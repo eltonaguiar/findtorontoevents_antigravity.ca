@@ -1373,123 +1373,6 @@
             font-weight: 600;
         }
 
-        /* Streaming Service Filter Row */
-        .streaming-filter-row {
-            position: fixed;
-            top: 72px;
-            left: 80px;
-            right: 16px;
-            z-index: 49;
-            display: none;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 4px 8px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .streaming-filter-row::-webkit-scrollbar { display: none; }
-        .streaming-filter-row.visible { display: flex; }
-
-        .streaming-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .streaming-pill:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-        }
-        .streaming-pill.active {
-            color: white;
-            border-color: transparent;
-        }
-        .streaming-pill img {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-        }
-        .streaming-pill.netflix.active { background: #e50914; }
-        .streaming-pill.prime.active { background: #00a8e1; }
-        .streaming-pill.disney.active { background: #113ccf; }
-        .streaming-pill.hulu.active { background: #1ce783; color: black; }
-        .streaming-pill.apple.active { background: #555; }
-        .streaming-pill.hbo.active { background: #b835f5; }
-        .streaming-pill.paramount.active { background: #0064ff; }
-        .streaming-pill.peacock.active { background: #000; border-color: #ffd700; }
-        .streaming-pill.crave.active { background: #0033a1; }
-        .streaming-pill.tubi.active { background: #fa382f; }
-        .streaming-pill .provider-count {
-            background: rgba(255,255,255,0.2);
-            padding: 1px 6px;
-            border-radius: 8px;
-            font-size: 10px;
-        }
-
-        /* Provider badges on movie cards */
-        .provider-badges {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-            margin-top: 4px;
-        }
-        .provider-badge {
-            width: 22px;
-            height: 22px;
-            border-radius: 5px;
-            object-fit: cover;
-        }
-
-        /* Lazy loading placeholder */
-        .video-placeholder {
-            width: 100%;
-            height: 100%;
-            background: #0a0a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .video-placeholder img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.4;
-        }
-        .video-placeholder .play-icon {
-            position: absolute;
-            font-size: 60px;
-            opacity: 0.7;
-            animation: pulse-play 2s infinite;
-        }
-        @keyframes pulse-play {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
-        .video-placeholder .loading-spinner {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #f59e0b;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         .filter-btn.coming-soon-filter {
             color: #7dd3fc;
         }
@@ -1981,9 +1864,6 @@
         <button class="control-btn" onclick="toggleQueue()" title="My Queue">
             📋
         </button>
-        <button class="control-btn" onclick="toggleStreamingFilter()" title="Filter by Streaming Service" id="streamingToggleBtn">
-            📺
-        </button>
         <div class="filter-group">
             <button class="filter-btn active" onclick="filterContent('all')" id="filterAll">All (<span
                     id="countAll">0</span>)</button>
@@ -1998,21 +1878,6 @@
                     id="countMotivation">0</span>)</button>
             <button class="filter-btn freestyle-filter" onclick="openFreestyle()" id="filterFreestyle">Freestyle <span class="freestyle-experimental-tag">Beta</span></button>
         </div>
-    </div>
-
-    <!-- Streaming Service Filter Row -->
-    <div class="streaming-filter-row" id="streamingFilterRow">
-        <button class="streaming-pill" data-provider="all" onclick="filterByProvider('all')">All</button>
-        <button class="streaming-pill netflix" data-provider="8" onclick="filterByProvider('8')">Netflix</button>
-        <button class="streaming-pill prime" data-provider="9" onclick="filterByProvider('9')">Prime Video</button>
-        <button class="streaming-pill disney" data-provider="337" onclick="filterByProvider('337')">Disney+</button>
-        <button class="streaming-pill hulu" data-provider="15" onclick="filterByProvider('15')">Hulu</button>
-        <button class="streaming-pill apple" data-provider="350" onclick="filterByProvider('350')">Apple TV+</button>
-        <button class="streaming-pill hbo" data-provider="1899" onclick="filterByProvider('1899')">Max</button>
-        <button class="streaming-pill paramount" data-provider="531" onclick="filterByProvider('531')">Paramount+</button>
-        <button class="streaming-pill peacock" data-provider="386" onclick="filterByProvider('386')">Peacock</button>
-        <button class="streaming-pill crave" data-provider="230" onclick="filterByProvider('230')">Crave</button>
-        <button class="streaming-pill tubi" data-provider="73" onclick="filterByProvider('73')">Tubi</button>
     </div>
 
     <!-- Browse/Catalog View -->
@@ -2051,24 +1916,6 @@
                             onclick="setContentTypeFilter('out-this-week')">Out This Week</button>
                         <button class="filter-chip" data-type="freestyle"
                             onclick="openFreestyle()" style="border-color: rgba(245, 158, 11, 0.5); color: #fbbf24;">Freestyle <span class="freestyle-experimental-tag">Beta</span></button>
-                    </div>
-                </div>
-
-                <!-- Streaming Service Filter -->
-                <div class="filter-section" style="flex-basis: 100%;">
-                    <div class="filter-label">Streaming Service</div>
-                    <div class="filter-buttons" id="browseStreamingFilters">
-                        <button class="filter-chip active" data-provider="all" onclick="setBrowseProviderFilter('all')">All</button>
-                        <button class="filter-chip" data-provider="8" onclick="setBrowseProviderFilter('8')" style="border-color: rgba(229,9,20,0.5); color: #f87171;">Netflix</button>
-                        <button class="filter-chip" data-provider="9" onclick="setBrowseProviderFilter('9')" style="border-color: rgba(0,168,225,0.5); color: #38bdf8;">Prime Video</button>
-                        <button class="filter-chip" data-provider="337" onclick="setBrowseProviderFilter('337')" style="border-color: rgba(17,60,207,0.5); color: #818cf8;">Disney+</button>
-                        <button class="filter-chip" data-provider="15" onclick="setBrowseProviderFilter('15')" style="border-color: rgba(28,231,131,0.5); color: #4ade80;">Hulu</button>
-                        <button class="filter-chip" data-provider="350" onclick="setBrowseProviderFilter('350')" style="border-color: rgba(100,100,100,0.5); color: #d4d4d8;">Apple TV+</button>
-                        <button class="filter-chip" data-provider="1899" onclick="setBrowseProviderFilter('1899')" style="border-color: rgba(184,53,245,0.5); color: #c084fc;">Max</button>
-                        <button class="filter-chip" data-provider="531" onclick="setBrowseProviderFilter('531')" style="border-color: rgba(0,100,255,0.5); color: #60a5fa;">Paramount+</button>
-                        <button class="filter-chip" data-provider="386" onclick="setBrowseProviderFilter('386')" style="border-color: rgba(255,215,0,0.5); color: #fbbf24;">Peacock</button>
-                        <button class="filter-chip" data-provider="230" onclick="setBrowseProviderFilter('230')" style="border-color: rgba(0,51,161,0.5); color: #93c5fd;">Crave</button>
-                        <button class="filter-chip" data-provider="73" onclick="setBrowseProviderFilter('73')" style="border-color: rgba(250,56,47,0.5); color: #fb923c;">Tubi</button>
                     </div>
                 </div>
 
@@ -2193,50 +2040,12 @@
 
     <script>
         const API_URL = '/MOVIESHOWS3/api/get-movies.php';
-        const TMDB_API_KEY = 'b84ff7bfe35ffad8779b77bcbbda317f';
-        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-
         let allMovies = [];
         let allMotivationalVideos = [];
         let filteredMovies = [];
         let currentFilter = 'all';
         let myQueue = JSON.parse(localStorage.getItem('movieQueue') || '[]');
         let currentMovieIndex = 0;
-
-        // Streaming provider state
-        let providerCache = JSON.parse(localStorage.getItem('ms3_providerCache') || '{}');
-        let providerCacheTimestamp = parseInt(localStorage.getItem('ms3_providerCacheTs') || '0');
-        const PROVIDER_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
-        let currentProviderFilter = 'all';
-        let providerDataLoaded = false;
-        let providerLoadingInProgress = false;
-
-        // TMDB Provider ID mapping
-        const PROVIDER_NAMES = {
-            '8': 'Netflix', '9': 'Prime Video', '337': 'Disney+',
-            '15': 'Hulu', '350': 'Apple TV+', '1899': 'Max',
-            '531': 'Paramount+', '386': 'Peacock', '230': 'Crave', '73': 'Tubi'
-        };
-        const PROVIDER_LOGOS = {
-            '8': 'https://image.tmdb.org/t/p/original/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg',
-            '9': 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg',
-            '337': 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg',
-            '15': 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg',
-            '350': 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg',
-            '1899': 'https://image.tmdb.org/t/p/original/6Q3KKKLC5RzYtuZgjE0Jv88tKds.jpg',
-            '531': 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg',
-            '386': 'https://image.tmdb.org/t/p/original/8VCV78prwd9QzZnEhzuVrl65MZz.jpg',
-            '230': 'https://image.tmdb.org/t/p/original/mogGMz3ZNmFsUBYSUOpGrdOoCNZ.jpg',
-            '73': 'https://image.tmdb.org/t/p/original/4UfRBJiRROwkhVnxVHnGFjHW7fE.jpg'
-        };
-
-        // Lazy loading state
-        const LAZY_LOAD_BUFFER = 2; // Load iframes for N cards before/after visible
-        let lazyObserver = null;
-        let loadedIframes = new Set();
-
-        // YouTube Player instances (for Quest 3 fix)
-        let ytPlayers = {};
 
         // Motivational settings (persisted in localStorage)
         let motivationSettings = {
@@ -3014,6 +2823,7 @@
             delay: 10 // default 10 seconds (kept for backward compatibility, but now triggers on video end)
         };
         let autoScrollTimeout = null;
+        let ytPlayers = {}; // Track YouTube player instances
 
         // Load auto-scroll settings from localStorage
         function loadAutoScrollSettings() {
@@ -3140,222 +2950,6 @@
             document.getElementById('menuPanel').classList.toggle('active');
         }
 
-        // ========== STREAMING SERVICE FILTER ==========
-        function toggleStreamingFilter() {
-            const row = document.getElementById('streamingFilterRow');
-            row.classList.toggle('visible');
-            const btn = document.getElementById('streamingToggleBtn');
-            btn.style.background = row.classList.contains('visible')
-                ? 'rgba(245, 158, 11, 0.4)' : 'rgba(0, 0, 0, 0.4)';
-
-            if (row.classList.contains('visible') && !providerDataLoaded && !providerLoadingInProgress) {
-                fetchAllProviderData();
-            }
-        }
-
-        async function fetchAllProviderData() {
-            if (providerLoadingInProgress) return;
-            providerLoadingInProgress = true;
-
-            // Check cache validity
-            if (Date.now() - providerCacheTimestamp < PROVIDER_CACHE_TTL && Object.keys(providerCache).length > 0) {
-                applyProviderCacheToMovies();
-                providerDataLoaded = true;
-                providerLoadingInProgress = false;
-                updateProviderCounts();
-                return;
-            }
-
-            console.log('Fetching streaming provider data from TMDB...');
-            const moviesWithTmdb = allMovies.filter(m => m.tmdb_id);
-            let fetched = 0;
-            const batchSize = 10;
-            const newCache = {};
-
-            for (let i = 0; i < moviesWithTmdb.length; i += batchSize) {
-                const batch = moviesWithTmdb.slice(i, i + batchSize);
-                const promises = batch.map(async (movie) => {
-                    const cacheKey = movie.type + '_' + movie.tmdb_id;
-                    if (providerCache[cacheKey]) {
-                        newCache[cacheKey] = providerCache[cacheKey];
-                        return;
-                    }
-                    try {
-                        const endpoint = movie.type === 'tv' ? 'tv' : 'movie';
-                        const resp = await fetch(
-                            TMDB_BASE_URL + '/' + endpoint + '/' + movie.tmdb_id +
-                            '/watch/providers?api_key=' + TMDB_API_KEY
-                        );
-                        if (!resp.ok) return;
-                        const data = await resp.json();
-                        // Use US providers as default, fall back to CA
-                        const region = data.results && (data.results.US || data.results.CA);
-                        if (region) {
-                            const providers = [];
-                            const seen = new Set();
-                            ['flatrate', 'free', 'ads'].forEach(function(key) {
-                                if (region[key]) {
-                                    region[key].forEach(function(p) {
-                                        if (!seen.has(p.provider_id)) {
-                                            seen.add(p.provider_id);
-                                            providers.push({
-                                                id: String(p.provider_id),
-                                                name: p.provider_name,
-                                                logo: 'https://image.tmdb.org/t/p/original' + p.logo_path
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                            newCache[cacheKey] = providers;
-                        } else {
-                            newCache[cacheKey] = [];
-                        }
-                    } catch (err) {
-                        // silently skip failures
-                    }
-                });
-                await Promise.all(promises);
-                fetched += batch.length;
-                // Small delay to avoid rate limiting
-                if (i + batchSize < moviesWithTmdb.length) {
-                    await new Promise(function(r) { setTimeout(r, 150); });
-                }
-            }
-
-            providerCache = newCache;
-            localStorage.setItem('ms3_providerCache', JSON.stringify(providerCache));
-            localStorage.setItem('ms3_providerCacheTs', String(Date.now()));
-
-            applyProviderCacheToMovies();
-            providerDataLoaded = true;
-            providerLoadingInProgress = false;
-            updateProviderCounts();
-            console.log('Streaming provider data loaded for ' + Object.keys(providerCache).length + ' titles');
-        }
-
-        function applyProviderCacheToMovies() {
-            allMovies.forEach(function(movie) {
-                if (!movie.tmdb_id) { movie._providers = []; return; }
-                var cacheKey = movie.type + '_' + movie.tmdb_id;
-                movie._providers = providerCache[cacheKey] || [];
-            });
-        }
-
-        function updateProviderCounts() {
-            var counts = {};
-            allMovies.forEach(function(movie) {
-                if (!movie._providers) return;
-                movie._providers.forEach(function(p) {
-                    counts[p.id] = (counts[p.id] || 0) + 1;
-                });
-            });
-
-            // Update pill counts in the streaming filter row
-            document.querySelectorAll('.streaming-pill[data-provider]').forEach(function(pill) {
-                var pid = pill.getAttribute('data-provider');
-                if (pid === 'all') return;
-                var existing = pill.querySelector('.provider-count');
-                if (existing) existing.remove();
-                var count = counts[pid] || 0;
-                if (count > 0) {
-                    var span = document.createElement('span');
-                    span.className = 'provider-count';
-                    span.textContent = count;
-                    pill.appendChild(span);
-                }
-            });
-
-            // Update browse view provider filter counts too
-            document.querySelectorAll('#browseStreamingFilters .filter-chip[data-provider]').forEach(function(chip) {
-                var pid = chip.getAttribute('data-provider');
-                if (pid === 'all') return;
-                var count = counts[pid] || 0;
-                var name = PROVIDER_NAMES[pid] || pid;
-                chip.textContent = name + (count > 0 ? ' (' + count + ')' : '');
-            });
-        }
-
-        function filterByProvider(providerId) {
-            currentProviderFilter = providerId;
-
-            // Update pill active states
-            document.querySelectorAll('.streaming-pill').forEach(function(p) {
-                p.classList.remove('active');
-            });
-            var activePill = document.querySelector('.streaming-pill[data-provider="' + providerId + '"]');
-            if (activePill) activePill.classList.add('active');
-
-            // Re-filter and render
-            applyMainFilter();
-        }
-
-        function setBrowseProviderFilter(providerId) {
-            currentProviderFilter = providerId;
-
-            // Update active state in browse
-            document.querySelectorAll('#browseStreamingFilters .filter-chip').forEach(function(c) {
-                c.classList.remove('active');
-            });
-            var activeChip = document.querySelector('#browseStreamingFilters .filter-chip[data-provider="' + providerId + '"]');
-            if (activeChip) activeChip.classList.add('active');
-
-            // Also update the top streaming pills
-            document.querySelectorAll('.streaming-pill').forEach(function(p) { p.classList.remove('active'); });
-            var topPill = document.querySelector('.streaming-pill[data-provider="' + providerId + '"]');
-            if (topPill) topPill.classList.add('active');
-
-            applyBrowseFilters();
-        }
-
-        function applyProviderFilterToList(movies) {
-            if (currentProviderFilter === 'all') return movies;
-            return movies.filter(function(m) {
-                if (!m._providers) return false;
-                return m._providers.some(function(p) { return p.id === currentProviderFilter; });
-            });
-        }
-
-        function applyMainFilter() {
-            // Apply content type filter first
-            var movies;
-            if (currentFilter === 'all') {
-                if (motivationSettings.showInAll) {
-                    movies = allMovies.concat(allMotivationalVideos);
-                } else {
-                    movies = allMovies.slice();
-                }
-            } else if (currentFilter === 'motivation') {
-                movies = allMotivationalVideos.slice();
-            } else if (currentFilter === 'now-playing') {
-                buildNowPlayingList();
-                movies = nowPlayingMovies.slice();
-            } else if (currentFilter === 'coming-soon') {
-                buildComingSoonList();
-                movies = allComingSoon.slice();
-            } else {
-                movies = allMovies.filter(function(m) { return m.type === currentFilter; });
-            }
-
-            // Apply provider filter
-            movies = applyProviderFilterToList(movies);
-
-            // Skip watched
-            if (skipWatchedSettings.enabled && watchedMovieIds.length > 0) {
-                movies = movies.filter(function(m) { return watchedMovieIds.indexOf(m.id) === -1; });
-            }
-
-            filteredMovies = movies;
-            renderMovies(filteredMovies);
-
-            setTimeout(function() { setupScrollAutoplay(); }, 100);
-
-            if (document.getElementById('browseView').classList.contains('active')) {
-                renderBrowseGrid();
-                applyBrowseFilters();
-            }
-        }
-
         function toggleBrowse() {
             const browseView = document.getElementById('browseView');
             const isActive = browseView.classList.toggle('active');
@@ -3378,8 +2972,8 @@
             currentFilter = type;
 
             // Update button states
-            document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
-            var filterMap = {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            const filterMap = {
                 'all': 'filterAll',
                 'movie': 'filterMovies',
                 'tv': 'filterTV',
@@ -3387,11 +2981,46 @@
                 'now-playing': 'filterNowPlaying',
                 'coming-soon': 'filterComingSoon'
             };
-            var btnId = filterMap[type];
+            const btnId = filterMap[type];
             if (btnId) document.getElementById(btnId).classList.add('active');
 
-            // Use the centralized filter logic
-            applyMainFilter();
+            // Filter and render
+            if (type === 'all') {
+                // If motivation-in-all is enabled, include motivation videos
+                if (motivationSettings.showInAll) {
+                    filteredMovies = [...allMovies, ...allMotivationalVideos];
+                } else {
+                    filteredMovies = [...allMovies];
+                }
+            } else if (type === 'motivation') {
+                filteredMovies = [...allMotivationalVideos];
+            } else if (type === 'now-playing') {
+                buildNowPlayingList();
+                filteredMovies = [...nowPlayingMovies];
+            } else if (type === 'coming-soon') {
+                buildComingSoonList();
+                filteredMovies = [...allComingSoon];
+            } else {
+                filteredMovies = allMovies.filter(m => m.type === type);
+            }
+
+            // Skip watched trailers if setting is enabled
+            if (skipWatchedSettings.enabled && watchedMovieIds.length > 0) {
+                filteredMovies = filteredMovies.filter(m => !watchedMovieIds.includes(m.id));
+            }
+
+            renderMovies(filteredMovies);
+
+            // Re-setup scroll autoplay after rendering new videos
+            setTimeout(() => {
+                setupScrollAutoplay();
+            }, 100);
+
+            // Update browse grid if open
+            if (document.getElementById('browseView').classList.contains('active')) {
+                renderBrowseGrid();
+                applyBrowseFilters();
+            }
         }
 
         function renderBrowseGrid() {
@@ -3460,13 +3089,6 @@
                                         : `${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + movie.imdb_rating : ''}`
                                 }
                             </div>
-                            ${movie._providers && movie._providers.length > 0 ? `
-                                <div class="provider-badges">
-                                    ${movie._providers.slice(0, 5).map(function(p) {
-                                        return '<img class="provider-badge" src="' + p.logo + '" alt="' + p.name + '" title="' + p.name + '">';
-                                    }).join('')}
-                                </div>
-                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -3567,14 +3189,6 @@
                     if (!genreStr) return false;
                     const genres = genreStr.split(',').map(g => g.trim().toLowerCase());
                     return genres.includes(browseFilters.genre.toLowerCase());
-                });
-            }
-
-            // Apply streaming provider filter
-            if (currentProviderFilter !== 'all') {
-                results = results.filter(function(m) {
-                    if (!m._providers) return false;
-                    return m._providers.some(function(p) { return p.id === currentProviderFilter; });
                 });
             }
 
@@ -4144,18 +3758,6 @@
                 // Init alt trailer button for first video
                 setTimeout(updateAltTrailerButton, 1000);
                 console.log(`\u2705 Loaded ${allMovies.length} movies + ${allMotivationalVideos.length} motivational + ${allComingSoon.length} coming soon`);
-
-                // Pre-fetch streaming provider data in background (non-blocking)
-                setTimeout(function() {
-                    if (!providerDataLoaded && !providerLoadingInProgress) {
-                        fetchAllProviderData().then(function() {
-                            // Re-render browse grid if open
-                            if (document.getElementById('browseView').classList.contains('active')) {
-                                renderBrowseGrid();
-                            }
-                        });
-                    }
-                }, 3000);
             } catch (error) {
                 console.error('Error loading movies:', error);
                 // Still build motivational videos even if movie API fails
@@ -4185,120 +3787,30 @@
         }
 
         function renderMovies(movies) {
-            var container = document.getElementById('container');
+            const container = document.getElementById('container');
             container.innerHTML = '';
 
-            // Reset per-video mute states and player instances when re-rendering
+            // Reset per-video mute states when re-rendering
             videoMuteStates = {};
-            ytPlayers = {};
-            loadedIframes = new Set();
 
-            // Destroy old lazy observer
-            if (lazyObserver) {
-                lazyObserver.disconnect();
-                lazyObserver = null;
-            }
-
-            movies.forEach(function(movie, index) {
-                var card = createMovieCard(movie, index);
+            movies.forEach((movie, index) => {
+                const card = createMovieCard(movie, index);
                 container.appendChild(card);
             });
 
-            // Setup lazy loading observer for iframes
-            setupLazyLoading();
+            // If user previously enabled sound, unmute new videos and update UI
+            if (userEnabledSound) {
+                const allIframes = document.querySelectorAll('#container iframe');
+                allIframes.forEach((iframe, idx) => {
+                    videoMuteStates[idx] = false;
+                    iframe.src = iframe.src.replace(/mute=1/, 'mute=0');
+                    const btn = iframe.parentElement.querySelector('.unmute-btn');
+                    if (btn) btn.textContent = '🔊';
+                });
+            }
 
             // Update mute overlay to reflect current state
             updateMuteOverlay();
-        }
-
-        function setupLazyLoading() {
-            var options = {
-                root: null,
-                rootMargin: '200% 0px', // Pre-load when 2 screens away
-                threshold: 0
-            };
-
-            lazyObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    var card = entry.target;
-                    var index = parseInt(card.dataset.index);
-
-                    if (entry.isIntersecting) {
-                        // Card is near viewport - load iframe if not loaded
-                        if (!loadedIframes.has(index)) {
-                            activateIframe(card, index);
-                        }
-                    } else {
-                        // Card is far from viewport - unload iframe to free memory
-                        // But keep a generous buffer
-                        if (loadedIframes.has(index)) {
-                            var rect = card.getBoundingClientRect();
-                            var distance = Math.abs(rect.top) / window.innerHeight;
-                            if (distance > 4) {
-                                deactivateIframe(card, index);
-                            }
-                        }
-                    }
-                });
-            }, options);
-
-            document.querySelectorAll('.video-card').forEach(function(card) {
-                lazyObserver.observe(card);
-            });
-        }
-
-        function activateIframe(card, index) {
-            var placeholder = card.querySelector('.video-placeholder');
-            if (!placeholder) return;
-
-            var trailerId = placeholder.dataset.trailerId;
-            if (!trailerId) return;
-
-            loadedIframes.add(index);
-
-            var muteVal = (userEnabledSound || videoMuteStates[index] === false) ? 0 : 1;
-            var autoplayValue = 0; // Scroll autoplay will handle playing
-            var youtubeUrl = 'https://www.youtube.com/embed/' + trailerId +
-                '?autoplay=' + autoplayValue + '&mute=' + muteVal +
-                '&controls=1&playsinline=1&loop=0&modestbranding=1&rel=0&enablejsapi=1&origin=' + window.location.origin;
-
-            var wrapper = document.createElement('div');
-            wrapper.className = 'video-wrapper';
-            wrapper.innerHTML =
-                '<iframe id="player-' + index + '" ' +
-                'src="' + youtubeUrl + '" ' +
-                'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ' +
-                'allowfullscreen></iframe>' +
-                '<button class="unmute-btn" onclick="toggleMute(' + index + ')" title="Toggle Mute">' +
-                (muteVal ? '🔇' : '🔊') + '</button>';
-
-            placeholder.replaceWith(wrapper);
-        }
-
-        function deactivateIframe(card, index) {
-            var wrapper = card.querySelector('.video-wrapper');
-            if (!wrapper) return;
-
-            // Clean up YT player
-            if (ytPlayers[index]) {
-                try { ytPlayers[index].destroy(); } catch(e) {}
-                delete ytPlayers[index];
-            }
-
-            var movie = filteredMovies[index];
-            if (!movie) return;
-
-            loadedIframes.delete(index);
-
-            var posterUrl = movie.thumbnail || 'https://placehold.co/1280x720/1a1a2e/e2e8f0?text=' + encodeURIComponent(movie.title);
-            var ph = document.createElement('div');
-            ph.className = 'video-placeholder';
-            ph.dataset.trailerId = movie.trailer_id;
-            ph.innerHTML = '<img src="' + posterUrl + '" alt="' + escapeHtml(movie.title) + '" ' +
-                'onerror="this.style.display=\'none\'">' +
-                '<div class="play-icon">▶</div>';
-
-            wrapper.replaceWith(ph);
         }
 
         function createMovieCard(movie, index) {
@@ -4340,44 +3852,45 @@
                 }
             }
 
-            var videoContent;
+            let videoContent;
             if (hasTrailer) {
-                // Use lazy placeholder - iframe will be loaded by IntersectionObserver
-                var posterUrl = movie.thumbnail || 'https://placehold.co/1280x720/1a1a2e/e2e8f0?text=' + encodeURIComponent(movie.title);
-                // First 2 cards get immediate iframes for fast initial load
-                if (index < 2) {
-                    var muteVal = userEnabledSound ? 0 : 1;
-                    var autoplayValue = index === 0 ? 1 : 0;
-                    var youtubeUrl = 'https://www.youtube.com/embed/' + movie.trailer_id +
-                        '?autoplay=' + autoplayValue + '&mute=' + muteVal +
-                        '&controls=1&playsinline=1&loop=0&modestbranding=1&rel=0&enablejsapi=1&origin=' + window.location.origin;
-                    videoContent =
-                        '<div class="video-wrapper">' +
-                        '<iframe id="player-' + index + '" src="' + youtubeUrl + '" ' +
-                        'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ' +
-                        'allowfullscreen></iframe>' +
-                        '<button class="unmute-btn" onclick="toggleMute(' + index + ')" title="Toggle Mute">' +
-                        (muteVal ? '🔇' : '🔊') + '</button></div>';
-                    loadedIframes.add(index);
-                } else {
-                    videoContent =
-                        '<div class="video-placeholder" data-trailer-id="' + movie.trailer_id + '">' +
-                        '<img src="' + posterUrl + '" alt="' + escapeHtml(movie.title) + '" ' +
-                        'onerror="this.style.display=\'none\'">' +
-                        '<div class="play-icon">▶</div></div>';
-                }
+                // Show YouTube controls on all videos so users can seek/fast-forward/rewind
+                const controlsParam = 1;
+                // Don't loop any videos — allows YouTube ENDED event to fire for auto-scroll
+                const loopParam = 0;
+                const playlistParam = '';
+
+                // Only the FIRST video starts with autoplay=1, all others start with autoplay=0
+                const autoplayValue = index === 0 ? 1 : 0;
+                const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplayValue}&mute=1&controls=${controlsParam}&playsinline=1&loop=${loopParam}${playlistParam}&modestbranding=1&rel=0&enablejsapi=1`;
+
+                videoContent = `
+                    <div class="video-wrapper">
+                        <iframe 
+                            id="player-${index}"
+                            src="${youtubeUrl}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            loading="${index < 3 ? 'eager' : 'lazy'}"
+                        ></iframe>
+                        <button class="unmute-btn" onclick="toggleMute(${index})" title="Unmute">
+                            🔇
+                        </button>
+                    </div>`;
             } else {
-                var noTrailerPoster = movie.thumbnail || 'https://placehold.co/1280x720/1a1a2e/e2e8f0?text=' + encodeURIComponent(movie.title);
-                videoContent =
-                    '<div class="video-wrapper" style="position: relative; background: #0a0a1a;">' +
-                    '<img src="' + noTrailerPoster + '" alt="' + escapeHtml(movie.title) + '" ' +
-                    'style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;" ' +
-                    'onerror="this.style.display=\'none\'">' +
-                    '<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">' +
-                    '<div style="font-size: 48px;">🎬</div>' +
-                    '<div style="font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9);">Trailer Coming Soon</div>' +
-                    '<div style="font-size: 13px; color: rgba(255,255,255,0.5);">' + (movie._releaseDateStr || '') + '</div>' +
-                    '</div></div>';
+                // No trailer - show poster image with "No Trailer Yet" overlay
+                const posterUrl = movie.thumbnail || `https://placehold.co/1280x720/1a1a2e/e2e8f0?text=${encodeURIComponent(movie.title)}`;
+                videoContent = `
+                    <div class="video-wrapper" style="position: relative; background: #0a0a1a;">
+                        <img src="${posterUrl}" alt="${escapeHtml(movie.title)}"
+                            style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;"
+                            onerror="this.style.display='none'">
+                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                            <div style="font-size: 48px;">🎬</div>
+                            <div style="font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9);">Trailer Coming Soon</div>
+                            <div style="font-size: 13px; color: rgba(255,255,255,0.5);">${movie._releaseDateStr || ''}</div>
+                        </div>
+                    </div>`;
             }
 
             const altDescId = `alt-desc-${index}`;
@@ -4394,13 +3907,6 @@
                         ${metaBadges}
                     </div>
                     ${movie.description ? `<div class="movie-description" id="movie-desc-${index}">${escapeHtml(movie.description)}${altDescLink}</div>` : ''}
-                    ${movie._providers && movie._providers.length > 0 ? `
-                        <div class="provider-badges">
-                            ${movie._providers.slice(0, 5).map(function(p) {
-                                return '<img class="provider-badge" src="' + p.logo + '" alt="' + p.name + '" title="' + p.name + '">';
-                            }).join('')}
-                        </div>
-                    ` : ''}
                     ${movie.genre ? `
                         <div class="genre-tags">
                             ${movie.genre.split(',').map(g => `<span class="genre-tag">${escapeHtml(g.trim())}</span>`).join('')}
@@ -4433,83 +3939,39 @@
 
         function toggleMute(index) {
             // Toggle mute state for this specific video
-            var currentMuteState = videoMuteStates[index] !== undefined ? videoMuteStates[index] : true;
+            const currentMuteState = videoMuteStates[index] !== undefined ? videoMuteStates[index] : true;
             videoMuteStates[index] = !currentMuteState;
 
-            var playerEl = document.getElementById('player-' + index);
-            if (!playerEl) return;
-            var btn = playerEl.parentElement.querySelector('.unmute-btn');
-            if (btn) btn.textContent = videoMuteStates[index] ? '🔇' : '🔊';
+            const btn = document.querySelector(`#player-${index}`).parentElement.querySelector('.unmute-btn');
+            btn.textContent = videoMuteStates[index] ? '🔇' : '🔊';
 
-            // Use YouTube IFrame API postMessage for mute/unmute (no src reload)
-            // This fixes Meta Quest 3 where iframe src reloads jam the player
-            if (ytPlayers[index]) {
-                try {
-                    if (videoMuteStates[index]) {
-                        ytPlayers[index].mute();
-                    } else {
-                        ytPlayers[index].unMute();
-                        ytPlayers[index].playVideo();
-                    }
-                } catch(e) {
-                    // Fallback: use postMessage directly
-                    sendYTCommand(playerEl, videoMuteStates[index] ? 'mute' : 'unMute');
-                }
-            } else {
-                // No YT player instance yet - use postMessage
-                sendYTCommand(playerEl, videoMuteStates[index] ? 'mute' : 'unMute');
-                if (!videoMuteStates[index]) {
-                    sendYTCommand(playerEl, 'playVideo');
-                }
+            // Update ONLY the current video's iframe
+            const iframe = document.getElementById(`player-${index}`);
+            if (iframe) {
+                const currentUrl = iframe.src;
+                iframe.src = currentUrl.replace(/mute=[01]/, `mute=${videoMuteStates[index] ? 1 : 0}`);
             }
 
             // Update overlay visibility
             updateMuteOverlay();
         }
 
-        function sendYTCommand(iframe, command) {
-            try {
-                iframe.contentWindow.postMessage(JSON.stringify({
-                    event: 'command',
-                    func: command,
-                    args: []
-                }), '*');
-            } catch(e) {
-                // Cross-origin fallback - only use src swap as last resort
-                console.warn('postMessage failed, using src fallback for', command);
-                if (command === 'mute' || command === 'unMute') {
-                    var muteVal = command === 'mute' ? 1 : 0;
-                    var currentUrl = iframe.src;
-                    iframe.src = currentUrl.replace(/mute=[01]/, 'mute=' + muteVal);
-                }
-            }
-        }
-
         function enableSound() {
             // Mark that user wants sound globally (persists across category switches)
             userEnabledSound = true;
 
-            // Unmute all loaded videos using YouTube API (no iframe src reload)
-            document.querySelectorAll('#container iframe').forEach(function(iframe) {
-                var idMatch = iframe.id.match(/player-(\d+)/);
-                if (!idMatch) return;
-                var idx = parseInt(idMatch[1]);
-                videoMuteStates[idx] = false;
+            // Unmute all videos
+            const allIframes = document.querySelectorAll('iframe');
+            allIframes.forEach((iframe, index) => {
+                videoMuteStates[index] = false;
+                const currentUrl = iframe.src;
+                iframe.src = currentUrl.replace(/mute=1/, 'mute=0');
 
-                // Use YT player API if available, otherwise postMessage
-                if (ytPlayers[idx]) {
-                    try {
-                        ytPlayers[idx].unMute();
-                        ytPlayers[idx].setVolume(100);
-                    } catch(e) {
-                        sendYTCommand(iframe, 'unMute');
-                    }
-                } else {
-                    sendYTCommand(iframe, 'unMute');
+                // Update the unmute button for this video
+                const btn = iframe.parentElement.querySelector('.unmute-btn');
+                if (btn) {
+                    btn.textContent = '🔊';
                 }
-
-                var btn = iframe.parentElement.querySelector('.unmute-btn');
-                if (btn) btn.textContent = '🔊';
             });
 
             // Hide the mute overlay and persistent button
@@ -4549,21 +4011,22 @@
             showMuteOverlay();
         }, 1000);
 
-        // Intersection Observer for autoplay on scroll (works with lazy loading)
+        // Intersection Observer for autoplay on scroll
         function setupScrollAutoplay() {
-            var options = {
+            const options = {
                 root: null,
                 rootMargin: '0px',
-                threshold: 0.75
+                threshold: 0.75  // Increased threshold for better detection
             };
 
-            var currentlyPlaying = null;
+            let currentlyPlaying = null;
 
-            var observer = new IntersectionObserver(function(entries) {
-                var mostVisible = null;
-                var highestRatio = 0;
+            const observer = new IntersectionObserver((entries) => {
+                // Find the most visible video
+                let mostVisible = null;
+                let highestRatio = 0;
 
-                entries.forEach(function(entry) {
+                entries.forEach(entry => {
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.75) {
                         if (entry.intersectionRatio > highestRatio) {
                             highestRatio = entry.intersectionRatio;
@@ -4572,87 +4035,96 @@
                     }
                 });
 
+                // If we found a visible video, play ONLY that one
                 if (mostVisible) {
-                    var card = mostVisible.target;
-                    var index = card.dataset.index;
-                    var iframe = card.querySelector('iframe');
+                    const iframe = mostVisible.target.querySelector('iframe');
+                    const index = mostVisible.target.dataset.index;
 
-                    // If card has a placeholder, activate the iframe first
-                    if (!iframe && card.querySelector('.video-placeholder')) {
-                        activateIframe(card, parseInt(index));
-                        // Wait for iframe to load before playing
-                        setTimeout(function() {
-                            var newIframe = card.querySelector('iframe');
-                            if (newIframe && currentlyPlaying !== index) {
-                                playVideoAtIndex(index, newIframe, currentlyPlaying === null);
-                                currentlyPlaying = index;
+                    if (currentlyPlaying !== index) {
+                        console.log(`Playing video ${index}`);
+
+                        // FIRST: STOP ALL other videos by removing their src completely, then restoring with autoplay=0
+                        document.querySelectorAll('.video-card').forEach(card => {
+                            const cardIndex = card.dataset.index;
+                            if (cardIndex !== index) {
+                                const cardIframe = card.querySelector('iframe');
+                                if (cardIframe) {
+                                    // Store the current src
+                                    const currentSrc = cardIframe.src;
+                                    // Only stop if it's currently playing
+                                    if (currentSrc.includes('autoplay=1')) {
+                                        // Remove src to stop playback
+                                        cardIframe.src = '';
+                                        // Restore with autoplay=0 after a tiny delay
+                                        setTimeout(() => {
+                                            cardIframe.src = currentSrc.replace(/autoplay=1/, 'autoplay=0');
+                                        }, 50);
+                                    }
+                                }
                             }
-                        }, 500);
-                        return;
-                    }
+                        });
 
-                    if (iframe && currentlyPlaying !== index) {
-                        playVideoAtIndex(index, iframe, currentlyPlaying === null);
+                        // THEN: Play the new video
+                        const currentSrc = iframe.src;
+                        const isInitialLoad = currentlyPlaying === null;
+                        if (!currentSrc.includes('autoplay=1')) {
+                            iframe.src = currentSrc.replace(/autoplay=[01]/, 'autoplay=1');
+                        } else if (!isInitialLoad) {
+                            // Only force reload if we're SWITCHING from another video
+                            // Don't reload on initial load — the iframe already has autoplay=1
+                            iframe.src = iframe.src;
+                        }
+
                         currentlyPlaying = index;
+
+                        // Update alt trailer button for new video
+                        updateAltTrailerButton();
+
+                        // Re-initialize YouTube player after iframe reloads (for auto-scroll on video end)
+                        if (typeof YT !== 'undefined' && YT.Player) {
+                            if (isInitialLoad && currentSrc.includes('autoplay=1')) {
+                                // Initial load — iframe isn't reloading, init YT player directly
+                                initYouTubePlayer(index);
+                            } else {
+                                // Wait for iframe to finish loading before binding YT.Player
+                                iframe.addEventListener('load', function onLoad() {
+                                    iframe.removeEventListener('load', onLoad);
+                                    initYouTubePlayer(index);
+                                });
+                            }
+                        }
                     }
                 }
             }, options);
 
-            document.querySelectorAll('.video-card').forEach(function(card) {
+            // Observe all video cards
+            document.querySelectorAll('.video-card').forEach(card => {
                 observer.observe(card);
             });
 
-            // Force play first video after short delay
-            setTimeout(function() {
-                if (currentlyPlaying !== null) return;
-                var firstCard = document.querySelector('.video-card');
+            // Force play the first video after a short delay (only if observer didn't already handle it)
+            setTimeout(() => {
+                if (currentlyPlaying !== null) {
+                    console.log('First video already playing via observer, skipping force play');
+                    return;
+                }
+                const firstCard = document.querySelector('.video-card');
                 if (firstCard) {
-                    var firstIframe = firstCard.querySelector('iframe');
+                    const firstIframe = firstCard.querySelector('iframe');
                     if (firstIframe) {
                         console.log('Force playing first video');
+                        firstIframe.src = firstIframe.src; // Reload to trigger autoplay
                         currentlyPlaying = '0';
-                        initYouTubePlayer(0);
-                    }
-                }
-            }, 1000);
-        }
-
-        function playVideoAtIndex(index, iframe, isInitialLoad) {
-            console.log('Playing video ' + index);
-
-            // PAUSE all other videos using YT API (no src replacement!)
-            document.querySelectorAll('.video-card').forEach(function(card) {
-                var cardIndex = card.dataset.index;
-                if (cardIndex !== index) {
-                    var ci = parseInt(cardIndex);
-                    if (ytPlayers[ci]) {
-                        try { ytPlayers[ci].pauseVideo(); } catch(e) {}
-                    } else {
-                        var cardIframe = card.querySelector('iframe');
-                        if (cardIframe) {
-                            sendYTCommand(cardIframe, 'pauseVideo');
+                        // Re-bind YT.Player after force reload
+                        if (typeof YT !== 'undefined' && YT.Player) {
+                            firstIframe.addEventListener('load', function onLoad() {
+                                firstIframe.removeEventListener('load', onLoad);
+                                initYouTubePlayer(0);
+                            });
                         }
                     }
                 }
-            });
-
-            // PLAY the new video using YT API
-            if (ytPlayers[parseInt(index)]) {
-                try {
-                    ytPlayers[parseInt(index)].playVideo();
-                } catch(e) {
-                    sendYTCommand(iframe, 'playVideo');
-                }
-            } else {
-                // Use postMessage to start, and init YT player
-                sendYTCommand(iframe, 'playVideo');
-                if (typeof YT !== 'undefined' && YT.Player) {
-                    initYouTubePlayer(parseInt(index));
-                }
-            }
-
-            // Update alt trailer button
-            updateAltTrailerButton();
+            }, 1000);
         }
 
 

@@ -12,29 +12,9 @@
     
     // ========== NAVIGATION STATE ==========
     let currentFilter = 'all'; // all, movies, tv, nowplaying
-    let currentProviderFilter = 'all'; // streaming service filter
     let searchPanel = null;
     let filterPanel = null;
     let queuePanel = null;
-    
-    // ========== STREAMING PROVIDER DATA ==========
-    let providerCache = JSON.parse(localStorage.getItem('ms2_providerCache') || '{}');
-    let providerCacheTs = parseInt(localStorage.getItem('ms2_providerCacheTs') || '0');
-    const PROVIDER_CACHE_TTL = 24 * 60 * 60 * 1000;
-    let providerDataLoaded = false;
-    let providerLoadingInProgress = false;
-    const PROVIDER_IDS = {
-        '8': { name: 'Netflix', color: '#e50914' },
-        '9': { name: 'Prime Video', color: '#00a8e1' },
-        '337': { name: 'Disney+', color: '#113ccf' },
-        '15': { name: 'Hulu', color: '#1ce783' },
-        '350': { name: 'Apple TV+', color: '#555' },
-        '1899': { name: 'Max', color: '#b835f5' },
-        '531': { name: 'Paramount+', color: '#0064ff' },
-        '386': { name: 'Peacock', color: '#ffd700' },
-        '230': { name: 'Crave', color: '#0033a1' },
-        '73': { name: 'Tubi', color: '#fa382f' }
-    };
     let userQueue = JSON.parse(localStorage.getItem("movieshows-queue") || "[]");
     let watchedHistory = JSON.parse(localStorage.getItem("movieshows-watched") || "[]");
     let queueViewMode = localStorage.getItem("movieshows-queue-view") || "thumbnail"; // "thumbnail" or "text"
@@ -606,40 +586,6 @@
             performSearch(document.getElementById("movie-search-input")?.value || "");
         });
         
-        // Streaming service quick-filter pills in search panel
-        const streamingRow = document.createElement("div");
-        streamingRow.id = "search-streaming-pills";
-        streamingRow.style.cssText = "display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;";
-        streamingRow.innerHTML = `
-            <button class="streaming-pill-btn active" data-sp="all" style="padding: 5px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; background: transparent; color: #aaa; cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; transition: all 0.2s;">All</button>
-            <button class="streaming-pill-btn" data-sp="8" style="padding: 5px 12px; border: 1px solid rgba(229,9,20,0.3); border-radius: 14px; background: transparent; color: #f87171; cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; transition: all 0.2s;">Netflix</button>
-            <button class="streaming-pill-btn" data-sp="9" style="padding: 5px 12px; border: 1px solid rgba(0,168,225,0.3); border-radius: 14px; background: transparent; color: #38bdf8; cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; transition: all 0.2s;">Prime</button>
-            <button class="streaming-pill-btn" data-sp="337" style="padding: 5px 12px; border: 1px solid rgba(17,60,207,0.3); border-radius: 14px; background: transparent; color: #818cf8; cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; transition: all 0.2s;">Disney+</button>
-            <button class="streaming-pill-btn" data-sp="15" style="padding: 5px 12px; border: 1px solid rgba(28,231,131,0.3); border-radius: 14px; background: transparent; color: #4ade80; cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; transition: all 0.2s;">Hulu</button>
-            <button class="streaming-pill-btn" data-sp="1899" style="padding: 5px 12px; border: 1px solid rgba(184,53,245,0.3); border-radius: 14px; background: transparent; color: #c084fc; cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; transition: all 0.2s;">Max</button>
-        `;
-        content.appendChild(streamingRow);
-        
-        // Streaming pill click handlers
-        streamingRow.querySelectorAll('.streaming-pill-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                streamingRow.querySelectorAll('.streaming-pill-btn').forEach(b => {
-                    b.classList.remove('active');
-                    b.style.background = 'transparent';
-                });
-                btn.classList.add('active');
-                btn.style.background = 'rgba(255,255,255,0.1)';
-                currentProviderFilter = btn.dataset.sp;
-                if (currentProviderFilter !== 'all' && !providerDataLoaded && !providerLoadingInProgress) {
-                    fetchProviderData().then(() => {
-                        performSearch(document.getElementById("movie-search-input")?.value || "");
-                    });
-                } else {
-                    performSearch(document.getElementById("movie-search-input")?.value || "");
-                }
-            });
-        });
-
         // Results container
         const results = document.createElement("div");
         results.id = "search-results";
@@ -709,14 +655,6 @@
             filtered = filtered.filter(m => m.source === 'Now Playing' || m.source === 'In Theatres');
         }
         
-        // Apply streaming provider filter
-        if (currentProviderFilter !== 'all') {
-            filtered = filtered.filter(m => {
-                if (!m._providers) return false;
-                return m._providers.some(p => String(p.id) === currentProviderFilter);
-            });
-        }
-        
         // Limit results
         filtered = filtered.slice(0, 30);
         
@@ -761,13 +699,6 @@
                     <h4 style="color: white; font-size: 13px; font-weight: 600; margin: 0 0 4px 0; 
                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${movie.title || 'Unknown'}</h4>
                     <p style="color: #888; font-size: 11px; margin: 0;">${movie.year || ''} ${movie.rating ? '• ⭐ ' + movie.rating : ''}</p>
-                    ${movie._providers && movie._providers.length > 0 ? `
-                        <div style="display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap;">
-                            ${movie._providers.slice(0, 4).map(p => 
-                                `<img src="${p.logo}" alt="${p.name}" title="${p.name}" style="width: 18px; height: 18px; border-radius: 4px;">`
-                            ).join('')}
-                        </div>
-                    ` : ''}
                 </div>
             </div>
         `;
@@ -788,23 +719,6 @@
                     <button class="filter-btn" data-filter="tv">TV Shows</button>
                     <button class="filter-btn" data-filter="nowplaying">Now Playing</button>
                 </div>
-            </div>
-            <div style="margin-bottom: 24px;">
-                <h3 style="color: #888; font-size: 12px; text-transform: uppercase; margin-bottom: 12px;">Streaming Service</h3>
-                <div id="streaming-filters" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <button class="filter-btn streaming-btn active" data-provider="all" style="border-color: rgba(34,197,94,0.5);">All</button>
-                    <button class="filter-btn streaming-btn" data-provider="8" style="border-color: rgba(229,9,20,0.5); color: #f87171;">Netflix</button>
-                    <button class="filter-btn streaming-btn" data-provider="9" style="border-color: rgba(0,168,225,0.5); color: #38bdf8;">Prime Video</button>
-                    <button class="filter-btn streaming-btn" data-provider="337" style="border-color: rgba(17,60,207,0.5); color: #818cf8;">Disney+</button>
-                    <button class="filter-btn streaming-btn" data-provider="15" style="border-color: rgba(28,231,131,0.5); color: #4ade80;">Hulu</button>
-                    <button class="filter-btn streaming-btn" data-provider="350" style="border-color: rgba(100,100,100,0.5); color: #d4d4d8;">Apple TV+</button>
-                    <button class="filter-btn streaming-btn" data-provider="1899" style="border-color: rgba(184,53,245,0.5); color: #c084fc;">Max</button>
-                    <button class="filter-btn streaming-btn" data-provider="531" style="border-color: rgba(0,100,255,0.5); color: #60a5fa;">Paramount+</button>
-                    <button class="filter-btn streaming-btn" data-provider="386" style="border-color: rgba(255,215,0,0.5); color: #fbbf24;">Peacock</button>
-                    <button class="filter-btn streaming-btn" data-provider="230" style="border-color: rgba(0,51,161,0.5); color: #93c5fd;">Crave</button>
-                    <button class="filter-btn streaming-btn" data-provider="73" style="border-color: rgba(250,56,47,0.5); color: #fb923c;">Tubi</button>
-                </div>
-                <div id="streaming-loading-msg" style="font-size: 11px; color: #888; margin-top: 6px; display: none;">Loading provider data...</div>
             </div>
             <div style="margin-bottom: 24px;">
                 <h3 style="color: #888; font-size: 12px; text-transform: uppercase; margin-bottom: 12px;">Genres</h3>
@@ -872,24 +786,6 @@
             btn.addEventListener("click", () => btn.classList.toggle("active"));
         });
         
-        // Streaming service filter handlers
-        content.querySelectorAll(".streaming-btn[data-provider]").forEach(btn => {
-            btn.addEventListener("click", () => {
-                content.querySelectorAll(".streaming-btn").forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                currentProviderFilter = btn.dataset.provider;
-                // Trigger provider data fetch if not loaded
-                if (currentProviderFilter !== 'all' && !providerDataLoaded && !providerLoadingInProgress) {
-                    fetchProviderData();
-                }
-            });
-        });
-        
-        // Auto-fetch provider data when filter panel opens
-        if (!providerDataLoaded && !providerLoadingInProgress) {
-            fetchProviderData();
-        }
-        
         content.querySelectorAll(".filter-btn[data-year]").forEach(btn => {
             btn.addEventListener("click", () => {
                 content.querySelectorAll(".filter-btn[data-year]").forEach(b => b.classList.remove("active"));
@@ -908,113 +804,6 @@
         });
         
         return filterPanel;
-    }
-    
-    // ========== STREAMING PROVIDER FETCH ==========
-    async function fetchProviderData() {
-        if (providerLoadingInProgress) return;
-        providerLoadingInProgress = true;
-        
-        const loadingMsg = document.getElementById('streaming-loading-msg');
-        if (loadingMsg) loadingMsg.style.display = 'block';
-        
-        // Check cache
-        if (Date.now() - providerCacheTs < PROVIDER_CACHE_TTL && Object.keys(providerCache).length > 0) {
-            applyProviderCacheToMovies();
-            providerDataLoaded = true;
-            providerLoadingInProgress = false;
-            if (loadingMsg) loadingMsg.style.display = 'none';
-            updateProviderCounts();
-            return;
-        }
-        
-        console.log('[MovieShows] Fetching streaming provider data from TMDB...');
-        const moviesWithTmdb = allMoviesData.filter(m => m.tmdb_id);
-        const newCache = {};
-        const batchSize = 10;
-        
-        for (let i = 0; i < moviesWithTmdb.length; i += batchSize) {
-            const batch = moviesWithTmdb.slice(i, i + batchSize);
-            const promises = batch.map(async (movie) => {
-                const cacheKey = (movie.type || 'movie') + '_' + movie.tmdb_id;
-                if (providerCache[cacheKey]) {
-                    newCache[cacheKey] = providerCache[cacheKey];
-                    return;
-                }
-                try {
-                    const endpoint = (movie.type === 'tv' || movie.type === 'series') ? 'tv' : 'movie';
-                    const resp = await fetch(
-                        TMDB_BASE_URL + '/' + endpoint + '/' + movie.tmdb_id +
-                        '/watch/providers?api_key=' + TMDB_API_KEY
-                    );
-                    if (!resp.ok) return;
-                    const data = await resp.json();
-                    const region = data.results && (data.results.US || data.results.CA);
-                    if (region) {
-                        const providers = [];
-                        const seen = new Set();
-                        ['flatrate', 'free', 'ads'].forEach(key => {
-                            if (region[key]) {
-                                region[key].forEach(p => {
-                                    if (!seen.has(p.provider_id)) {
-                                        seen.add(p.provider_id);
-                                        providers.push({
-                                            id: String(p.provider_id),
-                                            name: p.provider_name,
-                                            logo: 'https://image.tmdb.org/t/p/original' + p.logo_path
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                        newCache[cacheKey] = providers;
-                    } else {
-                        newCache[cacheKey] = [];
-                    }
-                } catch (err) { /* skip */ }
-            });
-            await Promise.all(promises);
-            if (i + batchSize < moviesWithTmdb.length) {
-                await new Promise(r => setTimeout(r, 150));
-            }
-        }
-        
-        providerCache = newCache;
-        localStorage.setItem('ms2_providerCache', JSON.stringify(providerCache));
-        localStorage.setItem('ms2_providerCacheTs', String(Date.now()));
-        
-        applyProviderCacheToMovies();
-        providerDataLoaded = true;
-        providerLoadingInProgress = false;
-        if (loadingMsg) loadingMsg.style.display = 'none';
-        updateProviderCounts();
-        console.log('[MovieShows] Provider data loaded for ' + Object.keys(providerCache).length + ' titles');
-    }
-    
-    function applyProviderCacheToMovies() {
-        allMoviesData.forEach(movie => {
-            if (!movie.tmdb_id) { movie._providers = []; return; }
-            const cacheKey = (movie.type || 'movie') + '_' + movie.tmdb_id;
-            movie._providers = providerCache[cacheKey] || [];
-        });
-    }
-    
-    function updateProviderCounts() {
-        const counts = {};
-        allMoviesData.forEach(movie => {
-            if (!movie._providers) return;
-            movie._providers.forEach(p => {
-                counts[p.id] = (counts[p.id] || 0) + 1;
-            });
-        });
-        
-        document.querySelectorAll('.streaming-btn[data-provider]').forEach(btn => {
-            const pid = btn.dataset.provider;
-            if (pid === 'all') return;
-            const count = counts[pid] || 0;
-            const name = PROVIDER_IDS[pid]?.name || pid;
-            btn.textContent = name + (count > 0 ? ' (' + count + ')' : '');
-        });
     }
     
     function createQueuePanel() {
@@ -4337,13 +4126,6 @@
                         updateUpNextCount();
                         checkInfiniteScroll();
 
-                        // Pre-fetch streaming provider data in background
-                        setTimeout(function() {
-                            if (!providerDataLoaded && !providerLoadingInProgress) {
-                                fetchProviderData();
-                            }
-                        }, 5000);
-                        
                         // If loaded from database, start staged background loading
                         if (usedDatabase) {
                             // Get total count to know when to stop
