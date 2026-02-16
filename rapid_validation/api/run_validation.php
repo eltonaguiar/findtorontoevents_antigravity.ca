@@ -18,8 +18,8 @@ if ($key !== 'livetrader2026') {
     exit;
 }
 
-// Database credentials - update DB_PASS with your password
-$DB_HOST = 'sql.50webs.com';
+// Database credentials - try localhost first
+$DB_HOST = 'localhost';  // or try '127.0.0.1' if localhost doesn't work
 $DB_USER = 'ejaguiar1_stocks';
 $DB_PASS = ''; // TODO: Add your database password here
 $DB_NAME = 'ejaguiar1_stocks';
