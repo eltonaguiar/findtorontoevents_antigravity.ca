@@ -215,16 +215,20 @@ foreach ($movies as $movie) {
     }
 
     $description = isset($videoInfo['description']) ? $videoInfo['description'] : '';
+    $title = isset($videoInfo['title']) ? $videoInfo['title'] : '';
 
-    if (empty($description)) {
-        echo "  ℹ️  No description\n\n";
+    // Combine title and description for better detection
+    $combinedText = $title . "\n\n" . $description;
+
+    if (empty($combinedText)) {
+        echo "  ℹ️  No title/description\n\n";
         $processed++;
         usleep(100000);
         continue;
     }
 
-    // Extract providers
-    $providers = extractProvidersFromDescription($description, $PROVIDER_PATTERNS);
+    // Extract providers from combined text
+    $providers = extractProvidersFromDescription($combinedText, $PROVIDER_PATTERNS);
 
     if (count($providers) > 0) {
         $providerNames = array();

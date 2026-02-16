@@ -235,15 +235,19 @@ def scrape_youtube_providers(limit=100, offset=0):
             continue
 
         description = video_info.get('description', '')
+        title = video_info.get('title', '')
 
-        if not description:
-            print("  ℹ️  No description")
+        # Combine title and description for better detection
+        combined_text = f"{title}\n\n{description}"
+
+        if not combined_text.strip():
+            print("  ℹ️  No title/description")
             processed += 1
             time.sleep(0.1)  # Rate limiting
             continue
 
-        # Extract providers from description
-        providers = extract_providers_from_description(description)
+        # Extract providers from combined text
+        providers = extract_providers_from_description(combined_text)
 
         if providers:
             provider_names = ', '.join([p['name'] for p in providers])

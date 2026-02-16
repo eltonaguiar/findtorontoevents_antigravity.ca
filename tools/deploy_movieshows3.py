@@ -56,6 +56,8 @@ FILES_TO_DEPLOY = [
     "api/test-providers.php",
     "api/manual-provider-insert.php",
     "api/scrape-youtube-providers.php",
+    "api/tag-sweet-tooth.php",
+    "api/batch-update-all-providers.php",
     "index.html",
 ]
 
