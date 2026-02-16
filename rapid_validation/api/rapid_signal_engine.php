@@ -19,7 +19,7 @@ if ($action !== 'status' && $key !== 'livetrader2026') {
     exit;
 }
 
-$base_path = realpath(dirname(__DIR__));
+$base_path = realpath('..');
 $python = '/usr/bin/python3'; // Adjust if needed
 
 switch ($action) {
