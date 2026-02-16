@@ -790,10 +790,18 @@
                 btn.classList.add('active');
                 btn.style.background = 'rgba(255,255,255,0.1)';
                 currentProviderFilter = btn.dataset.sp;
-                if (currentProviderFilter !== 'all' && !providerDataLoaded && !providerLoadingInProgress) {
-                    fetchProviderData().then(() => {
-                        performSearch(document.getElementById("movie-search-input")?.value || "");
-                    });
+                if (currentProviderFilter !== 'all' && !providerDataLoaded) {
+                    // Show loading state in results while provider data loads
+                    const results = document.getElementById("search-results");
+                    if (results) {
+                        results.innerHTML = '<p style="color: #f59e0b; text-align: center; grid-column: span 2; padding: 20px;">Loading streaming data... <br><small style="color: #888;">First load takes a few seconds</small></p>';
+                    }
+                    if (!providerLoadingInProgress) {
+                        fetchProviderData().then(() => {
+                            performSearch(document.getElementById("movie-search-input")?.value || "");
+                        });
+                    }
+                    // Provider data callback in fetchProviderData will refresh search when done
                 } else {
                     performSearch(document.getElementById("movie-search-input")?.value || "");
                 }
@@ -912,12 +920,34 @@
         });
     }
     
+    // Helper: get best available thumbnail for a movie
+    function getMoviePoster(movie) {
+        // 1. Direct poster URL from DB
+        if (movie.posterUrl && !movie.posterUrl.includes('placehold')) return movie.posterUrl;
+        if (movie.image && !movie.image.includes('placehold')) return movie.image;
+        // 2. YouTube thumbnail from trailer
+        if (movie.trailerUrl) {
+            const vid = extractVideoId(movie.trailerUrl);
+            if (vid) return `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
+        }
+        // 3. TMDB poster via poster_path if stored
+        if (movie.poster_path) return `https://image.tmdb.org/t/p/w342${movie.poster_path}`;
+        // 4. Placeholder
+        return null;
+    }
+    
+    function extractVideoId(url) {
+        if (!url) return null;
+        const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/);
+        return match ? match[1] : null;
+    }
+    
     function createMovieCard(movie) {
         const getCardPlaceholder = (text, w, h) => {
             const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="100%" height="100%" fill="#1a1a2e"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="14" font-family="Arial">${text}</text></svg>`;
             return `data:image/svg+xml,${encodeURIComponent(svg)}`;
         };
-        const posterUrl = movie.posterUrl || movie.image || getCardPlaceholder(movie.title?.substring(0,10) || 'Movie', 150, 225);
+        const posterUrl = getMoviePoster(movie) || getCardPlaceholder(movie.title?.substring(0,10) || 'Movie', 150, 225);
         const fallbackPoster = getCardPlaceholder('No Image', 150, 225);
         const isMotivation = movie._isMotivation;
         const borderColor = isMotivation ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.1)';
@@ -1231,6 +1261,15 @@
         if (loadingMsg) loadingMsg.style.display = 'none';
         updateProviderCounts();
         console.log('[MovieShows] Provider data loaded for ' + Object.keys(providerCache).length + ' titles');
+        
+        // Auto-refresh search results if search panel is open (fixes race condition)
+        if (searchPanel && searchPanel.style.right === "0px") {
+            const input = document.getElementById("movie-search-input");
+            if (input) {
+                console.log('[MovieShows] Provider data loaded — refreshing search results');
+                performSearch(input.value);
+            }
+        }
     }
 
     async function fetchDiscoverPages(mediaType, providerId, ourIdSet, maxPages) {
@@ -4560,6 +4599,22 @@
     let allMoviesData = [];
 
     function transformDbMovie(m) {
+        var trailerUrl = m.trailerUrl || (m.trailer_id ? 'https://www.youtube.com/watch?v=' + m.trailer_id : '');
+        // Build best poster: DB poster > thumbnail > TMDB poster > YouTube thumb
+        var poster = m.posterUrl || m.thumbnail || '';
+        if (!poster || poster.includes('placehold')) {
+            if (m.poster_path) {
+                poster = 'https://image.tmdb.org/t/p/w342' + m.poster_path;
+            } else {
+                // Extract YouTube video ID for thumbnail
+                var vidId = m.trailer_id || '';
+                if (!vidId && trailerUrl) {
+                    var vidMatch = trailerUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/);
+                    if (vidMatch) vidId = vidMatch[1];
+                }
+                if (vidId) poster = 'https://img.youtube.com/vi/' + vidId + '/mqdefault.jpg';
+            }
+        }
         return {
             title: m.title || '',
             type: m.type || 'movie',
@@ -4567,12 +4622,13 @@
             rating: String(m.imdb_rating || m.rating || ''),
             genres: m.genres || (m.genre ? m.genre.split(',').map(function(g){ return g.trim(); }).filter(Boolean) : []),
             source: m.source || 'In Theatres',
-            trailerUrl: m.trailerUrl || (m.trailer_id ? 'https://www.youtube.com/watch?v=' + m.trailer_id : ''),
-            posterUrl: m.posterUrl || m.thumbnail || '',
+            trailerUrl: trailerUrl,
+            posterUrl: poster,
             description: m.description || '',
             nowPlaying: m.nowPlaying || [],
             imdb_id: m.imdb_id || '',
             tmdb_id: m.tmdb_id || '',
+            poster_path: m.poster_path || '',
             runtime: m.runtime || ''
         };
     }
@@ -4677,6 +4733,70 @@
         updateCategoryButtons();
         console.log('[MovieShows] Staged loading finished! Total: ' + allMoviesData.length + ' titles with trailers');
         _stagedLoadingActive = false;
+        
+        // After all data loaded, enrich missing posters via TMDB in background
+        setTimeout(enrichMissingPosters, 3000);
+    }
+    
+    // Background: fetch TMDB posters for movies that only have YouTube thumbnails
+    async function enrichMissingPosters() {
+        const needsPoster = allMoviesData.filter(m => 
+            m.tmdb_id && 
+            (!m.posterUrl || m.posterUrl.includes('img.youtube.com') || m.posterUrl === '')
+        );
+        if (needsPoster.length === 0) return;
+        
+        // Check localStorage cache first
+        let posterCache = {};
+        try { posterCache = JSON.parse(localStorage.getItem('ms2_posterCache') || '{}'); } catch(e) {}
+        
+        let enriched = 0;
+        const toFetch = [];
+        
+        // Apply cached posters first
+        needsPoster.forEach(m => {
+            const key = (m.type === 'tv' ? 'tv' : 'movie') + '_' + m.tmdb_id;
+            if (posterCache[key]) {
+                m.posterUrl = posterCache[key];
+                enriched++;
+            } else {
+                toFetch.push(m);
+            }
+        });
+        
+        if (enriched > 0) console.log(`[MovieShows] Applied ${enriched} cached TMDB posters`);
+        
+        // Fetch missing ones in batches
+        const batchSize = 10;
+        let fetched = 0;
+        for (let i = 0; i < Math.min(toFetch.length, 200); i += batchSize) {
+            const batch = toFetch.slice(i, i + batchSize);
+            const promises = batch.map(async m => {
+                try {
+                    const endpoint = m.type === 'tv' ? 'tv' : 'movie';
+                    const resp = await fetch(`${TMDB_BASE_URL}/${endpoint}/${m.tmdb_id}?api_key=${TMDB_API_KEY}&language=en-US`);
+                    if (!resp.ok) return;
+                    const data = await resp.json();
+                    if (data.poster_path) {
+                        const url = 'https://image.tmdb.org/t/p/w342' + data.poster_path;
+                        m.posterUrl = url;
+                        m.poster_path = data.poster_path;
+                        const key = (m.type === 'tv' ? 'tv' : 'movie') + '_' + m.tmdb_id;
+                        posterCache[key] = url;
+                        fetched++;
+                    }
+                } catch(e) {}
+            });
+            await Promise.all(promises);
+            if (i + batchSize < toFetch.length) {
+                await new Promise(r => setTimeout(r, 250));
+            }
+        }
+        
+        if (fetched > 0) {
+            try { localStorage.setItem('ms2_posterCache', JSON.stringify(posterCache)); } catch(e) {}
+            console.log(`[MovieShows] Enriched ${fetched} movies with TMDB posters (${Object.keys(posterCache).length} cached)`);
+        }
     }
 
     async function loadMoviesData() {
