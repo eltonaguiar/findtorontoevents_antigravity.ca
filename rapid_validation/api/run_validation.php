@@ -18,10 +18,10 @@ if ($key !== 'livetrader2026') {
     exit;
 }
 
-// Database credentials - try localhost first
-$DB_HOST = 'localhost';  // or try '127.0.0.1' if localhost doesn't work
+// Database credentials from findstocks/portfolio2/api/db_config.php
+$DB_HOST = 'mysql.50webs.com';
 $DB_USER = 'ejaguiar1_stocks';
-$DB_PASS = ''; // TODO: Add your database password here
+$DB_PASS = 'stocks';
 $DB_NAME = 'ejaguiar1_stocks';
 
 // Connect to database
