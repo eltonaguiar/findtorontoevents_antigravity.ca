@@ -15,17 +15,19 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 env:
-  RSVE_VERSION: KIMI CODE_Feb152026
+  RSVE_VERSION: "KIMI CODE_Feb152026"
 
 jobs:
   generate-signals:
     runs-on: ubuntu-latest
-    name: Generate Signals (${{ env.RSVE_VERSION }})
+    name: Generate Signals
     
     steps:
       - name: Generate New Signals
+        env:
+          RSVE_BASE_URL: ${{ secrets.RSVE_BASE_URL }}
         run: |
-          curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/rapid_signal_engine_KIMI CODE_Feb152026.php?action=generate" \
+          curl -s "${RSVE_BASE_URL}/rapid-validator-KIMI%20CODE_Feb152026/api/rapid_signal_engine_KIMI%20CODE_Feb152026.php?action=generate" \
             -H "User-Agent: RSVE-Automation-KIMI-CODE-Feb152026" \
             -H "X-RSVE-Version: KIMI CODE_Feb152026" \
             --max-time 30
@@ -33,13 +35,15 @@ jobs:
 
   scan-markets:
     runs-on: ubuntu-latest
-    name: Scan & Resolve (${{ env.RSVE_VERSION }})
+    name: Scan and Resolve
     needs: generate-signals
     
     steps:
       - name: Resolve Completed Signals
+        env:
+          RSVE_BASE_URL: ${{ secrets.RSVE_BASE_URL }}
         run: |
-          curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/rapid_signal_engine_KIMI CODE_Feb152026.php?action=scan" \
+          curl -s "${RSVE_BASE_URL}/rapid-validator-KIMI%20CODE_Feb152026/api/rapid_signal_engine_KIMI%20CODE_Feb152026.php?action=scan" \
             -H "User-Agent: RSVE-Automation-KIMI-CODE-Feb152026" \
             -H "X-RSVE-Version: KIMI CODE_Feb152026" \
             --max-time 30
@@ -47,12 +51,14 @@ jobs:
 
   hourly-evaluation:
     runs-on: ubuntu-latest
-    name: Strategy Evaluation (${{ env.RSVE_VERSION }})
+    name: Strategy Evaluation
     
     steps:
       - name: Run Elimination Check
+        env:
+          RSVE_BASE_URL: ${{ secrets.RSVE_BASE_URL }}
         run: |
-          curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/auto_eliminator_KIMI CODE_Feb152026.php?action=evaluate" \
+          curl -s "${RSVE_BASE_URL}/rapid-validator-KIMI%20CODE_Feb152026/api/auto_eliminator_KIMI%20CODE_Feb152026.php?action=evaluate" \
             -H "User-Agent: RSVE-Automation-KIMI-CODE-Feb152026" \
             -H "X-RSVE-Version: KIMI CODE_Feb152026" \
             --max-time 60
@@ -60,18 +66,21 @@ jobs:
 
   notify-results:
     runs-on: ubuntu-latest
-    name: Send Daily Summary (${{ env.RSVE_VERSION }})
+    name: Send Daily Summary
     if: github.event.schedule == '0 0 * * *'  # Only at midnight UTC
     
     steps:
       - name: Fetch Championship Round
         id: championship
+        env:
+          RSVE_BASE_URL: ${{ secrets.RSVE_BASE_URL }}
         run: |
-          RESULT=$(curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/auto_eliminator_KIMI CODE_Feb152026.php?action=championship")
+          RESULT=$(curl -s "${RSVE_BASE_URL}/rapid-validator-KIMI%20CODE_Feb152026/api/auto_eliminator_KIMI%20CODE_Feb152026.php?action=championship")
           echo "result=$RESULT" >> $GITHUB_OUTPUT
       
       - name: Send Discord Notification
-        if: secrets.DISCORD_WEBHOOK != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -80,4 +89,4 @@ jobs:
             Championship Round Update:
             ${{ steps.championship.outputs.result }}
             
-            View full dashboard: ${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/frontend/rapid_dashboard_KIMI CODE_Feb152026.html
+            View full dashboard: https://findtorontoevents.ca/rapid-validator-KIMI%20CODE_Feb152026/frontend/rapid_dashboard_KIMI%20CODE_Feb152026.html
