@@ -11,8 +11,9 @@ require_once 'db-config.php';
 try {
     $pdo = getDbConnection();
 
+    // Fetch movies with basic info
     $stmt = $pdo->query("
-        (SELECT 
+        (SELECT
             m.id,
             m.title,
             m.type,
@@ -29,7 +30,7 @@ try {
         WHERE t.is_active = TRUE AND m.type = 'movie'
         ORDER BY m.created_at DESC)
         UNION ALL
-        (SELECT 
+        (SELECT
             m.id,
             m.title,
             m.type,
@@ -48,6 +49,48 @@ try {
     ");
 
     $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch streaming providers for all movies
+    $movieIds = array_column($movies, 'id');
+    $providers = [];
+
+    if (!empty($movieIds)) {
+        $placeholders = implode(',', array_fill(0, count($movieIds), '?'));
+        $providerStmt = $pdo->prepare("
+            SELECT
+                movie_id,
+                provider_id,
+                provider_name,
+                provider_logo,
+                display_priority
+            FROM streaming_providers
+            WHERE movie_id IN ($placeholders) AND is_active = 1
+            ORDER BY movie_id, display_priority ASC
+        ");
+        $providerStmt->execute($movieIds);
+
+        // Group providers by movie_id
+        foreach ($providerStmt->fetchAll(PDO::FETCH_ASSOC) as $provider) {
+            $movieId = $provider['movie_id'];
+            unset($provider['movie_id']);
+
+            if (!isset($providers[$movieId])) {
+                $providers[$movieId] = [];
+            }
+
+            $providers[$movieId][] = [
+                'id' => $provider['provider_id'],
+                'name' => $provider['provider_name'],
+                'logo' => $provider['provider_logo']
+            ];
+        }
+    }
+
+    // Attach providers to movies
+    foreach ($movies as &$movie) {
+        $movie['providers'] = $providers[$movie['id']] ?? [];
+    }
+    unset($movie);
 
     echo json_encode(array(
         'success' => true,

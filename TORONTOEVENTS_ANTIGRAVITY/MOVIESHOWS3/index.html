@@ -2204,6 +2204,20 @@
     </div>
 
     <script>
+        // Detect Meta Quest browser and redirect to optimized version
+        (function() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isQuestBrowser = /OculusBrowser|Quest|VR/i.test(userAgent) ||
+                                   /Meta Quest/i.test(userAgent);
+
+            if (isQuestBrowser) {
+                // Store redirect reason for toast message
+                sessionStorage.setItem('questRedirect', 'true');
+                window.location.href = '/MOVIESHOWS3_QUEST/';
+                return; // Stop execution
+            }
+        })();
+
         const API_URL = '/MOVIESHOWS3/api/get-movies.php';
         const TMDB_API_KEY = 'b84ff7bfe35ffad8779b77bcbbda317f';
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -3160,9 +3174,10 @@
             btn.style.background = row.classList.contains('visible')
                 ? 'rgba(245, 158, 11, 0.4)' : 'rgba(0, 0, 0, 0.4)';
 
-            if (row.classList.contains('visible') && !providerDataLoaded && !providerLoadingInProgress) {
-                fetchAllProviderData();
-            }
+            // Provider data now comes from server - no need to fetch from TMDB
+            // if (row.classList.contains('visible') && !providerDataLoaded && !providerLoadingInProgress) {
+            //     fetchAllProviderData();
+            // }
         }
 
         async function fetchAllProviderData() {
@@ -3178,55 +3193,80 @@
                 return;
             }
 
-            console.log('Fetching streaming provider data via TMDB Discover API...');
+            console.log('Fetching streaming provider data via TMDB Watch Providers API (per-title)...');
             var newCache = {};
+            var knownProviderIds = new Set(Object.keys(PROVIDER_NAMES));
 
-            // Build a set of our TMDB IDs for fast lookup
-            var ourMovieIds = new Set();
-            var ourTvIds = new Set();
+            // Collect all titles with a tmdb_id
+            var titlesToFetch = [];
             allMovies.forEach(function(m) {
                 if (!m.tmdb_id) return;
-                if (m.type === 'tv') ourTvIds.add(String(m.tmdb_id));
-                else ourMovieIds.add(String(m.tmdb_id));
+                var mediaType = (m.type === 'tv') ? 'tv' : 'movie';
+                titlesToFetch.push({ tmdbId: String(m.tmdb_id), mediaType: mediaType });
             });
 
-            // For each provider, use TMDB Discover to get titles on that service
-            var providerIds = Object.keys(PROVIDER_NAMES);
+            console.log('Fetching watch providers for ' + titlesToFetch.length + ' titles...');
 
-            for (var pi = 0; pi < providerIds.length; pi++) {
-                var pid = providerIds[pi];
-                try {
-                    // Fetch movies on this provider (up to 5 pages = 100 results)
-                    var movieMatches = await fetchDiscoverPages('movie', pid, ourMovieIds, 5);
-                    // Fetch TV on this provider
-                    var tvMatches = await fetchDiscoverPages('tv', pid, ourTvIds, 5);
+            // Process in batches of 8 with 300ms delay between batches (TMDB ~40 req/10s)
+            var BATCH_SIZE = 8;
+            var BATCH_DELAY = 300;
+            var fetched = 0;
 
-                    // Tag matched movies
-                    movieMatches.forEach(function(tmdbId) {
-                        var key = 'movie_' + tmdbId;
-                        if (!newCache[key]) newCache[key] = [];
-                        newCache[key].push({
-                            id: pid,
-                            name: PROVIDER_NAMES[pid],
-                            logo: PROVIDER_LOGOS[pid]
-                        });
-                    });
-                    tvMatches.forEach(function(tmdbId) {
-                        var key = 'tv_' + tmdbId;
-                        if (!newCache[key]) newCache[key] = [];
-                        newCache[key].push({
-                            id: pid,
-                            name: PROVIDER_NAMES[pid],
-                            logo: PROVIDER_LOGOS[pid]
-                        });
-                    });
+            for (var i = 0; i < titlesToFetch.length; i += BATCH_SIZE) {
+                var batch = titlesToFetch.slice(i, i + BATCH_SIZE);
+                var promises = batch.map(function(item) {
+                    var url = TMDB_BASE_URL + '/' + item.mediaType + '/' + item.tmdbId +
+                        '/watch/providers?api_key=' + TMDB_API_KEY;
+                    return fetch(url).then(function(r) {
+                        if (!r.ok) return null;
+                        return r.json();
+                    }).then(function(data) {
+                        if (!data || !data.results) return;
+                        var cacheKey = item.mediaType + '_' + item.tmdbId;
+                        var providers = [];
+                        // Check CA (Canada) first, then US as fallback
+                        var regions = ['CA', 'US'];
+                        for (var ri = 0; ri < regions.length; ri++) {
+                            var regionData = data.results[regions[ri]];
+                            if (!regionData) continue;
+                            // Combine flatrate, free, and ads offerings
+                            var sources = [].concat(
+                                regionData.flatrate || [],
+                                regionData.free || [],
+                                regionData.ads || []
+                            );
+                            sources.forEach(function(s) {
+                                var pid = String(s.provider_id);
+                                if (knownProviderIds.has(pid)) {
+                                    // Avoid duplicate provider entries
+                                    if (!providers.some(function(p) { return p.id === pid; })) {
+                                        providers.push({
+                                            id: pid,
+                                            name: PROVIDER_NAMES[pid] || s.provider_name,
+                                            logo: PROVIDER_LOGOS[pid] || ('https://image.tmdb.org/t/p/original' + s.logo_path)
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                        if (providers.length > 0) {
+                            newCache[cacheKey] = providers;
+                        }
+                    }).catch(function() { /* skip failed title */ });
+                });
 
-                    console.log('Provider ' + PROVIDER_NAMES[pid] + ': ' + movieMatches.length + ' movies, ' + tvMatches.length + ' TV');
-                } catch (err) {
-                    console.warn('Failed to fetch provider ' + pid + ': ' + err.message);
+                await Promise.all(promises);
+                fetched += batch.length;
+
+                // Progress log every 50 titles
+                if (fetched % 50 < BATCH_SIZE) {
+                    console.log('  ... fetched providers for ' + fetched + '/' + titlesToFetch.length + ' titles');
                 }
-                // Small delay between providers
-                await new Promise(function(r) { setTimeout(r, 200); });
+
+                // Delay between batches to respect TMDB rate limits
+                if (i + BATCH_SIZE < titlesToFetch.length) {
+                    await new Promise(function(r) { setTimeout(r, BATCH_DELAY); });
+                }
             }
 
             providerCache = newCache;
@@ -3240,31 +3280,6 @@
             providerLoadingInProgress = false;
             updateProviderCounts();
             console.log('Streaming provider data loaded for ' + Object.keys(providerCache).length + ' titles');
-        }
-
-        async function fetchDiscoverPages(mediaType, providerId, ourIdSet, maxPages) {
-            var matched = [];
-            for (var page = 1; page <= maxPages; page++) {
-                try {
-                    var url = TMDB_BASE_URL + '/discover/' + mediaType +
-                        '?api_key=' + TMDB_API_KEY +
-                        '&with_watch_providers=' + providerId +
-                        '&watch_region=US' +
-                        '&with_watch_monetization_types=flatrate|free|ads' +
-                        '&sort_by=popularity.desc&page=' + page;
-                    var resp = await fetch(url);
-                    if (!resp.ok) break;
-                    var data = await resp.json();
-                    if (!data.results || data.results.length === 0) break;
-                    data.results.forEach(function(item) {
-                        if (ourIdSet.has(String(item.id))) {
-                            matched.push(String(item.id));
-                        }
-                    });
-                    if (page >= data.total_pages) break;
-                } catch (e) { break; }
-            }
-            return matched;
         }
 
         function applyProviderCacheToMovies() {
@@ -4149,6 +4164,15 @@
 
                 allMovies = data.movies;
 
+                // Process server-provided streaming providers
+                allMovies.forEach(function(movie) {
+                    // Server returns 'providers' array directly
+                    movie._providers = movie.providers || [];
+                });
+
+                providerDataLoaded = true;
+                updateProviderCounts();
+
                 // Build motivational videos, now playing, and coming soon lists
                 loadMotivationSettings();
                 buildMotivationalVideos();
@@ -4177,18 +4201,20 @@
                 // Init alt trailer button for first video
                 setTimeout(updateAltTrailerButton, 1000);
                 console.log(`\u2705 Loaded ${allMovies.length} movies + ${allMotivationalVideos.length} motivational + ${allComingSoon.length} coming soon`);
+                console.log(`\u2705 Streaming providers loaded from server for ${allMovies.filter(m => m._providers && m._providers.length > 0).length} titles`);
 
-                // Pre-fetch streaming provider data in background (non-blocking)
-                setTimeout(function() {
-                    if (!providerDataLoaded && !providerLoadingInProgress) {
-                        fetchAllProviderData().then(function() {
-                            // Re-render browse grid if open
-                            if (document.getElementById('browseView').classList.contains('active')) {
-                                renderBrowseGrid();
-                            }
-                        });
-                    }
-                }, 3000);
+                // No longer need to fetch from TMDB - providers come from server
+                // Pre-fetch streaming provider data in background (non-blocking) - DISABLED
+                // setTimeout(function() {
+                //     if (!providerDataLoaded && !providerLoadingInProgress) {
+                //         fetchAllProviderData().then(function() {
+                //             // Re-render browse grid if open
+                //             if (document.getElementById('browseView').classList.contains('active')) {
+                //                 renderBrowseGrid();
+                //             }
+                //         });
+                //     }
+                // }, 3000);
             } catch (error) {
                 console.error('Error loading movies:', error);
                 // Still build motivational videos even if movie API fails
