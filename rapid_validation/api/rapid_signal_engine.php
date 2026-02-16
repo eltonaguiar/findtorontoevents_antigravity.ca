@@ -15,7 +15,7 @@ $key = isset($_GET['key']) ? $_GET['key'] : '';
 // Simple authentication
 if ($action !== 'status' && $key !== 'livetrader2026') {
     http_response_code(401);
-    echo json_encode(['ok' => false, 'error' => 'Unauthorized']);
+    echo json_encode(array('ok' => false, 'error' => 'Unauthorized'));
     exit;
 }
 
@@ -26,56 +26,56 @@ switch ($action) {
     case 'validate':
         // Run fast validator
         $cmd = "cd " . escapeshellarg($base_path) . " && $python fast_validator_CLAUDECODE_Feb152026.py 2>&1";
-        $output = [];
+        $output = array();
         $return_var = 0;
         exec($cmd, $output, $return_var);
 
-        echo json_encode([
+        echo json_encode(array(
             'ok' => $return_var === 0,
             'action' => 'validate',
             'output' => implode("\n", $output),
             'exit_code' => $return_var,
             'timestamp' => date('Y-m-d H:i:s')
-        ]);
+        ));
         break;
 
     case 'rank':
         // Run strategy ranker
         $cmd = "cd " . escapeshellarg($base_path) . " && $python strategy_ranker_CLAUDECODE_Feb152026.py 2>&1";
-        $output = [];
+        $output = array();
         $return_var = 0;
         exec($cmd, $output, $return_var);
 
-        echo json_encode([
+        echo json_encode(array(
             'ok' => $return_var === 0,
             'action' => 'rank',
             'output' => implode("\n", $output),
             'exit_code' => $return_var,
             'timestamp' => date('Y-m-d H:i:s')
-        ]);
+        ));
         break;
 
     case 'cycle':
         // Run full validation + ranking cycle
-        $results = [];
+        $results = array();
 
         // 1. Validate signals
         $cmd1 = "cd " . escapeshellarg($base_path) . " && $python fast_validator_CLAUDECODE_Feb152026.py 2>&1";
         exec($cmd1, $output1, $ret1);
-        $results['validate'] = [
+        $results['validate'] = array(
             'ok' => $ret1 === 0,
             'output' => implode("\n", $output1),
             'exit_code' => $ret1
-        ];
+        );
 
         // 2. Rank strategies
         $cmd2 = "cd " . escapeshellarg($base_path) . " && $python strategy_ranker_CLAUDECODE_Feb152026.py 2>&1";
         exec($cmd2, $output2, $ret2);
-        $results['rank'] = [
+        $results['rank'] = array(
             'ok' => $ret2 === 0,
             'output' => implode("\n", $output2),
             'exit_code' => $ret2
-        ];
+        );
 
         // 3. Check if rankings file exists
         $rankings_file = $base_path . '/rankings_CLAUDECODE_Feb152026.json';
@@ -84,17 +84,17 @@ switch ($action) {
             $rankings = json_decode(file_get_contents($rankings_file), true);
         }
 
-        echo json_encode([
+        echo json_encode(array(
             'ok' => $ret1 === 0 && $ret2 === 0,
             'action' => 'cycle',
             'results' => $results,
-            'rankings' => $rankings ? [
-                'promoted' => count(isset($rankings['promoted']) ? $rankings['promoted'] : []),
-                'testing' => count(isset($rankings['testing']) ? $rankings['testing'] : []),
-                'eliminated' => count(isset($rankings['eliminated']) ? $rankings['eliminated'] : [])
-            ] : null,
+            'rankings' => $rankings ? array(
+                'promoted' => count(isset($rankings['promoted']) ? $rankings['promoted'] : array()),
+                'testing' => count(isset($rankings['testing']) ? $rankings['testing'] : array()),
+                'eliminated' => count(isset($rankings['eliminated']) ? $rankings['eliminated'] : array())
+            ) : null,
             'timestamp' => date('Y-m-d H:i:s')
-        ]);
+        ));
         break;
 
     case 'status':
@@ -109,25 +109,25 @@ switch ($action) {
             $last_updated = filemtime($rankings_file);
         }
 
-        echo json_encode([
+        echo json_encode(array(
             'ok' => true,
             'action' => 'status',
             'initialized' => $rankings_exists,
             'last_updated' => $last_updated ? date('Y-m-d H:i:s', $last_updated) : null,
-            'rankings' => $rankings ? [
-                'promoted' => count(isset($rankings['promoted']) ? $rankings['promoted'] : []),
-                'testing' => count(isset($rankings['testing']) ? $rankings['testing'] : []),
-                'eliminated' => count(isset($rankings['eliminated']) ? $rankings['eliminated'] : []),
+            'rankings' => $rankings ? array(
+                'promoted' => count(isset($rankings['promoted']) ? $rankings['promoted'] : array()),
+                'testing' => count(isset($rankings['testing']) ? $rankings['testing'] : array()),
+                'eliminated' => count(isset($rankings['eliminated']) ? $rankings['eliminated'] : array()),
                 'timestamp' => isset($rankings['timestamp']) ? $rankings['timestamp'] : null
-            ] : null
-        ]);
+            ) : null
+        ));
         break;
 
     default:
-        echo json_encode([
+        echo json_encode(array(
             'ok' => false,
             'error' => 'Unknown action',
-            'valid_actions' => ['status', 'validate', 'rank', 'cycle']
-        ]);
+            'valid_actions' => array('status', 'validate', 'rank', 'cycle')
+        ));
         break;
 }
