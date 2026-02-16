@@ -9,8 +9,8 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-$action = $_GET['action'] ?? 'status';
-$key = $_GET['key'] ?? '';
+$action = isset($_GET['action']) ? $_GET['action'] : 'status';
+$key = isset($_GET['key']) ? $_GET['key'] : '';
 
 // Simple authentication
 if ($action !== 'status' && $key !== 'livetrader2026') {
@@ -89,9 +89,9 @@ switch ($action) {
             'action' => 'cycle',
             'results' => $results,
             'rankings' => $rankings ? [
-                'promoted' => count($rankings['promoted'] ?? []),
-                'testing' => count($rankings['testing'] ?? []),
-                'eliminated' => count($rankings['eliminated'] ?? [])
+                'promoted' => count(isset($rankings['promoted']) ? $rankings['promoted'] : []),
+                'testing' => count(isset($rankings['testing']) ? $rankings['testing'] : []),
+                'eliminated' => count(isset($rankings['eliminated']) ? $rankings['eliminated'] : [])
             ] : null,
             'timestamp' => date('Y-m-d H:i:s')
         ]);
@@ -115,10 +115,10 @@ switch ($action) {
             'initialized' => $rankings_exists,
             'last_updated' => $last_updated ? date('Y-m-d H:i:s', $last_updated) : null,
             'rankings' => $rankings ? [
-                'promoted' => count($rankings['promoted'] ?? []),
-                'testing' => count($rankings['testing'] ?? []),
-                'eliminated' => count($rankings['eliminated'] ?? []),
-                'timestamp' => $rankings['timestamp'] ?? null
+                'promoted' => count(isset($rankings['promoted']) ? $rankings['promoted'] : []),
+                'testing' => count(isset($rankings['testing']) ? $rankings['testing'] : []),
+                'eliminated' => count(isset($rankings['eliminated']) ? $rankings['eliminated'] : []),
+                'timestamp' => isset($rankings['timestamp']) ? $rankings['timestamp'] : null
             ] : null
         ]);
         break;
