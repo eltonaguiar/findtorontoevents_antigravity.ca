@@ -81,13 +81,13 @@ $user_email_for_log = isset($data['email']) ? $data['email'] : null;
 if (isset($userObj)) {
     log_success('user_login', 'login.php', 
         "User logged in: " . $userObj['email'], 
-        json_encode(['role' => $userObj['role'], 'provider' => $userObj['provider']]),
+        json_encode(array('role' => $userObj['role'], 'provider' => $userObj['provider'])),
         $user_id_for_log, $user_email_for_log);
 } else {
     $error_msg = isset($user) ? 'Invalid password' : 'User not found';
     log_error('user_login', 'login.php', 
         "Login failed: " . $error_msg,
-        json_encode(['email_attempted' => $user_email_for_log]),
+        json_encode(array('email_attempted' => $user_email_for_log)),
         null, $user_email_for_log);
 }
 

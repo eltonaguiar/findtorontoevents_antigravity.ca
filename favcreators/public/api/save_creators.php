@@ -169,7 +169,7 @@ if (function_exists('get_session_user')) {
 
 log_success('save_creators', 'save_creators.php',
     "Saved " . count($creators) . " creators for user $user_id",
-    json_encode(['user_id' => $user_id, 'creator_count' => count($creators), 'previous_count' => $current_count]),
+    json_encode(array('user_id' => $user_id, 'creator_count' => count($creators), 'previous_count' => $current_count)),
     $user_id, $user_email);
 
 $conn->close();

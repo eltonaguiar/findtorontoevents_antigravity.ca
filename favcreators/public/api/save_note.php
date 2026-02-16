@@ -98,7 +98,7 @@ if ($conn->query($query) === TRUE) {
     $note_type = ($user_id === 0) ? 'global_default' : 'user_note';
     log_success('save_note', 'save_note.php',
         "Note saved for creator: $creator_id ($note_type)",
-        json_encode(['creator_id' => $creator_id, 'user_id' => $user_id, 'note_type' => $note_type, 'note_length' => strlen($note)]),
+        json_encode(array('creator_id' => $creator_id, 'user_id' => $user_id, 'note_type' => $note_type, 'note_length' => strlen($note))),
         $session_id, $user_email);
     
     echo json_encode(array('status' => 'success', 'message' => 'Note saved'));
