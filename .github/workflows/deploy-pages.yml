@@ -63,7 +63,7 @@ jobs:
       - name: Rewrite asset base path for GitHub Pages
         run: |
           # Project Pages are served at /REPO_NAME/ so assets must use that prefix (local source unchanged)
-          for f in $(find site -name '*.html'); do
+          find site -name '*.html' -print0 | while IFS= read -r -d '' f; do
             sed -i "s|\"/next|\"$PAGES_BASE/next|g" "$f"
             sed -i "s|'/next|'$PAGES_BASE/next|g" "$f"
             sed -i "s|href=\"/favicon.ico\"|href=\"$PAGES_BASE/favicon.ico\"|g" "$f"
