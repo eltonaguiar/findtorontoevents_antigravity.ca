@@ -81,16 +81,15 @@ class FastValidator:
             self.create_database()
 
     def create_database(self):
-        """Create rapid_validation database and tables"""
+        """Create tables in existing database (ejaguiar1_stocks)"""
         try:
             conn = mysql.connector.connect(
                 host=DB_HOST,
                 user=DB_USER,
-                password=DB_PASS
+                password=DB_PASS,
+                database=DB_NAME
             )
             cursor = conn.cursor()
-            cursor.execute("CREATE DATABASE IF NOT EXISTS rapid_validation")
-            cursor.execute("USE rapid_validation")
 
             # Create rapid_signals table
             cursor.execute("""
@@ -167,7 +166,7 @@ class FastValidator:
             """)
 
             conn.commit()
-            print("✅ Created rapid_validation database with tables")
+            print(f"✅ Created rapid validation tables in {DB_NAME} database")
             self.db = conn
 
         except Exception as e:
