@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MovieShows - Quest Edition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 16px;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 900;
+        }
+        .header h1 span { color: #f59e0b; }
+        .quest-badge {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        /* Filter row */
+        .filter-row {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+        }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-pill {
+            padding: 7px 14px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .filter-pill:hover { background: rgba(255,255,255,0.1); color: white; }
+        .filter-pill.active { background: #f59e0b; color: black; border-color: #f59e0b; }
+        .filter-pill.netflix.active { background: #e50914; color: white; border-color: #e50914; }
+        .filter-pill.prime.active { background: #00a8e1; color: white; border-color: #00a8e1; }
+        .filter-pill.disney.active { background: #113ccf; color: white; border-color: #113ccf; }
+        .filter-pill.hulu.active { background: #1ce783; color: black; border-color: #1ce783; }
+        .filter-pill.provider-count { font-size: 10px; opacity: 0.7; }
+
+        /* Search */
+        .search-bar {
+            margin-top: 10px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+        .search-bar input:focus { border-color: #f59e0b; }
+        .search-bar input::placeholder { color: rgba(255,255,255,0.35); }
+
+        /* Movie Grid */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 16px;
+        }
+        .movie-tile {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #111;
+            cursor: pointer;
+            transition: transform 0.15s;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .movie-tile:hover { transform: scale(1.03); }
+        .movie-tile img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+        }
+        .movie-tile .play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .movie-tile:hover .play-overlay { opacity: 1; }
+        .play-circle {
+            width: 50px;
+            height: 50px;
+            background: rgba(245, 158, 11, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .movie-tile .tile-info {
+            padding: 8px 10px;
+        }
+        .movie-tile .tile-title {
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .movie-tile .tile-meta {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .movie-tile .tile-providers {
+            display: flex;
+            gap: 3px;
+            margin-top: 4px;
+        }
+        .movie-tile .tile-providers img {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            aspect-ratio: 1;
+        }
+        .tile-type-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        /* Video Player Modal */
+        .player-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+        }
+        .player-modal.active { display: flex; }
+        .player-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 201;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .player-video {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 16px 16px;
+        }
+        .player-video iframe {
+            width: 100%;
+            max-width: 960px;
+            aspect-ratio: 16/9;
+            border: none;
+            border-radius: 12px;
+        }
+        .player-info {
+            padding: 16px 20px 24px;
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .player-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .player-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .player-meta span {
+            background: rgba(255,255,255,0.1);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .player-desc {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.5;
+            max-height: 80px;
+            overflow: hidden;
+        }
+        .player-nav {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px 20px;
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .player-nav button {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .player-nav button:hover { background: rgba(255,255,255,0.12); }
+
+        /* Load more */
+        .load-more-row {
+            display: flex;
+            justify-content: center;
+            padding: 16px 16px 32px;
+        }
+        .load-more-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: black;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .load-more-btn:hover { opacity: 0.9; }
+
+        /* Status bar */
+        .status-bar {
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        /* Loading */
+        .loading-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive - Quest 3 typically renders at ~1280px wide */
+        @media (min-width: 600px) {
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        }
+        @media (min-width: 1000px) {
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-top">
+        <h1>Movie<span>Shows</span></h1>
+        <span class="quest-badge">QUEST EDITION</span>
+        <a class="back-link" href="/MOVIESHOWS3/">Full Version</a>
+    </div>
+    <div class="filter-row" id="filterRow">
+        <button class="filter-pill active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-pill" data-filter="movie" onclick="setFilter('movie')">Movies</button>
+        <button class="filter-pill" data-filter="tv" onclick="setFilter('tv')">TV</button>
+        <span style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;flex-shrink:0;"></span>
+        <button class="filter-pill netflix" data-provider="8" onclick="setProvider('8')">Netflix</button>
+        <button class="filter-pill prime" data-provider="9" onclick="setProvider('9')">Prime</button>
+        <button class="filter-pill disney" data-provider="337" onclick="setProvider('337')">Disney+</button>
+        <button class="filter-pill hulu" data-provider="15" onclick="setProvider('15')">Hulu</button>
+        <button class="filter-pill" data-provider="350" onclick="setProvider('350')">Apple TV+</button>
+        <button class="filter-pill" data-provider="1899" onclick="setProvider('1899')">Max</button>
+        <button class="filter-pill" data-provider="531" onclick="setProvider('531')">Paramount+</button>
+        <button class="filter-pill" data-provider="73" onclick="setProvider('73')">Tubi</button>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search movies & shows..." oninput="onSearch()">
+    </div>
+</div>
+
+<div id="movieGrid" class="movie-grid">
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <div>Loading movies...</div>
+    </div>
+</div>
+
+<div class="load-more-row" id="loadMoreRow" style="display:none;">
+    <button class="load-more-btn" onclick="loadMore()">Load More</button>
+</div>
+
+<div class="status-bar" id="statusBar"></div>
+
+<!-- Video Player Modal -->
+<div class="player-modal" id="playerModal">
+    <button class="player-close" onclick="closePlayer()">✕</button>
+    <div class="player-video">
+        <iframe id="playerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="player-info">
+        <div class="player-title" id="playerTitle"></div>
+        <div class="player-meta" id="playerMeta"></div>
+        <div class="player-desc" id="playerDesc"></div>
+    </div>
+    <div class="player-nav">
+        <button onclick="playPrev()">&#9664; Previous</button>
+        <button onclick="playNext()">Next &#9654;</button>
+    </div>
+</div>
+
+<script>
+    var API_URL = '/MOVIESHOWS3/api/get-movies.php';
+    var TMDB_API_KEY = 'b84ff7bfe35ffad8779b77bcbbda317f';
+    var TMDB_BASE = 'https://api.themoviedb.org/3';
+
+    var allMovies = [];
+    var displayedMovies = [];
+    var currentFilter = 'all';
+    var currentProvider = 'all';
+    var searchQuery = '';
+    var pageSize = 24;
+    var currentPage = 0;
+    var currentPlayerIndex = -1;
+
+    // Provider names for display
+    var PROVIDERS = {
+        '8': 'Netflix', '9': 'Prime Video', '337': 'Disney+',
+        '15': 'Hulu', '350': 'Apple TV+', '1899': 'Max',
+        '531': 'Paramount+', '386': 'Peacock', '230': 'Crave', '73': 'Tubi'
+    };
+    var PROVIDER_LOGOS = {
+        '8': 'https://image.tmdb.org/t/p/original/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg',
+        '9': 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg',
+        '337': 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg',
+        '15': 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg',
+        '350': 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg',
+        '1899': 'https://image.tmdb.org/t/p/original/6Q3KKKLC5RzYtuZgjE0Jv88tKds.jpg',
+        '531': 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg',
+        '386': 'https://image.tmdb.org/t/p/original/8VCV78prwd9QzZnEhzuVrl65MZz.jpg',
+        '230': 'https://image.tmdb.org/t/p/original/mogGMz3ZNmFsUBYSUOpGrdOoCNZ.jpg',
+        '73': 'https://image.tmdb.org/t/p/original/4UfRBJiRROwkhVnxVHnGFjHW7fE.jpg'
+    };
+
+    // Provider cache
+    var providerCache = {};
+    try { providerCache = JSON.parse(localStorage.getItem('ms3q_providerCache') || '{}'); } catch(e) {}
+    var providerCacheTs = parseInt(localStorage.getItem('ms3q_providerCacheTs') || '0');
+
+    async function init() {
+        try {
+            var resp = await fetch(API_URL);
+            var data = await resp.json();
+            if (data.success && data.movies) {
+                allMovies = data.movies;
+            } else {
+                throw new Error(data.error || 'No movies');
+            }
+        } catch(err) {
+            document.getElementById('loadingScreen').innerHTML =
+                '<div style="font-size:48px;">&#9888;&#65039;</div>' +
+                '<div>Error loading movies</div>' +
+                '<div style="font-size:12px;color:#888;">' + err.message + '</div>';
+            return;
+        }
+
+        applyFilters();
+        document.getElementById('statusBar').textContent = allMovies.length + ' titles available';
+
+        // Load provider data in background
+        setTimeout(loadProviderData, 1000);
+    }
+
+    function applyFilters() {
+        var movies = allMovies.slice();
+
+        // Type filter
+        if (currentFilter === 'movie') {
+            movies = movies.filter(function(m) { return m.type === 'movie'; });
+        } else if (currentFilter === 'tv') {
+            movies = movies.filter(function(m) { return m.type === 'tv'; });
+        }
+
+        // Provider filter
+        if (currentProvider !== 'all') {
+            movies = movies.filter(function(m) {
+                return m._providers && m._providers.some(function(p) { return p.id === currentProvider; });
+            });
+        }
+
+        // Search
+        if (searchQuery) {
+            var q = searchQuery.toLowerCase();
+            movies = movies.filter(function(m) {
+                return (m.title && m.title.toLowerCase().indexOf(q) !== -1) ||
+                       (m.description && m.description.toLowerCase().indexOf(q) !== -1);
+            });
+        }
+
+        displayedMovies = movies;
+        currentPage = 0;
+        renderGrid(true);
+    }
+
+    function renderGrid(reset) {
+        var grid = document.getElementById('movieGrid');
+        var loadMore = document.getElementById('loadMoreRow');
+        var loading = document.getElementById('loadingScreen');
+        if (loading) loading.style.display = 'none';
+
+        var start = 0;
+        var end = (currentPage + 1) * pageSize;
+        var slice = displayedMovies.slice(start, end);
+
+        if (reset) grid.innerHTML = '';
+
+        var html = '';
+        var startIdx = reset ? 0 : currentPage * pageSize;
+        for (var i = startIdx; i < slice.length; i++) {
+            var m = slice[i];
+            var poster = m.thumbnail || 'https://placehold.co/200x300/111/666?text=' + encodeURIComponent(m.title || 'Movie');
+            var provBadges = '';
+            if (m._providers && m._providers.length > 0) {
+                provBadges = '<div class="tile-providers">';
+                for (var j = 0; j < Math.min(m._providers.length, 4); j++) {
+                    provBadges += '<img src="' + m._providers[j].logo + '" alt="' + m._providers[j].name + '" title="' + m._providers[j].name + '">';
+                }
+                provBadges += '</div>';
+            }
+            html += '<div class="movie-tile" onclick="openPlayer(' + i + ')">' +
+                '<img src="' + poster + '" alt="" loading="lazy" onerror="this.src=\'https://placehold.co/200x300/111/666?text=No+Image\'">' +
+                '<div class="play-overlay"><div class="play-circle">&#9654;</div></div>' +
+                (m.type ? '<div class="tile-type-badge">' + m.type.toUpperCase() + '</div>' : '') +
+                '<div class="tile-info">' +
+                '<div class="tile-title">' + escHtml(m.title) + '</div>' +
+                '<div class="tile-meta">' + (m.release_year || '') + (m.imdb_rating ? ' &#11088; ' + m.imdb_rating : '') + '</div>' +
+                provBadges +
+                '</div></div>';
+        }
+
+        if (reset) {
+            grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#555;">No results found</div>';
+        } else {
+            grid.insertAdjacentHTML('beforeend', html);
+        }
+
+        // Show/hide load more
+        loadMore.style.display = end < displayedMovies.length ? '' : 'none';
+        document.getElementById('statusBar').textContent =
+            'Showing ' + Math.min(end, displayedMovies.length) + ' of ' + displayedMovies.length;
+    }
+
+    function loadMore() {
+        currentPage++;
+        renderGrid(false);
+    }
+
+    function setFilter(f) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-pill[data-filter]').forEach(function(p) { p.classList.remove('active'); });
+        var el = document.querySelector('.filter-pill[data-filter="' + f + '"]');
+        if (el) el.classList.add('active');
+        applyFilters();
+    }
+
+    function setProvider(pid) {
+        if (currentProvider === pid) {
+            currentProvider = 'all';
+            document.querySelectorAll('.filter-pill[data-provider]').forEach(function(p) { p.classList.remove('active'); });
+        } else {
+            currentProvider = pid;
+            document.querySelectorAll('.filter-pill[data-provider]').forEach(function(p) { p.classList.remove('active'); });
+            var el = document.querySelector('.filter-pill[data-provider="' + pid + '"]');
+            if (el) el.classList.add('active');
+        }
+        // Trigger provider data load if not yet loaded
+        if (currentProvider !== 'all' && !allMovies[0]?._providers) {
+            loadProviderData().then(function() { applyFilters(); });
+            return;
+        }
+        applyFilters();
+    }
+
+    var searchTimeout;
+    function onSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            searchQuery = document.getElementById('searchInput').value.trim();
+            applyFilters();
+        }, 300);
+    }
+
+    // Player
+    function openPlayer(idx) {
+        var movie = displayedMovies[idx];
+        if (!movie || !movie.trailer_id) return;
+        currentPlayerIndex = idx;
+
+        var iframe = document.getElementById('playerIframe');
+        iframe.src = 'https://www.youtube.com/embed/' + movie.trailer_id +
+            '?autoplay=1&mute=0&controls=1&playsinline=1&modestbranding=1&rel=0&enablejsapi=1';
+
+        document.getElementById('playerTitle').textContent = movie.title;
+
+        var meta = '';
+        if (movie.release_year) meta += '<span>' + movie.release_year + '</span>';
+        if (movie.imdb_rating) meta += '<span>&#11088; ' + movie.imdb_rating + '</span>';
+        if (movie.type) meta += '<span>' + movie.type.toUpperCase() + '</span>';
+        if (movie._providers) {
+            movie._providers.slice(0, 3).forEach(function(p) {
+                meta += '<span style="display:flex;align-items:center;gap:4px;">' +
+                    '<img src="' + p.logo + '" style="width:14px;height:14px;border-radius:3px;">' +
+                    p.name + '</span>';
+            });
+        }
+        document.getElementById('playerMeta').innerHTML = meta;
+        document.getElementById('playerDesc').textContent = movie.description || '';
+        document.getElementById('playerModal').classList.add('active');
+    }
+
+    function closePlayer() {
+        document.getElementById('playerIframe').src = '';
+        document.getElementById('playerModal').classList.remove('active');
+    }
+
+    function playNext() {
+        if (currentPlayerIndex < displayedMovies.length - 1) {
+            var next = currentPlayerIndex + 1;
+            while (next < displayedMovies.length && !displayedMovies[next].trailer_id) next++;
+            if (next < displayedMovies.length) openPlayer(next);
+        }
+    }
+    function playPrev() {
+        if (currentPlayerIndex > 0) {
+            var prev = currentPlayerIndex - 1;
+            while (prev >= 0 && !displayedMovies[prev].trailer_id) prev--;
+            if (prev >= 0) openPlayer(prev);
+        }
+    }
+
+    // Close player on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePlayer();
+    });
+
+    function escHtml(t) {
+        var d = document.createElement('div');
+        d.textContent = t || '';
+        return d.innerHTML;
+    }
+
+    // Provider data loading via TMDB Discover API
+    async function loadProviderData() {
+        // Check cache
+        if (Date.now() - providerCacheTs < 86400000 && Object.keys(providerCache).length > 0) {
+            applyProviders();
+            return;
+        }
+
+        var ourMovieIds = new Set();
+        var ourTvIds = new Set();
+        allMovies.forEach(function(m) {
+            if (!m.tmdb_id) return;
+            if (m.type === 'tv') ourTvIds.add(String(m.tmdb_id));
+            else ourMovieIds.add(String(m.tmdb_id));
+        });
+
+        var newCache = {};
+        var pids = Object.keys(PROVIDERS);
+
+        for (var i = 0; i < pids.length; i++) {
+            var pid = pids[i];
+            try {
+                var mMovies = await discoverPages('movie', pid, ourMovieIds, 5);
+                var mTv = await discoverPages('tv', pid, ourTvIds, 5);
+                mMovies.forEach(function(id) {
+                    var k = 'movie_' + id;
+                    if (!newCache[k]) newCache[k] = [];
+                    newCache[k].push({ id: pid, name: PROVIDERS[pid], logo: PROVIDER_LOGOS[pid] });
+                });
+                mTv.forEach(function(id) {
+                    var k = 'tv_' + id;
+                    if (!newCache[k]) newCache[k] = [];
+                    newCache[k].push({ id: pid, name: PROVIDERS[pid], logo: PROVIDER_LOGOS[pid] });
+                });
+            } catch(e) {}
+            await new Promise(function(r) { setTimeout(r, 200); });
+        }
+
+        providerCache = newCache;
+        try {
+            localStorage.setItem('ms3q_providerCache', JSON.stringify(providerCache));
+            localStorage.setItem('ms3q_providerCacheTs', String(Date.now()));
+        } catch(e) {}
+
+        applyProviders();
+    }
+
+    async function discoverPages(type, pid, ourIds, maxPages) {
+        var matched = [];
+        for (var pg = 1; pg <= maxPages; pg++) {
+            try {
+                var url = TMDB_BASE + '/discover/' + type +
+                    '?api_key=' + TMDB_API_KEY +
+                    '&with_watch_providers=' + pid +
+                    '&watch_region=US&with_watch_monetization_types=flatrate|free|ads' +
+                    '&sort_by=popularity.desc&page=' + pg;
+                var r = await fetch(url);
+                if (!r.ok) break;
+                var d = await r.json();
+                if (!d.results) break;
+                d.results.forEach(function(item) {
+                    if (ourIds.has(String(item.id))) matched.push(String(item.id));
+                });
+                if (pg >= d.total_pages) break;
+            } catch(e) { break; }
+        }
+        return matched;
+    }
+
+    function applyProviders() {
+        allMovies.forEach(function(m) {
+            if (!m.tmdb_id) { m._providers = []; return; }
+            var k = m.type + '_' + m.tmdb_id;
+            m._providers = providerCache[k] || [];
+        });
+
+        // Update counts on pills
+        var counts = {};
+        allMovies.forEach(function(m) {
+            if (!m._providers) return;
+            m._providers.forEach(function(p) {
+                counts[p.id] = (counts[p.id] || 0) + 1;
+            });
+        });
+        document.querySelectorAll('.filter-pill[data-provider]').forEach(function(pill) {
+            var pid = pill.getAttribute('data-provider');
+            var count = counts[pid] || 0;
+            var name = PROVIDERS[pid] || pid;
+            pill.textContent = name + (count > 0 ? ' (' + count + ')' : '');
+        });
+
+        // Re-render if we're showing results
+        if (displayedMovies.length > 0) renderGrid(true);
+    }
+
+    // Start
+    init();
+</script>
+</body>
+</html>

@@ -911,6 +911,20 @@
     }
     
     // ========== STREAMING PROVIDER FETCH ==========
+    // Uses TMDB Discover API: 1 call per provider instead of per-movie
+    const PROVIDER_LOGOS = {
+        '8': 'https://image.tmdb.org/t/p/original/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg',
+        '9': 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg',
+        '337': 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg',
+        '15': 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg',
+        '350': 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg',
+        '1899': 'https://image.tmdb.org/t/p/original/6Q3KKKLC5RzYtuZgjE0Jv88tKds.jpg',
+        '531': 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg',
+        '386': 'https://image.tmdb.org/t/p/original/8VCV78prwd9QzZnEhzuVrl65MZz.jpg',
+        '230': 'https://image.tmdb.org/t/p/original/mogGMz3ZNmFsUBYSUOpGrdOoCNZ.jpg',
+        '73': 'https://image.tmdb.org/t/p/original/4UfRBJiRROwkhVnxVHnGFjHW7fE.jpg'
+    };
+
     async function fetchProviderData() {
         if (providerLoadingInProgress) return;
         providerLoadingInProgress = true;
@@ -928,60 +942,50 @@
             return;
         }
         
-        console.log('[MovieShows] Fetching streaming provider data from TMDB...');
-        const moviesWithTmdb = allMoviesData.filter(m => m.tmdb_id);
-        const newCache = {};
-        const batchSize = 10;
+        console.log('[MovieShows] Fetching provider data via TMDB Discover API...');
         
-        for (let i = 0; i < moviesWithTmdb.length; i += batchSize) {
-            const batch = moviesWithTmdb.slice(i, i + batchSize);
-            const promises = batch.map(async (movie) => {
-                const cacheKey = (movie.type || 'movie') + '_' + movie.tmdb_id;
-                if (providerCache[cacheKey]) {
-                    newCache[cacheKey] = providerCache[cacheKey];
-                    return;
-                }
-                try {
-                    const endpoint = (movie.type === 'tv' || movie.type === 'series') ? 'tv' : 'movie';
-                    const resp = await fetch(
-                        TMDB_BASE_URL + '/' + endpoint + '/' + movie.tmdb_id +
-                        '/watch/providers?api_key=' + TMDB_API_KEY
-                    );
-                    if (!resp.ok) return;
-                    const data = await resp.json();
-                    const region = data.results && (data.results.US || data.results.CA);
-                    if (region) {
-                        const providers = [];
-                        const seen = new Set();
-                        ['flatrate', 'free', 'ads'].forEach(key => {
-                            if (region[key]) {
-                                region[key].forEach(p => {
-                                    if (!seen.has(p.provider_id)) {
-                                        seen.add(p.provider_id);
-                                        providers.push({
-                                            id: String(p.provider_id),
-                                            name: p.provider_name,
-                                            logo: 'https://image.tmdb.org/t/p/original' + p.logo_path
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                        newCache[cacheKey] = providers;
-                    } else {
-                        newCache[cacheKey] = [];
-                    }
-                } catch (err) { /* skip */ }
-            });
-            await Promise.all(promises);
-            if (i + batchSize < moviesWithTmdb.length) {
-                await new Promise(r => setTimeout(r, 150));
+        // Build sets of our TMDB IDs for fast lookup
+        const ourMovieIds = new Set();
+        const ourTvIds = new Set();
+        allMoviesData.forEach(m => {
+            if (!m.tmdb_id) return;
+            const t = m.type || 'movie';
+            if (t === 'tv' || t === 'series') ourTvIds.add(String(m.tmdb_id));
+            else ourMovieIds.add(String(m.tmdb_id));
+        });
+
+        const newCache = {};
+        const providerIdList = Object.keys(PROVIDER_IDS);
+
+        for (let pi = 0; pi < providerIdList.length; pi++) {
+            const pid = providerIdList[pi];
+            try {
+                const movieMatches = await fetchDiscoverPages('movie', pid, ourMovieIds, 5);
+                const tvMatches = await fetchDiscoverPages('tv', pid, ourTvIds, 5);
+
+                movieMatches.forEach(tmdbId => {
+                    const key = 'movie_' + tmdbId;
+                    if (!newCache[key]) newCache[key] = [];
+                    newCache[key].push({ id: pid, name: PROVIDER_IDS[pid].name, logo: PROVIDER_LOGOS[pid] });
+                });
+                tvMatches.forEach(tmdbId => {
+                    const key = 'tv_' + tmdbId;
+                    if (!newCache[key]) newCache[key] = [];
+                    newCache[key].push({ id: pid, name: PROVIDER_IDS[pid].name, logo: PROVIDER_LOGOS[pid] });
+                });
+
+                console.log('[MovieShows] Provider ' + PROVIDER_IDS[pid].name + ': ' + movieMatches.length + ' movies, ' + tvMatches.length + ' TV');
+            } catch (err) {
+                console.warn('[MovieShows] Failed provider ' + pid + ': ' + err.message);
             }
+            await new Promise(r => setTimeout(r, 200));
         }
         
         providerCache = newCache;
-        localStorage.setItem('ms2_providerCache', JSON.stringify(providerCache));
-        localStorage.setItem('ms2_providerCacheTs', String(Date.now()));
+        try {
+            localStorage.setItem('ms2_providerCache', JSON.stringify(providerCache));
+            localStorage.setItem('ms2_providerCacheTs', String(Date.now()));
+        } catch(e) { /* localStorage full */ }
         
         applyProviderCacheToMovies();
         providerDataLoaded = true;
@@ -990,11 +994,35 @@
         updateProviderCounts();
         console.log('[MovieShows] Provider data loaded for ' + Object.keys(providerCache).length + ' titles');
     }
+
+    async function fetchDiscoverPages(mediaType, providerId, ourIdSet, maxPages) {
+        const matched = [];
+        for (let page = 1; page <= maxPages; page++) {
+            try {
+                const url = TMDB_BASE_URL + '/discover/' + mediaType +
+                    '?api_key=' + TMDB_API_KEY +
+                    '&with_watch_providers=' + providerId +
+                    '&watch_region=US' +
+                    '&with_watch_monetization_types=flatrate|free|ads' +
+                    '&sort_by=popularity.desc&page=' + page;
+                const resp = await fetch(url);
+                if (!resp.ok) break;
+                const data = await resp.json();
+                if (!data.results || data.results.length === 0) break;
+                data.results.forEach(item => {
+                    if (ourIdSet.has(String(item.id))) matched.push(String(item.id));
+                });
+                if (page >= data.total_pages) break;
+            } catch (e) { break; }
+        }
+        return matched;
+    }
     
     function applyProviderCacheToMovies() {
         allMoviesData.forEach(movie => {
             if (!movie.tmdb_id) { movie._providers = []; return; }
-            const cacheKey = (movie.type || 'movie') + '_' + movie.tmdb_id;
+            const t = movie.type || 'movie';
+            const cacheKey = ((t === 'tv' || t === 'series') ? 'tv' : 'movie') + '_' + movie.tmdb_id;
             movie._providers = providerCache[cacheKey] || [];
         });
     }

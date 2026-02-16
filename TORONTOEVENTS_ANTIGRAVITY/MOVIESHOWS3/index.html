@@ -1856,6 +1856,18 @@
 </head>
 
 <body>
+    <!-- Quest 3 / VR Headset Detection Banner -->
+    <div id="questBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999;
+        background:linear-gradient(135deg, #7c3aed, #4f46e5); padding:14px 20px; text-align:center;
+        font-size:14px; font-weight:700; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <span>VR headset detected! For the best experience, try </span>
+        <a href="/MOVIESHOWS3_QUEST/" style="color:#fbbf24; text-decoration:underline; font-weight:900;">Quest Edition</a>
+        <span> - lighter, faster, no freezing.</span>
+        <button onclick="this.parentElement.style.display='none'; localStorage.setItem('ms3_dismissQuest','1');"
+            style="margin-left:16px; background:rgba(0,0,0,0.3); border:none; color:white; padding:4px 12px;
+            border-radius:6px; cursor:pointer; font-size:12px;">Dismiss</button>
+    </div>
+
     <!-- Mute Overlay Modal -->
     <div class="mute-overlay hidden" id="muteOverlay">
         <div class="mute-icon">🔇</div>
@@ -3166,72 +3178,93 @@
                 return;
             }
 
-            console.log('Fetching streaming provider data from TMDB...');
-            const moviesWithTmdb = allMovies.filter(m => m.tmdb_id);
-            let fetched = 0;
-            const batchSize = 10;
-            const newCache = {};
+            console.log('Fetching streaming provider data via TMDB Discover API...');
+            var newCache = {};
 
-            for (let i = 0; i < moviesWithTmdb.length; i += batchSize) {
-                const batch = moviesWithTmdb.slice(i, i + batchSize);
-                const promises = batch.map(async (movie) => {
-                    const cacheKey = movie.type + '_' + movie.tmdb_id;
-                    if (providerCache[cacheKey]) {
-                        newCache[cacheKey] = providerCache[cacheKey];
-                        return;
-                    }
-                    try {
-                        const endpoint = movie.type === 'tv' ? 'tv' : 'movie';
-                        const resp = await fetch(
-                            TMDB_BASE_URL + '/' + endpoint + '/' + movie.tmdb_id +
-                            '/watch/providers?api_key=' + TMDB_API_KEY
-                        );
-                        if (!resp.ok) return;
-                        const data = await resp.json();
-                        // Use US providers as default, fall back to CA
-                        const region = data.results && (data.results.US || data.results.CA);
-                        if (region) {
-                            const providers = [];
-                            const seen = new Set();
-                            ['flatrate', 'free', 'ads'].forEach(function(key) {
-                                if (region[key]) {
-                                    region[key].forEach(function(p) {
-                                        if (!seen.has(p.provider_id)) {
-                                            seen.add(p.provider_id);
-                                            providers.push({
-                                                id: String(p.provider_id),
-                                                name: p.provider_name,
-                                                logo: 'https://image.tmdb.org/t/p/original' + p.logo_path
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                            newCache[cacheKey] = providers;
-                        } else {
-                            newCache[cacheKey] = [];
-                        }
-                    } catch (err) {
-                        // silently skip failures
-                    }
-                });
-                await Promise.all(promises);
-                fetched += batch.length;
-                // Small delay to avoid rate limiting
-                if (i + batchSize < moviesWithTmdb.length) {
-                    await new Promise(function(r) { setTimeout(r, 150); });
+            // Build a set of our TMDB IDs for fast lookup
+            var ourMovieIds = new Set();
+            var ourTvIds = new Set();
+            allMovies.forEach(function(m) {
+                if (!m.tmdb_id) return;
+                if (m.type === 'tv') ourTvIds.add(String(m.tmdb_id));
+                else ourMovieIds.add(String(m.tmdb_id));
+            });
+
+            // For each provider, use TMDB Discover to get titles on that service
+            var providerIds = Object.keys(PROVIDER_NAMES);
+
+            for (var pi = 0; pi < providerIds.length; pi++) {
+                var pid = providerIds[pi];
+                try {
+                    // Fetch movies on this provider (up to 5 pages = 100 results)
+                    var movieMatches = await fetchDiscoverPages('movie', pid, ourMovieIds, 5);
+                    // Fetch TV on this provider
+                    var tvMatches = await fetchDiscoverPages('tv', pid, ourTvIds, 5);
+
+                    // Tag matched movies
+                    movieMatches.forEach(function(tmdbId) {
+                        var key = 'movie_' + tmdbId;
+                        if (!newCache[key]) newCache[key] = [];
+                        newCache[key].push({
+                            id: pid,
+                            name: PROVIDER_NAMES[pid],
+                            logo: PROVIDER_LOGOS[pid]
+                        });
+                    });
+                    tvMatches.forEach(function(tmdbId) {
+                        var key = 'tv_' + tmdbId;
+                        if (!newCache[key]) newCache[key] = [];
+                        newCache[key].push({
+                            id: pid,
+                            name: PROVIDER_NAMES[pid],
+                            logo: PROVIDER_LOGOS[pid]
+                        });
+                    });
+
+                    console.log('Provider ' + PROVIDER_NAMES[pid] + ': ' + movieMatches.length + ' movies, ' + tvMatches.length + ' TV');
+                } catch (err) {
+                    console.warn('Failed to fetch provider ' + pid + ': ' + err.message);
                 }
+                // Small delay between providers
+                await new Promise(function(r) { setTimeout(r, 200); });
             }
 
             providerCache = newCache;
-            localStorage.setItem('ms3_providerCache', JSON.stringify(providerCache));
-            localStorage.setItem('ms3_providerCacheTs', String(Date.now()));
+            try {
+                localStorage.setItem('ms3_providerCache', JSON.stringify(providerCache));
+                localStorage.setItem('ms3_providerCacheTs', String(Date.now()));
+            } catch(e) { /* localStorage full */ }
 
             applyProviderCacheToMovies();
             providerDataLoaded = true;
             providerLoadingInProgress = false;
             updateProviderCounts();
             console.log('Streaming provider data loaded for ' + Object.keys(providerCache).length + ' titles');
+        }
+
+        async function fetchDiscoverPages(mediaType, providerId, ourIdSet, maxPages) {
+            var matched = [];
+            for (var page = 1; page <= maxPages; page++) {
+                try {
+                    var url = TMDB_BASE_URL + '/discover/' + mediaType +
+                        '?api_key=' + TMDB_API_KEY +
+                        '&with_watch_providers=' + providerId +
+                        '&watch_region=US' +
+                        '&with_watch_monetization_types=flatrate|free|ads' +
+                        '&sort_by=popularity.desc&page=' + page;
+                    var resp = await fetch(url);
+                    if (!resp.ok) break;
+                    var data = await resp.json();
+                    if (!data.results || data.results.length === 0) break;
+                    data.results.forEach(function(item) {
+                        if (ourIdSet.has(String(item.id))) {
+                            matched.push(String(item.id));
+                        }
+                    });
+                    if (page >= data.total_pages) break;
+                } catch (e) { break; }
+            }
+            return matched;
         }
 
         function applyProviderCacheToMovies() {
@@ -4702,6 +4735,17 @@
                 }
             }
         }
+
+        // Detect Quest / VR headset and show banner
+        (function detectQuest() {
+            var ua = navigator.userAgent || '';
+            var isQuest = /OculusBrowser|Quest|Pacific/i.test(ua);
+            var isXR = /XR|VR|Pico|HTC Vive|Oculus/i.test(ua);
+            if ((isQuest || isXR) && localStorage.getItem('ms3_dismissQuest') !== '1') {
+                var banner = document.getElementById('questBanner');
+                if (banner) banner.style.display = 'block';
+            }
+        })();
 
         // Load movies and setup autoplay
         loadMovies().then(async () => {
