@@ -11,11 +11,171 @@
     const SCROLL_COOLDOWN = 500;
     
     // ========== NAVIGATION STATE ==========
-    let currentFilter = 'all'; // all, movies, tv, nowplaying
+    let currentFilter = 'all'; // all, movies, tv, nowplaying, motivation
     let currentProviderFilter = 'all'; // streaming service filter
     let searchPanel = null;
     let filterPanel = null;
     let queuePanel = null;
+    
+    // ========== MOTIVATIONAL VIDEOS ==========
+    let allMotivationalVideos = [];
+    let motivationSettings = {
+        showInAll: false,
+        showLongForm: true
+    };
+    
+    function loadMotivationSettings() {
+        try {
+            const saved = localStorage.getItem('ms2_motivationSettings');
+            if (saved) motivationSettings = JSON.parse(saved);
+        } catch(e) {}
+    }
+    function saveMotivationSettings() {
+        localStorage.setItem('ms2_motivationSettings', JSON.stringify(motivationSettings));
+    }
+    
+    // Curated motivation channels (same as MOVIESHOWS3)
+    const MOTIVATION_CHANNELS = [
+        {
+            channel: 'Motiversity',
+            videos: [
+                { id: 'wnHW6o8WMas', title: 'NO EXCUSES - Best Motivational Video', duration: '10:15', isShort: false },
+                { id: '2xeW_HYdb8g', title: 'LISTEN TO THIS EVERY MORNING', duration: '10:20', isShort: false },
+                { id: '9i45VrIyNOI', title: 'WHY NOT YOU - Best Motivational Speeches', duration: '8:35', isShort: false },
+                { id: '-WRP5qXa7SU', title: 'FOCUS AND VALUE YOURSELF - Matthew McConaughey', duration: '17:40', isShort: false },
+                { id: 'LwxnZzGp-n8', title: 'FOCUS ON YOURSELF AND STAY SILENT - Tony Robbins', duration: '12:25', isShort: false },
+                { id: 'zjOS9hWVGQs', title: 'DISCIPLINE YOURSELF - Jocko Willink & David Goggins', duration: '10:00', isShort: false },
+                { id: 'U24wsr048FY', title: 'DISCIPLINE YOUR MIND - Motivational Speech', duration: '8:00', isShort: false },
+                { id: 'Wj1_NCOJ2yY', title: 'DISCIPLINE - Motivational Speech', duration: '9:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'MotivationHub',
+            videos: [
+                { id: 'g-jwWYX7Jlo', title: 'DREAM - Motivational Video', duration: '15:22', isShort: false },
+                { id: 'k9zTr2MAFRg', title: 'AGAINST ALL ODDS - Elon Musk Motivation', duration: '12:10', isShort: false },
+                { id: 'Hx0VZjLvY-M', title: 'PERSISTENCE - Goggins, Jocko & Eric Thomas', duration: '15:00', isShort: false },
+                { id: '5j3S2ZuiJfc', title: 'GET UP AND GET IT DONE IN 2025 - David Goggins', duration: '19:30', isShort: false },
+            ]
+        },
+        {
+            channel: 'Ben Lionel Scott',
+            videos: [
+                { id: '26U_seo0a1g', title: 'UNBROKEN - Motivational Video', duration: '11:30', isShort: false },
+                { id: 'lsSC2vx7zFQ', title: 'HOW BAD DO YOU WANT IT? (Success)', duration: '5:37', isShort: false },
+                { id: 'x3mxjCm0aUI', title: 'CONTROL YOUR MIND - Motivational Speech', duration: '10:00', isShort: false },
+                { id: '8bUpyNYXAiI', title: 'SELF CONFIDENCE - Motivational Speech', duration: '10:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Be Inspired',
+            videos: [
+                { id: 'ft_DXwgUXB0', title: 'SELF DISCIPLINE - Featuring Will Smith', duration: '7:12', isShort: false },
+                { id: 'bth-GCGyWcU', title: 'YOU HAVE NO DISCIPLINE - Eric Thomas', duration: '8:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Fearless Motivation',
+            videos: [
+                { id: 'D0q9HIMRvtk', title: 'I DID NOT COME THIS FAR TO ONLY COME THIS FAR', duration: '4:30', isShort: false },
+                { id: 'PKBDZOPoCH0', title: 'YOU ARE HERE FOR A REASON (Goosebumps)', duration: '5:00', isShort: false },
+                { id: 'xOvts_DTrlA', title: 'THE WARRIOR MENTALITY', duration: '6:00', isShort: false },
+                { id: '9H5SWjSdgdk', title: 'NO FEAR - Best Motivational Speech', duration: '7:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Motivation2Study',
+            videos: [
+                { id: 'VSceuiPBpxY', title: 'THE MINDSET OF A WINNER - Kobe Bryant', duration: '10:00', isShort: false },
+                { id: 'YcdF_TsubxQ', title: 'NO EXCUSES - Best Video for Students', duration: '8:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Absolute Motivation',
+            videos: [
+                { id: 'TLKxdTmk-zc', title: 'THE MOST EYE OPENING 10 MINUTES - David Goggins', duration: '10:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'GaryVee',
+            videos: [
+                { id: 'dp9uSNPnC34', title: 'YOU\'VE GOT TIME!', duration: '0:58', isShort: true },
+                { id: 'f-AyDfj-1C0', title: 'ADVICE EVERY GRADUATE NEEDS TO HEAR', duration: '0:55', isShort: true },
+                { id: '51RdAU0cOUw', title: 'CHANGE YOUR PERSPECTIVE - Gary Vaynerchuk', duration: '7:00', isShort: false },
+                { id: 'loyfrfB4UhE', title: 'FEELING LOST? TURN YOUR LIFE AROUND', duration: '8:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Evan Carmichael',
+            videos: [
+                { id: 'rePlYbzByxg', title: 'TOP 10 RULES FOR SUCCESS', duration: '12:00', isShort: false },
+                { id: 'oK28sWkfSSk', title: 'OVERCOME NEGATIVITY AND UNLOCK YOUR MIND', duration: '10:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Eric Thomas',
+            videos: [
+                { id: '7Oxz060iedY', title: 'YOU OWE YOU - Powerful Motivation', duration: '7:40', isShort: false },
+                { id: 'tTQG-xf611M', title: 'THE NEW VERSION OF YOU IN 2025', duration: '20:00', isShort: false },
+                { id: 'V5-OaWYas8U', title: 'MAKING 2025 THE BEST YEAR EVER', duration: '20:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'Tony Robbins',
+            videos: [
+                { id: '0b2MtFQk_aU', title: 'ONE OF THE MOST EYE OPENING SPEECHES EVER', duration: '10:00', isShort: false },
+                { id: '2EuhFLwtR7Y', title: 'TRANSFORM YOUR LIFE WITH ONE DECISION', duration: '34:00', isShort: false },
+                { id: '8PHm_GkQ8kU', title: 'BECOME SOMEONE NOBODY THOUGHT YOU COULD BE', duration: '12:00', isShort: false },
+            ]
+        },
+        {
+            channel: 'David Goggins',
+            videos: [
+                { id: 'Emc7obS9z4s', title: 'START NOW - David Goggins', duration: '0:30', isShort: true },
+                { id: 'm5S3H1W9lnQ', title: 'IT ALL COMES DOWN TO THIS', duration: '0:45', isShort: true },
+                { id: '8rjtYOavgoo', title: 'WHAT DO YOU STAND FOR?', duration: '0:55', isShort: true },
+                { id: 'Cw0hZQ8Na_Y', title: 'GET UP AND GET IT DONE', duration: '14:00', isShort: false },
+                { id: 'b0FVTOxsWw0', title: 'A FEW MINUTES CAN CHANGE YOUR LIFE', duration: '10:00', isShort: false },
+                { id: 'd6Jefz9Mwgg', title: 'DO IT ALONE. DO IT BROKEN. DO IT SCARED.', duration: '15:00', isShort: false },
+                { id: 'EMRT4mfKTkw', title: 'SHUT UP AND DO THE WORK', duration: '10:00', isShort: false },
+            ]
+        },
+    ];
+    
+    function buildMotivationalVideos() {
+        allMotivationalVideos = [];
+        let idCounter = 100000;
+        
+        MOTIVATION_CHANNELS.forEach(channel => {
+            channel.videos.forEach(video => {
+                if (!motivationSettings.showLongForm && !video.isShort) return;
+                
+                allMotivationalVideos.push({
+                    title: video.title,
+                    type: 'motivation',
+                    genres: ['Motivation'],
+                    description: `${channel.channel} - Motivational ${video.isShort ? 'Short' : 'Video'}`,
+                    year: String(new Date().getFullYear()),
+                    trailerUrl: `https://www.youtube.com/watch?v=${video.id}`,
+                    posterUrl: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`,
+                    image: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`,
+                    tmdb_id: null,
+                    _channel: channel.channel,
+                    _duration: video.duration,
+                    _isShort: video.isShort,
+                    _isMotivation: true
+                });
+            });
+        });
+        
+        // Shuffle for variety
+        for (let i = allMotivationalVideos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allMotivationalVideos[i], allMotivationalVideos[j]] = [allMotivationalVideos[j], allMotivationalVideos[i]];
+        }
+        
+        console.log(`[MovieShows] Built ${allMotivationalVideos.length} motivational videos`);
+    }
     
     // ========== STREAMING PROVIDER DATA ==========
     let providerCache = JSON.parse(localStorage.getItem('ms2_providerCache') || '{}');
@@ -689,14 +849,17 @@
         const results = document.getElementById("search-results");
         if (!results) return;
         
-        let filtered = allMoviesData;
+        // Combine regular movies + motivation for search pool
+        let searchPool = [...allMoviesData, ...allMotivationalVideos];
+        let filtered = searchPool;
         
         if (query.trim()) {
             const q = query.toLowerCase();
-            filtered = allMoviesData.filter(m => 
+            filtered = searchPool.filter(m => 
                 m.title?.toLowerCase().includes(q) ||
                 m.description?.toLowerCase().includes(q) ||
-                m.genres?.some(g => g.toLowerCase().includes(q))
+                m.genres?.some(g => g.toLowerCase().includes(q)) ||
+                (m._channel && m._channel.toLowerCase().includes(q))
             );
         }
         
@@ -707,6 +870,8 @@
             filtered = filtered.filter(m => m.type === 'tv' || m.type === 'series');
         } else if (currentFilter === 'nowplaying') {
             filtered = filtered.filter(m => m.source === 'Now Playing' || m.source === 'In Theatres');
+        } else if (currentFilter === 'motivation') {
+            filtered = filtered.filter(m => m._isMotivation);
         }
         
         // Apply streaming provider filter
@@ -728,7 +893,9 @@
         results.querySelectorAll(".movie-card").forEach(card => {
             card.addEventListener("click", () => {
                 const title = card.dataset.title;
-                const movie = allMoviesData.find(m => m.title === title);
+                // Search both allMoviesData and allMotivationalVideos
+                const movie = allMoviesData.find(m => m.title === title) || 
+                              allMotivationalVideos.find(m => m.title === title);
                 if (movie) {
                     closePanel(searchPanel);
                     showToast(`Playing: ${movie.title}`);
@@ -752,22 +919,39 @@
         };
         const posterUrl = movie.posterUrl || movie.image || getCardPlaceholder(movie.title?.substring(0,10) || 'Movie', 150, 225);
         const fallbackPoster = getCardPlaceholder('No Image', 150, 225);
+        const isMotivation = movie._isMotivation;
+        const borderColor = isMotivation ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.1)';
+        const hoverColor = isMotivation ? '#8b5cf6' : '#22c55e';
         return `
             <div class="movie-card" data-title="${movie.title || ''}" style="
                 cursor: pointer;
                 border-radius: 12px;
                 overflow: hidden;
-                background: rgba(255,255,255,0.05);
+                background: ${isMotivation ? 'rgba(139,92,246,0.08)' : 'rgba(255,255,255,0.05)'};
                 transition: all 0.2s;
-                border: 1px solid rgba(255,255,255,0.1);
-            " onmouseenter="this.style.transform='scale(1.03)';this.style.borderColor='#22c55e'" 
-               onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(255,255,255,0.1)'">
-                <img src="${posterUrl}" alt="${movie.title}" style="width: 100%; aspect-ratio: 2/3; object-fit: cover;" 
+                border: 1px solid ${borderColor};
+                position: relative;
+            " onmouseenter="this.style.transform='scale(1.03)';this.style.borderColor='${hoverColor}'" 
+               onmouseleave="this.style.transform='scale(1)';this.style.borderColor='${borderColor}'">
+                <img src="${posterUrl}" alt="${movie.title}" style="width: 100%; aspect-ratio: ${isMotivation ? '16/9' : '2/3'}; object-fit: cover;" 
                     onerror="this.src='${fallbackPoster}'">
+                ${isMotivation ? `
+                    <div style="position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);
+                        color:white;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:800;letter-spacing:0.5px;">
+                        MOTIVATION</div>
+                    ${movie._duration ? `<div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);
+                        color:white;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:600;">
+                        ${movie._duration}</div>` : ''}
+                ` : ''}
                 <div style="padding: 10px;">
                     <h4 style="color: white; font-size: 13px; font-weight: 600; margin: 0 0 4px 0; 
                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${movie.title || 'Unknown'}</h4>
-                    <p style="color: #888; font-size: 11px; margin: 0;">${movie.year || ''} ${movie.rating ? '• ⭐ ' + movie.rating : ''}</p>
+                    ${isMotivation ? `
+                        <p style="color: #c4b5fd; font-size: 11px; margin: 0;">
+                            ${movie._channel || 'Motivation'} ${movie._duration ? '• ' + movie._duration : ''}</p>
+                    ` : `
+                        <p style="color: #888; font-size: 11px; margin: 0;">${movie.year || ''} ${movie.rating ? '• ⭐ ' + movie.rating : ''}</p>
+                    `}
                     ${movie._providers && movie._providers.length > 0 ? `
                         <div style="display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap;">
                             ${movie._providers.slice(0, 4).map(p => 
@@ -794,6 +978,7 @@
                     <button class="filter-btn" data-filter="movies">Movies</button>
                     <button class="filter-btn" data-filter="tv">TV Shows</button>
                     <button class="filter-btn" data-filter="nowplaying">Now Playing</button>
+                    <button class="filter-btn" data-filter="motivation" style="border-color: rgba(139,92,246,0.5); color: #c4b5fd;">💪 Motivation (<span id="filter-motivation-count">${allMotivationalVideos.length}</span>)</button>
                 </div>
             </div>
             <div style="margin-bottom: 24px;">
@@ -812,6 +997,19 @@
                     <button class="filter-btn streaming-btn" data-provider="73" style="border-color: rgba(250,56,47,0.5); color: #fb923c;">Tubi</button>
                 </div>
                 <div id="streaming-loading-msg" style="font-size: 11px; color: #888; margin-top: 6px; display: none;">Loading provider data...</div>
+            </div>
+            <div style="margin-bottom: 24px; background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.15); border-radius: 12px; padding: 12px;">
+                <h3 style="color: #c4b5fd; font-size: 12px; text-transform: uppercase; margin-bottom: 12px;">💪 Motivational Videos</h3>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 8px;">
+                    <input type="checkbox" id="ms2-motiv-in-all" style="width:18px;height:18px;accent-color:#8b5cf6;"
+                        ${motivationSettings.showInAll ? 'checked' : ''}>
+                    <span style="font-size: 13px; color: #ddd;">Mix into "All" feed</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="ms2-motiv-longform" style="width:18px;height:18px;accent-color:#8b5cf6;"
+                        ${motivationSettings.showLongForm ? 'checked' : ''}>
+                    <span style="font-size: 13px; color: #ddd;">Include long-form videos (5+ min)</span>
+                </label>
             </div>
             <div style="margin-bottom: 24px;">
                 <h3 style="color: #888; font-size: 12px; text-transform: uppercase; margin-bottom: 12px;">Genres</h3>
@@ -878,6 +1076,25 @@
         content.querySelectorAll(".filter-btn[data-genre]").forEach(btn => {
             btn.addEventListener("click", () => btn.classList.toggle("active"));
         });
+        
+        // Motivation settings handlers
+        const motivInAllEl = content.querySelector('#ms2-motiv-in-all');
+        if (motivInAllEl) {
+            motivInAllEl.addEventListener('change', () => {
+                motivationSettings.showInAll = motivInAllEl.checked;
+                saveMotivationSettings();
+            });
+        }
+        const motivLongEl = content.querySelector('#ms2-motiv-longform');
+        if (motivLongEl) {
+            motivLongEl.addEventListener('change', () => {
+                motivationSettings.showLongForm = motivLongEl.checked;
+                saveMotivationSettings();
+                buildMotivationalVideos();
+                const countEl = content.querySelector('#filter-motivation-count');
+                if (countEl) countEl.textContent = allMotivationalVideos.length;
+            });
+        }
         
         // Streaming service filter handlers
         content.querySelectorAll(".streaming-btn[data-provider]").forEach(btn => {
@@ -2068,7 +2285,8 @@
                 (currentFilter === 'all' && text.includes("all (")) ||
                 (currentFilter === 'movies' && text.includes("movies (")) ||
                 (currentFilter === 'tv' && text.includes("tv (")) ||
-                (currentFilter === 'nowplaying' && text.includes("now playing"));
+                (currentFilter === 'nowplaying' && text.includes("now playing")) ||
+                (currentFilter === 'motivation' && text.includes("motivation"));
             
             // Update counts in button text
             if (text.includes("all (")) {
@@ -4497,6 +4715,10 @@
 
                         console.log('[MovieShows] SUCCESS: Loaded ' + items.length + ' items from ' + src.name);
 
+                        // Build motivational videos
+                        loadMotivationSettings();
+                        buildMotivationalVideos();
+
                         setTimeout(function(){ updateCategoryButtons(); }, 100);
                         ensureMinimumCount(20);
                         updateUpNextCount();
@@ -5378,6 +5600,11 @@
     }
 
     function getFilteredMovies() {
+        // Motivation filter - show only motivational videos
+        if (currentFilter === 'motivation') {
+            return allMotivationalVideos.slice();
+        }
+        
         // Filter movies based on current category
         let filtered = allMoviesData.filter(m => m.trailerUrl && m.trailerUrl.length > 10);
         
@@ -5393,6 +5620,11 @@
                 m.nowPlaying === true ||
                 (m.badges && m.badges.includes('IN THEATRES'))
             );
+        } else if (currentFilter === 'all' && motivationSettings.showInAll) {
+            // Mix motivation into the "All" feed
+            filtered = filtered.concat(allMotivationalVideos);
+            // Shuffle so motivation isn't all at the end
+            filtered.sort(() => 0.5 - Math.random());
         }
         
         // Apply streaming provider filter
@@ -5430,7 +5662,9 @@
         console.log(`[MovieShows] Found ${filteredMovies.length} ${currentFilter} items with trailers`);
         
         if (filteredMovies.length === 0) {
-            showToast(`No ${currentFilter === 'nowplaying' ? 'now playing' : currentFilter} content with trailers`, true);
+            const filterLabel = currentFilter === 'nowplaying' ? 'now playing' : 
+                               currentFilter === 'motivation' ? 'motivation' : currentFilter;
+            showToast(`No ${filterLabel} content with trailers`, true);
             // Fall back to showing all
             currentFilter = 'all';
             updateCategoryButtons();

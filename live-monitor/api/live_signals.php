@@ -4085,11 +4085,11 @@ function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) 
             $trust_badge = "\xF0\x9F\x86\x95 NEW (no track record yet)";
         }
 
-        // ── Action tier based on strength + trust ──
+        // ── Action tier based on strength + trust (QUALITY GATES: 50+ trades, 55%+ WR) ──
         $tier = 'WATCH';
-        if (isset($algo_perf[$algo_name]) && floatval($algo_perf[$algo_name]['win_rate']) >= 55 && $str >= 85) {
+        if (isset($algo_perf[$algo_name]) && intval($algo_perf[$algo_name]['total_signals']) >= 50 && floatval($algo_perf[$algo_name]['win_rate']) >= 55 && $str >= 85) {
             $tier = 'ACT NOW';
-        } elseif ($str >= 80) {
+        } elseif ($str >= 80 && isset($algo_perf[$algo_name]) && intval($algo_perf[$algo_name]['total_signals']) >= 50 && floatval($algo_perf[$algo_name]['win_rate']) >= 55) {
             $tier = 'WATCH CLOSELY';
         }
 
