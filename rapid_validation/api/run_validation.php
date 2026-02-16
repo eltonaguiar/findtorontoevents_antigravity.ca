@@ -18,11 +18,11 @@ if ($key !== 'livetrader2026') {
     exit;
 }
 
-// Database credentials
-$DB_HOST = getenv('DB_HOST') ? getenv('DB_HOST') : 'sql.50webs.com';
-$DB_USER = getenv('DB_USER') ? getenv('DB_USER') : 'ejaguiar1_stocks';
-$DB_PASS = getenv('DB_PASS') ? getenv('DB_PASS') : ''; // Set via environment or hardcode
-$DB_NAME = getenv('DB_NAME') ? getenv('DB_NAME') : 'ejaguiar1_stocks';
+// Database credentials - update DB_PASS with your password
+$DB_HOST = 'sql.50webs.com';
+$DB_USER = 'ejaguiar1_stocks';
+$DB_PASS = ''; // TODO: Add your database password here
+$DB_NAME = 'ejaguiar1_stocks';
 
 // Connect to database
 $conn = @mysqli_connect($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
