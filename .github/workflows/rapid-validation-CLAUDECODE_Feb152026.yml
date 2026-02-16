@@ -24,18 +24,18 @@ jobs:
           echo "=== Deploying Rapid Validation API to Server ==="
           # Upload dashboard
           curl -T rapid_validation/dashboard_CLAUDECODE_Feb152026.html \
-            "ftp://$FTP_SERVER/htdocs/rapid_validation/" \
+            "ftp://$FTP_SERVER/findtorontoevents.ca/rapid_validation/" \
             --user "$FTP_USER:$FTP_PASS" \
             --ftp-create-dirs --insecure || true
           # Upload API
           curl -T rapid_validation/api/rapid_signal_engine.php \
-            "ftp://$FTP_SERVER/htdocs/rapid_validation/api/rapid_signal_engine.php" \
+            "ftp://$FTP_SERVER/findtorontoevents.ca/rapid_validation/api/rapid_signal_engine.php" \
             --user "$FTP_USER:$FTP_PASS" \
             --ftp-create-dirs --insecure || true
           # Upload Python scripts
           for file in rapid_validation/*.py; do
             filename=$(basename "$file")
-            curl -T "$file" "ftp://$FTP_SERVER/htdocs/rapid_validation/$filename" \
+            curl -T "$file" "ftp://$FTP_SERVER/findtorontoevents.ca/rapid_validation/$filename" \
               --user "$FTP_USER:$FTP_PASS" --insecure || true
           done
           echo "✅ Deployment attempted"
