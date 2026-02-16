@@ -111,7 +111,8 @@ $testing = array();
 $eliminated = array();
 
 $result = mysqli_query($conn, "SELECT * FROM rapid_strategy_stats ORDER BY total_pnl DESC");
-while ($row = mysqli_fetch_assoc($result)) {
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
     $strategy = array(
         'name' => $row['strategy_name'],
         'trades' => intval($row['total_trades']),
@@ -120,12 +121,13 @@ while ($row = mysqli_fetch_assoc($result)) {
         'total_pnl' => floatval($row['total_pnl'])
     );
 
-    if ($row['rank'] === 'promoted') {
-        $promoted[] = $strategy;
-    } elseif ($row['rank'] === 'testing') {
-        $testing[] = $strategy;
-    } else {
-        $eliminated[] = $strategy;
+        if ($row['rank'] === 'promoted') {
+            $promoted[] = $strategy;
+        } elseif ($row['rank'] === 'testing') {
+            $testing[] = $strategy;
+        } else {
+            $eliminated[] = $strategy;
+        }
     }
 }
 
@@ -142,7 +144,7 @@ $rankings = array(
 );
 
 $json_file = realpath('..') . '/rankings_CLAUDECODE_Feb152026.json';
-file_put_contents($json_file, json_encode($rankings, JSON_PRETTY_PRINT));
+file_put_contents($json_file, json_encode($rankings));
 
 mysqli_close($conn);
 
