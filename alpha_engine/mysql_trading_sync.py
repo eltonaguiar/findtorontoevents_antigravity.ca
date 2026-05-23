@@ -597,7 +597,16 @@ def sync(dry_run=False):
         pass
 
     conn.close()
-    return 0 if errors == 0 else 1
+    # Tolerate small row-level data errors when bulk upsert succeeded.
+    # Why: ELITE scorer sometimes hits picks with non-numeric risk_reward
+    # ('HIGH'/'LOW'/'MEDIUM' from upstream feed); these are flagged + logged,
+    # but the bulk DB write is otherwise healthy. Hard-fail only when error
+    # rate is high (>1%) or no rows landed at all.
+    if errors == 0:
+        return 0
+    if inserted > 0 and errors * 100 <= inserted:
+        return 0
+    return 1
 
 
 def main():
