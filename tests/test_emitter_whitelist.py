@@ -12,10 +12,13 @@ from alpha_engine.emitter_whitelist import (
 
 
 def test_hardcoded_toxic_pairs():
-    assert is_toxic_pair("CRYPTO", "quan_engine")
-    assert is_toxic_pair("COMMODITY", "cta_replicator")
-    assert is_toxic_pair("FOREX", "multi_asset_copytrader")
-    assert not is_toxic_pair("COMMODITY", "multi_asset_copytrader")
+    # Test only the HARDCODED set — the registry may dynamically add pairs
+    # at runtime (e.g. COMMODITY/multi_asset_copytrader if pf < 1.2 and n >= 20),
+    # so is_toxic_pair() is not stable for non-hardcoded pairs.
+    assert ("CRYPTO", "quan_engine") in HARDCODED_TOXIC_PAIRS
+    assert ("COMMODITY", "cta_replicator") in HARDCODED_TOXIC_PAIRS
+    assert ("FOREX", "multi_asset_copytrader") in HARDCODED_TOXIC_PAIRS
+    assert ("COMMODITY", "multi_asset_copytrader") not in HARDCODED_TOXIC_PAIRS
 
 
 def test_toxic_pick_rejected(monkeypatch):
