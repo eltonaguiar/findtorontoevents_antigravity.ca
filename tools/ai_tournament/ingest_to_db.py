@@ -149,6 +149,12 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
         """,
     ]
 
+    # Fallback ALTER for older MySQL (< 8.0.16) that doesn't support IF NOT EXISTS
+    alter_fallbacks = [
+        "ALTER TABLE ai_tournament_picks ADD COLUMN reason TEXT DEFAULT NULL COMMENT 'Detailed persona rationale' AFTER thesis;",
+        "ALTER TABLE ai_tournament_picks ADD COLUMN entry_criteria TEXT DEFAULT NULL COMMENT 'Specific entry triggers that fired' AFTER reason;",
+    ]
+
     insert_sql = """
         INSERT INTO ai_tournament_picks
             (model_id, symbol, asset_class, direction, entry_price,
@@ -218,7 +224,18 @@ def main() -> None:
         )
         with conn.cursor() as cur:
             for ddl in ddl_statements:
-                cur.execute(ddl)
+                try:
+                    cur.execute(ddl)
+                except Exception as alter_e:
+                    print(f"[ingest] DDL failed, trying fallback: {alter_e}")
+                    # Fallback to simpler ALTER for older MySQL
+                    import re
+                    for fallback in alter_fallbacks:
+                        try:
+                            cur.execute(fallback)
+                            print(f"[ingest] Fallback ALTER succeeded")
+                        except Exception:
+                            pass  # Column may already exist
             print("[ingest] Tables verified")
 
             # Insert in batches
