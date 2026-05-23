@@ -1,0 +1,227 @@
+{
+  "generated_at": "2026-03-24T03:10:44.095039+00:00",
+  "summary": {
+    "clone_wr": 42.1,
+    "copy_wr_estimate": 55,
+    "wr_gap": 12.9,
+    "clone_picks_count": 38,
+    "clone_wins": 16,
+    "clone_losses": 22,
+    "clone_avg_pnl": -0.92,
+    "clone_avg_win": 2.58,
+    "clone_avg_loss": -3.48,
+    "estimated_wr_after_fixes": "55-62%",
+    "root_causes": [
+      "RC1: Scalper strategies (hold 0.1h) cloned on 1h candle data -- timeframe mismatch",
+      "RC2: TP targets 0.07-0.19% from scalper avg_win -- impossible on hourly scans",
+      "RC3: Clone direction decided by RSI/EMA, ignoring trader actual live position",
+      "RC4: No cross-strategy conflict detection -- LONG and SHORT same symbol simultaneously",
+      "RC5: Zero SL from 100% WR artifacts (1-4 trade sample sizes)",
+      "RC6: Duplicate picks across traders without deduplication inflate loss count",
+      "RC7: Low sample profiles (1-7 trades) produce unreliable strategy DNA"
+    ],
+    "primary_diagnosis": "Clone pipeline tries to predict scalper trades using hourly RSI/EMA indicators. This is like predicting an HFT bot with yesterday's newspaper. Top 3 fixes (filter scalpers, use trader direction, enforce min TP) close ~80% of the 13pt WR gap."
+  },
+  "failure_modes": [
+    {
+      "id": "FM1_MICROSCOPIC_TP",
+      "severity": "CRITICAL",
+      "affected": "24/38 picks (63%)",
+      "description": "TP targets of 0.07-0.19% derived from scalper avg_win_pct applied to 1h clone scans. These NEVER hit TP and drift into losses. Auros_66M TP=0.14%, ABC_41M TP=0.07%. Root: strategy_reverse_engineer.py line 549: tp_pct = abs(avg_win_pct) * 0.8",
+      "examples": [
+        {
+          "symbol": "RENDERUSDT",
+          "direction": "SHORT",
+          "tp_pct": 0.43,
+          "trader": "whale_433roi",
+          "pnl": -4.3
+        },
+        {
+          "symbol": "ONDOUSDT",
+          "direction": "SHORT",
+          "tp_pct": 0.43,
+          "trader": "whale_433roi",
+          "pnl": 3.15
+        },
+        {
+          "symbol": "RENDERUSDT",
+          "direction": "SHORT",
+          "tp_pct": 0.49,
+          "trader": "lb_None",
+          "pnl": -4.23
+        },
+        {
+          "symbol": "ONDOUSDT",
+          "direction": "SHORT",
+          "tp_pct": 0.49,
+          "trader": "lb_None",
+          "pnl": 3.18
+        },
+        {
+          "symbol": "BTCUSDT",
+          "direction": "LONG",
+          "tp_pct": 0.19,
+          "trader": "lb_None",
+          "pnl": 0.79
+        },
+        {
+          "symbol": "AVAXUSDT",
+          "direction": "LONG",
+          "tp_pct": 0.19,
+          "trader": "lb_None",
+          "pnl": 0.0
+        }
+      ]
+    },
+    {
+      "id": "FM2_CONTRADICTORY_PICKS",
+      "severity": "HIGH",
+      "affected": "3 symbols with LONG+SHORT simultaneously",
+      "description": "Same symbol cloned LONG (from trader A) and SHORT (from trader B). Guaranteed one side loses. RENDERUSDT, ONDOUSDT, FETUSDT all affected. Root: No cross-strategy conflict detection in clone generator.",
+      "examples": [
+        {
+          "symbol": "RENDERUSDT",
+          "long_count": 2,
+          "short_count": 2,
+          "net_pnl": -0.13
+        },
+        {
+          "symbol": "ONDOUSDT",
+          "long_count": 2,
+          "short_count": 2,
+          "net_pnl": 0.07
+        },
+        {
+          "symbol": "FETUSDT",
+          "long_count": 1,
+          "short_count": 1,
+          "net_pnl": 0.06
+        }
+      ]
+    },
+    {
+      "id": "FM3_DUPLICATE_PICKS",
+      "severity": "MEDIUM",
+      "affected": "11 groups with 2-4 duplicates each",
+      "description": "Same symbol+direction from multiple traders (BTCUSDT LONG x4). Each has different TP: 3.5% vs 0.19% vs 0.07% vs 0.14%. The 0.07% TP version always loses, dragging down the group average."
+    },
+    {
+      "id": "FM4_DIRECTION_MISMATCH",
+      "severity": "CRITICAL",
+      "affected": "10/16 matched coins had OPPOSITE direction",
+      "description": "Cross-examination: 17.2% coin agreement, 28.4% direction agreement. Clone uses RSI<35->LONG, RSI>65->SHORT to decide direction, IGNORING the trader's actual live position. PensionFund clone goes LONG BTC while PensionFund is SHORT BTC. Root: strategy_clone_generator.py analyze_coin() substitutes generic RSI for trader intent."
+    },
+    {
+      "id": "FM5_TIMEFRAME_MISMATCH",
+      "severity": "CRITICAL",
+      "affected": "7/13 traders are SCALPERS",
+      "description": "Scalpers (lb_None, lb_NMTD -Thank you Jeff, lb_None, whale_22M, ABC_41M, whale_13M_new, Auros_66M) hold positions for 0.0-0.9 hours. Clone scans 1h candles. By the time clone detects a signal, the scalper has entered AND exited. Cannot replicate sub-minute strategies on hourly data."
+    },
+    {
+      "id": "FM6_ZERO_STOP_LOSS",
+      "severity": "HIGH",
+      "affected": "4 strategies have SL=0%",
+      "description": "100% WR traders (artifact from 1-4 trades) produce avg_loss=0 -> SL=0%. Clone uses max(sl_pct, 0.01)=1% fallback but losing positions run to -10%+ because no real SL is set. ENAUSDT LONG lost -10.35%, FETUSDT SHORT lost -12.96%."
+    },
+    {
+      "id": "FM7_LOW_SAMPLE_PROFILES",
+      "severity": "HIGH",
+      "affected": "5/13 profiles have <10 trades",
+      "description": "PensionFund_24M: 1 trade (100% WR = meaningless). whale_433roi: 7 trades. Strategy DNA extracted from <10 trades is statistical noise, not signal.",
+      "details": [
+        {
+          "trader": "whale_433roi",
+          "trades": 7
+        },
+        {
+          "trader": "PensionFund_24M",
+          "trades": 1
+        },
+        {
+          "trader": "lb_None",
+          "trades": 2
+        },
+        {
+          "trader": "lb_None",
+          "trades": 4
+        },
+        {
+          "trader": "whale_1225roi",
+          "trades": 8
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "FIX1",
+      "priority": 1,
+      "action": "IMPLEMENT",
+      "title": "Filter out scalper traders from cloning (median_hold < 2h)",
+      "impact": "+8-12% WR",
+      "effort": "LOW (3 lines in strategy_clone_generator.py)",
+      "file": "copy_trader_intel/strategy_clone_generator.py",
+      "detail": "Add at line ~399: if median_hold < 2h, skip. Eliminates ABC_41M, Auros_66M, whale_13M_new, whale_22M, 2x lb_None."
+    },
+    {
+      "id": "FIX2",
+      "priority": 2,
+      "action": "IMPLEMENT",
+      "title": "Enforce minimum TP=1.5% and SL=1.0% floor",
+      "impact": "+5-8% WR",
+      "effort": "LOW (2 lines in strategy_reverse_engineer.py)",
+      "file": "copy_trader_intel/strategy_reverse_engineer.py",
+      "detail": "Line 549: tp_pct = max(abs(avg_win_pct) * 0.8, 1.5) and sl_pct = max(abs(avg_loss_pct) * 1.2, 1.0)"
+    },
+    {
+      "id": "FIX3",
+      "priority": 3,
+      "action": "CRITICAL",
+      "title": "Use trader live direction instead of RSI-derived direction",
+      "impact": "+10-15% WR (biggest single fix)",
+      "effort": "MEDIUM (rearchitect analyze_coin in strategy_clone_generator.py)",
+      "file": "copy_trader_intel/strategy_clone_generator.py",
+      "detail": "Query trader HL positions BEFORE generating clone pick. Use their actual direction. If trader is SHORT BTC, clone should be SHORT BTC. Note: this makes clone a delayed copy -- consider if cloning adds value over copying."
+    },
+    {
+      "id": "FIX4",
+      "priority": 4,
+      "action": "IMPLEMENT",
+      "title": "Add cross-strategy conflict detection and resolution",
+      "impact": "+3-5% WR",
+      "effort": "MEDIUM",
+      "file": "copy_trader_intel/strategy_clone_generator.py",
+      "detail": "After generating all picks, group by symbol. If LONG+SHORT exist, keep only higher-WR trader or drop both."
+    },
+    {
+      "id": "FIX5",
+      "priority": 5,
+      "action": "IMPLEMENT",
+      "title": "Deduplicate same-direction picks per symbol (keep best TP params)",
+      "impact": "+2-3% WR",
+      "effort": "LOW",
+      "file": "copy_trader_intel/strategy_clone_generator.py",
+      "detail": "When 3-4 traders produce BTCUSDT LONG, keep only the pick with highest TP% or highest-WR source trader."
+    },
+    {
+      "id": "FIX6",
+      "priority": 6,
+      "action": "IMPLEMENT",
+      "title": "Require minimum 20 closed trades for clone eligibility",
+      "impact": "+3-5% WR",
+      "effort": "LOW",
+      "file": "copy_trader_intel/strategy_clone_generator.py",
+      "detail": "Skip strategies where source trader has <20 reconstructed trades."
+    },
+    {
+      "id": "FIX7",
+      "priority": 7,
+      "action": "IMPLEMENT",
+      "title": "Abandon cloning for all scalper-type traders",
+      "impact": "Eliminates 54% of failing clones",
+      "effort": "LOW",
+      "file": "copy_trader_intel/strategy_clone_generator.py",
+      "detail": "Complements FIX1. Only clone SWING_TRADER and POSITION_TRADER styles."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+---
+description: Require PHP 5.2 syntax validation before deploying any PHP files
+alwaysApply: true
+---
+
+# PHP 5.2 Syntax Check Before Deploy
+
+**Every PHP file must pass the PHP 5.2 compatibility check before deployment.**
+
+**CRITICAL: A single PHP 5.3+ construct (like `?:` or `??`) in config.php or any included file causes a FATAL Parse Error on every endpoint that includes it. This has taken down Google Auth and other APIs in the past. Prevention is mandatory.**
+
+## Step 1: Self-Check While Writing PHP
+
+Before even saving a PHP file, mentally (or explicitly) verify:
+
+- **No `?:` anywhere** — this is the #1 repeat offender. `getenv('X') ?: ''` looks innocent but kills PHP 5.2.
+- **No `??`** — `$x ?? 'default'` is PHP 7 only.
+- **No `[]` for arrays** — always `array()`.
+- **No closures** — no `function() {}` inline or as arguments.
+- **No `http_response_code()`** — use `header()`.
+- **No `__DIR__`** — use `dirname(__FILE__)`.
+
+If you catch yourself writing any of these, **stop and rewrite immediately** before saving.
+
+## Step 2: Run the Validator
+
+Run the validator **before deploying** whenever you create or modify any `.php` file:
+
+```bash
+python tools/validate_php52.py
+```
+
+Or check specific files/directories:
+
+```bash
+python tools/validate_php52.py path/to/file.php
+python tools/validate_php52.py favcreators/public/api/
+```
+
+**Run it on the SPECIFIC file(s) you just edited** — do not skip this step even if you believe the code is clean.
+
+## Step 3: Zero Errors Required
+
+The script must exit with **code 0** (no errors) for the files you edited. If it reports errors, **fix them before deploying**. Common fixes:
+
+| Error | Fix |
+|-------|-----|
+| `short ternary ?:` | **NEVER** `$x ?: $y`. Use `($x) ? $x : $y` or a helper function. For getenv: `$v = getenv('K'); $result = ($v !== false && $v !== '') ? $v : 'default';` |
+| `null coalescing ??` | Use `isset($x) ? $x : $default` |
+| `short array syntax []` | Replace `[...]` with `array(...)` |
+| `__DIR__` | Use `dirname(__FILE__)` |
+| `http_response_code()` | Use `header('HTTP/1.1 CODE Status')` |
+| `json_encode() with options` | Remove the second argument: `json_encode($data)` only |
+| `closure / anonymous function` | Extract to a named function |
+| `static::` | Use `self::` or explicit class name |
+
+## Deploy Gate (MANDATORY)
+
+Do **not** run `python tools/deploy_to_ftp.py` until `validate_php52.py` passes on your changed files. The deploy flow is:
+
+1. Write/edit PHP files — self-check for forbidden constructs
+2. `python tools/validate_php52.py <your-changed-files>` — must exit 0
+3. Local tests (serve_local + Playwright)
+4. `python tools/deploy_to_ftp.py`
+
+**If you skip step 2, you risk taking down the entire API.** This has happened before and it will happen again unless the validator is always run.
+
+See `php-server-environment.mdc` for the full list of PHP 5.2 language restrictions and common mistake patterns.

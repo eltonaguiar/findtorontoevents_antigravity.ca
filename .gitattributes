@@ -1,0 +1,20 @@
+# .gitattributes
+# Auto-generated data files that are regenerated on every CI run.
+# Using merge=ours prevents cascading conflict markers when git stash pop
+# conflicts with upstream pulls -- the freshly-generated (local) file wins.
+battleground/data/combo_metrics.json          merge=ours
+audit_dashboard/data/ai_challenge_summary.json merge=ours
+audit_trail/data/stock_prices.json            merge=ours
+meta_strategy/data/swarm_weights.json         merge=ours
+audit_dashboard/data/*.json                   merge=ours
+alpha_engine/data/scanner_output/*.json       merge=ours
+
+# 2026-04-17: ML model files use .txt extension but are NOT line-ending-safe.
+# Local Windows checkouts were corrupting them with CRLF (LightGBM "Model
+# format error" on load — verified: 305 extra \r bytes vs origin LF-only).
+# Mark as binary so git skips line-ending normalization on checkout.
+crypto_signal_engine/data/models/*.txt    binary
+ml_battleground/**/models/*.joblib        binary
+*.pkl                                     binary
+*.joblib                                  binary
+KIMI_RISEOFTHECLAW/data/*.pkl             binary

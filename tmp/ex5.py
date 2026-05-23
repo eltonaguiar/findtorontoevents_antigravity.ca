@@ -1,0 +1,13 @@
+import sys,io
+sys.stdout=io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8',errors='replace')
+c=open(r'TORONTOEVENTS_ANTIGRAVITY\MOVIESHOWS2\app.html',encoding='utf-8').read()
+count=c.count('data-index=')
+print('TOTAL CARDS:',count)
+print()
+idx=c.rfind('data-index=')
+print('LAST CARD AREA:')
+print(c[idx-50:min(len(c),idx+2000)])
+print()
+idx2=c.find('self.__next_f')
+print('NEXT RSC DATA:')
+print(c[idx2:idx2+500])

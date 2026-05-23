@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUPERPOWERS ARENA - The Horse Race</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6}
+a{color:#3b82f6;text-decoration:none}
+.container{max-width:1400px;margin:0 auto;padding:16px}
+
+/* Header */
+.header{text-align:center;padding:32px 0 20px;border-bottom:1px solid #1e1e3a}
+.header-title{font-size:36px;font-weight:900;background:linear-gradient(135deg,#22c55e,#3b82f6,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-sub{font-size:14px;color:#94a3b8;margin-top:6px;font-style:italic}
+.header-meta{display:flex;justify-content:center;align-items:center;gap:16px;margin-top:12px;font-size:13px;color:#64748b}
+.pulse-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Winner Badge */
+.winner-section{text-align:center;margin:24px 0}
+.winner-badge{display:inline-block;padding:16px 32px;border-radius:12px;font-size:20px;font-weight:800}
+.winner-crowned{background:linear-gradient(135deg,#eab30822,#f59e0b22);border:2px solid #eab30866;color:#eab308}
+.winner-pending{background:#12121f;border:2px solid #1e1e3a;color:#64748b;font-size:16px}
+
+/* Comparison Table */
+.compare-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto}
+.section-title{font-size:18px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:12px 14px;border-bottom:2px solid #1e1e3a;color:#64748b;text-transform:uppercase;font-size:11px;letter-spacing:.5px;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #1e1e3a22;white-space:nowrap}
+tr:hover{background:#ffffff06}
+.col-leader{font-weight:800;color:#eab308}
+.system-name{font-weight:700;font-size:15px}
+.system-a{color:#22c55e}.system-b{color:#3b82f6}.system-c{color:#a855f7}.system-d{color:#f59e0b}.system-e{color:#ec4899}
+.status-proven{background:#22c55e22;color:#22c55e;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700}
+.status-pending{background:#eab30822;color:#eab308;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700}
+
+/* Age badges & tooltips */
+.age-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;display:inline-block;margin-left:6px}
+.age-new{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+.age-recent{background:#3b82f622;color:#3b82f6;border:1px solid #3b82f644}
+.age-old{background:#ef444422;color:#ef4444;border:1px solid #ef444444}
+.tip{position:relative;cursor:help;border-bottom:1px dotted #64748b}
+.tip:hover::after{content:attr(data-tip);position:absolute;background:#1e1e3a;color:#e2e8f0;padding:8px 12px;border-radius:6px;font-size:11px;white-space:pre-line;margin-top:22px;left:50%;transform:translateX(-50%);z-index:100;border:1px solid #3b82f644;box-shadow:0 4px 12px rgba(0,0,0,.5);min-width:180px;text-align:left;line-height:1.5;font-weight:400}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-right:4px}
+.filter-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid #1e1e3a;background:#12121f;color:#94a3b8;cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:#3b82f688;color:#e2e8f0}
+.filter-btn.active{background:#3b82f622;border-color:#3b82f6;color:#3b82f6}
+
+/* Equity Chart */
+.chart-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0}
+canvas{width:100%!important;height:300px!important;display:block}
+.chart-legend{display:flex;justify-content:center;gap:24px;margin-top:12px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend-line{width:24px;height:3px;border-radius:2px}
+
+/* Consensus Signals */
+.consensus-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0}
+.consensus-signal{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0a0a12;border-radius:8px;margin:8px 0;border-left:4px solid #22c55e}
+.consensus-signal.sell{border-left-color:#ef4444}
+.consensus-symbol{font-size:18px;font-weight:800}
+.consensus-direction{font-size:13px;font-weight:700;padding:3px 10px;border-radius:4px}
+.consensus-buy{background:#22c55e22;color:#22c55e}
+.consensus-sell{background:#ef444422;color:#ef4444}
+.consensus-systems{font-size:12px;color:#94a3b8;margin-left:auto}
+
+  /* Strategy breakdown */
+  .strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+  .strat-card{background:#0a0a12;border:1px solid #1e1e3a;border-radius:8px;padding:14px;position:relative;transition:opacity .2s,cursor:pointer}
+  .strat-card.hidden{display:none}
+  .strat-card:hover{transform:translateY(-2px);border-color:#3b82f688}
+  .strat-card-name{font-size:13px;color:#94a3b8;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .strat-card-wr{font-size:22px;font-weight:800}
+  .strat-card-meta{font-size:11px;color:#64748b;margin-top:4px}
+  .strat-card-system{position:absolute;top:8px;right:8px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+  .pnl-pos{color:#22c55e;font-weight:700}.pnl-neg{color:#ef4444;font-weight:700}
+  .badge-buy{background:#22c55e22;color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+  .badge-sell{background:#ef444422;color:#ef4444;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+
+  /* Modal */
+  .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal-overlay.active{opacity:1;pointer-events:auto}
+  .modal{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:24px;max-width:900px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .modal-title{font-size:20px;font-weight:800}
+  .modal-close{background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer;padding:4px 8px;border-radius:4px}
+  .modal-close:hover{background:#1e1e3a;color:#e2e8f0}
+  .modal-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}
+  .modal-table th{text-align:left;padding:10px 12px;border-bottom:2px solid #1e1e3a;color:#64748b;text-transform:uppercase;font-size:11px;letter-spacing:.5px;white-space:nowrap;position:sticky;top:0;background:#12121f}
+  .modal-table td{padding:10px 12px;border-bottom:1px solid #1e1e3a11;white-space:nowrap}
+  .modal-table tr:hover{background:#0a0a12}
+
+/* System Cards */
+.system-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin:24px 0 12px}
+.system-card{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;text-align:center;transition:border-color .2s,transform .2s;cursor:pointer}
+.system-card:hover{transform:translateY(-2px)}
+.system-card-a:hover{border-color:#22c55e55}
+.system-card-b:hover{border-color:#3b82f655}
+.system-card-c:hover{border-color:#a855f755}
+.system-card-d:hover{border-color:#f59e0b55}
+.system-card-e:hover{border-color:#ec489955}
+.system-card-icon{font-size:36px;margin-bottom:8px}
+.system-card-name{font-size:18px;font-weight:800;margin-bottom:4px}
+.system-card-desc{font-size:12px;color:#64748b;margin-bottom:12px}
+.system-card-stat{font-size:24px;font-weight:800}
+.system-card-statlabel{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px}
+.system-card-dates{font-size:10px;color:#475569;margin-top:8px;line-height:1.4}
+
+/* Responsive */
+@media(max-width:1200px){
+  .system-cards{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:768px){
+  .system-cards{grid-template-columns:1fr}
+  .header-title{font-size:24px}
+  .chart-legend{flex-direction:column;align-items:center}
+  .strat-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .container{padding:10px}
+}
+
+.loading{text-align:center;padding:40px;color:#64748b}
+.error-banner{background:#ef444422;border:1px solid #ef4444;color:#ef4444;padding:12px 16px;border-radius:8px;margin:12px 0;display:none}
+.no-data{text-align:center;color:#64748b;padding:20px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">SUPERPOWERS ARENA -- The Horse Race</div>
+    <div class="header-sub">5 ML systems compete. Honest metrics. May the best algorithm win.</div>
+    <div class="header-meta">
+      <span><span class="pulse-dot"></span> Live</span>
+      <span id="lastUpdated">Loading...</span>
+    </div>
+  </div>
+
+  <div id="errorBanner" class="error-banner"></div>
+
+  <!-- Status Banner: Why Win Rates Are Low -->
+  <div style="background:linear-gradient(135deg,#1e1e3a,#12121f);border:1px solid #3b82f644;border-radius:12px;padding:24px;margin:20px 0;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:24px;">&#128736;</span>
+      <span style="font-size:18px;font-weight:800;color:#3b82f6;">SYSTEMS UNDER ACTIVE REPAIR &mdash; Major Overhaul In Progress</span>
+    </div>
+    <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin-bottom:16px;">
+      A <strong style="color:#e2e8f0;">28-agent AI research audit</strong> found <strong style="color:#ef4444;">10 critical bugs</strong>. All are now patched.
+      A <strong style="color:#22c55e;">90-day backtest on 4h data</strong> validated the fixes: <strong style="color:#22c55e;">System B hit 56.6% WR (Sharpe 9.91)</strong>.
+      Systems A and C were redesigned based on backtest results. Fresh picks from the corrected pipeline start now.
+    </p>
+
+    <!-- Backtest Proof -->
+    <div style="background:#0a0a12;border:2px solid #22c55e44;border-radius:8px;padding:14px;margin-bottom:16px;">
+      <div style="font-weight:700;color:#22c55e;margin-bottom:8px;">&#128200; Backtest Proof (90 days, 4h, 10 pairs, 0.35% costs)</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #1e1e3a;color:#64748b;font-size:11px;text-transform:uppercase;">
+          <th style="padding:6px 8px;text-align:left;">System</th>
+          <th style="padding:6px 8px;text-align:right;">Trades</th>
+          <th style="padding:6px 8px;text-align:right;">Win Rate</th>
+          <th style="padding:6px 8px;text-align:right;">Sharpe</th>
+          <th style="padding:6px 8px;text-align:right;">Status</th>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a11;">
+          <td style="padding:6px 8px;color:#3b82f6;font-weight:700;">The Regime (B)</td>
+          <td style="padding:6px 8px;text-align:right;color:#e2e8f0;">1,656</td>
+          <td style="padding:6px 8px;text-align:right;color:#22c55e;font-weight:800;">56.6%</td>
+          <td style="padding:6px 8px;text-align:right;color:#22c55e;font-weight:800;">9.91</td>
+          <td style="padding:6px 8px;text-align:right;"><span style="background:#22c55e22;color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">PRIMARY</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a11;">
+          <td style="padding:6px 8px;color:#22c55e;font-weight:700;">The Filter (A)</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">313</td>
+          <td style="padding:6px 8px;text-align:right;color:#ef4444;">39.3%</td>
+          <td style="padding:6px 8px;text-align:right;color:#ef4444;">-3.13</td>
+          <td style="padding:6px 8px;text-align:right;"><span style="background:#eab30822;color:#eab308;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">REDESIGNED</span></td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px;color:#a855f7;font-weight:700;">Neural Net (C)</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">90</td>
+          <td style="padding:6px 8px;text-align:right;color:#eab308;">44.4%</td>
+          <td style="padding:6px 8px;text-align:right;color:#ef4444;">-1.11</td>
+          <td style="padding:6px 8px;text-align:right;"><span style="background:#eab30822;color:#eab308;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">TP LOWERED</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a11;">
+          <td style="padding:6px 8px;color:#f59e0b;font-weight:700;">Carry Trade (D)</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">--</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">60% (exp)</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">--</td>
+          <td style="padding:6px 8px;text-align:right;"><span style="background:#22c55e22;color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">NEW</span></td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px;color:#ec4899;font-weight:700;">Momentum (E)</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">--</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">55-60% (exp)</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">--</td>
+          <td style="padding:6px 8px;text-align:right;"><span style="background:#22c55e22;color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">NEW</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Per-System Breakdown -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px;">
+      <!-- The Filter -->
+      <div style="background:#0a0a12;border:1px solid #22c55e33;border-radius:8px;padding:14px;">
+        <div style="font-weight:700;color:#22c55e;margin-bottom:8px;">&#9889; The Filter <span style="color:#eab308;font-size:12px;">(REDESIGNED)</span></div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
+          <div><span style="color:#22c55e;">&#10003;</span> RSI divergence replaces raw oversold</div>
+          <div><span style="color:#22c55e;">&#10003;</span> 5-bar swing detection for entries</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Regime filter from System B</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Confidence threshold raised to 0.65</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Circuit breaker at 0% WR</div>
+        </div>
+      </div>
+      <!-- The Regime -->
+      <div style="background:#0a0a12;border:2px solid #22c55e44;border-radius:8px;padding:14px;">
+        <div style="font-weight:700;color:#3b82f6;margin-bottom:8px;">&#127919; The Regime <span style="color:#22c55e;font-size:12px;">(PRIMARY - 56.6% BT)</span></div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
+          <div><span style="color:#22c55e;">&#10003;</span> Backtest: 56.6% WR, Sharpe 9.91</div>
+          <div><span style="color:#22c55e;">&#10003;</span> HMM cascade regime detection</div>
+          <div><span style="color:#22c55e;">&#10003;</span> 4h primary, momentum + low-vol filter</div>
+          <div><span style="color:#22c55e;">&#10003;</span> 2x weight in ensemble</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Standalone picks at 50% size</div>
+        </div>
+      </div>
+      <!-- The Neural Net -->
+      <div style="background:#0a0a12;border:1px solid #a855f733;border-radius:8px;padding:14px;">
+        <div style="font-weight:700;color:#a855f7;margin-bottom:8px;">&#129504; The Neural Net <span style="color:#eab308;font-size:12px;">(TP FIXED)</span></div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
+          <div><span style="color:#22c55e;">&#10003;</span> Signal direction fixed (was backwards)</div>
+          <div><span style="color:#22c55e;">&#10003;</span> TP lowered: 3x&rarr;2x ATR</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Hold time extended: 20&rarr;30 bars</div>
+          <div><span style="color:#22c55e;">&#10003;</span> SL widened to 2x ATR minimum</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Circuit breaker pauses at 0% WR</div>
+        </div>
+      </div>
+      <!-- The Carry Trade -->
+      <div style="background:#0a0a12;border:2px solid #f59e0b33;border-radius:8px;padding:14px;">
+        <div style="font-weight:700;color:#f59e0b;margin-bottom:8px;">&#128176; The Carry Trade <span style="color:#22c55e;font-size:12px;">(NEW)</span></div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
+          <div><span style="color:#22c55e;">&#10003;</span> Funding rate contrarian carry</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Exploits overleveraged longs/shorts</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Binance perpetual funding rates</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Expected WR: 60% (19-115% annual)</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Research: R001, R005, R026</div>
+        </div>
+      </div>
+      <!-- The Momentum -->
+      <div style="background:#0a0a12;border:2px solid #ec489933;border-radius:8px;padding:14px;">
+        <div style="font-weight:700;color:#ec4899;margin-bottom:8px;">&#128640; The Momentum <span style="color:#22c55e;font-size:12px;">(NEW)</span></div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
+          <div><span style="color:#22c55e;">&#10003;</span> Cross-sectional momentum ranking</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Top 3 / bottom 3 by 7d momentum</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Liu et al. 2022 JFE (Sharpe ~2.1)</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Expected WR: 55-60%</div>
+          <div><span style="color:#22c55e;">&#10003;</span> Research: R001, Liu et al. 2022</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixes Applied -->
+    <div style="background:#0a0a12;border:1px solid #1e1e3a;border-radius:8px;padding:14px;margin-bottom:16px;">
+      <div style="font-weight:700;color:#eab308;margin-bottom:8px;">&#128640; All Fixes Deployed (Feb 24-25)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:#94a3b8;">
+        <div>&#10003; 10 critical bugs patched from 28-agent audit</div>
+        <div>&#10003; Confidence thresholds raised (A:0.65, B:0.55, C:0.75)</div>
+        <div>&#10003; Transaction costs raised to 0.35%+ (was 0.20%)</div>
+        <div>&#10003; Stop-losses widened (2x ATR min + 1.5% floor)</div>
+        <div>&#10003; Cross-sectional momentum rank feature (Sharpe ~2.0)</div>
+        <div>&#10003; Funding rate 5-feature decomposition (21 features total)</div>
+        <div>&#10003; Ensemble coordinator with B-primary weighting</div>
+        <div>&#10003; Circuit breakers halt trading at 0% WR / 8% DD</div>
+        <div style="color:#3b82f6;font-weight:600;">&#9889; System B: Regime direction filter blocks BUY in downtrends</div>
+        <div style="color:#3b82f6;font-weight:600;">&#9889; System A: Dynamic ML threshold (PANIC=0.85, WARNING=0.75)</div>
+        <div style="color:#3b82f6;font-weight:600;">&#9889; System B: F&G fear gate widened to &lt;25 (was &lt;15)</div>
+        <div style="color:#3b82f6;font-weight:600;">&#9889; 3 toxic strategies hard-killed (-$18K total losses)</div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div style="background:#0a0a12;border:1px solid #1e1e3a;border-radius:8px;padding:14px;">
+      <div style="font-weight:700;color:#e2e8f0;margin-bottom:10px;">&#128197; Timeline to Proof</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;align-items:center;">
+        <span style="color:#22c55e;font-weight:700;">Feb 24 (NOW)</span>
+        <span style="color:#94a3b8;">All critical bugs patched, new features deployed, systems scanning on 4h</span>
+        <span style="color:#3b82f6;font-weight:700;">Feb 25-28</span>
+        <span style="color:#94a3b8;">First picks from corrected pipeline. Expect 5-15 new trades. Early signal quality visible.</span>
+        <span style="color:#eab308;font-weight:700;">Mar 1-7</span>
+        <span style="color:#94a3b8;">30+ trades accumulated. Statistical significance begins. Ensemble coordinator active.</span>
+        <span style="color:#a855f7;font-weight:700;">Mar 7-14</span>
+        <span style="color:#94a3b8;">50+ trades = Deflated Sharpe Ratio test. First &ldquo;PROVEN&rdquo; badge possible if WR &gt; 55% &amp; Sharpe &gt; 1.0.</span>
+        <span style="color:#ef4444;font-weight:700;">Target</span>
+        <span style="color:#e2e8f0;font-weight:700;">55-65% win rate, Sharpe &gt; 1.5, max drawdown &lt; 10%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner Badge -->
+  <div class="winner-section">
+    <div class="winner-badge" id="winnerBadge">Loading...</div>
+  </div>
+
+  <!-- Head-to-Head Comparison -->
+  <div class="compare-section">
+    <div class="section-title">Head-to-Head Comparison</div>
+    <table>
+      <thead>
+        <tr><th>System</th><th>Inception</th><th>Last Updated</th><th>Trades</th><th>Win Rate</th><th>Sharpe</th><th>Max DD</th><th>Total PnL</th><th>Status</th></tr>
+      </thead>
+      <tbody id="compareBody">
+        <tr><td colspan="9" class="loading">Loading all systems...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Strategy Breakdown with Filter -->
+  <div class="compare-section">
+    <div class="section-title">Strategy Breakdown (All Systems)</div>
+    <div class="filter-bar">
+      <span class="filter-label">Age:</span>
+      <button class="filter-btn active" data-filter-group="age" onclick="filterStrats('all')">All</button>
+      <button class="filter-btn" data-filter-group="age" onclick="filterStrats('new')">New (&lt;12h)</button>
+      <button class="filter-btn" data-filter-group="age" onclick="filterStrats('recent')">Recent (12-48h)</button>
+      <button class="filter-btn" data-filter-group="age" onclick="filterStrats('old')">Old (&gt;48h)</button>
+      <span style="color:var(--border);margin:0 6px">|</span>
+      <span class="filter-label">Direction:</span>
+      <button class="filter-btn active" data-filter-group="dir" onclick="filterDir('all')">All</button>
+      <button class="filter-btn" data-filter-group="dir" onclick="filterDir('long')">LONG</button>
+      <button class="filter-btn" data-filter-group="dir" onclick="filterDir('short')">SHORT</button>
+    </div>
+    <div class="strat-grid" id="stratGrid"><div class="loading">Loading strategies...</div></div>
+  </div>
+
+  <!-- Overlaid Equity Curves -->
+  <div class="chart-section">
+    <div class="section-title">Equity Curves Overlay</div>
+    <canvas id="equityChart"></canvas>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-line" style="background:#22c55e"></div>System A: The Filter</div>
+      <div class="legend-item"><div class="legend-line" style="background:#3b82f6"></div>System B: The Regime</div>
+      <div class="legend-item"><div class="legend-line" style="background:#a855f7"></div>System C: The Neural Net</div>
+      <div class="legend-item"><div class="legend-line" style="background:#f59e0b"></div>System D: The Carry Trade</div>
+      <div class="legend-item"><div class="legend-line" style="background:#ec4899"></div>System E: The Momentum</div>
+    </div>
+  </div>
+
+  <!-- Consensus Signals -->
+  <div class="consensus-section">
+    <div class="section-title">Consensus Signals (2+ Systems Agree)</div>
+    <div id="consensusBody"><div class="no-data">Analyzing system signals...</div></div>
+  </div>
+
+  <!-- System Cards -->
+  <div class="section-title" style="margin-top:24px">Individual System Dashboards</div>
+  <div class="system-cards">
+    <a href="system_a_filter/index.html" style="text-decoration:none;color:inherit">
+      <div class="system-card system-card-a">
+        <div class="system-card-icon">&#9889;</div>
+        <div class="system-card-name system-a">The Filter</div>
+        <div class="system-card-desc">ML Signal Quality Filter</div>
+        <div class="system-card-stat system-a" id="cardStatA">--</div>
+        <div class="system-card-statlabel">Win Rate</div>
+        <div class="system-card-dates" id="cardDatesA"></div>
+      </div>
+    </a>
+    <a href="system_b_regime/index.html" style="text-decoration:none;color:inherit">
+      <div class="system-card system-card-b">
+        <div class="system-card-icon">&#127919;</div>
+        <div class="system-card-name system-b">The Regime</div>
+        <div class="system-card-desc">Market Regime Detector</div>
+        <div class="system-card-stat system-b" id="cardStatB">--</div>
+        <div class="system-card-statlabel">Win Rate</div>
+        <div class="system-card-dates" id="cardDatesB"></div>
+      </div>
+    </a>
+    <a href="system_c_deeplearn/index.html" style="text-decoration:none;color:inherit">
+      <div class="system-card system-card-c">
+        <div class="system-card-icon">&#129504;</div>
+        <div class="system-card-name system-c">The Neural Net</div>
+        <div class="system-card-desc">Deep Learning Predictor</div>
+        <div class="system-card-stat system-c" id="cardStatC">--</div>
+        <div class="system-card-statlabel">Win Rate</div>
+        <div class="system-card-dates" id="cardDatesC"></div>
+      </div>
+    </a>
+    <a href="system_d_carry/index.html" style="text-decoration:none;color:inherit">
+      <div class="system-card system-card-d">
+        <div class="system-card-icon">&#128176;</div>
+        <div class="system-card-name system-d">The Carry Trade</div>
+        <div class="system-card-desc">Funding Rate Contrarian Carry</div>
+        <div class="system-card-stat system-d" id="cardStatD">--</div>
+        <div class="system-card-statlabel">Win Rate</div>
+        <div class="system-card-dates" id="cardDatesD"></div>
+      </div>
+    </a>
+    <a href="system_e_momentum/index.html" style="text-decoration:none;color:inherit">
+      <div class="system-card system-card-e">
+        <div class="system-card-icon">&#128640;</div>
+        <div class="system-card-name system-e">The Momentum</div>
+        <div class="system-card-desc">Cross-Sectional Momentum Ranking</div>
+        <div class="system-card-stat system-e" id="cardStatE">--</div>
+        <div class="system-card-statlabel">Win Rate</div>
+        <div class="system-card-dates" id="cardDatesE"></div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Strategy Trades Modal -->
+<div class="modal-overlay" id="tradeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Strategy Trades</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modalContent">
+      <table class="modal-table">
+        <thead>
+          <tr>
+            <th>System</th>
+            <th>Symbol</th>
+            <th>Signal</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>PnL %</th>
+            <th>Reason</th>
+            <th>Duration</th>
+          </tr>
+        </thead>
+        <tbody id="modalTradesBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground';
+const URLS = {
+  a: BASE + '/system_a_filter/data/dashboard.json',
+  b: BASE + '/system_b_regime/data/dashboard.json',
+  c: BASE + '/system_c_deeplearn/data/dashboard.json',
+  d: BASE + '/system_d_carry/data/dashboard.json',
+  e: BASE + '/system_e_momentum/data/dashboard.json'
+};
+const NAMES = { a: 'The Filter', b: 'The Regime', c: 'The Neural Net', d: 'The Carry Trade', e: 'The Momentum' };
+const COLORS = { a: '#22c55e', b: '#3b82f6', c: '#a855f7', d: '#f59e0b', e: '#ec4899' };
+const CLASSES = { a: 'system-a', b: 'system-b', c: 'system-c', d: 'system-d', e: 'system-e' };
+const ALL_KEYS = ['a','b','c','d','e'];
+
+function fmtPct(v) { return v != null ? v.toFixed(2) + '%' : '--'; }
+function fmtNum(v, d) { return v != null ? v.toFixed(d || 2) : '--'; }
+
+function ageBadge(isoDate) {
+  if (!isoDate) return '';
+  const hrs = (Date.now() - new Date(isoDate).getTime()) / 3600000;
+  if (hrs < 12) return '<span class="age-badge age-new">NEW</span>';
+  if (hrs < 48) return '<span class="age-badge age-recent">RECENT</span>';
+  return '<span class="age-badge age-old">OLD</span>';
+}
+function ageClass(isoDate) {
+  if (!isoDate) return 'old';
+  const hrs = (Date.now() - new Date(isoDate).getTime()) / 3600000;
+  if (hrs < 12) return 'new';
+  if (hrs < 48) return 'recent';
+  return 'old';
+}
+function fmtDate(iso) {
+  if (!iso) return '--';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + ' ' +
+         d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const hrs = (Date.now() - new Date(iso).getTime()) / 3600000;
+  if (hrs < 1) return Math.round(hrs * 60) + 'm ago';
+  if (hrs < 24) return Math.round(hrs) + 'h ago';
+  return Math.round(hrs / 24) + 'd ago';
+}
+function wrColor(wr) { return wr >= 55 ? '#22c55e' : wr >= 45 ? '#eab308' : '#ef4444'; }
+
+function isProven(m) {
+  if (!m) return false;
+  return (m.total_trades || 0) >= 50 && (m.win_rate || 0) > 55 && (m.sharpe_ratio || 0) > 1.0 && (m.max_drawdown || 100) < 15;
+}
+
+let _allStratCards = [];
+let _allSystemsData = null;
+
+async function loadAll() {
+  const results = {};
+  const fetches = Object.entries(URLS).map(async ([key, url]) => {
+    try {
+      const r = await fetch(url + '?t=' + Date.now());
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      results[key] = await r.json();
+    } catch(e) {
+      results[key] = null;
+    }
+  });
+  await Promise.all(fetches);
+  render(results);
+}
+
+function render(systems) {
+  const now = new Date().toLocaleString();
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + now;
+
+  const metrics = {};
+  ALL_KEYS.forEach(k => {
+    const raw = systems[k]?.metrics || systems[k]?.stats || {};
+    metrics[k] = {
+      win_rate: (raw.win_rate ?? 0) * ((raw.win_rate ?? 0) <= 1 ? 100 : 1),
+      sharpe_ratio: raw.sharpe_ratio ?? raw.sharpe ?? 0,
+      total_trades: raw.total_trades ?? raw.trades ?? 0,
+      max_drawdown: (raw.max_drawdown ?? raw.max_dd ?? 0) * ((raw.max_drawdown ?? raw.max_dd ?? 0) <= 1 ? 100 : 1),
+      total_pnl: raw.total_pnl ?? raw.total_pnl_pct ?? 0,
+      wins: raw.wins ?? 0,
+      losses: raw.losses ?? 0
+    };
+  });
+
+  // Find leaders per column
+  const cols = ['total_trades','win_rate','sharpe_ratio','max_drawdown','total_pnl'];
+  const leaders = {};
+  cols.forEach(col => {
+    let best = null, bestVal = col === 'max_drawdown' ? Infinity : -Infinity;
+    ALL_KEYS.forEach(k => {
+      const v = metrics[k][col] ?? (col === 'max_drawdown' ? Infinity : -Infinity);
+      if (col === 'max_drawdown' ? v < bestVal : v > bestVal) { bestVal = v; best = k; }
+    });
+    leaders[col] = best;
+  });
+
+  // Comparison table with inception + last_updated columns
+  const tbody = document.getElementById('compareBody');
+  tbody.innerHTML = ALL_KEYS.map(k => {
+    const m = metrics[k];
+    const proven = isProven(m);
+    const ld = (col) => leaders[col] === k ? ' col-leader' : '';
+    const inception = systems[k]?.inception_date;
+    const lastUpdate = systems[k]?.last_code_update;
+    const tipInc = inception ? 'Inception: ' + fmtDate(inception) + '\n(' + timeAgo(inception) + ')' : 'Unknown';
+    const tipUpd = lastUpdate ? 'Code updated: ' + fmtDate(lastUpdate) + '\n(' + timeAgo(lastUpdate) + ')' : 'Unknown';
+    return `<tr>
+      <td class="system-name ${CLASSES[k]}">${NAMES[k]} ${ageBadge(lastUpdate)}</td>
+      <td><span class="tip" data-tip="${tipInc}">${inception ? fmtDate(inception) : '--'}</span></td>
+      <td><span class="tip" data-tip="${tipUpd}">${lastUpdate ? timeAgo(lastUpdate) : '--'}</span></td>
+      <td class="${ld('total_trades')}">${m.total_trades || 0}</td>
+      <td class="${ld('win_rate')}">${fmtPct(m.win_rate)}</td>
+      <td class="${ld('sharpe_ratio')}">${fmtNum(m.sharpe_ratio)}</td>
+      <td class="${ld('max_drawdown')}">${fmtPct(m.max_drawdown)}</td>
+      <td class="${ld('total_pnl')}">${fmtPct(m.total_pnl)}</td>
+      <td><span class="${proven ? 'status-proven' : 'status-pending'}">${proven ? 'PROVEN' : 'Pending'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Winner badge
+  const wb = document.getElementById('winnerBadge');
+  const provenSystems = ALL_KEYS.filter(k => isProven(metrics[k]));
+  if (provenSystems.length) {
+    let best = provenSystems[0];
+    provenSystems.forEach(k => {
+      if ((metrics[k].sharpe_ratio || 0) > (metrics[best].sharpe_ratio || 0)) best = k;
+    });
+    wb.textContent = '\uD83C\uDFC6 CURRENT WINNER: ' + NAMES[best];
+    wb.className = 'winner-badge winner-crowned';
+  } else {
+    wb.textContent = '\u23F3 No winner yet -- the race continues...';
+    wb.className = 'winner-badge winner-pending';
+  }
+
+  // Card stats with inception dates
+  ALL_KEYS.forEach(k => {
+    document.getElementById('cardStat' + k.toUpperCase()).textContent = fmtPct(metrics[k].win_rate);
+    const datesEl = document.getElementById('cardDates' + k.toUpperCase());
+    const inc = systems[k]?.inception_date;
+    const upd = systems[k]?.last_code_update || systems[k]?.updated;
+    datesEl.innerHTML = (inc ? 'Since: ' + fmtDate(inc) : '') +
+      (upd ? '<br>Updated: ' + timeAgo(upd) : '');
+  });
+
+  // Build strategy breakdown grid (merged across all systems)
+  buildStratGrid(systems);
+
+  // Equity curves overlay
+  const curvesObj = {};
+  ALL_KEYS.forEach(k => { curvesObj[k] = systems[k]?.equity_curve || []; });
+  drawOverlay(curvesObj);
+
+  // Consensus signals
+  buildConsensus(systems);
+}
+
+function buildStratGrid(systems) {
+  const grid = document.getElementById('stratGrid');
+  const allStrats = [];
+
+  // Store full systems data for modal lookup
+  _allSystemsData = systems;
+
+  ALL_KEYS.forEach(k => {
+    const breakdown = systems[k]?.strategy_breakdown || systems[k]?.strategy_stats || {};
+    Object.entries(breakdown).forEach(([name, data]) => {
+      allStrats.push({
+        name,
+        system: k,
+        systemLabel: NAMES[k],
+        trades: data.trades || 0,
+        wins: data.wins || 0,
+        win_rate: data.win_rate ?? (data.trades ? Math.round(data.wins / data.trades * 100) : 0),
+        total_pnl: data.total_pnl || 0,
+        inception: data.inception || systems[k]?.inception_date,
+        last_code_update: data.last_code_update || systems[k]?.last_code_update,
+      });
+    });
+  });
+
+  if (!allStrats.length) {
+    grid.innerHTML = '<div class="no-data">No strategy data yet</div>';
+    return;
+  }
+
+  _allStratCards = allStrats;
+
+  grid.innerHTML = allStrats.map((s, i) => {
+    const wr = s.win_rate;
+    const pnlClass = s.total_pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+    const age = ageClass(s.last_code_update || s.inception);
+    const tipText = 'Inception: ' + fmtDate(s.inception) + '\\nCode updated: ' + fmtDate(s.last_code_update) + '\\nSystem: ' + s.systemLabel + '\\nTrades: ' + s.trades + '\\nPnL: ' + (s.total_pnl >= 0 ? '+' : '') + s.total_pnl.toFixed(2) + '%' + '\\n\\nClick to view trade details';
+    return `<div class="strat-card" data-age="${age}" data-idx="${i}" data-strategy="${s.name}" data-system="${s.system}" onclick="openStrategyModal('${s.name}', '${s.system}')">
+      <span class="strat-card-system" style="background:${COLORS[s.system]}22;color:${COLORS[s.system]}">${s.systemLabel.split(' ').pop()}</span>
+      <div class="strat-card-name tip" data-tip="${tipText}">${s.name.replace(/_/g, ' ')} ${ageBadge(s.last_code_update || s.inception)}</div>
+      <div class="strat-card-wr" style="color:${wrColor(wr)}">${wr.toFixed(0)}%</div>
+      <div class="strat-card-meta">${s.trades} trades | <span class="${pnlClass}">${s.total_pnl >= 0 ? '+' : ''}${s.total_pnl.toFixed(2)}%</span></div>
+      <div class="strat-card-meta">Since ${fmtDate(s.inception)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openStrategyModal(strategyName, systemKey) {
+  const modal = document.getElementById('tradeModal');
+  const title = document.getElementById('modalTitle');
+  const tbody = document.getElementById('modalTradesBody');
+
+  title.textContent = `${NAMES[systemKey]} - ${strategyName.replace(/_/g, ' ')} Trades`;
+
+  if (!_allSystemsData) {
+    tbody.innerHTML = '<tr><td colspan="8">No data available</td></tr>';
+    modal.classList.add('active');
+    return;
+  }
+
+  const systemData = _allSystemsData[systemKey];
+  const allClosed = systemData?.recent_closed || systemData?.closed_trades || [];
+  const strategyTrades = allClosed.filter(t => t.strategy === strategyName);
+
+  if (strategyTrades.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8">No closed trades for this strategy yet</td></tr>';
+  } else {
+    tbody.innerHTML = strategyTrades.map(t => {
+      const pnl = t.net_pnl_pct ?? t.net_pnl ?? 0;
+      const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const sig = t.signal_type || t.signal || 'BUY';
+      const sigClass = sig.toLowerCase() === 'buy' ? 'badge-buy' : 'badge-sell';
+      const duration = t.duration || calculateDuration(t.timestamp, t.closed_at);
+      return `<tr>
+        <td><span style="color:${COLORS[systemKey]};font-weight:700">${NAMES[systemKey].split(' ').pop()}</span></td>
+        <td><strong>${t.symbol||'--'}</strong></td>
+        <td><span class="badge ${sigClass}">${sig}</span></td>
+        <td>${fmtNum(t.entry_price ?? t.entry,4)}</td>
+        <td>${fmtNum(t.exit_price ?? t.exit,4)}</td>
+        <td class="${pnlClass}">${fmtPct(pnl)}</td>
+        <td style="font-size:11px;color:#94a3b8;max-width:200px">${t.exit_reason||'--'}</td>
+        <td style="font-size:11px;color:#64748b">${duration}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  modal.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('tradeModal').classList.remove('active');
+}
+
+function calculateDuration(start, end) {
+  if (!start || !end) return '--';
+  const startMs = new Date(start).getTime();
+  const endMs = new Date(end).getTime();
+  const diffHrs = (endMs - startMs) / 3600000;
+  if (diffHrs < 1) return Math.round(diffHrs * 60) + 'm';
+  if (diffHrs < 24) return Math.round(diffHrs) + 'h';
+  return Math.round(diffHrs / 24) + 'd';
+}
+
+// Close modal on overlay click
+document.getElementById('tradeModal').addEventListener('click', (e) => {
+  if (e.target.id === 'tradeModal') closeModal();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+let _ageFilter = 'all';
+let _dirFilterArena = 'all';
+
+function filterStrats(filter) {
+  _ageFilter = filter;
+  document.querySelectorAll('[data-filter-group="age"]').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  applyStratFilters();
+}
+
+function filterDir(dir) {
+  _dirFilterArena = dir;
+  document.querySelectorAll('[data-filter-group="dir"]').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  applyStratFilters();
+  filterConsensusSignals();
+}
+
+function applyStratFilters() {
+  document.querySelectorAll('.strat-card').forEach(card => {
+    const age = card.dataset.age;
+    const idx = parseInt(card.dataset.idx);
+    const strat = _allStratCards[idx];
+
+    let ageOk = _ageFilter === 'all' || age === _ageFilter;
+    let dirOk = _dirFilterArena === 'all';
+
+    // Check direction from closed trades if available
+    if (!dirOk && strat && _allSystemsData) {
+      const sysData = _allSystemsData[strat.system];
+      const closed = sysData?.recent_closed || sysData?.closed_trades || [];
+      const active = sysData?.active_picks || [];
+      const allTrades = [...closed, ...active].filter(t => t.strategy === strat.name);
+      const dirMatch = _dirFilterArena === 'long' ? 'BUY' : 'SELL';
+      dirOk = allTrades.some(t => {
+        const sig = (t.signal_type || t.signal || t.direction || '').toUpperCase();
+        return sig === dirMatch || sig === _dirFilterArena.toUpperCase();
+      });
+      // If no trades, show by default
+      if (!allTrades.length) dirOk = true;
+    }
+
+    card.classList.toggle('hidden', !(ageOk && dirOk));
+  });
+}
+
+function filterConsensusSignals() {
+  document.querySelectorAll('.consensus-signal').forEach(sig => {
+    if (_dirFilterArena === 'all') {
+      sig.style.display = '';
+    } else {
+      const isBuy = !sig.classList.contains('sell');
+      const match = (_dirFilterArena === 'long' && isBuy) || (_dirFilterArena === 'short' && !isBuy);
+      sig.style.display = match ? '' : 'none';
+    }
+  });
+}
+
+function drawOverlay(curves) {
+  const canvas = document.getElementById('equityChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 300 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 300;
+  ctx.clearRect(0, 0, W, H);
+
+  const allSeries = {};
+  let anyData = false;
+  ALL_KEYS.forEach(k => {
+    const raw = curves[k] || [];
+    allSeries[k] = raw.map(p => typeof p === 'number' ? p : p.value || p.equity || 0);
+    if (allSeries[k].length >= 2) anyData = true;
+  });
+
+  if (!anyData) {
+    ctx.fillStyle = '#64748b';ctx.font = '14px sans-serif';ctx.textAlign = 'center';
+    ctx.fillText('Equity curves will appear after systems generate trades', W/2, H/2);
+    return;
+  }
+
+  let gMin = Infinity, gMax = -Infinity;
+  ALL_KEYS.forEach(k => {
+    allSeries[k].forEach(v => { if (v < gMin) gMin = v; if (v > gMax) gMax = v; });
+  });
+  const range = gMax - gMin || 1;
+  const pad = {t:20,b:30,l:60,r:20};
+  const cw = W-pad.l-pad.r, ch = H-pad.t-pad.b;
+
+  ctx.strokeStyle = '#1e1e3a';ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = pad.t + ch * i/4;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='11px sans-serif';ctx.textAlign='right';
+    ctx.fillText((gMax - range*i/4).toFixed(2), pad.l-8, y+4);
+  }
+
+  ALL_KEYS.forEach(k => {
+    const vals = allSeries[k];
+    if (vals.length < 2) return;
+    ctx.beginPath();
+    ctx.strokeStyle = COLORS[k];
+    ctx.lineWidth = 2.5;
+    vals.forEach((v,i) => {
+      const x = pad.l + (i/(vals.length-1))*cw;
+      const y = pad.t + (1-(v-gMin)/range)*ch;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  });
+}
+
+function buildConsensus(systems) {
+  const container = document.getElementById('consensusBody');
+  const picksBySymbol = {};
+
+  ALL_KEYS.forEach(k => {
+    const picks = systems[k]?.active_picks || [];
+    picks.forEach(p => {
+      const sig = p.signal_type || p.signal;
+      if (!p.symbol || !sig) return;
+      const sym = p.symbol.toUpperCase();
+      const dir = sig.toUpperCase();
+      if (!picksBySymbol[sym]) picksBySymbol[sym] = {};
+      if (!picksBySymbol[sym][dir]) picksBySymbol[sym][dir] = [];
+      picksBySymbol[sym][dir].push(NAMES[k]);
+    });
+  });
+
+  const consensus = [];
+  Object.entries(picksBySymbol).forEach(([sym, dirs]) => {
+    Object.entries(dirs).forEach(([dir, sysNames]) => {
+      if (sysNames.length >= 2) {
+        consensus.push({ symbol: sym, direction: dir, systems: sysNames });
+      }
+    });
+  });
+
+  if (consensus.length) {
+    container.innerHTML = consensus.map(c => {
+      const isBuy = c.direction === 'BUY';
+      return `<div class="consensus-signal${isBuy ? '' : ' sell'}">
+        <span class="consensus-direction ${isBuy ? 'consensus-buy' : 'consensus-sell'}">${c.direction}</span>
+        <span class="consensus-symbol">${c.symbol}</span>
+        <span class="consensus-systems">${c.systems.join(' + ')} agree</span>
+      </div>`;
+    }).join('');
+  } else {
+    container.innerHTML = '<div class="no-data">No consensus signals right now -- systems are making independent calls</div>';
+  }
+}
+
+// Init
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>

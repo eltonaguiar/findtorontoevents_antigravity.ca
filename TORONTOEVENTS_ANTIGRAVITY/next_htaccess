@@ -1,0 +1,31 @@
+# Source for /findtorontoevents.ca/next/.htaccess
+# Uploaded by .github/workflows/deploy-fte-index.yml.
+#
+# Why this exists: Apache on the 50webs host already gzips text/html
+# (index.html responses include `Vary: Accept-Encoding`), but it does NOT
+# gzip application/json — `events.json` was being delivered as 16,056,505
+# uncompressed bytes even when the client sent `Accept-Encoding: gzip`.
+# On real mobile networks (Samsung S25 Ultra report, 2026-04-30) the
+# unconditional 15-second safety timeout in the Next.js useEventsFromGitHub
+# hook fires before that 16 MB download finishes, the hook flips
+# `loading=false` with `events=[]`, and the user sees the
+# "No Events Loaded — Unable to load events..." empty-state banner even
+# though the data is on the server. Enabling DEFLATE for JSON cuts the
+# wire payload by ~85% (typical for repetitive event data) and fully
+# closes the timeout race.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE text/json
+    AddOutputFilterByType DEFLATE application/javascript text/javascript text/css
+    # SetOutputFilter is a belt-and-suspenders for hosts that ignore the
+    # type-based directive; harmless when mod_deflate is already wired.
+    <FilesMatch "\.(json)$">
+        SetOutputFilter DEFLATE
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(json)$">
+        Header append Vary Accept-Encoding
+    </FilesMatch>
+</IfModule>

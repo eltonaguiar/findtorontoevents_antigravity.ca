@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AsterDEX Paper Trading Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a12; color: #c8c8d8; font-family: 'Segoe UI', -apple-system, sans-serif; min-height: 100vh; }
+    .header { text-align: center; padding: 30px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .header h1 { font-size: 28px; font-weight: 200; letter-spacing: 4px; color: #fff; }
+    .header .mode-badge { display: inline-block; padding: 4px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-top: 8px; }
+    .mode-paper { background: #f59e0b33; color: #f59e0b; border: 1px solid #f59e0b55; }
+    .mode-live { background: #22c55e33; color: #22c55e; border: 1px solid #22c55e55; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: #12121f; border: 1px solid #1e1e30; border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-card .label { font-size: 11px; color: #667; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .stat-card .value { font-size: 24px; font-weight: 300; color: #fff; }
+    .stat-card .value.positive { color: #22c55e; }
+    .stat-card .value.negative { color: #ef4444; }
+    .chart-container { background: #12121f; border: 1px solid #1e1e30; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .chart-container h3 { font-size: 14px; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .chart-container canvas { max-height: 250px; }
+    .section { background: #12121f; border: 1px solid #1e1e30; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .section h3 { font-size: 14px; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 10px; color: #667; font-weight: 500; border-bottom: 1px solid #1e1e30; }
+    td { padding: 8px 10px; border-bottom: 1px solid #0f0f1a; }
+    .badge-long { color: #22c55e; font-weight: 600; }
+    .badge-short { color: #ef4444; font-weight: 600; }
+    .badge-win { color: #22c55e; }
+    .badge-loss { color: #ef4444; }
+    .updated { text-align: center; color: #445; font-size: 11px; padding: 20px; }
+    .strat-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .strat-bar .name { width: 200px; font-size: 12px; color: #aaa; }
+    .strat-bar .bar { height: 20px; border-radius: 4px; min-width: 4px; }
+    .strat-bar .bar.pos { background: #22c55e55; border: 1px solid #22c55e; }
+    .strat-bar .bar.neg { background: #ef444455; border: 1px solid #ef4444; }
+    .strat-bar .val { font-size: 12px; color: #888; }
+    @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ASTERDEX TRADING</h1>
+    <div id="modeBadge" class="mode-badge mode-paper">PAPER MODE</div>
+  </div>
+
+  <div class="container">
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="label">Balance</div><div class="value" id="balance">$1,000.00</div></div>
+      <div class="stat-card"><div class="label">Total PnL</div><div class="value" id="pnl">$0.00</div></div>
+      <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="winRate">0%</div></div>
+      <div class="stat-card"><div class="label">Trades</div><div class="value" id="trades">0</div></div>
+      <div class="stat-card"><div class="label">Drawdown</div><div class="value" id="drawdown">0%</div></div>
+      <div class="stat-card"><div class="label">Open Positions</div><div class="value" id="openCount">0</div></div>
+    </div>
+
+    <div class="chart-container">
+      <h3>Equity Curve</h3>
+      <canvas id="equityChart"></canvas>
+    </div>
+
+    <div class="section">
+      <h3>Open Positions</h3>
+      <table id="openTable">
+        <thead><tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>TP</th><th>SL</th><th>Strategy</th><th>Opened</th></tr></thead>
+        <tbody id="openBody"><tr><td colspan="7" style="color:#445">No open positions</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Strategy Breakdown</h3>
+      <div id="stratBreakdown"><p style="color:#445">No data yet</p></div>
+    </div>
+
+    <div class="section">
+      <h3>Recent Trades</h3>
+      <table id="closedTable">
+        <thead><tr><th>Symbol</th><th>Dir</th><th>Entry</th><th>Exit</th><th>PnL</th><th>Strategy</th><th>Reason</th></tr></thead>
+        <tbody id="closedBody"><tr><td colspan="7" style="color:#445">No closed trades yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="updated" id="updatedAt">Loading...</div>
+
+  <script>
+    const DATA_URLS = [
+      'data/dashboard_data.json',
+      'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/trading/data/dashboard_data.json',
+    ];
+    let equityChart = null;
+
+    async function loadData() {
+      for (const url of DATA_URLS) {
+        try {
+          const resp = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+          if (!resp.ok) continue;
+          const d = await resp.json();
+          if (d.error) { document.getElementById('updatedAt').textContent = d.error; return; }
+          render(d);
+          return;
+        } catch (e) { continue; }
+      }
+      document.getElementById('updatedAt').textContent = 'Failed to load data from all sources';
+    }
+
+    function render(d) {
+      // Mode
+      const badge = document.getElementById('modeBadge');
+      badge.textContent = (d.mode || 'PAPER') + ' MODE';
+      badge.className = 'mode-badge ' + (d.mode === 'LIVE' ? 'mode-live' : 'mode-paper');
+
+      // Stats
+      const pnl = d.total_pnl_usd || 0;
+      document.getElementById('balance').textContent = '$' + (d.balance || 0).toLocaleString(undefined, {minimumFractionDigits:2});
+      const pnlEl = document.getElementById('pnl');
+      pnlEl.textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits:2});
+      pnlEl.className = 'value ' + (pnl >= 0 ? 'positive' : 'negative');
+      document.getElementById('winRate').textContent = (d.win_rate || 0).toFixed(1) + '%';
+      document.getElementById('trades').textContent = d.total_trades + ' (' + d.wins + 'W/' + d.losses + 'L)';
+      const ddEl = document.getElementById('drawdown');
+      ddEl.textContent = (d.drawdown_pct || 0).toFixed(1) + '%';
+      ddEl.className = 'value ' + (d.drawdown_pct > 3 ? 'negative' : '');
+      document.getElementById('openCount').textContent = (d.open_positions || []).length;
+
+      // Equity chart
+      const eq = d.equity_curve || [];
+      if (eq.length > 1) {
+        const labels = eq.map(e => new Date(e.timestamp).toLocaleDateString());
+        const values = eq.map(e => e.balance);
+        if (equityChart) equityChart.destroy();
+        equityChart = new Chart(document.getElementById('equityChart'), {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Balance', data: values, borderColor: '#22c55e', backgroundColor: '#22c55e22', fill: true, tension: 0.3, pointRadius: 0 }] },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1e1e30' }, ticks: { color: '#667', callback: v => '$' + v.toFixed(0) } } } }
+        });
+      }
+
+      // Open positions
+      const openBody = document.getElementById('openBody');
+      const ops = d.open_positions || [];
+      openBody.innerHTML = ops.length ? ops.map(p =>
+        `<tr><td>${p.symbol}</td><td class="badge-${(p.direction||'').toLowerCase()}">${p.direction}</td>` +
+        `<td>$${(p.entry_price||0).toLocaleString()}</td><td>$${(p.take_profit||0).toLocaleString()}</td>` +
+        `<td>$${(p.stop_loss||0).toLocaleString()}</td><td>${p.strategy||''}</td>` +
+        `<td>${new Date(p.opened_at).toLocaleString()}</td></tr>`
+      ).join('') : '<tr><td colspan="7" style="color:#445">No open positions</td></tr>';
+
+      // Strategy breakdown
+      const sb = d.strategy_breakdown || {};
+      const stratDiv = document.getElementById('stratBreakdown');
+      const maxPnl = Math.max(...Object.values(sb).map(s => Math.abs(s.pnl || 0)), 1);
+      stratDiv.innerHTML = Object.entries(sb).map(([name, s]) => {
+        const pnl = (s.pnl || 0);
+        const w = Math.max(Math.abs(pnl) / maxPnl * 200, 4);
+        return `<div class="strat-bar"><div class="name">${name}</div>` +
+          `<div class="bar ${pnl >= 0 ? 'pos' : 'neg'}" style="width:${w}px"></div>` +
+          `<div class="val">${s.wins}W/${s.losses}L | ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</div></div>`;
+      }).join('') || '<p style="color:#445">No data yet</p>';
+
+      // Closed trades
+      const closedBody = document.getElementById('closedBody');
+      const cts = d.recent_trades || [];
+      closedBody.innerHTML = cts.length ? cts.map(p => {
+        const pnl = (p.pnl_usd || 0);
+        return `<tr><td>${p.symbol}</td><td class="badge-${(p.direction||'').toLowerCase()}">${p.direction}</td>` +
+          `<td>$${(p.entry_price||0).toLocaleString()}</td><td>$${(p.exit_price||0).toLocaleString()}</td>` +
+          `<td class="${pnl >= 0 ? 'badge-win' : 'badge-loss'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</td>` +
+          `<td>${p.strategy||''}</td><td>${p.close_reason||''}</td></tr>`;
+      }).join('') : '<tr><td colspan="7" style="color:#445">No closed trades yet</td></tr>';
+
+      document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(d.generated_at).toLocaleString() + ' | Auto-refreshes every 60s';
+    }
+
+    loadData();
+    setInterval(loadData, 60000);
+  </script>
+</body>
+</html>

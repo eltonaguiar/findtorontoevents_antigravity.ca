@@ -1,0 +1,775 @@
+/**
+ * gear-settings-integration.css
+ *
+ * Styles for the Gear Settings modal on findtorontoevents.ca.
+ * Uses CSS custom properties for theming and supports:
+ *   - Fade-in backdrop animation
+ *   - Slide-up mobile sheet animation
+ *   - Desktop centered modal animation
+ *   - Focus-visible ring styles
+ *   - Dark theme (matches the existing slate palette)
+ */
+
+:root {
+  --fte-bg-backdrop: rgba(0, 0, 0, 0.6);
+  --fte-bg-modal: #0f172a;          /* slate-900 */
+  --fte-bg-modal-header: #0f172a;
+  --fte-bg-content: rgba(30, 41, 59, 0.5);  /* slate-800/50 */
+  --fte-bg-card: rgba(51, 65, 85, 0.3);     /* slate-700/30 */
+  --fte-bg-card-border: rgba(51, 65, 85, 0.5);
+  --fte-bg-toggle-off: #475569;     /* slate-600 */
+  --fte-bg-toggle-on: #6366f1;     /* indigo-500 */
+  --fte-bg-btn-primary: #4f46e5;    /* indigo-600 */
+  --fte-bg-btn-primary-hover: #4338ca; /* indigo-700 */
+  --fte-bg-btn-secondary: #334155; /* slate-700 */
+  --fte-bg-btn-secondary-hover: #475569; /* slate-600 */
+  --fte-bg-tab-active: #1e293b;    /* slate-800 */
+  --fte-border-modal: #334155;      /* slate-700 */
+  --fte-border-tab: rgba(51, 65, 85, 0.5);
+  --fte-text-primary: #f1f5f9;     /* slate-100 */
+  --fte-text-secondary: #94a3b8;    /* slate-400 */
+  --fte-text-muted: #64748b;        /* slate-500 */
+  --fte-text-indigo: #a5b4fc;      /* indigo-300 */
+  --fte-text-emerald: #34d399;     /* emerald-400 */
+  --fte-text-amber: #fbbf24;       /* amber-400 */
+  --fte-text-rose: #fb7185;        /* rose-400 */
+  --fte-accent-indigo: #6366f1;
+  --fte-accent-emerald: #10b981;
+  --fte-accent-amber: #f59e0b;
+  --fte-accent-rose: #f43f5e;
+  --fte-radius-sm: 6px;
+  --fte-radius-md: 8px;
+  --fte-radius-lg: 12px;
+  --fte-radius-xl: 16px;
+  --fte-radius-2xl: 20px;
+  --fte-shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --fte-transition-fast: 150ms ease;
+  --fte-transition-base: 250ms ease;
+}
+
+/* =============================================================================
+   Backdrop
+   ============================================================================= */
+
+.fte-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--fte-bg-backdrop);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fte-fade-in 200ms ease;
+}
+
+@keyframes fte-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* =============================================================================
+   Modal Sheet — Mobile (default)
+   ============================================================================= */
+
+.fte-modal-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+  background: var(--fte-bg-modal);
+  border: 1px solid var(--fte-border-modal);
+  box-shadow: var(--fte-shadow-modal);
+  overflow: hidden;
+  animation: fte-slide-up 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fte-modal-sheet--mobile {
+  border-radius: var(--fte-radius-2xl) var(--fte-radius-2xl) 0 0;
+}
+
+.fte-modal-sheet--desktop {
+  max-width: 512px; /* max-w-lg */
+  border-radius: var(--fte-radius-2xl);
+  max-height: 85vh;
+  margin: auto;
+}
+
+@keyframes fte-slide-up {
+  from { transform: translateY(30px); opacity: 0.8; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* =============================================================================
+   Header
+   ============================================================================= */
+
+.fte-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  flex-shrink: 0;
+}
+
+.fte-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fte-modal-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--fte-radius-md);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--fte-text-indigo);
+  flex-shrink: 0;
+}
+
+.fte-modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fte-text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.fte-modal-subtitle {
+  font-size: 0.75rem;
+  color: var(--fte-text-secondary);
+  margin: 2px 0 0;
+}
+
+.fte-modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--fte-radius-md);
+  border: none;
+  background: transparent;
+  color: var(--fte-text-secondary);
+  cursor: pointer;
+  transition: color var(--fte-transition-fast), background var(--fte-transition-fast);
+}
+
+.fte-modal-close-btn:hover {
+  background: #1e293b;
+  color: var(--fte-text-primary);
+}
+
+.fte-modal-close-btn:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Tabs
+   ============================================================================= */
+
+.fte-modal-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-shrink: 0;
+}
+
+.fte-modal-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.fte-modal-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--fte-radius-md) var(--fte-radius-md) 0 0;
+  background: transparent;
+  color: var(--fte-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--fte-transition-fast), background var(--fte-transition-fast);
+}
+
+.fte-modal-tab:hover {
+  color: #e2e8f0;
+}
+
+.fte-modal-tab--active {
+  background: var(--fte-bg-tab-active);
+  color: var(--fte-text-indigo);
+  border: 1px solid var(--fte-border-tab);
+  border-bottom: none;
+}
+
+.fte-modal-tab:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Content / Body
+   ============================================================================= */
+
+.fte-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--fte-bg-content);
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.fte-modal-body {
+  padding: 16px 20px;
+}
+
+/* =============================================================================
+   Section Header
+   ============================================================================= */
+
+.fte-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fte-text-secondary);
+  margin-bottom: 12px;
+  margin-top: 24px;
+}
+
+.fte-section-header:first-child {
+  margin-top: 0;
+}
+
+/* =============================================================================
+   Cards
+   ============================================================================= */
+
+.fte-card {
+  padding: 12px;
+  border-radius: var(--fte-radius-lg);
+  background: var(--fte-bg-card);
+  border: 1px solid var(--fte-bg-card-border);
+  margin-bottom: 12px;
+}
+
+.fte-card--muted {
+  opacity: 0.6;
+}
+
+.fte-card-text {
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  margin-bottom: 12px;
+}
+
+/* =============================================================================
+   Slider
+   ============================================================================= */
+
+.fte-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fte-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fte-text-primary);
+}
+
+.fte-slider-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: var(--fte-radius-md);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--fte-text-indigo);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.fte-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #475569;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.fte-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--fte-accent-indigo);
+  cursor: pointer;
+  border: 2px solid var(--fte-bg-modal);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform var(--fte-transition-fast);
+}
+
+.fte-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.fte-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--fte-accent-indigo);
+  cursor: pointer;
+  border: 2px solid var(--fte-bg-modal);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fte-slider:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.fte-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--fte-text-muted);
+}
+
+/* =============================================================================
+   Toggle Switch
+   ============================================================================= */
+
+.fte-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.fte-toggle-label-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.fte-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fte-text-primary);
+}
+
+.fte-toggle-desc {
+  font-size: 0.75rem;
+  color: var(--fte-text-secondary);
+  margin: 4px 0 0;
+}
+
+.fte-toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: var(--fte-bg-toggle-off);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background var(--fte-transition-base);
+}
+
+.fte-toggle-switch--on {
+  background: var(--fte-bg-toggle-on);
+}
+
+.fte-toggle-switch:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+.fte-toggle-knob {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateX(0);
+  transition: transform var(--fte-transition-base);
+  pointer-events: none;
+}
+
+.fte-toggle-knob--on {
+  transform: translateX(20px);
+}
+
+/* =============================================================================
+   Sources List
+   ============================================================================= */
+
+.fte-sources-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--fte-text-secondary);
+  margin-bottom: 8px;
+}
+
+.fte-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fte-source-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--fte-radius-md);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  background: rgba(51, 65, 85, 0.2);
+  transition: opacity var(--fte-transition-fast);
+}
+
+.fte-source-row--disabled {
+  background: rgba(30, 41, 59, 0.4);
+  border-color: rgba(71, 85, 105, 0.2);
+  opacity: 0.6;
+}
+
+.fte-source-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--fte-radius-sm);
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background var(--fte-transition-fast), border-color var(--fte-transition-fast);
+}
+
+.fte-source-toggle--on {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--fte-text-indigo);
+}
+
+.fte-source-toggle--off {
+  border-color: #475569;
+  background: rgba(71, 85, 105, 0.5);
+  color: var(--fte-text-muted);
+}
+
+.fte-source-toggle:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+.fte-source-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fte-source-name-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fte-source-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fte-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fte-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.fte-badge--api {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--fte-text-emerald);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.fte-badge--rss {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--fte-text-amber);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.fte-badge--scrape {
+  background: rgba(244, 63, 94, 0.1);
+  color: var(--fte-text-rose);
+  border-color: rgba(244, 63, 94, 0.2);
+}
+
+.fte-source-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.fte-exempt-tag {
+  font-size: 0.625rem;
+  color: var(--fte-text-indigo);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--fte-radius-sm);
+}
+
+/* =============================================================================
+   Format Buttons
+   ============================================================================= */
+
+.fte-format-btns {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fte-format-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--fte-radius-md);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  background: rgba(51, 65, 85, 0.3);
+  color: var(--fte-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--fte-transition-fast);
+}
+
+.fte-format-btn:hover {
+  color: #e2e8f0;
+}
+
+.fte-format-btn--active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--fte-text-indigo);
+}
+
+.fte-format-btn:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Tip / Dedup cards
+   ============================================================================= */
+
+.fte-tip-card {
+  padding: 12px;
+  border-radius: var(--fte-radius-md);
+  background: rgba(51, 65, 85, 0.2);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  margin-top: 16px;
+}
+
+.fte-dedup-active {
+  padding: 12px;
+  border-radius: var(--fte-radius-md);
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.fte-dedup-active-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--fte-text-emerald);
+}
+
+.fte-dedup-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6ee7b7;
+  margin: 0;
+}
+
+.fte-dedup-desc {
+  font-size: 0.75rem;
+  color: rgba(52, 211, 153, 0.7);
+  margin: 4px 0 0;
+}
+
+/* =============================================================================
+   Footer & Buttons
+   ============================================================================= */
+
+.fte-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  background: rgba(30, 41, 59, 0.3);
+  flex-shrink: 0;
+}
+
+.fte-modal-footer-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.fte-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--fte-radius-md);
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--fte-transition-fast), color var(--fte-transition-fast);
+}
+
+.fte-btn--primary {
+  background: var(--fte-bg-btn-primary);
+  color: #fff;
+}
+
+.fte-btn--primary:hover {
+  background: var(--fte-bg-btn-primary-hover);
+}
+
+.fte-btn--secondary {
+  background: var(--fte-bg-btn-secondary);
+  color: #e2e8f0;
+}
+
+.fte-btn--secondary:hover {
+  background: var(--fte-bg-btn-secondary-hover);
+}
+
+.fte-btn--full {
+  width: 100%;
+  padding: 10px 14px;
+  margin-top: 8px;
+}
+
+.fte-btn:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+.fte-modal-saved-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--fte-text-emerald);
+  animation: fte-pulse 1.5s ease-in-out infinite;
+}
+
+.fte-hidden {
+  display: none !important;
+}
+
+@keyframes fte-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* =============================================================================
+   Gear Icon Button (fallback if not found in DOM)
+   ============================================================================= */
+
+.fte-gear-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--fte-radius-md);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--fte-text-secondary);
+  font-size: 1.125rem;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color var(--fte-transition-fast), background var(--fte-transition-fast);
+}
+
+.fte-gear-icon-btn:hover {
+  color: var(--fte-text-primary);
+  background: rgba(51, 65, 85, 0.8);
+}
+
+.fte-gear-icon-btn:focus-visible {
+  outline: 2px solid var(--fte-accent-indigo);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Utilities
+   ============================================================================= */
+
+.fte-help-text {
+  font-size: 0.75rem;
+  color: var(--fte-text-secondary);
+  margin-top: 8px;
+}
+
+.fte-text-center {
+  text-align: center;
+}

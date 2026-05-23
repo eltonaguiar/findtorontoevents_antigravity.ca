@@ -1,0 +1,80 @@
+name: Hourly Master Picks to Discord
+
+on:
+  schedule:
+    # Every hour at minute 5
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: 1
+
+jobs:
+  send-master-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install aiohttp aiofiles requests numpy scrapling
+      
+      - name: Aggregate signals
+        run: |
+          python << 'PYEOF'
+          import asyncio
+          import sys
+          import json
+          sys.path.insert(0, 'signal_aggregator')
+          
+          from signal_aggregator.aggregator_fixed import FixedSignalAggregator
+          
+          async def main():
+              async with FixedSignalAggregator() as agg:
+                  consensus = await agg.aggregate_all_signals()
+                  agg.export_consensus('signal_aggregator/data/consensus_output.json')
+                  print(f"Active systems: {agg.get_active_systems_count()}")
+                  print(f"Consensus signals: {len(consensus)}")
+          
+          asyncio.run(main())
+          PYEOF
+      
+      - name: Send top picks to Discord
+        env:
+          DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
+          DISCORD_FRESHPICKS: ${{ secrets.DISCORD_FRESHPICKS }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MASTER_MIN_UNIQUE_SYSTEMS: "2"
+          MASTER_MIN_CONSENSUS_SCORE: "0.55"
+        run: |
+          python scripts/send_top_picks_now.py
+      
+      - name: Commit tracker and consensus data
+        run: |
+          git config --local user.email "picks@github.com"
+          git config --local user.name "Picks Bot"
+          git add signal_aggregator/data/consensus_output.json 2>/dev/null || true
+          git add signal_aggregator/data/master_picks_tracker.json 2>/dev/null || true
+          git add signal_aggregator/data/master_picks_history.json 2>/dev/null || true
+          git add signal_aggregator/data/last_sent_cache.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Update master-picks tracker [skip ci]"
+          bash .github/scripts/safe_push.sh
+

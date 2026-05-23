@@ -1,0 +1,140 @@
+name: Penny Stock Daily Picks
+
+on:
+  schedule:
+    # Run weekdays at 7:00 AM EST (12:00 UTC) - after market data settles
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  penny-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance requests numpy pandas scipy
+
+      - name: Run penny stock picks engine
+        env:
+          PENNY_API_BASE: https://findtorontoevents.ca/findstocks/portfolio2/api
+          PENNY_ADMIN_KEY: livetrader2026
+        run: |
+          cd scripts
+          python penny_stock_picks.py
+
+      - name: Commit local report
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f findstocks/portfolio2/data/penny_picks_latest.json ]; then
+            git add findstocks/portfolio2/data/penny_picks_latest.json
+            git diff --cached --quiet || git commit -m "Update penny stock picks - $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+  # Track existing picks with current prices (runs after picks)
+  track-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    needs: penny-picks
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance requests
+
+      - name: Track active picks
+        env:
+          PENNY_API_BASE: https://findtorontoevents.ca/findstocks/portfolio2/api
+          PENNY_ADMIN_KEY: livetrader2026
+        run: |
+          python -c "
+          import requests, yfinance as yf, json, time
+
+          API_BASE = 'https://findtorontoevents.ca/findstocks/portfolio2/api'
+          HEADERS = {'User-Agent': 'PennyStockIntelligence/1.0'}
+
+          def safe_json(resp, ctx):
+              # API may return an empty body or an HTML error page on a transient
+              # outage; tracking is best-effort, so degrade gracefully instead of
+              # crashing the workflow with a JSONDecodeError.
+              if resp.status_code != 200:
+                  print(f'{ctx}: HTTP {resp.status_code} - skipping (transient API issue)')
+                  return None
+              try:
+                  return resp.json()
+              except ValueError:
+                  print(f'{ctx}: non-JSON response ({len(resp.text)} bytes) - skipping')
+                  return None
+
+          # Get active picks
+          try:
+              r = requests.get(f'{API_BASE}/penny_stock_picks.php?action=picks&limit=50', headers=HEADERS, timeout=30)
+              data = safe_json(r, 'picks')
+          except Exception as e:
+              print(f'picks: connection error ({e}) - skipping track')
+              exit(0)
+          if not data or not data.get('ok') or not data.get('picks'):
+              print('No active picks to track')
+              exit(0)
+
+          updates = []
+          for p in data['picks']:
+              if p.get('status') != 'active':
+                  continue
+              sym = p['symbol']
+              try:
+                  tk = yf.Ticker(sym)
+                  info = tk.info or {}
+                  price = info.get('currentPrice', info.get('regularMarketPrice', 0))
+                  if price and price > 0:
+                      updates.append({'symbol': sym, 'current_price': price})
+                      print(f'{sym}: \${price}')
+                  time.sleep(0.5)
+              except Exception as e:
+                  print(f'{sym}: ERROR - {e}')
+
+          if updates:
+              try:
+                  r = requests.post(
+                      f'{API_BASE}/penny_stock_picks.php?action=track&key=livetrader2026',
+                      json={'updates': updates},
+                      headers=HEADERS,
+                      timeout=30
+                  )
+                  result = safe_json(r, 'track') or {}
+                  print(f'Tracked {result.get(\"updated\", 0)} picks')
+              except Exception as e:
+                  print(f'track: connection error ({e}) - skipping update')
+          else:
+              print('No price updates available')
+          "
+

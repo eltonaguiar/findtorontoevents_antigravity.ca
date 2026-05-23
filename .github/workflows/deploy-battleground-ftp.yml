@@ -1,0 +1,168 @@
+name: Deploy Battleground to FTP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'battleground/**'
+      - '.github/workflows/deploy-battleground-ftp.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy battleground to findtorontoevents.ca (50webs) via FTP
+        continue-on-error: true
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, sys
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("findtorontoevents.ca FTP credentials not set, skipping")
+              sys.exit(0)
+
+          SITE_ROOT = "findtorontoevents.ca"
+          LOCAL_DIR = Path("battleground")
+
+          files_to_upload = [
+              ("index.html", "battleground/index.html"),
+              ("app.js", "battleground/app.js"),
+          ]
+          data_files = list((LOCAL_DIR / "data").glob("*.json"))
+
+          print(f"Connecting to {host} (findtorontoevents.ca) timeout=30s...")
+          try:
+              ftp = ftplib.FTP(host, timeout=30)
+              ftp.login(user, pwd)
+              ftp.cwd(SITE_ROOT)
+              print("Connected")
+
+              # Ensure directories exist
+              for d in ["battleground", "battleground/data"]:
+                  try:
+                      ftp.mkd(d)
+                      print(f"  Created /{d}/")
+                  except Exception:
+                      pass
+
+              # Upload main files
+              for remote_name, local_path in files_to_upload:
+                  p = Path(local_path)
+                  if p.exists():
+                      ftp.cwd(f"/{SITE_ROOT}/battleground")
+                      with open(p, "rb") as f:
+                          ftp.storbinary(f"STOR {remote_name}", f)
+                      print(f"  Uploaded {remote_name} ({p.stat().st_size} bytes)")
+
+              # Upload data files
+              ftp.cwd(f"/{SITE_ROOT}/battleground/data")
+              for df in data_files:
+                  with open(df, "rb") as f:
+                      ftp.storbinary(f"STOR {df.name}", f)
+                  print(f"  Uploaded data/{df.name} ({df.stat().st_size} bytes)")
+
+              ftp.quit()
+              print("findtorontoevents.ca/battleground/ deployed")
+          except Exception as e:
+              print(f"findtorontoevents.ca FTP failed: {e}")
+              sys.exit(1)
+          PYEOF
+
+      - name: Deploy battleground to torontoevent.net via FTP
+        continue-on-error: true
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, sys
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("torontoevent.net FTP credentials not set, skipping")
+              sys.exit(0)
+
+          LOCAL_DIR = Path("battleground")
+
+          files_to_upload = [
+              ("index.html", "battleground/index.html"),
+              ("app.js", "battleground/app.js"),
+          ]
+          data_files = list((LOCAL_DIR / "data").glob("*.json"))
+
+          print(f"Connecting to {host} (torontoevent.net) timeout=30s...")
+          try:
+              ftp = ftplib.FTP(host, timeout=30)
+              ftp.login(user, pwd)
+              print("Connected")
+
+              for d in ["battleground", "battleground/data"]:
+                  try:
+                      ftp.mkd(d)
+                      print(f"  Created /{d}/")
+                  except Exception:
+                      pass
+
+              for remote_name, local_path in files_to_upload:
+                  p = Path(local_path)
+                  if p.exists():
+                      ftp.cwd("/battleground")
+                      with open(p, "rb") as f:
+                          ftp.storbinary(f"STOR {remote_name}", f)
+                      print(f"  Uploaded {remote_name} ({p.stat().st_size} bytes)")
+
+              ftp.cwd("/battleground/data")
+              for df in data_files:
+                  with open(df, "rb") as f:
+                      ftp.storbinary(f"STOR {df.name}", f)
+                  print(f"  Uploaded data/{df.name} ({df.stat().st_size} bytes)")
+
+              ftp.quit()
+              print("torontoevent.net/battleground/ deployed")
+          except Exception as e:
+              print(f"torontoevent.net FTP failed: {e}")
+              sys.exit(1)
+          PYEOF
+
+      - name: Verify URLs
+        if: always()
+        continue-on-error: true
+        run: |
+          sleep 8
+          echo "=== Checking live URLs (non-fatal  FTP hosts can be slow) ==="
+          s1=$(curl -o /dev/null -s -w "%{http_code}" --max-time 30 "https://findtorontoevents.ca/battleground/" || echo "timeout")
+          s2=$(curl -o /dev/null -s -w "%{http_code}" --max-time 30 "https://torontoevent.net/battleground/" || echo "timeout")
+          s3=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/")
+          echo "findtorontoevents.ca/battleground/:  $s1"
+          echo "torontoevent.net/battleground/:      $s2"
+          echo "GitHub Pages:                        $s3"
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Deploy Battleground to FTP" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

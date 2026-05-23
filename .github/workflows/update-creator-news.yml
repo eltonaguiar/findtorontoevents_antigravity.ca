@@ -1,0 +1,46 @@
+name: Update Creator News
+
+on:
+  schedule:
+    # Run every 2 hours
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-news:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Trigger News Aggregation
+        run: |
+          for attempt in 1 2 3; do
+            if curl -s --max-time 30 --retry 2 "https://findtorontoevents.ca/fc/api/aggregate_creator_news.php" > /tmp/result.json 2>/dev/null; then
+              echo "Curl succeeded on attempt $attempt"
+              cat /tmp/result.json
+              break
+            else
+              echo "Curl failed on attempt $attempt (exit $?)"
+              if [ "$attempt" -eq 3 ]; then
+                echo '{"error":"curl failed after 3 attempts","success":false}' > /tmp/result.json
+              fi
+              sleep 5
+            fi
+          done
+          
+      - name: Check Result
+        run: |
+          if grep -q '"success":true' /tmp/result.json; then
+            echo " News aggregation successful"
+            cat /tmp/result.json | python3 -m json.tool
+          elif grep -q "Database connection failed: Access denied" /tmp/result.json; then
+            echo " News aggregation skipped: remote DB credentials missing on server"
+            cat /tmp/result.json | python3 -m json.tool || cat /tmp/result.json
+            exit 0
+          elif grep -q '"error":"curl failed' /tmp/result.json; then
+            echo " News aggregation skipped: server unreachable"
+            exit 0
+          else
+            echo " News aggregation failed"
+            cat /tmp/result.json
+            exit 1
+          fi
+

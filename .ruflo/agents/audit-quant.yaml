@@ -1,0 +1,39 @@
+# Ruflo-style agent: Quantitative Audit Coder
+# Runs quantitative checks on strategy data
+type: audit_quant
+version: "1.0.0"
+role: coder
+model: deepseek/deepseek-chat:free
+goal: |
+  Quantitative audit: check audit_trail/data/universal_resolved_picks.json and
+  audit_dashboard/data/dashboard_data.json for WR by asset class.
+  Look for regime gate deployment status, transaction cost modeling, inverse trade backtests.
+  Check if forward resolution tracker is still broken (all forward_wr=0.5).
+  Return JSON with numeric evidence and recommended code fixes. If the required
+  files cannot be inspected, return unable_to_verify instead of synthetic metrics.
+capabilities:
+  - quantitative-analysis
+  - win-rate-by-asset-class
+  - forward-resolution-validation
+  - regime-gate-check
+  - transaction-cost-modeling
+optimizations:
+  - flash-attention
+  - token-reduction
+  - structured-json-output
+swarm: audit
+priority: medium
+metadata:
+  created: "2026-05-05T00:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  dataSources:
+    - audit_trail/data/universal_resolved_picks.json
+    - audit_dashboard/data/dashboard_data.json
+    - alpha_engine/config.py
+    - audit_trail/dashboard_generator.py
+  checks:
+    - wr_by_asset_class_breakdown
+    - forward_resolution_tracker_broken_check
+    - regime_gate_deployment_status
+    - transaction_cost_modeling_present
+    - inverse_trade_backtests

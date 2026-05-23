@@ -1,0 +1,54 @@
+{
+  "plan_still_relevant": "mostly",
+  "todos_now_obsolete": [],
+  "todos_still_binding": [
+    "snapshot-audit-baseline",
+    "enable-class-gates",
+    "fast-track-strong-classes",
+    "contain-weak-classes",
+    "db-lineage-and-backtests"
+  ],
+  "todos_need_revision": [
+    "snapshot-audit-baseline: must now include COT timing-leakage audit results and multi_asset_cot PF 21.86 verification before baseline is considered valid",
+    "fast-track-strong-classes: COMMODITY Tier-1 is contingent on COT fix survival; EQUITY VIX+YC combo is new strongest candidate and should be fast-tracked ahead of raw COMMODITY",
+    "contain-weak-classes: FOREX sizing OFF is already done but BOND (n=11) needs explicit containment action beyond just ignoring"
+  ],
+  "missing_from_plan_critical": [
+    "regime-GATE overlay pattern (6/7 hit rate) as a formal strategy construction methodology",
+    "lead-LAG-corr prohibition rule (0/4 failures) as a filter to reject proposals automatically",
+    "COT publication-lag patch verification step as prerequisite for COMMODITY real-money eligibility",
+    "multi_asset_cot PF 21.86 fabrication-risk DB verification as a mandatory gate before any multi-asset COT strategy goes live",
+    "EQUITY VIX<22 AND YC>0 combined strategy as a new primary real-money candidate (PF 4.98 / Sharpe 2.08)"
+  ],
+  "real_money_ready_gate_status": "nearly_met",
+  "next_3_actions_post_session": [
+    {
+      "action": "Run tools/verify_multi_asset_cot_db.py and report results; if PF 21.86 is fabrication, flag multi_asset_cot for removal from all candidate lists",
+      "owner": "operator",
+      "blocker_if_any": "DB access permissions for the multi_asset_cot table"
+    },
+    {
+      "action": "Apply COT 3-day publication-lag patch to COMMODITY backtest and re-run money-maker-ready report to determine if Tier-1 survives or drops to Tier-2/Tier-3",
+      "owner": "dev",
+      "blocker_if_any": "COT data source must have reliable publication timestamps for the lag calculation"
+    },
+    {
+      "action": "Enable EQUITY VIX<22 AND YC>0 strategy (PR #960) with default OFF, then run 30-day walk-forward on it to confirm stability before flipping to ON",
+      "owner": "dev",
+      "blocker_if_any": "Walk-forward infrastructure must support the combined VIX+YC gate condition"
+    }
+  ],
+  "single_most_important_finding_for_real_money_promotion": "EQUITY VIX<22 AND YC>0 backtest (PF 4.98 / Sharpe 2.08 / MDD 16.8%) is the session's best risk-adjusted strategy and, if it survives walk-forward, provides the second Tier-2+ class needed to meet the real-money gate alongside a COT-patched COMMODITY.",
+  "engine": "deepseek",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_real_money_plan\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260513T191149Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 1158,
+    "tokens_out": 704,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

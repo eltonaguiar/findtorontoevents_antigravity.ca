@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI Model Tournament · findtorontoevents.ca/audit/ai-tournament</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1400px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { margin-bottom: 4px; font-size: 22px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; margin: 20px 0 10px; }
+  h3 { font-size: 13px; color: #c0c0d0; margin: 12px 0 6px; }
+  header { padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 16px; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .small { font-size: 11px; color: #a0a0b0; }
+
+  /* Status badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px; letter-spacing: 0.3px; }
+  .b-t1 { background: #22c55e; color: #0a0a0f; }
+  .b-t2 { background: #60a5fa; color: #0a0a0f; }
+  .b-t3 { background: #fbbf24; color: #0a0a0f; }
+  .b-below { background: #ef4444; color: #fff; }
+  .b-pending { background: #6b7280; color: #e6e6f0; }
+
+  /* Data integrity flags */
+  .flag-fwd { background: #14532d; color: #86efac; border: 1px solid #22c55e; padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+  .flag-bkt { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+  .flag-dis { background: #7c2d12; color: #fca5a5; border: 1px solid #ef4444; padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+  .flag-hal { background: #1a1a1a; color: #6b7280; border: 1px solid #374151; padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 32px 16px 24px; background: linear-gradient(135deg, rgba(96,165,250,0.08) 0%, rgba(34,197,94,0.08) 100%); border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(96,165,250,0.15); }
+  .hero h1 { font-size: 28px; margin-bottom: 8px; }
+  .hero p { color: #a0a0b0; max-width: 600px; margin: 0 auto; font-size: 14px; }
+
+  /* Nav */
+  .nav { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .nav a { background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(255,255,255,0.08); }
+  .nav a:hover { background: rgba(96,165,250,0.12); text-decoration: none; }
+  .nav a.active { background: rgba(96,165,250,0.2); border-color: #60a5fa; color: #93c5fd; }
+
+  /* Integrity legend */
+  .integrity-legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 6px; margin-bottom: 20px; font-size: 12px; align-items: center; }
+  .integrity-legend strong { color: #e6e6f0; margin-right: 8px; }
+
+  /* Time window filter tabs */
+  .time-tabs { display: flex; gap: 4px; margin: 12px 0; }
+  .time-tab { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #6b7280; padding: 5px 14px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600; letter-spacing: 0.3px; transition: all 0.15s; }
+  .time-tab:hover { background: rgba(96,165,250,0.1); color: #93c5fd; border-color: rgba(96,165,250,0.25); }
+  .time-tab.active { background: rgba(96,165,250,0.18); color: #60a5fa; border-color: #60a5fa; }
+  .time-tab .count { font-weight: 400; font-size: 10px; opacity: 0.7; margin-left: 3px; }
+
+  /* Leaderboard table */
+  table.lb { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  table.lb th { background: rgba(255,255,255,0.04); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.lb td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  table.lb tr:hover td { background: rgba(96,165,250,0.06); }
+  table.lb .rank { font-weight: 700; color: #fbbf24; }
+  table.lb .model-name { font-weight: 600; color: #e6e6f0; }
+  table.lb .provider { font-size: 10px; color: #6b7280; }
+  table.lb .num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.lb .pnl-pos { color: #22c55e; }
+  table.lb .pnl-neg { color: #ef4444; }
+  table.lb .pnl-neu { color: #a0a0b0; }
+
+  /* Phase status bar */
+  .phase-bar { display: flex; gap: 0; margin: 20px 0; background: rgba(255,255,255,0.03); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+  .phase-step { flex: 1; padding: 10px 14px; text-align: center; font-size: 11px; }
+  .phase-step.done { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .phase-step.active { background: rgba(96,165,250,0.12); color: #60a5fa; border-left: 2px solid #60a5fa; border-right: 2px solid #60a5fa; }
+  .phase-step.pending { color: #4b5563; }
+  .phase-step strong { display: block; font-size: 12px; }
+
+  /* Model cards */
+  .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 16px; }
+  .model-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; }
+  .model-card.pending-card { opacity: 0.55; }
+  .model-card h3 { margin: 0 0 4px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .model-card .provider-tag { font-size: 10px; color: #6b7280; font-weight: 400; }
+  .model-card .stats-row { display: flex; gap: 16px; margin: 10px 0; font-size: 12px; }
+  .model-card .stat { text-align: center; }
+  .model-card .stat-val { font-size: 18px; font-weight: 700; display: block; }
+  .model-card .stat-label { color: #6b7280; font-size: 10px; }
+  .model-card .picks-mini table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .model-card .picks-mini td { padding: 3px 5px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .model-card .picks-mini th { font-size: 10px; color: #6b7280; padding: 3px 5px; text-align: left; }
+  .model-card .strategy-box { background: rgba(255,255,255,0.03); border-radius: 5px; padding: 8px; font-size: 11px; color: #a0a0b0; margin: 8px 0; line-height: 1.4; }
+  .model-card .no-picks { color: #4b5563; font-size: 12px; text-align: center; padding: 16px 0; }
+
+  /* Universe panel */
+  .universe-panel { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 14px; margin: 20px 0; }
+  .universe-panel h3 { margin-top: 0; }
+  .universe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 10px; }
+  .universe-class { background: rgba(255,255,255,0.03); border-radius: 6px; padding: 10px; }
+  .universe-class strong { font-size: 12px; display: block; margin-bottom: 4px; color: #60a5fa; }
+  .universe-class span { font-size: 11px; color: #a0a0b0; }
+
+  /* Methodology box */
+  .method-box { background: rgba(255,255,255,0.02); border-left: 3px solid #60a5fa; border-radius: 0 6px 6px 0; padding: 12px 16px; margin: 16px 0; font-size: 12px; }
+  .method-box ul { margin: 6px 0; padding-left: 18px; }
+  .method-box li { margin: 3px 0; }
+
+  /* Comparison panel */
+  .compare-panel { margin: 20px 0; }
+  table.compare { width: 100%; border-collapse: collapse; font-size: 11px; }
+  table.compare th { background: rgba(255,255,255,0.04); padding: 7px 10px; text-align: left; font-weight: 700; }
+  table.compare td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  table.compare .tbd { color: #4b5563; }
+
+  /* Footer */
+  footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07); color: #4b5563; font-size: 11px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  details { margin: 8px 0; }
+  details summary { cursor: pointer; font-weight: 600; font-size: 12px; padding: 6px 0; }
+  details[open] summary { color: #60a5fa; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>🏆 AI Model Prediction Tournament</h1>
+  <p>Which AI model is actually the best at predicting markets? We pit every cloud model against live markets — same rules, same data, zero shortcuts. Forward-tested. Hallucination-checked. Ranked by real P&amp;L.</p>
+  <div style="margin-top:14px;font-size:12px;color:#4b5563">
+    Live forward-testing · Started 2026-05-19 · Methodology v1.1 (post-swarm-review)
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/audit/">← Main Audit</a>
+  <a href="/audit/ai-tournament.html" class="active">🏆 AI Tournament</a>
+  <a href="/audit/ai_leaderboard.html">AI Leaderboard (internal)</a>
+  <a href="/audit/research_index.html">Research Index</a>
+</nav>
+
+<!-- DATA INTEGRITY LEGEND -->
+<div class="integrity-legend">
+  <strong>Data flags:</strong>
+  <span><span class="flag-fwd">🟢 FORWARD_TEST</span> Live market, post-2026-05-19</span>
+  <span><span class="flag-bkt">🟡 BACKTEST_VERIFIED</span> Historical, independently reproduced</span>
+  <span><span class="flag-dis">🔴 BACKTEST_DISPUTED</span> Claimed but not reproducible (±10%)</span>
+  <span><span class="flag-hal">⚫ HALLUCINATION</span> Fabricated data confirmed · −1 pick penalty</span>
+</div>
+
+<!-- PHASE STATUS -->
+<h2>Tournament Status</h2>
+<div class="phase-bar">
+  <div class="phase-step done"><strong>✓ Phase 1A</strong>Infrastructure &amp; methodology</div>
+  <div class="phase-step active"><strong>⟳ Phase 1B</strong>Prompting all cloud models</div>
+  <div class="phase-step pending"><strong>Phase 1C</strong>Live price tracking (auto)</div>
+  <div class="phase-step pending"><strong>Phase 2</strong>Local models (future)</div>
+</div>
+
+<!-- LEADERBOARD -->
+<h2>Leaderboard — Forward-Test Only <span class="small">(min n=30 to rank; CI-adjusted score)</span></h2>
+
+<!-- TIME WINDOW FILTER TABS -->
+<div class="time-tabs" id="time-tabs">
+  <button class="time-tab active" data-window="all">ALL</button>
+  <button class="time-tab" data-window="5d">5D <span class="count" id="count-5d"></span></button>
+  <button class="time-tab" data-window="3d">3D <span class="count" id="count-3d"></span></button>
+  <button class="time-tab" data-window="today">Today <span class="count" id="count-today"></span></button>
+</div>
+<table class="lb" id="leaderboard">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Model</th>
+      <th>Provider</th>
+      <th class="num">WR</th>
+      <th class="num">WR 95% CI</th>
+      <th class="num">PF</th>
+      <th class="num">Score*</th>
+      <th class="num">n picks</th>
+      <th class="num">n resolved</th>
+      <th>Tier</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="lb-body">
+    <!-- Populated by leaderboard.json or static pending rows below -->
+  </tbody>
+</table>
+<div class="small" style="margin-top:6px">*Score = lower_95%(WR) × lower_95%(PF) — only rewards statistically supported performance. Models need n≥30 resolved picks to earn a rank.</div>
+
+<!-- PENDING MODELS TABLE -->
+<details open>
+  <summary>Pending model submissions (Phase 1B in progress)</summary>
+  <div style="margin-top:10px;">
+  <table class="lb">
+    <thead><tr><th>Model</th><th>Provider</th><th>API key env var</th><th>Asset classes</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="model-name">Mercury</td><td>Inception Labs (via OpenRouter)</td><td><code>OPENROUTER_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
+      <tr><td class="model-name">Llama-4-Scout</td><td>Cerebras</td><td><code>CEREBRAS_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
+      <tr><td class="model-name">Ring-2.6-1T</td><td>Inclusion AI (via OpenRouter)</td><td><code>OPENROUTER_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
+      <tr><td class="model-name">Grok-3</td><td>xAI</td><td><code>XAI_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
+      <tr><td class="model-name">DeepSeek-R1</td><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
+      <tr><td class="model-name">GPT-4o</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
+      <tr><td class="model-name">Claude Opus 4.7</td><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
+      <tr><td class="model-name">Gemini 2.5 Pro</td><td>Google</td><td><code>GOOGLE_AI_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING</span></td></tr>
+      <tr><td class="model-name">GLM-4.7-flash</td><td>OFOX/ZhipuAI</td><td><code>OFOX_AI_KEY</code></td><td>CRYPTO, EQUITY</td><td><span class="badge b-pending">PENDING</span></td></tr>
+      <tr><td class="model-name">Mistral Large</td><td>Mistral</td><td><code>MISTRAL_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING</span></td></tr>
+      <tr><td class="model-name">Command R+</td><td>Cohere</td><td><code>COHERE_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<!-- PRE-REGISTERED UNIVERSE -->
+<div class="universe-panel">
+  <h3>📋 Pre-Registered Universe (locked 2026-05-19 — models must pick within this list)</h3>
+  <p class="small">All models compete on the same pre-approved symbols. Picks <em>outside</em> the universe are accepted but marked as bonus/unranked. Universe locked to prevent cherry-picking.</p>
+  <div class="universe-grid">
+    <div class="universe-class">
+      <strong>EQUITY</strong>
+      <span>S&amp;P 500 constituents (as of 2024-12-31)</span>
+    </div>
+    <div class="universe-class">
+      <strong>CRYPTO</strong>
+      <span>Top 30 by market cap (CoinMarketCap, weekly snapshot)</span>
+    </div>
+    <div class="universe-class">
+      <strong>FOREX</strong>
+      <span>EURUSD, GBPUSD, USDJPY, AUDUSD, USDCHF</span>
+    </div>
+    <div class="universe-class">
+      <strong>COMMODITY</strong>
+      <span>XAUUSD, XAGUSD, CL=F (crude), NG=F (nat gas), HG=F (copper)</span>
+    </div>
+    <div class="universe-class">
+      <strong>ETF</strong>
+      <span>SPY, QQQ, IWM, EEM, GLD</span>
+    </div>
+    <div class="universe-class">
+      <strong>BOND</strong>
+      <span>US10Y (^TNX), US30Y (^TYX)</span>
+    </div>
+  </div>
+</div>
+
+<!-- METHODOLOGY SUMMARY -->
+<h2>Rules &amp; Methodology</h2>
+<div class="method-box">
+  <ul>
+    <li><strong>Forward-test only</strong> for ranking. Backtests recorded but not used for leaderboard position.</li>
+    <li><strong>Resolution:</strong> TP/SL hit (first one) → win/loss. Expiry at closing price (not mid-price). Slippage: 5–10bps equity, 0.2% crypto.</li>
+    <li><strong>Windows:</strong> EQUITY 30d · CRYPTO 14d · COMMODITY 28d · FOREX 21d · ETF 30d · BOND 60d</li>
+    <li><strong>Min n=30</strong> resolved picks per model per asset class before ranking.</li>
+    <li><strong>Score = lower_95%(WR) × lower_95%(PF)</strong> — only statistically supported performance counts.</li>
+    <li><strong>Hallucination check:</strong> All backtest claims reproduced against real OHLC. Fabrication = ⚫ + −1 pick penalty.</li>
+    <li><strong>Max SL/TP ratio: 2.0</strong> (SL ≤ 2×TP). Min RR ≥ 1.5. Enforced at submission.</li>
+    <li><strong>Model version pinned</strong> at tournament start for reproducibility.</li>
+    <li><strong>No shortcuts prompt</strong> applied to every model — see <code>/noshortcutsprompt</code> skill.</li>
+  </ul>
+  <div class="small" style="margin-top:8px">Full methodology: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/AI_PREDICTION_TOURNAMENT_METHODOLOGY.md">docs/AI_PREDICTION_TOURNAMENT_METHODOLOGY.md</a> · Swarm review: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/ai_tournament_methodology_swarm_review_20260519.md">reports/ai_tournament_methodology_swarm_review_20260519.md</a></div>
+</div>
+
+<!-- PICKS SECTION — placeholder for dynamic content -->
+<h2>Model Picks (Forward-Test, Live Tracking)</h2>
+<div id="picks-container">
+  <div style="color:#4b5563;font-size:13px;padding:24px;text-align:center;border:1px dashed rgba(255,255,255,0.08);border-radius:8px">
+    ⟳ Phase 1B in progress — model picks will appear here as submissions are collected and validated.<br>
+    <span class="small">Picks are ingested from <code>data/ai_tournament/picks_*.json</code> and updated daily by GitHub Actions.</span>
+  </div>
+</div>
+
+<!-- COMPARISON PANEL -->
+<h2>AI vs Our System — Strategy Comparison</h2>
+<div class="compare-panel">
+  <p class="small">At the end of Phase 1's first resolution cycle, this table will show the best AI model's strategy vs our validated system strategy per class.</p>
+  <table class="compare">
+    <thead>
+      <tr>
+        <th>Asset class</th>
+        <th>Best AI model</th>
+        <th>AI strategy name</th>
+        <th>Our system strategy</th>
+        <th>AI WR</th>
+        <th>Our WR*</th>
+        <th>AI PF</th>
+        <th>Our PF*</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>EQUITY</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>PACP shadow scoring</td><td class="tbd">—</td><td>49.2%</td><td class="tbd">—</td><td>0.76</td></tr>
+      <tr><td>CRYPTO</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>quan_engine scalp</td><td class="tbd">—</td><td>44.6%</td><td class="tbd">—</td><td>1.25</td></tr>
+      <tr><td>COMMODITY</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>CTA trend-following + COT</td><td class="tbd">—</td><td>46.9%</td><td class="tbd">—</td><td>1.78</td></tr>
+      <tr><td>FOREX</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>Mutation protocol (sub-floor)</td><td class="tbd">—</td><td>46.4%</td><td class="tbd">—</td><td>0.27</td></tr>
+      <tr><td>ETF</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>sector rotation + VIX</td><td class="tbd">—</td><td>55.2%</td><td class="tbd">—</td><td>1.24</td></tr>
+      <tr><td>BOND</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>UST TSMOM (B-003)</td><td class="tbd">—</td><td>55.6%</td><td class="tbd">—</td><td>1.72</td></tr>
+    </tbody>
+  </table>
+  <div class="small" style="margin-top:6px">*Our system stats from audit dashboard as of 2026-05-19 (post-dedup, 41,360 rows). <a href="/audit/">View live stats →</a></div>
+</div>
+
+<!-- CONFLICT DISCLOSURE -->
+<details>
+  <summary>⚠ Conflict of interest disclosure</summary>
+  <div style="padding:10px;font-size:12px;color:#a0a0b0;line-height:1.6">
+    <p>This tournament is operated by the same system that uses Claude Code (Anthropic) as its primary agent. Claude Opus 4.7 is one of the competing models. We disclose this conflict and note:</p>
+    <ul>
+      <li>Claude's picks are evaluated by the same automated price-tracking system as all other models.</li>
+      <li>No human review of individual picks occurs between submission and resolution.</li>
+      <li>All pick data is stored in the public GitHub repository for independent verification.</li>
+      <li>The "no shortcuts" prompt is applied identically to every model including Claude.</li>
+    </ul>
+  </div>
+</details>
+
+<footer>
+  <span>findtorontoevents.ca/audit/ai-tournament · Updated by GitHub Actions daily at 23:00 UTC</span>
+  <span><a href="/audit/">Main audit</a> · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca">GitHub</a> · Not financial advice</span>
+</footer>
+
+<script>
+// ── State ──
+let allPicks = [];        // Merged from all pick files + leaderboard fallback
+let currentWindow = 'all'; // Active time window filter
+
+// ── Time window cutoffs (UTC) ──
+function getCutoffDays(window) {
+  if (window === 'all') return 0;
+  if (window === '5d') return 5;
+  if (window === '3d') return 3;
+  if (window === 'today') return 0;
+  return 0;
+}
+
+function filterPicksByWindow(picks, window) {
+  if (window === 'all' || !picks.length) return picks;
+  const days = getCutoffDays(window);
+  const now = new Date();
+  const cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - days * 86400000);
+  return picks.filter(p => {
+    try {
+      const d = new Date(p.submitted_at || p.created_at || '');
+      return !isNaN(d) && d >= cutoff;
+    } catch { return false; }
+  });
+}
+
+// ── Per-window stats calculator ──
+function calcModelStats(picks) {
+  const models = {};
+  for (const p of picks) {
+    const mid = p.model_id || 'unknown';
+    if (!models[mid]) {
+      models[mid] = { model_id: mid, provider: p.provider || '', n_picks: 0, n_resolved: 0, n_wins: 0,
+        sum_gains: 0, sum_losses: 0, tier: 'BUILDING', rank_eligible: false, rank: null };
+    }
+    const m = models[mid];
+    m.n_picks++;
+    if (p.status === 'WIN') {
+      m.n_resolved++;
+      m.n_wins++;
+      const pnl = parseFloat(p.pnl_pct) || 0;
+      if (pnl > 0) m.sum_gains += pnl;
+      else m.sum_losses += Math.abs(pnl);
+    } else if (p.status === 'LOSS') {
+      m.n_resolved++;
+      const pnl = parseFloat(p.pnl_pct) || 0;
+      if (pnl !== 0) m.sum_losses += Math.abs(pnl);
+    } else if (p.status !== 'OPEN' && p.pnl_pct != null) {
+      m.n_resolved++;
+      const pnl = parseFloat(p.pnl_pct) || 0;
+      if (pnl > 0) { m.n_wins++; m.sum_gains += pnl; }
+      else { m.sum_losses += Math.abs(pnl); }
+    }
+  }
+  // Calculate derived metrics
+  for (const mid of Object.keys(models)) {
+    const m = models[mid];
+    m.wr = m.n_resolved > 0 ? m.n_wins / m.n_resolved : 0;
+    m.pf = m.sum_losses > 0 ? m.sum_gains / m.sum_losses : (m.sum_gains > 0 ? 999 : 0);
+    // Score = WR * PF (simplified CI proxy for client-side; real CI in pipeline)
+    m.score = m.wr * m.pf;
+    m.wr_ci_lo = m.wr;
+    m.wr_ci_hi = 1;
+    m.pf_ci_lo = m.pf;
+    m.pf_ci_hi = m.pf;
+    m.rank_eligible = m.n_resolved >= 30;
+    if (m.rank_eligible) {
+      m.tier = m.pf >= 2.0 && m.wr >= 0.55 ? 'T1'
+             : m.pf >= 1.5 && m.wr >= 0.50 ? 'T2'
+             : m.pf >= 1.3 && m.wr >= 0.45 ? 'T3'
+             : 'BELOW';
+    } else {
+      m.tier = m.n_resolved > 0 ? 'BUILDING' : 'BUILDING';
+    }
+  }
+  return Object.values(models);
+}
+
+// ── Render leaderboard ──
+function renderLeaderboard(models) {
+  const tbody = document.getElementById('lb-body');
+  if (!models || models.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:#4b5563;padding:20px">
+      No data in this window — picks are still being collected or no models have resolved picks yet.
+    </td></tr>`;
+    return;
+  }
+
+  const ranked = models
+    .filter(m => m.rank_eligible)
+    .sort((a, b) => b.score - a.score);
+  const pending = models.filter(m => !m.rank_eligible);
+
+  tbody.innerHTML = '';
+
+  ranked.forEach((m, i) => {
+    const tier = m.tier === 'T1' ? '<span class="badge b-t1">T1</span>'
+               : m.tier === 'T2' ? '<span class="badge b-t2">T2</span>'
+               : m.tier === 'T3' ? '<span class="badge b-t3">T3</span>'
+               : '<span class="badge b-below">BELOW</span>';
+    const wrClass = m.wr >= 0.55 ? 'pnl-pos' : m.wr < 0.45 ? 'pnl-neg' : 'pnl-neu';
+    const pfClass = m.pf >= 1.5 ? 'pnl-pos' : m.pf < 1.0 ? 'pnl-neg' : 'pnl-neu';
+    tbody.innerHTML += `<tr>
+      <td class="rank">#${i+1}</td>
+      <td class="model-name">${esc(m.model_id)}</td>
+      <td><span class="provider">${esc(m.provider)}</span></td>
+      <td class="num ${wrClass}">${(m.wr*100).toFixed(1)}%</td>
+      <td class="num small">[${(m.wr_ci_lo*100).toFixed(1)}%, ${(m.wr_ci_hi*100).toFixed(1)}%]</td>
+      <td class="num ${pfClass}">${m.pf.toFixed(2)}</td>
+      <td class="num">${m.score.toFixed(3)}</td>
+      <td class="num">${m.n_picks}</td>
+      <td class="num">${m.n_resolved}</td>
+      <td>${tier}</td>
+      <td><span class="badge b-t2">LIVE</span></td>
+    </tr>`;
+  });
+
+  pending.forEach(m => {
+    const totalN = models.filter(x => x.rank_eligible).length;
+    tbody.innerHTML += `<tr style="opacity:0.5">
+      <td class="rank">—</td>
+      <td class="model-name">${esc(m.model_id)}</td>
+      <td><span class="provider">${esc(m.provider)}</span></td>
+      <td class="num pnl-neu" colspan="6">n=${m.n_resolved} / need 30 to rank</td>
+      <td><span class="badge b-pending">BUILDING</span></td>
+      <td></td>
+    </tr>`;
+  });
+}
+
+// ── Update tab counts ──
+function updateTabCounts() {
+  const wins = ['all', '5d', '3d', 'today'];
+  for (const w of wins.slice(1)) {
+    const filtered = filterPicksByWindow(allPicks, w);
+    const stats = calcModelStats(filtered);
+    const totalResolved = stats.reduce((s, m) => s + m.n_resolved, 0);
+    const el = document.getElementById('count-' + w);
+    if (el) el.textContent = totalResolved > 0 ? '(' + totalResolved + ')' : '';
+  }
+}
+
+// ── Switch time window ──
+function switchWindow(window) {
+  currentWindow = window;
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.time-tab[data-window="' + window + '"]')?.classList.add('active');
+  const filtered = filterPicksByWindow(allPicks, window);
+  const models = calcModelStats(filtered);
+  renderLeaderboard(models);
+}
+
+// ── Tab click handlers ──
+(function attachTabHandlers() {
+  document.querySelectorAll('.time-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const win = this.getAttribute('data-window');
+      if (win) switchWindow(win);
+    });
+  });
+})();
+
+function esc(v) {
+  if (v == null) return '—';
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Load picks from multiple sources ──
+function mergePicksFromSources(sources) {
+  const seen = new Set();
+  const merged = [];
+  for (const src of sources) {
+    if (!Array.isArray(src)) continue;
+    for (const p of src) {
+      const key = (p.model_id || '') + '|' + (p.symbol || '') + '|' + (p.submitted_at || '');
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(p);
+      }
+    }
+  }
+  return merged;
+}
+
+async function loadPicksAndLeaderboard() {
+  const sources = [];
+
+  // Try loading daily pick files (most complete source)
+  const today = new Date();
+  for (let d = 0; d < 5; d++) {
+    const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
+    const ds = date.toISOString().slice(0, 10).replace(/-/g, '');
+    try {
+      const resp = await fetch('./data/ai_tournament/picks_' + ds + '.json');
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data)) sources.push(data);
+      }
+    } catch { /* file may not exist yet */ }
+  }
+
+  // Fallback: try the merged picks file
+  if (sources.length === 0) {
+    try {
+      const resp = await fetch('./data/ai_tournament_picks_latest.json');
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data)) sources.push(data);
+      }
+    } catch { /* not available */ }
+  }
+
+  // Last resort: try leaderboard JSON for model list (no picks detail)
+  let leaderboardModels = null;
+  try {
+    const resp = await fetch('./data/ai_tournament_leaderboard.json');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.models && data.models.length > 0) {
+        leaderboardModels = data.models;
+      }
+    }
+  } catch { /* not available */ }
+
+  if (sources.length > 0) {
+    allPicks = mergePicksFromSources(sources);
+  } else if (leaderboardModels) {
+    // No pick-level data — show leaderboard models as all-time only
+    renderLeaderboard(leaderboardModels);
+    document.getElementById('lb-body').insertAdjacentHTML('beforeend',
+      '<tr><td colspan="11" style="text-align:center;color:#4b5563;padding:8px;font-size:11px">' +
+      '⚠ Time-window filters require pick-level data. Showing all-time only until <code>ai_tournament_picks_latest.json</code> is available.' +
+      '</td></tr>');
+    return;
+  }
+
+  // Render default view (all-time)
+  const models = calcModelStats(allPicks);
+  renderLeaderboard(models);
+  updateTabCounts();
+}
+
+// ── Load model picks detail (cards section) ──
+async function loadPicks() {
+  try {
+    // Reuse the same picks we already loaded for the leaderboard
+    if (allPicks.length === 0) return;
+    const picks = allPicks;
+
+    // Group by model
+    const byModel = {};
+    picks.forEach(p => {
+      if (!byModel[p.model_id]) byModel[p.model_id] = [];
+      byModel[p.model_id].push(p);
+    });
+
+    const container = document.getElementById('picks-container');
+    let html = '<div class="models-grid">';
+    for (const [modelId, modelPicks] of Object.entries(byModel)) {
+      const open = modelPicks.filter(p => p.status === 'OPEN').length;
+      const resolved = modelPicks.filter(p => p.status !== 'OPEN');
+      const wins = resolved.filter(p => p.pnl_pct > 0).length;
+      const wr = resolved.length > 0 ? wins / resolved.length : null;
+
+      html += `<div class="model-card">
+        <h3>${esc(modelId)} <span class="provider-tag">${esc(modelPicks[0]?.provider || '')}</span>
+          ${modelPicks[0]?.data_integrity_flag ? `<span class="flag-${modelPicks[0].data_integrity_flag.toLowerCase().replace(/_/g,'-').slice(0,3)}">${esc(modelPicks[0].data_integrity_flag)}</span>` : ''}
+        </h3>`;
+
+      if (modelPicks[0]?.strategy_name) {
+        html += `<div class="strategy-box">${esc(modelPicks[0].strategy_name)}: ${esc(modelPicks[0].rationale?.slice(0,120))}${modelPicks[0].rationale?.length > 120 ? '…' : ''}</div>`;
+      }
+
+      html += `<div class="stats-row">
+        <div class="stat"><span class="stat-val">${wr !== null ? (wr*100).toFixed(0)+'%' : '—'}</span><span class="stat-label">Win Rate</span></div>
+        <div class="stat"><span class="stat-val">${modelPicks.length}</span><span class="stat-label">Total Picks</span></div>
+        <div class="stat"><span class="stat-val">${open}</span><span class="stat-label">Open</span></div>
+        <div class="stat"><span class="stat-val">${resolved.length}</span><span class="stat-label">Resolved</span></div>
+      </div>`;
+
+      const recentPicks = modelPicks.slice(0, 5);
+      html += `<div class="picks-mini"><table>
+        <tr><th>Symbol</th><th>Dir</th><th>Class</th><th>Status</th><th>P&L</th></tr>`;
+      recentPicks.forEach(p => {
+        const pnlClass = p.pnl_pct > 0 ? 'pnl-pos' : p.pnl_pct < 0 ? 'pnl-neg' : 'pnl-neu';
+        html += `<tr>
+          <td>${esc(p.symbol)}</td>
+          <td>${esc(p.direction)}</td>
+          <td>${esc(p.asset_class)}</td>
+          <td>${esc(p.status)}</td>
+          <td class="${pnlClass}">${p.pnl_pct != null ? (p.pnl_pct > 0 ? '+' : '') + p.pnl_pct.toFixed(2) + '%' : '—'}</td>
+        </tr>`;
+      });
+      html += `</table></div>`;
+      if (modelPicks.length > 5) html += `<div class="small" style="margin-top:4px">+${modelPicks.length-5} more picks</div>`;
+      html += `</div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  } catch(e) { /* keep placeholder */ }
+}
+
+// ── Init ──
+loadPicksAndLeaderboard().then(() => loadPicks());
+</script>
+</body>
+</html>

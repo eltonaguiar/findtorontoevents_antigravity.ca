@@ -1,0 +1,47 @@
+# Refresh STOCKSUNIFY/data/daily-stocks.json after US cash equity close (weekdays).
+# Requires API secrets on the repo for Yahoo/Polygon/Finnhub fallbacks (see scripts/lib/stock-api-keys.ts).
+
+name: STOCKSUNIFY Daily Stock Picks
+
+on:
+  schedule:
+    - cron: "40 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: STOCKSUNIFY/package-lock.json
+
+      - name: Install STOCKSUNIFY deps
+        working-directory: STOCKSUNIFY
+        run: npm ci
+
+      - name: Generate daily-stocks.json
+        working-directory: STOCKSUNIFY
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+        run: npm run generate:daily
+
+      - name: Commit if changed
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add STOCKSUNIFY/data/daily-stocks.json STOCKSUNIFY/data/picks-archive || true
+          git diff --staged --quiet || (git commit -m "chore(stocksunify): refresh daily-stocks.json $(date -u +%F) [skip ci]" && bash .github/scripts/safe_push.sh)

@@ -1,0 +1,194 @@
+//@version=5
+strategy("Ichimoku_Cloud_STEPFUN", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.1, initial_capital=10000, pyramiding=0)
+
+// ============================================
+// ICHIMOKU CLOUD STRATEGY
+// Japanese trend following with cloud support
+// ============================================
+
+// ——— INPUT PARAMETERS ———
+tenkan_period = input.int(9, "Tenkan-sen Period", minval=5, maxval=20)
+kijun_period = input.int(26, "Kijun-sen Period", minval=15, maxval=50)
+senkou_span_b_period = input.int(52, "Senkou Span B Period", minval=30, maxval=100)
+
+// Signal confirmation
+require_cloud_confirmation = input.bool(true, "Require Cloud Confirmation")
+use_chikou_span = input.bool(false, "Use Chikou Span Filter")
+
+// Exit parameters
+exit_mode = input.string("Opposite Signal", "Exit Mode", options=["Opposite Signal", "TP/SL", "Kijun Cross"])
+tp_percent = input.float(3.0, "Take Profit %", minval=0.1, step=0.1)
+sl_percent = input.float(1.5, "Stop Loss %", minval=0.1, step=0.1)
+
+// Position sizing
+position_size_pct = input.float(100.0, "Position Size %", minval=1.0, maxval=100.0)
+
+// ============================================
+// ICHIMOKU CALCULATIONS
+// ============================================
+
+// Tenkan-sen (Conversion Line): (9-period high + 9-period low)/2
+tenkan = (ta.highest(high, tenkan_period) + ta.lowest(low, tenkan_period)) / 2
+
+// Kijun-sen (Base Line): (26-period high + 26-period low)/2
+kijun = (ta.highest(high, kijun_period) + ta.lowest(low, kijun_period)) / 2
+
+// Senkou Span A (Leading Span A): (Tenkan + Kijun)/2, plotted 26 periods ahead
+senkou_a = (tenkan + kijun) / 2
+
+// Senkou Span B (Leading Span B): (52-period high + 52-period low)/2, plotted 26 periods ahead
+senkou_b = (ta.highest(high, senkou_span_b_period) + ta.lowest(low, senkou_span_b_period)) / 2
+
+// Chikou Span (Lagging Span): Current close plotted 26 periods back
+chikou = close[26]
+
+// Cloud identification
+cloud_top = math.max(senkou_a, senkou_b)
+cloud_bottom = math.min(senkou_a, senkou_b)
+bullish_cloud = senkou_a > senkou_b
+bearish_cloud = senkou_a < senkou_b
+
+// ============================================
+// SIGNAL GENERATION
+// ============================================
+
+// Price position relative to cloud
+price_above_cloud = close > cloud_top
+price_below_cloud = close < cloud_bottom
+price_inside_cloud = not (price_above_cloud or price_below_cloud)
+
+// Tenkan/Kijun cross
+tk_bullish_cross = ta.crossover(tenkan, kijun)
+tk_bearish_cross = ta.crossunder(tenkan, kijun)
+
+// Chikou span confirmation (price above/below chikou)
+chikou_bullish = chikou > close
+chikou_bearish = chikou < close
+
+// Long signal: Price above cloud + TK bullish cross + cloud bullish
+long_condition = price_above_cloud and tk_bullish_cross and bullish_cloud and (not use_chikou_span or chikou_bullish)
+
+// Short signal: Price below cloud + TK bearish cross + cloud bearish
+short_condition = price_below_cloud and tk_bearish_cross and bearish_cloud and (not use_chikou_span or chikou_bearish)
+
+// If cloud confirmation not required, simplify
+if not require_cloud_confirmation
+    long_condition := tk_bullish_cross and close > kijun
+    short_condition := tk_bearish_cross and close < kijun
+
+// ============================================
+// EXIT LOGIC
+// ============================================
+
+// Calculate exit levels
+float long_tp = na
+float long_sl = na
+float short_tp = na
+float short_sl = na
+if exit_mode == "TP/SL"
+    long_tp := close * (1 + tp_percent / 100)
+    long_sl := close * (1 - sl_percent / 100)
+    short_tp := close * (1 - tp_percent / 100)
+    short_sl := close * (1 + sl_percent / 100)
+
+// Kijun-based exit
+long_kijun_exit = close < kijun
+short_kijun_exit = close > kijun
+
+// ============================================
+// STRATEGY EXECUTION
+// ============================================
+
+// Enter long
+if long_condition and strategy.position_size == 0
+    strategy.entry("Long", strategy.long, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Long Exit", "Long", limit=long_tp, stop=long_sl)
+
+// Enter short
+if short_condition and strategy.position_size == 0
+    strategy.entry("Short", strategy.short, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Short Exit", "Short", limit=short_tp, stop=short_sl)
+
+// Exit on Kijun cross (if using that mode)
+if exit_mode == "Kijun Cross"
+    if long_kijun_exit and strategy.position_size > 0
+        strategy.close("Long")
+    if short_kijun_exit and strategy.position_size < 0
+        strategy.close("Short")
+
+// Exit on opposite signal
+if exit_mode == "Opposite Signal"
+    if short_condition and strategy.position_size > 0
+        strategy.close("Long")
+    if long_condition and strategy.position_size < 0
+        strategy.close("Short")
+
+// ============================================
+// PLOTTING
+// ============================================
+
+// Plot Ichimoku components
+plot(tenkan, "Tenkan", color=color.new(color.blue, 0), linewidth=2)
+plot(kijun, "Kijun", color=color.new(color.red, 0), linewidth=2)
+plot(senkou_a, "Span A", color=color.new(color.green, 0), linewidth=1)
+plot(senkou_b, "Span B", color=color.new(color.red, 0), linewidth=1)
+
+// Cloud fill
+fill_color = bullish_cloud ? color.new(color.green, 85) : color.new(color.red, 85)
+fill(plot(senkou_a, display=display.none), plot(senkou_b, display=display.none), color=fill_color, title="Cloud")
+
+// Entry markers
+plotshape(long_condition, title="Ichimoku Long", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, text="ICH+")
+
+plotshape(short_condition, title="Ichimoku Short", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, text="ICH-")
+
+// Background
+bgcolor(strategy.position_size > 0 ? color.new(color.green, 90) : na)
+bgcolor(strategy.position_size < 0 ? color.new(color.red, 90) : na)
+
+// ============================================
+// INFO TABLE
+// ============================================
+var table info_table = table.new(position.top_right, 2, 11, border_width=1)
+
+if barstate.islast
+    table.cell(info_table, 0, 0, "Ichimoku Cloud", bgcolor=color.blue, text_color=color.white)
+    table.cell(info_table, 1, 0, "Value", bgcolor=color.blue, text_color=color.white)
+    
+    table.cell(info_table, 0, 1, "Tenkan", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 1, str.tostring(tenkan, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 2, "Kijun", bgcolor=color.new(color.red, 80))
+    table.cell(info_table, 1, 2, str.tostring(kijun, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 3, "Span A", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 3, str.tostring(senkou_a, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 4, "Span B", bgcolor=color.new(color.red, 80))
+    table.cell(info_table, 1, 4, str.tostring(senkou_b, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 5, "Cloud", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 5, bullish_cloud ? "Bullish" : bearish_cloud ? "Bearish" : "Mixed", text_color=color.white)
+    
+    table.cell(info_table, 0, 6, "Price vs Cloud", bgcolor=color.new(color.orange, 80))
+    table.cell(info_table, 1, 6, price_above_cloud ? "Above" : price_below_cloud ? "Below" : "Inside", text_color=color.white)
+    
+    table.cell(info_table, 0, 7, "Signal", bgcolor=long_condition ? color.green : short_condition ? color.red : color.gray)
+    table.cell(info_table, 1, 7, long_condition ? "LONG" : short_condition ? "SHORT" : "WAIT", text_color=color.white)
+    
+    table.cell(info_table, 0, 8, "Exit Mode", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 8, exit_mode, text_color=color.white)
+    
+    table.cell(info_table, 0, 9, "Position", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 9, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", text_color=color.white)
+    
+    table.cell(info_table, 0, 10, "Equity", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 10, str.tostring(strategy.equity, "#.##"), text_color=color.white)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(long_condition, "Ichimoku Long", "Ichimoku Cloud Long Entry")
+alertcondition(short_condition, "Ichimoku Short", "Ichimoku Cloud Short Entry")

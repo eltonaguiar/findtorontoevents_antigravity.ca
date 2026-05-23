@@ -1,0 +1,67 @@
+name: Top Gainers Spike Scanner
+
+on:
+  schedule:
+    # Every 30 min during US market hours (13:30–19:30 UTC = 9:30 AM–3:30 PM ET)
+    # Stops before 20:00 UTC to avoid running after 4 PM ET market close.
+    - cron: '*/30 13-19 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force run even if market is closed'
+        required: false
+        default: 'false'
+        type: boolean
+      dry_run:
+        description: 'Dry run — print picks but do not write files'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: top-gainers-scanner
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          update-environment: false
+
+      - name: Install dependencies
+        run: pip install yfinance requests beautifulsoup4 pandas numpy --quiet
+
+      - name: Run top gainers scanner
+        run: |
+          FLAGS=""
+          if [ "${{ inputs.force }}" = "true" ]; then FLAGS="$FLAGS --force"; fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then FLAGS="$FLAGS --dry-run"; fi
+          python STOCKS/scanners/top_gainers_scanner.py $FLAGS
+
+      - name: Commit picks if changed
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add STOCKS/scanners/data/top_gainers_picks.json || true
+          git add STOCKS/competition/forward_picks.json || true
+          if git diff --staged --quiet; then
+            echo "No new picks to commit."
+          else
+            git commit -m "auto: top gainers scan $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi

@@ -1,0 +1,231 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-17T23:00:00Z",
+  "description": "Feature registry for Alpha Engine ML pipeline. All 32 features from MLSignalRanker.FEATURES.",
+  "features": {
+    "strategy_encoded": {
+      "type": "int",
+      "range": [-1, 200],
+      "source": "label_encoder",
+      "critical": true,
+      "description": "Label-encoded strategy name (-1 for unknown)"
+    },
+    "category_encoded": {
+      "type": "int",
+      "range": [0, 4],
+      "source": "category_map",
+      "critical": true,
+      "description": "crypto=0, forex=1, stock=2, penny=3, meme=4"
+    },
+    "confidence": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "strategy",
+      "critical": true,
+      "description": "Strategy raw confidence score"
+    },
+    "rsi_at_entry": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": true,
+      "description": "RSI at signal time, normalized /100 (58/342 real, rest imputed to 0.5)"
+    },
+    "volume_ratio": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": true,
+      "description": "Volume vs 20d average, normalized /10, capped at 1.0 (22/342 real)"
+    },
+    "risk_reward": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "entry_tp_sl",
+      "critical": true,
+      "description": "TP/SL ratio, normalized /5, capped at 1.0 (342/342)"
+    },
+    "atr_at_entry": {
+      "type": "float",
+      "range": [0.0, 0.2],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "Normalized ATR capped at 0.2 (18/342 real, fallback to sl_dist_pct)"
+    },
+    "regime_encoded": {
+      "type": "int",
+      "range": [-1, 1],
+      "source": "regime_map",
+      "critical": true,
+      "description": "bull/risk_on=1, neutral=0, bear/risk_off=-1"
+    },
+    "direction_encoded": {
+      "type": "int",
+      "range": [-1, 1],
+      "source": "signal",
+      "critical": true,
+      "description": "LONG/BUY=1, SHORT/SELL=-1 (342/342)"
+    },
+    "strategy_win_rate": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "computed",
+      "critical": true,
+      "description": "Strategy historical win rate from compute_strategy_stats"
+    },
+    "strategy_sharpe": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "computed",
+      "critical": true,
+      "description": "Strategy historical Sharpe, normalized /3, clamped to [-1,1]"
+    },
+    "strategy_closed_picks": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "computed",
+      "critical": false,
+      "description": "Number of closed picks, normalized /100, capped at 1.0"
+    },
+    "hour_utc": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "timestamp",
+      "critical": true,
+      "description": "Hour of signal (0-23) normalized to 0-1"
+    },
+    "hour_sin": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "timestamp",
+      "critical": true,
+      "description": "sin(2*pi*hour/24) cyclic encoding"
+    },
+    "hour_cos": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "timestamp",
+      "critical": true,
+      "description": "cos(2*pi*hour/24) cyclic encoding"
+    },
+    "day_of_week": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "timestamp",
+      "critical": false,
+      "description": "0=Mon..6=Sun normalized to 0-1"
+    },
+    "is_weekend": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "timestamp",
+      "critical": false,
+      "description": "1 if Sat/Sun, 0 otherwise"
+    },
+    "hour_x_vol": {
+      "type": "float",
+      "range": [-0.2, 0.2],
+      "source": "computed",
+      "critical": false,
+      "description": "hour_sin * atr_pct (time-volatility interaction)"
+    },
+    "sl_distance_pct": {
+      "type": "float",
+      "range": [0.0, 0.2],
+      "source": "entry_tp_sl",
+      "critical": true,
+      "description": "Stop-loss distance as % of entry, capped at 0.2 (342/342)"
+    },
+    "tp_distance_pct": {
+      "type": "float",
+      "range": [0.0, 0.5],
+      "source": "entry_tp_sl",
+      "critical": true,
+      "description": "Take-profit distance as % of entry, capped at 0.5 (342/342)"
+    },
+    "rr_asymmetry": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "computed",
+      "critical": false,
+      "description": "(tp_dist - sl_dist) / (tp_dist + sl_dist), trade shape"
+    },
+    "entry_vs_optimal": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "outcome",
+      "critical": false,
+      "description": "How far entry was from subsequent low/high (training only)"
+    },
+    "hold_duration_hours": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "outcome",
+      "critical": false,
+      "description": "Trade hold time normalized by 720h (30d max)"
+    },
+    "mfe_pct": {
+      "type": "float",
+      "range": [0.0, 0.5],
+      "source": "outcome",
+      "critical": false,
+      "description": "Max favorable excursion capped at 50% (160/342 real)"
+    },
+    "mae_pct": {
+      "type": "float",
+      "range": [0.0, 0.5],
+      "source": "outcome",
+      "critical": false,
+      "description": "Max adverse excursion capped at 50% (161/342 real)"
+    },
+    "rsi_x_regime": {
+      "type": "float",
+      "range": [0.0, 2.0],
+      "source": "computed",
+      "critical": false,
+      "description": "RSI * regime_interaction_val (RSI extremes more meaningful in trending)"
+    },
+    "vol_ratio_x_regime": {
+      "type": "float",
+      "range": [0.0, 3.0],
+      "source": "computed",
+      "critical": false,
+      "description": "volume_ratio * (3 - regime_val) (spikes matter more in low vol)"
+    },
+    "momentum_x_regime": {
+      "type": "float",
+      "range": [0.0, 0.0],
+      "source": "computed",
+      "critical": false,
+      "description": "momentum_7d * regime_val (always 0 — no raw momentum available)"
+    },
+    "bb_x_regime": {
+      "type": "float",
+      "range": [0.0, 0.5],
+      "source": "computed",
+      "critical": false,
+      "description": "bb_position * regime_factor (mean-reversion in low vol)"
+    },
+    "hour_x_regime": {
+      "type": "float",
+      "range": [-2.0, 2.0],
+      "source": "computed",
+      "critical": false,
+      "description": "hour_sin * regime_val (time effects differ by regime)"
+    },
+    "atr_x_regime": {
+      "type": "float",
+      "range": [0.0, 0.4],
+      "source": "computed",
+      "critical": false,
+      "description": "atr_pct * regime_val (vol significance varies)"
+    },
+    "direction_x_regime": {
+      "type": "float",
+      "range": [-2.0, 2.0],
+      "source": "computed",
+      "critical": false,
+      "description": "direction_encoded * regime_val (counter-trend penalty)"
+    }
+  }
+}

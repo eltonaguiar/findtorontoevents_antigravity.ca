@@ -1,0 +1,1326 @@
+{
+  "generated_at": "2026-03-21T15:12:57.424466+00:00",
+  "source_system": "ml_eth_reverser",
+  "variation_count": 5,
+  "variations": [
+    {
+      "variation_id": "eth_v1_short_only",
+      "name": "ETH Short Specialist",
+      "description": "SHORT-only ETH based on 75-79% WR short bias from nightraid- and Expert-Ethash-Camel",
+      "source_system": "ml_eth_reverser",
+      "coin": "ETHUSDT",
+      "direction": "SHORT",
+      "tp_pct": 1.77,
+      "sl_pct": 0.91,
+      "max_hold_hours": 48,
+      "leverage": 10,
+      "entry_conditions": {
+        "rsi_14_above": 55,
+        "bb_position_above": 0.6,
+        "adx_above": 15,
+        "sma20_dist_pct_above": 0.5
+      },
+      "entry_hours_utc": [
+        19,
+        3,
+        5,
+        2,
+        11,
+        0
+      ],
+      "session": "ANY",
+      "starting_capital": 1000,
+      "status": "ACTIVE",
+      "source_wr": 0.7778,
+      "nightraid_short_wr": 0.7,
+      "source_trades": 27,
+      "created_at": "2026-03-21T15:12:56.022802+00:00",
+      "backtest": {
+        "variation_id": "eth_v1_short_only",
+        "name": "ETH Short Specialist",
+        "total_trades": 199,
+        "wins": 108,
+        "losses": 91,
+        "win_rate": 0.5427,
+        "total_pnl_pct": -90.27,
+        "avg_pnl_pct": -0.45,
+        "avg_win_pct": 8.83,
+        "avg_loss_pct": 11.47,
+        "profit_factor": 0.91,
+        "sharpe_ratio": -0.56,
+        "max_drawdown_pct": 96.53,
+        "final_equity": 66.13,
+        "roi_pct": -93.39,
+        "trades_sample": [
+          {
+            "direction": "SHORT",
+            "entry_price": 3323.89,
+            "exit_price": 3328.99,
+            "pnl_pct": -1.53,
+            "pnl_usd": -15.34,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3429.3,
+            "exit_price": 3420.13,
+            "pnl_pct": 2.67,
+            "pnl_usd": 26.33,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3694.25,
+            "exit_price": 3628.77,
+            "pnl_pct": 17.72,
+            "pnl_usd": 179.2,
+            "hold_hours": 8,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3112.98,
+            "exit_price": 3138.7,
+            "pnl_pct": -8.26,
+            "pnl_usd": -98.33,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3095.0,
+            "exit_price": 3113.01,
+            "pnl_pct": -5.82,
+            "pnl_usd": -63.54,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3135.61,
+            "exit_price": 3175.75,
+            "pnl_pct": -12.8,
+            "pnl_usd": -131.64,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3228.94,
+            "exit_price": 3271.48,
+            "pnl_pct": -13.17,
+            "pnl_usd": -118.13,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3254.55,
+            "exit_price": 3301.21,
+            "pnl_pct": -14.34,
+            "pnl_usd": -111.62,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3244.37,
+            "exit_price": 3170.55,
+            "pnl_pct": 22.75,
+            "pnl_usd": 151.75,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 2948.4,
+            "exit_price": 2922.8,
+            "pnl_pct": 8.68,
+            "pnl_usd": 71.08,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          }
+        ]
+      }
+    },
+    {
+      "variation_id": "eth_v2_high_lev_momentum",
+      "name": "ETH High-Leverage Momentum",
+      "description": "47x leverage momentum trades like nightraid-, only when ADX>25 confirms trend strength",
+      "source_system": "ml_eth_reverser",
+      "coin": "ETHUSDT",
+      "direction": "BOTH",
+      "tp_pct": 0.88,
+      "sl_pct": 0.38,
+      "max_hold_hours": 12,
+      "leverage": 47,
+      "entry_conditions": {
+        "adx_above": 25,
+        "volume_ratio_20_above": 1.3,
+        "atr_pct_above": 0.8,
+        "short_when_rsi_above": 65,
+        "long_when_rsi_below": 35
+      },
+      "entry_hours_utc": [
+        19,
+        3,
+        5,
+        2,
+        11,
+        0
+      ],
+      "session": "HIGH_VOLATILITY",
+      "starting_capital": 500,
+      "status": "ACTIVE",
+      "source_wr": 0.6912,
+      "nightraid_avg_leverage": 31.3,
+      "source_trades": 70,
+      "created_at": "2026-03-21T15:12:56.022802+00:00",
+      "backtest": {
+        "variation_id": "eth_v2_high_lev_momentum",
+        "name": "ETH High-Leverage Momentum",
+        "total_trades": 6,
+        "wins": 4,
+        "losses": 2,
+        "win_rate": 0.6667,
+        "total_pnl_pct": -192.15,
+        "avg_pnl_pct": -32.03,
+        "avg_win_pct": 51.55,
+        "avg_loss_pct": 199.17,
+        "profit_factor": 0.52,
+        "sharpe_ratio": -3.0,
+        "max_drawdown_pct": 267.53,
+        "final_equity": -3922.7,
+        "roi_pct": -884.54,
+        "trades_sample": [
+          {
+            "direction": "LONG",
+            "entry_price": 2967.39,
+            "exit_price": 3042.62,
+            "pnl_pct": 119.16,
+            "pnl_usd": 595.78,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3108.52,
+            "exit_price": 3126.62,
+            "pnl_pct": 27.37,
+            "pnl_usd": 299.88,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3021.54,
+            "exit_price": 3008.05,
+            "pnl_pct": 20.98,
+            "pnl_usd": 292.86,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3688.9,
+            "exit_price": 3658.55,
+            "pnl_pct": 38.67,
+            "pnl_usd": 652.93,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3472.68,
+            "exit_price": 3446.0,
+            "pnl_pct": -36.11,
+            "pnl_usd": -845.48,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3105.32,
+            "exit_price": 2866.0,
+            "pnl_pct": -362.22,
+            "pnl_usd": -5418.66,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          }
+        ]
+      }
+    },
+    {
+      "variation_id": "eth_v3_patience",
+      "name": "ETH Patience (Hold Winners)",
+      "description": "Hold winners 150h+, cut losers at 30h -- mirrors nightraid-'s 123h avg hold pattern",
+      "source_system": "ml_eth_reverser",
+      "coin": "ETHUSDT",
+      "direction": "BOTH",
+      "tp_pct": 5.96,
+      "sl_pct": 1.21,
+      "max_hold_hours": 200,
+      "min_hold_winners_hours": 150,
+      "max_hold_losers_hours": 30,
+      "leverage": 5,
+      "entry_conditions": {
+        "sma50_dist_pct_range": [
+          -3,
+          3
+        ],
+        "rsi_14_range": [
+          35,
+          65
+        ],
+        "change_24h_pct_range": [
+          -5,
+          5
+        ]
+      },
+      "entry_hours_utc": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "session": "ANY",
+      "starting_capital": 1000,
+      "status": "ACTIVE",
+      "source_wr": 0.6739,
+      "nightraid_avg_hold_hours": 123,
+      "source_trades": 70,
+      "created_at": "2026-03-21T15:12:56.022802+00:00",
+      "backtest": {
+        "variation_id": "eth_v3_patience",
+        "name": "ETH Patience (Hold Winners)",
+        "total_trades": 335,
+        "wins": 25,
+        "losses": 310,
+        "win_rate": 0.0746,
+        "total_pnl_pct": -841.41,
+        "avg_pnl_pct": -2.51,
+        "avg_win_pct": 33.75,
+        "avg_loss_pct": 5.44,
+        "profit_factor": 0.5,
+        "sharpe_ratio": -2.93,
+        "max_drawdown_pct": 100.0,
+        "final_equity": 0.02,
+        "roi_pct": -100.0,
+        "trades_sample": [
+          {
+            "direction": "SHORT",
+            "entry_price": 3552.0,
+            "exit_price": 3617.82,
+            "pnl_pct": -9.27,
+            "pnl_usd": -92.65,
+            "hold_hours": 20,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3600.41,
+            "exit_price": 3534.2,
+            "pnl_pct": -9.19,
+            "pnl_usd": -83.43,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3495.99,
+            "exit_price": 3420.13,
+            "pnl_pct": 10.85,
+            "pnl_usd": 89.39,
+            "hold_hours": 152,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3628.77,
+            "exit_price": 3497.32,
+            "pnl_pct": -18.11,
+            "pnl_usd": -165.42,
+            "hold_hours": 8,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3527.4,
+            "exit_price": 3561.58,
+            "pnl_pct": -4.84,
+            "pnl_usd": -36.23,
+            "hold_hours": 12,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3557.72,
+            "exit_price": 3503.8,
+            "pnl_pct": -7.58,
+            "pnl_usd": -53.93,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3526.01,
+            "exit_price": 3497.73,
+            "pnl_pct": -4.01,
+            "pnl_usd": -26.38,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3112.98,
+            "exit_price": 3138.7,
+            "pnl_pct": -4.13,
+            "pnl_usd": -26.08,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3136.69,
+            "exit_price": 3081.61,
+            "pnl_pct": -8.78,
+            "pnl_usd": -53.14,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3025.94,
+            "exit_price": 2951.21,
+            "pnl_pct": -12.35,
+            "pnl_usd": -68.18,
+            "hold_hours": 36,
+            "exit_reason": "SL",
+            "is_win": 0
+          }
+        ]
+      }
+    },
+    {
+      "variation_id": "eth_v4_london_ny_overlap",
+      "name": "ETH London/NY Overlap",
+      "description": "Trade only during 11-15 UTC (London/NY overlap) -- nightraid-'s best performing hours",
+      "source_system": "ml_eth_reverser",
+      "coin": "ETHUSDT",
+      "direction": "SHORT",
+      "tp_pct": 1.55,
+      "sl_pct": 0.76,
+      "max_hold_hours": 24,
+      "leverage": 15,
+      "entry_conditions": {
+        "hour_utc_range": [
+          11,
+          15
+        ],
+        "adx_above": 18,
+        "volume_ratio_20_above": 1.0
+      },
+      "entry_hours_utc": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "session": "LONDON_NY_OVERLAP",
+      "starting_capital": 1000,
+      "status": "ACTIVE",
+      "source_wr": 0.7778,
+      "overlap_trades": 32,
+      "source_trades": 70,
+      "created_at": "2026-03-21T15:12:56.022802+00:00",
+      "backtest": {
+        "variation_id": "eth_v4_london_ny_overlap",
+        "name": "ETH London/NY Overlap",
+        "total_trades": 233,
+        "wins": 116,
+        "losses": 117,
+        "win_rate": 0.4979,
+        "total_pnl_pct": 103.98,
+        "avg_pnl_pct": 0.45,
+        "avg_win_pct": 20.34,
+        "avg_loss_pct": 19.28,
+        "profit_factor": 1.05,
+        "sharpe_ratio": 0.25,
+        "max_drawdown_pct": 100.02,
+        "final_equity": -0.72,
+        "roi_pct": -100.07,
+        "trades_sample": [
+          {
+            "direction": "SHORT",
+            "entry_price": 3616.33,
+            "exit_price": 3621.0,
+            "pnl_pct": -1.94,
+            "pnl_usd": -19.37,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3297.03,
+            "exit_price": 3261.54,
+            "pnl_pct": 16.15,
+            "pnl_usd": 158.34,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3262.14,
+            "exit_price": 3319.99,
+            "pnl_pct": -26.6,
+            "pnl_usd": -302.97,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3401.01,
+            "exit_price": 3396.01,
+            "pnl_pct": 2.21,
+            "pnl_usd": 18.44,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3643.43,
+            "exit_price": 3658.56,
+            "pnl_pct": -6.23,
+            "pnl_usd": -53.22,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3440.01,
+            "exit_price": 3527.4,
+            "pnl_pct": -38.11,
+            "pnl_usd": -305.31,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3557.72,
+            "exit_price": 3503.8,
+            "pnl_pct": 22.73,
+            "pnl_usd": 112.74,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3497.73,
+            "exit_price": 3423.31,
+            "pnl_pct": 31.91,
+            "pnl_usd": 194.25,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3031.41,
+            "exit_price": 2951.21,
+            "pnl_pct": 39.68,
+            "pnl_usd": 318.62,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3024.98,
+            "exit_price": 3061.69,
+            "pnl_pct": -18.2,
+            "pnl_usd": -204.15,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          }
+        ]
+      }
+    },
+    {
+      "variation_id": "eth_v5_scale_into_winners",
+      "name": "ETH Scale-Into-Winners",
+      "description": "Start small (25% size), add 25% every time position is +1% -- nightraid- pattern yields 4x larger wins",
+      "source_system": "ml_eth_reverser",
+      "coin": "ETHUSDT",
+      "direction": "BOTH",
+      "tp_pct": 4.97,
+      "sl_pct": 0.91,
+      "max_hold_hours": 120,
+      "leverage": 10,
+      "scaling": {
+        "initial_size_pct": 25,
+        "add_at_profit_pct": [
+          1,
+          2,
+          3
+        ],
+        "add_size_pct": 25,
+        "max_additions": 3
+      },
+      "entry_conditions": {
+        "rsi_14_range": [
+          30,
+          70
+        ],
+        "adx_above": 20,
+        "change_4h_pct_abs_above": 0.5
+      },
+      "entry_hours_utc": [
+        19,
+        3,
+        5,
+        2,
+        11,
+        0
+      ],
+      "session": "ANY",
+      "starting_capital": 2000,
+      "status": "ACTIVE",
+      "source_wr": 0.6912,
+      "avg_win_vs_loss_ratio": 1.64,
+      "source_trades": 70,
+      "created_at": "2026-03-21T15:12:56.022802+00:00",
+      "backtest": {
+        "variation_id": "eth_v5_scale_into_winners",
+        "name": "ETH Scale-Into-Winners",
+        "total_trades": 316,
+        "wins": 127,
+        "losses": 189,
+        "win_rate": 0.4019,
+        "total_pnl_pct": -1041.14,
+        "avg_pnl_pct": -3.29,
+        "avg_win_pct": 7.9,
+        "avg_loss_pct": 10.82,
+        "profit_factor": 0.49,
+        "sharpe_ratio": -3.79,
+        "max_drawdown_pct": 100.0,
+        "final_equity": 0.0,
+        "roi_pct": -100.0,
+        "trades_sample": [
+          {
+            "direction": "SHORT",
+            "entry_price": 3327.8,
+            "exit_price": 3287.4,
+            "pnl_pct": 6.07,
+            "pnl_usd": 121.4,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3429.3,
+            "exit_price": 3596.32,
+            "pnl_pct": -48.7,
+            "pnl_usd": -1033.2,
+            "hold_hours": 8,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3694.25,
+            "exit_price": 3628.77,
+            "pnl_pct": 8.86,
+            "pnl_usd": 96.44,
+            "hold_hours": 8,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3534.0,
+            "exit_price": 3561.58,
+            "pnl_pct": -7.8,
+            "pnl_usd": -92.45,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3112.98,
+            "exit_price": 3138.7,
+            "pnl_pct": -8.26,
+            "pnl_usd": -90.24,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3095.0,
+            "exit_price": 3113.01,
+            "pnl_pct": -5.82,
+            "pnl_usd": -58.3,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 2993.17,
+            "exit_price": 3014.31,
+            "pnl_pct": -7.06,
+            "pnl_usd": -66.65,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3041.46,
+            "exit_price": 3005.68,
+            "pnl_pct": -11.76,
+            "pnl_usd": -103.17,
+            "hold_hours": 4,
+            "exit_reason": "SL",
+            "is_win": 0
+          },
+          {
+            "direction": "LONG",
+            "entry_price": 3030.53,
+            "exit_price": 3064.92,
+            "pnl_pct": 5.67,
+            "pnl_usd": 43.91,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          },
+          {
+            "direction": "SHORT",
+            "entry_price": 3218.08,
+            "exit_price": 3176.17,
+            "pnl_pct": 6.51,
+            "pnl_usd": 53.25,
+            "hold_hours": 4,
+            "exit_reason": "TP",
+            "is_win": 1
+          }
+        ]
+      }
+    }
+  ],
+  "backtest_summary": [
+    {
+      "variation_id": "eth_v1_short_only",
+      "name": "ETH Short Specialist",
+      "total_trades": 199,
+      "wins": 108,
+      "losses": 91,
+      "win_rate": 0.5427,
+      "total_pnl_pct": -90.27,
+      "avg_pnl_pct": -0.45,
+      "avg_win_pct": 8.83,
+      "avg_loss_pct": 11.47,
+      "profit_factor": 0.91,
+      "sharpe_ratio": -0.56,
+      "max_drawdown_pct": 96.53,
+      "final_equity": 66.13,
+      "roi_pct": -93.39,
+      "trades_sample": [
+        {
+          "direction": "SHORT",
+          "entry_price": 3323.89,
+          "exit_price": 3328.99,
+          "pnl_pct": -1.53,
+          "pnl_usd": -15.34,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3429.3,
+          "exit_price": 3420.13,
+          "pnl_pct": 2.67,
+          "pnl_usd": 26.33,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3694.25,
+          "exit_price": 3628.77,
+          "pnl_pct": 17.72,
+          "pnl_usd": 179.2,
+          "hold_hours": 8,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3112.98,
+          "exit_price": 3138.7,
+          "pnl_pct": -8.26,
+          "pnl_usd": -98.33,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3095.0,
+          "exit_price": 3113.01,
+          "pnl_pct": -5.82,
+          "pnl_usd": -63.54,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3135.61,
+          "exit_price": 3175.75,
+          "pnl_pct": -12.8,
+          "pnl_usd": -131.64,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3228.94,
+          "exit_price": 3271.48,
+          "pnl_pct": -13.17,
+          "pnl_usd": -118.13,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3254.55,
+          "exit_price": 3301.21,
+          "pnl_pct": -14.34,
+          "pnl_usd": -111.62,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3244.37,
+          "exit_price": 3170.55,
+          "pnl_pct": 22.75,
+          "pnl_usd": 151.75,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 2948.4,
+          "exit_price": 2922.8,
+          "pnl_pct": 8.68,
+          "pnl_usd": 71.08,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        }
+      ]
+    },
+    {
+      "variation_id": "eth_v2_high_lev_momentum",
+      "name": "ETH High-Leverage Momentum",
+      "total_trades": 6,
+      "wins": 4,
+      "losses": 2,
+      "win_rate": 0.6667,
+      "total_pnl_pct": -192.15,
+      "avg_pnl_pct": -32.03,
+      "avg_win_pct": 51.55,
+      "avg_loss_pct": 199.17,
+      "profit_factor": 0.52,
+      "sharpe_ratio": -3.0,
+      "max_drawdown_pct": 267.53,
+      "final_equity": -3922.7,
+      "roi_pct": -884.54,
+      "trades_sample": [
+        {
+          "direction": "LONG",
+          "entry_price": 2967.39,
+          "exit_price": 3042.62,
+          "pnl_pct": 119.16,
+          "pnl_usd": 595.78,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3108.52,
+          "exit_price": 3126.62,
+          "pnl_pct": 27.37,
+          "pnl_usd": 299.88,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3021.54,
+          "exit_price": 3008.05,
+          "pnl_pct": 20.98,
+          "pnl_usd": 292.86,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3688.9,
+          "exit_price": 3658.55,
+          "pnl_pct": 38.67,
+          "pnl_usd": 652.93,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3472.68,
+          "exit_price": 3446.0,
+          "pnl_pct": -36.11,
+          "pnl_usd": -845.48,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3105.32,
+          "exit_price": 2866.0,
+          "pnl_pct": -362.22,
+          "pnl_usd": -5418.66,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        }
+      ]
+    },
+    {
+      "variation_id": "eth_v3_patience",
+      "name": "ETH Patience (Hold Winners)",
+      "total_trades": 335,
+      "wins": 25,
+      "losses": 310,
+      "win_rate": 0.0746,
+      "total_pnl_pct": -841.41,
+      "avg_pnl_pct": -2.51,
+      "avg_win_pct": 33.75,
+      "avg_loss_pct": 5.44,
+      "profit_factor": 0.5,
+      "sharpe_ratio": -2.93,
+      "max_drawdown_pct": 100.0,
+      "final_equity": 0.02,
+      "roi_pct": -100.0,
+      "trades_sample": [
+        {
+          "direction": "SHORT",
+          "entry_price": 3552.0,
+          "exit_price": 3617.82,
+          "pnl_pct": -9.27,
+          "pnl_usd": -92.65,
+          "hold_hours": 20,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3600.41,
+          "exit_price": 3534.2,
+          "pnl_pct": -9.19,
+          "pnl_usd": -83.43,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3495.99,
+          "exit_price": 3420.13,
+          "pnl_pct": 10.85,
+          "pnl_usd": 89.39,
+          "hold_hours": 152,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3628.77,
+          "exit_price": 3497.32,
+          "pnl_pct": -18.11,
+          "pnl_usd": -165.42,
+          "hold_hours": 8,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3527.4,
+          "exit_price": 3561.58,
+          "pnl_pct": -4.84,
+          "pnl_usd": -36.23,
+          "hold_hours": 12,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3557.72,
+          "exit_price": 3503.8,
+          "pnl_pct": -7.58,
+          "pnl_usd": -53.93,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3526.01,
+          "exit_price": 3497.73,
+          "pnl_pct": -4.01,
+          "pnl_usd": -26.38,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3112.98,
+          "exit_price": 3138.7,
+          "pnl_pct": -4.13,
+          "pnl_usd": -26.08,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3136.69,
+          "exit_price": 3081.61,
+          "pnl_pct": -8.78,
+          "pnl_usd": -53.14,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3025.94,
+          "exit_price": 2951.21,
+          "pnl_pct": -12.35,
+          "pnl_usd": -68.18,
+          "hold_hours": 36,
+          "exit_reason": "SL",
+          "is_win": 0
+        }
+      ]
+    },
+    {
+      "variation_id": "eth_v4_london_ny_overlap",
+      "name": "ETH London/NY Overlap",
+      "total_trades": 233,
+      "wins": 116,
+      "losses": 117,
+      "win_rate": 0.4979,
+      "total_pnl_pct": 103.98,
+      "avg_pnl_pct": 0.45,
+      "avg_win_pct": 20.34,
+      "avg_loss_pct": 19.28,
+      "profit_factor": 1.05,
+      "sharpe_ratio": 0.25,
+      "max_drawdown_pct": 100.02,
+      "final_equity": -0.72,
+      "roi_pct": -100.07,
+      "trades_sample": [
+        {
+          "direction": "SHORT",
+          "entry_price": 3616.33,
+          "exit_price": 3621.0,
+          "pnl_pct": -1.94,
+          "pnl_usd": -19.37,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3297.03,
+          "exit_price": 3261.54,
+          "pnl_pct": 16.15,
+          "pnl_usd": 158.34,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3262.14,
+          "exit_price": 3319.99,
+          "pnl_pct": -26.6,
+          "pnl_usd": -302.97,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3401.01,
+          "exit_price": 3396.01,
+          "pnl_pct": 2.21,
+          "pnl_usd": 18.44,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3643.43,
+          "exit_price": 3658.56,
+          "pnl_pct": -6.23,
+          "pnl_usd": -53.22,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3440.01,
+          "exit_price": 3527.4,
+          "pnl_pct": -38.11,
+          "pnl_usd": -305.31,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3557.72,
+          "exit_price": 3503.8,
+          "pnl_pct": 22.73,
+          "pnl_usd": 112.74,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3497.73,
+          "exit_price": 3423.31,
+          "pnl_pct": 31.91,
+          "pnl_usd": 194.25,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3031.41,
+          "exit_price": 2951.21,
+          "pnl_pct": 39.68,
+          "pnl_usd": 318.62,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3024.98,
+          "exit_price": 3061.69,
+          "pnl_pct": -18.2,
+          "pnl_usd": -204.15,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        }
+      ]
+    },
+    {
+      "variation_id": "eth_v5_scale_into_winners",
+      "name": "ETH Scale-Into-Winners",
+      "total_trades": 316,
+      "wins": 127,
+      "losses": 189,
+      "win_rate": 0.4019,
+      "total_pnl_pct": -1041.14,
+      "avg_pnl_pct": -3.29,
+      "avg_win_pct": 7.9,
+      "avg_loss_pct": 10.82,
+      "profit_factor": 0.49,
+      "sharpe_ratio": -3.79,
+      "max_drawdown_pct": 100.0,
+      "final_equity": 0.0,
+      "roi_pct": -100.0,
+      "trades_sample": [
+        {
+          "direction": "SHORT",
+          "entry_price": 3327.8,
+          "exit_price": 3287.4,
+          "pnl_pct": 6.07,
+          "pnl_usd": 121.4,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3429.3,
+          "exit_price": 3596.32,
+          "pnl_pct": -48.7,
+          "pnl_usd": -1033.2,
+          "hold_hours": 8,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3694.25,
+          "exit_price": 3628.77,
+          "pnl_pct": 8.86,
+          "pnl_usd": 96.44,
+          "hold_hours": 8,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3534.0,
+          "exit_price": 3561.58,
+          "pnl_pct": -7.8,
+          "pnl_usd": -92.45,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3112.98,
+          "exit_price": 3138.7,
+          "pnl_pct": -8.26,
+          "pnl_usd": -90.24,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3095.0,
+          "exit_price": 3113.01,
+          "pnl_pct": -5.82,
+          "pnl_usd": -58.3,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 2993.17,
+          "exit_price": 3014.31,
+          "pnl_pct": -7.06,
+          "pnl_usd": -66.65,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3041.46,
+          "exit_price": 3005.68,
+          "pnl_pct": -11.76,
+          "pnl_usd": -103.17,
+          "hold_hours": 4,
+          "exit_reason": "SL",
+          "is_win": 0
+        },
+        {
+          "direction": "LONG",
+          "entry_price": 3030.53,
+          "exit_price": 3064.92,
+          "pnl_pct": 5.67,
+          "pnl_usd": 43.91,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        },
+        {
+          "direction": "SHORT",
+          "entry_price": 3218.08,
+          "exit_price": 3176.17,
+          "pnl_pct": 6.51,
+          "pnl_usd": 53.25,
+          "hold_hours": 4,
+          "exit_reason": "TP",
+          "is_win": 1
+        }
+      ]
+    }
+  ]
+}

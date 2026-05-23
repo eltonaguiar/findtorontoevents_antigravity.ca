@@ -1,0 +1,619 @@
+{
+  "research_date": "2026-03-21",
+  "purpose": "Public commodity/futures positioning data sources for copy trading intelligence",
+  "confidence": "HIGH - all sources verified against official endpoints",
+
+  "sources": {
+    "1_cftc_cot_socrata_api": {
+      "name": "CFTC Commitments of Traders - Socrata Open Data API",
+      "description": "Official US government COT data. Updated weekly (Friday 3:30pm ET for prior Tuesday positions). FREE, no API key required for basic access.",
+      "auth_required": false,
+      "rate_limits": "1000 requests/hour without app token. Register free app token for higher limits.",
+      "data_format": "JSON, CSV, TSV, XML, RDF",
+      "update_frequency": "Weekly (Friday 3:30pm ET)",
+
+      "endpoints": {
+        "legacy_futures_only": {
+          "dataset_id": "6dca-aqww",
+          "url_json": "https://publicreporting.cftc.gov/resource/6dca-aqww.json",
+          "url_csv": "https://publicreporting.cftc.gov/resource/6dca-aqww.csv",
+          "description": "Legacy report - Commercial vs Non-Commercial (speculative) positions",
+          "key_fields": [
+            "market_and_exchange_names",
+            "as_of_date_in_form_yymmdd",
+            "cftc_contract_market_code",
+            "open_interest_all",
+            "noncomm_positions_long_all",
+            "noncomm_positions_short_all",
+            "comm_positions_long_all",
+            "comm_positions_short_all",
+            "nonrept_positions_long_all",
+            "nonrept_positions_short_all",
+            "change_in_open_interest_all",
+            "change_in_noncomm_long_all",
+            "change_in_noncomm_short_all",
+            "change_in_comm_long_all",
+            "change_in_comm_short_all",
+            "pct_of_oi_noncomm_long_all",
+            "pct_of_oi_noncomm_short_all",
+            "pct_of_oi_comm_long_all",
+            "pct_of_oi_comm_short_all",
+            "traders_tot_all",
+            "traders_noncomm_long_all",
+            "traders_noncomm_short_all",
+            "traders_comm_long_all",
+            "traders_comm_short_all"
+          ]
+        },
+        "legacy_futures_and_options": {
+          "dataset_id": "jun7-fc8e",
+          "url_json": "https://publicreporting.cftc.gov/resource/jun7-fc8e.json",
+          "url_csv": "https://publicreporting.cftc.gov/resource/jun7-fc8e.csv"
+        },
+        "disaggregated_futures_only": {
+          "dataset_id": "72hh-3qpy",
+          "url_json": "https://publicreporting.cftc.gov/resource/72hh-3qpy.json",
+          "url_csv": "https://publicreporting.cftc.gov/resource/72hh-3qpy.csv",
+          "description": "More granular: Producer/Merchant, Swap Dealer, Managed Money, Other Reportable",
+          "key_fields": [
+            "prod_merc_positions_long_all",
+            "prod_merc_positions_short_all",
+            "swap_positions_long_all",
+            "swap_positions_short_all",
+            "m_money_positions_long_all",
+            "m_money_positions_short_all",
+            "other_rept_positions_long_all",
+            "other_rept_positions_short_all"
+          ]
+        },
+        "disaggregated_futures_and_options": {
+          "dataset_id": "kh3c-gbw2",
+          "url_json": "https://publicreporting.cftc.gov/resource/kh3c-gbw2.json",
+          "url_csv": "https://publicreporting.cftc.gov/resource/kh3c-gbw2.csv"
+        },
+        "tff_futures_only": {
+          "dataset_id": "gpe5-46if",
+          "url_json": "https://publicreporting.cftc.gov/resource/gpe5-46if.json",
+          "url_csv": "https://publicreporting.cftc.gov/resource/gpe5-46if.csv",
+          "description": "Traders in Financial Futures - for financial instruments (not physical commodities)"
+        },
+        "supplemental_cit": {
+          "dataset_id": "4zgm-a668",
+          "url_json": "https://publicreporting.cftc.gov/resource/4zgm-a668.json",
+          "url_csv": "https://publicreporting.cftc.gov/resource/4zgm-a668.csv",
+          "description": "Commodity Index Trader supplemental report"
+        }
+      },
+
+      "commodity_codes_cftc": {
+        "GOLD": {"code": "088691", "exchange": "COMEX", "contract_size": "100 troy oz"},
+        "SILVER": {"code": "084691", "exchange": "COMEX", "contract_size": "5000 troy oz"},
+        "COPPER": {"code": "085692", "exchange": "COMEX", "contract_size": "25000 lbs"},
+        "CRUDE_OIL": {"code": "067651", "exchange": "NYMEX", "contract_size": "1000 barrels"},
+        "NATURAL_GAS": {"code": "023651", "exchange": "NYMEX", "contract_size": "10000 mmBtu"},
+        "CORN": {"code": "002602", "exchange": "CBOT", "contract_size": "5000 bushels"},
+        "WHEAT_SRW": {"code": "001602", "exchange": "CBOT", "contract_size": "5000 bushels"},
+        "WHEAT_HRW": {"code": "001612", "exchange": "KCBT", "contract_size": "5000 bushels"},
+        "WHEAT_SPRING": {"code": "001626", "exchange": "MGEX", "contract_size": "5000 bushels"},
+        "SOYBEANS": {"code": "005602", "exchange": "CBOT", "contract_size": "5000 bushels"},
+        "COFFEE": {"code": "083731", "exchange": "ICE", "contract_size": "37500 lbs"},
+        "SUGAR": {"code": "080732", "exchange": "ICE", "contract_size": "112000 lbs"},
+        "COTTON": {"code": "033661", "exchange": "ICE", "contract_size": "50000 lbs"}
+      },
+
+      "query_examples": {
+        "get_latest_gold_legacy": "https://publicreporting.cftc.gov/resource/6dca-aqww.json?$where=cftc_contract_market_code='088691'&$order=as_of_date_in_form_yymmdd DESC&$limit=10",
+        "get_latest_all_commodities": "https://publicreporting.cftc.gov/resource/6dca-aqww.json?$order=as_of_date_in_form_yymmdd DESC&$limit=50",
+        "get_gold_2026": "https://publicreporting.cftc.gov/resource/6dca-aqww.json?$where=cftc_contract_market_code='088691' AND as_of_date_in_form_yymmdd > '2026-01-01'",
+        "get_disaggregated_crude": "https://publicreporting.cftc.gov/resource/72hh-3qpy.json?$where=cftc_contract_market_code='067651'&$order=as_of_date_in_form_yymmdd DESC&$limit=10",
+        "filter_by_market_name": "https://publicreporting.cftc.gov/resource/6dca-aqww.json?$where=market_and_exchange_names LIKE '%GOLD%'&$limit=5"
+      },
+
+      "python_example": "import requests\nimport pandas as pd\n\nCOT_LEGACY_URL = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json'\nCOT_DISAGG_URL = 'https://publicreporting.cftc.gov/resource/72hh-3qpy.json'\n\nCOMMODITY_CODES = {\n    'GOLD': '088691', 'SILVER': '084691', 'COPPER': '085692',\n    'CRUDE_OIL': '067651', 'NATURAL_GAS': '023651',\n    'CORN': '002602', 'WHEAT': '001602', 'SOYBEANS': '005602',\n    'COFFEE': '083731', 'SUGAR': '080732', 'COTTON': '033661'\n}\n\ndef fetch_cot_legacy(commodity_code, limit=52):\n    params = {\n        '$where': f\"cftc_contract_market_code='{commodity_code}'\",\n        '$order': 'as_of_date_in_form_yymmdd DESC',\n        '$limit': limit\n    }\n    r = requests.get(COT_LEGACY_URL, params=params, timeout=30)\n    r.raise_for_status()\n    data = r.json()\n    df = pd.DataFrame(data)\n    return df\n\ndef fetch_cot_disaggregated(commodity_code, limit=52):\n    params = {\n        '$where': f\"cftc_contract_market_code='{commodity_code}'\",\n        '$order': 'as_of_date_in_form_yymmdd DESC',\n        '$limit': limit\n    }\n    r = requests.get(COT_DISAGG_URL, params=params, timeout=30)\n    r.raise_for_status()\n    return pd.DataFrame(r.json())\n\ndef compute_net_positioning(df):\n    df['net_speculative'] = df['noncomm_positions_long_all'].astype(float) - df['noncomm_positions_short_all'].astype(float)\n    df['net_commercial'] = df['comm_positions_long_all'].astype(float) - df['comm_positions_short_all'].astype(float)\n    df['spec_long_pct'] = df['pct_of_oi_noncomm_long_all'].astype(float)\n    df['spec_short_pct'] = df['pct_of_oi_noncomm_short_all'].astype(float)\n    return df\n\n# Fetch all commodities\nfor name, code in COMMODITY_CODES.items():\n    df = fetch_cot_legacy(code, limit=4)\n    df = compute_net_positioning(df)\n    latest = df.iloc[0]\n    print(f\"{name}: Net Spec={latest['net_speculative']:.0f}, Net Comm={latest['net_commercial']:.0f}\")\n"
+    },
+
+    "2_cftc_bulk_csv_download": {
+      "name": "CFTC Historical Compressed CSV Files",
+      "description": "Bulk annual ZIP files containing full year COT data. Best for backtesting and historical analysis.",
+      "auth_required": false,
+      "data_format": "ZIP containing CSV",
+      "urls": {
+        "current_year_legacy_futures": "https://www.cftc.gov/files/dea/history/deacot2026.zip",
+        "current_year_legacy_combined": "https://www.cftc.gov/files/dea/history/deacotsof2026.zip",
+        "current_year_disaggregated_futures": "https://www.cftc.gov/files/dea/history/fut_disagg_txt_2026.zip",
+        "current_year_disaggregated_combined": "https://www.cftc.gov/files/dea/history/com_disagg_txt_2026.zip",
+        "current_year_tff_futures": "https://www.cftc.gov/files/dea/history/fut_fin_txt_2026.zip",
+        "historical_pattern": "https://www.cftc.gov/files/dea/history/deacot{YEAR}.zip",
+        "index_page": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalCompressed/index.htm"
+      },
+      "python_example": "import requests, zipfile, io, pandas as pd\n\ndef download_cot_bulk(year=2026):\n    url = f'https://www.cftc.gov/files/dea/history/deacot{year}.zip'\n    r = requests.get(url, timeout=60)\n    r.raise_for_status()\n    z = zipfile.ZipFile(io.BytesIO(r.content))\n    csv_name = z.namelist()[0]\n    df = pd.read_csv(z.open(csv_name))\n    return df\n\ndf = download_cot_bulk(2026)\ngold = df[df['CFTC Contract Market Code'] == '088691']\nprint(gold[['As of Date in Form YYMMDD', 'Open Interest (All)', 'Noncommercial Positions-Long (All)', 'Noncommercial Positions-Short (All)']].head())\n"
+    },
+
+    "3_python_cot_libraries": {
+      "name": "Python COT Libraries (pip installable)",
+      "description": "Pre-built libraries that handle CFTC data fetching and parsing",
+      "auth_required": false,
+      "libraries": {
+        "cot_reports": {
+          "install": "pip install cot-reports",
+          "github": "https://github.com/NDelventhal/cot_reports",
+          "features": "All 7 COT report types, historical from 1986, returns pandas DataFrame",
+          "example": "from cot_reports import cot_report\nimport cot_reports as cot\n\n# Get current year legacy futures-only\ndf = cot.cot_year(2026, cot_report_type='legacy_fut')\ngold = df[df['CFTC Contract Market Code'] == '088691']\nprint(gold.tail())\n"
+        },
+        "pycot_reports": {
+          "install": "pip install pycot-reports",
+          "github": "https://github.com/philsv/pycot",
+          "features": "Clean API, supports legacy/disaggregated/tff reports",
+          "example": "from pycot.reports import CommitmentOfTraders\ncot = CommitmentOfTraders('legacy_fut')\ndf = cot.report(('GOLD - COMMODITY EXCHANGE INC.',))\nprint(df.tail())\n"
+        },
+        "cftc_cot": {
+          "install": "pip install cftc-cot",
+          "github": "https://github.com/Mcamin/cftc-cot",
+          "features": "Year-based download, stores ZIPs locally, disaggregated support",
+          "example": "from cftc_cot import cot_download_year\ndf = cot_download_year(year=2026, cot_report_type='disaggregated_fut')\n"
+        }
+      }
+    },
+
+    "4_yahoo_finance_yfinance": {
+      "name": "Yahoo Finance via yfinance",
+      "description": "Free delayed commodity futures prices. No API key. OHLCV data. 15-20min delay.",
+      "auth_required": false,
+      "rate_limits": "~2000 requests/hour (unofficial, throttled if abused)",
+      "data_format": "pandas DataFrame via Python library",
+      "update_frequency": "Near real-time (15-20 min delay)",
+
+      "commodity_symbols": {
+        "GOLD": "GC=F",
+        "SILVER": "SI=F",
+        "COPPER": "HG=F",
+        "CRUDE_OIL": "CL=F",
+        "BRENT_CRUDE": "BZ=F",
+        "NATURAL_GAS": "NG=F",
+        "CORN": "ZC=F",
+        "WHEAT": "ZW=F",
+        "SOYBEANS": "ZS=F",
+        "SOYBEAN_OIL": "ZL=F",
+        "SOYBEAN_MEAL": "ZM=F",
+        "COFFEE": "KC=F",
+        "SUGAR": "SB=F",
+        "COTTON": "CT=F",
+        "COCOA": "CC=F",
+        "LIVE_CATTLE": "LE=F",
+        "LEAN_HOGS": "HE=F",
+        "LUMBER": "LBS=F",
+        "PLATINUM": "PL=F",
+        "PALLADIUM": "PA=F",
+        "HEATING_OIL": "HO=F",
+        "GASOLINE": "RB=F"
+      },
+
+      "data_fields": ["Open", "High", "Low", "Close", "Adj Close", "Volume"],
+
+      "python_example": "import yfinance as yf\nimport pandas as pd\n\nSYMBOLS = {\n    'GOLD': 'GC=F', 'SILVER': 'SI=F', 'COPPER': 'HG=F',\n    'CRUDE_OIL': 'CL=F', 'NATURAL_GAS': 'NG=F',\n    'CORN': 'ZC=F', 'WHEAT': 'ZW=F', 'SOYBEANS': 'ZS=F',\n    'COFFEE': 'KC=F', 'SUGAR': 'SB=F', 'COTTON': 'CT=F'\n}\n\ndef fetch_commodity_prices(symbols, period='3mo', interval='1d'):\n    tickers = list(symbols.values())\n    data = yf.download(tickers, period=period, interval=interval, group_by='ticker')\n    return data\n\ndef get_latest_prices(symbols):\n    results = {}\n    for name, sym in symbols.items():\n        t = yf.Ticker(sym)\n        info = t.fast_info\n        results[name] = {\n            'price': info.last_price,\n            'prev_close': info.previous_close,\n            'change_pct': ((info.last_price - info.previous_close) / info.previous_close * 100) if info.previous_close else 0\n        }\n    return results\n\nprices = get_latest_prices(SYMBOLS)\nfor name, p in prices.items():\n    print(f\"{name}: ${p['price']:.2f} ({p['change_pct']:+.2f}%)\")\n"
+    },
+
+    "5_cme_group_delayed_quotes": {
+      "name": "CME Group Delayed Quotes",
+      "description": "Free 10-minute delayed quotes on cmegroup.com. HTML scraping required (no free JSON API). Settlement prices published daily.",
+      "auth_required": false,
+      "rate_limits": "Standard web scraping limits; aggressive scraping will get blocked",
+      "data_format": "HTML (requires BeautifulSoup/Selenium scraping)",
+
+      "quote_pages": {
+        "GOLD": "https://www.cmegroup.com/markets/metals/precious/gold.quotes.html",
+        "SILVER": "https://www.cmegroup.com/markets/metals/precious/silver.quotes.html",
+        "COPPER": "https://www.cmegroup.com/markets/metals/base/copper.quotes.html",
+        "CRUDE_OIL": "https://www.cmegroup.com/markets/energy/crude-oil/light-sweet-crude.quotes.html",
+        "NATURAL_GAS": "https://www.cmegroup.com/markets/energy/natural-gas/natural-gas.quotes.html",
+        "CORN": "https://www.cmegroup.com/markets/agriculture/grains/corn.quotes.html",
+        "WHEAT_SRW": "https://www.cmegroup.com/markets/agriculture/grains/wheat.quotes.html",
+        "SOYBEANS": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.quotes.html",
+        "SOYBEAN_OIL": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean-oil.quotes.html",
+        "LIVE_CATTLE": "https://www.cmegroup.com/markets/agriculture/livestock/live-cattle.quotes.html",
+        "LEAN_HOGS": "https://www.cmegroup.com/markets/agriculture/livestock/lean-hogs.quotes.html"
+      },
+
+      "settlement_pages": {
+        "daily_bulletin": "https://www.cmegroup.com/market-data/browse-data/delayed-quotes.html",
+        "note": "Settlement prices updated after market close. Delayed quotes page shows all asset classes."
+      },
+
+      "cot_visualization": {
+        "url": "https://www.cmegroup.com/tools-information/quikstrike/commitment-of-traders.html",
+        "note": "CME QuikStrike COT tool - free interactive charts but requires CME account (free)"
+      },
+
+      "warning": "CME pages are JavaScript-rendered. Use Selenium or Playwright, not simple requests. Headers and anti-bot protections present.",
+
+      "python_example": "# CME requires JS rendering - use Playwright or Selenium\n# For price data, prefer yfinance (source 4) which is much easier\n# CME is best for: settlement prices, COT visualization, contract specs\n\n# Settlement data alternative via tradingcharts.com (simpler HTML)\nimport requests\nfrom bs4 import BeautifulSoup\n\nurl = 'https://futures.tradingcharts.com/marketquotes/cme.html'\nr = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)\nsoup = BeautifulSoup(r.text, 'html.parser')\n# Parse table rows for settlement prices\n"
+    },
+
+    "6_barchart_public_pages": {
+      "name": "Barchart.com Public Futures Pages",
+      "description": "Free delayed futures overview with quotes, charts, technical analysis. HTML scraping.",
+      "auth_required": false,
+      "rate_limits": "Anti-scraping protections. Free API (barchart.com/ondemand) has 400 calls/day.",
+      "data_format": "HTML pages + optional free API (JSON)",
+
+      "overview_pages": {
+        "all_commodities": "https://www.barchart.com/futures/major-commodities",
+        "futures_overview": "https://www.barchart.com/futures",
+        "cot_charts": "https://www.barchart.com/futures/commitment-of-traders",
+        "grains": "https://www.barchart.com/futures/grains",
+        "energy": "https://www.barchart.com/futures/energy",
+        "metals": "https://www.barchart.com/futures/metals",
+        "softs": "https://www.barchart.com/futures/softs"
+      },
+
+      "specific_commodity_pages": {
+        "GOLD": "https://www.barchart.com/futures/quotes/GC*0/overview",
+        "SILVER": "https://www.barchart.com/futures/quotes/SI*0/overview",
+        "COPPER": "https://www.barchart.com/futures/quotes/HG*0/overview",
+        "CRUDE_OIL": "https://www.barchart.com/futures/quotes/CL*0/overview",
+        "NATURAL_GAS": "https://www.barchart.com/futures/quotes/NG*0/overview",
+        "CORN": "https://www.barchart.com/futures/quotes/ZC*0/overview",
+        "WHEAT": "https://www.barchart.com/futures/quotes/ZW*0/overview",
+        "SOYBEANS": "https://www.barchart.com/futures/quotes/ZS*0/overview",
+        "COFFEE": "https://www.barchart.com/futures/quotes/KC*0/overview",
+        "SUGAR": "https://www.barchart.com/futures/quotes/SB*0/overview",
+        "COTTON": "https://www.barchart.com/futures/quotes/CT*0/overview"
+      },
+
+      "cot_specific_pages": {
+        "GOLD_COT": "https://www.barchart.com/futures/commitment-of-traders/commodity/GC",
+        "CRUDE_OIL_COT": "https://www.barchart.com/futures/commitment-of-traders/commodity/CL",
+        "CORN_COT": "https://www.barchart.com/futures/commitment-of-traders/commodity/ZC"
+      },
+
+      "free_api": {
+        "base_url": "https://marketdata.websol.barchart.com/getQuote.json",
+        "note": "Free tier: 400 API calls/day. Requires free API key from barchart.com/ondemand",
+        "registration_url": "https://www.barchart.com/ondemand/free-market-data-api"
+      },
+
+      "data_fields": ["Last", "Change", "Open", "High", "Low", "Volume", "Open Interest", "Time"],
+
+      "warning": "Barchart uses heavy JavaScript rendering and anti-scraping. Pages return minimal HTML without JS execution. Use their free API instead of scraping."
+    },
+
+    "7_tradingview_public_ideas": {
+      "name": "TradingView Public Ideas & Technicals",
+      "description": "Public trading ideas for commodities. Can scrape idea pages for sentiment. Technical analysis widget embeds available.",
+      "auth_required": false,
+      "data_format": "HTML / embedded widgets",
+
+      "commodity_ideas_pages": {
+        "GOLD": "https://www.tradingview.com/symbols/COMEX-GC1!/ideas/",
+        "SILVER": "https://www.tradingview.com/symbols/COMEX-SI1!/ideas/",
+        "CRUDE_OIL": "https://www.tradingview.com/symbols/NYMEX-CL1!/ideas/",
+        "NATURAL_GAS": "https://www.tradingview.com/symbols/NYMEX-NG1!/ideas/",
+        "CORN": "https://www.tradingview.com/symbols/CBOT-ZC1!/ideas/",
+        "WHEAT": "https://www.tradingview.com/symbols/CBOT-ZW1!/ideas/",
+        "SOYBEANS": "https://www.tradingview.com/symbols/CBOT-ZS1!/ideas/",
+        "COFFEE": "https://www.tradingview.com/symbols/ICEUS-KC1!/ideas/",
+        "SUGAR": "https://www.tradingview.com/symbols/ICEUS-SB1!/ideas/",
+        "COTTON": "https://www.tradingview.com/symbols/ICEUS-CT1!/ideas/",
+        "COPPER": "https://www.tradingview.com/symbols/COMEX-HG1!/ideas/"
+      },
+
+      "cot_scripts": "https://www.tradingview.com/scripts/commitmentoftraders/",
+
+      "technicals_widget": {
+        "note": "TradingView offers free embeddable technical analysis widgets showing Buy/Sell/Neutral signals",
+        "widget_url": "https://www.tradingview.com/widget/technical-analysis/"
+      },
+
+      "warning": "TradingView has strong anti-scraping. Ideas pages require JS rendering. Best used for manual sentiment checks or widget embedding, not automated scraping."
+    },
+
+    "8_nasdaq_data_link_quandl": {
+      "name": "Nasdaq Data Link (formerly Quandl) - CFTC COT",
+      "description": "CFTC COT data via structured API. Free API key required (free registration). 50 calls/day on free tier.",
+      "auth_required": true,
+      "auth_type": "Free API key (register at data.nasdaq.com)",
+      "rate_limits": "Free: 50 API calls/day, 1 call/second. Premium: higher limits.",
+      "data_format": "JSON, CSV, XML",
+
+      "cot_dataset_codes": {
+        "GOLD_legacy": "CFTC/088691_FO_ALL",
+        "SILVER_legacy": "CFTC/084691_FO_ALL",
+        "COPPER_legacy": "CFTC/085692_FO_ALL",
+        "CRUDE_OIL_legacy": "CFTC/067651_FO_ALL",
+        "NATURAL_GAS_legacy": "CFTC/023651_FO_ALL",
+        "CORN_legacy": "CFTC/002602_FO_ALL",
+        "WHEAT_legacy": "CFTC/001602_FO_ALL",
+        "SOYBEANS_legacy": "CFTC/005602_FO_ALL",
+        "COFFEE_legacy": "CFTC/083731_FO_ALL",
+        "SUGAR_legacy": "CFTC/080732_FO_ALL",
+        "COTTON_legacy": "CFTC/033661_FO_ALL"
+      },
+
+      "url_pattern": "https://data.nasdaq.com/api/v3/datasets/{code}.json?api_key={YOUR_KEY}",
+
+      "example_urls": {
+        "gold_json": "https://data.nasdaq.com/api/v3/datasets/CFTC/088691_FO_ALL.json?api_key=YOUR_KEY",
+        "gold_csv": "https://data.nasdaq.com/api/v3/datasets/CFTC/088691_FO_ALL.csv?api_key=YOUR_KEY",
+        "with_date_filter": "https://data.nasdaq.com/api/v3/datasets/CFTC/088691_FO_ALL.json?start_date=2026-01-01&api_key=YOUR_KEY"
+      },
+
+      "python_example": "import nasdaqdatalink\n# pip install nasdaq-data-link\nnasdaqdatalink.ApiConfig.api_key = 'YOUR_FREE_KEY'\n\n# Fetch Gold COT legacy report\ngold_cot = nasdaqdatalink.get('CFTC/088691_FO_ALL', start_date='2025-01-01')\nprint(gold_cot.tail())\n\n# Columns: Date, Open Interest, Noncommercial Long, Noncommercial Short,\n# Commercial Long, Commercial Short, Nonreportable Long, Nonreportable Short,\n# Change in Open Interest, etc.\n"
+    },
+
+    "9_investing_com_cot_pages": {
+      "name": "Investing.com - COT Speculative Positions",
+      "description": "Weekly COT net speculative positions. Historical data tables. HTML scraping required.",
+      "auth_required": false,
+      "rate_limits": "Anti-scraping (Cloudflare). Requires headers/cookies. Inconsistent access.",
+      "data_format": "HTML tables",
+
+      "cot_pages": {
+        "GOLD": {"url": "https://www.investing.com/economic-calendar/cftc-gold-speculative-positions-1618", "id": 1618},
+        "SILVER": {"url": "https://www.investing.com/economic-calendar/cftc-silver-speculative-positions-1621", "id": 1621},
+        "COPPER": {"url": "https://www.investing.com/economic-calendar/cftc-copper-speculative-positions-1620", "id": 1620},
+        "CRUDE_OIL": {"url": "https://www.investing.com/economic-calendar/cftc-crude-oil-speculative-positions-1653", "id": 1653},
+        "NATURAL_GAS": {"url": "https://www.investing.com/economic-calendar/cftc-natural-gas-speculative-positions-1820", "id": 1820},
+        "CORN": {"url": "https://www.investing.com/economic-calendar/cftc-corn-speculative-positions-1813", "id": 1813},
+        "WHEAT": {"url": "https://www.investing.com/economic-calendar/cftc-wheat-speculative-positions-1812", "id": 1812},
+        "SOYBEANS": {"url": "https://www.investing.com/economic-calendar/cftc-soybeans-speculative-positions-1814", "id": 1814},
+        "COFFEE": {"url": "https://www.investing.com/economic-calendar/cftc-coffee-speculative-positions-1815", "id": 1815},
+        "SUGAR": {"url": "https://www.investing.com/economic-calendar/cftc-sugar-speculative-positions-1816", "id": 1816},
+        "COTTON": {"url": "https://www.investing.com/economic-calendar/cftc-cotton-speculative-positions-1817", "id": 1817}
+      },
+
+      "technical_analysis_pages": {
+        "GOLD": "https://www.investing.com/commodities/gold-technical",
+        "CRUDE_OIL": "https://www.investing.com/commodities/crude-oil-technical",
+        "SILVER": "https://www.investing.com/commodities/silver-technical",
+        "NATURAL_GAS": "https://www.investing.com/commodities/natural-gas-technical",
+        "COPPER": "https://www.investing.com/commodities/copper-technical",
+        "CORN": "https://www.investing.com/commodities/us-corn-technical",
+        "WHEAT": "https://www.investing.com/commodities/us-wheat-technical",
+        "SOYBEANS": "https://www.investing.com/commodities/us-soybeans-technical",
+        "COFFEE": "https://www.investing.com/commodities/us-coffee-c-technical",
+        "SUGAR": "https://www.investing.com/commodities/us-sugar-no11-technical",
+        "COTTON": "https://www.investing.com/commodities/us-cotton-no.2-technical"
+      },
+
+      "warning": "Investing.com has aggressive Cloudflare protection. Direct requests usually fail. Requires: rotating proxies, browser fingerprinting, or Selenium. NOT recommended as primary source. Use CFTC Socrata API directly instead."
+    },
+
+    "10_coinglass": {
+      "name": "CoinGlass",
+      "description": "Primarily crypto-focused, but has expanded to include GOLD futures OI data from CME/Binance/OKX/Bybit.",
+      "auth_required": false,
+      "data_format": "JSON (unofficial API) / HTML",
+
+      "available_commodity_data": {
+        "GOLD": {
+          "open_interest": "https://www.coinglass.com/open-interest/GOLD",
+          "note": "Shows GOLD futures OI across CME, Binance, OKX, Bybit, Bitget, Bitfinex"
+        }
+      },
+
+      "limitations": "Only GOLD has dedicated commodity coverage. No Oil, Corn, Wheat, etc. CoinGlass is NOT a commodity futures data source - it is crypto-first with limited gold coverage due to tokenized gold (PAXG/XAUT) and exchange gold futures.",
+
+      "recommendation": "Do NOT use CoinGlass for commodity positioning data. Use CFTC Socrata API or yfinance instead."
+    },
+
+    "11_tradingster_com": {
+      "name": "Tradingster.com - Free COT Reports & Charts",
+      "description": "Clean, free COT data visualization. Directly sources from CFTC. Good for scraping COT history.",
+      "auth_required": false,
+      "rate_limits": "Standard web scraping. No known aggressive anti-bot.",
+      "data_format": "HTML tables with embedded chart data",
+
+      "legacy_futures_pages": {
+        "GOLD": "https://www.tradingster.com/cot/legacy-futures/088691",
+        "SILVER": "https://www.tradingster.com/cot/legacy-futures/084691",
+        "COPPER": "https://www.tradingster.com/cot/legacy-futures/085692",
+        "CRUDE_OIL": "https://www.tradingster.com/cot/legacy-futures/067651",
+        "NATURAL_GAS": "https://www.tradingster.com/cot/legacy-futures/023651",
+        "CORN": "https://www.tradingster.com/cot/legacy-futures/002602",
+        "WHEAT": "https://www.tradingster.com/cot/legacy-futures/001602",
+        "SOYBEANS": "https://www.tradingster.com/cot/legacy-futures/005602",
+        "COFFEE": "https://www.tradingster.com/cot/legacy-futures/083731",
+        "SUGAR": "https://www.tradingster.com/cot/legacy-futures/080732",
+        "COTTON": "https://www.tradingster.com/cot/legacy-futures/033661"
+      },
+
+      "disaggregated_pages": {
+        "GOLD": "https://www.tradingster.com/cot/futures/disagg/088691",
+        "CRUDE_OIL": "https://www.tradingster.com/cot/futures/disagg/067651",
+        "CORN": "https://www.tradingster.com/cot/futures/disagg/002602",
+        "url_pattern": "https://www.tradingster.com/cot/futures/disagg/{CFTC_CODE}"
+      },
+
+      "data_fields": ["Date", "Price (OHLC)", "Commercial Net", "NonCommercial Net", "NonReportable Net", "Open Interest"],
+
+      "overview_page": "https://www.tradingster.com/cot"
+    },
+
+    "12_cot_reports_com": {
+      "name": "COT-Reports.com",
+      "description": "Free CFTC COT data and analysis tools. Charts, tables, index calculations.",
+      "auth_required": false,
+      "url": "https://cot-reports.com/",
+      "data_format": "HTML with embedded JSON chart data",
+      "note": "Good secondary source for COT visualization. Not as structured as CFTC Socrata API for automated access."
+    },
+
+    "13_cotbase_com": {
+      "name": "COTBase.com",
+      "description": "COT analysis platform. Free tier: 3 markets with 1-year history. Paid: full access.",
+      "auth_required": "Free limited / Paid full",
+      "url": "https://cotbase.com/",
+      "features": ["COT indicator calculations", "NinjaTrader 8 integration", "Data download API (paid)"],
+      "free_limitations": "Only 3 markets, 1-year history on free tier",
+      "recommendation": "Not worth scraping. Use CFTC Socrata API directly for the same underlying data."
+    },
+
+    "14_market_bulls_cot": {
+      "name": "MarketBulls COT Reports",
+      "description": "Free COT charts, tables, and COT index for all major commodities.",
+      "auth_required": false,
+      "url": "https://market-bulls.com/cot-report/",
+      "data_format": "HTML",
+      "note": "Clean presentation of COT data. COT Index calculations (0-100 scale) are useful for signals."
+    },
+
+    "15_seasonal_data_sources": {
+      "name": "Seasonal Commodity Pattern Sources",
+      "description": "Historical seasonal patterns for commodity futures",
+
+      "sources": {
+        "mrci_moore_research": {
+          "url": "https://www.mrci.com/client/spmarket/",
+          "free_charts": "https://www.mrci.com/pdf/index.php",
+          "description": "Industry standard seasonal patterns. Free PDF charts available. Full data: ~$32/month.",
+          "data": "5, 15, 30-year seasonal patterns for all major commodities",
+          "auth_required": "Free charts public / Full data subscription"
+        },
+        "insider_week": {
+          "url": "https://insider-week.com/en/seasonal-charts/",
+          "description": "Free seasonal commodity charts online. Shows monthly/seasonal tendencies.",
+          "auth_required": false
+        },
+        "spreadcharts": {
+          "url": "https://spreadcharts.com/",
+          "description": "Free tier available. Seasonality + COT + term structure analysis combined.",
+          "auth_required": "Free limited / Premium full"
+        },
+        "diy_seasonal_calculation": {
+          "description": "Build your own seasonal index from yfinance historical data",
+          "python_example": "import yfinance as yf\nimport pandas as pd\nimport numpy as np\n\ndef calculate_seasonal_pattern(symbol, years=15):\n    data = yf.download(symbol, period=f'{years}y', interval='1d')\n    data['month'] = data.index.month\n    data['day_of_year'] = data.index.dayofyear\n    data['pct_change'] = data['Close'].pct_change()\n    \n    # Monthly seasonal pattern\n    monthly = data.groupby('month')['pct_change'].agg(['mean', 'std', 'count'])\n    monthly['win_rate'] = data.groupby('month')['pct_change'].apply(lambda x: (x > 0).mean())\n    monthly.columns = ['avg_return', 'volatility', 'observations', 'win_rate']\n    return monthly\n\nfor name, sym in {'GOLD': 'GC=F', 'CRUDE_OIL': 'CL=F', 'CORN': 'ZC=F'}.items():\n    print(f'\\n=== {name} Seasonal Pattern ===')\n    pattern = calculate_seasonal_pattern(sym)\n    print(pattern.round(4))\n"
+        }
+      }
+    },
+
+    "16_interactive_brokers": {
+      "name": "Interactive Brokers",
+      "description": "No free public market data API. Requires funded account ($0 minimum but must be account holder).",
+      "auth_required": true,
+      "recommendation": "Not suitable for free scraping. IBKR API requires TWS/Gateway running + account. Skip for this use case.",
+      "note": "IBKR does publish some educational content and market commentary publicly at https://www.interactivebrokers.com/campus/ but no raw data feeds."
+    },
+
+    "17_alpha_vantage_commodities": {
+      "name": "Alpha Vantage - Commodity Prices",
+      "description": "Free tier: 25 requests/day. Commodity time series including WTI, Brent, Natural Gas, Copper, Aluminum, Wheat, Corn, Cotton, Sugar, Coffee.",
+      "auth_required": true,
+      "auth_type": "Free API key (register at alphavantage.co)",
+      "rate_limits": "Free: 25 requests/day, 5/minute",
+      "data_format": "JSON, CSV",
+
+      "endpoints": {
+        "wti_crude": "https://www.alphavantage.co/query?function=WTI&interval=monthly&apikey=YOUR_KEY",
+        "brent_crude": "https://www.alphavantage.co/query?function=BRENT&interval=monthly&apikey=YOUR_KEY",
+        "natural_gas": "https://www.alphavantage.co/query?function=NATURAL_GAS&interval=monthly&apikey=YOUR_KEY",
+        "copper": "https://www.alphavantage.co/query?function=COPPER&interval=monthly&apikey=YOUR_KEY",
+        "wheat": "https://www.alphavantage.co/query?function=WHEAT&interval=monthly&apikey=YOUR_KEY",
+        "corn": "https://www.alphavantage.co/query?function=CORN&interval=monthly&apikey=YOUR_KEY",
+        "cotton": "https://www.alphavantage.co/query?function=COTTON&interval=monthly&apikey=YOUR_KEY",
+        "sugar": "https://www.alphavantage.co/query?function=SUGAR&interval=monthly&apikey=YOUR_KEY",
+        "coffee": "https://www.alphavantage.co/query?function=COFFEE&interval=monthly&apikey=YOUR_KEY"
+      },
+
+      "note": "Monthly/daily interval. Good for price data, does NOT include COT positioning data."
+    }
+  },
+
+  "recommended_architecture": {
+    "tier_1_primary_no_auth": {
+      "description": "Use these first - no API key needed, reliable, structured data",
+      "sources": [
+        {
+          "source": "CFTC Socrata API",
+          "use_for": "COT positioning data (commercial vs speculative)",
+          "frequency": "Weekly scan after Friday 3:30pm ET release",
+          "reliability": "HIGH - US Government, always available"
+        },
+        {
+          "source": "yfinance",
+          "use_for": "Real-time commodity prices, OHLCV, technical analysis input",
+          "frequency": "Every 30 min during market hours",
+          "reliability": "HIGH - Yahoo Finance rarely down"
+        },
+        {
+          "source": "CFTC Bulk CSV",
+          "use_for": "Historical backtesting, seasonal analysis",
+          "frequency": "Annual download + weekly incremental",
+          "reliability": "HIGH - Static files on CFTC servers"
+        }
+      ]
+    },
+    "tier_2_free_api_key": {
+      "description": "Free registration required but valuable data",
+      "sources": [
+        {
+          "source": "Nasdaq Data Link (Quandl)",
+          "use_for": "Clean structured COT data with easy filtering",
+          "frequency": "As needed (50 calls/day limit)",
+          "reliability": "HIGH"
+        },
+        {
+          "source": "Alpha Vantage",
+          "use_for": "Commodity price time series (monthly/daily)",
+          "frequency": "Daily (25 calls/day limit)",
+          "reliability": "MEDIUM - rate limits strict"
+        }
+      ]
+    },
+    "tier_3_scraping_fallback": {
+      "description": "HTML scraping as backup or for specific data not in APIs",
+      "sources": [
+        {
+          "source": "Tradingster.com",
+          "use_for": "COT charts and formatted positioning tables",
+          "frequency": "Weekly",
+          "reliability": "MEDIUM - web scraping"
+        },
+        {
+          "source": "Barchart.com",
+          "use_for": "Futures overview, COT charts",
+          "frequency": "Weekly",
+          "reliability": "LOW - anti-scraping protections"
+        }
+      ]
+    },
+    "skip_not_worth_it": [
+      "Investing.com - Cloudflare blocks automated access",
+      "CoinGlass - Only has GOLD, not a commodity platform",
+      "Interactive Brokers - Requires funded account",
+      "COTBase.com - Paywalled, CFTC API has same data free",
+      "CME Group pages - JS-rendered, hard to scrape, use yfinance instead"
+    ]
+  },
+
+  "signal_generation_strategy": {
+    "description": "How to generate commodity positioning signals from this data",
+    "signals": {
+      "cot_extreme_positioning": {
+        "description": "When speculative net positions reach extreme levels (95th/5th percentile over 3 years), a reversal is likely",
+        "data_source": "CFTC Socrata API (legacy report)",
+        "calculation": "net_speculative = noncomm_long - noncomm_short; percentile over 156 weeks",
+        "signal": "EXTREME_LONG (>95th percentile) = bearish reversal warning, EXTREME_SHORT (<5th) = bullish reversal warning"
+      },
+      "commercial_hedger_signal": {
+        "description": "Commercials (hedgers) are the 'smart money'. When they go extremely long/short vs speculators, follow commercials.",
+        "data_source": "CFTC Socrata API (legacy report)",
+        "calculation": "comm_net = comm_long - comm_short; compare to speculative net for divergence"
+      },
+      "managed_money_momentum": {
+        "description": "Track week-over-week change in managed money positions (disaggregated report). Large changes signal momentum.",
+        "data_source": "CFTC Socrata API (disaggregated report)",
+        "calculation": "delta_managed_money = current_week_m_money_net - prior_week_m_money_net"
+      },
+      "open_interest_divergence": {
+        "description": "Rising price + falling OI = weak trend. Falling price + rising OI = strong selling pressure.",
+        "data_source": "yfinance (price) + CFTC (OI)",
+        "calculation": "Compare 4-week OI trend vs 4-week price trend"
+      },
+      "seasonal_confluence": {
+        "description": "When COT positioning aligns with historical seasonal pattern, signal confidence increases.",
+        "data_source": "yfinance historical + CFTC COT",
+        "calculation": "15-year monthly seasonal pattern + current COT positioning"
+      }
+    }
+  }
+}

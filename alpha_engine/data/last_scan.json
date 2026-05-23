@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-03-19T04:22:10.485630+00:00",
+  "version": "2.0",
+  "strategy_count": 344,
+  "symbols_fetched": 176,
+  "raw_signals": 268,
+  "filtered_signals": 47,
+  "picks_opened": 0,
+  "picks_closed": 0,
+  "ml_trained": true,
+  "elapsed_seconds": 389.1,
+  "forward_gate": {
+    "validated_signals": 1,
+    "unvalidated_signals": 46,
+    "min_trades": 10,
+    "min_wr": 0.5
+  },
+  "regime_detection": {
+    "enabled": true,
+    "method": "ADX_14 + volatility + Regime Sentinel",
+    "thresholds": {
+      "trending": ">= 25",
+      "ranging": "<= 20"
+    },
+    "symbol_regimes": {
+      "trending": 100,
+      "ranging": 43,
+      "transitional": 33,
+      "unknown": 0
+    },
+    "signals_regime_compatible": 44,
+    "signals_regime_mismatched": 3,
+    "regime_sentinel": {
+      "regime": "ACCUMULATION",
+      "confidence": 0.75,
+      "risk_multiplier": 1.3,
+      "action_bias": "LONG",
+      "canonical_regime": "CRASH",
+      "inputs": {
+        "mvrv": 0.76,
+        "fng": 23,
+        "funding_rate": 7e-06
+      },
+      "scores": {
+        "mvrv_score": 0,
+        "fng_score": 0,
+        "funding_score": 1,
+        "weighted": 0.2
+      },
+      "reasoning": "MVRV=0.76 <1.0 (undervalued), F&G=23 <25 (Extreme Fear), Funding=0.0007% neutral -> weighted=0.20",
+      "timestamp": "2026-03-19T04:15:45.347779+00:00"
+    }
+  },
+  "transaction_costs": {
+    "enabled": true,
+    "position_sizing": "risk_based",
+    "max_risk_per_trade": 0.02,
+    "max_allocation_per_pick": 0.15,
+    "max_total_exposure": 0.8,
+    "max_correlated_exposure": 0.4,
+    "cost_models": {
+      "crypto_spot": "0.25%",
+      "crypto_altcoin": "0.70%",
+      "meme_coins": "1.00%",
+      "forex": "0.03%",
+      "stocks_etf": "0.03%",
+      "penny_stocks": "1.50%"
+    }
+  }
+}

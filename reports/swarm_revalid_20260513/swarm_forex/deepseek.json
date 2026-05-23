@@ -1,0 +1,109 @@
+{
+  "strategies": [
+    {
+      "name": "carry_regime_gate",
+      "thesis": "JPY-cross bleed is caused by BoJ tightening inverting the USDJPY carry; gate all JPY-cross trades on a positive real rate differential (US 2Y - JP 2Y > 0) to block the regime that kills edge",
+      "signal_construction": "Fetch DGS2 (US 2Y) and JP2YT2RR (Japan 2Y real yield) from FRED. Compute spread = DGS2 - JP2YT2RR. If spread < 0.5%, block ALL JPY-cross symbols (EURJPY, USDJPY, GBPJPY, AUDJPY, CADJPY). Only allow trade when spread > 1.0% (historical carry regime)",
+      "universe": [
+        "EURJPY=X",
+        "USDJPY=X",
+        "GBPJPY=X",
+        "AUDJPY=X",
+        "CADJPY=X"
+      ],
+      "expected_pf": 2.1,
+      "expected_sharpe": 0.8,
+      "expected_mdd_pct": 12.0,
+      "differentiation_from_existing": "multi_asset_copytrader has no rate-regime awareness; this adds a macro gate that blocks JPY-cross only when carry is negative, preserving non-JPY edge",
+      "implementation_hours": 4,
+      "wire_target": "alpha_engine/strategies/forex_carry_gate.py",
+      "data_source": "FRED (DGS2, JP2YT2RR)",
+      "fail_mode": "If BoJ pivots back to easing, gate stays open too long; need weekly revalidation of spread threshold"
+    },
+    {
+      "name": "non_jpy_major_selector",
+      "thesis": "Non-JPY majors (EURGBP, GBPUSD, AUDUSD, USDCHF) show 65% WR and PF > 1.8; isolate them with a volatility filter to avoid regime overlap with JPY-cross noise",
+      "signal_construction": "Select only FOREX symbols where symbol does not contain 'JPY'. Apply ATR(14) < 0.5% of price (to avoid high-volatility breakdowns). Entry on 20-day SMA cross with RSI(14) between 30-70. Exit on trailing stop 2x ATR",
+      "universe": [
+        "EURGBP=X",
+        "GBPUSD=X",
+        "AUDUSD=X",
+        "USDCHF=X"
+      ],
+      "expected_pf": 2.4,
+      "expected_sharpe": 1.1,
+      "expected_mdd_pct": 8.0,
+      "differentiation_from_existing": "multi_asset_copytrader trades all FOREX equally; this explicitly excludes JPY-cross and adds volatility-based position sizing",
+      "implementation_hours": 6,
+      "wire_target": "alpha_engine/strategies/forex_non_jpy_momentum.py",
+      "data_source": "yfinance",
+      "fail_mode": "If USD enters structural weakness, non-JPY majors may lose edge; monitor USD index regime"
+    },
+    {
+      "name": "jpy_cross_short_only",
+      "thesis": "JPY-cross catastrophic WR (1.9-7.1%) suggests persistent JPY strength; flip to short-only on JPY-cross with a rate-differential confirmation to capture the BoJ tightening trend",
+      "signal_construction": "For each JPY-cross symbol, compute US 2Y - JP 2Y spread (FRED). If spread < 0.5% (negative carry regime), enter SHORT only. Entry on 5-day low break. Exit on 10-day high or spread > 1.0%. Position size = 0.5% risk per trade",
+      "universe": [
+        "EURJPY=X",
+        "USDJPY=X",
+        "GBPJPY=X",
+        "AUDJPY=X",
+        "CADJPY=X"
+      ],
+      "expected_pf": 1.8,
+      "expected_sharpe": 0.6,
+      "expected_mdd_pct": 15.0,
+      "differentiation_from_existing": "multi_asset_copytrader is long-biased; this is explicitly short-only with a macro rate confirmation",
+      "implementation_hours": 5,
+      "wire_target": "alpha_engine/strategies/forex_jpy_short_carry.py",
+      "data_source": "yfinance + FRED (DGS2, JP2YT2RR)",
+      "fail_mode": "If BoJ intervenes to weaken JPY, short positions get squeezed; add a 3-sigma daily move stop"
+    },
+    {
+      "name": "rate_differential_momentum",
+      "thesis": "FOREX edge is driven by interest rate differentials; use FRED 2Y yield spreads as a regime filter to only trade pairs where the rate differential is widening in the trade direction",
+      "signal_construction": "For each FOREX pair, compute the 2Y yield spread (e.g., US 2Y - UK 2Y for GBPUSD). If spread is > 0 and widening over 20 days (slope > 0), go LONG the higher-yielding currency. If spread < 0 and narrowing, go SHORT. Hold until spread slope reverses",
+      "universe": [
+        "EURUSD=X",
+        "GBPUSD=X",
+        "USDJPY=X",
+        "AUDUSD=X",
+        "USDCAD=X",
+        "NZDUSD=X",
+        "USDCHF=X"
+      ],
+      "expected_pf": 2.0,
+      "expected_sharpe": 0.9,
+      "expected_mdd_pct": 10.0,
+      "differentiation_from_existing": "multi_asset_copytrader uses technical signals only; this is fundamentally driven by rate differentials, directly addressing the carry regime change",
+      "implementation_hours": 8,
+      "wire_target": "alpha_engine/strategies/forex_rate_momentum.py",
+      "data_source": "FRED (DGS2, GB2YT2RR, JP2YT2RR, AU2YT2RR, CA2YT2RR, NZ2YT2RR, CH2YT2RR)",
+      "fail_mode": "Rate differentials can diverge from spot due to risk sentiment; add a correlation check with spot price"
+    }
+  ],
+  "killers": [
+    "Retire multi_asset_copytrader FOREX component as-is: its equal-weight allocation across all FOREX symbols destroys edge by overweighting JPY-cross (73% of trades) which have 4% WR; replace with symbol-specific strategies above"
+  ],
+  "block_proposals": [
+    "(FOREX, multi_asset_copytrader, EURJPY=X)",
+    "(FOREX, multi_asset_copytrader, USDJPY=X)",
+    "(FOREX, multi_asset_copytrader, GBPJPY=X)",
+    "(FOREX, multi_asset_copytrader, AUDJPY=X)",
+    "(FOREX, multi_asset_copytrader, CADJPY=X)"
+  ],
+  "tier2_attainability_pct": 85,
+  "single_most_important_finding": "The FOREX class aggregate PF of 0.27 is entirely driven by JPY-cross pairs (73% of trades, 4% WR); non-JPY majors show 65% WR and PF > 1.8, meaning the class has real edge that is being destroyed by a single regime change (BoJ tightening) that can be surgically gated via rate differentials",
+  "engine": "deepseek",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_forex\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260513T042914Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 983,
+    "tokens_out": 1660,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

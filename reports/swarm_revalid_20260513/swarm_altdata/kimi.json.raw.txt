@@ -1,0 +1,137 @@
+```json
+{
+  "ranking": [
+    {
+      "thread_id": "G",
+      "rank": 1,
+      "tractability_score": 90,
+      "expected_sharpe_lift": 0.25,
+      "free_tier_data_path": "EIA Weekly Petroleum Status Report API (eia.gov/opendata) + FRED NGPSPONG + yfinance (VLO/MPC/PSX/XLY)",
+      "minimum_viable_backtest_spec": "Long refiners (VLO/MPC/PSX) when EIA gasoline inventory build exceeds 1-sigma vs 5-year average, short XLY; weekly rebalance, 2005-2025",
+      "killer_caveat": "Crack spread dynamics dominate refiner returns; retail gas prices lag wholesale by weeks, breaking simple passthrough logic",
+      "dev_hours_estimate": 35
+    },
+    {
+      "thread_id": "I",
+      "rank": 2,
+      "tractability_score": 88,
+      "expected_sharpe_lift": 0.35,
+      "free_tier_data_path": "NOAA Climate Data Online API (ncdc.noaa.gov/cdo-web) + USDA NASS Quick Stats (quickstats.nass.usda.gov) + yfinance continuous futures (ZC/ZW/ZS=F)",
+      "minimum_viable_backtest_spec": "Long-only front-month ZC/ZW/ZS when NOAA soil moisture percentile divergence from USDA planting-intent surprise exceeds 1-sigma, monthly signal, 1990-2025",
+      "killer_caveat": "Commercial ag funds and satellite imagery firms price in USDA/NASS reports within hours; weather surprises are increasingly random with climate volatility",
+      "dev_hours_estimate": 50
+    },
+    {
+      "thread_id": "F",
+      "rank": 3,
+      "tractability_score": 78,
+      "expected_sharpe_lift": 0.30,
+      "free_tier_data_path": "yfinance (KWEB, HSI, FXI, MCHI, ASHR) + Investing.com HKEX historical closes + FRED DEXCHUS",
+      "minimum_viable_backtest_spec": "Long HK-listed dual-listings short NYSE ADR when premium/discount exceeds 2-sigma 90-day Bollinger band, weekly rebalance, 2010-2025",
+      "killer_caveat": "Capital controls and regulatory crackdowns create one-way gaps that never converge; ADR delisting risk is non-stationary",
+      "dev_hours_estimate": 50
+    },
+    {
+      "thread_id": "D",
+      "rank": 4,
+      "tractability_score": 75,
+      "expected_sharpe_lift": 0.40,
+      "free_tier_data_path": "CBOE Daily Market Statistics (cboe.com/us/options/market_statistics) + CBOE VIX term structure + yfinance delayed options chains for skew",
+      "minimum_viable_backtest_spec": "Long SPY/QQQ when CBOE equity put/call 5-day MA < 0.55 and VIX term structure in contango; exit on VIX backwardation, 2010-2025",
+      "killer_caveat": "Free CBOE data is daily-aggregated only; true UOA and directional flow require expensive OPRA/WhaleStream feeds",
+      "dev_hours_estimate": 90
+    },
+    {
+      "thread_id": "J",
+      "rank": 5,
+      "tractability_score": 72,
+      "expected_sharpe_lift": 0.35,
+      "free_tier_data_path": "SEC EDGAR full-text search (sec.gov/edgar/search) for CAT/Komatsu 10-K capex tables + World Bank Commodity Price Data API (API_MKT_*)",
+      "minimum_viable_backtest_spec": "Long copper futures (HG=F) when combined CAT+Komatsu YoY capex growth turns negative after 2+ consecutive quarters, 6-month hold, 2000-2025",
+      "killer_caveat": "Capital cycle lead time is 2-5 years, producing very low Sharpe in standard annual-rebalancing frameworks",
+      "dev_hours_estimate": 60
+    },
+    {
+      "thread_id": "L",
+      "rank": 6,
+      "tractability_score": 68,
+      "expected_sharpe_lift": 0.30,
+      "free_tier_data_path": "TSA Checkpoint Travel Numbers (tsa.gov/travel/passenger-volumes) + Freightos FBX container index (freightos.com free tier) + CME FedWatch for event overlay",
+      "minimum_viable_backtest_spec": "Long PEJ when TSA 7-day MA throughput exceeds 30-day MA by >2%, exit on crossover; 2002-2025 (ex-COVID structural break)",
+      "killer_caveat": "Each sub-signal has different seasonality and structural breaks; TSA destroyed by COVID regime change and box office is noise",
+      "dev_hours_estimate": 60
+    },
+    {
+      "thread_id": "K",
+      "rank": 7,
+      "tractability_score": 58,
+      "expected_sharpe_lift": 0.15,
+      "free_tier_data_path": "CDC Wonder NCHS Annual Marriage Rates (wonder.cdc.gov) + yfinance (SIG, GLD) + fixed Indian festival calendars",
+      "minimum_viable_backtest_spec": "Long GLD 30 days before Diwali; short SIG when CDC marriage rate YoY declines >5% for 2 consecutive years, 2000-2025",
+      "killer_caveat": "CDC marriage data is released with 1-2 year lag, making it untradeable forward; India gold seasonality fully arbed by physical dealers",
+      "dev_hours_estimate": 25
+    },
+    {
+      "thread_id": "E",
+      "rank": 8,
+      "tractability_score": 55,
+      "expected_sharpe_lift": 0.55,
+      "free_tier_data_path": "SEC EDGAR API (sec.gov/cgi-bin/browse-edgar) + USPTO Patent Public Search API + SAM.gov Entity/Contract APIs",
+      "minimum_viable_backtest_spec": "Long small-caps receiving first-ever SAM.gov prime contract >$10M in prior 30 days, equal-weight, 2000-2025",
+      "killer_caveat": "EDGAR XBRL parsing is brittle; NLP for Samsung-vendor relationship extraction requires labeled training data that does not exist",
+      "dev_hours_estimate": 150
+    },
+    {
+      "thread_id": "H",
+      "rank": 9,
+      "tractability_score": 48,
+      "expected_sharpe_lift": 0.45,
+      "free_tier_data_path": "Polymarket public API (polymarket.com/api) + Kalshi API (trading-api.readme.io) + yfinance (XLE/XOM/GLD/IWM)",
+      "minimum_viable_backtest_spec": "Long XLE/XOM when Polymarket Iran-conflict probability spikes >10pp in 48hrs; long IWM when election odds shift >15pp, 3-day hold, 2020-2025",
+      "killer_caveat": "Only ~5 years of history with sparse relevant markets; election cycles are too infrequent for robust Sharpe estimation",
+      "dev_hours_estimate": 40
+    },
+    {
+      "thread_id": "B",
+      "rank": 10,
+      "tractability_score": 38,
+      "expected_sharpe_lift": 0.20,
+      "free_tier_data_path": "yfinance + OTCMarkets.com OTC Bulletin Board + EODHD free tier for delisted tickers",
+      "minimum_viable_backtest_spec": "Long <$1 stocks with 50-day volume spike >300% and no SEC suspension flag, 5-day hold, 2000-2025",
+      "killer_caveat": "Extreme survivorship bias in free data; most delisted OTC zeros simply disappear from yfinance, making backtests fiction",
+      "dev_hours_estimate": 80
+    },
+    {
+      "thread_id": "C",
+      "rank": 11,
+      "tractability_score": 30,
+      "expected_sharpe_lift": 0.05,
+      "free_tier_data_path": "Morningstar API (limited) + Yahoo Finance fund pages + SEC N-SAR/N-CSR filings",
+      "minimum_viable_backtest_spec": "Buy-and-hold no-load S&P 500 index funds ranked by lowest expense ratio, annual rebalancing, 1995-2025",
+      "killer_caveat": "This is wealth management fee optimization, not a trading alpha signal; PF lift on a tier-2 strategy is effectively zero",
+      "dev_hours_estimate": 30
+    },
+    {
+      "thread_id": "A",
+      "rank": 12,
+      "tractability_score": 25,
+      "expected_sharpe_lift": 0.15,
+      "free_tier_data_path": "yfinance (spotty historical fundamentals) + FRED + CFTC COT legacy reports + Glassnode free tier",
+      "minimum_viable_backtest_spec": "Cross-sectional equity long/short on EV/EBITDA deciles within Russell 2000, monthly rebalance, 2000-2025",
+      "killer_caveat": "User explicitly states standard signal sources are exhausted; 200 dev-hours for 0.15 Sharpe lift on crowded factors is terrible ROI",
+      "dev_hours_estimate": 200
+    }
+  ],
+  "top_3_picks_with_reasoning": [
+    {"thread_id": "G", "why": "EIA weekly data is institutional-grade, completely free, and backtestable to 1982; gasoline inventory surprises have direct passthrough to refiner margins with only 35 dev-hours."},
+    {"thread_id": "I", "why": "NOAA and USDA provide 30+ years of free granular data; weather shocks to planting and yield are among the most fundamental and backtestable signals for lifting the sub-floor FUTURES PF."},
+    {"thread_id": "D", "why": "CBOE daily aggregates are free and stretch to 2010; put/call ratios and VIX term structure are validated risk-sentiment proxies that can improve EQUITY and ETF timing with moderate dev cost."}
+  ],
+  "bottom_3_dismissals_with_reasoning": [
+    {"thread_id": "C", "why": "Mutual fund fee minimization is wealth management, not a trading alpha signal; it produces effectively zero PF lift and consumes dev hours better spent on actual strategies."},
+    {"thread_id": "A", "why": "User explicitly states standard sources are exhausted; 200 dev-hours for 0.15 Sharpe lift on crowded factors (P/E, EV/EBITDA) is the worst risk-adjusted edge per hour in the list."},
+    {"thread_id": "B", "why": "Free-tier data misses delisted zeros, creating fatal survivorship bias; backtests become fiction because failed penny stocks disappear from yfinance and OTC feeds."}
+  ],
+  "single_most_surprising_correlation_worth_testing": "TSA weekly checkpoint throughput 7-day moving average rate-of-change vs PEJ (Invesco Dynamic Leisure and Entertainment ETF) 15-day forward return"
+}
+```

@@ -1,0 +1,108 @@
+function doFreestyleSearch() {
+            const query = document.getElementById('freestyleSearchInput').value.trim();
+            const type = document.getElementById('freestyleType').value;
+            const resultsDiv = document.getElementById('freestyleResults');
+
+            if (!query) return;
+            if (freestyleSearching) return;
+            freestyleSearching = true;
+
+            const isYouTube = type === 'youtube';
+            const searchLabel = isYouTube ? 'YouTube' : 'TMDB';
+
+            resultsDiv.innerHTML = `
+                <div class="freestyle-loading">
+                    <div class="spinner-ring"></div>
+                    <div>Searching ${searchLabel} for "${escapeHtml(query)}"...</div>
+                </div>`;
+
+            try {
+                const apiBase = window.location.pathname.replace(/\/[^/]*$/, '');
+                let url;
+
+                if (isYouTube) {
+                    url = apiBase + '/api/freestyle-search.php?q=' + encodeURIComponent(query) + '&type=youtube';
+                } else {
+                    url = apiBase + '/api/freestyle-search.php?q=' + encodeURIComponent(query) + '&type=' + type;
+                }
+
+                const resp = await fetch(url);
+                const data = await resp.json();
+
+                if (!data.success) {
+                    resultsDiv.innerHTML = `<div class="freestyle-empty"><div class="freestyle-empty-icon">â ï¸</div><div>${data.error || 'Search failed'}</div></div>`;
+                    freestyleSearching = false;
+                    return;
+                }
+
+                freestyleResults = data.results || [];
+
+                if (freestyleResults.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="freestyle-empty">
+                            <div class="freestyle-empty-icon">ð¤·</div>
+                            <div style="font-size:16px; font-weight:600; margin-bottom:8px;">No results found</div>
+                            <div style="font-size:13px;">Try different keywords or a broader search</div>
+                        </div>`;
+                    freestyleSearching = false;
+                    return;
+                }
+
+                const sourceLabel = isYouTube ? 'YouTube' : 'TMDB';
+                let html = `<div style="margin-bottom:12px; color:rgba(255,255,255,0.4); font-size:13px;">${(data.total_results || freestyleResults.length).toLocaleString()} results on ${sourceLabel} &bull; Showing ${freestyleResults.length}</div>`;
+                html += '<div class="freestyle-results-grid">';
+
+                freestyleResults.forEach((item, i) => {
+                    const isYt = item._isYouTube;
+                    const videoId = isYt ? item.trailer_id : item.trailer_id;
+                    const thumb = videoId
+                        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+                        : (item.backdrop || item.thumbnail || '');
+                    const hasTrailer = !!videoId;
+
+                    let badgeHtml;
+                    if (isYt) {
+                        badgeHtml = `<span class="yt-badge">YouTube</span>`;
+                        if (item._channel) {
+                            badgeHtml += `<span style="color:rgba(255,255,255,0.4); font-size:11px;">${escapeHtml(item._channel)}</span>`;
+                        }
+                    } else {
+                        const typeLabel = item.type === 'tv' ? 'TV' : 'Movie';
+                        const typeColor = item.type === 'tv' ? '#8957e5' : '#1f6feb';
+                        badgeHtml = `<span class="freestyle-badge">FREESTYLE</span>
+                            <span style="background:${typeColor}; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;">${typeLabel}</span>`;
+                    }
+
+                    html += `
+                    <div class="freestyle-card">
+                        <div class="freestyle-card-thumb" onclick="${hasTrailer ? `playFreestyleTrailer(${i})` : ''}" style="${hasTrailer ? 'cursor:pointer' : ''}">
+                            ${thumb ? `<img src="${thumb}" alt="" onerror="this.style.display='none'">` : ''}
+                            ${hasTrailer ? `<div class="freestyle-card-play"><span>â¶</span></div>` : `<div class="freestyle-no-trailer">No trailer available</div>`}
+                        </div>
+                        <div class="freestyle-card-body">
+                            <div class="freestyle-card-title">${escapeHtml(item.title)}</div>
+                            <div class="freestyle-card-meta">
+                                ${badgeHtml}
+                                ${item.release_year ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">${item.release_year}</span>` : ''}
+                                ${item.imdb_rating ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">â­ ${item.imdb_rating}</span>` : ''}
+                                ${item._duration ? `<span style="color:rgba(255,255,255,0.4); font-size:11px;">${item._duration}</span>` : ''}
+                            </div>
+                            ${item.genre ? `<div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:4px;">${escapeHtml(item.genre)}</div>` : ''}
+                            <div class="freestyle-card-desc">${escapeHtml(item.description || '')}</div>
+                        </div>
+                        <div class="freestyle-card-actions">
+                            ${hasTrailer ? `<button class="freestyle-action-btn play-btn" onclick="event.stopPropagation(); playFreestyleTrailer(${i})">â¶ Play Now</button>` : ''}
+                            ${hasTrailer ? `<button class="freestyle-action-btn queue-btn" onclick="event.stopPropagation(); queueFreestyleItem(${i}, this)">â Queue</button>` : ''}
+                        </div>
+                    </div>`;
+                });
+
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                resultsDiv.innerHTML = `<div class="freestyle-empty"><div class="freestyle-empty-icon">â</div><div>Error: ${err.message}</div></div>`;
+            }
+            freestyleSearching = false;
+        }
+
+        

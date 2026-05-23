@@ -1,0 +1,686 @@
+{
+  "meta": {
+    "researched": "2026-03-21",
+    "purpose": "Public stock copy trading and analyst data sources - no API keys required",
+    "confidence": "MEDIUM-HIGH - verified via official docs and community libraries",
+    "total_sources": 11,
+    "recommended_priority": [
+      "finviz",
+      "openinsider",
+      "sec_edgar",
+      "stocktwits",
+      "capitol_trades",
+      "tipranks",
+      "barchart",
+      "whalewisdom",
+      "seeking_alpha",
+      "simply_wall_st",
+      "unusual_whales"
+    ]
+  },
+
+  "sources": {
+
+    "finviz": {
+      "name": "Finviz",
+      "tier": "FREE - no auth needed for scraping",
+      "priority": "CRITICAL - richest free stock screener",
+      "confidence": "HIGH",
+      "description": "Stock screener with 67 fundamental + technical filters, insider trading, analyst ratings, news",
+
+      "urls": {
+        "screener_base": "https://finviz.com/screener.ashx",
+        "insider_buying_signal": "https://finviz.com/screener.ashx?v=340&s=it_latestbuys",
+        "insider_selling_signal": "https://finviz.com/screener.ashx?v=340&s=it_latestsells",
+        "analyst_upgrades": "https://finviz.com/screener.ashx?v=340&s=n_upgrades",
+        "analyst_downgrades": "https://finviz.com/screener.ashx?v=340&s=n_downgrades",
+        "insider_trading_page": "https://finviz.com/insidertrading.ashx",
+        "stock_page": "https://finviz.com/quote.ashx?t={TICKER}",
+        "stock_page_example": "https://finviz.com/quote.ashx?t=AAPL"
+      },
+
+      "url_parameters": {
+        "v": "View mode: 110=overview, 120=valuation, 130=financial, 140=ownership, 150=performance, 160=technical, 340=signal snapshot",
+        "s": "Signal preset: it_latestbuys, it_latestsells, n_upgrades, n_downgrades, ta_topgainers, ta_toplosers, ta_newhigh, ta_newlow, ta_mostvolatile, ta_mostactive, ta_unusualvolume, ta_overbought, ta_oversold",
+        "f": "Filters: comma-separated codes like cap_largeover,exch_nasd,idx_sp500,an_strongbuy",
+        "o": "Order by column (e.g., price, -price for descending)",
+        "r": "Row offset for pagination (r=21 for page 2)"
+      },
+
+      "filter_codes": {
+        "analyst_recommendation": {
+          "an_strongbuy": "Strong Buy (1)",
+          "an_buy": "Buy or better",
+          "an_buy1": "Buy",
+          "an_hold": "Hold or better",
+          "an_hold1": "Hold",
+          "an_holdworse": "Hold or worse",
+          "an_sell": "Sell",
+          "an_sellworse": "Sell or worse",
+          "an_strongsell": "Strong Sell (5)"
+        },
+        "insider_transactions": {
+          "it_latestbuys": "Latest insider buys (signal mode)",
+          "it_latestsells": "Latest insider sells (signal mode)"
+        },
+        "ownership_filters": {
+          "sh_insiderown_o10": "Insider ownership > 10%",
+          "sh_insidertrans_vpos": "Insider transactions: very positive",
+          "sh_insidertrans_pos": "Insider transactions: positive",
+          "sh_insidertrans_neg": "Insider transactions: negative",
+          "sh_insidertrans_vneg": "Insider transactions: very negative",
+          "sh_instown_o60": "Institutional ownership > 60%"
+        }
+      },
+
+      "data_fields": {
+        "stock_quote_page": [
+          "ticker", "company", "sector", "industry", "country",
+          "market_cap", "pe", "forward_pe", "peg", "ps", "pb",
+          "dividend_yield", "eps_this_y", "eps_next_y", "eps_growth_5y",
+          "insider_own", "insider_trans", "inst_own", "inst_trans",
+          "short_float", "short_ratio", "target_price", "52w_range",
+          "rsi_14", "sma_20", "sma_50", "sma_200", "volume", "avg_volume",
+          "analyst_recom", "earnings_date", "beta", "atr",
+          "volatility_w", "volatility_m"
+        ],
+        "insider_trading": [
+          "insider_name", "relationship", "date", "transaction_type",
+          "cost", "shares", "value", "shares_total", "sec_form4_date"
+        ],
+        "analyst_ratings": [
+          "date", "action", "analyst", "rating_current", "rating_prior",
+          "price_target_current", "price_target_prior"
+        ]
+      },
+
+      "rate_limits": {
+        "free": "No official rate limit documented, but aggressive scraping gets IP blocked",
+        "recommendation": "1-2 requests per second with random delays",
+        "elite_api": "$39.50/month for real-time + no rate limits"
+      },
+
+      "python_libraries": {
+        "finvizfinance": {
+          "install": "pip install finvizfinance",
+          "pypi": "https://pypi.org/project/finvizfinance/",
+          "docs": "https://finvizfinance.readthedocs.io/"
+        },
+        "finviz": {
+          "install": "pip install finviz",
+          "github": "https://github.com/mariostoev/finviz"
+        }
+      },
+
+      "example_code": {
+        "screener_upgrades": "from finvizfinance.screener.overview import Overview\nfobj = Overview()\nfilters_dict = {'Signal': 'Top Gainers'}\nfobj.set_filter(signal='Analyst Upgrade')\ndf = fobj.screener_view()\nprint(df.head())",
+        "insider_trading": "import finviz\ninsider_data = finviz.get_insider('AAPL')\nfor trade in insider_data:\n    print(trade)",
+        "analyst_targets": "import finviz\ntargets = finviz.get_analyst_price_targets('AAPL')\nfor t in targets:\n    print(t)",
+        "stock_fundamentals": "from finvizfinance.quote import finvizfinance\nstock = finvizfinance('AAPL')\nfundamentals = stock.ticker_fundament()\ninsider = stock.ticker_inside_trader()\nouter_ratings = stock.ticker_outer_ratings()\nprint(fundamentals)",
+        "screener_custom": "from finvizfinance.screener.overview import Overview\nfobj = Overview()\nfilters = {'Market Cap.': 'Large ($10bln to $200bln)', 'Analyst Recom.': 'Strong Buy (1)'}\nfobj.set_filter(filters_dict=filters)\ndf = fobj.screener_view()\nprint(df)",
+        "raw_scraping": "import requests\nfrom bs4 import BeautifulSoup\n\nurl = 'https://finviz.com/screener.ashx?v=340&s=n_upgrades'\nheaders = {'User-Agent': 'Mozilla/5.0'}\nresp = requests.get(url, headers=headers)\nsoup = BeautifulSoup(resp.text, 'html.parser')\ntable = soup.find('table', class_='screener_table')\nfor row in table.find_all('tr')[1:]:\n    cols = [td.text.strip() for td in row.find_all('td')]\n    print(cols)"
+      }
+    },
+
+    "openinsider": {
+      "name": "OpenInsider",
+      "tier": "FREE - fully public, no auth",
+      "priority": "CRITICAL - best free insider trading database",
+      "confidence": "HIGH",
+      "description": "SEC Form 4 insider trading screener with cluster buys, filters by officer type, transaction size",
+
+      "urls": {
+        "homepage": "http://openinsider.com/",
+        "screener": "http://openinsider.com/screener",
+        "latest_buys": "http://openinsider.com/insider-purchases",
+        "cluster_buys": "http://openinsider.com/latest-cluster-buys",
+        "top_weekly_buys": "http://openinsider.com/top-weekly-buys",
+        "top_monthly_buys": "http://openinsider.com/top-monthly-buys",
+        "screener_filtered_example": "http://openinsider.com/screener?s=&o=&pl=&ph=&ll=&lh=&fd=7&fdr=&td=0&tdr=&feession=&cession=&sidTicker=&ta=1&hession=true&hc=&tc=&lk=&rs=&sc=&vl=100&vh=&pricipal=&ph2=&ol=&oh=&sortcol=0&cnt=100&page=1",
+        "by_ticker": "http://openinsider.com/search?q={TICKER}",
+        "by_ticker_example": "http://openinsider.com/search?q=AAPL"
+      },
+
+      "screener_parameters": {
+        "s": "Ticker symbol",
+        "fd": "Filing date range in days (1, 2, 3, 7, 14, 30, 60, 90, 180, 365)",
+        "td": "Trade date range in days",
+        "ta": "Transaction type: 1=purchases, 2=sales",
+        "hession": "Officer filter: true = CEO/CFO/COO only",
+        "vl": "Minimum trade value (e.g., 100 = $100k minimum)",
+        "vh": "Maximum trade value",
+        "cnt": "Results per page (max 100)",
+        "page": "Page number for pagination",
+        "sortcol": "Sort column index",
+        "rs": "Insider role filter"
+      },
+
+      "data_fields": [
+        "filing_date", "trade_date", "ticker", "company_name",
+        "insider_name", "title", "trade_type", "price",
+        "quantity", "owned", "delta_owned", "value",
+        "sec_form4_link"
+      ],
+
+      "rate_limits": {
+        "documented": "None explicitly documented",
+        "recommendation": "Be respectful - 1 request per 2-3 seconds",
+        "note": "Simple HTML tables, easy to parse with BeautifulSoup"
+      },
+
+      "example_code": "import requests\nfrom bs4 import BeautifulSoup\nimport pandas as pd\n\n# Latest cluster buys (multiple insiders buying same stock)\nurl = 'http://openinsider.com/latest-cluster-buys'\nheaders = {'User-Agent': 'Mozilla/5.0'}\nresp = requests.get(url, headers=headers)\nsoup = BeautifulSoup(resp.text, 'html.parser')\ntable = soup.find('table', class_='tinytable')\n\nrows = []\nfor tr in table.find_all('tr')[1:]:\n    cols = [td.text.strip() for td in tr.find_all('td')]\n    if cols:\n        rows.append(cols)\n\n# CEO/CFO buys over $100k in last 7 days\nscreener_url = 'http://openinsider.com/screener?s=&o=&pl=&ph=&ll=&lh=&fd=7&fdr=&td=0&tdr=&feession=&cession=&sidTicker=&ta=1&hession=true&hc=&tc=&lk=&rs=&sc=&vl=100&vh=&pricipal=&ph2=&ol=&oh=&sortcol=0&cnt=100&page=1'\nresp2 = requests.get(screener_url, headers=headers)\nprint(f'Got {len(rows)} cluster buy records')"
+    },
+
+    "sec_edgar": {
+      "name": "SEC EDGAR",
+      "tier": "FREE - official US government API, no auth required",
+      "priority": "CRITICAL - authoritative source for 13F + Form 4",
+      "confidence": "HIGH",
+      "description": "Official SEC database with RESTful JSON APIs for filings, insider trades (Form 4), institutional holdings (13F)",
+
+      "urls": {
+        "submissions_api": "https://data.sec.gov/submissions/CIK{10_DIGIT_CIK}.json",
+        "submissions_example": "https://data.sec.gov/submissions/CIK0000320193.json",
+        "company_facts": "https://data.sec.gov/api/xbrl/companyfacts/CIK{10_DIGIT_CIK}.json",
+        "company_concept": "https://data.sec.gov/api/xbrl/companyconcept/CIK{CIK}/us-gaap/{concept}.json",
+        "full_text_search": "https://efts.sec.gov/LATEST/search-index?q={query}&forms={form_type}&dateRange=custom&startdt={YYYY-MM-DD}&enddt={YYYY-MM-DD}",
+        "filing_index": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={TICKER}&type=4&dateb=&owner=include&count=40&search_text=&action=getcompany",
+        "13f_index": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={CIK}&type=13F-HR&dateb=&owner=include&count=40",
+        "company_tickers_json": "https://www.sec.gov/files/company_tickers.json",
+        "company_tickers_exchange": "https://www.sec.gov/files/company_tickers_exchange.json"
+      },
+
+      "api_notes": {
+        "authentication": "NONE - completely free and open",
+        "rate_limit": "10 requests per second maximum",
+        "user_agent_required": "YES - must set User-Agent header to 'Company Name email@domain.com'",
+        "format": "JSON",
+        "cik_format": "10-digit with leading zeros (e.g., 0000320193 for Apple)"
+      },
+
+      "data_fields": {
+        "submissions": [
+          "cik", "entityType", "sic", "sicDescription", "name",
+          "tickers", "exchanges", "filings.recent.accessionNumber",
+          "filings.recent.filingDate", "filings.recent.form",
+          "filings.recent.primaryDocument", "filings.recent.items"
+        ],
+        "form4_insider_fields": [
+          "issuerCik", "issuerName", "issuerTradingSymbol",
+          "reportingOwnerName", "reportingOwnerRelationship",
+          "transactionDate", "transactionCode", "sharesTraded",
+          "pricePerShare", "sharesOwnedAfter"
+        ],
+        "13f_holdings_fields": [
+          "nameOfIssuer", "titleOfClass", "cusip", "value",
+          "shrsOrPrnAmt", "investmentDiscretion", "votingAuthority"
+        ]
+      },
+
+      "python_libraries": {
+        "edgartools": {
+          "install": "pip install edgartools",
+          "github": "https://github.com/dgunning/edgartools",
+          "note": "Best Python library - supports 13F, Form 4, 10-K, all forms"
+        },
+        "sec_edgar_api": {
+          "install": "pip install sec-edgar-api",
+          "docs": "https://sec-edgar-api.readthedocs.io/"
+        }
+      },
+
+      "example_code": "import requests\nimport json\n\n# SEC requires a proper User-Agent\nheaders = {'User-Agent': 'YourApp yourname@email.com'}\n\n# Get company tickers mapping\ntickers = requests.get('https://www.sec.gov/files/company_tickers.json', headers=headers).json()\n\n# Get Apple submissions (CIK 0000320193)\nsubmissions = requests.get('https://data.sec.gov/submissions/CIK0000320193.json', headers=headers).json()\nrecent = submissions['filings']['recent']\n\n# Filter for Form 4 (insider trading)\nform4_indices = [i for i, f in enumerate(recent['form']) if f == '4']\nfor idx in form4_indices[:10]:\n    print(f\"{recent['filingDate'][idx]} | {recent['primaryDocument'][idx]}\")\n\n# Filter for 13F-HR (institutional holdings)\n# Search for a fund's 13F\nfund_cik = '0001067983'  # Berkshire Hathaway\nfund_subs = requests.get(f'https://data.sec.gov/submissions/CIK{fund_cik}.json', headers=headers).json()\nfund_recent = fund_subs['filings']['recent']\n_13f = [i for i, f in enumerate(fund_recent['form']) if '13F' in f]\nfor idx in _13f[:5]:\n    print(f\"Berkshire 13F: {fund_recent['filingDate'][idx]}\")"
+    },
+
+    "stocktwits": {
+      "name": "Stocktwits",
+      "tier": "FREE - public JSON API, no auth for basic access",
+      "priority": "HIGH - social sentiment for stocks",
+      "confidence": "HIGH",
+      "description": "Stock-focused social platform with public API for sentiment, trending stocks, message streams",
+
+      "urls": {
+        "symbol_stream": "https://api.stocktwits.com/api/2/streams/symbol/{SYMBOL}.json",
+        "symbol_stream_example": "https://api.stocktwits.com/api/2/streams/symbol/AAPL.json",
+        "trending": "https://api.stocktwits.com/api/2/trending/symbols.json",
+        "trending_equities": "https://api.stocktwits.com/api/2/trending/symbols/equities.json",
+        "symbol_sentiment": "https://stocktwits.com/symbol/{SYMBOL}/sentiment",
+        "sentiment_api_v2": "https://sentiment-v2-api.stocktwits.com/",
+        "api_docs": "https://api-docs.stocktwits.com/"
+      },
+
+      "rate_limits": {
+        "unauthenticated": "200 requests per hour (IP-based)",
+        "authenticated": "400 requests per hour (OAuth token)",
+        "note": "No API key needed for basic stream access"
+      },
+
+      "data_fields": {
+        "symbol_stream": {
+          "response": {
+            "status": 200
+          },
+          "symbol": {
+            "id": "int",
+            "symbol": "string (e.g., AAPL)",
+            "title": "string (e.g., Apple Inc.)",
+            "watchlist_count": "int",
+            "has_pricing": "bool"
+          },
+          "messages": [
+            {
+              "id": "int",
+              "body": "string (message text)",
+              "created_at": "datetime",
+              "user": {"username": "string", "followers": "int"},
+              "entities": {"sentiment": {"basic": "Bullish|Bearish|null"}},
+              "likes": {"total": "int"},
+              "reshares": {"reshared_count": "int"}
+            }
+          ]
+        },
+        "trending": {
+          "symbols": [
+            {
+              "id": "int",
+              "symbol": "string",
+              "title": "string",
+              "watchlist_count": "int"
+            }
+          ]
+        }
+      },
+
+      "example_code": "import requests\nimport time\n\n# Get symbol stream with sentiment\ndef get_stocktwits_sentiment(symbol):\n    url = f'https://api.stocktwits.com/api/2/streams/symbol/{symbol}.json'\n    resp = requests.get(url)\n    data = resp.json()\n    \n    messages = data.get('messages', [])\n    bullish = sum(1 for m in messages if m.get('entities', {}).get('sentiment', {}).get('basic') == 'Bullish')\n    bearish = sum(1 for m in messages if m.get('entities', {}).get('sentiment', {}).get('basic') == 'Bearish')\n    total = bullish + bearish\n    \n    return {\n        'symbol': symbol,\n        'message_count': len(messages),\n        'bullish': bullish,\n        'bearish': bearish,\n        'bull_ratio': round(bullish / total, 2) if total > 0 else 0.5,\n        'watchlist_count': data.get('symbol', {}).get('watchlist_count', 0)\n    }\n\n# Get trending stocks\ndef get_trending():\n    url = 'https://api.stocktwits.com/api/2/trending/symbols/equities.json'\n    resp = requests.get(url)\n    return [s['symbol'] for s in resp.json().get('symbols', [])]\n\n# Example usage\ntrending = get_trending()\nfor sym in trending[:5]:\n    sentiment = get_stocktwits_sentiment(sym)\n    print(f\"{sym}: {sentiment['bull_ratio']:.0%} bullish ({sentiment['message_count']} msgs)\")\n    time.sleep(2)  # Respect rate limits"
+    },
+
+    "tipranks": {
+      "name": "TipRanks",
+      "tier": "SEMI-FREE - public JSON endpoints exist but may require account for full data",
+      "priority": "HIGH - analyst consensus is very valuable",
+      "confidence": "MEDIUM",
+      "description": "Analyst consensus, price targets, smart scores, news sentiment. Public JSON endpoints via community libraries.",
+
+      "urls": {
+        "public_stock_page": "https://www.tipranks.com/stocks/{TICKER}/forecast",
+        "public_stock_page_example": "https://www.tipranks.com/stocks/AAPL/forecast",
+        "internal_api_consensus": "https://www.tipranks.com/api/stocks/getNewsSentiments/?ticker={TICKER}",
+        "internal_api_price_targets": "https://www.tipranks.com/api/stocks/getPriceTargets/?ticker={TICKER}",
+        "internal_api_trending": "https://www.tipranks.com/api/stocks/gettrendingstocks/?daysago=3&which=most",
+        "note": "These internal APIs may change without notice and may require session cookies"
+      },
+
+      "community_libraries": {
+        "tipranks_api_v2_node": {
+          "install": "npm install tipranks-api-v2",
+          "github": "https://github.com/janlukasschroeder/tipranks-api-v2",
+          "methods": {
+            "getPriceTargets(ticker)": "Returns mean, median, highest, lowest price targets + numberOfEstimates",
+            "getNewsSentimentData(ticker)": "Returns bullishPercent, bearishPercent, articlesInLastWeek, buzz, companyNewsScore",
+            "getTrendingStocks()": "Returns ticker, companyName, sector, popularity, sentiment, consensusScore, buy/sell/hold counts, priceTarget"
+          }
+        },
+        "tipranks_python": {
+          "install": "pip install tipranks",
+          "github": "https://github.com/visuxls/tipranks",
+          "methods": [
+            "top_analyst_stocks()",
+            "top_smart_score_stocks()",
+            "top_insider_stocks()",
+            "stock_screener()",
+            "anaylst_projection(ticker)",
+            "news_sentiment(ticker)"
+          ],
+          "note": "May require TipRanks Premium/Ultimate account for full access"
+        }
+      },
+
+      "data_fields": {
+        "price_targets": ["symbol", "mean", "median", "highest", "lowest", "numberOfEstimates"],
+        "news_sentiment": ["bullishPercent", "bearishPercent", "articlesInLastWeek", "weeklyAverage", "buzz", "sectorAverageBullishPercent", "companyNewsScore"],
+        "trending": ["ticker", "companyName", "sector", "popularity", "sentiment", "consensusScore", "buy", "sell", "hold", "priceTarget", "rating", "marketCap"]
+      },
+
+      "rate_limits": {
+        "note": "TipRanks actively blocks scrapers - use session management",
+        "recommendation": "Use community libraries which handle auth, or scrape cautiously with delays"
+      },
+
+      "example_code": "# Python approach using requests (may need session cookies)\nimport requests\n\ndef get_tipranks_consensus(ticker):\n    \"\"\"Fetch analyst consensus from TipRanks internal API.\n    NOTE: These endpoints may require browser-like headers and may break.\n    Use the tipranks npm/python libraries for more reliable access.\"\"\"\n    headers = {\n        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',\n        'Accept': 'application/json'\n    }\n    \n    # Price targets\n    pt_url = f'https://www.tipranks.com/api/stocks/getPriceTargets/?ticker={ticker}'\n    try:\n        resp = requests.get(pt_url, headers=headers, timeout=10)\n        if resp.status_code == 200:\n            return resp.json()\n    except Exception as e:\n        print(f'TipRanks blocked: {e}')\n    return None\n\n# More reliable: use the Node.js library via subprocess\n# npm install tipranks-api-v2\n# Then call from Python via subprocess or use tipranks pip package"
+    },
+
+    "capitol_trades": {
+      "name": "Capitol Trades",
+      "tier": "FREE - public website, scrapable",
+      "priority": "HIGH - congressional trading is a proven alpha signal",
+      "confidence": "MEDIUM",
+      "description": "Tracks US congressional stock trades from STOCK Act disclosures. Free web scraping, plus third-party APIs.",
+
+      "urls": {
+        "homepage": "https://www.capitoltrades.com/",
+        "trades": "https://www.capitoltrades.com/trades",
+        "politicians": "https://www.capitoltrades.com/politicians",
+        "issuers": "https://www.capitoltrades.com/issuers",
+        "by_politician": "https://www.capitoltrades.com/politicians/{SLUG}",
+        "alternative_quiver": "https://www.quiverquant.com/congresstrading/"
+      },
+
+      "third_party_apis": {
+        "quiver_quant": {
+          "url": "https://www.quiverquant.com/congresstrading/",
+          "description": "Free congressional trading data with visualizations",
+          "api": "https://api.quiverquant.com/ (requires free account)"
+        },
+        "finnhub": {
+          "url": "https://finnhub.io/docs/api/congressional-trading",
+          "description": "Congressional trading API endpoint (free tier available)"
+        }
+      },
+
+      "data_fields": [
+        "politician_name", "party", "chamber", "state",
+        "trade_date", "disclosure_date", "ticker", "asset_name",
+        "transaction_type", "amount_range", "cap_gains_over_200",
+        "industry", "sector"
+      ],
+
+      "rate_limits": {
+        "website": "No documented limits, scrape respectfully",
+        "quiver_api": "Free tier has rate limits",
+        "recommendation": "1 request per 2-3 seconds for scraping"
+      },
+
+      "example_code": "import requests\nfrom bs4 import BeautifulSoup\n\n# Scrape latest congressional trades\ndef get_congress_trades():\n    url = 'https://www.capitoltrades.com/trades'\n    headers = {'User-Agent': 'Mozilla/5.0'}\n    resp = requests.get(url, headers=headers)\n    soup = BeautifulSoup(resp.text, 'html.parser')\n    \n    trades = []\n    table = soup.find('table')\n    if table:\n        for row in table.find_all('tr')[1:]:\n            cols = [td.text.strip() for td in row.find_all('td')]\n            if len(cols) >= 6:\n                trades.append({\n                    'politician': cols[0],\n                    'ticker': cols[1],\n                    'type': cols[2],\n                    'amount': cols[3],\n                    'date': cols[4]\n                })\n    return trades\n\n# Alternative: Quiver Quant (more reliable)\n# Sign up free at quiverquant.com for API key\n# import quiverquant\n# q = quiverquant.quiver('YOUR_API_KEY')\n# congress = q.congress_trading()"
+    },
+
+    "whalewisdom": {
+      "name": "WhaleWisdom",
+      "tier": "FREEMIUM - last 9 quarters free, historical data paid",
+      "priority": "MEDIUM - 13F institutional holdings tracking",
+      "confidence": "MEDIUM",
+      "description": "Aggregates 13F filings from institutional investors. Track what hedge funds are buying/selling.",
+
+      "urls": {
+        "homepage": "https://whalewisdom.com/",
+        "latest_filings": "https://whalewisdom.com/filing/latest_filings",
+        "fund_page": "https://whalewisdom.com/filer/{FILER_NAME}",
+        "fund_example": "https://whalewisdom.com/filer/berkshire-hathaway-inc",
+        "stock_page": "https://whalewisdom.com/stock/{TICKER}",
+        "stock_example": "https://whalewisdom.com/stock/aapl",
+        "13f_filing": "https://whalewisdom.com/filing/detail/{FILING_ID}"
+      },
+
+      "data_fields": {
+        "fund_holdings": [
+          "stock_name", "ticker", "shares", "market_value",
+          "percent_of_portfolio", "change_in_shares",
+          "percent_change", "source_date", "filing_date"
+        ],
+        "stock_institutional": [
+          "filer_name", "shares_held", "market_value",
+          "percent_of_portfolio", "change_in_shares",
+          "quarterly_change_percent"
+        ]
+      },
+
+      "limitations": {
+        "free_data": "Last 9 quarters only",
+        "scraping": "JavaScript-heavy site, may need Selenium/Playwright",
+        "recommendation": "Use SEC EDGAR directly for 13F data instead - it's more reliable and free"
+      },
+
+      "rate_limits": {
+        "note": "No documented API rate limits",
+        "recommendation": "Use Selenium with delays, site has anti-bot measures"
+      },
+
+      "example_code": "# WhaleWisdom is JS-heavy, recommend SEC EDGAR instead for raw 13F data\n# If you must scrape WhaleWisdom:\nfrom playwright.sync_api import sync_playwright\n\ndef get_fund_holdings(filer_slug):\n    with sync_playwright() as p:\n        browser = p.chromium.launch(headless=True)\n        page = browser.new_page()\n        page.goto(f'https://whalewisdom.com/filer/{filer_slug}')\n        page.wait_for_selector('table')\n        # Parse table data\n        rows = page.query_selector_all('table tbody tr')\n        holdings = []\n        for row in rows:\n            cells = row.query_selector_all('td')\n            if len(cells) >= 5:\n                holdings.append({\n                    'stock': cells[0].inner_text(),\n                    'shares': cells[1].inner_text(),\n                    'value': cells[2].inner_text(),\n                    'pct_portfolio': cells[3].inner_text()\n                })\n        browser.close()\n        return holdings\n\n# BETTER APPROACH: Use SEC EDGAR 13F directly\n# See sec_edgar section for free, reliable 13F access"
+    },
+
+    "barchart": {
+      "name": "Barchart",
+      "tier": "FREEMIUM - limited free API, full access requires paid plan",
+      "priority": "MEDIUM - good for options flow and analyst data",
+      "confidence": "MEDIUM",
+      "description": "Market data platform with API for quotes, options, analyst ratings, earnings estimates",
+
+      "urls": {
+        "homepage": "https://www.barchart.com/",
+        "api_docs": "https://www.barchart.com/ondemand/api",
+        "analyst_ratings_page": "https://www.barchart.com/stocks/quotes/{TICKER}/analyst-ratings",
+        "options_page": "https://www.barchart.com/stocks/quotes/{TICKER}/options",
+        "unusual_options": "https://www.barchart.com/options/unusual-activity/stocks",
+        "insider_trades": "https://www.barchart.com/stocks/quotes/{TICKER}/insider-trades"
+      },
+
+      "api_endpoints": {
+        "getQuote": "Real-time/delayed quotes by symbol",
+        "getRatings": "Analyst strong buy/buy/hold/sell ratings",
+        "getEarningsEstimates": "Per share earnings estimates quarterly/annual",
+        "getCashFlow": "Cash flow and income data",
+        "getOptionsScreener": "Options screening with filters",
+        "getHistory": "Historical time series data",
+        "note": "API key required - sign up for free tier at barchart.com/ondemand"
+      },
+
+      "data_fields": {
+        "ratings": ["symbol", "strongBuy", "moderateBuy", "hold", "moderateSell", "strongSell", "consensus"],
+        "options": ["symbol", "strikePrice", "expirationDate", "volume", "openInterest", "impliedVolatility", "delta", "gamma", "theta", "vega"]
+      },
+
+      "rate_limits": {
+        "free_tier": "Limited calls per day (varies)",
+        "note": "Web scraping is easier than using the API for free access"
+      },
+
+      "example_code": "import requests\nfrom bs4 import BeautifulSoup\n\n# Scrape analyst ratings page (no API key needed)\ndef get_barchart_ratings(ticker):\n    url = f'https://www.barchart.com/stocks/quotes/{ticker}/analyst-ratings'\n    headers = {'User-Agent': 'Mozilla/5.0'}\n    resp = requests.get(url, headers=headers)\n    soup = BeautifulSoup(resp.text, 'html.parser')\n    # Parse ratings data from page\n    return soup\n\n# Scrape unusual options activity\ndef get_unusual_options():\n    url = 'https://www.barchart.com/options/unusual-activity/stocks'\n    headers = {'User-Agent': 'Mozilla/5.0'}\n    resp = requests.get(url, headers=headers)\n    # Barchart uses AJAX - need to find the data endpoint\n    # Check Network tab for XHR requests\n    return resp"
+    },
+
+    "seeking_alpha": {
+      "name": "Seeking Alpha",
+      "tier": "DIFFICULT - aggressive anti-bot, most data behind paywall",
+      "priority": "LOW - too hard to scrape reliably",
+      "confidence": "MEDIUM",
+      "description": "Quant ratings, analyst consensus, earnings analysis. Heavy anti-bot protection (Cloudflare/PerimeterX).",
+
+      "urls": {
+        "stock_page": "https://seekingalpha.com/symbol/{TICKER}",
+        "quant_rating": "https://seekingalpha.com/symbol/{TICKER}/ratings/quant-ratings",
+        "earnings": "https://seekingalpha.com/symbol/{TICKER}/earnings",
+        "quant_performance": "https://seekingalpha.com/performance/quant"
+      },
+
+      "scraping_difficulty": "VERY HIGH",
+      "anti_bot_measures": [
+        "Cloudflare protection",
+        "PerimeterX bot detection",
+        "React SPA (data loaded via XHR, not in initial HTML)",
+        "Subscription wall for detailed quant metrics",
+        "Browser fingerprinting"
+      ],
+
+      "data_fields_if_accessible": [
+        "quant_rating", "quant_score", "growth_grade", "profitability_grade",
+        "momentum_grade", "valuation_grade", "revisions_grade",
+        "wall_street_rating", "author_rating", "dividend_grade"
+      ],
+
+      "recommendation": "SKIP for automated scraping. Use Finviz analyst ratings as substitute. If you must access SA data, use paid scraping services like Apify or ScrapingBee.",
+
+      "alternative": "Use finviz.get_analyst_price_targets() and finviz screener analyst recommendation filter instead"
+    },
+
+    "simply_wall_st": {
+      "name": "Simply Wall St",
+      "tier": "FREEMIUM - limited free analysis, detailed data requires subscription",
+      "priority": "LOW - nice visuals but hard to extract data",
+      "confidence": "LOW",
+      "description": "Visual stock analysis with snowflake charts. Limited free access, JS-heavy rendering.",
+
+      "urls": {
+        "stock_page": "https://simplywall.st/stocks/{COUNTRY}/{EXCHANGE}/{TICKER}/",
+        "stock_example": "https://simplywall.st/stocks/us/tech/nasdaq-aapl/apple",
+        "news": "https://simplywall.st/news"
+      },
+
+      "data_fields_if_accessible": [
+        "value_score", "future_score", "past_score", "health_score", "dividend_score",
+        "overall_snowflake_score", "fair_value_estimate", "pe_ratio",
+        "debt_to_equity", "roe", "revenue_growth", "insider_buying"
+      ],
+
+      "scraping_difficulty": "HIGH - React SPA, subscription required for detailed data",
+
+      "recommendation": "SKIP - use Finviz for fundamentals, SEC EDGAR for insider data. Simply Wall St adds visual layer but underlying data comes from same public sources."
+    },
+
+    "unusual_whales": {
+      "name": "Unusual Whales",
+      "tier": "PAID - free tier too limited for automated use",
+      "priority": "LOW for scraping, HIGH if willing to pay $29+/mo",
+      "confidence": "MEDIUM",
+      "description": "Options flow, dark pool data, congressional trading. API requires paid subscription.",
+
+      "urls": {
+        "homepage": "https://unusualwhales.com/",
+        "api_docs": "https://api.unusualwhales.com/docs",
+        "openapi_spec": "https://api.unusualwhales.com/api/openapi",
+        "pricing": "https://unusualwhales.com/pricing",
+        "congress_page": "https://unusualwhales.com/politics",
+        "flow_page": "https://unusualwhales.com/live-options-flow"
+      },
+
+      "api_endpoints_if_paid": {
+        "options_flow": "100+ endpoints for options flow",
+        "dark_pool": "Dark pool transaction data",
+        "congress": "Congressional trading data",
+        "greeks": "Options Greeks exposure",
+        "volatility": "Volatility data"
+      },
+
+      "free_tier_limitations": [
+        "Delayed alerts only",
+        "Basic watchlists",
+        "Limited flow feed",
+        "No premium filters",
+        "No dark pool data",
+        "No API access"
+      ],
+
+      "recommendation": "Use Capitol Trades + Finviz for free alternatives. Unusual Whales API is excellent but requires $29-99/month subscription."
+    }
+  },
+
+  "integration_plan": {
+    "phase_1_immediate": {
+      "description": "Free sources that can be integrated today with no API keys",
+      "sources": [
+        {
+          "name": "finviz",
+          "module": "finviz_scanner.py",
+          "signals": ["analyst_upgrades", "analyst_downgrades", "insider_buying", "strong_buy_consensus", "stock_fundamentals"],
+          "install": "pip install finviz finvizfinance",
+          "frequency": "every 30 min"
+        },
+        {
+          "name": "openinsider",
+          "module": "openinsider_scanner.py",
+          "signals": ["cluster_buys", "ceo_cfo_buys", "large_insider_purchases"],
+          "install": "pip install requests beautifulsoup4",
+          "frequency": "every 1 hour"
+        },
+        {
+          "name": "sec_edgar",
+          "module": "sec_edgar_scanner.py",
+          "signals": ["form4_insider_trades", "13f_institutional_changes"],
+          "install": "pip install requests edgartools",
+          "frequency": "every 2 hours (13F quarterly, Form 4 daily)"
+        },
+        {
+          "name": "stocktwits",
+          "module": "stocktwits_sentiment.py",
+          "signals": ["social_sentiment_bullish", "trending_stocks", "sentiment_shift"],
+          "install": "pip install requests",
+          "frequency": "every 15 min (respect 200/hr limit)"
+        }
+      ]
+    },
+    "phase_2_enhanced": {
+      "description": "Sources requiring more setup or community libraries",
+      "sources": [
+        {
+          "name": "capitol_trades",
+          "module": "congress_scanner.py",
+          "signals": ["congressional_buys", "bipartisan_consensus"],
+          "frequency": "every 6 hours (disclosures are delayed 30-45 days)"
+        },
+        {
+          "name": "tipranks",
+          "module": "tipranks_scanner.py",
+          "signals": ["analyst_consensus", "price_target_changes", "smart_score"],
+          "note": "May need npm tipranks-api-v2 or browser automation"
+        }
+      ]
+    },
+    "phase_3_optional": {
+      "description": "Lower priority or paid sources",
+      "sources": ["barchart", "whalewisdom", "unusual_whales", "seeking_alpha", "simply_wall_st"]
+    }
+  },
+
+  "signal_aggregation": {
+    "description": "How to combine these sources into actionable stock picks",
+    "scoring_model": {
+      "insider_cluster_buy": {
+        "source": "openinsider",
+        "weight": 25,
+        "description": "Multiple insiders buying same stock within 2 weeks"
+      },
+      "analyst_upgrade_consensus": {
+        "source": "finviz",
+        "weight": 20,
+        "description": "Strong Buy consensus + recent upgrades"
+      },
+      "institutional_accumulation": {
+        "source": "sec_edgar_13f",
+        "weight": 20,
+        "description": "Multiple funds adding same position in latest 13F"
+      },
+      "social_sentiment_surge": {
+        "source": "stocktwits",
+        "weight": 10,
+        "description": "Bullish sentiment > 70% with rising message volume"
+      },
+      "congressional_buying": {
+        "source": "capitol_trades",
+        "weight": 15,
+        "description": "Multiple congress members buying same stock"
+      },
+      "price_target_raise": {
+        "source": "tipranks",
+        "weight": 10,
+        "description": "Mean analyst price target raised > 10% above current price"
+      }
+    },
+    "minimum_score_for_pick": 40,
+    "maximum_picks": 10,
+    "hold_period_days": 30
+  },
+
+  "dependencies": {
+    "required_pip_packages": [
+      "finviz",
+      "finvizfinance",
+      "requests",
+      "beautifulsoup4",
+      "edgartools",
+      "pandas",
+      "lxml"
+    ],
+    "optional_pip_packages": [
+      "playwright",
+      "tipranks"
+    ],
+    "install_command": "pip install finviz finvizfinance requests beautifulsoup4 edgartools pandas lxml"
+  }
+}

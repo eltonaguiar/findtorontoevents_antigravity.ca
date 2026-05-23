@@ -1,0 +1,197 @@
+{
+  "version": "2.1",
+  "effective_date": "2026-04-06T19:15:00Z",
+  "description": "Emergency scoring adjustments based on closed picks analysis",
+  "rationale": "Score 80+ showing -2.08% avg, Score 60-79 showing +3.59%. SHORT positions: 67% WR vs LONG: 33% WR",
+  
+  "direction_bias": {
+    "enabled": true,
+    "rationale": "Market showing strong SHORT bias",
+    "multipliers": {
+      "SHORT": 1.25,
+      "LONG": 0.75
+    },
+    "target_allocation": {
+      "SHORT_pct": 60,
+      "LONG_pct": 40
+    },
+    "review_date": "2026-04-13T00:00:00Z"
+  },
+
+  "asset_class_multipliers": {
+    "enabled": true,
+    "rationale": "EQUITY showing -5.35% avg, CRYPTO +0.42%",
+    "values": {
+      "CRYPTO": 1.10,
+      "FOREX": 1.00,
+      "COMMODITY": 0.95,
+      "EQUITY": 0.85,
+      "FUTURES": 0.95
+    },
+    "equity_max_exposure_pct": 10
+  },
+
+  "system_trust_multipliers": {
+    "enabled": true,
+    "rationale": "Based on realized PnL performance",
+    "values": {
+      "inverse_mutations": 1.50,
+      "short_engine": 1.30,
+      "battleground": 1.20,
+      "mercury2": 1.10,
+      "alpha_engine": 1.00,
+      "pm_kalshi_signals": 0.80,
+      "multi_asset": 0.90
+    },
+    "rebalance_frequency": "weekly"
+  },
+
+  "score_decay": {
+    "enabled": true,
+    "rationale": "Punish poor live performance",
+    "rules": [
+      {
+        "condition": "live_win_rate < 0.45",
+        "multiplier": 0.70,
+        "label": "severe_underperformance"
+      },
+      {
+        "condition": "live_win_rate < 0.50",
+        "multiplier": 0.85,
+        "label": "mild_underperformance"
+      },
+      {
+        "condition": "staleness_days > 7",
+        "multiplier_per_week": 0.95,
+        "label": "staleness_decay"
+      }
+    ]
+  },
+
+  "symbol_blacklist": {
+    "enabled": true,
+    "symbols": [
+      {
+        "symbol": "OPUSDT",
+        "reason": "17.9% WR, -56% PnL",
+        "ban_duration": "indefinite"
+      },
+      {
+        "symbol": "KATUSDT",
+        "reason": "Toxic asset from audit",
+        "ban_duration": "indefinite"
+      },
+      {
+        "symbol": "KITEUSDT",
+        "reason": "Toxic asset from audit",
+        "ban_duration": "indefinite"
+      },
+      {
+        "symbol": "RESOLVUSDT",
+        "reason": "Toxic asset from audit",
+        "ban_duration": "indefinite"
+      }
+    ]
+  },
+
+  "strategy_restrictions": {
+    "enabled": true,
+    "rules": [
+      {
+        "strategy": "macd_crossover",
+        "action": "disable_long",
+        "rationale": "19.6% LONG WR vs 46.2% SHORT WR",
+        "effective": "immediate"
+      },
+      {
+        "strategy": "luxalgo_confluence",
+        "action": "short_only",
+        "rationale": "32.3% LONG WR vs 43.5% SHORT WR",
+        "symbols_allowed": ["SOLUSDT", "BTCUSDT"]
+      },
+      {
+        "strategy": "crypto_keltner_v1",
+        "action": "favor_short",
+        "short_bias_pct": 80,
+        "rationale": "82% WR on BTC SHORT vs 37.5% LONG"
+      }
+    ]
+  },
+
+  "regime_adjustments": {
+    "enabled": true,
+    "rationale": "Adapt to market conditions",
+    "multipliers": {
+      "trending_bull": {
+        "trend_strategies": 1.20,
+        "mean_reversion": 0.80
+      },
+      "trending_bear": {
+        "short_bias": 1.30,
+        "long_bias": 0.70
+      },
+      "ranging": {
+        "mean_reversion": 1.20,
+        "trend_following": 0.80
+      },
+      "volatile": {
+        "position_size_factor": 0.70,
+        "score_cap": 85
+      }
+    }
+  },
+
+  "expected_impact": {
+    "overall_win_rate": {
+      "before": "42%",
+      "target": "55%",
+      "confidence": "high"
+    },
+    "score_correlation": {
+      "before": "-2.08% (80+ scores)",
+      "target": "+3.0%",
+      "confidence": "medium"
+    },
+    "avg_pnl_per_pick": {
+      "before": "-0.5%",
+      "target": "+1.5%",
+      "confidence": "medium"
+    },
+    "direction_balance": {
+      "before": "79% LONG",
+      "target": "60% SHORT",
+      "confidence": "high"
+    }
+  },
+
+  "rollback_criteria": [
+    {
+      "condition": "overall_wr < 40% for 3 consecutive days",
+      "action": "revert_direction_bias"
+    },
+    {
+      "condition": "score_correlation remains negative after 1 week",
+      "action": "revert_all_changes"
+    },
+    {
+      "condition": "single_day_drawdown > 10% from SHORT bias",
+      "action": "reduce_short_exposure"
+    }
+  ],
+
+  "monitoring": {
+    "metrics": [
+      "daily_score_correlation",
+      "direction_win_rates",
+      "system_performance_by_trust",
+      "asset_class_pnl",
+      "blacklist_effectiveness"
+    ],
+    "reporting_frequency": "daily",
+    "review_meeting": "2026-04-13T15:00:00Z"
+  },
+
+  "approved_by": "claude-analytics-agent",
+  "approval_date": "2026-04-06T19:15:00Z",
+  "next_review": "2026-04-13T00:00:00Z"
+}

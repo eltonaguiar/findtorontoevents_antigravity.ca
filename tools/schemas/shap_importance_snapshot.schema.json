@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://findtorontoevents.ca/schemas/shap_importance_snapshot.json",
+  "title": "FeatureImportanceSnapshot",
+  "description": "Baseline or current snapshot for tools/shap_drift_monitor.py — SHAP or proxy (e.g. mean ml_composite_breakdown).",
+  "type": "object",
+  "required": ["generated_at_utc", "source", "features"],
+  "properties": {
+    "generated_at_utc": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "string",
+      "description": "e.g. dashboard_active_ml_breakdown_mean, shap_xgboost_v3"
+    },
+    "model_id": { "type": "string" },
+    "features": {
+      "type": "object",
+      "additionalProperties": { "type": "number" },
+      "description": "Non-negative importance weights (pre-normalization OK)"
+    },
+    "n_samples": { "type": "integer", "minimum": 0 }
+  }
+}

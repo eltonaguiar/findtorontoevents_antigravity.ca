@@ -1,0 +1,41 @@
+{
+  "name": "inverse_enhanced_ml_xgboost",
+  "description": "Inverse of 'enhanced_ml_A_xgboost' crypto strategy. Parent has 22% WR, 0% winning days, 78% SL hit rate on n=124. Inverse SHORTs instead of going LONG. Symbol-locked to losing symbols (where inverse is strongest).",
+  "parent_strategy": "enhanced_ml_A_xgboost",
+  "mutation_type": "inverse_with_symbol_lock",
+  "asset_class": "CRYPTO",
+  "wired_in_scanner": false,
+  "status": "awaiting_forward_test",
+  "created": "2026-04-14T07:41:00-04:00",
+  "evidence": {
+    "parent_wr": 22,
+    "parent_pf": 0.42,
+    "parent_n": 124,
+    "parent_sl_hit_pct": 78,
+    "inverse_theoretical_wr": 78,
+    "inverse_confirmed_pf": null,
+    "per_symbol": {
+      "TRXUSDT": {"parent_wr": 0, "n": 43, "note": "0% WR on 43 trades — strongest inverse candidate"},
+      "JTOUSDT": {"parent_wr": 0, "n": 30, "note": "0% WR on 30 trades"},
+      "TIAUSDT": {"parent_wr": 75, "n": 12, "note": "WINNING — exclude from inverse"},
+      "SEIUSDT": {"parent_wr": 90, "n": 10, "note": "WINNING — exclude from inverse"},
+      "ETCUSDT": {"parent_wr": 88, "n": 8, "note": "WINNING — exclude from inverse"}
+    }
+  },
+  "config": {
+    "source_strategy_substring": "enhanced_ml_A_xgboost",
+    "flip_direction": true,
+    "symbol_filter": {
+      "inverse_only_on": ["TRXUSDT", "JTOUSDT", "ARBUSDT", "ALGOUSDT", "FILUSDT"],
+      "exclude_from_inverse": ["TIAUSDT", "SEIUSDT", "ETCUSDT", "WLDUSDT"]
+    },
+    "tp_sl_from_parent": true
+  },
+  "validation_checklist": {
+    "layer_1_backtest": false,
+    "layer_2_oos": false,
+    "layer_2_5_quality_gates": false,
+    "layer_6_forward_test_n20": false,
+    "layer_6_forward_test_pf_1_5": false
+  }
+}

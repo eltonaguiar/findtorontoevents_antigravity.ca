@@ -1,0 +1,63 @@
+name: WSL Runner Manager
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'status'
+        type: choice
+        options:
+          - status
+          - start
+          - stop
+          - restart
+
+jobs:
+  manage-runner:
+    runs-on: windows-latest
+    if: github.event.inputs.action != 'status'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Manage WSL Runner
+        shell: powershell
+        run: |
+          $action = "${{ github.event.inputs.action }}"
+          
+          # Note: This workflow only works when run from the local machine with WSL
+          # Cloud runners cannot access your local WSL instance
+          
+          Write-Host "Action requested: $action" -ForegroundColor Cyan
+          Write-Host "  This workflow must be run from a self-hosted runner with WSL access" -ForegroundColor Yellow
+          Write-Host "   or executed locally with: gh workflow run wsl-runner-manager.yml -f action=$action" -ForegroundColor Yellow
+          
+          # Check WSL status
+          $wslList = wsl -l -v 2>&1
+          Write-Host "`nWSL Status:" -ForegroundColor Cyan
+          Write-Host $wslList
+
+  check-status:
+    runs-on: windows-latest
+    if: github.event.inputs.action == 'status'
+    
+    steps:
+      - name: Check Runner Status
+        shell: powershell
+        run: |
+          Write-Host "Checking WSL Runner Status..." -ForegroundColor Cyan
+          
+          # Try to check if runner is running
+          $process = wsl -d UbuntuRecovered -- bash -c "ps aux | grep -v grep | grep run.sh" 2>$null
+          if ($process) {
+            Write-Host " WSL Runner is RUNNING" -ForegroundColor Green
+            Write-Host $process
+          } else {
+            Write-Host " WSL Runner is NOT RUNNING" -ForegroundColor Red
+          }
+          
+          # Check GitHub API for runner status
+          Write-Host "`nChecking GitHub registered runners..." -ForegroundColor Cyan

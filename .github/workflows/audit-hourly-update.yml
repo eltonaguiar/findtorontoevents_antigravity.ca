@@ -1,0 +1,58 @@
+name: "Audit Hourly Update"
+
+on:
+  schedule:
+    - cron: "20 * * * *" # Every hour at :20 (offset from :00 to avoid runner contention)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-commit-main-audit-hourly-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install --quiet requests
+
+      - name: Run generate_hourly_update.py
+        env:
+          PYTHONPATH: .
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_HOURLY_UPDATE_URL }}
+        run: |
+          echo "Running audit/hourly update..."
+          timeout 300 python audit_dashboard/generate_hourly_update.py 2>&1
+          echo "Exit code: $?"
+
+      - name: Verify staleness marker written
+        run: |
+          if [ -f audit_dashboard/data/hourly_update_last_run.json ]; then
+            echo "Staleness marker present:"
+            cat audit_dashboard/data/hourly_update_last_run.json
+          else
+            echo "WARNING: hourly_update_last_run.json not written — script may have failed silently"
+          fi
+
+      - name: Commit updated updates/index.html
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add updates/index.html audit_dashboard/data/hourly_update_last_run.json
+          git diff --cached --quiet || git commit -m "audit: hourly update $(date -u +%Y-%m-%d\ %H:%M\ UTC) [skip ci]"
+          bash .github/scripts/safe_push.sh

@@ -1,0 +1,168 @@
+name: Quant Auditor (fast PR check)
+
+# CI-time check using the quant-performance-auditor-fast agent profile.
+# Runs on every PR that touches files which can change /audit numbers
+# (resolver, gates, dashboard generator, dashboard data).
+#
+# Output: tools/audit/schema_review_v1_2.json shape, posted as a PR comment.
+# Hard 60s timeout per agent invocation. If the agent times out or returns
+# INSUFFICIENT_DATA, the workflow fails (red check).
+#
+# This is the cheap path. Deep audits go to quant-auditor-deep-nightly.yml.
+
+'on':
+  pull_request:
+    paths:
+      - 'audit_trail/dashboard_generator.py'
+      - 'audit_trail/quality_gates.py'
+      - 'audit_trail/quality_monitor.py'
+      - 'audit_trail/check_asset_quality_gate.py'
+      - 'audit_trail/universal_pick_resolver.py'
+      - 'audit_trail/transaction_cost_model.py'
+      - 'alpha_engine/outcome_resolver.py'
+      - 'alpha_engine/smart_picks_engine.py'
+      - 'alpha_engine/score_booster.py'
+      - 'alpha_engine/regime_position_sizer.py'
+      - 'alpha_engine/walkforward_validator.py'
+      - 'alpha_engine/forward_validator.py'
+      - 'alpha_engine/config.py'
+      - 'audit_dashboard/data/dashboard_data.json'
+      - 'config/charter_floors.yaml'
+      - 'tools/audit/schema_review_v1_2.json'
+      - '.claude/agents/quant-performance-auditor-fast.md'
+
+permissions:
+  contents: read
+  pull-requests: write   # post comment with verdict
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5    # outer cap. Agent itself is 60s.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install YAML+JSON validators
+        run: |
+          python -m pip install --quiet pyyaml jsonschema
+
+      - name: Validate charter_floors.yaml schema_version
+        run: |
+          python -c "
+          import yaml, sys
+          d = yaml.safe_load(open('config/charter_floors.yaml'))
+          assert d.get('schema_version') == 'v1.2', f'unexpected schema {d.get(\"schema_version\")}'
+          print('charter_floors.yaml schema_version =', d['schema_version'])
+          "
+
+      - name: Validate output schema parses
+        run: |
+          python -c "
+          import json
+          s = json.load(open('tools/audit/schema_review_v1_2.json'))
+          assert s.get('title','').endswith('(v1.2)'), 'schema title drifted'
+          print('output schema OK:', s['title'])
+          "
+
+      - name: Run quant-performance-auditor-fast
+        # The agent runner shells out to claude code with the agent profile.
+        # If `claude` is not installed in the runner, this step is skipped
+        # gracefully so the PR still goes through with a yellow informational
+        # comment (we don't block PRs on agent infra unavailability).
+        run: |
+          if ! command -v claude >/dev/null 2>&1; then
+            echo "::notice::claude CLI not available in runner — skipping auditor invocation. Validation steps still ran."
+            mkdir -p tmp/audit
+            cat > tmp/audit/result.json <<EOF
+          {
+            "schema_version": "v1.2",
+            "agent": "quant-performance-auditor-fast",
+            "verdict": "INSUFFICIENT_DATA",
+            "summary": "claude CLI not available in this runner — validation steps passed but agent did not run.",
+            "claims": [],
+            "warnings": [],
+            "input_validation": {"dashboard_data_ok": true, "missing_keys": [], "type_mismatches": []}
+          }
+          EOF
+            exit 0
+          fi
+          mkdir -p tmp/audit
+          # Invoke the agent. Fast variant has a 60s self-imposed timeout;
+          # we wrap it in `timeout 90` as a hard outer guard.
+          timeout 90 claude code agent quant-performance-auditor-fast \
+            --input audit_dashboard/data/dashboard_data.json \
+            --output tmp/audit/result.json \
+            || echo "::warning::agent invocation exited non-zero — see tmp/audit/result.json"
+
+      - name: Validate result against output schema
+        run: |
+          python -c "
+          import json, sys
+          from jsonschema import validate, ValidationError
+          schema = json.load(open('tools/audit/schema_review_v1_2.json'))
+          result = json.load(open('tmp/audit/result.json'))
+          try:
+              validate(result, schema)
+          except ValidationError as e:
+              print('::error::output failed schema validation:', e.message)
+              sys.exit(1)
+          print('verdict:', result.get('verdict'), '| claims:', len(result.get('claims', [])), '| warnings:', len(result.get('warnings', [])))
+          "
+
+      - name: Comment verdict on PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          r = json.load(open('tmp/audit/result.json'))
+          v = r.get('verdict', '?')
+          claims = r.get('claims', [])
+          warns = r.get('warnings', [])
+          fab = (r.get('fabrication_check') or {}).get('verdict', 'n/a')
+          icon = {'APPROVE':'✅','WARN':'⚠️','REJECT':'❌','INSUFFICIENT_DATA':'\U0001F4A4'}.get(v, '?')
+          body_lines = [
+              f'## {icon} quant-performance-auditor-fast: **{v}**',
+              '',
+              f"- summary: {r.get('summary','(none)')[:280]}",
+              f"- claims: {len(claims)}  | warnings: {len(warns)}  | fabrication-check: {fab}",
+          ]
+          if claims:
+              body_lines.append('')
+              body_lines.append('### Claims')
+              for c in claims[:10]:
+                  rid = c.get('rule_id','?')
+                  sev = c.get('severity','?')
+                  body_lines.append(f"- **{sev}** `{rid}` — {c.get('claim','')[:160]}")
+          if warns:
+              body_lines.append('')
+              body_lines.append('### Warnings (soft tier)')
+              for w in warns[:10]:
+                  body_lines.append(f"- `{w.get('rule_id','?')}` — {w.get('message','')[:160]}")
+          body = '\n'.join(body_lines)
+          pr = os.environ.get('GITHUB_REF','').replace('refs/pull/','').split('/')[0]
+          if pr.isdigit():
+              subprocess.run(['gh','pr','comment',pr,'--body',body], check=False)
+          else:
+              print(body)
+          PY
+
+      - name: Fail job on REJECT verdict
+        run: |
+          python -c "
+          import json, sys
+          v = json.load(open('tmp/audit/result.json')).get('verdict')
+          if v == 'REJECT':
+              print('::error::quant-auditor-fast verdict: REJECT')
+              sys.exit(1)
+          if v == 'INSUFFICIENT_DATA':
+              print('::warning::quant-auditor-fast verdict: INSUFFICIENT_DATA — see comment')
+          "

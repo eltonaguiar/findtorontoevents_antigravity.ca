@@ -1,0 +1,165 @@
+name:  Real-Time Battle Test - Eliminate Losers, Optimize Winners
+
+on:
+  # Run every hour for continuous battle testing
+  schedule:
+    - cron: '0 * * * *'
+  
+  # Run on push to main
+  push:
+    branches: [main]
+    paths:
+      - 'battle_test_real_time.py'
+      - '.github/workflows/battle_test.yml'
+  
+  # Manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  battle-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pandas numpy
+        
+    - name:  Run Real-Time Battle Test
+      env:
+        COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        CRYPTOCOMPARE_API_KEY: ${{ secrets.CRYPTOCOMPARE_API_KEY }}
+        
+      run: |
+        echo ""
+        echo "      REAL-TIME BATTLE TEST SYSTEM                             "
+        echo ""
+        echo "   Testing algorithms with REAL market data                    "
+        echo "   Eliminating losing strategies                               "
+        echo "   Optimizing winners                                          "
+        echo "   Generating LIVE signals                                     "
+        echo ""
+        echo ""
+        python battle_test_real_time.py
+        
+    - name:  Generate Battle Report
+      run: |
+        if [ -f battle_test_results.json ]; then
+          echo "##  Battle Test Report" > BATTLE_REPORT.md
+          echo "" >> BATTLE_REPORT.md
+          echo "**Last Run:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> BATTLE_REPORT.md
+          echo "" >> BATTLE_REPORT.md
+          
+          # Extract key metrics
+          python3 << 'EOF' >> BATTLE_REPORT.md
+        import json
+        with open('battle_test_results.json') as f:
+            data = json.load(f)
+        
+        print(f"### Summary")
+        print(f"- **Prices Fetched:** {data['prices_fetched']}")
+        print(f"- **Signals Generated:** {data['signals_generated']}")
+        print(f"- **Survivors:** {data['elimination']['survivor_count']}")
+        print(f"- **Eliminated:** {data['elimination']['eliminated_count']}")
+        print("")
+        
+        if data['signals']:
+            print("###  Live Signals")
+            print("")
+            print("| Symbol | Strategy | Signal | Entry | TP | SL | Confidence |")
+            print("|--------|----------|--------|-------|-------|-------|------------|")
+            for sig in data['signals'][:10]:
+                ep = sig.get('entry_price', 0)
+                tp = sig.get('take_profit', 0)
+                sl = sig.get('stop_loss', 0)
+                conf = sig.get('confidence', 0)
+                print(f"| {sig.get('symbol','?')} | {sig.get('strategy','?')} | {sig.get('signal','?')} | ${ep:.4f} | ${tp:.4f} | ${sl:.4f} | {conf:.0%} |")
+        
+        print("")
+        print("###  Survivors (Battle-Tested)")
+        for s in data['elimination']['survivors'][:5]:
+            print(f"- **{s['name']}** (Grade: {s['grade']}, Score: {s['viability_score']})")
+        
+        print("")
+        print("###  Eliminated (Failed Testing)")
+        for e in data['elimination']['eliminated'][:5]:
+            print(f"- **{e['name']}** - {e['reason']}")
+        EOF
+        fi
+        
+    - name:  Upload battle data
+      uses: actions/upload-artifact@v4
+      with:
+        name: battle-test-data-${{ github.run_number }}
+        path: |
+          battle_test_results.json
+          battle_test.log
+          BATTLE_REPORT.md
+        retention-days: 90
+        
+    - name:  Commit battle results
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "battle@testing.ai"
+        git config --local user.name " Battle Test Bot"
+        
+        git add battle_test_results.json || true
+        git add battle_test.log || true
+        git add BATTLE_REPORT.md || true
+        
+        TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+        git commit -m " Battle Test: Real-time algorithm validation - $TIMESTAMP
+
+         Tested with REAL market data
+         Eliminated losing strategies
+         Confirmed battle-tested survivors
+         Generated live trading signals
+
+        Run #${{ github.run_number }} [skip ci]" || echo "No changes"
+        
+        bash .github/scripts/safe_push.sh
+        
+    - name:  Final Report
+      run: |
+        echo ""
+        echo ""
+        echo "      BATTLE TEST COMPLETE                                     "
+        echo ""
+        echo "   Algorithms tested with REAL market data                     "
+        echo "   Losers eliminated                                           "
+        echo "   Winners optimized                                           "
+        echo "   Live signals generated                                      "
+        echo ""
+        echo ""
+        
+        if [ -f battle_test_results.json ]; then
+          python3 << 'EOF'
+        import json
+        with open('battle_test_results.json') as f:
+            data = json.load(f)
+        print(f" Results: {data['prices_fetched']} prices, {data['signals_generated']} signals")
+        print(f" Survivors: {data['elimination']['survivor_count']} | Eliminated: {data['elimination']['eliminated_count']}")
+        if data['signals']:
+            print(f"\n Top Signal: {data['signals'][0]['symbol']} {data['signals'][0]['signal']} ({data['signals'][0]['strategy']})")
+        EOF
+        fi
+        
+        echo ""
+        echo " Next battle: $(date -u -d '+1 hour' '+%Y-%m-%d %H:%M UTC')"
+

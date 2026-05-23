@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercury 2 — Signal Engine</title>
+<style>
+  :root {
+    --bg: #0a0a12; --card: #12121f; --border: #1e1e35;
+    --text: #e0e0e8; --muted: #8888aa; --accent: #00ff88;
+    --red: #ff4444; --green: #00cc66; --blue: #4488ff;
+    --orange: #ff8844; --purple: #aa66ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; padding: 20px; }
+  h1 { font-size: 24px; color: var(--accent); margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-size: 22px; font-weight: bold; margin-top: 4px; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.orange { color: var(--orange); }
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 16px; color: var(--purple); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  th { background: #1a1a2e; color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; }
+  td { padding: 8px; border-top: 1px solid var(--border); font-size: 12px; }
+  tr:hover { background: #1a1a2e; }
+  .tag-long { background: #00cc6622; color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .tag-short { background: #ff444422; color: var(--red); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .tag-win { background: #00cc6622; color: var(--green); padding: 2px 6px; border-radius: 4px; }
+  .tag-loss { background: #ff444422; color: var(--red); padding: 2px 6px; border-radius: 4px; }
+  .pnl-pos { color: var(--green); }
+  .pnl-neg { color: var(--red); }
+  .reason { color: var(--muted); font-size: 11px; max-width: 400px; word-wrap: break-word; }
+  .gainer-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .gainer-sym { font-size: 16px; font-weight: bold; color: var(--accent); }
+  .gainer-ret { font-size: 20px; font-weight: bold; }
+  .footer { color: var(--muted); font-size: 11px; margin-top: 30px; text-align: center; }
+  .loading { color: var(--muted); text-align: center; padding: 40px; }
+  .legend { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 11px; color: var(--muted); }
+  .legend strong { color: var(--text); }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-right: 4px; }
+  .filter-btn { padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; transition: all .2s; font-family: inherit; }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: rgba(0,255,136,0.1); border-color: var(--accent); color: var(--accent); }
+  .dir-stats { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .dir-stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 12px; min-width: 180px; }
+  .dir-stat-box .dir-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 700; }
+  .dir-stat-box .dir-values { display: flex; gap: 12px; }
+  .dir-stat-box .dir-val { font-size: 14px; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>Mercury 2</h1>
+<div class="subtitle">Unified Signal Engine — 3× XGBoost Ensemble + LightGBM Top-Gainer Regressor</div>
+
+<!-- SYSTEM STATUS & QUALITY SUMMARY -->
+<div style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #30363d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="color:var(--accent);font-weight:700;font-size:13px">ML Engine Status & Quality</span>
+      <span id="m2-health-badge" style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;background:#eab30822;color:#eab308">TRAINING</span>
+    </div>
+    <span id="m2-status-ts" style="color:#6b7280;font-size:11px"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px">
+    <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Model</div>
+      <div style="color:var(--blue);font-weight:700;font-size:13px">3× XGBoost + LightGBM</div>
+    </div>
+    <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Validation</div>
+      <div style="color:var(--red);font-weight:700;font-size:13px">DSR: FAIL</div>
+    </div>
+    <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Sharpe (Test)</div>
+      <div style="color:var(--red);font-weight:700;font-size:13px">-0.027</div>
+    </div>
+    <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Training Data</div>
+      <div style="color:var(--muted);font-weight:700;font-size:13px">350K rows / 20 symbols</div>
+    </div>
+  </div>
+</div>
+<script>document.getElementById('m2-status-ts').textContent='As of '+new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true})+' EST';</script>
+
+<!-- ML EXPLAINER — How Mercury 2's Brain Works -->
+<div style="background:linear-gradient(135deg,#12121f,#1a1a2e);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px;line-height:1.7">
+  <div style="font-size:15px;font-weight:700;color:var(--purple);margin-bottom:10px">How Mercury 2's Machine Learning Works (Plain English)</div>
+  <div style="font-size:12px;color:var(--text)">
+    <p style="margin-bottom:10px"><strong style="color:var(--accent)">What is XGBoost?</strong> &mdash; XGBoost is like a team of hundreds of tiny decision-makers. Each one looks at market data (price momentum, RSI, volume, etc.) and asks simple yes/no questions like <em>"Is RSI below 30?"</em> or <em>"Is volume higher than average?"</em>. Individually, each decision-maker is weak &mdash; but combined, they vote together to make surprisingly accurate predictions. Think of it like asking 200 amateur analysts and going with the majority vote.</p>
+    <p style="margin-bottom:10px"><strong style="color:var(--accent)">Why 3 models?</strong> &mdash; Mercury 2 runs <strong>3 separate XGBoost models</strong> with different "personalities":
+      <span style="color:#00cc66">Conservative</span> (careful, fewer false alarms),
+      <span style="color:#ff4444">Aggressive</span> (more trades, higher risk),
+      <span style="color:#4488ff">Balanced</span> (middle ground).
+      Their predictions are averaged &mdash; a coin only becomes a pick when all three agree it's likely to go up.</p>
+    <p style="margin-bottom:10px"><strong style="color:var(--accent)">What is LightGBM?</strong> &mdash; Similar concept to XGBoost, but optimized for speed. Mercury 2 uses a LightGBM <em>regressor</em> (not classifier) to predict <strong>how much</strong> each coin will gain in the next 24 hours. This powers the "Top 5 Predicted Gainers" section &mdash; it's a watchlist, not a trading signal.</p>
+    <p style="margin-bottom:10px"><strong style="color:var(--accent)">What do "16 models trained" mean?</strong> &mdash; Each of the 3 XGBoost models is trained on 2 years of 1-hour candles across 20 crypto pairs. The models learn patterns like <em>"when RSI drops below 25 and volume spikes 3x, price usually rebounds within 4 hours"</em>. Plus the LightGBM gainer model = 4 total model files. Each model was trained on ~350,000 data rows.</p>
+    <p style="margin-bottom:10px"><strong style="color:var(--accent)">How do models become picks?</strong> &mdash; Every 30 minutes, Mercury 2 feeds the latest price data through all 3 XGBoost models. If the average confidence (probability) is above 55%, and the <strong>risk engine</strong> approves (checks RSI, funding rate, trend, volatility), a pick is generated with specific TP (take profit) and SL (stop loss) targets.</p>
+    <p style="margin-bottom:8px"><strong style="color:var(--orange)">What is DSR/PSR validation?</strong> &mdash; Before trusting a model, we run a statistical test called the <strong>Deflated Sharpe Ratio</strong>. It asks: <em>"Could this model's performance just be luck from testing so many combinations?"</em> If the answer is "probably yes" (DSR &lt; 0.6), the model <strong style="color:var(--red)">fails validation</strong> and Mercury 2 stops opening new trades until the next weekly retrain produces a better model. Current status: <span id="ml-val-status" style="font-weight:700">checking...</span></p>
+  </div>
+</div>
+
+<div class="legend">
+  <strong>Abbreviation Legend:</strong>
+  <strong>conf</strong> = ensemble confidence (avg probability from 3 XGBoost classifiers) |
+  <strong>R:R</strong> = Risk-to-Reward ratio (TP distance / SL distance) |
+  <strong>TP</strong> = Take Profit target |
+  <strong>SL</strong> = Stop Loss level |
+  <strong>ATR</strong> = Average True Range (14-period volatility measure) |
+  <strong>RSI</strong> = Relative Strength Index (14-period momentum, 0-100) |
+  <strong>F&amp;G</strong> = Fear &amp; Greed Index (0=extreme fear, 100=extreme greed) |
+  <strong>SMA</strong> = Simple Moving Average |
+  <strong>funding_z</strong> = Funding rate z-score (std deviations from 48h mean) |
+  <strong>P&amp;L</strong> = Profit and Loss |
+  <strong>WR</strong> = Win Rate |
+  <strong>TP1</strong> = Take Profit 1 (1.5R, close 50%) |
+  <strong>TP2</strong> = Take Profit 2 (3R, close 25%, rest = runner) |
+  <strong>Pos%</strong> = Remaining position size (100% → 50% after TP1 → 25% after TP2)
+</div>
+
+<div class="grid" id="stats">
+  <div class="stat"><div class="stat-label">Active Picks</div><div class="stat-value blue" id="s-active">—</div></div>
+  <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value green" id="s-wr">—</div></div>
+  <div class="stat"><div class="stat-label">Total P&L</div><div class="stat-value" id="s-pnl">—</div></div>
+  <div class="stat"><div class="stat-label">Closed Picks</div><div class="stat-value" id="s-closed">—</div></div>
+  <div class="stat"><div class="stat-label">F&G Index</div><div class="stat-value orange" id="s-fng">—</div></div>
+  <div class="stat"><div class="stat-label">Last Scan</div><div class="stat-value" id="s-scan" style="font-size:12px">—</div></div>
+</div>
+
+<!-- Direction Performance Breakdown -->
+<div class="dir-stats" id="dir-stats"></div>
+<div style="background:#1a1a2e;border:1px solid #334155;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#94a3b8;">
+  <strong style="color:#f59e0b;">Why no SHORT picks?</strong> Mercury 2's risk engine requires very specific conditions for shorts (RSI&gt;70 + below 200SMA, or F&amp;G&lt;15 + below 95% SMA200). In the current extreme fear market most coins are already oversold (RSI 20-35), which triggers the oversold guard and blocks SHORT entries. This is by design — the system is primarily a contrarian dip-buyer.
+</div>
+
+<!-- Direction Filter -->
+<div class="filter-bar">
+  <span class="filter-label">Direction:</span>
+  <button class="filter-btn active" onclick="setDirFilter('ALL')">All</button>
+  <button class="filter-btn" onclick="setDirFilter('LONG')">LONG</button>
+  <button class="filter-btn" onclick="setDirFilter('SHORT')">SHORT</button>
+</div>
+
+<div class="section">
+  <div class="section-title">Active Picks <span id="active-count" style="font-size:12px;color:var(--muted);font-weight:normal"></span></div>
+  <table id="active-table">
+    <thead><tr>
+      <th>Symbol</th><th>Direction</th><th>Entry</th><th>TP1</th><th>TP2</th><th>SL</th>
+      <th>R:R</th><th>Conf</th><th>Pos%</th><th>P&L</th><th>Time</th><th>Reason</th>
+    </tr></thead>
+    <tbody id="active-body"><tr><td colspan="12" class="loading">Loading...</td></tr></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-title">Top 5 Predicted Gainers (Next 24h)</div>
+  <div style="color:var(--muted);font-size:11px;margin-bottom:8px;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:6px">
+    <strong style="color:var(--text)">What is this?</strong> A LightGBM regression model predicts which coins will gain the most in the next 24 hours. The <strong style="color:var(--text)">%</strong> shown is the <em>predicted</em> return, not actual performance. These are <strong style="color:var(--text)">NOT traded signals</strong> — the actual trading signals come from the XGBoost ensemble above (with TP/SL). Think of these as "watchlist" items.
+    <span id="gainers-timestamp" style="display:block;margin-top:4px;color:var(--muted)"></span>
+  </div>
+  <div id="gainers-container"><div class="loading">Loading...</div></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Closed Picks (Recent) <span id="closed-count" style="font-size:12px;color:var(--muted);font-weight:normal"></span></div>
+  <table id="closed-table">
+    <thead><tr>
+      <th>Symbol</th><th>Direction</th><th>Entry</th><th>Exit</th>
+      <th>Result</th><th>P&L</th><th>Opened</th><th>Closed</th><th>Reason</th>
+    </tr></thead>
+    <tbody id="closed-body"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Mercury 2 v1.3.0 — Scans every 30 min via GitHub Actions<br>
+  Day-trade: 3× XGBoost ensemble on 1h candles | Tiered TP: 1.5R (50%) + 3R (25%) + runner (25%)<br>
+  MTF trend filter (daily 50-MA + MACD) | Vol-targeted sizing | Session-aware execution<br>
+  Trailing stop (breakeven lock → runner trail 1.5×ATR from peak) | 24h time exit<br>
+  Top gainers: LightGBM regressor predicting next-24h % returns
+</div>
+
+<script>
+const BASE = "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data";
+
+let _active = [], _closed = [], _dirFilter = 'ALL';
+
+async function fetchJSON(file) {
+  try {
+    const r = await fetch(`${BASE}/${file}?t=${Date.now()}`);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+function fmt(n, d=4) { return n != null ? Number(n).toFixed(d) : "—"; }
+function fmtPct(n) {
+  if (n == null) return "—";
+  const v = Number(n).toFixed(2);
+  return `<span class="${n >= 0 ? 'pnl-pos' : 'pnl-neg'}">${n >= 0 ? '+' : ''}${v}%</span>`;
+}
+function fmtTime(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  return d.toLocaleString("en-US", {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:true,timeZone:"America/New_York"}) + " EST";
+}
+
+function getDir(p) { return (p.direction || 'LONG').toUpperCase(); }
+
+function setDirFilter(dir) {
+  _dirFilter = dir;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderActive();
+  renderClosed();
+  renderDirStats();
+}
+
+function renderDirStats() {
+  const box = document.getElementById('dir-stats');
+  if (!_closed.length) { box.innerHTML = ''; return; }
+
+  const dirs = ['LONG', 'SHORT'];
+  const html = dirs.map(d => {
+    const picks = _closed.filter(p => getDir(p) === d);
+    if (!picks.length) return '';
+    const wins = picks.filter(p => p.status === 'WIN').length;
+    const wr = (wins / picks.length * 100).toFixed(1);
+    const pnl = picks.reduce((s, p) => s + (p.realized_pnl_pct || 0), 0).toFixed(2);
+    const avgWin = picks.filter(p => p.status === 'WIN').reduce((s, p) => s + (p.realized_pnl_pct || 0), 0);
+    const avgLoss = picks.filter(p => p.status !== 'WIN').reduce((s, p) => s + (p.realized_pnl_pct || 0), 0);
+    const wrColor = parseFloat(wr) >= 50 ? 'var(--green)' : 'var(--red)';
+    const pnlColor = parseFloat(pnl) >= 0 ? 'var(--green)' : 'var(--red)';
+    const dirColor = d === 'LONG' ? 'var(--green)' : 'var(--red)';
+
+    return `<div class="dir-stat-box">
+      <div class="dir-label" style="color:${dirColor}">${d} Performance</div>
+      <div class="dir-values">
+        <div><div style="color:var(--muted);font-size:10px">Trades</div><div class="dir-val">${picks.length}</div></div>
+        <div><div style="color:var(--muted);font-size:10px">Win Rate</div><div class="dir-val" style="color:${wrColor}">${wr}%</div></div>
+        <div><div style="color:var(--muted);font-size:10px">Total P&L</div><div class="dir-val" style="color:${pnlColor}">${pnl >= 0 ? '+' : ''}${pnl}%</div></div>
+        <div><div style="color:var(--muted);font-size:10px">W/L Sum</div><div class="dir-val"><span class="pnl-pos">+${avgWin.toFixed(1)}</span> / <span class="pnl-neg">${avgLoss.toFixed(1)}</span></div></div>
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  box.innerHTML = html || '<div style="color:var(--muted);font-size:12px">No closed trades yet</div>';
+}
+
+function renderActive() {
+  const abody = document.getElementById("active-body");
+  const filtered = _dirFilter === 'ALL' ? _active : _active.filter(p => getDir(p) === _dirFilter);
+  document.getElementById('active-count').textContent = _dirFilter !== 'ALL' ? `(${filtered.length}/${_active.length} shown)` : '';
+
+  if (filtered.length > 0) {
+    abody.innerHTML = filtered.map(p => {
+      const remaining = p.remaining_size_pct != null ? Math.round(p.remaining_size_pct * 100) + '%' : '100%';
+      const tp2 = p.take_profit_2 ? fmt(p.take_profit_2) : '—';
+      const posClass = (p.remaining_size_pct != null && p.remaining_size_pct < 1.0) ? ' style="color:var(--orange)"' : '';
+      return `<tr>
+      <td><strong>${p.symbol}</strong></td>
+      <td><span class="tag-${(p.direction||'LONG').toLowerCase()}">${p.direction||'LONG'}</span></td>
+      <td>${fmt(p.entry_price)}</td>
+      <td>${fmt(p.take_profit)}</td>
+      <td>${tp2}</td>
+      <td>${fmt(p.stop_loss)}</td>
+      <td>${p.risk_reward ?? '—'}</td>
+      <td>${fmt(p.confidence, 3)}</td>
+      <td${posClass}>${remaining}</td>
+      <td>${fmtPct(p.unrealized_pnl_pct)}</td>
+      <td style="font-size:11px">${fmtTime(p.timestamp)}</td>
+      <td class="reason">${p.pick_reason || '—'}</td>
+    </tr>`;
+    }).join("");
+  } else {
+    abody.innerHTML = `<tr><td colspan="12" class="loading">No ${_dirFilter !== 'ALL' ? _dirFilter + ' ' : ''}active picks</td></tr>`;
+  }
+}
+
+function renderClosed() {
+  const cbody = document.getElementById("closed-body");
+  const allClosed = _closed.slice(-30).reverse();
+  const filtered = _dirFilter === 'ALL' ? allClosed : allClosed.filter(p => getDir(p) === _dirFilter);
+  document.getElementById('closed-count').textContent = _dirFilter !== 'ALL' ? `(${filtered.length} ${_dirFilter} shown)` : '';
+
+  if (filtered.length > 0) {
+    cbody.innerHTML = filtered.map(p => `<tr>
+      <td><strong>${p.symbol}</strong></td>
+      <td><span class="tag-${(p.direction||'LONG').toLowerCase()}">${p.direction||'LONG'}</span></td>
+      <td>${fmt(p.entry_price)}</td>
+      <td>${fmt(p.exit_price)}</td>
+      <td><span class="tag-${(p.status||'').toLowerCase()}">${p.status||'—'}</span></td>
+      <td>${fmtPct(p.realized_pnl_pct)}</td>
+      <td style="font-size:11px">${fmtTime(p.timestamp || p.entry_time)}</td>
+      <td style="font-size:11px">${fmtTime(p.exit_time)}</td>
+      <td class="reason">${p.exit_reason || '—'}</td>
+    </tr>`).join("");
+  } else {
+    cbody.innerHTML = `<tr><td colspan="9" class="loading">No ${_dirFilter !== 'ALL' ? _dirFilter + ' ' : ''}closed picks</td></tr>`;
+  }
+}
+
+async function load() {
+  const [summary, active, closed, gainers] = await Promise.all([
+    fetchJSON("scan_summary.json"),
+    fetchJSON("active_picks.json"),
+    fetchJSON("closed_picks.json"),
+    fetchJSON("top_gainers.json"),
+  ]);
+
+  _active = active || [];
+  _closed = closed || [];
+
+  // Validation status
+  const valEl = document.getElementById("ml-val-status");
+  const badgeEl = document.getElementById("m2-health-badge");
+  if (summary && summary.validation_passed !== undefined) {
+    if (summary.validation_passed) {
+      valEl.innerHTML = '<span style="color:var(--green)">PASSED — model is generating picks</span>';
+      badgeEl.textContent = "VALIDATED"; badgeEl.style.background = "#22c55e22"; badgeEl.style.color = "#22c55e";
+    } else {
+      valEl.innerHTML = '<span style="color:var(--red)">FAILED — new picks paused until next retrain (Sundays 2 AM UTC)</span>';
+      badgeEl.textContent = "VALIDATION FAILED"; badgeEl.style.background = "#ff444422"; badgeEl.style.color = "#ff4444";
+    }
+  }
+
+  // Stats
+  if (summary) {
+    document.getElementById("s-active").textContent = summary.active_picks ?? 0;
+    document.getElementById("s-wr").textContent = (summary.win_rate ?? 0) + "%";
+    const pnl = summary.total_pnl_pct ?? 0;
+    const pnlEl = document.getElementById("s-pnl");
+    pnlEl.textContent = (pnl >= 0 ? "+" : "") + pnl.toFixed(2) + "%";
+    pnlEl.className = "stat-value " + (pnl >= 0 ? "green" : "red");
+    document.getElementById("s-closed").textContent = summary.closed_picks ?? 0;
+    document.getElementById("s-fng").textContent = summary.fear_greed ?? "—";
+    document.getElementById("s-scan").textContent = fmtTime(summary.timestamp);
+  }
+
+  // Render direction stats
+  renderDirStats();
+
+  // Active picks
+  renderActive();
+
+  // Top gainers
+  const gc = document.getElementById("gainers-container");
+  if (gainers && gainers.length > 0) {
+    const gTs = document.getElementById("gainers-timestamp");
+    if (summary && summary.timestamp) {
+      gTs.textContent = "Predictions generated: " + fmtTime(summary.timestamp) + " — valid for ~24h from that time";
+    }
+    gc.innerHTML = gainers.map((g, i) => `<div class="gainer-card">
+      <div>
+        <span style="color:var(--muted);font-size:11px">#${i+1}</span>
+        <span class="gainer-sym">${g.symbol}</span>
+        <span style="color:var(--muted);margin-left:8px">$${fmt(g.current_price, 2)}</span>
+      </div>
+      <div>
+        <div class="gainer-ret ${g.predicted_return_pct >= 0 ? 'pnl-pos' : 'pnl-neg'}">
+          ${g.predicted_return_pct >= 0 ? '+' : ''}${g.predicted_return_pct}%
+        </div>
+        <div style="font-size:10px;color:var(--muted);text-align:right">predicted</div>
+      </div>
+    </div>`).join("");
+  } else {
+    gc.innerHTML = '<div class="loading">No predictions yet</div>';
+  }
+
+  // Closed picks
+  renderClosed();
+}
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

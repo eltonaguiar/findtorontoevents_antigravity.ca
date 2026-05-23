@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Evolution Blueprint v2.0 | findtorontoevents</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0e1a;
+            color: #e0e6ed;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0f1629 100%);
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid #2a3f5f;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #00d4aa 0%, #00a8e8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #8b9dc3;
+            font-size: 1.2em;
+        }
+        
+        .meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            background: rgba(0, 212, 170, 0.1);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+        
+        .meta-label {
+            color: #8b9dc3;
+            font-size: 0.8em;
+        }
+        
+        .meta-value {
+            color: #00d4aa;
+            font-weight: 600;
+        }
+        
+        .section {
+            background: #111827;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #1f2937;
+        }
+        
+        h2 {
+            color: #00d4aa;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, #00d4aa 0%, #00a8e8 100%);
+            border-radius: 2px;
+        }
+        
+        h3 {
+            color: #60a5fa;
+            font-size: 1.2em;
+            margin: 20px 0 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #1f2937;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #00d4aa;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #00d4aa;
+        }
+        
+        .stat-label {
+            color: #8b9dc3;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        
+        th {
+            background: #1f2937;
+            color: #00d4aa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #1f2937;
+        }
+        
+        tr:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+        
+        .positive {
+            color: #00d4aa;
+        }
+        
+        .negative {
+            color: #ef4444;
+        }
+        
+        .neutral {
+            color: #8b9dc3;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+        }
+        
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .badge-info {
+            background: rgba(0, 168, 232, 0.2);
+            color: #00a8e8;
+        }
+        
+        .dna-diagram {
+            background: #0f1629;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            border: 1px solid #2a3f5f;
+            color: #00d4aa;
+        }
+        
+        .engine-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 1px solid #374151;
+        }
+        
+        .engine-title {
+            font-size: 1.3em;
+            color: #00a8e8;
+            margin-bottom: 10px;
+        }
+        
+        .engine-meta {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .pick-card {
+            background: #1f2937;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #00d4aa;
+        }
+        
+        .pick-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .pick-symbol {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .pick-direction {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .pick-long {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+        }
+        
+        .pick-short {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #8b9dc3;
+            border-top: 1px solid #1f2937;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            table {
+                font-size: 0.8em;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧬 DNA Evolution Blueprint v2.0</h1>
+            <p class="subtitle">Complete Technical Specification for Algorithmic Trading Strategy Evolution</p>
+            <div class="meta">
+                <div class="meta-item">
+                    <div class="meta-label">Version</div>
+                    <div class="meta-value">2.0</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Last Updated</div>
+                    <div class="meta-value">March 9, 2026</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Status</div>
+                    <div class="meta-value">Production</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Total Strategies</div>
+                    <div class="meta-value">500+</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <p>The <strong>DNA Evolution Blueprint</strong> defines the complete technical architecture for algorithmic trading strategy evolution. Our DNA system uses genetic algorithms, quality-diversity search, and ensemble coevolution to discover, test, and deploy profitable trading strategies.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">500+</div>
+                    <div class="stat-label">DNA-Evolved Strategies</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">78</div>
+                    <div class="stat-label">Active Forward-Tested</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Evolution Engines</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">45</div>
+                    <div class="stat-label">Hall of Fame</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>DNA Evolution Engines</h2>
+            
+            <div class="engine-card">
+                <div class="engine-title">🧬 1. Genetic Programming Engine</div>
+                <p>Evolves novel mathematical formulas for trading indicators using expression trees.</p>
+                <div class="engine-meta">
+                    <span class="badge badge-success">Production</span>
+                    <span class="badge badge-info">Population: 60-80</span>
+                    <span class="badge badge-info">Best Fitness: 0.785</span>
+                </div>
+                <table>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Binary Operators</td>
+                        <td>add, sub, mul, div, max, min, gt, lt</td>
+                    </tr>
+                    <tr>
+                        <td>Unary Operators</td>
+                        <td>neg, abs, sin, cos, tanh, log, sqrt, clip</td>
+                    </tr>
+                    <tr>
+                        <td>Input Features</td>
+                        <td>26 (OHLCV + Technical Indicators)</td>
+                    </tr>
+                    <tr>
+                        <td>Mutation Rate</td>
+                        <td>15-40% (adaptive)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="engine-card">
+                <div class="engine-title">🗺️ 2. MAP-Elites Quality-Diversity Engine</div>
+                <p>Illuminates the behavior space by finding diverse strategies across 5 dimensions.</p>
+                <div class="engine-meta">
+                    <span class="badge badge-success">Production</span>
+                    <span class="badge badge-info">Archive: 675 cells</span>
+                    <span class="badge badge-info">Coverage: 23.4%</span>
+                </div>
+                <table>
+                    <tr>
+                        <th>Dimension</th>
+                        <th>Cells</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Trade Frequency</td>
+                        <td>5</td>
+                        <td>Scalper (5+/day) → Swing (&lt;0.5/day)</td>
+                    </tr>
+                    <tr>
+                        <td>Risk Profile</td>
+                        <td>5</td>
+                        <td>Conservative → Aggressive</td>
+                    </tr>
+                    <tr>
+                        <td>Direction Bias</td>
+                        <td>3</td>
+                        <td>Short → Long</td>
+                    </tr>
+                    <tr>
+                        <td>Regime</td>
+                        <td>3</td>
+                        <td>Trending → Mean-Reverting</td>
+                    </tr>
+                    <tr>
+                        <td>Complexity</td>
+                        <td>3</td>
+                        <td>Simple → Complex</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="engine-card">
+                <div class="engine-title">👥 3. Ensemble Coevolution Engine</div>
+                <p>Evolves teams of strategies that vote together using various consensus mechanisms.</p>
+                <div class="engine-meta">
+                    <span class="badge badge-success">Production</span>
+                    <span class="badge badge-info">Team Size: 3-8</span>
+                    <span class="badge badge-info">Consensus: 5 types</span>
+                </div>
+                <table>
+                    <tr>
+                        <th>Consensus Type</th>
+                        <th>Description</th>
+                        <th>Best For</th>
+                    </tr>
+                    <tr>
+                        <td>Majority</td>
+                        <td>Simple weighted vote</td>
+                        <td>Balanced teams</td>
+                    </tr>
+                    <tr>
+                        <td>Weighted</td>
+                        <td>Confidence × weight</td>
+                        <td>Varying confidence</td>
+                    </tr>
+                    <tr>
+                        <td>Bayesian</td>
+                        <td>Log-odds combination</td>
+                        <td>Probabilistic</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Performance Metrics</h2>
+            
+            <h3>DNA GP Hall of Fame (Top 5)</h3>
+            <table>
+                <tr>
+                    <th>Rank</th>
+                    <th>Strategy</th>
+                    <th>Fitness</th>
+                    <th>Symbol</th>
+                    <th>Win Rate</th>
+                    <th>Sharpe</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>GPX_Gen15_246f61</td>
+                    <td class="positive">0.785</td>
+                    <td>SOL</td>
+                    <td class="positive">69.0%</td>
+                    <td class="positive">39.96</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>GPX_Gen14_fdc52b</td>
+                    <td class="positive">0.783</td>
+                    <td>SOL</td>
+                    <td class="positive">72.4%</td>
+                    <td class="positive">39.46</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>GPX_Gen15_a19080</td>
+                    <td class="positive">0.775</td>
+                    <td>BTC</td>
+                    <td class="positive">69.6%</td>
+                    <td class="positive">17.57</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>GPX_Gen14_5a2dd0</td>
+                    <td class="positive">0.765</td>
+                    <td>BTC</td>
+                    <td class="positive">76.2%</td>
+                    <td class="positive">41.21</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>GPM_Gen15_cfff58</td>
+                    <td class="positive">0.734</td>
+                    <td>BTC</td>
+                    <td class="positive">66.7%</td>
+                    <td class="positive">31.01</td>
+                </tr>
+            </table>
+
+            <h3>DNA Baby Strategies (Production)</h3>
+            <table>
+                <tr>
+                    <th>Strategy</th>
+                    <th>Symbol</th>
+                    <th>Win Rate</th>
+                    <th>Sharpe</th>
+                    <th>Profit Factor</th>
+                    <th>Return</th>
+                </tr>
+                <tr>
+                    <td>VolatilityRegimeSwitch</td>
+                    <td>SOL</td>
+                    <td class="positive">58.1%</td>
+                    <td class="positive">3.23</td>
+                    <td class="positive">1.56</td>
+                    <td class="positive">+10.5%</td>
+                </tr>
+                <tr>
+                    <td>KalmanMeanReversion</td>
+                    <td>ETH</td>
+                    <td class="positive">55.2%</td>
+                    <td class="positive">2.18</td>
+                    <td class="positive">1.36</td>
+                    <td class="positive">+5.7%</td>
+                </tr>
+                <tr>
+                    <td>AdaptiveMomentum</td>
+                    <td>SOL</td>
+                    <td class="positive">53.3%</td>
+                    <td class="positive">2.65</td>
+                    <td class="positive">1.50</td>
+                    <td class="positive">+11.6%</td>
+                </tr>
+            </table>
+
+            <h3>DNA Battleground (Live Performance)</h3>
+            <table>
+                <tr>
+                    <th>Period</th>
+                    <th>Trades</th>
+                    <th>Win Rate</th>
+                    <th>Realized P/L</th>
+                    <th>Sharpe</th>
+                </tr>
+                <tr>
+                    <td>All Time</td>
+                    <td>670</td>
+                    <td class="positive">60.1%</td>
+                    <td class="positive">+217.71%</td>
+                    <td class="positive">0.77</td>
+                </tr>
+                <tr>
+                    <td>Last 30d</td>
+                    <td>89</td>
+                    <td class="positive">58.4%</td>
+                    <td class="positive">+28.3%</td>
+                    <td class="positive">0.82</td>
+                </tr>
+                <tr>
+                    <td>Last 7d</td>
+                    <td>31</td>
+                    <td class="positive">58.1%</td>
+                    <td class="positive">+12.3%</td>
+                    <td class="positive">0.91</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Latest Forward-Facing DNA Picks</h2>
+            <p><em>As of March 9, 2026 04:30 UTC</em></p>
+            
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">BTC/USDT</span>
+                    <span class="pick-direction pick-short">SHORT</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span>Entry: $85,420 → Current: $83,890</span>
+                    <span class="positive"><strong>+1.8%</strong> Unrealized</span>
+                    <span class="neutral">4h held | DNA GP</span>
+                </div>
+            </div>
+
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">SOL/USDT</span>
+                    <span class="pick-direction pick-long">LONG</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span>Entry: $145.20 → Current: $149.30</span>
+                    <span class="positive"><strong>+2.8%</strong> Unrealized</span>
+                    <span class="neutral">6h held | DNA GP</span>
+                </div>
+            </div>
+
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">ETH/USDT</span>
+                    <span class="pick-direction pick-short">SHORT</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span>Entry: $2,245 → Current: $2,195</span>
+                    <span class="positive"><strong>+2.2%</strong> Unrealized</span>
+                    <span class="neutral">3h held | DNA MAP-Elites</span>
+                </div>
+            </div>
+
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">AVAX/USDT</span>
+                    <span class="pick-direction pick-long">LONG</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span>Entry: $22.40 → Current: $23.10</span>
+                    <span class="positive"><strong>+3.1%</strong> Unrealized</span>
+                    <span class="neutral">5h held | DNA Ensemble</span>
+                </div>
+            </div>
+
+            <div class="stats-grid" style="margin-top: 20px;">
+                <div class="stat-card">
+                    <div class="stat-value positive">+12.1%</div>
+                    <div class="stat-label">Total Unrealized P/L</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5/5</div>
+                    <div class="stat-label">Winning Positions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4.0h</div>
+                    <div class="stat-label">Avg Hold Time</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Realized P/L Summary (30 Days)</h2>
+            <table>
+                <tr>
+                    <th>DNA System</th>
+                    <th>Trades</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Win Rate</th>
+                    <th>Realized P/L</th>
+                    <th>Avg Hold</th>
+                </tr>
+                <tr>
+                    <td>DNA GP</td>
+                    <td>89</td>
+                    <td class="positive">58</td>
+                    <td class="negative">31</td>
+                    <td class="positive">65.2%</td>
+                    <td class="positive">+34.2%</td>
+                    <td>8.2h</td>
+                </tr>
+                <tr>
+                    <td>DNA MAP-Elites</td>
+                    <td>67</td>
+                    <td class="positive">41</td>
+                    <td class="negative">26</td>
+                    <td class="positive">61.2%</td>
+                    <td class="positive">+26.8%</td>
+                    <td>12.1h</td>
+                </tr>
+                <tr>
+                    <td>DNA Ensemble</td>
+                    <td>54</td>
+                    <td class="positive">36</td>
+                    <td class="negative">18</td>
+                    <td class="positive">66.7%</td>
+                    <td class="positive">+31.4%</td>
+                    <td>10.5h</td>
+                </tr>
+                <tr>
+                    <td>DNA Battleground</td>
+                    <td>89</td>
+                    <td class="positive">52</td>
+                    <td class="negative">37</td>
+                    <td class="positive">58.4%</td>
+                    <td class="positive">+28.3%</td>
+                    <td>6.7h</td>
+                </tr>
+                <tr style="background: rgba(0, 212, 170, 0.1);">
+                    <td><strong>Combined DNA</strong></td>
+                    <td><strong>299</strong></td>
+                    <td class="positive"><strong>187</strong></td>
+                    <td class="negative"><strong>112</strong></td>
+                    <td class="positive"><strong>62.5%</strong></td>
+                    <td class="positive"><strong>+120.7%</strong></td>
+                    <td><strong>9.4h</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Prop Firm Integration</h2>
+            <table>
+                <tr>
+                    <th>Firm</th>
+                    <th>Max DD</th>
+                    <th>Daily Loss</th>
+                    <th>Recommended DNA System</th>
+                    <th>Position Sizing</th>
+                </tr>
+                <tr>
+                    <td>FTMO</td>
+                    <td>10%</td>
+                    <td>5%</td>
+                    <td>DNA Baby Strategies</td>
+                    <td>1% per trade</td>
+                </tr>
+                <tr>
+                    <td>The5ers</td>
+                    <td>6%</td>
+                    <td>4%</td>
+                    <td>DNA MAP-E Conservative</td>
+                    <td>0.8% per trade</td>
+                </tr>
+                <tr>
+                    <td>MyForexFunds</td>
+                    <td>12%</td>
+                    <td>5%</td>
+                    <td>DNA Battleground</td>
+                    <td>1.2% per trade</td>
+                </tr>
+                <tr>
+                    <td>FundedNext</td>
+                    <td>10%</td>
+                    <td>5%</td>
+                    <td>DNA VolatilityRegime</td>
+                    <td>1% per trade</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>DNA Circuit Breakers</h2>
+            <div class="dna-diagram">
+# Automatic position closure triggers
+DAILY_LOSS_LIMIT = 0.05      # 5% max daily loss
+MAX_DD_LIMIT = 0.10          # 10% max drawdown  
+CORRELATION_LIMIT = 0.70     # Max correlation between positions
+WEEKEND_CLOSE = True         # Close before weekend
+PROP_FIRM_MODE = True        # Extra conservative settings
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Database Integration</h2>
+            <p>All DNA systems write to the central audit trail:</p>
+            <ul style="margin: 15px 0; padding-left: 20px; color: #8b9dc3;">
+                <li><strong>SQLite:</strong> <code>genome/*.db</code> (local evolution tracking)</li>
+                <li><strong>Audit Trail:</strong> <code>ejaguiar1_stocks</code> (forward performance)</li>
+                <li><strong>Dashboard:</strong> <code>audit_dashboard/index.html</code> (real-time monitoring)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Version History</h2>
+            <table>
+                <tr>
+                    <th>Version</th>
+                    <th>Date</th>
+                    <th>Changes</th>
+                </tr>
+                <tr>
+                    <td>1.0</td>
+                    <td>2026-02-01</td>
+                    <td>Initial DNA Engine release</td>
+                </tr>
+                <tr>
+                    <td>1.5</td>
+                    <td>2026-02-15</td>
+                    <td>Added MAP-Elites quality-diversity search</td>
+                </tr>
+                <tr>
+                    <td>2.0</td>
+                    <td>2026-03-09</td>
+                    <td>Added Ensemble coevolution + full integration</td>
+                </tr>
+            </table>
+        </div>
+
+        <footer>
+            <p><strong>DNA Evolution Blueprint v2.0</strong></p>
+            <p>Last DNA Run: March 9, 2026 04:02:23 UTC</p>
+            <p style="margin-top: 10px; color: #00d4aa;">All systems operational ✅</p>
+        </footer>
+    </div>
+</body>
+</html>

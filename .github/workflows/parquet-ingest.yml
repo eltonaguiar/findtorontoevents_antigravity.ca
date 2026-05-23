@@ -1,0 +1,40 @@
+name: Parquet Data Ingestion
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Every 4 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy requests pyarrow
+
+      - name: Run ingestion
+        run: |
+          python -m data_pipeline.live_ingest --intervals 1h 4h --limit 500
+
+      - name: Commit new data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/parquet/ || true
+          git diff --cached --quiet || git commit -m "data: Parquet ingest $(date -u +%Y-%m-%dT%H:%M) [skip ci]"
+          bash .github/scripts/safe_push.sh
+

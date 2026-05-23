@@ -1,0 +1,29 @@
+name: Schema Drift Audit
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # 03:00 UTC nightly
+  workflow_dispatch:       # allow manual trigger
+
+jobs:
+  schema-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install pymysql
+
+      - name: Run schema drift check
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_NAME: ejaguiar1_stocks
+        run: python tools/db_schema_snapshot.py --check

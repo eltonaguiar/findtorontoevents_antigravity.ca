@@ -1,0 +1,296 @@
+name: System Health Check
+
+on:
+  schedule:
+    # Every 2 hours
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+env:
+  PYTHONUNBUFFERED: 1
+
+permissions:
+  contents: write
+
+jobs:
+  health-check:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy requests aiohttp
+      
+      - name: Run comprehensive health check
+        id: health
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import sys
+          import json
+          import sqlite3
+          from datetime import datetime, timedelta
+          
+          health_report = {
+              'timestamp': datetime.now().isoformat(),
+              'checks': {},
+              'overall_status': 'HEALTHY',
+              'critical_issues': []
+          }
+          
+          # === Check 1: Forward Tracking Database ===
+          check_db = {'status': 'OK', 'details': {}}
+          try:
+              if os.path.exists('forward_tracking.db'):
+                  conn = sqlite3.connect('forward_tracking.db')
+                  cursor = conn.cursor()
+                  
+                  # Count signals
+                  cursor.execute("SELECT COUNT(*) FROM signals")
+                  total_signals = cursor.fetchone()[0]
+                  check_db['details']['total_signals'] = total_signals
+                  
+                  # Check for recent signals
+                  cursor.execute("""
+                      SELECT COUNT(*) FROM signals 
+                      WHERE timestamp >= datetime('now', '-1 hour')
+                  """)
+                  recent_signals = cursor.fetchone()[0]
+                  check_db['details']['signals_last_hour'] = recent_signals
+                  
+                  # Check for stuck signals (old but still open)
+                  cursor.execute("""
+                      SELECT COUNT(*) FROM signals 
+                      WHERE status = 'open' 
+                      AND timestamp < datetime('now', '-7 days')
+                  """)
+                  stuck_signals = cursor.fetchone()[0]
+                  check_db['details']['stuck_signals'] = stuck_signals
+                  
+                  conn.close()
+                  
+                  if recent_signals == 0:
+                      check_db['status'] = 'WARNING'
+                      check_db['message'] = 'No signals in last hour'
+                      health_report['critical_issues'].append('No recent signals')
+                  
+                  if stuck_signals > 10:
+                      check_db['status'] = 'WARNING'
+                      health_report['critical_issues'].append(f'{stuck_signals} stuck signals')
+              else:
+                  check_db['status'] = 'CRITICAL'
+                  check_db['message'] = 'Database not found'
+                  health_report['critical_issues'].append('Forward tracking DB missing')
+                  health_report['overall_status'] = 'CRITICAL'
+          except Exception as e:
+              check_db['status'] = 'ERROR'
+              check_db['message'] = str(e)
+              health_report['critical_issues'].append(f'DB error: {e}')
+          
+          health_report['checks']['forward_database'] = check_db
+          
+          # === Check 2: ML Models ===
+          check_ml = {'status': 'OK', 'details': {}}
+          try:
+              models = {
+                  'consensus': 'signal_aggregator/models/ml_consensus_latest.pkl',
+                  'quality': 'forward_testing/models/tp_hit_model.pkl',
+                  'risk': 'risk_management/models/drawdown_model.pkl'
+              }
+              
+              for name, path in models.items():
+                  exists = os.path.exists(path)
+                  check_ml['details'][name] = 'exists' if exists else 'missing'
+                  
+                  if not exists:
+                      check_ml['status'] = 'WARNING'
+              
+              if all(not os.path.exists(p) for p in models.values()):
+                  check_ml['status'] = 'WARNING'
+                  check_ml['message'] = 'No ML models trained yet'
+          except Exception as e:
+              check_ml['status'] = 'ERROR'
+              check_ml['message'] = str(e)
+          
+          health_report['checks']['ml_models'] = check_ml
+          
+          # === Check 3: GitHub Actions Workflows ===
+          check_workflows = {'status': 'OK', 'details': {}}
+          required_workflows = [
+              'forward-tracking-v2.yml',
+              'ml-model-autotraining.yml',
+              'signal-quality-monitor.yml'
+          ]
+          
+          for wf in required_workflows:
+              path = f'.github/workflows/{wf}'
+              exists = os.path.exists(path)
+              check_workflows['details'][wf] = 'exists' if exists else 'MISSING'
+              
+              if not exists:
+                  check_workflows['status'] = 'CRITICAL'
+                  health_report['overall_status'] = 'CRITICAL'
+                  health_report['critical_issues'].append(f'Missing workflow: {wf}')
+          
+          health_report['checks']['workflows'] = check_workflows
+          
+          # === Check 4: Data Pipeline ===
+          check_data = {'status': 'OK', 'details': {}}
+          data_files = [
+              'data_fetcher_enhanced.py',
+              'forward_trade_executor_v2.py'
+          ]
+          
+          for f in data_files:
+              exists = os.path.exists(f)
+              check_data['details'][f] = 'exists' if exists else 'MISSING'
+              
+              if not exists:
+                  check_data['status'] = 'CRITICAL'
+                  health_report['overall_status'] = 'CRITICAL'
+          
+          health_report['checks']['data_pipeline'] = check_data
+          
+          # === Check 5: Core Modules ===
+          check_core = {'status': 'OK', 'details': {}}
+          core_modules = [
+              'signal_aggregator/integrations.py',
+              'signal_aggregator/ml_consensus.py',
+              'forward_testing/signal_quality_ml.py',
+              'risk_management/position_sizer.py',
+              'circuit_breaker_system.py'
+          ]
+          
+          for module in core_modules:
+              exists = os.path.exists(module)
+              check_core['details'][os.path.basename(module)] = 'exists' if exists else 'MISSING'
+              
+              if not exists:
+                  check_core['status'] = 'CRITICAL'
+                  health_report['overall_status'] = 'CRITICAL'
+          
+          health_report['checks']['core_modules'] = check_core
+          
+          # === Check 6: Import Tests ===
+          check_imports = {'status': 'OK', 'details': {}}
+          imports_to_test = [
+              ('signal_aggregator.integrations', 'EnhancedSignalAggregator'),
+              ('forward_testing.adaptive_tpsl', 'AdaptiveTPSL'),
+              ('risk_management.position_sizer', 'PositionSizer'),
+          ]
+          
+          sys.path.insert(0, '.')
+          
+          for module_name, class_name in imports_to_test:
+              try:
+                  module = __import__(module_name, fromlist=[class_name])
+                  getattr(module, class_name)
+                  check_imports['details'][module_name] = 'OK'
+              except Exception as e:
+                  check_imports['details'][module_name] = f'FAIL: {e}'
+                  check_imports['status'] = 'WARNING'
+          
+          health_report['checks']['imports'] = check_imports
+          
+          # === Determine Overall Status ===
+          critical_count = sum(1 for c in health_report['checks'].values() if c['status'] == 'CRITICAL')
+          warning_count = sum(1 for c in health_report['checks'].values() if c['status'] == 'WARNING')
+          error_count = sum(1 for c in health_report['checks'].values() if c['status'] == 'ERROR')
+          
+          if critical_count > 0:
+              health_report['overall_status'] = 'CRITICAL'
+          elif error_count > 0:
+              health_report['overall_status'] = 'ERROR'
+          elif warning_count > 0:
+              health_report['overall_status'] = 'WARNING'
+          else:
+              health_report['overall_status'] = 'HEALTHY'
+          
+          health_report['summary'] = {
+              'critical': critical_count,
+              'error': error_count,
+              'warning': warning_count,
+              'ok': len(health_report['checks']) - critical_count - error_count - warning_count
+          }
+          
+          # Save report
+          os.makedirs('reports/health', exist_ok=True)
+          report_path = f"reports/health/health_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+          with open(report_path, 'w') as f:
+              json.dump(health_report, f, indent=2)
+          
+          # Save latest
+          with open('reports/health/latest.json', 'w') as f:
+              json.dump(health_report, f, indent=2)
+          
+          # Print summary
+          print("\n=== System Health Check ===")
+          print(f"Overall Status: {health_report['overall_status']}")
+          print(f"Critical Issues: {len(health_report['critical_issues'])}")
+          for issue in health_report['critical_issues']:
+              print(f"  - {issue}")
+          print("\nCheck Details:")
+          for check_name, check_data in health_report['checks'].items():
+              print(f"  {check_name}: {check_data['status']}")
+          
+          # Set outputs
+          with open(os.environ.get('GITHUB_OUTPUT'), 'a') as f:
+              f.write(f"status={health_report['overall_status']}\n")
+              f.write(f"critical_count={critical_count}\n")
+              f.write(f"has_critical={str(critical_count > 0).lower()}\n")
+          PYEOF
+        env:
+          GITHUB_OUTPUT: $GITHUB_OUTPUT
+      
+      - name: Alert on critical issues
+        if: steps.health.outputs.has_critical == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_HEALTH_ALERTS }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -H "Content-Type: application/json" \
+                 -d "{
+                   \"embeds\": [{
+                     \"title\": \" System Health CRITICAL\",
+                     \"color\": 16711680,
+                     \"description\": \"Critical issues detected in system health check\",
+                     \"fields\": [
+                       {\"name\": \"Status\", \"value\": \"${{ steps.health.outputs.status }}\", \"inline\": true},
+                       {\"name\": \"Critical Count\", \"value\": \"${{ steps.health.outputs.critical_count }}\", \"inline\": true}
+                     ],
+                     \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                   }]
+                 }" \
+                 $DISCORD_WEBHOOK || true
+          fi
+      
+      - name: Commit health reports
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config --local user.email "health-bot@github.com"
+          git config --local user.name "Health Check Bot"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${{ github.repository }}"
+          git add reports/health/ 2>/dev/null || true
+          git diff --cached --quiet || git commit -m " Health check report [skip ci]"
+          bash .github/scripts/safe_push.sh
+      
+      - name: Upload health artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-report-${{ github.run_number }}
+          path: reports/health/
+          retention-days: 14
+

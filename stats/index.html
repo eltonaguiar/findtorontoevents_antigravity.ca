@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FindTorontoEvents — Scrape Stats</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:32px 40px;max-width:480px;width:100%}
+  h1{font-size:18px;font-weight:600;color:#58a6ff;margin-bottom:6px}
+  .sub{font-size:13px;color:#8b949e;margin-bottom:28px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #21262d}
+  .row:last-child{border-bottom:none}
+  .label{font-size:13px;color:#8b949e}
+  .value{font-size:15px;font-weight:600;color:#e6edf3}
+  .value.green{color:#3fb950}
+  .value.blue{color:#58a6ff}
+  .value.yellow{color:#d29922}
+  .badge{display:inline-block;background:#1f3a2a;color:#3fb950;font-size:11px;padding:2px 8px;border-radius:12px;margin-left:8px;vertical-align:middle}
+  .badge.yellow{background:#2d2103;color:#d29922}
+  .footer{margin-top:24px;font-size:12px;color:#8b949e;text-align:center}
+  .footer a{color:#58a6ff;text-decoration:none}
+  .error{color:#f85149;font-size:13px;margin-top:12px}
+  #ts{color:#8b949e;font-size:12px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>FindTorontoEvents</h1>
+  <div class="sub">Live Events Database — Scrape Statistics</div>
+  <div id="content">
+    <div class="row"><span class="label">Loading…</span></div>
+  </div>
+  <div class="footer">
+    <a href="/">← Back to events</a>
+    &nbsp;·&nbsp;
+    Data from <code>last_update.json</code>
+  </div>
+</div>
+<script>
+(async function() {
+  const el = document.getElementById('content');
+  try {
+    // Try same-origin first, then parent directory
+    let d = null;
+    for (const url of ['/last_update.json', '../last_update.json', 'https://findtorontoevents.ca/last_update.json']) {
+      try {
+        const r = await fetch(url + '?t=' + Date.now());
+        if (r.ok) { d = await r.json(); break; }
+      } catch(e) {}
+    }
+    if (!d) throw new Error('Could not load last_update.json');
+
+    const ts = d.timestamp ? new Date(d.timestamp) : null;
+    const ago = ts ? Math.round((Date.now() - ts.getTime()) / 60000) : null;
+    const agoStr = ago === null ? '?' : ago < 60 ? ago + ' min ago' : Math.round(ago/60) + 'h ago';
+    const tsLocal = ts ? ts.toLocaleString('en-CA', {timeZone:'America/Toronto', hour12:true}) : '—';
+
+    el.innerHTML = `
+      <div class="row">
+        <span class="label">Last scraped</span>
+        <span class="value blue" title="${d.timestamp || ''}">${tsLocal} <span class="badge yellow">${agoStr}</span></span>
+      </div>
+      <div class="row">
+        <span class="label">New events added</span>
+        <span class="value green">+${(d.new_count || 0).toLocaleString()}</span>
+      </div>
+      <div class="row">
+        <span class="label">Events modified</span>
+        <span class="value yellow">~${(d.modified_count || 0).toLocaleString()}</span>
+      </div>
+      <div class="row">
+        <span class="label">Source</span>
+        <span class="value">${d.source || '—'} <span class="badge">automated</span></span>
+      </div>
+    `;
+  } catch(e) {
+    el.innerHTML = '<div class="error">Failed to load stats: ' + e.message + '</div>';
+  }
+})();
+</script>
+</body>
+</html>

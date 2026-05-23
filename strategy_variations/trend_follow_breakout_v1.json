@@ -1,0 +1,42 @@
+{
+  "name": "trend_follow_breakout_v1",
+  "version": "1.0",
+  "strategy_type": "trend_following",
+  "entry_logic": {
+    "type": "breakout",
+    "lookback_periods": 20,
+    "volume_confirmation": true,
+    "min_volume_mult": 1.5,
+    "pullback_entry": true,
+    "pullback_ma": 20
+  },
+  "exit_logic": {
+    "tp_type": "trailing",
+    "trailing_stop_pct": 0.02,
+    "sl_type": "swing_low",
+    "time_exit_hours": 24,
+    "move_stop_to_breakeven": true,
+    "breakeven_trigger": 1.5
+  },
+  "risk_management": {
+    "position_size": 0.12,
+    "pyramiding": true,
+    "max_pyramid_levels": 2,
+    "pyramid_size": 0.05
+  },
+  "regime_detection": {
+    "enabled": true,
+    "required_regime": "trending",
+    "adx_min": 30,
+    "adx_max": 60
+  },
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ],
+  "parent_strategies": [
+    "crypto_keltner_compression_expansion_v1"
+  ],
+  "created_at": "2026-03-07T20:16:21.051599"
+}

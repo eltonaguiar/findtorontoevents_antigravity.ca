@@ -1,0 +1,44 @@
+function renderQueue() {
+            const queueContent = document.getElementById('queueContent');
+            const upNextSection = document.getElementById('queueUpNext');
+            const upNextContent = document.getElementById('queueUpNextContent');
+
+            if (myQueue.length === 0) {
+                queueContent.innerHTML = '<p style="opacity: 0.5; text-align: center; padding: 20px;">Your queue is empty<br><small>Click \u2795 to add movies</small></p>';
+                upNextSection.style.display = 'none';
+                return;
+            }
+
+            // Render queue items
+            queueContent.innerHTML = myQueue.map(movie => `
+                <div class="queue-item">
+                    <img src="${movie.thumbnail || 'https://placehold.co/60x90/1a1a1a/666?text=' + encodeURIComponent(movie.title)}" alt="${escapeHtml(movie.title)}" onerror="this.src='https://placehold.co/60x90/1a1a1a/666?text=No+Image'">
+                    <div class="queue-item-info">
+                        <div class="queue-item-title">${escapeHtml(movie.title)}</div>
+                        <div class="queue-item-meta">
+                            ${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + movie.imdb_rating : ''}
+                        </div>
+                    </div>
+                    <button class="queue-item-remove" onclick="removeFromQueue(${movie.id})">\u2716</button>
+                </div>
+            `).join('');
+
+            // Show "Up Next" - the first item in queue
+            if (myQueue.length > 0) {
+                const nextMovie = myQueue[0];
+                upNextContent.innerHTML = `
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <img src="${nextMovie.thumbnail || 'https://placehold.co/60x90/1a1a1a/666?text=' + encodeURIComponent(nextMovie.title)}" alt="${escapeHtml(nextMovie.title)}" style="width: 50px; height: 75px; object-fit: cover; border-radius: 6px;" onerror="this.src='https://placehold.co/60x90/1a1a1a/666?text=No+Image'">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">${escapeHtml(nextMovie.title)}</div>
+                            <div style="font-size: 12px; opacity: 0.7;">${nextMovie.release_year || ''} ${nextMovie.imdb_rating ? '\u2b50 ' + nextMovie.imdb_rating : ''}</div>
+                        </div>
+                    </div>
+                `;
+                upNextSection.style.display = 'block';
+            } else {
+                upNextSection.style.display = 'none';
+            }
+        }
+
+        async 

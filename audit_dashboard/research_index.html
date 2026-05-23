@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Research index · findtorontoevents.ca/audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1200px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { margin-bottom: 4px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data-table th, table.data-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  table.data-table th { background: rgba(255,255,255,0.03); }
+  table.data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  section { margin: 24px 0; }
+  a { color: #60a5fa; }
+  header { padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 16px; }
+  .nav { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .nav a { background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+  .nav a:hover { background: rgba(96,165,250,0.12); text-decoration: none; }
+  .nav a.active { background: rgba(96,165,250,0.2); border-color: #60a5fa; color: #93c5fd; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Asset-Class Research Index</h1>
+  <div style="color:#a0a0b0;font-size:13px;margin-top:6px">
+    Multi-AI consensus research runs producing sourced + backtested + cross-tested strategy candidates per asset class.
+    See <code>tools/research/orchestrator.py</code> + <code>updates/2026-05-11-research-orchestrator-design.md</code> for the 5-pass protocol.
+  </div>
+  <div style="color:#94a3b8;font-size:12px;margin-top:8px">
+    Index generated: <strong style="color:#e6e6f0">May 16, 2026 2:52 AM EDT</strong>
+    &nbsp;•&nbsp; All run timestamps shown below are also <strong>EST/EDT</strong>; the <code>run_*</code> directory IDs are UTC.
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/audit/">← Main Audit</a>
+  <a href="/audit/ai-tournament.html">🏆 AI Tournament</a>
+  <a href="/audit/ai_leaderboard.html">AI Leaderboard (internal)</a>
+  <a href="/audit/research_index.html" class="active">Research Index</a>
+</nav>
+
+<section style="margin-top:12px">
+  <h2>How to read this page</h2>
+  <div style="font-size:13px;color:#cbd5e1;line-height:1.6">
+    Each run is one full 5-pass orchestrator cycle for one asset class:
+    <strong>P1</strong> literature → <strong>P2</strong> candidate distillation →
+    <strong>P3</strong> backtest → <strong>P4</strong> cross-test on out-of-sample fold →
+    <strong>P5</strong> synthesis. Click <em>view →</em> to drill into the per-pass artifacts
+    (<code>p1_literature.json</code>, <code>p2_candidates.json</code>, …, <code>p5_synthesis.md</code>).
+    <br><br>
+    <strong>Columns:</strong>
+    <code>Candidates</code> = strategies P2 produced;
+    <code>Backtested</code> = passed structural sanity to enter P3;
+    <code>Independent</code> = survived P4 cross-test on a held-out fold;
+    <code>Citations verified/total</code> = how many P1 citations resolved to a real URL;
+    <code>Cost</code> = LLM spend for that run.
+    <br><br>
+    <strong>Verdict legend:</strong>
+    <span style="background:#22c55e;color:#0a0a0f;padding:1px 8px;border-radius:10px;font-weight:700">GO</span>
+    at least one candidate survived all 5 passes with Tier-2 floor stats (PF≥1.5, WR≥50, n≥100).
+    &nbsp;
+    <span style="background:#fbbf24;color:#0a0a0f;padding:1px 8px;border-radius:10px;font-weight:700">MIXED</span>
+    survivors exist but fail the Tier-2 floor on one axis — needs human triage.
+    &nbsp;
+    <span style="background:#888;color:#0a0a0f;padding:1px 8px;border-radius:10px;font-weight:700">NO_EDGE</span>
+    no candidate cleared cross-test.
+    &nbsp;
+    <span style="background:#3b82f6;color:#0a0a0f;padding:1px 8px;border-radius:10px;font-weight:700">PENDING</span>
+    in flight.
+    &nbsp;
+    <span style="background:#ef4444;color:#0a0a0f;padding:1px 8px;border-radius:10px;font-weight:700">ABORTED</span>
+    crashed before completing the 5 passes.
+  </div>
+</section>
+
+<section>
+  <h2 style="text-transform:uppercase">bond</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-51-00Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-16T06-51-00Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-50-48Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:50 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-16T06-50-48Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-34-52Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:34 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T19-34-52Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-33-00Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:33 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T19-33-00Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-31-34Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:31 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T19-31-34Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-30-55Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:30 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T19-30-55Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-01-40Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:01 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T19-01-40Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T18-59-11Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 2:59 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">14</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T18-59-11Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T18-56-26Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 2:56 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">3</td>
+  <td class="num">3</td>
+  <td class="num">3</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T18-56-26Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T17-46-50Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 1:46 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">3</td>
+  <td class="num">3</td>
+  <td class="num">3</td>
+  <td class="num">0 / 3</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/bond/run_2026-05-11T17-46-50Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section><section>
+  <h2 style="text-transform:uppercase">commodity</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-52-25Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:52 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/commodity/run_2026-05-16T06-52-25Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-52-19Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:52 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/commodity/run_2026-05-16T06-52-19Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-35-10Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:35 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/commodity/run_2026-05-11T19-35-10Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-32-58Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:32 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/commodity/run_2026-05-11T19-32-58Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-18-00Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:18 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/commodity/run_2026-05-11T19-18-00Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section><section>
+  <h2 style="text-transform:uppercase">crypto</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-51-46Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">15 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/crypto/run_2026-05-16T06-51-46Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-51-37Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">15 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/crypto/run_2026-05-16T06-51-37Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-35-02Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:35 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">15 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/crypto/run_2026-05-11T19-35-02Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-32-51Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:32 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">15 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/crypto/run_2026-05-11T19-32-51Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-17-50Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:17 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">16</td>
+  <td class="num">15 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/crypto/run_2026-05-11T19-17-50Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section><section>
+  <h2 style="text-transform:uppercase">equity</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-51-31Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">14 / 30</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/equity/run_2026-05-16T06-51-31Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-51-22Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">14 / 30</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/equity/run_2026-05-16T06-51-22Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-34-59Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:34 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">14 / 30</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/equity/run_2026-05-11T19-34-59Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-32-48Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:32 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">14 / 30</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/equity/run_2026-05-11T19-32-48Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-17-46Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:17 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">14 / 30</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/equity/run_2026-05-11T19-17-46Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section><section>
+  <h2 style="text-transform:uppercase">etf</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-51-59Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/etf/run_2026-05-16T06-51-59Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-51-54Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/etf/run_2026-05-16T06-51-54Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-35-05Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:35 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/etf/run_2026-05-11T19-35-05Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-32-53Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:32 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/etf/run_2026-05-11T19-32-53Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-17-53Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:17 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">6 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/etf/run_2026-05-11T19-17-53Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section><section>
+  <h2 style="text-transform:uppercase">forex</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-51-15Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/forex/run_2026-05-16T06-51-15Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-51-10Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:51 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/forex/run_2026-05-16T06-51-10Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-34-55Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:34 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/forex/run_2026-05-11T19-34-55Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-32-46Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:32 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/forex/run_2026-05-11T19-32-46Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-14-54Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:14 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">5</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/forex/run_2026-05-11T19-14-54Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section><section>
+  <h2 style="text-transform:uppercase">futures</h2>
+  <table class="data-table">
+    <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
+    <tbody><tr>
+  <td><code>run_2026-05-16T06-52-12Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:52 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/futures/run_2026-05-16T06-52-12Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-16T06-52-05Z</code><br><span style="color:#94a3b8;font-size:11px">May 16, 2026 2:52 AM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/futures/run_2026-05-16T06-52-05Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-35-07Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:35 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/futures/run_2026-05-11T19-35-07Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-32-55Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:32 PM EDT</span></td>
+  <td><span style="background:#888;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">NO_EDGE</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/futures/run_2026-05-11T19-32-55Z/index.html">view →</a></td>
+</tr>
+<tr>
+  <td><code>run_2026-05-11T19-17-56Z</code><br><span style="color:#94a3b8;font-size:11px">May 11, 2026 3:17 PM EDT</span></td>
+  <td><span style="background:#fbbf24;color:#0a0a0f;padding:2px 8px;border-radius:10px;font-weight:700">MIXED</span></td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">10</td>
+  <td class="num">8 / 20</td>
+  <td class="num">$0.00</td>
+  <td><a href="research/asset_class/futures/run_2026-05-11T19-17-56Z/index.html">view →</a></td>
+</tr></tbody>
+  </table>
+</section>
+<footer style="margin-top:32px;color:#a0a0b0;font-size:12px">
+  Goal #1 (CLAUDE.md): phenomenal performance across ALL asset classes on /audit (Tier-2 floor PF≥1.5, WR≥50, MDD&lt;20, n≥100).
+  This index updates whenever <code>python -m tools.research.build_research_index</code> runs (manually for now; CI cron in PR 3).
+</footer>
+</body>
+</html>

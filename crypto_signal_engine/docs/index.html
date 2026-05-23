@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Signal Engine — ML Ensemble Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a12;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+h1 { color: #8b5cf6; font-size: 1.8rem; margin-bottom: 4px; }
+h2 { color: #a78bfa; font-size: 1.2rem; margin: 24px 0 12px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+h3 { color: #c4b5fd; font-size: 1rem; margin: 16px 0 8px; }
+.subtitle { color: #888; font-size: 0.85rem; margin-bottom: 16px; }
+.timestamp { color: #f59e0b; font-size: 0.85rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 16px 0; }
+.card {
+  background: #111;
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  padding: 16px;
+}
+.card.active { border-color: #22c55e; }
+.card.closed { border-color: #666; }
+.card.gainer { border-color: #f59e0b; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-right: 6px;
+}
+.badge-long { background: #22c55e; color: #000; }
+.badge-short { background: #ef4444; color: #fff; }
+.badge-win { background: #22c55e; color: #000; }
+.badge-loss { background: #ef4444; color: #fff; }
+.badge-active { background: #3b82f6; color: #fff; }
+.pnl-pos { color: #22c55e; font-weight: bold; }
+.pnl-neg { color: #ef4444; font-weight: bold; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.85rem; }
+th { text-align: left; color: #888; padding: 6px 8px; border-bottom: 1px solid #333; }
+td { padding: 6px 8px; border-bottom: 1px solid #1a1a2a; }
+.metric-box {
+  display: inline-block;
+  background: #1a1a2a;
+  border-radius: 6px;
+  padding: 12px 20px;
+  margin: 4px;
+  text-align: center;
+}
+.metric-value { font-size: 1.4rem; font-weight: bold; color: #8b5cf6; }
+.metric-label { font-size: 0.75rem; color: #888; margin-top: 2px; }
+.reason-box {
+  background: #0d0d1a;
+  border-left: 3px solid #8b5cf6;
+  padding: 10px 14px;
+  margin: 8px 0;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+.guard-check { color: #22c55e; margin-right: 4px; }
+.audit-trail {
+  background: #0d0d1a;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.audit-ok { color: #22c55e; }
+.audit-fail { color: #ef4444; }
+.loading { color: #888; font-style: italic; }
+#error-banner {
+  display: none;
+  background: #7f1d1d;
+  color: #fca5a5;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.collapsible { cursor: pointer; user-select: none; }
+.collapsible:hover { color: #fff; }
+.collapse-content { display: none; }
+.collapse-content.open { display: block; }
+</style>
+</head>
+<body>
+
+<h1>CRYPTO SIGNAL ENGINE</h1>
+<p class="subtitle">ML Ensemble (3x XGBoost) + LightGBM Top-Gainer | v1.0.0</p>
+<p class="timestamp" id="last-updated">Loading...</p>
+
+<div id="error-banner"></div>
+
+<!-- Validation Metrics -->
+<h2>Model Validation</h2>
+<div id="validation-metrics" class="loading">Loading validation data...</div>
+
+<!-- Market Snapshot -->
+<h2>Market Snapshot</h2>
+<div id="market-snapshot" class="loading">Loading...</div>
+
+<!-- Active Picks -->
+<h2>Active Picks <span id="active-count" style="color:#888;font-size:0.85rem;"></span></h2>
+<div id="active-picks" class="loading">Loading picks...</div>
+
+<!-- Top Gainers -->
+<h2>Top-5 Predicted Gainers (Next 24h)</h2>
+<div id="top-gainers" class="loading">Loading...</div>
+
+<!-- Closed Picks -->
+<h2 class="collapsible" onclick="toggleSection('closed-section')">Closed Picks ▾</h2>
+<div id="closed-section" class="collapse-content">
+  <div id="closed-picks">Loading...</div>
+</div>
+
+<!-- Audit Trail -->
+<h2 class="collapsible" onclick="toggleSection('audit-section')">API Audit Trail ▾</h2>
+<div id="audit-section" class="collapse-content">
+  <div id="audit-trail" class="audit-trail">Loading...</div>
+</div>
+
+<!-- Abbreviations -->
+<h2 class="collapsible" onclick="toggleSection('abbrev-section')">Abbreviations & Glossary ▾</h2>
+<div id="abbrev-section" class="collapse-content">
+  <table>
+    <tr><th>Abbrev</th><th>Full Name</th><th>Meaning</th></tr>
+    <tr><td>TP</td><td>Take Profit</td><td>Price target where profit is locked in</td></tr>
+    <tr><td>SL</td><td>Stop Loss</td><td>Price level where loss is capped</td></tr>
+    <tr><td>ATR</td><td>Average True Range</td><td>14-period volatility measure; TP = 3×ATR, SL = 2×ATR</td></tr>
+    <tr><td>RSI</td><td>Relative Strength Index</td><td>Momentum oscillator (0-100); >70 = overbought, <30 = oversold</td></tr>
+    <tr><td>MACD</td><td>Moving Avg Convergence Divergence</td><td>Trend strength indicator (EMA12 - EMA26)</td></tr>
+    <tr><td>SMA</td><td>Simple Moving Average</td><td>Average price over N periods; 200 SMA = long-term trend</td></tr>
+    <tr><td>EMA</td><td>Exponential Moving Average</td><td>Weighted average giving more weight to recent prices</td></tr>
+    <tr><td>F&G</td><td>Fear & Greed Index</td><td>Market sentiment (0=extreme fear, 100=extreme greed)</td></tr>
+    <tr><td>DSR</td><td>Deflated Sharpe Ratio</td><td>Statistical test: probability true Sharpe > 0 (Bailey 2014)</td></tr>
+    <tr><td>PSR</td><td>Probabilistic Sharpe Ratio</td><td>Probability that model's Sharpe exceeds target (2.0)</td></tr>
+    <tr><td>BB</td><td>Bollinger Bands</td><td>Volatility bands; width = squeeze/expansion measure</td></tr>
+    <tr><td>P&L</td><td>Profit & Loss</td><td>Unrealized (active) or realized (closed) gain/loss</td></tr>
+    <tr><td>WR</td><td>Win Rate</td><td>Percentage of trades that hit TP (profitable)</td></tr>
+    <tr><td>XGB</td><td>XGBoost</td><td>Gradient-boosted tree ML model (3 variants used)</td></tr>
+    <tr><td>LGB</td><td>LightGBM</td><td>Fast gradient-boosted tree (used for top-gainer prediction)</td></tr>
+  </table>
+</div>
+
+<script>
+const BASE = '.';
+const FALLBACK_BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_signal_engine/data';
+
+async function fetchJSON(file) {
+  // Try relative path first (GitHub Pages), then raw GitHub
+  for (const base of [BASE, FALLBACK_BASE]) {
+    try {
+      const r = await fetch(`${base}/${file}?t=${Date.now()}`);
+      if (r.ok) return await r.json();
+    } catch(e) {}
+  }
+  return null;
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function pnlClass(val) { return val >= 0 ? 'pnl-pos' : 'pnl-neg'; }
+function pnlSign(val) { return val >= 0 ? '+' : ''; }
+
+async function loadDashboard() {
+  // Load all data
+  const [active, closed, topGainers, audit, validation] = await Promise.all([
+    fetchJSON('active_picks.json'),
+    fetchJSON('closed_picks.json'),
+    fetchJSON('top_gainers.json'),
+    fetchJSON('audit.json'),
+    fetchJSON('validation.json'),
+  ]);
+
+  // Timestamp
+  if (audit) {
+    document.getElementById('last-updated').textContent =
+      `Last scan: ${audit.timestamp_est || audit.timestamp_utc || 'Unknown'}`;
+  }
+
+  // Validation metrics
+  if (validation) {
+    const vEl = document.getElementById('validation-metrics');
+    vEl.innerHTML = `
+      <div class="metric-box">
+        <div class="metric-value" style="color:${validation.dsr >= 0.75 ? '#22c55e' : '#ef4444'}">${(validation.dsr || 0).toFixed(3)}</div>
+        <div class="metric-label">DSR ${validation.dsr_pass ? '✓ PASS' : '✗ FAIL'}</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value" style="color:${validation.psr >= 0.75 ? '#22c55e' : '#ef4444'}">${(validation.psr || 0).toFixed(3)}</div>
+        <div class="metric-label">PSR ${validation.psr_pass ? '✓ PASS' : '✗ FAIL'}</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value">${(validation.sharpe || 0).toFixed(2)}</div>
+        <div class="metric-label">Sharpe Ratio</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value">${((validation.prob_mean || 0) * 100).toFixed(1)}%</div>
+        <div class="metric-label">Avg Probability</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value">${((validation.label_balance || 0) * 100).toFixed(1)}%</div>
+        <div class="metric-label">Label Balance</div>
+      </div>
+      <p style="color:#888;font-size:0.75rem;margin-top:8px;">Trained: ${validation.trained_at_est || 'N/A'} | ${validation.total_rows || 0} rows | ${validation.symbols_trained || 0} symbols</p>
+    `;
+  }
+
+  // Market snapshot (from active picks)
+  if (active && active.length > 0) {
+    const snap = document.getElementById('market-snapshot');
+    const symbols = [...new Set(active.map(p => p.symbol))];
+    snap.innerHTML = symbols.map(s => {
+      const p = active.find(x => x.symbol === s);
+      return `<div class="metric-box">
+        <div class="metric-value">$${(p.current_price || p.entry || 0).toLocaleString()}</div>
+        <div class="metric-label">${s.replace('USDT','')}</div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('market-snapshot').innerHTML = '<p style="color:#666;">No market data yet</p>';
+  }
+
+  // Active picks
+  const activeEl = document.getElementById('active-picks');
+  if (active && active.length > 0) {
+    document.getElementById('active-count').textContent = `(${active.length})`;
+    activeEl.innerHTML = '<div class="grid">' + active.map(p => {
+      const dirClass = p.direction === 'SHORT' ? 'badge-short' : 'badge-long';
+      const pnl = p.pnl_pct || 0;
+      return `<div class="card active">
+        <div>
+          <span class="badge ${dirClass}">${p.direction}</span>
+          <span class="badge badge-active">ACTIVE</span>
+          <strong>${p.symbol}</strong>
+        </div>
+        <table>
+          <tr><td>Entry</td><td>$${p.entry}</td></tr>
+          <tr><td>Current</td><td>$${p.current_price || '—'}</td></tr>
+          <tr><td>TP (Take Profit)</td><td>$${p.tp}</td></tr>
+          <tr><td>SL (Stop Loss)</td><td>$${p.sl}</td></tr>
+          <tr><td>Confidence</td><td>${(p.confidence * 100).toFixed(1)}%</td></tr>
+          <tr><td>P&L</td><td class="${pnlClass(pnl)}">${pnlSign(pnl)}${pnl.toFixed(2)}% ($${(p.pnl_usd || 0).toFixed(2)})</td></tr>
+          <tr><td>Opened</td><td>${p.opened_at || '—'}</td></tr>
+        </table>
+        ${p.model_votes ? `<h3>Model Votes</h3><table>
+          ${Object.entries(p.model_votes).map(([k,v]) => `<tr><td>${k}</td><td>${(v*100).toFixed(1)}%</td></tr>`).join('')}
+        </table>` : ''}
+        ${p.pick_reason ? `<h3>Why This Pick</h3><div class="reason-box">${p.pick_reason}</div>` : ''}
+      </div>`;
+    }).join('') + '</div>';
+  } else {
+    activeEl.innerHTML = '<p style="color:#666;">No active picks — waiting for signals that pass all 5 guards</p>';
+  }
+
+  // Top gainers
+  const tgEl = document.getElementById('top-gainers');
+  if (topGainers && topGainers.length > 0) {
+    tgEl.innerHTML = '<div class="grid">' + topGainers.map(g => {
+      return `<div class="card gainer">
+        <div><strong>#${g.rank} ${g.symbol}</strong></div>
+        <table>
+          <tr><td>Predicted Return</td><td class="${pnlClass(g.predicted_return_pct)}">${pnlSign(g.predicted_return_pct)}${g.predicted_return_pct}%</td></tr>
+          <tr><td>Current Price</td><td>$${g.current_price}</td></tr>
+          <tr><td>RSI</td><td>${g.rsi}</td></tr>
+          <tr><td>Above 200 SMA</td><td>${g.above_200_sma ? 'Yes ✓' : 'No'}</td></tr>
+          <tr><td>Volume Ratio</td><td>${g.vol_ratio}x</td></tr>
+        </table>
+        <div class="reason-box">${g.reason}</div>
+      </div>`;
+    }).join('') + '</div>';
+  } else {
+    tgEl.innerHTML = '<p style="color:#666;">No top-gainer predictions yet</p>';
+  }
+
+  // Closed picks
+  const closedEl = document.getElementById('closed-picks');
+  if (closed && closed.length > 0) {
+    const wins = closed.filter(p => p.result === 'WIN').length;
+    const total = closed.length;
+    const wr = total > 0 ? (wins / total * 100).toFixed(1) : '0';
+    const totalPnl = closed.reduce((s, p) => s + (p.pnl_usd || 0), 0);
+    closedEl.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <div class="metric-box"><div class="metric-value">${wr}%</div><div class="metric-label">Win Rate</div></div>
+        <div class="metric-box"><div class="metric-value">${wins}/${total}</div><div class="metric-label">Wins/Total</div></div>
+        <div class="metric-box"><div class="metric-value" class="${pnlClass(totalPnl)}">$${totalPnl.toFixed(2)}</div><div class="metric-label">Total P&L</div></div>
+      </div>
+      <table>
+        <tr><th>Symbol</th><th>Dir</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Result</th><th>Closed</th></tr>
+        ${closed.slice(-20).reverse().map(p => `
+          <tr>
+            <td>${p.symbol}</td>
+            <td><span class="badge ${p.direction === 'SHORT' ? 'badge-short' : 'badge-long'}">${p.direction}</span></td>
+            <td>$${p.entry}</td>
+            <td>$${p.exit_price || '—'}</td>
+            <td class="${pnlClass(p.pnl_pct || 0)}">${pnlSign(p.pnl_pct || 0)}${(p.pnl_pct || 0).toFixed(2)}%</td>
+            <td><span class="badge ${p.result === 'WIN' ? 'badge-win' : 'badge-loss'}">${p.result}</span></td>
+            <td>${p.closed_at || '—'}</td>
+          </tr>
+        `).join('')}
+      </table>`;
+  } else {
+    closedEl.innerHTML = '<p style="color:#666;">No closed picks yet</p>';
+  }
+
+  // Audit trail
+  const auditEl = document.getElementById('audit-trail');
+  if (audit && audit.api_sources) {
+    auditEl.innerHTML = audit.api_sources.map(a => {
+      const cls = a.status === 'OK' ? 'audit-ok' : 'audit-fail';
+      return `<div class="${cls}">[${a.status}] ${a.source} → ${a.symbol || a.type || ''} ${a.rows ? `(${a.rows} rows)` : ''} ${a.error ? `— ${a.error}` : ''}</div>`;
+    }).join('');
+  }
+}
+
+// Load on page open + auto-refresh every 60s
+loadDashboard();
+setInterval(loadDashboard, 60000);
+</script>
+</body>
+</html>

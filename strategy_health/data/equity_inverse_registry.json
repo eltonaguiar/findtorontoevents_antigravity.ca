@@ -1,0 +1,43 @@
+{
+  "registry_name": "equity_inverse_paper_mutations",
+  "version": "v2_post_mc_retraction",
+  "created_at_utc": "2026-04-04T21:30:00Z",
+  "revised_at_utc": "2026-04-04T22:00:00Z",
+  "author": "claude-sports-db-fix",
+  "status": "observation_only_paper_track",
+  "source_backtest": "alpha_engine/data/equity_inverse_mutations_2026-04-04.json",
+  "monte_carlo_validation": "alpha_engine/data/equity_inverse_monte_carlo_2026-04-04.json",
+  "activation_threshold_n_per_strategy": 30,
+  "retraction_note": "v1 registry had 5 mutations based on a 15-trade cherry-picked slice. Monte Carlo on the full n=81 dataset showed 3 of those 5 strategies are actually profitable in aggregate (Breakout Momentum +12.81%, Classic Momentum +15.75%, quality-minus-junk +19.07%). Only vol-contraction-scout (n=11, -4.32%) and macd-hidden-div-scout (n=4, -8.22%) are genuinely losing. This v2 narrows to those 2 only. Inverse MC shows NO edge at aggregate (p=0.9455), so even these 2 are observation-only until n>=30 per strategy.",
+  "mutations": [
+    {
+      "source_strategy": "vol-contraction-scout",
+      "mutation_name": "vol_contraction_INVERSE",
+      "rule": "flip_direction",
+      "asset_class_filter": "EQUITY",
+      "historical_n": 11,
+      "historical_wr_pct": 45.5,
+      "historical_pnl_pct": -4.32,
+      "confidence": "LOW",
+      "note": "Genuinely losing but n=11 is too small to justify real-money inverse. Paper-track only."
+    },
+    {
+      "source_strategy": "macd-hidden-div-scout",
+      "mutation_name": "macd_hidden_div_INVERSE",
+      "rule": "flip_direction",
+      "asset_class_filter": "EQUITY",
+      "historical_n": 4,
+      "historical_wr_pct": 25.0,
+      "historical_pnl_pct": -8.22,
+      "confidence": "VERY_LOW",
+      "note": "Genuinely losing but n=4 is near-useless for inference. Paper-track only."
+    }
+  ],
+  "risk_guardrails": {
+    "position_size_pct_hint": 0.5,
+    "max_inverse_positions_simultaneous": 2,
+    "require_paper_confirmation": true,
+    "exclude_from_real_money_until": "n_30_per_strategy_reached AND wilson_95_ci_lower_bound > 0.50",
+    "equity_short_notes": "Real-money inverse-equity shorts require: borrow availability check, hard-to-borrow rate assessment, asymmetric upside loss acknowledgment"
+  }
+}

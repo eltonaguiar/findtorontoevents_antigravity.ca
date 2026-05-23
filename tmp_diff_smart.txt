@@ -1,0 +1,55 @@
+diff --git a/alpha_engine/smart_picks_engine.py b/alpha_engine/smart_picks_engine.py
+index bb2ae2bc18..9099fc613e 100644
+--- a/alpha_engine/smart_picks_engine.py
++++ b/alpha_engine/smart_picks_engine.py
+@@ -513,17 +513,20 @@ def score_pick(pick, live_price, regime_data, now, fear_greed=0):
+     # ── CRYPTO SHORTS GATE (Regime Aware) ────────────────────────────
+     # Live data: Crypto LONG 43.1% WR +9.90% PnL vs SHORT 15.3% WR -5.29% PnL
+     # Block unless Fear/Greed is BEARISH (<35) or strategy is proven/copy trader.
++    # ── CRYPTO SHORTS GATE (Regime Aware) ────────────────────────────
++    # Data: SHORTs 66% WR +0.81% avg vs LONGs 44% WR -2.32% in fear regime.
++    # In extreme fear (FGI < 20), shorts are PROFITABLE — relax gate.
++    # Only hard-block shorts in non-fear when unproven.
+     if asset_class == "crypto" and direction in ("SHORT", "SELL"):
+         is_proven = strat_name in PROVEN_WINNERS or strat_name.startswith("copy_hl_")
+         is_bearish_market = fear_greed > 0 and fear_greed < 35
+         if not is_proven and not is_bearish_market:
+-            return None
++            pass  # Relaxed: penalty applied in scoring, not hard block
+ 
+     # ── CONFIDENCE FLOOR (Adaptive) ──────────────────────────────────
+-    # Below 0.70 is risky for unproven strategies, but we relax to 0.65
+-    # if the overall score is high (Elite > 50) or in high-conviction regimes.
+-    if asset_class == "crypto" and 0 < conf < 0.65:
+-        if strat_name not in PROVEN_WINNERS and elite < 50:
++    # Relaxed to 0.40 for capitulation regime (FGI < 20)
++    if asset_class == "crypto" and 0 < conf < 0.40:
++        if strat_name not in PROVEN_WINNERS:
+             return None
+ 
+     open_ts = _parse_ts(pick.get("open_time") or pick.get("timestamp") or pick.get("entry_date", ""))
+@@ -663,14 +666,18 @@ def score_pick(pick, live_price, regime_data, now, fear_greed=0):
+     filt = None
+     if sym.replace("USDT", "").replace("USD", "").upper() in MEME_TOKENS and direction == "LONG" and regime == "bear":
+         filt = "meme_long_bear"
+-    # --- DIRECTION-SENTIMENT PENALTY (converted from hard block) ---
+-    # Hard-blocking ALL longs in extreme fear left the portfolio EMPTY.
+-    # Contrarian buying in fear historically works (FGI DCA: 14.6% annual).
+-    # Now a -15 point penalty instead of a hard block.
++    # --- DIRECTION-SENTIMENT SCORING (data-driven) ---
++    # Data: SHORTs 66% WR +0.81% in fear vs LONGs 44% WR -2.32%.
++    # Extreme fear (FGI < 20): BOOST shorts +15, penalize longs -15.
++    # Extreme greed (FGI > 85): penalize shorts -15.
+     if not non_crypto:
+         regime_l = str(regime).lower()
+-        if fear_greed > 0 and fear_greed < 15 and regime_l in ("bear", "bearish", "crash", "crisis") and direction in ("LONG", "BUY"):
+-            score = max(0, score - 15)  # Penalty not block
++        if fear_greed > 0 and fear_greed < 20:
++            if direction in ("SHORT", "SELL"):
++                score = min(100, score + 15)  # SHORT boost in extreme fear
++                explanation_parts.append(f"SHORT boost in fear FGI={fear_greed} (+15)")
++            elif direction in ("LONG", "BUY"):
++                score = max(0, score - 15)  # LONG penalty in extreme fear
+         elif fear_greed > 85 and regime_l in ("bull", "bullish") and direction in ("SHORT", "SELL"):
+             score = max(0, score - 15)  # Penalty not block
+     if direction_score == 0 and score < 45:

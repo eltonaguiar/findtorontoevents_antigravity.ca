@@ -1,0 +1,54 @@
+name: Backfill Missing Audit Trail Sources
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'   # Every 2 hours
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run backfill for missing sources
+        continue-on-error: true
+        env:
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+        run: |
+          echo "=== Backfilling 5 missing audit trail sources ==="
+          python -m audit_trail.backfill_missing_sources
+          echo "=== Backfill complete ==="
+
+      - name: Commit any updated tracking files
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Audit Trail Bot"
+          git config user.email "audit-bot@findtorontoevents.ca"
+          git add audit_trail/ data/ 2>/dev/null || true
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          git diff --staged --quiet || git commit -m "Audit trail backfill @ ${TIMESTAMP} [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

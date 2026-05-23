@@ -1,0 +1,67 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "TSMOM_LO_INVVOL",
+      "thesis": "12‑month price momentum combined with inverse‑volatility scaling captures the same edge observed in the academic backtest while avoiding large drawdowns.",
+      "signal_construction": "Signal = 12‑month cumulative return; Vol = annualized std of daily returns over past 60 days; Weight = 1/Vol; Position = max(Signal,0) * Weight; Rebalance monthly, fully liquidate if Signal ≤ 0.",
+      "universe": ["CT=F","GC=F","SI=F","HG=F","ZC=F","ZW=F","ZS=F","NG=F","ES=F","NQ=F","ZN=F","ZB=F","6E=F","6J=F"],
+      "expected_pf": 2.12,
+      "expected_sharpe": 0.88,
+      "expected_mdd_pct": 6.2,
+      "differentiation_from_existing": "Existing live emitters use flat equal‑weight without volatility scaling, leading to high drawdowns; this variant adds inverse‑vol weighting and clips negatives, matching the backtest’s long‑only edge.",
+      "implementation_hours": 38,
+      "wire_target": "alpha_engine/futures/tsmom_longonly_invvol.py",
+      "data_source": "yfinance (price), internal daily returns cache",
+      "fail_mode": "Regime shift where 12‑month momentum loses predictive power (e.g., prolonged sideways markets) causing the inverse‑vol scaling to amplify noise."
+    },
+    {
+      "name": "TSMOM_LS_INVVOL",
+      "thesis": "Allowing both long and short exposure to 12‑month momentum with inverse‑vol scaling doubles the usable signal set and reproduces the Tier‑2 backtest performance.",
+      "signal_construction": "Signal = 12‑month cumulative return; Vol = annualized std of daily returns over past 60 days; Weight = 1/Vol; Position = Signal * Weight (sign retained); Rebalance monthly, cap gross exposure at 100% of capital.",
+      "universe": ["CT=F","GC=F","SI=F","HG=F","ZC=F","ZW=F","ZS=F","NG=F","ES=F","NQ=F","ZN=F","ZB=F","6E=F","6J=F"],
+      "expected_pf": 1.78,
+      "expected_sharpe": 0.66,
+      "expected_mdd_pct": 13.8,
+      "differentiation_from_existing": "Current dead emitters are long‑only and ignore volatility; this variant adds short legs and inverse‑vol weighting, directly mirroring the Tier‑2 backtest.",
+      "implementation_hours": 32,
+      "wire_target": "alpha_engine/futures/tsmom_longshort_invvol.py",
+      "data_source": "yfinance (price)",
+      "fail_mode": "Short‑side slippage due to futures contract roll mismatches, especially in commodity curves, which can erode the expected profit factor."
+    },
+    {
+      "name": "COT_MOM_BIAS",
+      "thesis": "Combining trader positioning data (COT) with price momentum filters out false signals and improves risk‑adjusted returns.",
+      "signal_construction": "Momentum = 12‑month cumulative return; COT_bias = month‑over‑month change in net long % from CFTC COT (commercial + non‑commercial); CompositeScore = Momentum * sign(COT_bias); Position = CompositeScore * (1/Vol) where Vol is 60‑day realized volatility; Clip negatives to zero for long‑only version, retain sign for long‑short version; Rebalance monthly.",
+      "universe": ["CT=F","GC=F","SI=F","HG=F","ZC=F","ZW=F","ZS=F","NG=F","ES=F","NQ=F","ZN=F","ZB=F","6E=F","6J=F"],
+      "expected_pf": 1.86,
+      "expected_sharpe": 0.73,
+      "expected_mdd_pct": 9.4,
+      "differentiation_from_existing": "Live emitters never use COT data; this adds an independent macro‑sentiment filter that reduces drawdowns and boosts win‑rate.",
+      "implementation_hours": 27,
+      "wire_target": "alpha_engine/futures/cot_momentum_bias.py",
+      "data_source": "yfinance (price) + CFTC COT via tools/cot_fetcher_socrata.py",
+      "fail_mode": "COT reports are lagged (monthly) and may miss rapid sentiment shifts, leading to stale bias signals during fast market moves."
+    },
+    {
+      "name": "MACRO_SEASONAL_MOM",
+      "thesis": "Seasonal macro variables (e.g., US Industrial Production YoY) modulate exposure to momentum, preserving upside while curbing downside during weak economic periods.",
+      "signal_construction": "Momentum = 12‑month cumulative return; Macro = latest YoY change in INDPRO (FRED); ExposureFactor = 1 if Macro > 0 else 0.5; Position = Momentum * ExposureFactor * (1/Vol) with Vol = 60‑day realized volatility; Clip negatives to zero (long‑only); Rebalance monthly.",
+      "universe": ["CT=F","GC=F","SI=F","HG=F","ZC=F","ZW=F","ZS=F","NG=F","ES=F","NQ=F","ZN=F","ZB=F","6E=F","6J=F"],
+      "expected_pf": 2.05,
+      "expected_sharpe": 0.81,
+      "expected_mdd_pct": 7.1,
+      "differentiation_from_existing": "Current dead emitters lack any macro conditioning; this strategy introduces a simple economic filter that aligns with the observed low‑drawdown long‑only edge.",
+      "implementation_hours": 22,
+      "wire_target": "alpha_engine/futures/macro_seasonal_mom.py",
+      "data_source": "yfinance (price) + FRED (INDPRO)",
+      "fail_mode": "Macro indicator may lag the market and cause under‑allocation during sudden recoveries, reducing upside capture."
+    }
+  ],
+  "killers": [
+    "futures_dead_emitter_v0 (win‑rate 5.9%, PF 0.00) – redundant flat‑weight momentum that provides no edge"
+  ],
+  "tier1_attainability_pct": 68,
+  "single_most_important_finding": "Live emitters ignore volatility scaling and external sentiment filters, which are the key drivers behind the low‑drawdown, high‑Sharpe edge seen in the academic backtest."
+}
+```

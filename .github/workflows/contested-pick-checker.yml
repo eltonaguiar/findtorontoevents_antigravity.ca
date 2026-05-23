@@ -1,0 +1,44 @@
+name: Contested Pick Checker (Claude vs Antigravity)
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # Every hour on the hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-contested:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run contested pick checker
+        run: |
+          echo "Checking contested picks (Claude vs Antigravity)..."
+          python cross_aggregation/contested_pick_checker.py
+
+      - name: Commit updated tracker
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cross_aggregation/data/contested_picks_tracker.json docs/CHATWITHIT.md
+          git diff --cached --quiet || git commit -m "Contested pick hourly check $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

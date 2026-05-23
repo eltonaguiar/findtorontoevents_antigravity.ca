@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Real Money — Tools, Gates, and Readiness | /audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Pre-real-money readiness hub for findtorontoevents.ca/audit. Lists every tool, gate, viewer, and audit ledger that must clear before any live capital is sized. NFA — research surface only.">
+<style>
+  :root {
+    --bg: #0b1020; --card: #111a33; --border: #1f2a4a;
+    --text: #e7ecff; --muted: #94a3b8;
+    --green: #22c55e; --red: #ef4444; --amber: #facc15; --cyan: #06b6d4; --violet: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 0; }
+  header { padding: 20px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #111a33, #0b1020); position: sticky; top: 0; z-index: 10; }
+  header h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; color: #fbbf24; }
+  header .sub { color: var(--muted); font-size: 12px; max-width: 900px; }
+  nav { padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--card); display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+  nav a { color: var(--cyan); text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+  main { padding: 16px 20px; max-width: 1400px; margin: 0 auto; }
+  section { margin: 22px 0; }
+  section h2 { font-size: 15px; margin: 0 0 12px; color: var(--text); border-left: 3px solid #fbbf24; padding-left: 10px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .card h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--violet); }
+  .card .desc { color: var(--text); font-size: 12px; line-height: 1.55; }
+  .card .meta { color: var(--muted); font-size: 11px; margin-top: auto; padding-top: 6px; border-top: 1px dashed rgba(148,163,184,0.2); }
+  .card a { color: var(--cyan); text-decoration: none; font-weight: 500; }
+  .card a:hover { text-decoration: underline; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; vertical-align: middle; }
+  .badge.live   { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge.shadow { background: rgba(250,204,21,0.15); color: var(--amber); }
+  .badge.research { background: rgba(167,139,250,0.15); color: var(--violet); }
+  .badge.fix    { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  .nfa { background: linear-gradient(90deg, rgba(239,68,68,0.10), rgba(250,204,21,0.10)); border: 1px solid rgba(250,204,21,0.4); padding: 10px 14px; border-radius: 6px; color: var(--amber); font-size: 12px; margin: 6px 0 16px; }
+  ol.gate { margin: 0; padding: 0 0 0 18px; }
+  ol.gate li { margin: 6px 0; line-height: 1.55; }
+  ol.gate li code { background: rgba(167,139,250,0.10); color: #c4b5fd; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .pill.ok    { background: rgba(34,197,94,0.15); color: var(--green); }
+  .pill.warn  { background: rgba(250,204,21,0.15); color: var(--amber); }
+  .pill.block { background: rgba(239,68,68,0.15); color: var(--red); }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#x1F4B0; Real Money — Tools, Gates, and Readiness</h1>
+  <div class="sub">
+    Every tool, audit, viewer, and gate that must clear before any live capital is sized.
+    Aggregates DSR audits + paper-pilot trackers + ghost-row quarantines + WON-vs-PnL guards
+    + COT 7-step testing plan + top-N rank backtests into one navigable hub.
+    <strong style="color:#fbbf24">NFA — research surface only.</strong>
+  </div>
+</header>
+<nav>
+  <a href="/audit/">&larr; /audit dashboard</a>
+  <a href="#readiness-gate">Readiness gate</a>
+  <a href="#tools">Tools</a>
+  <a href="#audits">Audits &amp; reports</a>
+  <a href="#blocks">Active blocks</a>
+  <a href="#queued">Queued P0/P1</a>
+</nav>
+<main>
+
+<div class="nfa">
+  &#x26A0; <strong>NFA — Not Financial Advice.</strong> No live capital sizing without explicit user greenlight AND all <a href="#readiness-gate" style="color:#fbbf24">readiness gates</a> clear AND <a href="/audit/anti_overfit.html" style="color:#fbbf24">DSR&ge;0.95</a> on the candidate strategy/symbol. Paper-pilot graduation gate (<a href="/audit/paper_pilot.html" style="color:#fbbf24">cot_paper_pilot_status.json</a>) is the canonical SHADOW &rarr; LIVE_ELIGIBLE bar.
+</div>
+
+<section id="readiness-gate">
+  <h2>10-step readiness gate (Lopez de Prado AFML + Codex governance)</h2>
+  <ol class="gate">
+    <li><strong>Pre-register</strong> &mdash; entry signal + exit rule + sizing committed in writing before any data look</li>
+    <li><strong>In-sample backtest</strong> &mdash; PF&ge;1.5, WR&ge;55, MDD&le;10 on the candidate</li>
+    <li><strong>Walk-forward analysis</strong> &mdash; OOS WR within &plusmn;10pp of in-sample, WFE&gt;60%</li>
+    <li><strong>CPCV (combinatorial purged cross-validation)</strong> &mdash; mean OOS WR&ge;75% across 10 folds, worst fold&ge;60%</li>
+    <li><strong>DSR (deflated Sharpe ratio)</strong> &mdash; <code>tools/anti_overfit_audit_sidecar.py</code> &rarr; <code>DSR&ge;0.95</code> at conservative n_trials</li>
+    <li><strong>Break-tests</strong> &mdash; pre/post-2020 regimes, low-vol vs high-vol regimes, single asset removal</li>
+    <li><strong>Sensitivity sweep</strong> &mdash; parameter robustness within &plusmn;20% of optimal</li>
+    <li><strong>Transaction-cost overlay</strong> &mdash; net per-trade economics survive realistic slippage</li>
+    <li><strong>3-6 month paper-pilot</strong> &mdash; <a href="/audit/paper_pilot.html">paper_pilot.html</a> tracker, WR within &plusmn;10pp of backtest</li>
+    <li><strong>Graduated sizing</strong> &mdash; 5% &rarr; 25% &rarr; 100% over 3+ months, halted on any decay alert</li>
+  </ol>
+  <div style="margin-top:10px;color:var(--muted);font-size:12px">
+    Canonical reference: <a href="/updates/2026-05-11-money-maker-master-plan.html#db-health-remediation">SUPREME EDGE master plan</a> + <code>reports/db_evidence_graded_final_2026-05-08.md</code>.
+    Codex state machine: <code>REHAB &rarr; OOS_READY &rarr; SHADOW &rarr; LIVE_ELIGIBLE</code>. Single-class deviation (cot_positioning + CT=F) accepted by user 2026-05-12.
+  </div>
+</section>
+
+<section id="tools">
+  <h2>Tools shipped this session (2026-05-12)</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>COT Paper Pilot Tracker <span class="badge shadow">SHADOW</span></h3>
+      <div class="desc">SHADOW-state ledger for the DSR=1.0000 verified <code>cot_positioning</code> + <code>CT=F</code> edge (n=100, WR 90%, Sharpe +1.377). 1-contract paper sizing, 4-week graduation gate, per-trade P&amp;L vs expected $3.40-$13.40 band.</div>
+      <div class="meta">
+        <a href="/audit/paper_pilot.html">View paper_pilot.html &rarr;</a> &middot;
+        <code>alpha_engine/strategies/cot_paper_pilot.py</code> &middot;
+        cron: hourly via audit-dashboard.yml
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Anti-Overfit Audit (DSR) <span class="badge research">RESEARCH</span></h3>
+      <div class="desc">Deflated Sharpe Ratio per strategy via Lopez de Prado AFML eq 14.5. Surfaces strategies passing DSR&ge;0.95 ("publishable confidence" per Bailey-Lopez de Prado) and overfit-likely rejections. Hourly cron.</div>
+      <div class="meta">
+        <a href="/audit/anti_overfit.html">View anti_overfit.html &rarr;</a> &middot;
+        <code>tools/anti_overfit_audit_sidecar.py</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Research Sidecars (Agent C) <span class="badge research">RESEARCH</span></h3>
+      <div class="desc">4 academically-backed sidecars: commodity carry+momo (Miffre 2010), sector dual-momentum (Antonacci GEM), UST term-structure momentum, overnight-intraday reversal. Hourly cron.</div>
+      <div class="meta">
+        <a href="/audit/research_sidecars.html">View research_sidecars.html &rarr;</a> &middot;
+        <code>tools/research/*.py</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Top-N Rank Backtest <span class="badge fix">NEW</span></h3>
+      <div class="desc">Hindsight replay: "if I bought the top-10 EQUITY picks ranked by score T days ago, would I have been profitable?" Aggregates today / yesterday / day_before / 7d / 30d / 90d windows. Per-day detail + cumulative P&amp;L.</div>
+      <div class="meta">
+        <code>tools/top_n_rank_backtest.py</code> &middot;
+        <code>audit_dashboard/data/top_n_rank_backtest.json</code> &middot;
+        cron: hourly
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>DB Health Panel <span class="badge fix">REFRESHED</span></h3>
+      <div class="desc">6 truth-layer metrics: PnL Integrity (sampled), Ghost Rows (constant pnl_pct cohorts), Forward Validator Freshness, Phantom EXPIRED rows, Raw-Pick Outcome Coverage, WON-vs-PnL contradiction. Per-metric "Action required" remediation banner now reflects shipped fixes.</div>
+      <div class="meta">
+        <code>tools/db_health_check.py</code> &middot;
+        <a href="/audit/#enh-db-health">View on /audit &rarr;</a> &middot;
+        <a href="/updates/2026-05-11-money-maker-master-plan.html#db-health-remediation">remediation status &rarr;</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>MONEY READY filter <span class="badge fix">SHIPPED</span></h3>
+      <div class="desc">Strictest preset on the main /audit picks grid: only DSR-verified Tier-1 sleeves visible. Confidence &ge;70% (normalized), score &ge; per-class floor, no decay-alert, asset_class not blocked. Each surviving pick gets a justification tooltip.</div>
+      <div class="meta">
+        <code>audit_dashboard/money_ready_filter.js</code> &middot;
+        Toggle via <code>btn-money-ready</code> on /audit
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Ghost-Row Symbol-Triple Block <span class="badge fix">SHIPPED</span></h3>
+      <div class="desc">New <code>BLOCKED_ASSET_STRATEGY_SYMBOL_TRIPLES</code> axis in <code>quality_gates.py</code> with 5 documented cohorts (quan_engine MATIC, KIMI_signal_tracker ETH/BTC, irb_hoffman ADA, funding_rate_carry ROBO). Enforced at <code>passes_active_gate</code> AND <code>_is_historical_blocked_pick</code>.</div>
+      <div class="meta">
+        commit <code>597819d79c7</code> &middot; expected ~220k+ rows excluded from CRYPTO aggregates
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>WON-vs-PnL Sign-Coherence Guard <span class="badge fix">SHIPPED</span></h3>
+      <div class="desc">When source dict supplies (exit_reason='TP', pnl_pct&lt;0) or (SL, pnl&gt;0), writer trusts pnl sign and logs <code>won_pnl_contradiction:</code> WARNING. Applied to both atomic writers (resolver + mysql_close_trade).</div>
+      <div class="meta">
+        commit <code>22b677c1167</code> &middot;
+        <code>alpha_engine/outcome_resolver.py:1670</code>, <code>audit_trail/mysql_client.py:628</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Commodity Tooltips <span class="badge fix">NEW</span></h3>
+      <div class="desc">Friendly-name + contract-spec hover tooltips for 40+ yfinance <code>=F</code> tickers: CT=F &rarr; Cotton Futures, ES=F &rarr; S&amp;P E-mini, ZN=F &rarr; 10Y T-Note, GC=F &rarr; Gold, etc. Auto-attached on /audit load.</div>
+      <div class="meta">
+        <code>audit_dashboard/dashboard_enhancements.js</code> &middot;
+        function <code>attachCommodityTooltips()</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Cotton Sizing Brief <span class="badge research">RESEARCH</span></h3>
+      <div class="desc">Per-trade economics for <code>cot_positioning</code> + <code>CT=F</code> at 1-contract notional. Margin tiers, expected net per-trade $3.40-$13.40, risk-of-ruin math at $5k/$10k/$25k starter, micro-contract status (none — full-size only).</div>
+      <div class="meta">
+        <code>reports/cotton_cot_real_money_sizing_2026-05-12.md</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>7-Step Testing Plan (COT) <span class="badge research">RESEARCH</span></h3>
+      <div class="desc">Pre-real-money validation pipeline for cot_positioning + CT=F: reproducibility, data-integrity, walk-forward CPCV, conservative DSR, sample-window robustness, 4-week paper-pilot, risk-of-ruin Monte Carlo. Disqualifying conditions enumerated.</div>
+      <div class="meta">
+        <code>reports/cot_paper_pilot_testing_plan_2026-05-12.md</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Asset-Class Expansion Report <span class="badge research">RESEARCH</span></h3>
+      <div class="desc">Scope for filling BOND (n=18), ETF (n=87), and FUTURES (5.9% WR). Key finding: symbol universes are adequate; 206 baby_strategies/ files exist with ZERO wired to production; BOND scanner exists but not in production cron.</div>
+      <div class="meta">
+        <code>reports/asset_class_expansion_2026-05-12.md</code>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="audits">
+  <h2>Audits &amp; reference reports</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>DB Evidence-Graded Final (2026-05-08)</h3>
+      <div class="desc">4-engine swarm evidence review (deepseek + kilo + claude + gemini) of 20 DB findings. Per-finding evidence verdicts, action priorities, retraction confirmations.</div>
+      <div class="meta"><code>reports/db_evidence_graded_final_2026-05-08.md</code></div>
+    </div>
+    <div class="card">
+      <h3>SUPREME EDGE Master Plan</h3>
+      <div class="desc">Authoritative 5-agent synthesis (Claude Code + Cursor + Copilot + Kimi + Codex) + DB Health remediation status table. The canonical real-money-readiness document.</div>
+      <div class="meta"><a href="/updates/2026-05-11-money-maker-master-plan.html">updates/2026-05-11-money-maker-master-plan.html</a></div>
+    </div>
+    <div class="card">
+      <h3>Performance Charter v1.0</h3>
+      <div class="desc">Canonical KPI/risk-cap/tier-threshold doc (2026-04-28). Tier-2 minimum (PF&gt;1.5/WR&gt;50/MDD&lt;20) for sizing; Tier-1 Renaissance (PF&gt;2/WR&gt;55/MDD&lt;10) is the long-run target.</div>
+      <div class="meta"><code>docs/PERFORMANCE_CHARTER.md</code></div>
+    </div>
+    <div class="card">
+      <h3>Session Summary 2026-05-12</h3>
+      <div class="desc">Finished tasks + remaining P0/P1/P2 + future suggestions + verbatim user-prompt chatlog excerpts.</div>
+      <div class="meta"><code>reports/session_summary_2026-05-12.md</code></div>
+    </div>
+  </div>
+</section>
+
+<section id="blocks">
+  <h2>Active hard-blocks (won't emit / won't aggregate)</h2>
+  <div class="card" style="padding:14px 18px">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+      <span class="pill block">FOREX class</span>
+      <span class="pill block">FUTURES class</span>
+      <span class="pill block">MEMECOIN class</span>
+    </div>
+    <div class="desc">
+      <strong>BLOCKED_ASSET_STRATEGY_PAIRS</strong> (<code>audit_trail/quality_gates.py:1534</code>): 30+ entries — goldmine 1x/2x/3x/4x/6x consensus across CRYPTO+EQUITY, kimi_signal_tracking, crypto_soc_*, forex_carry_momentum, myfxbook_retail_contrarian, MeanReversionBB, futures_momentum, full MEMECOIN class quarantine (29 entries).
+      <br><br>
+      <strong>BLOCKED_DIRECTION_TRIPLES</strong> (<code>quality_gates.py:1687</code>): quan_engine_swing LONG, ml_crypto_predictor SHORT, crypto_keltner_compression_expansion LONG.
+      <br><br>
+      <strong>BLOCKED_ASSET_STRATEGY_SYMBOL_TRIPLES</strong> (<code>quality_gates.py:1687</code> precedes, NEW 2026-05-12): quan_engine MATICUSDT, KIMI_signal_tracker ETHUSDT/BTCUSDT, irb_hoffman ADAUSDT, funding_rate_carry ROBOUSDT.
+      <br><br>
+      <strong>PERMANENTLY_KILLED_STRATEGIES</strong>: yahoo_analyst_consensus, cta_tsmom_blend, binance_smart_money, hl_funding_fade, winner_pattern_precursor, + more.
+    </div>
+  </div>
+</section>
+
+<section id="queued">
+  <h2>Queued action items</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>P0 &mdash; sync_active_mysql_picks_to_json <span class="badge research">QUEUED</span></h3>
+      <div class="desc">The missing upstream writer that should read ACTIVE <code>at_raw_picks</code>, detect TP/SL/time-exit per asset class, and feed new entries into <code>closed_picks.json</code>. Root cause of 0.09% raw-pick outcome coverage. Investigator-scoped 2026-05-12 (recommended: inline call from <code>forward_validator.validate_picks()</code>, new module at <code>alpha_engine/active_picks_sync.py</code>).</div>
+      <div class="meta">Estimate 2-3h with tests &middot; reuses existing failover price fetchers</div>
+    </div>
+    <div class="card">
+      <h3>P0 &mdash; WON-vs-PnL backfill SQL <span class="badge research">DRAFT</span></h3>
+      <div class="desc">Sign-coherence guard stops NEW contradiction rows. Existing contradicted rows in <code>trading_picks</code> still poison aggregates. Needs an UPDATE pass that re-computes status from pnl_pct for any (status='WON', pnl_pct&lt;0) or (status='LOST', pnl_pct&gt;0) row.</div>
+      <div class="meta">Requires user sign-off for DB write</div>
+    </div>
+    <div class="card">
+      <h3>P1 &mdash; meta_strategy CRYPTO blanket block <span class="badge research">QUEUED</span></h3>
+      <div class="desc">1.6M template rows across ~140 symbol/dir pairs in <code>bt_backtest_trades</code>. Defer until <code>db_health.json::ghost_rows.top_cohorts</code> repopulates after the CI commit-list fix lands (next 1-2 cron cycles), then decide whether blanket-block or symbol-triple enumeration.</div>
+      <div class="meta">Linked: commit <code>d317560ac9c</code> commit-list fix</div>
+    </div>
+    <div class="card">
+      <h3>P1 &mdash; BOND scanner production wiring <span class="badge research">QUEUED</span></h3>
+      <div class="desc"><code>alpha_engine/bond_scanner.py</code> exists with 3 strategies (yield_momentum, duration_rotation, mean_reversion); not visibly wired into production cron. Wiring should lift BOND n from 18 &rarr; 50+ within 2 weeks.</div>
+      <div class="meta">Universe ready (14 symbols at config.py:721)</div>
+    </div>
+    <div class="card">
+      <h3>P1 &mdash; baby-strats batch backtest <span class="badge research">QUEUED</span></h3>
+      <div class="desc">206 files in <code>baby_strategies/</code>, ZERO wired to production. Surface a batch DSR runner (<code>anti_overfit_audit_sidecar.py</code> over baby_strategies/*) to find DSR-real candidates.</div>
+      <div class="meta">Massive untapped pipeline</div>
+    </div>
+    <div class="card">
+      <h3>P2 &mdash; COT 7-step testing plan execution <span class="badge shadow">PASSIVE</span></h3>
+      <div class="desc">Steps 1-5 (~6h active work) + Step 6 (4-week passive paper-pilot, running) + Step 7 (risk-of-ruin Monte Carlo). Gates the only currently-DSR-verified single-class deviation candidate (cot_positioning + CT=F).</div>
+      <div class="meta"><code>reports/cot_paper_pilot_testing_plan_2026-05-12.md</code></div>
+    </div>
+  </div>
+</section>
+
+<footer style="padding:24px 20px;color:var(--muted);font-size:11px;border-top:1px solid var(--border);margin-top:30px">
+  <strong style="color:#fbbf24">NFA &mdash; Not Financial Advice.</strong> This page enumerates research tools and pre-real-money readiness gates. No live capital should be sized from anything listed here without (1) explicit user greenlight, (2) all 10 readiness-gate steps clear on the specific strategy/symbol, (3) DSR&ge;0.95 verified, (4) paper-pilot graduation gate cleared on <a href="/audit/paper_pilot.html" style="color:#06b6d4">paper_pilot.html</a>.
+  <br><br>
+  Generated 2026-05-12 by Claude Opus 4.7 (caveman mode). Linked from <a href="/audit/" style="color:#06b6d4">/audit</a> nav pill. Source: <code>audit_dashboard/real_money.html</code> (DO NOT edit <code>audit_dashboard/index.html</code> — auto-generated).
+</footer>
+
+</main>
+</body>
+</html>

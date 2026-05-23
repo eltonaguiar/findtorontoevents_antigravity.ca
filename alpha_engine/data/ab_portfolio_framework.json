@@ -1,0 +1,258 @@
+{
+  "framework": "A/B Portfolio Testing Framework for Non-Crypto Investments",
+  "version": "1.0.0",
+  "created": "2026-03-23",
+  "test_duration_months": 12,
+  "min_trades_statistical_significance": 100,
+  "target_trades_robust": 300,
+  "confidence_level": 0.95,
+
+  "portfolio_a": {
+    "name": "Conservative Growth",
+    "target_annual_return_pct": [8, 12],
+    "max_drawdown_pct": 15,
+    "min_sharpe": 1.0,
+    "rebalancing": "quarterly_with_5pct_threshold",
+    "allocation_policy": {
+      "stocks_pct": 60,
+      "bonds_fixed_income_pct": 30,
+      "alternatives_pct": 10
+    },
+    "holdings": [
+      {"ticker": "JNJ",  "weight_pct": 8,  "category": "dividend_aristocrat", "sector": "healthcare"},
+      {"ticker": "PG",   "weight_pct": 8,  "category": "dividend_aristocrat", "sector": "consumer_staples"},
+      {"ticker": "KO",   "weight_pct": 7,  "category": "dividend_aristocrat", "sector": "consumer_staples"},
+      {"ticker": "LIN",  "weight_pct": 7,  "category": "dividend_aristocrat", "sector": "materials"},
+      {"ticker": "MCD",  "weight_pct": 6,  "category": "dividend_aristocrat", "sector": "consumer_discretionary"},
+      {"ticker": "ABT",  "weight_pct": 6,  "category": "dividend_aristocrat", "sector": "healthcare"},
+      {"ticker": "ITW",  "weight_pct": 6,  "category": "dividend_aristocrat", "sector": "industrials"},
+      {"ticker": "NOBL", "weight_pct": 6,  "category": "etf_dividend_aristocrats", "sector": "broad"},
+      {"ticker": "SCHD", "weight_pct": 6,  "category": "etf_dividend_growth", "sector": "broad"},
+      {"ticker": "AGG",  "weight_pct": 12, "category": "bond_etf", "sector": "aggregate_bond"},
+      {"ticker": "BND",  "weight_pct": 8,  "category": "bond_etf", "sector": "total_bond"},
+      {"ticker": "TIP",  "weight_pct": 5,  "category": "bond_etf", "sector": "tips"},
+      {"ticker": "IEFA", "weight_pct": 5,  "category": "intl_equity_etf", "sector": "intl_developed"},
+      {"ticker": "GLD",  "weight_pct": 5,  "category": "commodity_etf", "sector": "gold"},
+      {"ticker": "VNQ",  "weight_pct": 5,  "category": "reit_etf", "sector": "real_estate"}
+    ],
+    "entry_criteria": {
+      "rsi_14_below": 45,
+      "price_above_sma_200": true,
+      "price_above_sma_50": true,
+      "adx_above": 20,
+      "volume_above_20d_avg": true,
+      "vwap_confirmation": "price_above_vwap_for_longs"
+    },
+    "exit_criteria": {
+      "trailing_stop_pct": 8,
+      "hard_stop_pct": 12,
+      "profit_target_pct": 15,
+      "time_stop_days": 90,
+      "rsi_14_above_exit": 75
+    },
+    "risk_management": {
+      "max_single_position_pct": 10,
+      "max_sector_concentration_pct": 25,
+      "max_correlation_between_holdings": 0.7,
+      "position_sizing": "equal_risk_contribution",
+      "max_portfolio_beta": 0.85,
+      "cash_buffer_pct": 2
+    }
+  },
+
+  "portfolio_b": {
+    "name": "Aggressive Growth",
+    "target_annual_return_pct": [15, 25],
+    "max_drawdown_pct": 30,
+    "min_sharpe": 0.8,
+    "rebalancing": "monthly_with_3pct_threshold",
+    "allocation_policy": {
+      "stocks_growth_momentum_pct": 80,
+      "sector_etfs_pct": 15,
+      "commodities_pct": 5
+    },
+    "holdings": [
+      {"ticker": "NVDA", "weight_pct": 10, "category": "growth_mega", "sector": "technology"},
+      {"ticker": "MSFT", "weight_pct": 9,  "category": "growth_mega", "sector": "technology"},
+      {"ticker": "AMZN", "weight_pct": 8,  "category": "growth_mega", "sector": "consumer_discretionary"},
+      {"ticker": "META", "weight_pct": 8,  "category": "growth_mega", "sector": "technology"},
+      {"ticker": "AVGO", "weight_pct": 7,  "category": "growth_semi", "sector": "technology"},
+      {"ticker": "MTUM", "weight_pct": 8,  "category": "etf_momentum", "sector": "broad_momentum"},
+      {"ticker": "QQQ",  "weight_pct": 8,  "category": "etf_growth", "sector": "nasdaq100"},
+      {"ticker": "VUG",  "weight_pct": 7,  "category": "etf_growth", "sector": "large_growth"},
+      {"ticker": "SOXX", "weight_pct": 5,  "category": "sector_etf", "sector": "semiconductors"},
+      {"ticker": "XLK",  "weight_pct": 5,  "category": "sector_etf", "sector": "technology"},
+      {"ticker": "XLV",  "weight_pct": 5,  "category": "sector_etf", "sector": "healthcare"},
+      {"ticker": "GLD",  "weight_pct": 5,  "category": "commodity_etf", "sector": "gold"},
+      {"ticker": "SLV",  "weight_pct": 3,  "category": "commodity_etf", "sector": "silver"},
+      {"ticker": "GDXJ", "weight_pct": 2,  "category": "commodity_etf", "sector": "gold_miners"},
+      {"ticker": "VEU",  "weight_pct": 5,  "category": "intl_equity_etf", "sector": "intl_all_world"},
+      {"ticker": "IBIT", "weight_pct": 5,  "category": "crypto_etf", "sector": "bitcoin_spot"}
+    ],
+    "entry_criteria": {
+      "rsi_14_range": [30, 60],
+      "price_above_ema_21": true,
+      "price_above_sma_50": true,
+      "macd_bullish_crossover": true,
+      "adx_above": 25,
+      "volume_surge_ratio": 1.5,
+      "vwap_confirmation": "price_above_vwap_for_longs",
+      "momentum_12m_skip1m_positive": true
+    },
+    "exit_criteria": {
+      "trailing_stop_pct": 12,
+      "hard_stop_pct": 18,
+      "profit_target_pct": 30,
+      "time_stop_days": 60,
+      "rsi_14_above_exit": 80,
+      "macd_bearish_crossover_exit": true
+    },
+    "risk_management": {
+      "max_single_position_pct": 12,
+      "max_sector_concentration_pct": 40,
+      "max_correlation_between_holdings": 0.8,
+      "position_sizing": "momentum_weighted",
+      "max_portfolio_beta": 1.3,
+      "cash_buffer_pct": 2
+    }
+  },
+
+  "comparison_metrics": {
+    "primary": [
+      {"metric": "sharpe_ratio", "description": "Excess return per unit of total volatility", "formula": "(Rp - Rf) / sigma_p", "benchmark": {"conservative": 1.0, "aggressive": 0.8}},
+      {"metric": "sortino_ratio", "description": "Excess return per unit of downside volatility", "formula": "(Rp - Rf) / sigma_downside", "benchmark": {"conservative": 1.5, "aggressive": 1.0}},
+      {"metric": "calmar_ratio", "description": "Annualized return / max drawdown", "formula": "CAGR / MaxDD", "benchmark": {"conservative": 0.8, "aggressive": 0.5}},
+      {"metric": "max_drawdown_pct", "description": "Largest peak-to-trough decline", "threshold": {"conservative": 15, "aggressive": 30}},
+      {"metric": "win_rate_pct", "description": "Percentage of trades closed in profit", "threshold": {"conservative": 55, "aggressive": 50}}
+    ],
+    "secondary": [
+      {"metric": "information_ratio", "description": "Active return vs tracking error relative to SPY", "formula": "(Rp - Rb) / TE"},
+      {"metric": "treynor_ratio", "description": "Excess return per unit of systematic risk", "formula": "(Rp - Rf) / beta"},
+      {"metric": "omega_ratio", "description": "Probability-weighted ratio of gains vs losses at threshold", "threshold_return": 0},
+      {"metric": "ulcer_index", "description": "Measures depth and duration of drawdowns"},
+      {"metric": "profit_factor", "description": "Gross profits / gross losses"},
+      {"metric": "avg_win_to_avg_loss", "description": "Average winning trade / average losing trade"},
+      {"metric": "monthly_return_std", "description": "Standard deviation of monthly returns"},
+      {"metric": "skewness", "description": "Asymmetry of return distribution (positive preferred)"},
+      {"metric": "kurtosis", "description": "Tail risk - excess kurtosis above normal distribution"}
+    ]
+  },
+
+  "statistical_testing": {
+    "minimum_duration_months": 6,
+    "recommended_duration_months": 12,
+    "optimal_duration_months": 24,
+    "minimum_trades_per_portfolio": 30,
+    "reliable_trades_per_portfolio": 100,
+    "robust_trades_per_portfolio": 300,
+    "sample_size_formula": "n = (Z^2 * p * (1-p)) / E^2",
+    "z_scores": {
+      "90_pct_confidence": 1.645,
+      "95_pct_confidence": 1.96,
+      "99_pct_confidence": 2.576
+    },
+    "hypothesis_test": {
+      "null_hypothesis": "H0: Sharpe_A = Sharpe_B (no difference between portfolios)",
+      "alternative_hypothesis": "H1: Sharpe_A != Sharpe_B (significant difference exists)",
+      "test_method": "Jobson-Korkie test for Sharpe ratio equality (with Memmel correction)",
+      "significance_level": 0.05,
+      "correction_for_multiple_comparisons": "Bonferroni or Holm-Bonferroni"
+    },
+    "robustness_checks": [
+      "Bootstrap confidence intervals (10000 resamples)",
+      "Rolling 3-month window Sharpe comparison",
+      "Regime-conditional analysis (bull vs bear vs sideways)",
+      "Monte Carlo simulation of return paths",
+      "Out-of-sample walk-forward validation"
+    ],
+    "reliability_tiers": [
+      {"trades": "<50",   "time": "<1yr",  "conditions": "single_regime",    "rating": "unreliable"},
+      {"trades": "50-100", "time": "1-2yr", "conditions": "single_regime",    "rating": "limited"},
+      {"trades": "100-200","time": "2-3yr", "conditions": "one_full_cycle",   "rating": "moderate"},
+      {"trades": "200-500","time": "3-5yr", "conditions": "one_full_cycle",   "rating": "good"},
+      {"trades": "500+",  "time": "5yr+",  "conditions": "multiple_cycles",  "rating": "robust"}
+    ]
+  },
+
+  "rebalancing": {
+    "portfolio_a_method": {
+      "primary": "calendar_quarterly",
+      "secondary": "threshold_5pct_drift",
+      "description": "Rebalance every quarter on schedule, but also trigger if any asset class drifts >5% from target. Vanguard research (Dec 2024) shows threshold-based yields 11-18bps/yr higher returns than pure calendar."
+    },
+    "portfolio_b_method": {
+      "primary": "calendar_monthly",
+      "secondary": "threshold_3pct_drift",
+      "description": "Monthly check with 3% drift trigger. More aggressive portfolio needs tighter control to prevent momentum concentration risk."
+    },
+    "tax_efficiency_rules": [
+      "Harvest losses in taxable accounts when position drops >10%",
+      "Use new contributions to rebalance before selling (cash flow rebalancing)",
+      "Defer rebalancing sells in positions held <1yr to avoid short-term cap gains",
+      "Use dividend reinvestment to direct income toward underweight positions"
+    ]
+  },
+
+  "robo_advisor_comparison": {
+    "wealthfront": {
+      "methodology": "Mean-variance optimization (Black-Litterman) with after-tax returns",
+      "asset_classes": 10,
+      "risk_levels": 20,
+      "fee_pct": 0.25,
+      "key_features": ["Daily tax-loss harvesting (1.8x more tax alpha vs peers)", "Risk parity weighting", "Direct indexing for $100k+"],
+      "etfs_used": ["VTI", "VEA", "VWO", "VIG", "AGG", "LQD", "EMB", "VTIP", "VNQ", "MUB"]
+    },
+    "betterment": {
+      "methodology": "Goals-based optimization with glide path",
+      "asset_classes": 13,
+      "risk_levels": 101,
+      "fee_pct": 0.25,
+      "key_features": ["100+ allocation presets (0-100% stocks)", "Tax-coordinated portfolios", "Automatic rebalancing on deposits"],
+      "etfs_used": ["VTI", "VTV", "VOE", "VBR", "VEA", "VWO", "AGG", "BNDX", "MUB", "VTIP", "VNQ", "VNQI", "GLD"]
+    },
+    "key_takeaways_for_framework": [
+      "Both use low-cost passive ETFs (expense ratios <0.10%)",
+      "Tax-aware allocation is critical (munis for high-tax, TIPS for inflation)",
+      "Diversification across 10+ asset classes reduces max drawdown ~30%",
+      "Automatic rebalancing prevents emotional drift",
+      "Risk scoring maps directly to stock/bond ratio"
+    ]
+  },
+
+  "implementation_phases": {
+    "phase_1_backtest": {
+      "duration": "3 months historical (2023-2026)",
+      "actions": [
+        "Download daily OHLCV for all tickers via yfinance",
+        "Apply entry/exit rules to generate paper trades",
+        "Calculate all comparison metrics for both portfolios",
+        "Run Monte Carlo simulation (10000 paths) for confidence intervals"
+      ]
+    },
+    "phase_2_paper_trade": {
+      "duration": "3 months forward",
+      "actions": [
+        "Run both portfolios in parallel with paper money",
+        "Track all trades with timestamps, fills, slippage",
+        "Weekly metric snapshots for rolling comparison",
+        "Flag any drift violations for rebalancing"
+      ]
+    },
+    "phase_3_live_ab_test": {
+      "duration": "6-12 months",
+      "actions": [
+        "Equal capital allocation to both portfolios",
+        "Automated execution via broker API",
+        "Monthly statistical comparison reports",
+        "Decision checkpoint at 6 months: continue, adjust, or declare winner"
+      ]
+    },
+    "phase_4_production": {
+      "actions": [
+        "Adopt winning portfolio as primary allocation",
+        "Keep losing portfolio at 20% allocation for continued monitoring",
+        "Quarterly review for regime changes"
+      ]
+    }
+  }
+}

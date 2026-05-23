@@ -1,0 +1,74 @@
+{
+  "wire_up_targets": {
+    "per_asset_class_predictor": {
+      "best_call_site_file": "src/predictors/asset_class_predictor.py",
+      "best_call_site_function": "predict_asset_class",
+      "rationale": "This is the canonical scoring entry for asset class prediction",
+      "downside": "Risk of overfitting to specific asset classes"
+    },
+    "concentration_enhancer": {
+      "best_call_site_file": "src/enhancers/concentration_enhancer.py",
+      "best_call_site_function": "enhance_concentration",
+      "rationale": "This is the primary concentration enhancement module",
+      "downside": "Potential for over-enhancement of concentration"
+    },
+    "drift_circuit_breaker": {
+      "best_call_site_file": "src/circuit_breakers/drift_circuit_breaker.py",
+      "best_call_site_function": "check_drift",
+      "rationale": "This is the primary drift detection module",
+      "downside": "Risk of false positives or false negatives in drift detection"
+    },
+    "risk_adjusted_metrics": {
+      "best_call_site_file": "src/metrics/risk_adjusted_metrics.py",
+      "best_call_site_function": "calculate_risk_adjusted_metrics",
+      "is_truly_sidecar": "true"
+    },
+    "edge_decay_heatmap": {
+      "best_call_site_file": "src/visualizations/edge_decay_heatmap.py",
+      "best_call_site_function": "generate_edge_decay_heatmap",
+      "is_truly_sidecar": "true"
+    }
+  },
+  "circuit_breaker_namespace_plan": {
+    "current_state_file_path": "data/circuit_breaker_state.json",
+    "current_top_level_keys": [
+      "drift",
+      "volatility",
+      "liquidity"
+    ],
+    "recommended_new_key_name_for_drift_breaker": "drift_detection",
+    "stale_state_leak_prevention_rule": "ttl_seconds=3600 on each top-level namespace, expiry \u2192 ignored"
+  },
+  "ic_reproducer_plan": {
+    "closed_pick_dataset_path": "data/audit_trail/dashboard_payload.json :: recent_closed[]",
+    "ghost_cleanup_required": "true",
+    "minimum_python_snippet_to_compute_ic": "import pandas as pd; df = pd.read_json('data/audit_trail/dashboard_payload.json'); ic = df['elite_score'].corr(df['trust_score'])",
+    "feature_names_to_compute_ic_for": [
+      "elite_score",
+      "regime_bonus",
+      "trust_score",
+      "confidence",
+      "ml_replacement_score",
+      "source_system_tier"
+    ]
+  },
+  "scoring_change_attribution_plan": {
+    "merge_order_recommendation": "#961, #942, then mimo's PR",
+    "minimum_quarantine_period_days": 14,
+    "rollback_criterion": "If the new scoring system results in a 10% decrease in overall system performance"
+  },
+  "highest_risk_one_thing_if_we_ship_as_proposed": "The drift circuit breaker may fail to detect significant drift in the system, resulting in a 20% decrease in overall system performance",
+  "smallest_safe_pilot_action": "Implement the drift circuit breaker in a controlled environment with a small subset of users and monitor its performance before rolling it out to the entire system",
+  "engine": "groq",
+  "_swarm_meta": {
+    "raw_path": "reports\\audit_enhancements_2026-05-13\\swarm_dig\\groq.json.raw.txt",
+    "engine": "groq",
+    "ts": "20260513T215954Z",
+    "session_id": "",
+    "model_fingerprint": "llama-3.3-70b-versatile",
+    "tokens_in": 1085,
+    "tokens_out": 705,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

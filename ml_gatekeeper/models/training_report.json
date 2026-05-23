@@ -1,0 +1,493 @@
+{
+  "trained_at": "2026-05-22T10:18:01.001660+00:00",
+  "training_data": {
+    "source": "audit_dashboard/data/dashboard_data.json (recent_closed)",
+    "n_samples": 3500,
+    "n_features": 32,
+    "base_win_rate": 0.4706,
+    "data_type": "REAL closed trade outcomes (no synthetic data)"
+  },
+  "cross_validation": [
+    {
+      "fold": 1,
+      "accuracy": 0.5437392795883362,
+      "precision": 0.46503496503496505,
+      "f1": 0.5,
+      "auc": 0.5699922800414948,
+      "brier": 0.2737517222738384,
+      "val_size": 583,
+      "val_wr": 0.4219554030874786
+    },
+    {
+      "fold": 2,
+      "accuracy": 0.5711835334476844,
+      "precision": 0.5121951219512195,
+      "f1": 0.4019138755980861,
+      "auc": 0.5501041093267597,
+      "brier": 0.2536076548197748,
+      "val_size": 583,
+      "val_wr": 0.43567753001715265
+    },
+    {
+      "fold": 3,
+      "accuracy": 0.5454545454545454,
+      "precision": 0.5225806451612903,
+      "f1": 0.3793911007025761,
+      "auc": 0.6111511726877246,
+      "brier": 0.252119327632468,
+      "val_size": 583,
+      "val_wr": 0.4665523156089194
+    },
+    {
+      "fold": 4,
+      "accuracy": 0.5626072041166381,
+      "precision": 0.5268542199488491,
+      "f1": 0.6176911544227885,
+      "auc": 0.6393688334985601,
+      "brier": 0.23348126697584276,
+      "val_size": 583,
+      "val_wr": 0.4734133790737564
+    },
+    {
+      "fold": 5,
+      "accuracy": 0.5643224699828473,
+      "precision": 0.5689655172413793,
+      "f1": 0.6092307692307692,
+      "auc": 0.6335285522377507,
+      "brier": 0.23758003552986812,
+      "val_size": 583,
+      "val_wr": 0.5180102915951973
+    }
+  ],
+  "backtest": {
+    "method": "walk_forward_12fold_plus_holdout",
+    "mercury_checklist": [
+      "1_true_holdout_set",
+      "2_walk_forward_rolling",
+      "3_timeseries_cv",
+      "4_feature_gen_respects_split",
+      "5_final_model_on_full_train",
+      "6_insample_vs_oos_reported",
+      "7_statistical_significance",
+      "8_drift_baseline_saved"
+    ],
+    "walk_forward": {
+      "n_folds": 12,
+      "per_fold": [
+        {
+          "fold": 1,
+          "train_size": 240,
+          "test_size": 230,
+          "base_wr": 0.4217,
+          "passed_wr": 0.4508,
+          "rejected_wr": 0.3889,
+          "wr_lift_pct": 2.91,
+          "auc": 0.5559,
+          "passed_n": 122,
+          "rejected_n": 108,
+          "passed_cum_pnl": 57.8,
+          "rejected_cum_pnl": -147.81
+        },
+        {
+          "fold": 2,
+          "train_size": 470,
+          "test_size": 230,
+          "base_wr": 0.5696,
+          "passed_wr": 0.6729,
+          "rejected_wr": 0.4797,
+          "wr_lift_pct": 10.33,
+          "auc": 0.6148,
+          "passed_n": 107,
+          "rejected_n": 123,
+          "passed_cum_pnl": 71.94,
+          "rejected_cum_pnl": 39.08
+        },
+        {
+          "fold": 3,
+          "train_size": 700,
+          "test_size": 230,
+          "base_wr": 0.5043,
+          "passed_wr": 0.4222,
+          "rejected_wr": 0.5243,
+          "wr_lift_pct": -8.21,
+          "auc": 0.5515,
+          "passed_n": 45,
+          "rejected_n": 185,
+          "passed_cum_pnl": -11.17,
+          "rejected_cum_pnl": 84.6
+        },
+        {
+          "fold": 4,
+          "train_size": 930,
+          "test_size": 230,
+          "base_wr": 0.3609,
+          "passed_wr": 0.4254,
+          "rejected_wr": 0.2708,
+          "wr_lift_pct": 6.45,
+          "auc": 0.6305,
+          "passed_n": 134,
+          "rejected_n": 96,
+          "passed_cum_pnl": 30.69,
+          "rejected_cum_pnl": -57.04
+        },
+        {
+          "fold": 5,
+          "train_size": 1160,
+          "test_size": 230,
+          "base_wr": 0.387,
+          "passed_wr": 0.4762,
+          "rejected_wr": 0.367,
+          "wr_lift_pct": 8.92,
+          "auc": 0.5634,
+          "passed_n": 42,
+          "rejected_n": 188,
+          "passed_cum_pnl": -8.48,
+          "rejected_cum_pnl": -19.25
+        },
+        {
+          "fold": 6,
+          "train_size": 1390,
+          "test_size": 230,
+          "base_wr": 0.5217,
+          "passed_wr": 0.5758,
+          "rejected_wr": 0.3846,
+          "wr_lift_pct": 5.4,
+          "auc": 0.6044,
+          "passed_n": 165,
+          "rejected_n": 65,
+          "passed_cum_pnl": 80.25,
+          "rejected_cum_pnl": 26.59
+        },
+        {
+          "fold": 7,
+          "train_size": 1620,
+          "test_size": 230,
+          "base_wr": 0.4043,
+          "passed_wr": 0.4681,
+          "rejected_wr": 0.119,
+          "wr_lift_pct": 6.37,
+          "auc": 0.7804,
+          "passed_n": 188,
+          "rejected_n": 42,
+          "passed_cum_pnl": 55.63,
+          "rejected_cum_pnl": -16.73
+        },
+        {
+          "fold": 8,
+          "train_size": 1850,
+          "test_size": 230,
+          "base_wr": 0.3652,
+          "passed_wr": 0.375,
+          "rejected_wr": 0.3608,
+          "wr_lift_pct": 0.98,
+          "auc": 0.589,
+          "passed_n": 72,
+          "rejected_n": 158,
+          "passed_cum_pnl": 29.57,
+          "rejected_cum_pnl": -15.35
+        },
+        {
+          "fold": 9,
+          "train_size": 2080,
+          "test_size": 230,
+          "base_wr": 0.5609,
+          "passed_wr": 0.807,
+          "rejected_wr": 0.319,
+          "wr_lift_pct": 24.61,
+          "auc": 0.7975,
+          "passed_n": 114,
+          "rejected_n": 116,
+          "passed_cum_pnl": 235.06,
+          "rejected_cum_pnl": -47.53
+        },
+        {
+          "fold": 10,
+          "train_size": 2310,
+          "test_size": 230,
+          "base_wr": 0.5261,
+          "passed_wr": 0.5628,
+          "rejected_wr": 0.2903,
+          "wr_lift_pct": 3.67,
+          "auc": 0.6276,
+          "passed_n": 199,
+          "rejected_n": 31,
+          "passed_cum_pnl": 193.25,
+          "rejected_cum_pnl": -1.95
+        },
+        {
+          "fold": 11,
+          "train_size": 2540,
+          "test_size": 230,
+          "base_wr": 0.4304,
+          "passed_wr": 0.4963,
+          "rejected_wr": 0.3368,
+          "wr_lift_pct": 6.59,
+          "auc": 0.6114,
+          "passed_n": 135,
+          "rejected_n": 95,
+          "passed_cum_pnl": 76.96,
+          "rejected_cum_pnl": -16.7
+        },
+        {
+          "fold": 12,
+          "train_size": 2770,
+          "test_size": 230,
+          "base_wr": 0.4957,
+          "passed_wr": 0.5217,
+          "rejected_wr": 0.4928,
+          "wr_lift_pct": 2.61,
+          "auc": 0.5939,
+          "passed_n": 23,
+          "rejected_n": 207,
+          "passed_cum_pnl": 7.51,
+          "rejected_cum_pnl": 51.53
+        }
+      ],
+      "mean_lift_pct": 5.89,
+      "bootstrap_ci_95": [
+        2.0,
+        10.26
+      ],
+      "t_statistic": 2.698,
+      "p_value": 0.0207,
+      "statistically_significant": true
+    },
+    "true_holdout": {
+      "n_total": 500,
+      "auc": 0.6415,
+      "baseline_wr": 0.514,
+      "passed_wr": 0.5625,
+      "rejected_wr": 0.4146,
+      "wr_lift_pct": 4.85,
+      "passed_n": 336,
+      "rejected_n": 164,
+      "passed_cum_pnl": 326.48,
+      "rejected_cum_pnl": -16.02,
+      "profit_factor": 1.963,
+      "per_asset_class": {
+        "CRYPTO": {
+          "passed_wr": 0.4737,
+          "rejected_wr": 0.55,
+          "lift_pct": -7.63,
+          "passed_n": 133,
+          "rejected_n": 20,
+          "passed_cum_pnl": 28.43
+        },
+        "FOREX": {
+          "passed_wr": 0.4348,
+          "rejected_wr": 0.4,
+          "lift_pct": 3.48,
+          "passed_n": 23,
+          "rejected_n": 45,
+          "passed_cum_pnl": 1.85
+        },
+        "EQUITY": {
+          "passed_wr": 0.6466,
+          "rejected_wr": 0.45,
+          "lift_pct": 19.66,
+          "passed_n": 133,
+          "rejected_n": 40,
+          "passed_cum_pnl": 247.62
+        },
+        "COMMODITY": {
+          "passed_wr": 0,
+          "rejected_wr": 0.0,
+          "lift_pct": 0.0,
+          "passed_n": 0,
+          "rejected_n": 2,
+          "passed_cum_pnl": 0
+        },
+        "BOND": {
+          "passed_wr": 0.6667,
+          "rejected_wr": 0.5,
+          "lift_pct": 16.67,
+          "passed_n": 3,
+          "rejected_n": 8,
+          "passed_cum_pnl": -0.08
+        }
+      }
+    },
+    "drift_baseline": {
+      "mean": 0.4743,
+      "std": 0.1869,
+      "p10": 0.2074,
+      "p25": 0.3565,
+      "p50": 0.4844,
+      "p75": 0.6126,
+      "p90": 0.7132,
+      "n_samples": 3000
+    }
+  },
+  "top_features": [
+    [
+      "age_hours",
+      0.1289
+    ],
+    [
+      "strat_fwd_wr",
+      0.1055
+    ],
+    [
+      "forward_wr",
+      0.0766
+    ],
+    [
+      "sl_dist_pct",
+      0.0717
+    ],
+    [
+      "rr_ratio",
+      0.0678
+    ],
+    [
+      "strat_fwd_pf",
+      0.0581
+    ],
+    [
+      "tp_dist_pct",
+      0.0515
+    ],
+    [
+      "confidence",
+      0.0428
+    ],
+    [
+      "eb_forward_wr",
+      0.0424
+    ],
+    [
+      "elite_score",
+      0.0415
+    ],
+    [
+      "method_a_score",
+      0.0411
+    ],
+    [
+      "ml_composite_score",
+      0.0345
+    ],
+    [
+      "eb_source_direction_adj",
+      0.0298
+    ],
+    [
+      "trust_score",
+      0.0295
+    ],
+    [
+      "direction",
+      0.0289
+    ],
+    [
+      "strat_fwd_trades",
+      0.023
+    ],
+    [
+      "forward_trades",
+      0.022
+    ],
+    [
+      "wf_p_value",
+      0.019
+    ],
+    [
+      "eb_confidence",
+      0.0177
+    ],
+    [
+      "wf_pass",
+      0.0165
+    ]
+  ],
+  "feature_importance": [
+    {
+      "feature": "age_hours",
+      "importance": 0.1289
+    },
+    {
+      "feature": "strat_fwd_wr",
+      "importance": 0.1055
+    },
+    {
+      "feature": "forward_wr",
+      "importance": 0.0766
+    },
+    {
+      "feature": "sl_dist_pct",
+      "importance": 0.0717
+    },
+    {
+      "feature": "rr_ratio",
+      "importance": 0.0678
+    },
+    {
+      "feature": "strat_fwd_pf",
+      "importance": 0.0581
+    },
+    {
+      "feature": "tp_dist_pct",
+      "importance": 0.0515
+    },
+    {
+      "feature": "confidence",
+      "importance": 0.0428
+    },
+    {
+      "feature": "eb_forward_wr",
+      "importance": 0.0424
+    },
+    {
+      "feature": "elite_score",
+      "importance": 0.0415
+    },
+    {
+      "feature": "method_a_score",
+      "importance": 0.0411
+    },
+    {
+      "feature": "ml_composite_score",
+      "importance": 0.0345
+    },
+    {
+      "feature": "eb_source_direction_adj",
+      "importance": 0.0298
+    },
+    {
+      "feature": "trust_score",
+      "importance": 0.0295
+    },
+    {
+      "feature": "direction",
+      "importance": 0.0289
+    },
+    {
+      "feature": "strat_fwd_trades",
+      "importance": 0.023
+    },
+    {
+      "feature": "forward_trades",
+      "importance": 0.022
+    },
+    {
+      "feature": "wf_p_value",
+      "importance": 0.019
+    },
+    {
+      "feature": "eb_confidence",
+      "importance": 0.0177
+    },
+    {
+      "feature": "wf_pass",
+      "importance": 0.0165
+    }
+  ],
+  "strategy_router_summary": {
+    "n_strategies": 139,
+    "n_sources": 24
+  },
+  "output": {
+    "active_picks": "/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/ml_gatekeeper/data/active_picks.json",
+    "n_picks_passed": 4
+  }
+}

@@ -1,0 +1,184 @@
+name: ML Picks  Hourly Discord Alert
+
+on:
+  schedule:
+    - cron: '10 */4 * * *'  # Every 4 hours (was hourly  webhook disabled, no-op most runs)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Send hourly picks to Discord
+      # env:
+        # DISABLED: noisy/underperforming  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        python3 << 'PYEOF'
+        import json, os, requests
+        from datetime import datetime, timezone
+
+        webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
+        if not webhook:
+            print("No DISCORD_WEBHOOK_URL set"); exit(0)
+
+        now = datetime.now(timezone.utc)
+        hour = now.strftime('%H:%M UTC')
+
+        # Load picks
+        picks = []
+        picks_path = 'updates/data/antigravity_ml_live_picks.json'
+        if os.path.exists(picks_path):
+            with open(picks_path) as f:
+                picks = json.load(f)
+
+        # Load backtest results
+        bt = {}
+        bt_path = 'backtest_results/walk_forward_results.json'
+        if os.path.exists(bt_path):
+            with open(bt_path) as f:
+                bt = json.load(f)
+
+        if not picks:
+            print("No picks available")
+            exit(0)
+
+        # Sort by probability
+        picks.sort(key=lambda x: x.get('pump_probability', 0), reverse=True)
+
+        # Build embed fields for each pick
+        fields = []
+        for p in picks[:6]:
+            sym = p.get('symbol', '?')
+            conf = p.get('confidence', 'HOLD')
+            prob = p.get('pump_probability', 0)
+            entry = p.get('entry_price', 0)
+            tp = p.get('tp_price', 0)
+            tp_pct = p.get('tp_pct', 0)
+            sl = p.get('sl_price', 0)
+            sl_pct = p.get('sl_pct', 0)
+            rr = p.get('rr_ratio', 0)
+            signals = p.get('signals', [])
+            bt_val = p.get('backtest_validation', {})
+
+            # Confidence emoji
+            if conf == 'STRONG BUY':
+                emoji = ''
+            elif conf == 'BUY':
+                emoji = ''
+            elif conf == 'WATCH':
+                emoji = ''
+            else:
+                emoji = ''
+
+            # Signal descriptions
+            sig_text = []
+            for s in signals:
+                if s == 'OVERSOLD':
+                    sig_text.append(' RSI oversold  mean reversion candidate')
+                elif s == 'VOL_COMPRESSION':
+                    sig_text.append(' Vol compression  breakout setup')
+                elif 'HIGH_VOLUME' in s:
+                    sig_text.append(' Volume spike above 20d avg')
+                elif s == 'BB_SQUEEZE':
+                    sig_text.append(' BB squeeze  explosive move imminent')
+                elif s == 'MACD_BULLISH':
+                    sig_text.append(' MACD bullish  momentum building')
+                elif 'GREEN_STREAK' in s:
+                    sig_text.append(f' {s}  sustained buying')
+                else:
+                    sig_text.append(f' {s}')
+
+            # Format entry
+            if entry > 100:
+                price_fmt = f"${entry:,.2f}"
+                tp_fmt = f"${tp:,.2f}"
+                sl_fmt = f"${sl:,.2f}"
+            elif entry > 0.01:
+                price_fmt = f"${entry:.4f}"
+                tp_fmt = f"${tp:.4f}"
+                sl_fmt = f"${sl:.4f}"
+            else:
+                price_fmt = f"${entry:.8f}"
+                tp_fmt = f"${tp:.8f}"
+                sl_fmt = f"${sl:.8f}"
+
+            field_value = (
+                f"{emoji} **{conf}** | Prob: **{prob:.1%}**\n"
+                f"Entry: `{price_fmt}`\n"
+                f"TP: `{tp_fmt}` ({tp_pct:+.2f}%) | SL: `{sl_fmt}` ({sl_pct:.2f}%) | R:R `{rr:.1f}:1`\n"
+                f"Backtest: WR={bt_val.get('win_rate', 0):.0%} PF={bt_val.get('profit_factor', 0):.2f} Sharpe={bt_val.get('sharpe', 0):.1f}\n"
+            )
+            if sig_text:
+                field_value += "Signals: " + "  ".join(sig_text[:3])
+
+            fields.append({
+                'name': f'{sym}/USDT',
+                'value': field_value,
+                'inline': False
+            })
+
+        # Summary stats
+        profitable_pairs = sum(1 for r in bt.values()
+                               if isinstance(r, dict) and r.get('profit_factor', 0) > 1.0)
+        total_pairs = len(bt)
+
+        # Determine overall market stance
+        buy_signals = sum(1 for p in picks if p.get('confidence') in ['STRONG BUY', 'BUY'])
+        watch_signals = sum(1 for p in picks if p.get('confidence') == 'WATCH')
+        hold_signals = sum(1 for p in picks if p.get('confidence') == 'HOLD')
+
+        if buy_signals > 0:
+            market_stance = " ACTIVE  Entry signals detected"
+            color = 0x22c55e
+        elif watch_signals > 0:
+            market_stance = " MONITORING  Approaching entry conditions"
+            color = 0xf59e0b
+        else:
+            market_stance = " WAITING  No edge, staying flat"
+            color = 0x6b7280
+
+        description = (
+            f"**{market_stance}**\n\n"
+            f"Model scanned **{len(picks)}** backtest-validated pairs\n"
+            f"Walk-forward validated: **{profitable_pairs}/{total_pairs}** profitable\n"
+            f"BUY: {buy_signals} | WATCH: {watch_signals} | HOLD: {hold_signals}\n\n"
+            f"[ Full Dashboard](https://findtorontoevents.ca/updates/ml-picks-dashboard.html) | "
+            f"[ Scanner](https://findtorontoevents.ca/updates/antigravity-ml-gainer.html)"
+        )
+
+        payload = {
+            'embeds': [{
+                'title': f' Antigravity ML  Hourly Picks ({hour})',
+                'description': description,
+                'color': color,
+                'fields': fields,
+                'footer': {
+                    'text': 'Antigravity ML v2.0 | Walk-Forward Validated | PAPER TRADE ONLY'
+                },
+                'timestamp': now.isoformat()
+            }]
+        }
+
+        try:
+            r = requests.post(webhook, json=payload, timeout=15)
+            print(f"Discord: {r.status_code}  {len(picks)} picks sent at {hour}")
+            if r.status_code != 204:
+                print(f"Response: {r.text[:200]}")
+        except Exception as e:
+            print(f"Discord failed: {e}")
+        PYEOF
+

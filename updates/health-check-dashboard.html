@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Health Dashboard + Audit Trail | Find Toronto Events</title>
+  <meta name="description" content="Comprehensive health monitoring with full audit trail, P/L tracking, and calendar view for all ML trading systems">
+  <style>
+    :root {
+      --bg: #0a0a12;
+      --bg2: #11111b;
+      --bg3: #1a1a2e;
+      --bg4: #242440;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --border: #2d2d44;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 40px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .header .subtitle {
+      color: var(--text2);
+      font-size: 13px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .tab.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.2s;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Summary Stats */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .summary-card .value {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+
+    .summary-card .label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .summary-card .sub {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    /* Filters */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: var(--bg2);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .filter-label {
+      font-size: 12px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--blue);
+      color: var(--text);
+    }
+
+    .filter-btn.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    /* Calendar Heatmap */
+    .calendar-section {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 4px;
+      cursor: pointer;
+      background: var(--bg3);
+      color: var(--text2);
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      border: 1px solid var(--blue);
+    }
+
+    .calendar-day.positive {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--green);
+    }
+
+    .calendar-day.negative {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--red);
+    }
+
+    .calendar-day .count {
+      font-weight: 700;
+    }
+
+    .calendar-day .sub {
+      font-size: 8px;
+      color: var(--text3);
+      position: absolute;
+      bottom: 2px;
+    }
+
+    /* Picks Table */
+    .table-section {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .table-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .table-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .table-search {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text);
+      font-size: 12px;
+      width: 200px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12px;
+    }
+
+    th {
+      background: var(--bg3);
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text3);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th:hover {
+      color: var(--text2);
+    }
+
+    th.sorted-asc::after {
+      content: ' \u25B2';
+      font-size: 8px;
+    }
+
+    th.sorted-desc::after {
+      content: ' \u25BC';
+      font-size: 8px;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+
+    tr:hover td {
+      background: var(--bg3);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-crypto { background: rgba(251,146,60,.15); color:#fb923c; }
+    .badge-stock { background: rgba(34,197,94,.15); color:#22c55e; }
+    .badge-forex { background: rgba(59,130,246,.15); color:#3b82f6; }
+    .badge-multi { background: rgba(168,85,247,.15); color:#a855f7; }
+
+    .badge-long { background: rgba(34,197,94,.15); color:#22c55e; }
+    .badge-short { background: rgba(239,68,68,.15); color:#ef4444; }
+    .badge-open { background: rgba(59,130,246,.15); color:#3b82f6; }
+    .badge-closed { background: rgba(156,163,175,.15); color:#9ca3af; }
+    .badge-won { background: rgba(34,197,94,.15); color:#22c55e; }
+    .badge-lost { background: rgba(239,68,68,.15); color:#ef4444; }
+
+    .pnl-pos { color: var(--green); }
+    .pnl-neg { color: var(--red); }
+
+    /* System Cards */
+    .systems-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .system-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.2s;
+    }
+
+    .system-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    .system-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .system-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .system-desc {
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .system-status {
+      font-size: 10px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .status-live { background: rgba(34,197,94,.15); color: var(--green); }
+    .status-warning { background: rgba(234,179,8,.15); color: var(--yellow); }
+    .status-offline { background: rgba(239,68,68,.15); color: var(--red); }
+
+    .meta-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .meta-item {
+      background: var(--bg3);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg3);
+      border-radius: 8px;
+    }
+
+    .metric .value {
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 2px;
+    }
+
+    .metric .value.green { color: var(--green); }
+    .metric .value.red { color: var(--red); }
+    .metric .value.yellow { color: var(--yellow); }
+    .metric .value.blue { color: var(--blue); }
+    .metric .value.purple { color: var(--purple); }
+
+    .metric .label {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .dashboard-link {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .dashboard-link:hover {
+      opacity: 0.9;
+      text-decoration: none;
+    }
+
+    .asset-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    .asset-crypto { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+    .asset-stock { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .asset-forex { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .asset-multi { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 24px;
+      font-size: 11px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text2);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.live { background: var(--green); }
+    .legend-dot.warning { background: var(--yellow); }
+    .legend-dot.offline { background: var(--red); }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text3);
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .systems-grid { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-label { margin-bottom: 8px; }
+      .table-search { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>System Health & Audit Dashboard</h1>
+      <div class="subtitle">
+        Comprehensive monitoring with full pick audit trail, P/L tracking, and calendar view
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="audit">Audit Trail</button>
+      <button class="tab" data-tab="calendar">P&L Calendar</button>
+      <button class="tab" data-tab="active">Active Picks</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="tab-overview" class="tab-content active">
+      <!-- Summary Stats -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="value" id="totalSystems">0</div>
+          <div class="label">Total Systems</div>
+          <div class="sub">Live + Inactive</div>
+        </div>
+        <div class="summary-card">
+          <div class="value" id="liveSystems" style="color: var(--green);">0</div>
+          <div class="label">Live Now</div>
+          <div class="sub">Auto-updating</div>
+        </div>
+        <div class="summary-card">
+          <div class="value" id="mlLearning" style="color: var(--blue);">0</div>
+          <div class="label">ML Learning</div>
+          <div class="sub">Actively training</div>
+        </div>
+        <div class="summary-card">
+          <div class="value" id="totalPicks">0</div>
+          <div class="label">Total Picks</div>
+          <div class="sub">All time</div>
+        </div>
+        <div class="summary-card">
+          <div class="value" id="activePicks" style="color: var(--yellow);">0</div>
+          <div class="label">Active Picks</div>
+          <div class="sub">Currently open</div>
+        </div>
+        <div class="summary-card">
+          <div class="value" id="lastPickTime">--</div>
+          <div class="label">Last Pick</div>
+          <div class="sub">Most recent</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <span class="filter-label">Filter by Asset:</span>
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="crypto">Crypto</button>
+        <button class="filter-btn" data-filter="stock">Stocks</button>
+        <button class="filter-btn" data-filter="forex">Forex</button>
+        <button class="filter-btn" data-filter="multi">Multi-Asset</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot live"></div>
+          <span>Live (auto-updating)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot warning"></div>
+          <span>Warm-up / Partial</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot offline"></div>
+          <span>Offline / Stopped</span>
+        </div>
+      </div>
+
+      <!-- Systems Grid -->
+      <div class="systems-grid" id="systemsGrid">
+        <!-- Cards injected by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Audit Trail Tab -->
+    <div id="tab-audit" class="tab-content">
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">Complete Pick Audit Trail</div>
+          <div class="table-controls">
+            <input type="text" class="table-search" id="auditSearch" placeholder="Search symbol, strategy, ID...">
+            <select class="filter-btn" id="auditSystemFilter">
+              <option value="all">All Systems</option>
+              <option value="system_a">System A (Filter)</option>
+              <option value="system_b">System B (Regime)</option>
+              <option value="system_c">System C (Neural)</option>
+              <option value="alpha">Alpha Engine</option>
+              <option value="kimi">KIMI Rise of Claw</option>
+              <option value="crypto_edge">Crypto ML Edge</option>
+              <option value="breakout">Breakout Arena</option>
+            </select>
+            <select class="filter-btn" id="auditStatusFilter">
+              <option value="all">All Statuses</option>
+              <option value="OPEN">Open</option>
+              <option value="WON">Won</option>
+              <option value="LOST">Lost</option>
+              <option value="TIMEOUT">Timeout</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="auditTable">
+            <thead>
+              <tr>
+                <th data-sort="entry_date">Date</th>
+                <th data-sort="system">System</th>
+                <th data-sort="symbol">Symbol</th>
+                <th data-sort="strategy">Strategy</th>
+                <th data-sort="signal_type">Dir</th>
+                <th data-sort="entry_price">Entry</th>
+                <th data-sort="pnl_pct">P/L %</th>
+                <th data-sort="status">Status</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+              <!-- Rows injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div id="auditLoading" class="loading">
+          <div class="spinner"></div>
+          <div>Loading audit data from all systems...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P&L Calendar Tab -->
+    <div id="tab-calendar" class="tab-content">
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <h3 style="font-size: 16px; font-weight: 700; color: #fff;">P&L by Date (Last 30 Days)</h3>
+          <div class="filter-bar" style="margin:0; padding:0; border:none;">
+            <select class="filter-btn" id="calendarSystemFilter">
+              <option value="all">All Systems</option>
+              <option value="system_a">System A</option>
+              <option value="system_b">System B</option>
+              <option value="system_c">System C</option>
+              <option value="alpha">Alpha Engine</option>
+            </select>
+          </div>
+        </div>
+        <div id="calendarGrid" class="calendar-grid">
+          <!-- Calendar days injected by JavaScript -->
+        </div>
+        <div id="calendarEmpty" class="loading" style="display:none;">
+          <div>No closed picks in the selected period</div>
+        </div>
+      </div>
+
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">Daily P&L Summary</div>
+        </div>
+        <div class="table-wrapper">
+          <table id="dailyPnlTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Total Picks</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Win Rate</th>
+                <th>Total P/L %</th>
+                <th>Avg P/L %</th>
+              </tr>
+            </thead>
+            <tbody id="dailyPnlBody">
+              <!-- Rows injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Picks Tab -->
+    <div id="tab-active" class="tab-content">
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">Currently Active Picks Across All Systems</div>
+          <div class="table-controls">
+            <input type="text" class="table-search" id="activeSearch" placeholder="Search symbol, system...">
+            <button class="filter-btn" id="refreshActive">Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="activeTable">
+            <thead>
+              <tr>
+                <th>System</th>
+                <th>Symbol</th>
+                <th>Strategy</th>
+                <th>Direction</th>
+                <th>Entry Price</th>
+                <th>Entry Date</th>
+                <th>Current Price</th>
+                <th>Unrealized P/L %</th>
+                <th>TP</th>
+                <th>SL</th>
+                <th>Hold Time</th>
+              </tr>
+            </thead>
+            <tbody id="activeTableBody">
+              <!-- Rows injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div id="activeLoading" class="loading">
+          <div class="spinner"></div>
+          <div>Loading active picks...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; padding: 32px; color: var(--text3); font-size: 11px;">
+      <p>Last updated: <span id="lastUpdated">Loading...</span></p>
+      <p style="margin-top: 4px;">Data sourced from live system JSON files via GitHub raw</p>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const GH = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+    const SYSTEM_PATHS = {
+      system_a: {
+        name: 'System A (Filter)',
+        closed: 'ml_battleground/system_a_filter/data/closed_picks.json',
+        active: 'ml_battleground/system_a_filter/data/active_picks.json'
+      },
+      system_b: {
+        name: 'System B (Regime)',
+        closed: 'ml_battleground/system_b_regime/data/closed_picks.json',
+        active: 'ml_battleground/system_b_regime/data/active_picks.json'
+      },
+      system_c: {
+        name: 'System C (Neural)',
+        closed: 'ml_battleground/system_c_deeplearn/data/closed_picks.json',
+        active: 'ml_battleground/system_c_deeplearn/data/active_picks.json'
+      },
+      alpha: {
+        name: 'Alpha Engine',
+        closed: 'alpha_engine/data/closed_picks.json',
+        active: 'alpha_engine/data/active_picks.json'
+      },
+      kimi: {
+        name: 'KIMI Rise of Claw',
+        closed: 'KIMI_RISEOFTHECLAW/data/closed_picks.json',
+        active: 'KIMI_RISEOFTHECLAW/data/active_picks.json'
+      },
+      crypto_edge: {
+        name: 'Crypto ML Edge',
+        closed: null,
+        active: 'crypto_ml_edge/data/active_picks.json'
+      },
+      breakout: {
+        name: 'Breakout Arena',
+        closed: null,
+        active: null
+      }
+    };
+
+    // State
+    let allClosedPicks = [];
+    let allActivePicks = [];
+    let currentTab = 'overview';
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById('tab-' + tabId).classList.add('active');
+        currentTab = tabId;
+        if (tabId === 'audit') renderAuditTable();
+        if (tabId === 'calendar') renderCalendar();
+        if (tabId === 'active') renderActiveTable();
+      });
+    });
+
+    // Utility: parse date
+    function parseDate(str) {
+      if (!str) return null;
+      // Try ISO format
+      const d = new Date(str);
+      if (isNaN(d.getTime())) {
+        // Try other formats
+        const parts = str.split('-');
+        if (parts.length === 3) {
+          d.setFullYear(int(parts[0]), int(parts[1])-1, int(parts[2]));
+        }
+      }
+      return d;
+    }
+
+    function int(val) { return parseInt(val, 10); }
+
+    // Load all data
+    async function loadAllData() {
+      console.log('Loading all system data...');
+      const t = Date.now();
+
+      try {
+        // Load closed picks from all systems in parallel
+        const closedPromises = Object.entries(SYSTEM_PATHS).map(async ([key, sys]) => {
+          if (!sys.closed) return { system: key, picks: [] };
+          try {
+            const res = await fetch(GH + sys.closed + '?t=' + t);
+            if (res.ok) {
+              const data = await res.json();
+              return { system: key, picks: Array.isArray(data) ? data : [] };
+            }
+          } catch (e) {
+            console.warn(`Failed to load ${key} closed picks:`, e);
+          }
+          return { system: key, picks: [] };
+        });
+
+        const closedResults = await Promise.all(closedPromises);
+        allClosedPicks = [];
+        closedResults.forEach(r => {
+          if (Array.isArray(r.picks)) {
+            r.picks.forEach(pick => {
+              if (pick && typeof pick === 'object') {
+                pick.system = r.system;
+                allClosedPicks.push(pick);
+              }
+            });
+          }
+        });
+
+        // Load active picks
+        const activePromises = Object.entries(SYSTEM_PATHS).map(async ([key, sys]) => {
+          if (!sys.active) return { system: key, picks: [] };
+          try {
+            const res = await fetch(GH + sys.active + '?t=' + t);
+            if (res.ok) {
+              const data = await res.json();
+              let picks = [];
+              if (Array.isArray(data)) picks = data;
+              else if (data.picks) picks = data.picks;
+              return { system: key, picks: picks };
+            }
+          } catch (e) {
+            console.warn(`Failed to load ${key} active picks:`, e);
+          }
+          return { system: key, picks: [] };
+        });
+
+        const activeResults = await Promise.all(activePromises);
+        allActivePicks = [];
+        activeResults.forEach(r => {
+          if (Array.isArray(r.picks)) {
+            r.picks.forEach(pick => {
+              if (pick && typeof pick === 'object') {
+                pick.system = r.system;
+                allActivePicks.push(pick);
+              }
+            });
+          }
+        });
+
+        // Update last updated timestamp
+        const now = new Date();
+        document.getElementById('lastUpdated').textContent = now.toLocaleString('en-US', {
+          timeZone: 'America/New_York',
+          hour12: false
+        });
+
+        // Update summary stats
+        updateSummary();
+
+        // If we're on a visible tab, refresh its content
+        if (currentTab === 'audit') renderAuditTable();
+        if (currentTab === 'calendar') renderCalendar();
+        if (currentTab === 'active') renderActiveTable();
+
+        // Also re-render system cards on overview
+        if (currentTab === 'overview') renderSystemCards();
+
+      } catch (err) {
+        console.error('Error loading data:', err);
+      }
+    }
+
+    function updateSummary() {
+      const systems = Object.keys(SYSTEM_PATHS);
+      const liveCount = systems.length; // All are considered live for now
+      const mlLearning = systems.filter(k => ['system_a', 'system_b', 'system_c', 'alpha', 'kimi'].includes(k)).length;
+      const totalPicks = allClosedPicks.length;
+      const activeCount = allActivePicks.length;
+
+      document.getElementById('totalSystems').textContent = systems.length;
+      document.getElementById('liveSystems').textContent = liveCount;
+      document.getElementById('mlLearning').textContent = mlLearning;
+      document.getElementById('totalPicks').textContent = totalPicks.toLocaleString();
+      document.getElementById('activePicks').textContent = activeCount;
+
+      // Last pick time
+      if (allClosedPicks.length > 0) {
+        const sorted = [...allClosedPicks].sort((a, b) => {
+          const da = new Date(a.entry_date || a.created_at || a.timestamp || 0);
+          const db = new Date(b.entry_date || b.created_at || b.timestamp || 0);
+          return db - da;
+        });
+        const last = sorted[0];
+        const rawDate = last.entry_date || last.created_at || last.timestamp || '';
+        document.getElementById('lastPickTime').textContent = rawDate ? rawDate.split('T')[0] : '--';
+      } else {
+        document.getElementById('lastPickTime').textContent = '--';
+      }
+    }
+
+    // Render system cards (Overview tab)
+    function renderSystemCards() {
+      // Static system data (same as before)
+      const systems = [
+        {
+          id: 'kimi-riseoftheclaw',
+          name: 'KIMI Rise of the Claw',
+          desc: '10-algorithm ensemble competition with live scoring, regime routing, and elimination engine.',
+          assetClass: 'multi',
+          dashboard: '/KIMI_RISEOFTHECLAW/index.html',
+          status: 'live',
+          mlLearning: 'partial',
+          closedPicks: 0,
+          totalPicks: 'N/A',
+          winRate: '--',
+          sharpe: '--',
+          workflow: 'deploy-riseoftheclaw.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Tournament launched Feb 16, 2026.'
+        },
+        {
+          id: 'ml-battleground-arena',
+          name: 'ML Battleground Arena',
+          desc: 'Comparison dashboard for Systems A, B, C. Shows head-to-head performance.',
+          assetClass: 'multi',
+          dashboard: '/ml_battleground/arena.html',
+          status: 'live',
+          mlLearning: true,
+          closedPicks: 2059,
+          totalPicks: '2,059',
+          winRate: '~45%',
+          sharpe: '9.91 (System B)',
+          workflow: 'ml-battleground-monitor.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'System B PRIMARY with 1656 trades.'
+        },
+        {
+          id: 'system-a-filter',
+          name: 'System A: The Filter',
+          desc: 'ML gatekeeper combining 9 technical strategies with RF filtering.',
+          assetClass: 'multi',
+          dashboard: '/ml_battleground/system_a_filter/index.html',
+          status: 'live',
+          mlLearning: true,
+          closedPicks: 313,
+          totalPicks: '313',
+          winRate: '~45%',
+          sharpe: '0.8',
+          workflow: 'ml-battleground-monitor.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Active RF model.'
+        },
+        {
+          id: 'system-b-regime',
+          name: 'System B: The Regime',
+          desc: 'HMM-based market regime detector. PRIMARY system.',
+          assetClass: 'multi',
+          dashboard: '/ml_battleground/system_b_regime/index.html',
+          status: 'live',
+          mlLearning: true,
+          closedPicks: 1656,
+          totalPicks: '1,656',
+          winRate: '56.6%',
+          sharpe: '9.91',
+          workflow: 'ml-battleground-monitor.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Most mature system.'
+        },
+        {
+          id: 'system-c-deeplearn',
+          name: 'System C: The Neural Net',
+          desc: 'Deep learning predictor with multi-timeframe fusion.',
+          assetClass: 'multi',
+          dashboard: '/ml_battleground/system_c_deeplearn/index.html',
+          status: 'live',
+          mlLearning: true,
+          closedPicks: 90,
+          totalPicks: '90',
+          winRate: '--',
+          sharpe: '--',
+          workflow: 'ml-battleground-monitor.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Neural architecture evaluating.'
+        },
+        {
+          id: 'crypto-ml-edge',
+          name: 'Crypto ML Edge Engine',
+          desc: 'GSD scanner with multi-strategy edge analysis.',
+          assetClass: 'crypto',
+          dashboard: '/crypto_ml_edge/dashboard/index.html',
+          status: 'live',
+          mlLearning: 'partial',
+          closedPicks: 8,
+          totalPicks: '8',
+          winRate: '62.5%',
+          sharpe: '1.2',
+          workflow: 'crypto-ml-edge.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Heuristic mode until 50 closed picks.'
+        },
+        {
+          id: 'alpha-engine',
+          name: 'Alpha Engine Live',
+          desc: '110-strategy multi-asset signal service.',
+          assetClass: 'multi',
+          dashboard: '/alpha_engine/live_dashboard.html',
+          status: 'live',
+          mlLearning: 'partial',
+          closedPicks: 68,
+          totalPicks: '68',
+          winRate: '25%',
+          sharpe: '-2.80',
+          workflow: 'alpha-engine-live.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Heuristic → RF at 50 picks.'
+        },
+        {
+          id: 'regime-terminal',
+          name: 'HMM Regime Terminal',
+          desc: 'Unsupervised Gaussian HMM regime classifier.',
+          assetClass: 'multi',
+          dashboard: '/regime_terminal/index.html',
+          status: 'live',
+          mlLearning: 'unsupervised',
+          closedPicks: 'N/A',
+          totalPicks: 'N/A',
+          winRate: '--',
+          sharpe: '--',
+          workflow: 'regime-terminal.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Trains on price data, feeds KIMI & Alpha.'
+        },
+        {
+          id: 'breakout-arena',
+          name: 'Breakout Arena',
+          desc: '3 breakout methodologies: S/R, ML, Spike/Reverse.',
+          assetClass: 'multi',
+          dashboard: '/breakout_arena/index.html',
+          status: 'live',
+          mlLearning: true,
+          closedPicks: 0,
+          totalPicks: '0',
+          winRate: '--',
+          sharpe: '--',
+          workflow: 'breakout-arena.yml',
+          lastUpdate: '2026-02-24',
+          notes: 'Forward-testing in progress.'
+        }
+      ];
+
+      const grid = document.getElementById('systemsGrid');
+      grid.innerHTML = systems.map(sys => `
+        <div class="system-card" data-asset="${sys.assetClass}">
+          <div class="card-header">
+            <div>
+              <div class="system-name">${sys.name}</div>
+              <div class="system-desc">${sys.desc}</div>
+            </div>
+            <span class="system-status status-${sys.status}">${sys.status}</span>
+          </div>
+          <div class="meta-row">
+            <span class="asset-tag asset-${sys.assetClass}">${sys.assetClass}</span>
+            <span class="meta-item">📡 ${sys.workflow}</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="value">${sys.totalPicks}</div>
+              <div class="label">Closed Picks</div>
+            </div>
+            <div class="metric">
+              <div class="value ${getMetricColor(sys.winRate)}">${sys.winRate}</div>
+              <div class="label">Win Rate</div>
+            </div>
+            <div class="metric">
+              <div class="value">${sys.closedPicks}</div>
+              <div class="label">Total Trades</div>
+            </div>
+            <div class="metric">
+              <div class="value">${sys.sharpe}</div>
+              <div class="label">Sharpe / PnL</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--text3); margin-bottom: 12px;">
+            <strong>Last Update:</strong> ${sys.lastUpdate}
+          </div>
+          <div class="card-footer">
+            <a href="${sys.dashboard}" class="dashboard-link" target="_blank">
+              Open Dashboard ↗
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getMetricColor(val) {
+      if (val === '--' || val === 'N/A') return '';
+      if (val.includes('%')) {
+        const pct = parseFloat(val);
+        if (pct >= 50) return 'green';
+        if (pct >= 40) return 'yellow';
+        return 'red';
+      }
+      if (typeof val === 'number' && val > 0) return 'green';
+      if (typeof val === 'number' && val < 0) return 'red';
+      return '';
+    }
+
+    // Render Audit Trail
+    function renderAuditTable() {
+      const tbody = document.getElementById('auditTableBody');
+      const loading = document.getElementById('auditLoading');
+      const search = document.getElementById('auditSearch').value.toLowerCase();
+      const sysFilter = document.getElementById('auditSystemFilter').value;
+      const statusFilter = document.getElementById('auditStatusFilter').value;
+
+      // Filter
+      let filtered = allClosedPicks.filter(pick => {
+        if (search) {
+          const s = (pick.symbol || '').toLowerCase() + (pick.strategy || '').toLowerCase() + (pick.id || '').toLowerCase();
+          if (!s.includes(search)) return false;
+        }
+        if (sysFilter !== 'all' && pick.system !== sysFilter) return false;
+        if (statusFilter !== 'all' && pick.status !== statusFilter) return false;
+        return true;
+      });
+
+      // Sort by entry_date descending
+      filtered.sort((a, b) => {
+        const da = new Date(a.entry_date || a.created_at || a.timestamp);
+        const db = new Date(b.entry_date || b.created_at || b.timestamp);
+        return db - da;
+      });
+
+      loading.style.display = 'none';
+      tbody.innerHTML = filtered.slice(0, 1000).map(pick => {
+        const rawDate = pick.entry_date || pick.created_at || pick.timestamp || '';
+        const date = rawDate.split('T')[0];
+        const pnl = pick.pnl_pct !== undefined ? (pick.pnl_pct * 100).toFixed(2) + '%' : (pick.pnl_dollar ? `$${pick.pnl_dollar.toFixed(2)}` : '--');
+        const pnlClass = pick.status === 'WON' ? 'pnl-pos' : (pick.status === 'LOST' ? 'pnl-neg' : '');
+        const duration = pick.hold_days !== undefined ? `${pick.hold_days}d` : (pick.duration || '--');
+
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${SYSTEM_PATHS[pick.system]?.name || pick.system}</td>
+            <td>${pick.symbol || pick.pair || '--'}</td>
+            <td>${pick.strategy || '--'}</td>
+            <td class="${pick.signal_type === 'BUY' ? 'badge-long' : 'badge-short'}">${pick.signal_type || '--'}</td>
+            <td>$${pick.entry_price?.toFixed(4) || '--'}</td>
+            <td class="${pnlClass}">${pnl}</td>
+            <td><span class="badge badge-${(pick.status || '').toLowerCase()}">${pick.status || '--'}</span></td>
+            <td>${duration}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--text3);">No picks match current filters</td></tr>';
+      }
+    }
+
+    // Render Calendar
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      const empty = document.getElementById('calendarEmpty');
+      const sysFilter = document.getElementById('calendarSystemFilter').value;
+
+      // Filter closed picks by system and last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      let picks = allClosedPicks.filter(p => {
+        if (sysFilter !== 'all' && p.system !== sysFilter) return false;
+        const date = new Date(p.entry_date || p.created_at || p.timestamp);
+        return date >= thirtyDaysAgo && p.status && (p.status === 'WON' || p.status === 'LOST');
+      });
+
+      if (picks.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+
+      // Group by date
+      const dateMap = {};
+      picks.forEach(pick => {
+        const rawDate = pick.entry_date || pick.created_at || pick.timestamp || '';
+        const date = rawDate.split('T')[0];
+        if (!dateMap[date]) dateMap[date] = { wins: 0, losses: 0, total: 0, pnl: 0 };
+        dateMap[date].total++;
+        if (pick.status === 'WON') {
+          dateMap[date].wins++;
+          dateMap[date].pnl += (pick.pnl_pct || 0) * 100;
+        } else if (pick.status === 'LOST') {
+          dateMap[date].losses++;
+          dateMap[date].pnl += (pick.pnl_pct || 0) * 100;
+        }
+      });
+
+      // Generate last 30 days
+      const days = [];
+      for (let i = 0; i < 30; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const data = dateMap[dateStr];
+        days.push({ date: dateStr, data });
+      }
+
+      grid.innerHTML = days.map(d => {
+        const hasData = d.data && d.data.total > 0;
+        const isPositive = hasData && d.data.pnl > 0;
+        const isNegative = hasData && d.data.pnl < 0;
+        const count = hasData ? d.data.total : '';
+        const pct = hasData ? d.data.pnl.toFixed(1) + '%' : '';
+
+        return `
+          <div class="calendar-day ${isPositive ? 'positive' : ''} ${isNegative ? 'negative' : ''}" title="${d.date}: ${hasData ? d.data.wins + 'W/' + d.data.losses + 'L' : 'No trades'}">
+            <div style="font-weight:700; margin-bottom:2px;">${d.date.slice(8,10)}</div>
+            ${hasData ? `<div class="sub">${count}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      // Also render daily P&L table
+      renderDailyPnlTable(dateMap);
+    }
+
+    function renderDailyPnlTable(dateMap) {
+      const tbody = document.getElementById('dailyPnlBody');
+      const sortedDates = Object.keys(dateMap).filter(k => k && k !== 'undefined').sort().reverse();
+
+      tbody.innerHTML = sortedDates.map(date => {
+        const d = dateMap[date];
+        const winRate = d.total > 0 ? ((d.wins / d.total) * 100).toFixed(1) + '%' : '0%';
+        const avgPnL = d.total > 0 ? (d.pnl / d.total).toFixed(2) + '%' : '0%';
+        const pnlClass = d.pnl > 0 ? 'pnl-pos' : (d.pnl < 0 ? 'pnl-neg' : '');
+
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${d.total}</td>
+            <td style="color:var(--green)">${d.wins}</td>
+            <td style="color:var(--red)">${d.losses}</td>
+            <td>${winRate}</td>
+            <td class="${pnlClass}">${d.pnl.toFixed(2)}%</td>
+            <td class="${pnlClass}">${avgPnL}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render Active Picks
+    function renderActiveTable() {
+      const tbody = document.getElementById('activeTableBody');
+      const loading = document.getElementById('activeLoading');
+      const search = document.getElementById('activeSearch').value.toLowerCase();
+
+      let filtered = allActivePicks.filter(pick => {
+        if (search) {
+          const s = (pick.symbol || '').toLowerCase() + (pick.strategy || '').toLowerCase() + (pick.system || '').toLowerCase();
+          return s.includes(search);
+        }
+        return true;
+      });
+
+      // Sort by entry_date descending
+      filtered.sort((a, b) => {
+        const da = new Date(a.entry_date || a.created_at || a.timestamp || 0);
+        const db = new Date(b.entry_date || b.created_at || b.timestamp || 0);
+        return db - da;
+      });
+
+      loading.style.display = 'none';
+      tbody.innerHTML = filtered.slice(0, 500).map(pick => {
+        const systemName = SYSTEM_PATHS[pick.system]?.name || pick.system;
+        const currentPrice = pick.current_price || pick.currentPrice;
+        const entryPrice = pick.entry_price || pick.entryPrice;
+        const unrealized = currentPrice && entryPrice && pick.signal_type === 'BUY'
+          ? ((currentPrice - entryPrice) / entryPrice * 100).toFixed(2)
+          : (pick.signal_type === 'SELL' && currentPrice && entryPrice
+            ? ((entryPrice - currentPrice) / entryPrice * 100).toFixed(2)
+            : (pick.unrealized_pnl_pct !== undefined ? (pick.unrealized_pnl_pct * 100).toFixed(2) : '0.00'));
+        const pnlClass = parseFloat(unrealized) > 0 ? 'pnl-pos' : (parseFloat(unrealized) < 0 ? 'pnl-neg' : '');
+
+        const rawDate = pick.entry_date || pick.created_at || pick.timestamp || '';
+        const entryDate = new Date(rawDate);
+        const now = new Date();
+        const holdHours = Math.floor((now - entryDate) / (1000 * 60 * 60));
+        const holdTime = holdHours < 24 ? `${holdHours}h` : `${Math.floor(holdHours/24)}d`;
+
+        return `
+          <tr>
+            <td>${systemName}</td>
+            <td style="font-weight:700; color:var(--cyan)">${pick.symbol || pick.pair || '--'}</td>
+            <td>${pick.strategy || '--'}</td>
+            <td class="${pick.signal_type === 'BUY' ? 'badge-long' : 'badge-short'}">${pick.signal_type || '--'}</td>
+            <td>$${entryPrice?.toFixed(4) || '--'}</td>
+            <td>${rawDate.split('T')[0]}</td>
+            <td>$${currentPrice?.toFixed(4) || '--'}</td>
+            <td class="${pnlClass}">${unrealized}%</td>
+            <td style="color:var(--blue)">$${pick.take_profit?.toFixed(4) || '--'}</td>
+            <td style="color:var(--red)">$${pick.stop_loss?.toFixed(4) || '--'}</td>
+            <td>${holdTime}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 20px; color: var(--text3);">No active picks found</td></tr>';
+      }
+    }
+
+    // Event Listeners for Filters
+    document.getElementById('auditSearch').addEventListener('input', renderAuditTable);
+    document.getElementById('auditSystemFilter').addEventListener('change', renderAuditTable);
+    document.getElementById('auditStatusFilter').addEventListener('change', renderAuditTable);
+    document.getElementById('calendarSystemFilter').addEventListener('change', renderCalendar);
+    document.getElementById('activeSearch').addEventListener('input', renderActiveTable);
+    document.getElementById('refreshActive').addEventListener('click', () => {
+      document.getElementById('activeLoading').style.display = 'block';
+      loadAllData().then(() => {
+        renderActiveTable();
+      });
+    });
+
+    // Auto-refresh every 5 minutes
+    setInterval(loadAllData, 5 * 60 * 1000);
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAllData();
+    });
+  </script>
+</body>
+</html>

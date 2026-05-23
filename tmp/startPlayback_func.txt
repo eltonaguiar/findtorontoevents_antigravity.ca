@@ -1,0 +1,16 @@
+function startPlayback(index) {
+            hasUserInteracted = true;
+            const overlay = document.getElementById(`play-overlay-${index}`);
+            if (overlay) {
+                overlay.classList.remove('visible');
+                setTimeout(() => overlay.remove(), 300);
+            }
+
+            // Reload iframe to trigger autoplay
+            const iframe = document.getElementById(`player-${index}`);
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        }
+
+        

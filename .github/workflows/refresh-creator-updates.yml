@@ -1,0 +1,128 @@
+name: Refresh Creator Updates
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC (9 PM EST / 10 PM EDT)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  refresh-updates:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Refresh All Creator Content
+        run: |
+          set -euo pipefail
+          URL="https://findtorontoevents.ca/fc/api/refresh_all_creators.php"
+          echo "Starting creator content refresh: $URL"
+
+          set +e
+          RESPONSE=$(curl -sS \
+            --connect-timeout 20 \
+            --max-time 420 \
+            --retry 2 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            -w "\n%{http_code}\n%{content_type}" \
+            "$URL")
+          CURL_RC=$?
+          set -e
+
+          HTTP_CODE=$(printf '%s\n' "$RESPONSE" | tail -n 2 | head -n 1)
+          CONTENT_TYPE=$(printf '%s\n' "$RESPONSE" | tail -n 1)
+          BODY=$(printf '%s\n' "$RESPONSE" | sed '$d' | sed '$d')
+
+          printf '%s\n' "$BODY" > /tmp/refresh_result.json
+          printf '{"curl_rc": %s, "http_code": "%s", "content_type": "%s"}\n' \
+            "$CURL_RC" "$HTTP_CODE" "$CONTENT_TYPE" > /tmp/refresh_result_meta.json
+
+          echo "curl_rc=$CURL_RC http_code=$HTTP_CODE content_type=$CONTENT_TYPE"
+          head -n 40 /tmp/refresh_result.json || true
+          
+      - name: Check Result
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          import sys
+          from pathlib import Path
+
+          body = Path('/tmp/refresh_result.json').read_text(encoding='utf-8', errors='replace')
+          meta = json.loads(Path('/tmp/refresh_result_meta.json').read_text(encoding='utf-8'))
+          curl_rc = int(meta.get('curl_rc', 1))
+          http_code = str(meta.get('http_code', '000')).strip()
+          content_type = str(meta.get('content_type', '')).strip()
+
+          if curl_rc != 0:
+              print(f"::warning::Creator refresh skipped due curl transport failure (exit {curl_rc}).")
+              print(body[:1200])
+              sys.exit(0)
+
+          if http_code != '200':
+              if (http_code.startswith('5')
+                      or 'mod_fcgid' in body
+                      or 'Server error' in body
+                      or 'Error 500' in body):
+                  print(f"::warning::Creator refresh skipped due upstream shared-host error (HTTP {http_code}).")
+                  print('50webs shared host returned a server-side error; marking non-fatal.')
+                  sys.exit(0)
+              print(f"Creator content refresh failed: HTTP {http_code}, content-type={content_type}")
+              print(body[:2000])
+              sys.exit(1)
+
+          # Also check for server error indicators even on HTTP 200.
+          # The shared host may return HTTP 200 with an HTML error page embedded
+          # before the actual JSON payload (mod_fcgid timeout), causing JSON
+          # parse failure below.
+          if ('mod_fcgid' in body
+                  or 'Server error' in body
+                  or 'Error 500' in body):
+              print(f"::warning::Creator refresh skipped due upstream shared-host error (HTTP {http_code}).")
+              print('50webs shared host returned a server-side error embedded in a 200 response; marking non-fatal.')
+              print(body[:2000])
+              sys.exit(0)
+
+          try:
+              data = json.loads(body)
+          except json.JSONDecodeError as exc:
+              # Last resort: try to extract JSON from the end of the response
+              # (PHP may dump HTML error first, then JSON payload).
+              # Use rfind with the expected JSON key prefix to avoid picking
+              # up stray '{' characters in the HTML error page.
+              json_start = body.rfind('{"ok":')
+              if json_start >= 0:
+                  try:
+                      data = json.loads(body[json_start:])
+                      if data.get('ok') is True:
+                          print(f"::warning::Creator refresh partially recovered from non-JSON 200 response ({exc}).")
+                          print('PHP error HTML prepended to JSON payload (mod_fcgid timeout); marking non-fatal.')
+                          print(body[json_start:json_start+500])
+                          sys.exit(0)
+                  except (json.JSONDecodeError, ValueError):
+                      pass
+              print(f"::warning::Creator content refresh failed: non-JSON 200 response ({exc}).")
+              print(body[:2000])
+              sys.exit(0)
+
+          if data.get('ok') is True:
+              refreshed = data.get('refreshed', 0)
+              errors = data.get('errors', 0)
+              total = data.get('total_creators', 0)
+              print('Creator content refresh successful')
+              print('Statistics:')
+              print(f'  - Total creators: {total}')
+              print(f'  - Successfully refreshed: {refreshed}')
+              print(f'  - Errors: {errors}')
+              print(json.dumps(data, indent=2, ensure_ascii=True))
+              sys.exit(0)
+
+          payload_text = json.dumps(data, ensure_ascii=True)
+          if 'Database connection failed: Access denied' in payload_text:
+              print('::warning::Creator refresh skipped: remote DB credentials missing on server.')
+              print(json.dumps(data, indent=2, ensure_ascii=True))
+              sys.exit(0)
+
+          print('Creator content refresh failed: endpoint returned ok=false or unexpected payload')
+          print(json.dumps(data, indent=2, ensure_ascii=True))
+          sys.exit(1)
+          PYEOF
+

@@ -1,0 +1,43 @@
+name: Forward-Test New Strategies Tracker
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  forward-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Run forward-test tracker
+        run: python alpha_engine/forward_test_new_strategies.py
+
+      - name: Commit results
+        run: |
+          git config user.name "forward-test-bot"
+          git config user.email "bot@antigravity.ca"
+          git add alpha_engine/data/new_strategy_forward_results.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Forward-test update $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+            git pull --rebase origin main
+            bash .github/scripts/safe_push.sh
+          fi
+

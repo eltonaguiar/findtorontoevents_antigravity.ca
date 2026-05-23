@@ -1,0 +1,161 @@
+name:  Market Beating System - Crypto & Forex Priority
+
+on:
+  # Run every 2 hours for continuous validation
+  schedule:
+    - cron: '0 */2 * * *'
+  
+  # Run on relevant pushes
+  push:
+    branches: [main]
+    paths:
+      - 'market_beating_bot.py'
+      - 'signal_tracker.py'
+      - '.github/workflows/market_beating.yml'
+  
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  market-beating:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name:  Run Market Beating System
+      env:
+        COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        CRYPTOCOMPARE_API_KEY: ${{ secrets.CRYPTOCOMPARE_API_KEY }}
+        
+      run: |
+        echo ""
+        echo "      MARKET BEATING TRADING SYSTEM                            "
+        echo ""
+        echo "   Priority: Crypto (BTC, ETH, SOL, XRP, ADA...)               "
+        echo "   Secondary: Forex (EUR/USD, GBP/USD, USD/JPY...)             "
+        echo "   Goal: Consistently beat buy-and-hold                         "
+        echo "   Method: Track  Validate  Tweak  Repeat                   "
+        echo ""
+        echo ""
+        python market_beating_bot.py
+        
+    - name:  Display Market Beating Report
+      run: |
+        if [ -f MARKET_BEATING_REPORT.md ]; then
+          echo " MARKET BEATING REPORT:"
+          echo "========================"
+          cat MARKET_BEATING_REPORT.md
+        else
+          echo " Report not generated yet"
+        fi
+        
+    - name:  Upload all data
+      uses: actions/upload-artifact@v4
+      with:
+        name: market-beating-data-${{ github.run_number }}
+        path: |
+          signals_database.json
+          validation_results.json
+          tweak_history.json
+          OPTIMIZATION_REPORT.md
+          MARKET_BEATING_REPORT.md
+          market_beating_bot.log
+        retention-days: 90
+        
+    - name:  Commit all data
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "bot@market-beating.ai"
+        git config --local user.name " Market Beating Bot"
+        
+        # Add all tracking files
+        git add signals_database.json || true
+        git add validation_results.json || true
+        git add tweak_history.json || true
+        git add OPTIMIZATION_REPORT.md || true
+        git add MARKET_BEATING_REPORT.md || true
+        git add market_beating_bot.log || true
+        
+        TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+        
+        # Generate commit message with stats
+        COMMIT_MSG=" Auto: Market beating cycle - $TIMESTAMP
+
+         Crypto +  Forex Analysis
+         Signals tracked and validated
+         Parameters auto-tweaked
+         Progress toward beating market
+
+        Run #${{ github.run_number }}"
+        
+        git commit -m "$COMMIT_MSG [skip ci]" || echo "No changes to commit"
+        bash .github/scripts/safe_push.sh
+        
+    - name:  Final Status
+      run: |
+        echo ""
+        echo ""
+        echo "      MARKET BEATING CYCLE COMPLETE                            "
+        echo ""
+        echo "   Signals Generated & Tracked                                  "
+        echo "   Predictions Validated Against Market                         "
+        echo "   Accuracy Calculated per Asset per Strategy                   "
+        echo "   Parameters Tweaked for Better Performance                    "
+        echo "   Progress Toward Beating Market Recorded                      "
+        echo ""
+        echo ""
+        
+        # Show current stats if available
+        if [ -f signals_database.json ] && [ -f validation_results.json ]; then
+          python3 << 'EOF' 2>/dev/null || true
+        import json
+        try:
+            with open('signals_database.json') as f:
+                signals = json.load(f)
+            with open('validation_results.json') as f:
+                validations = json.load(f)
+            
+            total = len(signals)
+            validated = len(validations)
+            
+            if validated > 0:
+                correct = sum(1 for v in validations if v.get('correct', False))
+                accuracy = (correct / validated) * 100
+                print(f" Current Stats: {total} signals, {validated} validated, {accuracy:.1f}% accuracy")
+            else:
+                print(f" Building database: {total} signals tracked")
+        except:
+            print(" Database building...")
+        EOF
+        fi
+        
+        echo ""
+        echo " Next run: $(date -u -d '+2 hours' '+%Y-%m-%d %H:%M UTC')"
+

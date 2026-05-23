@@ -1,0 +1,132 @@
+name: Proven Strategies Scanner
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours (reduced from */15 to ease queue pressure)
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Run RSI Capitulation Scanner
+        run: |
+          cd alpha_engine
+          python -c "
+          from rsi_capitulation_strategy import scan_rsi_capitulation
+          import json, os
+          picks = scan_rsi_capitulation()
+          print(f'RSI Capitulation: {len(picks)} signals found')
+          for p in picks:
+              print(f'  {p[\"symbol\"]} RSI={p.get(\"rsi_at_signal\",0):.1f} conf={p[\"confidence\"]:.2f} type={p.get(\"bounce_type\",\"?\")}')
+          if picks:
+              # Merge into active_picks.json
+              ap_path = 'data/active_picks.json'
+              existing = json.load(open(ap_path)) if os.path.exists(ap_path) else []
+              existing_ids = {p.get('id','') for p in existing}
+              new = [p for p in picks if p['id'] not in existing_ids]
+              if new:
+                  existing.extend(new)
+                  with open(ap_path, 'w') as f: json.dump(existing, f, indent=2)
+                  print(f'Merged {len(new)} new RSI Capitulation picks')
+          "
+
+      - name: Run Beaten Majors Scanner
+        run: |
+          cd alpha_engine
+          python -c "
+          from beaten_majors_strategy import scan_beaten_majors
+          import json, os
+          picks = scan_beaten_majors()
+          print(f'Beaten Majors: {len(picks)} signals found')
+          for p in picks:
+              print(f'  {p[\"symbol\"]} DD={p.get(\"drawdown_pct\",0):.1f}% RSI={p.get(\"rsi_at_signal\",0):.1f} conf={p[\"confidence\"]:.2f}')
+          if picks:
+              ap_path = 'data/active_picks.json'
+              existing = json.load(open(ap_path)) if os.path.exists(ap_path) else []
+              existing_ids = {p.get('id','') for p in existing}
+              new = [p for p in picks if p['id'] not in existing_ids]
+              if new:
+                  existing.extend(new)
+                  with open(ap_path, 'w') as f: json.dump(existing, f, indent=2)
+                  print(f'Merged {len(new)} new Beaten Majors picks')
+          "
+
+      - name: Run Relative Strength Recovery Scanner
+        run: |
+          cd alpha_engine
+          python -c "
+          try:
+              from relative_strength_strategy import scan_relative_strength
+              import json, os
+              picks = scan_relative_strength()
+              print(f'Relative Strength: {len(picks)} signals found')
+              for p in picks:
+                  print(f'  {p[\"symbol\"]} 7d={p.get(\"perf_7d_pct\",0):.1f}% conf={p[\"confidence\"]:.2f}')
+              if picks:
+                  ap_path = 'data/active_picks.json'
+                  existing = json.load(open(ap_path)) if os.path.exists(ap_path) else []
+                  existing_ids = {p.get('id','') for p in existing}
+                  new = [p for p in picks if p['id'] not in existing_ids]
+                  if new:
+                      existing.extend(new)
+                      with open(ap_path, 'w') as f: json.dump(existing, f, indent=2)
+                      print(f'Merged {len(new)} new Rel Strength picks')
+          except ImportError:
+              print('Relative Strength strategy not yet deployed -- skipping')
+          "
+
+      - name: Run Proven Strategies Engine (VWAP Scalper Pro, RSI-BB, TSMOM)
+        run: |
+          cd proven_strategies
+          python proven_strategies.py
+          # Merge generated picks into alpha_engine active_picks.json
+          python -c "
+          import json, os
+          if os.path.exists('data/proven_strategy_picks.json'):
+              with open('data/proven_strategy_picks.json') as f:
+                  data = json.load(f)
+              picks = data.get('picks', [])
+              print(f'Proven strategies generated {len(picks)} picks')
+              if picks:
+                  ap_path = '../alpha_engine/data/active_picks.json'
+                  existing = json.load(open(ap_path)) if os.path.exists(ap_path) else []
+                  existing_ids = {p.get('id','') for p in existing}
+                  new = [p for p in picks if p.get('id') and p['id'] not in existing_ids]
+                  if new:
+                      existing.extend(new)
+                      with open(ap_path, 'w') as f: json.dump(existing, f, indent=2)
+                      print(f'Merged {len(new)} new proven strategy picks')
+                  else:
+                      print('No new proven strategy picks to merge')
+          else:
+              print('No proven_strategy_picks.json found')
+          "
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/active_picks.json alpha_engine/data/rsi_cap_picks.json alpha_engine/data/beaten_majors_picks.json alpha_engine/data/rel_strength_picks.json proven_strategies/data/proven_strategy_picks.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No new picks"
+          else
+            SYMS=$(git diff --cached --stat | head -1)
+            git commit -m "Proven strategies scan $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

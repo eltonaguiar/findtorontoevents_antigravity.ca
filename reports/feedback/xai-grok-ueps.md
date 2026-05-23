@@ -1,0 +1,5 @@
+1. **RECOMMENDED OPTION**: B - It targets UEPS long-horizon specifics with bypasses for BLOCKED_SYMBOLS, elite_grade, and score floor, minimizing impact on short-term strategies via env flag.
+2. **WHAT TO DROP**: C (global score floor drop risks short-term strategy quality); D (UI fix avoids core gate logic, misaligned with pipeline integrity); E (deferring delays value without solving root issues).
+3. **SAFETY**: Worst-case for B is UEPS picks with underlying data/quality issues pass gate, degrading portfolio trust; canary metric is unexpected UEPS pick volume spike in picks.active within 14d shadow period.
+4. **UNIT TESTS**: (1) Test UEPS pick with trade_timeframe=POSITION bypasses score floor, BLOCKED_SYMBOLS, and elite_grade under env flag ON; (2) Test non-UEPS picks unchanged under same flag; (3) Test flag OFF reverts to original gate behavior.
+5. **ROLLBACK**: Flip env flag UEPS_LONG_HORIZON_GATE_BYPASS_ENABLED=OFF to disable bypass instantly.

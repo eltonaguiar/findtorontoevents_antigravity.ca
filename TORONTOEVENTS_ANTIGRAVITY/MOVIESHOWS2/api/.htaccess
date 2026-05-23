@@ -1,0 +1,11 @@
+# CORS — set at Apache level so preflight OPTIONS always gets headers
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, X-User-Id"
+</IfModule>
+
+# Return 204 for OPTIONS preflight without invoking PHP
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=204,L]

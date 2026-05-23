@@ -1,0 +1,120 @@
+name: H-004 — Inventory Surprise + Roll Yield Backtest (real EIA data)
+
+on:
+  # Weekly on Monday 06:00 UTC — after weekend EIA/USDA data updates
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      quick:
+        description: "Quick mode (USO/UNG/DBA only, faster)"
+        type: boolean
+        default: false
+      refresh_cache:
+        description: "Force re-fetch all market data"
+        type: boolean
+        default: false
+
+jobs:
+  h004-backtest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install yfinance requests
+
+      - name: Run H-004 backtest
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+        run: |
+          QUICK_FLAG=""
+          if [ "${{ inputs.quick }}" = "true" ]; then
+            QUICK_FLAG="--quick"
+          fi
+          REFRESH_FLAG=""
+          if [ "${{ inputs.refresh_cache }}" = "true" ]; then
+            REFRESH_FLAG="--refresh-cache"
+          fi
+          python tools/h004_inventory_surprise_roll_yield.py \
+            $QUICK_FLAG $REFRESH_FLAG --json \
+            2>&1 | tee /tmp/h004_output.txt
+          # Extract just the JSON verdict from stdout
+          grep -E '^\{' /tmp/h004_output.txt | tail -1 > /tmp/h004_verdict.json || true
+
+      - name: Show verdict
+        run: |
+          echo "=== H-004 Verdict ==="
+          cat /tmp/h004_verdict.json 2>/dev/null || echo "(no verdict produced)"
+
+      - name: Copy report
+        run: |
+          # The script writes its own report; find and echo it
+          REPORT=$(ls reports/h004_inventory_roll_yield_*.json 2>/dev/null | tail -1)
+          if [ -n "$REPORT" ]; then
+            echo "=== Report: $REPORT ==="
+            cat "$REPORT"
+          fi
+
+      - name: Update hypothesis registry
+        run: |
+          python - <<'PYEOF'
+          import json, sys
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          verdict_path = Path("/tmp/h004_verdict.json")
+          registry_path = Path("reports/hypothesis_registry.json")
+          if not verdict_path.exists() or not registry_path.exists():
+              print("Skipping registry update — files missing")
+              sys.exit(0)
+
+          try:
+              verdict = json.loads(verdict_path.read_text())
+          except Exception as e:
+              print(f"Could not parse verdict: {e}")
+              sys.exit(0)
+
+          registry = json.loads(registry_path.read_text())
+          for h in registry["hypotheses"]:
+              if h["id"] == "H-004":
+                  h["ci_result"] = {
+                      "run_date": datetime.now(timezone.utc).date().isoformat(),
+                      "verdict": verdict.get("verdict"),
+                      "n_trades": verdict.get("n_trades"),
+                      "win_rate_gross": verdict.get("win_rate_gross"),
+                      "gross_edge_bps": verdict.get("gross_edge_bps"),
+                      "net_edge_bps": verdict.get("net_edge_bps"),
+                      "any_offline": verdict.get("any_offline"),
+                  }
+                  if verdict.get("verdict") == "HARNESS_PASS":
+                      h["status"] = "SHADOW_LIVE"
+                  break
+
+          registry_path.write_text(json.dumps(registry, indent=2))
+          print(f"Registry updated: H-004 → {verdict.get('verdict')}")
+          PYEOF
+
+      - name: Commit results
+        run: |
+          git config user.name "H-004 Backtest Bot"
+          git config user.email "h004-backtest@findtorontoevents.ca"
+          git add reports/h004_inventory_roll_yield_*.json reports/hypothesis_registry.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "chore(H-004): weekly backtest $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git pull --rebase origin main || true
+          git push origin main || echo "Push failed — report is local"

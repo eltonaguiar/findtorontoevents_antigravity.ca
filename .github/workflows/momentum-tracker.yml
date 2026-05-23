@@ -1,0 +1,118 @@
+name: MOMENTUM TRACKER - Real-Time Gainer Scanner
+
+on:
+  schedule:
+    # Every 15 minutes
+    - cron: '37 * * * *' # Reduced from */15 doesn't feed audit
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no picks saved)'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: momentum-tracker
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  momentum-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run Momentum Tracker
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo " MOMENTUM TRACKER - Gainer Acceleration"
+          echo " $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+
+          DRY_RUN_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          python alpha_engine/momentum_tracker.py $DRY_RUN_FLAG --verbose
+
+      - name: Commit results
+        if: inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add alpha_engine/data/momentum_tracker_state.json 2>/dev/null || true
+          git add alpha_engine/data/momentum_tracker_picks.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            ACTIVE=$(python -c "
+          import json
+          try:
+              picks = json.load(open('alpha_engine/data/momentum_tracker_picks.json'))
+              active = [p for p in picks if p.get('status') == 'active']
+              print(f'{len(active)} active picks')
+          except:
+              print('scan complete')
+          " 2>/dev/null || echo "scan complete")
+
+            git commit -m "MOMENTUM TRACKER [$(date -u '+%Y-%m-%d %H:%M UTC')] - $ACTIVE [skip ci]"
+
+            for i in 1 2 3; do
+              git rebase --abort 2>/dev/null || true
+
+              if git pull --rebase origin main 2>/dev/null; then
+                bash .github/scripts/safe_push.sh && break
+              else
+                git rebase --abort 2>/dev/null || true
+                git pull origin main --no-rebase -X ours 2>/dev/null || true
+                bash .github/scripts/safe_push.sh && break
+              fi
+
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+
+      - name: Print summary
+        if: always()
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          import json
+          try:
+              picks = json.load(open('alpha_engine/data/momentum_tracker_picks.json'))
+              active = [p for p in picks if p.get('status') == 'active']
+              closed = [p for p in picks if p.get('status','').startswith('closed')]
+              print(f'Active: {len(active)} | Closed: {len(closed)}')
+              for p in active:
+                  print(f' {p[\"symbol\"]:12s} entry={p[\"entry_price\"]} conf={p.get(\"confidence\",0):.2f} [{p.get(\"reason\",\"\")[:60]}]')
+          except Exception as e:
+              print(f'Summary unavailable: {e}')
+          " 2>/dev/null || echo "Summary unavailable"
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "MOMENTUM TRACKER" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

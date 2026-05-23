@@ -1,0 +1,48 @@
+{
+  "$comment": "Reference config for tools/swarm. The dispatcher does not auto-load this today; treat it as the source of truth for human reviewers and copy values into swarm_dispatch.ps1 defaults or a wrapper. See tools/swarm/SPEC.md and PORTING.md.",
+  "repo_slug": "eltonaguiar/findtorontoevents_antigravity.ca",
+  "default_engines": ["claude", "gemini", "deepseek"],
+  "max_parallel": 4,
+  "prompts": {
+    "pr_review": "tools/swarm/prompts/pr_review.md",
+    "merge_reviews": "tools/swarm/prompts/merge_reviews.md",
+    "redteam": "tools/swarm/prompts/redteam.md"
+  },
+  "engines": {
+    "claude":       {"kind": "cli", "auth": "oauth",     "default_model": "sonnet",          "headless": true,  "notes": "merge-captain + red-team use opus"},
+    "gemini":       {"kind": "cli", "auth": "oauth",     "default_model": null,              "headless": true,  "notes": "may ignore strict-JSON contract"},
+    "opencode":     {"kind": "cli", "auth": "oauth",     "default_model": null,              "headless": "partial", "notes": "windows arg quoting truncates long prompts; worker pipes via stdin"},
+    "kilo":         {"kind": "cli", "auth": "oauth",     "default_model": null,              "headless": "partial", "notes": "shares opencode adapter path"},
+    "copilot":      {"kind": "cli", "auth": "gh-oauth",  "default_model": null,              "headless": true,  "notes": "gh extension install github/gh-copilot"},
+    "deepseek":     {"kind": "api", "auth_env": "DEEPSEEK_API",      "default_model": "deepseek-chat",     "headless": true},
+    "cerebras":     {"kind": "api", "auth_env": "CEREBRAS_API",      "default_model": "gpt-oss-120b",      "headless": true,  "extra_pip": "cerebras-cloud-sdk"},
+    "xai":          {"kind": "api", "auth_env": "X_AI_KEY",          "default_model": "grok-3-latest",     "headless": true},
+    "inception":    {"kind": "api", "auth_env": "INCEPTION_AI_KEY",  "default_model": "mercury-2",         "headless": true,  "notes": "mercury is deprecated, use mercury-2"},
+    "ollama_cloud": {"kind": "cli", "auth": "ollama-signin",         "default_model": "gpt-oss:120b-cloud","headless": true,  "notes": "OLLAMA_CLOUD_KEY env is an SSH push key, NOT a chat token; adapter shells to local `ollama run`"}
+  },
+  "excluded_engines": {
+    "codebuff": "TUI only + out of credits"
+  },
+  "logging": {
+    "calls_jsonl": "swarm_runs/_calls.jsonl",
+    "low_signal_byte_floor": 50,
+    "stats_flags": {
+      "LOW_OK_RATE":   "ok_rate < 0.5 (calls >= 2)",
+      "ZOMBIE_OUTPUT": "low_signal_rate >= 0.5 (calls >= 2)",
+      "ERRORING":      "error_rate >= 0.5",
+      "UNUSED":        "calls == 0"
+    }
+  },
+  "permissions": {
+    "writers": ["tools/swarm/comment_poster.ps1"],
+    "claude_worker_allowed_tools": [
+      "Bash(gh pr view:*)", "Bash(gh pr diff:*)", "Bash(gh pr checks:*)",
+      "Bash(git diff:*)",   "Bash(git log:*)",    "Bash(grep:*)", "Bash(rg:*)",
+      "Read", "Grep", "Glob"
+    ],
+    "claude_worker_disallowed_tools": [
+      "Edit", "Bash(git push:*)", "Bash(gh pr merge:*)",
+      "Bash(gh pr comment:*)", "Bash(gh pr review:*)", "Bash(gh pr edit:*)"
+    ]
+  }
+}

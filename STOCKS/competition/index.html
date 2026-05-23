@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Algorithm Competition Arena | Real Data Results</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg-0:#06060b;--bg-1:#0d0d16;--bg-2:#14141f;--bg-3:#1c1c2b;--border:#2a2a40;--text-1:#eeeef5;--text-2:#a0a0b8;--text-3:#666680;--gold:#ffd700;--silver:#c0c0c0;--bronze:#cd7f32;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4;--orange:#f97316;--pink:#ec4899}
+    html{scroll-behavior:smooth}
+    body{font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-0);color:var(--text-1);min-height:100vh}
+    a{color:var(--purple);text-decoration:none}
+    .bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(168,85,247,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,0.03) 1px,transparent 1px);background-size:40px 40px}
+    .bg-glow{position:fixed;top:-30vh;left:50%;transform:translateX(-50%);width:100vw;height:60vh;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(147,51,234,0.08) 0%,transparent 70%)}
+    .page{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:20px}
+    .header{text-align:center;padding:28px 20px 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+    .header h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;background:linear-gradient(135deg,var(--gold),var(--orange),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;margin-bottom:6px}
+    .header .sub{color:var(--text-2);font-size:0.95rem;margin-bottom:6px}
+    .header .gen{color:var(--text-3);font-size:0.8rem}
+    .nav-links{display:flex;justify-content:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .nav-links a{padding:6px 14px;background:var(--bg-3);border-radius:6px;color:var(--text-2);font-size:0.82rem;transition:all 0.2s}
+    .nav-links a:hover{background:var(--purple);color:#fff}
+
+    /* Data Type Banner */
+    .data-type-banner{max-width:900px;margin:0 auto 24px;padding:16px 20px;border-radius:12px;font-size:0.85rem;line-height:1.6}
+    .data-type-banner.backtest{background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);color:var(--orange)}
+    .data-type-banner strong{color:var(--text-1)}
+    .data-type-banner .badge-bt{display:inline-block;padding:2px 10px;border-radius:4px;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(249,115,22,0.18);color:var(--orange);border:1px solid rgba(249,115,22,0.3);margin-right:6px;vertical-align:middle}
+    .data-type-banner ul{margin:8px 0 0 18px;color:var(--text-2)}
+    .data-type-banner li{padding:2px 0}
+
+    /* Tooltip icon */
+    .info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--bg-3);color:var(--text-3);font-size:0.65rem;cursor:help;margin-left:4px;position:relative;border:1px solid var(--border);flex-shrink:0;font-style:normal;font-weight:700}
+    .info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1c1c2b;color:var(--text-2);padding:8px 12px;border-radius:8px;font-size:0.75rem;white-space:normal;width:260px;z-index:100;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.4);line-height:1.4;font-weight:400;text-align:left;pointer-events:none}
+
+    /* Tabs */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:24px}
+    .tab{padding:10px 20px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;transition:all 0.2s;color:var(--text-2)}
+    .tab:hover{border-color:var(--purple);color:var(--text-1)}
+    .tab.active{background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(99,102,241,0.15));border-color:var(--purple);color:var(--text-1)}
+    .winner-banner{background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(168,85,247,0.08));border:2px solid var(--gold);border-radius:16px;padding:28px;text-align:center;margin-bottom:24px}
+    .winner-banner .trophy{font-size:3rem;margin-bottom:6px}
+    .winner-banner h2{font-size:1.6rem;background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+    .winner-banner .detail{color:var(--text-2);font-size:0.95rem;line-height:1.5}
+    .winner-banner .why{color:var(--text-2);font-size:0.85rem;margin-top:10px;padding:12px;background:var(--bg-2);border-radius:8px;text-align:left;max-width:700px;margin-left:auto;margin-right:auto}
+    .podium{display:flex;justify-content:center;gap:20px;margin-top:16px;flex-wrap:wrap}
+    .podium-card{background:var(--bg-2);border-radius:12px;padding:14px 22px;min-width:170px;text-align:center}
+    .podium-card .rank-label{font-size:0.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px}
+    .podium-card .name{font-size:1.05rem;font-weight:700;margin:4px 0}
+    .podium-card .ret{font-size:0.95rem;font-weight:600}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+    .stat-card .sv{font-size:1.3rem;font-weight:700}
+    .stat-card .sl{color:var(--text-3);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+    .positive{color:var(--green)}.negative{color:var(--red)}
+    .chart-section{background:var(--bg-1);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;position:relative;overflow:hidden}
+    .chart-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--gold),var(--cyan))}
+    .chart-section h3{font-size:1.15rem;font-weight:700;margin-bottom:14px}
+    .chart-box{position:relative;height:400px}
+    @media(max-width:768px){.chart-box{height:280px}}
+    .table-section{background:var(--bg-1);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;overflow-x:auto;position:relative}
+    .table-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--orange))}
+    .table-section h3{font-size:1.15rem;font-weight:700;margin-bottom:14px}
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;padding:10px 12px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-3);border-bottom:1px solid var(--border)}
+    td{padding:10px 12px;font-size:0.85rem;border-bottom:1px solid rgba(42,42,64,0.4);vertical-align:middle}
+    tr:hover td{background:rgba(168,85,247,0.04)}
+    .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-weight:700;font-size:0.8rem}
+    .r1{background:var(--gold);color:#000}.r2{background:var(--silver);color:#000}.r3{background:var(--bronze);color:#fff}.rx{background:var(--bg-3);color:var(--text-2)}
+    .trades-section{background:var(--bg-1);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;position:relative;overflow:hidden}
+    .trades-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--blue))}
+    .trades-section h3{font-size:1.15rem;font-weight:700;margin-bottom:14px}
+    .trades-list{max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+    .trades-list::-webkit-scrollbar{width:6px}
+    .trades-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    .trade-item{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.82rem;flex-wrap:wrap}
+    .trade-time{color:var(--text-3);font-size:0.72rem;min-width:140px;font-family:monospace}
+    .trade-algo{font-weight:600;min-width:80px}
+    .trade-action{font-weight:700;padding:2px 8px;border-radius:4px;font-size:0.72rem;text-transform:uppercase}
+    .trade-buy{background:rgba(34,197,94,0.15);color:var(--green)}
+    .trade-sell{background:rgba(239,68,68,0.15);color:var(--red)}
+    .trade-ticker{font-weight:700;min-width:65px}
+    .trade-detail{color:var(--text-2);flex:1;min-width:100px}
+    .trade-pnl{font-weight:600;min-width:80px;text-align:right}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+    @media(max-width:1024px){.two-col{grid-template-columns:1fr}}
+    .footer{text-align:center;padding:24px;color:var(--text-3);font-size:0.8rem;border-top:1px solid var(--border);margin-top:32px}
+    .loading{text-align:center;padding:60px;color:var(--text-3);font-size:1.1rem}
+    .loading .spin{display:inline-block;width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty-state{text-align:center;padding:40px 20px;color:var(--text-3);background:var(--bg-2);border:1px dashed var(--border);border-radius:12px;margin:12px 0}
+    .empty-state .es-icon{font-size:2rem;margin-bottom:8px}
+    .empty-state .es-title{font-size:1rem;color:var(--text-2);margin-bottom:4px}
+    .empty-state .es-detail{font-size:0.82rem;line-height:1.5}
+    .audit-section{background:var(--bg-1);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;position:relative;overflow:hidden}
+    .audit-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--red))}
+    .audit-section h3{font-size:1.15rem;font-weight:700;margin-bottom:14px}
+    .audit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .audit-card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:14px}
+    .audit-card h4{font-size:0.88rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .audit-card p,.audit-card li{font-size:0.8rem;color:var(--text-2);line-height:1.5}
+    .audit-card ul{margin:4px 0 0 16px;list-style:disc}
+    @media(max-width:600px){.page{padding:10px}.stats-grid{grid-template-columns:repeat(2,1fr)}.podium{gap:10px}.podium-card{min-width:130px;padding:10px 14px}.audit-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="page">
+  <div class="header">
+    <h1>Algorithm Competition Arena</h1>
+    <p class="sub">12 trading algorithms competing on real Yahoo Finance market data across 5 asset classes</p>
+    <p class="gen" id="genTime">Loading results...</p>
+    <div class="nav-links">
+      <a href="/STOCKS/index.html">Stocks Hub</a>
+      <a href="/predictions/dashboard.html">Predictions</a>
+      <a href="/STOCKS/algorithm-competition.html">Simulation Mode</a>
+      <a href="/index.html">Home</a>
+    </div>
+  </div>
+
+  <!-- DATA TYPE DISCLOSURE: always visible -->
+  <div class="data-type-banner backtest" id="dataDisclosure">
+    <span class="badge-bt">Backtested</span>
+    <strong>These are backtested results, NOT forward-facing live trades.</strong>
+    <ul>
+      <li><strong>What this means:</strong> Algorithms were run against <em>historical</em> Yahoo Finance price data. Trades shown were <em>simulated</em> &mdash; no real money was placed, no orders were sent to any exchange.</li>
+      <li><strong>Data source:</strong> Yahoo Finance OHLCV (yfinance Python library). Prices are adjusted close. Downloaded fresh at the time shown in "Generated" above.</li>
+      <li><strong>Indicators computed:</strong> RSI(14,21), Bollinger Bands(20,50), MACD(12,26,9), SMA/EMA(10,20,50,100,200), Hurst exponent(63d), trend strength, momentum, volatility &mdash; all from real price data.</li>
+      <li><strong>Trade timestamps:</strong> Each trade shows an EST timestamp. These represent the <em>simulated execution time</em> on that historical trading day, not a real order placed at that moment.</li>
+      <li><strong>Limitations:</strong> No slippage modeled. No commissions. Execution assumed at close price. Past performance does not predict future results.</li>
+      <li><strong>Forward-facing picks:</strong> See the <strong style="color:var(--green)">LIVE FORWARD TEST</strong> section below &mdash; algorithms generate picks daily at market open, tracked against real prices until TP/SL hit or expiry.</li>
+    </ul>
+  </div>
+
+  <!-- FORWARD TEST SECTION -->
+  <div id="forwardSection" style="display:none;">
+    <div style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(6,182,212,0.08));border:2px solid var(--green);border-radius:16px;padding:24px;margin-bottom:24px;">
+      <h2 style="font-size:1.4rem;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-block;width:12px;height:12px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;"></span>
+        LIVE FORWARD TEST &mdash; Real Picks Tracked Against Live Prices
+      </h2>
+      <p style="color:var(--text-2);font-size:0.88rem;margin-bottom:6px;">
+        These picks were generated <strong>before</strong> outcomes were known. Entry prices locked at signal time. Resolved against real market prices.
+        <i class="info-tip" data-tip="Unlike the backtest above, these picks are FORWARD-FACING. The algorithm generated the signal, we recorded the entry price, and now we wait to see if TP or SL gets hit. This is the gold standard for strategy validation.">?</i>
+      </p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;" id="fwStats"></div>
+      <div id="fwPicksList" style="max-height:600px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+      <p style="color:var(--text-3);font-size:0.75rem;margin-top:12px;">
+        Auto-generates weekdays 9:30 AM EST | Resolves every 6 hours | Data: <code>forward_picks.json</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- Asset Class Tabs -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- Content -->
+  <div id="content">
+    <div class="loading"><div class="spin"></div><br>Loading real competition data...</div>
+  </div>
+
+  <div class="footer">
+    <p>STOCKSCURSORS CLAW &mdash; Algorithm Competition Arena</p>
+    <p>Real Yahoo Finance market data. Backtested using alpha_engine strategies. <strong>Not financial advice.</strong></p>
+    <p>Source code: <code>alpha_engine/strategies/</code> &amp; <code>alpha_engine/ensemble/</code> | Backtester: <code>STOCKS/competition/run_competition.py</code></p>
+    <p style="margin-top:8px;">Data auto-refreshes weekly via GitHub Actions (<code>algorithm-competition-refresh.yml</code>).</p>
+  </div>
+</div>
+
+<script>
+const ALGO_COLORS = {
+  'Momentum':'#3b82f6','Trend':'#06b6d4','Breakout':'#f97316','BB Revert':'#22c55e',
+  'Reversal':'#ec4899','Quality':'#a855f7','Value':'#14b8a6','Dividend':'#84cc16',
+  'PEAD':'#f59e0b','SafeBet':'#6366f1','ML':'#f43f5e','GodMode':'#ffd700',
+};
+const ASSET_ICONS = {stocks:'📈',crypto:'🪙',forex:'💱',penny_stocks:'🎰',meme_coins:'🐸'};
+
+let DATA = null;
+let currentAC = null;
+let mainChart = null;
+
+async function loadData() {
+  try {
+    const resp = await fetch('competition-slim.json');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    DATA = await resp.json();
+    document.getElementById('genTime').textContent = `Generated: ${DATA.generated_at} | Starting Capital: $${DATA.starting_capital.toLocaleString()} | Backtest (not live)`;
+    buildTabs();
+    const first = Object.keys(DATA.asset_classes)[0];
+    if (first) switchTab(first);
+    else showGlobalEmpty('No asset class data found in results file.');
+  } catch(e) {
+    document.getElementById('content').innerHTML = emptyStateHTML(
+      '📂', 'Competition Data Not Available',
+      `Could not load <code>competition-slim.json</code>. This file is generated by the Python backtester.<br><br>
+       <strong>To generate:</strong> Run <code>python3 STOCKS/competition/run_competition.py</code><br>
+       <strong>Auto-refresh:</strong> GitHub Actions runs this every Sunday at 5:00 AM EST.<br>
+       <strong>Error:</strong> ${e.message}`
+    );
+  }
+}
+
+function emptyStateHTML(icon, title, detail) {
+  return `<div class="empty-state"><div class="es-icon">${icon}</div><div class="es-title">${title}</div><div class="es-detail">${detail}</div></div>`;
+}
+
+function showGlobalEmpty(msg) {
+  document.getElementById('content').innerHTML = emptyStateHTML('📭', 'No Data', msg);
+}
+
+function buildTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  for (const [key, ac] of Object.entries(DATA.asset_classes)) {
+    const t = document.createElement('div');
+    t.className = 'tab';
+    t.dataset.key = key;
+    t.textContent = `${ASSET_ICONS[key]||'📊'} ${ac.label}`;
+    t.onclick = () => switchTab(key);
+    tabs.appendChild(t);
+  }
+}
+
+function switchTab(key) {
+  currentAC = key;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key === key));
+  const ac = DATA.asset_classes[key];
+  if (!ac || !ac.results || ac.results.length === 0) {
+    document.getElementById('content').innerHTML = emptyStateHTML(
+      '📭', `No results for ${ac ? ac.label : key}`,
+      `The backtester did not produce results for this asset class. This can happen if:<br>
+       &bull; Yahoo Finance returned no data for the tickers<br>
+       &bull; Insufficient trading days (need 252+)<br>
+       &bull; All tickers were delisted or unavailable<br><br>
+       <strong>Next refresh:</strong> Sunday 5:00 AM EST via GitHub Actions.`
+    );
+    return;
+  }
+  renderAssetClass(ac);
+}
+
+function renderAssetClass(ac) {
+  const results = ac.results;
+  const winner = results[0];
+  const second = results.length > 1 ? results[1] : null;
+  const third = results.length > 2 ? results[2] : null;
+  const totalTrades = results.reduce((s,r) => s + r.total_trades, 0);
+  const avgSharpe = (results.reduce((s,r) => s + r.sharpe_ratio, 0) / results.length).toFixed(3);
+
+  let allTrades = [];
+  results.forEach(r => { if(r.trades_sample) allTrades = allTrades.concat(r.trades_sample); });
+  allTrades.sort((a,b) => (b.timestamp_est||b.date).localeCompare(a.timestamp_est||a.date));
+
+  const whyWins = buildWinnerExplanation(winner, ac);
+
+  // Check for zero-trade algorithms
+  const zeroTradeAlgos = results.filter(r => r.total_trades === 0);
+  const zeroTradeNote = zeroTradeAlgos.length > 0
+    ? `<div style="margin-top:12px;padding:10px;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:8px;font-size:0.82rem;color:var(--orange);">
+        <strong>Note:</strong> ${zeroTradeAlgos.length} algorithm(s) generated 0 trades for this asset class:
+        ${zeroTradeAlgos.map(a => a.short_name).join(', ')}.
+        This occurs when signal conditions (e.g., Bollinger &lt; -1.5 SD, stocks below 200-day MA) were never met during the test period. This is expected &mdash; conservative strategies fire rarely.
+       </div>` : '';
+
+  const html = `
+    <!-- Winner Banner -->
+    <div class="winner-banner">
+      <div class="trophy">🏆</div>
+      <h2>${winner.algorithm} Wins ${ac.label}!</h2>
+      <p class="detail">
+        Return: <strong class="${winner.total_return_pct>=0?'positive':'negative'}">${winner.total_return_pct>=0?'+':''}${winner.total_return_pct}%</strong>
+        <i class="info-tip" data-tip="Backtested total return over ${ac.trading_days} trading days (${ac.start_date} to ${ac.end_date}). This is NOT a live or forward-facing result.">?</i>
+        &nbsp;|&nbsp; Sharpe: <strong>${winner.sharpe_ratio}</strong>
+        <i class="info-tip" data-tip="Annualized Sharpe ratio = (mean daily return / std daily return) * sqrt(252). Higher = better risk-adjusted return. >1.0 is good, >2.0 is excellent.">?</i>
+        &nbsp;|&nbsp; Win Rate: <strong>${winner.win_rate_pct}%</strong>
+        <i class="info-tip" data-tip="Percentage of closed trades that were profitable (exit price > entry price). Note: a low win rate can still be profitable if average wins >> average losses.">?</i>
+        &nbsp;|&nbsp; Trades: <strong>${winner.total_trades}</strong>
+        &nbsp;|&nbsp; Max DD: <strong class="negative">-${winner.max_drawdown_pct}%</strong>
+        <i class="info-tip" data-tip="Maximum peak-to-trough portfolio decline during the backtest. Represents the worst drawdown the strategy experienced.">?</i><br>
+        Benchmark (${ac.benchmark}): <strong class="${ac.benchmark_return_pct>=0?'positive':'negative'}">${ac.benchmark_return_pct>=0?'+':''}${ac.benchmark_return_pct}%</strong>
+        <i class="info-tip" data-tip="Buy-and-hold return of the benchmark (${ac.benchmark}) over the same period. Algorithms are compared against this.">?</i>
+        &nbsp;|&nbsp; ${ac.algorithms_beating_benchmark}/12 algorithms beat benchmark
+      </p>
+      <div class="why">${whyWins}</div>
+      <div class="podium">
+        <div class="podium-card"><div class="rank-label">🥇 1st Place</div><div class="name" style="color:var(--gold)">${winner.short_name}</div><div class="ret ${winner.total_return_pct>=0?'positive':'negative'}">${winner.total_return_pct>=0?'+':''}${winner.total_return_pct}%</div></div>
+        ${second ? `<div class="podium-card"><div class="rank-label">🥈 2nd Place</div><div class="name" style="color:var(--silver)">${second.short_name}</div><div class="ret ${second.total_return_pct>=0?'positive':'negative'}">${second.total_return_pct>=0?'+':''}${second.total_return_pct}%</div></div>` : ''}
+        ${third ? `<div class="podium-card"><div class="rank-label">🥉 3rd Place</div><div class="name" style="color:var(--bronze)">${third.short_name}</div><div class="ret ${third.total_return_pct>=0?'positive':'negative'}">${third.total_return_pct>=0?'+':''}${third.total_return_pct}%</div></div>` : ''}
+      </div>
+      ${zeroTradeNote}
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sv">${ac.trading_days}</div><div class="sl">Trading Days <i class="info-tip" data-tip="Number of market days simulated. Weekends/holidays excluded.">?</i></div></div>
+      <div class="stat-card"><div class="sv">${ac.start_date}</div><div class="sl">Backtest Start</div></div>
+      <div class="stat-card"><div class="sv">${ac.end_date}</div><div class="sl">Backtest End</div></div>
+      <div class="stat-card"><div class="sv ${ac.benchmark_return_pct>=0?'positive':'negative'}">${ac.benchmark_return_pct>=0?'+':''}${ac.benchmark_return_pct}%</div><div class="sl">Benchmark (${ac.benchmark})</div></div>
+      <div class="stat-card"><div class="sv">${totalTrades.toLocaleString()}</div><div class="sl">Total Trades</div></div>
+      <div class="stat-card"><div class="sv">${avgSharpe}</div><div class="sl">Avg Sharpe</div></div>
+    </div>
+
+    <!-- Audit Trail -->
+    <div class="audit-section" id="auditSection">
+      <h3>Audit Trail &amp; Methodology <i class="info-tip" data-tip="Full transparency on how results were generated. Every number is traceable to source code and data.">?</i></h3>
+      <div class="audit-grid">
+        <div class="audit-card">
+          <h4>📊 Data Source</h4>
+          <p><strong>Provider:</strong> Yahoo Finance via <code>yfinance</code> Python library</p>
+          <p><strong>Data type:</strong> OHLCV (Open, High, Low, Close, Volume), adjusted for splits/dividends</p>
+          <p><strong>Tickers:</strong> ${ac.tickers_used.length} instruments: ${ac.tickers_used.slice(0,10).join(', ')}${ac.tickers_used.length > 10 ? '...' : ''}</p>
+          <p><strong>Period:</strong> ~2 years downloaded, last ${ac.trading_days} days used for simulation</p>
+        </div>
+        <div class="audit-card">
+          <h4>🔬 Technical Indicators</h4>
+          <ul>
+            <li>Moving Averages: SMA 10, 20, 50, 100, 200</li>
+            <li>RSI (14-day, 21-day), MACD (12,26,9)</li>
+            <li>Bollinger Bands (20-day, 50-day), z-scores</li>
+            <li>Trend strength (return/volatility ratio)</li>
+            <li>Hurst exponent (63-day variance ratio proxy)</li>
+            <li>Momentum: 5d, 10d, 21d, 63d, 126d, 252d returns</li>
+            <li>Volatility: annualized realized vol (21d, 63d)</li>
+          </ul>
+        </div>
+        <div class="audit-card">
+          <h4>⚙️ Execution Assumptions</h4>
+          <ul>
+            <li>Entry: at close price on signal day</li>
+            <li>Exit: stop-loss, take-profit, or hold period expiry</li>
+            <li>Slippage: none modeled (optimistic)</li>
+            <li>Commissions: none modeled (optimistic)</li>
+            <li>Position sizing: equal-weight, cash buffer 10%</li>
+            <li>Max positions: varies by algorithm (8-15)</li>
+          </ul>
+        </div>
+        <div class="audit-card">
+          <h4>🔄 Reproducibility</h4>
+          <p><strong>Script:</strong> <code>STOCKS/competition/run_competition.py</code></p>
+          <p><strong>Strategies:</strong> Faithfully ported from <code>alpha_engine/strategies/*.py</code></p>
+          <p><strong>Auto-refresh:</strong> GitHub Actions every Sunday 5 AM EST</p>
+          <p><strong>Last generated:</strong> ${DATA.generated_at}</p>
+          <p>Anyone can re-run: <code>pip install yfinance pandas numpy && python3 run_competition.py</code></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio Chart -->
+    <div class="chart-section">
+      <h3>Portfolio Value Over Time <span style="font-size:0.75rem;color:var(--orange);font-weight:400">(BACKTESTED)</span></h3>
+      <div class="chart-box"><canvas id="mainChart"></canvas></div>
+    </div>
+
+    <div class="two-col">
+      <!-- Leaderboard -->
+      <div class="table-section">
+        <h3>Full Leaderboard</h3>
+        <table>
+          <thead><tr>
+            <th>Rank</th><th>Algorithm</th><th>Type</th><th>Final Value</th>
+            <th>Return <i class="info-tip" data-tip="Total backtested return from $${DATA.starting_capital.toLocaleString()} starting capital.">?</i></th>
+            <th>Sharpe</th>
+            <th>Win Rate <i class="info-tip" data-tip="% of closed trades with positive P&L. Low win rate can still be profitable if avg win >> avg loss.">?</i></th>
+            <th>Trades</th>
+            <th>Max DD <i class="info-tip" data-tip="Maximum peak-to-trough drawdown during the backtest period.">?</i></th>
+          </tr></thead>
+          <tbody>
+            ${results.map((r,i) => {
+              const rc = i<3 ? `r${i+1}` : 'rx';
+              const noTrades = r.total_trades === 0;
+              return `<tr${noTrades ? ' style="opacity:0.5"' : ''}>
+                <td><span class="rank-badge ${rc}">${i+1}</span></td>
+                <td><strong>${r.short_name}</strong>${noTrades ? ' <span style="font-size:0.7rem;color:var(--orange)">(no trades)</span>' : ''}</td>
+                <td style="color:var(--text-3);font-size:0.78rem">${r.type}</td>
+                <td>$${r.final_value.toLocaleString()}</td>
+                <td class="${r.total_return_pct>=0?'positive':'negative'}" style="font-weight:600">${r.total_return_pct>=0?'+':''}${r.total_return_pct}%</td>
+                <td>${noTrades ? '<span style="color:var(--text-3)" title="No trades generated - Sharpe cannot be calculated">N/A</span>' : r.sharpe_ratio}</td>
+                <td>${noTrades ? '<span style="color:var(--text-3)" title="No trades to measure win rate">N/A</span>' : r.win_rate_pct+'%'}</td>
+                <td>${r.total_trades}</td>
+                <td class="negative">${noTrades ? 'N/A' : '-'+r.max_drawdown_pct+'%'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Trade Log -->
+      <div class="trades-section">
+        <h3>Trade Audit Log <span style="font-size:0.75rem;color:var(--orange);font-weight:400">(BACKTESTED)</span>
+          <i class="info-tip" data-tip="Every trade logged with simulated EST timestamp, ticker, shares, price, and P&L. These are backtested trades executed against historical data, not real orders.">?</i>
+        </h3>
+        ${allTrades.length === 0
+          ? emptyStateHTML('📭', 'No Trades Recorded',
+              'No algorithms generated trades for this asset class during the test period. This can happen with very conservative strategies (e.g., Dividend Aristocrats on crypto) or when signal conditions are never met.')
+          : `<div class="trades-list" data-testid="trades-list">
+          ${allTrades.slice(0, 200).map(t => {
+            const isBuy = t.action === 'BUY';
+            const pnlStr = t.pnl !== undefined ? `<span class="${t.pnl>=0?'positive':'negative'}" style="font-weight:600">${t.pnl>=0?'+':''}$${t.pnl.toFixed(0)} (${t.return_pct>=0?'+':''}${t.return_pct}%)</span>` : '';
+            const reasonInfo = t.reasons ? Object.entries(t.reasons).map(([k,v])=>`${k}: ${typeof v === 'number' ? v.toFixed(2) : v}`).join(', ') : '';
+            return `<div class="trade-item" data-testid="trade-item">
+              <span class="trade-time" title="Simulated execution time (backtest)">${t.timestamp_est || t.date}</span>
+              <span class="trade-algo" style="color:${ALGO_COLORS[t.algo]||'var(--text-1)'}">${t.algo}</span>
+              <span class="trade-action ${isBuy?'trade-buy':'trade-sell'}">${t.action}</span>
+              <span class="trade-ticker">${t.ticker}</span>
+              <span class="trade-detail">${isBuy ? t.shares+' shares @ $'+t.price + (reasonInfo ? ' <i class="info-tip" data-tip="Signal reasons: '+reasonInfo.replace(/"/g,'&quot;')+'">?</i>' : '') : (t.reason||'')+' ('+(t.hold_days||'?')+'d)'}</span>
+              <span class="trade-pnl">${pnlStr || '$'+(t.value||0).toLocaleString()}</span>
+            </div>`;
+          }).join('')}
+          </div>`
+        }
+      </div>
+    </div>
+  `;
+
+  document.getElementById('content').innerHTML = html;
+  buildChart(results, ac);
+}
+
+function buildChart(results, ac) {
+  const ctx = document.getElementById('mainChart');
+  if (!ctx) return;
+  if (mainChart) mainChart.destroy();
+
+  const datasets = results.filter(r => r.portfolio_history && r.portfolio_history.length > 1).map(r => ({
+    label: r.short_name,
+    data: r.portfolio_history.map(p => ({x: p.date, y: p.value})),
+    borderColor: ALGO_COLORS[r.short_name] || '#888',
+    backgroundColor: 'transparent',
+    borderWidth: r.short_name === 'GodMode' ? 3 : 1.5,
+    pointRadius: 0,
+    tension: 0.3,
+  }));
+
+  if (ac.benchmark_history && ac.benchmark_history.length > 0) {
+    datasets.push({
+      label: `Benchmark (${ac.benchmark})`,
+      data: ac.benchmark_history.map(p => ({x: p.date, y: p.value})),
+      borderColor: '#555',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.3,
+      borderDash: [8, 4],
+    });
+  }
+
+  if (datasets.length === 0) return;
+
+  mainChart = new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: '#a0a0b8', font: { size: 11 }, boxWidth: 12, usePointStyle: true } },
+        tooltip: {
+          backgroundColor: '#1c1c2b', titleColor: '#eeeef5', bodyColor: '#a0a0b8', borderColor: '#2a2a40', borderWidth: 1,
+          callbacks: { label: function(c) { return `${c.dataset.label}: $${c.raw.y.toLocaleString()}`; } }
+        }
+      },
+      scales: {
+        x: { type: 'category', grid: { color: 'rgba(42,42,64,0.3)' }, ticks: { color: '#666680', font: { size: 10 }, maxTicksLimit: 15 } },
+        y: { grid: { color: 'rgba(42,42,64,0.3)' }, ticks: { color: '#666680', font: { size: 10 }, callback: function(v) { return '$'+(v/1000).toFixed(0)+'k'; } } }
+      }
+    }
+  });
+}
+
+function buildWinnerExplanation(winner, ac) {
+  const beatsBench = winner.total_return_pct > ac.benchmark_return_pct;
+  const alpha = (winner.total_return_pct - ac.benchmark_return_pct).toFixed(2);
+  let reason = `<strong>Why ${winner.algorithm} wins (backtested):</strong><br>`;
+
+  const explanations = {
+    'Ensemble': 'The God-Mode ensemble dynamically shifts strategy weights based on market regime (volatility, trend strength). It aggregates signals from all 11 sub-strategies with regime-aware weighting.',
+    'Momentum': 'Classic momentum (Jegadeesh & Titman style) buys past 6-month winners while skipping the most recent month to avoid short-term reversal contamination.',
+    'Mean Reversion': 'Bollinger Band mean reversion buys deeply oversold stocks (below -1.5 SD from 20-day mean) in stocks with low Hurst exponent (confirming mean-reverting behavior).',
+    'Trend': 'Trend following buys stocks above both 50-day and 200-day moving averages with strong trend strength (return/volatility ratio).',
+    'Breakout': 'Breakout momentum targets stocks within 5% of their 52-week high, capturing continued upward pressure from attention and anchoring bias.',
+    'Quality': 'Quality compounders select low-volatility, consistent-trend, low-drawdown stocks. The "boring winners" approach.',
+    'Value': 'Value + Quality buys stocks trading below their 200-day MA (undervalued) but only if volatility is low (quality filter to avoid value traps).',
+    'Dividend': 'Dividend Aristocrats focuses on companies with 25+ years of consecutive dividend increases. Defensive during downturns.',
+    'Anomaly': 'Earnings drift (PEAD) proxy: buys stocks with strong recent momentum confirmed by positive MACD histogram, capturing post-earnings announcement drift.',
+    'Earnings': 'Consecutive Beats targets stocks with positive returns across 3+ timeframes simultaneously, indicating sustained institutional interest.',
+    'Machine Learning': 'ML Ranker combines multiple indicators with learned weights (momentum, mean-reversion, quality signals) into a composite ranking score.',
+  };
+
+  reason += explanations[winner.type] || `This strategy type (${winner.type}) generated the best risk-adjusted returns for this asset class.`;
+  reason += `<br><br><strong>Backtested performance:</strong> ${winner.total_return_pct>=0?'+':''}${winner.total_return_pct}% return | Sharpe ${winner.sharpe_ratio} | ${winner.win_rate_pct}% win rate | ${winner.total_trades} trades<br>`;
+  if (beatsBench) reason += `<strong>Alpha vs benchmark:</strong> +${alpha}% above ${ac.benchmark}<br>`;
+  reason += `<strong>Risk:</strong> Max drawdown -${winner.max_drawdown_pct}% | Avg hold: ~${winner.hold_period} days`;
+  return reason;
+}
+
+loadData();
+
+// ── Forward Test Section ──
+async function loadForwardPicks() {
+  try {
+    const resp = await fetch('forward_picks.json');
+    if (!resp.ok) return;
+    const fw = await resp.json();
+    if (!fw.picks || fw.picks.length === 0) return;
+
+    document.getElementById('forwardSection').style.display = '';
+
+    const picks = fw.picks;
+    const open = picks.filter(p => p.status === 'OPEN');
+    const won = picks.filter(p => p.status === 'WON');
+    const lost = picks.filter(p => p.status === 'LOST');
+    const resolved = won.length + lost.length;
+    const wr = resolved > 0 ? (won.length / resolved * 100).toFixed(1) : 'N/A';
+    const pnls = picks.filter(p => p.pnl_pct !== null).map(p => p.pnl_pct);
+    const avgPnl = pnls.length > 0 ? (pnls.reduce((a,b) => a+b, 0) / pnls.length).toFixed(2) : 'N/A';
+
+    document.getElementById('fwStats').innerHTML = [
+      {label: 'Total Picks', value: picks.length, color: ''},
+      {label: 'Open', value: open.length, color: 'var(--cyan)'},
+      {label: 'Won', value: won.length, color: 'var(--green)'},
+      {label: 'Lost', value: lost.length, color: 'var(--red)'},
+      {label: 'Win Rate', value: wr === 'N/A' ? wr : wr + '%', color: parseFloat(wr) >= 50 ? 'var(--green)' : wr === 'N/A' ? '' : 'var(--red)'},
+      {label: 'Avg P&L', value: avgPnl === 'N/A' ? avgPnl : avgPnl + '%', color: parseFloat(avgPnl) >= 0 ? 'var(--green)' : avgPnl === 'N/A' ? '' : 'var(--red)'},
+      {label: 'Last Generated', value: fw.last_generate || 'Never', color: ''},
+      {label: 'Last Resolved', value: fw.last_resolve || 'Never', color: ''},
+    ].map(s => `<div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
+      <div style="font-size:1.2rem;font-weight:700;${s.color ? 'color:'+s.color : ''}">${s.value}</div>
+      <div style="font-size:0.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px">${s.label}</div>
+    </div>`).join('');
+
+    // Sort: open first, then resolved by date desc
+    const sorted = [...open, ...won.concat(lost).sort((a,b) => (b.resolved_at||'').localeCompare(a.resolved_at||''))];
+
+    document.getElementById('fwPicksList').innerHTML = sorted.map(p => {
+      const statusColor = p.status === 'OPEN' ? 'var(--cyan)' : p.status === 'WON' ? 'var(--green)' : 'var(--red)';
+      const statusBg = p.status === 'OPEN' ? 'rgba(6,182,212,0.12)' : p.status === 'WON' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+      const pnlStr = p.pnl_pct !== null ? `<span style="color:${p.pnl_pct>=0?'var(--green)':'var(--red)'};font-weight:700">${p.pnl_pct>=0?'+':''}${p.pnl_pct}%</span>` : '';
+      const reasonStr = p.reasons ? Object.entries(p.reasons).slice(0,3).map(([k,v]) => `${k}:${typeof v==='number'?v.toFixed(2):v}`).join(', ') : '';
+      return `<div style="display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.82rem;flex-wrap:wrap;">
+        <span style="background:${statusBg};color:${statusColor};padding:2px 10px;border-radius:4px;font-weight:700;font-size:0.72rem;min-width:55px;text-align:center">${p.status}</span>
+        <span style="font-weight:700;min-width:60px">${p.ticker}</span>
+        <span style="color:${ALGO_COLORS[p.algorithm.split(' ')[0]]||'var(--text-2)'};font-weight:600;min-width:90px;font-size:0.78rem">${p.algorithm}</span>
+        <span style="color:var(--text-3);font-size:0.72rem;min-width:80px">${p.asset_class}</span>
+        <span style="color:var(--text-2);font-size:0.78rem">Entry: $${p.entry_price} | TP: $${p.tp_price} (+${p.tp_pct}%) | SL: $${p.sl_price} (-${p.sl_pct}%)</span>
+        <span style="flex:1"></span>
+        ${pnlStr}
+        <span style="color:var(--text-3);font-size:0.7rem;font-family:monospace" title="${p.generated_at}">${p.generated_date}</span>
+        ${p.resolved_reason ? `<span style="color:var(--text-3);font-size:0.68rem">${p.resolved_reason}</span>` : `<span style="color:var(--text-3);font-size:0.68rem">exp: ${p.expiry_date}</span>`}
+      </div>`;
+    }).join('');
+
+    if (resolved === 0 && open.length > 0) {
+      document.getElementById('fwPicksList').insertAdjacentHTML('afterbegin',
+        `<div style="padding:12px;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:8px;color:var(--orange);font-size:0.82rem;margin-bottom:8px;">
+          <strong>Picks are OPEN</strong> &mdash; ${open.length} forward picks generated, waiting for TP/SL to hit or expiry.
+          Win/loss data will populate as picks resolve over the coming days/weeks. Resolver runs every 6 hours via GitHub Actions.
+        </div>`);
+    }
+  } catch(e) {
+    // No forward picks file yet - that's fine, section stays hidden
+  }
+}
+loadForwardPicks();
+</script>
+</body>
+</html>
+<!-- v1771274173 -->
+trigger deploy

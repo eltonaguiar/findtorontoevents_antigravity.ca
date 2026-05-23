@@ -1,0 +1,85 @@
+name: ML Monthly Full Retrain
+on:
+  schedule:
+    - cron: '0 4 1 * *' # 1st of each month at 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  full-retrain:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+          pip install -r mercury2/requirements.txt 2>/dev/null || true
+
+      - name: Full retrain ML Battleground (Systems A/B/C)
+        run: python -m ml_battleground.bootstrap.run_bootstrap
+        timeout-minutes: 60
+
+      - name: Full retrain Mercury2
+        run: python -m mercury2.trainer
+        timeout-minutes: 30
+
+      - name: Full retrain ML Crypto Predictor
+        run: python -m ml_crypto_predictor.enhanced_models.main train
+        timeout-minutes: 60
+
+      - name: Reset feedback baseline
+        run: |
+          python -c "
+          from ml_battleground.shared.feedback_loop import reset_baseline
+          reset_baseline()
+          print('Baseline reset after full retrain')
+          "
+
+      - name: Reset drift monitors
+        run: |
+          python -c "
+          from ml_battleground.shared.drift_monitor import DriftMonitor
+          for sys_name in ['system_a', 'system_b', 'system_c', 'system_d', 'system_e', 'mercury2']:
+              monitor = DriftMonitor(sys_name)
+              monitor.mark_retrained()
+              print(f'{sys_name}: drift monitor reset')
+          "
+
+      - name: Commit retrained models
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "bot@superpowers.dev"
+          git add ml_battleground/ mercury2/models/ mercury2/data/ ml_crypto_predictor/enhanced_models/models/ ml_crypto_predictor/enhanced_models/results/ 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Monthly full retrain $(date -u +%Y-%m-%d) [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            sleep $((i * 10))
+          done
+
+      - name: Discord notification
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" = "success" ]; then
+            MSG="Monthly ML Retrain completed successfully. All models refreshed with 12-month rolling window."
+          else
+            MSG="Monthly ML Retrain FAILED. Check workflow logs."
+          fi
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+              -H "Content-Type: application/json" \
+              -d "{\"content\": \"$MSG\"}"
+          fi
+

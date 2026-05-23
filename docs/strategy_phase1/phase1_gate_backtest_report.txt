@@ -1,0 +1,49 @@
+====================================================================================================
+BASELINE: all 4,762 closed picks, no Phase 1 gates
+====================================================================================================
+  overall                                       n=4762  WR=31.5%  PF=0.40   expect=-0.141%/trade  total=-673.75%
+    CRYPTO                                      n=4522  WR=31.1%  PF=0.40   expect=-0.149%/trade  total=-672.43%
+    OTHER                                       n=217   WR=37.8%  PF=0.66   expect=-0.006%/trade  total=-1.20%
+    EQUITY                                      n=12    WR=50.0%  PF=0.44   expect=-0.006%/trade  total=-0.08%
+    FOREX                                       n=6     WR=100.0%  PF=inf    expect=+0.001%/trade  total=+0.01%
+    FUTURES                                     n=3     WR=33.3%  PF=0.04   expect=-0.004%/trade  total=-0.01%
+    COMMODITY                                   n=2     WR=0.0%  PF=0.00   expect=-0.022%/trade  total=-0.04%
+
+====================================================================================================
+GATE 1 ONLY: confidence>=0.80 (crypto only)
+====================================================================================================
+  kept                                          n=391   WR=39.4%  PF=0.90   expect=-0.001%/trade  total=-0.57%
+  rejected                                      n=4371  WR=30.8%  PF=0.40   expect=-0.154%/trade  total=-673.18%
+
+  CRYPTO-only slice:
+      crypto kept                               n=151   WR=39.1%  PF=1.33   expect=+0.005%/trade  total=+0.75%
+      crypto rejected (saved from taking)       n=4371  WR=30.8%  PF=0.40   expect=-0.154%/trade  total=-673.18%
+
+====================================================================================================
+GATE 2 ONLY: TOD block 08-11 UTC entry (crypto only)
+====================================================================================================
+  kept                                          n=4006  WR=32.5%  PF=0.44   expect=-0.127%/trade  total=-507.13%
+  rejected                                      n=756   WR=26.7%  PF=0.23   expect=-0.220%/trade  total=-166.62%
+
+====================================================================================================
+BOTH GATES: conf>=0.80 AND entry_hour NOT in {8,9,10,11} UTC (crypto only)
+====================================================================================================
+  kept                                          n=365   WR=39.2%  PF=0.90   expect=-0.001%/trade  total=-0.54%
+  rejected (not taken)                          n=4397  WR=30.9%  PF=0.40   expect=-0.153%/trade  total=-673.21%
+
+  Per asset class after both gates:
+      OTHER                                     n=217   WR=37.8%  PF=0.66   expect=-0.006%/trade  total=-1.20%
+      CRYPTO                                    n=125   WR=38.4%  PF=1.41   expect=+0.006%/trade  total=+0.78%
+      EQUITY                                    n=12    WR=50.0%  PF=0.44   expect=-0.006%/trade  total=-0.08%
+      FOREX                                     n=6     WR=100.0%  PF=inf    expect=+0.001%/trade  total=+0.01%
+      FUTURES                                   n=3     WR=33.3%  PF=0.04   expect=-0.004%/trade  total=-0.01%
+      COMMODITY                                 n=2     WR=0.0%  PF=0.00   expect=-0.022%/trade  total=-0.04%
+
+====================================================================================================
+HEADLINE DELTA
+====================================================================================================
+  Picks:        4762   → 365     (-4397, -92.3%)
+  WR:           31.5% → 39.2%  (+7.6 pp)
+  PF:           0.40 → 0.90
+  Expectancy:   -0.141% → -0.001%/trade  (+0.140 pp)
+  Total P/L:    -673.75% → -0.54%  (+673.21 pp saved)

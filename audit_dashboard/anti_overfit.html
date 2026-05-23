@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anti-Overfit Audit (DSR) | findtorontoevents.ca/audit</title>
+<meta name="description" content="Per-strategy Deflated Sharpe Ratio audit via Lopez de Prado AFML eq 14.5. Live data from ejaguiar1_stocks::trading_picks. Auto-refreshes hourly. Advisory only — not a production gate.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e1a;color:#e0e6ed;line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
+header{background:linear-gradient(135deg,#1a2540 0%,#0f1629 100%);padding:24px;border-radius:14px;margin-bottom:18px;border:1px solid #2a3f5f}
+h1{font-size:1.55em;color:#fbbf24;margin-bottom:8px}
+h2{color:#34d399;font-size:1.1em;margin:14px 0 8px;border-left:4px solid #34d399;padding-left:10px}
+.meta{font-size:0.82em;color:#94a3b8;margin-bottom:10px}
+.nfa{background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#fecaca;padding:9px 14px;border-radius:8px;font-weight:600;text-align:center;margin-bottom:12px;font-size:0.88em}
+.section{background:#111827;padding:18px;border-radius:10px;margin-bottom:14px;border:1px solid #1f2937}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.25);padding:10px 12px;border-radius:8px}
+.kpi-label{font-size:0.78em;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px}
+.kpi-value{font-size:1.4em;font-weight:700;color:#e0e6ed}
+.kpi-real{color:#86efac}
+.kpi-undet{color:#fcd34d}
+.kpi-overfit{color:#fca5a5}
+table{width:100%;border-collapse:collapse;font-size:0.85em;margin-top:6px}
+th,td{padding:6px 9px;text-align:left;border-bottom:1px solid #1f2937}
+th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:sticky;top:0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.verdict-real{background:rgba(34,197,94,0.18);color:#86efac;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
+.verdict-undet{background:rgba(251,191,36,0.18);color:#fcd34d;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
+.verdict-overfit{background:rgba(239,68,68,0.18);color:#fca5a5;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
+.verdict-err{background:rgba(148,163,184,0.18);color:#cbd5e1;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
+.back{color:#60a5fa;font-size:0.88em;margin-bottom:10px;display:inline-block}
+.code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 5px;border-radius:3px;font-size:0.85em;font-family:Consolas,Menlo,monospace}
+.err{color:#fca5a5;padding:14px;background:rgba(239,68,68,0.08);border:1px solid #ef4444;border-radius:8px}
+.dsr-bar{display:inline-block;width:50px;height:8px;background:#1f2937;border-radius:4px;overflow:hidden;vertical-align:middle;margin-right:6px}
+.dsr-fill{height:100%;background:linear-gradient(90deg,#ef4444 0%,#fbbf24 50%,#22c55e 100%);transition:width 0.3s}
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back" href="/audit/">&larr; Back to /audit</a>
+
+<header>
+<h1>Anti-Overfit Audit &mdash; Deflated Sharpe Ratio per Strategy</h1>
+<div class="nfa">RESEARCH SURFACE &mdash; ADVISORY ONLY. NOT A PRODUCTION GATE. NOT FINANCIAL ADVICE.</div>
+<div class="meta">Live data: <span class="code">audit_dashboard/data/anti_overfit_audit.json</span> &middot; Source: <span class="code">ejaguiar1_stocks::trading_picks</span> closed picks &middot; Auto-refresh: hourly via <span class="code">.github/workflows/audit-dashboard.yml</span> &middot; Validator: <span class="code">alpha_engine.anti_overfit_validator.deflated_sharpe</span> (Lopez de Prado AFML eq 14.5) &middot; SUPREME EDGE P1 wire-up (2026-05-11)</div>
+</header>
+
+<div class="section">
+<h2>Thresholds</h2>
+<table>
+<tr><th>Verdict</th><th>DSR range</th><th>Interpretation</th></tr>
+<tr><td><span class="verdict-real">EDGE_LIKELY_REAL</span></td><td>&ge; 0.95</td><td>Headline Sharpe survives multiple-testing correction (Bailey-Lopez de Prado "publishable confidence"). Promotion candidate to <span class="code">OOS_READY</span> in state machine if other gates pass.</td></tr>
+<tr><td><span class="verdict-undet">UNDETERMINED</span></td><td>0.50 &mdash; 0.95</td><td>Statistically inconclusive given sample + skew/kurtosis. More data needed.</td></tr>
+<tr><td><span class="verdict-overfit">OVERFIT_LIKELY</span></td><td>&lt; 0.50</td><td>Backtest-overfit signature; reject or quarantine. Most likely the strategy's positive Sharpe is selection bias, not real edge.</td></tr>
+</table>
+</div>
+
+<div class="section" id="kpi-section">
+<h2>Summary</h2>
+<div class="kpi-row" id="kpi-row">
+  <div class="kpi"><div class="kpi-label">Loading...</div></div>
+</div>
+<div class="meta" id="last-updated"></div>
+</div>
+
+<div class="section" id="data-section">
+<h2>Per-strategy verdicts</h2>
+<div id="content"><em>Loading...</em></div>
+</div>
+
+<script>
+(async function() {
+  const root = document.getElementById('content');
+  const kpiRow = document.getElementById('kpi-row');
+  const lastUpd = document.getElementById('last-updated');
+  try {
+    const r = await fetch('/audit_dashboard/data/anti_overfit_audit.json?ts=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+
+    // KPI row
+    const vc = d.verdict_counts || {};
+    kpiRow.innerHTML =
+      '<div class="kpi"><div class="kpi-label">Strategies audited</div><div class="kpi-value">' + (d.n_strategies_audited||0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Min n threshold</div><div class="kpi-value">' + (d.min_n_threshold||20) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Edge likely real</div><div class="kpi-value kpi-real">' + (vc.EDGE_LIKELY_REAL||0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Undetermined</div><div class="kpi-value kpi-undet">' + (vc.UNDETERMINED||0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Overfit likely</div><div class="kpi-value kpi-overfit">' + (vc.OVERFIT_LIKELY||0) + '</div></div>';
+    lastUpd.textContent = 'Generated: ' + (d.generated_at || 'unknown');
+
+    // Table
+    const rows = (d.strategies||[]).map(s => {
+      const vClass = s.verdict === 'EDGE_LIKELY_REAL' ? 'verdict-real' :
+                     s.verdict === 'UNDETERMINED' ? 'verdict-undet' :
+                     s.verdict === 'OVERFIT_LIKELY' ? 'verdict-overfit' : 'verdict-err';
+      const dsrPct = s.dsr != null ? Math.round(s.dsr * 100) : 0;
+      const dsrBar = s.dsr != null
+        ? '<span class="dsr-bar"><span class="dsr-fill" style="width:' + dsrPct + '%"></span></span>' + s.dsr.toFixed(4)
+        : '<em>n/a</em>';
+      return '<tr><td><span class="' + vClass + '">' + (s.verdict||'?') + '</span></td>' +
+             '<td><span class="code">' + escapeHTML(s.strategy||'?') + '</span></td>' +
+             '<td class="num">' + (s.n||0) + '</td>' +
+             '<td class="num">' + (s.wr_pct||0).toFixed(1) + '%</td>' +
+             '<td class="num">' + (s.pf!=null?s.pf.toFixed(2):'-') + '</td>' +
+             '<td class="num">' + (s.sharpe!=null?s.sharpe.toFixed(3):'-') + '</td>' +
+             '<td class="num">' + dsrBar + '</td></tr>';
+    }).join('');
+
+    root.innerHTML = '<table><thead><tr><th>Verdict</th><th>Strategy</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">Sharpe</th><th class="num">DSR</th></tr></thead><tbody>' + (rows||'<tr><td colspan="7"><em>no strategies above min_n</em></td></tr>') + '</tbody></table>';
+  } catch(e) {
+    root.innerHTML = '<div class="err">Failed to load anti_overfit_audit.json: ' + escapeHTML(String(e)) + '</div>';
+    kpiRow.innerHTML = '<div class="kpi"><div class="kpi-label">Load failed</div></div>';
+  }
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+})();
+</script>
+</div>
+</body>
+</html>

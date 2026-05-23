@@ -1,0 +1,105 @@
+# Growth Stock Screener — daily (opt-in sidecar).
+#
+# Adapted from starboi-63/growth-stock-screener (5-stage RS/liquidity/stage-2/
+# revenue/inst-accum screen). Runs the screener every weekday at 14:00 UTC
+# (~market open) with GROWTH_STOCK_SCREENER_ENABLED=1 and writes results to
+# audit_dashboard/data/growth_stock_picks.json. Commits + pushes only if the
+# emitted JSON changed.
+#
+# CLAUDE.md Wire-Up Rule: opt-in sidecar. Wiring plan = future PR that hooks
+# alpha_engine.growth_stock_screener into calculate_smart_score /
+# dashboard_generator. Read-only data ingest. No trading side effects.
+
+name: Growth Stock Screener Daily
+
+'on':
+  schedule:
+    - cron: '0 14 * * 1-5'  # Mon-Fri 14:00 UTC = 10:00 EDT
+  workflow_dispatch: {}
+
+concurrency:
+  group: growth-stock-screener-${{ github.event_name == 'push' && 'push' || 'cron' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: write
+
+jobs:
+  run-growth-screener:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas yfinance
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt || true
+          fi
+
+      - name: Run growth stock screener
+        id: run_screener
+        continue-on-error: true
+        env:
+          GROWTH_STOCK_SCREENER_ENABLED: '1'
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/growth_stock_screener.py
+
+      - name: Upload picks artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: growth_stock_picks_${{ github.run_id }}
+          path: audit_dashboard/data/growth_stock_picks.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Commit + push if changed
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ ! -f audit_dashboard/data/growth_stock_picks.json ]; then
+            echo "no picks file emitted — skipping commit"
+            exit 0
+          fi
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh "chore(growth-screener): refresh picks [skip ci]" audit_dashboard/data/growth_stock_picks.json
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add audit_dashboard/data/growth_stock_picks.json
+            if git diff --staged --quiet; then
+              echo "no changes - skipping commit"
+              exit 0
+            fi
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git add audit_dashboard/data/growth_stock_picks.json
+            git commit -m "chore(growth-screener): refresh picks [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## Growth Stock Screener Daily"
+            echo ""
+            echo "- screener_outcome: ${{ steps.run_screener.outcome }}"
+            if [ -f audit_dashboard/data/growth_stock_picks.json ]; then
+              COUNT=$(python -c "import json; print(json.load(open('audit_dashboard/data/growth_stock_picks.json')).get('total_picks',0))")
+              echo "- total_picks: $COUNT"
+            else
+              echo "- total_picks: 0 (file missing)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

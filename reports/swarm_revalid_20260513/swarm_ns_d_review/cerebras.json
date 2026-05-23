@@ -1,0 +1,26 @@
+{
+  "verdict": "APPROVE_WITH_CAVEATS",
+  "merge_decision": "MERGE",
+  "code_quality_score": 9,
+  "concerns": [
+    "The gate overwrites any existing `_hf_quality_gate_reason` set by earlier gates, potentially losing provenance information.",
+    "The check for direction/value does not strip whitespace, so inputs like \"LONG \" or \" BUY\" would not be caught."
+  ],
+  "missing_edge_cases": [
+    "Source system names that contain the target substrings (e.g., \"ml_crypto_pred_v2\") are not matched; a more robust check might use `in` or regex.",
+    "Direction or signal_type fields with leading/trailing whitespace or non-standard capitalisation could bypass the filter."
+  ],
+  "default_on_or_off_check": "correct",
+  "engine": "cerebras",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_ns_d_review\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260513T060038Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 827,
+    "tokens_out": 771,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,266 @@
+# Unified Gate & Risk Control Configuration
+# Asset-class-specific thresholds, strategy health monitors, and risk limits
+# Version: 2026-05-03
+# Based on: Live-data audit (dashboard_data.json, n=3500, generated 2026-05-02T23:02Z)
+
+asset_classes:
+  CRYPTO:
+    description: "Cryptocurrencies (BTC, ETH, altcoins, meme coins)"
+    active: true
+    # Tier targets
+    tier_1_target:
+      pf: 2.0
+      wr_pct: 55
+      mdd_pct: 10
+    tier_2_target:
+      pf: 1.5
+      wr_pct: 50
+      mdd_pct: 20
+    tier_3_target:
+      pf: 1.2
+      wr_pct: 48
+      mdd_pct: 30
+    # Gate thresholds
+    max_strategy_volume_pct: 15       # No strategy > 15% of CRYPTO volume
+    min_pf_for_admission: 1.2         # T3 minimum for new strategies
+    min_wr_for_admission: 48
+    # Risk
+    max_position_pct: 5.0             # Max 5% portfolio per pick
+    default_sl_pct: 3.0              # Default stop-loss width
+    # Special rules
+    jpy_cross_buy_kill: true         # Applies to JPY-denominated crypto pairs (rare)
+    meme_coin:
+      enabled: false                 # Enable after review
+      max_position_pct: 1.0
+      sl_pct: 15.0
+      min_confluence_signals: 2       # Social + volume + exchange
+      auto_disable_after_consecutive_sl: 3
+
+  EQUITY:
+    description: "Stocks (large-cap, mid-cap, penny stocks)"
+    active: true
+    tier_1_target:
+      pf: 2.0
+      wr_pct: 55
+      mdd_pct: 10
+    tier_2_target:
+      pf: 1.5
+      wr_pct: 50
+      mdd_pct: 20
+    tier_3_target:
+      pf: 1.2
+      wr_pct: 48
+      mdd_pct: 30
+    max_strategy_volume_pct: 15
+    min_pf_for_admission: 1.2
+    min_wr_for_admission: 48
+    max_position_pct: 5.0
+    default_sl_pct: 3.0
+    penny_stock:
+      enabled: true
+      max_position_pct: 2.0           # Lower limit for penny stocks
+      sl_pct: 8.0                     # Wider SL for higher volatility
+      min_market_cap_millions: 50     # $50M minimum
+      price_max_usd: 5.0              # Penny stock definition
+      volume_min_1m: 1000000          # Minimum daily volume
+
+  FOREX:
+    description: "Currency pairs (majors, crosses, exotics)"
+    active: true
+    # Lower bar — FOREX is structurally harder for this signal set
+    tier_1_target:
+      pf: 2.0
+      wr_pct: 55
+      mdd_pct: 10
+    tier_2_target:
+      pf: 1.5
+      wr_pct: 50
+      mdd_pct: 20
+    tier_3_target:
+      pf: 1.2
+      wr_pct: 48
+      mdd_pct: 30
+    max_strategy_volume_pct: 15
+    min_pf_for_admission: 1.0         # Lower bar for admission
+    min_wr_for_admission: 40
+    max_position_pct: 3.0             # Lower leverage for FOREX
+    default_sl_pct: 1.0               # Tighter SL (lower volatility)
+    jpy_cross_buy_kill: true
+    jpy_cross_pairs:
+      - CADJPY
+      - EURJPY
+      - NZDJPY
+      - GBPJPY
+      - AUDJPY
+      - CHFJPY
+    jpy_cross_exempt: USDJPY
+
+  COMMODITY:
+    description: "Commodities (gold, oil, metals, agricultural)"
+    active: true
+    tier_1_target:
+      pf: 2.0
+      wr_pct: 55
+      mdd_pct: 10
+    tier_2_target:
+      pf: 1.5
+      wr_pct: 50
+      mdd_pct: 20
+    tier_3_target:
+      pf: 1.2
+      wr_pct: 48
+      mdd_pct: 30
+    max_strategy_volume_pct: 15
+    min_pf_for_admission: 1.0
+    min_wr_for_admission: 35          # Lower bar (thin data)
+    max_position_pct: 3.0
+    default_sl_pct: 2.0
+
+  ETF:
+    description: "Exchange-traded funds (index, sector, thematic)"
+    active: true
+    tier_1_target:
+      pf: 2.0
+      wr_pct: 55
+      mdd_pct: 10
+    tier_2_target:
+      pf: 1.5
+      wr_pct: 50
+      mdd_pct: 20
+    tier_3_target:
+      pf: 1.2
+      wr_pct: 48
+      mdd_pct: 30
+    max_strategy_volume_pct: 20       # Higher allowed — best performing class
+    min_pf_for_admission: 1.5         # Higher bar (class is strong)
+    min_wr_for_admission: 50
+    max_position_pct: 5.0
+    default_sl_pct: 3.0
+
+  BOND:
+    description: "Fixed income (treasuries, corporates, sovereign)"
+    active: false                     # No data yet
+    activation_criteria:
+      min_historical_picks: 50
+      min_observation_days: 30
+
+strategy_health_monitor:
+  enabled: true
+  evaluation_window_days: 7
+  
+  auto_disable_rules:
+    consecutive_windows_below_pf:
+      threshold: 3                     # 3 consecutive 7d windows below floor
+      pf_floor: 0.8
+      wr_floor: 35
+      action: "reduce_notional_to_zero" # Kill, don't just warn
+    
+    mutation_review:
+      trigger_pf_range: [0.8, 1.2]     # Borderline
+      trigger_wr_range: [35, 48]       # Borderline
+      action: "halve_notional"          # Reduce position, don't kill
+      re_evaluation_window_days: 14
+      
+    volume_concentration_guard:
+      max_strategy_volume_pct: 15
+      action_when_exceeded: "scaling_penalty"
+      penalty_formula: "score *= (15 / actual_pct)"  # Linear scaling down
+
+  periodic_health_check:
+    schedule: "daily_00:00Z"
+    output: "audit_dashboard/data/strategy_health.json"
+    alert_channels:
+      - github_issue
+      - slack_webhook
+
+blocked_pairs:
+  asset_strategy_pairs:
+    - [FOREX, forex_carry_momentum]      # PR #692 — zero edge, 39% volume drag
+    - [EQUITY, goldmine_6x_consensus]    # PR #692 — 0% WR, -55% sum
+    # Previously blocked (preserved):
+    - [FOREX, goldmine_1x_consensus]
+    - [FOREX, goldmine_2x_consensus]
+    - [FOREX, goldmine_3x_consensus]
+    - [FOREX, goldmine_4x_consensus]
+    - [EQUITY, goldmine_1x_consensus]
+    - [EQUITY, goldmine_2x_consensus]
+    - [EQUITY, goldmine_3x_consensus]
+    - [EQUITY, goldmine_4x_consensus]
+    - [CRYPTO, goldmine_1x_consensus]
+    - [CRYPTO, goldmine_2x_consensus]
+    - [CRYPTO, goldmine_3x_consensus]
+    - [CRYPTO, goldmine_4x_consensus]
+
+  strategy_symbol_pairs:
+    - [quan_engine, HYPEUSDT]            # PR #694 — concentration risk
+    - [quan_engine, HYPEUSD]             # Alias coverage
+
+  direction_aware_pairs:                  # Block (asset, strategy, direction)
+    - [EQUITY, short_squeeze_hunter, SHORT]  # Shorting short squeezes is dangerous
+
+  symbol_global_blocklist:
+    - LUNAUSDT                           # Collapsed token
+    - FTTUSDT                            # Collapsed token
+
+risk_limits:
+  global:
+    max_portfolio_mdd_pct: 20
+    max_daily_drawdown_pct: 10
+    max_single_asset_class_exposure_pct: 40
+    
+  per_pick:
+    max_position_pct_by_confidence:
+      high: 5.0                         # ml_score > 80, score > 70
+      medium: 3.0                       # ml_score 50-80, score 40-70
+      low: 1.0                          # ml_score < 50, score < 40
+    
+  dynamic_sizing:
+    enabled: true
+    formula: "notional *= min(1.0, tier_1_pf / actual_pf)"  # Reduce size when PF drops
+    min_notional_multiplier: 0.2        # Never below 20% of base
+    
+  correlation_guard:
+    enabled: true
+    max_correlation: 0.7                # Don't stack highly correlated picks
+    lookback_days: 30
+
+quality_gates:
+  active_gate:
+    min_score: 30
+    min_rr: 1.0
+    min_forward_wr: 40                # 40% forward win rate minimum
+    
+  smart_gate:
+    min_score: 40
+    min_rr: 1.2
+    min_forward_wr: 45
+    min_ml_score: 0.0                # 0-100 scale — field uses raw units
+    
+  ml_gatekeeper:
+    enabled: false                   # Requires PR #668 review
+    min_ml_score: 70                 # 70/100 minimum
+    min_model_confidence: 0.6
+
+thresholds:
+  # PnL classification (pnl_pct field is in percentage points)
+  # 0.01 = 0.01% = 1 basis point
+  flat_pnl_threshold_bp: 1            # 1bp = 0.01%
+  
+  # Asset-specific overrides (if needed)
+  flat_pnl_by_asset:
+    FOREX: 0.5                        # 0.5bp for FOREX (tighter due to low volatility)
+    BOND: 0.5
+
+reporting:
+  dashboard_refresh_interval_seconds: 300
+  strategy_health_refresh_interval_hours: 24
+  audit_retention_days: 90
+  
+  alerts:
+    tier_breach:
+      when: "asset_class drops below Tier-3 for 2 consecutive windows"
+      action: "auto_disable_strategies_below_pf_0.8"
+    
+    volume_concentration:
+      when: "single_strategy exceeds 20% of asset_class volume"
+      action: "warn + scaling_penalty"

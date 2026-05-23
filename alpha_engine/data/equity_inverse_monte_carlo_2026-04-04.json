@@ -1,0 +1,63 @@
+{
+  "generated_at_utc": "2026-04-04T21:50:41Z",
+  "method": "bootstrap + permutation on inverse-flipped equity-losing-strategy trades",
+  "random_seed": 42,
+  "n_bootstrap": 10000,
+  "n_permutation": 10000,
+  "fees_per_round_trip_pct": 0.2,
+  "historical_sample": {
+    "n": 81,
+    "mean_net_pnl_per_trade_pct": -0.879,
+    "wins": 36,
+    "losses": 45,
+    "wr_pct": 44.44,
+    "cumulative_net_pnl_pct": -71.23
+  },
+  "bootstrap_95_ci": {
+    "mean_pnl_per_trade_pct": [
+      -1.987,
+      0.153
+    ],
+    "win_rate_pct": [
+      33.3,
+      55.6
+    ],
+    "p_mean_positive": 0.0502,
+    "p_wr_above_55_pct": 0.0283
+  },
+  "permutation_test": {
+    "null_hypothesis": "Direction flips are random (50/50) \u2014 no inverse edge",
+    "p_value_one_sided": 0.9455,
+    "reject_null_at_0.05": false,
+    "interpretation": "p >= 0.05 means inverse edge cannot be distinguished from random"
+  },
+  "forward_projection_bootstrap_resample": {
+    "n_30": {
+      "p_positive_cumulative_pnl": 0.1649,
+      "median_terminal_pnl_pct": -25.67,
+      "p5_terminal_pnl_pct": -72.36,
+      "p95_terminal_pnl_pct": 17.25,
+      "max_drawdown_estimated_p5": -72.36
+    },
+    "n_100": {
+      "p_positive_cumulative_pnl": 0.0315,
+      "median_terminal_pnl_pct": -86.15,
+      "p5_terminal_pnl_pct": -169.72,
+      "p95_terminal_pnl_pct": -8.99,
+      "max_drawdown_estimated_p5": -169.72
+    },
+    "n_300": {
+      "p_positive_cumulative_pnl": 0.0007,
+      "median_terminal_pnl_pct": -262.87,
+      "p5_terminal_pnl_pct": -408.27,
+      "p95_terminal_pnl_pct": -123.63,
+      "max_drawdown_estimated_p5": -408.27
+    }
+  },
+  "caveats": [
+    "Bootstrap assumes trades are i.i.d. \u2014 regime shifts break this",
+    "Permutation test's null is direction-flip-random, not 'no edge' per se",
+    "n=15 is small; CIs are wide; real deployment adds borrow + slippage costs",
+    "Forward projection is IN-SAMPLE resample; does not account for regime decay"
+  ]
+}

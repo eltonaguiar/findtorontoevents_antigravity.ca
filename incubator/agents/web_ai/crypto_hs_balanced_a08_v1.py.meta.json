@@ -1,0 +1,73 @@
+{
+  "strategy_name": "crypto_hs_balanced_a08_v1",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T21:00:00Z",
+  "status": "backtest_failed",
+  "strategy_type": "high_sharpe_balanced",
+  "unique_value": "High-Sharpe balanced composite using trend/mean-reversion/breakout with volatility regime gating.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "regime_adaptive",
+  "backtest_metrics": {
+    "sharpe": 2.96,
+    "win_rate": 0.44,
+    "max_drawdown": 0.0538,
+    "total_trades": 27,
+    "profit_factor": 1.61,
+    "total_return": 0.0558,
+    "timestamp": "2026-02-26T23:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "EMA(18/50)",
+    "ZScore(20)",
+    "RangeBreak(27)",
+    "ATR(12)",
+    "VolMA(28)"
+  ],
+  "entry_conditions": [
+    "Composite score exceeds side threshold",
+    "ATR regime expansion > 1.065",
+    "Volume ratio gate > 1.15 on breakout leg"
+  ],
+  "exit_conditions": [
+    "Take profit: 2.00x ATR",
+    "Stop loss: 1.60x ATR"
+  ],
+  "parameters": {
+    "fast_ema": 18,
+    "slow_ema": 50,
+    "z_window": 20,
+    "breakout_window": 27,
+    "vol_window": 28,
+    "atr_period": 12,
+    "vol_gate": 1.15,
+    "atr_gate": 1.065,
+    "trend_weight": 0.365,
+    "meanrev_weight": 0.3175,
+    "breakout_weight": 0.3175,
+    "long_threshold": 0.45,
+    "short_threshold": 0.45,
+    "tp_atr": 2.0,
+    "sl_atr": 1.6
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": null,
+    "completed_at": null,
+    "days_remaining": null
+  },
+  "forward_metrics": {
+    "win_rate": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "total_trades": null
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  }
+}

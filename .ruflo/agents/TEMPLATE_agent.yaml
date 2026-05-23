@@ -1,0 +1,68 @@
+# Ruflo-style Agent Template
+# Copy this file and customize for new agent types
+# Save to: .ruflo/agents/{agent-name}.yaml
+
+type: {agent_type}              # e.g., audit_researcher, bug_hunter, strategist
+version: "1.0.0"                # Semantic versioning
+role: {role_type}               # One of: researcher, coder, reviewer, security-architect, architect, tester
+model: {model_name}             # e.g., google/gemini-2.5-flash, deepseek/deepseek-chat:free
+
+goal: |
+  Describe what this agent should accomplish.
+  Be specific about:
+  - Input files to read
+  - Analysis to perform
+  - Output format expected (especially JSON structure)
+  - Error handling (return "unable_to_verify" instead of synthetic data)
+  
+  Example:
+  "Analyze audit dashboard data from {path/to/file.json}.
+   Check for failing strategies with WR < 50% and PF < 1.0.
+   Return JSON with findings and recommended fixes.
+   If files unavailable, return unable_to_verify."
+
+capabilities:
+  - capability-1              # e.g., quantitative-analysis
+  - capability-2              # e.g., code-pattern-matching
+  - capability-3              # e.g., vulnerability-detection
+  # Add relevant capabilities for this agent's role
+
+optimizations:
+  - optimization-1            # e.g., flash-attention, token-reduction
+  - optimization-2            # e.g., structured-json-output
+  # See orchestrator.py MODEL_SPECS for available optimizations
+
+swarm: {swarm_name}            # Which swarm this agent belongs to: audit, github, bugs, strategy
+priority: {priority}            # high, medium, or low (determines execution order)
+
+metadata:
+  created: "{ISO8601 timestamp}"  # e.g., 2026-05-05T00:00:00.000Z
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  
+  # Data sources this agent should read (relative paths from workspace)
+  dataSources:
+    - path/to/file1.json
+    - path/to/file2.py
+    - path/to/file3.md
+  
+  # Tools this agent needs (CLIs, APIs, etc.)
+  tools:
+    - gh CLI
+    - git log
+    - Python 3.11+
+  
+  # Specific checks this agent performs
+  checks:
+    - check_name_1
+    - check_name_2
+    - check_name_3
+  
+  # Expected deliverables
+  deliverables:
+    - deliverable_1
+    - deliverable_2
+  
+  # Additional notes
+  notes: |
+    Any special instructions, known limitations, or context
+    for this agent's operation.

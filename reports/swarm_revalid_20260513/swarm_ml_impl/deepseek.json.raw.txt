@@ -1,0 +1,15 @@
+```json
+{
+  "recommended_option": "A",
+  "rationale": "Hard REJECT at execution gate is the safest path: it preserves the proven SHORT side (85.7% WR), eliminates the toxic LONG side entirely, and follows the existing NS-C/FX1 surgical reject pattern with easy rollback. Option B's soft floor could still surface bad LONG picks, and Option C's inversion amplifies tail risk from n=7 SHORT sample.",
+  "expected_pf_lift": 0.25,
+  "rollback_complexity": "one_line",
+  "production_safety": "safe",
+  "additional_safeguards": [
+    "Add telemetry counter for rejected LONG picks to monitor volume impact",
+    "Set alert if rejected volume exceeds 35% of ml_crypto_pred total volume",
+    "Log rejected picks with direction and source for post-hoc analysis"
+  ],
+  "ship_now_or_shadow_first": "SHIP_NOW"
+}
+```

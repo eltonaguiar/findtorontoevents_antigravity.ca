@@ -1,0 +1,92 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-03-03",
+  "description": "Strategies with toxic performance - DISABLED from production",
+  "disable_reason": "Negative expectancy, low win rate, or breakeven performance",
+  "killed_strategies": [
+    {
+      "id": "smart_money_fvg",
+      "name": "Smart Money FVG",
+      "family": "Kill List",
+      "win_rate": 0.11,
+      "expectancy_percent": -2.5,
+      "reason": "Very low win rate, consistent losses",
+      "action": "disable_immediately",
+      "date_killed": "2026-03-03"
+    },
+    {
+      "id": "m2_liquidity_lag",
+      "name": "M2 Liquidity Lag",
+      "family": "Kill List", 
+      "win_rate": 0.22,
+      "expectancy_percent": -1.8,
+      "reason": "Poor performance across all market conditions",
+      "action": "disable_immediately",
+      "date_killed": "2026-03-03"
+    },
+    {
+      "id": "ema_crossover",
+      "name": "EMA Crossover",
+      "family": "ATM Challenge",
+      "win_rate": 0.48,
+      "expectancy_percent": -0.05,
+      "reason": "Near breakeven after costs, no edge",
+      "action": "move_to_incubator",
+      "date_killed": "2026-03-03"
+    },
+    {
+      "id": "bollinger_squeeze",
+      "name": "Bollinger Squeeze",
+      "family": "ATM Challenge",
+      "win_rate": 0.45,
+      "expectancy_percent": -0.08,
+      "reason": "High frequency but no edge",
+      "action": "move_to_incubator",
+      "date_killed": "2026-03-03"
+    },
+    {
+      "id": "alpha_engine_long",
+      "name": "Alpha Engine - Long Only",
+      "family": "Alpha Engine",
+      "win_rate": 0.26,
+      "expectancy_percent": -3.9,
+      "reason": "Severe directional asymmetry - long side is toxic",
+      "action": "disable_long_direction",
+      "alternative": "Use short-only for Alpha strategies",
+      "date_killed": "2026-03-03"
+    },
+    {
+      "id": "quan_engine_scalp",
+      "name": "Quan Engine Scalp",
+      "family": "Quan Engine",
+      "win_rate": 0.0,
+      "expectancy_percent": -100.0,
+      "reason": "0% WR zombie — 449 closed picks with zero wins",
+      "action": "disable_immediately",
+      "date_killed": "2026-04-02"
+    },
+    {
+      "id": "quan_engine_swing",
+      "name": "Quan Engine Swing",
+      "family": "Quan Engine",
+      "win_rate": 0.0,
+      "expectancy_percent": -100.0,
+      "reason": "0% WR zombie — 39 closed picks with zero wins",
+      "action": "disable_immediately",
+      "date_killed": "2026-04-02"
+    }
+  ],
+  "auto_kill_conditions": {
+    "min_win_rate": 0.25,
+    "min_expectancy_percent": -0.5,
+    "max_consecutive_losses": 8,
+    "evaluation_window_trades": 20
+  },
+  "resurrection_criteria": {
+    "description": "Conditions for moving from kill list back to incubator",
+    "min_paper_trading_days": 30,
+    "min_paper_win_rate": 0.45,
+    "min_paper_expectancy": 0.2,
+    "required_sample_size": 50
+  }
+}

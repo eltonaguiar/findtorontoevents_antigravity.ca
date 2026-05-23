@@ -1,0 +1,50 @@
+{
+  "artifact_name": "equity_inverse_mutations_20260404",
+  "generated_at_utc": "2026-04-04T21:20:00Z",
+  "revised_at_utc": "2026-04-04T22:00:00Z",
+  "author": "claude-sports-db-fix",
+  "status": "RETRACTED_v1_replaced_by_v2",
+  "method": "DNA-style signal inversion on losing equity strategies (user directive: 'inverse/dna transform the losing, backtest for edge')",
+  "source_data": "audit_dashboard/data/dashboard_data.json \u2192 picks.recent_closed (n=1200, EQUITY subset n=222)",
+  "monte_carlo_validation": "alpha_engine/data/equity_inverse_monte_carlo_2026-04-04.json",
+  "retraction_notice": "v1 of this artifact claimed combined +30% inverse edge from 5 losing strategies based on n=15 slice. Monte Carlo test on true n=81 dataset invalidated that. See true_population_analysis below.",
+  "true_population_analysis": {
+    "method": "Scan ALL closed EQUITY picks from picks.recent_closed for the 5 strategies originally flagged as losing",
+    "combined_n": 104,
+    "equity_n": 81,
+    "per_strategy_truth": [
+      {"strategy": "Breakout Momentum", "n": 55, "wr_pct": 43.6, "pnl_pct": 12.81, "verdict": "WINNING"},
+      {"strategy": "Classic Momentum", "n": 13, "wr_pct": 38.5, "pnl_pct": 15.75, "verdict": "WINNING"},
+      {"strategy": "quality-minus-junk", "n": 21, "wr_pct": 66.7, "pnl_pct": 19.07, "verdict": "WINNING"},
+      {"strategy": "vol-contraction-scout", "n": 11, "wr_pct": 45.5, "pnl_pct": -4.32, "verdict": "genuinely losing"},
+      {"strategy": "macd-hidden-div-scout", "n": 4, "wr_pct": 25.0, "pnl_pct": -8.22, "verdict": "genuinely losing"}
+    ]
+  },
+  "monte_carlo_summary": {
+    "n": 81,
+    "bootstrap_iterations": 10000,
+    "permutation_iterations": 10000,
+    "inverse_wr_pct": 44.4,
+    "inverse_wr_95_ci": [33.3, 55.6],
+    "inverse_mean_net_pnl_pct_per_trade": -0.88,
+    "inverse_mean_95_ci": [-1.99, 0.15],
+    "permutation_p_value_one_sided": 0.9455,
+    "reject_null": false,
+    "forward_projection_p_positive": {
+      "n_30": 0.1649,
+      "n_100": 0.0315,
+      "n_300": 0.0007
+    },
+    "conclusion": "Inverse has no edge. Null hypothesis (random direction) not rejected."
+  },
+  "narrowed_v2_targets": [
+    "vol-contraction-scout (n=11, -4.32%)",
+    "macd-hidden-div-scout (n=4, -8.22%)"
+  ],
+  "honesty_caveats": [
+    "v1 claim was based on 15-trade slice; full n=81 inverts the conclusion",
+    "Even the 2 genuine losers have samples too small (n=4, n=11) to justify real-money inverse",
+    "Statistical process lesson: bootstrap/permutation test ALL strategy claims before acting on eyeballed slices",
+    "Paper-track observation only until n>=30 per strategy and Wilson 95% CI lower bound > 50%"
+  ]
+}

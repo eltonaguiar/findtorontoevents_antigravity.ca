@@ -1,0 +1,37 @@
+{
+  "experiment_name": "SUPER_PICKS_S_PLUS_COHORT_2026_04_05",
+  "generated_at": "2026-04-05T02:30:00Z",
+  "dashboard_source": "audit_dashboard/data/dashboard_data.json (generated 2026-04-05T01:17:53Z)",
+  "purpose": "Validate whether score>=96 SUPER picks deliver real alpha. 14 picks bypassed score cap (120 raw) - investigate if label is meaningful.",
+  "tp_sl_rule": "2.5x ATR TP / 1.5x ATR SL (from TP values in dashboard)",
+  "buckets": {
+    "A_trust_6plus_sweet_spot": "Trust>=6 + conf 0.70-0.79, non-ml-flood source. Expected: outperform.",
+    "B_ml_crypto_pred_flood": "Trust=5, source=ml_crypto_pred or enhanced_ml_A_xgboost. Expected: correlated, mixed results.",
+    "C_battleground_demoted": "Source=battleground (demoted to WATCH 2026-04-04). Expected: underperform.",
+    "D_low_conf_outlier": "conf<=0.50 despite score=120. Expected: underperform."
+  },
+  "tracked_picks": [
+    {"symbol": "SHIBUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.78, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": false, "reason_skip_tv": "meme, high-spread, low liquidity on paper"},
+    {"symbol": "DOGEUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.78, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": true, "size_pct": 3, "size_justification": "B-bucket rep: meme+ml flood. 3% (not 5%) because single-source correlated signal, not independent alpha."},
+    {"symbol": "ADAUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.79, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": "already_open", "existing_qty": 391.10},
+    {"symbol": "ETHUSDT", "direction": "LONG", "score": 120, "trust": 8, "conf": 0.73, "source": "battleground", "bucket": "C", "tv_trade": false, "reason_skip_tv": "battleground DEMOTED to WATCH 2026-04-04 (35.7% WR, PF 0.28). Trust=8 label is STALE. Tracking-only to confirm demotion correct."},
+    {"symbol": "SUIUSDT", "direction": "LONG", "score": 120, "trust": 6, "conf": 0.75, "source": "alpha_engine", "bucket": "A", "tv_trade": true, "size_pct": 5, "size_justification": "A-bucket best-of-breed: trust=6 + conf=0.75 perfect sweet spot + alpha_engine source (not ml flood). Full 5%."},
+    {"symbol": "NEARUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.78, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": false, "reason_skip_tv": "closed 1h ago at -1.67 PnL in prior TRUSTOURSCORE run; wait for cooldown"},
+    {"symbol": "XRPUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.79, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": "already_open", "existing_qty": 71.38},
+    {"symbol": "STRKUSDT", "direction": "LONG", "score": 120, "trust": 7, "conf": 0.50, "source": "alpha_engine", "bucket": "D", "tv_trade": true, "size_pct": 2, "size_justification": "D-bucket test: trust=7 but conf=0.50 = weak signal with strong strategy. 2% downsize tests whether trust alone carries edge."},
+    {"symbol": "APTUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.71, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": "already_open", "existing_qty": 91.34},
+    {"symbol": "DYDXUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.70, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": true, "size_pct": 3, "size_justification": "B-bucket rep: conf=0.70 bottom of sweet spot. 3% because track-arrow DOWN on dashboard suggests momentum fading."},
+    {"symbol": "ATOMUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.80, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": true, "size_pct": 2, "size_justification": "B-bucket + DANGER ZONE: conf=0.80 is start of overconfidence tier (22% historical WR at 0.90+). 2% downsize."},
+    {"symbol": "OPUSDT", "direction": "LONG", "score": 120, "trust": 7, "conf": 0.70, "source": "alpha_engine", "bucket": "A", "tv_trade": true, "size_pct": 4, "size_justification": "A-bucket: trust=7 + conf=0.70 bottom of sweet spot + alpha_engine. 4% (not full 5%) because conf at bottom edge."},
+    {"symbol": "AAVEUSDT", "direction": "LONG", "score": 120, "trust": 7, "conf": 0.50, "source": "alpha_engine", "bucket": "D", "tv_trade": true, "size_pct": 2, "size_justification": "D-bucket twin of STRKUSDT: trust=7 + conf=0.50. 2% tests whether conf=0.50 is noise."},
+    {"symbol": "BNBUSDT", "direction": "LONG", "score": 120, "trust": 5, "conf": 0.80, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": "already_open", "existing_qty": 0.1609},
+    {"symbol": "APTUSDT_alpha", "direction": "LONG", "score": 108, "trust": 4, "conf": 0.50, "source": "alpha_engine", "bucket": "D", "tv_trade": false, "reason_skip_tv": "dup of existing APTUSDT position; lower-trust variant"},
+    {"symbol": "JTOUSDT", "direction": "LONG", "score": 106, "trust": 5, "conf": 0.79, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": true, "size_pct": 3, "size_justification": "B-bucket rep: conf=0.79 top of sweet spot. 3% standard B-bucket size."},
+    {"symbol": "BTCUSDT", "direction": "LONG", "score": 96.5, "trust": 5, "conf": 0.79, "source": "ml_crypto_pred", "bucket": "B", "tv_trade": "already_open", "existing_qty": 0.0014}
+  ],
+  "review_schedule": {
+    "48h_checkpoint": "2026-04-07T02:30:00Z",
+    "72h_final": "2026-04-08T02:30:00Z",
+    "metrics": ["bucket_win_rate", "bucket_avg_pnl_pct", "correlation_within_bucket_B", "battleground_confirm_demote"]
+  }
+}

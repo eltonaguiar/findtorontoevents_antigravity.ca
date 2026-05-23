@@ -1,0 +1,30 @@
+{
+  "name": "inverse_wrapper",
+  "category": "transformer",
+  "purpose": "Generic pick transformer that flips direction on a named source strategy's picks, with optional confidence-band and symbol filters.",
+  "source": {
+    "cross_reference": "docs/TRADING_INSIGHTS_FROM_AI4TRADE.md §6a",
+    "prior_knowledge": "alpha_engine/elite_scorer.py:497-502 (quan_engine confidence bands are inverted) and :63 (edge concentrated in TAOUSDT/HYPEUSDT/TRXUSDT)",
+    "created": "2026-04-14"
+  },
+  "status": "draft — not wired into scanner; forward-validate before activating",
+  "design_doc": "docs/superpowers/specs/2026-04-14-inverse-wrapper-design.md",
+  "wired_in_scanner": false,
+  "forward_test_started": null,
+  "configured_callers": {
+    "quan_engine_inverse": {
+      "source_strategy": "quan_engine",
+      "new_strategy_name": "quan_engine_inverse",
+      "only_if_confidence_in": [0.60, 0.69],
+      "exclude_symbols": ["TAOUSDT", "HYPEUSDT", "TRXUSDT"],
+      "rationale": "Target the 0.60-0.69 conf band (19.8% WR per elite_scorer:498) while excluding the 3 symbols where quan_engine has real edge."
+    },
+    "value_quality_inverse": {
+      "source_strategy": "Value + Quality",
+      "new_strategy_name": "value_quality_inverse",
+      "only_if_confidence_in": null,
+      "exclude_symbols": null,
+      "rationale": "No prior band or symbol analysis yet — invert the whole thing as a first pass, refine if forward tracking shows uneven WR across confidence or symbol."
+    }
+  }
+}

@@ -1,0 +1,94 @@
+**Recommendation: Option A. Steps 5-6 in one workflow, step 7 in a separate workflow.**
+
+Rationale: desktop can't connect anyway, so "manual" still means GHA. Encoding the safety steps in a workflow gives you audit logs, reproducibility, and the typed-input gate for free.
+
+---
+
+## Workflow design
+
+### Workflow 1 — `resolver-step5-6.yml` (steps 5 + 6)
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type APPLY to execute. Anything else = dry-run.'
+        required: true
+        default: 'dry-run'
+```
+
+**Sequence inside the job:**
+
+```
+1. BACKUP
+   CREATE TABLE at_raw_picks_bak_20260519_prestep5
+     AS SELECT * FROM at_raw_picks;
+   -- verify: row count must match SELECT COUNT(*) FROM at_raw_picks
+
+2. PREFLIGHT (always runs, even in dry-run)
+   SELECT COUNT(*), symbol FROM at_raw_picks
+   WHERE <step-5 normalization predicates>   -- bare FOREX / bare =F / junk
+   GROUP BY symbol ORDER BY COUNT(*) DESC;
+   -- print to log; operator reviews before re-triggering with confirm=APPLY
+
+3. IF confirm == 'APPLY':
+   START TRANSACTION;
+   -- step 5 UPDATEs here (suffix normalization + quarantine flag)
+   SELECT ROW_COUNT() INTO @updated;
+   -- assert @updated BETWEEN 1900 AND 2300  (bounds on ~2086)
+   SELECT COUNT(*) FROM at_raw_picks WHERE <bad-symbol predicates>;
+   -- assert == 0 (all fixed)
+   COMMIT;
+
+4. STEP 6 re-resolve (only if step 5 committed)
+   python alpha_engine/outcome_resolver.py --symbols-from-step5
+   -- or full re-resolve pass; capture stdout/exit code
+
+5. POST-WRITE VERIFICATION
+   SELECT asset_class, COUNT(*), SUM(result='WON'), SUM(result='LOST')
+   FROM at_raw_picks
+   WHERE updated_at >= NOW() - INTERVAL 10 MINUTE
+   GROUP BY asset_class;
+   -- print to log for operator sign-off before running workflow 2
+```
+
+### Workflow 2 — `resolver-step7-apply.yml`
+
+Separate `workflow_dispatch`, same typed-input gate. Runs `active_picks_sync.py --apply` only. Reason: Step 6 re-resolve may surface unexpected outcome distributions — you want a human checkpoint before flipping WON/LOST/EXPIRED.
+
+---
+
+## Backup strategy
+
+| What | Name |
+|---|---|
+| Full table snapshot | `at_raw_picks_bak_YYYYMMDD_prestep5` |
+| Row count assertion | logged to GHA output |
+| Never drop backup | leave it until you've verified step 6 + step 7 outputs clean |
+
+---
+
+## Rollback path
+
+```sql
+-- If something goes wrong post-COMMIT:
+RENAME TABLE at_raw_picks TO at_raw_picks_broken_20260519;
+RENAME TABLE at_raw_picks_bak_20260519_prestep5 TO at_raw_picks;
+```
+
+One-liner, no data loss as long as backup table exists.
+
+---
+
+## Summary ranking
+
+| | Option A (GHA) | Option B (manual) |
+|---|---|---|
+| Can connect to MySQL | ✅ | Depends on whitelisted machine |
+| Audit trail | ✅ full logs | ❌ none |
+| Typed-input confirmation gate | ✅ | ❌ |
+| Dry-run / preflight built-in | ✅ | Manual discipline required |
+| Rollback path | ✅ in workflow | ❌ ad-hoc |
+
+**Option A wins on every axis.** Keep steps 5-6 together (they're one atomic normalization + re-resolve unit), step 7 separate (gives you a deliberate pause to inspect outcome distribution before writing final verdicts).

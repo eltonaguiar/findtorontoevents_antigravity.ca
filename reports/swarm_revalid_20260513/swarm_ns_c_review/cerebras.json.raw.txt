@@ -1,0 +1,22 @@
+```json
+{
+  "verdict": "REQUEST_CHANGES",
+  "evidence_quality": "thin",
+  "confounders_identified": [
+    "6 UTC coincides with the early‑Asia session where liquidity is typically lower",
+    "Potential overlap with weekend‑edge effects (e.g., Friday night / Saturday morning low activity)",
+    "Correlation with market‑wide volatility spikes that often occur around the start of the Asian session",
+    "Possible interaction with other quality‑gate rules (e.g., volume‑threshold filters) that may already be suppressing picks at 6 UTC"
+  ],
+  "recommendation_on_filter_scope": "ADD_6_TO_(8,9)",
+  "default_behavior_recommendation": "DEFAULT_ON",
+  "additional_test_cases_needed": [
+    "Run the back‑test on multiple time windows (e.g., last 6 months, last 12 months) to verify stability of the 6 UTC effect",
+    "Separate analysis for weekdays vs weekends to isolate weekend‑edge confounding",
+    "Cross‑asset validation (e.g., BTC vs ETH vs altcoins) to ensure the 6 UTC pattern is not crypto‑specific",
+    "Stress‑test with synthetic low‑liquidity periods to confirm the filter does not over‑reject viable picks",
+    "A/B test comparing the current (8,9) filter, the proposed (6) filter, and the combined (6,8,9) filter on a hold‑out dataset"
+  ],
+  "merge_decision": "HOLD"
+}
+```

@@ -1,0 +1,288 @@
+{
+  "_meta": {
+    "exported": "2026-05-17",
+    "source": "agentmemory REST :3111",
+    "note": "Censored snapshot — API keys/tokens/passwords redacted. Live store is localhost:3111."
+  },
+  "observations": {
+    "error": "HTTP Error 400: Bad Request"
+  },
+  "search_snapshot_query": "findtorontoevents audit registry slippage verdict",
+  "memories": {
+    "format": "full",
+    "results": [
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Session V (2026-05-17): /audit verdict de-contaminated. asset_class_health was systematically inflated — recomputed PF/WR with no independent cross-check. Built canonical PF registry (tools/build_pf_registry.py -> audit_dashboard/data/pf_registry.json): ingests full 32-ledger JSON_PICK_SOURCES set, dedups ~41% re-emissions, exposes by_asset_class_policy_clean. tools/reconcile_pf_registry.py cross-checks registry vs verdict, exits 2 on divergence; wired into hourly audit-dashboard.yml. PR #1150 forced COMMODITY sizing_allowed=false (CT=F/COT leak, headline PF 7.71) and excluded PERMANENTLY_KILLED_STRATEGIES (quan_engine family, ~70% of CRYPTO ledger @ PF 0.38) from asset_class_health aggregates. Reconcile: 6/9 classes diverge. Canonical policy-clean PF — COMMODITY 1.25, CRYPTO 1.24, EQUITY 0.74, FOREX 0.36 — every class sub/near-floor, NO class real-money ready. The registry, not the /audit tile, is verdict-grade. M-067 (MASTER_ACTION_PLAN s25) swarm-planned follow-up: make the generator READ the registry. PRs #1150/#1151/#1152/#1156/#1158 merged."
+          ],
+          "files": [],
+          "id": "mem_mp9li54b_cb1c526c308b",
+          "importance": 7,
+          "narrative": "Session V (2026-05-17): /audit verdict de-contaminated. asset_class_health was systematically inflated — recomputed PF/WR with no independent cross-check. Built canonical PF registry (tools/build_pf_registry.py -> audit_dashboard/data/pf_registry.json): ingests full 32-ledger JSON_PICK_SOURCES set, dedups ~41% re-emissions, exposes by_asset_class_policy_clean. tools/reconcile_pf_registry.py cross-checks registry vs verdict, exits 2 on divergence; wired into hourly audit-dashboard.yml. PR #1150 forced COMMODITY sizing_allowed=false (CT=F/COT leak, headline PF 7.71) and excluded PERMANENTLY_KILLED_STRATEGIES (quan_engine family, ~70% of CRYPTO ledger @ PF 0.38) from asset_class_health aggregates. Reconcile: 6/9 classes diverge. Canonical policy-clean PF — COMMODITY 1.25, CRYPTO 1.24, EQUITY 0.74, FOREX 0.36 — every class sub/near-floor, NO class real-money ready. The registry, not the /audit tile, is verdict-grade. M-067 (MASTER_ACTION_PLAN s25) swarm-planned follow-up: make the generator READ the registry. PRs #1150/#1151/#1152/#1156/#1158 merged.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T09:51:22.471Z",
+          "title": "Session V (2026-05-17): /audit verdict de-contaminated. asset_class_health was s",
+          "type": "decision"
+        },
+        "score": 10.472620657146448,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "M-069 (2026-05-17, Session W): fixed a 100x units bug in alpha_engine/charter_slippage.py::deduct_slippage. It assumed pnl_pct is percentage-points (1.0==1%) and deducted 2*one_way_bps/100; every real caller (dashboard_generator verdict aggregate L14414, stamp_pick_net_pnl -> outcome_resolver) feeds the FRACTIONAL ledger value (closed_picks.json pnl_pct: 99%+ of rows in [-1,1], -0.0328==-3.28%). So an 8bp CRYPTO round-trip was subtracted as 8 percentage points — flipping real wins to losses across the whole verdict aggregate. Fix: deduct round_trip_bps/10000 (bps->fraction). 11/11 test_charter_slippage.py pass after migrating assertions to the fraction convention. Verdict shift (sim): buggy slippage crushed every class to ~0% WR; correct slippage gives COMMODITY 63%WR/PF2.45, CRYPTO 49%/0.53, EQUITY 40%/0.96, FOREX 28%/0.35. No class crosses sizing_allowed PF>=1.0 — no blocked->allowed flip. PR #1162 merged. Prerequisite for M-067."
+          ],
+          "files": [],
+          "id": "mem_mp9mjz3d_c5312e06a21f",
+          "importance": 7,
+          "narrative": "M-069 (2026-05-17, Session W): fixed a 100x units bug in alpha_engine/charter_slippage.py::deduct_slippage. It assumed pnl_pct is percentage-points (1.0==1%) and deducted 2*one_way_bps/100; every real caller (dashboard_generator verdict aggregate L14414, stamp_pick_net_pnl -> outcome_resolver) feeds the FRACTIONAL ledger value (closed_picks.json pnl_pct: 99%+ of rows in [-1,1], -0.0328==-3.28%). So an 8bp CRYPTO round-trip was subtracted as 8 percentage points — flipping real wins to losses across the whole verdict aggregate. Fix: deduct round_trip_bps/10000 (bps->fraction). 11/11 test_charter_slippage.py pass after migrating assertions to the fraction convention. Verdict shift (sim): buggy slippage crushed every class to ~0% WR; correct slippage gives COMMODITY 63%WR/PF2.45, CRYPTO 49%/0.53, EQUITY 40%/0.96, FOREX 28%/0.35. No class crosses sizing_allowed PF>=1.0 — no blocked->allowed flip. PR #1162 merged. Prerequisite for M-067.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T10:20:47.583Z",
+          "title": "M-069 (2026-05-17, Session W): fixed a 100x units bug in alpha_engine/charter_sl",
+          "type": "decision"
+        },
+        "score": 6.6048779078356,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Session 2026-05-17 — Equities-IPO research sub-class shipped (PR #1142 merged). After a 9-report AI-auditor marathon (Ernie/GLM confabulated; MiMo/Sauna did real clones), assessed cheap-stock/IPO/penny-stock trading. VERDICT: true penny stocks <$1 NOT systematically tradable (3-10% round-trip spreads eat alpha); IPO first-day pop not reachable without offer-price allocation. The ONE defensible approach = IPO lock-up-expiry SHORT anomaly (Field & Hanka 2001, Brav & Gompers 2003) — 180-day insider lock-up expiry creates predictable selling pressure. SHIPPED as opt-in research sidecar (Wire-Up Rule compliant, NOT wired to production): alpha_engine/ipo_data_pipeline.py (Nasdaq IPO calendar + SEC EDGAR + Yahoo fetch, lock-up-date computation, SHORT signal gen source_system=ipo_pipeline) + alpha_engine/ipo_lockup_strategy.py (backtester: short 5d pre-lockup, cover 10d post, 15% stop/10% TP, 2% slippage + live signal generator). py_compile clean + unit-tested. Wiring Plan: passes_active_gate admits ipo_pipeline ONLY after a >=2yr backtest clears the universal 5-gate (DSR>=0.95, PBO<0.05, WF decay>=0, n>=100, 30d rolling-clean). WR estimates 58-62% are literature not system-verified. updates/index.html got an Equities-IPO entry with before/after filter state (production pick flow + HC filter UNCHANGED). KEY SESSION LESSON: AI auditors confabulate when they cannot clone the repo (Ernie invented strategies/files) or overfit (MiMo conf>=0.8 = 3 overfit ML models, FOREX cta_replicator = resolver-replay artifact). The cloud-agent prompt now has anti-fantasy gates: proof-of-access (git HEAD + real strategy names), inverse-projection rule (no 1/PF), recency-window rule (no last-10/last-50 cherry-pick). MASTER_ACTION_PLAN amended §23 with M-060..M-064. No asset class is real-money ready."
+          ],
+          "files": [],
+          "id": "mem_mp9hdckc_886a46980bf1",
+          "importance": 7,
+          "narrative": "Session 2026-05-17 — Equities-IPO research sub-class shipped (PR #1142 merged). After a 9-report AI-auditor marathon (Ernie/GLM confabulated; MiMo/Sauna did real clones), assessed cheap-stock/IPO/penny-stock trading. VERDICT: true penny stocks <$1 NOT systematically tradable (3-10% round-trip spreads eat alpha); IPO first-day pop not reachable without offer-price allocation. The ONE defensible approach = IPO lock-up-expiry SHORT anomaly (Field & Hanka 2001, Brav & Gompers 2003) — 180-day insider lock-up expiry creates predictable selling pressure. SHIPPED as opt-in research sidecar (Wire-Up Rule compliant, NOT wired to production): alpha_engine/ipo_data_pipeline.py (Nasdaq IPO calendar + SEC EDGAR + Yahoo fetch, lock-up-date computation, SHORT signal gen source_system=ipo_pipeline) + alpha_engine/ipo_lockup_strategy.py (backtester: short 5d pre-lockup, cover 10d post, 15% stop/10% TP, 2% slippage + live signal generator). py_compile clean + unit-tested. Wiring Plan: passes_active_gate admits ipo_pipeline ONLY after a >=2yr backtest clears the universal 5-gate (DSR>=0.95, PBO<0.05, WF decay>=0, n>=100, 30d rolling-clean). WR estimates 58-62% are literature not system-verified. updates/index.html got an Equities-IPO entry with before/after filter state (production pick flow + HC filter UNCHANGED). KEY SESSION LESSON: AI auditors confabulate when they cannot clone the repo (Ernie invented strategies/files) or overfit (MiMo conf>=0.8 = 3 overfit ML models, FOREX cta_replicator = resolver-replay artifact). The cloud-agent prompt now has anti-fantasy gates: proof-of-access (git HEAD + real strategy names), inverse-projection rule (no 1/PF), recency-window rule (no last-10/last-50 cherry-pick). MASTER_ACTION_PLAN amended §23 with M-060..M-064. No asset class is real-money ready.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T07:55:40.350Z",
+          "title": "Session 2026-05-17 — Equities-IPO research sub-class shipped (PR #1142 merged). ",
+          "type": "decision"
+        },
+        "score": 5.983058281536399,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Session 2026-05-17 (findtorontoevents.ca /audit). ACHIEVEMENTS: Built 6 Claude skills (handlealltodos wraps /goal with chat-sweep+escalation; consult-gemini/codex/cursor-agent/opencode/kilo headless second-opinion CLIs mirroring consult-grok). Ran reproduction-grade external audit of the CRYPTO /audit aggregate -> reports/crypto_edge_artifact_audit_2026_05_17.md. Shipped 3 PRs: #1127 (C2 net-pnl PF + C3 exclude BLOCKED_SOURCE_SYSTEMS + C4 m004 autopsy correction); #1130 (C1 Path A gap-aware TP/SL fill in outcome_resolver._scan_ohlc_for_touch); #1132 (C1 Paths B/C live-spot+claude_gainer_ml + D2 systems[] mirror-dedup). LESSONS: (1) LMArena cannot be reliably automated - moved off Gradio to Cloudflare+reCAPTCHA-Enterprise; LMArenaBridge headless/non-headless both 403, userscript proxy never dispatched jobs. Use /swarm-second-opinion. (2) For scrape/automate-hostile-service tasks: recon gate (live curl+devtools) + explicit kill criteria BEFORE planning. (3) CRYPTO /audit verdict was contaminated: outcome_resolver credited TP hits at NOMINAL take_profit not real fill -> ghost rows (81% wins at exactly +3.0%); PF gross with no fee term; blocked-source losers + mirror-duplicate trades polluted aggregates. (4) Storm-commit repo: always work in an isolated git worktree or commits land on peer branches. (5) consult-* CLI gotchas: run from clean dir ($env:TEMP); gemini needs --skip-trust; opencode/kilo hang without a provider; cursor-agent answer is JSON .result not .text. (6) m004 autopsy wrong - cited closed_picks not resolved_picks as n (kimi_signal_tracking n=21 real not 1198). OUTSTANDING: C1 8k-row historical re-resolution migration - held for user go-ahead, back up DB to ejaguiar1_backups + validate first."
+          ],
+          "files": [],
+          "id": "mem_mp9d544x_f767bc8aa730",
+          "importance": 7,
+          "narrative": "Session 2026-05-17 (findtorontoevents.ca /audit). ACHIEVEMENTS: Built 6 Claude skills (handlealltodos wraps /goal with chat-sweep+escalation; consult-gemini/codex/cursor-agent/opencode/kilo headless second-opinion CLIs mirroring consult-grok). Ran reproduction-grade external audit of the CRYPTO /audit aggregate -> reports/crypto_edge_artifact_audit_2026_05_17.md. Shipped 3 PRs: #1127 (C2 net-pnl PF + C3 exclude BLOCKED_SOURCE_SYSTEMS + C4 m004 autopsy correction); #1130 (C1 Path A gap-aware TP/SL fill in outcome_resolver._scan_ohlc_for_touch); #1132 (C1 Paths B/C live-spot+claude_gainer_ml + D2 systems[] mirror-dedup). LESSONS: (1) LMArena cannot be reliably automated - moved off Gradio to Cloudflare+reCAPTCHA-Enterprise; LMArenaBridge headless/non-headless both 403, userscript proxy never dispatched jobs. Use /swarm-second-opinion. (2) For scrape/automate-hostile-service tasks: recon gate (live curl+devtools) + explicit kill criteria BEFORE planning. (3) CRYPTO /audit verdict was contaminated: outcome_resolver credited TP hits at NOMINAL take_profit not real fill -> ghost rows (81% wins at exactly +3.0%); PF gross with no fee term; blocked-source losers + mirror-duplicate trades polluted aggregates. (4) Storm-commit repo: always work in an isolated git worktree or commits land on peer branches. (5) consult-* CLI gotchas: run from clean dir ($env:TEMP); gemini needs --skip-trust; opencode/kilo hang without a provider; cursor-agent answer is JSON .result not .text. (6) m004 autopsy wrong - cited closed_picks not resolved_picks as n (kimi_signal_tracking n=21 real not 1198). OUTSTANDING: C1 8k-row historical re-resolution migration - held for user go-ahead, back up DB to ejaguiar1_backups + validate first.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T05:57:17.635Z",
+          "title": "Session 2026-05-17 (findtorontoevents.ca /audit). ACHIEVEMENTS: Built 6 Claude s",
+          "type": "decision"
+        },
+        "score": 4.846004881936034,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Session 2026-05-17 (Claude Opus 4.7) - LMArena action-program completion. ACHIEVEMENTS: Completed + merged the full 9-item LMArena/OLLAMA action program across 5 PRs - #1120 (A1 meta-label shadow gate in quality_gates.passes_active_gate + A5 COMMODITY PF verify), #1122 (A4 FOREX ATR mutation / A6 confidence-calibrator refit / A8 canonical PF registry), #1123 (A9 emitter idempotency guard alpha_engine/emitter_dedup.py), #1129 (A2 overconfidence-decay hash-bucketed A/B + A3 vol-scalar cohort-replay backtest), #1127 (crypto-audit C2/C3/C4 net-PnL PF). Fixed the consult-grok skill. Broadcast session summary to peers via holographic memory (commit 7736c8e4d38). KEY FINDINGS: A8 PF registry found 41% of the entire closed-pick ledger is duplicate re-emissions - the single biggest data-integrity finding; COMMODITY multi_asset_cot CT=F PF is INFLATED (true ~4.69 not 21.33, 65% of its picks are COT re-emissions, winners re-emitted up to 9x); A6 OOS test shows only EQUITY confidence-calibrator passes - FOREX calibrator is a sign-flip hazard, do NOT enable global CONFIDENCE_CALIBRATION_ENABLED; A4 FOREX ATR-normalization NO-VIABLE-SUBSET, FOREX stays hard-disabled; O3 confidence inversion is NOT a Beta-prior bug (calibrator uses isotonic regression, default-off). LESSONS LEARNED: (1) This repo is a peer-storm-commit repo - multiple Claude instances constantly git-checkout the shared 21k-file working tree, which WIPED uncommitted subagent edits twice. FIX: always run subagent code work in worktree-isolation (Agent isolation=worktree), and consolidate commits via a fresh worktree off origin/main + cherry-pick, never trust the shared checkout HEAD. (2) consult-grok skill bug: wsl inherits Windows TMPDIR/TEMP/TMP (C:/Users/.../AppData/Local/Temp); grok aborts with --single: prompt is empty. FIX: wsl --cd /tmp bash -lc unset TMPDIR TEMP TMP then grok. (3) Ollama cloud auth drops mid-session (needs ollama signin); HF Inference API credits depleted - rotate models, dont assume cloud stays up. (4) Grok steering: when 41pct of the ledger is duplicate noise, fix the emitter/resolver pipeline FIRST before chasing per-class edge - downstream PF/calibrator numbers are all phantom until the data source is idempotent. (5) swarm-v2 PR review (python -m swarms.cli.main pr-review --pr N from tools/swarm_v2) is the reliable approval gate; swarm-approved means merge same turn. REMAINING: A7 cross-asset COT overlay (XL), live 30d validation windows for A1/A2/A3/A6, Grok-recommended A1 shadow->enforce promotion beyond EQUITY."
+          ],
+          "files": [],
+          "id": "mem_mp9d5yi2_24ea16eac225",
+          "importance": 7,
+          "narrative": "Session 2026-05-17 (Claude Opus 4.7) - LMArena action-program completion. ACHIEVEMENTS: Completed + merged the full 9-item LMArena/OLLAMA action program across 5 PRs - #1120 (A1 meta-label shadow gate in quality_gates.passes_active_gate + A5 COMMODITY PF verify), #1122 (A4 FOREX ATR mutation / A6 confidence-calibrator refit / A8 canonical PF registry), #1123 (A9 emitter idempotency guard alpha_engine/emitter_dedup.py), #1129 (A2 overconfidence-decay hash-bucketed A/B + A3 vol-scalar cohort-replay backtest), #1127 (crypto-audit C2/C3/C4 net-PnL PF). Fixed the consult-grok skill. Broadcast session summary to peers via holographic memory (commit 7736c8e4d38). KEY FINDINGS: A8 PF registry found 41% of the entire closed-pick ledger is duplicate re-emissions - the single biggest data-integrity finding; COMMODITY multi_asset_cot CT=F PF is INFLATED (true ~4.69 not 21.33, 65% of its picks are COT re-emissions, winners re-emitted up to 9x); A6 OOS test shows only EQUITY confidence-calibrator passes - FOREX calibrator is a sign-flip hazard, do NOT enable global CONFIDENCE_CALIBRATION_ENABLED; A4 FOREX ATR-normalization NO-VIABLE-SUBSET, FOREX stays hard-disabled; O3 confidence inversion is NOT a Beta-prior bug (calibrator uses isotonic regression, default-off). LESSONS LEARNED: (1) This repo is a peer-storm-commit repo - multiple Claude instances constantly git-checkout the shared 21k-file working tree, which WIPED uncommitted subagent edits twice. FIX: always run subagent code work in worktree-isolation (Agent isolation=worktree), and consolidate commits via a fresh worktree off origin/main + cherry-pick, never trust the shared checkout HEAD. (2) consult-grok skill bug: wsl inherits Windows TMPDIR/TEMP/TMP (C:/Users/.../AppData/Local/Temp); grok aborts with --single: prompt is empty. FIX: wsl --cd /tmp bash -lc unset TMPDIR TEMP TMP then grok. (3) Ollama cloud auth drops mid-session (needs ollama signin); HF Inference API credits depleted - rotate models, dont assume cloud stays up. (4) Grok steering: when 41pct of the ledger is duplicate noise, fix the emitter/resolver pipeline FIRST before chasing per-class edge - downstream PF/calibrator numbers are all phantom until the data source is idempotent. (5) swarm-v2 PR review (python -m swarms.cli.main pr-review --pr N from tools/swarm_v2) is the reliable approval gate; swarm-approved means merge same turn. REMAINING: A7 cross-asset COT overlay (XL), live 30d validation windows for A1/A2/A3/A6, Grok-recommended A1 shadow->enforce promotion beyond EQUITY.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T05:57:57.073Z",
+          "title": "Session 2026-05-17 (Claude Opus 4.7) - LMArena action-program completion. ACHIEV",
+          "type": "decision"
+        },
+        "score": 4.243799802338171,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "KEY FINDING 2026-05-17: dependency-audit subagent found 6 third-party packages imported by repo code but declared in NO requirements*.txt — yfinance (148 files), pymysql (54), redis (20), beautifulsoup4/bs4 (9), mysql-connector-python/mysql.connector (8), PyYAML/yaml (5). Every CI job that pip-installs requirements then runs those modules hits ModuleNotFoundError; this was the true root cause of the ETF/Bond scanners emitting 0 picks (the per-scanner failover only patched the symptom). Fixed in PR #1137. Import-name vs PyPI-name mismatches (bs4/yaml/mysql.connector) make these easy to miss in an audit. Repo also uses TWO MySQL drivers (pymysql + mysql-connector-python) — worth standardizing."
+          ],
+          "files": [],
+          "id": "mem_mp9h94ue_c5d84806d6dd",
+          "importance": 7,
+          "narrative": "KEY FINDING 2026-05-17: dependency-audit subagent found 6 third-party packages imported by repo code but declared in NO requirements*.txt — yfinance (148 files), pymysql (54), redis (20), beautifulsoup4/bs4 (9), mysql-connector-python/mysql.connector (8), PyYAML/yaml (5). Every CI job that pip-installs requirements then runs those modules hits ModuleNotFoundError; this was the true root cause of the ETF/Bond scanners emitting 0 picks (the per-scanner failover only patched the symptom). Fixed in PR #1137. Import-name vs PyPI-name mismatches (bs4/yaml/mysql.connector) make these easy to miss in an audit. Repo also uses TWO MySQL drivers (pymysql + mysql-connector-python) — worth standardizing.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T07:52:23.747Z",
+          "title": "KEY FINDING 2026-05-17: dependency-audit subagent found 6 third-party packages i",
+          "type": "decision"
+        },
+        "score": 3.9742425613903567,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "External-AI input audit 2026-05-17 (Opus 4.7): 7 separate external-AI deliverables reviewed this session — LMArena 5-gap audit, 4 crypto-predictor code dumps, Baidu ERNIE 12 docx + 5 'paste-ready' code files + 4 more 'build-not-wire' files. VERDICT: integrate NONE. Consistent failure pattern — external AIs lack repo access, generate plausible code that does not survive repo contact: wrong field names, phantom file paths (picks.COMMODITY_recent.json, risk/, ml_ops/, feature_repo/, execution_service/ — none exist), reinvent already-validated modules (Ernie's pbo()/dsr reinvent tools/pbo_cscv.py compute_pbo + alpha_engine/deflated_sharpe.py deflated_sharpe_ratio), duplicate shipped work (multi_model_swarm stub vs shipped multi_model_vote.py/multi_model_pick_gen.py), or target a production HFT execution stack the repo deliberately is NOT (paper-first, NFA). ERNIE also FABRICATED a tool run ('Result: Total 3500 OPEN 0') — it cannot execute anything. KEY: alpha_engine/money_ready_verdict.py + tests/test_money_ready_verdict.py ALREADY EXIST on main (16KB) — do not rebuild. LESSON: stop soliciting external-AI idea rounds; the bottleneck is repo-grounded execution, not idea generation. Verify every 'already exists' / 'already verified' claim against the live repo before acting."
+          ],
+          "files": [],
+          "id": "mem_mp9l7hoo_4d6412c357d0",
+          "importance": 7,
+          "narrative": "External-AI input audit 2026-05-17 (Opus 4.7): 7 separate external-AI deliverables reviewed this session — LMArena 5-gap audit, 4 crypto-predictor code dumps, Baidu ERNIE 12 docx + 5 'paste-ready' code files + 4 more 'build-not-wire' files. VERDICT: integrate NONE. Consistent failure pattern — external AIs lack repo access, generate plausible code that does not survive repo contact: wrong field names, phantom file paths (picks.COMMODITY_recent.json, risk/, ml_ops/, feature_repo/, execution_service/ — none exist), reinvent already-validated modules (Ernie's pbo()/dsr reinvent tools/pbo_cscv.py compute_pbo + alpha_engine/deflated_sharpe.py deflated_sharpe_ratio), duplicate shipped work (multi_model_swarm stub vs shipped multi_model_vote.py/multi_model_pick_gen.py), or target a production HFT execution stack the repo deliberately is NOT (paper-first, NFA). ERNIE also FABRICATED a tool run ('Result: Total 3500 OPEN 0') — it cannot execute anything. KEY: alpha_engine/money_ready_verdict.py + tests/test_money_ready_verdict.py ALREADY EXIST on main (16KB) — do not rebuild. LESSON: stop soliciting external-AI idea rounds; the bottleneck is repo-grounded execution, not idea generation. Verify every 'already exists' / 'already verified' claim against the live repo before acting.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T09:43:05.538Z",
+          "title": "External-AI input audit 2026-05-17 (Opus 4.7): 7 separate external-AI deliverabl",
+          "type": "decision"
+        },
+        "score": 3.6166251445980695,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "2026-05-17 session close-out. GIT FIXED: local main was 360 behind origin (storm-commit repo) + untracked collisions; reset --hard origin/main + clean -fd -> local==origin clean. PRs #1127/#1130/#1132 (C1/C2/C3/C4/D2 crypto-audit fixes) all MERGED. Peer PR #1145 (ETF/Bond CI fix) merged by me. Storm-repo lesson: do NOT rebase a deeply-drifted local clone; publish commits via 'git push origin HEAD:refs/heads/<newbranch>' (no rebase needed) then PR, OR reset --hard once peers are done. updates/index.html CRYPTO de-contamination entry FTP-deployed live to findtorontoevents.ca/updates/ (verified prod bytes==local). Peers notified via claude-peers MCP (peers d716wx3x ETF/Bond, vcsnm83o); set_summary done. OPEN: my PR #1143 stale (360-behind base, conflicts) - content already live+in agentmemory, safe to close. Hourly cron 0b814784 still armed."
+          ],
+          "files": [],
+          "id": "mem_mp9i71qy_4b58b7d7ccf6",
+          "importance": 7,
+          "narrative": "2026-05-17 session close-out. GIT FIXED: local main was 360 behind origin (storm-commit repo) + untracked collisions; reset --hard origin/main + clean -fd -> local==origin clean. PRs #1127/#1130/#1132 (C1/C2/C3/C4/D2 crypto-audit fixes) all MERGED. Peer PR #1145 (ETF/Bond CI fix) merged by me. Storm-repo lesson: do NOT rebase a deeply-drifted local clone; publish commits via 'git push origin HEAD:refs/heads/<newbranch>' (no rebase needed) then PR, OR reset --hard once peers are done. updates/index.html CRYPTO de-contamination entry FTP-deployed live to findtorontoevents.ca/updates/ (verified prod bytes==local). Peers notified via claude-peers MCP (peers d716wx3x ETF/Bond, vcsnm83o); set_summary done. OPEN: my PR #1143 stale (360-behind base, conflicts) - content already live+in agentmemory, safe to close. Hourly cron 0b814784 still armed.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T08:18:46.038Z",
+          "title": "2026-05-17 session close-out. GIT FIXED: local main was 360 behind origin (storm",
+          "type": "decision"
+        },
+        "score": 3.562130482746176,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Session 2026-05-17 wrap (Claude Opus 4.7). SHIPPED: PR #1140 cot_paper_pilot falsification fix (dedup-by-release-week -> tier SHADOW_INSUFFICIENT_N, DSR null); PR #1142 IPO lock-up-expiry research sidecar (alpha_engine/ipo_data_pipeline.py + ipo_lockup_strategy.py, opt-in NOT wired); PR #1144 first IPO backtest result. IPO BACKTEST VERDICT: n=23, WR 34.8%, PF 0.18, -164% PnL — FAILS the 5-gate. Literature 58-62% WR NOT reproduced. Only 2022 bear cohort worked; 2024-25 IPOs rallied through the lock-up window and hit the short stop. ipo_pipeline stays research-only, NOT wired to passes_active_gate. MASTER_ACTION_PLAN §23 amended with M-060..M-064 (MiMo Money-Ready roadmap validated, corrected: M-060 CRYPTO recalibration + M-061 DSR/PBO are WIRE-existing-code not BUILD — confidence_calibrator.py / deflated_sharpe.py / tools/pbo_cscv.py already exist). Cloud-agent prompt (reports/CLOUD_AGENT_AUDIT_VERIFICATION_PROMPT.md) hardened with 3 anti-fantasy gates: proof-of-access (git HEAD + real strategy names), inverse-projection rule (no 1/PF), recency-window rule (no last-10/50 cherry-pick). KEY LESSON: 9-report AI-auditor marathon — Ernie/GLM confabulated (no repo clone, invented strategies/files); MiMo/Sauna did real clones, MiMo conceded its holy-grail (conf>=0.8 = 3 overfit ML models; cta_replicator FOREX = resolver-replay artifact). No asset class is real-money ready. LOCAL CLONE ~360 behind origin/main — never reset it; published all work via fresh remote branches + PR, no rebase, peer-safe."
+          ],
+          "files": [],
+          "id": "mem_mp9i9oia_f95b0a64bbc2",
+          "importance": 7,
+          "narrative": "Session 2026-05-17 wrap (Claude Opus 4.7). SHIPPED: PR #1140 cot_paper_pilot falsification fix (dedup-by-release-week -> tier SHADOW_INSUFFICIENT_N, DSR null); PR #1142 IPO lock-up-expiry research sidecar (alpha_engine/ipo_data_pipeline.py + ipo_lockup_strategy.py, opt-in NOT wired); PR #1144 first IPO backtest result. IPO BACKTEST VERDICT: n=23, WR 34.8%, PF 0.18, -164% PnL — FAILS the 5-gate. Literature 58-62% WR NOT reproduced. Only 2022 bear cohort worked; 2024-25 IPOs rallied through the lock-up window and hit the short stop. ipo_pipeline stays research-only, NOT wired to passes_active_gate. MASTER_ACTION_PLAN §23 amended with M-060..M-064 (MiMo Money-Ready roadmap validated, corrected: M-060 CRYPTO recalibration + M-061 DSR/PBO are WIRE-existing-code not BUILD — confidence_calibrator.py / deflated_sharpe.py / tools/pbo_cscv.py already exist). Cloud-agent prompt (reports/CLOUD_AGENT_AUDIT_VERIFICATION_PROMPT.md) hardened with 3 anti-fantasy gates: proof-of-access (git HEAD + real strategy names), inverse-projection rule (no 1/PF), recency-window rule (no last-10/50 cherry-pick). KEY LESSON: 9-report AI-auditor marathon — Ernie/GLM confabulated (no repo clone, invented strategies/files); MiMo/Sauna did real clones, MiMo conceded its holy-grail (conf>=0.8 = 3 overfit ML models; cta_replicator FOREX = resolver-replay artifact). No asset class is real-money ready. LOCAL CLONE ~360 behind origin/main — never reset it; published all work via fresh remote branches + PR, no rebase, peer-safe.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T08:20:48.846Z",
+          "title": "Session 2026-05-17 wrap (Claude Opus 4.7). SHIPPED: PR #1140 cot_paper_pilot fal",
+          "type": "decision"
+        },
+        "score": 3.049735536074905,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Built two-layer codebase search for findtorontoevents_antigravity.ca repo (2026-05-17). Layer 1 structural: graphify graph refreshed to 289768 nodes/365931 edges, queried via graphify-ask skill. Layer 2 semantic: new tools/code_index.py — zero-dependency (numpy + local Ollama nomic-embed-text) semantic code search, indexed 70664 chunks from 9496 git-tracked source files into graphify-out/code_index/store.npz (~217MB, gitignored). Commands: build/query/stats. Per-file content-hash cache for incremental rebuilds. Brute-force numpy cosine over normalized 768-dim vectors. Doc at tools/CODE_SEARCH.md."
+          ],
+          "files": [],
+          "id": "mem_mp9d3v6i_8ca17809a930",
+          "importance": 7,
+          "narrative": "Built two-layer codebase search for findtorontoevents_antigravity.ca repo (2026-05-17). Layer 1 structural: graphify graph refreshed to 289768 nodes/365931 edges, queried via graphify-ask skill. Layer 2 semantic: new tools/code_index.py — zero-dependency (numpy + local Ollama nomic-embed-text) semantic code search, indexed 70664 chunks from 9496 git-tracked source files into graphify-out/code_index/store.npz (~217MB, gitignored). Commands: build/query/stats. Per-file content-hash cache for incremental rebuilds. Brute-force numpy cosine over normalized 768-dim vectors. Doc at tools/CODE_SEARCH.md.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T05:56:16.719Z",
+          "title": "Built two-layer codebase search for findtorontoevents_antigravity.ca repo (2026-",
+          "type": "decision"
+        },
+        "score": 2.0907422709069414,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "LESSON — multi-instance git in findtorontoevents_antigravity.ca (2026-05-17): shared .git/index corrupts ('index file smaller than expected') from concurrent peer git ops across multiple Claude instances sharing one working tree. Recover with `rm .git/index && git reset` (working tree untouched, only staged state lost; peers re-stage after). Stage+commit must be atomic in one shell command with a lock-retry loop, else peers clobber the index between `git add` and `git commit` (split a commit once). LESSON — delegation: WSL `grok -p` headless is unreliable here (produced no output, hung). Local Ollama index builds cannot delegate to Grok — Grok runs in WSL and cannot reach Windows Ollama loopback."
+          ],
+          "files": [],
+          "id": "mem_mp9d3xyg_9e0205d1863f",
+          "importance": 7,
+          "narrative": "LESSON — multi-instance git in findtorontoevents_antigravity.ca (2026-05-17): shared .git/index corrupts ('index file smaller than expected') from concurrent peer git ops across multiple Claude instances sharing one working tree. Recover with `rm .git/index && git reset` (working tree untouched, only staged state lost; peers re-stage after). Stage+commit must be atomic in one shell command with a lock-retry loop, else peers clobber the index between `git add` and `git commit` (split a commit once). LESSON — delegation: WSL `grok -p` headless is unreliable here (produced no output, hung). Local Ollama index builds cannot delegate to Grok — Grok runs in WSL and cannot reach Windows Ollama loopback.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T05:56:23.077Z",
+          "title": "LESSON — multi-instance git in findtorontoevents_antigravity.ca (2026-05-17): sh",
+          "type": "decision"
+        },
+        "score": 1.9962064605006369,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "M-070 (2026-05-17): money_ready_verdict.py had declared CRYPTO+COMMODITY MONEY_READY on un-money-ready numbers. Two bugs fixed: (1) _class_stats summed GROSS pnl_pct with no execution cost — now applies M-069-corrected deduct_slippage per pick, win/loss by NET return sign not status field; (2) no single-symbol concentration guard — COMMODITY MONEY_READY was 231/354 (65%) CT=F (probation symbol, COT look-ahead leakage-falsified). New MAX_SYMBOL_CONCENTRATION=0.60: caps verdict at WATCH when top symbol exceeds that share. Effect: COMMODITY MONEY_READY->WATCH (PF 7.30->2.15 net); CRYPTO stays MONEY_READY (2.66->2.60 net, diversified, DSR+PBO+SPA pass). 9/9 tests. PR #1166 merged 60ddd6a795a. NOTE: CRYPTO MONEY_READY here still diverges from canonical pf_registry policy-clean — money_ready_verdict recomputes independently; M-067 is the single-source-of-truth fix."
+          ],
+          "files": [],
+          "id": "mem_mp9n3q70_9fc34a12b36b",
+          "importance": 7,
+          "narrative": "M-070 (2026-05-17): money_ready_verdict.py had declared CRYPTO+COMMODITY MONEY_READY on un-money-ready numbers. Two bugs fixed: (1) _class_stats summed GROSS pnl_pct with no execution cost — now applies M-069-corrected deduct_slippage per pick, win/loss by NET return sign not status field; (2) no single-symbol concentration guard — COMMODITY MONEY_READY was 231/354 (65%) CT=F (probation symbol, COT look-ahead leakage-falsified). New MAX_SYMBOL_CONCENTRATION=0.60: caps verdict at WATCH when top symbol exceeds that share. Effect: COMMODITY MONEY_READY->WATCH (PF 7.30->2.15 net); CRYPTO stays MONEY_READY (2.66->2.60 net, diversified, DSR+PBO+SPA pass). 9/9 tests. PR #1166 merged 60ddd6a795a. NOTE: CRYPTO MONEY_READY here still diverges from canonical pf_registry policy-clean — money_ready_verdict recomputes independently; M-067 is the single-source-of-truth fix.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T10:36:09.178Z",
+          "title": "M-070 (2026-05-17): money_ready_verdict.py had declared CRYPTO+COMMODITY MONEY_R",
+          "type": "decision"
+        },
+        "score": 1.8764500087428273,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "Session 2026-05-17 (Opus 4.7) CLOSED — 10 PRs merged, 0 open. Final batch: #1132 D2 dedup ordering fix merged (owned a peer PR, applied _filter_valid_resolved_picks-before-dedup fix); #1141 transcript_action_scan.py tool merged. #1134 peer hourly-audit merged by a peer despite a fabricated issue-#686 comment ID + COMMODITY n regression 322->228 (docs-only, inaccurate). Verified end-to-end: ETF/Bond failover ran live in CI — Bond 8 picks persisted to active_picks.json via Tiingo. Whole ETF/Bond chain closed: emitter bugs + missing commit step + git hygiene + chunked fetch + yfinance-absent failover gating + sequential jobs + 6 undeclared deps declared."
+          ],
+          "files": [],
+          "id": "mem_mp9haj9h_0a96189ad4ee",
+          "importance": 7,
+          "narrative": "Session 2026-05-17 (Opus 4.7) CLOSED — 10 PRs merged, 0 open. Final batch: #1132 D2 dedup ordering fix merged (owned a peer PR, applied _filter_valid_resolved_picks-before-dedup fix); #1141 transcript_action_scan.py tool merged. #1134 peer hourly-audit merged by a peer despite a fabricated issue-#686 comment ID + COMMODITY n regression 322->228 (docs-only, inaccurate). Verified end-to-end: ETF/Bond failover ran live in CI — Bond 8 picks persisted to active_picks.json via Tiingo. Whole ETF/Bond chain closed: emitter bugs + missing commit step + git hygiene + chunked fetch + yfinance-absent failover gating + sequential jobs + 6 undeclared deps declared.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T07:53:29.073Z",
+          "title": "Session 2026-05-17 (Opus 4.7) CLOSED — 10 PRs merged, 0 open. Final batch: #1132",
+          "type": "decision"
+        },
+        "score": 1.630002555464635,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "2026-05-17 CRYPTO audit follow-up COMPLETE. PRs #1127 (C2/C3/C4) + #1130 + #1132 (C1 + D2) all MERGED to main. C1 ledger migration done: trading_picks.tp_fill_method column flags 1842 NOMINAL_TP_LEGACY + 6425 OBSERVED. MATERIALITY CHECK (key result): the 1842 flagged rows = 22.3% of resolved rows but only 0.02% of total realized PnL (sum pnl_pct -24.3 of -118973; avg pnl -0.013%, near-flat micro-trades). => flag-only is the CORRECT final call; a numeric OHLC re-resolution would move <0.1% of book PnL - not worth the heavy refetch batch. Deferred/effectively closed. External review: Grok + Gemini both said flag-only insufficient IN GENERAL but conditioned on materiality - and the materiality check (which both recommended as step 1) settles it as immaterial here. LESSON: always run the cheap materiality query (count, PnL contribution, distribution) BEFORE committing to a heavy data-migration; it converts an open-ended 'must re-resolve 8k rows' into a closed 'immaterial, flag is enough'. Storm-commit repo: land small commits via git fetch + rebase --autostash + push --force-with-lease retry loop; long-term move holographic-memory JSON out of git. updates/index.html entry added documenting the de-contamination. Full DB (323 tables) backed up to ejaguiar1_backups, verified."
+          ],
+          "files": [],
+          "id": "mem_mp9hgxca_22e6af825244",
+          "importance": 7,
+          "narrative": "2026-05-17 CRYPTO audit follow-up COMPLETE. PRs #1127 (C2/C3/C4) + #1130 + #1132 (C1 + D2) all MERGED to main. C1 ledger migration done: trading_picks.tp_fill_method column flags 1842 NOMINAL_TP_LEGACY + 6425 OBSERVED. MATERIALITY CHECK (key result): the 1842 flagged rows = 22.3% of resolved rows but only 0.02% of total realized PnL (sum pnl_pct -24.3 of -118973; avg pnl -0.013%, near-flat micro-trades). => flag-only is the CORRECT final call; a numeric OHLC re-resolution would move <0.1% of book PnL - not worth the heavy refetch batch. Deferred/effectively closed. External review: Grok + Gemini both said flag-only insufficient IN GENERAL but conditioned on materiality - and the materiality check (which both recommended as step 1) settles it as immaterial here. LESSON: always run the cheap materiality query (count, PnL contribution, distribution) BEFORE committing to a heavy data-migration; it converts an open-ended 'must re-resolve 8k rows' into a closed 'immaterial, flag is enough'. Storm-commit repo: land small commits via git fetch + rebase --autostash + push --force-with-lease retry loop; long-term move holographic-memory JSON out of git. updates/index.html entry added documenting the de-contamination. Full DB (323 tables) backed up to ejaguiar1_backups, verified.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T07:58:27.271Z",
+          "title": "2026-05-17 CRYPTO audit follow-up COMPLETE. PRs #1127 (C2/C3/C4) + #1130 + #1132",
+          "type": "decision"
+        },
+        "score": 1.568515109130267,
+        "sessionId": "memory"
+      },
+      {
+        "observation": {
+          "concepts": [],
+          "facts": [
+            "2026-05-17 DB backup + C1 ledger migration COMPLETE. (1) Full ejaguiar1_stocks backup: all 323 tables -> ejaguiar1_backups as stocks__<name> (Python-bridged, no cross-DB GRANT needed; the Grok-launched ejaguiar1_backtests job failed 323/323 on permission 1142). bt_backtest_trades=32,724,171 rows copied via resumable PK-chunked copy. Verified: 0 schema mismatches across 323 tables, 320/323 exact row-match, 3 live tables grew post-snapshot (expected). ejaguiar1_backups [REDACTED]. (2) C1 ledger migration on ejaguiar1_stocks.trading_picks: added column tp_fill_method; flagged 1842 rows NOMINAL_TP_LEGACY (exit credited at nominal tp/sl = ghost-TP artifact, suspect) and 6425 OBSERVED (real fill). Numbers (pnl_pct/exit_price/status) UNTOUCHED — flag only, per audit recommendation (blanket numeric rewrite is wrong; same-bar limit fill AT tp is legitimate, only gap-throughs need OHLC re-resolution). Restore point: ejaguiar1_backups.trading_picks_premigration_20260517 (71008 rows). FOLLOW-UP: numeric re-resolution of the 1842 NOMINAL_TP_LEGACY rows needs OHLC re-fetch (gap-aware fill) — heavy batch, deferred. Dashboard aggregators can now exclude tp_fill_method='NOMINAL_TP_LEGACY' for clean WR/PF. C1 forward code-fix already shipped PRs #1130/#1132."
+          ],
+          "files": [],
+          "id": "mem_mp9gs9bz_03a34d1373ae",
+          "importance": 7,
+          "narrative": "2026-05-17 DB backup + C1 ledger migration COMPLETE. (1) Full ejaguiar1_stocks backup: all 323 tables -> ejaguiar1_backups as stocks__<name> (Python-bridged, no cross-DB GRANT needed; the Grok-launched ejaguiar1_backtests job failed 323/323 on permission 1142). bt_backtest_trades=32,724,171 rows copied via resumable PK-chunked copy. Verified: 0 schema mismatches across 323 tables, 320/323 exact row-match, 3 live tables grew post-snapshot (expected). ejaguiar1_backups [REDACTED]. (2) C1 ledger migration on ejaguiar1_stocks.trading_picks: added column tp_fill_method; flagged 1842 rows NOMINAL_TP_LEGACY (exit credited at nominal tp/sl = ghost-TP artifact, suspect) and 6425 OBSERVED (real fill). Numbers (pnl_pct/exit_price/status) UNTOUCHED — flag only, per audit recommendation (blanket numeric rewrite is wrong; same-bar limit fill AT tp is legitimate, only gap-throughs need OHLC re-resolution). Restore point: ejaguiar1_backups.trading_picks_premigration_20260517 (71008 rows). FOLLOW-UP: numeric re-resolution of the 1842 NOMINAL_TP_LEGACY rows needs OHLC re-fetch (gap-aware fill) — heavy batch, deferred. Dashboard aggregators can now exclude tp_fill_method='NOMINAL_TP_LEGACY' for clean WR/PF. C1 forward code-fix already shipped PRs #1130/#1132.",
+          "sessionId": "memory",
+          "timestamp": "2026-05-17T07:39:16.411Z",
+          "title": "2026-05-17 DB backup + C1 ledger migration COMPLETE. (1) Full ejaguiar1_stocks b",
+          "type": "decision"
+        },
+        "score": 1.4082786623179089,
+        "sessionId": "memory"
+      }
+    ],
+    "tokens_used": 13563,
+    "truncated": false
+  }
+}

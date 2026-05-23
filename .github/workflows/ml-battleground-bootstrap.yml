@@ -1,0 +1,200 @@
+name: "SUPERPOWERS - Bootstrap All 3 ML Systems"
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [ml-retrain-triggered]
+
+permissions:
+  contents: write
+
+env:
+  # safe_push.sh reads GH_PAT / TOKEN_FOR_PUSH to authenticate git push
+  GH_PAT: ${{ secrets.GH_PAT }}
+
+jobs:
+  bootstrap:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          sparse-checkout: |
+            ml_battleground
+            .github
+          sparse-checkout-cone-mode: true
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ml-bootstrap-${{ hashFiles('ml_battleground/requirements.txt') }}
+          restore-keys: ml-bootstrap-
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+
+      - name: Run SUPERPOWERS Quick Bootstrap
+        run: |
+          cd ml_battleground || exit 1
+          python -m bootstrap.run_bootstrap
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Show bootstrap summary
+        if: always()
+        run: |
+          if [ -f ml_battleground/bootstrap/bootstrap_summary.json ]; then
+            cat ml_battleground/bootstrap/bootstrap_summary.json
+          fi
+
+      - name: Commit trained models
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "superpowers@findtorontoevents.ca"
+          git add \
+            ml_battleground/system_a_filter/models/ \
+            ml_battleground/system_b_regime/models/ \
+            ml_battleground/system_c_deeplearn/models/ \
+            ml_battleground/bootstrap/bootstrap_summary.json \
+            || true
+          git diff --cached --quiet || \
+            git commit -m "bootstrap: train all 3 ML systems $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+
+      - name: Reset feedback baseline after retrain
+        run: |
+          python -c "
+          from ml_battleground.shared.feedback_loop import reset_baseline
+          reset_baseline()
+          print('Baseline reset after bootstrap retrain')
+          "
+
+  # Run all 3 scanners in parallel after bootstrap
+  scan-a:
+    needs: bootstrap
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          ref: main
+          sparse-checkout: |
+            ml_battleground
+            .github
+          sparse-checkout-cone-mode: true
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+
+      - name: System A first ML scan
+        run: |
+          cd ml_battleground || exit 1
+          python -m system_a_filter.scanner
+        # env DISABLED: system underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Commit scan results
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "superpowers@findtorontoevents.ca"
+          git add ml_battleground/system_a_filter/data/ || true
+          git diff --cached --quiet || git commit -m "scan: System A first ML scan $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+
+  scan-b:
+    needs: bootstrap
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          ref: main
+          sparse-checkout: |
+            ml_battleground
+            .github
+          sparse-checkout-cone-mode: true
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+
+      - name: System B first ML scan
+        run: |
+          cd ml_battleground || exit 1
+          python -m system_b_regime.scanner
+        # env DISABLED: system underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Commit scan results
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "superpowers@findtorontoevents.ca"
+          git add ml_battleground/system_b_regime/data/ || true
+          git diff --cached --quiet || git commit -m "scan: System B first ML scan $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+
+  scan-c:
+    needs: bootstrap
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          ref: main
+          sparse-checkout: |
+            ml_battleground
+            .github
+          sparse-checkout-cone-mode: true
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+
+      - name: System C first ML scan
+        run: |
+          cd ml_battleground || exit 1
+          python -m system_c_deeplearn.scanner
+        # env DISABLED: system underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Commit scan results
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "superpowers@findtorontoevents.ca"
+          git add ml_battleground/system_c_deeplearn/data/ || true
+          git diff --cached --quiet || git commit -m "scan: System C first ML scan $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

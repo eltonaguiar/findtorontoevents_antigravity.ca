@@ -1,0 +1,34 @@
+# Minimal 3-engine ad-hoc QA fan-out.
+#
+# Drop your one-off prompt at swarm_runs/_adhoc_prompt.md (or change
+# prompt_file below) and run:
+#
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/multi_model_qa.yaml
+#
+# All three engines are stateless API providers — pairs cleanly with
+# --persist-sessions for follow-up turns via JSONL replay.
+
+name: multi_model_qa_${TS}
+prompt_file: swarm_runs/_adhoc_prompt.md
+out_dir: swarm_runs/qa_${TS}
+max_parallel: 3
+strictness: strict   # strict | lenient | off — see SPEC.md "Schema strictness levels"
+
+engines:
+  # Per-engine `sampling:` and `retries:` overrides — see SPEC.md
+  # "Per-engine sampling" + "Retry policy" sections. Read by
+  # worker_runner.py via tools/swarm/_engine_overrides.py.
+  - name: deepseek
+    model: deepseek-chat
+    sampling:
+      temperature: 0.2
+      max_tokens: 4000
+    retries: 1
+  - name: xai
+    sampling:
+      temperature: 0.3
+  - name: cerebras
+    sampling:
+      temperature: 0.2
+      max_tokens: 4000           # auto-mapped to max_completion_tokens
+    retries: 2

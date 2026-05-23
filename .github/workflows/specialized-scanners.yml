@@ -1,0 +1,79 @@
+name: Specialized Scanners - Rocket, Short Engine, TSMOM
+
+on:
+  schedule:
+    # Run every 4 hours (offset from main scanner to distribute load)
+    - cron: "0 1,5,9,13,17,21 * * *"
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Force refresh of all scanners'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: specialized-scanners
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run-scanners:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy
+
+      - name: Run Rocket Scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Rocket Scanner ==="
+          python alpha_engine/rocket_scanner.py || echo " Rocket scanner failed (non-fatal)"
+
+      - name: Run Short Dominant Engine
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Short Dominant Engine ==="
+          python alpha_engine/short_dominant_engine.py || echo " Short engine failed (non-fatal)"
+
+      - name: Run TSMOM Strategy
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== TSMOM Strategy ==="
+          python alpha_engine/tsmom_strategy.py || echo " TSMOM strategy failed (non-fatal)"
+
+      - name: Check outputs
+        run: |
+          echo "=== Scanner Outputs ==="
+          ls -la alpha_engine/data/rocket_picks.json 2>/dev/null && echo " Rocket picks" || echo " No rocket picks"
+          ls -la alpha_engine/data/short_dominant_picks.json 2>/dev/null && echo " Short picks" || echo " No short picks"
+          ls -la alpha_engine/data/tsmom_picks.json 2>/dev/null && echo " TSMOM picks" || echo " No TSMOM picks"
+
+      - name: Commit picks
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add alpha_engine/data/rocket_picks.json alpha_engine/data/short_dominant_picks.json alpha_engine/data/tsmom_picks.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: specialized scanner picks update [$(date -u +%Y-%m-%d_%H:%M)] [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

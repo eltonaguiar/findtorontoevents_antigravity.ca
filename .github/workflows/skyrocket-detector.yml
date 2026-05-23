@@ -1,0 +1,87 @@
+name: Skyrocket Detector  Live Scanner
+
+on:
+  schedule:
+    - cron: '33 * * * *'  # Every hour at :33
+  workflow_dispatch:
+
+# issue #141: serialize auto-commit workflows so concurrent runs cannot race
+# each other into the main branch and produce conflict markers in data files.
+concurrency:
+  group: auto-commit-main-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -q numpy pandas scikit-learn requests joblib
+          pip install -q lightgbm || echo "LightGBM not available, using sklearn fallback"
+
+      - name: Train model if needed (bootstrap from Binance)
+        run: |
+          if [ ! -f skyrocket_detector/data/skyrocket_model.joblib ]; then
+            echo "No model found  running initial training from Binance historical data..."
+            python -m skyrocket_detector.train
+          else
+            echo "Model exists  skipping training"
+          fi
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run Skyrocket Detector
+        run: |
+          echo "=== Skyrocket Detector  Live Scan ==="
+          python -m skyrocket_detector.detector
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f skyrocket_detector/data/ || true
+          git diff --cached --quiet && { echo "No changes to commit"; exit 0; }
+          # issue #141: block conflict-marker commits
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "Skyrocket Detector scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          # Robust push: stash, pull, unstash, push with retry
+          for i in 1 2 3; do
+            git pull --rebase origin main && break || {
+              echo "Rebase attempt $i failed, retrying..."
+              git rebase --abort 2>/dev/null || true
+              git stash
+              git pull origin main
+              git stash pop || {
+                # BUG FIX 2026-04-05 (mirrors 108b99aa85): prefer --ours (locally-stashed
+                # freshly-generated skyrocket_detector/data/ files) over --theirs (origin's
+                # stale version). Pre-fix order silently reverted this workflow's output.
+                git diff --name-only --diff-filter=U | while read -r f; do
+                  git checkout --ours -- "$f" 2>/dev/null || git checkout --theirs -- "$f" 2>/dev/null || true
+                  git add "$f" 2>/dev/null || true
+                done
+              }
+              git add -f skyrocket_detector/data/ || true
+              # issue #141: block conflict-marker commits after stash-pop recovery
+              bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+              git diff --cached --quiet || git commit -m "Skyrocket Detector scan $(date -u '+%Y-%m-%d %H:%M UTC') [retry] [skip ci]"
+            }
+          done
+          bash .github/scripts/safe_push.sh
+

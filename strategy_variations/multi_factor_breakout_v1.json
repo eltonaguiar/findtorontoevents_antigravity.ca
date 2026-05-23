@@ -1,0 +1,46 @@
+{
+  "name": "multi_factor_breakout_v1",
+  "version": "1.0",
+  "strategy_type": "hybrid",
+  "entry_logic": {
+    "primary": "keltner",
+    "secondary_filter": "volume+volatility",
+    "confirmation_required": true,
+    "min_score": 0.7
+  },
+  "exit_logic": {
+    "strategy": "partial",
+    "tp_atr_mult": 2.5,
+    "sl_atr_mult": 1.5,
+    "time_exit_hours": 12,
+    "partial_tp_1": 1.5,
+    "partial_tp_2": 2.5,
+    "partial_size_1": 0.5,
+    "partial_size_2": 0.25
+  },
+  "risk_management": {
+    "position_size": 0.08,
+    "max_positions": 5,
+    "correlation_filter": true,
+    "volatility_adjustment": true
+  },
+  "regime_detection": {
+    "enabled": true,
+    "regime_timeframe": "4h",
+    "strategy_per_regime": {
+      "trending": "follow",
+      "ranging": "revert",
+      "volatile": "compress"
+    }
+  },
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ],
+  "parent_strategies": [
+    "crypto_keltner_compression_expansion_v1",
+    "crypto_vwap_deviation_reversion_volfilter_v1"
+  ],
+  "created_at": "2026-03-07T20:16:21.051564"
+}

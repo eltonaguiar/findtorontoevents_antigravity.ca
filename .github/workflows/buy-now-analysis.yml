@@ -1,0 +1,143 @@
+name: Buy Now Analysis & Tracking
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+env:
+  PYTHONUNBUFFERED: 1
+
+# Serialize auto-commit workflows so concurrent runs cannot race each other
+# into the main branch and produce conflict markers in data files.
+concurrency:
+  group: auto-commit-main-${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  analyze-and-track:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25  # 2026-05-06: was 15 — checkout step consumed the entire 15-min budget on run 25454039887; 15 min checkout is abnormally long (usually <2 min); raising to 25 gives the full pipeline (checkout+install+analysis+commit+Discord) room to complete even under GC pressure
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy
+      
+      - name: Run Buy Now Analysis
+        run: |
+          python signal_aggregator/buy_now_analysis.py > signal_aggregator/data/buy_now_report.txt
+          echo "Analysis complete"
+      
+      - name: Update tracking database
+        run: |
+          python << 'PYEOF'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          
+          # Load existing tracking data or create new
+          tracking_file = Path('signal_aggregator/data/pick_tracking.json')
+          if tracking_file.exists():
+              with open(tracking_file) as f:
+                  tracking = json.load(f)
+          else:
+              tracking = {'runs': [], 'system_stats': {}}
+          
+          # Add this run
+          run_data = {
+              'timestamp': datetime.utcnow().isoformat(),
+              'summary': 'See buy_now_report.txt for details'
+          }
+          tracking['runs'].append(run_data)
+          
+          # Keep only last 100 runs
+          tracking['runs'] = tracking['runs'][-100:]
+          
+          tracking_file.parent.mkdir(parents=True, exist_ok=True)
+          with open(tracking_file, 'w') as f:
+              json.dump(tracking, f, indent=2)
+          
+          print("Tracking updated")
+          PYEOF
+      
+      - name: Commit results
+        env:
+          # Ensures git push uses the same credential as checkout (PAT when set; else GITHUB_TOKEN).
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config --local user.email "bot@findtorontoevents.ca"
+          git config --local user.name "Buy Now Bot"
+          git add signal_aggregator/data/buy_now_report.txt
+          git add signal_aggregator/data/pick_tracking.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update buy-now analysis [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh
+      
+      - name: Post summary to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python << 'PYEOF'
+          import os
+          import json
+          import requests
+          from datetime import datetime
+
+          webhook = os.getenv('DISCORD_WEBHOOK_URL')
+          if not webhook:
+              exit(0)
+          
+          # Read the report
+          try:
+              with open('signal_aggregator/data/buy_now_report.txt') as f:
+                  report = f.read()
+          except:
+              exit(0)
+          
+          # Extract key metrics from report
+          lines = report.strip().split('\n')
+          # Grab first 800 chars of report as summary (Discord field limit 1024)
+          report_preview = report[:800].rstrip()
+          if len(report) > 800:
+              report_preview += "\n..."
+
+          repo_url = "https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/signal_aggregator/data/buy_now_report.txt"
+          now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
+          embed = {
+              "title": " Buy Now Analysis",
+              "description": "Buy Now Analysis Complete",
+              "color": 0x3498db,
+              "fields": [
+                  {"name": "Summary", "value": report_preview if report_preview else "No data", "inline": False},
+                  {"name": "Full Report", "value": f"[View in repository]({repo_url})", "inline": False}
+              ],
+              "footer": {"text": f"Updated: {now}"}
+          }
+          
+          try:
+              requests.post(webhook, json={"embeds": [embed]}, timeout=10)
+          except:
+              pass
+          PYEOF
+

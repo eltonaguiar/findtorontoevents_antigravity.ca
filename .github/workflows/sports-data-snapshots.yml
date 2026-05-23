@@ -1,0 +1,211 @@
+# Sports data snapshots — GitHub Actions cron replacement for the host crons
+# the deploy host (50webs) does not support.
+#
+# Generates two JSON feeds and uploads them to the live site via FTP:
+#   1. Pinnacle moneyline anchor → data/pinnacle_snapshots/<UTC>.json
+#      Consumed by sports_value_load_pinnacle_snapshot() in
+#      live-monitor/api/sports_value_analyze_lib.php (Shin devig fallback
+#      when Odds API drops Pinnacle from the feed).
+#      Frequency: every 15 min (runs alongside the sports-betting refresh).
+#
+#   2. NHL goalie + GSAx/SV% feed → live-monitor/data/nhl_goalies_today.json
+#      Consumed by the NHL goalie overlay (PHP lib not yet wired — Phase 2).
+#      Frequency: once daily at 17:00 UTC (13:00 ET) — after most NHL
+#      lineups confirm and before the sports-betting refresh's 18:00 UTC run.
+#
+# Both scripts exit 0 on partial upstream failure so a transient API hiccup
+# never breaks the workflow. FTP uploads are gated on the FTP_* secrets being
+# present; if any is missing, the workflow logs a warning and skips upload.
+#
+# Required GitHub Actions secrets (already set on this repo for other deploys):
+#   FTP_SERVER, FTP_USER, FTP_PASS
+
+name: Sports data snapshots
+
+on:
+  schedule:
+    # Every 15 minutes for Pinnacle (matches the refresh cadence the analyzer
+    # snapshot-staleness guard expects). NHL goalie step gates itself on hour.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_nhl_goalie:
+        description: 'Force NHL goalie scrape regardless of hour'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sports-data-snapshots
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          update-environment: false
+
+      - name: Run Pinnacle anchor scrape
+        id: pinnacle
+        continue-on-error: true
+        run: |
+          mkdir -p data/pinnacle_snapshots
+          python3 tools/pinnacle_anchor_scrape.py
+          ls -la data/pinnacle_snapshots/ | tail -3 || echo "no snapshot produced"
+
+      - name: Run NHL goalie scrape (17:00 UTC daily, or manual force)
+        id: nhl
+        continue-on-error: true
+        run: |
+          HOUR=$(date -u +%H)
+          FORCE='${{ github.event.inputs.force_nhl_goalie }}'
+          if [ "$HOUR" = "17" ] || [ "$FORCE" = "true" ]; then
+            mkdir -p live-monitor/data
+            python3 tools/scrapers/nhl_goalie_scraper.py
+            ls -la live-monitor/data/nhl_goalies_today.json 2>/dev/null || echo "no goalie file"
+          else
+            echo "Skipping NHL goalie scrape (hour=$HOUR, runs at 17:00 UTC)"
+          fi
+
+      - name: Run tennis ELO refresh (06:00 UTC daily)
+        # Fetches JeffSackmann/tennis_atp CSVs from GitHub raw and computes
+        # surface-specific ELO ratings for active ATP players.
+        # Runs once daily (06:00 UTC) so the ratings are fresh before the
+        # morning sports-betting-refresh. Falls back gracefully on network error.
+        id: tennis_elo
+        continue-on-error: true
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" = "06" ] || [ "$HOUR" = "07" ]; then
+            mkdir -p live-monitor/data
+            python3 live-monitor/tennis_elo_engine.py \
+              --years 6 \
+              --out live-monitor/data/tennis_elo_ratings.json
+            ls -la live-monitor/data/tennis_elo_ratings.json 2>/dev/null || echo "no elo file"
+          else
+            echo "Skipping tennis ELO refresh (hour=$HOUR, runs at 06:00 UTC)"
+          fi
+
+      - name: FTP-upload snapshots to live site
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning::FTP_* secrets missing — skipping upload (snapshot files generated but not deployed)"
+            exit 0
+          fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+          REMOTE_BASE="/findtorontoevents.ca"
+
+          # Pinnacle: upload only the newest snapshot in this run (don't touch history).
+          NEWEST=$(ls -1t data/pinnacle_snapshots/*.json 2>/dev/null | head -1 || true)
+          if [ -n "$NEWEST" ] && [ -f "$NEWEST" ]; then
+            FNAME=$(basename "$NEWEST")
+            echo "Uploading Pinnacle snapshot: $FNAME"
+            lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" <<FTPEOF
+            set ssl:verify-certificate no
+            set net:timeout 30
+            set net:max-retries 3
+            mkdir -p $REMOTE_BASE/data/pinnacle_snapshots
+            put -O $REMOTE_BASE/data/pinnacle_snapshots/ "$NEWEST" -o "$FNAME"
+            bye
+          FTPEOF
+          else
+            echo "No new Pinnacle snapshot to upload"
+          fi
+
+          # NHL goalie: only when present (the daily-only step writes it)
+          if [ -f "live-monitor/data/nhl_goalies_today.json" ]; then
+            echo "Uploading NHL goalies feed"
+            lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" <<FTPEOF
+            set ssl:verify-certificate no
+            set net:timeout 30
+            set net:max-retries 3
+            mkdir -p $REMOTE_BASE/live-monitor/data
+            put -O $REMOTE_BASE/live-monitor/data/ "live-monitor/data/nhl_goalies_today.json" -o "nhl_goalies_today.json"
+            bye
+          FTPEOF
+          else
+            echo "No NHL goalies feed to upload (off-hour)"
+          fi
+
+          # Tennis ELO: upload when present (daily step writes it at 06:00 UTC)
+          if [ -f "live-monitor/data/tennis_elo_ratings.json" ]; then
+            echo "Uploading tennis ELO ratings"
+            lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" <<FTPEOF
+            set ssl:verify-certificate no
+            set net:timeout 30
+            set net:max-retries 3
+            mkdir -p $REMOTE_BASE/live-monitor/data
+            put -O $REMOTE_BASE/live-monitor/data/ "live-monitor/data/tennis_elo_ratings.json" -o "tennis_elo_ratings.json"
+            bye
+          FTPEOF
+          else
+            echo "No tennis ELO ratings to upload (off-hour)"
+          fi
+
+      - name: Prune old Pinnacle snapshots on host (keep last 50)
+        # 50 snapshots @ */15min = 12.5 hours of history, plenty for the
+        # 15-min staleness guard. Avoids the host accumulating thousands.
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            exit 0
+          fi
+          # List remote, delete all but newest 50
+          REMOTE_BASE="/findtorontoevents.ca"
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" <<'FTPEOF' > /tmp/snap_list.txt 2>&1 || true
+          set ssl:verify-certificate no
+          set net:timeout 30
+          cls -1 /findtorontoevents.ca/data/pinnacle_snapshots/
+          bye
+          FTPEOF
+          # Sort alphabetically (timestamp filenames sort chronologically),
+          # drop the newest 50, delete the rest.
+          STALE=$(grep -E '^[0-9]{8}T' /tmp/snap_list.txt | sort | head -n -50 || true)
+          if [ -n "$STALE" ]; then
+            echo "Pruning $(echo "$STALE" | wc -l) old Pinnacle snapshot files"
+            {
+              echo "set ssl:verify-certificate no"
+              echo "set net:timeout 30"
+              for f in $STALE; do
+                echo "rm -f /findtorontoevents.ca/data/pinnacle_snapshots/$f"
+              done
+              echo "bye"
+            } | lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" || true
+          else
+            echo "Nothing to prune (snapshot count <= 50)"
+          fi
+
+      - name: Run steam-move + arb scanner via web endpoints
+        # Both detectors are PHP CLI scripts deployed by PR #406. Running them
+        # via HTTP avoids needing PHP on the runner; the scripts are gated on
+        # ?key=livetrader2026 (the existing admin key).
+        env:
+          ADMIN_KEY: livetrader2026
+        run: |
+          BASE="https://findtorontoevents.ca/live-monitor/api"
+          echo "=== steam-move detector ==="
+          curl -s --max-time 60 "$BASE/sports_steam_detector.php?action=run&key=$ADMIN_KEY" | head -c 500
+          echo
+          echo "=== 2-leg arb scanner ==="
+          curl -s --max-time 60 "$BASE/sports_arb_scanner.php?action=run&key=$ADMIN_KEY" | head -c 500
+          echo
+        continue-on-error: true

@@ -1,0 +1,39 @@
+# Sync Polymarket sports signals to JSON for live-monitor/api/sports_picks.php
+# This runs 2x daily and commits the output so the PHP endpoint can load
+# prediction-market confirmation data without hitting external APIs on every request.
+name: Sports Prediction Market Sync
+
+on:
+  schedule:
+    - cron: '0 14,20 * * *'  # 10am, 4pm EST
+  workflow_dispatch:
+
+concurrency:
+  group: sports-prediction-market-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-05-13: run 25824926796 — allow sync + auto-commit on slow checkout.
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Sync Polymarket sports signals
+      run: |
+        echo "=== Syncing Polymarket sports signals ==="
+        python3 alpha_engine/sports_prediction_market_sync.py --verbose
+        echo "Done"
+
+    - name: Commit updated signals
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "[skip ci] Auto-sync sports prediction market signals"
+        file_pattern: |
+          backfill/sports_prediction_market_signals.json
+          alpha_engine/data/sports_prediction_market_signals.json

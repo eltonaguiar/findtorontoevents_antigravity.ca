@@ -1,0 +1,12 @@
+# Test fixture override — paired with expired_override.json.
+# The expires_at date is in the past so the deep variant must REFUSE this
+# override and emit a ci:expired-override blocking claim.
+ticket_id: TEST-EXPIRED-001
+rule_id: charter:tier-floor
+expires_at: 2026-01-01
+override_reason: |
+  Synthetic test fixture — should never be honoured because expires_at
+  (2026-01-01) is in the past as of 2026-05-05.
+approver: "@test"
+scope:
+  asset_class: FOREX

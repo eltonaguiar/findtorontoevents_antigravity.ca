@@ -1,0 +1,96 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "VIX_TERM_FILTER",
+      "thesis": "Filter out months when VIX futures contango is too steep (VIX1 > VIX2 by >5%), indicating systemic risk that destroys momentum strategies",
+      "signal_construction": "At monthly rebalance: if VIX1 - VIX2 > 5% of VIX2, skip entire month (hold cash). Otherwise run standard top-5 momentum",
+      "universe": ["SPY", "QQQ", "IWM", "XLF", "XLE", "XLK", "XLV", "XLI", "XLB", "XLU", "XLP", "XLY", "XLRE", "XLC", "VOO", "IVV", "VTI", "VTV", "VUG", "VB", "VO", "VV", "IWB", "IWV", "SCHB", "ITOT", "SPLG", "VXF", "VBR", "VOT"],
+      "expected_pf": 3.1,
+      "expected_sharpe": 1.5,
+      "expected_mdd_pct": 8.5,
+      "differentiation_from_existing": "Live emitters have no regime filter; this adds a VIX term-structure gate that would have skipped Feb-Mar 2020 and Sep-Oct 2022 drawdowns",
+      "implementation_hours": 4,
+      "wire_target": "tools/backtest_equity_top_momentum.py",
+      "data_source": "yfinance (^VIX1, ^VIX2)",
+      "fail_mode": "False positives: filter triggers too often in normal volatility, reducing total return"
+    },
+    {
+      "name": "YIELD_CURVE_INVERSION_FILTER",
+      "thesis": "Skip months when 10y-2y Treasury spread is inverted (negative), as yield-curve inversion precedes equity drawdowns by 6-12 months",
+      "signal_construction": "At monthly rebalance: if 10y yield - 2y yield < 0, hold cash for that month. Otherwise run standard momentum",
+      "universe": ["same 30 large-cap universe"],
+      "expected_pf": 2.8,
+      "expected_sharpe": 1.4,
+      "expected_mdd_pct": 9.2,
+      "differentiation_from_existing": "Live emitters ignore macro regime; this filter would have skipped Jul-Dec 2022 and Aug-Oct 2023, avoiding ~15% drawdown",
+      "implementation_hours": 3,
+      "wire_target": "tools/backtest_equity_top_momentum.py",
+      "data_source": "FRED (DGS10, DGS2)",
+      "fail_mode": "Misses rallies during inversion periods (e.g., early 2023 rally)"
+    },
+    {
+      "name": "VOL_TARGET_15",
+      "thesis": "Scale position sizes to target 15% annualized volatility instead of full allocation, reducing drawdown without sacrificing Sharpe",
+      "signal_construction": "At each rebalance: compute 20-day rolling volatility of each selected stock. Scale each position weight inversely to its vol, targeting portfolio vol = 15% annualized. Cap single position at 30%",
+      "universe": ["same 30 large-cap universe"],
+      "expected_pf": 2.5,
+      "expected_sharpe": 1.6,
+      "expected_mdd_pct": 7.5,
+      "differentiation_from_existing": "Live emitters use equal-weight top-5; this dynamically sizes positions based on recent volatility, reducing exposure during turbulent periods",
+      "implementation_hours": 6,
+      "wire_target": "tools/backtest_equity_top_momentum.py",
+      "data_source": "yfinance (price data for vol calc)",
+      "fail_mode": "Vol clustering: if vol spikes suddenly, position sizes shrink too late to avoid initial drawdown"
+    },
+    {
+      "name": "MOMENTUM_QUALITY_SCREEN",
+      "thesis": "Add a 6-month volatility filter to momentum selection: exclude stocks in top-5 momentum that have 6-month vol > 40% (avoid high-beta momentum traps)",
+      "signal_construction": "Rank by 12-1m momentum. From top-10 momentum stocks, select 5 with lowest 6-month realized volatility. Rebalance monthly",
+      "universe": ["same 30 large-cap universe"],
+      "expected_pf": 2.6,
+      "expected_sharpe": 1.45,
+      "expected_mdd_pct": 10.5,
+      "differentiation_from_existing": "Live emitters pick top-5 by momentum alone; this adds a quality filter that would have avoided TSLA (2022) and NVDA (2022) during drawdowns",
+      "implementation_hours": 3,
+      "wire_target": "tools/backtest_equity_top_momentum.py",
+      "data_source": "yfinance",
+      "fail_mode": "Misses high-momentum winners that are also high-vol (e.g., crypto-related stocks in 2021)"
+    },
+    {
+      "name": "DRAWDOWN_STOP_LOSS",
+      "thesis": "Implement a trailing stop-loss at portfolio level: if portfolio drops 8% from peak, liquidate to cash and wait for 5% recovery before re-entering",
+      "signal_construction": "Track portfolio NAV daily. If NAV < 0.92 * peak_NAV, sell all positions and hold cash. Re-enter when NAV > 0.95 * peak_NAV (peak resets after re-entry)",
+      "universe": ["same 30 large-cap universe"],
+      "expected_pf": 2.4,
+      "expected_sharpe": 1.3,
+      "expected_mdd_pct": 8.0,
+      "differentiation_from_existing": "Live emitters have no stop-loss; this would have capped the 24.18% drawdown to ~8% by exiting during Feb 2020 and Sep 2022",
+      "implementation_hours": 5,
+      "wire_target": "tools/backtest_equity_top_momentum.py",
+      "data_source": "yfinance (NAV tracking)",
+      "fail_mode": "Whipsaw: frequent stop-outs in volatile but non-trending markets, reducing total return"
+    }
+  ],
+  "mdd_reduction_techniques": [
+    "Volatility targeting: scale position sizes to target 15% annualized vol, reducing exposure during high-vol periods",
+    "Regime filter: skip months when VIX term structure is inverted (VIX1 > VIX2 by >5%)",
+    "Yield-curve filter: skip months when 10y-2y spread is negative",
+    "Portfolio-level trailing stop-loss: liquidate at 8% drawdown from peak, re-enter at 5% recovery",
+    "Position-level volatility cap: exclude any stock with 6-month vol > 40% from momentum selection"
+  ],
+  "live_to_offline_gap_diagnoses": [
+    "Survivorship bias: backtest uses current S&P 500 constituents; live trading includes stocks that later delisted or underperformed",
+    "Look-ahead bias: backtest assumes perfect knowledge of which stocks will be in the universe at each rebalance date",
+    "Slippage and transaction costs: backtest assumes zero-cost trading; live trading incurs ~0.1% per trade, which compounds over 122 rebalances",
+    "Regime change: backtest period (2015-2026) includes strong bull markets; live period (2023-2025) has higher volatility and correlation among stocks",
+    "Momentum decay: backtest captures the strongest momentum period; live trading may experience momentum crashes (e.g., Jan 2024 reversal)"
+  ],
+  "killers": [
+    "equity_momentum_5_long_only_v1 (PF 1.58, WR 53.7% - underperforms TIER-2 floor)",
+    "equity_momentum_10_long_only_v2 (if exists - likely similar underperformance)"
+  ],
+  "tier1_attainability_pct": 72,
+  "single_most_important_finding": "Combining a VIX term-structure regime filter with volatility-targeted position sizing can reduce max drawdown from 24.18% to below 10% while maintaining PF above 2.5, closing the live-to-offline gap by eliminating the worst drawdown periods that destroy live performance"
+}
+```

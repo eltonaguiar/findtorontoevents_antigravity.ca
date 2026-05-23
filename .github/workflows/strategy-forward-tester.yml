@@ -1,0 +1,54 @@
+name: Strategy Forward Tester
+on:
+  schedule:
+    - cron: '15 */2 * * *'  # Every 2 hours at :15
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  forward-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -q numpy pandas yfinance requests
+
+      - name: Run equity strategies (RSI-2 + SuperTrend)
+        run: |
+          python alpha_engine/strategies/connors_rsi2.py || true
+
+      - name: Run new forex carry strategy
+        run: |
+          python alpha_engine/strategies/new_strategies/forex_carry.py || true
+
+      - name: Run TSMOM (futures + bonds)
+        run: |
+          python alpha_engine/strategies/new_strategies/tsmom.py || true
+
+      - name: Run strategy prover scorecard
+        run: |
+          python tools/strategy_prover/strategy_prover.py --scorecard > tools/data/latest_scorecard.md 2>&1 || true
+          python tools/strategy_prover/strategy_prover.py --all --output tools/data/strategy_prover_results.json 2>&1 || true
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Strategy Prover Bot"
+          git config user.email "prover@bot"
+          git add alpha_engine/data/forward_tests/ tools/data/ alpha_engine/data/*.json || true
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Forward test + scorecard update $(date -u +%Y-%m-%dT%H:%M) [skip ci]"
+          bash .github/scripts/safe_push.sh || echo "Push failed (non-fatal)"

@@ -1,0 +1,194 @@
+name: Commodities Agent
+
+on:
+  schedule:
+    # Twice daily on weekdays — commodity markets trade 23h/day (except close)
+    - cron: '0 10 * * 1-5'
+    - cron: '0 20 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable verbose debug output'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: commodities-agent
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  commodities-scan:
+    name: Commodities Scanner
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          update-environment: false
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Run Commodities scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python - <<'EOF'
+          import sys, json
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+
+          import pandas as pd
+          import yfinance as yf
+
+          from config import COMMODITY_SYMBOLS
+          from commodities_strategies import (
+              seasonal_momentum, gold_safe_haven, oil_inventory_momentum,
+              metals_mean_reversion, agricultural_spread,
+              commodity_tsmom_12m,  # 2026-04-17 add: ranks commodities by 12-mo momentum
+          )
+          from elite_scorer import compute_elite_score
+          # 2026-04-17: per supply-pipeline investigation Step 7. futures_momentum
+          # produced 369 of 438 historical commodity closed picks but wasn't being
+          # invoked here. Adding the dominant historical producer.
+          import sys as _sys
+          _sys.path.insert(0, str(Path("multi_asset").resolve()))
+          try:
+              from commodity_futures_strategies import futures_momentum
+              _HAS_FUTURES_MOMENTUM = True
+          except Exception as _e:
+              print(f"  WARN futures_momentum import failed: {_e}")
+              _HAS_FUTURES_MOMENTUM = False
+
+          # ── fetch data ────────────────────────────────────────────────────
+          # Note: CL=F (WTI crude) was REMOVED after 26 trades at 3.8% WR — not included.
+          print(f"Fetching data for {len(COMMODITY_SYMBOLS)} commodity symbols...")
+          data = {}
+          # Also fetch DXY (USD strength) — commodities inversely correlated with USD
+          for sym in list(COMMODITY_SYMBOLS.keys()) + ["DX=F", "^VIX"]:
+              try:
+                  df = yf.Ticker(sym).history(period="1y")
+                  if not df.empty:
+                      data[sym] = df
+              except Exception as e:
+                  print(f"  WARN fetch failed {sym}: {e}")
+          print(f"  Loaded {len(data)} symbols")
+
+          # ── run strategies ────────────────────────────────────────────────
+          picks = []
+          _strategy_fns = [
+              seasonal_momentum, gold_safe_haven, oil_inventory_momentum,
+              metals_mean_reversion, agricultural_spread,
+              commodity_tsmom_12m,  # 2026-04-17: TSMOM 12m
+          ]
+          if _HAS_FUTURES_MOMENTUM:
+              _strategy_fns.append(futures_momentum)  # 2026-04-17: dominant historical producer
+          for fn in _strategy_fns:
+              try:
+                  picks += fn(data)
+              except Exception as e:
+                  print(f"  WARN strategy {fn.__name__} failed: {e}")
+
+          # ── score ─────────────────────────────────────────────────────────
+          for p in picks:
+              p.update(compute_elite_score(p))
+
+          # ── curate (commodity floor: 0.50) ────────────────────────────────
+          quality = sorted(
+              [p for p in picks if float(p.get("confidence", 0) or 0) >= 0.50
+               and float(p.get("risk_reward", 0) or 0) >= 1.15
+               and float(p.get("elite_score", 0) or 0) >= 50],
+              key=lambda p: (p.get("elite_score", 0), p.get("confidence", 0)),
+              reverse=True,
+          )
+
+          # Performance note from closed picks: Commodities 55.6% WR, +0.86% PnL, PF 1.06
+          # Best strategy: strong consensus (alpha engine) — only profitable non-crypto category
+          perf_note = "Live WR: 55.6% (10/18 closed), PF 1.06, +0.86% PnL — ONLY profitable non-crypto category"
+
+          # ── fail-open guard: distinguish data-fetch failure from real-empty market ──
+          _universe = list(COMMODITY_SYMBOLS.keys()) + ["DX=F", "^VIX"]
+          _loaded = len(data)
+          _requested = max(1, len(_universe))
+          _ratio = _loaded / _requested
+          if _ratio < 0.5:
+              _status = "DATA_FAIL"
+          elif len(picks) == 0:
+              _status = "EMPTY"
+          else:
+              _status = "OK"
+
+          out = {
+              "agent": "commodities",
+              "timestamp": pd.Timestamp.now().isoformat(),
+              "total_raw": len(picks),
+              "quality": len(quality),
+              "status": _status,
+              "symbols_tracked": len(COMMODITY_SYMBOLS),
+              "strategies_run": 5,
+              "live_performance_note": perf_note,
+              "picks": quality,
+          }
+          Path("non_crypto_agent/data").mkdir(parents=True, exist_ok=True)
+          Path("non_crypto_agent/data/commodities_picks.json").write_text(
+              json.dumps(out, indent=2, default=str)
+          )
+          print(f"Commodities agent: {len(quality)} quality picks from {len(picks)} raw")
+          for p in quality[:5]:
+              print(f"  {p['symbol']} {p.get('signal_type','?')} conf={p.get('confidence',0):.2f} rr={p.get('risk_reward',0):.2f} strategy={p.get('strategy','?')}")
+
+          print(f"\n=== COMMODITIES AGENT SUMMARY ===")
+          print(f"Symbols tracked : {len(COMMODITY_SYMBOLS)}")
+          print(f"Raw picks       : {len(picks)}")
+          print(f"Quality picks   : {len(quality)}")
+          print(f"Performance note: {perf_note}")
+
+          # ── enforce fail-open guard ───────────────────────────────────────
+          if _status == "DATA_FAIL":
+              print(f"::error::DATA FETCH FAILURE — only {_loaded}/{_requested} symbols loaded "
+                    f"(yfinance empty/delisted); refusing to exit green on missing data")
+              sys.exit(1)
+          elif _status == "EMPTY":
+              print(f"::warning::0 raw picks on healthy data ({_loaded}/{_requested} symbols loaded) "
+                    f"— real-empty market, not a data failure")
+          EOF
+
+      - name: COT contrarian paper pilot (21-contract universe, writes paper signals only)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          pip install requests -q 2>/dev/null || true
+          python -m alpha_engine.commodity_cot_contrarian \
+            || echo "::warning::commodity_cot_contrarian run failed (non-fatal paper pilot)"
+        continue-on-error: true
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add non_crypto_agent/data/commodities_picks.json
+          git add alpha_engine/data/commodity_cot_contrarian_signals.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Commodities agent: $(date -u '+%Y-%m-%d %H:%M') UTC scan [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh

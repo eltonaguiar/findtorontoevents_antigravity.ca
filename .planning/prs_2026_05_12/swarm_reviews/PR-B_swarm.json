@@ -1,0 +1,73 @@
+{
+  "pr_id": "PR-B",
+  "reviews": {
+    "qwen2.5-coder:14b": {
+      "role": "code-specialist (Alibaba)",
+      "elapsed_s": 8.0,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [],
+        "questions": [
+          "Can you confirm that the `kimi_signal_tracking` is indeed blacklisted in all relevant environments and not just in `alpha_engine/config.py:216`?"
+        ],
+        "risk_score_0_10": 1,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "deepseek-r1:14b": {
+      "role": "reasoning (DeepSeek)",
+      "elapsed_s": 17.5,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [],
+        "questions": [
+          "Are all scenarios covered in test_blacklist_enforcement.py?"
+        ],
+        "risk_score_0_10": 2,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "devstral-small-2": {
+      "role": "code-patches (Mistral)",
+      "elapsed_s": 19.9,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Verify BLOCKED_SOURCE_SYSTEMS in audit_trail/quality_gates.py includes kimi_signal_tracking"
+        ],
+        "questions": [
+          "Is kimi_signal_tracking still blacklisted in alpha_engine/config.py:216?"
+        ],
+        "risk_score_0_10": 2,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "ernie:latest": {
+      "role": "thinking (Baidu)",
+      "elapsed_s": 99.2,
+      "parsed": null,
+      "raw_tail": " rain beginning as a faint shimmer on the leaves\u2014a sign that the sky was about to unleash its wrath.\"\n\nInclude shadow and sparkle: \"As the first drops fell, a shadow stretched across the cliffs, not from the storm, but from something ancient and watchful. And in that shadow, a single drop of water sparkled, as if it had been left behind by the rain and given life by the very magic of the place.\"\n\nThen introduce a creature: \"Before he could follow, the shadow moved\u2014not like a fleeing animal, but like a liquid current, and from its wake stepped a stag with antlers entwined with glowing silver light. Its body was covered in scales that sparkled like droplets of starlight.\"\n\nThen the stone: \"The stag bowed its head, its antlers dripping with water that turned to sparkle when it touched a particular point on the cliff. A section of the cliff face retracted, revealing a cave entrance lined with stones that sparkled as if they were made of moonlight.\"\n\nThen the vision: \"Inside, Leo saw his reflection in a pool of water, but not his own\u2014a figure with the stag's antlers and the eyes of the sky. It spoke not in words, but in whispers of wind and the rustle of leaves, revealing a memory of a time when he had been lost but found again.\"\n\nConclusion: \"As the storm passed, the cave opened once more, and Leo emerged with a lightness in his step. Sanctuary Falls had not only revealed its secrets but had also washed away the weight of his past. And somewhere in the valley, a stag watched over"
+    },
+    "glm-4.7-flash": {
+      "role": "alt-lineage (Zhipu)",
+      "elapsed_s": 69.5,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Static grep test in `check_active_picks.py` does not verify runtime enforcement; use mocking."
+        ],
+        "questions": [],
+        "risk_score_0_10": 1,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    }
+  }
+}

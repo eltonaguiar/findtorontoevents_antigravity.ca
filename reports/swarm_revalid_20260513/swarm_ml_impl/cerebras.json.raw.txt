@@ -1,0 +1,14 @@
+{
+  "recommended_option": "A",
+  "rationale": "Hard‑rejecting LONG signals eliminates the under‑performing side with minimal code change and easy rollback, while preserving the high‑WIN‑RATE SHORT side.",
+  "expected_pf_lift": 0.14,
+  "rollback_complexity": "one_line",
+  "production_safety": "safe",
+  "additional_safeguards": [
+    "log reject reason with ns_d_ml_crypto_pred_long_reject tag",
+    "track PF and WR per side in shadow mode",
+    "set a temporary cap on LONG volume to 0% for the source",
+    "add alert if any LONG pick passes the score threshold"
+  ],
+  "ship_now_or_shadow_first": "SHADOW_MODE_7D_FIRST"
+}

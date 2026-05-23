@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/big_mover_payload_schema.json",
+  "title": "Big Mover Payload Schema",
+  "description": "Extension to the dashboard_payload.json that adds a big_movers array containing active picks where |PnL%| > threshold. Designed for the Big Mover widget.",
+  "type": "object",
+  "properties": {
+    "big_movers": {
+      "type": "array",
+      "description": "Active trading picks with significant price movement (|PnL%| > configurable threshold, default 3%)",
+      "items": {
+        "$ref": "#/$defs/BigMoverPick"
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "BigMoverPick": {
+      "type": "object",
+      "description": "A single active pick that qualifies as a big mover.",
+      "required": ["symbol", "direction", "pnl_pct"],
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Trading symbol / ticker (e.g. 'META', 'BTC', 'EURUSD')",
+          "examples": ["META", "BTC", "EURUSD", "GC"]
+        },
+        "direction": {
+          "type": "string",
+          "description": "Trade direction",
+          "enum": ["LONG", "SHORT"],
+          "examples": ["LONG"]
+        },
+        "asset_class": {
+          "type": "string",
+          "description": "Asset class classification",
+          "enum": ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "FUTURES", "ETF"],
+          "examples": ["EQUITY"]
+        },
+        "pnl_pct": {
+          "type": "number",
+          "description": "Current unrealized PnL as a percentage (positive = profit, negative = loss)",
+          "examples": [11.09, -4.52]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Composite quality score (Smart Score or equivalent, 0-100 scale)",
+          "examples": [30, 72]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Model confidence level (0.0 to 1.0)",
+          "examples": [0.64, 0.82]
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Strategy or system name that generated this pick",
+          "examples": ["goldmine_1x_consensus", "momentum_interceptor", "alpha_engine_v3"]
+        },
+        "age_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Time since signal generation in fractional hours (e.g. 0.4 = 24 minutes)",
+          "examples": [0.4, 2.5, 18.0]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

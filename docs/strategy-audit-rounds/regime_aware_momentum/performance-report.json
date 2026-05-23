@@ -1,0 +1,39 @@
+{
+  "strategy": "regime_filtered_momentum",
+  "audit_slug": "regime_aware_momentum",
+  "harness": "alpha_engine/regime_filtered_momentum.py::__main__",
+  "harness_kind": "synthetic",
+  "universe": ["AAPL", "SPY", "QQQ", "TLT", "GLD"],
+  "days": 600,
+  "rebalance_freq_bars": 21,
+  "regimes_rotated": [
+    ["steep", "low"],
+    ["flat", "normal"],
+    ["inverted", "elevated"],
+    ["inverted", "normal"]
+  ],
+  "results": {
+    "n_rebalances": 15,
+    "n_signals_total": 27,
+    "hit_rate": 0.4074,
+    "monthly_mean_pct": 0.1686,
+    "monthly_std_pct": 2.474,
+    "sharpe_annualized_eqweight": 0.236,
+    "rebalance_log_first6": [
+      {"t": 278, "regime": ["steep", "low"], "n_signals": 3},
+      {"t": 299, "regime": ["flat", "normal"], "n_signals": 3},
+      {"t": 320, "regime": ["inverted", "elevated"], "n_signals": 1},
+      {"t": 341, "regime": ["inverted", "normal"], "n_signals": 0},
+      {"t": 362, "regime": ["steep", "low"], "n_signals": 3},
+      {"t": 383, "regime": ["flat", "normal"], "n_signals": 3}
+    ]
+  },
+  "notes": [
+    "Synthetic harness; 5 symbols x 600 days with embedded drift/vol + 2 reversals at days 300/400.",
+    "n_signals=0 in inverted+normal regime confirms gate behaves correctly (LONG blocked, SHORT requires inverted+elevated).",
+    "n_signals=1 in inverted+elevated confirms SHORT branch fires only when both conditions met.",
+    "Real-data validation pending Wire-Up step: 7-day shadow run after registering in equity_strategies.py."
+  ],
+  "ran_at_utc": "2026-05-09",
+  "compile_check": "python -m py_compile alpha_engine/regime_filtered_momentum.py -> OK"
+}

@@ -1,0 +1,67 @@
+{
+  "symbol": "XOM",
+  "review_date": "2026-05-19",
+  "reviewer": "blocked_symbol_review_monitor (automated)",
+  "data_source": "alpha_engine/data/closed_picks.json (local)",
+  "scheduled_review_date": "2026-05-30",
+  "asset_class": "EQUITY",
+  "stage_before_review": "PENDING_UNBLOCK_REVIEW (SHADOW); also in EQUITY_BLOCKED_SYMBOLS",
+  "block_date": "2026-04-28",
+  "block_reason": "Blocked via goldmine_stocks system (0/3 WR on XOM within that system). Energy stocks consistently lose in equity portfolios. In both EQUITY_BLOCKED_SYMBOLS and PENDING_UNBLOCK_REVIEW.",
+
+  "block_locations": {
+    "EQUITY_BLOCKED_SYMBOLS": true,
+    "PENDING_UNBLOCK_REVIEW": true,
+    "note": "Unlike CVX (which was removed from EQUITY_BLOCKED_SYMBOLS), XOM remains in both. EQUITY_BLOCKED_SYMBOLS line 1521: {\"XLE\", \"XOM\"}"
+  },
+
+  "thresholds": {
+    "SHADOW": {"n_min": 10, "wr_min_pct": 50, "pf_min": 1.3},
+    "PROBATION": {"n_min": 20, "wr_min_pct": 52, "pf_min": 1.3}
+  },
+
+  "local_stats": {
+    "n": 0,
+    "wins": 0,
+    "losses": 0,
+    "wr_pct": 0.0,
+    "pf": 0.0,
+    "note": "Zero XOM picks in local closed_picks.json"
+  },
+
+  "quality_gates_comment_claim": {
+    "source": "quality_gates.py PENDING_UNBLOCK_REVIEW comment line ~2021 + EQUITY_BLOCKED_SYMBOLS comment line ~1520",
+    "claimed_n": 15,
+    "claimed_wr_pct": 60.0,
+    "claimed_pf": 1.33,
+    "claimed_stage": "SHADOW (weak PF)",
+    "note": "From MySQL data. Local closed_picks.json has zero XOM picks. PF=1.33 is barely above SHADOW floor of 1.3 — borderline. Comment at line 1520: 'XOM review 2026-07-01: n=15, WR=60%, PF=1.33 — keep blocked until n>=20 and PF>=1.5'"
+  },
+
+  "thresholds_met": {
+    "SHADOW": {
+      "n_met": false,
+      "wr_met": false,
+      "pf_met": false,
+      "overall": false,
+      "note": "Local: zero picks. MySQL claim: n=15<20 PROBATION threshold; WR=60%>=50% SHADOW threshold; PF=1.33>=1.3 SHADOW threshold but barely. Would be SHADOW-eligible from MySQL data but n=15<20 for PROBATION."
+    }
+  },
+
+  "mysql_post_dedup_stats": {
+    "query_date": "2026-05-19",
+    "db": "ejaguiar1_stocks.trading_picks (post-dedup: 41,360 rows)",
+    "resolved_statuses": ["WIN","WON","TP_HIT","CLOSED_TP","LOSS","LOST","SL_HIT","CLOSED_SL","CLOSED","TIME_EXIT","EXPIRED"],
+    "n": 3,
+    "won": 3,
+    "wr_pct": 100.0,
+    "pf": "undefined (no losses)",
+    "open_picks": 97,
+    "note": "Only 3 resolved picks post-dedup (all WON). 97 OPEN picks. n=3 is far below any statistical threshold. PF undefined (no denominator). WR=100% on n=3 is meaningless. Previously claimed n=15 in quality_gates.py comment was from pre-dedup data."
+  },
+
+  "verdict": "KEEP_BLOCKED",
+  "verdict_reason": "MySQL post-dedup (2026-05-19): only 3 resolved picks (all WON), n far below SHADOW floor of 10. With 97 OPEN picks in the DB, more data will accumulate. Previous quality_gates.py comment claiming n=15 was pre-dedup inflated data. Extend to 2026-07-01 when more picks should have resolved.",
+  "recommended_action": "Keep in EQUITY_BLOCKED_SYMBOLS. Keep in PENDING_UNBLOCK_REVIEW with date 2026-07-01. At that review: if MySQL shows n>=10 AND WR>=50% AND PF>=1.3, promote to SHADOW. Note: the 97 OPEN picks will provide much more resolved data by then.",
+  "next_review_date": "2026-07-01"
+}

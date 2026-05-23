@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocol backtest edge scan (Cursor Auto Agent) — Apr 9, 2026 | findtorontoevents</title>
+    <meta name="description" content="Observational edge from closed audit picks: top strategies by Wilson LB, asset-class summary, empirical Bayes walk-forward. Research only — NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-04-09-cursor-protocol-edge-backtest.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.65; }
+        .container { max-width: 920px; margin: 0 auto; padding: 36px 20px 60px; }
+        header { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 32px; border-radius: 16px; margin-bottom: 28px; border: 1px solid #4338ca; }
+        h1 { font-size: 1.65em; color: #a5b4fc; margin-bottom: 12px; }
+        .agent-tag { display: inline-block; background: #312e81; color: #c7d2fe; padding: 6px 12px; border-radius: 8px; font-size: 0.88em; margin-top: 8px; border: 1px solid #6366f1; }
+        .nfa-banner {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #fecaca;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 1.02em;
+        }
+        .nfa-sub { font-weight: 400; font-size: 0.85em; margin-top: 8px; color: #fca5a5; line-height: 1.5; }
+        .section { background: #111827; padding: 24px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #1f2937; }
+        h2 { color: #34d399; font-size: 1.2em; margin-bottom: 12px; border-left: 4px solid #34d399; padding-left: 10px; }
+        p, li { color: #d1d5db; margin-bottom: 10px; }
+        ul { padding-left: 22px; }
+        a { color: #7dd3fc; }
+        code { background: #1f2937; padding: 2px 8px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88em; margin: 12px 0; color: #e5e7eb; }
+        th, td { border: 1px solid #374151; padding: 8px 10px; text-align: left; }
+        th { background: #1f2937; color: #a5b4fc; }
+        td.num { text-align: right; }
+        footer { text-align: center; color: #6b7280; font-size: 0.85em; margin-top: 28px; }
+        .muted { color: #9ca3af; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="nfa-banner">
+                NOT FINANCIAL ADVICE (NFA)
+                <div class="nfa-sub">Historical closed picks in the audit merge are not a guarantee of future results. This page documents research output from tooling, not a recommendation to trade.</div>
+            </div>
+            <h1>Edge scan: TESTING_PROTOCOL closed-book backtest</h1>
+            <p class="muted">April 9, 2026 &middot; <a href="/audit/">/audit/</a> &middot; <a href="/updates/">Updates index</a></p>
+            <p class="agent-tag"><strong>Author:</strong> Cursor &mdash; Auto Agent (automated coding / analysis session). Numbers below come from <code>tools/protocol_closed_pick_backtest.py</code> on the repo&rsquo;s <code>audit_dashboard/data/dashboard_data.json</code> at the time of the run; re-run the script after regenerating the dashboard for fresh stats.</p>
+        </header>
+
+        <div class="section">
+            <h2>What we ran</h2>
+            <ul>
+                <li><strong>Protocol alignment:</strong> Observational study on real <code>recent_closed</code> rows only (no synthetic trades), consistent with <code>TESTING_PROTOCOL.MD</code> themes: data-driven gates, strategy-level evidence, walk-forward style split for calibration checks.</li>
+                <li><strong>Command:</strong> <code>python tools/protocol_closed_pick_backtest.py</code> (from repo root).</li>
+                <li><strong>Output:</strong> <code>tools/data/protocol_backtest_report.json</code> plus console summary.</li>
+                <li><strong>Related code shipped in the same effort:</strong> <code>audit_trail/empirical_bayes_scorer.py</code>, adaptive stops / forward <code>GateFilter</code>, <code>audit_trail/non_crypto_smart_score.py</code>, <code>audit_trail/pead_strategy.py</code> (wired for real inputs only).</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Strategy edge (n &ge; 15, Wilson 95% lower bound on win rate)</h2>
+            <p>Ranked by conservative Wilson LB; mean PnL is average <code>pnl_pct</code> on labeled closes.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="num">n</th>
+                        <th class="num">Wilson LB (WR)</th>
+                        <th class="num">Mean pnl %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>st_rsi_vol_bounce</code></td><td class="num">18</td><td class="num">~60.8%</td><td class="num">+1.86%</td></tr>
+                    <tr><td><code>st_fear_greed_contrarian</code></td><td class="num">679</td><td class="num">~57.0%</td><td class="num">+0.53%</td></tr>
+                    <tr><td><code>vwap_deviation_reversion_sol_v1</code></td><td class="num">15</td><td class="num">~48.0%</td><td class="num">+0.74%</td></tr>
+                    <tr><td><code>drawdown_recovery_rsi_eth</code></td><td class="num">17</td><td class="num">~46.9%</td><td class="num">+0.34%</td></tr>
+                    <tr><td><code>MeanReversionBB</code></td><td class="num">33</td><td class="num">~46.6%</td><td class="num">+0.81%</td></tr>
+                    <tr><td><code>quality-minus-junk</code></td><td class="num">21</td><td class="num">~45.4%</td><td class="num">+0.91%</td></tr>
+                </tbody>
+            </table>
+            <p class="muted"><strong>Takeaway:</strong> <code>st_fear_greed_contrarian</code> combines the strongest <em>large-n</em> evidence in this snapshot. <code>st_rsi_vol_bounce</code> has the highest Wilson LB but small n &mdash; treat as hypothesis-generating until more closes accumulate.</p>
+        </div>
+
+        <div class="section">
+            <h2>Asset-class snapshot (same merge)</h2>
+            <table>
+                <thead>
+                    <tr><th>Asset class</th><th class="num">Closed n</th><th class="num">WR %</th><th class="num">Mean pnl %</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>CRYPTO</td><td class="num">2857</td><td class="num">~48.0</td><td class="num">+0.22</td></tr>
+                    <tr><td>EQUITY</td><td class="num">473</td><td class="num">~35.5</td><td class="num">&minus;0.77</td></tr>
+                    <tr><td>FOREX</td><td class="num">147</td><td class="num">~31.3</td><td class="num">&minus;0.28</td></tr>
+                    <tr><td>ETF</td><td class="num">12</td><td class="num">~41.7</td><td class="num">&minus;0.95</td></tr>
+                </tbody>
+            </table>
+            <p class="muted"><strong>Takeaway:</strong> Crypto dominates sample size and shows positive mean closed pnl in this merge; non-crypto sleeves still need separate gates, costs, and freshness (aligned with adaptive non-crypto stops + non-crypto smart score work in repo).</p>
+        </div>
+
+        <div class="section">
+            <h2>Empirical Bayes walk-forward (chronological 50/50 split)</h2>
+            <p>Train <code>EmpiricalBayesScorer</code> on the first half of labeled closes; bucket the second half by predicted win probability.</p>
+            <table>
+                <thead>
+                    <tr><th>Bucket</th><th class="num">Test n</th><th class="num">Realized WR</th><th class="num">Wilson LB</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>high (&ge; 0.55)</td><td class="num">159</td><td class="num">0.566</td><td class="num">0.488</td></tr>
+                    <tr><td>mid (0.45&ndash;0.55)</td><td class="num">410</td><td class="num">0.532</td><td class="num">0.483</td></tr>
+                    <tr><td>low (&lt; 0.45)</td><td class="num">1181</td><td class="num">0.530</td><td class="num">0.501</td></tr>
+                </tbody>
+            </table>
+            <p class="muted"><strong>Takeaway:</strong> High bucket is slightly better on realized WR, but separation is modest &mdash; shrinkage toward the global WR is strong; use as a <em>ranking assist</em>, not a sole filter, until enriched with more features or longer history.</p>
+        </div>
+
+        <div class="section">
+            <h2>Gates &amp; adaptive stop (proxy)</h2>
+            <ul>
+                <li>Most closes include TP/SL; a light geometry gate (<code>forward_pick_passes_gates</code>) passes on a large majority of rows.</li>
+                <li>ATR-proxy adaptive <code>net_rr</code> rejects a minority of rows under strict commission-adjusted rules &mdash; see JSON report for exact counts on your snapshot.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>Cursor Auto Agent &middot; <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca" target="_blank" rel="noopener">GitHub repo</a> &middot; <a href="/updates/">More updates</a></p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+name: Signal Quality Monitor
+
+on:
+  schedule:
+    # Every hour - monitor signal quality
+    - cron: '15 * * * *'
+  workflow_dispatch:
+
+env:
+  PYTHONUNBUFFERED: 1
+
+permissions:
+  contents: write
+
+jobs:
+  monitor-quality:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn joblib requests
+      
+      - name: Load forward database
+        run: |
+          # Download from artifacts if not in repo
+          echo "Loading forward tracking database..."
+          ls -la forward_tracking.db 2>/dev/null || echo "Database not in repo"
+      
+      - name: Analyze signal quality trends
+        run: |
+          python3 << 'PYEOF'
+          import sqlite3
+          import json
+          import os
+          from datetime import datetime, timedelta
+          
+          if not os.path.exists('forward_tracking.db'):
+              print("No forward tracking database found")
+              exit(0)
+          
+          conn = sqlite3.connect('forward_tracking.db')
+          cursor = conn.cursor()
+          
+          # Get quality metrics
+          cursor.execute("""
+              SELECT 
+                  status,
+                  COUNT(*) as count,
+                  AVG(pnl_pct) as avg_pnl,
+                  AVG(CASE WHEN resolved_at IS NOT NULL 
+                      THEN julianday(resolved_at) - julianday(timestamp) 
+                      END) as avg_duration_days
+              FROM signals
+              WHERE status IN ('tp_hit', 'sl_hit', 'expired')
+              AND timestamp >= datetime('now', '-7 days')
+              GROUP BY status
+          """)
+          
+          results = cursor.fetchall()
+          
+          stats = {
+              'generated_at': datetime.now().isoformat(),
+              'period': '7d',
+              'by_status': {}
+          }
+          
+          total = 0
+          wins = 0
+          losses = 0
+          expired = 0
+          
+          for status, count, avg_pnl, avg_duration in results:
+              stats['by_status'][status] = {
+                  'count': count,
+                  'avg_pnl': round(avg_pnl, 4) if avg_pnl else 0,
+                  'avg_duration_days': round(avg_duration, 2) if avg_duration else None
+              }
+              total += count
+              if status == 'tp_hit':
+                  wins += count
+              elif status == 'sl_hit':
+                  losses += count
+              elif status == 'expired':
+                  expired += count
+          
+          # Calculate key metrics
+          stats['total'] = total
+          stats['win_rate'] = round(wins / (wins + losses), 4) if (wins + losses) > 0 else 0
+          stats['expiration_rate'] = round(expired / total, 4) if total > 0 else 0
+          stats['resolution_rate'] = round((wins + losses) / total, 4) if total > 0 else 0
+          
+          # Check for concerning trends
+          alerts = []
+          
+          if stats['win_rate'] < 0.45:
+              alerts.append(f"LOW_WIN_RATE: {stats['win_rate']:.1%} (target >45%)")
+          
+          if stats['expiration_rate'] > 0.50:
+              alerts.append(f"HIGH_EXPIRATION: {stats['expiration_rate']:.1%} (target <40%)")
+          
+          if stats['resolution_rate'] < 0.50:
+              alerts.append(f"LOW_RESOLUTION: {stats['resolution_rate']:.1%} signals unresolved")
+          
+          stats['alerts'] = alerts
+          
+          # System breakdown
+          cursor.execute("""
+              SELECT 
+                  system,
+                  status,
+                  COUNT(*) as count
+              FROM signals
+              WHERE timestamp >= datetime('now', '-7 days')
+              GROUP BY system, status
+          """)
+          
+          system_stats = {}
+          for system, status, count in cursor.fetchall():
+              if system not in system_stats:
+                  system_stats[system] = {}
+              system_stats[system][status] = count
+          
+          stats['by_system'] = system_stats
+          
+          conn.close()
+          
+          # Save report
+          os.makedirs('reports/quality', exist_ok=True)
+          report_path = f"reports/quality/quality_report_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+          with open(report_path, 'w') as f:
+              json.dump(stats, f, indent=2)
+          
+          # Also save as latest
+          with open('reports/quality/latest.json', 'w') as f:
+              json.dump(stats, f, indent=2)
+          
+          print("\n=== Signal Quality Report ===")
+          print(json.dumps(stats, indent=2))
+          
+          # Set output for alerts
+          with open(os.environ.get('GITHUB_OUTPUT'), 'a') as f:
+              f.write(f"has_alerts={str(len(alerts) > 0).lower()}\n")
+              f.write(f"alert_count={len(alerts)}\n")
+              f.write(f"win_rate={stats['win_rate']}\n")
+              f.write(f"expiration_rate={stats['expiration_rate']}\n")
+          PYEOF
+        env:
+          GITHUB_OUTPUT: $GITHUB_OUTPUT
+      
+      - name: Check ML model quality predictions
+        run: |
+          python3 << 'PYEOF'
+          import sys
+          sys.path.insert(0, '.')
+          import json
+          import os
+          
+          # Check if quality models exist
+          if not os.path.exists('forward_testing/models/tp_hit_model.pkl'):
+              print("No quality models found yet")
+              exit(0)
+          
+          try:
+              from forward_testing.signal_quality_ml import SignalQualityPredictor
+              
+              predictor = SignalQualityPredictor()
+              if not predictor.load_models():
+                  print("Could not load quality models")
+                  exit(0)
+              
+              # Get model stats
+              report = predictor.get_quality_report()
+              
+              print("\n=== Quality Model Status ===")
+              print(json.dumps(report, indent=2, default=str))
+              
+              # Check if model performance is degrading
+              if 'tp_hit_roc_auc' in report.get('training_stats', {}):
+                  auc = report['training_stats']['tp_hit_roc_auc']
+                  if auc < 0.6:
+                      print(f" WARNING: Model AUC {auc:.3f} below threshold (0.6)")
+          except Exception as e:
+              print(f"Error checking quality models: {e}")
+          PYEOF
+      
+      - name: Alert on quality issues
+        if: steps.monitor-quality.outputs.has_alerts == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_QUALITY_ALERTS }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "No webhook configured, skipping alert"
+            exit 0
+          fi
+          
+          ALERT_COUNT="${{ steps.monitor-quality.outputs.alert_count }}"
+          WIN_RATE="${{ steps.monitor-quality.outputs.win_rate }}"
+          EXP_RATE="${{ steps.monitor-quality.outputs.expiration_rate }}"
+          
+          curl -H "Content-Type: application/json" \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \" Signal Quality Alert\",
+                   \"color\": 15158332,
+                   \"description\": \"$ALERT_COUNT quality issues detected\",
+                   \"fields\": [
+                     {\"name\": \"Win Rate\", \"value\": \"$WIN_RATE\", \"inline\": true},
+                     {\"name\": \"Expiration Rate\", \"value\": \"$EXP_RATE\", \"inline\": true}
+                   ],
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               $DISCORD_WEBHOOK || true
+      
+      - name: Commit quality reports
+        run: |
+          git config --local user.email "quality-bot@github.com"
+          git config --local user.name "Quality Monitor Bot"
+          
+          git add reports/quality/ 2>/dev/null || true
+          git diff --cached --quiet || git commit -m " Signal quality report [skip ci]"
+          bash .github/scripts/safe_push.sh
+      
+      - name: Upload quality artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports-${{ github.run_number }}
+          path: reports/quality/
+          retention-days: 7
+

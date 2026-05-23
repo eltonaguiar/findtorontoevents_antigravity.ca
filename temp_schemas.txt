@@ -1,0 +1,333 @@
+
+--- Schema for E:/findtorontoevents_antigravity.ca/data/audit_trail.db ---
+Table: meta
+CREATE TABLE meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+)
+Table: aggregation_runs
+CREATE TABLE aggregation_runs (
+    run_id              TEXT PRIMARY KEY,
+    started_at          TEXT NOT NULL,
+    finished_at         TEXT,
+    status              TEXT NOT NULL DEFAULT 'RUNNING',
+    systems_loaded      INTEGER DEFAULT 0,
+    raw_picks_count     INTEGER DEFAULT 0,
+    consensus_count     INTEGER DEFAULT 0,
+    regime_data         TEXT,
+    portfolio_drawdown  REAL DEFAULT 0.0
+)
+Table: raw_picks
+CREATE TABLE raw_picks (
+    id                  TEXT PRIMARY KEY,
+    aggregation_run_id  TEXT NOT NULL REFERENCES aggregation_runs(run_id),
+    source_system       TEXT NOT NULL,
+    symbol              TEXT NOT NULL,
+    asset_class         TEXT NOT NULL,
+    direction           TEXT NOT NULL,
+    entry_price         REAL,
+    take_profit         REAL,
+    stop_loss           REAL,
+    risk_reward         REAL,
+    confidence          REAL,
+    strategy            TEXT,
+    raw_payload         TEXT,
+    signal_timestamp    TEXT,
+    recorded_at         TEXT NOT NULL,
+    dedup_hash          TEXT UNIQUE,
+    was_stale           INTEGER DEFAULT 0,
+    was_banned          INTEGER DEFAULT 0,
+    was_demoted         INTEGER DEFAULT 0,
+    was_wr_suppressed   INTEGER DEFAULT 0,
+    created_by          TEXT DEFAULT 'aggregator'
+)
+Table: consensus_picks
+CREATE TABLE consensus_picks (
+    id                  TEXT PRIMARY KEY,
+    aggregation_run_id  TEXT NOT NULL REFERENCES aggregation_runs(run_id),
+    symbol              TEXT NOT NULL,
+    asset_class         TEXT NOT NULL,
+    direction           TEXT NOT NULL,
+    entry_price         REAL,
+    take_profit         REAL,
+    stop_loss           REAL,
+    risk_reward         REAL,
+    confidence          REAL,
+    agreement_count     INTEGER,
+    source_systems      TEXT,
+    source_strategies   TEXT,
+    system_confidences  TEXT,
+    consensus_tier      TEXT,
+    classification      TEXT,
+    regime_data         TEXT,
+    discord_channel     TEXT,
+    discord_message_id  TEXT,
+    status              TEXT DEFAULT 'OPEN',
+    exit_price          REAL,
+    exit_reason         TEXT,
+    pnl_pct             REAL,
+    slippage_estimate   REAL,
+    generated_at        TEXT NOT NULL,
+    closed_at           TEXT,
+    UNIQUE(symbol, direction, entry_price, generated_at)
+)
+Table: audit_events
+CREATE TABLE audit_events (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type          TEXT NOT NULL,
+    pick_id             TEXT,
+    aggregation_run_id  TEXT,
+    symbol              TEXT,
+    payload             TEXT,
+    origin              TEXT DEFAULT 'aggregator',
+    timestamp           TEXT NOT NULL
+)
+Table: sqlite_sequence
+CREATE TABLE sqlite_sequence(name,seq)
+Table: filter_log
+CREATE TABLE filter_log (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    aggregation_run_id  TEXT,
+    raw_pick_id         TEXT,
+    symbol              TEXT,
+    direction           TEXT,
+    source_system       TEXT,
+    filter_reason       TEXT NOT NULL,
+    details             TEXT,
+    timestamp           TEXT NOT NULL
+)
+Table: strategy_stats
+CREATE TABLE strategy_stats (
+    strategy        TEXT NOT NULL,
+    source_system   TEXT NOT NULL,
+    asset_class     TEXT,
+    total_picks     INTEGER DEFAULT 0,
+    consensus_picks INTEGER DEFAULT 0,
+    wins            INTEGER DEFAULT 0,
+    losses          INTEGER DEFAULT 0,
+    win_rate        REAL DEFAULT 0.0,
+    avg_pnl_pct     REAL DEFAULT 0.0,
+    best_pnl        REAL DEFAULT 0.0,
+    worst_pnl       REAL DEFAULT 0.0,
+    avg_risk_reward REAL DEFAULT 0.0,
+    last_updated    TEXT,
+    PRIMARY KEY (strategy, source_system)
+)
+Table: bt_backtest_runs
+CREATE TABLE bt_backtest_runs (
+    id                  TEXT PRIMARY KEY,
+    source_db           TEXT NOT NULL,
+    source_table        TEXT NOT NULL DEFAULT '',
+    strategy            TEXT NOT NULL,
+    symbol              TEXT NOT NULL DEFAULT 'BTC/USDT',
+    asset_class         TEXT NOT NULL DEFAULT 'CRYPTO',
+    total_trades        INTEGER DEFAULT 0,
+    wins                INTEGER DEFAULT 0,
+    losses              INTEGER DEFAULT 0,
+    win_rate            REAL DEFAULT 0.0,
+    profit_factor       REAL DEFAULT 0.0,
+    total_return        REAL DEFAULT 0.0,
+    sharpe              REAL DEFAULT 0.0,
+    max_drawdown        REAL DEFAULT 0.0,
+    imported_at         TEXT NOT NULL
+)
+Table: bt_backtest_trades
+CREATE TABLE bt_backtest_trades (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    backtest_run_id     TEXT REFERENCES bt_backtest_runs(id),
+    source_db           TEXT NOT NULL,
+    source_table        TEXT NOT NULL DEFAULT '',
+    symbol              TEXT NOT NULL,
+    asset_class         TEXT NOT NULL DEFAULT 'CRYPTO',
+    direction           TEXT,
+    strategy            TEXT NOT NULL,
+    entry_price         REAL,
+    exit_price          REAL,
+    take_profit         REAL,
+    stop_loss           REAL,
+    entry_time          TEXT,
+    exit_time           TEXT,
+    pnl_pct             REAL,
+    status              TEXT,
+    confidence          REAL,
+    raw_data            TEXT,
+    imported_at         TEXT NOT NULL
+)
+
+--- Schema for E:/findtorontoevents_antigravity.ca/KIMI_RISEOFTHECLAW/data/kimi_trading.db ---
+Table: signals
+CREATE TABLE signals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            algorithm TEXT NOT NULL,
+            tier TEXT,
+            strategy TEXT,
+            symbol TEXT NOT NULL,
+            signal TEXT NOT NULL,
+            reason TEXT,
+            price REAL,
+            regime TEXT,
+            crypto_regime TEXT,
+            breadth_pct REAL,
+            vix_proxy TEXT,
+            hmm_confidence REAL
+        )
+Table: sqlite_sequence
+CREATE TABLE sqlite_sequence(name,seq)
+Table: picks
+CREATE TABLE picks (
+            id TEXT PRIMARY KEY,
+            algorithm TEXT NOT NULL,
+            symbol TEXT NOT NULL,
+            category TEXT,
+            tier TEXT,
+            entry_price REAL,
+            entry_date TEXT,
+            exit_price REAL,
+            exit_date TEXT,
+            exit_reason TEXT,
+            pnl_pct REAL,
+            pnl_dollar REAL,
+            status TEXT,
+            reason TEXT,
+            regime TEXT,
+            regime_confidence REAL,
+            breadth_pct REAL,
+            vol_20d REAL,
+            rsi_at_entry REAL,
+            volume_ratio REAL,
+            ml_win_prob REAL
+        , take_profit REAL, stop_loss REAL)
+Table: rankings
+CREATE TABLE rankings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_date TEXT NOT NULL,
+            algorithm TEXT NOT NULL,
+            score REAL,
+            league TEXT,
+            total_return REAL,
+            sharpe REAL,
+            sortino REAL,
+            win_rate REAL,
+            max_drawdown REAL,
+            closed_picks INTEGER,
+            regime TEXT
+        )
+Table: regime
+CREATE TABLE regime (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            regime TEXT,
+            crypto_regime TEXT,
+            vix_proxy TEXT,
+            hmm_regime TEXT,
+            hmm_confidence REAL,
+            vol_20d REAL,
+            btc_eth_ratio REAL,
+            spy_vs_sma200 REAL
+        )
+
+--- Schema for E:/findtorontoevents_antigravity.ca/genome/strategy_registry.db ---
+Table: strategies
+CREATE TABLE strategies (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    dna_hash TEXT UNIQUE NOT NULL,
+                    status TEXT DEFAULT 'active',
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    generation INTEGER DEFAULT 0,
+                    parent_ids TEXT,  -- JSON array
+                    genes TEXT NOT NULL,  -- JSON object
+                    symbol_specialization TEXT,
+                    metadata TEXT,  -- JSON object
+                    fitness_score REAL,
+                    win_rate REAL,
+                    sharpe_ratio REAL,
+                    total_trades INTEGER DEFAULT 0
+                )
+Table: permutations
+CREATE TABLE permutations (
+                    combo_id TEXT PRIMARY KEY,
+                    component_ids TEXT NOT NULL,  -- JSON array of strategy IDs
+                    combination_logic TEXT NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    status TEXT DEFAULT 'untested',
+                    fitness_score REAL,
+                    win_rate REAL,
+                    sharpe_ratio REAL,
+                    profit_factor REAL,
+                    max_drawdown REAL,
+                    performance_metrics TEXT,  -- JSON object
+                    UNIQUE(component_ids, combination_logic)
+                )
+Table: backtest_results
+CREATE TABLE backtest_results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    strategy_id TEXT NOT NULL,
+                    symbol TEXT NOT NULL,
+                    start_date TEXT NOT NULL,
+                    end_date TEXT NOT NULL,
+                    total_trades INTEGER DEFAULT 0,
+                    winning_trades INTEGER DEFAULT 0,
+                    losing_trades INTEGER DEFAULT 0,
+                    win_rate REAL,
+                    avg_trade REAL,
+                    avg_win REAL,
+                    avg_loss REAL,
+                    profit_factor REAL,
+                    total_return REAL,
+                    total_return_pct REAL,
+                    annualized_return REAL,
+                    max_drawdown REAL,
+                    max_drawdown_pct REAL,
+                    volatility REAL,
+                    sharpe_ratio REAL,
+                    sortino_ratio REAL,
+                    calmar_ratio REAL,
+                    omega_ratio REAL,
+                    expectancy REAL,
+                    sqn REAL,
+                    regime TEXT,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (strategy_id) REFERENCES strategies(id),
+                    UNIQUE(strategy_id, symbol, start_date, end_date)
+                )
+Table: sqlite_sequence
+CREATE TABLE sqlite_sequence(name,seq)
+Table: live_signals
+CREATE TABLE live_signals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    strategy_id TEXT NOT NULL,
+                    permutation_id TEXT,
+                    symbol TEXT NOT NULL,
+                    direction TEXT NOT NULL,
+                    entry_price REAL,
+                    take_profit REAL,
+                    stop_loss REAL,
+                    confidence REAL,
+                    risk_reward REAL,
+                    position_size REAL,
+                    generated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    executed_at TEXT,
+                    closed_at TEXT,
+                    status TEXT DEFAULT 'pending',
+                    exit_price REAL,
+                    pnl REAL,
+                    pnl_pct REAL,
+                    exit_reason TEXT,
+                    market_regime TEXT,
+                    metadata TEXT,  -- JSON object
+                    FOREIGN KEY (strategy_id) REFERENCES strategies(id)
+                )
+Table: audit_log
+CREATE TABLE audit_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    table_name TEXT NOT NULL,
+                    record_id TEXT NOT NULL,
+                    action TEXT NOT NULL,  -- 'CREATE', 'UPDATE', 'DELETE'
+                    old_values TEXT,  -- JSON
+                    new_values TEXT,  -- JSON
+                    timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+                    user_agent TEXT
+                )

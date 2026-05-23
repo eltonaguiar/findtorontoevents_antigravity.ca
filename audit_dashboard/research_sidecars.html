@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Sidecars — Academically-Backed Strategies | /audit</title>
+<meta name="description" content="4 opt-in research sidecars surfacing academically-backed strategies (Miffre commodity carry+momo, Antonacci GEM sector rotation, Sihvonen UST TSMOM, Liu et al overnight-intraday reversal). Auto-refresh hourly. Advisory only.">
+<link rel="canonical" href="https://findtorontoevents.ca/audit_dashboard/research_sidecars.html">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e1a;color:#e0e6ed;line-height:1.55}
+.container{max-width:1280px;margin:0 auto;padding:22px 16px 60px}
+header{background:linear-gradient(135deg,#1a2540 0%,#0f1629 100%);padding:22px;border-radius:14px;margin-bottom:16px;border:1px solid #2a3f5f}
+h1{font-size:1.5em;color:#fbbf24;margin-bottom:6px}
+h2{color:#34d399;font-size:1.05em;margin:8px 0 6px;display:flex;align-items:center;gap:8px}
+h3{color:#a78bfa;font-size:0.95em;margin:8px 0 4px}
+.meta{font-size:0.8em;color:#94a3b8}
+.nfa{background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#fecaca;padding:8px 12px;border-radius:8px;font-weight:600;text-align:center;margin-bottom:10px;font-size:0.82em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(540px,1fr));gap:12px}
+.card{background:#111827;padding:16px;border-radius:10px;border:1px solid #1f2937}
+.card-com{border-top:3px solid #f59e0b}
+.card-etf{border-top:3px solid #22c55e}
+.card-bond{border-top:3px solid #06b6d4}
+.card-eq{border-top:3px solid #a78bfa}
+.signal-strong{background:rgba(34,197,94,0.18);color:#86efac;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:700}
+.signal-mod{background:rgba(251,191,36,0.18);color:#fcd34d;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:700}
+.signal-weak{background:rgba(239,68,68,0.18);color:#fca5a5;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:700}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.kpi{background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.25);padding:6px 8px;border-radius:6px}
+.kpi-lbl{font-size:0.7em;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px}
+.kpi-val{font-size:0.95em;font-weight:700;color:#e0e6ed}
+.basket{font-size:0.85em;margin:6px 0;font-family:Consolas,Menlo,monospace}
+.basket-long{color:#86efac}
+.basket-short{color:#fca5a5}
+.basket-neutral{color:#94a3b8}
+table{width:100%;border-collapse:collapse;font-size:0.78em;margin-top:6px}
+th,td{padding:4px 6px;text-align:left;border-bottom:1px solid #1f2937}
+th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 4px;border-radius:3px;font-size:0.85em;font-family:Consolas,Menlo,monospace}
+a{color:#60a5fa}
+.back{font-size:0.85em;display:inline-block;margin-bottom:8px}
+.ref{font-size:0.78em;color:#94a3b8;margin-top:6px;font-style:italic}
+.err{color:#fca5a5;padding:10px;background:rgba(239,68,68,0.08);border:1px solid #ef4444;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back" href="/audit/">&larr; Back to /audit</a> &middot; <a class="back" href="/audit_dashboard/anti_overfit.html">Anti-Overfit (DSR) &rarr;</a>
+
+<header>
+<h1>Research Sidecars &mdash; Academically-Backed Strategies</h1>
+<div class="nfa">RESEARCH SURFACE &mdash; OPT-IN SIDECARS. NOT PRODUCTION GATES. NOT FINANCIAL ADVICE.</div>
+<div class="meta">4 opt-in strategies from Agent C external-research synthesis (SUPREME EDGE 2026-05-12). Each fetches via free yfinance, auto-refresh hourly via <span class="code">.github/workflows/audit-dashboard.yml</span>. Wiring Plan: this page (Phase 2). Phase 3 = production pick path. See <a href="/reports/supreme_edge_5agent_synthesis_2026-05-12.md">5-agent synthesis</a>.</div>
+</header>
+
+<div class="grid">
+  <div class="card card-com" id="card-commodity">
+    <h2>&#x1F33E; Commodity Carry + Momentum Double-Sort</h2>
+    <div class="meta">Fuertes/Miffre/Rallis 2010 &middot; SSRN 1127213 &middot; Expected α 21% annualized / Sharpe 1.0-1.4</div>
+    <div id="loading-commodity"><em>Loading...</em></div>
+  </div>
+
+  <div class="card card-etf" id="card-etf">
+    <h2>&#x1F4CA; Sector Dual Momentum (GEM 12-1)</h2>
+    <div class="meta">Antonacci 2014 GEM + Zarattini/Antonacci 2024 SSRN 4857230 &middot; Expected Sharpe 0.8-1.1 / MDD&lt;15%</div>
+    <div id="loading-etf"><em>Loading...</em></div>
+  </div>
+
+  <div class="card card-bond" id="card-bond">
+    <h2>&#x1F4B5; UST Time-Series Momentum (TSMOM)</h2>
+    <div class="meta">Sihvonen 2024 SSRN 3965229 &middot; Expected Sharpe 0.7-1.0 / vol-targeted 10%</div>
+    <div id="loading-bond"><em>Loading...</em></div>
+  </div>
+
+  <div class="card card-eq" id="card-eq">
+    <h2>&#x1F319; Overnight-Intraday Reversal (US Large Cap)</h2>
+    <div class="meta">Liu/Liu/Wang/Zhou/Zhu &middot; SSRN 2730304 &middot; Expected Sharpe 1.5-2.5 / hold ~16h</div>
+    <div id="loading-eq"><em>Loading...</em></div>
+  </div>
+</div>
+
+<script>
+const FILES = [
+  ['commodity', '/audit_dashboard/data/commodity_carry_momo.json', renderCommodity],
+  ['etf', '/audit_dashboard/data/sector_dual_momentum.json', renderETF],
+  ['bond', '/audit_dashboard/data/ust_tsmom.json', renderBond],
+  ['eq', '/audit_dashboard/data/overnight_intraday_reversal.json', renderEquity],
+];
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function signalBadge(sig) {
+  const c = (sig === 'STRONG') ? 'signal-strong' :
+            (sig === 'MODERATE') ? 'signal-mod' : 'signal-weak';
+  return `<span class="${c}">${esc(sig)}</span>`;
+}
+
+function renderCommodity(d) {
+  const b = d.basket || {};
+  const longs = (b.longs || []).map(esc).join(', ') || '<em>none</em>';
+  const shorts = (b.shorts || []).map(esc).join(', ') || '<em>none</em>';
+  const rows = (d.rows || []).filter(r => !r.error).sort((a,b) => (b.mom_12_1_pct||0) - (a.mom_12_1_pct||0));
+  const trows = rows.map(r => `<tr><td><span class="code">${esc(r.symbol)}</span></td><td class="num">${(r.mom_12_1_pct||0).toFixed(2)}</td><td class="num">${(r.carry_proxy_pct||0).toFixed(3)}</td><td class="num">${(r.last_close||0).toFixed(2)}</td></tr>`).join('');
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Signal</div><div class="kpi-val">${signalBadge(b.expected_signal_strength)}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Universe</div><div class="kpi-val">${b.n_valid||0} valid</div></div>
+      <div class="kpi"><div class="kpi-lbl">Quintile</div><div class="kpi-val">${b.quintile_size||0}</div></div>
+    </div>
+    <div class="basket"><strong>LONGS:</strong> <span class="basket-long">${longs}</span></div>
+    <div class="basket"><strong>SHORTS:</strong> <span class="basket-short">${shorts}</span></div>
+    <table><thead><tr><th>Symbol</th><th class="num">Mom 12-1%</th><th class="num">Carry%</th><th class="num">Close</th></tr></thead><tbody>${trows}</tbody></table>
+    <div class="ref">Generated: ${esc(d.generated_at)} &middot; Sharpe range ${JSON.stringify(d.expected_sharpe_range||[])}</div>
+  `;
+}
+
+function renderETF(d) {
+  const dec = d.decision || {};
+  const basket = (dec.basket || []).map(esc).join(', ') || '<em>none</em>';
+  const rows = (d.per_etf || []).filter(r => !r.error).sort((a,b) => (b.mom_12_1_pct||0) - (a.mom_12_1_pct||0));
+  const trows = rows.map(r => `<tr><td><span class="code">${esc(r.ticker)}</span></td><td class="num">${(r.mom_12_1_pct||0).toFixed(2)}</td><td class="num">${(r.last_close||0).toFixed(2)}</td><td class="num">${r.current_rank||'-'}</td></tr>`).join('');
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Signal</div><div class="kpi-val">${signalBadge(dec.expected_signal_strength)}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Regime</div><div class="kpi-val">${esc(dec.regime||'?')}</div></div>
+      <div class="kpi"><div class="kpi-lbl">SPY mom 12-1</div><div class="kpi-val">${(dec.spy_mom_12_1_pct||0).toFixed(1)}%</div></div>
+    </div>
+    <div class="basket"><strong>BASKET (top-${d.top_n||3}):</strong> <span class="basket-long">${basket}</span></div>
+    <table><thead><tr><th>Ticker</th><th class="num">Mom 12-1%</th><th class="num">Close</th><th class="num">Rank</th></tr></thead><tbody>${trows}</tbody></table>
+    <div class="ref">Generated: ${esc(d.generated_at)} &middot; Sharpe ${JSON.stringify(d.expected_sharpe_range||[])} &middot; MDD&lt;${d.expected_max_drawdown_pct||15}%</div>
+  `;
+}
+
+function renderBond(d) {
+  const rows = (d.rows || []).filter(r => !r.error).sort((a,b) => (b.mom_12_pct||0) - (a.mom_12_pct||0));
+  const longs = rows.filter(r => r.signal === 'long').map(r => r.ticker);
+  const shorts = rows.filter(r => r.signal === 'short').map(r => r.ticker);
+  const trows = rows.map(r => `<tr><td><span class="code">${esc(r.ticker)}</span></td><td class="num">${(r.mom_12_pct||0).toFixed(2)}</td><td class="num">${(r.vol_90d_annualized_pct||0).toFixed(2)}</td><td class="num">${(r.vol_target_position_size_pct||0).toFixed(0)}%</td><td>${signalBadgeSmall(r.signal)}</td></tr>`).join('');
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Longs</div><div class="kpi-val">${longs.length}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Shorts</div><div class="kpi-val">${shorts.length}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Vol target</div><div class="kpi-val">${d.vol_target_pct||10}%</div></div>
+    </div>
+    <div class="basket"><strong>LONGS:</strong> <span class="basket-long">${longs.map(esc).join(', ') || '<em>none</em>'}</span></div>
+    <div class="basket"><strong>SHORTS:</strong> <span class="basket-short">${shorts.map(esc).join(', ') || '<em>none</em>'}</span></div>
+    <table><thead><tr><th>Ticker</th><th class="num">Mom 12mo%</th><th class="num">Vol 90d%</th><th class="num">Size</th><th>Signal</th></tr></thead><tbody>${trows}</tbody></table>
+    <div class="ref">Generated: ${esc(d.generated_at)}</div>
+  `;
+}
+
+function signalBadgeSmall(sig) {
+  const c = (sig === 'long') ? 'basket-long' :
+            (sig === 'short') ? 'basket-short' : 'basket-neutral';
+  return `<span class="${c}">${esc(sig)}</span>`;
+}
+
+function renderEquity(d) {
+  const dec = d.decision || {};
+  const longs = (dec.longs || []).map(esc).join(', ') || '<em>none</em>';
+  const shorts = (dec.shorts || []).map(esc).join(', ') || '<em>none</em>';
+  const rows = (d.per_symbol || []).filter(r => !r.error).sort((a,b) => (a.intraday_return_pct||0) - (b.intraday_return_pct||0)).slice(0, 12);
+  const trows = rows.map(r => `<tr><td><span class="code">${esc(r.ticker)}</span></td><td class="num">${(r.intraday_return_pct||0).toFixed(2)}</td><td class="num">${(r.last_open||0).toFixed(2)}</td><td class="num">${(r.last_close||0).toFixed(2)}</td><td class="num">${r.rank||'-'}</td></tr>`).join('');
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Signal</div><div class="kpi-val">${signalBadge(dec.expected_signal_strength)}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Longs</div><div class="kpi-val">${(dec.longs||[]).length}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Shorts</div><div class="kpi-val">${(dec.shorts||[]).length}</div></div>
+    </div>
+    <div class="basket"><strong>LONGS (most negative intraday):</strong> <span class="basket-long">${longs}</span></div>
+    <div class="basket"><strong>SHORTS (most positive intraday):</strong> <span class="basket-short">${shorts}</span></div>
+    <table><thead><tr><th>Ticker</th><th class="num">Intraday %</th><th class="num">Open</th><th class="num">Close</th><th class="num">Rank</th></tr></thead><tbody>${trows}</tbody></table>
+    <div class="ref">Top-12 by intraday rank (worst first). Generated: ${esc(d.generated_at)}</div>
+  `;
+}
+
+FILES.forEach(([id, url, fn]) => {
+  fetch(url + '?ts=' + Date.now()).then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+    .then(d => { document.getElementById(`card-${id}`).insertAdjacentHTML('beforeend', fn(d)); document.getElementById(`loading-${id}`).remove(); })
+    .catch(e => { document.getElementById(`loading-${id}`).outerHTML = `<div class="err">Load failed: ${esc(String(e))}</div>`; });
+});
+</script>
+</div>
+</body>
+</html>

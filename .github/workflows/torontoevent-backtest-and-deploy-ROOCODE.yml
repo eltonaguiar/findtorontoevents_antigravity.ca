@@ -1,0 +1,292 @@
+name: "[torontoevent.net] Run Backtests & Deploy Dashboards (ROOCODE)"
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Daily backtest at 6 AM UTC
+    - cron: '*/15 14-21 * * 1-5' # Every 15 min during US market hours
+    - cron: '0 */4 * * 0,6' # Every 4 hours on weekends (crypto only)
+  push:
+    branches: [main]
+    paths:
+      - 'KIMI_CLAW_RESEARCH_FEB162026/strategies_tier1.py'
+      - 'KIMI_CLAW_RESEARCH_FEB162026/backtest_framework.py'
+      - 'KIMI_CLAW_RESEARCH_FEB162026/generate_dashboard_data.py'
+      - 'KIMI_CLAW_RESEARCH_FEB162026/run_tier1_backtest.py'
+      - 'KIMI_CLAW_RESEARCH_FEB162026/index.html'
+      - 'KIMI_CLAW_RESEARCH_FEB162026/css/**'
+      - 'KIMI_CLAW_RESEARCH_FEB162026/js/**'
+      - 'KIMI_RISEOFTHECLAW/index.html'
+      - 'KIMI_RISEOFTHECLAW/js/**'
+      - 'KIMI_RISEOFTHECLAW/css/**'
+      - 'KIMI_RISEOFTHECLAW/live_scanner.py'
+      - '.github/workflows/torontoevent-backtest-and-deploy-ROOCODE.yml'
+  workflow_dispatch:
+
+jobs:
+  backtest-ROOCODE:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance pandas numpy "ccxt>=4.3.80,<4.4" requests statsmodels
+
+      - name: Run Tier 1 backtests
+        if: github.event.schedule == '0 6 * * *' || github.event_name != 'schedule'
+        working-directory: KIMI_CLAW_RESEARCH_FEB162026
+        run: |
+          echo " Running Tier 1 strategy backtests..."
+          python generate_dashboard_data.py
+
+      - name: Run live market scanner
+        working-directory: KIMI_RISEOFTHECLAW
+        run: |
+          echo " Running live market scanner..."
+          python live_scanner.py
+
+      - name: Commit updated results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add KIMI_CLAW_RESEARCH_FEB162026/backtest_results/ KIMI_CLAW_RESEARCH_FEB162026/data/ KIMI_RISEOFTHECLAW/data/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: Auto-update backtest results (ROOCODE) $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+
+      - name: Deploy dashboard to torontoevent.net via FTP
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python - <<'PYEOF'
+          import ftplib, os, json
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print(" FTP credentials not set, skipping deploy")
+              exit(0)
+
+          SRC = Path("KIMI_CLAW_RESEARCH_FEB162026")
+          REMOTE_BASE = "" # torontoevent.net root is /
+
+          print(f" Connecting to {host}...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print(" Connected")
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part:
+                      continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f" mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              remote_dir = "/".join(remote_path.split("/")[:-1])
+              remote_name = remote_path.split("/")[-1]
+              if remote_dir:
+                  ensure_dir(ftp, remote_dir)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {remote_name}", f)
+              print(f" {remote_path}")
+
+          uploaded = 0
+
+          # Deploy dashboard HTML
+          if (SRC / "index.html").exists():
+              upload(ftp, SRC / "index.html", "kimi-claw-ROOCODE/index.html")
+              uploaded += 1
+
+          # Deploy CSS
+          for css_file in (SRC / "css").glob("*") if (SRC / "css").exists() else []:
+              upload(ftp, css_file, f"kimi-claw-ROOCODE/css/{css_file.name}")
+              uploaded += 1
+
+          # Deploy JS
+          for js_file in (SRC / "js").glob("*") if (SRC / "js").exists() else []:
+              upload(ftp, js_file, f"kimi-claw-ROOCODE/js/{js_file.name}")
+              uploaded += 1
+
+          # Deploy data files (backtest results + dashboard data)
+          for data_file in (SRC / "data").glob("*.json") if (SRC / "data").exists() else []:
+              upload(ftp, data_file, f"kimi-claw-ROOCODE/data/{data_file.name}")
+              uploaded += 1
+
+          for res_file in (SRC / "backtest_results").glob("*.json") if (SRC / "backtest_results").exists() else []:
+              upload(ftp, res_file, f"kimi-claw-ROOCODE/data/{res_file.name}")
+              uploaded += 1
+
+          ftp.quit()
+          print(f"\n Deployed {uploaded} files to kimi-claw-ROOCODE/ on torontoevent.net")
+          PYEOF
+
+      - name: Deploy Rise of the Claw to torontoevent.net via FTP (ROOCODE)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          echo " Deploying Rise of the Claw (ROOCODE) to torontoevent.net..."
+
+          mkdir -p deploy_riseoftheclaw_ROOCODE/riseoftheclaw/{css,js,data}
+          cp KIMI_RISEOFTHECLAW/index.html deploy_riseoftheclaw_ROOCODE/riseoftheclaw.html
+          sed -i 's|href="css/|href="/riseoftheclaw-ROOCODE/css/|g' deploy_riseoftheclaw_ROOCODE/riseoftheclaw.html
+          sed -i 's|src="js/|src="/riseoftheclaw-ROOCODE/js/|g' deploy_riseoftheclaw_ROOCODE/riseoftheclaw.html
+          cp -r KIMI_RISEOFTHECLAW/css/* deploy_riseoftheclaw_ROOCODE/riseoftheclaw/css/
+          cp -r KIMI_RISEOFTHECLAW/js/* deploy_riseoftheclaw_ROOCODE/riseoftheclaw/js/
+          cp -r KIMI_RISEOFTHECLAW/data/* deploy_riseoftheclaw_ROOCODE/riseoftheclaw/data/
+
+          python - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd = os.environ.get("FTP_PASS", "")
+          if not all([host, user, pwd]):
+              exit(0)
+
+          src = Path("deploy_riseoftheclaw_ROOCODE")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      ftp.mkd(part); ftp.cwd(part)
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d: ensure_dir(ftp, d)
+              else: ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f" {remote_path}")
+
+          # Upload main HTML
+          upload(ftp, src / "riseoftheclaw.html", "riseoftheclaw-ROOCODE.html")
+
+          # Upload supporting dirs (skip subdirectories)
+          for subdir in ["css", "js", "data"]:
+              for f in (src / "riseoftheclaw" / subdir).glob("*"):
+                  if f.is_file():
+                      upload(ftp, f, f"riseoftheclaw-ROOCODE/{subdir}/{f.name}")
+
+          ftp.quit()
+          print(" Rise of the Claw (ROOCODE) deployed to torontoevent.net")
+          PYEOF
+
+      - name: Deploy updates page to torontoevent.net (ROOCODE)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd = os.environ.get("FTP_PASS", "")
+          if not all([host, user, pwd]):
+              exit(0)
+
+          local = Path("updates/index.html")
+          if not local.exists():
+              print("No updates/index.html, skipping")
+              exit(0)
+
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+
+          ftp.cwd("/")
+          try:
+              ftp.cwd("updates-ROOCODE")
+          except:
+              ftp.mkd("updates-ROOCODE"); ftp.cwd("updates-ROOCODE")
+
+          with open(local, "rb") as f:
+              ftp.storbinary("STOR index.html", f)
+          print(" Deployed updates/index.html to torontoevent.net (updates-ROOCODE)")
+          ftp.quit()
+          PYEOF
+
+      - name: Verify torontoevent.net deployments (ROOCODE)
+        run: |
+          echo " Verifying torontoevent.net deployments (ROOCODE)..."
+
+          for url in \
+            "https://torontoevent.net/kimi-claw-ROOCODE/" \
+            "https://torontoevent.net/riseoftheclaw-ROOCODE.html" \
+            "https://torontoevent.net/updates-ROOCODE/" \
+            "https://torontoevent.net/kimi-claw-ROOCODE/data/dashboard_data.json"; do
+            status=$(curl -o /dev/null -s -w "%{http_code}" "$url")
+            if [ "$status" = "200" ]; then
+              echo " $url ($status)"
+            else
+              echo " $url ($status)"
+            fi
+          done
+
+      - name: Summary (ROOCODE)
+        run: |
+          echo "## [torontoevent.net] Backtest & Deploy Complete (ROOCODE)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dashboards (ROOCODE)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Rise of the Claw ROOCODE](https://torontoevent.net/riseoftheclaw-ROOCODE.html)" >> $GITHUB_STEP_SUMMARY
+          echo "- [KIMI Claw Research ROOCODE](https://torontoevent.net/kimi-claw-ROOCODE/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Updates Page ROOCODE](https://torontoevent.net/updates-ROOCODE/)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Data (ROOCODE)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Dashboard JSON](https://torontoevent.net/kimi-claw-ROOCODE/data/dashboard_data.json)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Backtest Summary](https://torontoevent.net/kimi-claw-ROOCODE/data/tier1_summary.json)" >> $GITHUB_STEP_SUMMARY
+

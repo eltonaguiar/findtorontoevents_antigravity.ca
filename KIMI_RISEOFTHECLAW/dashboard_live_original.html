@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alpha ÔÇö Live Trading Dashboard</title>
+    <meta name="description"
+        content="Live paper trading dashboard: 10 strategies ├ù 12 assets. Real market data, real signals, real-time P&L.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a28;
+            --border: #2a2a3a;
+            --text: #e8e8f0;
+            --text2: #8888aa;
+            --green: #00ff88;
+            --green-dim: #00cc6a;
+            --red: #ff4466;
+            --red-dim: #cc3355;
+            --blue: #4488ff;
+            --gold: #ffaa00;
+            --purple: #aa66ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: linear-gradient(rgba(68, 136, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(68, 136, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, rgba(68, 136, 255, 0.1), rgba(170, 102, 255, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--blue), var(--purple));
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .sub {
+            color: var(--text2);
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 12px;
+        }
+
+        .badge-live {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .badge-method {
+            background: rgba(68, 136, 255, 0.15);
+            color: var(--blue);
+            border: 1px solid rgba(68, 136, 255, 0.3);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            background: var(--green);
+            animation: blink 1.5s infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 0.7rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .green {
+            color: var(--green);
+        }
+
+        .red {
+            color: var(--red);
+        }
+
+        .blue {
+            color: var(--blue);
+        }
+
+        .gold {
+            color: var(--gold);
+        }
+
+        .positions {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .position {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .position:hover {
+            border-color: var(--blue);
+        }
+
+        .position.winning {
+            border-left: 3px solid var(--green);
+        }
+
+        .position.losing {
+            border-left: 3px solid var(--red);
+        }
+
+        .position.flat {
+            border-left: 3px solid var(--text2);
+        }
+
+        .pos-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .pos-icon {
+            font-size: 1.5rem;
+        }
+
+        .pos-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .pos-symbol {
+            color: var(--text2);
+            font-size: 0.85rem;
+            margin-left: 8px;
+        }
+
+        .pos-reason {
+            color: var(--text2);
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .pos-strategies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .pos-strat-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(68, 136, 255, 0.1);
+            color: var(--blue);
+            border: 1px solid rgba(68, 136, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pos-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .level {
+            text-align: center;
+        }
+
+        .level .lbl {
+            font-size: 0.65rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .level .val {
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .tp-sl-bar {
+            margin-top: 10px;
+            position: relative;
+            height: 8px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: visible;
+        }
+
+        .tp-sl-bar .marker {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 16px;
+            border-radius: 1px;
+        }
+
+        .tp-sl-bar .marker.entry-m {
+            background: var(--text2);
+        }
+
+        .tp-sl-bar .marker.current-m {
+            background: var(--gold);
+            width: 4px;
+            top: -6px;
+            height: 20px;
+        }
+
+        .pnl-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .pnl-pct {
+            font-size: 1.8rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pnl-dollar {
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pnl-status {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .methodology {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .methodology h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: var(--blue);
+        }
+
+        .strat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .strat-item {
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .strat-item .sn {
+            font-weight: 700;
+            color: var(--green);
+            font-size: 0.75rem;
+        }
+
+        .strat-item .ss {
+            color: var(--text2);
+            font-size: 0.7rem;
+            margin-top: 4px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text2);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        #last-update {
+            color: var(--gold);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar .filter-label {
+            font-size: 0.75rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-right: 4px;
+        }
+
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text2);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--blue);
+            color: var(--text);
+        }
+
+        .filter-btn.active {
+            background: rgba(68, 136, 255, 0.2);
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .filter-btn .filter-count {
+            font-size: 0.65rem;
+            margin-left: 4px;
+            opacity: 0.7;
+        }
+
+        /* Category tags */
+        .cat-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        .cat-crypto {
+            background: rgba(255, 170, 0, 0.15);
+            color: var(--gold);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+        }
+
+        .cat-stock {
+            background: rgba(170, 102, 255, 0.15);
+            color: var(--purple);
+            border: 1px solid rgba(170, 102, 255, 0.3);
+        }
+
+        .market-status {
+            font-size: 0.7rem;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .market-status.live {
+            color: var(--green);
+        }
+
+        .market-status.closed {
+            color: var(--text2);
+        }
+
+        .market-status .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .market-status.live .status-dot {
+            background: var(--green);
+            animation: blink 1.5s infinite;
+        }
+
+        .market-status.closed .status-dot {
+            background: var(--text2);
+        }
+
+        .position.hidden {
+            display: none;
+        }
+
+        @media (max-width:768px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .pos-levels {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .position {
+                grid-template-columns: 1fr;
+            }
+
+            .pnl-cell {
+                align-items: flex-start;
+                margin-top: 8px;
+            }
+
+            .filter-bar {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+        <div class="header">
+            <h1>ANTIGRAVITY ALPHA ENGINE</h1>
+            <div class="sub">10 Strategies ├ù 12 Assets ÔÇö Forward-Looking Signal System</div>
+            <div style="margin-top:12px">
+                <span class="badge badge-live"><span class="live-dot"></span> Auto-Refreshing (30s)</span>
+                <span class="badge badge-method">$0 Data Budget</span>
+            </div>
+            <div id="last-update">Loading live prices...</div>
+        </div>
+        <div class="stats" id="stats-row"></div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+            <span class="filter-label">Filter:</span>
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All <span
+                    class="filter-count">(5)</span></button>
+            <button class="filter-btn" data-filter="crypto" onclick="setFilter('crypto')">­ƒ¬Ö Crypto <span
+                    class="filter-count">(3)</span></button>
+            <button class="filter-btn" data-filter="stock" onclick="setFilter('stock')">­ƒôè Stocks <span
+                    class="filter-count">(2)</span></button>
+            <button class="filter-btn" data-filter="winning" onclick="setFilter('winning')">­ƒƒó Winning</button>
+            <button class="filter-btn" data-filter="losing" onclick="setFilter('losing')">­ƒö┤ Losing</button>
+            <button class="filter-btn" data-filter="live" onclick="setFilter('live')">ÔùÅ Live Only</button>
+        </div>
+
+        <div class="positions" id="positions"></div>
+        <div class="methodology">
+            <h2>­ƒôè Strategy Arsenal ÔÇö 10 Signals Scanned Per Asset</h2>
+            <div class="strat-grid">
+                <div class="strat-item">
+                    <div class="sn">1. RSI(2) Mean Reversion</div>
+                    <div class="ss">Connors & Alvarez ÔÇö 77% WR on SPY</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">2. Fear & Greed Contrarian</div>
+                    <div class="ss">Baker & Wurgler ÔÇö alternative.me</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">3. Funding Rates</div>
+                    <div class="ss">Binance fapi ÔÇö perpetual futures</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">4. BTC Dominance Rotation</div>
+                    <div class="ss">Liu & Tsyvinski ÔÇö relative strength</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">5. MACD Crossover</div>
+                    <div class="ss">Gerald Appel 1979</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">6. Stochastic Oscillator</div>
+                    <div class="ss">George Lane ÔÇö overbought/oversold</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">7. Bollinger Squeeze</div>
+                    <div class="ss">John Bollinger 2001</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">8. Volume Spike</div>
+                    <div class="ss">Wyckoff Method ÔÇö institutional flow</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">9. Golden/Death Cross</div>
+                    <div class="ss">Brock et al. 1992 ÔÇö SMA50/200</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">10. OBV Divergence</div>
+                    <div class="ss">Joe Granville 1963</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Built by <strong>Antigravity</strong> ÔÇö $0 budget, public APIs only</p>
+            <p style="margin-top:6px">
+                <a href="/updates/">ÔåÉ Updates</a> ┬À
+                <a href="/KIMI_RISEOFTHECLAW/METHODOLOGY_AUDIT_TRAIL.md">Audit Trail</a> ┬À
+                <a href="/KIMI_RISEOFTHECLAW/data/paper_portfolio.json">Portfolio JSON</a>
+            </p>
+            <p style="margin-top:8px;font-size:0.7rem;color:#555">Paper trading simulation only. Not financial advice.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Portfolio data ÔÇö entries locked at trade open time
+        const PORTFOLIO = {
+            opened_at: "2026-02-17 21:21:19 EST",
+            starting_capital: 10000,
+            per_trade: 2000,
+            positions: [
+                {
+                    symbol: "AVAX-USD", name: "Avalanche", icon: "­ƒö║", direction: "LONG",
+                    category: "crypto", market: "24/7", exchange: "Binance/DEX",
+                    entry_price: 9.144852638244629, invested: 2000, tp: 10.882375, sl: 7.956022, tp_pct: 19, sl_pct: 13,
+                    reason: "3/3 strategies BULLISH | RSI2=0.0 EXTREME oversold | MACD expanding | Ensemble +1",
+                    strategies: ["RSI2 (70%)", "MACD (50%)", "ENSEMBLE (45%)"],
+                    coingecko_id: "avalanche-2", binance: "AVAXUSDT"
+                },
+                {
+                    symbol: "BTC-USD", name: "Bitcoin", icon: "Ôé┐", direction: "LONG",
+                    category: "crypto", market: "24/7", exchange: "Global",
+                    entry_price: 67273.3515625, invested: 2000, tp: 84091.689453, sl: 58527.815859, tp_pct: 25, sl_pct: 13,
+                    reason: "5/6 strategies BULLISH | RSI2=3.4 | F&G=8 Extreme Fear | MACD expanding | BTC Dom rising",
+                    strategies: ["RSI2 (70%)", "F&G (60%)", "BTC_DOM (50%)", "MACD (50%)", "ENSEMBLE (45%)"],
+                    coingecko_id: "bitcoin", binance: "BTCUSDT"
+                },
+                {
+                    symbol: "TSLA", name: "Tesla", icon: "ÔÜí", direction: "LONG",
+                    category: "stock", market: "NYSE 9:30-4 ET", exchange: "NASDAQ",
+                    entry_price: 410.6300048828125, invested: 2000, tp: 449.639855, sl: 375.726454, tp_pct: 9.5, sl_pct: 8.5,
+                    reason: "4/4 strategies BULLISH (0 sells!) | Ensemble STRONG BUY 75% | RSI2=5.2 | OBV accumulation",
+                    strategies: ["ENSEMBLE (75%)", "RSI2 (60%)", "GOLDEN_CROSS (45%)", "OBV (45%)"],
+                    coingecko_id: null, binance: null
+                },
+                {
+                    symbol: "QQQ", name: "Nasdaq 100", icon: "­ƒôê", direction: "LONG",
+                    category: "stock", market: "NYSE 9:30-4 ET", exchange: "NASDAQ",
+                    entry_price: 601.2999877929688, invested: 2000, tp: 631.364987, sl: 583.260988, tp_pct: 5, sl_pct: 3,
+                    reason: "3/3 strategies BULLISH | Stochastic bullish crossover in oversold | Golden Cross | Ensemble",
+                    strategies: ["STOCHASTIC (70%)", "GOLDEN_CROSS (45%)", "ENSEMBLE (45%)"],
+                    coingecko_id: null, binance: null
+                },
+                {
+                    symbol: "DOGE-USD", name: "Dogecoin", icon: "­ƒÉò", direction: "LONG",
+                    category: "crypto", market: "24/7", exchange: "Binance",
+                    entry_price: 0.100331149995327, invested: 2000, tp: 0.120397, sl: 0.085281, tp_pct: 20, sl_pct: 15,
+                    reason: "2/2 strategies BULLISH | RSI2=0.0 EXTREME oversold | Ensemble MILD_BUY",
+                    strategies: ["RSI2 (70%)", "ENSEMBLE (45%)"],
+                    coingecko_id: "dogecoin", binance: "DOGEUSDT"
+                },
+            ]
+        };
+
+        function fmt(p) {
+            if (p >= 1000) return '$' + p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (p >= 1) return '$' + p.toFixed(2);
+            return '$' + p.toFixed(6);
+        }
+
+        async function fetchLivePrices() {
+            const prices = {};
+            // Crypto via CoinGecko
+            const ids = PORTFOLIO.positions.filter(p => p.coingecko_id).map(p => p.coingecko_id).join(',');
+            try {
+                const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+                const data = await r.json();
+                for (const pos of PORTFOLIO.positions) {
+                    if (pos.coingecko_id && data[pos.coingecko_id]) {
+                        prices[pos.symbol] = data[pos.coingecko_id].usd;
+                    }
+                }
+            } catch (e) {
+                console.warn('CoinGecko failed, trying Binance...', e);
+                // Fallback: Binance
+                for (const pos of PORTFOLIO.positions) {
+                    if (pos.binance) {
+                        try {
+                            const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${pos.binance}`);
+                            const d = await r.json();
+                            prices[pos.symbol] = parseFloat(d.price);
+                        } catch (e2) { }
+                    }
+                }
+            }
+            // Stocks: use entry price if market closed (no free real-time stock API)
+            for (const pos of PORTFOLIO.positions) {
+                if (!prices[pos.symbol]) prices[pos.symbol] = pos.entry_price;
+            }
+            return prices;
+        }
+
+        function render(prices) {
+            let totalPnl = 0, winners = 0, losers = 0;
+            const posData = [];
+
+            for (const pos of PORTFOLIO.positions) {
+                const current = prices[pos.symbol] || pos.entry_price;
+                const pnlPct = (current - pos.entry_price) / pos.entry_price * 100;
+                const pnlDollar = pos.invested * pnlPct / 100;
+                totalPnl += pnlDollar;
+                if (pnlPct > 0) winners++; else if (pnlPct < 0) losers++;
+
+                const tpDist = (pos.tp - current) / current * 100;
+                const slDist = (current - pos.sl) / current * 100;
+                let status = pnlPct > 0.5 ? '­ƒƒó WINNING' : (pnlPct < -0.5 ? '­ƒö┤ BEHIND' : 'ÔÜ¬ IN PLAY');
+                if (current >= pos.tp) status = '­ƒÅå TP HIT!';
+                if (current <= pos.sl) status = '­ƒÆÇ SL HIT';
+
+                posData.push({ ...pos, current, pnlPct, pnlDollar, tpDist, slDist, status });
+            }
+
+            const ret = totalPnl / PORTFOLIO.starting_capital * 100;
+
+            // Stats
+            document.getElementById('stats-row').innerHTML = `
+        <div class="stat-card"><div class="label">Portfolio</div><div class="value blue">$${(10000 + totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div></div>
+        <div class="stat-card"><div class="label">P&L</div><div class="value ${totalPnl >= 0 ? 'green' : 'red'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div></div>
+        <div class="stat-card"><div class="label">Return</div><div class="value ${ret >= 0 ? 'green' : 'red'}">${ret >= 0 ? '+' : ''}${ret.toFixed(3)}%</div></div>
+        <div class="stat-card"><div class="label">Winners</div><div class="value green">${winners}</div></div>
+        <div class="stat-card"><div class="label">Losers</div><div class="value red">${losers}</div></div>
+        <div class="stat-card"><div class="label">Strategies</div><div class="value gold">10</div></div>
+    `;
+
+            // Positions sorted by P&L
+            let html = '';
+            for (const p of posData.sort((a, b) => b.pnlPct - a.pnlPct)) {
+                const cls = p.pnlPct > 0.3 ? 'winning' : (p.pnlPct < -0.3 ? 'losing' : 'flat');
+                const color = p.pnlPct >= 0 ? 'var(--green)' : 'var(--red)';
+                const range = p.tp - p.sl;
+                const curPct = Math.max(0, Math.min(100, (p.current - p.sl) / range * 100));
+                const entPct = (p.entry_price - p.sl) / range * 100;
+                const tags = p.strategies.map(s => `<span class="pos-strat-tag">${s}</span>`).join('');
+
+                const isLive = prices[p.symbol] !== p.entry_price;
+                const catCls = p.category === 'crypto' ? 'cat-crypto' : 'cat-stock';
+                const catLabel = p.category === 'crypto' ? '­ƒ¬Ö CRYPTO' : '­ƒôè STOCK';
+                const marketCls = isLive ? 'live' : 'closed';
+                const marketLabel = isLive ? `ÔùÅ LIVE ${p.market}` : `Ôùï ${p.market}`;
+
+                html += `
+        <div class="position ${cls}" data-category="${p.category}" data-live="${isLive}" data-winning="${p.pnlPct > 0}">
+            <div>
+                <div class="pos-header">
+                    <span class="pos-icon">${p.icon}</span>
+                    <span class="pos-name">${p.name}</span>
+                    <span class="pos-symbol">${p.symbol}</span>
+                    <span class="cat-tag ${catCls}">${catLabel}</span>
+                    <span class="market-status ${marketCls}"><span class="status-dot"></span>${marketLabel}</span>
+                </div>
+                <div class="pos-reason">${p.reason}</div>
+                <div class="pos-strategies">${tags}</div>
+                <div class="pos-levels">
+                    <div class="level"><div class="lbl">Entry</div><div class="val" style="color:var(--text)">${fmt(p.entry_price)}</div></div>
+                    <div class="level"><div class="lbl">Current</div><div class="val" style="color:var(--gold)">${fmt(p.current)}</div></div>
+                    <div class="level"><div class="lbl">Take Profit</div><div class="val green">${fmt(p.tp)} (+${p.tp_pct}%)</div></div>
+                    <div class="level"><div class="lbl">Stop Loss</div><div class="val red">${fmt(p.sl)} (-${p.sl_pct}%)</div></div>
+                </div>
+                <div class="tp-sl-bar">
+                    <div style="position:absolute;left:0;top:0;width:${curPct}%;height:100%;border-radius:4px;background:${p.pnlPct >= 0 ? 'linear-gradient(90deg,var(--surface2),var(--green-dim))' : 'linear-gradient(90deg,var(--red-dim),var(--surface2))'}"></div>
+                    <div class="marker entry-m" style="left:${entPct}%" title="Entry"></div>
+                    <div class="marker current-m" style="left:${curPct}%" title="Current"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.65rem;color:var(--text2)">
+                    <span>SL ${fmt(p.sl)}</span>
+                    <span>TP ${fmt(p.tp)} (${p.tpDist >= 0 ? '+' : ''}${p.tpDist.toFixed(1)}% away)</span>
+                </div>
+            </div>
+            <div class="pnl-cell">
+                <div class="pnl-pct" style="color:${color}">${p.pnlPct >= 0 ? '+' : ''}${p.pnlPct.toFixed(3)}%</div>
+                <div class="pnl-dollar" style="color:${color}">${p.pnlDollar >= 0 ? '+' : ''}$${p.pnlDollar.toFixed(2)}</div>
+                <div class="pnl-status">${p.status}</div>
+            </div>
+        </div>`;
+            }
+            document.getElementById('positions').innerHTML = html;
+            document.getElementById('last-update').textContent = `Last update: ${new Date().toLocaleString()} ÔÇö refreshes every 30s`;
+
+            // Re-apply active filter
+            setFilter(currentFilter, false);
+        }
+
+        // Filter logic
+        let currentFilter = 'all';
+        function setFilter(filter, updateButtons = true) {
+            currentFilter = filter;
+            if (updateButtons) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`.filter-btn[data-filter="${filter}"]`)?.classList.add('active');
+            }
+            document.querySelectorAll('.position').forEach(card => {
+                const cat = card.dataset.category;
+                const isLive = card.dataset.live === 'true';
+                const isWinning = card.dataset.winning === 'true';
+                let show = true;
+                if (filter === 'crypto') show = cat === 'crypto';
+                else if (filter === 'stock') show = cat === 'stock';
+                else if (filter === 'winning') show = isWinning;
+                else if (filter === 'losing') show = !isWinning;
+                else if (filter === 'live') show = isLive;
+                card.classList.toggle('hidden', !show);
+            });
+        }
+
+        // Initial load + auto-refresh
+        async function refresh() {
+            try {
+                const prices = await fetchLivePrices();
+                render(prices);
+            } catch (e) {
+                console.error('Refresh failed:', e);
+                const fallback = {};
+                PORTFOLIO.positions.forEach(p => fallback[p.symbol] = p.entry_price);
+                render(fallback);
+            }
+        }
+
+        refresh();
+        setInterval(refresh, 30000);
+    </script>
+</body>
+
+</html>

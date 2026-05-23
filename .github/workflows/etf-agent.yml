@@ -1,0 +1,176 @@
+name: ETF Agent
+
+on:
+  schedule:
+    # Once daily on weekdays at 14:30 UTC (10:30 ET, 30 min after US market open)
+    # ETF rotation strategies are monthly-rebalance in nature — daily is sufficient
+    - cron: '30 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable verbose debug output'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: etf-agent
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  etf-scan:
+    name: ETF Scanner
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          update-environment: false
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Run ETF scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+          ETF_ELITE_FLOOR: ${{ vars.ETF_ELITE_FLOOR || '45' }}
+        run: |
+          python - <<'EOF'
+          import sys, json, os
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+
+          import pandas as pd
+          import yfinance as yf
+
+          from config import ETF_SYMBOLS
+          from etf_strategies import (
+              etf_dual_momentum, etf_sector_momentum,
+              etf_risk_parity_rotation, etf_trend_following,
+          )
+          from elite_scorer import compute_elite_score
+          _elite_floor = float(os.getenv("ETF_ELITE_FLOOR", "45") or 45)
+
+          # ── fetch data ────────────────────────────────────────────────────
+          # ETF strategies need SPY + TLT for risk-parity rotation
+          extra_syms = ["SPY", "TLT", "QQQ", "^VIX"]
+          print(f"Fetching data for {len(ETF_SYMBOLS)} ETF symbols...")
+          data = {}
+          for sym in list(ETF_SYMBOLS.keys()) + extra_syms:
+              try:
+                  df = yf.Ticker(sym).history(period="2y")  # 2y for dual-momentum 12m lookback
+                  if not df.empty:
+                      data[sym] = df
+              except Exception as e:
+                  print(f"  WARN fetch failed {sym}: {e}")
+          print(f"  Loaded {len(data)} symbols")
+
+          # ── run strategies ────────────────────────────────────────────────
+          picks = []
+          for fn in [
+              etf_dual_momentum, etf_sector_momentum,
+              etf_risk_parity_rotation, etf_trend_following,
+          ]:
+              try:
+                  picks += fn(data)
+              except Exception as e:
+                  print(f"  WARN strategy {fn.__name__} failed: {e}")
+
+          # ── score ─────────────────────────────────────────────────────────
+          for p in picks:
+              p.update(compute_elite_score(p))
+
+          # ── curate (etf floor: 0.50) ─────────────────────────────────────
+          quality = sorted(
+              [p for p in picks if float(p.get("confidence", 0) or 0) >= 0.50
+               and float(p.get("risk_reward", 0) or 0) >= 1.20
+               and float(p.get("elite_score", 0) or 0) >= _elite_floor],
+              key=lambda p: (p.get("elite_score", 0), p.get("confidence", 0)),
+              reverse=True,
+          )
+
+          # Performance note from closed picks: ETFs 41.7% WR (5/12 closed), -11.41% PnL, PF 0.34
+          # Root cause: NO dedicated ETF strategies existed. SPY/QQQ treated as stocks with wrong TP/SL.
+          # Fix: 4 new dedicated ETF strategies with correct ETF-scale TP/SL (5%/3% vs stock 8%/5%)
+          perf_note = (
+              "Live WR: 41.7% (5/12 closed), PF 0.34, -11.41% PnL — "
+              "Root cause: ETF picks used stock TP/SL (8%/5%), way too wide for diversified baskets. "
+              "4 new strategies deployed with correct ETF-scale TP/SL (5%/3%): "
+              "etf_dual_momentum (Antonacci 75%+ WR), etf_sector_momentum (Faber 2007), "
+              "etf_risk_parity_rotation, etf_trend_following"
+          )
+
+          # ── fail-open guard: distinguish data-fetch failure from real-empty market ──
+          _universe = list(ETF_SYMBOLS.keys()) + extra_syms
+          _loaded = len(data)
+          _requested = max(1, len(_universe))
+          _ratio = _loaded / _requested
+          if _ratio < 0.5:
+              _status = "DATA_FAIL"
+          elif len(picks) == 0:
+              _status = "EMPTY"
+          else:
+              _status = "OK"
+
+          out = {
+              "agent": "etf",
+              "timestamp": pd.Timestamp.now().isoformat(),
+              "total_raw": len(picks),
+              "quality": len(quality),
+              "status": _status,
+              "symbols_tracked": len(ETF_SYMBOLS),
+              "strategies_run": 4,
+              "live_performance_note": perf_note,
+              "picks": quality,
+          }
+          Path("non_crypto_agent/data").mkdir(parents=True, exist_ok=True)
+          Path("non_crypto_agent/data/etf_picks.json").write_text(
+              json.dumps(out, indent=2, default=str)
+          )
+          print(f"ETF agent: {len(quality)} quality picks from {len(picks)} raw")
+          for p in quality[:5]:
+              print(f"  {p['symbol']} {p.get('signal_type','?')} conf={p.get('confidence',0):.2f} rr={p.get('risk_reward',0):.2f} strategy={p.get('strategy','?')}")
+
+          print(f"\n=== ETF AGENT SUMMARY ===")
+          print(f"Symbols tracked : {len(ETF_SYMBOLS)}")
+          print(f"Raw picks       : {len(picks)}")
+          print(f"Quality picks   : {len(quality)}")
+          print(f"Performance note: {perf_note}")
+
+          # ── enforce fail-open guard ───────────────────────────────────────
+          if _status == "DATA_FAIL":
+              print(f"::error::DATA FETCH FAILURE — only {_loaded}/{_requested} symbols loaded "
+                    f"(yfinance empty/delisted); refusing to exit green on missing data")
+              sys.exit(1)
+          elif _status == "EMPTY":
+              print(f"::warning::0 raw picks on healthy data ({_loaded}/{_requested} symbols loaded) "
+                    f"— real-empty market, not a data failure")
+          EOF
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add non_crypto_agent/data/etf_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "ETF agent: $(date -u '+%Y-%m-%d %H:%M') UTC scan [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh

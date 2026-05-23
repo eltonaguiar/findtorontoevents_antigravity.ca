@@ -1,0 +1,65 @@
+# .gitleaks.toml — Secret-scan suppression rules for findtorontoevents.ca / audit repo
+# Used by the M-043 Gitleaks job in .github/workflows/secret-scan.yml
+#
+# Philosophy: extend the upstream default ruleset; only add targeted allowlists
+# for patterns that are provably non-secrets in this codebase.
+# Do NOT add broad regex that could mask real credentials.
+
+[extend]
+# Pull in the full gitleaks default ruleset (API keys, tokens, private keys, etc.)
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Global allowlist — patterns / paths that are never real secrets here
+# ---------------------------------------------------------------------------
+[allowlist]
+description = "Repo-wide safe patterns"
+
+# GitHub Actions expression syntax — ${{ secrets.FOO }} is a template placeholder,
+# not an actual secret value committed to the repo.
+regexes = [
+  '''\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}''',
+]
+
+# Paths that should never trigger secret alerts:
+paths = [
+  # Test fixtures contain intentionally fake credentials for unit tests
+  '''tests/fixtures/''',
+  '''tests/data/''',
+  '''paper_trading/tests/fixtures/''',
+  # Example / sample config blocks in documentation
+  '''docs/.*example.*''',
+  '''docs/.*sample.*''',
+  # This config file itself (contains regex patterns that look like secrets)
+  '''.gitleaks.toml''',
+]
+
+# ---------------------------------------------------------------------------
+# Rule: skip known-safe placeholder patterns in trading config files
+# ---------------------------------------------------------------------------
+[[rules]]
+id            = "skip-placeholder-api-keys"
+description   = "Ignore placeholder API key values used in example configs"
+# Matches patterns like: api_key = "YOUR_API_KEY_HERE" or key = "REPLACE_ME"
+regex         = '''(?i)(api[_-]?key|token|secret|password)\s*[=:]\s*["']?(YOUR_[A-Z_]+|REPLACE_?ME|<[A-Z_]+>|PLACEHOLDER|DUMMY|FAKE|EXAMPLE|CHANGEME|xxx+)["']?'''
+tags          = ["allowlist", "placeholder"]
+
+  [rules.allowlist]
+  description = "These are placeholder values, not real secrets"
+  regexes     = [
+    '''(?i)(YOUR_[A-Z_]+|REPLACE_?ME|<[A-Z_]+>|PLACEHOLDER|DUMMY|FAKE|EXAMPLE|CHANGEME|xxx+)''',
+  ]
+
+# ---------------------------------------------------------------------------
+# Rule: skip strategy performance JSON files (contain numeric "scores" not keys)
+# ---------------------------------------------------------------------------
+[[rules]]
+id          = "skip-strategy-scores"
+description = "Strategy JSON files contain numeric score fields that trigger false positives"
+regex       = '''"(score|weight|threshold|factor)"\s*:\s*[\d.]+'''
+path        = '''(dashboard_data|strategy_performance|backtest_results|forward_test).*\.json'''
+tags        = ["allowlist", "numeric-score"]
+
+  [rules.allowlist]
+  description = "Numeric score fields in strategy JSON — not secrets"
+  regexes     = ['''"(score|weight|threshold|factor)"\s*:\s*[\d.]+''']

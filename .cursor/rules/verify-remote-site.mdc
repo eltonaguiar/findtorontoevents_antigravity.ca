@@ -1,0 +1,55 @@
+---
+description: After coding changes that affect the live site, run "Verify remote site" to fully verify findtorontoevents.ca (Playwright + fallback).
+globs: 
+alwaysApply: false
+---
+
+# Verify Remote Site (Cursor action)
+
+When the user asks to **verify remote site**, **test the live site**, or **confirm findtorontoevents.ca works** after coding changes:
+
+## What to run
+
+1. **Primary:** `npm run verify:remote`  
+   - Runs Playwright against **https://findtorontoevents.ca** (or `VERIFY_REMOTE_URL`): homepage 200, events grid visible, **events count > 0**, filter UI, no critical JS errors, chunk returns JS, Quick Nav links.
+2. **If Playwright fails:** The same script automatically runs the **HTTP fallback** (no browser): index 200, chunk 200 + JS, events.json 200 + non-empty events.
+
+## What is verified
+
+- Main page loads (200).
+- Events grid is visible after React loads.
+- **Events found > 0** (event cards or "N EVENTS FOUND" text).
+- Filter/search UI (GLOBAL FEED or search bar) visible.
+- No critical JS errors (SyntaxError, ChunkLoadError, ModSecurity).
+- Main chunk (`a2ac3a6616d60872.js`) returns JavaScript, not HTML or block page.
+- Quick Nav opens and key links (e.g. FavCreators → /fc/#/guest) present.
+
+## Environment
+
+- **VERIFY_REMOTE_URL** / **REMOTE_BASE** — Base URL (default `https://findtorontoevents.ca`). If main site is under findevents, set to `https://findtorontoevents.ca/findevents`. FavCreators is at **/fc/#/guest** (path "favcreators" returns 500 on host; we use /fc/).
+- **VERIFY_REMOTE** — Set to `1` when running only remote tests so the local webServer is not started (the runner sets this).
+- **FTP_SERVER, FTP_USER, FTP_PASS** — Not used by verification; use for deploy scripts. See ftp-credentials rule.
+
+## When local verified passed and ready to deploy: cross-comparison
+
+Run a **cross-comparison** of remote vs local to see if something is missing (e.g. remote has older chunks or different index):
+
+1. **Prerequisite:** Local server running (`python tools/serve_local.py`).
+2. **Run:** `npm run compare:local-vs-remote`
+   - Compares index HTML (chunk script list), main chunk content, events.json count, and &lt;title&gt;.
+   - **FAIL** if remote is missing chunk(s) that local has, or remote chunk is not valid JS.
+   - **WARN** if main chunk differs (remote may be outdated), remote events 0 while local &gt; 0, or index title differs.
+3. If the comparison shows remote behind or missing items, deploy (index.html, chunks, events.json) then re-run verification.
+
+Environment: **LOCAL_BASE** (default `http://localhost:9000`), **REMOTE_BASE** or **VERIFY_REMOTE_URL** (default `https://findtorontoevents.ca`).
+
+## Commands reference
+
+| Command | Purpose |
+|--------|--------|
+| `npm run verify:remote` | Full verification (Playwright then fallback). |
+| `npm run verify:remote:fallback` | HTTP-only checks (no Playwright). |
+| `npm run compare:local-vs-remote` | Cross-compare local vs remote (run when local passed and ready to deploy). |
+| `VERIFY_REMOTE=1 npx playwright test tests/verify_remote_site.spec.ts` | Playwright only (Unix). On Windows use `set VERIFY_REMOTE=1` then run the playwright command, or use `npm run verify:remote`. |
+
+After running, report: **PASS** (all checks) or **FAIL** with the first failing check or error.

@@ -1,0 +1,75 @@
+name: Alpha Engine - Weekly Validation Suite
+
+on:
+  schedule:
+    # Run every Monday at 06:00 UTC (1 AM EST)
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      window_days:
+        description: 'Rolling window size in days'
+        required: false
+        default: '30'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  weekly-validation:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy scikit-learn requests
+
+      - name: Run Risk Metrics (Sortino + Realistic Sharpe + IC)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  GAP 1 & 2: Risk Metrics + IC"
+          echo "============================================"
+          python -m alpha_engine.risk_metrics
+
+      - name: Run Rolling Walk-Forward Validation
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          WINDOW_DAYS="${{ github.event.inputs.window_days || '30' }}"
+          echo "============================================"
+          echo "  GAP 3: Rolling Walk-Forward ($WINDOW_DAYS-day)"
+          echo "============================================"
+          python -m alpha_engine.rolling_walk_forward --window-days "$WINDOW_DAYS"
+
+      - name: Commit updated reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add alpha_engine/data/risk_metrics.json \
+                  alpha_engine/data/precision_recall_report.json \
+                  alpha_engine/data/walk_forward_rolling_report.json \
+                  2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Weekly validation: risk metrics + IC + rolling walk-forward [skip ci]"
+            git pull --rebase origin main
+            bash .github/scripts/safe_push.sh
+          fi
+

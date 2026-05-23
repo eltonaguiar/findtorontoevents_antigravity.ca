@@ -1,0 +1,44 @@
+name: TradingView Strategy Scanner
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Every 4 hours
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Run TradingView Scanner
+        run: |
+          cd incubator/tradingview_scanner
+          python tv_strategy_scanner.py
+
+      - name: Commit scan results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add incubator/tradingview_scanner/data/
+          if git diff --cached --quiet; then
+            echo "No new scripts found"
+          else
+            git commit -m "chore(scanner): TV strategy scan $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

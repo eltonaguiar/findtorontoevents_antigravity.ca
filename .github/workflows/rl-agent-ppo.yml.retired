@@ -1,0 +1,79 @@
+# RETIRED 2026-04-18: dormant since mid-March 2026, no consumer downstream. To revive, rename back to .yml and re-enable schedule.
+name: RL Agent (PPO) Train & Predict
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - train
+          - predict
+          - both
+
+jobs:
+  rl-agent:
+    if: false # DEPRECATED 2026-03-16: rl_agent is stale/abandoned, disabled to stop stale picks
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install numpy requests
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ github.event.inputs.mode }}"
+          elif [ "$(date -u +%H)" = "03" ]; then
+            MODE="both"
+          else
+            # Check if models exist; if not, train first
+            if ls rl_agent/models/*.npz 1>/dev/null 2>&1; then
+              MODE="predict"
+            else
+              echo "No models found training first"
+              MODE="both"
+            fi
+          fi
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "Running in mode: $MODE"
+
+      - name: Run RL Agent PPO
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m rl_agent.train --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Commit and push results
+        run: |
+          git config user.name "Antigravity RL Bot"
+          git config user.email "rl-bot@findtorontoevents.ca"
+          git add -A rl_agent/models/ rl_agent/data/ || true
+
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          MODE="${{ steps.mode.outputs.mode }}"
+
+          git diff --staged --quiet || \
+            git commit -m "RL Agent (PPO) [$MODE]: ${TIMESTAMP} [skip ci]"
+          bash .github/scripts/safe_push.sh
+

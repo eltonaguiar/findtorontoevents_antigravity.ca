@@ -1,0 +1,84 @@
+name: Mercury2 Fast  High Frequency Crypto Scanner
+
+on:
+  # DISABLED 2026-03-12: mercury2_fast is garbage data (+333% synthetic TRXUSDT, -100% losses). Purge approved.
+  # schedule:
+  #   - cron: "0 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Force refresh of all signals'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: mercury2-fast-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Mercury2 Fast Scanner
+        env:
+          FORCE_REFRESH: ${{ github.event.inputs.force_refresh || false }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Mercury2 Fast Crypto Scanner ==="
+          if [ "$FORCE_REFRESH" = "true" ]; then
+            echo " FORCE REFRESH ENABLED  Clearing existing picks"
+            rm -f mercury2/mercury2_fast_picks.json
+          fi
+          cd mercury2 || exit
+          python mercury2_fast.py
+
+      # SKIP: dashboard_payload.json is owned by audit-dashboard.yml (P0 publisher unification 2026-03-26)
+      # - name: Regenerate Dashboard
+      #   run: |
+      #     echo "=== Regenerating Audit Dashboard ==="
+      #     python -m audit_trail.dashboard_generator
+
+      - name: Commit and push changes
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          # Check if there are changes to commit
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            echo "Committing Mercury2 Fast results..."
+            git add mercury2/mercury2_fast_picks.json
+            git add mercury2/data/closed_picks.json 2>/dev/null || true
+            git add ml_battleground/retrain_trigger.json ml_battleground/baseline_metrics.json 2>/dev/null || true
+            # SKIP: dashboard_payload.json and index.html are owned by audit-dashboard.yml
+            # (P0 publisher unification 2026-03-26)
+            # git add audit_trail/data/dashboard_payload.json
+            # git add audit_dashboard/index.html
+            git commit -m " Mercury2 Fast: $(date +'%Y-%m-%d %H:%M') [AUTO] [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

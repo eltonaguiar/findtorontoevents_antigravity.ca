@@ -1,0 +1,140 @@
+---
+description: Ban dummy, sample, and placeholder data — all data must be real or visibly flagged
+alwaysApply: true
+---
+
+# No Placeholder or Dummy Data
+
+**NEVER** use hardcoded sample data, fake arrays, mock objects, or placeholder values in any code that ships to production or feeds into decision-making (picks, analytics, dashboards, APIs).
+
+## The Rule
+
+1. **All data must come from a real source** — an API call, a database query, a file read, user input, or a live computation. If the data source doesn't exist yet, **build the integration first** before writing the consuming code.
+
+2. **If a real source is temporarily unavailable**, the code must:
+   - Show an explicit empty/loading state (e.g. "No data yet", spinner, `--`)
+   - **Never** fall back to invented numbers, fake names, or sample arrays
+
+3. **If you absolutely must leave a temporary stub** (e.g. during mid-implementation before the API is wired up), it must be:
+   - Visually flagged in the UI with a **red background** and 🚨 siren emoji so it is impossible to miss
+   - Marked in code with a `// 🚨 PLACEHOLDER — replace with real data source` comment
+   - Tracked as a TODO so it is not forgotten
+
+## Examples
+
+```javascript
+// ❌ BAD — fake data silently presented as real
+const pickHistory = [
+    { date: '2026-02-11', outcome: 'win', details: 'UAB Blazers ML' },
+    { date: '2026-02-11', outcome: 'loss', details: 'Brooklyn Nets ML' },
+];
+
+// ✅ GOOD — fetch from real source
+const pickHistory = await fetch('/api/picks/history').then(r => r.json());
+
+// ✅ ACCEPTABLE (temporary) — clearly flagged stub
+// 🚨 PLACEHOLDER — replace with real data source
+const pickHistory = []; // empty until API is wired
+if (pickHistory.length === 0) {
+    container.innerHTML = '<div class="placeholder-warning" style="background:red;color:white;padding:8px;">🚨 No real data source connected yet</div>';
+}
+```
+
+```html
+<!-- ❌ BAD — fake metric silently displayed -->
+<p>Win Rate: 72%</p>
+
+<!-- ✅ GOOD — real computation or honest empty state -->
+<p>Win Rate: <span id="win-rate">--</span></p>
+
+<!-- ✅ ACCEPTABLE (temporary) — impossible to miss -->
+<p style="background:red;color:white;">🚨 PLACEHOLDER Win Rate: 72% — NOT REAL DATA</p>
+```
+
+## Mandatory: Replace Fake Data With Real Scrapers + API Failover
+
+If the algorithm attempts to generate or hardcode fake data, **do not accept it**. Instead, immediately implement a **real data pipeline** with redundancy:
+
+### Minimum 4-5 Scrapers (Failover Chain)
+
+Build at least 4-5 scrapers that cascade on failure. If scraper #1 fails or returns empty, fall to #2, then #3, etc. Example for NBA/sports data:
+
+1. **Basketball Reference** (`basketball-reference.com`) — box scores, standings, player stats, historical records
+2. **ESPN** (`espn.com/nba/`) — live scores, schedules, team stats, injury reports
+3. **NBA.com Stats** (`stats.nba.com`) — official advanced stats, shot charts, play-by-play
+4. **CBS Sports** (`cbssports.com/nba/`) — standings, odds movement, matchup data
+5. **Yahoo Sports** (`sports.yahoo.com/nba/`) — scores, player news, fantasy projections
+
+```javascript
+// ✅ GOOD — failover scraper chain
+async function fetchNBAData(gameId) {
+    const scrapers = [
+        () => scrapeBasketballReference(gameId),
+        () => scrapeESPN(gameId),
+        () => scrapeNBAStats(gameId),
+        () => scrapeCBSSports(gameId),
+        () => scrapeYahooSports(gameId),
+    ];
+    for (const scraper of scrapers) {
+        try {
+            const data = await scraper();
+            if (data && data.length > 0) return data;
+        } catch (err) {
+            console.warn(`Scraper failed, trying next: ${err.message}`);
+        }
+    }
+    return null; // all failed — show honest empty state, NOT fake data
+}
+```
+
+### Suggested Free APIs (2-3 Minimum)
+
+In addition to scrapers, integrate **at least 2-3 free APIs** as primary or supplemental sources before resorting to scraping:
+
+1. **[The Odds API](https://the-odds-api.com/)** (free tier: 500 requests/month) — live odds, line movement, bookmaker comparison across NBA, NHL, NFL, MLB. Already used by this project for odds data.
+2. **[balldontlie API](https://www.balldontlie.io/)** (free, no key required) — NBA stats, players, teams, season averages, box scores. Great for historical NBA performance data and team matchup analysis.
+3. **[API-Sports](https://api-sports.io/)** (free tier: 100 requests/day) — covers NBA, NHL, NFL, MLB with live scores, standings, fixtures, odds, and player statistics.
+
+```javascript
+// ✅ GOOD — real API chain with free-tier sources
+async function fetchNBAStats(teamId) {
+    const apis = [
+        () => fetch(`https://www.balldontlie.io/api/v1/teams/${teamId}/stats`).then(r => r.json()),
+        () => fetch(`https://v1.basketball.api-sports.io/teams?id=${teamId}`, {
+            headers: { 'x-apisports-key': process.env.API_SPORTS_KEY }
+        }).then(r => r.json()),
+        () => fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${process.env.ODDS_API_KEY}`).then(r => r.json()),
+    ];
+    for (const apiFn of apis) {
+        try {
+            const data = await apiFn();
+            if (data && !data.error) return data;
+        } catch (err) {
+            console.warn(`API failed, trying next: ${err.message}`);
+        }
+    }
+    // All APIs failed — fall through to scraper chain
+    return await scrapeNBADataFailover(teamId);
+}
+```
+
+### Architecture: APIs First, Scrapers as Fallback
+
+```
+Request → Free API #1 → Free API #2 → Free API #3
+                                            ↓ (all APIs failed)
+          Scraper #1 → Scraper #2 → Scraper #3 → Scraper #4 → Scraper #5
+                                                                    ↓ (all failed)
+                                                        Show empty state (never fake data)
+```
+
+## Checklist Before Committing
+
+- [ ] No hardcoded sample/mock arrays that feed into UI or analytics
+- [ ] Every data display is sourced from a real API, DB, or computation
+- [ ] Any temporary stubs have 🚨 + red styling + code comment
+- [ ] No fake numbers in metric cards, charts, or pick grids
+- [ ] At least 2-3 free APIs integrated as primary data sources
+- [ ] At least 4-5 scrapers implemented as failover behind APIs
+- [ ] Failover chain tested — each source cascades correctly on failure
+- [ ] Empty state shown (not fake data) if the entire chain fails

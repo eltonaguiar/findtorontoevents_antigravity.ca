@@ -1,0 +1,163 @@
+name: Deploy Alpha Engine Dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'alpha_engine/live_dashboard.html'
+      - 'alpha_engine/live_dashboard.html'
+      - '.github/workflows/deploy-alpha-dashboard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Verify required FTP secrets are present
+        id: secret_check
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          missing=""
+          [ -z "$FTP_HOST" ] && missing+="FTP_HOST "
+          [ -z "$FTP_USER" ] && missing+="FTP_USER "
+          [ -z "$FTP_PASS" ] && missing+="FTP_PASS "
+          if [ -n "$missing" ]; then
+            echo " Missing required FTP secrets: $missing"
+            exit 1
+          fi
+          echo " All required FTP secrets present"
+
+      - name: Find dashboard file (case-insensitive)
+        id: findfile
+        run: |
+          DASH=$(find . -iname "live_dashboard.html" | head -1)
+          if [ -z "$DASH" ]; then
+            echo " live_dashboard.html not found in repo"
+            exit 1
+          fi
+          echo "Found: $DASH"
+          cp "$DASH" /tmp/live_dashboard.html
+          echo "size=$(stat -c%s /tmp/live_dashboard.html) bytes"
+
+      - name: Deploy to findtorontoevents.ca (50webs) via FTP
+        continue-on-error: true
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, sys
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("  findtorontoevents.ca FTP credentials not set, skipping")
+              sys.exit(0)
+
+          src = Path("/tmp/live_dashboard.html")
+          SITE_ROOT = "findtorontoevents.ca"
+
+          print(f" Connecting to {host} (findtorontoevents.ca) timeout=30s...")
+          try:
+              ftp = ftplib.FTP(host, timeout=30)
+              ftp.login(user, pwd)
+              print(" Connected")
+
+              try:
+                  ftp.cwd(SITE_ROOT)
+              except Exception as e:
+                  print(f" Could not cd to {SITE_ROOT}: {e}")
+                  sys.exit(1)
+
+              try:
+                  ftp.mkd("alpha")
+                  print("  Created /alpha/ directory")
+              except Exception:
+                  print("  /alpha/ directory already exists")
+
+              ftp.cwd("alpha")
+              with open(src, "rb") as f:
+                  ftp.storbinary("STOR index.html", f)
+              print(f" Uploaded index.html ({src.stat().st_size} bytes)")
+
+              ftp.quit()
+              print(" findtorontoevents.ca/alpha/ deployed")
+          except Exception as e:
+              print(f" findtorontoevents.ca FTP failed: {e}")
+              sys.exit(1)
+          PYEOF
+
+      - name: Deploy to torontoevent.net via FTP
+        continue-on-error: true
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, sys
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("  torontoevent.net FTP credentials not set, skipping")
+              sys.exit(0)
+
+          src = Path("/tmp/live_dashboard.html")
+
+          print(f" Connecting to {host} (torontoevent.net) timeout=30s...")
+          try:
+              ftp = ftplib.FTP(host, timeout=30)
+              ftp.login(user, pwd)
+              print(" Connected")
+
+              try:
+                  ftp.mkd("alpha")
+                  print("  Created /alpha/ directory")
+              except Exception:
+                  print("  /alpha/ directory already exists")
+
+              ftp.cwd("alpha")
+              with open(src, "rb") as f:
+                  ftp.storbinary("STOR index.html", f)
+              print(f" Uploaded index.html ({src.stat().st_size} bytes)")
+
+              ftp.quit()
+              print(" torontoevent.net/alpha/ deployed")
+          except Exception as e:
+              print(f" torontoevent.net FTP failed: {e}")
+              sys.exit(1)
+          PYEOF
+
+      - name: Verify both URLs
+        if: always()
+        run: |
+          sleep 8
+          echo "=== Checking live URLs ==="
+          s1=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://findtorontoevents.ca/alpha/")
+          s2=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://torontoevent.net/alpha/")
+          echo "findtorontoevents.ca/alpha/:  $s1"
+          echo "torontoevent.net/alpha/:      $s2"
+          [ "$s1" = "200" ] && echo " findtorontoevents.ca LIVE" || echo "  findtorontoevents.ca: $s1"
+          [ "$s2" = "200" ] && echo " torontoevent.net LIVE" || echo "  torontoevent.net: $s2"
+          # Fail only if BOTH are dead
+          [ "$s1" = "200" ] || [ "$s2" = "200" ] || { echo " BOTH DEAD"; exit 1; }
+

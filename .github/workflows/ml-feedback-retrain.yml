@@ -1,0 +1,126 @@
+name: ML Feedback Retrain  Learn from Closed Trades
+
+on:
+  schedule:
+    - cron: '23 */12 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ml-feedback-retrain
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: 1
+
+jobs:
+  feedback-retrain:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn joblib
+
+      - name: Check if retraining needed
+        id: check
+        run: |
+          python3 << 'PYEOF'
+          import json, os, glob
+          from datetime import datetime, timedelta, timezone
+
+          # Count total closed picks across all systems
+          total_closed = 0
+          sources = glob.glob("*/data/closed_picks*.json") + \
+                    glob.glob("*/*/data/closed_picks*.json") + \
+                    glob.glob("ml_crypto_predictor/enhanced_models/live_picks/*/closed_picks.json")
+          for path in sources:
+              try:
+                  with open(path) as f:
+                      data = json.load(f)
+                  if isinstance(data, list):
+                      total_closed += len(data)
+              except: pass
+
+          print(f"Total closed trades across all systems: {total_closed}")
+
+          # Check when last retrained
+          report_path = "ml_crypto_predictor/enhanced_models/feedback_data/feedback_training_report.json"
+          last_trained = None
+          last_count = 0
+          if os.path.exists(report_path):
+              with open(report_path) as f:
+                  report = json.load(f)
+              last_trained = report.get("trained_at", "")
+              last_count = report.get("total_trades", 0)
+              print(f"Last trained: {last_trained} with {last_count} trades")
+
+          # Retrain if: 10+ new trades OR never trained OR model file missing
+          new_trades = total_closed - last_count
+          model_exists = os.path.exists("ml_crypto_predictor/enhanced_models/models/outcome_feedback_model.joblib")
+
+          needs_retrain = (
+              new_trades >= 10 or
+              not model_exists or
+              total_closed >= 30 and last_count == 0
+          )
+
+          with open(os.environ.get("GITHUB_OUTPUT", "/dev/null"), "a") as f:
+              f.write(f"needs_retrain={str(needs_retrain).lower()}\n")
+              f.write(f"total_closed={total_closed}\n")
+              f.write(f"new_trades={new_trades}\n")
+
+          print(f"Needs retrain: {needs_retrain} (new_trades={new_trades}, model_exists={model_exists})")
+          PYEOF
+
+      - name: Run feedback trainer
+        if: steps.check.outputs.needs_retrain == 'true'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m ml_crypto_predictor.enhanced_models.feedback_trainer
+
+      - name: Commit feedback model and data
+        if: steps.check.outputs.needs_retrain == 'true'
+        run: |
+          git config user.name "ML Feedback Bot"
+          git config user.email "ml-feedback@findtorontoevents.ca"
+
+          git add ml_crypto_predictor/enhanced_models/models/outcome_feedback_model.joblib \
+                  ml_crypto_predictor/enhanced_models/feedback_data/ \
+                  2>/dev/null || true
+
+          TOTAL="${{ steps.check.outputs.total_closed }}"
+          NEW="${{ steps.check.outputs.new_trades }}"
+
+          git diff --staged --quiet || \
+            git commit -m "ML feedback retrain: ${TOTAL} trades (+${NEW} new) [skip ci]"
+
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            sleep $((i * 5))
+          done
+
+      - name: Skip notification
+        if: steps.check.outputs.needs_retrain != 'true'
+        run: |
+          echo "Feedback retrain not needed."
+          echo "Total closed: ${{ steps.check.outputs.total_closed }}"
+          echo "New trades: ${{ steps.check.outputs.new_trades }}"
+

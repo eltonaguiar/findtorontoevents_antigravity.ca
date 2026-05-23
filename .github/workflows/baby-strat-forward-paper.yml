@@ -1,0 +1,158 @@
+name: Baby Strat Real Forward Monitor
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "baby_strategies/**/*.py"
+      - "paper_trading/strategies/hoffman_winning_strategies.py"
+      - "paper_trading/strategies/championship_strategies_pt.py"
+      - "incubator/agents/**/*.py"
+      - "incubator/backtest_team/**/*.py"
+      - "incubator/validation/**/*.py"
+      - "ml_crypto_predictor/fetch_and_populate_db.py"
+      - "battleground/incubator/**/*.py"
+      - ".github/workflows/baby-strat-forward-paper.yml"
+  schedule:
+    - cron: "15 * * * *"
+  workflow_dispatch:
+    inputs:
+      boost_pool:
+        description: "Seed additional paper strategies + backfill short start window"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: baby-strat-forward-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+jobs:
+  forward-monitor:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install pandas numpy requests "ccxt>=4.3.80,<4.4" chronos-forecasting
+
+      - name: Optional fast-track pool expansion
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.boost_pool }}
+        run: |
+          python incubator/validation/seed_paper_fasttrack.py --count 60
+          python incubator/validation/backfill_paper_window.py --hours 72
+
+      - name: Refresh real market database
+        run: python ml_crypto_predictor/fetch_and_populate_db.py
+
+      - name: Update real forward matches
+        run: python incubator/validation/update_forward_matches.py --bar-step 1 --max-hold-bars 12
+
+      - name: Regenerate baby dashboard
+        run: python incubator/backtest_team/generate_baby_strats_dashboard.py
+
+      - name: Run incubator strategies (Chronos-Bolt, FundingRate, OI-Divergence, SMC-FVG)
+        timeout-minutes: 10
+        continue-on-error: true
+        run: python battleground/incubator/run_incubator_strategies.py
+
+      - name: Rebuild baby bundles with current strategy names
+        run: python battleground/rebuild_bundles.py
+
+      - name: Export qualifying baby picks for FC-PRO
+        run: python battleground/export_top_picks.py || echo "Baby picks export skipped (non-fatal)"
+
+      - name: Build run summary metrics
+        id: metrics
+        run: |
+          python - << 'PYEOF'
+          import json
+          from pathlib import Path
+
+          p = Path("battleground/data/baby_strats_dashboard.json")
+          d = json.loads(p.read_text(encoding="utf-8"))
+          s = d.get("strategies", [])
+
+          fw_trade_strats = sum(1 for x in s if int((x.get("forward_metrics") or {}).get("total_trades") or 0) > 0)
+          fw_trades_total = sum(int((x.get("forward_metrics") or {}).get("total_trades") or 0) for x in s)
+          paper_count = sum(1 for x in s if str(x.get("status", "")).lower() == "paper_trading")
+          graduated_count = sum(1 for x in s if str(x.get("status", "")).lower() in {"graduated", "live"})
+
+          out = Path(".github/workflows/.baby_forward_metrics.env")
+          out.write_text(
+              "\n".join(
+                  [
+                      f"FW_TRADE_STRATS={fw_trade_strats}",
+                      f"FW_TRADES_TOTAL={fw_trades_total}",
+                      f"PAPER_COUNT={paper_count}",
+                      f"GRADUATED_COUNT={graduated_count}",
+                  ]
+              ),
+              encoding="utf-8",
+          )
+          print(out.read_text(encoding="utf-8"))
+          PYEOF
+
+      - name: Load metrics env
+        run: cat .github/workflows/.baby_forward_metrics.env >> $GITHUB_ENV
+
+      - name: Auto-commit changed forward artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            battleground/data/baby_strats_dashboard.json \
+            battleground/data/active_picks.json \
+            battleground/data/closed_picks.json \
+            battleground/data/incubator_signals.json \
+            battleground/data/incubator_ledger.json \
+            incubator/config/baby_strats_dashboard.json \
+            incubator/agents/**/*.py.meta.json \
+            incubator/backtest_results/forward_matches_*.json || true
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          # issue #141: block conflict-marker commits
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "chore: refresh real forward baby picks [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked 2>/dev/null || true
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying in ${i}0s..."
+            git rebase --abort 2>/dev/null || true
+            git stash pop 2>/dev/null || true
+            sleep ${i}0
+          done
+
+      - name: Workflow summary
+        run: |
+          echo "## Baby Strat Real Forward Monitor" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Paper strategies: **${PAPER_COUNT}**" >> $GITHUB_STEP_SUMMARY
+          echo "- Strategies with FW trades: **${FW_TRADE_STRATS}**" >> $GITHUB_STEP_SUMMARY
+          echo "- Total FW trades: **${FW_TRADES_TOTAL}**" >> $GITHUB_STEP_SUMMARY
+          echo "- Graduated/live: **${GRADUATED_COUNT}**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Dashboard: https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Baby Strat Real Forward Monitor" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Testing Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .experiment-card { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .status-running { background-color: #e8f5e8; border-color: #4caf50; }
+        .status-completed { background-color: #e3f2fd; border-color: #2196f3; }
+        .status-draft { background-color: #fff3e0; border-color: #ff9800; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background-color: #2196f3; color: white; }
+        .btn-success { background-color: #4caf50; color: white; }
+        .btn-danger { background-color: #f44336; color: white; }
+        .btn:hover { opacity: 0.8; }
+        .metrics { display: flex; justify-content: space-around; margin: 20px 0; }
+        .metric { text-align: center; }
+        .metric-value { font-size: 2em; font-weight: bold; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>A/B Testing Dashboard</h1>
+            <button class="btn btn-primary" onclick="showCreateExperimentModal()">Create New Experiment</button>
+        </div>
+
+        <div id="experiments-list">
+            <!-- Experiments will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Create Experiment Modal -->
+    <div id="create-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; width: 500px;">
+            <h3>Create New Experiment</h3>
+            <form id="create-experiment-form">
+                <div style="margin-bottom: 15px;">
+                    <label>Name:</label><br>
+                    <input type="text" id="exp-name" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Description:</label><br>
+                    <textarea id="exp-description" style="width: 100%; padding: 8px; height: 60px;"></textarea>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Variants (JSON format):</label><br>
+                    <textarea id="exp-variants" placeholder='[{"name": "A", "traffic_percentage": 50}, {"name": "B", "traffic_percentage": 50}]' required style="width: 100%; padding: 8px; height: 60px;"></textarea>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Metrics (comma-separated):</label><br>
+                    <input type="text" id="exp-metrics" placeholder="conversion_rate,revenue,engagement" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Target Metric:</label><br>
+                    <input type="text" id="exp-target-metric" placeholder="conversion_rate" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="text-align: right;">
+                    <button type="button" class="btn" onclick="hideCreateExperimentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let experiments = [];
+
+        async function loadExperiments() {
+            try {
+                const response = await fetch('/api/experiments');
+                const data = await response.json();
+                experiments = data.experiments;
+                renderExperiments();
+            } catch (error) {
+                console.error('Error loading experiments:', error);
+            }
+        }
+
+        function renderExperiments() {
+            const container = document.getElementById('experiments-list');
+            container.innerHTML = '';
+
+            experiments.forEach(exp => {
+                const card = document.createElement('div');
+                card.className = `experiment-card status-${exp.status}`;
+                card.innerHTML = `
+                    <h3>${exp.name}</h3>
+                    <p><strong>Status:</strong> ${exp.status}</p>
+                    <p><strong>Started:</strong> ${exp.start_date || 'Not started'}</p>
+                    <p><strong>Winner:</strong> ${exp.winner || 'Not determined'}</p>
+                    <div>
+                        ${getActionButtons(exp)}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getActionButtons(exp) {
+            let buttons = '';
+
+            if (exp.status === 'draft') {
+                buttons += `<button class="btn btn-success" onclick="startExperiment(${exp.id})">Start</button>`;
+            } else if (exp.status === 'running') {
+                buttons += `<button class="btn btn-danger" onclick="stopExperiment(${exp.id})">Stop</button>`;
+                buttons += `<button class="btn btn-primary" onclick="viewExperiment(${exp.id})">View Details</button>`;
+            } else if (exp.status === 'completed') {
+                buttons += `<button class="btn btn-primary" onclick="deployExperiment(${exp.id})">Deploy Winner</button>`;
+                buttons += `<button class="btn btn-primary" onclick="viewExperiment(${exp.id})">View Results</button>`;
+            }
+
+            return buttons;
+        }
+
+        async function startExperiment(id) {
+            try {
+                const response = await fetch(`/api/experiments/${id}/start`, { method: 'POST' });
+                if (response.ok) {
+                    loadExperiments();
+                } else {
+                    alert('Failed to start experiment');
+                }
+            } catch (error) {
+                console.error('Error starting experiment:', error);
+            }
+        }
+
+        async function stopExperiment(id) {
+            try {
+                const response = await fetch(`/api/experiments/${id}/stop`, { method: 'POST' });
+                if (response.ok) {
+                    loadExperiments();
+                } else {
+                    alert('Failed to stop experiment');
+                }
+            } catch (error) {
+                console.error('Error stopping experiment:', error);
+            }
+        }
+
+        function viewExperiment(id) {
+            window.location.href = `/experiment/${id}`;
+        }
+
+        function deployExperiment(id) {
+            const winner = prompt('Enter winner variant name:');
+            if (winner) {
+                fetch(`/api/experiments/${id}/deploy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ winner_variant: winner })
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Deployment started');
+                    } else {
+                        alert('Deployment failed');
+                    }
+                });
+            }
+        }
+
+        function showCreateExperimentModal() {
+            document.getElementById('create-modal').style.display = 'block';
+        }
+
+        function hideCreateExperimentModal() {
+            document.getElementById('create-modal').style.display = 'none';
+        }
+
+        document.getElementById('create-experiment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('exp-name').value,
+                description: document.getElementById('exp-description').value,
+                variants: JSON.parse(document.getElementById('exp-variants').value),
+                metrics: document.getElementById('exp-metrics').value.split(',').map(m => m.trim()),
+                target_metric: document.getElementById('exp-target-metric').value
+            };
+
+            try {
+                const response = await fetch('/api/experiments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    hideCreateExperimentModal();
+                    loadExperiments();
+                } else {
+                    alert('Failed to create experiment');
+                }
+            } catch (error) {
+                console.error('Error creating experiment:', error);
+            }
+        });
+
+        // Load experiments on page load
+        loadExperiments();
+    </script>
+</body>
+</html>

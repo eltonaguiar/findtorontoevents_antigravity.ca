@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Ollama Run Audit - Elton's Laptop</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --ink: #102030;
+      --muted: #4f6375;
+      --line: #d7e0ea;
+      --ok: #18794e;
+      --warn: #9a6700;
+      --bad: #b42318;
+      --accent: #005cc5;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(140deg, #f6f8fb, #ecf3ff 55%, #edf8f3);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.9rem;
+      line-height: 1.2;
+    }
+    .sub {
+      color: var(--muted);
+      margin: 0 0 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .kpi .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
+    .kpi .value {
+      font-size: 1.2rem;
+      font-weight: 650;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.93rem;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      padding: 8px 6px;
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: #f9fbff;
+    }
+    .ok { color: var(--ok); font-weight: 600; }
+    .warn { color: var(--warn); font-weight: 600; }
+    .bad { color: var(--bad); font-weight: 600; }
+    ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    li { margin: 4px 0; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+    .footer {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Local Ollama Run Audit: Elton's Laptop</h1>
+    <p class="sub">Consolidated from local benchmark rounds on 2026-05-19. Focus: pull reliability, GPU vs CPU throughput, and execution stability for the quant deep-dive prompt workflow.</p>
+
+    <div class="grid">
+      <div class="kpi"><div class="label">Rounds Consolidated</div><div class="value">Round 1 to Round 6</div></div>
+      <div class="kpi"><div class="label">Large-Model Pulls</div><div class="value">qwen2.5:32b, qwen2.5-coder:32b, mixtral:8x7b, qwen3.5:27b</div></div>
+      <div class="kpi"><div class="label">Stability Highlight</div><div class="value">Round 3 GPU 500 on qwen2.5-coder:32b recovered in Round 4</div></div>
+      <div class="kpi"><div class="label">Storage Path at End</div><div class="value mono">E:\ollama\models</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Baseline Small/Medium Results (Round 1)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>GPU Tok/s</th>
+            <th>CPU Tok/s</th>
+            <th>GPU WallSec</th>
+            <th>CPU WallSec</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>qwen2.5-coder:14b</td><td>25.43</td><td>5.29</td><td>11.987</td><td>48.428</td><td class="ok">ok</td></tr>
+          <tr><td>llama3.1:8b</td><td>57.32</td><td>5.36</td><td>8.203</td><td>29.815</td><td class="ok">ok</td></tr>
+          <tr><td>gemma:latest</td><td>68.19</td><td>3.24</td><td>15.402</td><td>52.200</td><td class="ok">ok</td></tr>
+          <tr><td>mistral:7b</td><td>73.18</td><td>3.81</td><td>16.645</td><td>49.369</td><td class="ok">ok</td></tr>
+          <tr><td>qwen2.5:7b</td><td>57.35</td><td>3.61</td><td>21.884</td><td>50.674</td><td class="ok">ok</td></tr>
+          <tr><td>deepseek-r1:8b</td><td>56.86</td><td>2.63</td><td>45.470</td><td>55.973</td><td class="ok">ok</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Large-Model Reliability (Rounds 3 and 4)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Round 3 GPU</th>
+            <th>Round 4 GPU</th>
+            <th>Round 4 CPU</th>
+            <th>Round 4 GPU Tok/s</th>
+            <th>Round 4 CPU Tok/s</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>qwen2.5:32b</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td>4.79 to 5.11</td>
+            <td>2.97 to 3.07</td>
+            <td>Stable across both rounds.</td>
+          </tr>
+          <tr>
+            <td>qwen2.5-coder:32b</td>
+            <td class="bad">failed (500)</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td>5.21 to 5.23</td>
+            <td>3.00 to 3.13</td>
+            <td>Recovered by Round 4 after two Round 3 GPU failures.</td>
+          </tr>
+          <tr>
+            <td>mixtral:8x7b</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td>9.62 to 9.66</td>
+            <td>0.51 to 0.66</td>
+            <td>Large GPU/CPU throughput gap remains significant.</td>
+          </tr>
+          <tr>
+            <td>gemma3:12b</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td>36.66 to 39.26</td>
+            <td>7.09 to 7.68</td>
+            <td>Fast and stable warm runs.</td>
+          </tr>
+          <tr>
+            <td>qwen3.5:27b</td>
+            <td class="warn">not in Round 3</td>
+            <td class="ok">ok</td>
+            <td class="ok">ok</td>
+            <td>4.79 to 4.95</td>
+            <td>2.55 to 2.56</td>
+            <td>Pulled and validated in Round 4.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Round 5: Grok Small/Fast Round (Completed)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>GPU Tok/s (warm)</th>
+            <th>CPU Tok/s</th>
+            <th>GPU WallSec</th>
+            <th>CPU WallSec</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>qwen3:4b</td><td>75.82 to 93.48</td><td>20.05</td><td>3.576 to 4.153</td><td>22.392</td><td class="ok">ok</td></tr>
+          <tr><td>qwen3.5:9b</td><td>45.39 to 50.01</td><td>7.42</td><td>6.769 to 10.684</td><td>59.352</td><td class="ok">ok</td></tr>
+          <tr><td>phi4-mini:latest</td><td>79.28 to 108.75</td><td>20.00</td><td>3.193 to 7.236</td><td>23.765</td><td class="ok">ok</td></tr>
+          <tr><td>gemma3:4b</td><td>79.06 to 95.76</td><td>19.43</td><td>3.515 to 6.696</td><td>25.187</td><td class="ok">ok</td></tr>
+          <tr><td>deepseek-r1:8b</td><td>56.28 to 56.37</td><td>10.41</td><td>5.688 to 14.250</td><td>46.173</td><td class="ok">ok</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Round 6: Grok High-Ceiling Sanity Round</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>GPU Tok/s</th>
+            <th>CPU Tok/s</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>qwen3:14b</td><td>0</td><td>0</td><td class="bad">failed</td><td>404 not found tag in local/runtime route.</td></tr>
+          <tr><td>phi4:14b</td><td>30.18</td><td>6.36</td><td class="ok">ok</td><td>Strong quality-speed balance at 14b size.</td></tr>
+          <tr><td>mistral-nemo:12b</td><td>47.61</td><td>6.81</td><td class="ok">ok</td><td>Fastest successful high-ceiling model in this round.</td></tr>
+          <tr><td>gpt-oss:120b-cloud</td><td>0</td><td>0</td><td class="bad">failed</td><td>Cloud payload shape lacks eval_duration fields expected by local benchmark schema.</td></tr>
+          <tr><td>qwen2.5:32b</td><td>4.75</td><td>2.57</td><td class="ok">ok</td><td>Stable heavyweight baseline for deeper reasoning runs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Re-Evaluation Exercise (14-day Bounce-Back)</h2>
+      <ul>
+        <li>Focus on EQUITY-only validation lane first; avoid mixed asset noise until confidence monotonicity is fixed.</li>
+        <li>Add strict gates to CI: CPCV, DSR, PBO, MinTRL, and WFE thresholds before promotion.</li>
+        <li>Rebuild confidence scoring as monotonic hybrid and validate against forward WR slices.</li>
+        <li>Run 4-week paper pilot on top 3 equity strategies, then tiny live sizing only after gate pass.</li>
+        <li>Use frontier model second-opinion audits (Claude Opus / GLM) on failing strategy cohorts.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Notable Pull/Infra Events</h2>
+      <ul>
+        <li>Round 3 shows a failed pull for deepseek-r1:14b due to host resolution/network failure during blob download.</li>
+        <li>Round 4 pull times near 1 second for some 32b/8x7b models indicate cached local artifacts, not full cold-download timings.</li>
+        <li>Storage migration onto E drive was retained for the run window and did not block local benchmark execution.</li>
+        <li>Round 5 confirmed very strong small-model throughput on this hardware (up to 108.75 tok/s).</li>
+        <li>Ring-1T / Ring-2.6-1T class models remain cloud-first for this laptop; local inference is not practical without aggressive quantization and specialized runtimes.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>MTP Support Check</h2>
+      <p>Multi-Token Prediction support was investigated during session workflow but remains inconclusive in this benchmark artifact set. This page records only measured pull/run behavior and observed runtime failures/recoveries.</p>
+    </div>
+
+    <div class="card">
+      <h2>Source Artifacts Used</h2>
+      <ul class="mono">
+        <li>swarm_runs/_outputs/hf_sim_2026-05-19/model_mode_benchmark_e_drive_2026-05-19.csv</li>
+        <li>swarm_runs/_outputs/hf_sim_2026-05-19/model_mode_benchmark_e_drive_round3_2026-05-19.csv</li>
+        <li>swarm_runs/_outputs/hf_sim_2026-05-19/model_mode_benchmark_e_drive_round4_2026-05-19.csv</li>
+        <li>swarm_runs/_outputs/hf_sim_2026-05-19/round5_grok_small_fast/round5_benchmark.csv</li>
+        <li>swarm_runs/_outputs/hf_sim_2026-05-19/round6_grok_high_ceiling/round5_benchmark.csv</li>
+        <li>reports/QUANT_RESCUE_HF_OLLAMA_SIM_2026-05-19.md</li>
+        <li>updates/2026-05-19-ollama-storage-migration-and-hf-sim-summary.md</li>
+      </ul>
+    </div>
+
+    <p class="footer">Generated locally on 2026-05-19 for publication at /audit/localrun_eltonslaptop.html.</p>
+  </div>
+</body>
+</html>

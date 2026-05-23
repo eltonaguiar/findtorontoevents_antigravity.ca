@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resources by Demographics - Mental Health Resources</title>
+  <style>
+    :root {
+      --pk-500: #ec4899;
+      --pk-700: #be185d;
+      --pk-900: #500724;
+      --surface-0: #0f0f0f;
+      --surface-1: #1a1a1a;
+      --surface-2: #262626;
+      --surface-3: #3a3a3a;
+      --text-1: #ffffff;
+      --text-2: #a3a3a3;
+      --text-3: #737373;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--surface-0) 0%, #1a1a0f 100%);
+      color: var(--text-1);
+      min-height: 100vh;
+    }
+    .crisis-banner {
+      background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 4px solid #7f1d1d;
+    }
+    .crisis-banner h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .crisis-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+    .crisis-links a {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 0.5rem;
+      color: white;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .crisis-links a:hover { background: rgba(255,255,255,0.3); }
+    header {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, var(--pk-900) 0%, transparent 100%);
+    }
+    header h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    header p { color: var(--text-2); max-width: 600px; margin: 0 auto; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+    .quick-nav {
+      background: var(--surface-1);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .quick-nav a {
+      padding: 0.5rem 1rem;
+      background: var(--surface-2);
+      border-radius: 0.5rem;
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: all 0.3s;
+    }
+    .quick-nav a:hover {
+      background: var(--pk-500);
+      color: white;
+    }
+    .content {
+      background: var(--surface-1);
+      border-radius: 1rem;
+      padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .demographic-section {
+      margin-bottom: 3rem;
+      padding-top: 1rem;
+    }
+    .demographic-section h2 {
+      color: var(--pk-500);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--pk-500);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .demographic-section p {
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .resource-card {
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+    .resource-card:hover {
+      border-color: var(--pk-500);
+    }
+    .resource-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .resource-card p {
+      font-size: 0.875rem;
+      color: var(--text-3);
+      margin-bottom: 0.75rem;
+    }
+    .resource-link {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--pk-500);
+      color: white;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .resource-link:hover { background: var(--pk-700); }
+    .hotline-card {
+      background: rgba(236, 72, 153, 0.1);
+      border: 1px solid var(--pk-500);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .hotline-icon { font-size: 2rem; }
+    .hotline-info h4 { margin-bottom: 0.25rem; }
+    .hotline-info p { color: var(--text-2); font-size: 0.875rem; margin: 0; }
+    .hotline-number {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--pk-500);
+      margin-left: auto;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      color: var(--text-2);
+      text-decoration: none;
+      margin-top: 2rem;
+      transition: all 0.3s;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.1); color: white; }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-3);
+      font-size: 0.75rem;
+    }
+  
+    .info-banner {
+      background: linear-gradient(90deg, #1e40af 0%, #3730a3 100%);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #1e3a8a;
+    }
+    .info-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .info-icon { font-size: 1.25rem; }
+    .info-text { font-size: 0.875rem; line-height: 1.4; }
+    .info-text strong { color: #fbbf24; }
+
+    .recommended-resources {
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .recommended-resources h3 {
+      color: var(--pk-500);
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .resource-category h4 {
+      color: var(--text-1);
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    .resource-category ul {
+      list-style: none;
+      padding: 0;
+    }
+    .resource-category li {
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .resource-category a {
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .resource-category a:hover {
+      color: var(--pk-500);
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+  <section class="crisis-banner">
+    <h2>🚨 In Crisis? Get Help Now</h2>
+    <div class="crisis-links">
+      <a href="tel:18334564566">☎️ Call 1-833-456-4566</a>
+      <a href="sms:741741&body=HOME">💬 Text HOME to 741741</a>
+      <a href="tel:911">🆘 Emergency: 911</a>
+    </div>
+  </section>
+
+  <section class="info-banner">
+    <div class="info-content">
+      <span class="info-icon">ℹ️</span>
+      <div class="info-text">
+        <strong>Note:</strong> Save features use your browser's local storage and are for personal reflection only. 
+        Data is stored on your device and not on our servers. These tools are designed for self-reflection and are not a substitute for professional help.
+      </div>
+    </div>
+  </section>
+
+
+  <header>
+    <h1>👥 Resources by Demographics</h1>
+    <p>Find specialized mental health support tailored to your specific needs and identity.</p>
+  </header>
+
+  <div class="container">
+    <nav class="quick-nav">
+      <a href="#lgbtq">🏳️‍🌈 LGBTQ+</a>
+      <a href="#youth">👦 Youth & Teens</a>
+      <a href="#seniors">👴 Seniors</a>
+      <a href="#veterans">🎖️ Veterans</a>
+      <a href="#indigenous">🪶 Indigenous</a>
+      <a href="#bipoc">✊ BIPOC</a>
+    </nav>
+
+    <div class="content">
+      <!-- LGBTQ+ Section -->
+      <section class="demographic-section" id="lgbtq">
+        <h2>🏳️‍🌈 LGBTQ+ Resources</h2>
+        <p>Specialized support for lesbian, gay, bisexual, transgender, queer, and other LGBTQ+ individuals.</p>
+        
+        <div class="hotline-card">
+          <span class="hotline-icon">☎️</span>
+          <div class="hotline-info">
+            <h4>Trans Lifeline</h4>
+            <p>Support for transgender individuals by transgender individuals</p>
+          </div>
+          <a href="tel:18775658860" class="hotline-number">1-877-565-8860</a>
+        </div>
+        
+        <div class="hotline-card">
+          <span class="hotline-icon">💬</span>
+          <div class="hotline-info">
+            <h4>Trevor Project</h4>
+            <p>Crisis intervention for LGBTQ+ youth</p>
+          </div>
+          <a href="tel:18664887386" class="hotline-number">1-866-488-7386</a>
+        </div>
+        
+        <div class="resource-grid">
+          <div class="resource-card">
+            <h3>The Trevor Project</h3>
+            <p>Leading suicide prevention organization for LGBTQ+ youth.</p>
+            <a href="https://www.thetrevorproject.org" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>PFLAG Canada</h3>
+            <p>Support for parents, families, and friends of LGBTQ+ people.</p>
+            <a href="https://pflagcanada.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Egale Canada</h3>
+            <p>LGBTQ+ human rights organization providing resources and support.</p>
+            <a href="https://egale.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Youth Section -->
+      <section class="demographic-section" id="youth">
+        <h2>👦 Youth & Teens</h2>
+        <p>Mental health resources specifically designed for young people and teenagers.</p>
+        
+        <div class="hotline-card">
+          <span class="hotline-icon">📞</span>
+          <div class="hotline-info">
+            <h4>Kids Help Phone</h4>
+            <p>24/7 support for youth in Canada</p>
+          </div>
+          <a href="tel:18006686868" class="hotline-number">1-800-668-6868</a>
+        </div>
+        
+        <div class="resource-grid">
+          <div class="resource-card">
+            <h3>Kids Help Phone</h3>
+            <p>Professional counseling, information, and referrals for young people.</p>
+            <a href="https://kidshelpphone.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Jack.org</h3>
+            <p>Youth-led mental health organization training young leaders.</p>
+            <a href="https://jack.org" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Foundry BC</h3>
+            <p>Health and wellness resources for ages 12-24 in British Columbia.</p>
+            <a href="https://foundrybc.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Mind Your Mind</h3>
+            <p>Interactive tools and resources for youth mental wellness.</p>
+            <a href="https://mindyourmind.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seniors Section -->
+      <section class="demographic-section" id="seniors">
+        <h2>👴 Seniors</h2>
+        <p>Mental health support tailored for older adults and seniors.</p>
+        
+        <div class="resource-grid">
+          <div class="resource-card">
+            <h3>Canadian Coalition for Seniors' Mental Health</h3>
+            <p>Resources and guidelines for senior mental health care.</p>
+            <a href="https://ccsmh.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Senior's Mental Health</h3>
+            <p>CAMH resources for older adults' mental health.</p>
+            <a href="https://www.camh.ca/en/health-info/mental-health-and-covid-19/information-for-older-adults" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Seniors First BC</h3>
+            <p>Helpline and support services for older adults.</p>
+            <a href="https://seniorsfirstbc.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Veterans Section -->
+      <section class="demographic-section" id="veterans">
+        <h2>🎖️ Veterans</h2>
+        <p>Specialized mental health resources for military veterans and their families.</p>
+        
+        <div class="hotline-card">
+          <span class="hotline-icon">🎖️</span>
+          <div class="hotline-info">
+            <h4>Veterans Affairs Canada Crisis Line</h4>
+            <p>24/7 support for Canadian veterans</p>
+          </div>
+          <a href="tel:18004564566" class="hotline-number">1-800-456-4566</a>
+        </div>
+        
+        <div class="resource-grid">
+          <div class="resource-card">
+            <h3>Veterans Affairs Canada</h3>
+            <p>Mental health services and support for veterans.</p>
+            <a href="https://www.veterans.gc.ca/eng/health-support/mental-health-and-wellness" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Operational Stress Injury Social Support (OSISS)</h3>
+            <p>Peer support for veterans dealing with operational stress injuries.</p>
+            <a href="https://www.veterans.gc.ca/eng/resources/osiss" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Wounded Warriors Canada</h3>
+            <p>Mental health programs for veterans, first responders, and families.</p>
+            <a href="https://woundedwarriors.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Indigenous Section -->
+      <section class="demographic-section" id="indigenous">
+        <h2>🪶 Indigenous Communities</h2>
+        <p>Culturally appropriate mental health resources for Indigenous peoples.</p>
+        
+        <div class="hotline-card">
+          <span class="hotline-icon">🌿</span>
+          <div class="hotline-info">
+            <h4>Hope for Wellness</h4>
+            <p>24/7 counseling for Indigenous peoples in English, French, Cree, Ojibway, and Inuktitut</p>
+          </div>
+          <a href="tel:18552423310" class="hotline-number">1-855-242-3310</a>
+        </div>
+        
+        <div class="resource-grid">
+          <div class="resource-card">
+            <h3>Hope for Wellness Helpline</h3>
+            <p>Immediate mental health counseling and crisis intervention.</p>
+            <a href="https://www.hopeforwellness.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Thunderbird Partnership Foundation</h3>
+            <p>Indigenous wellness and healing approaches.</p>
+            <a href="https://thunderbirdpf.org" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>First Nations Health Authority (BC)</h3>
+            <p>Health programs and services for First Nations in BC.</p>
+            <a href="https://www.fnha.ca/what-we-do/mental-wellness-and-substance-use" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Inuit Tapiriit Kanatami</h3>
+            <p>Mental wellness resources for Inuit communities.</p>
+            <a href="https://www.itk.ca/national-inuit-suicide-prevention-strategy/" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- BIPOC Section -->
+      <section class="demographic-section" id="bipoc">
+        <h2>✊ BIPOC Communities</h2>
+        <p>Mental health resources for Black, Indigenous, and People of Color.</p>
+        
+        <div class="resource-grid">
+          <div class="resource-card">
+            <h3>Black Youth Helpline</h3>
+            <p>Support for Black youth and families in Canada.</p>
+            <a href="https://blackyouth.ca" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Therapy for Black Girls</h3>
+            <p>Directory of Black therapists and mental health professionals.</p>
+            <a href="https://therapyforblackgirls.com" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>BIPOC Mental Health</h3>
+            <p>Resources and support for BIPOC mental wellness.</p>
+            <a href="https://www.mhanational.org/bipoc-mental-health" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+          <div class="resource-card">
+            <h3>Inclusive Therapists</h3>
+            <p>Directory of therapists committed to anti-oppressive care.</p>
+            <a href="https://www.inclusivetherapists.com" target="_blank" rel="noopener noreferrer" class="resource-link">Visit →</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    
+    <div class="recommended-resources">
+      <h3>📚 Recommended Resources</h3>
+      <div class="resources-grid">
+        <div class="resource-category">
+          <h4>📖 Books</h4>
+          <ul>
+            <li><a href="https://www.amazon.com/Feeling-Good-New-Mood-Therapy/dp/0380810336" target="_blank" rel="noopener noreferrer">"Feeling Good" by David D. Burns</a> - CBT classic</li>
+            <li><a href="https://www.amazon.com/Body-Keeps-Score-Healing-Trauma/dp/0143127748" target="_blank" rel="noopener noreferrer">"The Body Keeps the Score" by Bessel van der Kolk</a> - Trauma & healing</li>
+            <li><a href="https://www.amazon.com/Atomic-Habits-Proven-Build-Break/dp/0735211299" target="_blank" rel="noopener noreferrer">"Atomic Habits" by James Clear</a> - Building better habits</li>
+            <li><a href="https://www.amazon.com/Mans-Search-Meaning-Viktor-Frankl/dp/0807014273" target="_blank" rel="noopener noreferrer">"Man's Search for Meaning" by Viktor Frankl</a> - Finding purpose</li>
+          </ul>
+        </div>
+        <div class="resource-category">
+          <h4>🎬 Videos & Channels</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/@hubaboratoryermanlab" target="_blank" rel="noopener noreferrer">Huberman Lab</a> - Neuroscience-based mental health</li>
+            <li><a href="https://www.youtube.com/@HealthyGamerGG" target="_blank" rel="noopener noreferrer">HealthyGamer GG</a> - Mental health for modern life</li>
+            <li><a href="https://www.youtube.com/@TherapyinaNutshell" target="_blank" rel="noopener noreferrer">Therapy in a Nutshell</a> - CBT & DBT techniques</li>
+            <li><a href="https://www.ted.com/topics/mental+health" target="_blank" rel="noopener noreferrer">TED Talks: Mental Health</a> - Expert insights</li>
+          </ul>
+        </div>
+        <div class="resource-category">
+          <h4>🎧 Apps & Podcasts</h4>
+          <ul>
+            <li><a href="https://www.headspace.com" target="_blank" rel="noopener noreferrer">Headspace</a> - Guided meditation</li>
+            <li><a href="https://www.calm.com" target="_blank" rel="noopener noreferrer">Calm</a> - Sleep & relaxation</li>
+            <li><a href="https://www.wysa.io" target="_blank" rel="noopener noreferrer">Wysa</a> - AI mental health companion</li>
+            <li><a href="https://podcasts.apple.com/us/podcast/the-happiness-lab-with-dr-laurie-santos/id1474245040" target="_blank" rel="noopener noreferrer">The Happiness Lab Podcast</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <div style="text-align: center;">
+      <a href="/MENTALHEALTHRESOURCES/" class="back-link">← Back to Mental Health Resources</a>
+    </div>
+  </div>
+
+    <section class="disclaimer-section" style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+      <div style="background:var(--surface-1,#1a1a1a);border:1px solid rgba(255,255,255,0.1);border-radius:0.75rem;padding:2rem;margin-top:2rem;">
+        <h3 style="color:var(--pk-500,#ec4899);font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+          <span style="font-size:1.25rem;">&#9878;</span> Medical &amp; Mental Health Disclaimer
+        </h3>
+        <div style="color:var(--text-2,#a3a3a3);font-size:0.85rem;line-height:1.7;">
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Not a Substitute for Professional Medical Advice.</strong>
+            The information provided on this website is for general informational and educational purposes only. It is not intended to be, and should not be interpreted as, medical advice, mental health counseling, diagnosis, or treatment. The content on this site does not replace the relationship between you and your doctor, psychiatrist, psychologist, or other qualified healthcare provider.
+          </p>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">No Doctor-Patient or Therapist-Client Relationship.</strong>
+            Your use of this website does not create a doctor-patient, therapist-client, or any other professional healthcare relationship between you and the operators of this website. We are not a medical provider, mental health clinic, or healthcare facility.
+          </p>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Always Seek Professional Advice.</strong>
+            If you have or suspect you may have a medical or mental health condition, or if you are experiencing psychological distress, always seek the advice of a qualified healthcare provider. Never disregard professional medical advice or delay seeking it because of information you have read on this website.
+          </p>
+          <div style="background:linear-gradient(90deg,#dc2626 0%,#991b1b 100%);color:white;padding:1rem;border-radius:0.5rem;margin:1rem 0;">
+            <p style="margin:0;font-weight:bold;font-size:0.9rem;">
+              &#128680; If you are experiencing a medical or mental health emergency, or if you are having thoughts of suicide or self-harm, seek immediate help:
+            </p>
+            <ul style="margin:0.75rem 0 0 1.5rem;font-size:0.85rem;">
+              <li><strong>Call 911</strong> for immediate emergency assistance</li>
+              <li><strong>Call or text 9-8-8</strong> &mdash; Canada Suicide Crisis Helpline (24/7)</li>
+              <li><strong>Kids Help Phone:</strong> 1-800-668-6868 or text CONNECT to 686868 (ages 5&ndash;29, 24/7)</li>
+              <li><strong>Hope for Wellness Help Line</strong> (Indigenous peoples): 1-855-242-3310 (24/7)</li>
+              <li><strong>Crisis Text Line:</strong> Text HOME to 741741 (24/7)</li>
+            </ul>
+          </div>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Limitation of Liability.</strong>
+            While we strive to provide accurate and up-to-date information, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, or suitability of the information contained on this website. Any reliance you place on such information is strictly at your own risk. In no event will we be liable for any loss or damage arising from the use of this website or the information provided herein.
+          </p>
+          <p style="margin:0;font-size:0.8rem;color:var(--text-3,#737373);font-style:italic;">
+            Last updated: February 2026
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+
+  <footer>
+    <p>Mental health resources curated for global access. If you're in crisis, please reach out to local emergency services.</p>
+  </footer>
+</body>
+</html>

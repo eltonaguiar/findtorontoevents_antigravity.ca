@@ -1,0 +1,188 @@
+{
+  "generated_at": "2026-05-12T05:30:00+00:00",
+  "version": "1.0",
+  "description": "Master registry of all currently-quarantined strategies, symbol-strategy pairs, and direction triples. Source of truth aggregating BLOCKED_ASSET_STRATEGY_PAIRS / BLOCKED_DIRECTION_TRIPLES / BLOCKED_ASSET_STRATEGY_SYMBOL_TRIPLES / PERMANENTLY_KILLED_STRATEGIES from audit_trail/quality_gates.py. Updated whenever a quarantine entry lands.",
+  "size_caps": {
+    "CRYPTO": {"max_pct_of_risk": 10, "rationale": "Per Grok 2026-05-12 rescue plan + ML inversion -16.67pp on CRYPTO holdout"},
+    "FOREX":  {"max_pct_of_risk": 0,  "rationale": "Sub-floor PF 0.27 / WR 45.6% on n=1169; class-blocked per hedge_fund_sprint until SHORT-only rehab clears"},
+    "FUTURES": {"max_pct_of_risk": 0, "rationale": "Silent-dead 5.9% WR; only CT=F (anchor) is real per cot_paper_pilot_status.json"},
+    "MEMECOIN": {"max_pct_of_risk": 0, "rationale": "Class quarantined; PF 0.499 on n=1869"},
+    "PENNY_STOCK": {"max_pct_of_risk": 0, "rationale": "WR 6.76% on n=148; noise"},
+    "ETF": {"max_pct_of_risk": 20, "rationale": "Borderline T2; emission audit pending"},
+    "EQUITY": {"max_pct_of_risk": 25, "rationale": "T2 candidate; PF 1.41 / WR 52.7% on n=421"},
+    "COMMODITY": {"max_pct_of_risk": 25, "rationale": "CT=F factor-beta sleeve (not alpha); CTA-crowding cap per AQR R3 review"},
+    "BOND": {"max_pct_of_risk": 20, "rationale": "Quality-T2 (PF 1.72) but n=18 sub-floor; ramping post-FRED fix"}
+  },
+  "blocked_strategies_class_wide": [
+    {"strategy": "kimi_signal_tracking", "scope": "all", "rationale": "-974% PnL on FOREX n=177 PF 0.26", "commit": "4a2d337a5dc"},
+    {"strategy": "enhanced_ml_A_xgboost", "scope": "all", "rationale": "28% WR PF 0.42 retired 2026-04-22"}
+  ],
+  "blocked_asset_strategy_pairs": [
+    {"asset_class": "FOREX", "strategy": "MomentumEMA"},
+    {"asset_class": "FOREX", "strategy": "volume_spike_breakout"},
+    {"asset_class": "FOREX", "strategy": "myfxbook_retail_contrarian"},
+    {"asset_class": "FOREX", "strategy": "forex_carry_momentum"},
+    {"asset_class": "EQUITY", "strategy": "ML Ranker"},
+    {"asset_class": "EQUITY", "strategy": "goldmine_1x_consensus"},
+    {"asset_class": "EQUITY", "strategy": "goldmine_2x_consensus"},
+    {"asset_class": "EQUITY", "strategy": "goldmine_3x_consensus"},
+    {"asset_class": "EQUITY", "strategy": "goldmine_4x_consensus"},
+    {"asset_class": "EQUITY", "strategy": "goldmine_6x_consensus"},
+    {"asset_class": "EQUITY", "strategy": "penny_deep_oversold"},
+    {"asset_class": "CRYPTO", "strategy": "goldmine_1x_consensus"},
+    {"asset_class": "CRYPTO", "strategy": "goldmine_2x_consensus"},
+    {"asset_class": "CRYPTO", "strategy": "goldmine_3x_consensus"},
+    {"asset_class": "CRYPTO", "strategy": "ml_enhanced_APEUSDT_1d_D_ensemble_stack"},
+    {"asset_class": "CRYPTO", "strategy": "quan_engine_scalp"},
+    {"asset_class": "CRYPTO", "strategy": "crypto_soc_proxy_decoupling_a03_v1", "commit": "4a2d337a5dc"},
+    {"asset_class": "CRYPTO", "strategy": "crypto_soc_delta_divergence_a07_v1", "commit": "4a2d337a5dc"},
+    {"asset_class": "CRYPTO", "strategy": "crypto_soc_orderflow_absorption_a07_v1", "commit": "4a2d337a5dc"},
+    {"asset_class": "CRYPTO", "strategy": "MeanReversionBB"},
+    {"asset_class": "CRYPTO", "strategy": "meta_strategy", "commit": "5c7a8c43a27", "rationale": "Synthetic backtest template; never emits live picks; 1.6M template rows in bt_backtest_trades"},
+    {"asset_class": "EQUITY", "strategy": "MeanReversionBB"},
+    {"asset_class": "FUTURES", "strategy": "futures_momentum"},
+    {"asset_class": "MEMECOIN", "strategy": "meme_signals"},
+    {"asset_class": "MEMECOIN", "strategy": "incubator_gainer"},
+    {"asset_class": "MEMECOIN", "strategy": "quan_engine"},
+    {"asset_class": "MEMECOIN", "strategy": "meta_strategy"},
+    {"asset_class": "MEMECOIN", "strategy": "goldmine_meme"},
+    {"asset_class": "MEMECOIN", "strategy": "sandbox_opposite"},
+    {"asset_class": "MEMECOIN", "strategy": "opposite_day"},
+    {"asset_class": "MEMECOIN", "strategy": "ema_stack"},
+    {"asset_class": "MEMECOIN", "strategy": "macd_rsi_confluence"},
+    {"asset_class": "MEMECOIN", "strategy": "predictions"},
+    {"asset_class": "MEMECOIN", "strategy": "FearGreedReversal"},
+    {"asset_class": "MEMECOIN", "strategy": "AltseasonRotation"},
+    {"asset_class": "MEMECOIN", "strategy": "hurst_mean_reversion"},
+    {"asset_class": "MEMECOIN", "strategy": "fractal_sr_bounce"},
+    {"asset_class": "MEMECOIN", "strategy": "volume_spike_breakout"},
+    {"asset_class": "MEMECOIN", "strategy": "winner_pattern_precursor"},
+    {"asset_class": "MEMECOIN", "strategy": "inverse_winner_pattern_precursor"},
+    {"asset_class": "MEMECOIN", "strategy": "st_obv_support_divergence"},
+    {"asset_class": "MEMECOIN", "strategy": "coinglass_funding_confluence"},
+    {"asset_class": "MEMECOIN", "strategy": "coinglass_leverage_squeeze"},
+    {"asset_class": "MEMECOIN", "strategy": "kimi_tracker"},
+    {"asset_class": "MEMECOIN", "strategy": "Kimi LGBM Feature Proxy"},
+    {"asset_class": "MEMECOIN", "strategy": "Correlation - KAMA Adaptive"},
+    {"asset_class": "MEMECOIN", "strategy": "SCALP"},
+    {"asset_class": "MEMECOIN", "strategy": "justin_rsi_divergence_v2"},
+    {"asset_class": "MEMECOIN", "strategy": "justin_ema9_pullback_v2"},
+    {"asset_class": "MEMECOIN", "strategy": "justin_breakout_volume_v2"},
+    {"asset_class": "MEMECOIN", "strategy": "justin_trend_follow_v2"},
+    {"asset_class": "MEMECOIN", "strategy": "ml_enhanced_DOGEUSDT_15m_D_ensemble_stack"}
+  ],
+  "blocked_direction_triples": [
+    {"asset_class": "FOREX", "strategy": "quan_engine_swing", "direction": "LONG"},
+    {"asset_class": "CRYPTO", "strategy": "ml_crypto_predictor", "direction": "SHORT"},
+    {"asset_class": "CRYPTO", "strategy": "quan_engine_swing", "direction": "LONG"},
+    {"asset_class": "CRYPTO", "strategy": "crypto_keltner_compression_expansion_v1", "direction": "LONG"},
+    {"asset_class": "CRYPTO", "strategy": "keltner_compression_expansion_eth_v1", "direction": "LONG"}
+  ],
+  "blocked_asset_strategy_symbol_triples": [
+    {"asset_class": "CRYPTO", "strategy": "quan_engine", "symbol": "MATICUSDT", "commit": "597819d79c7", "rationale": "215k rows constant -15% pnl_pct artifact"},
+    {"asset_class": "CRYPTO", "strategy": "KIMI_signal_tracker", "symbol": "ETHUSDT", "commit": "597819d79c7"},
+    {"asset_class": "CRYPTO", "strategy": "KIMI_signal_tracker", "symbol": "BTCUSDT", "commit": "597819d79c7"},
+    {"asset_class": "CRYPTO", "strategy": "irb_hoffman", "symbol": "ADAUSDT", "commit": "597819d79c7"},
+    {"asset_class": "CRYPTO", "strategy": "funding_rate_carry", "symbol": "ROBOUSDT", "commit": "597819d79c7", "rationale": "566 rows constant -99.26%; ROBO delisting artifact"}
+  ],
+  "mimo_avoid_verdict_strategies": [
+    {"strategy": "rapid_momentum_filter_mut", "wr_pct": 25.0, "n": 16, "avg_pnl": -0.45, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "meanreversionbb", "wr_pct": 24.4, "n": 41, "avg_pnl": 0.24, "source": "Mimo audit 2026-05-12", "note": "WR<30% on n=41 = structural failure"},
+    {"strategy": "macd_rsi_confluence", "wr_pct": 32.4, "n": 34, "avg_pnl": -0.38, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "betting-against-beta", "wr_pct": 23.1, "n": 13, "avg_pnl": -1.08, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "dxy-reversal-scout", "wr_pct": 20.0, "n": 10, "avg_pnl": -0.19, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "ema_stack_momentum", "wr_pct": 18.2, "n": 11, "avg_pnl": 0.31, "source": "Mimo audit 2026-05-12", "note": "WR catastrophically low"}
+  ],
+  "mimo_zero_wr_hard_quarantine": [
+    {"strategy": "drawdown_recovery_rsi_sol", "wr_pct": 0, "n": 4, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "drawdown_recovery_rsi_eth", "wr_pct": 0, "n": 6, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "b_flip_pricerocmeanreversion", "wr_pct": 0, "n": 5, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "crypto_vwap_volprofile_reversion_v1", "wr_pct": 0, "n": 9, "source": "Mimo audit 2026-05-12"},
+    {"strategy": "macd_divergence", "wr_pct": 0, "n": 6, "source": "Mimo audit 2026-05-12"}
+  ],
+  "mimo_dead_sources": [
+    {"source": "mutation_lab", "wr_pct": 0, "n": 9, "avg_pnl": -1.43},
+    {"source": "ml_crypto_pred", "wr_pct": 0, "n": 6, "avg_pnl": -1.50},
+    {"source": "stocksunify2", "wr_pct": 0, "n": 11, "avg_pnl": 0},
+    {"source": "multi_asset_scanner", "wr_pct": 12.9, "n": 31, "avg_pnl": -0.11}
+  ],
+  "mimo_strong_keepers": [
+    {"strategy": "cftc_cot_commercial_signal", "wr_pct": 79.3, "n": 58, "avg_pnl": 1.22, "asset_class": "COMMODITY"},
+    {"strategy": "rs-breakout-scout", "wr_pct": 81.3, "n": 32, "avg_pnl": 2.91, "asset_class": "EQUITY"},
+    {"strategy": "claude_ml_moderate_mut", "wr_pct": 62.0, "n": 71, "avg_pnl": 0.97, "asset_class": "CRYPTO"},
+    {"strategy": "st_fear_greed_contrarian", "wr_pct": 65.9, "n": 82, "avg_pnl": 0.44, "asset_class": "CRYPTO"},
+    {"strategy": "donchian-stock-breakout", "wr_pct": 78.6, "n": 14, "avg_pnl": 6.25, "asset_class": "EQUITY"},
+    {"strategy": "macd_rsi_m048", "wr_pct": 70.8, "n": 24, "avg_pnl": 3.28, "asset_class": "CRYPTO"},
+    {"strategy": "crypto_kalman_trend_residual_reversion_v1", "wr_pct": 71.1, "n": 38, "avg_pnl": 0.32, "asset_class": "CRYPTO"},
+    {"strategy": "vwap_deviation_reversion_eth_v1", "wr_pct": 72.0, "n": 25, "avg_pnl": 0.48, "asset_class": "CRYPTO"},
+    {"strategy": "adx-trend-scout", "wr_pct": 71.4, "n": 14, "avg_pnl": 0.85, "asset_class": "EQUITY"}
+  ],
+  "ml_class_gates": [
+    {"model": "ml_gatekeeper", "class": "CRYPTO", "threshold_floor": 70, "commit": "c778f8f1696", "rationale": "Confidence inversion -16.67pp on holdout; raised threshold from 40 to 70 until per-class calibrator retrains"}
+  ],
+  "permanently_killed_strategies": [
+    "yahoo_analyst_consensus",
+    "cta_tsmom_blend",
+    "binance_smart_money",
+    "hl_funding_fade",
+    "winner_pattern_precursor"
+  ],
+  "per_source_volume_caps": {
+    "quan_engine": {"CRYPTO": 0.05, "reason": "PF 0.70, 18% CRYPTO volume drag; tightened 12%->5% 2026-05-15", "since": "2026-05-12", "ref": "alpha_engine/per_source_volume_cap.py"},
+    "luxalgo_filters": {"CRYPTO": 0.10, "reason": "PF 1.12, ~17.5% of CRYPTO n — dilutive vs class PF 1.29", "since": "2026-05-15", "ref": "reports/asset_class_verification_2026-05-15.md"}
+  },
+  "ml_staleness_gate": {
+    "max_age_days": 7,
+    "commit": "db5bcfa0f04",
+    "affected_workflows": [".github/workflows/enhanced-ml-crypto.yml"],
+    "action_on_stale": "delete .joblib + force train-quick"
+  },
+  "session_commits": [
+    "f1fdb68a2f5 paper_pilot viewer + nav pill + DB Health banner",
+    "22b677c1167 WON-vs-PnL sign-coherence guard",
+    "597819d79c7 ghost-row 5-cohort symbol-triple block",
+    "d317560ac9c CI commit-list fix",
+    "1d55bee87eb master plan refresh + db-health-remediation anchor",
+    "e9c7c3d6737 Closed Holds empty-state + commodity tooltips + top-N tool",
+    "5c7a8c43a27 Real Money hub + BOND registry + meta_strategy CRYPTO block",
+    "f076539a517 top-N dashboard card + WON-vs-PnL backfill SQL draft",
+    "bf85c4a343c active_picks_sync.py DRY-RUN scaffold",
+    "9747f9594ec active_picks_sync DRY-RUN cron wire + baby-strats DSR harness scope",
+    "a26374027c3 COT Step 4 DSR conservative 0.9974",
+    "99bd1753f6f COT Steps 1+2+3+5 + synthesis",
+    "760a2535279 COT Step 7 ROR MC + DAILY_IDEAS",
+    "452d2ca9b63 Step 7 yml wire-up",
+    "26cd0f39d01 Round 10 deep-dive reports + updates entry",
+    "293017a5cc9 FRED SKIP_FRED + empty-values for BOND",
+    "c778f8f1696 ml_gatekeeper CRYPTO inversion gate",
+    "2af67228b24 Ollama qwen3.5cloud /money-maker-ready synthesis",
+    "2ecbae3d80d active_picks_sync PR #2 design plan",
+    "dd8e8282537 truth-layer reality banner + zero-PnL artifact filter",
+    "db5bcfa0f04 ML staleness watchdog mtime hard-fail",
+    "68939ddb0d0 Grok rescue plan + red-team synthesis",
+    "ba4a40ac36a v3b SignalSpec Pydantic validator + roadmap docs",
+    "aad6cd94c64 15 pytest cases for SignalSpec (15/15 PASS)",
+    "f16c8cb7f46 plain-English impact summary",
+    "f659c902a3e DAILY_IDEAS hedge-fund-rescue swarm brief",
+    "4ea7d1e6b41 7-persona Round 1 + Round 2 merge",
+    "2fbc31bc077 master plan + 6 Round-3 reviews + Week 1 checklist"
+  ],
+  "factor_exposures": {
+    "description": "Master-plan Action #4 + AQR R3 prescription: certain signals are FACTOR exposures (well-documented market betas), not proprietary alpha. Production sizing must cap them at the CTA-crowding-adjusted ceiling, and realized return must be decomposed into factor-beta + residual-alpha. Only residual-alpha counts toward LIVE_ELIGIBLE Sharpe.",
+    "registry": [
+      {
+        "factor_id": "commodity_carry_momo",
+        "source_path": "tools/research/commodity_carry_momo.py",
+        "output_path": "audit_dashboard/data/commodity_carry_momo.json",
+        "reference": "Fuertes, Miffre, Rallis 2010 SSRN 1127213; Jiang & Liu 2024 EFMA replicated",
+        "asset_class": "COMMODITY",
+        "max_pct_of_class_sleeve": 25,
+        "cap_rationale": "AQR R3: CTA-crowding ceiling; not alpha, well-publicized beta",
+        "consumer_rule": "Any production pick whose symbol appears in the commodity_carry_momo basket.longs/shorts inherits factor_label='commodity_carry_momo'. Sleeve sizing layer must enforce 25% cap on combined factor-labeled allocation.",
+        "sharpe_attribution": "Realized COMMODITY-sleeve Sharpe decomposed as factor_beta_sharpe + residual_alpha_sharpe. LIVE_ELIGIBLE threshold (1.5) applies to residual_alpha_sharpe ONLY.",
+        "wired_into_workflow": "Pending — sidecar produces JSON daily via ab_analysis.yml. Production-consumer wire (sleeve sizing enforcement) is the next-PR follow-up."
+      }
+    ]
+  },
+  "nfa": "Research surface only. This manifest aggregates the current quarantine state. No real-money sizing until 10-step Lopez de Prado AFML readiness pipeline clears AND post-leakage-purge gatekeeper retrain verifies edge survives."
+}

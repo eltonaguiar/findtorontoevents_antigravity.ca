@@ -1,0 +1,82 @@
+{
+  "strategies": [
+    {
+      "name": "CRYPTO_DIR_GATE_V1",
+      "thesis": "Leverage direction asymmetry by gating LONGs and SHORTs based on ml_crypto_pred autopsy results.",
+      "signal_construction": "Allow SHORT signals from all sources; gate LONG signals to only trigger from sources with historical LONG WR > 50% (per autopsy, exclude low WR sources for LONGs).",
+      "universe_or_filter": "BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT, XRPUSDT, DOGEUSDT, LINKUSDT, AVAXUSDT, ADAUSDT, MATICUSDT (exclude MATIC ghost-rows via zero-pnl filter).",
+      "expected_pf": 1.6,
+      "expected_wr_pct": 48.0,
+      "differentiation_from_existing": "Introduces direction-aware gating vs current non-discriminatory signal acceptance.",
+      "implementation_hours": 12,
+      "wire_target": "alpha_engine/direction_gates.py",
+      "data_source": "binance",
+      "fail_mode": "Insufficient SHORT signal volume to balance portfolio."
+    },
+    {
+      "name": "CRYPTO_UTC6_FILTER",
+      "thesis": "Avoid CRYPTO death zone at 6 UTC to lift overall WR and PF.",
+      "signal_construction": "Reject all entry signals (LONG and SHORT) at 6 UTC hour across all sources and symbols.",
+      "universe_or_filter": "BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT, XRPUSDT, DOGEUSDT, LINKUSDT, AVAXUSDT, ADAUSDT, MATICUSDT (exclude MATIC ghost-rows).",
+      "expected_pf": 1.55,
+      "expected_wr_pct": 45.7,
+      "differentiation_from_existing": "Adds explicit UTC hour filter vs current no-time-gate setup.",
+      "implementation_hours": 8,
+      "wire_target": "audit_trail/quality_gates.py",
+      "data_source": "binance",
+      "fail_mode": "Over-filtering reduces trade volume excessively."
+    },
+    {
+      "name": "CRYPTO_BTC4H_REGIME",
+      "thesis": "Reject LONG signals during bearish BTC 4h regimes to avoid counter-trend losses.",
+      "signal_construction": "Reject LONG signals from LONG-only sources if BTCUSDT 4h candle closes below its 10-period MA.",
+      "universe_or_filter": "BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT, XRPUSDT, DOGEUSDT, LINKUSDT, AVAXUSDT, ADAUSDT, MATICUSDT (exclude MATIC ghost-rows).",
+      "expected_pf": 1.65,
+      "expected_wr_pct": 47.5,
+      "differentiation_from_existing": "Adds BTC 4h trend filter for LONGs vs current unfiltered LONG acceptance.",
+      "implementation_hours": 10,
+      "wire_target": "alpha_engine/regime_filters.py",
+      "data_source": "binance",
+      "fail_mode": "False negatives on LONG signals during minor pullbacks."
+    },
+    {
+      "name": "CRYPTO_SRC_VOL_CAP",
+      "thesis": "Limit per-source overexposure to prevent single-source risk concentration.",
+      "signal_construction": "Cap each source's active position volume at 10% of total portfolio notional value, rejecting excess signals.",
+      "universe_or_filter": "BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT, XRPUSDT, DOGEUSDT, LINKUSDT, AVAXUSDT, ADAUSDT, MATICUSDT (exclude MATIC ghost-rows).",
+      "expected_pf": 1.52,
+      "expected_wr_pct": 45.0,
+      "differentiation_from_existing": "Enforces strict per-source volume limits vs current uncapped exposure.",
+      "implementation_hours": 6,
+      "wire_target": "audit_trail/quality_gates.py",
+      "data_source": "internal",
+      "fail_mode": "Underutilization of capital due to overly restrictive caps."
+    }
+  ],
+  "edge10_corrections": [
+    "Implement a hard filter to reject all CRYPTO entry signals at 6 UTC across all symbols and sources, as backtest confirms 6 UTC as the death zone with 23.1% WR and 0.06 PF."
+  ],
+  "edge11_proposals": [
+    "Define BTC 4h regime as bearish if BTCUSDT 4h close is below its 10-period MA, rejecting LONG signals from LONG-only sources during such periods."
+  ],
+  "direction_gates": [
+    "Gate LONG signals to only allow sources with historical LONG WR > 50% (per ml_crypto_pred autopsy); allow SHORT signals from all sources to capitalize on 85.7% WR strength."
+  ],
+  "killers": [
+    "Retire any CRYPTO emitter source with LONG WR < 20% as identified in ml_crypto_pred autopsy to eliminate consistent underperformers."
+  ],
+  "tier2_attainability_pct": 75,
+  "single_most_important_finding": "Direction-aware gating exploiting SHORT strength (85.7% WR) offers the highest potential lift to PF 1.5+.",
+  "engine": "xai",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_crypto\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260513T043323Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 788,
+    "tokens_out": 1123,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

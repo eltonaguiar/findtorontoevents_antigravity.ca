@@ -1,0 +1,77 @@
+name: Regime Terminal  HMM Live Scanner
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # Every 30 minutes
+  workflow_dispatch:          # Manual trigger
+
+concurrency:
+  group: regime-terminal
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  regime-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install hmmlearn scikit-learn yfinance pandas numpy scipy joblib
+
+      - name: Run Regime Terminal scanner
+        run: |
+          echo "========================================"
+          echo "  REGIME TERMINAL v1.0.0"
+          echo "  Gaussian HMM | 7 Regimes | 5 Markets"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "========================================"
+          python -m regime_terminal.live_regime
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run regime bridge (HMM  KIMI + Alpha Engine)
+        run: |
+          echo " Converting HMM regime data to KIMI + Alpha formats..."
+          python -m regime_terminal.regime_bridge
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit regime state data
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Regime Terminal Bot"
+          git config user.email "regime-bot@findtorontoevents.ca"
+          git add regime_terminal/data/regime_state.json || echo "No regime_state.json changes"
+          git add regime_terminal/data/active_signals.json || echo "No active_signals.json changes"
+          git add STOCKS/competition/.regime_cache.json || echo "No regime_cache.json changes"
+          git add alpha_engine/data/hmm_regime.json || echo "No hmm_regime.json changes"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Regime Terminal scan: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            # Handle concurrent pushes with rebase (preserves other commits)
+            for i in 1 2 3; do
+              git pull --rebase origin main || true
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          fi
+

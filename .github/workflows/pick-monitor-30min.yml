@@ -1,0 +1,64 @@
+name: "Pick Monitor & Price Validator (30min)"
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'   # Every 2 hours (reduced from */30 to ease queue pressure)
+  workflow_dispatch:
+
+concurrency:
+  group: pick-monitor-30min-writer
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: 1
+
+jobs:
+  monitor-and-validate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run price validator
+        run: python alpha_engine/price_validator.py
+
+      - name: Run pick monitor
+        run: python alpha_engine/pick_monitor.py
+
+      - name: Commit any fixes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/active_picks.json alpha_engine/data/pick_monitor_report.json alpha_engine/data/price_validation_log.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Pick monitor + price validation $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase origin main && \
+              bash .github/scripts/safe_push.sh "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+              echo "Pushed successfully" && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

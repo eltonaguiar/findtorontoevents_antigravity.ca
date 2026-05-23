@@ -1,0 +1,192 @@
+# Deploy Algorithm Competition Arena to findtorontoevents.ca via FTP
+# Uploads dashboard HTML, JSON data, and updates page to the live site
+name: Deploy Competition to Live Site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'STOCKS/competition/**'
+      - 'STOCKS/algorithm-competition.html'
+      - 'updates/index.html'
+      - 'updates/antigravity-ml-gainer.html'
+      - 'cross_aggregation/data/**'
+      - 'cross_aggregation/consensus_dashboard.html'
+      - 'audit_dashboard/**'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Algorithm Competition Refresh", "Forward Test Daily", "Cross-System Signal Aggregator"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy competition files to live site via FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          echo "=== Deploying Algorithm Competition Arena to findtorontoevents.ca ==="
+
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::warning::FTP credentials not configured. Skipping deploy."
+            echo "Set FTP_SERVER, FTP_USER, FTP_PASS in repository secrets to enable."
+            exit 0
+          fi
+
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+
+          REMOTE_BASE="/findtorontoevents.ca"
+
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+          set ssl:verify-certificate no
+          set net:timeout 30
+          set net:max-retries 3
+          # 2026-04-12: abort on command failure. Previously a silent 'cd'
+          # failure dumped competition-*.json at the FTP root instead of
+          # /findtorontoevents.ca/STOCKS/competition/.
+          set cmd:fail-exit yes
+
+          # Create directories
+          mkdir -fp $REMOTE_BASE/STOCKS/competition
+          mkdir -fp $REMOTE_BASE/STOCKS
+
+          # Upload competition dashboard and data
+          cd $REMOTE_BASE/STOCKS/competition
+          put STOCKS/competition/index.html
+          put STOCKS/competition/competition-slim.json
+          put STOCKS/competition/competition-stocks.json
+          put STOCKS/competition/competition-crypto.json
+          put STOCKS/competition/competition-forex.json
+          put STOCKS/competition/competition-penny_stocks.json
+          put STOCKS/competition/competition-meme_coins.json
+          put STOCKS/competition/forward_picks.json
+
+          # Upload simulation mode page
+          cd $REMOTE_BASE/STOCKS
+          put STOCKS/algorithm-competition.html
+
+          # Upload main Audit Dashboard to /audit/ (the live URL path)
+          mkdir -fp $REMOTE_BASE/audit
+          cd $REMOTE_BASE/audit
+          put audit_dashboard/index.html
+
+          # Upload Portfolio Challenge files to /audit_dashboard/
+          mkdir -fp $REMOTE_BASE/audit_dashboard
+          mkdir -fp $REMOTE_BASE/audit_dashboard/data
+          cd $REMOTE_BASE/audit_dashboard
+          put audit_dashboard/claudes_test.html
+          put audit_dashboard/portfolio_history.html
+          put audit_dashboard/BLUEPRINT.md
+          put audit_dashboard/LEARNINGS.md
+          put audit_dashboard/trading_blueprint.html
+          put audit_dashboard/funds.html
+          cd $REMOTE_BASE/audit_dashboard/data
+          put audit_dashboard/data/claudes_test_state.json
+          put audit_dashboard/data/claudes_test_dashboard.json
+
+          # Upload consensus dashboard + data
+          mkdir -fp $REMOTE_BASE/cross_aggregation
+          mkdir -fp $REMOTE_BASE/cross_aggregation/data
+          cd $REMOTE_BASE/cross_aggregation
+          put cross_aggregation/consensus_dashboard.html
+          cd $REMOTE_BASE/cross_aggregation/data
+          put cross_aggregation/data/consensus_outcomes.json
+          put cross_aggregation/data/super_signals.json
+          put cross_aggregation/data/contested_picks_tracker.json
+          put cross_aggregation/data/conflict_lessons_learned.json
+
+          # Upload updated updates page and subpages
+          cd $REMOTE_BASE/updates
+          mkdir -f styles
+          cd $REMOTE_BASE/updates/styles
+          put updates/styles/updates.css
+          cd $REMOTE_BASE/updates
+          put updates/index.html
+          put updates/simpleton-grok-v0-01-quickstart.html
+          put updates/simpleton-cursor-quickstart.html
+          put updates/antigravity-ml-gainer.html
+          put updates/antigravity-pinescript-guide.html
+          put updates/claude-ml-gainer.html
+
+          # Upload Simpleton Pine Scripts and docs to site root
+          cd $REMOTE_BASE
+          put Simpletonv001_ANTIGRAVITY.pine
+          put SignalEngine_ANTIGRAVITY.pine
+          put Simpletonv0.01_CURSOR.pine
+          put Simpletonv0.01_KIMI.pine
+          put SimpletonSignals_KIMI.pine
+          put Simpletonv0.01_GROK_Documentation.html
+          put simpleton_kimi_guide.html
+          put simpleton_backtest.py
+          put simpleton_backtester.py
+          put backtest_cursor.py
+          put pine_generator/output/simpleton_v001_claude.pine
+
+          # Upload GROK pine from pine_scripts/
+          lcd pine_scripts
+          mkdir -fp $REMOTE_BASE/pine_scripts
+          cd $REMOTE_BASE/pine_scripts
+          put Simpletonv0.01_GROK.pine
+          lcd ..
+
+          echo "Upload complete"
+          bye
+          FTPEOF
+
+          if [ $? -eq 0 ]; then
+            echo "=== Deployed to findtorontoevents.ca ==="
+          else
+            echo "::warning::FTP upload to findtorontoevents.ca failed"
+          fi
+
+      - name: Mirror to tdotevent.ca via FTP
+        continue-on-error: true
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::warning::FTP credentials not set, skipping tdotevent.ca"
+            exit 0
+          fi
+
+          REMOTE_BASE="/tdotevent.ca"
+
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+          set ssl:verify-certificate no
+          set net:timeout 30
+          set net:max-retries 3
+          # 2026-04-12: abort on command failure. Previously a silent 'cd'
+          # failure dumped competition-*.json at the FTP root instead of
+          # /findtorontoevents.ca/STOCKS/competition/.
+          set cmd:fail-exit yes
+
+          # Audit dashboard files
+          mkdir -fp $REMOTE_BASE/audit_dashboard
+          mkdir -fp $REMOTE_BASE/audit_dashboard/data
+          cd $REMOTE_BASE/audit_dashboard
+          put audit_dashboard/claudes_test.html
+          put audit_dashboard/portfolio_history.html
+          put audit_dashboard/trading_blueprint.html
+          put audit_dashboard/funds.html
+          cd $REMOTE_BASE/audit_dashboard/data
+          put audit_dashboard/data/claudes_test_state.json
+          put audit_dashboard/data/claudes_test_dashboard.json
+
+          echo "Upload to tdotevent.ca complete"
+          bye
+          FTPEOF
+
+          echo "=== Mirrored audit files to tdotevent.ca ==="
+

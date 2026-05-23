@@ -1,0 +1,79 @@
+name: Mutation Lifecycle Runner
+
+# Closes the promote/kill governance loop on alpha_engine/data/dna_mutations.json.
+# Default = dry-run only — opt-in to writes via MUTATION_LIFECYCLE_ENABLED=1
+# (set as a repo Variable). The runner refuses to --apply without it, so this
+# workflow is safe to merge before the manual eyeball cycle.
+#
+# Wiring plan (see PR body):
+#   1) Land THIS workflow (dry-run-only). Inspect 1-2 daily runs.
+#   2) Set repo variable MUTATION_LIFECYCLE_ENABLED=1 in a SEPARATE PR after
+#      reviewers eyeball the dry-run output.
+#   3) Optionally tighten cadence to every 6h once steady-state.
+
+on:
+  schedule:
+    # Daily at 05:30 UTC — 30 minutes after dna-mutation-cycle.yml so that
+    # whatever new mutations were just minted are evaluated on the same day.
+    - cron: "30 5 * * *"
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply transitions (requires MUTATION_LIFECYCLE_ENABLED=1)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: mutation-lifecycle-runner
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  lifecycle:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run lifecycle (dry-run)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.apply != true }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python tools/mutation_lifecycle_runner.py
+
+      - name: Run lifecycle (apply)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply == true }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          MUTATION_LIFECYCLE_ENABLED: ${{ vars.MUTATION_LIFECYCLE_ENABLED || '0' }}
+        run: python tools/mutation_lifecycle_runner.py --apply
+
+      - name: Commit lifecycle changes
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply == true }}
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/dna_mutations.json
+          if git diff --cached --quiet; then
+            echo "No lifecycle changes to commit"
+          else
+            git commit -m "chore(dna): mutation lifecycle pass - $(date -u +%Y-%m-%d) [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi

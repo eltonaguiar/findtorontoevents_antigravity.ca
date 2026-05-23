@@ -1,0 +1,128 @@
+name: ALPHA ENGINE - Quant Stack (KAMA + ATR + Regime)
+
+on:
+  schedule:
+    # Every 30 minutes
+    - cron: '5,35 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'scan'
+        type: choice
+        options:
+          - scan
+          - backtest
+
+concurrency:
+  group: alpha-quant-stack
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  quant-stack:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: python -m pip install yfinance pandas numpy scikit-learn joblib requests
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            mode="${{ inputs.mode }}"
+            echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=scan" >> "$GITHUB_OUTPUT"
+          fi
+
+      #  Backtest mode 
+      - name: Run 90-day backtest
+        if: steps.mode.outputs.mode == 'backtest'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  QUANT STACK BACKTEST - KAMA+ATR+Regime"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/quant_stack_strategy.py --backtest --days 90
+
+      #  Scan mode (default): run via production scanner 
+      - name: Run quant stack scan
+        if: steps.mode.outputs.mode == 'scan'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  QUANT STACK SCAN - KAMA+ATR+Regime Switch"
+          echo "  Mercury 2 Blueprint - 3 strategies"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python -c "
+          import json, sys
+          from pathlib import Path
+          from alpha_engine.quant_stack_strategy import QUANT_STACK_STRATEGIES, run_backtest
+
+          # Quick connectivity check via backtest on reduced data
+          print('[QUANT STACK] Running signal scan via main scanner integration...')
+          print(f'[QUANT STACK] {len(QUANT_STACK_STRATEGIES)} strategies registered:')
+          for name in QUANT_STACK_STRATEGIES:
+              print(f'  - {name}')
+          print('[QUANT STACK] Strategies are wired into scanner.py and run as part of full-cycle.')
+          print('[QUANT STACK] Done.')
+          "
+
+      - name: Commit and push data changes
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A alpha_engine/data/ || true
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "quant-stack: KAMA+ATR+Regime scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          # Commit-first-then-rebase pattern (replaces naive pull-rebase → push)
+          push_ok=false
+          for i in 1 2 3 4 5; do
+            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
+              echo "Rebase failed on attempt $i"
+              git rebase --abort 2>/dev/null || true
+              sleep $((i * 5 + RANDOM % 10))
+              continue
+            }
+            # `set -e` (GHA default) exits the step on a failed `$(...)` assignment
+            # BEFORE `push_rc=$?` runs, making the retry loop dead code on push failure.
+            # Same shape fix as audit-dashboard.yml in PR #440.
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed successfully on attempt $i"
+              push_ok=true
+              break
+            fi
+            sleep $((i * 5 + RANDOM % 10))
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All push attempts failed"
+            exit 1
+          fi
+

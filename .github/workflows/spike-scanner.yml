@@ -1,0 +1,33 @@
+# Spike Scanner & Pattern Detection - Runs every 2 hours
+name: Spike Scanner
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours (reduced from */30 to ease queue pressure)
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Trigger Spike Scan
+        run: |
+          curl -s "https://findtorontoevents.ca/live-monitor/api/spike_scanner.php?action=scan&key=livetrader2026" || true
+          echo "Spike scan triggered"
+      
+      - name: Trigger Pattern Build  
+        run: |
+          curl -s "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=build&key=livetrader2026" || true
+          echo "Pattern build triggered"
+      
+      - name: Wait for processing
+        run: sleep 30
+      
+      - name: Check Status
+        run: |
+          echo "Spike Scanner Status:"
+          curl -s "https://findtorontoevents.ca/live-monitor/api/spike_scanner.php?action=status" | head -c 500
+          echo ""
+          echo "Pair Fingerprint Status:"
+          curl -s "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=status" | head -c 500
+

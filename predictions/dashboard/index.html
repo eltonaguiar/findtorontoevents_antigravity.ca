@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Prediction Tracker | FindTorontoEvents</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;color:#e0e0e0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+header{text-align:center;padding:30px 0 20px;border-bottom:1px solid #1a1a2e}
+header h1{font-size:1.8rem;background:linear-gradient(135deg,#f59e0b,#ef4444,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+header p{color:#888;font-size:0.9rem}
+.stats-bar{display:flex;gap:16px;justify-content:center;margin:20px 0;flex-wrap:wrap}
+.stat-card{background:#12121e;border:1px solid #1a1a2e;border-radius:10px;padding:14px 24px;text-align:center;min-width:140px}
+.stat-card .val{font-size:1.6rem;font-weight:700;color:#a78bfa}
+.stat-card .lbl{font-size:0.75rem;color:#666;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.data-warning{background:#f59e0b22;border:1px solid #f59e0b44;color:#fbbf24;padding:10px 14px;border-radius:8px;text-align:center;font-size:0.82rem;margin:10px auto;max-width:980px}
+.data-warning.hidden{display:none}
+
+/* Source filters */
+.filter-bar{display:flex;gap:10px;justify-content:center;margin:20px 0;flex-wrap:wrap}
+.filter-btn{background:#12121e;border:1px solid #1a1a2e;border-radius:20px;padding:8px 18px;color:#888;font-size:0.85rem;cursor:pointer;transition:all 0.2s;font-family:inherit}
+.filter-btn:hover{border-color:#a78bfa;color:#c4b5fd}
+.filter-btn.active{background:#a78bfa22;border-color:#a78bfa;color:#a78bfa;font-weight:600}
+.filter-btn.source-analysts.active{background:#f59e0b22;border-color:#f59e0b;color:#f59e0b}
+.filter-btn.source-reddit.active{background:#ff450022;border-color:#ff4500;color:#ff6b35}
+.filter-btn.source-twitter.active{background:#1da1f222;border-color:#1da1f2;color:#1da1f2}
+.filter-btn.source-tradingview.active{background:#2962ff22;border-color:#2962ff;color:#2962ff}
+.filter-btn.source-news.active{background:#22c55e22;border-color:#22c55e;color:#22c55e}
+.filter-btn.source-polymarket.active{background:#6f42c122;border-color:#6f42c1;color:#a855f7}
+.filter-btn.source-4chan.active{background:#78992222;border-color:#789922;color:#7c9473}
+.filter-btn.source-stocktwits.active{background:#405de622;border-color:#405de6;color:#5b7cff}
+.filter-btn.source-coincodex.active{background:#00d4aa22;border-color:#00d4aa;color:#00d4aa}
+.filter-btn.source-coinmarketcap.active{background:#ff6b3522;border-color:#ff6b35;color:#ff6b35}
+.filter-btn.source-communities.active{background:#8b5cf622;border-color:#8b5cf6;color:#8b5cf6}
+.filter-btn.source-youtube.active{background:#ff000022;border-color:#ff0000;color:#ff4444}
+
+.section{margin-top:30px}
+.section h2{font-size:1.2rem;color:#c4b5fd;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* Leaderboard table */
+table{width:100%;border-collapse:collapse;background:#12121e;border-radius:10px;overflow:hidden}
+th{background:#1a1a2e;color:#888;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;padding:12px 14px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:#a78bfa}
+th.sorted-asc::after{content:' \25B2';font-size:0.6rem}
+th.sorted-desc::after{content:' \25BC';font-size:0.6rem}
+td{padding:10px 14px;border-top:1px solid #1a1a2e;font-size:0.9rem}
+tr:hover{background:#16162a}
+tr.hidden{display:none}
+tr.clickable{cursor:pointer}
+.rank{font-weight:700;color:#a78bfa;width:40px}
+.predictor-name{font-weight:600;color:#e0e0e0}
+.predictor-name a{color:#a78bfa;text-decoration:none}
+.predictor-name a:hover{text-decoration:underline}
+.predictor-handle{color:#666;font-size:0.8rem;margin-left:4px}
+
+/* Source badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.badge-twitter{background:#1da1f222;color:#1da1f2;border:1px solid #1da1f244}
+.badge-reddit{background:#ff450022;color:#ff6b35;border:1px solid #ff450044}
+.badge-tradingview{background:#2962ff22;color:#2962ff;border:1px solid #2962ff44}
+.badge-youtube{background:#ff000022;color:#ff4444;border:1px solid #ff000044}
+.badge-analyst{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44}
+.badge-polymarket{background:#6f42c122;color:#a855f7;border:1px solid #6f42c144}
+.badge-4chan{background:#78992222;color:#7c9473;border:1px solid #78992244}
+.badge-stocktwits{background:#405de622;color:#5b7cff;border:1px solid #405de644}
+.badge-coincodex{background:#00d4aa22;color:#00d4aa;border:1px solid #00d4aa44}
+.badge-coinmarketcap{background:#ff6b3522;color:#ff6b35;border:1px solid #ff6b3544}
+.badge-communities{background:#8b5cf622;color:#8b5cf6;border:1px solid #8b5cf644}
+.badge-youtube{background:#ff000022;color:#ff4444;border:1px solid #ff000044}
+.badge-news{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+
+/* Tier badges - STRicter requirements */
+.tier-elite{background:linear-gradient(135deg,#fbbf2433,#f59e0b33);color:#fbbf24;border:1px solid #fbbf2466;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700}
+.tier-proven{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600}
+.tier-mixed{background:#eab30822;color:#eab308;border:1px solid #eab30844;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600}
+.tier-losing{background:#ef444422;color:#ef4444;border:1px solid #ef444444;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600}
+.tier-unranked{background:#66666622;color:#888;border:1px solid #66666644;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600}
+.tier-qualifying{background:#3b82f622;color:#3b82f6;border:1px solid #3b82f644;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600}
+
+.pnl-pos{color:#22c55e;font-weight:600}
+.pnl-neg{color:#ef4444;font-weight:600}
+
+/* Active predictions grid */
+.active-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.active-card{background:#12121e;border:1px solid #1a1a2e;border-radius:8px;padding:14px;transition:border-color 0.2s}
+.active-card:hover{border-color:#333}
+.active-card.hidden{display:none}
+.active-card .sym{font-size:1.1rem;font-weight:700;color:#e0e0e0}
+.active-card .dir-long{color:#22c55e;font-weight:600;font-size:0.85rem}
+.active-card .dir-short{color:#ef4444;font-weight:600;font-size:0.85rem}
+.active-card .meta{color:#666;font-size:0.8rem;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.active-card .levels{display:flex;gap:14px;margin-top:8px;font-size:0.8rem}
+.active-card .levels span{color:#888}
+.active-card .levels .tp{color:#22c55e}
+.active-card .levels .sl{color:#ef4444}
+.active-card .source-link{margin-top:10px;padding-top:10px;border-top:1px solid #1a1a2e}
+.active-card .source-link a{color:#a78bfa;text-decoration:none;font-size:0.8rem}
+.active-card .source-link a:hover{text-decoration:underline}
+
+.empty-state{text-align:center;padding:40px;color:#555;font-style:italic}
+.refresh-note{text-align:center;color:#444;font-size:0.75rem;margin-top:30px;padding-bottom:20px}
+
+/* Consensus signal */
+.consensus-section{margin:24px 0}
+.consensus-section h2{font-size:1.2rem;color:#c4b5fd;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.consensus-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.consensus-card{background:#12121e;border:1px solid #1a1a2e;border-radius:8px;padding:12px 14px;transition:border-color 0.2s}
+.consensus-card:hover{border-color:#333}
+.consensus-card .sym-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.consensus-card .sym-name{font-size:1rem;font-weight:700;color:#e0e0e0}
+.consensus-card .consensus-pct{font-size:1.1rem;font-weight:700}
+.consensus-card .consensus-pct.bullish{color:#22c55e}
+.consensus-card .consensus-pct.bearish{color:#ef4444}
+.consensus-card .consensus-pct.neutral{color:#eab308}
+.consensus-bar{height:8px;border-radius:4px;overflow:hidden;background:#1a1a2e;display:flex}
+.consensus-bar .long-fill{background:linear-gradient(90deg,#22c55e,#16a34a);height:100%;transition:width 0.4s}
+.consensus-bar .short-fill{background:linear-gradient(90deg,#dc2626,#ef4444);height:100%;transition:width 0.4s}
+.consensus-card .meta-row{display:flex;justify-content:space-between;margin-top:6px;font-size:0.75rem;color:#666}
+.consensus-card .source-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.consensus-card .source-chip{font-size:0.65rem;padding:1px 6px;border-radius:3px;background:#1a1a2e;color:#888;border:1px solid #2a2a3e}
+
+/* Modal for predictor detail */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:1000;padding:20px}
+.modal-overlay.active{display:flex}
+.modal-content{background:#12121e;border:1px solid #1a1a2e;border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #1a1a2e}
+.modal-header h2{margin:0;font-size:1.4rem;color:#c4b5fd}
+.modal-close{background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.modal-close:hover{background:#1a1a2e;color:#fff}
+.modal-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.modal-stat{background:#0a0a12;padding:12px;border-radius:8px;text-align:center}
+.modal-stat .val{font-size:1.4rem;font-weight:700;color:#a78bfa}
+.modal-stat .lbl{font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:1px}
+.picks-table{width:100%;font-size:0.85rem}
+.picks-table th{padding:10px;background:#1a1a2e}
+.picks-table td{padding:10px;border-top:1px solid #1a1a2e}
+.picks-table tr:hover{background:#16162a}
+.picks-table .resolved-win{color:#22c55e}
+.picks-table .resolved-loss{color:#ef4444}
+.picks-table .active{color:#a78bfa}
+
+@media(max-width:768px){
+  .container{padding:12px}
+  header h1{font-size:1.3rem}
+  .stats-bar{gap:8px}
+  .stat-card{padding:10px 16px;min-width:100px}
+  .stat-card .val{font-size:1.2rem}
+  table{font-size:0.8rem}
+  th,td{padding:8px 6px}
+  .active-grid{grid-template-columns:1fr}
+  .filter-bar{gap:6px}
+  .filter-btn{padding:6px 12px;font-size:0.8rem}
+  .modal-stats{grid-template-columns:repeat(2,1fr)}
+  .picks-table{font-size:0.75rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Crypto Prediction Tracker</h1>
+    <p>Farming predictions from Reddit, Twitter, TradingView, Polymarket, 4chan, StockTwits, CoinCodex + 20 top analysts — All picks verified against real prices</p>
+  </header>
+  <div id="data-warning" class="data-warning hidden"></div>
+<div id="data-error" style="background:#ef444422;border:1px solid #ef444444;color:#ef4444;padding:10px 14px;border-radius:8px;text-align:center;font-size:0.82rem;margin:10px auto;max-width:980px;display:none"></div>
+
+  <div class="stats-bar">
+    <div class="stat-card"><div class="val" id="s-predictors">--</div><div class="lbl">Predictors</div></div>
+    <div class="stat-card"><div class="val" id="s-predictions">--</div><div class="lbl">Total Picks</div></div>
+    <div class="stat-card"><div class="val" id="s-active">--</div><div class="lbl">Active</div></div>
+    <div class="stat-card"><div class="val" id="s-top-wr">--</div><div class="lbl">Top Win Rate</div></div>
+    <div class="stat-card"><div class="val" id="s-updated">--</div><div class="lbl">Last Update</div></div>
+  </div>
+
+  <!-- Crowd Consensus Signal -->
+  <div class="consensus-section">
+    <h2>🎯 Crowd Consensus (Aggregated Signal per Coin)</h2>
+    <div class="consensus-grid" id="consensus-grid"></div>
+    <div class="empty-state" id="consensus-empty" style="display:none">No active predictions to aggregate.</div>
+  </div>
+
+  <!-- Source Filters -->
+  <div class="filter-bar" style="flex-wrap:wrap;gap:8px">
+    <button class="filter-btn active" data-source="all">All</button>
+    <button class="filter-btn source-analysts" data-source="analyst">Analysts</button>
+    <button class="filter-btn source-twitter" data-source="twitter">Twitter</button>
+    <button class="filter-btn source-reddit" data-source="reddit">Reddit</button>
+    <button class="filter-btn source-tradingview" data-source="tradingview">TradingView</button>
+    <button class="filter-btn source-polymarket" data-source="polymarket">Polymarket</button>
+    <button class="filter-btn source-4chan" data-source="4chan">4chan</button>
+    <button class="filter-btn source-stocktwits" data-source="stocktwits">StockTwits</button>
+    <button class="filter-btn source-coincodex" data-source="coincodex">CoinCodex</button>
+    <button class="filter-btn source-coinmarketcap" data-source="coinmarketcap">CMC</button>
+    <button class="filter-btn source-communities" data-source="communities">Communities</button>
+    <button class="filter-btn source-youtube" data-source="youtube">YouTube</button>
+    <button class="filter-btn source-news" data-source="news">News</button>
+  </div>
+
+  <!-- Data Sources Info -->
+  <div style="background:#0f1419;border:1px solid #1e3a5f;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:.75rem;color:#6b7280">
+    <strong style="color:#3b82f6">Data Sources:</strong> 
+    Reddit (25+) • Twitter/X • YouTube • 4chan/biz/ • StockTwits • TradingView • CoinCodex • CoinMarketCap • Polymarket • BitcoinTalk • CryptoCompare
+    <br><small>Powered by Crawl4AI + Scrapling • All predictions link to original source • Auto-validated</small>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="section">
+    <h2>Leaderboard (Click row for audit trail)</h2>
+    <div style="overflow-x:auto">
+      <table id="leaderboard">
+        <thead>
+          <tr>
+            <th data-col="rank">#</th>
+            <th data-col="display_name">Predictor</th>
+            <th data-col="platform">Source</th>
+            <th data-col="win_rate">WR%</th>
+            <th data-col="avg_pnl_pct">Avg P&amp;L</th>
+            <th data-col="total_predictions">Picks</th>
+            <th data-col="tier">Tier</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="lb-empty" style="display:none">No ranked predictors yet.</div>
+  </div>
+
+  <!-- New Predictors (fewer than 3 picks) -->
+  <div class="section">
+    <h2>📈 New Predictors (Building Track Record)</h2>
+    <div style="overflow-x:auto">
+      <table id="new-predictors">
+        <thead>
+          <tr>
+            <th>Predictor</th>
+            <th>Source</th>
+            <th>Picks</th>
+            <th>Platform</th>
+          </tr>
+        </thead>
+        <tbody id="new-pred-body"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="new-pred-empty" style="display:none">No new predictors.</div>
+  </div>
+
+  <!-- Active Predictions -->
+  <div class="section">
+    <h2>Active Predictions (All with source links)</h2>
+    <div class="active-grid" id="active-grid"></div>
+    <div class="empty-state" id="active-empty" style="display:none">No active predictions right now.</div>
+  </div>
+
+  <div class="refresh-note">Auto-refreshes every 60s | Predictions expire after 48h | Tier: QUALIFYING(5+), PROVEN(25+ & WR>55%), ELITE(50+ & WR>65%)</div>
+</div>
+
+<!-- Modal for predictor detail -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modal-title">Predictor Detail</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-stats" id="modal-stats"></div>
+    <h3 style="color:#c4b5fd;margin-bottom:12px;font-size:1rem">All Predictions (Click source to verify)</h3>
+    <div style="overflow-x:auto">
+      <table class="picks-table">
+        <thead>
+          <tr>
+            <th>Date (EST)</th>
+            <th>Symbol</th>
+            <th>Dir</th>
+            <th>Entry</th>
+            <th>TP</th>
+            <th>SL</th>
+            <th>Status</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="modal-picks"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const LOCAL_URL = '../data/leaderboard.json';
+const REMOTE_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/predictions/data/leaderboard.json';
+
+let currentData = null;
+let sortCol = 'total_predictions';
+let sortDir = -1;
+let activeFilter = 'all';
+
+const isSampleUrl = (url, predictorId) => {
+  const u = String(url || '').toLowerCase();
+  // Only filter as "sample" if URL contains /sample AND predictor is not a known analyst
+  const isKnownAnalyst = predictorId && predictorId.startsWith('analyst:');
+  if (isKnownAnalyst) return false;
+  return u.includes('/sample') || u.includes('status/sample');
+};
+
+function sanitizeData(data) {
+  const leaderboard = Array.isArray(data?.leaderboard) ? data.leaderboard : [];
+  const active = Array.isArray(data?.active_predictions) ? data.active_predictions : [];
+
+  const sampleActive = active.filter(p => isSampleUrl(p.source_url, p.predictor_id));
+  const samplePredictors = new Set(sampleActive.map(p => p.predictor_id));
+
+  const cleanActive = active.filter(p => !isSampleUrl(p.source_url, p.predictor_id) && !samplePredictors.has(p.predictor_id));
+  const cleanLeaderboard = leaderboard.filter(r => !samplePredictors.has(r.predictor_id));
+
+  const filteredTotalPredictions = cleanLeaderboard.reduce((acc, r) => acc + (r.total_predictions || 0), 0);
+
+  return {
+    ...data,
+    leaderboard: cleanLeaderboard,
+    active_predictions: cleanActive,
+    total_predictions_filtered: filteredTotalPredictions,
+    _quality: {
+      sample_active_excluded: sampleActive.length,
+      sample_predictors_excluded: samplePredictors.size
+    }
+  };
+}
+
+function renderDataWarning() {
+  const el = document.getElementById('data-warning');
+  if (!el) return;
+  const q = currentData?._quality;
+  if (!q || (!q.sample_active_excluded && !q.sample_predictors_excluded)) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.classList.remove('hidden');
+  el.textContent = `Data quality note: excluded ${q.sample_active_excluded} sample active picks from ${q.sample_predictors_excluded} seeded predictor accounts.`;
+}
+
+const platformBadge = p => {
+  const m = {
+    tradingview:'tradingview',reddit:'reddit',twitter:'twitter',
+    blog:'news',youtube:'youtube',analyst:'analyst',
+    polymarket:'polymarket','4chan':'4chan',stocktwits:'stocktwits',
+    coincodex:'coincodex',coinmarketcap:'coinmarketcap',
+    communities:'communities',news:'news'
+  };
+  const k = (p||'').toLowerCase();
+  const cls = m[k] || 'analyst';
+  return `<span class="badge badge-${cls}">${p||'Unknown'}</span>`;
+};
+
+// STRICT tier calculation
+const calculateTier = (predictor) => {
+  const picks = predictor.total_predictions || 0;
+  const wr = predictor.win_rate || 0;
+  
+  if (picks < 5) return 'UNRANKED';
+  if (picks < 25) return 'QUALIFYING';
+  if (picks >= 50 && wr >= 0.65) return 'ELITE';
+  if (picks >= 25 && wr >= 0.55) return 'PROVEN';
+  if (picks >= 25 && wr >= 0.45) return 'MIXED';
+  if (picks >= 25) return 'LOSING';
+  return 'QUALIFYING';
+};
+
+const tierBadge = (tier) => {
+  return `<span class="tier-${tier.toLowerCase()}">${tier}</span>`;
+};
+
+const pnlFmt = v => {
+  if (v == null || v === 0) return '<span style="color:#555">--</span>';
+  const cls = v >= 0 ? 'pnl-pos' : 'pnl-neg';
+  const sign = v >= 0 ? '+' : '';
+  return `<span class="${cls}">${sign}${v.toFixed(2)}%</span>`;
+};
+
+const wrFmt = (wr, picks) => {
+  if (picks < 5) return '<span style="color:#555">--</span>';
+  if (wr == null) return '--';
+  const pct = (wr * 100).toFixed(1);
+  let color = '#888';
+  if (wr >= 0.65) color = '#22c55e';
+  else if (wr >= 0.55) color = '#a78bfa';
+  else if (wr >= 0.45) color = '#eab308';
+  else color = '#ef4444';
+  return `<span style="color:${color};font-weight:600">${pct}%</span>`;
+};
+
+function extractHandle(predictor_id) {
+  if (!predictor_id) return '';
+  return predictor_id.replace('analyst:', '@').replace('tv:', '@').replace('reddit:u/', '@');
+}
+
+function getSourceType(platform, predictor_id) {
+  if (predictor_id && predictor_id.startsWith('analyst:')) return 'analyst';
+  return (platform || 'unknown').toLowerCase();
+}
+
+function toEST(isoString) {
+  if (!isoString) return 'N/A';
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleString('en-US', {timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+  } catch { return isoString; }
+}
+
+function showPredictorDetail(predictorId) {
+  const predictor = (currentData?.leaderboard || []).find(p => p.predictor_id === predictorId);
+  if (!predictor) return;
+  
+  // Get all picks for this predictor
+  const allPicks = (currentData?.active_predictions || []).filter(p => p.predictor_id === predictorId);
+  
+  document.getElementById('modal-title').innerHTML = `${predictor.display_name || predictorId} <span style="font-size:0.7rem;color:#888">${extractHandle(predictorId)}</span>`;
+  
+  const tier = calculateTier(predictor);
+  document.getElementById('modal-stats').innerHTML = `
+    <div class="modal-stat"><div class="val">${predictor.total_predictions || 0}</div><div class="lbl">Total Picks</div></div>
+    <div class="modal-stat"><div class="val">${wrFmt(predictor.win_rate, predictor.total_predictions || 0)}</div><div class="lbl">Win Rate</div></div>
+    <div class="modal-stat"><div class="val">${pnlFmt(predictor.avg_pnl_pct)}</div><div class="lbl">Avg P&L</div></div>
+    <div class="modal-stat"><div class="val">${tierBadge(tier)}</div><div class="lbl">Tier</div></div>
+  `;
+  
+  document.getElementById('modal-picks').innerHTML = allPicks.map(p => {
+    const status = p.status === 'ACTIVE' ? '<span class="active">ACTIVE</span>' : 
+                   (p.outcome_pnl_pct > 0 ? `<span class="resolved-win">WIN +${p.outcome_pnl_pct.toFixed(1)}%</span>` : 
+                    `<span class="resolved-loss">LOSS ${p.outcome_pnl_pct?.toFixed(1)}%</span>`);
+    const sourceLink = p.source_url ? `<a href="${p.source_url}" target="_blank" style="color:#a78bfa">View Original →</a>` : 'N/A';
+    
+    return `<tr>
+      <td>${toEST(p.scraped_at)}</td>
+      <td><strong>${p.symbol}</strong></td>
+      <td>${p.direction}</td>
+      <td>$${p.entry_price?.toLocaleString() || '--'}</td>
+      <td style="color:#22c55e">$${p.take_profit?.toLocaleString() || '--'}</td>
+      <td style="color:#ef4444">$${p.stop_loss?.toLocaleString() || '--'}</td>
+      <td>${status}</td>
+      <td>${sourceLink}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#555;padding:20px">No picks found</td></tr>';
+  
+  document.getElementById('modal').classList.add('active');
+}
+
+function showPredictorPicks(predictorId) {
+  // Show picks for any predictor (including new ones not in leaderboard)
+  const allPicks = (currentData?.active_predictions || []).filter(p => p.predictor_id === predictorId);
+  
+  if (!allPicks.length) {
+    alert('No picks found for this predictor');
+    return;
+  }
+  
+  const firstPick = allPicks[0];
+  const displayName = firstPick.display_name || predictorId;
+  
+  document.getElementById('modal-title').innerHTML = `${displayName} <span style="font-size:0.7rem;color:#888">${extractHandle(predictorId)}</span>`;
+  
+  document.getElementById('modal-stats').innerHTML = `
+    <div class="modal-stat"><div class="val">${allPicks.length}</div><div class="lbl">Active Picks</div></div>
+    <div class="modal-stat"><div class="val">${firstPick.platform || 'Unknown'}</div><div class="lbl">Platform</div></div>
+    <div class="modal-stat"><div class="val">NEW</div><div class="lbl">Status</div></div>
+    <div class="modal-stat"><div class="val">${allPicks.filter(p => p.direction === 'LONG').length}</div><div class="lbl">Long / Short</div></div>
+  `;
+  
+  document.getElementById('modal-picks').innerHTML = allPicks.map(p => {
+    const status = p.status === 'ACTIVE' ? '<span class="active">ACTIVE</span>' : 
+                   (p.outcome_pnl_pct > 0 ? `<span class="resolved-win">WIN +${p.outcome_pnl_pct.toFixed(1)}%</span>` : 
+                    `<span class="resolved-loss">LOSS ${p.outcome_pnl_pct?.toFixed(1)}%</span>`);
+    const sourceLink = p.source_url ? `<a href="${p.source_url}" target="_blank" style="color:#a78bfa;text-decoration:none">📎 View Source →</a>` : 'N/A';
+    
+    return `<tr>
+      <td>${toEST(p.scraped_at)}</td>
+      <td><strong>${p.symbol}</strong></td>
+      <td><span class="badge badge-${p.direction === 'LONG' ? 'long' : 'short'}">${p.direction}</span></td>
+      <td>${p.entry_price ? '$' + Number(p.entry_price).toLocaleString() : '--'}</td>
+      <td style="color:#22c55e">${p.take_profit ? '$' + Number(p.take_profit).toLocaleString() : '--'}</td>
+      <td style="color:#ef4444">${p.stop_loss ? '$' + Number(p.stop_loss).toLocaleString() : '--'}</td>
+      <td>${status}</td>
+      <td>${sourceLink}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#555;padding:20px">No picks found</td></tr>';
+  
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+function renderNewPredictors() {
+  // Get all unique predictors from active predictions who aren't in leaderboard
+  const allActive = (currentData && currentData.active_predictions) || [];
+  const lbIds = new Set(((currentData && currentData.leaderboard) || []).map(r => r.predictor_id));
+  
+  // Group by predictor
+  const predictorMap = new Map();
+  for (const p of allActive) {
+    const pid = p.predictor_id;
+    if (!pid || lbIds.has(pid)) continue;
+    if (!predictorMap.has(pid)) {
+      predictorMap.set(pid, {
+        predictor_id: pid,
+        display_name: p.display_name || pid.split(':').pop(),
+        platform: p.platform,
+        count: 0
+      });
+    }
+    predictorMap.get(pid).count++;
+  }
+  
+  const newPredictors = Array.from(predictorMap.values()).sort((a, b) => b.count - a.count);
+  const body = document.getElementById('new-pred-body');
+  const empty = document.getElementById('new-pred-empty');
+  
+  console.log('Rendering new predictors:', newPredictors.length, 'entries');
+  
+  if (!newPredictors.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  
+  body.innerHTML = newPredictors.map(r => {
+    const handle = extractHandle(r.predictor_id);
+    return `<tr class="clickable" onclick="showPredictorPicks('${r.predictor_id}')">
+      <td><span class="predictor-name">${r.display_name}</span>${handle ? `<span class="predictor-handle">${handle}</span>` : ''}</td>
+      <td>${platformBadge(r.platform)}</td>
+      <td style="color:#a78bfa;font-weight:600">${r.count}</td>
+      <td>${r.platform}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const lb = (currentData && currentData.leaderboard) || [];
+  const body = document.getElementById('lb-body');
+  const empty = document.getElementById('lb-empty');
+
+  if (!lb.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const sorted = [...lb].sort((a, b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (typeof va === 'string') return sortDir * (va || '').localeCompare(vb || '');
+    return sortDir * ((va || 0) - (vb || 0));
+  });
+
+  body.innerHTML = sorted.map((r, i) => {
+    const source = getSourceType(r.platform, r.predictor_id);
+    const hidden = (activeFilter !== 'all' && source !== activeFilter) ? ' hidden' : '';
+    const handle = extractHandle(r.predictor_id);
+    const tier = calculateTier(r);
+    
+    return `<tr class="${hidden}" data-source="${source}">
+      <td class="rank">${i + 1}</td>
+      <td class="clickable" onclick="showPredictorDetail('${r.predictor_id}')">
+        <span class="predictor-name">${r.display_name || r.predictor_id}</span>
+        ${handle ? `<span class="predictor-handle">${handle}</span>` : ''}
+      </td>
+      <td>${platformBadge(r.platform)}</td>
+      <td>${wrFmt(r.win_rate, r.total_predictions || 0)}</td>
+      <td>${pnlFmt(r.avg_pnl_pct)}</td>
+      <td class="clickable" onclick="showPredictorDetail('${r.predictor_id}')" style="cursor:pointer;color:#a78bfa;font-weight:600">${r.total_predictions || 0}</td>
+      <td>${tierBadge(tier)}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#leaderboard th').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (th.dataset.col === sortCol) {
+      th.classList.add(sortDir > 0 ? 'sorted-asc' : 'sorted-desc');
+    }
+  });
+}
+
+function renderActive() {
+  const preds = (currentData && currentData.active_predictions) || [];
+  const grid = document.getElementById('active-grid');
+  const empty = document.getElementById('active-empty');
+
+  if (!preds.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  grid.innerHTML = preds.map(p => {
+    const dirCls = p.direction === 'LONG' ? 'dir-long' : 'dir-short';
+    const age = p.scraped_at ? timeSince(p.scraped_at) : '';
+    const source = getSourceType(p.platform, p.predictor_id);
+    const hidden = (activeFilter !== 'all' && source !== activeFilter) ? ' hidden' : '';
+    const name = p.display_name || (p.predictor_id ? p.predictor_id.split(':').pop() : 'Unknown');
+    const sourceLink = p.source_url ? `<a href="${p.source_url}" target="_blank">View Original Post →</a>` : 'Source: N/A';
+    
+    return `<div class="active-card${hidden}" data-source="${source}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="sym">${p.symbol}</span>
+        <span class="${dirCls}">${p.direction}</span>
+      </div>
+      <div class="meta">
+        <strong>${name}</strong>
+        ${platformBadge(p.platform)}
+        ${age ? '<span style="color:#555">| ' + age + ' ago</span>' : ''}
+      </div>
+      <div class="levels">
+        ${p.entry_price ? '<span>Entry: $' + Number(p.entry_price).toLocaleString() + '</span>' : ''}
+        ${p.take_profit ? '<span class="tp">TP: $' + Number(p.take_profit).toLocaleString() + '</span>' : ''}
+        ${p.stop_loss ? '<span class="sl">SL: $' + Number(p.stop_loss).toLocaleString() + '</span>' : ''}
+      </div>
+      <div class="source-link">${sourceLink}</div>
+    </div>`;
+  }).join('');
+}
+
+function timeSince(iso) {
+  try {
+    const ms = Date.now() - new Date(iso).getTime();
+    const h = Math.floor(ms / 3600000);
+    if (h < 1) return Math.floor(ms / 60000) + 'm';
+    if (h < 24) return h + 'h';
+    return Math.floor(h / 24) + 'd';
+  } catch { return ''; }
+}
+
+function renderConsensus() {
+  const preds = (currentData && currentData.active_predictions) || [];
+  const grid = document.getElementById('consensus-grid');
+  const empty = document.getElementById('consensus-empty');
+
+  if (!preds.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  // Aggregate per symbol
+  const symbolMap = {};
+  for (const p of preds) {
+    const sym = p.symbol || 'UNKNOWN';
+    if (!symbolMap[sym]) symbolMap[sym] = { long: 0, short: 0, sources: {}, predictors: new Set() };
+    if (p.direction === 'LONG') symbolMap[sym].long++;
+    else symbolMap[sym].short++;
+    const src = (p.platform || 'unknown').toLowerCase();
+    symbolMap[sym].sources[src] = (symbolMap[sym].sources[src] || 0) + 1;
+    if (p.predictor_id) symbolMap[sym].predictors.add(p.predictor_id);
+  }
+
+  // Sort by total predictions descending
+  const symbols = Object.entries(symbolMap)
+    .map(([sym, d]) => ({ sym, ...d, total: d.long + d.short }))
+    .sort((a, b) => b.total - a.total);
+
+  grid.innerHTML = symbols.map(s => {
+    const longPct = s.total > 0 ? Math.round(s.long / s.total * 100) : 50;
+    const shortPct = 100 - longPct;
+    const isBullish = longPct >= 60;
+    const isBearish = longPct <= 40;
+    const label = isBullish ? 'BULLISH' : (isBearish ? 'BEARISH' : 'SPLIT');
+    const labelCls = isBullish ? 'bullish' : (isBearish ? 'bearish' : 'neutral');
+    const displaySym = s.sym.replace('USDT', '').replace(/[<>&"']/g, '');
+
+    const sourceChips = Object.entries(s.sources)
+      .sort((a, b) => b[1] - a[1])
+      .map(([src, cnt]) => {
+        const safeSrc = String(src).replace(/[<>&"']/g, '');
+        return `<span class="source-chip">${safeSrc} ${parseInt(cnt) || 0}</span>`;
+      })
+      .join('');
+
+    return `<div class="consensus-card">
+      <div class="sym-row">
+        <span class="sym-name">${displaySym}</span>
+        <span class="consensus-pct ${labelCls}">${longPct}% ${label}</span>
+      </div>
+      <div class="consensus-bar">
+        <div class="long-fill" style="width:${longPct}%"></div>
+        <div class="short-fill" style="width:${shortPct}%"></div>
+      </div>
+      <div class="meta-row">
+        <span>🟢 ${s.long} Long &nbsp;|&nbsp; 🔴 ${s.short} Short</span>
+        <span>${s.predictors.size} predictors</span>
+      </div>
+      <div class="source-chips">${sourceChips}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const lb = (currentData && currentData.leaderboard) || [];
+  const active = (currentData && currentData.active_predictions) || [];
+
+  document.getElementById('s-predictors').textContent = lb.length || 0;
+  document.getElementById('s-predictions').textContent = currentData ? (currentData.total_predictions_filtered || currentData.total_predictions || 0) : '--';
+  document.getElementById('s-active').textContent = active.length;
+
+  const qualified = lb.filter(r => (r.total_predictions || 0) >= 5 && r.win_rate != null);
+  if (qualified.length > 0) {
+    const best = qualified.reduce((a, b) => (a.win_rate || 0) > (b.win_rate || 0) ? a : b);
+    document.getElementById('s-top-wr').textContent = ((best.win_rate || 0) * 100).toFixed(1) + '%';
+  } else {
+    document.getElementById('s-top-wr').textContent = '--';
+  }
+
+  if (currentData && currentData.updated_at) {
+    try {
+      const d = new Date(currentData.updated_at);
+      document.getElementById('s-updated').textContent = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    } catch { document.getElementById('s-updated').textContent = '--'; }
+  }
+}
+
+function applyFilter(source) {
+  activeFilter = source;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.filter-btn[data-source="${source}"]`).classList.add('active');
+
+  document.querySelectorAll('#lb-body tr').forEach(tr => {
+    if (source === 'all' || tr.dataset.source === source) {
+      tr.classList.remove('hidden');
+    } else {
+      tr.classList.add('hidden');
+    }
+  });
+
+  document.querySelectorAll('.active-card').forEach(card => {
+    if (source === 'all' || card.dataset.source === source) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+async function fetchData() {
+  let data = null;
+  let localErr = null, remoteErr = null;
+  
+  // Try local first
+  try {
+    console.log('Fetching local:', LOCAL_URL);
+    const r = await fetch(LOCAL_URL + '?t=' + Date.now());
+    console.log('Local response:', r.status);
+    if (r.ok) {
+      data = await r.json();
+      console.log('Local data loaded:', data.leaderboard?.length, 'predictors,', data.active_predictions?.length, 'active');
+    }
+  } catch(e) { localErr = e; console.log('Local fetch failed:', e.message); }
+  
+  // Fallback to remote
+  if (!data) {
+    try {
+      console.log('Fetching remote:', REMOTE_URL);
+      const r = await fetch(REMOTE_URL + '?t=' + Date.now(), {mode: 'cors'});
+      console.log('Remote response:', r.status);
+      if (r.ok) {
+        data = await r.json();
+        console.log('Remote data loaded:', data.leaderboard?.length, 'predictors,', data.active_predictions?.length, 'active');
+      }
+    } catch(e) { remoteErr = e; console.log('Remote fetch failed:', e.message); }
+  }
+  
+  // Empty fallback
+  if (!data) {
+    console.error('All data sources failed. Local:', localErr?.message, 'Remote:', remoteErr?.message);
+    const errEl = document.getElementById('data-error');
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.innerHTML = `<strong>Data load error:</strong> Could not fetch predictions. <a href="${REMOTE_URL}" target="_blank" style="color:#fbbf24">Try direct link</a>`;
+    }
+    data = {leaderboard: [], active_predictions: [], total_predictions: 0, total_predictors: 0, updated_at: null};
+  } else {
+    const errEl = document.getElementById('data-error');
+    if (errEl) errEl.style.display = 'none';
+  }
+  
+  currentData = sanitizeData(data);
+  renderDataWarning();
+  updateStats();
+  renderConsensus();
+  renderLeaderboard();
+  renderNewPredictors();
+  renderActive();
+}
+
+// Sort headers
+document.querySelectorAll('#leaderboard th').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (!col) return;
+    if (sortCol === col) { sortDir *= -1; }
+    else { sortCol = col; sortDir = -1; }
+    renderLeaderboard();
+  });
+});
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.source));
+});
+
+// Close modal on outside click
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+fetchData();
+setInterval(fetchData, 60000);
+</script>
+</body>
+</html>

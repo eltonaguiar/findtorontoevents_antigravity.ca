@@ -1,0 +1,1 @@
+The edge is real. The data proves it. But the scoring formula can't see it because the symbol-specific component is nearly dead and the ml_score is actively working against you. Fix these 6 things and the score finally matches reality.

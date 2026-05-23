@@ -1,0 +1,39 @@
+# BOND research P1 — LITERATURE swarm.
+#
+# Fans the prompt at swarm_runs/briefing_research_bond_p1.md across 3 engines
+# (deepseek + cerebras + inception). Each engine returns JSON-strict citations
+# with URL + access_date + title + claim. Orchestrator HEAD-checks every URL
+# in tools/research/verify_citations.py and downgrades engines that exceed
+# 25% hallucination rate.
+#
+# Run via:
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/research_bond_p1.yaml --json-strict
+#
+# Out dir per run: swarm_runs/research_bond_p1_${TS}/
+# Per-engine: <engine>.json + <engine>.json.raw.txt
+# Summary: _summary.json
+#
+# Budget: ~$1-2 across 3 engines. P3+P4 are pure Python (free). P5 is a
+# separate yaml (research_bond_p5.yaml).
+
+name: research_bond_p1_${TS}
+prompt_file: swarm_runs/briefing_research_bond_p1.md
+out_dir: swarm_runs/research_bond_p1_${TS}
+max_parallel: 3
+json_strict: true
+strictness: strict
+
+engines:
+  - name: deepseek
+    model: deepseek-chat
+    sampling:
+      temperature: 0.2
+      max_tokens: 8000
+  - name: cerebras
+    sampling:
+      temperature: 0.2
+      max_tokens: 8000
+  - name: inception
+    sampling:
+      temperature: 0.2
+      max_tokens: 8000

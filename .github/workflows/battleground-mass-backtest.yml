@@ -1,0 +1,161 @@
+name: Battleground Mass Backtest
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_strategies:
+        description: 'Max strategies to test (0=all)'
+        default: '0'
+        type: string
+      timeout_per_strategy:
+        description: 'Timeout per strategy (seconds)'
+        default: '25'
+        type: string
+      scope:
+        description: 'Which strategies to test'
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - agents-only
+          - babies-only
+      force:
+        description: 'Re-test already tested strategies'
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+# issue #141: serialize auto-commit workflows so concurrent runs cannot race
+# each other into the main branch and produce conflict markers in data files.
+concurrency:
+  group: auto-commit-main-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  mass-backtest:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 240
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas numpy requests
+
+      - name: Run mass backtest
+        run: |
+          echo "=== Battleground Mass Backtest ==="
+          echo "Time: $(date -u)"
+          echo "Scope: ${{ inputs.scope || 'all' }}"
+          echo "Max: ${{ inputs.max_strategies || '0' }}"
+          echo "Timeout: ${{ inputs.timeout_per_strategy || '25' }}s"
+          echo ""
+
+          ARGS=""
+          if [ "${{ inputs.max_strategies }}" != "0" ] && [ -n "${{ inputs.max_strategies }}" ]; then
+            ARGS="$ARGS --max ${{ inputs.max_strategies }}"
+          fi
+          ARGS="$ARGS --timeout ${{ inputs.timeout_per_strategy || '25' }}"
+          if [ "${{ inputs.scope }}" = "agents-only" ]; then
+            ARGS="$ARGS --agents-only"
+          elif [ "${{ inputs.scope }}" = "babies-only" ]; then
+            ARGS="$ARGS --babies-only"
+          fi
+          if [ "${{ inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+
+          python incubator/backtest_team/batch_backtest_all.py $ARGS
+
+      - name: Commit and push results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage our backtest results
+          git add incubator/backtest_results/*.json battleground/data/*.json incubator/config/*.json 2>/dev/null || true
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          # issue #141: block conflict-marker commits
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "backtest: mass sweep results [$TIMESTAMP] [skip ci]" || { echo "No changes to commit"; exit 0; }
+
+          # Push with conflict resolution  our backtest results take priority
+          for i in 1 2 3 4 5; do
+            echo "Push attempt $i..."
+            git fetch origin main
+
+            # Try rebase first
+            if git rebase origin/main 2>/dev/null; then
+              bash .github/scripts/safe_push.sh && break
+            fi
+
+            # If rebase fails due to conflicts, abort and use merge with ours strategy
+            git rebase --abort 2>/dev/null || true
+
+            # Reset to our commit and force-include our changes
+            git checkout --ours . 2>/dev/null || true
+            git add -A 2>/dev/null || true
+
+            # Try merge approach instead
+            git reset --soft HEAD~1 2>/dev/null || true
+            git stash 2>/dev/null || true
+            git pull origin main --no-edit 2>/dev/null || true
+            git stash pop 2>/dev/null || true
+            git add incubator/backtest_results/*.json battleground/data/*.json incubator/config/*.json 2>/dev/null || true
+            # issue #141: block conflict-marker commits after stash-pop recovery
+            bash .github/scripts/assert_no_conflict_markers.sh || { echo "Aborting retry loop — conflict markers detected"; exit 1; }
+            git commit -m "backtest: mass sweep results [$TIMESTAMP] [skip ci]" 2>/dev/null || true
+            bash .github/scripts/safe_push.sh && break
+
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+
+      - name: Summary
+        run: |
+          echo "## Battleground Mass Backtest Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Scope:** ${{ inputs.scope || 'all' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Parse latest results
+          LATEST=$(ls -t incubator/backtest_results/real_data_sweep_*.json 2>/dev/null | head -1)
+          if [ -n "$LATEST" ]; then
+            python3 -c "
+          import json
+          data = json.loads(open('$LATEST').read())
+          print(f\"**Total tested:** {data['total_tested']}\")
+          print(f\"**Passed:** {data['passed']}\")
+          print(f\"**Failed:** {data['failed']}\")
+          print(f\"**Errors:** {data['errors']}\")
+          print(f\"**Duration:** {data['duration_sec']/60:.1f} min\")
+          print()
+          # Top performers
+          results = sorted([r for r in data['results'] if r['status'] == 'passed'], key=lambda x: x.get('sharpe') or 0, reverse=True)[:10]
+          if results:
+              print('### Top 10 Passed Strategies')
+              print('| Strategy | Sharpe | WR | PF | Trades |')
+              print('|---|---|---|---|---|')
+              for r in results:
+                  wr = f\"{r['win_rate']*100:.1f}%\" if r.get('win_rate') else 'N/A'
+                  print(f\"| {r['strategy_name']} | {r.get('sharpe', 0):.2f} | {wr} | {r.get('profit_factor', 0):.2f} | {r['total_trades']} |\")
+          " >> $GITHUB_STEP_SUMMARY
+          fi
+

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Therapy Game - Mental Health Resources</title>
+  <style>
+    :root {
+      --pk-500: #ec4899;
+      --pk-700: #be185d;
+      --pk-900: #500724;
+      --surface-0: #0f0f0f;
+      --surface-1: #1a1a1a;
+      --surface-2: #262626;
+      --surface-3: #3a3a3a;
+      --text-1: #ffffff;
+      --text-2: #a3a3a3;
+      --text-3: #737373;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--surface-0) 0%, #1a1a0a 100%);
+      color: var(--text-1);
+      min-height: 100vh;
+    }
+    .crisis-banner {
+      background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 4px solid #7f1d1d;
+    }
+    .crisis-banner h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .crisis-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+    .crisis-links a {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 0.5rem;
+      color: white;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .crisis-links a:hover { background: rgba(255,255,255,0.3); }
+    header {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, var(--pk-900) 0%, transparent 100%);
+    }
+    header h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    header p { color: var(--text-2); max-width: 600px; margin: 0 auto; }
+    .container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
+    .game-container {
+      background: var(--surface-1);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .score-board {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: var(--surface-2);
+      border-radius: 0.5rem;
+    }
+    .score-item { text-align: center; }
+    .score-label { font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; }
+    .score-value { font-size: 1.5rem; font-weight: bold; color: var(--pk-500); }
+    .target-color {
+      width: 150px;
+      height: 150px;
+      border-radius: 1rem;
+      margin: 1rem auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+    }
+    .instruction { margin: 1rem 0; color: var(--text-2); }
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .color-option {
+      aspect-ratio: 1;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 3px solid transparent;
+    }
+    .color-option:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    .color-option.correct {
+      border-color: #22c55e;
+      animation: pulse 0.5s ease-out;
+    }
+    .color-option.wrong {
+      border-color: #ef4444;
+      animation: shake 0.5s ease-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    .message {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin: 1rem 0;
+      min-height: 2rem;
+    }
+    .message.success { color: #22c55e; }
+    .message.error { color: #ef4444; }
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+    .btn-primary { background: var(--pk-500); color: white; }
+    .btn-primary:hover { background: var(--pk-700); }
+    .benefits {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      text-align: left;
+    }
+    .benefits h3 { margin-bottom: 1rem; color: var(--pk-500); }
+    .benefits ul { padding-left: 1.5rem; color: var(--text-2); }
+    .benefits li { margin-bottom: 0.5rem; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      color: var(--text-2);
+      text-decoration: none;
+      margin-top: 2rem;
+      transition: all 0.3s;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.1); color: white; }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-3);
+      font-size: 0.75rem;
+    }
+  
+    .info-banner {
+      background: linear-gradient(90deg, #1e40af 0%, #3730a3 100%);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #1e3a8a;
+    }
+    .info-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .info-icon { font-size: 1.25rem; }
+    .info-text { font-size: 0.875rem; line-height: 1.4; }
+    .info-text strong { color: #fbbf24; }
+
+    .recommended-resources {
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .recommended-resources h3 {
+      color: var(--pk-500);
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .resource-category h4 {
+      color: var(--text-1);
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    .resource-category ul {
+      list-style: none;
+      padding: 0;
+    }
+    .resource-category li {
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .resource-category a {
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .resource-category a:hover {
+      color: var(--pk-500);
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+  <section class="crisis-banner">
+    <h2>🚨 In Crisis? Get Help Now</h2>
+    <div class="crisis-links">
+      <a href="tel:18334564566">☎️ Call 1-833-456-4566</a>
+      <a href="sms:741741&body=HOME">💬 Text HOME to 741741</a>
+      <a href="tel:911">🆘 Emergency: 911</a>
+    </div>
+  </section>
+
+  <section class="info-banner">
+    <div class="info-content">
+      <span class="info-icon">ℹ️</span>
+      <div class="info-text">
+        <strong>Note:</strong> Save features use your browser's local storage and are for personal reflection only. 
+        Data is stored on your device and not on our servers. These tools are designed for self-reflection and are not a substitute for professional help.
+      </div>
+    </div>
+  </section>
+
+
+  <header>
+    <h1>🎨 Color Therapy Game</h1>
+    <p>Match the colors to calm your mind. Simple, engaging gameplay designed to reduce stress and improve focus.</p>
+  </header>
+
+  <div class="container">
+    <div class="game-container">
+      <div class="score-board">
+        <div class="score-item">
+          <div class="score-label">Score</div>
+          <div class="score-value" id="score">0</div>
+        </div>
+        <div class="score-item">
+          <div class="score-label">Streak</div>
+          <div class="score-value" id="streak">0</div>
+        </div>
+        <div class="score-item">
+          <div class="score-label">Best</div>
+          <div class="score-value" id="best">0</div>
+        </div>
+      </div>
+
+      <p class="instruction">Find and click the matching color:</p>
+      <div class="target-color" id="targetColor"></div>
+      
+      <div class="message" id="message"></div>
+
+      <div class="color-grid" id="colorGrid"></div>
+
+      <button class="btn btn-primary" onclick="newRound()">New Game</button>
+
+      <div class="benefits">
+        <h3>Benefits of Color Therapy</h3>
+        <ul>
+          <li><strong>Reduces anxiety:</strong> Focusing on colors interrupts anxious thought patterns</li>
+          <li><strong>Improves focus:</strong> Simple matching tasks enhance concentration</li>
+          <li><strong>Promotes mindfulness:</strong> Being present with colors grounds you</li>
+          <li><strong>Stimulates creativity:</strong> Color engagement activates creative brain areas</li>
+        </ul>
+      </div>
+    </div>
+
+    
+    <div class="recommended-resources">
+      <h3>📚 Recommended Resources</h3>
+      <div class="resources-grid">
+        <div class="resource-category">
+          <h4>📖 Books</h4>
+          <ul>
+            <li><a href="https://www.amazon.com/Feeling-Good-New-Mood-Therapy/dp/0380810336" target="_blank" rel="noopener noreferrer">"Feeling Good" by David D. Burns</a> - CBT classic</li>
+            <li><a href="https://www.amazon.com/Body-Keeps-Score-Healing-Trauma/dp/0143127748" target="_blank" rel="noopener noreferrer">"The Body Keeps the Score" by Bessel van der Kolk</a> - Trauma & healing</li>
+            <li><a href="https://www.amazon.com/Atomic-Habits-Proven-Build-Break/dp/0735211299" target="_blank" rel="noopener noreferrer">"Atomic Habits" by James Clear</a> - Building better habits</li>
+            <li><a href="https://www.amazon.com/Mans-Search-Meaning-Viktor-Frankl/dp/0807014273" target="_blank" rel="noopener noreferrer">"Man's Search for Meaning" by Viktor Frankl</a> - Finding purpose</li>
+          </ul>
+        </div>
+        <div class="resource-category">
+          <h4>🎬 Videos & Channels</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/@hubaboratoryermanlab" target="_blank" rel="noopener noreferrer">Huberman Lab</a> - Neuroscience-based mental health</li>
+            <li><a href="https://www.youtube.com/@HealthyGamerGG" target="_blank" rel="noopener noreferrer">HealthyGamer GG</a> - Mental health for modern life</li>
+            <li><a href="https://www.youtube.com/@TherapyinaNutshell" target="_blank" rel="noopener noreferrer">Therapy in a Nutshell</a> - CBT & DBT techniques</li>
+            <li><a href="https://www.ted.com/topics/mental+health" target="_blank" rel="noopener noreferrer">TED Talks: Mental Health</a> - Expert insights</li>
+          </ul>
+        </div>
+        <div class="resource-category">
+          <h4>🎧 Apps & Podcasts</h4>
+          <ul>
+            <li><a href="https://www.headspace.com" target="_blank" rel="noopener noreferrer">Headspace</a> - Guided meditation</li>
+            <li><a href="https://www.calm.com" target="_blank" rel="noopener noreferrer">Calm</a> - Sleep & relaxation</li>
+            <li><a href="https://www.wysa.io" target="_blank" rel="noopener noreferrer">Wysa</a> - AI mental health companion</li>
+            <li><a href="https://podcasts.apple.com/us/podcast/the-happiness-lab-with-dr-laurie-santos/id1474245040" target="_blank" rel="noopener noreferrer">The Happiness Lab Podcast</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <div style="text-align: center;">
+      <a href="/MENTALHEALTHRESOURCES/" class="back-link">← Back to Mental Health Resources</a>
+    </div>
+  </div>
+
+    <section class="disclaimer-section" style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+      <div style="background:var(--surface-1,#1a1a1a);border:1px solid rgba(255,255,255,0.1);border-radius:0.75rem;padding:2rem;margin-top:2rem;">
+        <h3 style="color:var(--pk-500,#ec4899);font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+          <span style="font-size:1.25rem;">&#9878;</span> Medical &amp; Mental Health Disclaimer
+        </h3>
+        <div style="color:var(--text-2,#a3a3a3);font-size:0.85rem;line-height:1.7;">
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Not a Substitute for Professional Medical Advice.</strong>
+            The information provided on this website is for general informational and educational purposes only. It is not intended to be, and should not be interpreted as, medical advice, mental health counseling, diagnosis, or treatment. The content on this site does not replace the relationship between you and your doctor, psychiatrist, psychologist, or other qualified healthcare provider.
+          </p>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">No Doctor-Patient or Therapist-Client Relationship.</strong>
+            Your use of this website does not create a doctor-patient, therapist-client, or any other professional healthcare relationship between you and the operators of this website. We are not a medical provider, mental health clinic, or healthcare facility.
+          </p>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Always Seek Professional Advice.</strong>
+            If you have or suspect you may have a medical or mental health condition, or if you are experiencing psychological distress, always seek the advice of a qualified healthcare provider. Never disregard professional medical advice or delay seeking it because of information you have read on this website.
+          </p>
+          <div style="background:linear-gradient(90deg,#dc2626 0%,#991b1b 100%);color:white;padding:1rem;border-radius:0.5rem;margin:1rem 0;">
+            <p style="margin:0;font-weight:bold;font-size:0.9rem;">
+              &#128680; If you are experiencing a medical or mental health emergency, or if you are having thoughts of suicide or self-harm, seek immediate help:
+            </p>
+            <ul style="margin:0.75rem 0 0 1.5rem;font-size:0.85rem;">
+              <li><strong>Call 911</strong> for immediate emergency assistance</li>
+              <li><strong>Call or text 9-8-8</strong> &mdash; Canada Suicide Crisis Helpline (24/7)</li>
+              <li><strong>Kids Help Phone:</strong> 1-800-668-6868 or text CONNECT to 686868 (ages 5&ndash;29, 24/7)</li>
+              <li><strong>Hope for Wellness Help Line</strong> (Indigenous peoples): 1-855-242-3310 (24/7)</li>
+              <li><strong>Crisis Text Line:</strong> Text HOME to 741741 (24/7)</li>
+            </ul>
+          </div>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Limitation of Liability.</strong>
+            While we strive to provide accurate and up-to-date information, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, or suitability of the information contained on this website. Any reliance you place on such information is strictly at your own risk. In no event will we be liable for any loss or damage arising from the use of this website or the information provided herein.
+          </p>
+          <p style="margin:0;font-size:0.8rem;color:var(--text-3,#737373);font-style:italic;">
+            Last updated: February 2026
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+
+  <footer>
+    <p>Mental health resources curated for global access. If you're in crisis, please reach out to local emergency services.</p>
+  </footer>
+
+  <script>
+    let score = 0;
+    let streak = 0;
+    let best = parseInt(localStorage.getItem('colorTherapyBest') || '0');
+    let targetColor = '';
+
+    const calmingColors = [
+      '#64B5F6', '#81C784', '#FFB74D', '#BA68C8', '#4DD0E1',
+      '#F06292', '#AED581', '#FFD54F', '#7986CB', '#4DB6AC',
+      '#FF8A65', '#A1887F', '#90A4AE', '#E57373', '#9575CD'
+    ];
+
+    function generateColors() {
+      const shuffled = [...calmingColors].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, 6);
+    }
+
+    function newRound() {
+      const colors = generateColors();
+      targetColor = colors[Math.floor(Math.random() * colors.length)];
+      
+      document.getElementById('targetColor').style.backgroundColor = targetColor;
+      document.getElementById('message').textContent = '';
+      document.getElementById('message').className = 'message';
+      
+      const grid = document.getElementById('colorGrid');
+      grid.innerHTML = '';
+      
+      const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
+      
+      shuffledColors.forEach(color => {
+        const div = document.createElement('div');
+        div.className = 'color-option';
+        div.style.backgroundColor = color;
+        div.onclick = () => checkColor(color, div);
+        grid.appendChild(div);
+      });
+
+      updateDisplay();
+    }
+
+    function checkColor(color, element) {
+      document.querySelectorAll('.color-option').forEach(el => {
+        el.classList.remove('correct', 'wrong');
+      });
+
+      if (color === targetColor) {
+        element.classList.add('correct');
+        score += 10 + streak * 2;
+        streak++;
+        if (streak > best) {
+          best = streak;
+          localStorage.setItem('colorTherapyBest', best.toString());
+        }
+        document.getElementById('message').textContent = getPositiveMessage();
+        document.getElementById('message').className = 'message success';
+        
+        setTimeout(newRound, 1000);
+      } else {
+        element.classList.add('wrong');
+        streak = 0;
+        document.getElementById('message').textContent = 'Try again! Take your time...';
+        document.getElementById('message').className = 'message error';
+      }
+      
+      updateDisplay();
+    }
+
+    function getPositiveMessage() {
+      const messages = [
+        'Perfect! 🌟',
+        'Well done! ✨',
+        'Great eye! 👁️',
+        'Excellent! 🎯',
+        'You got it! 💫',
+        'Wonderful! 🌈',
+        'Amazing! ⭐'
+      ];
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function updateDisplay() {
+      document.getElementById('score').textContent = score;
+      document.getElementById('streak').textContent = streak;
+      document.getElementById('best').textContent = best;
+    }
+
+    // Start game
+    newRound();
+  </script>
+</body>
+</html>

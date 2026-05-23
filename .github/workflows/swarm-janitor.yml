@@ -1,0 +1,49 @@
+name: swarm-janitor
+
+# Daily session-DB cleanup for the multi-engine swarm. Marks idle sessions
+# older than 168h (7d) expired and vacuums the SQLite file.
+#
+# The DB itself (`swarm_runs/_sessions.db`) is gitignored — see top of
+# `.gitignore`. This job commits the human-readable activity log
+# (`swarm_runs/_janitor.log`) which is the gitignore exception, so reviewers
+# get a paper trail of what the janitor expired without binary-blob churn.
+
+on:
+  schedule:
+    - cron: "0 4 * * *"   # daily 04:00 UTC
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  janitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Run swarm janitor
+        run: python tools/swarm/swarm_janitor.py --hours 168 --vacuum
+      - name: Commit janitor log if changed
+        run: |
+          if git diff --quiet swarm_runs/_janitor.log 2>/dev/null && \
+             [ -z "$(git status --porcelain swarm_runs/_janitor.log)" ]; then
+            echo "no janitor log changes"
+          else
+            if [ -f .github/scripts/safe_commit_push.sh ]; then
+              bash .github/scripts/safe_commit_push.sh "chore: weekly session cleanup [skip ci]" swarm_runs/_janitor.log
+            else
+              git config user.name "swarm-janitor"
+              git config user.email "swarm-janitor@noreply.local"
+              git add swarm_runs/_janitor.log
+              git commit -m "chore: weekly session cleanup [skip ci]" || echo "nothing to commit"
+              git pull --rebase origin main
+              git push origin HEAD:main || echo "push skipped (no changes)"
+            fi
+          fi

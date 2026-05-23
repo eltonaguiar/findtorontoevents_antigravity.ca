@@ -1,0 +1,441 @@
+# Feature Registry — Alpha Engine
+# Generated: 2026-05-16
+# Source modules: alpha_engine/features/factory.py, alpha_engine/feature_populator.py
+# Each entry: name, type, owner_module, data_lineage, description
+#
+# Type codes: numeric | categorical | binary | ordinal
+# owner_module: the Python module that computes this feature
+# data_lineage: upstream data sources required
+
+features:
+
+  # ── Momentum / Trend (factory.py -> features/momentum.py) ───────────────
+  - name: ret_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: >
+      N-day percentage return across windows [5,10,21,63,126,252].
+      Template: ret_5d, ret_21d, etc. (one column per ticker+window).
+
+  - name: logret_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: >
+      Log return over N days for windows [5,21,63]. More Gaussian than simple returns.
+
+  - name: ma{W}_slope
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: >
+      5-day slope of the W-day simple moving average. Windows: [10,20,50,100,200].
+
+  - name: price_vs_ma{W}
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: >
+      Fractional distance from price to W-day MA: (price - ma) / ma.
+
+  - name: golden_cross
+    type: binary
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: 1 if 50-day MA > 200-day MA (Golden Cross), else 0.
+
+  - name: ma50_200_spread
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: Fractional spread between 50-day and 200-day MA.
+
+  - name: rsi_14
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: 14-period Relative Strength Index. Range [0,100].
+
+  - name: macd_norm
+    type: numeric
+    owner_module: alpha_engine.features.momentum
+    data_lineage: [close_prices]
+    description: MACD (EMA12 - EMA26) normalised by price.
+
+  # ── Cross-Sectional (factory.py -> features/cross_sectional.py) ─────────
+  - name: cs_momentum_rank
+    type: numeric
+    owner_module: alpha_engine.features.cross_sectional
+    data_lineage: [close_prices, volume]
+    description: >
+      Cross-sectional percentile rank of momentum within the universe.
+      Range [0,1].
+
+  # ── Volatility (factory.py -> features/volatility.py) ───────────────────
+  - name: rvol_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Annualised realised volatility over N-day rolling window.
+
+  - name: vol_ratio_21_63
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Ratio of 21-day to 63-day volatility (vol term structure).
+
+  - name: vol_zscore
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Z-score of current realised vol vs its own 1-year history.
+
+  - name: atr_{N}d_pct
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices, high_prices, low_prices]
+    description: Average True Range over N days, expressed as % of price.
+
+  - name: intraday_range
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [high_prices, low_prices]
+    description: (High - Low) / Close. Single-bar intraday range.
+
+  - name: parkinson_vol
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [high_prices, low_prices]
+    description: Parkinson (high-low) estimator of volatility.
+
+  - name: beta_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Rolling N-day beta vs equal-weighted universe.
+
+  - name: downside_vol_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Downside (semi-)deviation over N days.
+
+  - name: max_dd_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Maximum drawdown over a rolling N-day window.
+
+  - name: kurtosis_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Excess kurtosis of daily returns over N days.
+
+  - name: skewness_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Skewness of daily returns over N days.
+
+  - name: vol_of_vol
+    type: numeric
+    owner_module: alpha_engine.features.volatility
+    data_lineage: [close_prices]
+    description: Volatility of 21-day realised vol (meta-vol).
+
+  # ── Volume (factory.py -> features/volume.py) ────────────────────────────
+  - name: dollar_vol_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [close_prices, volume]
+    description: Log(1 + average dollar volume) over N days.
+
+  - name: dollar_vol_rank
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [close_prices, volume]
+    description: Percentile rank of 20-day dollar volume within universe [0,1].
+
+  - name: vol_ratio_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [volume]
+    description: Ratio of N-day volume to its longer-term average.
+
+  - name: vol_shock
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [volume]
+    description: Z-score of current volume vs recent history (volume shock).
+
+  - name: amihud_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [close_prices, volume]
+    description: Amihud illiquidity ratio over N days.
+
+  - name: obv_slope_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [close_prices, volume]
+    description: Slope of On-Balance Volume over N days.
+
+  - name: rel_volume
+    type: numeric
+    owner_module: alpha_engine.features.volume
+    data_lineage: [volume]
+    description: Current volume relative to 20-day average.
+
+  # ── Mean Reversion (factory.py -> features/mean_reversion.py) ───────────
+  - name: reversal_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices]
+    description: Negative N-day cumulative return (reversal signal).
+
+  - name: bb_zscore_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices]
+    description: Bollinger Band z-score: (price - N-day MA) / N-day std.
+
+  - name: bb_width_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices]
+    description: Bollinger Band width = (upper - lower) / mid.
+
+  - name: bb_position_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices]
+    description: Position within Bollinger Band [0=lower, 1=upper].
+
+  - name: stoch_k_{N}
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices, high_prices, low_prices]
+    description: Stochastic %K over N periods.
+
+  - name: stoch_d_{N}
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices, high_prices, low_prices]
+    description: Stochastic %D (smoothed %K) over N periods.
+
+  - name: gap_from_trend
+    type: numeric
+    owner_module: alpha_engine.features.mean_reversion
+    data_lineage: [close_prices]
+    description: Gap between current price and long-run trend.
+
+  # ── Regime (factory.py -> features/regime.py) ────────────────────────────
+  - name: vix_level
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [macro_data, vix]
+    description: Current VIX level from macro DataFrame.
+
+  - name: vix_percentile
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [macro_data, vix]
+    description: 1-year percentile rank of VIX.
+
+  - name: vol_regime
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [close_prices, macro_data]
+    description: Composite volatility regime score.
+
+  - name: corr_regime
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [close_prices]
+    description: Rolling cross-sectional correlation (risk-on/off proxy).
+
+  - name: rate_level
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [macro_data, tnx]
+    description: Current 10-year treasury yield level.
+
+  - name: rate_change_21d
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [macro_data, tnx]
+    description: 21-day change in 10-year treasury yield.
+
+  - name: dxy_dist
+    type: numeric
+    owner_module: alpha_engine.features.regime
+    data_lineage: [macro_data, dxy]
+    description: DXY distance from its 50-day MA.
+
+  # ── Fundamental (factory.py -> features/fundamental.py) ─────────────────
+  - name: quality_composite
+    type: numeric
+    owner_module: alpha_engine.features.fundamental
+    data_lineage: [fundamentals]
+    description: Composite quality score (profitability + solvency).
+
+  - name: piotroski_proxy
+    type: numeric
+    owner_module: alpha_engine.features.fundamental
+    data_lineage: [fundamentals]
+    description: Piotroski F-score proxy from available fundamental ratios.
+
+  - name: balance_sheet_resilience
+    type: numeric
+    owner_module: alpha_engine.features.fundamental
+    data_lineage: [fundamentals]
+    description: Composite balance-sheet strength metric.
+
+  # ── Flow (factory.py -> features/flow.py) ────────────────────────────────
+  - name: accumulation_proxy_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.flow
+    data_lineage: [close_prices, volume]
+    description: Accumulation/distribution proxy over N days.
+
+  - name: money_flow_{N}d
+    type: numeric
+    owner_module: alpha_engine.features.flow
+    data_lineage: [close_prices, volume]
+    description: Chaikin Money Flow over N days.
+
+  - name: block_trade_proxy
+    type: numeric
+    owner_module: alpha_engine.features.flow
+    data_lineage: [volume]
+    description: Proxy for large-block institutional buying.
+
+  - name: short_cover_proxy
+    type: numeric
+    owner_module: alpha_engine.features.flow
+    data_lineage: [close_prices, volume]
+    description: Short-covering signal proxy.
+
+  - name: relative_flow
+    type: numeric
+    owner_module: alpha_engine.features.flow
+    data_lineage: [close_prices, volume]
+    description: Flow relative to sector/universe.
+
+  - name: flow_momentum
+    type: numeric
+    owner_module: alpha_engine.features.flow
+    data_lineage: [close_prices, volume]
+    description: Trend in cumulative money flow.
+
+  # ── Live signal features (feature_populator.py) ──────────────────────────
+  - name: rsi_at_entry
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: 14-period RSI computed at signal entry time from live OHLCV.
+
+  - name: volume_ratio
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Current bar volume / 20-bar average volume.
+
+  - name: atr_at_entry
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: 14-period ATR in price units at signal entry.
+
+  - name: regime_encoded
+    type: categorical
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Market regime label encoded as integer (0=bear,1=neutral,2=bull).
+
+  - name: close_to_vwap
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Fractional distance of close from VWAP: (close - vwap) / vwap.
+
+  - name: garman_klass_vol
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Garman-Klass volatility estimator from live OHLCV.
+
+  - name: fear_greed_norm
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [alternative_me_fng_api]
+    description: Fear & Greed Index normalised to [-1, 1]. External API.
+
+  - name: funding_rate_raw
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_fapi]
+    description: Current perpetual funding rate for the symbol.
+
+  - name: mom30
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: 30-bar momentum (close/close[30] - 1).
+
+  - name: rsi30
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: 30-period RSI from live OHLCV.
+
+  - name: macd_hist_norm
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: MACD histogram normalised by ATR.
+
+  - name: stoch_k30
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Stochastic %K with 30-period window.
+
+  - name: stoch_d30
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Stochastic %D with 30-period window.
+
+  - name: cci20_norm
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: 20-period Commodity Channel Index normalised by 100.
+
+  - name: williams_r
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Williams %R (14-period). Range [-100, 0].
+
+  - name: orderbook_imbalance
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_depth_api]
+    description: >
+      Top-of-book bid/ask imbalance: (bid_qty - ask_qty) / (bid_qty + ask_qty).
+
+  - name: btc_correlation
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: Rolling 30-bar correlation of the symbol with BTC returns.
+
+  - name: btc_24h_change
+    type: numeric
+    owner_module: alpha_engine.feature_populator
+    data_lineage: [binance_klines]
+    description: BTC 24-hour percentage change (macro crypto signal).

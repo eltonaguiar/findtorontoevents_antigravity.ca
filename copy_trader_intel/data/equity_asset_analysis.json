@@ -1,0 +1,630 @@
+{
+  "generated_at": "2026-03-21T15:12:53.244831+00:00",
+  "source_system": "ml_equity_reverser",
+  "diagnosis": {
+    "total_active_picks": 38,
+    "total_closed": 2,
+    "closed_won": 0,
+    "closed_lost": 2,
+    "issues": [
+      {
+        "issue": "UNREALISTIC_TP_TARGETS",
+        "severity": "CRITICAL",
+        "count": 27,
+        "detail": "27/38 picks have TP beyond realistic cap. Yahoo analyst consensus targets are 12-month forward -- not actionable for swing trades. RIOT 93%, MSTR 175%, MARA 96% are extreme examples.",
+        "fix": "Cap TP at 15% large-cap, 20% mid-cap, 25% small-cap."
+      },
+      {
+        "issue": "TRADING_AGAINST_TREND",
+        "severity": "HIGH",
+        "count": 23,
+        "detail": "23 picks enter LONG below 200d SMA -- fighting the primary trend.",
+        "fix": "Add trend filter: only LONG when above 200d SMA."
+      },
+      {
+        "issue": "UNDERPERFORMING_VS_SPY",
+        "severity": "MEDIUM",
+        "count": 24,
+        "detail": "24 picks are underperforming SPY over 63 days.",
+        "fix": "Add relative strength filter: only trade stocks outperforming SPY."
+      }
+    ],
+    "per_strategy": {
+      "stocks_rsi2_pullback": {
+        "count": 8,
+        "avg_tp_pct": 4.43,
+        "avg_sl_pct": 3.32
+      },
+      "yahoo_analyst_consensus": {
+        "count": 28,
+        "avg_tp_pct": 44.92,
+        "avg_sl_pct": 7.0
+      },
+      "smart_money_accumulation": {
+        "count": 2,
+        "avg_tp_pct": 7.05,
+        "avg_sl_pct": 3.52
+      }
+    },
+    "per_symbol_flags": [
+      {
+        "symbol": "PLTR",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "AMZN",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "RIOT",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "META",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "HD",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "BAC",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "MA",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "NFLX",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "MARA",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "AVGO",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "TMO",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "NVDA",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "PG",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "ORCL",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "V",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "CRM",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "HOOD",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "MSTR",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "MSFT",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "JPM",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "PINS",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "ABBV",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      },
+      {
+        "symbol": "COIN",
+        "flag": "LONG_BELOW_200SMA",
+        "detail": "Price below 200d SMA but entering LONG"
+      }
+    ],
+    "relative_strength_vs_spy": {
+      "AAPL": -5.84,
+      "ABBV": -4.99,
+      "AMD": 4.48,
+      "AMZN": -4.34,
+      "AVGO": -1.72,
+      "BAC": -10.21,
+      "COIN": -16.27,
+      "COST": 15.72,
+      "CRM": -21.34,
+      "GOOGL": 4.36,
+      "HD": -6.64,
+      "HOOD": -35.93,
+      "JPM": -5.76,
+      "KO": 9.35,
+      "LLY": -9.97,
+      "MA": -9.25,
+      "MARA": -11.95,
+      "META": -5.67,
+      "MRK": 18.83,
+      "MSFT": -16.76,
+      "MSTR": -12.56,
+      "NFLX": -0.28,
+      "NIO": 14.58,
+      "NVDA": 3.89,
+      "ORCL": -13.05,
+      "PEP": 3.72,
+      "PFE": 12.36,
+      "PG": 1.16,
+      "PINS": -24.97,
+      "PLTR": -12.16,
+      "RIOT": 6.09,
+      "TMO": -12.74,
+      "V": -9.39,
+      "WMT": 5.97
+    },
+    "sector_correlations": {
+      "AAPL": 0.623,
+      "ABBV": 0.582,
+      "AMD": 0.691,
+      "AMZN": 0.765,
+      "AVGO": 0.744,
+      "BAC": 0.823,
+      "COIN": 0.457,
+      "COST": 0.549,
+      "CRM": 0.499,
+      "GOOGL": 0.672,
+      "HD": 0.574,
+      "HOOD": 0.522,
+      "JPM": 0.842,
+      "KO": 0.707,
+      "LLY": 0.604,
+      "MA": 0.749,
+      "MARA": 0.465,
+      "META": 0.763,
+      "MRK": 0.605,
+      "MSFT": 0.69,
+      "MSTR": 0.459,
+      "NFLX": 0.357,
+      "NIO": 0.273,
+      "NVDA": 0.823,
+      "ORCL": 0.554,
+      "PEP": 0.688,
+      "PFE": 0.612,
+      "PG": 0.75,
+      "PINS": 0.444,
+      "PLTR": 0.568,
+      "RIOT": 0.495,
+      "TMO": 0.665,
+      "V": 0.727,
+      "WMT": 0.587
+    }
+  },
+  "summary": {
+    "root_causes": [
+      "UNREALISTIC_TP_TARGETS",
+      "TRADING_AGAINST_TREND",
+      "UNDERPERFORMING_VS_SPY"
+    ],
+    "primary_cause": "UNREALISTIC_TP_TARGETS",
+    "explanation": "Yahoo analyst 12-month price targets (RIOT 93%, MSTR 175%) are not achievable in swing trading timeframes. Combined with no trend filter (LONGs below 200d SMA) and no relative-strength screening, the system enters poor-quality trades with impossible targets. By the time price approaches TP, it has usually reversed.",
+    "fixes_applied": [
+      "TP capped at 15% large-cap, 20% mid-cap, 25% small-cap",
+      "Trend filter: LONG only above 200d SMA",
+      "Relative strength vs SPY filter",
+      "5 equity-specific variations with realistic parameters"
+    ]
+  },
+  "universe_snapshot": {
+    "AAPL": {
+      "rsi2": 11.2,
+      "rsi14": 34.9,
+      "above_200sma": true,
+      "pct_from_52w_high": -14.0,
+      "adx": 23.2,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -5.84,
+      "sector_corr": 0.623,
+      "market_cap_tier": "large"
+    },
+    "ABBV": {
+      "rsi2": 2.1,
+      "rsi14": 27.9,
+      "above_200sma": false,
+      "pct_from_52w_high": -15.0,
+      "adx": 19.8,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -4.99,
+      "sector_corr": 0.582,
+      "market_cap_tier": "large"
+    },
+    "AMD": {
+      "rsi2": 48.2,
+      "rsi14": 48.0,
+      "above_200sma": true,
+      "pct_from_52w_high": -24.6,
+      "adx": 13.5,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 4.48,
+      "sector_corr": 0.691,
+      "market_cap_tier": "large"
+    },
+    "AMZN": {
+      "rsi2": 11.4,
+      "rsi14": 40.6,
+      "above_200sma": false,
+      "pct_from_52w_high": -20.6,
+      "adx": 19.1,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -4.34,
+      "sector_corr": 0.765,
+      "market_cap_tier": "large"
+    },
+    "AVGO": {
+      "rsi2": 15.7,
+      "rsi14": 39.2,
+      "above_200sma": false,
+      "pct_from_52w_high": -25.0,
+      "adx": 17.9,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -1.72,
+      "sector_corr": 0.744,
+      "market_cap_tier": "large"
+    },
+    "BAC": {
+      "rsi2": 66.0,
+      "rsi14": 34.9,
+      "above_200sma": false,
+      "pct_from_52w_high": -17.6,
+      "adx": 33.3,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -10.21,
+      "sector_corr": 0.823,
+      "market_cap_tier": "large"
+    },
+    "COIN": {
+      "rsi2": 19.0,
+      "rsi14": 52.0,
+      "above_200sma": false,
+      "pct_from_52w_high": -55.6,
+      "adx": 22.4,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -16.27,
+      "sector_corr": 0.457,
+      "market_cap_tier": "mid"
+    },
+    "COST": {
+      "rsi2": 3.4,
+      "rsi14": 43.1,
+      "above_200sma": true,
+      "pct_from_52w_high": -8.5,
+      "adx": 17.2,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 15.72,
+      "sector_corr": 0.549,
+      "market_cap_tier": "large"
+    },
+    "CRM": {
+      "rsi2": 57.4,
+      "rsi14": 47.2,
+      "above_200sma": false,
+      "pct_from_52w_high": -33.7,
+      "adx": 17.7,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -21.34,
+      "sector_corr": 0.499,
+      "market_cap_tier": "large"
+    },
+    "GOOGL": {
+      "rsi2": 11.0,
+      "rsi14": 41.4,
+      "above_200sma": true,
+      "pct_from_52w_high": -13.7,
+      "adx": 24.9,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 4.36,
+      "sector_corr": 0.672,
+      "market_cap_tier": "large"
+    },
+    "HD": {
+      "rsi2": 2.0,
+      "rsi14": 23.4,
+      "above_200sma": false,
+      "pct_from_52w_high": -23.8,
+      "adx": 33.1,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -6.64,
+      "sector_corr": 0.574,
+      "market_cap_tier": "large"
+    },
+    "HOOD": {
+      "rsi2": 8.0,
+      "rsi14": 37.4,
+      "above_200sma": false,
+      "pct_from_52w_high": -53.9,
+      "adx": 32.0,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -35.93,
+      "sector_corr": 0.522,
+      "market_cap_tier": "mid"
+    },
+    "JPM": {
+      "rsi2": 28.8,
+      "rsi14": 37.6,
+      "above_200sma": false,
+      "pct_from_52w_high": -14.7,
+      "adx": 29.5,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -5.76,
+      "sector_corr": 0.842,
+      "market_cap_tier": "large"
+    },
+    "KO": {
+      "rsi2": 2.7,
+      "rsi14": 36.5,
+      "above_200sma": true,
+      "pct_from_52w_high": -8.2,
+      "adx": 20.8,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 9.35,
+      "sector_corr": 0.707,
+      "market_cap_tier": "large"
+    },
+    "LLY": {
+      "rsi2": 2.4,
+      "rsi14": 30.7,
+      "above_200sma": true,
+      "pct_from_52w_high": -19.9,
+      "adx": 16.0,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -9.97,
+      "sector_corr": 0.604,
+      "market_cap_tier": "large"
+    },
+    "MA": {
+      "rsi2": 59.1,
+      "rsi14": 39.5,
+      "above_200sma": false,
+      "pct_from_52w_high": -17.3,
+      "adx": 24.3,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -9.25,
+      "sector_corr": 0.749,
+      "market_cap_tier": "large"
+    },
+    "MARA": {
+      "rsi2": 17.0,
+      "rsi14": 46.4,
+      "above_200sma": false,
+      "pct_from_52w_high": -63.9,
+      "adx": 14.0,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -11.95,
+      "sector_corr": 0.465,
+      "market_cap_tier": "small"
+    },
+    "META": {
+      "rsi2": 4.3,
+      "rsi14": 32.7,
+      "above_200sma": false,
+      "pct_from_52w_high": -25.3,
+      "adx": 15.6,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -5.67,
+      "sector_corr": 0.763,
+      "market_cap_tier": "large"
+    },
+    "MRK": {
+      "rsi2": 15.7,
+      "rsi14": 43.4,
+      "above_200sma": true,
+      "pct_from_52w_high": -8.1,
+      "adx": 18.5,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 18.83,
+      "sector_corr": 0.605,
+      "market_cap_tier": "large"
+    },
+    "MSFT": {
+      "rsi2": 2.5,
+      "rsi14": 32.2,
+      "above_200sma": false,
+      "pct_from_52w_high": -30.9,
+      "adx": 23.4,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -16.76,
+      "sector_corr": 0.69,
+      "market_cap_tier": "large"
+    },
+    "MSTR": {
+      "rsi2": 13.0,
+      "rsi14": 47.2,
+      "above_200sma": false,
+      "pct_from_52w_high": -70.3,
+      "adx": 14.4,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -12.56,
+      "sector_corr": 0.459,
+      "market_cap_tier": "mid"
+    },
+    "NFLX": {
+      "rsi2": 10.8,
+      "rsi14": 51.5,
+      "above_200sma": false,
+      "pct_from_52w_high": -31.5,
+      "adx": 28.9,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -0.28,
+      "sector_corr": 0.357,
+      "market_cap_tier": "large"
+    },
+    "NIO": {
+      "rsi2": 10.6,
+      "rsi14": 52.6,
+      "above_200sma": true,
+      "pct_from_52w_high": -32.3,
+      "adx": 24.2,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 14.58,
+      "sector_corr": 0.273,
+      "market_cap_tier": "small"
+    },
+    "NVDA": {
+      "rsi2": 2.8,
+      "rsi14": 37.8,
+      "above_200sma": false,
+      "pct_from_52w_high": -18.6,
+      "adx": 17.2,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 3.89,
+      "sector_corr": 0.823,
+      "market_cap_tier": "large"
+    },
+    "ORCL": {
+      "rsi2": 18.1,
+      "rsi14": 43.8,
+      "above_200sma": false,
+      "pct_from_52w_high": -56.5,
+      "adx": 14.9,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -13.05,
+      "sector_corr": 0.554,
+      "market_cap_tier": "large"
+    },
+    "PEP": {
+      "rsi2": 0.9,
+      "rsi14": 31.1,
+      "above_200sma": true,
+      "pct_from_52w_high": -11.7,
+      "adx": 23.1,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 3.72,
+      "sector_corr": 0.688,
+      "market_cap_tier": "large"
+    },
+    "PFE": {
+      "rsi2": 24.1,
+      "rsi14": 50.7,
+      "above_200sma": true,
+      "pct_from_52w_high": -3.5,
+      "adx": 16.7,
+      "ema_stack_bullish": true,
+      "rs_vs_spy": 12.36,
+      "sector_corr": 0.612,
+      "market_cap_tier": "large"
+    },
+    "PG": {
+      "rsi2": 3.5,
+      "rsi14": 31.0,
+      "above_200sma": false,
+      "pct_from_52w_high": -15.2,
+      "adx": 24.6,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 1.16,
+      "sector_corr": 0.75,
+      "market_cap_tier": "large"
+    },
+    "PINS": {
+      "rsi2": 60.5,
+      "rsi14": 46.2,
+      "above_200sma": false,
+      "pct_from_52w_high": -53.2,
+      "adx": 22.6,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -24.97,
+      "sector_corr": 0.444,
+      "market_cap_tier": "mid"
+    },
+    "PLTR": {
+      "rsi2": 25.1,
+      "rsi14": 51.0,
+      "above_200sma": false,
+      "pct_from_52w_high": -27.4,
+      "adx": 18.6,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -12.16,
+      "sector_corr": 0.568,
+      "market_cap_tier": "mid"
+    },
+    "RIOT": {
+      "rsi2": 8.0,
+      "rsi14": 39.2,
+      "above_200sma": false,
+      "pct_from_52w_high": -44.1,
+      "adx": 10.8,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 6.09,
+      "sector_corr": 0.495,
+      "market_cap_tier": "small"
+    },
+    "TMO": {
+      "rsi2": 73.6,
+      "rsi14": 34.5,
+      "above_200sma": false,
+      "pct_from_52w_high": -26.3,
+      "adx": 51.5,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -12.74,
+      "sector_corr": 0.665,
+      "market_cap_tier": "large"
+    },
+    "V": {
+      "rsi2": 48.1,
+      "rsi14": 34.5,
+      "above_200sma": false,
+      "pct_from_52w_high": -19.2,
+      "adx": 28.7,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": -9.39,
+      "sector_corr": 0.727,
+      "market_cap_tier": "large"
+    },
+    "WMT": {
+      "rsi2": 2.2,
+      "rsi14": 38.1,
+      "above_200sma": true,
+      "pct_from_52w_high": -11.5,
+      "adx": 16.8,
+      "ema_stack_bullish": false,
+      "rs_vs_spy": 5.97,
+      "sector_corr": 0.587,
+      "market_cap_tier": "large"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+name: Gate Config Emit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'audit_trail/quality_gates.py'
+      - 'tools/emit_gate_config.py'
+  schedule:
+    # Regenerate daily at 05:00 UTC so the config stays fresh even if no code pushes
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+# Serialize overlapping runs — back-to-back pushes to quality_gates.py
+# otherwise spawn racing emit jobs that collide on `git push`.
+concurrency:
+  group: gate-config-emit
+  cancel-in-progress: false
+
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # depth >1 so `git pull --rebase` has history to replay onto
+          fetch-depth: 20
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Emit gate_config.json
+        run: python tools/emit_gate_config.py --out audit_dashboard/data/gate_config.json
+
+      - name: Commit gate_config.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/gate_config.json
+          if git diff --cached --quiet; then
+            echo "gate_config.json unchanged — no commit needed."
+          else
+            git commit -m "chore(gates): regenerate gate_config.json [skip ci]"
+            # Pull-rebase + retry: storm-commit repo, ~30 workflows push to main.
+            pushed=0
+            for i in 1 2 3 4 5; do
+              if git pull --rebase --autostash origin main \
+                 && git push origin HEAD:main; then
+                echo "Push succeeded on attempt $i"
+                pushed=1
+                break
+              fi
+              echo "push attempt $i/5 lost the race — re-fetching"
+              sleep $((i * 5))
+            done
+            [ "$pushed" = 1 ] || { echo "::error::push failed after 5 attempts"; exit 1; }
+          fi

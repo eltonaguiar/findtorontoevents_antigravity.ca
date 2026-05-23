@@ -1,0 +1,51 @@
+{
+  "wire_up_targets": {
+    "per_asset_class_predictor": {
+      "best_call_site_file": "scoring_engine/core/predictor_pipeline.py",
+      "best_call_site_function": "run_full_prediction_cycle",
+      "rationale": "This is the central scoring entry point for asset class predictions, called during every scoring batch.",
+      "downside": "Risk of overloading the main prediction loop with untested logic."
+    },
+    "concentration_enhancer": {
+      "best_call_site_file": "risk_management/portfolio_optimizer.py",
+      "best_call_site_function": "optimize_weights",
+      "rationale": "Concentration logic fits naturally in portfolio weight optimization as a post-processing step.",
+      "downside": "May interfere with existing risk parity constraints."
+    },
+    "drift_circuit_breaker": {
+      "best_call_site_file": "monitoring/live_drift_detector.py",
+      "best_call_site_function": "check_drift_thresholds",
+      "rationale": "Drift detection is already centralized here, making it the logical place to trigger circuit breakers.",
+      "downside": "Risk of false positives if thresholds are not tuned properly."
+    },
+    "risk_adjusted_metrics": {
+      "best_call_site_file": "dashboard/metrics_collector.py",
+      "best_call_site_function": "aggregate_risk_metrics",
+      "is_truly_sidecar": "true"
+    },
+    "edge_decay_heatmap": {
+      "best_call_site_file": "dashboard/visualization_engine.py",
+      "best_call_site_function": "generate_heatmap_data",
+      "is_truly_sidecar": "true"
+    }
+  },
+  "circuit_breaker_namespace_plan": {
+    "current_state_file_path": "state/circuit_breaker_state.json",
+    "current_top_level_keys": ["alpha_engine_fast", "beta_engine_slow"],
+    "recommended_new_key_name_for_drift_breaker": "drift_circuit_breaker_v1",
+    "stale_state_leak_prevention_rule": "ttl_seconds=3600 on each top-level namespace, expiry → ignored"
+  },
+  "ic_reproducer_plan": {
+    "closed_pick_dataset_path": "audit_trail/data/dashboard_payload.json :: recent_closed[]",
+    "ghost_cleanup_required": "true",
+    "minimum_python_snippet_to_compute_ic": "import pandas as pd\nimport numpy as np\ndf = pd.read_json('audit_trail/data/dashboard_payload.json')\nclosed = df['recent_closed']\nfor feat in feature_names:\n    ic = np.corrcoef(closed[feat], closed['outcome'])[0,1]\n    print(f'{feat} IC: {ic}')",
+    "feature_names_to_compute_ic_for": ["elite_score", "regime_bonus", "trust_score", "confidence", "ml_replacement_score", "source_system_tier"]
+  },
+  "scoring_change_attribution_plan": {
+    "merge_order_recommendation": "#942, #961, then mimo's PR",
+    "minimum_quarantine_period_days": 7,
+    "rollback_criterion": "If any scoring metric deviates >10% from baseline post-merge."
+  },
+  "highest_risk_one_thing_if_we_ship_as_proposed": "Drift circuit breaker could trigger false positives, halting live trading unnecessarily due to untested thresholds.",
+  "smallest_safe_pilot_action": "Deploy drift_circuit_breaker in shadow mode to log potential triggers without halting trading."
+}

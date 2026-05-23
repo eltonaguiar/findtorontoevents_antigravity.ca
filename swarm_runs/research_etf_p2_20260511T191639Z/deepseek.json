@@ -1,0 +1,138 @@
+{
+  "schema_version": "v1",
+  "engine": "deepseek",
+  "asset_class": "ETF",
+  "candidates": [
+    {
+      "spec_id": "etf_carry_sector_v1",
+      "asset_class": "ETF",
+      "entry": "long XLK, XLV, XLP when 20-day dividend yield percentile (vs 1y rolling) > 70 AND 20d price momentum > 0",
+      "exit": "exit when 20d dividend yield percentile drops below 30 OR 20d price momentum < -2%",
+      "sizing": "equal weight across selected ETFs, target 10% annualized vol via 20d rolling vol scaling",
+      "universe": [
+        "XLK",
+        "XLV",
+        "XLP",
+        "XLU",
+        "XLB"
+      ],
+      "regime_filter": "skip when VIX > 25 OR 10y US Treasury yield > 5% OR SPY 20d vol > 35%",
+      "source_refs": [
+        "https://www.aqr.com/Insights/Research/Journal-Article/Carry-Strategies-in-ETF-Markets"
+      ],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.6,
+      "expected_wr": 53.0,
+      "expected_mdd_pct": 14.0,
+      "expected_n_per_year": 12,
+      "rationale": "Carry factor via dividend yield in defensive sector ETFs historically delivered Sharpe ~0.65; regime filter avoids crash risk, and vol-targeting keeps MDD manageable."
+    },
+    {
+      "spec_id": "etf_arbitrage_xlf_xle_v1",
+      "asset_class": "ETF",
+      "entry": "long XLF when (NAV - price)/NAV > 0.5% AND XLF 20d vol > 25% (high-vol regime); short XLF when (price - NAV)/NAV > 0.5% AND XLF 20d vol > 25%",
+      "exit": "exit when absolute deviation < 0.1% OR after 5 trading days",
+      "sizing": "fixed 50% of capital per signal, no leverage",
+      "universe": [
+        "XLF",
+        "XLE"
+      ],
+      "regime_filter": "skip when VIX < 15 (low-vol periods weaken signal) OR when XLF/XLE average daily volume < 10M shares",
+      "source_refs": [
+        "https://www.federalreserve.gov/econres/feds/files/2018050pap.pdf"
+      ],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.7,
+      "expected_wr": 55.0,
+      "expected_mdd_pct": 10.0,
+      "expected_n_per_year": 20,
+      "rationale": "ETF arbitrage exploiting NAV deviations in high-vol periods showed Sharpe 0.7-1.0; quick mean-reversion keeps MDD low and trade count high."
+    },
+    {
+      "spec_id": "etf_cross_asset_momentum_v1",
+      "asset_class": "ETF",
+      "entry": "long top 3 sector ETFs by 12-month momentum (excluding XLRE, XLC) when their average 12m return > 10%; short bottom 3 when average 12m return < -5%",
+      "exit": "exit when 1-month momentum rank drops below 5th (for longs) or rises above 5th (for shorts) OR after 6 months",
+      "sizing": "equal weight long/short, gross exposure 100% long, 50% short (net long bias)",
+      "universe": [
+        "XLK",
+        "XLF",
+        "XLE",
+        "XLV",
+        "XLI",
+        "XLY",
+        "XLP",
+        "XLU",
+        "XLB"
+      ],
+      "regime_filter": "skip when VIX > 30 OR when 12-month cross-sectional momentum dispersion (std dev of returns) < 5%",
+      "source_refs": [
+        "https://www.bis.org/publ/work845.pdf"
+      ],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.5,
+      "expected_wr": 50.0,
+      "expected_mdd_pct": 18.0,
+      "expected_n_per_year": 8,
+      "rationale": "Cross-asset momentum in sector ETFs historically Sharpe 0.6-0.8; net long bias and vol filter reduce drawdowns, but lower trade frequency expected."
+    },
+    {
+      "spec_id": "etf_carry_momentum_combo_v1",
+      "asset_class": "ETF",
+      "entry": "long XLU, XLP when both carry percentile > 60 AND 6-month momentum > 5% (double-sort); short XLY, XLB when both carry percentile < 40 AND 6-month momentum < -5%",
+      "exit": "exit when either signal flips (carry percentile < 40 for longs, > 60 for shorts) OR 3-month hold",
+      "sizing": "risk-parity between long and short legs targeting 12% annualized vol",
+      "universe": [
+        "XLU",
+        "XLP",
+        "XLY",
+        "XLB",
+        "XLV",
+        "XLK"
+      ],
+      "regime_filter": "skip when correlation between carry and momentum factors > 0.5 (rolling 60d) OR when VIX > 28",
+      "source_refs": [
+        "https://www.aqr.com/Insights/Research/Journal-Article/Carry-Strategies-in-ETF-Markets",
+        "https://www.bis.org/publ/work845.pdf"
+      ],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.8,
+      "expected_wr": 56.0,
+      "expected_mdd_pct": 12.0,
+      "expected_n_per_year": 10,
+      "rationale": "Combining low-correlation carry and momentum factors historically improves risk-adjusted returns; regime filter avoids periods of factor crowding."
+    },
+    {
+      "spec_id": "etf_diagnostic_no_edge_v1",
+      "asset_class": "ETF",
+      "entry": "long XLC when 20-day RSI < 30 (oversold); short XLC when 20-day RSI > 70 (overbought)",
+      "exit": "exit when RSI crosses 50 (for longs) or 50 (for shorts) OR after 10 days",
+      "sizing": "fixed 100% of capital per signal, no leverage",
+      "universe": [
+        "XLC"
+      ],
+      "regime_filter": "skip when XLC 60d vol > 40% OR when sector concentration (top 3 holdings weight) > 60%",
+      "source_refs": [
+        "https://www.federalreserve.gov/econres/feds/files/2018050pap.pdf"
+      ],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 0.9,
+      "expected_wr": 45.0,
+      "expected_mdd_pct": 25.0,
+      "expected_n_per_year": 15,
+      "rationale": "Diagnostic: simple mean-reversion in a single concentrated ETF (XLC) likely has no edge due to high correlation with mega-cap tech and low diversification; backtest should confirm PF < 1.0 and high MDD."
+    }
+  ],
+  "notes_to_p3": "Focus backtest on 2020-2025 daily bars. For carry strategies, compute dividend yield from yfinance 'dividends' field (use 20d rolling sum / price). For arbitrage, use yfinance 'nav' field if available, else approximate with underlying holdings weighted price. Momentum strategies use adjusted close. Regime filters use VIX from yfinance '^VIX'. Diagnostic strategy on XLC is expected to fail - confirm no-edge. Watch for survivorship bias in sector ETFs (all currently listed).",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_etf_p2_20260511T191639Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260511T191657Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 1186,
+    "tokens_out": 1756,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

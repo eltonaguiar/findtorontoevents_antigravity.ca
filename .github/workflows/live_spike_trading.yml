@@ -1,0 +1,150 @@
+name: LIVE SPIKE TRADING - Autonomous Crypto Monitor
+
+on:
+  schedule:
+    - cron: '29 */2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: live-spike-trading
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  spike-trading:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 180
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy aiohttp
+        
+    - name: Run Live Spike Trading
+      run: |
+        echo ""
+        echo " LIVE SPIKE TRADING - AUTONOMOUS CRYPTO MONITOR "
+        echo ""
+        echo " Predicting volatility spikes before they happen "
+        echo " Assets: BTC, ETH, SOL, XRP, DOGE "
+        echo " Strategy: Multi-factor spike prediction "
+        echo ""
+        echo ""
+        
+        # Run for 14 minutes (GitHub Actions limit is ~6 hours, but we run frequently)
+        timeout 840 python live_spike_trader.py || true
+        
+    - name: Update Trading Results
+      run: |
+        # Create results summary
+        cat > LIVE_TRADING_RESULTS.md << 'RESULTS'
+        # LIVE SPIKE TRADING RESULTS
+        
+        **Last Updated:** $(date -u '+%Y-%m-%d %H:%M UTC')
+        
+        ## Current Status
+        
+        | Metric | Value |
+        |--------|-------|
+        | Status | ACTIVE |
+        | Assets Monitored | BTC, ETH, SOL, XRP, DOGE |
+        | Check Interval | 15 minutes |
+        | Capital | $10,000 |
+        | Risk per Trade | 2% |
+        
+        ## Strategy Overview
+        
+        ### Spike Prediction Factors
+        1. **Volume Surge Detection** - >2x average volume
+        2. **Funding Rate Anomalies** - Extreme funding = reversal risk
+        3. **Volatility Regime** - High vol = more opportunities
+        4. **Time-of-Day Patterns** - US market hours = higher activity
+        5. **Order Book Imbalance** - Buy/sell pressure
+        
+        ### Signal Criteria
+        - Minimum 2 confirming factors
+        - Confidence > 60%
+        - 2:1 risk-reward minimum
+        - 30-minute max hold time
+        
+        ## Performance Tracking
+        
+        Results are saved to: `spike_trading_results.json`
+        
+        ## Active Signals
+        
+        Check the latest run logs for current signals.
+        
+        ## Methodology
+        
+        This is a **true forward test** - no backtesting, no curve fitting.
+        Every signal is generated in real-time and tracked to completion.
+        
+        **Goal:** Collect 1,000+ signals for statistical validation
+        
+        RESULTS
+        
+    - name: Export spike picks to audit-readable JSON
+      continue-on-error: true
+      run: |
+        mkdir -p data
+        python3 -c "
+        import json, os, datetime
+
+        picks = []
+        try:
+            if os.path.exists('spike_trading_results.json'):
+                with open('spike_trading_results.json') as f:
+                    data = json.load(f)
+                for s in data.get('active_signals', []):
+                    asset = s.get('asset', '').upper()
+                    if not asset.endswith('USDT'):
+                        asset = asset.replace('USD', '') + 'USDT'
+                    picks.append({
+                        'symbol': asset,
+                        'direction': s.get('direction', 'LONG').upper(),
+                        'confidence': float(s.get('confidence', 50)) / 100.0,
+                        'entry_price': float(s.get('entry_price', 0)),
+                        'take_profit': float(s.get('take_profit', 0)),
+                        'stop_loss': float(s.get('stop_loss', 0)),
+                        'strategy': 'spike_prediction',
+                        'source_system': 'live_spike_trader',
+                        'timestamp': s.get('entry_time', datetime.datetime.utcnow().isoformat()),
+                    })
+        except Exception as e:
+            print(f'Failed to convert spike results: {e}')
+
+        output = {'picks': picks, 'updated_at': datetime.datetime.utcnow().isoformat(), 'source': 'live_spike_trader'}
+        with open('data/spike_trader_active.json', 'w') as f:
+            json.dump(output, f, indent=2)
+        print(f'Exported {len(picks)} spike trader picks to data/spike_trader_active.json')
+        "
+
+    - name: Commit results
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "trader@spike.ai"
+        git config --local user.name "Live Spike Trader"
+
+        git add spike_trading_results.json || true
+        git add LIVE_TRADING_RESULTS.md || true
+        git add data/spike_trader_active.json || true
+
+        git commit -m "Live spike trading update - $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" || echo "No changes"
+
+        bash .github/scripts/safe_push.sh
+

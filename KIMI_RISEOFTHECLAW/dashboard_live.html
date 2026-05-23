@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alpha — Live Trading Dashboard</title>
+    <meta name="description"
+        content="Live paper trading dashboard: 24+ strategies × 127 assets. Real market data, real signals, real-time P&amp;L.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a28;
+            --border: #2a2a3a;
+            --text: #e8e8f0;
+            --text2: #8888aa;
+            --green: #00ff88;
+            --green-dim: #00cc6a;
+            --red: #ff4466;
+            --red-dim: #cc3355;
+            --blue: #4488ff;
+            --gold: #ffaa00;
+            --purple: #aa66ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: linear-gradient(rgba(68, 136, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(68, 136, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, rgba(68, 136, 255, 0.1), rgba(170, 102, 255, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--blue), var(--purple));
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .sub {
+            color: var(--text2);
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 12px;
+        }
+
+        .badge-live {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .badge-method {
+            background: rgba(68, 136, 255, 0.15);
+            color: var(--blue);
+            border: 1px solid rgba(68, 136, 255, 0.3);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            background: var(--green);
+            animation: blink 1.5s infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card.clickable {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stat-card.clickable:hover {
+            border-color: var(--blue);
+            background: rgba(68, 136, 255, 0.05);
+        }
+
+        .click-hint {
+            font-size: 0.55rem;
+            color: var(--text2);
+            opacity: 0.5;
+            margin-top: 4px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.8rem;
+        }
+
+        .detail-label {
+            color: var(--text2);
+        }
+
+        .pos-sym {
+            color: var(--text2);
+            font-size: 0.75rem;
+        }
+
+        .cat-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        .pos-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 16px;
+            margin: 8px 0;
+        }
+
+        .stat-card .label {
+            font-size: 0.7rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .green {
+            color: var(--green);
+        }
+
+        .red {
+            color: var(--red);
+        }
+
+        .blue {
+            color: var(--blue);
+        }
+
+        .gold {
+            color: var(--gold);
+        }
+
+        .positions {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .position {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .position:hover {
+            border-color: var(--blue);
+        }
+
+        .position.winning {
+            border-left: 3px solid var(--green);
+        }
+
+        .position.losing {
+            border-left: 3px solid var(--red);
+        }
+
+        .position.flat {
+            border-left: 3px solid var(--text2);
+        }
+
+        .pos-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .pos-icon {
+            font-size: 1.5rem;
+        }
+
+        .pos-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .pos-symbol {
+            color: var(--text2);
+            font-size: 0.85rem;
+            margin-left: 8px;
+        }
+
+        .pos-reason {
+            color: var(--text2);
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .pos-strategies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .pos-strat-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(68, 136, 255, 0.1);
+            color: var(--blue);
+            border: 1px solid rgba(68, 136, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pos-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .level {
+            text-align: center;
+        }
+
+        .level .lbl {
+            font-size: 0.65rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .level .val {
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .tp-sl-bar {
+            margin-top: 10px;
+            position: relative;
+            height: 8px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: visible;
+        }
+
+        .tp-sl-bar .marker {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 16px;
+            border-radius: 1px;
+        }
+
+        .tp-sl-bar .marker.entry-m {
+            background: var(--text2);
+        }
+
+        .tp-sl-bar .marker.current-m {
+            background: var(--gold);
+            width: 4px;
+            top: -6px;
+            height: 20px;
+        }
+
+        .pnl-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .pnl-pct {
+            font-size: 1.8rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pnl-dollar {
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pnl-status {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .methodology {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .methodology h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: var(--blue);
+        }
+
+        .strat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .strat-item {
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .strat-item .sn {
+            font-weight: 700;
+            color: var(--green);
+            font-size: 0.75rem;
+        }
+
+        .strat-item .ss {
+            color: var(--text2);
+            font-size: 0.7rem;
+            margin-top: 4px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text2);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        #last-update {
+            color: var(--gold);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar .filter-label {
+            font-size: 0.75rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-right: 4px;
+        }
+
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text2);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--blue);
+            color: var(--text);
+        }
+
+        .filter-btn.active {
+            background: rgba(68, 136, 255, 0.2);
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .filter-btn .filter-count {
+            font-size: 0.65rem;
+            margin-left: 4px;
+            opacity: 0.7;
+        }
+
+        /* Category tags */
+        .cat-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        .cat-crypto {
+            background: rgba(255, 170, 0, 0.15);
+            color: var(--gold);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+        }
+
+        .cat-stock {
+            background: rgba(170, 102, 255, 0.15);
+            color: var(--purple);
+            border: 1px solid rgba(170, 102, 255, 0.3);
+        }
+
+        .cat-forex {
+            background: rgba(0, 200, 200, 0.15);
+            color: #00c8c8;
+            border: 1px solid rgba(0, 200, 200, 0.3);
+        }
+
+        .market-status {
+            font-size: 0.7rem;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .market-status.live {
+            color: var(--green);
+        }
+
+        .market-status.closed {
+            color: var(--text2);
+        }
+
+        .market-status .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .market-status.live .status-dot {
+            background: var(--green);
+            animation: blink 1.5s infinite;
+        }
+
+        .market-status.closed .status-dot {
+            background: var(--text2);
+        }
+
+        .position.hidden {
+            display: none;
+        }
+
+        @media (max-width:768px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .pos-levels {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .position {
+                grid-template-columns: 1fr;
+            }
+
+            .pnl-cell {
+                align-items: flex-start;
+                margin-top: 8px;
+            }
+
+            .filter-bar {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+        <div class="header">
+            <h1>ANTIGRAVITY ALPHA ENGINE</h1>
+            <div class="sub">24+ Strategies × 127 Assets — Live Signal Scanner with Confluence Filter</div>
+            <div style="margin-top:12px">
+                <span class="badge badge-live"><span class="live-dot"></span> Auto-Refreshing (30s)</span>
+                <span class="badge badge-method">$0 Data Budget</span>
+            </div>
+            <div id="last-update">Loading live prices...</div>
+        </div>
+        <div class="stats" id="stats-row"></div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar" id="filter-bar">
+            <span class="filter-label">Filter:</span>
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All <span
+                    class="filter-count" id="cnt-all"></span></button>
+            <button class="filter-btn" data-filter="crypto" onclick="setFilter('crypto')">&#x1FA99; Crypto <span
+                    class="filter-count" id="cnt-crypto"></span></button>
+            <button class="filter-btn" data-filter="stock" onclick="setFilter('stock')">&#x1F4CA; Stocks <span
+                    class="filter-count" id="cnt-stock"></span></button>
+            <button class="filter-btn" data-filter="forex" onclick="setFilter('forex')">&#x1F4B1; Forex <span
+                    class="filter-count" id="cnt-forex"></span></button>
+            <button class="filter-btn" data-filter="winning" onclick="setFilter('winning')">&#x1F7E2; Winning</button>
+            <button class="filter-btn" data-filter="losing" onclick="setFilter('losing')">&#x1F534; Losing</button>
+            <button class="filter-btn" data-filter="live" onclick="setFilter('live')">&#x25CF; Live Only</button>
+        </div>
+
+        <!-- Dynamic Commentary -->
+        <div id="commentary"
+            style="margin:12px 0;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;border-left:3px solid var(--blue)">
+            <div style="padding:4px 0;font-size:0.75rem;color:var(--text2)">&#x23F3; Loading market commentary...</div>
+        </div>
+
+        <!-- Forward Test Notice -->
+        <div
+            style="margin-bottom:12px;padding:10px 16px;background:rgba(0,122,255,0.08);border-radius:10px;border:1px solid rgba(0,122,255,0.2);display:flex;align-items:center;gap:10px">
+            <span style="font-size:1.2rem">&#x1F9EA;</span>
+            <div>
+                <div style="font-size:0.75rem;font-weight:700;color:var(--blue)">FORWARD TEST MODE</div>
+                <div style="font-size:0.65rem;color:var(--text2)">All picks are auto-detected by algorithms scanning
+                    real market data. $0 real money at risk. Click any pick's "View Full Audit Log" to see the exact
+                    methodology, strategy, confidence level, and indicators behind each signal.</div>
+            </div>
+        </div>
+
+        <div class="positions" id="positions"></div>
+        <div class="methodology">
+            <h2>&#x1F4CA; Strategy Arsenal &mdash; 24+ Signals Scanned Per Asset</h2>
+            <div class="strat-grid">
+                <div class="strat-item">
+                    <div class="sn">1. RSI(2) Mean Reversion</div>
+                    <div class="ss">Connors &amp; Alvarez &mdash; 77% WR on SPY</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">2. Fear & Greed Contrarian</div>
+                    <div class="ss">Baker &amp; Wurgler &mdash; alternative.me</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">3. Funding Rates</div>
+                    <div class="ss">Binance fapi &mdash; perpetual futures</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">4. BTC Dominance Rotation</div>
+                    <div class="ss">Liu &amp; Tsyvinski &mdash; relative strength</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">5. MACD Crossover</div>
+                    <div class="ss">Gerald Appel 1979</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">6. Stochastic Oscillator</div>
+                    <div class="ss">George Lane &mdash; overbought/oversold</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">7. Bollinger Squeeze</div>
+                    <div class="ss">John Bollinger 2001</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">8. Volume Spike</div>
+                    <div class="ss">Wyckoff Method &mdash; institutional flow</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">9. Golden/Death Cross</div>
+                    <div class="ss">Brock et al. 1992 &mdash; SMA50/200</div>
+                </div>
+                <div class="strat-item">
+                    <div class="sn">10. OBV Divergence</div>
+                    <div class="ss">Joe Granville 1963</div>
+                </div>
+            </div>
+        </div>
+        <!-- Scanner Picks Section -->
+        <div class="methodology" id="scanner-picks-section" style="margin-top:24px">
+            <h2>&#x1F50D; Live Market Scanner &mdash; <span id="picks-count">Loading...</span> Real-Time Signals</h2>
+            <p style="color:var(--text2);font-size:0.75rem;margin-bottom:12px">Real-time signals from crypto order
+                books, funding rates, RSI, and forex trend analysis. Updated automatically.</p>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                <button class="filter-btn active" data-pfilter="all" onclick="setPickFilter('all')">All</button>
+                <button class="filter-btn" data-pfilter="crypto" onclick="setPickFilter('crypto')">&#x1FA99;
+                    Crypto</button>
+                <button class="filter-btn" data-pfilter="stock" onclick="setPickFilter('stock')">&#x1F4CA;
+                    Stocks</button>
+                <button class="filter-btn" data-pfilter="forex" onclick="setPickFilter('forex')">&#x1F4B1;
+                    Forex</button>
+            </div>
+            <div id="scanner-picks" style="display:grid;gap:8px"></div>
+        </div>
+
+        <div class="footer">
+            <p>Built by <strong>Antigravity</strong> &mdash; $0 budget, public APIs only</p>
+            <p style="margin-top:6px">
+                <a href="/updates/">&larr; Updates</a> &middot;
+                <a href="scanner_log.html">&#x1F50D; Scanner Log</a> &middot;
+                <a href="/KIMI_RISEOFTHECLAW/METHODOLOGY_AUDIT_TRAIL.md">Audit Trail</a> &middot;
+                <a href="/KIMI_RISEOFTHECLAW/data/paper_portfolio.json">Portfolio JSON</a>
+            </p>
+            <p style="margin-top:8px;font-size:0.7rem;color:#555">Paper trading simulation only. Not financial advice.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        var ICONS = {};
+        var NAMES = {};
+        var CG_IDS = {};
+        var BINANCE_IDS = {};
+        var MIN_CONFLUENCE = 1;
+        var PORTFOLIO = { starting_capital: 0, per_trade: 2000, positions: [] };
+    </script>
+    <script src="dashboard_data.js"></script>
+    <script src="dashboard_logic.js"></script>
+</body>
+
+</html>

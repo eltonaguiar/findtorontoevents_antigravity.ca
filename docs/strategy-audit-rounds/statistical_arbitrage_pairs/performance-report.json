@@ -1,0 +1,36 @@
+{
+  "strategy": "crypto_pairs_arb",
+  "asset_class": "CRYPTO",
+  "module": "alpha_engine/crypto_pairs_arb.py",
+  "report_type": "synthetic_walk_forward_backtest",
+  "report_generated_utc": "2026-05-09T17:10:00Z",
+  "method": {
+    "data": "synthetic cointegrated BTC/ETH-like series (365 daily bars, seed=42)",
+    "construction": "shared random-walk common factor + OU mean-reverting spread (phi=0.85, sigma=0.02) + idiosyncratic noise",
+    "split": {"train_bars": 180, "test_bars": 185},
+    "entry_z": 2.0,
+    "exit_horizon_bars": 5,
+    "stop_pct": 0.03,
+    "max_half_life": 30,
+    "window": 60
+  },
+  "results": {
+    "n_signals": 13,
+    "win_rate": 0.9231,
+    "avg_pnl_pct": 2.5622,
+    "sharpe": 25.255,
+    "train_bars": 180,
+    "test_bars": 185
+  },
+  "notes": [
+    "Synthetic data is by-construction cointegrated, so 92% WR / 25 Sharpe is a SANITY CHECK that the math works, NOT a forecast of live performance.",
+    "Live expectation per Vidyamurthy / Gatev framework: 55-65% WR, Sharpe ~1.0-1.5 on crypto majors after fees+slippage.",
+    "Real backtest on closed-trade ledger requires wire-up + 30-day forward run; will replace this stub.",
+    "Reproduce: `python alpha_engine/crypto_pairs_arb.py` from repo root."
+  ],
+  "next_milestones": [
+    "Wire-up PR registers crypto_pairs_arb in PROVEN_RESEARCH_STRATEGIES (target 2026-05-12).",
+    "After n>=20 closed live trades, replace this synthetic report with audit_dashboard/data closed-ledger pull.",
+    "Promote to default-on once live PF >= 1.2 and WR >= 50%."
+  ]
+}

@@ -1,0 +1,151 @@
+# Cycle-8 perf-review mutation proposals
+# Per docs/MUTATION_THREE_AXIS_PROTOCOL.md: each candidate gets a sweep, regime, inverse axis.
+# Generated: 2026-04-21 04:13 UTC
+# Source: audit_trail/data/dashboard_payload.json (3500 closed picks)
+# Selection: n >= 20 closed picks AND WR < 35%
+#
+# DO NOT auto-apply. Engineer review required before paper-running any variant.
+# Each variant gets a 7-day paper-only run before promotion to baby_strategies.
+
+cycle: 8
+generated_at_utc: "2026-04-21T04:13:00Z"
+
+candidates:
+
+  # ========== ZOMBIES — already retired, skip mutation ==========
+  - strategy: copy_hl_lb_None
+    status: zombie_retired
+    note: |
+      Already in alpha_engine/strategy_blocklist.py::_RETIRED_STRATEGIES.
+      Still emitting closed picks (n=278, cum -806%). Do NOT mutate.
+      ACTION: trace which emitter bypasses the blocklist gate and plug it.
+    metrics: {n: 278, wr_pct: 32.0, pf: 0.56, mean_pnl_pct: -2.901, cum_pnl_pct: -806.39}
+
+  - strategy: st_fear_greed_contrarian
+    status: zombie_retired
+    note: |
+      Already retired. Still emitting (n=621, cum -365%). Do NOT mutate.
+      ACTION: same as copy_hl_lb_None — find the bypass.
+    metrics: {n: 621, wr_pct: 23.8, pf: 0.36, mean_pnl_pct: -0.587, cum_pnl_pct: -364.51}
+
+  - strategy: st_obv_support_divergence
+    status: zombie_retired
+    note: |
+      Already retired. Still emitting (n=90, cum -75%). Do NOT mutate.
+    metrics: {n: 90, wr_pct: 28.9, pf: 0.23, mean_pnl_pct: -0.836, cum_pnl_pct: -75.20}
+
+  # ========== BROKEN — investigate before mutating ==========
+  - strategy: non_crypto_consensus
+    status: broken_flat_close
+    note: |
+      n=87, WR=0%, mean PnL exactly 0%. Every closed pick has pnl_pct=0.0.
+      This is not a losing strategy — it's a strategy that closes flat.
+      Likely a resolver bug or strategy that emits picks with no actionable TP/SL.
+      ACTION: trace to source before any mutation.
+    metrics: {n: 87, wr_pct: 0.0, pf: 0.0, mean_pnl_pct: 0.0, cum_pnl_pct: 0.01}
+
+  # ========== TRUE MUTATION CANDIDATES (negative cum, PF < 1) ==========
+  - strategy: kimi_signal_tracking
+    status: mutate
+    metrics: {n: 29, wr_pct: 34.5, pf: 0.56, mean_pnl_pct: -2.190, cum_pnl_pct: -63.52}
+    axes:
+      sweep:
+        - "min_sub_signal_threshold: current -> {+1, +2}"
+        - "weighting: equal -> by_historical_wr"
+        - "expiry_horizon: same_bar -> {1h, 4h}"
+      regime:
+        - "asset_class scoping (only emit on classes with positive cohort WR)"
+        - "time_of_day filter (drop kill window 8-11 UTC, 16-21 UTC per PR #294)"
+      inverse: "invert direction signals; backtest as standalone variant"
+
+  - strategy: st_atr_vol_breakout
+    status: mutate
+    metrics: {n: 27, wr_pct: 22.2, pf: 0.27, mean_pnl_pct: -0.798, cum_pnl_pct: -21.55}
+    axes:
+      sweep:
+        - "breakout_mult: current -> {-25%, -10%, +25%}"
+        - "ATR_len: current -> {7, 14, 28}"
+        - "entry_threshold: tighten 25%"
+      regime:
+        - "session_filter: drop 8-11 UTC and 16-21 UTC"
+        - "volume_confirmation: require >1.5x avg vol on entry bar"
+      inverse: "invert direction; vol_breakouts often fade rather than continue"
+
+  - strategy: atr_regime_rsi
+    status: mutate
+    metrics: {n: 29, wr_pct: 17.2, pf: 0.26, mean_pnl_pct: -0.358, cum_pnl_pct: -10.38}
+    axes:
+      sweep:
+        - "RSI_len: 14 -> {7, 21, 28}"
+        - "OS/OB: 30/70 -> {20/80, 25/75}"
+        - "RSI_smoothing: SMA -> EMA"
+      regime:
+        - "BTC 4h trend filter (long only when BTC EMA50 > EMA200)"
+        - "ATR_percentile gate (skip when ATR% < 25th percentile)"
+      inverse: "invert direction signals"
+
+  - strategy: ensemble
+    status: investigate_first
+    note: |
+      Unbranded "ensemble" — likely a dispatcher mislabel.
+      Identify which sub-strategies are aggregated under this name BEFORE mutating.
+      May be a tracking-side rollup that should be split to component strategies.
+    metrics: {n: 24, wr_pct: 16.7, pf: 0.64, mean_pnl_pct: -0.376, cum_pnl_pct: -9.02}
+
+  - strategy: cta_commodity_momentum_term
+    status: mutate
+    metrics: {n: 43, wr_pct: 9.3, pf: 0.01, mean_pnl_pct: -0.100, cum_pnl_pct: -4.30}
+    axes:
+      sweep:
+        - "term_structure_window: current -> {30d, 60d, 90d}"
+        - "rebal_freq: current -> {weekly, monthly}"
+        - "signal_threshold: current -> ±25%"
+      regime:
+        - "commodity_regime_gate: contango vs backwardation"
+        - "softs vs metals subset (only metals or only softs)"
+      inverse: "invert direction; commodity term-structure often reverts"
+
+  # ========== TP:SL-SKEWED POSITIVES — DO NOT MUTATE ==========
+  # These low-WR strategies are net-positive cum PnL due to TP > SL ratios.
+  # Including for transparency; should be excluded from auto-mutation gate.
+  - strategy: cta_cross_asset_tsmom
+    status: skip_positive_cum
+    note: "PF 1.23, cum +1.07%. Low WR by design."
+    metrics: {n: 57, wr_pct: 12.3, pf: 1.23, mean_pnl_pct: 0.019, cum_pnl_pct: 1.07}
+
+  - strategy: futures_momentum
+    status: skip_positive_cum
+    note: "PF 1.38, cum +20.83%. Low WR by design."
+    metrics: {n: 436, wr_pct: 24.5, pf: 1.38, mean_pnl_pct: 0.048, cum_pnl_pct: 20.83}
+
+  - strategy: forex_rsi2_mean_reversion
+    status: skip_positive_cum
+    note: "PF 3.71, cum +34.56%. The strongest TP:SL skew in the dataset."
+    metrics: {n: 522, wr_pct: 28.4, pf: 3.71, mean_pnl_pct: 0.066, cum_pnl_pct: 34.56}
+
+# ========== Symbol blocklist proposal ==========
+# Crypto altcoins with cum PnL < -30% on n >= 50: soft block (require elite_score >= 75 AND conf >= 0.85 AND TP:SL >= 2.5)
+symbol_block_candidates:
+  - {symbol: OPUSDT,  asset_class: CRYPTO, n: 64, wr_pct: 15.6, cum_pnl_pct: -128.82}
+  - {symbol: SUIUSDT, asset_class: CRYPTO, n: 80, wr_pct: 18.8, cum_pnl_pct: -92.09}
+  - {symbol: APTUSDT, asset_class: CRYPTO, n: 66, wr_pct: 22.7, cum_pnl_pct: -82.58}
+  - {symbol: AVAXUSDT, asset_class: CRYPTO, n: 68, wr_pct: 14.7, cum_pnl_pct: -55.49}
+  - {symbol: DOGEUSDT, asset_class: CRYPTO, n: 68, wr_pct: 22.1, cum_pnl_pct: -51.03}
+  - {symbol: ADAUSDT, asset_class: CRYPTO, n: 62, wr_pct: 22.6, cum_pnl_pct: -38.15}
+  - {symbol: LINKUSDT, asset_class: CRYPTO, n: 54, wr_pct: 18.5, cum_pnl_pct: -36.64}
+
+# ========== High-conviction picks flagged on bottom-quartile symbols ==========
+hc_flagged_active:
+  - symbol: AVAXUSDT
+    strategy: "super signal (super) via claude_gainer_st"
+    elite_score: 52
+    confidence: 0.99
+    flag: "sym-block-cand WR=14.7% n=68"
+    proposed_action: "reject (add gate: conf >= 0.95 + elite_score < 70 + sym_wr < 0.30)"
+
+  - symbol: DOGEUSDT
+    strategy: "super signal (super) via rapid_fire"
+    elite_score: 52
+    confidence: 0.99
+    flag: "sym-block-cand WR=22.1% n=68"
+    proposed_action: "reject (same gate as above)"

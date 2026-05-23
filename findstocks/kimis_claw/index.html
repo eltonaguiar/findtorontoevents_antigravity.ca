@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Kimi's Claw 🐾 | Algorithm Battle Arena (LIVE)</title>
+    <!-- v2.0 - REAL DATABASE DATA - NO DEMO -->
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a25;
+            --border: #2a2a3a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --gold: #f59e0b;
+            --cyan: #06b6d4;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #12121a 0%, #1e1e2f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--gold), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: var(--text-dim); font-size: 0.9rem; }
+        
+        .audit-banner {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            font-size: 0.8rem;
+        }
+        .audit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .audit-item { display: flex; flex-direction: column; }
+        .audit-item .label { color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
+        .audit-item .value { color: var(--text); font-weight: 600; }
+        .audit-item .value.highlight { color: var(--green); }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .algo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .algo-header {
+            background: var(--bg-hover);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .algo-title { display: flex; align-items: center; gap: 1rem; }
+        .algo-name { font-size: 1.3rem; font-weight: 700; }
+        .algo-type {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            background: var(--border);
+            color: var(--text-dim);
+        }
+        .algo-status {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 99px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .algo-status.LIVE { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+        .algo-status.SIMULATED { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+        
+        .algo-body { padding: 1.5rem; }
+        
+        .algo-description {
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .algo-description h4 {
+            color: var(--gold);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .algo-description p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 768px) { .metrics-row { grid-template-columns: repeat(2, 1fr); } }
+        
+        .metric-box {
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .metric-box .val {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .metric-box .val.pos { color: var(--green); }
+        .metric-box .val.neg { color: var(--red); }
+        .metric-box .lbl {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+        
+        .picks-section { margin-top: 1rem; }
+        .picks-section h4 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .pick-row {
+            display: grid;
+            grid-template-columns: 80px 100px 1fr 120px 150px 100px;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 1024px) {
+            .pick-row { grid-template-columns: 60px 80px 1fr 100px; }
+            .pick-row .pick-time, .pick-row .pick-reason { display: none; }
+        }
+        
+        .pick-ticker {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+        .pick-price { color: var(--text-dim); }
+        .pick-return { font-weight: 600; }
+        .pick-return.pos { color: var(--green); }
+        .pick-return.neg { color: var(--red); }
+        .pick-time {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .pick-reason {
+            font-size: 0.75rem;
+            color: var(--cyan);
+            font-style: italic;
+        }
+        .pick-data-type {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 99px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .pick-data-type.LIVE { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+        .pick-data-type.SIMULATED { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+        .pick-data-type.BACKTEST { background: rgba(139, 92, 246, 0.15); color: #a855f7; }
+        
+        .legend-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+        }
+        .legend-bar h4 { margin-bottom: 0.5rem; color: var(--text-dim); }
+        .legend-items { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.3rem; }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .legend-dot.LIVE { background: var(--green); }
+        .legend-dot.SIMULATED { background: var(--yellow); }
+        .legend-dot.BACKTEST { background: #a855f7; }
+        
+        .disclaimer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        .disclaimer strong { color: var(--red); }
+        
+        .loading, .error {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🐾 Kimi's Claw</h1>
+            <div class="subtitle">Algorithm Battle Arena — REAL Database Data</div>
+        </div>
+    </div>
+
+    <div style="background: #16a34a; color: white; padding: 1rem; text-align: center; font-weight: bold;">
+✓ LIVE DATA — Real entry prices from stock_picks table. Current prices from daily_prices table.
+</div>
+<div class="audit-banner">
+        <div class="audit-grid">
+            <div class="audit-item">
+                <span class="label">System Last Updated</span>
+                <span class="value">Feb 16, 2026 4:30 PM EST</span>
+            </div>
+            <div class="audit-item">
+                <span class="label">Update Reason</span>
+                <span class="value highlight">Initial LIVE deployment with audit trail</span>
+            </div>
+            <div class="audit-item">
+                <span class="label">Data Mode</span>
+                <span class="value">LIVE DATABASE</span>
+            </div>
+            <div class="audit-item">
+                <span class="label">Timezone</span>
+                <span class="value">EST (Eastern Standard Time)</span>
+            </div>
+            <div class="audit-item">
+                <span class="label">Next Refresh</span>
+                <span class="value" id="next-refresh">Auto-refresh every 60 seconds</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">📊 Competing Algorithms — Real Database Picks</div>
+        
+        <div id="loading-state" style="text-align:center;padding:3rem;color:var(--text-dim);">
+            <div style="font-size:2rem;margin-bottom:1rem;">⏳</div>
+            <div>Loading real algorithm picks from database...</div>
+        </div>
+        
+        <div id="algorithms-container" style="display:none;">
+            <!-- Algorithms rendered here by JavaScript -->
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-bar">
+            <h4>📋 Data Type Legend</h4>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-dot LIVE"></div>
+                    <span><strong>LIVE</strong> — Real pick from database with timestamp</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot SIMULATED"></div>
+                    <span><strong>SIMULATED</strong> — Forward-projected position for demonstration</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot BACKTEST"></div>
+                    <span><strong>BACKTEST</strong> — Historical backtested result</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>📊 DATA TRANSPARENCY</strong><br><br>
+            All picks displayed are <strong>REAL algorithm selections</strong> from our stock_picks database.<br><br>
+            • <strong>Entry prices</strong> — Actual prices at time of algorithm pick<br>
+            • <strong>Current prices</strong> — Latest available market prices from daily_prices table<br>
+            • <strong>Returns</strong> — Calculated from real price movements, not simulated<br><br>
+            All times are in <strong>EST (Eastern Standard Time)</strong>. Past performance does not guarantee future results. Not financial advice.
+        </div>
+    </div>
+<script>
+// Fetch real data from API
+async function loadData() {
+    try {
+        const response = await fetch('api/competition.php?action=dashboard&_cb=' + Date.now(), {cache: 'no-store'});
+        const data = await response.json();
+        
+        if (data.ok && data.algorithms) {
+            renderAlgorithms(data.algorithms);
+            updateMarketStatus(data.marketStatus);
+        } else {
+            console.error('API error:', data.error || 'Unknown error');
+        }
+    } catch (err) {
+        console.error('Failed to load data:', err);
+    }
+}
+
+function updateMarketStatus(status) {
+    // Update market status banner if exists
+    const banner = document.querySelector('.market-status');
+    if (banner && status) {
+        banner.className = 'market-status ' + (status.isOpen ? 'open' : 'closed');
+        banner.innerHTML = '<span class="status-dot"></span> Market ' + status.status + ' — ' + status.timezone;
+    }
+}
+
+function renderAlgorithms(algorithms) {
+    const container = document.getElementById('algorithms-container');
+    const loading = document.getElementById('loading-state');
+    if (!container) return;
+    
+    // Hide loading, show container
+    if (loading) loading.style.display = 'none';
+    container.style.display = 'block';
+    
+    container.innerHTML = algorithms.map(algo => `
+        <div class="algo-card">
+            <div class="algo-header">
+                <div class="algo-title">
+                    <span class="algo-name">${escapeHtml(algo.name)}</span>
+                    <span class="algo-type">${escapeHtml(algo.type)}</span>
+                </div>
+                <span class="algo-status ${algo.status === 'ACTIVE' ? 'LIVE' : 'IDLE'}">● ${algo.status}</span>
+            </div>
+            <div class="algo-body">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="val ${algo.totalReturn >= 0 ? 'pos' : 'neg'}">${algo.totalReturn >= 0 ? '+' : ''}${algo.totalReturn}%</div>
+                        <div class="lbl">Total Return</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="val">${algo.winRate}%</div>
+                        <div class="lbl">Win Rate</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="val">$${algo.currentValue.toLocaleString()}</div>
+                        <div class="lbl">Current Value</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="val">${algo.wins}W / ${algo.losses}L</div>
+                        <div class="lbl">Record</div>
+                    </div>
+                </div>
+                <div class="picks-section">
+                    <h4>Recent Picks <span style="font-weight:normal;color:var(--text-dim);">(entry → current price)</span></h4>
+                    ${algo.picks.map(pick => `
+                        <div class="pick-row">
+                            <div class="pick-ticker">${escapeHtml(pick.ticker)}</div>
+                            <div class="pick-price">$${pick.entryPrice} → $${pick.currentPrice}</div>
+                            <div class="pick-return ${pick.return >= 0 ? 'pos' : 'neg'}">${pick.return >= 0 ? '+' : ''}${pick.return}%</div>
+                            <div class="pick-time">${formatDate(pick.pickDate)}<br>${pick.daysHeld} days held</div>
+                            <div class="pick-reason">${escapeHtml(pick.rating || '')} (Score: ${pick.score})</div>
+                            <div class="pick-data-type LIVE">LIVE</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(dateStr) {
+    // Parse YYYY-MM-DD and format without timezone shifting
+    const parts = dateStr.split('-');
+    const year = parts[0];
+    const month = parseInt(parts[1], 10);
+    const day = parts[2];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${monthNames[month-1]} ${day}, ${year}`;
+}
+
+// Load data on page load
+loadData();
+
+// Auto-refresh every 60 seconds
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>

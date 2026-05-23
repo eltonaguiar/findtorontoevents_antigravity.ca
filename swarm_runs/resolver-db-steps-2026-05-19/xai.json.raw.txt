@@ -1,0 +1,52 @@
+**Safest path: Option A (GitHub Actions workflow_dispatch).**  
+Manual execution (B) is rejected because it forces direct MySQL access or ad-hoc scripts outside version control and audit.
+
+### Ranked Recommendations
+
+**1. Workflow structure (preferred)**
+- One workflow for steps 5-6 only.
+- Separate workflow for step 7 (`--apply`).
+- Reason: normalization is a data-fix; outcome writing is a state change. Separate runs give an explicit verification gate and independent rollback.
+
+**2. Backup strategy (run first in the 5-6 workflow)**
+```sql
+CREATE TABLE at_raw_picks_backup_YYYYMMDD_HHMMSS
+AS SELECT * FROM at_raw_picks;
+```
+- Also snapshot the minimal slice you will touch:
+  ```sql
+  CREATE TABLE at_raw_picks_backup_YYYYMMDD_slice
+  AS SELECT * FROM at_raw_picks WHERE id IN (...);  -- or symbol pattern
+  ```
+- Store row count + checksum of the backup table in the workflow log.
+
+**3. Dry-run / preflight (always first job step)**
+- Run `SELECT COUNT(*)` with the exact WHERE clause of the UPDATE.
+- Emit the count as a workflow output and require it to match the expected ~2086 rows before proceeding.
+- Add a manual `workflow_dispatch` input (e.g., `confirm_row_count`) that the operator must re-type.
+
+**4. Transaction + verification (inside the same job)**
+- Wrap the UPDATE in a single transaction.
+- After commit, run these verification queries and fail the job if any check fails:
+  - Row count of affected symbols now zero for old patterns.
+  - Sample 5–10 rows of each transformed class (FOREX, futures, quarantined).
+  - `CHECKSUM TABLE at_raw_picks` vs. backup to detect accidental wider changes.
+
+**5. Rollback path**
+- Fast: `RENAME TABLE at_raw_picks TO at_raw_picks_bad, at_raw_picks_backup_YYYYMMDD_HHMMSS TO at_raw_picks;`
+- Or targeted restore from the `_slice` backup if only a subset was wrong.
+- Keep the backup tables for at least 7 days (add a cleanup job or manual step).
+
+**6. Step 7 placement**
+- Separate workflow that:
+  1. Accepts a typed confirmation input.
+  2. Runs `active_picks_sync.py --apply`.
+  3. Immediately prints the WON/LOST/EXPIRED counts and a small sample.
+- This keeps the blast radius of each change minimal and auditable.
+
+**Summary order of operations**
+1. Workflow “normalize-symbols” (backup → dry-run count → confirm → transactional UPDATE → verify).
+2. Manual review of verification output.
+3. Workflow “apply-outcomes” (confirm → --apply → result summary).
+
+This gives version-controlled, logged, reversible changes with explicit human gates while respecting the IP allow-list constraint.

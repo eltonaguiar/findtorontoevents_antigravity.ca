@@ -1,0 +1,65 @@
+{
+  "strategies": [
+    {
+      "name": "FUT_TS_MOM_12M_LS",
+      "thesis": "Time-series momentum over 12 months captures persistent trends in futures as per Moskowitz et al. 2012.",
+      "signal_construction": "Lookback 12 months for price return; enter long if return > 0, short if return < 0; exit and rebalance monthly.",
+      "universe": ["CT=F", "GC=F", "SI=F", "HG=F", "ZC=F", "ZW=F", "ZS=F", "NG=F", "ES=F", "NQ=F", "ZN=F", "ZB=F", "6E=F", "6J=F"],
+      "expected_pf": 1.7,
+      "expected_sharpe": 0.65,
+      "expected_mdd_pct": 14.0,
+      "differentiation_from_existing": "Focuses strictly on 12-month momentum with inverse-vol weighting, unlike live emitters which may use shorter lookbacks or lack vol adjustment.",
+      "implementation_hours": 8,
+      "wire_target": "alpha_engine/futures_momentum.py",
+      "data_source": "yfinance",
+      "fail_mode": "Momentum crashes during sharp market reversals or regime shifts."
+    },
+    {
+      "name": "FUT_TS_MOM_9M_LO",
+      "thesis": "A 9-month momentum long-only variant reduces drawdowns by avoiding short positions while capturing trend upside.",
+      "signal_construction": "Lookback 9 months for price return; enter long if return > 0, skip if return <= 0; exit and rebalance monthly.",
+      "universe": ["CT=F", "GC=F", "SI=F", "HG=F", "ZC=F", "ZW=F", "ZS=F", "NG=F", "ES=F", "NQ=F", "ZN=F", "ZB=F", "6E=F", "6J=F"],
+      "expected_pf": 1.6,
+      "expected_sharpe": 0.85,
+      "expected_mdd_pct": 7.0,
+      "differentiation_from_existing": "Long-only focus with shorter 9-month lookback to reduce exposure to prolonged downturns, unlike mixed long-short live strategies.",
+      "implementation_hours": 6,
+      "wire_target": "alpha_engine/futures_momentum.py",
+      "data_source": "yfinance",
+      "fail_mode": "Misses out on short-side profits during sustained bear markets."
+    },
+    {
+      "name": "FUT_COT_MOM_12M_LS",
+      "thesis": "Combining CFTC COT net positioning with 12-month momentum filters out false signals by aligning with commercial hedger trends.",
+      "signal_construction": "Lookback 12 months for price return and COT net commercial positions; enter long if return > 0 and COT net commercial > 0, short if return < 0 and COT net commercial < 0; exit and rebalance monthly.",
+      "universe": ["CT=F", "GC=F", "SI=F", "HG=F", "ZC=F", "ZW=F", "ZS=F", "NG=F", "ES=F", "NQ=F", "ZN=F", "ZB=F", "6E=F", "6J=F"],
+      "expected_pf": 1.8,
+      "expected_sharpe": 0.70,
+      "expected_mdd_pct": 12.0,
+      "differentiation_from_existing": "Incorporates COT data as a sentiment filter, unlike pure price-based live emitters.",
+      "implementation_hours": 12,
+      "wire_target": "alpha_engine/futures_cot_momentum.py",
+      "data_source": "yfinance, CFTC COT",
+      "fail_mode": "COT data lag or misinterpretation of hedger intent during speculative bubbles."
+    },
+    {
+      "name": "FUT_VOL_ADJ_MOM_6M_LO",
+      "thesis": "A 6-month momentum long-only strategy with strict volatility adjustment minimizes drawdowns by scaling exposure dynamically.",
+      "signal_construction": "Lookback 6 months for price return, calculate 20-day realized vol; enter long if return > 0 with position size inverse to vol; exit and rebalance monthly.",
+      "universe": ["CT=F", "GC=F", "SI=F", "HG=F", "ZC=F", "ZW=F", "ZS=F", "NG=F", "ES=F", "NQ=F", "ZN=F", "ZB=F", "6E=F", "6J=F"],
+      "expected_pf": 1.5,
+      "expected_sharpe": 0.80,
+      "expected_mdd_pct": 8.0,
+      "differentiation_from_existing": "Shorter 6-month lookback with explicit vol-scaling for risk control, unlike static weighting in live emitters.",
+      "implementation_hours": 10,
+      "wire_target": "alpha_engine/futures_momentum.py",
+      "data_source": "yfinance",
+      "fail_mode": "Volatility spikes could overly reduce exposure during profitable trends."
+    }
+  ],
+  "killers": [
+    "FUT_SHORT_TERM_REV (Current live emitter with WR 5.9% and PF 0.00; fails to capture trends and lacks academic grounding, should be replaced with momentum-based strategies.)"
+  ],
+  "tier1_attainability_pct": 40,
+  "single_most_important_finding": "Academic edge in futures momentum (low MDD in long-only) likely failed to materialize live due to overly short lookbacks or lack of volatility adjustment in existing emitters."
+}

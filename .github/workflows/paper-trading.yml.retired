@@ -1,0 +1,109 @@
+# RETIRED 2026-04-18: dormant since mid-March 2026, no consumer downstream. To revive, rename back to .yml and re-enable schedule.
+name: Paper Trading Portfolio
+
+on:
+  # DISABLED 2026-03-12: Paper trading has 0% WR, -29.91% crypto PnL. Kill per Antigravity audit.
+  # schedule:
+  #   - cron: '0 * * * *'
+  workflow_dispatch:                 # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  run-scanner:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas pymysql
+
+      - name: Run paper trading scanner
+        env:
+          DISCORD_WEBHOOK_PAPER_TRADE: ${{ secrets.DISCORD_WEBHOOK_PAPER_TRADE }}
+          CRYPTOQUANT_API_KEY: ${{ secrets.CRYPTOQUANT_API_KEY }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ${{ secrets.MYSQL_DB }}
+        run: |
+          echo "=== Paper Trading Scanner v2.2 (hourly + audit trail) ==="
+          echo "Time: $(date -u)"
+          python -m paper_trading
+
+      - name: Send hourly top picks to master-picks
+        env:
+          DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
+          DISCORD_FRESHPICKS: ${{ secrets.DISCORD_FRESHPICKS }}
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ${{ secrets.MYSQL_DB }}
+        run: |
+          echo "=== Hourly Top Picks to #master-picks ==="
+          python paper_trading/send_hourly_top_picks.py
+
+      - name: Send incubator report to sandbox
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ${{ secrets.MYSQL_DB }}
+        run: |
+          echo "=== Incubator Report to #sandbox ==="
+          python paper_trading/sandbox_reporter.py || echo "Sandbox report failed (non-fatal)"
+          echo "=== Store backtest catering data to MySQL ==="
+          python paper_trading/store_backtest_to_mysql.py || echo "MySQL backtest store failed (non-fatal)"
+
+      - name: Count active positions
+        id: count
+        run: |
+          if [ -f paper_trading/data/active_picks.json ]; then
+            COUNT=$(python3 -c "import json; print(len(json.load(open('paper_trading/data/active_picks.json'))))")
+          else
+            COUNT=0
+          fi
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+          echo "Active positions: $COUNT"
+
+      - name: Commit data snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Stage all data files (json + db) - use explicit paths to avoid glob issues
+          git add paper_trading/data/ data/audit_trail.db data/audit_trail.db-wal data/audit_trail.db-shm 2>/dev/null || true
+          # Remove any accidentally staged cache files
+          git reset HEAD paper_trading/data/.cache/ 2>/dev/null || true
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git diff --cached --quiet || git commit -m "Paper trading scan [$TIMESTAMP] -- ${{ steps.count.outputs.count }} active positions [skip ci]"
+
+      - name: Push with retry
+        run: |
+          # Clean untracked/unstaged files that block git pull --rebase
+          git clean -fd 2>/dev/null || true
+          git checkout -- . 2>/dev/null || true
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            sleep 5
+          done
+

@@ -1,0 +1,82 @@
+{
+  "strategies": [
+    {
+      "name": "HYG_LQD_CREDIT_SPREAD_MOM",
+      "thesis": "Credit spread momentum can improve Sharpe ratio by capturing changes in credit market conditions.",
+      "signal_construction": "Calculate the 6-month momentum of the HYG-LQD spread and select the top ETF based on this signal.",
+      "universe": [
+        "HYG",
+        "LQD"
+      ],
+      "expected_pf": 1.8,
+      "expected_sharpe": 0.9,
+      "expected_mdd_pct": 15,
+      "differentiation_from_existing": "Incorporates credit spread momentum to enhance the existing HYG/LQD momentum strategy.",
+      "implementation_hours": 20,
+      "wire_target": "tools/backtest_bond_tlt_ief_momentum.py",
+      "data_source": "yfinance, FRED",
+      "fail_mode": "Insufficient data quality or incorrect signal construction."
+    },
+    {
+      "name": "DURATION_ROTATION",
+      "thesis": "Duration rotation can improve Sharpe ratio by adapting to changes in interest rate environments.",
+      "signal_construction": "Calculate the 12-month moving average of the 10-year Treasury yield and rotate between short-duration (SHY) and long-duration (TLT) ETFs based on this signal.",
+      "universe": [
+        "SHY",
+        "TLT"
+      ],
+      "expected_pf": 1.5,
+      "expected_sharpe": 0.85,
+      "expected_mdd_pct": 12,
+      "differentiation_from_existing": "Incorporates duration rotation to enhance the existing momentum strategy.",
+      "implementation_hours": 15,
+      "wire_target": "tools/backtest_bond_tlt_ief_momentum.py",
+      "data_source": "yfinance, FRED",
+      "fail_mode": "Incorrect signal construction or insufficient data quality."
+    },
+    {
+      "name": "CREDIT_SPREAD_DURATION_HYBRID",
+      "thesis": "Combining credit spread and duration signals can improve Sharpe ratio by capturing multiple market factors.",
+      "signal_construction": "Calculate the 6-month momentum of the HYG-LQD spread and the 12-month moving average of the 10-year Treasury yield, and select the top ETF based on a combination of these signals.",
+      "universe": [
+        "HYG",
+        "LQD",
+        "SHY",
+        "TLT"
+      ],
+      "expected_pf": 1.9,
+      "expected_sharpe": 0.95,
+      "expected_mdd_pct": 10,
+      "differentiation_from_existing": "Incorporates both credit spread and duration signals to enhance the existing momentum strategy.",
+      "implementation_hours": 30,
+      "wire_target": "tools/backtest_bond_tlt_ief_momentum.py",
+      "data_source": "yfinance, FRED",
+      "fail_mode": "Insufficient data quality, incorrect signal construction, or overfitting."
+    }
+  ],
+  "credit_spread_signals": [
+    "HYG-LQD spread",
+    "DGS10",
+    "BAMLH0A0HYM2"
+  ],
+  "duration_overlay_proposals": [
+    "Short-duration vs long-duration regime based on 10-year Treasury yield"
+  ],
+  "killers": [
+    "Existing live BOND emitter with PF below 1.0"
+  ],
+  "tier1_attainability_pct": 80,
+  "single_most_important_finding": "Combining credit spread and duration signals can significantly improve the Sharpe ratio of the BOND asset class.",
+  "engine": "groq",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_bond\\groq.json.raw.txt",
+    "engine": "groq",
+    "ts": "20260513T043107Z",
+    "session_id": "",
+    "model_fingerprint": "llama-3.3-70b-versatile",
+    "tokens_in": 802,
+    "tokens_out": 757,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

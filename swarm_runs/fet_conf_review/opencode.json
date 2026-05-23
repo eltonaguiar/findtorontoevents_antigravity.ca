@@ -1,0 +1,31 @@
+{
+  "engine": "opencode",
+  "finding_1_verdict": "agree",
+  "finding_1_concerns": [
+    "Dedup must be scoped to (symbol, exit_date) pairs to avoid merging cross-symbol events sharing the same exit date; FETUSDT dedup is valid as all 44 picks are same symbol.",
+    "Daily-firing strategies with same-direction close-on-TP logic inherently generate duplicate exit dates; dedup correctly strips redundant bookkeeping entries."
+  ],
+  "finding_1_recommended_action": "retract_promotion",
+  "finding_2_verdict": "agree",
+  "finding_2_concerns": [
+    "Grep confirms +18 bonus only exists at audit_dashboard/template.html:9239; no other references to this bonus in alpha_engine or scoring modules.",
+    "breakdown.conf_sweet_spot is only populated in template.html with no downstream dependencies found."
+  ],
+  "finding_2_recommended_action": "remove_+18_bonus",
+  "regression_risks": [
+    "Low if score computation is isolated to dashboard display; validate no pick selection/strategy gate logic depends on inflated scores for [0.75,0.80) band."
+  ],
+  "confidence": 0.95,
+  "notes": "Cross-check of INJUSDT (raw PF 41.52 \u2192 dedup 25.88) and DYDXUSDT (raw 60.54 \u2192 40.20) confirms dedup preserves genuine edge. [0.75,0.80) conf band has 38.7% WR (losing), PF 0.69 <1, so +18 bonus inverts incentive vs higher-edge [0.80,0.85) band.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\fet_conf_review\\opencode.json.raw.txt",
+    "engine": "opencode",
+    "ts": "20260504T154524Z",
+    "session_id": "",
+    "model_fingerprint": "",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

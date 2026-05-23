@@ -1,0 +1,570 @@
+{
+  "version": "2.0.0",
+  "generated_at": "2026-03-02T10:00:00Z",
+  "hub_metadata": {
+    "title": "Trading Systems Command Center",
+    "description": "Consolidated view of all ML trading systems and signal generators",
+    "refresh_interval_seconds": 300,
+    "theme": {
+      "background": "#0a0a12",
+      "card_bg": "#12121e",
+      "border": "#1e1e3a",
+      "accent_purple": "#a855f7",
+      "accent_cyan": "#06b6d4",
+      "accent_green": "#22c55e",
+      "accent_red": "#ef4444",
+      "accent_yellow": "#eab308"
+    }
+  },
+  "categories": [
+    {
+      "id": "ml_ensemble",
+      "name": "ML Ensemble Systems",
+      "description": "Machine learning models with ensemble voting",
+      "color": "#a855f7",
+      "priority": 1
+    },
+    {
+      "id": "permutation",
+      "name": "DNA & Genome Systems",
+      "description": "Genetic algorithm and strategy evolution engines",
+      "color": "#06b6d4",
+      "priority": 2
+    },
+    {
+      "id": "signal_aggregation",
+      "name": "Signal Aggregation",
+      "description": "Cross-system consensus and super signal generators",
+      "color": "#22c55e",
+      "priority": 3
+    },
+    {
+      "id": "battleground",
+      "name": "Battleground Arena",
+      "description": "Competing strategy variants under test",
+      "color": "#eab308",
+      "priority": 4
+    },
+    {
+      "id": "specialized",
+      "name": "Specialized Systems",
+      "description": "Niche prediction and analysis systems",
+      "color": "#3b82f6",
+      "priority": 5
+    }
+  ],
+  "systems": [
+    {
+      "id": "mercury2",
+      "name": "ML: Mercury 2",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "retrain",
+      "priority": 1,
+      "scan_interval_minutes": 15,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data/closed_picks.json",
+        "metrics": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data/performance_metrics.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/mercury2/",
+      "methodology": "Ensemble of 3 XGBoost models (conservative/aggressive/balanced) with F&G + ATR + funding rate guards. v1.3.0: MTF trend filter + tiered TP exits.",
+      "features": ["fear_greed_guard", "ensemble_voting", "mtf_trend_filter", "tiered_exits"],
+      "model_type": "XGBoost",
+      "validation": {
+        "dsr_required": true,
+        "min_sharpe": 0.5,
+        "min_win_rate": 0.45
+      },
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "claws_of_doom",
+      "name": "ML: Claws of Doom (F)",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "new",
+      "priority": 2,
+      "scan_interval_minutes": 15,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/CLAWSOFDOOM/",
+      "source_repo": "https://github.com/eltonaguiar/CLAWSOFDOOM",
+      "methodology": "6 strategies: Extreme Fear Contrarian, Crash Reversal, Momentum Breakout, RSI+SMA, EMA+RSI, Funding Carry.",
+      "features": ["fear_contrarian", "crash_reversal", "momentum_breakout", "funding_carry"],
+      "model_type": "Multi-strategy ensemble",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "alpha_engine",
+      "name": "ML: Alpha Engine",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "fix",
+      "priority": 3,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/closed_picks.json",
+        "strategies": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/strategy_performance.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/",
+      "premium_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/premium.html",
+      "methodology": "100 strategies (75 crypto + 11 forex + 14 equity). Connors RSI-2, VIX Spike, MVRV, on-chain analytics. Direction-restricted + boosted proven strategies.",
+      "features": ["multi_asset", "direction_restricted", "strategy_boost", "on_chain"],
+      "model_type": "Random Forest + Heuristic",
+      "strategy_count": 100,
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "kimi",
+      "name": "KIMI Rise of the Claw",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "solid",
+      "priority": 4,
+      "scan_interval_minutes": 15,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/closed_picks.json",
+        "scanner_log": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/scanner_log.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html",
+      "methodology": "81 algorithms across crypto, stocks, forex: pairs trading, CCI reversal, calendar effects, Betting Against Beta, momentum factors, carry trade. Elimination engine auto-removes underperformers.",
+      "features": ["multi_asset", "pairs_trading", "calendar_effects", "auto_elimination"],
+      "model_type": "Multi-algorithm ensemble",
+      "algorithm_count": 81,
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "crypto_ml_edge",
+      "name": "ML: Crypto ML Edge",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "new",
+      "priority": 5,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_ml_edge/data/active_picks.json",
+        "models": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_ml_edge/data/model_performance.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/edge/",
+      "methodology": "LightGBM binary classifier. 10 models (5 pairs x 2 TF). DSR-gated validation. Isotonic calibration.",
+      "features": ["lightgbm", "dsr_gated", "isotonic_calibration"],
+      "model_type": "LightGBM",
+      "model_count": 10,
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "claude_gainer",
+      "name": "ML: Claude Gainer Tracker",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "solid",
+      "priority": 6,
+      "scan_interval_minutes": 240,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/claude_gainer_ml/tracker/claude_live_picks.json"
+      },
+      "dashboard_url": "https://findtorontoevents.ca/updates/antigravity-ml-gainer.html",
+      "winners_url": "https://findtorontoevents.ca/findcryptopairs/winners.html",
+      "methodology": "XGBoost + LightGBM + RF ensemble. Reverse-engineers daily top gainer patterns from 5yr data. TP1=+5%, TP2=+10%, SL=-5%.",
+      "features": ["gainer_prediction", "multi_target", "reverse_engineered"],
+      "model_type": "XGBoost + LightGBM + Random Forest",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "dna_genome",
+      "name": "DNA Genome Engine",
+      "category": "permutation",
+      "status": "active",
+      "badge": "new",
+      "priority": 1,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/active_picks.json",
+        "catalog": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/unified_strategy_catalog.json",
+        "genealogy": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/strategy_genealogy.json",
+        "revivals": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/phoenix_revivals.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/genome/",
+      "methodology": "Genetic algorithm strategy evolution. Creates strategy DNA sequences, evolves through selection/crossover/mutation. Tracks parent/child relationships and Phoenix recoveries.",
+      "features": ["genetic_algorithm", "dna_encoding", "strategy_evolution", "phoenix_detection"],
+      "dna_encoding": {
+        "chromosome_length": 64,
+        "genes": ["entry_timing", "exit_timing", "position_sizing", "risk_management", "filter_conditions", "market_regime"]
+      },
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "meta_strategy",
+      "name": "Meta-Strategy Combiner",
+      "category": "permutation",
+      "status": "active",
+      "badge": "new",
+      "priority": 2,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/meta_strategy/data/active_combos.json",
+        "weights": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/meta_strategy/data/combo_weights.json",
+        "stress_test": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/meta_strategy/data/stress_test_results.json",
+        "catalog": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/meta_strategy/data/unified_strategy_catalog.json"
+      },
+      "methodology": "Dynamically combines top-performing strategies into weighted portfolios. Uses stress testing and walk-forward validation.",
+      "features": ["dynamic_weighting", "stress_testing", "walk_forward_validation"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_bg_a",
+      "name": "ML: Battleground A",
+      "category": "battleground",
+      "status": "dormant",
+      "badge": "fail",
+      "priority": 1,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_a_filter/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_a_filter/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/a/",
+      "methodology": "EMA stack + Connors RSI-2 + Volume climax. Bootstrap confidence scoring. PAUSED: 0% WR across 15 closed trades.",
+      "features": ["ema_stack", "rsi2", "volume_climax"],
+      "model_type": "Heuristic + Bootstrap",
+      "pause_reason": "0% WR - PANIC_SELL logic triggers too early in fear regimes",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_bg_b",
+      "name": "ML: Battleground B",
+      "category": "battleground",
+      "status": "active",
+      "badge": "fix",
+      "priority": 2,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_b_regime/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_b_regime/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/b/",
+      "methodology": "Regime-aware adaptive. HMM regime detection + ATR stops. Sell-the-rally pattern. Fixed extreme fear mode (Feb 26).",
+      "features": ["hmm_regime", "atr_stops", "sell_rally"],
+      "model_type": "HMM + Heuristic",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_bg_c",
+      "name": "ML: Battleground C",
+      "category": "battleground",
+      "status": "dormant",
+      "badge": "fail",
+      "priority": 3,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_c_deeplearn/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_c_deeplearn/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/c/",
+      "methodology": "GRU-Attention neural net. High ML confidence (0.84-0.93) but 0% forward WR. Overfitting confirmed.",
+      "features": ["gru_attention", "neural_net"],
+      "model_type": "GRU-Attention",
+      "pause_reason": "Overfitting - high confidence but 0% WR",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_bg_d",
+      "name": "ML: Battleground D (Carry)",
+      "category": "battleground",
+      "status": "active",
+      "badge": "fix",
+      "priority": 4,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_d_carry/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_d_carry/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/",
+      "methodology": "Funding rate carry trade. Short overleveraged longs when funding > 0.03%. Binance Futures API with 3-retry cache.",
+      "features": ["funding_carry", "contrarian"],
+      "model_type": "Arbitrage",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_bg_e",
+      "name": "ML: Battleground E (Momentum)",
+      "category": "battleground",
+      "status": "active",
+      "badge": "fix",
+      "priority": 5,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_e_momentum/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_e_momentum/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/",
+      "methodology": "Cross-sectional momentum ranking. Top/bottom 3 pairs by 7d return. F&G contrarian bias + PANIC mode fix.",
+      "features": ["cross_sectional", "momentum_ranking", "fear_contrarian"],
+      "model_type": "Momentum",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_bg_ensemble",
+      "name": "ML: Battleground Ensemble",
+      "category": "signal_aggregation",
+      "status": "active",
+      "badge": "new",
+      "priority": 1,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/ensemble_data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/ensemble_data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/",
+      "methodology": "Meta-system aggregating Battleground A-E signals via majority vote + confidence weighting. Emits picks only when 2+ sub-systems agree on direction.",
+      "features": ["majority_vote", "confidence_weighted", "multi_system"],
+      "model_type": "Meta-ensemble",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "super_signal",
+      "name": "Super Signal Engine",
+      "category": "signal_aggregation",
+      "status": "active",
+      "badge": "new",
+      "priority": 2,
+      "scan_interval_minutes": 5,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/cross_aggregation/data/super_signals.json",
+        "consensus": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/cross_aggregation/data/consensus_matrix.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/monitor/",
+      "methodology": "Cross-pair + cross-system consensus detector. Fires when 60%+ of crypto pairs and 2+ systems agree on direction. Tiers: SUPER (70%+ + 3 systems) or STRONG (60%+ + 2 systems).",
+      "features": ["cross_pair", "cross_system", "consensus_detection", "tiered_signals"],
+      "signal_tiers": {
+        "SUPER": {"pair_consensus": 0.70, "system_count": 3, "color": "#8b5cf6"},
+        "STRONG": {"pair_consensus": 0.60, "system_count": 2, "color": "#3b82f6"}
+      },
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "regime_terminal",
+      "name": "Regime Terminal",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 1,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/regime_terminal/data/active_signals.json",
+        "regime_history": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/regime_terminal/data/regime_history.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/regime_terminal/",
+      "methodology": "HMM regime detection. Identifies bull/bear/sideways market states and generates directional confidence signals.",
+      "features": ["hmm_regime", "market_state", "directional_confidence"],
+      "model_type": "HMM",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "ml_crypto_pred",
+      "name": "ML: Claude Opus Predictor",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 2,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/closed_picks.json"
+      },
+      "methodology": "Enhanced ML models with Claude Opus integration for crypto price prediction.",
+      "features": ["claude_opus", "enhanced_features"],
+      "model_type": "Hybrid Neural + LLM",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "quantum_fusion",
+      "name": "QuantumFusion",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 3,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "report": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/quantum_fusion_report.json",
+        "signals": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/quantum_fusion_signals.json"
+      },
+      "methodology": "Quantum-inspired signal fusion engine combining multiple factor models.",
+      "features": ["quantum_inspired", "factor_fusion"],
+      "model_type": "Quantum-inspired",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "incubator_fwd",
+      "name": "Incubator Forward Test",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 4,
+      "scan_interval_minutes": 30,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/incubator/backtest_results/forward_signals.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/",
+      "methodology": "Forward-testing promising baby strategies from the incubator pipeline.",
+      "features": ["forward_test", "baby_strategies", "pipeline"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "rl_agent",
+      "name": "RL Agent (PPO)",
+      "category": "ml_ensemble",
+      "status": "active",
+      "badge": "new",
+      "priority": 7,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/rl_agent/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/rl_agent/data/closed_picks.json"
+      },
+      "methodology": "Proximal Policy Optimization (PPO) reinforcement learning agent. Learns optimal entry/exit timing through reward-shaped trading episodes.",
+      "features": ["reinforcement_learning", "ppo", "reward_shaping"],
+      "model_type": "PPO (Reinforcement Learning)",
+      "last_updated": "2026-03-16T00:00:00Z"
+    },
+    {
+      "id": "predictions",
+      "name": "Predictions Engine",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 5,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/predictions/data/active_predictions.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/predictions/dashboard/",
+      "methodology": "Multi-analyst prediction aggregator. Scrapes StockTwits, Twitter, known analysts. Sentiment scoring + track record weighting.",
+      "features": ["social_scraping", "sentiment_analysis", "track_record_weighting"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "crypto_gainer",
+      "name": "ML: Crypto Gainer",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 6,
+      "scan_interval_minutes": 15,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_gainer_ml/tracker/live_picks.json"
+      },
+      "methodology": "ML-based crypto gainer prediction with live price tracking.",
+      "features": ["gainer_prediction", "live_tracking"],
+      "model_type": "XGBoost",
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "signal_engine",
+      "name": "Signal Engine",
+      "category": "specialized",
+      "status": "dormant",
+      "badge": "dormant",
+      "priority": 7,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_signal_engine/data/active_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/signal-engine/",
+      "methodology": "Crypto signal generator with validation pipeline.",
+      "features": ["signal_generation", "validation"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "breakout_a",
+      "name": "ML: Breakout Arena A",
+      "category": "battleground",
+      "status": "dormant",
+      "badge": "dormant",
+      "priority": 6,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_a_sr_breakout/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_a_sr_breakout/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/arena/",
+      "methodology": "Support/Resistance breakout detection.",
+      "features": ["sr_breakout"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "breakout_b",
+      "name": "ML: Breakout Arena B",
+      "category": "battleground",
+      "status": "dormant",
+      "badge": "dormant",
+      "priority": 7,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_b_ml_breakout/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_b_ml_breakout/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/arena/",
+      "methodology": "ML-based breakout detection.",
+      "features": ["ml_breakout"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "breakout_c",
+      "name": "ML: Breakout Arena C",
+      "category": "battleground",
+      "status": "dormant",
+      "badge": "dormant",
+      "priority": 8,
+      "scan_interval_minutes": 60,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_c_spike_reverse/data/active_picks.json",
+        "closed": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_c_spike_reverse/data/closed_picks.json"
+      },
+      "dashboard_url": "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/arena/",
+      "methodology": "Spike reversal detection. Momentum continuation archetype scoring.",
+      "features": ["spike_reversal", "momentum_continuation"],
+      "last_updated": "2026-03-02T10:00:00Z"
+    },
+    {
+      "id": "copy_trader_intel",
+      "name": "Copy Trader Intelligence (HL)",
+      "category": "specialized",
+      "status": "active",
+      "badge": "new",
+      "priority": 8,
+      "scan_interval_minutes": 15,
+      "data_endpoints": {
+        "active": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/copy_trader_intel/data/active_picks.json",
+        "qualified_traders": "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/copy_trader_intel/data/qualified_traders.json"
+      },
+      "methodology": "Scrapes Hyperliquid on-chain leaderboard (32K+ traders). Analyzes 90-day fill history for each top wallet. Filters by win rate >52%, profit factor >1.2, max drawdown <60%. Mirrors live positions from qualified traders as picks. All data is fully on-chain verifiable — no faking results.",
+      "features": ["on_chain_verified", "copy_trading", "whale_tracking", "edge_scoring"],
+      "model_type": "Copy Trading Intelligence",
+      "last_updated": "2026-03-19T07:00:00Z"
+    }
+  ],
+  "consensus_config": {
+    "super_signal_threshold": 0.60,
+    "system_agreement_threshold": 2,
+    "super_tier_threshold": 0.70,
+    "super_tier_systems": 3,
+    "refresh_interval_seconds": 60
+  },
+  "quality_scoring": {
+    "weights": {
+      "sharpe_ratio": 20,
+      "win_rate": 30,
+      "drawdown_adjustment": 20,
+      "consensus_bonus": 15,
+      "sample_size_penalty": 0.5
+    },
+    "min_trades_for_full_score": 20,
+    "max_score": 100
+  }
+}

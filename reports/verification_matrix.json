@@ -1,0 +1,144 @@
+{
+  "generated_at": "2026-05-16T01:09:59.495787+00:00",
+  "plan_source": "reports\\enhancement_plan_per_asset_class.md",
+  "total_items": 15,
+  "implemented_count": 15,
+  "pending_count": 0,
+  "items": [
+    {
+      "item_id": "M-004",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n SOURCE_QUARANTINE_WARN_ENABLED audit_trail/quality_gates.py",
+      "result": "Found: 1082:# Env flag: SOURCE_QUARANTINE_WARN_ENABLED=1 (default OFF \u00e2\u20ac\u201d observational).\n5073:    # Observational only \u00e2\u20ac\u201d default OFF. Enable: SOURCE_QUARANTINE_WARN_ENABLED=1.\n5079:            \"SOURCE_QUA",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-013",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -nE 'CONCENTRATION_CAP_ENABLED.*1' audit_trail/quality_gates.py",
+      "result": "Found: 5215:        if _os_cc.environ.get(\"CONCENTRATION_CAP_ENABLED\", \"1\") not in (\"0\", \"false\", \"FALSE\", \"False\"):",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-014",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n _normalize_pick audit_trail/dashboard_generator.py",
+      "result": "Found: 3514:    asset_class='UNKNOWN' before _normalize_pick runs. This trap forces a\n6619:    BUG FIX: _normalize_pick was destroying original status values, causing Agreement Matrix\n6709:    \"\"\"Pre-normali",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-017",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -r --include=*.py -l vol_target_sizer alpha_engine/",
+      "result": "Found in: C:\\findtorontoevents_antigravity.ca\\alpha_engine/vol_target_sizer.py",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-027",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n FUTURES_DOW_TILT alpha_engine/score_booster.py",
+      "result": "Found: 1412:    # Disabled by default (FUTURES_DOW_TILT=0). Requires n>30 before production use.\n1416:        if _os_fut_dow.environ.get(\"FUTURES_DOW_TILT\", \"0\") not in (\"0\", \"false\", \"FALSE\", \"False\"):",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-028",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n DRIFT_PAUSE_DRY_RUN audit_trail/quality_gates.py",
+      "result": "Found: 5177:    # M-028: Dry-run mode \u00e2\u20ac\u201d set DRIFT_PAUSE_DRY_RUN=1 to emit a recommendation\n5190:                        \"DRIFT_PAUSE_DRY_RUN\", \"0\") not in (\"0\", \"false\", \"FALSE\", \"False\")",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-030",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n last_signal_date audit_trail/dashboard_generator.py",
+      "result": "Found: 9861:                \"last_signal_date\": (s[\"last_ts\"] or \"\")[:10] or None,  # M-030: plain YYYY-MM-DD for UI staleness badge",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-031",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n _build_readiness_payload audit_trail/dashboard_generator.py",
+      "result": "Found: 5497:def _build_readiness_payload(asset_class_health: dict, generated_at: str) -> dict:\n15625:        \"readiness\": _build_readiness_payload(asset_class_health, now),",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-032",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n FRED_API_KEY alpha_engine/config.py",
+      "result": "Found: 654:# Set FRED_API_KEY env var to enable. Free key: https://fred.stlouisfed.org/docs/api/api_key.html\n658:FRED_API_KEY: str = _os_fred.environ.get(\"FRED_API_KEY\", \"\")\n660:FRED_ENABLED: bool = bool(FRE",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-034",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n CRYPTO_CONF_INVERSION_GATE audit_trail/quality_gates.py",
+      "result": "Found: 5150:    # Enable: CRYPTO_CONF_INVERSION_GATE=1 (default OFF \u00e2\u20ac\u201d shadow first, enable after 30d live verify).\n5154:        if (_os_m034.environ.get(\"CRYPTO_CONF_INVERSION_GATE\", \"0\")",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-036",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n XLK alpha_engine/config.py",
+      "result": "Found: 45:SECTOR_ETFS = [\"XLK\", \"XLV\", \"XLF\", \"XLY\", \"XLP\", \"XLI\", \"XLE\", \"XLB\", \"XLU\", \"XLRE\", \"XLC\"]\n734:    \"XLK\":  {\"name\": \"Technology Select\", \"cat\": \"etf\"},",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-042",
+      "claimed_status": "implemented",
+      "evidence_found": true,
+      "verification_command": "test -f tools/build_verification_matrix.py",
+      "result": "tools/build_verification_matrix.py exists (this script)",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-043",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "test -f .github/workflows/secret-scan.yml",
+      "result": ".github/workflows/secret-scan.yml exists",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-044",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -r --include=*.py -l TestM044GateParity tests/",
+      "result": "Found in: C:\\findtorontoevents_antigravity.ca\\tests/test_quality_gates.py",
+      "confidence": "high",
+      "blocker": null
+    },
+    {
+      "item_id": "M-049",
+      "claimed_status": "pending",
+      "evidence_found": true,
+      "verification_command": "grep -n SAFETY_HALT_GATE_ENABLED audit_trail/quality_gates.py",
+      "result": "Found: 4960:    # Kill-switch: SAFETY_HALT_GATE_ENABLED=0 (default 1 = ON). Fail-open.\n4962:        if os.environ.get(\"SAFETY_HALT_GATE_ENABLED\", \"1\") not in (\"0\", \"false\", \"FALSE\", \"False\"):",
+      "confidence": "high",
+      "blocker": null
+    }
+  ]
+}

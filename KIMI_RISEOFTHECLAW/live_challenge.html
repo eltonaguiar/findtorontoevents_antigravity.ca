@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Live 2-Hour Challenge | Find Toronto Events</title>
+    <meta name="description"
+        content="4 AI algorithms compete in a live 2-hour challenge predicting crypto and forex price movements with real entry prices, TP, SL, and EST timestamps.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #c8c8d8;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #22d3ee, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #a0a0c0;
+            margin: 30px 0 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 6px;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #22d3ee;
+            margin: 20px 0 8px;
+        }
+
+        .meta {
+            font-size: 13px;
+            color: #667;
+            margin-bottom: 20px;
+        }
+
+        .meta span {
+            margin-right: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .badge-live {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .badge-win {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .badge-loss {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .badge-open {
+            background: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 13px;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.04);
+            color: #889;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .positive {
+            color: #22c55e;
+        }
+
+        .negative {
+            color: #ef4444;
+        }
+
+        .neutral {
+            color: #889;
+        }
+
+        .algo-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .algo-card h3 {
+            margin-top: 0;
+        }
+
+        .algo-desc {
+            font-size: 13px;
+            color: #889;
+            margin-bottom: 12px;
+        }
+
+        .methodology {
+            background: rgba(34, 211, 238, 0.04);
+            border: 1px solid rgba(34, 211, 238, 0.1);
+            border-radius: 6px;
+            padding: 14px;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+
+        .methodology h4 {
+            color: #22d3ee;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .methodology ul {
+            margin-left: 18px;
+        }
+
+        .methodology li {
+            margin: 4px 0;
+        }
+
+        .pick-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pick-detail {
+            font-size: 12px;
+            color: #778;
+        }
+
+        .reason-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #aab;
+            margin-top: 4px;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #22d3ee;
+        }
+
+        .leaderboard {
+            margin: 20px 0;
+        }
+
+        .leaderboard td:first-child {
+            font-weight: 600;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(168, 85, 247, 0.08));
+            border: 1px solid rgba(34, 211, 238, 0.15);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        a {
+            color: #22d3ee;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #22d3ee;
+        }
+
+        .timestamp {
+            font-family: monospace;
+            font-size: 12px;
+            color: #667;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/updates/" class="back-link">← Back to Updates</a>
+
+        <h1>⚔️ Antigravity Live 2-Hour Challenge</h1>
+        <div class="meta">
+            <span>📅 Feb 17, 2026</span>
+            <span>⏰ Started: 6:22 PM EST</span>
+            <span>🏁 Ends: 8:22 PM EST</span>
+            <span class="badge badge-live">🔴 LIVE</span>
+        </div>
+
+        <div class="summary-box">
+            <p><strong>The Challenge:</strong> 4 AI-built algorithms compete to predict crypto and forex price movements
+                in real-time over 2 hours. Each prediction has a specific entry price, take-profit (TP), stop-loss (SL),
+                and is timestamped in EST. At the end, the algorithm with the highest total P&L wins.</p>
+            <p style="margin-top:8px; font-size:13px; color:#889;">
+                Data source: Yahoo Finance (15-min candles). Check interval: 90 seconds. Max 25 predictions per
+                algorithm.
+            </p>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <h2>🏆 Live Leaderboard</h2>
+        <table class="leaderboard">
+            <tr>
+                <th>Rank</th>
+                <th>Algorithm</th>
+                <th>Picks</th>
+                <th>W</th>
+                <th>L</th>
+                <th>Open</th>
+                <th>Realized P&L</th>
+                <th>Unrealized P&L</th>
+                <th>Total</th>
+            </tr>
+            <tr>
+                <td>1st</td>
+                <td>MOMENTUM_SNIPER</td>
+                <td>5</td>
+                <td>0</td>
+                <td>0</td>
+                <td>5</td>
+                <td class="neutral">+0.00%</td>
+                <td class="positive">+0.07%</td>
+                <td class="positive">+0.07%</td>
+            </tr>
+            <tr>
+                <td>1st</td>
+                <td>MEAN_REVERSION</td>
+                <td>2</td>
+                <td>0</td>
+                <td>0</td>
+                <td>2</td>
+                <td class="neutral">+0.00%</td>
+                <td class="positive">+0.07%</td>
+                <td class="positive">+0.07%</td>
+            </tr>
+            <tr>
+                <td>3rd</td>
+                <td>BREAKOUT_HUNTER</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="neutral">+0.00%</td>
+                <td class="neutral">+0.00%</td>
+                <td class="neutral">+0.00%</td>
+            </tr>
+            <tr>
+                <td>4th</td>
+                <td>TREND_SURFER</td>
+                <td>12</td>
+                <td>0</td>
+                <td>0</td>
+                <td>12</td>
+                <td class="neutral">+0.00%</td>
+                <td class="negative">-0.16%</td>
+                <td class="negative">-0.16%</td>
+            </tr>
+        </table>
+        <p style="font-size:12px; color:#667;">Last updated: 6:31 PM EST (Cycle 7). Leaderboard auto-updates as
+            challenge runs.</p>
+
+        <!-- ALGORITHM METHODOLOGY -->
+        <h2>🧠 Algorithm Methodology</h2>
+
+        <div class="algo-card">
+            <h3>1. MOMENTUM_SNIPER</h3>
+            <div class="algo-desc">Detects momentum acceleration and RSI extremes to catch moves early.</div>
+            <div class="methodology">
+                <h4>Entry Rules:</h4>
+                <ul>
+                    <li><strong>Momentum Acceleration:</strong> 3-period Rate of Change (ROC3) > 0.3% AND accelerating
+                        faster than ROC6 → LONG</li>
+                    <li><strong>Momentum Deceleration:</strong> ROC3 < -0.3% AND decelerating faster than ROC6 →
+                            SHORT</li>
+                    <li><strong>RSI Extreme:</strong> RSI(14) < 25 → LONG bounce | RSI(14)> 75 → SHORT rejection</li>
+                    <li><strong>Volume Confirmation:</strong> Current volume vs 15-period average ratio (used in
+                        confidence scoring)</li>
+                </ul>
+                <h4>Exit Rules:</h4>
+                <ul>
+                    <li>Crypto: TP = +2.0%, SL = -1.0% (momentum) | TP = +1.5%, SL = -0.8% (RSI extreme)</li>
+                    <li>Forex: TP = +0.8%, SL = -0.4% (momentum) | TP = +1.5%, SL = -0.8% (RSI extreme)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="algo-card">
+            <h3>2. BREAKOUT_HUNTER</h3>
+            <div class="algo-desc">Identifies price breaking above or below the 12-bar high/low range.</div>
+            <div class="methodology">
+                <h4>Entry Rules:</h4>
+                <ul>
+                    <li><strong>Breakout UP:</strong> Current price > 12-period high (excluding current bar) AND volume
+                        ratio > 1.3x → LONG</li>
+                    <li><strong>Breakout DOWN:</strong> Current price < 12-period low AND volume ratio> 1.3x → SHORT
+                    </li>
+                    <li><strong>TP/SL sizing:</strong> Based on historical range percentage (range_pct × 0.5 for TP,
+                        range_pct × 0.25 for SL)</li>
+                </ul>
+                <h4>Why 0 picks so far:</h4>
+                <ul>
+                    <li>Market is ranging on a Sunday evening — no breakouts detected across any symbol</li>
+                    <li>This is actually appropriate behavior (not trading when there's no edge)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="algo-card">
+            <h3>3. MEAN_REVERSION</h3>
+            <div class="algo-desc">Detects extreme Bollinger Band positions combined with RSI to catch snap-backs.</div>
+            <div class="methodology">
+                <h4>Entry Rules:</h4>
+                <ul>
+                    <li><strong>BB Position Score:</strong> Calculated as (price - lower_BB) / (upper_BB - lower_BB).
+                        Range: 0.0 (bottom) to 1.0 (top)</li>
+                    <li><strong>LONG:</strong> BB position < 0.1 (price near/below lower band) OR BB < 0.2 with RSI <
+                            35</li>
+                    <li><strong>SHORT:</strong> BB position > 0.9 (price near/above upper band) OR BB > 0.8 with RSI >
+                        65</li>
+                </ul>
+                <h4>Exit Rules:</h4>
+                <ul>
+                    <li>Crypto: TP = +1.5%, SL = -1.0%</li>
+                    <li>Forex: TP = +0.6%, SL = -0.4%</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="algo-card">
+            <h3>4. TREND_SURFER</h3>
+            <div class="algo-desc">Rides trends using EMA alignment and MACD confirmation. Most aggressive picker.</div>
+            <div class="methodology">
+                <h4>Entry Rules:</h4>
+                <ul>
+                    <li><strong>Bullish:</strong> Price > EMA(9) > EMA(21) OR EMA(9) just crossed above EMA(21) → LONG
+                    </li>
+                    <li><strong>Bearish:</strong> Price < EMA(9) < EMA(21) OR EMA(9) just crossed below EMA(21) →
+                            SHORT</li>
+                    <li><strong>Confirmation:</strong> MACD histogram direction adds confidence points (positive for
+                        LONG, negative for SHORT)</li>
+                    <li><strong>Momentum bonus:</strong> 3-bar return > 0.2% adds confidence</li>
+                </ul>
+                <h4>Exit Rules:</h4>
+                <ul>
+                    <li>Crypto: TP = +2.0%, SL = -1.0%</li>
+                    <li>Forex: TP = +1.0%, SL = -0.5%</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ALL PICKS -->
+        <h2>📋 All 19 Live Predictions (with reasoning)</h2>
+
+        <h3>MOMENTUM_SNIPER — 5 Picks</h3>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Symbol</th>
+                <th>Direction</th>
+                <th>Entry Price</th>
+                <th>TP</th>
+                <th>SL</th>
+                <th>Confidence</th>
+                <th>Time (EST)</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>ADA-USD</td>
+                <td class="positive">LONG</td>
+                <td>$0.2809</td>
+                <td>$0.2851 (+1.5%)</td>
+                <td>$0.2786 (-0.8%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN +0.04%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> RSI(14) = 25 — extreme oversold. Historically, RSI
+                        below 25 has a high probability of mean-reverting upward in the short term.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>2</td>
+                <td>AVAX-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$9.1492</td>
+                <td>$8.9662 (+2.0%)</td>
+                <td>$9.2407 (-1.0%)</td>
+                <td>54%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN -0.02%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> Momentum decelerating — ROC(3) = -0.34%, falling
+                        faster than ROC(6). RSI = 37 (below midline). Low volume (0.6x normal) suggests weak support.
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>3</td>
+                <td>LINK-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$8.8412</td>
+                <td>$8.6644 (+2.0%)</td>
+                <td>$8.9296 (-1.0%)</td>
+                <td>53%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN +0.01%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> Momentum dropping — ROC(3) = -0.39%. RSI = 37
+                        (bearish). Very low volume (0.3x) indicates exhaustion/no buyers stepping in.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>4</td>
+                <td>DOT-USD</td>
+                <td class="positive">LONG</td>
+                <td>$1.3467</td>
+                <td>$1.3669 (+1.5%)</td>
+                <td>$1.3360 (-0.8%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN +0.02%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> RSI(14) = 23 — deeply oversold. At this level, the
+                        probability of a short-term bounce is historically high (~65-70%).</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>5</td>
+                <td>EURUSD=X</td>
+                <td class="negative">SHORT</td>
+                <td>$1.1858</td>
+                <td>$1.1680 (+1.5%)</td>
+                <td>$1.1953 (-0.8%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN +0.01%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> RSI(14) = 78 — overbought. EUR/USD extended after
+                        recent rally. High probability of short-term pullback from this level.</div>
+                </td>
+            </tr>
+        </table>
+
+        <h3>MEAN_REVERSION — 2 Picks</h3>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Symbol</th>
+                <th>Direction</th>
+                <th>Entry Price</th>
+                <th>TP</th>
+                <th>SL</th>
+                <th>Confidence</th>
+                <th>Time (EST)</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>XRP-USD</td>
+                <td class="positive">LONG</td>
+                <td>$1.4739</td>
+                <td>$1.4960 (+1.5%)</td>
+                <td>$1.4592 (-1.0%)</td>
+                <td>61%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN +0.03%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> BB position = 0.09 (price at 9% of Bollinger Band
+                        range — near bottom band). RSI = 36. Double confirmation: price stretched below normal range AND
+                        momentum oversold. Expecting reversion to BB midline.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>7</td>
+                <td>ADA-USD</td>
+                <td class="positive">LONG</td>
+                <td>$0.2809</td>
+                <td>$0.2851 (+1.5%)</td>
+                <td>$0.2781 (-1.0%)</td>
+                <td>53%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td><span class="badge badge-open">OPEN +0.04%</span></td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 <strong>Why:</strong> BB position = 0.17 (near lower band). RSI = 25
+                        (deeply oversold). Price at extreme deviation from its 20-period mean — high probability
+                        snap-back trade.</div>
+                </td>
+            </tr>
+        </table>
+
+        <h3>BREAKOUT_HUNTER — 0 Picks</h3>
+        <div class="algo-card">
+            <p style="color:#889">No breakouts detected. Market is ranging on Sunday evening — no symbol broke above its
+                12-bar high or below its 12-bar low with sufficient volume confirmation (&gt;1.3x). This is correct
+                behavior: <strong>not trading when there's no edge</strong>.</p>
+        </div>
+
+        <h3>TREND_SURFER — 12 Picks (most aggressive)</h3>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Symbol</th>
+                <th>Dir</th>
+                <th>Entry</th>
+                <th>TP</th>
+                <th>SL</th>
+                <th>Conf</th>
+                <th>Time (EST)</th>
+                <th>P&L</th>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>BTC-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$67,529</td>
+                <td>$66,179 (+2%)</td>
+                <td>$68,204 (-1%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="positive">+0.13%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) $67,563 < EMA(21) $67,612. MACD histogram=-24.63. 3-bar
+                            return=-0.09%. <strong>Bearish alignment</strong> — price below both EMAs with negative MACD
+                            momentum.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>9</td>
+                <td>SOL-USD</td>
+                <td class="positive">LONG</td>
+                <td>$85.21</td>
+                <td>$86.92 (+2%)</td>
+                <td>$84.36 (-1%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.07%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) $85.10 > EMA(21) $84.96. MACD histogram = +0.008 (just turned
+                        positive). <strong>Bullish EMA stack</strong> — only crypto with both EMAs aligned upward.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>10</td>
+                <td>XRP-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$1.4739</td>
+                <td>$1.4444 (+2%)</td>
+                <td>$1.4886 (-1%)</td>
+                <td>65%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.03%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) < EMA(21). MACD histogram=-0.0019. 3-bar return=-0.24%. <strong>
+                            Bearish trend confirmed.</strong> Note: conflicts with MEAN_REVERSION's LONG on same symbol
+                            — testing which approach wins.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>11</td>
+                <td>DOGE-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$0.10072</td>
+                <td>$0.09870 (+2%)</td>
+                <td>$0.10172 (-1%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="positive">+0.04%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) < EMA(21). MACD histogram=-0.0001. 3-bar return=-0.09%. <strong>
+                            Bearish EMA crossover.</strong></div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>12</td>
+                <td>ADA-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$0.2809</td>
+                <td>$0.2752 (+2%)</td>
+                <td>$0.2837 (-1%)</td>
+                <td>65%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.04%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) < EMA(21). MACD histogram=-0.0002. 3-bar return=-0.44%. <strong>
+                            Strong bearish momentum.</strong> Note: MOMENTUM_SNIPER and MEAN_REVERSION are LONG on ADA —
+                            this is a direct conflict testing trend vs. mean-reversion approaches.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>13</td>
+                <td>AVAX-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$9.1492</td>
+                <td>$8.9662 (+2%)</td>
+                <td>$9.2407 (-1%)</td>
+                <td>65%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.02%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) < EMA(21). MACD histogram=-0.0031. ROC(3)=-0.34%. Both trend AND
+                            momentum agree — bearish.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>14</td>
+                <td>BNB-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$617.24</td>
+                <td>$604.90 (+2%)</td>
+                <td>$623.42 (-1%)</td>
+                <td>65%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="positive">+0.01%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) $617.84 < EMA(21) $618.24. MACD histogram=-0.20. ROC(3)=-0.26%.
+                            Trend firmly bearish.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>15</td>
+                <td>DOT-USD</td>
+                <td class="negative">SHORT</td>
+                <td>$1.3467</td>
+                <td>$1.3198 (+2%)</td>
+                <td>$1.3602 (-1%)</td>
+                <td>65%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.02%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) < EMA(21). MACD histogram=-0.0009. ROC(3)=-0.32%. Note: conflicts
+                            with MOMENTUM_SNIPER's LONG (RSI oversold) — testing trend vs. oversold bounce.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>16</td>
+                <td>EURUSD=X</td>
+                <td class="positive">LONG</td>
+                <td>$1.1858</td>
+                <td>$1.1977 (+1%)</td>
+                <td>$1.1799 (-0.5%)</td>
+                <td>55%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.01%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) > EMA(21). MACD histogram ≈ 0. EUR/USD in mild uptrend on daily
+                        timeframe. Note: MOMENTUM_SNIPER is SHORT EUR — direct conflict (trend vs. overbought).</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>17</td>
+                <td>GBPUSD=X</td>
+                <td class="positive">LONG</td>
+                <td>$1.3569</td>
+                <td>$1.3704 (+1%)</td>
+                <td>$1.3501 (-0.5%)</td>
+                <td>60%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="negative">-0.01%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) > EMA(21). MACD histogram just turned positive. ROC(3) = +0.03%.
+                        GBP/USD EMA alignment bullish.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>18</td>
+                <td>AUDUSD=X</td>
+                <td class="positive">LONG</td>
+                <td>$0.7088</td>
+                <td>$0.7159 (+1%)</td>
+                <td>$0.7052 (-0.5%)</td>
+                <td>55%</td>
+                <td class="timestamp">6:22:37 PM</td>
+                <td class="neutral">+0.00%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 EMA(9) > EMA(21). MACD histogram = -0.0001 (nearly neutral). ROC(3) =
+                        +0.01%. Marginal bullish — lowest confidence pick.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>19</td>
+                <td>ETH-USD</td>
+                <td class="positive">LONG</td>
+                <td>$1,995.32</td>
+                <td>$2,035.22 (+2%)</td>
+                <td>$1,975.37 (-1%)</td>
+                <td>55%</td>
+                <td class="timestamp">6:25:38 PM</td>
+                <td class="negative">-0.15%</td>
+            </tr>
+            <tr>
+                <td colspan="9">
+                    <div class="reason-box">📊 Added Cycle 2. EMA(9) $1,995.26 > EMA(21) $1,992.95. MACD histogram =
+                        -1.26 (turning). ROC(3) = -0.13%. Borderline signal — EMAs aligned but momentum still weak.
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- INTERESTING CONFLICTS -->
+        <h2>🔥 Interesting Algo Conflicts</h2>
+        <div class="algo-card">
+            <p>Some algorithms disagree on the same symbol — this is intentional. It tests <strong>trend-following vs.
+                    mean-reversion</strong> approaches:</p>
+            <table>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Trend Says</th>
+                    <th>Mean Reversion Says</th>
+                    <th>Who's Right?</th>
+                </tr>
+                <tr>
+                    <td>ADA-USD</td>
+                    <td class="negative">SHORT (TREND_SURFER: bearish EMA)</td>
+                    <td class="positive">LONG (MOMENTUM_SNIPER + MEAN_REV: oversold RSI=25, BB=0.17)</td>
+                    <td><span class="badge badge-open">TBD</span></td>
+                </tr>
+                <tr>
+                    <td>XRP-USD</td>
+                    <td class="negative">SHORT (TREND_SURFER: bearish EMA)</td>
+                    <td class="positive">LONG (MEAN_REVERSION: BB=0.09, RSI=36)</td>
+                    <td><span class="badge badge-open">TBD</span></td>
+                </tr>
+                <tr>
+                    <td>DOT-USD</td>
+                    <td class="negative">SHORT (TREND_SURFER: bearish EMA)</td>
+                    <td class="positive">LONG (MOMENTUM_SNIPER: RSI=23 extreme oversold)</td>
+                    <td><span class="badge badge-open">TBD</span></td>
+                </tr>
+                <tr>
+                    <td>EURUSD=X</td>
+                    <td class="positive">LONG (TREND_SURFER: bullish EMA)</td>
+                    <td class="negative">SHORT (MOMENTUM_SNIPER: RSI=78 overbought)</td>
+                    <td><span class="badge badge-open">TBD</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- BATTLE TEST SUMMARY -->
+        <h2>🔬 Background: 2-Year Rigorous Battle Test</h2>
+        <div class="algo-card">
+            <p>Before this live challenge, we tested <strong>21 strategy/parameter combinations</strong> over 2 years of
+                real
+                market data using institutional-grade statistics (bootstrap CI, Monte Carlo, regime splitting,
+                Bonferroni correction).</p>
+            <table>
+                <tr>
+                    <th>Result</th>
+                    <th>Count</th>
+                </tr>
+                <tr>
+                    <td>❌ Eliminated</td>
+                    <td><strong>18</strong> (worse than random)</td>
+                </tr>
+                <tr>
+                    <td>⚠️ Marginal</td>
+                    <td>2 (CI crosses zero)</td>
+                </tr>
+                <tr>
+                    <td>✅ Winner</td>
+                    <td><strong>1</strong> — Meme Breakout Long (PF 3.36, p=0.018, beats random p=0.003)</td>
+                </tr>
+            </table>
+            <p style="margin-top:8px"><a href="/updates/">Full details on the updates page →</a></p>
+        </div>
+
+        <p style="text-align:center; margin-top:40px; color:#445; font-size:11px;">
+            Built by Antigravity (Gemini) · findtorontoevents.ca · Feb 17, 2026
+        </p>
+    </div>
+</body>
+
+</html>

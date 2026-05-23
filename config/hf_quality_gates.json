@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "enabled": true,
+  "doc": "Hedge-fund-grade quality gates. v2 replaces broken elite_score with ml_score. Per-asset thresholds derived from 3,500+ row closed ledger analysis (2026-05-02).",
+  "_changelog": [
+    "v2 (2026-05-02): BREAKING — removed min_elite_score (negative -0.17 correlation with profitability)",
+    "v2 (2026-05-02): ADDED min_ml_score threshold (0.82) — optimal precision-recall from ROC analysis",
+    "v2 (2026-05-02): ADDED per-asset-class override block for score floors",
+    "v2 (2026-05-02): CHANGED min_risk_reward 0.8 -> 1.25 (captures 85% of profitable sub-1.5 trades)",
+    "v2 (2026-05-02): CHANGED max_risk_reward 2.0 -> 3.0 (allows high-conviction asymmetric setups)",
+    "v2 (2026-05-02): REMOVED WINNER_FILTER confidence > 0.85 block (0% accuracy, blocked only winners)",
+    "v1 (legacy): min_elite_score: 80 -> reduced to 30 (2026-04) -> REMOVED in v2"
+  ],
+  "note_production_status": "Wiring status: hf_quality_gate.py::hf_smart_pick_post_score_reason was identified ORPHAN-CONSUMED on 2026-05-02 (issue #685). PR #660 lands the threshold update; a follow-up wiring PR is required to make passes_hedge_fund_gate() in alpha_engine/hedge_fund_quality_gate.py read this JSON. Until then, treat values here as the source-of-truth config; live gate behavior is governed by hard-coded constants in passes_hedge_fund_gate().",
+  "note_plan_v2_1_refutation": "Historical: Foolproof Action Plan v2.1 (2026-05-02) claimed R:R 1.5-2.0 band yields PF 5.81. REFUTED (5-source consensus, issue #685): actual PF 1.258 on n=1244 for that band. Plan v2.1 also claimed ml_score>=0.90 = 66.7% accuracy on n=3: REFUTED — n=0 picks meet that threshold. v2 thresholds below derive from independent near_miss_analysis_2026_05_02.md, not from Plan v2.1.",
+  "min_ml_score": 0.82,
+  "_min_ml_score_evidence": "ROC-AUC optimal threshold. ml_score >= 0.82: F1=0.68, Precision=0.71, Recall=0.65. Outperforms elite_score across all metrics. Source: near_miss_analysis_2026_05_02.md",
+  "min_risk_reward": 1.25,
+  "_min_rr_evidence": "R:R 1.25-1.5 range: 51.2% WR, profitable. R:R < 1.0: toxic. 1.25 captures 85% of profitable sub-1.5 trades while blocking toxicity. Source: shadow_blocked.json analysis (n=500)",
+  "max_risk_reward": 3.0,
+  "_max_rr_evidence": "S-Tier crypto shows R:R 2.0-3.0 produces highest PF. Cap at 3.0 prevents never-hit-TP scenarios while allowing asymmetric payoffs.",
+  "max_signal_age_hours": 4,
+  "max_signal_age_hours_copy_trader": 24,
+  "min_mtf_agree_numerator": 2,
+  "min_mtf_agree_denominator": 3,
+  "kelly_cap_fraction": 0.25,
+  "per_asset_score_floors": {
+    "CRYPTO": 50,
+    "EQUITY": 42,
+    "FOREX": 45,
+    "COMMODITY": 45,
+    "BOND": 40,
+    "ETF": 40,
+    "FUTURES": 50
+  },
+  "_score_floor_evidence": "Derived from gate_optimization_2026_05_02.md. Floors calibrated to maximize PF per asset class while maintaining minimum pick flow (n>=20/week).",
+  "per_asset_forward_wr_min": {
+    "CRYPTO": 0.60,
+    "EQUITY": 0.55,
+    "FOREX": 0.50,
+    "COMMODITY": 0.55,
+    "BOND": 0.50,
+    "ETF": 0.55,
+    "FUTURES": 0.60
+  },
+  "_fwd_wr_evidence": "FOREX lowered to 0.50 (trusted filter shows 48.7% true WR). BOND/ETF at 0.50-0.55 for accumulation. CRYPTO at 0.60 for quality bar.",
+  "suspension_list": {
+    "CRYPTO_C_TIER": {
+      "suspended": true,
+      "reason": "PF 0.36, -46.59% realized PnL, 68.5% loser rate. Suspend pending >6 months T3 proof-of-life in paper trading.",
+      "evidence": "crypto_analysis_2026_05_02.md Section 1.4",
+      "review_date": "2026-11-02"
+    }
+  },
+  "winner_filter": {
+    "enabled": false,
+    "_abolished_reason": "WINNER_FILTER (confidence > 0.85 -> reject) had 0% accuracy. The 0.85-0.90 confidence zone is the SWEET SPOT with 82% WR / PF 11.8. This filter blocked ONLY winners. Never re-enable without full revalidation."
+  },
+  "soft_gates": {
+    "enabled": true,
+    "confidence_sizing": {
+      "0.60_0.70": {"action": "reject", "reason": "dead band (29.9% WR, PF 0.69)"},
+      "0.70_0.85": {"action": "pass", "sizing_multiplier": 0.75, "reason": "moderate confidence"},
+      "0.85_0.90": {"action": "pass", "sizing_multiplier": 1.0, "reason": "sweet spot (82% WR, PF 11.8)"},
+      "0.90_0.95": {"action": "pass", "sizing_multiplier": 0.75, "reason": "overfit zone (47% WR above 0.90)"}
+    },
+    "ml_score_sizing": {
+      "below_0.70": {"action": "reject", "reason": "insufficient ML confidence"},
+      "0.70_0.82": {"action": "pass", "sizing_multiplier": 0.50, "reason": "conditional tier"},
+      "0.82_0.90": {"action": "pass", "sizing_multiplier": 1.0, "reason": "optimal zone"},
+      "above_0.90": {"action": "pass", "sizing_multiplier": 0.75, "reason": "high but check for overfit"}
+    }
+  }
+}

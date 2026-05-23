@@ -1,0 +1,58 @@
+name: Cross-DB Strategy Consistency Audit
+
+# Daily audit comparing strategy keys between ejaguiar1_stocks (live picks)
+# and ejaguiar1_backtests (backtest trades) to surface orphaned strategies.
+#
+# Orphaned live strategies = production picks with no backtest coverage.
+# Orphaned backtest strategies = backtest-only strategies not in production.
+#
+# Push trigger: tools/cross_db_consistency.py (see AGENTS.md push-trigger registry)
+# Secrets required: DB_PASS_STOCKS (or MYSQL_PASSWORD), DB_PASS_BACKTESTS (or MYSQL_PASSWORD)
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # daily at 06:00 UTC
+  push:
+    branches: [main]
+    paths:
+      - tools/cross_db_consistency.py
+      - .github/workflows/cross-db-audit.yml
+  workflow_dispatch:
+
+jobs:
+  cross-db-audit:
+    name: Cross-DB Consistency Audit
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run cross-DB consistency audit
+        env:
+          # Canonical new names (preferred by db_env.py resolution chain)
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_PASS_BACKTESTS: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD }}
+          # Legacy names kept for backward compat with any callers not yet using db_env
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+          DB_BACKTESTS_PASSWORD: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD || secrets.DB_BACKTESTS_PASSWORD }}
+        run: python tools/cross_db_consistency.py
+
+      - name: Upload cross-DB audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-db-audit-report
+          path: audit_dashboard/data/cross_db_audit.json
+          retention-days: 30

@@ -1,0 +1,117 @@
+{
+  "schema_version": "v1",
+  "engine": "synthesis_engine",
+  "asset_class": "CRYPTO",
+  "run_id": "run_2026-05-11T19-17-50Z",
+  "synthesis": [
+    {
+      "spec_id": "crypto_cross_mom_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 shows PF=2.86 but n=5 trades only, far below T2 floor of 100. P4 independence is high (|\u03c1|=-0.94) but sample size is too small for any reliable inference. Simplified signal (SMA crossover) not faithful to spec.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_ts_mom_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Same n=5 issue as cross_mom_v1. P4 correlation of 0.94 with claude_gainer_st suggests signal overlap rather than genuine edge. Insufficient trade count for any verdict.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_vol_target_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, PF=2.86 but MDD=37.1% exceeds T2 floor of 20%. P4 correlation 0.94 with dna_confluence_mutations. Sample too small for reliable vol-targeting assessment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_regime_switch_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% above 20% threshold. P4 independence (|\u03c1|=-0.94) is promising but sample size is inadequate. Simplified signal not faithful to spec.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_pairs_trade_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% exceeds T2 floor. P4 independence (|\u03c1|=-0.95) is strong but cannot overcome tiny sample. Needs longer history and faithful signal translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_momentum_cross_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, PF=2.86 but MDD=37.1% above 20%. P4 correlation 0.93 with predictions. Sample size far below T2 floor of 100; cannot assess edge reliably.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_carry_funding_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% exceeds T2 floor. P4 independence (|\u03c1|=-0.95) is good but sample is too small. Funding rate approximation via return proxy is unreliable without faithful translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_vol_target_btc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, PF=2.86 but MDD=37.1% above 20%. P4 correlation 0.95 with ml_bg_system_d. Sample size insufficient for vol-targeting strategy evaluation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_pairs_meanrev_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% exceeds T2 floor. P4 correlation 0.94 with dna_confluence_mutations. Tiny sample and simplified signal prevent any meaningful conclusion.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_ml_boost_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% above 20%. P4 correlation 0.94 with ai_challenge_scanner. ML strategy with 5 trades is statistically meaningless; needs thousands of trades for evaluation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_diagnostic_noedge_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, PF=2.86 but MDD=37.1% above 20%. P4 independence (|\u03c1|=-0.95) is strong but sample is too small. Diagnostic strategy with 5 trades cannot confirm or deny calendar effects.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_momentum_btc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% exceeds T2 floor. P4 correlation 0.94 with kimi_live_signals. Sample size far below 100-trade minimum for momentum strategy evaluation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_vol_target_eth_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 shows PF=0.86, WR=60.0%, MDD=61.6% - all metrics fail T2 floor (PF<1.5, MDD>20%). n=5 trades is too small. P4 independence (|\u03c1|=-0.95) cannot rescue poor performance.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_pairs_btc_eth_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, PF=2.86 but MDD=37.1% above 20%. P4 independence (|\u03c1|=-0.94) is promising but sample too small. Needs longer history and faithful signal translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_regime_switch_btc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% exceeds T2 floor. P4 correlation 0.95 with mega_mutation. Sample size inadequate for regime-switching strategy assessment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "crypto_cross_momentum_multi_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "n=5 trades, MDD=37.1% above 20%. P4 correlation 0.95 with incubator_pipeline. Tiny sample and simplified signal prevent any reliable conclusion about cross-sectional momentum.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "All 16 candidates share identical P3 metrics (PF=2.86, WR=60.0%, MDD=37.1%, n=5) because the backtest used a simplified SMA-crossover proxy instead of the specified signals - the faithful-signal translator was queued for v3 but not applied. The n=5 trade count is far below the T2 floor of 100 trades, making all PF/WR/MDD statistics unreliable. P4 cross-tests show high independence (|\u03c1| up to 0.95) but this is meaningless with such small samples. The run must be retried with the faithful-signal translator enabled and a longer history (at least 5-10 years of daily data) to generate sufficient trade counts. No candidate meets the T2 floor requirements, and no edge can be confirmed from this run.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_crypto_p5_20260511T193152Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260511T193209Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 4846,
+    "tokens_out": 1753,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

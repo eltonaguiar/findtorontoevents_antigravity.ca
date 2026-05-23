@@ -1,0 +1,57 @@
+name: MySQL Trading Picks Sync
+
+on:
+  schedule:
+    # Every hour at minute 30
+    - cron: '30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: mysql-trading-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: python -m pip install pymysql
+
+      - name: Sync trading picks to MySQL
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          # Prefer MYSQL_PASSWORD (used elsewhere), then AUDIT_DB_PASS; no plaintext fallback
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          DB_NAME: ejaguiar1_stocks
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          success=false
+          for i in 1 2 3; do
+            if python alpha_engine/mysql_trading_sync.py; then
+              success=true
+              break
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep $((i * 10))
+          done
+          if [ "$success" != "true" ]; then
+            echo "DB sync failed after 3 attempts" >&2
+            exit 1
+          fi

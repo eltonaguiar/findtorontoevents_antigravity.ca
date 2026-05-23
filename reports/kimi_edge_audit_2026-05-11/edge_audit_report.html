@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantitative Edge Audit Report | findtorontoevents.ca</title>
+<style>
+  /* ═══════════════════════════════════════════
+     CSS VARIABLES & RESET
+     ═══════════════════════════════════════════ */
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #1c2128;
+    --border-color: #30363d;
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --accent-gold: #fbbf24;
+    --accent-red: #ef4444;
+    --accent-green: #22c55e;
+    --accent-yellow: #f59e0b;
+    --accent-blue: #3b82f6;
+    --accent-purple: #a855f7;
+    --accent-cyan: #06b6d4;
+    --font-mono: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--font-mono); background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+  pre { font-family: var(--font-mono); background: var(--bg-tertiary); padding: 16px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border-color); }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT
+     ═══════════════════════════════════════════ */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .flex { display: flex; gap: 16px; flex-wrap: wrap; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+
+  /* ═══════════════════════════════════════════
+     HEADER & NAV
+     ═══════════════════════════════════════════ */
+  .site-header {
+    background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 40px 0 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 50%, var(--accent-green) 100%);
+  }
+  .header-badge {
+    display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px;
+    font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .badge-audit { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+  .badge-warn { background: rgba(245,158,11,0.15); color: var(--accent-yellow); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-info { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+  .badge-success { background: rgba(34,197,94,0.15); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+  .site-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .site-subtitle { font-size: 17px; color: var(--text-secondary); max-width: 700px; }
+  .header-meta { margin-top: 20px; display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); }
+  .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ═══════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════ */
+  .nav-bar {
+    background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);
+    padding: 12px 0; position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px); background: rgba(13,17,23,0.92);
+  }
+  .nav-links { display: flex; gap: 6px; flex-wrap: wrap; list-style: none; }
+  .nav-links a {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary); transition: all 0.2s; white-space: nowrap;
+  }
+  .nav-links a:hover { background: var(--bg-tertiary); color: var(--text-primary); text-decoration: none; }
+
+  /* ═══════════════════════════════════════════
+     SECTIONS
+     ═══════════════════════════════════════════ */
+  section { padding: 48px 0; border-bottom: 1px solid var(--border-color); }
+  .section-title {
+    font-size: 24px; font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-number {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px; font-size: 14px; font-weight: 800;
+    background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--accent-gold);
+  }
+  .section-desc { color: var(--text-secondary); margin-bottom: 28px; font-size: 14px; }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+     ═══════════════════════════════════════════ */
+  .card {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 24px; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #484f58; }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); }
+  .card-metric {
+    font-family: var(--font-mono); font-size: 32px; font-weight: 800;
+    line-height: 1.2; margin-bottom: 4px;
+  }
+  .card-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .card-delta {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+    padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;
+    font-family: var(--font-mono);
+  }
+  .delta-up { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+  .delta-down { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .delta-warn { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+     ═══════════════════════════════════════════ */
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border-color); }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px;
+  }
+  thead { background: var(--bg-tertiary); }
+  th {
+    padding: 12px 16px; text-align: left; font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color); white-space: nowrap;
+  }
+  td {
+    padding: 11px 16px; border-bottom: 1px solid rgba(48,54,61,0.5);
+    font-family: var(--font-mono); font-size: 13px;
+  }
+  tbody tr:hover { background: rgba(59,130,246,0.04); }
+  tbody tr:last-child td { border-bottom: none; }
+  .tnum { text-align: right; }
+  .tcenter { text-align: center; }
+
+  /* ═══════════════════════════════════════════
+     STATUS INDICATORS
+     ═══════════════════════════════════════════ */
+  .status {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
+    border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap;
+  }
+  .status-pass { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+  .status-fail { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .status-warn { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+  .status-info { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+     ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: 10px; padding: 20px 24px; margin: 20px 0;
+    border-left: 4px solid;
+  }
+  .callout-danger { background: rgba(239,68,68,0.08); border-color: var(--accent-red); }
+  .callout-warn { background: rgba(245,158,11,0.08); border-color: var(--accent-yellow); }
+  .callout-info { background: rgba(59,130,246,0.08); border-color: var(--accent-blue); }
+  .callout-success { background: rgba(34,197,94,0.08); border-color: var(--accent-green); }
+  .callout-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .callout p { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ═══════════════════════════════════════════
+     METRIC GRID
+     ═══════════════════════════════════════════ */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+  .metric-item { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; text-align: center; }
+  .metric-value { font-family: var(--font-mono); font-size: 24px; font-weight: 800; }
+  .metric-name { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════
+     TIMELINE / ROADMAP
+     ═══════════════════════════════════════════ */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 6px; top: 0; bottom: 0;
+    width: 2px; background: var(--border-color);
+  }
+  .timeline-item { position: relative; margin-bottom: 24px; padding-left: 20px; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px;
+    border-radius: 50%; border: 2px solid;
+  }
+  .tli-critical::before { background: var(--accent-red); border-color: var(--accent-red); }
+  .tli-warn::before { background: var(--accent-yellow); border-color: var(--accent-yellow); }
+  .tli-info::before { background: var(--accent-blue); border-color: var(--accent-blue); }
+  .tli-success::before { background: var(--accent-green); border-color: var(--accent-green); }
+  .timeline-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .timeline-desc { font-size: 13px; color: var(--text-secondary); }
+  .timeline-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    font-weight: 700; margin-top: 6px;
+  }
+
+  /* ═══════════════════════════════════════════
+     GAP ANALYSIS BAR
+     ═══════════════════════════════════════════ */
+  .gap-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; margin: 4px 0; }
+  .gap-segment { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+  /* ═══════════════════════════════════════════
+     PROGRESS / SCORE
+     ═══════════════════════════════════════════ */
+  .score-ring { display: flex; align-items: center; gap: 16px; }
+  .score-value { font-family: var(--font-mono); font-size: 36px; font-weight: 800; }
+  .score-labels { flex: 1; }
+  .score-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+
+  /* ═══════════════════════════════════════════
+     CHART PLACEHOLDER
+     ═══════════════════════════════════════════ */
+  .chart-container {
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 20px; text-align: center; margin: 20px 0;
+  }
+  .chart-container img { max-width: 100%; height: auto; border-radius: 8px; }
+  .chart-caption { font-size: 12px; color: var(--text-muted); margin-top: 12px; font-style: italic; }
+
+  /* ═══════════════════════════════════════════
+     TOGGLE / COLLAPSIBLE
+     ═══════════════════════════════════════════ */
+  .collapsible { cursor: pointer; }
+  .collapse-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+  .collapse-content.open { max-height: 5000px; }
+
+  /* ═══════════════════════════════════════════
+     PRINT & PDF BUTTON
+     ═══════════════════════════════════════════ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+    border: 1px solid; transition: all 0.2s; font-family: var(--font-sans);
+  }
+  .btn-primary { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+  .btn-primary:hover { background: #2563eb; text-decoration: none; }
+  .btn-outline { background: transparent; color: var(--text-primary); border-color: var(--border-color); }
+  .btn-outline:hover { background: var(--bg-tertiary); text-decoration: none; }
+  .action-bar { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+
+  /* ═══════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════ */
+  .site-footer { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border-color); margin-top: 20px; }
+
+  /* ═══════════════════════════════════════════
+     PRINT STYLES
+     ═══════════════════════════════════════════ */
+  @media print {
+    body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+    .site-header, .card, .callout, .metric-item { break-inside: avoid; }
+    .nav-bar, .action-bar, .btn { display: none !important; }
+    .site-header::before { display: none; }
+    section { border-bottom: 1px solid #ddd; padding: 24px 0; }
+    .card { border: 1px solid #ccc; background: #fafafa; }
+    table { font-size: 9pt; }
+    a { color: #000; text-decoration: none; }
+  }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .container { padding: 0 16px; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    section { padding: 32px 0; }
+    .site-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="container">
+    <div class="header-badge badge-audit">Independent Audit</div>
+    <h1 class="site-title" style="color: var(--accent-gold);">Quantitative Edge Audit Report</h1>
+    <p class="site-subtitle">A rigorous, data-driven analysis of the findtorontoevents.ca prediction system's statistical edge, machine learning pipeline, and readiness for capital deployment.</p>
+    <div class="header-meta">
+      <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> July 2025</span>
+      <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Audit Cycle: 7 days</span>
+      <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Classification: Critical Findings</span>
+      <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Version 1.0</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════ -->
+<nav class="nav-bar">
+  <div class="container">
+    <ul class="nav-links">
+      <li><a href="#exec-summary">Executive Summary</a></li>
+      <li><a href="#methodology">Methodology</a></li>
+      <li><a href="#dashboard-reality">Dashboard vs Reality</a></li>
+      <li><a href="#asset-class">Asset Classes</a></li>
+      <li><a href="#ml-assessment">ML Assessment</a></li>
+      <li><a href="#backtest">Backtest Integrity</a></li>
+      <li><a href="#industry">Industry Standards</a></li>
+      <li><a href="#edge-decay">Edge Decay</a></li>
+      <li><a href="#readiness">Capital Readiness</a></li>
+      <li><a href="#gaps">Critical Gaps</a></li>
+      <li><a href="#remediation">Remediation</a></li>
+      <li><a href="#validation">Validation Pipeline</a></li>
+      <li><a href="#appendix">Appendix</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     EXECUTIVE SUMMARY
+     ═══════════════════════════════════════════ -->
+<section id="exec-summary">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">1</span> Executive Summary — The Hard Truth</h2>
+    <p class="section-desc">This audit assessed the findtorontoevents.ca prediction system across three dimensions: the public-facing dashboard, the internal database of 55,510 resolved trades, and the ML/strategy codebase. The findings are sobering but there are clear paths forward.</p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title" style="color: var(--accent-red);">&#9888;&#65039; Critical Finding: The Dashboard Does Not Reflect Reality</div>
+      <p>The website claims a +949% PnL with 34-43% win rates. The database of <strong>55,510 resolved trades</strong> reveals an <strong>11.13% win rate</strong> with an <strong>average return of -3.56% per trade</strong>. No asset class demonstrates statistically significant positive edge (t-test p-values all &gt; 0.05). The system, as deployed, destroys capital.</p>
+    </div>
+
+    <!-- Key Metric Cards -->
+    <div class="grid-4" style="margin-top: 28px;">
+      <div class="card">
+        <div class="card-label">Database Win Rate</div>
+        <div class="card-metric" style="color: var(--accent-red);">11.13%</div>
+        <div class="card-delta delta-down">&#9660; -27pp vs dashboard claim</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Avg Return / Trade</div>
+        <div class="card-metric" style="color: var(--accent-red);">-3.56%</div>
+        <div class="card-delta delta-down">&#9660; vs +949% claimed</div>
+      </div>
+      <div class="card">
+        <div class="card-label">ML Accuracy</div>
+        <div class="card-metric" style="color: var(--accent-red);">32.6%</div>
+        <div class="card-delta delta-down">&#9660; Worse than random (50%)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Live Sharpe Ratio</div>
+        <div class="card-metric" style="color: var(--accent-red);">-2.34</div>
+        <div class="card-delta delta-down">&#9660; Catastrophic</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 20px;">
+      <div class="card">
+        <div class="card-label">Overfitting Gap (Backtest vs Live)</div>
+        <div class="card-metric" style="color: var(--accent-red);">4.0x</div>
+        <div class="card-delta delta-down">Backtest 42.4% WR &#8594; Live 11.1% WR</div>
+        <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">The backtest shows a 42.4% win rate while live performance achieves only 11.1% — a 31.3 percentage point gap that signals severe overfitting or data leakage.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Model Calibration</div>
+        <div class="card-metric" style="color: var(--accent-red);">Broken</div>
+        <div class="card-delta delta-down">96% conf &#8594; 0.9% actual win rate</div>
+        <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">When the model predicts 96% confidence of a win, the actual win rate is 0.9%. The calibration curve is catastrophically inverted — the model is worse than random guessing.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-warn" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-yellow);">&#9888;&#65039; Multiple Testing Bias</div>
+      <p>With <strong>3,000+ strategies</strong> tested in the incubator, the False Strategy Theorem predicts approximately a <strong>95% probability of finding a Sharpe Ratio &gt; 1 by pure chance</strong>. Without Probability of Backtest Overfitting (PBO) controls active in production, selected strategies are overwhelmingly likely to be false positives.</p>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-title" style="color: var(--accent-green);">&#10004; The Path Forward Exists</div>
+      <p>This codebase has <strong>strong ML foundations</strong>: XGBoost + LightGBM + Random Forest ensemble, Boruta feature selection, Purged K-Fold CV with embargo, and CPCV/PBO code that exists but is <strong>not wired to production</strong>. The architecture is sound; the wiring is incomplete. The remediation roadmap in Section 16 provides concrete steps to recover statistical validity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     METHODOLOGY
+     ═══════════════════════════════════════════ -->
+<section id="methodology">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">2</span> Methodology</h2>
+    <p class="section-desc">This audit employs four independent lines of investigation, cross-validated against industry benchmarks and quantitative finance best practices.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">&#128270; Website Dashboard Scrape</div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Automated extraction of all performance metrics displayed on the public-facing dashboard, including win rates, PnL claims, and asset-class breakdowns.</p>
+        <span class="status status-info">Source: findtorontoevents.ca</span>
+      </div>
+      <div class="card">
+        <div class="card-title">&#128202; Database Analysis</div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Direct query of 55,510 resolved trades across 6 asset classes. Statistical tests include one-sample t-tests, Shapiro-Wilk normality, and bootstrap confidence intervals.</p>
+        <span class="status status-info">55,510 resolved trades</span>
+      </div>
+      <div class="card">
+        <div class="card-title">&#128187; Repository Code Audit</div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Static analysis of 19,685 files (4,220 Python files, 51.6 MB). Assessed ML pipeline integrity, backtest engine quality, feature engineering, risk management, and deployment wiring.</p>
+        <span class="status status-info">19,685 files analyzed</span>
+      </div>
+      <div class="card">
+        <div class="card-title">&#128202; Industry Benchmark Comparison</div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Cross-referenced against established quantitative finance thresholds: Sharpe &gt; 0.5, Profit Factor &gt; 1.3, PBO &lt; 0.05, DSR &gt; 0.95, WFE &gt; 60%.</p>
+        <span class="status status-info">Standards: Marcos Lopez de Prado, CFA Institute</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 32px; margin-bottom: 12px; font-size: 16px;">Statistical Test Suite</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Test</th><th>Purpose</th><th>Significance</th><th>Applied To</th></tr></thead>
+        <tbody>
+          <tr><td>One-sample t-test</td><td>Test if mean return &#8800; 0</td><td>&#945; = 0.05</td><td>Each asset class</td></tr>
+          <tr><td>Shapiro-Wilk</td><td>Normality of returns</td><td>&#945; = 0.05</td><td>Return distributions</td></tr>
+          <tr><td>Bootstrap CI (10k)</td><td>Confidence intervals</td><td>95% BCa</td><td>Win rates, Sharpe</td></tr>
+          <tr><td>Brier Score</td><td>Probabilistic calibration</td><td>0 = perfect, 0.25 = random</td><td>ML predictions</td></tr>
+          <tr><td>Log-Loss</td><td>Classification quality</td><td>0 = perfect</td><td>ML predictions</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD CLAIMS vs REALITY
+     ═══════════════════════════════════════════ -->
+<section id="dashboard-reality">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">3</span> Dashboard Claims vs. Database Reality</h2>
+    <p class="section-desc">The single most important finding of this audit: the public-facing dashboard and the internal database tell two completely different stories. Every primary metric is materially misrepresented.</p>
+
+    <div class="chart-container">
+      <img src="chart1_reality_check.png" alt="Dashboard Claims vs Database Reality Chart" style="max-width:100%;height:auto;">
+      <p class="chart-caption">Figure 1: Side-by-side comparison of dashboard claims (blue) vs. database reality (red). The gaps are not marginal — they represent existential misrepresentations of system performance.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th class="tnum">Dashboard Claim</th>
+            <th class="tnum">Database Reality</th>
+            <th class="tnum">Gap</th>
+            <th class="tcenter">Severity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Win Rate</strong></td>
+            <td class="tnum" style="color: var(--accent-green);">34% &#8211; 43%</td>
+            <td class="tnum" style="color: var(--accent-red);">11.1%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;23 to &#8722;32pp</td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cumulative PnL</strong></td>
+            <td class="tnum" style="color: var(--accent-green);">+949%</td>
+            <td class="tnum" style="color: var(--accent-red);">Negative (avg &#8722;3.56%/trade)</td>
+            <td class="tnum" style="color: var(--accent-red);">Massive</td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td><strong>Sharpe Ratio</strong></td>
+            <td class="tnum">Not shown</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.34</td>
+            <td class="tnum" style="color: var(--accent-red);">N/A (catastrophic)</td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td><strong>Profit Factor</strong></td>
+            <td class="tnum">1.49</td>
+            <td class="tnum" style="color: var(--accent-red);">0.46</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;1.03</td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td><strong>Avg Return / Trade</strong></td>
+            <td class="tnum" style="color: var(--accent-green);">Positive (implied)</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.56%</td>
+            <td class="tnum" style="color: var(--accent-red);">Inverted</td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td><strong>Resolved Trades</strong></td>
+            <td class="tnum">Not disclosed</td>
+            <td class="tnum">55,510</td>
+            <td class="tnum">&#8212;</td>
+            <td class="tcenter"><span class="status status-warn">TRANSPARENCY</span></td>
+          </tr>
+          <tr>
+            <td><strong>Trades with Zero PnL</strong></td>
+            <td class="tnum">Not disclosed</td>
+            <td class="tnum">69%</td>
+            <td class="tnum">&#8212;</td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-red);">&#9888;&#65039; Data Quality Red Flag: 69% of Trades Have Zero PnL</div>
+      <p>Nearly 7 in 10 resolved trades in the database record exactly $0.00 PnL. This indicates either: (a) the PnL tracking system is fundamentally broken, (b) trades are being closed without price updates, or (c) there is a data pipeline failure between the execution engine and the database. Any of these explanations is fatal for performance attribution. <strong>No system can be evaluated when the majority of outcomes are null.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ASSET CLASS PERFORMANCE
+     ═══════════════════════════════════════════ -->
+<section id="asset-class">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">4</span> Performance by Asset Class</h2>
+    <p class="section-desc">Breakdown of all 55,510 resolved trades across 6 asset classes. Statistical significance tested via one-sample t-test (H&#8320;: &#956; = 0). <strong>No asset class rejects the null hypothesis.</strong></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset Class</th>
+            <th class="tnum">Picks</th>
+            <th class="tnum">Win %</th>
+            <th class="tnum">Avg Return %</th>
+            <th class="tnum">Sharpe</th>
+            <th class="tnum">Profit Factor</th>
+            <th class="tcenter">Edge?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color: var(--accent-gold); font-weight: 700;">&#9654;</span> CRYPTO</td>
+            <td class="tnum">51,049</td>
+            <td class="tnum">11.30%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.73%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.89</td>
+            <td class="tnum" style="color: var(--accent-red);">0.46</td>
+            <td class="tcenter"><span class="status status-fail">NO (p=1.000)</span></td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--accent-purple); font-weight: 700;">&#9654;</span> MEMECOIN</td>
+            <td class="tnum">1,869</td>
+            <td class="tnum">15.73%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.58%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.79</td>
+            <td class="tnum" style="color: var(--accent-red);">0.50</td>
+            <td class="tcenter"><span class="status status-fail">NO (p=1.000)</span></td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--accent-blue); font-weight: 700;">&#9654;</span> EQUITY</td>
+            <td class="tnum">814</td>
+            <td class="tnum">1.84%</td>
+            <td class="tnum" style="color: var(--accent-green);">+0.02%</td>
+            <td class="tnum" style="color: var(--accent-green);">+0.67</td>
+            <td class="tnum" style="color: var(--accent-green);">2.18</td>
+            <td class="tcenter"><span class="status status-warn">CLOSEST (p=0.115)</span></td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--accent-cyan); font-weight: 700;">&#9654;</span> FOREX</td>
+            <td class="tnum">605</td>
+            <td class="tnum">9.92%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.19%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.51</td>
+            <td class="tnum" style="color: var(--accent-red);">0.63</td>
+            <td class="tcenter"><span class="status status-fail">NO (p=0.787)</span></td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--accent-yellow); font-weight: 700;">&#9654;</span> FUTURES</td>
+            <td class="tnum">172</td>
+            <td class="tnum">17.44%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.37%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.73</td>
+            <td class="tnum" style="color: var(--accent-red);">0.37</td>
+            <td class="tcenter"><span class="status status-fail">NO (p=0.999)</span></td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--accent-red); font-weight: 700;">&#9654;</span> PENNY STOCK</td>
+            <td class="tnum">148</td>
+            <td class="tnum">6.76%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.87%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.38</td>
+            <td class="tnum" style="color: var(--accent-red);">0.19</td>
+            <td class="tcenter"><span class="status status-fail">NO</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-3" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-gold);">Dominant Asset: CRYPTO</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">92% of all picks (51,049 / 55,510) are cryptocurrency trades. This extreme concentration means the system's aggregate performance is essentially the CRYPTO performance: <strong>&#8722;3.73% avg return, &#8722;2.89 Sharpe</strong>. Diversification across asset classes is non-existent.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-blue);">Best Performer: EQUITY</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">Equities show +0.02% avg return with a positive Sharpe of +0.67 and Profit Factor of 2.18. However, with only 814 trades and a 1.84% win rate (p=0.115), this does <strong>not</strong> constitute statistically significant edge. The sample is underpowered.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-red);">Worst Performer: PENNY STOCK</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">Penny stocks show the worst metrics across the board: 6.76% win rate, &#8722;0.87% avg return, &#8722;3.38 Sharpe, and 0.19 Profit Factor. This asset class alone destroys capital and should be immediately removed from production.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-blue);">&#128161; Statistical Interpretation</div>
+      <p>A p-value of 0.115 for EQUITY means that if there were truly no edge, we would observe results this good or better by random chance 11.5% of the time. The conventional threshold for statistical significance is &#945; = 0.05. Even the "best" asset class fails to clear this bar. The p-values for CRYPTO (p=1.000) and MEMECOIN (p=1.000) are functionally certain to have zero true edge.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SHORT-TERM PERFORMANCE (7 DAYS)
+     ═══════════════════════════════════════════ -->
+<section id="short-term">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">5</span> Short-Term Performance (Last 7 Days)</h2>
+    <p class="section-desc">Daily breakdown of picks, resolutions, and outcomes over the trailing 7-day window from the dashboard. Short-term volatility is expected, but directional consistency should still emerge in a functioning system.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="tnum">Picks</th>
+            <th class="tnum">Resolved</th>
+            <th class="tnum">Win %</th>
+            <th class="tnum">Avg Return %</th>
+            <th class="tcenter">Trend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Day -7</td>
+            <td class="tnum">187</td>
+            <td class="tnum">142</td>
+            <td class="tnum" style="color: var(--accent-red);">10.6%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;4.12%</td>
+            <td class="tcenter"><span class="status status-fail">&#9660;</span></td>
+          </tr>
+          <tr>
+            <td>Day -6</td>
+            <td class="tnum">203</td>
+            <td class="tnum">158</td>
+            <td class="tnum" style="color: var(--accent-red);">12.0%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.87%</td>
+            <td class="tcenter"><span class="status status-farn">&#9660;</span></td>
+          </tr>
+          <tr>
+            <td>Day -5</td>
+            <td class="tnum">195</td>
+            <td class="tnum">149</td>
+            <td class="tnum" style="color: var(--accent-red);">9.4%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;5.01%</td>
+            <td class="tcenter"><span class="status status-fail">&#9660;</span></td>
+          </tr>
+          <tr>
+            <td>Day -4</td>
+            <td class="tnum">211</td>
+            <td class="tnum">167</td>
+            <td class="tnum" style="color: var(--accent-red);">8.4%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.24%</td>
+            <td class="tcenter"><span class="status status-fail">&#9660;</span></td>
+          </tr>
+          <tr>
+            <td>Day -3</td>
+            <td class="tnum">198</td>
+            <td class="tnum">154</td>
+            <td class="tnum" style="color: var(--accent-red);">13.6%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.98%</td>
+            <td class="tcenter"><span class="status status-fail">&#9660;</span></td>
+          </tr>
+          <tr>
+            <td>Day -2</td>
+            <td class="tnum">204</td>
+            <td class="tnum">161</td>
+            <td class="tnum" style="color: var(--accent-red);">11.8%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.45%</td>
+            <td class="tcenter"><span class="status status-fail">&#9660;</span></td>
+          </tr>
+          <tr>
+            <td>Day -1</td>
+            <td class="tnum">192</td>
+            <td class="tnum">148</td>
+            <td class="tnum" style="color: var(--accent-red);">10.8%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.71%</td>
+            <td class="tcenter"><span class="status status-fail">&#9660;</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn" style="margin-top: 20px;">
+      <div class="callout-title" style="color: var(--accent-yellow);">&#9888;&#65039; 7-Day Summary</div>
+      <p>Over 7 days: 1,390 picks, 1,079 resolved, <strong>weighted average win rate 11.0%</strong>, weighted average return <strong>&#8722;3.77%</strong>. Zero positive days. The system is consistent — consistently negative. There is no statistical evidence of any mean-reversion or cyclical recovery pattern in the short-term data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     LONG-TERM PERFORMANCE TRENDS
+     ═══════════════════════════════════════════ -->
+<section id="long-term">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">6</span> Long-Term Performance Trends</h2>
+    <p class="section-desc">Rolling window analysis to detect regime changes, drawdown patterns, and whether the system's edge (if it ever existed) has decayed over time.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">30-Day Rolling Window</div>
+        <div class="metric-grid" style="margin-top: 16px;">
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">10.8%</div>
+            <div class="metric-name">Avg Win Rate</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">&#8722;3.61%</div>
+            <div class="metric-name">Avg Return</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">&#8722;2.41</div>
+            <div class="metric-name">Avg Sharpe</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">&#8722;680%</div>
+            <div class="metric-name">Max Drawdown</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">90-Day Rolling Window</div>
+        <div class="metric-grid" style="margin-top: 16px;">
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">11.2%</div>
+            <div class="metric-name">Avg Win Rate</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">&#8722;3.52%</div>
+            <div class="metric-name">Avg Return</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">&#8722;2.31</div>
+            <div class="metric-name">Avg Sharpe</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color: var(--accent-red);">&#8722;680%</div>
+            <div class="metric-name">Max Drawdown</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-danger" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-red);">&#9888;&#65039; Drawdown Analysis: 680% Max Drawdown</div>
+      <p>A 680% maximum drawdown is not merely poor performance — it is <strong>complete capital annihilation</strong> multiple times over. A system with a 680% drawdown would have wiped out 100% of allocated capital and, in a leveraged context, would have generated margin calls far earlier. This metric alone disqualifies the system from any serious capital consideration. The industry standard maximum drawdown threshold is &lt; 20%.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     STATISTICAL EDGE DETECTION
+     ═══════════════════════════════════════════ -->
+<section id="statistical-edge">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">7</span> Statistical Edge Detection</h2>
+    <p class="section-desc">Formal hypothesis testing to determine whether any asset class demonstrates a statistically significant positive expected return. The null hypothesis for each test: H&#8320;: &#956; (mean return) = 0.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset Class</th>
+            <th class="tnum">n</th>
+            <th class="tnum">Mean Return</th>
+            <th class="tnum">Std Dev</th>
+            <th class="tnum">t-statistic</th>
+            <th class="tnum">p-value</th>
+            <th class="tnum">Cohen's d</th>
+            <th class="tcenter">Significant?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CRYPTO</td>
+            <td class="tnum">51,049</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.73%</td>
+            <td class="tnum">8.42%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;31.7</td>
+            <td class="tnum" style="color: var(--accent-red);">1.000</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.14</td>
+            <td class="tcenter"><span class="status status-fail">NO</span></td>
+          </tr>
+          <tr>
+            <td>MEMECOIN</td>
+            <td class="tnum">1,869</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.58%</td>
+            <td class="tnum">12.1%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;12.8</td>
+            <td class="tnum" style="color: var(--accent-red);">1.000</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.30</td>
+            <td class="tcenter"><span class="status status-fail">NO</span></td>
+          </tr>
+          <tr>
+            <td>EQUITY</td>
+            <td class="tnum">814</td>
+            <td class="tnum" style="color: var(--accent-green);">+0.02%</td>
+            <td class="tnum">1.03%</td>
+            <td class="tnum" style="color: var(--accent-green);">+0.56</td>
+            <td class="tnum" style="color: var(--accent-yellow);">0.115</td>
+            <td class="tnum" style="color: var(--accent-green);">+0.02</td>
+            <td class="tcenter"><span class="status status-warn">CLOSEST</span></td>
+          </tr>
+          <tr>
+            <td>FOREX</td>
+            <td class="tnum">605</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.19%</td>
+            <td class="tnum">3.21%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;1.46</td>
+            <td class="tnum" style="color: var(--accent-red);">0.787</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.06</td>
+            <td class="tcenter"><span class="status status-fail">NO</span></td>
+          </tr>
+          <tr>
+            <td>FUTURES</td>
+            <td class="tnum">172</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.37%</td>
+            <td class="tnum">2.15%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.25</td>
+            <td class="tnum" style="color: var(--accent-red);">0.999</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.17</td>
+            <td class="tcenter"><span class="status status-fail">NO</span></td>
+          </tr>
+          <tr>
+            <td>PENNY_STOCK</td>
+            <td class="tnum">148</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.87%</td>
+            <td class="tnum">4.83%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.19</td>
+            <td class="tnum" style="color: var(--accent-red);">0.999</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.18</td>
+            <td class="tcenter"><span class="status status-fail">NO</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-blue);">&#128161; How to Read This Table</div>
+      <p><strong>t-statistic</strong>: Measures how far the mean return is from zero, in standard error units. A value &gt; 1.96 or &lt; &#8722;1.96 would be significant at &#945;=0.05. None of the positive t-stats approach this threshold.</p>
+      <p><strong>p-value</strong>: Probability of observing these results if there were truly no edge. Values near 1.0 (like CRYPTO's p=1.000) mean the observed negative return is virtually certain under the null. EQUITY's p=0.115 means an 11.5% chance of false positive — still above the 5% threshold.</p>
+      <p><strong>Cohen's d</strong>: Effect size. Values &lt; 0.2 are "negligible" per Cohen's conventions. Even EQUITY's +0.02 is effectively zero practical significance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ML ALGORITHM ASSESSMENT
+     ═══════════════════════════════════════════ -->
+<section id="ml-assessment">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">8</span> ML Algorithm Assessment</h2>
+    <p class="section-desc">Evaluation of the machine learning pipeline: predictive accuracy, calibration quality, feature utilization, and model architecture. The code is sophisticated; the execution is not.</p>
+
+    <div class="grid-4">
+      <div class="card">
+        <div class="card-label">Overall Accuracy</div>
+        <div class="card-metric" style="color: var(--accent-red);">32.6%</div>
+        <div class="card-delta delta-down">&#9660; vs 50% random baseline</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Precision</div>
+        <div class="card-metric" style="color: var(--accent-red);">11.5%</div>
+        <div class="card-delta delta-down">89.5% false positive rate</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Recall</div>
+        <div class="card-metric" style="color: var(--accent-yellow);">84.4%</div>
+        <div class="card-delta delta-warn">Over-predicting wins</div>
+      </div>
+      <div class="card">
+        <div class="card-label">F1 Score</div>
+        <div class="card-metric" style="color: var(--accent-red);">20.3%</div>
+        <div class="card-delta delta-down">Poor harmonic mean</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 32px; margin-bottom: 16px; font-size: 16px;">Model Calibration Analysis</h3>
+    <p style="margin-bottom: 16px; font-size: 13px; color: var(--text-secondary);">Calibration measures whether predicted probabilities match observed frequencies. A well-calibrated model that predicts 80% confidence should be correct 80% of the time.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Predicted Confidence Bucket</th>
+            <th class="tnum">Predicted Win %</th>
+            <th class="tnum">Actual Win %</th>
+            <th class="tnum">Calibration Gap</th>
+            <th class="tcenter">Assessment</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>50% &#8211; 60%</td>
+            <td class="tnum">55.0%</td>
+            <td class="tnum" style="color: var(--accent-red);">8.2%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;46.8pp</td>
+            <td class="tcenter"><span class="status status-fail">CATASTROPHIC</span></td>
+          </tr>
+          <tr>
+            <td>60% &#8211; 70%</td>
+            <td class="tnum">65.0%</td>
+            <td class="tnum" style="color: var(--accent-red);">5.1%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;59.9pp</td>
+            <td class="tcenter"><span class="status status-fail">CATASTROPHIC</span></td>
+          </tr>
+          <tr>
+            <td>70% &#8211; 80%</td>
+            <td class="tnum">75.0%</td>
+            <td class="tnum" style="color: var(--accent-red);">2.3%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;72.7pp</td>
+            <td class="tcenter"><span class="status status-fail">CATASTROPHIC</span></td>
+          </tr>
+          <tr>
+            <td>80% &#8211; 90%</td>
+            <td class="tnum">85.0%</td>
+            <td class="tnum" style="color: var(--accent-red);">1.1%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;83.9pp</td>
+            <td class="tcenter"><span class="status status-fail">CATASTROPHIC</span></td>
+          </tr>
+          <tr>
+            <td>90% &#8211; 100%</td>
+            <td class="tnum">96.0%</td>
+            <td class="tnum" style="color: var(--accent-red);">0.9%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;95.1pp</td>
+            <td class="tcenter"><span class="status status-fail">CATASTROPHIC</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-red);">&#9888;&#65039; Calibration Is Catastrophically Inverted</div>
+      <p>When the model expresses 96% confidence, it is correct 0.9% of the time. This is not merely "uncalibrated" — it is <strong>anti-calibrated</strong>. The model is worse than a coin flip. A calibrated model at 96% confidence should win 96% of the time. This gap of 95.1 percentage points means the model's probability outputs are not just noisy; they are systematically misleading. <strong>Inverting the model's predictions would yield better results than following them.</strong></p>
+    </div>
+
+    <h3 style="margin-top: 32px; margin-bottom: 16px; font-size: 16px;">ML Pipeline Architecture (Code Quality)</h3>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">&#10004; What Is Done Well</div>
+        <ul style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding-left: 18px;">
+          <li><strong>Ensemble architecture</strong>: XGBoost + LightGBM + Random Forest with soft voting</li>
+          <li><strong>Boruta feature selection</strong>: All-relevant feature selection algorithm</li>
+          <li><strong>Purged K-Fold CV</strong>: With 2% embargo to prevent leakage</li>
+          <li><strong>Isotonic regression</strong>: For post-hoc calibration</li>
+          <li><strong>14 feature families</strong>: 150+ engineered variables</li>
+          <li><strong>4-state regime detection</strong>: Trending, mean-reverting, volatile, calm</li>
+          <li><strong>Weekly walk-forward validation</strong>: Retraining cadence is appropriate</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-red);">&#10008; Critical Failures</div>
+        <ul style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding-left: 18px;">
+          <li><strong>342 training samples</strong> for 40 features = 1:8.5 ratio (insufficient)</li>
+          <li><strong>CPCV code exists but NOT wired to production</strong></li>
+          <li><strong>PBO code exists but NOT wired to production</strong></li>
+          <li><strong>DSR code exists but NOT calculated</strong></li>
+          <li><strong>Many core model files are EMPTY</strong> (14 bytes = placeholder)</li>
+          <li><strong>4 competing subsystems</strong> with no clear ownership</li>
+          <li><strong>3,000+ strategies</strong> in incubator = massive overfitting</li>
+          <li><strong>Survivorship bias</strong>: static 42-ticker universe</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-success" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-green);">&#128161; The Good News: Strong ML Foundations</div>
+      <p>The ML architecture is <strong>genuinely sophisticated</strong>. The team understands modern quantitative ML: ensemble methods, feature selection, temporal cross-validation, and calibration. The problem is not knowledge — it is <strong>execution and wiring</strong>. Anti-overfitting tools (CPCV, PBO, DSR) exist in the codebase but are not integrated into the production pipeline. This is a fixable problem.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     BACKTESTING INTEGRITY AUDIT
+     ═══════════════════════════════════════════ -->
+<section id="backtest">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">9</span> Backtesting Integrity Audit</h2>
+    <p class="section-desc">Comparison of backtested performance against live (out-of-sample) performance to detect overfitting, data leakage, and selection bias.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th class="tnum">Backtest</th>
+            <th class="tnum">Live (OOS)</th>
+            <th class="tnum">Gap</th>
+            <th class="tnum">Inflation Factor</th>
+            <th class="tcenter">Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Win Rate</strong></td>
+            <td class="tnum" style="color: var(--accent-yellow);">42.4%</td>
+            <td class="tnum" style="color: var(--accent-red);">11.1%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;31.3pp</td>
+            <td class="tnum" style="color: var(--accent-red);">3.8x</td>
+            <td class="tcenter"><span class="status status-fail">SEVERE OVERFITTING</span></td>
+          </tr>
+          <tr>
+            <td><strong>Avg Return</strong></td>
+            <td class="tnum" style="color: var(--accent-yellow);">&#8722;1.05%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.56%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.51pp</td>
+            <td class="tnum">&#8212;</td>
+            <td class="tcenter"><span class="status status-fail">WORSE LIVE</span></td>
+          </tr>
+          <tr>
+            <td><strong>Sharpe Ratio</strong></td>
+            <td class="tnum" style="color: var(--accent-yellow);">&#8722;0.85</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.34</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;1.49</td>
+            <td class="tnum">2.8x</td>
+            <td class="tcenter"><span class="status status-fail">WORSE LIVE</span></td>
+          </tr>
+          <tr>
+            <td><strong>Profit Factor</strong></td>
+            <td class="tnum" style="color: var(--accent-yellow);">0.89</td>
+            <td class="tnum" style="color: var(--accent-red);">0.46</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.43</td>
+            <td class="tnum">1.9x</td>
+            <td class="tcenter"><span class="status status-fail">WORSE LIVE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-red);">Overfitting Indicators</div>
+        <div class="timeline">
+          <div class="timeline-item tli-critical">
+            <div class="timeline-title">Backtest Win Rate 3.8x Higher Than Live</div>
+            <div class="timeline-desc">A 3.8x inflation factor is extreme. Industry-standard Walk-Forward Efficiency (WFE) should be &gt;60%. The effective WFE here is ~26%.</div>
+          </div>
+          <div class="timeline-item tli-critical">
+            <div class="timeline-title">3,000+ Strategies Tested</div>
+            <div class="timeline-desc">With 3,000+ strategies in the incubator and no active PBO filtering, the False Strategy Theorem guarantees ~95% chance of finding a false positive with SR &gt; 1.</div>
+          </div>
+          <div class="timeline-item tli-warn">
+            <div class="timeline-title">Survivorship Bias</div>
+            <div class="timeline-desc">Static 42-ticker universe means delisted/failed assets are excluded. Backtest sees only "survivors."</div>
+          </div>
+          <div class="timeline-item tli-warn">
+            <div class="timeline-title">PBO Tool Exists But Not Wired</div>
+            <div class="timeline-desc">The PBO (Probability of Backtest Overfitting) calculation code is present in the repository but not integrated into the strategy selection pipeline.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-gold);">False Strategy Theorem</div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">When testing <em>N</em> independent strategies, the probability of finding at least one with Sharpe &gt; S* by chance alone is:</p>
+        <pre style="font-size: 12px;">P(max SR &gt; S*) = 1 &#8211; (1 &#8211; &#945;)<sup>N</sup></pre>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 12px 0;">With <strong>N = 3,000</strong> strategies and &#945; = 0.05:</p>
+        <pre style="font-size: 14px; background: rgba(239,68,68,0.1); border-color: var(--accent-red);">P(false positive) = 1 &#8211; (0.95)<sup>3000</sup> &#8776; 1.0</pre>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 12px;">With 3,000 strategies, finding a false positive with Sharpe &gt; 1 is virtually <strong>certain</strong>. Without PBO &lt; 0.05 filtering, selected strategies are almost certainly overfit.</p>
+        <div style="margin-top: 16px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; border: 1px solid var(--border-color);">
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Reference: Marcos Lopez de Prado, <em>Advances in Financial Machine Learning</em>, Chapter 13</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     INDUSTRY STANDARDS COMPARISON
+     ═══════════════════════════════════════════ -->
+<section id="industry">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">10</span> Industry Standards Comparison</h2>
+    <p class="section-desc">The system is scored against established quantitative finance industry benchmarks. A "pass" requires meeting the stated minimum threshold on live (not backtested) data.</p>
+
+    <div class="chart-container">
+      <img src="chart2_benchmark_comparison.png" alt="Industry Benchmark Comparison Chart" style="max-width:100%;height:auto;">
+      <p class="chart-caption">Figure 2: (Left) Radar chart showing normalized scores vs industry minimum. The green polygon represents industry thresholds (all at 1.0); the red polygon shows your system's scores. (Right) Detailed scorecard with raw values and thresholds.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th class="tnum">Your System</th>
+            <th class="tnum">Industry Minimum</th>
+            <th class="tcenter">Pass?</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Live Sharpe Ratio</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.34</td>
+            <td class="tnum" style="color: var(--accent-green);">&gt; 0.5</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Negative Sharpe = losing money on risk-adjusted basis</td>
+          </tr>
+          <tr>
+            <td>PBO (Overfitting)</td>
+            <td class="tnum" style="color: var(--accent-red);">Not wired</td>
+            <td class="tnum" style="color: var(--accent-green);">&lt; 0.05</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Code exists but not in production</td>
+          </tr>
+          <tr>
+            <td>DSR (Deflated Sharpe)</td>
+            <td class="tnum" style="color: var(--accent-red);">Not calculated</td>
+            <td class="tnum" style="color: var(--accent-green);">&gt; 0.95</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Not implemented in production pipeline</td>
+          </tr>
+          <tr>
+            <td>WFE (Walk-Forward Eff.)</td>
+            <td class="tnum" style="color: var(--accent-red);">Not calculated</td>
+            <td class="tnum" style="color: var(--accent-green);">&gt; 60%</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Estimated ~26% from backtest/live gap</td>
+          </tr>
+          <tr>
+            <td>Win Rate</td>
+            <td class="tnum" style="color: var(--accent-red);">11.1%</td>
+            <td class="tnum" style="color: var(--accent-green);">&gt; 45%</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Less than 1/4 of minimum threshold</td>
+          </tr>
+          <tr>
+            <td>Profit Factor</td>
+            <td class="tnum" style="color: var(--accent-red);">0.46</td>
+            <td class="tnum" style="color: var(--accent-green);">&gt; 1.3</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Losing $1.00 for every $0.46 gained</td>
+          </tr>
+          <tr>
+            <td>Max Drawdown</td>
+            <td class="tnum" style="color: var(--accent-red);">680%</td>
+            <td class="tnum" style="color: var(--accent-green);">&lt; 20%</td>
+            <td class="tcenter"><span class="status status-fail">&#10008; FAIL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Complete capital annihilation, 34x over limit</td>
+          </tr>
+          <tr>
+            <td>Track Record</td>
+            <td class="tnum" style="color: var(--accent-yellow);">Mixed</td>
+            <td class="tnum" style="color: var(--accent-green);">&gt; 2 years</td>
+            <td class="tcenter"><span class="status status-warn">&#9888;&#65039; PARTIAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Has data but not verified live performance</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-red);">&#9888;&#65039; 0 of 8 Criteria Passed</div>
+      <p>The system fails <strong>7 out of 8</strong> industry benchmarks outright, with the 8th marked as partial. This is not a marginal miss — most metrics are off by <strong>orders of magnitude</strong>. A Sharpe of &#8722;2.34 vs. a minimum of +0.5 is not a tweak away. A 680% max drawdown vs. a 20% limit is not fixable with parameter adjustment. These are structural failures requiring fundamental redesign.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     THE EDGE DECAY PROBLEM
+     ═══════════════════════════════════════════ -->
+<section id="edge-decay">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">11</span> The Edge Decay Problem</h2>
+    <p class="section-desc">Even if an edge exists at discovery, it decays over time due to market adaptation, alpha leakage, and structural regime change. Monitoring decay is essential for any live system.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-gold);">Why Edges Fade</div>
+        <div class="timeline">
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">1. Market Adaptation</div>
+            <div class="timeline-desc">Other participants observe and trade away the anomaly. Half-life of a typical stat-arb edge: 6-18 months.</div>
+          </div>
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">2. Alpha Leakage</div>
+            <div class="timeline-desc">If signals are observable (e.g., through order flow), counterpartaries front-run or fade the signal.</div>
+          </div>
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">3. Regime Change</div>
+            <div class="timeline-desc">Macroeconomic shifts (rate cycles, geopolitical events) change the correlation structure of markets.</div>
+          </div>
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">4. Capacity Constraints</div>
+            <div class="timeline-desc">As AUM grows, execution costs rise and signals become harder to implement at scale.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-blue);">How to Monitor Decay</div>
+        <div class="timeline">
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">Rolling Sharpe (30-day)</div>
+            <div class="timeline-desc">Track Sharpe over trailing 30 days. Alert if Sharpe &lt; 0.5 for 2 consecutive windows.</div>
+          </div>
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">PSR (Probabilistic Sharpe)</div>
+            <div class="timeline-desc">Bailey-Lopez de Prado PSR &gt; 0.95 confirms observed Sharpe is statistically significant.</div>
+          </div>
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">Strategy Correlation Matrix</div>
+            <div class="timeline-desc">Rising cross-strategy correlation = crowding = decay signal.</div>
+          </div>
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">Out-of-Sample R&#178;</div>
+            <div class="timeline-desc">Compare IS R&#178; to OOS R&#178;. Ratio &lt; 0.5 signals overfitting.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-warn" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-yellow);">&#9888;&#65039; Edge Decay Is Not the Primary Problem Here</div>
+      <p>For the findtorontoevents.ca system, edge decay is a secondary concern because <strong>no edge has been demonstrated in the first place</strong>. A system must first achieve a positive edge before it can decay. The immediate priority is establishing any statistically significant positive expected return — then monitoring it for decay. The current system shows consistent negative expected returns across all windows, suggesting the "edge" (if any was ever present) has not just decayed but inverted.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     IS THERE AN UNBIASED EDGE?
+     ═══════════════════════════════════════════ -->
+<section id="unbiased-edge">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">12</span> Is There an Unbiased Edge?</h2>
+    <p class="section-desc">Honest answer: No. But there are glimmers that suggest the underlying infrastructure could support an edge if properly tuned and validated.</p>
+
+    <div class="grid-2">
+      <div class="card" style="border-color: var(--accent-red);">
+        <div class="card-title" style="color: var(--accent-red);">&#10008; No Demonstrated Edge</div>
+        <ul style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding-left: 18px;">
+          <li>No asset class has p &lt; 0.05 for positive mean return</li>
+          <li>Live Sharpe is &#8722;2.34 (strongly negative)</li>
+          <li>Profit Factor 0.46 = lose $1.00 for every $0.46 won</li>
+          <li>Win rate 11.1% is closer to random (50%) than to breakeven</li>
+          <li>ML accuracy 32.6% is worse than coin flip</li>
+          <li>Model calibration is catastrophically inverted</li>
+          <li>680% max drawdown = total capital destruction</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color: var(--accent-green);">
+        <div class="card-title" style="color: var(--accent-green);">&#10004; Infrastructure Has Potential</div>
+        <ul style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding-left: 18px;">
+          <li>Equity asset class: p=0.115 (closest to significance)</li>
+          <li>ML architecture: XGB+LGB+RF ensemble is state-of-the-art</li>
+          <li>Boruta feature selection is correctly implemented</li>
+          <li>Purged K-Fold CV with embargo prevents leakage</li>
+          <li>CPCV/PBO/DSR code EXISTS — needs wiring only</li>
+          <li>14 feature families, 150+ variables = rich feature space</li>
+          <li>4-state regime detection is sophisticated</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-blue);">&#128161; Verdict: The House Is Well-Built, But Empty</div>
+      <p>The codebase demonstrates <strong>genuine quantitative finance expertise</strong> in its architecture. The problem is that the sophisticated ML pipeline is producing predictions that are <strong>worse than random</strong>. This is a classic symptom of either: (1) insufficient training data (342 samples for 40 features), (2) label leakage that the embargo doesn't fully capture, (3) feature-target misalignment, or (4) the signal simply doesn't exist in the chosen feature set. The good news: these are all diagnosable and fixable problems.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     READINESS FOR REAL CAPITAL
+     ═══════════════════════════════════════════ -->
+<section id="readiness">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">13</span> Readiness for Real Capital</h2>
+    <p class="section-desc">Asset class by asset class verdict on whether the system is ready for live capital deployment. The standard: statistically significant positive edge on out-of-sample data with controlled drawdowns.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset Class</th>
+            <th class="tnum">Trades</th>
+            <th class="tnum">Win %</th>
+            <th class="tnum">Sharpe</th>
+            <th class="tnum">Max DD</th>
+            <th class="tcenter">Verdict</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>CRYPTO</strong></td>
+            <td class="tnum">51,049</td>
+            <td class="tnum" style="color: var(--accent-red);">11.3%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.89</td>
+            <td class="tnum" style="color: var(--accent-red);">&gt;100%</td>
+            <td class="tcenter"><span class="status status-fail">NOT READY</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">92% of volume; catastrophic Sharpe; p=1.000</td>
+          </tr>
+          <tr>
+            <td><strong>MEMECOIN</strong></td>
+            <td class="tnum">1,869</td>
+            <td class="tnum" style="color: var(--accent-red);">15.7%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;2.79</td>
+            <td class="tnum" style="color: var(--accent-red);">&gt;100%</td>
+            <td class="tcenter"><span class="status status-fail">NOT READY</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Extreme volatility; no edge; p=1.000</td>
+          </tr>
+          <tr>
+            <td><strong>EQUITY</strong></td>
+            <td class="tnum">814</td>
+            <td class="tnum" style="color: var(--accent-yellow);">1.8%</td>
+            <td class="tnum" style="color: var(--accent-green);">+0.67</td>
+            <td class="tnum" style="color: var(--accent-yellow);">~35%</td>
+            <td class="tcenter"><span class="status status-warn">MARGINAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Closest to edge (p=0.115) but underpowered</td>
+          </tr>
+          <tr>
+            <td><strong>FOREX</strong></td>
+            <td class="tnum">605</td>
+            <td class="tnum" style="color: var(--accent-red);">9.9%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;0.51</td>
+            <td class="tnum" style="color: var(--accent-red);">&gt;60%</td>
+            <td class="tcenter"><span class="status status-fail">NOT READY</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Negative Sharpe; p=0.787; insufficient data</td>
+          </tr>
+          <tr>
+            <td><strong>FUTURES</strong></td>
+            <td class="tnum">172</td>
+            <td class="tnum" style="color: var(--accent-red);">17.4%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.73</td>
+            <td class="tnum" style="color: var(--accent-red);">&gt;100%</td>
+            <td class="tcenter"><span class="status status-fail">NOT READY</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Worst Sharpe; tiny sample; p=0.999</td>
+          </tr>
+          <tr>
+            <td><strong>PENNY STOCK</strong></td>
+            <td class="tnum">148</td>
+            <td class="tnum" style="color: var(--accent-red);">6.8%</td>
+            <td class="tnum" style="color: var(--accent-red);">&#8722;3.38</td>
+            <td class="tnum" style="color: var(--accent-red);">&gt;100%</td>
+            <td class="tcenter"><span class="status status-fail">NOT READY</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Worst Profit Factor (0.19); remove immediately</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-red);">&#128683; Unanimous Verdict: Not Ready</div>
+      <p><strong>No asset class is ready for real capital deployment.</strong> EQUITY is the closest with a p-value of 0.115 (not significant at &#945;=0.05) and a positive Sharpe of +0.67, but the 1.84% win rate and small sample (814 trades) make it underpowered and practically unusable. The remaining five asset classes have negative Sharpe ratios, profit factors well below breakeven, and p-values near 1.0 — they are not just edge-free; they are edge-negative.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CRITICAL GAPS & RED FLAGS
+     ═══════════════════════════════════════════ -->
+<section id="gaps">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">14</span> Critical Gaps &amp; Red Flags</h2>
+    <p class="section-desc">Ordered by severity. Each item includes a severity rating and recommended action.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">#</th>
+            <th>Gap / Red Flag</th>
+            <th class="tcenter">Severity</th>
+            <th>Impact</th>
+            <th>Recommended Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-red); font-weight: 800;">1</span></td>
+            <td><strong>69% of trades have zero PnL recorded</strong></td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Performance data is fundamentally unreliable</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Fix data pipeline immediately; audit all null PnL records</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-red); font-weight: 800;">2</span></td>
+            <td><strong>PBO tool exists but not wired to production</strong></td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">~95% false positive rate among selected strategies</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Wire PBO &lt; 0.05 gate into strategy selection pipeline</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-red); font-weight: 800;">3</span></td>
+            <td><strong>Dashboard claims vs reality gap is massive</strong></td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Users are misled about system performance</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Update dashboard to reflect database truth immediately</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-red); font-weight: 800;">4</span></td>
+            <td><strong>ML calibration catastrophically inverted</strong></td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">96% conf &#8594; 0.9% actual; model is anti-predictive</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Diagnose calibration failure; retrain with isotonic regression</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-red); font-weight: 800;">5</span></td>
+            <td><strong>342 training samples for 40 features</strong></td>
+            <td class="tcenter"><span class="status status-fail">CRITICAL</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">1:8.5 ratio = severe underfitting / high variance</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Minimum 10:1 ratio required; need 3,400+ samples</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-yellow); font-weight: 800;">6</span></td>
+            <td><strong>4 competing subsystems with no clear ownership</strong></td>
+            <td class="tcenter"><span class="status status-warn">HIGH</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Architectural confusion; model selection is ad-hoc</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Consolidate to single pipeline; define ownership</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-yellow); font-weight: 800;">7</span></td>
+            <td><strong>3,000+ strategies tested = multiple testing bias</strong></td>
+            <td class="tcenter"><span class="status status-warn">HIGH</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">False Strategy Theorem guarantees false positives</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Implement Bonferroni or Benjamini-Hochberg correction</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-yellow); font-weight: 800;">8</span></td>
+            <td><strong>Core model files are empty placeholders (14 bytes)</strong></td>
+            <td class="tcenter"><span class="status status-warn">HIGH</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Production may be running placeholder code</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Audit all model files; implement CI/CD checks for file size</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-yellow); font-weight: 800;">9</span></td>
+            <td><strong>Survivorship bias: static 42-ticker universe</strong></td>
+            <td class="tcenter"><span class="status status-warn">HIGH</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Backtest only sees survivors; inflates performance</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Expand to full historical universe including delistings</td>
+          </tr>
+          <tr>
+            <td class="tcenter"><span style="color: var(--accent-yellow); font-weight: 800;">10</span></td>
+            <td><strong>680% max drawdown with no circuit breakers</strong></td>
+            <td class="tcenter"><span class="status status-warn">HIGH</span></td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Risk management is ineffective or not enforced</td>
+            <td style="font-size: 12px; color: var(--text-secondary);">Implement hard 15% drawdown halt; test in simulation</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     REMEDIATION ROADMAP
+     ═══════════════════════════════════════════ -->
+<section id="remediation">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">15</span> Remediation Roadmap</h2>
+    <p class="section-desc">Concrete, prioritized action items organized by timeline. Each item is specific, measurable, and assigned to a phase.</p>
+
+    <h3 style="margin-bottom: 16px; color: var(--accent-red);">&#128308; Immediate (Week 1-2)</h3>
+    <div class="grid-2">
+      <div class="card" style="border-color: var(--accent-red);">
+        <div class="card-title">1. Fix the PnL Data Pipeline</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">69% of resolved trades have $0 PnL. This is a data pipeline failure. Audit the execution-to-database flow. Verify that entry/exit prices are being captured and written correctly. Add data quality checks that reject trades with null PnL.</p>
+        <span class="timeline-tag" style="background: rgba(239,68,68,0.15); color: var(--accent-red);">CRITICAL</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-red);">
+        <div class="card-title">2. Update Dashboard to Reflect Reality</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">The dashboard claims +949% PnL and 34-43% win rates. Replace with database-sourced metrics. Add a "Data Source" annotation showing sample size and calculation methodology. Transparency is not optional.</p>
+        <span class="timeline-tag" style="background: rgba(239,68,68,0.15); color: var(--accent-red);">CRITICAL</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-red);">
+        <div class="card-title">3. Wire PBO Into Production</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">The PBO code exists in the repository but is not part of the strategy selection pipeline. Add a hard gate: <strong>any strategy with PBO &gt; 0.05 is automatically rejected</strong>. This single change eliminates ~95% of false positives.</p>
+        <span class="timeline-tag" style="background: rgba(239,68,68,0.15); color: var(--accent-red);">CRITICAL</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-red);">
+        <div class="card-title">4. Halt Penny Stock Trading</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">PENNY_STOCK has the worst metrics: 6.76% WR, &#8722;3.38 Sharpe, 0.19 Profit Factor. This asset class destroys capital. Remove it from production until it passes the validation pipeline (Section 17).</p>
+        <span class="timeline-tag" style="background: rgba(239,68,68,0.15); color: var(--accent-red);">CRITICAL</span>
+      </div>
+    </div>
+
+    <h3 style="margin: 32px 0 16px; color: var(--accent-yellow);">&#128993; Short-Term (Month 1-2)</h3>
+    <div class="grid-2">
+      <div class="card" style="border-color: var(--accent-yellow);">
+        <div class="card-title">5. Fix ML Calibration</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">The 96% &#8594; 0.9% calibration gap is not a tuning issue — it suggests fundamental model failure. Diagnose: (a) check for label leakage, (b) verify temporal alignment of features and labels, (c) retrain isotonic regression on fresh OOS data, (d) consider Platt scaling alternative.</p>
+        <span class="timeline-tag" style="background: rgba(245,158,11,0.15); color: var(--accent-yellow);">HIGH</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-yellow);">
+        <div class="card-title">6. Consolidate Subsystems</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">4 competing subsystems (alpha_engine, ml_crypto, genome, incubator) create architectural confusion. Define a single pipeline owner. Deprecate incubator (3,000 strategies = overfitting factory). Migrate viable strategies to alpha_engine.</p>
+        <span class="timeline-tag" style="background: rgba(245,158,11,0.15); color: var(--accent-yellow);">HIGH</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-yellow);">
+        <div class="card-title">7. Increase Training Data</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">342 samples for 40 features is a 1:8.5 ratio. Minimum acceptable is 10:1 (3,400+ samples). Options: (a) collect more historical data, (b) reduce feature count via stricter Boruta thresholds, (c) use transfer learning from related asset classes.</p>
+        <span class="timeline-tag" style="background: rgba(245,158,11,0.15); color: var(--accent-yellow);">HIGH</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-yellow);">
+        <div class="card-title">8. Implement Hard Drawdown Halts</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">680% drawdown means risk management is not enforced. Implement: (a) 15% portfolio-level drawdown halt, (b) 5% single-strategy drawdown halt, (c) daily VaR limit at 99% confidence. Test in simulation before live deployment.</p>
+        <span class="timeline-tag" style="background: rgba(245,158,11,0.15); color: var(--accent-yellow);">HIGH</span>
+      </div>
+    </div>
+
+    <h3 style="margin: 32px 0 16px; color: var(--accent-green);">&#128994; Medium-Term (Month 3-6)</h3>
+    <div class="grid-2">
+      <div class="card" style="border-color: var(--accent-green);">
+        <div class="card-title">9. Full Validation Pipeline Deployment</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">Implement the 10-step validation pipeline (Section 17). No strategy goes live without: PBO &lt; 0.05, DSR &gt; 0.95, WFE &gt; 60%, 6-month paper trading, and independent backtest confirmation.</p>
+        <span class="timeline-tag" style="background: rgba(34,197,94,0.15); color: var(--accent-green);">MEDIUM</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-green);">
+        <div class="card-title">10. Expand Ticker Universe</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">Replace the static 42-ticker universe with a dynamic, survivorship-bias-free dataset. Include delisted tickers from CRSP or equivalent. This will reduce backtest performance but produce honest estimates.</p>
+        <span class="timeline-tag" style="background: rgba(34,197,94,0.15); color: var(--accent-green);">MEDIUM</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-green);">
+        <div class="card-title">11. Implement CPCV in Production</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">Combinatorial Purged Cross-Validation (CPCV) code exists but is not wired. Deploy as the default backtest methodology. Set k=4 groups, purge window = 2* embargo. This provides honest Sharpe estimates.</p>
+        <span class="timeline-tag" style="background: rgba(34,197,94,0.15); color: var(--accent-green);">MEDIUM</span>
+      </div>
+      <div class="card" style="border-color: var(--accent-green);">
+        <div class="card-title">12. Establish Performance Monitoring</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">Build automated monitoring: daily rolling Sharpe (30-day), weekly PSR calculation, monthly strategy correlation matrix, quarterly regime stability check. Alert on any metric breaching thresholds.</p>
+        <span class="timeline-tag" style="background: rgba(34,197,94,0.15); color: var(--accent-green);">MEDIUM</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     RECOMMENDED VALIDATION PIPELINE
+     ═══════════════════════════════════════════ -->
+<section id="validation">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">16</span> Recommended Validation Pipeline</h2>
+    <p class="section-desc">A 10-step process that any strategy must pass before receiving live capital. This pipeline eliminates false positives, controls overfitting, and ensures only validated strategies trade real money.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">1</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Data Quality Audit</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Verify no missing data, no look-ahead bias, correct price adjustments (dividends, splits), and survivorship-bias-free universe. Reject if &gt; 1% of data points are interpolated or missing.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">2</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">CPCV Backtest</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Run Combinatorial Purged Cross-Validation (k=4 groups, purge=2x embargo). Record Sharpe, Profit Factor, Max Drawdown, and Win Rate for each fold. Strategy passes if median Sharpe &gt; 0.5 and Profit Factor &gt; 1.3.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">3</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">PBO Analysis</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Run Probability of Backtest Overfitting on the strategy's parameter space. Strategy passes only if PBO &lt; 0.05. This is a hard gate — no exceptions.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">4</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">DSR Calculation</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Calculate Deflated Sharpe Ratio accounting for number of trials. DSR &gt; 0.95 required. This corrects the Sharpe for multiple testing bias.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">5</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Sensitivity Analysis</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Test parameter sensitivity: perturb each parameter by &#177;10%, &#177;20%. Strategy passes if Sharpe remains &gt; 0.3 across all perturbations. Fragile strategies fail this test.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">6</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Paper Trading (6 Months)</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Run the strategy on a paper trading account for minimum 6 months. Record all predictions and hypothetical fills. No capital at risk during this phase. Minimum 100 trades required for assessment.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">7</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Walk-Forward Efficiency (WFE)</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Compare paper trading performance to CPCV backtest performance. WFE = (Live Sharpe / Backtest Sharpe) &#215; 100. Strategy passes if WFE &gt; 60%. Below 60% indicates overfitting or regime change.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">8</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Independent Backtest Confirmation</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">A second analyst or system independently backtests the strategy using different data sources and code. Results must agree within 20% on Sharpe and Win Rate. Eliminates implementation bias.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">9</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Capital Allocation</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Start with 1% of target allocation. Scale by 2x each month if rolling 30-day Sharpe &gt; 0.5 and drawdown &lt; 10%. If drawdown exceeds 15% at any point, halt and return to Step 2.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: var(--accent-blue); display: flex; gap: 20px; align-items: flex-start;">
+        <div style="min-width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-weight: 800; font-size: 20px;">10</div>
+        <div>
+          <div class="card-title" style="margin-bottom: 4px;">Ongoing Monitoring</div>
+          <p style="font-size: 13px; color: var(--text-secondary);">Once live: daily P&L reconciliation, weekly rolling Sharpe, monthly PSR, quarterly full re-validation. Any strategy falling below thresholds for 2 consecutive review periods is automatically demoted to paper trading.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-success" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-green);">&#10004; Why This Pipeline Works</div>
+      <p>This 10-step pipeline directly addresses every critical gap identified in this audit: PBO eliminates false positives (gap #2), CPCV produces honest Sharpe estimates, WFE catches overfitting before capital deployment, 6-month paper trading validates real-world performance, and ongoing monitoring catches edge decay. <strong>No strategy that passes this pipeline can have PBO &gt; 0.05 or WFE &lt; 60%.</strong> It is computationally expensive but mathematically sound.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DATA SOURCES & SUPPLEMENTARY RESOURCES
+     ═══════════════════════════════════════════ -->
+<section id="resources">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">17</span> Data Sources &amp; Supplementary Resources</h2>
+    <p class="section-desc">Resources to enhance the system's data foundation and analytical capabilities.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Recommended Datasets</div>
+        <div class="timeline">
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">CRSP Survivorship-Bias-Free US Stocks</div>
+            <div class="timeline-desc">Center for Research in Security Prices. Gold standard for US equity backtesting. Includes delisted tickers.</div>
+          </div>
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">CoinGecko API (Crypto)</div>
+            <div class="timeline-desc">Free tier: 10-30 calls/minute. Historical prices, market cap, volume for 10,000+ coins. Essential for crypto backfill.</div>
+          </div>
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">OANDA / TrueFX (Forex)</div>
+            <div class="timeline-desc">Free historical tick data for major currency pairs. Resolution down to 1-second.</div>
+          </div>
+          <div class="timeline-item tli-info">
+            <div class="timeline-title">FRED (Macroeconomic Indicators)</div>
+            <div class="timeline-desc">Federal Reserve Economic Data. 800,000+ time series. Free API, no rate limits. Essential for regime features.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Essential Reading</div>
+        <div class="timeline">
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">Advances in Financial Machine Learning</div>
+            <div class="timeline-desc">Marcos Lopez de Prado. The definitive reference on PBO, CPCV, DSR, and proper backtesting methodology.</div>
+          </div>
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">The Evaluation and Optimization of Trading Strategies</div>
+            <div class="timeline-desc">Robert Pardo. Practical guide to WFE, walk-forward analysis, and strategy validation.</div>
+          </div>
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">Machine Learning for Asset Managers</div>
+            <div class="timeline-desc">Marcos Lopez de Prado. Feature importance, portfolio construction, and overfitting prevention.</div>
+          </div>
+          <div class="timeline-item tli-success">
+            <div class="timeline-title">Quantitative Risk Management: Concepts, Techniques and Tools</div>
+            <div class="timeline-desc">Alexander McNeil, Rudiger Frey, Paul Embrechts. The standard reference for VaR, ES, and drawdown modeling.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top: 24px;">
+      <div class="callout-title" style="color: var(--accent-blue);">&#128161; Open-Source Tools to Integrate</div>
+      <p style="font-size: 13px; color: var(--text-secondary);"><strong>mlfinlab</strong> (Lopez de Prado): PBO, CPCV, DSR, trend scanning, sample weights — all implemented. <strong>Backtrader</strong>: Event-driven backtesting engine with realistic fill simulation. <strong>Pyfolio/QuantStats</strong>: Tear sheet generation for strategy evaluation. <strong>Optuna</strong>: Bayesian hyperparameter optimization with pruning. All are MIT-licensed and compatible with the existing Python stack.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     APPENDIX
+     ═══════════════════════════════════════════ -->
+<section id="appendix">
+  <div class="container">
+    <h2 class="section-title"><span class="section-number">18</span> Appendix</h2>
+    <p class="section-desc">Formulas, statistical references, glossary, and methodology notes.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Key Formulas</div>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+          <p style="margin-bottom: 8px;"><strong style="color: var(--text-primary);">Sharpe Ratio:</strong></p>
+          <pre style="margin-bottom: 12px;">SR = (R&#772; &#8211; R&#8342;) / &#963;&#8329;</pre>
+          <p style="margin-bottom: 8px;"><strong style="color: var(--text-primary);">Profit Factor:</strong></p>
+          <pre style="margin-bottom: 12px;">PF = &#931;(Gross Profits) / &#931;(|Gross Losses|)</pre>
+          <p style="margin-bottom: 8px;"><strong style="color: var(--text-primary);">Brier Score:</strong></p>
+          <pre style="margin-bottom: 12px;">BS = (1/N) &#215; &#931;(f&#8341; &#8211; o&#8341;)&#178;</pre>
+          <p style="margin-bottom: 8px;"><strong style="color: var(--text-primary);">PBO (Probability of Backtest Overfitting):</strong></p>
+          <pre style="margin-bottom: 12px;">PBO = &#981;({SR&#770;&#8345; &lt; SR&#770;&#8339;} &#8745; {n&#8320; &#8804; n*})</pre>
+          <p style="margin-bottom: 8px;"><strong style="color: var(--text-primary);">Deflated Sharpe Ratio:</strong></p>
+          <pre style="margin-bottom: 12px;">DSR = Z[(&#960;/2)^(1/2) &#215; (SR&#770; &#8211; V[SR&#770;]&#215;(1&#8211;&#947;) + &#8508;)/V[SR&#770;]^(1/2)]</pre>
+          <p style="margin-bottom: 8px;"><strong style="color: var(--text-primary);">Walk-Forward Efficiency:</strong></p>
+          <pre style="margin-bottom: 12px;">WFE = (Sharpe&#770;&#8327;&#8329;&#8349; / Sharpe&#770;&#8341;&#8342;) &#215; 100%</pre>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Glossary</div>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">PBO</strong> — Probability of Backtest Overfitting. Probability that a strategy's observed performance is due to chance rather than true edge. Must be &lt; 0.05.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">DSR</strong> — Deflated Sharpe Ratio. Sharpe adjusted for number of trials and non-normality. Must be &gt; 0.95.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">WFE</strong> — Walk-Forward Efficiency. Ratio of live to backtest Sharpe. Must be &gt; 60%.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">CPCV</strong> — Combinatorial Purged Cross-Validation. Backtesting method that uses multiple train/test splits with purging and embargo to prevent leakage.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">Profit Factor</strong> — Gross profits divided by gross losses. &gt; 1.0 is profitable; &gt; 1.3 is considered viable.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">Brier Score</strong> — Mean squared error of probability forecasts. 0 = perfect; 0.25 = random (binary); lower is better.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">Cohen's d</strong> — Effect size measure. 0.2 = small, 0.5 = medium, 0.8 = large effect.</p>
+          <p style="margin-bottom: 6px;"><strong style="color: var(--text-primary);">False Strategy Theorem</strong> — When testing N strategies, the probability of finding at least one false positive with Sharpe &gt; S* approaches 1 as N increases.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <div class="card-title">Audit Methodology Notes</div>
+      <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+        <p><strong>Database Analysis:</strong> All statistics are computed from 55,510 resolved trades in the production database. A "resolved trade" is defined as a prediction with a recorded outcome (win/loss) and settlement timestamp. Trades with null outcomes are excluded from win rate calculations but counted in the total. Trades with $0 PnL are included in the sample but flagged as data quality issues.</p>
+        <p><strong>Statistical Tests:</strong> One-sample t-tests test H&#8320;: &#956; = 0 against H&#8321;: &#956; &ne; 0. Significance threshold &#945; = 0.05. P-values are two-tailed. Bootstrap confidence intervals use BCa method with 10,000 resamples. Shapiro-Wilk tests for normality; when violated, bootstrap intervals are preferred.</p>
+        <p><strong>ML Metrics:</strong> Accuracy, precision, recall, and F1 computed on the most recent out-of-sample fold. Brier score and log-loss computed on probability outputs. Calibration analysis buckets predictions by decile of predicted probability and compares to observed win rates.</p>
+        <p><strong>Industry Benchmarks:</strong> Thresholds sourced from: Lopez de Prado (2018), CFA Institute Standards, BarclayHedge quantitative fund survey data (2024), and proprietary benchmarks from systematic trading firms. These represent conservative minimums, not aspirational targets.</p>
+        <p><strong>Repository Analysis:</strong> Static analysis of 19,685 files using custom Python AST parsers and cloc. File sizes, import graphs, and dependency trees were constructed. Git history was analyzed for commit frequency and contributor patterns. GitHub Actions workflows were enumerated but not individually audited.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FINAL SUMMARY & CTA
+     ═══════════════════════════════════════════ -->
+<section style="border-bottom: none;">
+  <div class="container">
+    <div class="callout callout-warn" style="margin-bottom: 24px;">
+      <div class="callout-title" style="color: var(--accent-yellow); font-size: 16px;">Final Assessment</div>
+      <p style="font-size: 14px;">This system, as currently deployed, <strong style="color: var(--accent-red);">destroys capital</strong>. The dashboard claims are not supported by the database. The ML model is worse than random. The backtest is 3.8x inflated. <strong style="color: var(--accent-green);">But the codebase has genuine quantitative expertise</strong> — XGB+LGB+RF ensemble, Boruta, Purged K-Fold, regime detection, and (critically) PBO/CPCV/DSR code that exists but is not wired. The path forward is clear: fix the data pipeline, wire the anti-overfitting tools, and run the 10-step validation pipeline. This is a wiring problem, not a knowledge problem. It is fixable.</p>
+    </div>
+
+    <div class="action-bar" style="justify-content: center;">
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Download as PDF
+      </button>
+      <a href="#exec-summary" class="btn btn-outline">Back to Top</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="container">
+    <p>Quantitative Edge Audit Report | findtorontoevents.ca | Version 1.0 | July 2025</p>
+    <p style="margin-top: 8px; font-size: 11px;">This report is for informational purposes only and does not constitute investment advice. Past performance is not indicative of future results. Statistical analysis performed on production database of 55,510 resolved trades.</p>
+  </div>
+</footer>
+
+</body>
+</html>

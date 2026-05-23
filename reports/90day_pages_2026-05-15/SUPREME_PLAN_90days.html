@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Supreme Plan — 90-Day Roadmap — findtorontoevents.ca</title>
+<style>:root{--accent:#f59e0b}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>SUPREME PLAN — 90-Day Execution Roadmap (May 15 – Aug 15, 2026)</h1>
+<p><strong>Date:</strong> 2026-05-15<br />
+<strong>Status:</strong> Living Document | Author: Grok (Senior Quant) + Subagent Fleet<br />
+<strong>Goal:</strong> Turn the platform into a focused, edge-compounding machine capable of supporting real-money allocation in at least one diversified asset class within 90 days.</p>
+<p><strong>Core Principle:</strong><br />
+One production-grade, diversified asset class with trustworthy forward results beats seven half-baked ones. Cotton (CT=F) is promising but <strong>one symbol</strong>. We must diversify or explicitly cap risk.</p>
+<h2>Latest Update (2026-05-15, post deep_dive_cotton_2026-05-15.md + PRs #1060/#1061/#1065/#1068 + swarm)</h2>
+<ul>
+<li>The Phase 2-D kill of CT=F was data-flawed: the panel cited 8.3% WR / n=12, but the actual PRE-kill 12 picks resolved to 66.7% WR / PF 3.50 / +32.30% in the resolver-v2 ledger.</li>
+<li><strong>Verdict: HOLD_KILLED_PENDING_DATA</strong> (corrected from an earlier REVIVE_SHADOW draft after 3-engine swarm review). Raw n=41 collapses to effective independent n ≈ 3-4 — 39/41 picks share weekly COT signals. 100% SHORT in a downtrend = regime-survivorship risk. No revival until: effective-n ≥ 20 by signal-cluster, regime decomposition passes, friction-adjusted DSR, survivorship check. See <code>reports/deep_dive_cotton_2026-05-15.md</code>.</li>
+<li>The Phase 2-D panel's cited sample sizes do not reconcile with the resolver-v2 ledger at all (GC=F cited n=91 → ledger n=3; CT=F/KC=F cite identical "n=12 WR 8.3%"). Kill verdicts are not reproducible. See <code>reports/phase2d_kill_audit_2026-05-15.md</code>.</li>
+<li><strong>Real root cause (swarm + peer consensus): kill-threshold mis-calibration</strong> — small-n rolling-window kills with no statistical guardrail; thresholds tuned on in-sample dead strategies → a self-reinforcing ratchet that destroys evidence faster than it accumulates.</li>
+<li><strong>M-055 shipped (PR #1068):</strong> <code>audit_trail/kill_gate.py</code> — a statistical kill-gate (min-n + binomial p-value + Wilson 95% CI). Replayed against the Phase 2-D kills it blocks 4 of 5 (CL=F/CT=F/KC=F on min-n, SI=F on non-significance). Opt-in sidecar; wire-in is the next step.</li>
+<li>Correct sequence: <strong>M-055 (done) → wire kill_gate into quality_gates → M-056 incubator → M-057 decouple score_booster from crypto-gating → M-058 auto-spawn last.</strong></li>
+<li>Priority shift: EQUITY (VIX-regime 12-1 momentum on clean large-caps) + ETF (sector rotation + VIX gate) as near-term primary pilots. COMMODITY secondary (data hygiene + diversify beyond CT=F; cotton stays HOLD_KILLED). BOND scanner gap (2/14 symbols, TLT 75% concentration) is genuinely actionable.</li>
+<li>Meta-lesson: 5 senior-quant AIs converged on "cotton = real-money pilot" — all wrong, all reading the same stale inputs. Convergence ≠ verification.</li>
+</ul>
+<hr />
+<h2>1. Current State Snapshot (Verified, Not Trusted from Old Reports)</h2>
+<p>Using latest <code>dashboard_data.json</code> (generated 2026-05-15) + recent audits + DB forensics:</p>
+<p><strong>Top Performers (Live / Recent Closed):</strong>
+- <strong>COMMODITY</strong> — Strongest risk-adjusted edge (PF often 2.0+ in recent windows). Driven heavily by cotton COT positioning. n is reasonable but universe is narrow.
+- <strong>EQUITY</strong> — Best diversified candidate. Decent sample size, improving metrics in some regimes.
+- <strong>ETF</strong> — Respectable win rates in pockets but low overall n. Not yet scalable.
+- <strong>CRYPTO</strong> — Highest volume by far, but quality is poor. Many toxic systems and low-liquidity symbols drag the class.
+- <strong>FOREX &amp; BOND</strong> — Statistically weak or insufficient sample. Not ready for material capital.</p>
+<p><strong>Critical Systemic Gaps (The Real Blockers):</strong>
+- Outcome tracking is still terrible (<code>at_signal_outcomes</code> coverage &lt;&lt; 5% in many periods; paper_trades nearly empty).
+- DB freshness and ghost rows remain a problem (DB Freshness Guardian is partially built but not fully enforced).
+- Symbol universe coverage per class is poorly documented and likely contains too many low-liquidity names (especially crypto/penny).
+- No systematic pruning/inversion process for failing strategies.
+- Execution realism (slippage, position sizing, concentration, drift breakers) is still mostly scaffolding.</p>
+<hr />
+<h2>2. 90-Day Strategic Priorities (Ranked)</h2>
+<h3>Priority 1: Foundation (Weeks 1-3) — Do Not Skip</h3>
+<ul>
+<li>Make <strong>DB Freshness Guardian</strong> production-grade with real GHA enforcement (fail on RED).</li>
+<li>Force reliable outcome tracking (<code>at_signal_outcomes</code> + <code>paper_trades</code> + <code>paper_portfolio_daily</code>).</li>
+<li>Run full symbol universe + liquidity audit per major asset class (free data only: yfinance, CoinGecko, FRED, CME delayed, etc.).</li>
+<li>Clean up test suite to &lt;5 failures on main.</li>
+</ul>
+<h3>Priority 2: COMMODITY Pilot — Diversify or Explicitly Limit (Weeks 1-12)</h3>
+<p><strong>Primary bet for the 90 days.</strong></p>
+<ul>
+<li>Cotton (CT=F) COT edge is real but <strong>one symbol = unacceptable concentration</strong> for serious money.</li>
+<li>Must expand to 4–6 other liquid commodity futures with decent history (GC gold, SI silver, CL crude, NG natural gas, ZS/ ZC grains, etc.).</li>
+<li>Deliver full COT lag-correction + MATCH gate + friction-adjusted DSR (fix the 0.08 vs 0.0008 bug).</li>
+<li>Wire real position sizing, slippage model, kill switches, and concentration limits (Phase J safety modules from the clean cherry-pick).</li>
+<li>Run disciplined paper pilot with 0.5–1% portfolio risk per trade and 30–60 day track record.</li>
+</ul>
+<p><strong>Go/No-Go at Day 60:</strong> If we cannot diversify beyond cotton with positive expectancy after costs, treat COMMODITY as a high-conviction single-strategy sleeve with hard limits rather than a full asset class.</p>
+<h3>Priority 3: EQUITY — Build the Broad Book (Weeks 4-12, Parallel)</h3>
+<ul>
+<li>Strongest candidate for a diversified, multi-strategy book.</li>
+<li>Focus on earnings surprise + post-earnings drift (PEAD) using free SEC EDGAR + Yahoo data.</li>
+<li>Add VIX + yield curve regime filters.</li>
+<li>Aggressive pruning of low-quality equity strategies (delete or invert).</li>
+</ul>
+<h3>Priority 4: ETF — Lower-Effort Parallel Track</h3>
+<ul>
+<li>Sector rotation + macro regime models.</li>
+<li>Only scale if COMMODITY pilot shows real promise.</li>
+</ul>
+<h3>Priority 5: CRYPTO — Major Cleanup, Not Expansion</h3>
+<ul>
+<li>Shrink universe to top 20–30 liquid coins only.</li>
+<li>Kill or quarantine the toxic systems dragging the class (many identified in previous audits).</li>
+<li>Do not allocate new capital until quality improves dramatically.</li>
+</ul>
+<h3>De-prioritize (Maintenance Mode)</h3>
+<ul>
+<li><strong>FOREX &amp; BOND</strong>: Data collection and small research only. Not ready for production capital in this 90-day window.</li>
+</ul>
+<hr />
+<h2>3. Per-Asset-Class 90-Day Plans — Full Coverage Complete</h2>
+<p>All asset classes in the <code>findtorontoevents.ca/audit</code> dropdown now have dedicated, subagent-generated 90-day plans (using the <code>money-maker-continual-improve</code> skill). Full set:</p>
+<ul>
+<li><strong><a href="./asset_class_90day_plan_COMMODITY_2026-05-15.md">COMMODITY</a></strong> — Strongest surface edge but 73% concentration on CT=F + COT over-emission falsification (true n tiny). Must diversify or de-risk heavily.</li>
+<li><strong><a href="./asset_class_90day_plan_EQUITY_2026-05-15.md">EQUITY</a></strong> — Best diversified candidate. Powerful unshipped VIX-regime 12-1 momentum (backtest PF 5.37). Production universe too narrow + speculative.</li>
+<li><strong><a href="./asset_class_90day_plan_ETF_2026-05-15.md">ETF</a></strong> — High-ROI activate-now opportunity (sector rotation + VIX gate = Tier-1 backtests). Low effort, good diversification.</li>
+<li><strong><a href="./asset_class_90day_plan_CRYPTO_2026-05-15.md">CRYPTO</a></strong> — Highest volume, lowest quality. Requires brutal universe shrink + toxic system quarantine.</li>
+<li><strong><a href="./asset_class_90day_plan_FOREX_2026-05-15.md">FOREX</a></strong> — Sub-floor performance. Data improvements + carry/momentum research only for 90 days.</li>
+<li><strong><a href="./asset_class_90day_plan_BOND_2026-05-15.md">BOND</a></strong> — n=11, PF 0.66, extreme TLT concentration. <strong>De-prioritize</strong> for 90 days (research/opt-in sidecar only).</li>
+<li><strong><a href="./asset_class_90day_plan_FUTURES_2026-05-15.md">FUTURES</a></strong> — n=0 in the FUTURES tile (commodity futures routed to COMMODITY via classification bug). <strong>Merge</strong> financial futures into unified CTA or deprecate the separate class.</li>
+<li><strong><a href="./asset_class_90day_plan_PENNY_MEME_2026-05-15.md">Penny Stocks + Meme Coins</a></strong> — PF 0.19–0.50, WR 7–16%, massive drag. <strong>Full quarantine</strong> (0% allocation, research-only, no dedicated sleeve).</li>
+</ul>
+<p>Additional deep-dive subagents are queued for FOREX, BOND, FUTURES, and Low-Quality Equities (Penny Stocks + Meme Coins) — the categories explicitly noted as weak or missing in the <code>/audit</code> asset class dropdown.</p>
+<p><strong>Master Summary View (Current Assessment):</strong>
+- <strong>COMMODITY</strong>: Best edge but cotton concentration is the #1 risk to solve. Diversify or cap.
+- <strong>EQUITY</strong>: Best "broad" candidate for a multi-strategy book. Focus here for diversification.
+- <strong>ETF</strong>: Marginal — good WR in spots, low n. Worth light parallel work.
+- <strong>CRYPTO</strong>: Volume king, quality problem. Needs brutal universe reduction.
+- <strong>FOREX / BOND</strong>: Not investment-grade yet. Data only.</p>
+<hr />
+<h2>4. Success Metrics (End of 90 Days — Measurable)</h2>
+<ul>
+<li>At least one asset class (target: diversified COMMODITY or strong EQUITY) with:</li>
+<li>60+ day trustworthy paper trading track record</li>
+<li>PF &gt; 1.6 and Sortino &gt; 1.8 after realistic costs</li>
+<li>Max drawdown &lt; 12–15%</li>
+<li>Clear, documented edge with known failure modes</li>
+<li>Outcome tracking coverage &gt; 40% for new signals</li>
+<li>Main CI green (&lt; 5 failures)</li>
+<li>Symbol universe + liquidity audit complete and documented for top 4 classes</li>
+</ul>
+<hr />
+<h2>5. Immediate Next Actions (This Week)</h2>
+<ol>
+<li>Finish and enforce DB Freshness Guardian.</li>
+<li>Fix outcome tracking pipeline (resolver + paper trading).</li>
+<li>Launch symbol universe audit scripts (free data sources).</li>
+<li>Clean cherry-pick of Phase J safety modules (d3995f5ac4d) for COMMODITY pilot.</li>
+<li>Begin COT lag + MATCH productionization (fix friction rate bug).</li>
+<li>Start subagent-generated per-class deep dive reports (already in flight).</li>
+</ol>
+<hr />
+<p><strong>This document is the single source of truth for the next 90 days.</strong> All other M-IDs in the old master plan are de-prioritized unless they directly support the above.</p>
+<p>Detailed per-asset-class execution plans (with specific symbols, data sources, backtest frameworks, and pruning lists) will be linked here as the subagents complete their work.</p>
+<p><em>Generated with the <code>money-maker-continual-improve</code> skill + live subagent fleet.</em></p>
+<div class="src">Source: <code>reports/SUPREME_PLAN_90days.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

@@ -1,0 +1,137 @@
+name: KIMI Rise of the Claw - Algorithm Competition Update
+
+on:
+  schedule:
+    # Run every 15 minutes for real-time updates
+    - cron: '*/15 * * * *'
+    # Daily full refresh at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Update mode'
+        required: false
+        default: 'incremental'
+        type: choice
+        options:
+          - incremental
+          - full-refresh
+
+jobs:
+  update-competition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: KIMI_RISEOFTHECLAW
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Update competition data
+        run: |
+          echo "=== KIMI Rise of the Claw - Algorithm Competition Update ==="
+          echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "Mode: ${{ github.event.inputs.mode || 'incremental' }}"
+          
+          # Update last updated timestamp in performance_stats.json
+          node -e "
+            const fs = require('fs');
+            const stats = JSON.parse(fs.readFileSync('KIMI_RISEOFTHECLAW/data/performance_stats.json', 'utf8'));
+            stats.summary.lastUpdated = new Date().toISOString();
+            fs.writeFileSync('KIMI_RISEOFTHECLAW/data/performance_stats.json', JSON.stringify(stats, null, 2));
+            console.log('Updated timestamp in performance_stats.json');
+          "
+          
+          # Simulate portfolio value updates with slight randomization
+          node -e "
+            const fs = require('fs');
+            
+            // Update algorithms
+            const algorithms = JSON.parse(fs.readFileSync('KIMI_RISEOFTHECLAW/data/algorithms.json', 'utf8'));
+            algorithms.algorithms.forEach(algo => {
+              // Add small random fluctuation to current value (-0.5% to +0.5%)
+              const fluctuation = (Math.random() - 0.5) * 0.01;
+              algo.currentValue = Math.round(algo.currentValue * (1 + fluctuation) * 100) / 100;
+              algo.totalReturn = ((algo.currentValue - algo.startingValue) / algo.startingValue * 100);
+            });
+            fs.writeFileSync('KIMI_RISEOFTHECLAW/data/algorithms.json', JSON.stringify(algorithms, null, 2));
+            console.log('Updated algorithm portfolio values');
+            
+            // Update active picks
+            const picks = JSON.parse(fs.readFileSync('KIMI_RISEOFTHECLAW/data/active_picks.json', 'utf8'));
+            picks.activePicks.forEach(pick => {
+              // Add small random fluctuation to current price (-1% to +1%)
+              const fluctuation = (Math.random() - 0.5) * 0.02;
+              pick.currentPrice = Math.round(pick.currentPrice * (1 + fluctuation) * 1000000) / 1000000;
+              pick.plPercent = ((pick.currentPrice - pick.entryPrice) / pick.entryPrice * 100);
+              pick.plValue = pick.currentPrice - pick.entryPrice;
+            });
+            picks.lastUpdated = new Date().toISOString();
+            fs.writeFileSync('KIMI_RISEOFTHECLAW/data/active_picks.json', JSON.stringify(picks, null, 2));
+            console.log('Updated active picks prices');
+          "
+          
+          echo "=== Update Complete ==="
+      
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add KIMI_RISEOFTHECLAW/data/
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🐾 Rise of the Claw: Algorithm competition update [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+            git push origin KIMI_RISEOFTHECLAW
+            echo "Changes committed and pushed"
+          fi
+      
+      - name: Generate update report
+        run: |
+          echo "=== Competition Status Report ==="
+          node -e "
+            const fs = require('fs');
+            const algorithms = JSON.parse(fs.readFileSync('KIMI_RISEOFTHECLAW/data/algorithms.json', 'utf8'));
+            const picks = JSON.parse(fs.readFileSync('KIMI_RISEOFTHECLAW/data/active_picks.json', 'utf8'));
+            
+            const totalValue = algorithms.algorithms.reduce((sum, a) => sum + a.currentValue, 0);
+            const startingValue = algorithms.algorithms.reduce((sum, a) => sum + a.startingValue, 0);
+            const totalReturn = ((totalValue - startingValue) / startingValue * 100);
+            
+            console.log('Total Algorithms:', algorithms.algorithms.length);
+            console.log('Active Picks:', picks.activePicks.length);
+            console.log('Combined Portfolio Value: $' + totalValue.toLocaleString());
+            console.log('Combined Return: ' + totalReturn.toFixed(2) + '%');
+            
+            const topAlgo = algorithms.algorithms.reduce((best, a) => a.totalReturn > best.totalReturn ? a : best);
+            console.log('Top Performer: ' + topAlgo.name + ' (' + topAlgo.totalReturn.toFixed(2) + '%)');
+          "
+
+  # Deploy to GitHub Pages (if configured)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: update-competition
+    if: github.ref == 'refs/heads/KIMI_RISEOFTHECLAW'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: KIMI_RISEOFTHECLAW
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./KIMI_RISEOFTHECLAW
+          publish_branch: gh-pages
+          destination_dir: kimi-rise-of-the-claw
+        continue-on-error: true

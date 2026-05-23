@@ -1,0 +1,1444 @@
+//@version=6
+indicator("Elton's Screener v6.3.0 [20 Strategies | 2 Proven]", "Elton's Screener", overlay=false)
+
+groupMain = "STRATEGY SETTINGS"
+i_strategy = input.string("Auto-Detect (Best for Asset)", "Active Strategy", options=["Auto-Detect (Best for Asset)", "Connors RSI-2", "VIX Spike Reversal", "MACD Momentum", "EMA Crossover", "Ichimoku Cloud", "Bollinger Squeeze", "VWAP Reversion", "RSI Divergence", "Supertrend", "Swing Failure (SFP)", "Break of Structure", "Liquidation Cascade", "Momentum Crash", "Multi-Strategy Consensus", "Seasonal Bias", "Halving Cycle", "Turn of Month", "Day of Week", "Cycle Detection", "S/R Magnetism"], group=groupMain, tooltip="Auto-Detect picks the best strategy for the asset type (crypto/forex/stock). Or select manually.")
+
+groupDecision = "DECISION ENGINE"
+i_minConfidence = input.int(40, "Minimum Confidence %", minval=0, maxval=95, step=5, group=groupDecision, tooltip="Signals below this confidence are filtered out")
+i_htfTrend = input.string("60", "Higher TF Trend Filter", options=["15", "60", "240", "D", "W"], group=groupDecision, tooltip="Timeframe for trend alignment scoring (EMA 9/21)")
+
+groupRisk = "RISK MANAGEMENT"
+i_tpMult = input.float(3.0, "TP Multiplier (ATR)", minval=1.0, maxval=10.0, step=0.5, group=groupRisk, tooltip="Take Profit = Entry + ATR * this value")
+i_slMult = input.float(1.5, "SL Multiplier (ATR)", minval=0.5, maxval=5.0, step=0.5, group=groupRisk, tooltip="Stop Loss = Entry - ATR * this value")
+i_atrPeriod = input.int(14, "ATR Period", minval=5, maxval=50, group=groupRisk)
+
+groupAdvanced = "ADVANCED ENGINE"
+i_useCorrelationCaps = input.bool(true, "Correlation Group Caps", group=groupAdvanced, tooltip="Prevents correlated strategies from stacking consensus votes")
+i_useBayesian = input.bool(true, "Bayesian Confidence", group=groupAdvanced, tooltip="Replaces additive scoring with probabilistic logistic regression model")
+i_useRegimeFitness = input.bool(true, "Regime-Adaptive Strategies", group=groupAdvanced, tooltip="Penalizes strategies that don't fit the current market regime")
+i_useCircuitBreaker = input.bool(true, "Drawdown Circuit Breaker", group=groupAdvanced, tooltip="Reduces confidence after consecutive losses")
+i_cbMaxLosses = input.int(3, "CB Loss Threshold", minval=1, maxval=10, group=groupAdvanced, tooltip="Number of consecutive losses before circuit breaker activates")
+i_adaptiveThresholds = input.bool(true, "Volatility-Adaptive Thresholds", group=groupAdvanced, tooltip="RSI and Z-score thresholds adapt to current volatility regime")
+i_confirmedOnly = input.bool(true, "Non-Repainting Mode", group=groupAdvanced, tooltip="Only trigger signals on confirmed (closed) bars. Prevents intrabar signal artefacts. Recommended ON for live trading.")
+i_dualTP = input.bool(true, "Dual TP Targets", group=groupAdvanced, tooltip="Show TP1 (1.5x ATR) and TP2 (2.5x ATR) for scaled exits")
+
+// ============================================================================
+//                     PRE-COMPUTED VALUES (global scope)
+// ============================================================================
+
+// --- Asset type detection ---
+_isCrypto = syminfo.type == "crypto" or str.contains(str.lower(syminfo.ticker), "btc") or str.contains(str.lower(syminfo.ticker), "eth")
+_isForex = syminfo.type == "forex"
+_isStock = syminfo.type == "stock" or syminfo.type == "fund" or syminfo.type == "dr"
+_isIndex = syminfo.type == "index"
+
+// --- Auto-Detect: route to best strategy per asset class ---
+// Crypto -> Multi-Strategy Consensus (aggregates all 19 strategies)
+// Forex  -> Ichimoku Cloud (62% WR, designed for forex markets)
+// ALL asset classes -> Connors RSI-2 (only PROVEN strategy: 75.7% SPY, 75.3% QQQ, 62.5% BTC)
+// No proven crypto/forex-specific strategies yet -- route everything to proven
+_effectiveStrategy = i_strategy != "Auto-Detect (Best for Asset)" ? i_strategy : "Connors RSI-2"
+_stratDisplay = i_strategy == "Auto-Detect (Best for Asset)" ? "Auto -> " + _effectiveStrategy : _effectiveStrategy
+
+// --- Streak counter for ConnorsRSI -- must be at global scope for `var` persistence ---
+var int _crsi_streak = 0
+_crsi_streak := close > close[1] ? (nz(_crsi_streak[1]) >= 0 ? nz(_crsi_streak[1]) + 1 : 1) : close < close[1] ? (nz(_crsi_streak[1]) <= 0 ? nz(_crsi_streak[1]) - 1 : -1) : 0
+
+// --- SuperSmoother filter -- must be at global scope for `var` persistence ---
+f_supersmoother(_src, _len) =>
+    _pi = math.pi
+    _a1 = math.exp(-math.sqrt(2.0) * _pi / _len)
+    _b1 = 2.0 * _a1 * math.cos(math.sqrt(2.0) * _pi / _len)
+    _c2 = _b1
+    _c3 = -_a1 * _a1
+    _c1 = 1.0 - _c2 - _c3
+    var float _ss = na
+    _ss := _c1 * (_src + nz(_src[1])) / 2.0 + _c2 * nz(_ss[1]) + _c3 * nz(_ss[2])
+    _ss
+
+// --- Higher TF trend filter (global scope -- request.security MUST run every bar) ---
+f_htf_data() =>
+    e9 = ta.ema(close, 9)
+    e21 = ta.ema(close, 21)
+    [e9[1], e21[1], close[1]]  // [1] offset = confirmed (previous completed bar)
+
+[_htf_ema9, _htf_ema21, _htf_close] = request.security(syminfo.tickerid, i_htfTrend, f_htf_data(), lookahead=barmerge.lookahead_on)
+_htf_bullish = nz(_htf_ema9) > nz(_htf_ema21) and nz(_htf_close) > nz(_htf_ema21)
+_htf_bearish = nz(_htf_ema9) < nz(_htf_ema21) and nz(_htf_close) < nz(_htf_ema21)
+_htf_trend_str = _htf_bullish ? "BULLISH" : _htf_bearish ? "BEARISH" : "NEUTRAL"
+
+// --- Volume confirmation (global scope) -- v6.1 Composite Z-Score ---
+_vol_sma20 = ta.sma(volume, 20)
+_vol_ratio = _vol_sma20 > 0 ? volume / _vol_sma20 : 1.0
+_vol_strong = _vol_ratio >= 2.0
+_vol_confirm = _vol_ratio >= 1.2
+_vol_weak = _vol_ratio < 0.8
+_vol_status = _vol_strong ? "STRONG" : _vol_confirm ? "CONFIRMED" : _vol_weak ? "WEAK" : "NORMAL"
+
+// Composite Volume Score (0-100) -- 5 weighted components from Kimi Claw Pro research
+// 1. Volume Z-score (30%): how unusual is current volume statistically
+_vol_rel_sma50 = ta.sma(_vol_ratio, 50)
+_vol_rel_stdev = ta.stdev(_vol_ratio, 50)
+_vol_zscore = _vol_rel_stdev > 0 ? (_vol_ratio - _vol_rel_sma50) / _vol_rel_stdev : 0.0
+
+// 2. Volume trend strength (25%): |EMA(vol,10) - EMA(vol,30)| / SMA(vol,20)
+_vol_ema10 = ta.ema(volume, 10)
+_vol_ema30 = ta.ema(volume, 30)
+_vol_trend_str = _vol_sma20 > 0 ? math.abs(_vol_ema10 - _vol_ema30) / _vol_sma20 * 100.0 : 0.0
+
+// 3. Volume-price divergence (20%): price drops but vol surges = potential reversal
+_vpd_priceChg = nz((close - close[5]) / close[5] * 100.0)
+_vpd_volChg = volume[5] > 0 ? (volume - volume[5]) / volume[5] * 100.0 : 0.0
+_vpd_bullish = _vpd_priceChg < -2.0 and _vpd_volChg > 50.0
+_vpd_bearish = _vpd_priceChg > 2.0 and _vpd_volChg < -30.0
+
+// 4. Volume trend rising (15%): 3 consecutive rising bars
+_vol_rising = volume > volume[1] and volume[1] > volume[2]
+
+// 5. Relative volume excess (10%): how far above average
+_vol_excess = _vol_ratio > 1.0 ? (_vol_ratio - 1.0) * 50.0 : 0.0
+
+// Composite (0-100 scale, clamped)
+_volComposite = math.min(100.0, math.max(0.0, 30.0 * math.max(0.0, _vol_zscore * 20.0) + 25.0 * (_vol_trend_str / 2.0) + 20.0 * (_vpd_bullish or _vpd_bearish ? 1.0 : _vol_strong ? 0.5 : 0.0) + 15.0 * (_vol_rising ? 1.0 : 0.0) + 10.0 * _vol_excess))
+
+// ============================================================================
+//            REGIME DETECTION ENGINE (v6.0 -- ADX + Choppiness + ATR)
+// ============================================================================
+// Classifies market into: TRENDING / RANGING / VOLATILE / QUIET / NORMAL
+// Used by: Strategy-Regime Fitness, Adaptive Thresholds, Bayesian Confidence
+
+// --- ADX (Average Directional Index) for trend strength ---
+[_diPlus, _diMinus, _adx] = ta.dmi(14, 14)
+
+// --- Choppiness Index (0-100): high = choppy/ranging, low = trending ---
+// CI = 100 * LOG10(SUM(TR, 14) / (Highest(14) - Lowest(14))) / LOG10(14)
+_chopTrSum = math.sum(ta.tr(true), 14)
+_chopHigh14 = ta.highest(high, 14)
+_chopLow14 = ta.lowest(low, 14)
+_chopRange = _chopHigh14 - _chopLow14
+// Pine v6 has no math.log10() -- use change-of-base: log10(x) = ln(x) / ln(10)
+_log10 = math.log(10.0)
+_choppiness = _chopRange > 0 ? 100.0 * (math.log(_chopTrSum / _chopRange) / _log10) / (math.log(14.0) / _log10) : 50.0
+
+// --- ATR Percentile (0-100): where current vol sits in 100-bar history ---
+_atrPctile = ta.percentrank(ta.atr(14), 100)
+
+// --- Regime Classification with Hysteresis (v6.1 -- prevents whipsaw) ---
+// Once classified, regime persists until a stronger counter-signal appears.
+// Entry thresholds are strict; exit thresholds are relaxed (sticky).
+var string _regimePersist = "NORMAL"
+
+_regimeTrending = _adx > 25 and _choppiness < 38.2
+_regimeRanging = _adx < 20 and _choppiness > 61.8
+_regimeVolatile = _atrPctile > 80
+_regimeQuiet = _atrPctile < 20 and _adx < 15
+
+// Hysteresis: stay in regime until conditions clearly reverse
+if _regimeVolatile
+    _regimePersist := "VOLATILE"
+else if _regimeTrending
+    _regimePersist := "TRENDING"
+else if _regimeRanging
+    _regimePersist := "RANGING"
+else if _regimeQuiet
+    _regimePersist := "QUIET"
+else if _regimePersist == "VOLATILE" and _atrPctile > 60
+    _regimePersist := "VOLATILE"  // sticky: stay volatile until pctile drops below 60
+else if _regimePersist == "TRENDING" and _adx > 20
+    _regimePersist := "TRENDING"  // sticky: stay trending until ADX drops below 20
+else if _regimePersist == "RANGING" and _choppiness > 50
+    _regimePersist := "RANGING"  // sticky: stay ranging until choppiness drops below 50
+else if _regimePersist == "QUIET" and _atrPctile < 35
+    _regimePersist := "QUIET"  // sticky: stay quiet until pctile rises above 35
+else
+    _regimePersist := "NORMAL"
+
+_regimeStr = _regimePersist
+_regimeColor = _regimePersist == "VOLATILE" ? #ef4444 : _regimePersist == "TRENDING" ? #22c55e : _regimePersist == "RANGING" ? #eab308 : _regimePersist == "QUIET" ? #888888 : #3b82f6
+
+// Update regime booleans from hysteresis result (used by fitness function)
+_regimeTrending := _regimePersist == "TRENDING"
+_regimeRanging := _regimePersist == "RANGING"
+_regimeVolatile := _regimePersist == "VOLATILE"
+_regimeQuiet := _regimePersist == "QUIET"
+
+// ============================================================================
+//     SECOND HIGHER TIMEFRAME (Triple TF Confluence -- EMA 50/200)
+// ============================================================================
+// Derives a 2nd HTF from user-selected HTF for more robust trend scoring.
+// If user picked 60 -> HTF2 = 240; if 240 -> HTF2 = D; etc.
+
+_htf2_tf = switch i_htfTrend
+    "15" => "60"
+    "60" => "240"
+    "240" => "D"
+    "D" => "W"
+    "W" => "M"
+    => "D"
+
+f_htf2_data() =>
+    e50 = ta.ema(close, 50)
+    e200 = ta.ema(close, 200)
+    [e50[1], e200[1]]  // [1] offset = confirmed (non-repainting)
+
+[_htf2_ema50, _htf2_ema200] = request.security(syminfo.tickerid, _htf2_tf, f_htf2_data(), lookahead=barmerge.lookahead_on)
+_htf2_bullish = nz(_htf2_ema50) > nz(_htf2_ema200)
+_htf2_bearish = nz(_htf2_ema50) < nz(_htf2_ema200)
+
+// Combined HTF score: average of both timeframes (-1 to +1 scale)
+_htf1_score = _htf_bullish ? 1.0 : _htf_bearish ? -1.0 : 0.0
+_htf2_score = _htf2_bullish ? 1.0 : _htf2_bearish ? -1.0 : 0.0
+_htfComboScore = (_htf1_score + _htf2_score) / 2.0  // -1.0 to +1.0
+
+// ============================================================================
+//     VOLATILITY-ADAPTIVE THRESHOLDS (v6.0)
+// ============================================================================
+// RSI and Z-score thresholds adapt to ATR percentile.
+// High vol -> wider thresholds (fewer but higher-quality signals)
+// Low vol -> tighter thresholds (catch smaller moves)
+
+_adaptRsiOS = i_adaptiveThresholds ? (_atrPctile > 80 ? 8.0 : _atrPctile > 60 ? 5.0 : _atrPctile > 40 ? 3.0 : 2.0) : 5.0
+_adaptRsiOB = 100.0 - _adaptRsiOS
+_adaptZThresh = i_adaptiveThresholds ? (_atrPctile > 80 ? 2.5 : _atrPctile > 60 ? 2.0 : _atrPctile > 40 ? 1.5 : 1.2) : 1.5
+
+// ============================================================================
+//     STRATEGY-REGIME FITNESS FUNCTION (v6.0)
+// ============================================================================
+// Returns 0.0-1.0 fitness multiplier based on how well a strategy fits the regime.
+// Groups: Trend(2,3,4,8,10), MeanRev(0,5,6,9,11,19), Vol(1,12), Seasonal(14-18), Div(7)
+
+f_regime_fitness(_idx) =>
+    // Trend-following strategies: excel in TRENDING, poor in RANGING
+    _isTrend = _idx == 2 or _idx == 3 or _idx == 4 or _idx == 8 or _idx == 10
+    // Mean-reversion strategies: excel in RANGING, poor in TRENDING
+    _isMeanRev = _idx == 0 or _idx == 5 or _idx == 6 or _idx == 9 or _idx == 11 or _idx == 19
+    // Volatility strategies: excel in VOLATILE
+    _isVol = _idx == 1 or _idx == 12
+    // Seasonal: regime-agnostic
+    _isSeasonal = _idx >= 14 and _idx <= 18
+    // Divergence: best in RANGING/NORMAL
+    _isDiv = _idx == 7
+
+    float fit = 0.5  // default neutral
+    if _isTrend
+        fit := _regimeTrending ? 1.0 : _regimeRanging ? 0.15 : _regimeVolatile ? 0.6 : _regimeQuiet ? 0.3 : 0.5
+    else if _isMeanRev
+        fit := _regimeRanging ? 1.0 : _regimeTrending ? 0.15 : _regimeVolatile ? 0.4 : _regimeQuiet ? 0.8 : 0.5
+    else if _isVol
+        fit := _regimeVolatile ? 1.0 : _regimeTrending ? 0.3 : _regimeRanging ? 0.2 : _regimeQuiet ? 0.1 : 0.4
+    else if _isSeasonal
+        fit := 0.5  // Seasonal bias is regime-agnostic (calendar-based)
+    else if _isDiv
+        fit := _regimeRanging ? 0.9 : _regimeTrending ? 0.3 : _regimeVolatile ? 0.5 : 0.6
+
+    i_useRegimeFitness ? fit : 1.0  // bypass if user disables
+
+
+// ============================================================================
+//                     STRATEGY FUNCTIONS
+// ============================================================================
+// Each function returns [bool longSignal, bool shortSignal, float baseStrength]
+// baseStrength is 0-40 scale (Factor 1 of the dynamic confidence engine).
+// All functions are defined before the signal router calls them.
+
+// ---------------------------------------------------------------------------
+// 1. CONNORS RSI-2  (75.7% WR SPY, p=6e-06, Sharpe 4.84)
+//    Mean reversion: RSI(2) < 5 above 200 SMA = buy dip.
+//    ConnorsRSI composite (RSI-3 + streak percentrank + %change percentrank).
+// ---------------------------------------------------------------------------
+f_connors_rsi2() =>
+    rsi2 = ta.rsi(close, 2)
+    sma200 = ta.sma(close, 200)
+    aboveSma = close > sma200
+
+    // ConnorsRSI composite components
+    rsi3 = ta.rsi(close, 3)
+
+    // Streak percentrank (uses global _crsi_streak)
+    pctRankStreak = ta.percentrank(_crsi_streak, 100)
+
+    // Percent-change rank
+    pctChg = nz(ta.change(close) / close[1] * 100)
+    pctRankChg = ta.percentrank(pctChg, 100)
+
+    // Composite ConnorsRSI
+    crsi = (rsi3 + pctRankStreak + pctRankChg) / 3.0
+
+    // Volatility-adaptive thresholds (v6.0): uses _adaptRsiOS from regime engine
+    // Crypto gets wider base threshold, then adapted by ATR percentile
+    _cBase = _isCrypto ? 10.0 : 5.0
+    _cTh = i_adaptiveThresholds ? math.max(_cBase, _adaptRsiOS * 2.0) : _cBase
+    longSig = rsi2 < _cTh and aboveSma
+    shortSig = rsi2 > (100.0 - _cTh) and not aboveSma
+
+    // Base strength (0-40): deeper RSI extremes = stronger signal
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := rsi2 < 2.0 ? 40.0 : rsi2 < 3.0 ? 35.0 : 30.0
+    else if shortSig
+        baseStrength := rsi2 > 98.0 ? 40.0 : rsi2 > 97.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 2. VIX SPIKE REVERSAL  (72% WR, Sharpe 6.20, p=0.022)
+//    SCREENER VERSION: uses ATR fear proxy (no cross-symbol request.security allowed)
+//    ATR percentile > 90 = extreme vol/fear + oversold RSI(2) + above 200 SMA.
+//    Long-only strategy (no short signals).
+// ---------------------------------------------------------------------------
+f_vix_spike() =>
+    rsi2 = ta.rsi(close, 2)
+    sma200 = ta.sma(close, 200)
+    aboveSma = close > sma200
+
+    // ATR fear proxy: replaces VIX cross-symbol fetch for screener compatibility
+    _atrPct = ta.percentrank(ta.atr(14), 100)
+    _atrFear = _atrPct > 90
+    longSig = _atrFear and rsi2 < 20 and aboveSma
+    shortSig = false // Long-only (fear capitulation = buy)
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := _atrPct > 97.0 ? 40.0 : _atrPct > 93.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 3. MACD MOMENTUM  (~65% WR)
+//    Classic MACD crossover filtered by RSI to avoid overbought/oversold entries.
+// ---------------------------------------------------------------------------
+f_macd_momentum() =>
+    [macdLine, signalLine, hist] = ta.macd(close, 12, 26, 9)
+    rsi14 = ta.rsi(close, 14)
+
+    // Crossover + histogram acceleration continuation (fires during trends, not just on cross bar)
+    _mCross = ta.crossover(macdLine, signalLine)
+    _mAccel = macdLine > signalLine and hist > 0 and hist > hist[1] and hist[1] > hist[2]
+    longSig = (_mCross or _mAccel) and rsi14 < 80
+    _mCrossDn = ta.crossunder(macdLine, signalLine)
+    _mAccelDn = macdLine < signalLine and hist < 0 and hist < hist[1] and hist[1] < hist[2]
+    shortSig = (_mCrossDn or _mAccelDn) and rsi14 > 20
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := math.abs(hist) > 2.0 * math.abs(nz(hist[1])) ? 40.0 : math.abs(hist) > 1.5 * math.abs(nz(hist[1])) ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 4. EMA 9/21 CROSSOVER  (~60% WR)
+//    Fast EMA crosses slow EMA, filtered by 50 SMA trend direction.
+// ---------------------------------------------------------------------------
+f_ema_crossover() =>
+    ema9 = ta.ema(close, 9)
+    ema21 = ta.ema(close, 21)
+    sma50 = ta.sma(close, 50)
+
+    // Crossover + pullback re-entry (fires when price retests 21 EMA during a trend)
+    _eCross = ta.crossover(ema9, ema21) and close > sma50
+    _ePull = ema9 > ema21 and close > sma50 and low <= ema21 * 1.003 and close > ema21 and close > open
+    longSig = _eCross or _ePull
+    _eCrossDn = ta.crossunder(ema9, ema21) and close < sma50
+    _ePullDn = ema9 < ema21 and close < sma50 and high >= ema21 * 0.997 and close < ema21 and close < open
+    shortSig = _eCrossDn or _ePullDn
+
+    gap = math.abs(ema9 - ema21) / close * 100.0
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := gap > 0.5 ? 40.0 : gap > 0.2 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 5. ICHIMOKU CLOUD
+//    Tenkan/Kijun cross with price above/below the Kumo (cloud).
+// ---------------------------------------------------------------------------
+f_ichimoku() =>
+    convPeriod = 9
+    basePeriod = 26
+    spanBPeriod = 52
+
+    tenkan = (ta.highest(high, convPeriod) + ta.lowest(low, convPeriod)) / 2
+    kijun = (ta.highest(high, basePeriod) + ta.lowest(low, basePeriod)) / 2
+    spanA = (tenkan + kijun) / 2
+    spanB = (ta.highest(high, spanBPeriod) + ta.lowest(low, spanBPeriod)) / 2
+
+    cloudTop = math.max(nz(spanA[26]), nz(spanB[26]))
+    cloudBot = math.min(nz(spanA[26]), nz(spanB[26]))
+    aboveCloud = close > cloudTop
+    belowCloud = close < cloudBot
+    tkCross = ta.crossover(tenkan, kijun)
+    tkCrossDown = ta.crossunder(tenkan, kijun)
+
+    // TK cross + cloud breakout (fires when price breaks above cloud with TK aligned)
+    _tkLong = tkCross and aboveCloud
+    _cloudBrk = ta.crossover(close, cloudTop) and tenkan > kijun
+    longSig = _tkLong or _cloudBrk
+    _tkShort = tkCrossDown and belowCloud
+    _cloudBrkDn = ta.crossunder(close, cloudBot) and tenkan < kijun
+    shortSig = _tkShort or _cloudBrkDn
+
+    // Distance from cloud edge as percentage of close
+    float dist = 0.0
+    if longSig
+        dist := cloudTop > 0 ? (close - cloudTop) / close * 100.0 : 0.0
+    else if shortSig
+        dist := cloudBot > 0 ? (cloudBot - close) / close * 100.0 : 0.0
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := dist > 2.0 ? 40.0 : dist > 1.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 6. BOLLINGER SQUEEZE
+//    Bollinger Bands contract inside Keltner Channels (squeeze).
+//    Signal fires when squeeze releases with momentum direction.
+// ---------------------------------------------------------------------------
+f_bollinger_squeeze() =>
+    [bbMid, bbUp, bbLow] = ta.bb(close, 20, 2.0)
+    kcMid = ta.ema(close, 20)
+    kcRange = ta.atr(10) * 1.5
+    kcUp = kcMid + kcRange
+    kcLow = kcMid - kcRange
+
+    sqzOn = bbLow > kcLow and bbUp < kcUp   // BB inside KC = squeeze
+    sqzOff = not sqzOn
+
+    // Momentum: linear regression of close minus midline
+    mom = ta.linreg(close - bbMid, 20, 0)
+
+    prevSqz = sqzOn[1] == true   // explicit bool -- nz() does not accept bool in v6
+    _barsSinceSqz = nz(ta.barssince(sqzOn), 9999)  // pre-compute: must run every bar
+    // Release + post-squeeze continuation (fires for 12 bars after squeeze ends)
+    _bRelease = sqzOff and prevSqz
+    _bPost = sqzOff and not prevSqz and _barsSinceSqz < 12
+    longSig = (_bRelease and mom > 0) or (_bPost and mom > 0 and mom > mom[1])
+    shortSig = (_bRelease and mom < 0) or (_bPost and mom < 0 and mom < mom[1])
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := math.abs(mom) > 2.0 * math.abs(nz(mom[1])) ? 40.0 : math.abs(mom) > 1.5 * math.abs(nz(mom[1])) ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 7. VWAP REVERSION
+//    Z-score of price relative to VWAP. Buy at -2 sigma, sell at +2 sigma.
+// ---------------------------------------------------------------------------
+f_vwap_reversion() =>
+    vwapVal = ta.vwap(hlc3)
+    atrV = ta.atr(14)
+    zScore = atrV != 0 ? (close - vwapVal) / atrV : 0.0
+    rsi2 = ta.rsi(close, 2)   // pre-compute: ta.rsi() must run every bar
+
+    // Volatility-adaptive z-score threshold (v6.0)
+    _zTh = i_adaptiveThresholds ? _adaptZThresh : 1.5
+    longSig = zScore < -_zTh    // Below VWAP by adaptive threshold
+    shortSig = zScore > _zTh    // Above VWAP by adaptive threshold
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := math.abs(zScore) > 3.0 ? 40.0 : math.abs(zScore) > 2.5 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 8. RSI DIVERGENCE
+//    Bullish divergence: price lower low + RSI higher low.
+//    Bearish divergence: price higher high + RSI lower high.
+// ---------------------------------------------------------------------------
+f_rsi_divergence() =>
+    rsi14 = ta.rsi(close, 14)
+    lookback = 5  // Reduced from 14: confirms in 5 bars (5h on 1H), fires 3x more often
+
+    // Pivot lows for bullish divergence
+    pricePivotLow = ta.pivotlow(low, lookback, lookback)
+    rsiPivotLow = ta.pivotlow(rsi14, lookback, lookback)
+
+    // Bullish: price makes lower low, RSI makes higher low
+    prevPriceLow = ta.valuewhen(not na(pricePivotLow), low[lookback], 1)
+    prevRsiLow = ta.valuewhen(not na(rsiPivotLow), rsi14[lookback], 1)
+    bullDiv = not na(pricePivotLow) and not na(rsiPivotLow) and low[lookback] < prevPriceLow and rsi14[lookback] > prevRsiLow
+
+    // Pivot highs for bearish divergence
+    pricePivotHigh = ta.pivothigh(high, lookback, lookback)
+    rsiPivotHigh = ta.pivothigh(rsi14, lookback, lookback)
+
+    prevPriceHigh = ta.valuewhen(not na(pricePivotHigh), high[lookback], 1)
+    prevRsiHigh = ta.valuewhen(not na(rsiPivotHigh), rsi14[lookback], 1)
+    bearDiv = not na(pricePivotHigh) and not na(rsiPivotHigh) and high[lookback] > prevPriceHigh and rsi14[lookback] < prevRsiHigh
+
+    longSig = bullDiv
+    shortSig = bearDiv
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := rsi14 < 25.0 ? 40.0 : rsi14 < 30.0 ? 35.0 : 30.0
+    else if shortSig
+        baseStrength := rsi14 > 75.0 ? 40.0 : rsi14 > 70.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 9. SUPERTREND
+//    Price crosses above/below the Supertrend band (factor 3, ATR 10).
+// ---------------------------------------------------------------------------
+f_supertrend() =>
+    factor = 3.0
+    atrPeriod = 10
+    [stVal, stDir] = ta.supertrend(factor, atrPeriod)
+    atrRef = ta.atr(atrPeriod)
+
+    // Crossover + pullback re-entry (fires when price retests Supertrend line during trend)
+    _stCross = ta.crossover(close, stVal)
+    _stPull = stDir < 0 and low <= stVal * 1.005 and close > stVal and close > open
+    longSig = _stCross or _stPull
+    _stCrossDn = ta.crossunder(close, stVal)
+    _stPullDn = stDir > 0 and high >= stVal * 0.995 and close < stVal and close < open
+    shortSig = _stCrossDn or _stPullDn
+
+    gap = atrRef > 0 ? math.abs(close - stVal) / atrRef : 0.0
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := gap > 1.5 ? 40.0 : gap > 1.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 10: Swing Failure Pattern (Hsaka / ICT)
+// ============================================================================
+// Reference: Hsaka documented $400M+ using this pattern.
+// Price wicks beyond a swing high/low then closes back inside = failed breakout.
+// One of the most profitable reversal patterns in crypto trading.
+// Win rate: 58-65% with proper context. Best on 1H-4H crypto.
+// ============================================================================
+
+f_sfp() =>
+    // 20-bar lookback for swing points (exclude current bar)
+    _swingHigh = ta.highest(high, 20)[1]
+    _swingLow = ta.lowest(low, 20)[1]
+    _range = high - low
+
+    // Bullish SFP: wick below swing low, close back above, bullish candle
+    _wickBelow = _swingLow - low
+    _bullSfp = low < _swingLow and close > _swingLow and close > open and _range > 0 and _wickBelow / _range >= 0.25
+
+    // Bearish SFP: wick above swing high, close back below, bearish candle
+    _wickAbove = high - _swingHigh
+    _bearSfp = high > _swingHigh and close < _swingHigh and close < open and _range > 0 and _wickAbove / _range >= 0.25
+
+    float baseStrength = 0.0
+    if _bullSfp or _bearSfp
+        _depth = _bullSfp ? (_range > 0 ? _wickBelow / _range : 0.0) : (_range > 0 ? _wickAbove / _range : 0.0)
+        baseStrength := _depth > 0.5 ? 38.0 : _depth > 0.35 ? 34.0 : 30.0
+
+    [_bullSfp, _bearSfp, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 11: Break of Structure (ICT Smart Money Concepts)
+// ============================================================================
+// Reference: ICT methodology. BOS = price breaks above prior swing high
+// (bullish) or below prior swing low (bearish) with volume confirmation.
+// CHOCH = first break against prevailing trend = reversal signal.
+// Win rate: 55-65% with volume confirmation. Best on 1H-Daily.
+// ============================================================================
+
+f_bos() =>
+    // 20-bar swing points
+    _pivotHigh = ta.highest(high, 20)[1]
+    _pivotLow = ta.lowest(low, 20)[1]
+
+    // Bullish BOS: close crosses above prior swing high with volume
+    _bullBos = close > _pivotHigh and close[1] <= _pivotHigh and _vol_ratio >= 1.2
+
+    // Bearish BOS: close crosses below prior swing low with volume
+    _bearBos = close < _pivotLow and close[1] >= _pivotLow and _vol_ratio >= 1.2
+
+    float baseStrength = 0.0
+    if _bullBos or _bearBos
+        baseStrength := _vol_ratio >= 2.5 ? 38.0 : _vol_ratio >= 1.8 ? 34.0 : 30.0
+
+    [_bullBos, _bearBos, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 12: Liquidation Cascade Buy (Wave 5)
+// ============================================================================
+// Reference: Mean reversion after liquidation cascades.
+// 3+ consecutive red candles + volume spike + extreme RSI = cascade exhaustion.
+// Best on 1H-4H crypto. Win rate: 65-70% with proper volume confirmation.
+// ============================================================================
+
+f_liquidation_cascade() =>
+    // Detect consecutive red candles (cascade)
+    _red1 = close[1] < open[1]
+    _red2 = close[2] < open[2]
+    _red3 = close[3] < open[3]
+    _cascade = _red1 and _red2 and _red3
+
+    // RSI(2) extreme oversold
+    _rsi2 = ta.rsi(close, 2)
+    _extreme = _rsi2 < 10
+
+    // Volume spike: current > 2.5x average
+    _volSpike = _vol_ratio >= 2.5
+
+    // Price drop magnitude (4-bar)
+    _dropPct = (close - close[4]) / close[4] * 100
+
+    // Cascade buy: 3+ red + RSI extreme + vol spike + meaningful drop
+    _cascadeBuy = _cascade and _extreme and _volSpike and _dropPct < -3.0
+
+    // No short signal -- this is a mean reversion buy-only strategy
+    longSig = _cascadeBuy
+    shortSig = false
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := _rsi2 < 3.0 ? 40.0 : _rsi2 < 5.0 ? 37.0 : _dropPct < -8.0 ? 38.0 : 33.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 13: Momentum Crash Hedge (Daniel & Moskowitz 2016)
+// ============================================================================
+// Reference: Daniel & Moskowitz (2016) JFE -- momentum crash detection.
+// When realized vol of 5d momentum returns spikes 2x above its average,
+// momentum strategies are at risk of crashing. Sell/reduce exposure.
+// This is a PROTECTIVE strategy -- generates SELL signals in danger zones.
+// ============================================================================
+
+f_momentum_crash() =>
+    // 5-bar momentum returns
+    _momRet = (close - close[5]) / close[5]
+
+    // Rolling volatility of momentum returns (20-bar)
+    _momVol = ta.stdev(_momRet, 20)
+    _momVolAvg = ta.sma(_momVol, 60)
+
+    // Vol ratio: current vs average
+    _vr = _momVolAvg > 0 ? _momVol / _momVolAvg : 1.0
+
+    // Recent drawdown from 10-bar high
+    _recentHigh = ta.highest(high, 10)
+    _drawdown = (_recentHigh - close) / _recentHigh * 100
+
+    // Crash signal: momentum vol 2x+ above average AND meaningful drawdown
+    shortSig = _vr >= 2.0 and _drawdown >= 3.0
+    longSig = false  // Protective only
+
+    float baseStrength = 0.0
+    if shortSig
+        baseStrength := _vr >= 3.0 ? 40.0 : _vr >= 2.5 ? 36.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 15. SEASONAL BIAS  (~62% WR)
+//    Monthly return seasonality: Oct best (90% WR BTC), Sep worst.
+//    Combined with RSI confirmation for timing.
+//    Reference: Bouman & Jacobsen (2002), Seasonax
+// ---------------------------------------------------------------------------
+f_seasonal_bias() =>
+    m = month(time)
+    rsi14 = ta.rsi(close, 14)
+    sma50 = ta.sma(close, 50)
+
+    // Monthly bias scores (based on BTC 2011-2025 data)
+    // Oct=+24%, Nov=+17%, Dec=+12%, Apr=+13%, Jan=+10%
+    // Sep=-4.8%, Jun=-1.2%, Aug=-0.5%
+    bullMonth = m == 10 or m == 11 or m == 12 or m == 1 or m == 4
+    bearMonth = m == 9 or m == 6
+
+    longSig = bullMonth and rsi14 < 65 and close > sma50
+    shortSig = bearMonth and rsi14 > 35 and close < sma50
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := m == 10 ? 40.0 : m == 11 ? 37.0 : m == 12 ? 35.0 : 32.0
+    else if shortSig
+        baseStrength := m == 9 ? 38.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 16. HALVING CYCLE  (~67% WR)
+//    BTC halving cycle position detector. Last halving: April 19, 2024.
+//    Avg 480 days to peak, diminishing returns each cycle.
+//    Reference: PlanB S2F, Glassnode halving analysis
+// ---------------------------------------------------------------------------
+f_halving_cycle() =>
+    // Days since April 19, 2024 halving (approximate using bar timestamps)
+    halvingDate = timestamp("2024-04-19T00:00:00")
+    daysSince = (time - halvingDate) / 86400000  // ms to days
+
+    sma200 = ta.sma(close, 200)
+    rsi14 = ta.rsi(close, 14)
+
+    // Cycle phases (based on historical BTC halving patterns):
+    // 0-180d: Accumulation (buy zone)
+    // 180-480d: Markup (strong bull, weakening as we approach 480)
+    // 480-600d: Distribution (sell zone)
+    // 600-730d: Decline
+    accumulation = daysSince >= 0 and daysSince < 180
+    markup = daysSince >= 180 and daysSince < 480
+    distribution = daysSince >= 480 and daysSince < 600
+    decline = daysSince >= 600 and daysSince < 730
+
+    longSig = (accumulation or (markup and daysSince < 400)) and rsi14 < 70 and close > sma200
+    shortSig = (distribution or decline) and rsi14 > 30 and close < sma200
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := accumulation ? 40.0 : daysSince < 300 ? 37.0 : 33.0
+    else if shortSig
+        baseStrength := distribution ? 37.0 : 35.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 17. TURN OF MONTH  (~60% WR, p=0.01)
+//    Last trading day through first 3 days of month anomaly.
+//    +0.473% average in the 4-day window.
+//    Reference: Ariel (1987), Lakonishok & Smidt (1988)
+// ---------------------------------------------------------------------------
+f_turn_of_month() =>
+    dom = dayofmonth(time)
+    rsi14 = ta.rsi(close, 14)
+    sma20 = ta.sma(close, 20)
+
+    // Buy window: last 2 days of month (28-31) or first 3 days
+    buyWindow = dom >= 28 or dom <= 3
+    sellWindow = dom >= 14 and dom <= 18  // Mid-month weakness (empirical)
+
+    longSig = buyWindow and rsi14 < 70 and close > sma20
+    shortSig = sellWindow and rsi14 > 40 and close < sma20
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := dom <= 1 ? 38.0 : dom <= 3 ? 35.0 : 33.0
+    else if shortSig
+        baseStrength := 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 18. DAY OF WEEK EFFECT  (~57% WR, p=0.035)
+//    Day-of-week return anomaly for crypto.
+//    Friday best (+1.24%), Monday 2nd, Thursday worst (-0.88%).
+//    Reference: Caporale & Plastun (2019)
+// ---------------------------------------------------------------------------
+f_day_of_week() =>
+    dow = dayofweek(time)  // 1=Sunday, 2=Mon, ..., 6=Friday, 7=Saturday
+    rsi14 = ta.rsi(close, 14)
+    sma20 = ta.sma(close, 20)
+
+    bestDay = dow == 6     // Friday
+    goodDay = dow == 2     // Monday
+    worstDay = dow == 5    // Thursday
+
+    longSig = (bestDay or goodDay) and rsi14 < 60 and close > sma20
+    shortSig = worstDay and rsi14 > 45 and close < sma20
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := bestDay ? 35.0 : 32.0
+    else if shortSig
+        baseStrength := 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 19. CYCLE DETECTION  (~58% WR)
+//    Autocorrelation-based dominant cycle identification.
+//    Detects if price is at cycle trough or peak.
+//    Reference: Ehlers (2001) "Rocket Science for Traders"
+// ---------------------------------------------------------------------------
+f_cycle_detect() =>
+    // Detrend close using linear regression
+    src = close
+    linreg50 = ta.linreg(src, 50, 0)
+    detrended = src - linreg50
+
+    // Find dominant cycle via autocorrelation at representative periods
+    // Pre-computed at fixed intervals to avoid ta.correlation() inside loop (Pine v6 consistency)
+    _c10 = nz(ta.correlation(detrended, detrended[10], 50))
+    _c15 = nz(ta.correlation(detrended, detrended[15], 50))
+    _c20 = nz(ta.correlation(detrended, detrended[20], 50))
+    _c30 = nz(ta.correlation(detrended, detrended[30], 50))
+    _c40 = nz(ta.correlation(detrended, detrended[40], 50))
+    _c50 = nz(ta.correlation(detrended, detrended[50], 50))
+    _c60 = nz(ta.correlation(detrended, detrended[60], 50))
+    float bestCorr = math.max(_c10, math.max(_c15, math.max(_c20, math.max(_c30, math.max(_c40, math.max(_c50, _c60))))))
+    int bestPeriod = bestCorr == _c10 ? 10 : bestCorr == _c15 ? 15 : bestCorr == _c20 ? 20 : bestCorr == _c30 ? 30 : bestCorr == _c40 ? 40 : bestCorr == _c50 ? 50 : 60
+
+    // Phase: where are we in the cycle?
+    // Use sine fit approximation: if detrended is at local minimum = trough
+    rsi14 = ta.rsi(close, 14)
+    atTrough = detrended < detrended[1] and detrended < detrended[2] and detrended[1] < detrended[2]
+    atPeak = detrended > detrended[1] and detrended > detrended[2] and detrended[1] > detrended[2]
+
+    longSig = atTrough and bestCorr > 0.3 and rsi14 < 40
+    shortSig = atPeak and bestCorr > 0.3 and rsi14 > 60
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := bestCorr > 0.6 ? 38.0 : bestCorr > 0.4 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 20. S/R MAGNETISM  (~63% WR)
+//    Support/Resistance levels act as price magnets.
+//    Multi-touch levels with Williams fractals.
+//    Reference: Bulkowski (2005), Williams (1995)
+// ---------------------------------------------------------------------------
+f_sr_magnetism() =>
+    // Find pivot highs and lows (fractal pivots)
+    pivHi = ta.pivothigh(high, 5, 5)
+    pivLo = ta.pivotlow(low, 5, 5)
+
+    // Track last 4 pivot levels
+    var float r1 = na, var float r2 = na
+    var float s1 = na, var float s2 = na
+
+    if not na(pivHi)
+        r2 := r1
+        r1 := pivHi
+    if not na(pivLo)
+        s2 := s1
+        s1 := pivLo
+
+    // Check proximity to S/R levels (within 0.5%)
+    nearResist = nz(r1) > 0 and math.abs(close - r1) / close < 0.005
+    nearSupport = nz(s1) > 0 and math.abs(close - s1) / close < 0.005
+
+    // Double-touch confirmation (two nearby pivots = stronger level)
+    resistConfirm = nz(r1) > 0 and nz(r2) > 0 and math.abs(r1 - r2) / nz(r1) < 0.01
+    supportConfirm = nz(s1) > 0 and nz(s2) > 0 and math.abs(s1 - s2) / nz(s1) < 0.01
+
+    rsi14 = ta.rsi(close, 14)
+
+    // Buy at support with confirmation, sell at resistance
+    longSig = nearSupport and supportConfirm and rsi14 < 40 and close > open
+    shortSig = nearResist and resistConfirm and rsi14 > 60 and close < open
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := resistConfirm ? 38.0 : 33.0
+    else if shortSig
+        baseStrength := supportConfirm ? 38.0 : 33.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ============================================================================
+//         PRE-COMPUTE ALL STRATEGIES (global scope, runs every bar)
+// ============================================================================
+// All strategies computed once at global scope to:
+// 1. Ensure all ta.*() indicators run every bar (Pine v6 requirement)
+// 2. Eliminate redundant function calls
+// 3. Enable consensus aggregation without separate function
+
+[_g_l1, _g_s1, _g_c1] = f_connors_rsi2()
+[_g_l2, _g_s2, _g_c2] = f_vix_spike()
+[_g_l3, _g_s3, _g_c3] = f_macd_momentum()
+[_g_l4, _g_s4, _g_c4] = f_ema_crossover()
+[_g_l5, _g_s5, _g_c5] = f_ichimoku()
+[_g_l6, _g_s6, _g_c6] = f_bollinger_squeeze()
+[_g_l7, _g_s7, _g_c7] = f_vwap_reversion()
+[_g_l8, _g_s8, _g_c8] = f_rsi_divergence()
+[_g_l9, _g_s9, _g_c9] = f_supertrend()
+[_g_l10, _g_s10, _g_c10] = f_sfp()
+[_g_l11, _g_s11, _g_c11] = f_bos()
+[_g_l12, _g_s12, _g_c12] = f_liquidation_cascade()
+[_g_l13, _g_s13, _g_c13] = f_momentum_crash()
+[_g_l15, _g_s15, _g_c15] = f_seasonal_bias()
+[_g_l16, _g_s16, _g_c16] = f_halving_cycle()
+[_g_l17, _g_s17, _g_c17] = f_turn_of_month()
+[_g_l18, _g_s18, _g_c18] = f_day_of_week()
+[_g_l19, _g_s19, _g_c19] = f_cycle_detect()
+[_g_l20, _g_s20, _g_c20] = f_sr_magnetism()
+
+// --- Consensus: same-bar RAW counts (for display) ---
+_consBullRaw = (_g_l1 ? 1 : 0) + (_g_l2 ? 1 : 0) + (_g_l3 ? 1 : 0) + (_g_l4 ? 1 : 0) + (_g_l5 ? 1 : 0) + (_g_l6 ? 1 : 0) + (_g_l7 ? 1 : 0) + (_g_l8 ? 1 : 0) + (_g_l9 ? 1 : 0) + (_g_l10 ? 1 : 0) + (_g_l11 ? 1 : 0) + (_g_l12 ? 1 : 0) + (_g_l13 ? 1 : 0) + (_g_l15 ? 1 : 0) + (_g_l16 ? 1 : 0) + (_g_l17 ? 1 : 0) + (_g_l18 ? 1 : 0) + (_g_l19 ? 1 : 0) + (_g_l20 ? 1 : 0)
+_consBearRaw = (_g_s1 ? 1 : 0) + (_g_s2 ? 1 : 0) + (_g_s3 ? 1 : 0) + (_g_s4 ? 1 : 0) + (_g_s5 ? 1 : 0) + (_g_s6 ? 1 : 0) + (_g_s7 ? 1 : 0) + (_g_s8 ? 1 : 0) + (_g_s9 ? 1 : 0) + (_g_s10 ? 1 : 0) + (_g_s11 ? 1 : 0) + (_g_s12 ? 1 : 0) + (_g_s13 ? 1 : 0) + (_g_s15 ? 1 : 0) + (_g_s16 ? 1 : 0) + (_g_s17 ? 1 : 0) + (_g_s18 ? 1 : 0) + (_g_s19 ? 1 : 0) + (_g_s20 ? 1 : 0)
+
+// ============================================================================
+//     CORRELATION GROUP CAPS (v6.0 -- prevent correlated strategy stacking)
+// ============================================================================
+// Groups: Trend(3,4,5,9,11)->max 2, MeanRev(1,6,7,10,12,20)->max 2, Vol(2,13)->max 1,
+//         Seasonal(15-19)->max 1, Divergence(8)->max 1
+// Consensus maxes at 7 (not 19) -- each vote is more meaningful.
+// Raw counts kept for display; capped counts used for scoring.
+
+// Trend group: MACD(3), EMA Cross(4), Ichimoku(5), Supertrend(9), BOS(11) -> cap 2
+_trendBullRaw = (_g_l3?1:0) + (_g_l4?1:0) + (_g_l5?1:0) + (_g_l9?1:0) + (_g_l11?1:0)
+_trendBearRaw = (_g_s3?1:0) + (_g_s4?1:0) + (_g_s5?1:0) + (_g_s9?1:0) + (_g_s11?1:0)
+_trendBullCap = i_useCorrelationCaps ? math.min(_trendBullRaw, 2) : _trendBullRaw
+_trendBearCap = i_useCorrelationCaps ? math.min(_trendBearRaw, 2) : _trendBearRaw
+
+// Mean-reversion group: ConnorsRSI(1), Bollinger(6), VWAP(7), SFP(10), LiqCascade(12), S/R(20) -> cap 2
+_mrBullRaw = (_g_l1?1:0) + (_g_l6?1:0) + (_g_l7?1:0) + (_g_l10?1:0) + (_g_l12?1:0) + (_g_l20?1:0)
+_mrBearRaw = (_g_s1?1:0) + (_g_s6?1:0) + (_g_s7?1:0) + (_g_s10?1:0) + (_g_s12?1:0) + (_g_s20?1:0)
+_mrBullCap = i_useCorrelationCaps ? math.min(_mrBullRaw, 2) : _mrBullRaw
+_mrBearCap = i_useCorrelationCaps ? math.min(_mrBearRaw, 2) : _mrBearRaw
+
+// Volatility group: VIX(2), MomentumCrash(13) -> cap 1
+_volBullRaw = (_g_l2?1:0) + (_g_l13?1:0)
+_volBearRaw = (_g_s2?1:0) + (_g_s13?1:0)
+_volBullCap = i_useCorrelationCaps ? math.min(_volBullRaw, 1) : _volBullRaw
+_volBearCap = i_useCorrelationCaps ? math.min(_volBearRaw, 1) : _volBearRaw
+
+// Seasonal group: Seasonal(15), Halving(16), TurnOfMonth(17), DayOfWeek(18), Cycle(19) -> cap 1
+_seasBullRaw = (_g_l15?1:0) + (_g_l16?1:0) + (_g_l17?1:0) + (_g_l18?1:0) + (_g_l19?1:0)
+_seasBearRaw = (_g_s15?1:0) + (_g_s16?1:0) + (_g_s17?1:0) + (_g_s18?1:0) + (_g_s19?1:0)
+_seasBullCap = i_useCorrelationCaps ? math.min(_seasBullRaw, 1) : _seasBullRaw
+_seasBearCap = i_useCorrelationCaps ? math.min(_seasBearRaw, 1) : _seasBearRaw
+
+// Divergence group: RSI Divergence(8) -> cap 1 (standalone)
+_divBullCap = _g_l8 ? 1 : 0
+_divBearCap = _g_s8 ? 1 : 0
+
+// Correlation-capped consensus (max possible = 2+2+1+1+1 = 7)
+_consBull = _trendBullCap + _mrBullCap + _volBullCap + _seasBullCap + _divBullCap
+_consBear = _trendBearCap + _mrBearCap + _volBearCap + _seasBearCap + _divBearCap
+
+// --- Rolling 5-bar window consensus (correlation-capped) ---
+// If a strategy fired within the last 5 bars, it counts toward consensus.
+// Same correlation caps apply to prevent correlated strategy stacking.
+_rb1 = nz(ta.barssince(_g_l1), 9999) < 5 ? 1 : 0
+_rb2 = nz(ta.barssince(_g_l2), 9999) < 5 ? 1 : 0
+_rb3 = nz(ta.barssince(_g_l3), 9999) < 5 ? 1 : 0
+_rb4 = nz(ta.barssince(_g_l4), 9999) < 5 ? 1 : 0
+_rb5 = nz(ta.barssince(_g_l5), 9999) < 5 ? 1 : 0
+_rb6 = nz(ta.barssince(_g_l6), 9999) < 5 ? 1 : 0
+_rb7 = nz(ta.barssince(_g_l7), 9999) < 5 ? 1 : 0
+_rb8 = nz(ta.barssince(_g_l8), 9999) < 5 ? 1 : 0
+_rb9 = nz(ta.barssince(_g_l9), 9999) < 5 ? 1 : 0
+_rb10 = nz(ta.barssince(_g_l10), 9999) < 5 ? 1 : 0
+_rb11 = nz(ta.barssince(_g_l11), 9999) < 5 ? 1 : 0
+_rb12 = nz(ta.barssince(_g_l12), 9999) < 5 ? 1 : 0
+_rb13 = nz(ta.barssince(_g_l13), 9999) < 5 ? 1 : 0
+_rb15 = nz(ta.barssince(_g_l15), 9999) < 5 ? 1 : 0
+_rb16 = nz(ta.barssince(_g_l16), 9999) < 5 ? 1 : 0
+_rb17 = nz(ta.barssince(_g_l17), 9999) < 5 ? 1 : 0
+_rb18 = nz(ta.barssince(_g_l18), 9999) < 5 ? 1 : 0
+_rb19 = nz(ta.barssince(_g_l19), 9999) < 5 ? 1 : 0
+_rb20 = nz(ta.barssince(_g_l20), 9999) < 5 ? 1 : 0
+
+// Rolling window with correlation caps (same groups as same-bar)
+_rbTrendBull = i_useCorrelationCaps ? math.min(_rb3 + _rb4 + _rb5 + _rb9 + _rb11, 2) : _rb3 + _rb4 + _rb5 + _rb9 + _rb11
+_rbMRBull = i_useCorrelationCaps ? math.min(_rb1 + _rb6 + _rb7 + _rb10 + _rb12 + _rb20, 2) : _rb1 + _rb6 + _rb7 + _rb10 + _rb12 + _rb20
+_rbVolBull = i_useCorrelationCaps ? math.min(_rb2 + _rb13, 1) : _rb2 + _rb13
+_rbSeasBull = i_useCorrelationCaps ? math.min(_rb15 + _rb16 + _rb17 + _rb18 + _rb19, 1) : _rb15 + _rb16 + _rb17 + _rb18 + _rb19
+_rbDivBull = _rb8
+_recentBull = _rbTrendBull + _rbMRBull + _rbVolBull + _rbSeasBull + _rbDivBull
+
+_rs1 = nz(ta.barssince(_g_s1), 9999) < 5 ? 1 : 0
+_rs2 = nz(ta.barssince(_g_s2), 9999) < 5 ? 1 : 0
+_rs3 = nz(ta.barssince(_g_s3), 9999) < 5 ? 1 : 0
+_rs4 = nz(ta.barssince(_g_s4), 9999) < 5 ? 1 : 0
+_rs5 = nz(ta.barssince(_g_s5), 9999) < 5 ? 1 : 0
+_rs6 = nz(ta.barssince(_g_s6), 9999) < 5 ? 1 : 0
+_rs7 = nz(ta.barssince(_g_s7), 9999) < 5 ? 1 : 0
+_rs8 = nz(ta.barssince(_g_s8), 9999) < 5 ? 1 : 0
+_rs9 = nz(ta.barssince(_g_s9), 9999) < 5 ? 1 : 0
+_rs10 = nz(ta.barssince(_g_s10), 9999) < 5 ? 1 : 0
+_rs11 = nz(ta.barssince(_g_s11), 9999) < 5 ? 1 : 0
+_rs12 = nz(ta.barssince(_g_s12), 9999) < 5 ? 1 : 0
+_rs13 = nz(ta.barssince(_g_s13), 9999) < 5 ? 1 : 0
+_rs15 = nz(ta.barssince(_g_s15), 9999) < 5 ? 1 : 0
+_rs16 = nz(ta.barssince(_g_s16), 9999) < 5 ? 1 : 0
+_rs17 = nz(ta.barssince(_g_s17), 9999) < 5 ? 1 : 0
+_rs18 = nz(ta.barssince(_g_s18), 9999) < 5 ? 1 : 0
+_rs19 = nz(ta.barssince(_g_s19), 9999) < 5 ? 1 : 0
+_rs20 = nz(ta.barssince(_g_s20), 9999) < 5 ? 1 : 0
+
+_rbTrendBear = i_useCorrelationCaps ? math.min(_rs3 + _rs4 + _rs5 + _rs9 + _rs11, 2) : _rs3 + _rs4 + _rs5 + _rs9 + _rs11
+_rbMRBear = i_useCorrelationCaps ? math.min(_rs1 + _rs6 + _rs7 + _rs10 + _rs12 + _rs20, 2) : _rs1 + _rs6 + _rs7 + _rs10 + _rs12 + _rs20
+_rbVolBear = i_useCorrelationCaps ? math.min(_rs2 + _rs13, 1) : _rs2 + _rs13
+_rbSeasBear = i_useCorrelationCaps ? math.min(_rs15 + _rs16 + _rs17 + _rs18 + _rs19, 1) : _rs15 + _rs16 + _rs17 + _rs18 + _rs19
+_rbDivBear = _rs8
+_recentBear = _rbTrendBear + _rbMRBear + _rbVolBear + _rbSeasBear + _rbDivBear
+
+// Rolling window: with corr caps, max is 7. 3+ = strong consensus, 2 = moderate
+_consLong = _recentBull >= 3
+_consShort = _recentBear >= 3
+_consBase = _recentBull >= 5 ? 40.0 : _recentBull >= 4 ? 37.0 : _recentBull >= 3 ? 35.0 : _recentBull >= 2 ? 30.0 : _recentBear >= 5 ? 40.0 : _recentBear >= 4 ? 37.0 : _recentBear >= 3 ? 35.0 : _recentBear >= 2 ? 30.0 : 0.0
+
+
+// ============================================================================
+//                   ACTIVE INDEX + TIMEFRAME VALIDATION
+// ============================================================================
+// _activeIdx is needed by TF scoring, placed BEFORE signal dispatch.
+
+_activeIdx = switch _effectiveStrategy
+    "Connors RSI-2"            => 0
+    "VIX Spike Reversal"       => 1
+    "MACD Momentum"            => 2
+    "EMA Crossover"            => 3
+    "Ichimoku Cloud"           => 4
+    "Bollinger Squeeze"        => 5
+    "VWAP Reversion"           => 6
+    "RSI Divergence"           => 7
+    "Supertrend"               => 8
+    "Swing Failure (SFP)"      => 9
+    "Break of Structure"       => 10
+    "Liquidation Cascade"      => 11
+    "Momentum Crash"           => 12
+    "Multi-Strategy Consensus" => 13
+    "Seasonal Bias"     => 14
+    "Halving Cycle"     => 15
+    "Turn of Month"     => 16
+    "Day of Week"       => 17
+    "Cycle Detection"   => 18
+    "S/R Magnetism"     => 19
+    => -1
+
+// --- Timeframe validation function ---
+f_tf_score(_idx) =>
+    tf = timeframe.in_seconds()
+    // Per-strategy min/max in seconds
+    min_s = switch _idx
+        0 => 3600    // Connors: 1H+ (crypto-adapted thresholds)
+        1 => 3600    // VIX/Fear: 1H+ (ATR-percentile on crypto)
+        2 => 300     // MACD: 5m
+        3 => 900     // EMA: 15m
+        4 => 3600    // Ichimoku: 1H+ (cloud breakout works on all TFs)
+        5 => 3600    // Bollinger: 1H
+        6 => 60      // VWAP: 1m
+        7 => 3600    // RSI Diverg: 1H
+        8 => 900     // Supertrend: 15m
+        9 => 3600    // SFP: 1H (need clear swing points)
+        10 => 3600   // BOS: 1H (need clear structure)
+        11 => 3600   // Liquidation Cascade: 1H+ (need clear volume patterns)
+        12 => 3600   // Momentum Crash: 1H+ (need momentum vol calc)
+        13 => 60     // Consensus: any
+        14 => 86400  // Seasonal: Daily only
+        15 => 86400  // Halving: Daily only
+        16 => 86400  // Turn of Month: Daily
+        17 => 86400  // Day of Week: Daily
+        18 => 3600   // Cycle: 1H+
+        19 => 3600   // S/R Magnetism: 1H+
+        => 60
+    max_s = switch _idx
+        0 => 86400    // Connors: Daily only
+        1 => 86400    // VIX: Daily only
+        2 => 3600     // MACD: up to 1H
+        3 => 14400    // EMA: up to 4H
+        4 => 604800   // Ichimoku: up to Weekly
+        5 => 14400    // Bollinger: up to 4H
+        6 => 14400    // VWAP: up to 4H (intraday)
+        7 => 86400    // RSI Diverg: up to Daily
+        8 => 86400    // Supertrend: up to Daily
+        9 => 86400    // SFP: up to Daily
+        10 => 86400   // BOS: up to Daily
+        11 => 14400   // Liquidation Cascade: up to 4H
+        12 => 86400   // Momentum Crash: up to Daily
+        13 => 604800  // Consensus: any
+        14 => 604800  // Seasonal: up to Weekly
+        15 => 604800  // Halving: up to Weekly
+        16 => 86400   // Turn of Month: Daily
+        17 => 86400   // Day of Week: Daily
+        18 => 86400   // Cycle: up to Daily
+        19 => 86400   // S/R Magnetism: up to Daily
+        => 604800
+    tf >= min_s and tf <= max_s ? 10.0 : tf >= min_s / 2 and tf <= max_s * 2 ? 5.0 : 0.0
+
+_tf_match_score = f_tf_score(_activeIdx)
+_tf_match_str = _tf_match_score >= 10.0 ? "MATCH" : _tf_match_score >= 5.0 ? "CLOSE" : "MISMATCH"
+
+// ============================================================================
+//     PROVEN STATUS + REGIME FITNESS + CIRCUIT BREAKER (v6.0)
+// ============================================================================
+
+// --- Proven status array (moved here from decision panel for Bayesian access) ---
+var bool[] strat_proven = array.from(true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false)
+_activeProven = _activeIdx >= 0 and _activeIdx < array.size(strat_proven) ? array.get(strat_proven, _activeIdx) : false
+
+// --- Active strategy regime fitness (0.0-1.0) ---
+_activeFitness = f_regime_fitness(_activeIdx)
+
+// --- Drawdown Circuit Breaker (v6.0) ---
+// Tracks consecutive TP/SL outcomes via `var` persistence.
+// After N consecutive losses, applies logit penalty in Bayesian model.
+// Resets on first win.
+var int _cbConsecutiveLosses = 0
+var float _cbLastEntry = 0.0
+var int _cbLastDir = 0  // 1=long, -1=short, 0=none
+var int _cbLastBar = 0
+
+// Check if previous signal hit TP or SL (simplified: compare price move to ATR-based targets)
+_cbAtr = ta.atr(14)
+if _cbLastDir != 0 and bar_index > _cbLastBar + 1
+    _cbPriceMove = _cbLastDir > 0 ? close - _cbLastEntry : _cbLastEntry - close
+    _cbTPdist = _cbAtr * i_tpMult
+    _cbSLdist = _cbAtr * i_slMult
+    if _cbPriceMove >= _cbTPdist
+        _cbConsecutiveLosses := 0  // Win -- reset
+        _cbLastDir := 0
+    else if _cbPriceMove <= -_cbSLdist
+        _cbConsecutiveLosses := _cbConsecutiveLosses + 1  // Loss -- increment
+        _cbLastDir := 0
+
+// Circuit breaker active when losses exceed threshold
+_cbActive = i_useCircuitBreaker and _cbConsecutiveLosses >= i_cbMaxLosses
+_cbPenalty = i_useCircuitBreaker ? float(_cbConsecutiveLosses) * -0.7 : 0.0  // logit penalty
+
+
+// ============================================================================
+//                     SIGNAL DISPATCH (ROUTER)
+// ============================================================================
+// Uses pre-computed values with if/else chain (avoids switch tuple-type issues in v6).
+
+bool isLong = false
+bool isShort = false
+float confidence = 0.0
+
+if _effectiveStrategy == "Connors RSI-2"
+    isLong := _g_l1
+    isShort := _g_s1
+    confidence := _g_c1
+else if _effectiveStrategy == "VIX Spike Reversal"
+    isLong := _g_l2
+    isShort := _g_s2
+    confidence := _g_c2
+else if _effectiveStrategy == "MACD Momentum"
+    isLong := _g_l3
+    isShort := _g_s3
+    confidence := _g_c3
+else if _effectiveStrategy == "EMA Crossover"
+    isLong := _g_l4
+    isShort := _g_s4
+    confidence := _g_c4
+else if _effectiveStrategy == "Ichimoku Cloud"
+    isLong := _g_l5
+    isShort := _g_s5
+    confidence := _g_c5
+else if _effectiveStrategy == "Bollinger Squeeze"
+    isLong := _g_l6
+    isShort := _g_s6
+    confidence := _g_c6
+else if _effectiveStrategy == "VWAP Reversion"
+    isLong := _g_l7
+    isShort := _g_s7
+    confidence := _g_c7
+else if _effectiveStrategy == "RSI Divergence"
+    isLong := _g_l8
+    isShort := _g_s8
+    confidence := _g_c8
+else if _effectiveStrategy == "Supertrend"
+    isLong := _g_l9
+    isShort := _g_s9
+    confidence := _g_c9
+else if _effectiveStrategy == "Swing Failure (SFP)"
+    isLong := _g_l10
+    isShort := _g_s10
+    confidence := _g_c10
+else if _effectiveStrategy == "Break of Structure"
+    isLong := _g_l11
+    isShort := _g_s11
+    confidence := _g_c11
+else if _effectiveStrategy == "Liquidation Cascade"
+    isLong := _g_l12
+    isShort := _g_s12
+    confidence := _g_c12
+else if _effectiveStrategy == "Momentum Crash"
+    isLong := _g_l13
+    isShort := _g_s13
+    confidence := _g_c13
+else if _effectiveStrategy == "Multi-Strategy Consensus"
+    isLong := _consLong
+    isShort := _consShort
+    confidence := _consBase
+else if _effectiveStrategy == "Seasonal Bias"
+    isLong := _g_l15
+    isShort := _g_s15
+    confidence := _g_c15
+else if _effectiveStrategy == "Halving Cycle"
+    isLong := _g_l16
+    isShort := _g_s16
+    confidence := _g_c16
+else if _effectiveStrategy == "Turn of Month"
+    isLong := _g_l17
+    isShort := _g_s17
+    confidence := _g_c17
+else if _effectiveStrategy == "Day of Week"
+    isLong := _g_l18
+    isShort := _g_s18
+    confidence := _g_c18
+else if _effectiveStrategy == "Cycle Detection"
+    isLong := _g_l19
+    isShort := _g_s19
+    confidence := _g_c19
+else if _effectiveStrategy == "S/R Magnetism"
+    isLong := _g_l20
+    isShort := _g_s20
+    confidence := _g_c20
+
+
+// ============================================================================
+//         MARKET BIAS AGGREGATION (always-on directional assessment)
+// ============================================================================
+// Counts strategies whose CONDITIONS are currently bullish/bearish (ongoing),
+// not just crossover events on the current bar. Feeds into confidence Factor 4.
+
+_biasRsi2g = ta.rsi(close, 2)
+_biasSma200g = ta.sma(close, 200)
+_biasRsi14g = ta.rsi(close, 14)
+[_biasMacdG, _biasSigG, _biasHistG] = ta.macd(close, 12, 26, 9)
+_biasEma9g = ta.ema(close, 9)
+_biasEma21g = ta.ema(close, 21)
+[_biasST_val, _biasST_dir] = ta.supertrend(3.0, 10)
+_biasVwapG = ta.vwap(hlc3)
+_biasTenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+_biasKijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+_biasSpanA = (_biasTenkan + _biasKijun) / 2
+_biasSpanB = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+_biasCloudTop = math.max(nz(_biasSpanA[26]), nz(_biasSpanB[26]))
+_biasCloudBot = math.min(nz(_biasSpanA[26]), nz(_biasSpanB[26]))
+_biasBBmom = ta.linreg(close - ta.sma(close, 20), 20, 0)
+
+// Per-strategy bias (8 of 9; VIX excluded -- event-driven only)
+_bb1 = _biasRsi2g < 30 and close > _biasSma200g
+_br1 = _biasRsi2g > 70 and close < _biasSma200g
+_bb3 = _biasHistG > 0
+_br3 = _biasHistG < 0
+_bb4 = _biasEma9g > _biasEma21g
+_br4 = _biasEma9g < _biasEma21g
+_bb5 = close > _biasCloudTop
+_br5 = close < _biasCloudBot
+_bb6 = _biasBBmom > 0
+_br6 = _biasBBmom < 0
+_bb7 = close < _biasVwapG
+_br7 = close > _biasVwapG
+_bb8 = _biasRsi14g < 40
+_br8 = _biasRsi14g > 60
+_bb9 = _biasST_dir < 0
+_br9 = _biasST_dir > 0
+
+// SFP bias: price near recent swing low = bullish SFP zone
+_sfpSwingLow = ta.lowest(low, 20)[1]
+_sfpSwingHigh = ta.highest(high, 20)[1]
+_bb10 = low <= _sfpSwingLow * 1.005 and close > _sfpSwingLow  // Near swing low, holding above
+_br10 = high >= _sfpSwingHigh * 0.995 and close < _sfpSwingHigh  // Near swing high, rejected
+
+// BOS bias: price relative to structure
+_bb11 = close > _sfpSwingHigh  // Above structure = bullish
+_br11 = close < _sfpSwingLow   // Below structure = bearish
+
+// Liquidation cascade bias: RSI(2) < 15 and 3+ red candles = cascade oversold zone
+_bb12 = ta.rsi(close, 2) < 15 and close[1] < open[1] and close[2] < open[2] and close[3] < open[3]
+_br12 = false  // Liquidation cascade is buy-only
+
+// Momentum crash bias: momentum vol elevated = bearish protective
+_biMomRet = (close - close[5]) / nz(close[5], close)
+_biMomVol = ta.stdev(_biMomRet, 20)
+_biMomVolAvg = ta.sma(_biMomVol, 60)
+_bb13 = false  // Momentum crash is sell-only (protective)
+_br13 = nz(_biMomVolAvg) > 0 ? _biMomVol / _biMomVolAvg >= 1.8 : false
+
+_biasBull = (_bb1?1:0) + (_bb3?1:0) + (_bb4?1:0) + (_bb5?1:0) + (_bb6?1:0) + (_bb7?1:0) + (_bb8?1:0) + (_bb9?1:0) + (_bb10?1:0) + (_bb11?1:0) + (_bb12?1:0) + (_bb13?1:0)
+_biasBear = (_br1?1:0) + (_br3?1:0) + (_br4?1:0) + (_br5?1:0) + (_br6?1:0) + (_br7?1:0) + (_br8?1:0) + (_br9?1:0) + (_br10?1:0) + (_br11?1:0) + (_br12?1:0) + (_br13?1:0)
+
+// BIAS-PROMOTED SIGNALS: When no strategy fires but bias is strongly directional
+// Fires once per regime (12-bar cooldown) when 7+ of 10 strategies agree
+var int _lastBiasBar = 0
+_biasCD = bar_index - _lastBiasBar > 12
+if not isLong and not isShort and _biasCD
+    if _biasBull >= 7
+        isLong := true
+        confidence := 28.0
+        _lastBiasBar := bar_index
+    else if _biasBear >= 7
+        isShort := true
+        confidence := 28.0
+        _lastBiasBar := bar_index
+
+
+// ============================================================================
+//     BAYESIAN CONFIDENCE ENGINE (v6.0 -- Logistic Regression Model)
+// ============================================================================
+// Replaces naive additive scoring with probabilistic logistic regression.
+// P(win) = sigmoid(b0 + SUM bi*xi) where features are normalized 0-1.
+//
+// Coefficients calibrated for realistic confidence:
+//   All perfect (logit~4.9) -> 99.3% -> capped 95%
+//   All average (logit~0.5) -> 62%
+//   All bad (logit~-3.35) -> 3.4%
+//
+// Features:
+//   x_base:    Base signal strength (0-40) normalized to 0-1
+//   x_regime:  Strategy-regime fitness (0-1) from f_regime_fitness()
+//   x_htf:     Higher TF combo alignment (-1 to +1) normalized to 0-1
+//   x_vol:     Volume confirmation (0-1)
+//   x_agree:   Correlation-capped consensus agreement (0-7) normalized to 0-1
+//   x_proven:  Proven status (0 or 1)
+//   x_tf:      TF match score (0-10) normalized to 0-1
+//   x_cb:      Circuit breaker penalty (logit additive, negative)
+
+// --- Feature extraction (all normalized 0-1) ---
+float _f1_base = confidence  // Raw baseStrength from strategy (0-40)
+float _x_base = math.min(1.0, math.max(0.0, _f1_base / 40.0))
+
+float _x_regime = _activeFitness  // Already 0-1
+
+// HTF combo: aligned with signal direction? (-1 to +1 -> 0 to 1)
+float _htfDirScore = 0.0
+if isLong
+    _htfDirScore := _htfComboScore  // +1 if both HTFs bullish
+else if isShort
+    _htfDirScore := -_htfComboScore  // invert for shorts
+_x_htf = (_htfDirScore + 1.0) / 2.0  // normalize to 0-1
+
+// Volume: 0-1 from composite Z-score (v6.1 -- replaces binary thresholds)
+float _x_vol = math.min(1.0, math.max(0.0, _volComposite / 100.0))
+
+// Consensus agreement: capped consensus (0-7) normalized
+_biasAgree = isLong ? _biasBull : isShort ? _biasBear : 0
+float _corrCappedAgree = isLong ? float(_consBull) : isShort ? float(_consBear) : 0.0
+float _x_agree = math.min(1.0, _corrCappedAgree / 7.0)
+
+// Proven status
+float _x_proven = _activeProven ? 1.0 : 0.0
+
+// TF match: 0 or 5 or 10 -> normalize to 0-1
+float _x_tf = math.min(1.0, _tf_match_score / 10.0)
+
+// --- Logistic regression model ---
+// Calibrated coefficients (b values) -- v6.1.1 recalibrated for meaningful P(win) spread
+// Design targets: Perfect signal -> 95% (capped), Strong -> 75-85%, Average -> 45-60%, Weak -> <30%
+// Previous calibration (b0=-3.0) clustered all signals at 80-95%, defeating signal grading
+float _b0 = -4.0     // intercept (prior: ~1.8% without any positive signal -- conservative)
+float _b_base = 1.5   // base signal strength (reduced from 2.5 -- was dominating)
+float _b_regime = 2.0  // regime fitness (increased -- key differentiator)
+float _b_htf = 1.5    // HTF alignment (increased -- counter-trend penalty matters)
+float _b_vol = 1.0    // volume confirmation (increased -- reward strong volume)
+float _b_agree = 1.5   // consensus agreement (reduced from 2.0 -- was overweighted)
+float _b_proven = 1.5  // proven backtest bonus (increased -- proven strategies deserve more)
+float _b_tf = 0.5     // timeframe match
+
+// Compute logit (log-odds)
+float _logit = _b0 + _b_base * _x_base + _b_regime * _x_regime + _b_htf * _x_htf + _b_vol * _x_vol + _b_agree * _x_agree + _b_proven * _x_proven + _b_tf * _x_tf
+
+// Apply circuit breaker penalty (logit-additive: -0.7 per consecutive loss)
+_logit := _logit + _cbPenalty
+
+// Sigmoid: P(win) = 1 / (1 + e^(-logit))
+float _pWin = 1.0 / (1.0 + math.exp(-_logit))
+
+// Convert to 0-100 confidence, capped at 95% (no signal should be 100% confident)
+float dynamicConfidence = i_useBayesian ? math.min(95.0, math.max(0.0, _pWin * 100.0)) : math.max(0.0, math.min(92.0, _f1_base + (_vol_strong ? 15.0 : _vol_confirm ? 10.0 : _vol_weak ? 0.0 : 5.0) + (_x_htf > 0.5 ? 20.0 : _x_htf < 0.25 ? -10.0 : 5.0) + math.min(15.0, math.max(0.0, float(_biasAgree - 2) * 3.0)) + _tf_match_score))
+
+// Override confidence with Bayesian score
+confidence := dynamicConfidence
+
+// --- Kelly Criterion Position Sizing (v6.0) ---
+// Half-Kelly = (p*b - q) / (2*b) where p=P(win), b=R:R ratio, q=1-p
+// Conservative half-Kelly, capped at 25% of portfolio per trade
+float _rrForKelly = i_slMult > 0 ? i_tpMult / i_slMult : 1.5
+float _kellyFull = _rrForKelly > 0 ? (_pWin * _rrForKelly - (1.0 - _pWin)) / _rrForKelly : 0.0
+float _kellyHalf = math.max(0.0, math.min(0.25, _kellyFull / 2.0))
+float _kellyPct = _kellyHalf * 100.0  // For display (0-25%)
+
+// Apply minimum confidence filter
+bool _passesConfidence = (isLong or isShort) ? dynamicConfidence >= i_minConfidence : false
+isLong := isLong and _passesConfidence
+isShort := isShort and _passesConfidence
+
+// Non-repainting gate: only trigger on confirmed (closed) bars (v6.1)
+// Prevents intrabar signal artefacts -- signals only appear after bar closes
+if i_confirmedOnly
+    isLong := isLong and barstate.isconfirmed
+    isShort := isShort and barstate.isconfirmed
+
+// --- Circuit breaker: track new signals for TP/SL outcome validation ---
+if isLong and _cbLastDir == 0
+    _cbLastEntry := close
+    _cbLastDir := 1
+    _cbLastBar := bar_index
+else if isShort and _cbLastDir == 0
+    _cbLastEntry := close
+    _cbLastDir := -1
+    _cbLastBar := bar_index
+
+
+atrVal = ta.atr(i_atrPeriod)
+
+// ATR multiplier scaling by regime (v6.1 -- wider stops in volatile, tighter in quiet)
+_regimeAtrScale = _regimePersist == "VOLATILE" ? 1.5 : _regimePersist == "QUIET" ? 0.8 : _regimePersist == "RANGING" ? 1.1 : 1.0
+_scaledTpMult = i_tpMult * _regimeAtrScale
+_scaledSlMult = i_slMult * _regimeAtrScale
+_scaledTp2Mult = i_dualTP ? _scaledTpMult * 1.667 : _scaledTpMult  // TP2 ~ 2.5x ATR when TP1 = 1.5x
+
+alertcondition(isLong, title="Elton BUY Signal", message="Elton's Predictions: BUY signal on {{ticker}} at {{close}}")
+alertcondition(isShort, title="Elton SELL Signal", message="Elton's Predictions: SELL signal on {{ticker}} at {{close}}")
+alertcondition(isLong or isShort, title="Elton Any Signal", message="Elton's Predictions: Signal on {{ticker}} at {{close}}")
+
+// Confidence plot (hidden, available for alerts and data window)
+plot(dynamicConfidence, "Confidence %", display=display.data_window, color=color.new(color.blue, 100))
+
+// ============================================================================
+//               PINE SCREENER OUTPUTS
+// ============================================================================
+// All plots use display=display.data_window so they appear in the screener
+// and data window without cluttering the chart.
+
+// Signal direction: 2=Strong Long, 1=Long, -1=Short, -2=Strong Short, 0=None
+plot(isLong and dynamicConfidence >= 75 ? 2 : isLong ? 1 : isShort and dynamicConfidence >= 75 ? -2 : isShort ? -1 : 0, "Signal", display=display.data_window, color=color.new(color.blue, 100))
+
+// Consensus counts (how many strategies agree)
+plot(_consBull, "Consensus Bull", display=display.data_window, color=color.new(color.blue, 100))
+plot(_consBear, "Consensus Bear", display=display.data_window, color=color.new(color.blue, 100))
+
+// Bias counts (how many bias filters agree)
+plot(_biasBull, "Bias Bull", display=display.data_window, color=color.new(color.blue, 100))
+plot(_biasBear, "Bias Bear", display=display.data_window, color=color.new(color.blue, 100))
+
+// HTF combo score (-1.0 to +1.0: negative=bearish, positive=bullish)
+plot(_htfComboScore, "HTF Score", display=display.data_window, color=color.new(color.blue, 100))
+
+// Regime as numeric: 1=Trending, 2=Ranging, 3=Volatile, 4=Quiet, 0=Normal
+plot(_regimePersist == "TRENDING" ? 1 : _regimePersist == "RANGING" ? 2 : _regimePersist == "VOLATILE" ? 3 : _regimePersist == "QUIET" ? 4 : 0, "Regime", display=display.data_window, color=color.new(color.blue, 100))
+
+// Core technicals
+plot(_adx, "ADX", display=display.data_window, color=color.new(color.blue, 100))
+plot(_choppiness, "Choppiness", display=display.data_window, color=color.new(color.blue, 100))
+
+// Volume metrics
+plot(_vol_ratio, "Vol Ratio", display=display.data_window, color=color.new(color.blue, 100))
+plot(_vol_zscore, "Vol Z-Score", display=display.data_window, color=color.new(color.blue, 100))
+
+// Strategy fitness & proven status
+plot(_activeFitness, "Regime Fitness", display=display.data_window, color=color.new(color.blue, 100))
+plot(_activeProven ? 1 : 0, "Proven", display=display.data_window, color=color.new(color.blue, 100))
+
+// TP/SL multipliers (after regime scaling)
+plot(_scaledTpMult, "TP Mult", display=display.data_window, color=color.new(color.blue, 100))
+plot(_scaledSlMult, "SL Mult", display=display.data_window, color=color.new(color.blue, 100))
+
+// Bayesian P(win) raw -- already shown as Confidence % above, this is the 0-1 form
+plot(i_useBayesian ? _pWin : na, "Bayes P(win)", display=display.data_window, color=color.new(color.blue, 100))
+
+// END OF SCREENER COMPANION

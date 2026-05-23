@@ -1,0 +1,39 @@
+name: Money-Ready Verdict Snapshot
+
+# Daily per-asset-class money-ready snapshot for the /audit "Money Ready" tab.
+# Runs the verdict orchestrator, archives one file per UTC day, and computes
+# drift vs the prior archive so the dashboard can show improvement/degradation.
+
+on:
+  schedule:
+    - cron: '15 6 * * *'   # 06:15 UTC daily (offset from hourly workflows)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+      - run: pip install numpy scipy
+      - name: Generate money-ready snapshot
+        env:
+          # 2026-05-19 resolver step 3: enforce monotone-conservative shadow gates (downgrade-only).
+          MDD_GATE_ENFORCE: '1'
+          ML_ENHANCED_CRYPTO_QUARANTINE: '1'
+        run: python tools/money_ready_snapshot.py
+      - name: Commit snapshot + archive
+        run: |
+          bash .github/scripts/safe_commit_push.sh \
+            "money-ready snapshot $(date -u +'%Y-%m-%d') [skip ci]" \
+            audit_dashboard/data/money_ready_verdict.json \
+            audit_dashboard/data/money_ready_archive/

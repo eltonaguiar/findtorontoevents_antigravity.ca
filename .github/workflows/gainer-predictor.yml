@@ -1,0 +1,49 @@
+name: Gainer Predictor Scanner
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:
+
+concurrency:
+  group: gainer-predictor-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas
+
+      - name: Run gainer scoring service
+        run: python incubator/agents/claude_code_01/gainer_scoring_service.py --top 20 --save
+
+      - name: Run gainer data pipeline
+        run: python incubator/agents/claude_code_01/gainer_data_pipeline.py
+
+      - name: Commit results
+        run: |
+          git config user.name "Gainer Predictor"
+          git config user.email "predictor@bot"
+          git add incubator/agents/claude_code_01/data/
+          git diff --cached --quiet || git commit -m "Gainer scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            sleep 5
+          done
+

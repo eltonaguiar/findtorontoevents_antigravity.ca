@@ -1,0 +1,666 @@
+name: Deploy Rise of the Claw Dashboard
+
+on:
+  # Run every 30 minutes to avoid overlap (scanner + deploy often takes 15-27 min).
+  schedule:
+    - cron: '0,30 * * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+  # Push trigger REMOVED — was triggering on nearly every CI commit (80% cancellation rate).
+  # The 20-min cron is sufficient. Re-enable with tight paths if needed:
+  #   push: {branches: [main], paths: ['KIMI_RISEOFTHECLAW/data/**', 'tools/deploy_to_ftp.py']}
+
+# Required permissions for GitHub Pages deployment + committing scanner data
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "deploy-riseoftheclaw"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          echo " Installing dependencies..."
+          pip install pandas numpy yfinance "ccxt>=4.3.80,<4.4" requests statsmodels scikit-learn joblib
+
+      - name: Run Live Trading Pipeline
+        run: |
+          echo " Running live trading pipeline with validated Tier 1 strategies..."
+          python KIMI_RISEOFTHECLAW/live_scanner.py
+
+          if [ $? -ne 0 ]; then
+            echo " Pipeline failed!"
+            exit 1
+          fi
+
+          echo " Pipeline complete v6.1 32 algorithms Sortino+Sharpe scoring"
+          echo " - Tier 1: Funding Rate Arb, Pairs Trading, Beta Arb, Flash Crash, QMJ, Meme BB"
+          echo " - Tier 1: MACD, Golden Cross, Momentum, Short Squeeze, Sector Rotation"
+          echo " - Tier 1: Carry Trade, EMA Ribbon, Bollinger Squeeze, Meme Velocity"
+          echo " - Scout: 17 experimental strategies across stocks/crypto/forex/penny/meme"
+          echo " - v6.1: Pre-Earnings Momentum Drift (earnings announcement premium, 32nd algo)"
+          echo " - League Brackets: Champions 75 | Premier 55 | Challenger 40 | Qualification 25 | Danger <25"
+
+      - name: Run Signal Tracker (TP/SL validation)
+        run: |
+          echo " Running signal tracker validating TP/SL against live prices..."
+          python KIMI_RISEOFTHECLAW/signal_tracker.py || echo " Signal tracker had errors (non-fatal)"
+          echo " Signal tracker complete"
+
+      - name: Run Health Checks (run_check alias)
+        run: |
+          echo " Running quality analysis and heartbeat log..."
+          python audit_dashboard/analyze_quality.py || echo " analyze_quality.py had errors (non-fatal)"
+          echo " Heartbeat Log:"
+          cat audit_dashboard/data/heartbeat_log.txt || true
+          echo " Health checks complete"
+
+      - name: Send FreshPicks for KIMI RISEOFTHECLAW picks
+        env:
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_FRESHPICKS" ]; then
+            python3 -c "
+          import json, os, sys
+          sys.path.insert(0, '.')
+          from cross_aggregation.freshpicks_notify import send_fresh_pick
+
+          picks_path = 'KIMI_RISEOFTHECLAW/data/active_picks.json'
+          sent_path = 'KIMI_RISEOFTHECLAW/data/freshpicks_sent.json'
+
+          if not os.path.exists(picks_path):
+              print('No RISEOFTHECLAW active_picks.json')
+              exit(0)
+
+          data = json.load(open(picks_path))
+          if isinstance(data, dict):
+              picks = data.get('activePicks', data.get('picks', []))
+          else:
+              picks = data
+
+          if not picks:
+              print('No active picks')
+              exit(0)
+
+          sent_keys = set()
+          if os.path.exists(sent_path):
+              try: sent_keys = set(json.load(open(sent_path)))
+              except: pass
+
+          new_picks = []
+          for p in picks:
+              entry = p.get('entryPrice', p.get('entry_price', 0))
+              key = f\"{p.get('symbol','')}__{p.get('algorithm', p.get('algorithmName',''))}__{round(float(entry), 4)}\"
+              if key not in sent_keys:
+                  new_picks.append((key, p))
+
+          if not new_picks:
+              print(f'All {len(picks)} KIMI picks already sent')
+              exit(0)
+
+          # Build FORWARD-ONLY performance stats (live TP/SL tracking)
+          stats = {'total': 0, 'active': len(picks), 'wins': 0, 'losses': 0,
+                   'win_rate': 0, 'realized_pnl_pct': 0, 'unrealized_pnl_pct': 0,
+                   'tracking_since': 'Feb 17', 'recent_closed': []}
+          try:
+              tracking = json.load(open('KIMI_RISEOFTHECLAW/data/signal_tracking.json'))
+              summary = tracking.get('summary', {})
+              # Only count resolved signals (TP/SL hit), not open ones
+              stats['wins'] = summary.get('wins', 0)
+              stats['losses'] = summary.get('losses', 0)
+              total_resolved = stats['wins'] + stats['losses']
+              stats['total'] = total_resolved
+              stats['win_rate'] = stats['wins'] / total_resolved * 100 if total_resolved else 0
+              # Rolling WR + drawdown from closed signals
+              signals = tracking.get('signals', [])
+              resolved = [s for s in signals if s.get('status') == 'CLOSED']
+              if len(resolved) >= 20:
+                  last20 = resolved[-20:]
+                  stats['rolling_wr_20'] = sum(1 for s in last20 if s.get('pnl_pct', 0) > 0) / 20 * 100
+              cum = 0; peak = 0; mdd = 0
+              for s in resolved:
+                  cum += s.get('pnl_pct', 0)
+                  peak = max(peak, cum)
+                  mdd = min(mdd, cum - peak)
+              stats['max_drawdown_pct'] = round(mdd, 2)
+          except: pass
+          try:
+              for p2 in picks:
+                  entry2 = float(p2.get('entryPrice', p2.get('entry_price', 0)))
+                  current2 = float(p2.get('currentPrice', entry2))
+                  if entry2 > 0:
+                      stats['unrealized_pnl_pct'] += (current2 / entry2 - 1) * 100
+              stats['unrealized_pnl_pct'] /= max(len(picks), 1)
+          except: pass
+
+          dashboard = 'https://findtorontoevents.ca/riseoftheclaw.html'
+          sent = 0
+          for key, p in new_picks:
+              fp = {
+                  'symbol': p.get('symbol', ''),
+                  'direction': p.get('signal', 'BUY'),
+                  'entry_price': p.get('entryPrice', p.get('entry_price', 0)),
+                  'tp_price': p.get('targetPrice', p.get('take_profit', 0)),
+                  'sl_price': p.get('stopPrice', p.get('stop_loss', 0)),
+                  'confidence': p.get('signalProbability', p.get('confidence', 0)) / 100 if p.get('signalProbability', 0) > 1 else p.get('confidence', 0),
+                  'strategy': p.get('algorithmName', p.get('algorithm', 'unknown')),
+                  'reason': p.get('reason', '')[:200],
+              }
+              if send_fresh_pick('KIMI Rise of the Claw', fp, dashboard, stats=stats):
+                  sent += 1
+
+          all_sent = list(sent_keys | {k for k, _ in new_picks})
+          if len(all_sent) > 500: all_sent = all_sent[-500:]
+          json.dump(all_sent, open(sent_path, 'w'))
+          print(f'Sent {sent}/{len(new_picks)} KIMI picks to #fresh-picks')
+          " || echo "FreshPicks notification failed (non-fatal)"
+          else
+            echo "No DISCORD_WEBHOOK_FRESHPICKS set, skipping"
+          fi
+
+      - name: Push KIMI picks to Audit Trail
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python KIMI_RISEOFTHECLAW/audit_push.py 2>&1 || echo "KIMI audit push failed (non-fatal)"
+
+      - name: Commit all scanner data (single atomic push)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Copy key JSON data files to riseoftheclaw/data/ so GitHub Pages always has fresh data
+          mkdir -p riseoftheclaw/data
+          cp -f KIMI_RISEOFTHECLAW/data/live_competition.json riseoftheclaw/data/ 2>/dev/null || true
+          cp -f KIMI_RISEOFTHECLAW/data/live_signals_now.json riseoftheclaw/data/ 2>/dev/null || true
+          cp -f KIMI_RISEOFTHECLAW/data/algorithms.json riseoftheclaw/data/ 2>/dev/null || true
+          cp -f KIMI_RISEOFTHECLAW/data/signal_tracking.json riseoftheclaw/data/ 2>/dev/null || true
+          cp -f KIMI_RISEOFTHECLAW/data/paper_portfolio.json riseoftheclaw/data/ 2>/dev/null || true
+          cp -f KIMI_RISEOFTHECLAW/data/active_picks.json riseoftheclaw/data/ 2>/dev/null || true
+
+          # Stage JSON + model files exclude .db files (kimi_trading.db is >100MB, exceeds GitHub limit)
+          git add KIMI_RISEOFTHECLAW/data/*.json riseoftheclaw/data/ 2>/dev/null || true
+          git add KIMI_RISEOFTHECLAW/data/rf_model.pkl 2>/dev/null || true
+          git add data/freshpicks_gate_state.json 2>/dev/null || true
+          # Note: kimi_trading.db excluded (100MB+ exceeds GitHub file size limit)
+          git reset HEAD KIMI_RISEOFTHECLAW/data/*.db 2>/dev/null || true
+
+          # Discard unstaged .db changes so git pull --rebase won't fail
+          # (these are CI-only artifacts that shouldn't be committed)
+          git checkout -- KIMI_RISEOFTHECLAW/data/*.db 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No scanner data changes to commit"
+          else
+            TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+            git commit -m "Scanner data update [$TIMESTAMP] [skip ci]"
+            # Retry loop: rebase against any concurrent push before retrying
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 10s..."
+              sleep 10
+            done
+          fi
+
+      - name: Prepare deployment directory
+        run: |
+          echo " Preparing Rise of the Claw deployment for GitHub Pages..."
+
+          # Create deployment directory structure
+          mkdir -p _site/riseoftheclaw/{css,js,data}
+          mkdir -p _site/alpha
+
+          # Copy and rename main HTML file to root
+          cp KIMI_RISEOFTHECLAW/index.html _site/riseoftheclaw.html
+
+          # Update paths in HTML to use /riseoftheclaw/ prefix (for GitHub Pages subpath)
+          sed -i 's|href="css/|href="/findtorontoevents_antigravity.ca/riseoftheclaw/css/|g' _site/riseoftheclaw.html
+          sed -i 's|src="js/|src="/findtorontoevents_antigravity.ca/riseoftheclaw/js/|g' _site/riseoftheclaw.html
+
+          # Also serve at /riseoftheclaw/ (directory URL with index.html)
+          mkdir -p _site/riseoftheclaw
+          cp _site/riseoftheclaw.html _site/riseoftheclaw/index.html
+
+          # Copy supporting files
+          cp -r KIMI_RISEOFTHECLAW/css/* _site/riseoftheclaw/css/
+          cp -r KIMI_RISEOFTHECLAW/js/* _site/riseoftheclaw/js/
+          cp -r KIMI_RISEOFTHECLAW/data/* _site/riseoftheclaw/data/
+
+          # Alpha Engine dashboards
+          cp alpha_engine/live_dashboard.html _site/alpha/index.html
+          cp alpha_engine/premium_dashboard.html _site/alpha/premium.html
+          cp alpha_engine/performance.html _site/alpha/performance.html
+
+          # Alpha Engine data (for dashboard fallback fetching)
+          mkdir -p _site/alpha/data
+          for f in premium_signals.json active_picks.json closed_picks.json strategy_performance.json track_record.json; do
+            [ -f "alpha_engine/data/$f" ] && cp "alpha_engine/data/$f" "_site/alpha/data/$f"
+          done
+
+          # Regime Terminal (HMM Regime Detection)
+          mkdir -p _site/regime/data
+          cp regime_terminal/index.html _site/regime/index.html
+          [ -f regime_terminal/data/regime_state.json ] && cp regime_terminal/data/regime_state.json _site/regime/data/regime_state.json
+          [ -f regime_terminal/data/active_signals.json ] && cp regime_terminal/data/active_signals.json _site/regime/data/active_signals.json
+
+          # Wired-up trading dashboards (all fetch from GitHub raw JSON)
+          cp pair-fingerprints.html _site/pair-fingerprints.html
+          cp KIMI_RISEOFTHECLAW/scanner_log.html _site/riseoftheclaw/scanner-log.html
+          cp updates/unified-dashboard.html _site/unified-dashboard.html
+
+          # Updates page (all HTML files + data)
+          mkdir -p _site/updates
+          cp updates/*.html _site/updates/ 2>/dev/null || true
+          cp -r updates/data _site/updates/ 2>/dev/null || true
+          cp live-monitor/goldmine-alerts.html _site/goldmine-alerts.html
+          cp findforex2/portfolio/index.html _site/forex-portfolio.html
+
+          # OAuth landing page (bypasses 50webs mod_security)
+          cp oauth_return.html _site/oauth_return.html
+
+          # AsterDEX Paper Trading Dashboard
+          mkdir -p _site/asterdex/data _site/trading/data
+          cp asterdex_paper/dashboard.html _site/asterdex/index.html 2>/dev/null || true
+          [ -f asterdex_paper/data/dashboard.json ] && cp asterdex_paper/data/dashboard.json _site/asterdex/data/dashboard.json
+          cp trading/dashboard.html _site/trading/index.html 2>/dev/null || true
+          [ -f trading/data/dashboard_data.json ] && cp trading/data/dashboard_data.json _site/trading/data/dashboard_data.json
+          # ATM Challenge dashboard
+          mkdir -p _site/trading/atm/data
+          cp trading/atm_dashboard.html _site/trading/atm/index.html 2>/dev/null || true
+          [ -f trading/data/atm_leaderboard.json ] && cp trading/data/atm_leaderboard.json _site/trading/atm/data/atm_leaderboard.json
+
+          # ML Battleground SUPERPOWERS dashboards
+          mkdir -p _site/battleground/a/data _site/battleground/b/data _site/battleground/c/data _site/superpowers _site/battleground/data
+          cp battleground/index.html _site/battleground/index.html
+          cp battleground/app.js _site/battleground/app.js 2>/dev/null || true
+          cp battleground/data/*.json _site/battleground/data/ 2>/dev/null || true
+          cp ml_battleground/system_a_filter/index.html _site/battleground/a/index.html
+          cp ml_battleground/system_b_regime/index.html _site/battleground/b/index.html
+          cp ml_battleground/system_c_deeplearn/index.html _site/battleground/c/index.html
+          cp ml_battleground/arena.html _site/superpowers/index.html
+          # Copy data files if they exist (populated by scanner workflows)
+          cp ml_battleground/system_a_filter/data/*.json _site/battleground/a/data/ 2>/dev/null || true
+          cp ml_battleground/system_b_regime/data/*.json _site/battleground/b/data/ 2>/dev/null || true
+          cp ml_battleground/system_c_deeplearn/data/*.json _site/battleground/c/data/ 2>/dev/null || true
+
+          # DNA redirect (/dna -> /genome/dashboard/)
+          mkdir -p _site/dna
+          cp dna/index.html _site/dna/index.html
+
+          # Strategy DNA Genome dashboard + DARWIN ENGINE
+          mkdir -p _site/genome/data _site/genome/dashboard _site/meta_strategy/data
+          cp genome/index.html _site/genome/index.html
+          cp genome/dna_performance.html _site/genome/dna_performance.html 2>/dev/null || true
+          cp genome/dashboard/index.html _site/genome/dashboard/index.html 2>/dev/null || true
+          cp genome/dashboard/paper_portfolios.html _site/genome/dashboard/paper_portfolios.html 2>/dev/null || true
+          cp genome/data/gp_active_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/mape_active_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/ae_active_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/ensemble_active_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/universal_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/darwin_portfolios.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/failure_evolved_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/dna_winner_picks.json _site/genome/data/ 2>/dev/null || true
+          cp genome/data/mape_archive.json _site/genome/data/ 2>/dev/null || true
+          cp meta_strategy/data/unified_strategy_catalog.json _site/genome/data/ 2>/dev/null || true
+          cp meta_strategy/data/unified_strategy_catalog.json _site/meta_strategy/data/ 2>/dev/null || true
+
+          # Breakout Arena dashboards
+          mkdir -p _site/arena/approach_a_sr_breakout/data _site/arena/approach_b_ml_breakout/data _site/arena/approach_c_spike_reverse/data
+          cp breakout_arena/index.html _site/arena/index.html
+          cp breakout_arena/approach_a_sr_breakout/data/*.json _site/arena/approach_a_sr_breakout/data/ 2>/dev/null || true
+          cp breakout_arena/approach_b_ml_breakout/data/*.json _site/arena/approach_b_ml_breakout/data/ 2>/dev/null || true
+          cp breakout_arena/approach_c_spike_reverse/data/*.json _site/arena/approach_c_spike_reverse/data/ 2>/dev/null || true
+
+          # Crypto ML Edge dashboard
+          mkdir -p _site/edge
+          cp crypto_ml_edge/dashboard/index.html _site/edge/index.html
+          cp crypto_ml_edge/data/active_picks.json _site/edge/ 2>/dev/null || true
+
+          # Mental Health Resources
+          mkdir -p _site/MENTALHEALTHRESOURCES
+          cp MENTALHEALTHRESOURCES/*.html _site/MENTALHEALTHRESOURCES/ 2>/dev/null || true
+
+          # Crypto Signal Engine dashboard
+          mkdir -p _site/signal-engine
+          cp crypto_signal_engine/docs/index.html _site/signal-engine/index.html
+          cp crypto_signal_engine/data/active_picks.json _site/signal-engine/ 2>/dev/null || true
+          cp crypto_signal_engine/data/validation.json _site/signal-engine/ 2>/dev/null || true
+          cp crypto_signal_engine/data/history.json _site/signal-engine/ 2>/dev/null || true
+          cp crypto_signal_engine/data/closed_picks.json _site/signal-engine/ 2>/dev/null || true
+          cp crypto_signal_engine/data/top_gainers.json _site/signal-engine/ 2>/dev/null || true
+          cp crypto_signal_engine/data/audit.json _site/signal-engine/ 2>/dev/null || true
+
+          # Mercury 2 dashboard
+          mkdir -p _site/mercury2/data
+          cp mercury2/index.html _site/mercury2/index.html
+          cp mercury2/data/*.json _site/mercury2/data/ 2>/dev/null || true
+
+          # QuanEngine dashboard (prop firm grade predictions)
+          mkdir -p _site/quan_engine/dashboard _site/quan_engine/data
+          cp quan_engine/dashboard/index.html _site/quan_engine/dashboard/index.html
+          cp quan_engine/data/active_signals.json _site/quan_engine/data/ 2>/dev/null || true
+          cp quan_engine/data/market_analysis.json _site/quan_engine/data/ 2>/dev/null || true
+
+          # Cross-System Forward Test Monitor
+          mkdir -p _site/monitor
+          cp cross_aggregation/index.html _site/monitor/index.html
+
+          # Trading Systems Hub (master dashboard)
+          mkdir -p _site/hub/js _site/hub/data
+          cp hub/index.html _site/hub/index.html
+          cp hub/js/*.js _site/hub/js/ 2>/dev/null || true
+          cp hub/data/*.json _site/hub/data/ 2>/dev/null || true
+
+          # Cross-aggregation data + consensus dashboard
+          mkdir -p _site/cross_aggregation/data
+          cp cross_aggregation/consensus_dashboard.html _site/cross_aggregation/index.html 2>/dev/null || true
+          cp cross_aggregation/data/*.json _site/cross_aggregation/data/ 2>/dev/null || true
+
+          # Signal aggregator data
+          mkdir -p _site/signal_aggregator/data
+          cp signal_aggregator/data/*.json _site/signal_aggregator/data/ 2>/dev/null || true
+
+          # Multi-Asset Tournament Leaderboard
+          mkdir -p _site/tournament/data
+          cp multi_asset/dashboard.html _site/tournament/index.html 2>/dev/null || true
+          cp multi_asset/data/*.json _site/tournament/data/ 2>/dev/null || true
+
+          # Investment Tools page (with Multi-Asset ML section)
+          mkdir -p _site/investments
+          cp investments/index.html _site/investments/index.html 2>/dev/null || true
+
+          # === Events site content (merged from deploy-pages.yml) ===
+          cp index4.html _site/index4.html 2>/dev/null || true
+          cp -r next _site/next 2>/dev/null || true
+          cp -r _next _site/_next 2>/dev/null || true
+          cp -r data _site/data 2>/dev/null || true
+          [ -f events.json ] && cp events.json _site/
+          [ -f last_update.json ] && cp last_update.json _site/
+          [ -d stats ] && cp -r stats _site/
+          if [ -f favicon.ico ]; then
+            cp favicon.ico _site/
+          elif [ -f favcreators/docs/favicon.ico ]; then
+            cp favcreators/docs/favicon.ico _site/favicon.ico
+          elif [ -f favcreators/favicon.ico ]; then
+            cp favcreators/favicon.ico _site/favicon.ico
+          fi
+          touch _site/.nojekyll
+
+          # KIMI Claw Research (from deploy-pages.yml)
+          if [ -d KIMI_CLAW_RESEARCH_FEB162026 ]; then
+            mkdir -p _site/KIMI_CLAW_RESEARCH_FEB162026
+            cp KIMI_CLAW_RESEARCH_FEB162026/index.html _site/KIMI_CLAW_RESEARCH_FEB162026/
+          fi
+
+          # Updates torontoevent (from deploy-pages.yml)
+          [ -f updates_torontoevent.html ] && cp updates_torontoevent.html _site/
+
+          # Baby Strat dashboard data (from deploy-pages.yml)
+          if [ -f incubator/config/baby_strats_dashboard.json ]; then
+            cp incubator/config/baby_strats_dashboard.json _site/battleground/data/ 2>/dev/null || true
+          fi
+
+          # FavCreators
+          if [ -d favcreators/docs ]; then
+            mkdir -p _site/fc
+            cp -r favcreators/docs/* _site/fc/
+          fi
+
+          # STOCKS competition
+          if [ -d STOCKS/competition ]; then
+            mkdir -p _site/STOCKS/competition
+            cp STOCKS/competition/index.html _site/STOCKS/competition/
+            cp STOCKS/competition/competition-slim.json _site/STOCKS/competition/ 2>/dev/null || true
+            cp STOCKS/competition/competition-*.json _site/STOCKS/competition/ 2>/dev/null || true
+          fi
+          if [ -f STOCKS/algorithm-competition.html ]; then
+            mkdir -p _site/STOCKS
+            cp STOCKS/algorithm-competition.html _site/STOCKS/
+          fi
+
+          # Predictions
+          if [ -d predictions ]; then
+            mkdir -p _site/predictions
+            cp -r predictions/* _site/predictions/
+          fi
+
+          # Social Prediction Tracker dashboards
+          if [ -f social_prediction_tracker/dashboard/index.html ]; then
+            mkdir -p _site/predictions/dashboard _site/predictions/analysts
+            cp social_prediction_tracker/dashboard/index.html _site/predictions/dashboard/index.html
+            cp social_prediction_tracker/analysts/index.html _site/predictions/analysts/index.html 2>/dev/null || true
+            cp social_prediction_tracker/data/*.json _site/predictions/data/ 2>/dev/null || true
+          fi
+
+          # Audit Dashboard (deployed to /audit/ path to match FTP layout)
+          if [ -f audit_dashboard/index.html ]; then
+            mkdir -p _site/audit/data
+            cp audit_dashboard/index.html _site/audit/index.html
+            cp audit_dashboard/funds.html _site/audit/funds.html 2>/dev/null || true
+            cp audit_dashboard/portfolio_history.html _site/audit/portfolio_history.html 2>/dev/null || true
+            cp audit_dashboard/antigravity_picks.html _site/audit/antigravity_picks.html 2>/dev/null || true
+            cp audit_dashboard/antigravity_picks_data.json _site/audit/antigravity_picks_data.json 2>/dev/null || true
+            cp audit_dashboard/kimi_top_picks.html _site/audit/kimi_top_picks.html 2>/dev/null || true
+            # Keep the runtime JSONs in sync with the embedded dashboard HTML.
+            # 2026-05-22: dashboard_data.json (~44MB) + dashboard_payload.json
+            # (~57MB) are no longer committed to git (repo-bloat fix — they were
+            # adding ~100MB/hr to .git history; see
+            # reports/AUDIT_STAT_VALIDATION_2026-05-22.md). They are still
+            # generated and FTP-deployed to findtorontoevents.ca/audit/data/ by
+            # audit-dashboard.yml — fetch the live copies from there so the Pages
+            # /audit mirror stays fresh. Fall back to a local copy if present.
+            curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json" -o _site/audit/data/dashboard_data.json 2>/dev/null \
+              || cp audit_dashboard/data/dashboard_data.json _site/audit/data/dashboard_data.json 2>/dev/null || true
+            curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" -o _site/audit/data/dashboard_payload.json 2>/dev/null \
+              || cp audit_trail/data/dashboard_payload.json _site/audit/data/dashboard_payload.json 2>/dev/null || true
+            cp audit_trail/data/universal_resolved_picks.json _site/audit/data/universal_resolved_picks.json 2>/dev/null || true
+            cp audit_trail/data/stock_prices.json _site/audit/data/stock_prices.json 2>/dev/null || true
+            # Data files needed by dashboard tabs
+            cp audit_dashboard/data/claude_top_picks.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/claude_top_picks_phase2.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/ag_top_picks.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/grok_top_picks_phase2.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/mercury_top_picks_phase2.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/kimi_top_picks_phase2.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/ag_top_picks_phase2.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/claudes_test_dashboard.json _site/audit/data/ 2>/dev/null || true
+            cp audit_dashboard/data/claudes_test_state.json _site/audit/data/ 2>/dev/null || true
+          fi
+
+          # Genome data needed by audit dashboard (4-AI Battle tab)
+          cp genome/data/kimi_top_3_live_picks.json _site/genome/data/kimi_top_3_live_picks.json 2>/dev/null || true
+          mkdir -p _site/data
+          cp data/grok_top_picks.json _site/data/grok_top_picks.json 2>/dev/null || true
+          # Copy Grok + KIMI data into audit/data/ prefer audit_dashboard/data/ (curated with actual TradingView fills)
+          cp audit_dashboard/data/grok_top_picks.json _site/audit/data/grok_top_picks.json 2>/dev/null || cp data/grok_top_picks.json _site/audit/data/grok_top_picks.json 2>/dev/null || true
+          cp audit_dashboard/data/kimi_top_3_live_picks.json _site/audit/data/kimi_top_3_live_picks.json 2>/dev/null || cp genome/data/kimi_top_3_live_picks.json _site/audit/data/kimi_top_3_live_picks.json 2>/dev/null || true
+          cp genome/data/kimi_best_3_current.json _site/audit/data/kimi_best_3_current.json 2>/dev/null || true
+          cp audit_dashboard/data/mercury_top_picks.json _site/audit/data/mercury_top_picks.json 2>/dev/null || true
+
+          # Genome predictability data (for audit Predictability tab)
+          cp genome/data/symbol_predictability.json _site/audit/symbol_predictability.json 2>/dev/null || true
+          cp genome/data/tournament_results.json _site/audit/tournament_results.json 2>/dev/null || true
+
+          # Portfolio Challenge files (deployed to /audit_dashboard/ path too)
+          mkdir -p _site/audit_dashboard/data
+          cp audit_dashboard/claudes_test.html _site/audit_dashboard/ 2>/dev/null || true
+          cp audit_dashboard/portfolio_history.html _site/audit_dashboard/ 2>/dev/null || true
+          cp audit_dashboard/BLUEPRINT.md _site/audit_dashboard/ 2>/dev/null || true
+          cp audit_dashboard/LEARNINGS.md _site/audit_dashboard/ 2>/dev/null || true
+          cp audit_dashboard/trading_blueprint.html _site/audit_dashboard/ 2>/dev/null || true
+          cp audit_dashboard/funds.html _site/audit_dashboard/ 2>/dev/null || true
+          cp audit_dashboard/data/claudes_test_state.json _site/audit_dashboard/data/ 2>/dev/null || true
+          cp audit_dashboard/data/claudes_test_dashboard.json _site/audit_dashboard/data/ 2>/dev/null || true
+
+          # FindCryptoPairs pages (pump-watch, now, etc.)
+          if [ -d findcryptopairs ]; then
+            mkdir -p _site/findcryptopairs
+            cp findcryptopairs/pump-watch.html _site/findcryptopairs/ 2>/dev/null || true
+            cp findcryptopairs/now.html _site/findcryptopairs/ 2>/dev/null || true
+            cp findcryptopairs/algo-competition-enhanced.html _site/findcryptopairs/ 2>/dev/null || true
+            cp findcryptopairs/audit-trail.html _site/findcryptopairs/ 2>/dev/null || true
+          fi
+
+          # Rewrite /next asset paths for GitHub Pages project site base path
+          PAGES_BASE=/findtorontoevents_antigravity.ca
+          for f in $(find _site -name '*.html'); do
+            sed -i "s|\"/next|\"$PAGES_BASE/next|g" "$f"
+            sed -i "s|'/next|'$PAGES_BASE/next|g" "$f"
+            sed -i "s|href=\"/favicon.ico\"|href=\"$PAGES_BASE/favicon.ico\"|g" "$f"
+          done
+
+          # Create index redirect for convenience
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0; url=./hub/">
+            <title>Redirecting to Trading Systems Hub</title>
+          </head>
+          <body>
+            <p>Redirecting to <a href="./hub/">Trading Systems Hub</a>...</p>
+          </body>
+          </html>
+          EOF
+
+          echo " Unified GitHub Pages deployment directory ready"
+          echo " Structure:"
+          ls -lah _site/
+          echo ""
+          echo " Subdirectories:"
+          ls -lah _site/riseoftheclaw/
+
+      - name: Validate HTML/JS syntax before deploy
+        run: |
+          echo " Checking all HTML files for JavaScript syntax errors..."
+          ERRORS=0
+          for htmlfile in $(find _site -name '*.html' -size +1k); do
+            # Extract <script> blocks and validate with Node.js
+            RESULT=$(node -e "
+              const fs = require('fs');
+              const html = fs.readFileSync('$htmlfile', 'utf8');
+              const scripts = html.match(/<script[^>]*>([\s\S]*?)<\/script>/g) || [];
+              let errors = [];
+              for (const block of scripts) {
+                const code = block.replace(/<script[^>]*>/, '').replace(/<\/script>/, '');
+                if (code.trim().length === 0) continue;
+                try { new Function(code); }
+                catch(e) {
+                  // Retry with async wrapper (top-level async functions are valid JS but new Function rejects them)
+                  try { new Function('return (async () => {' + code + '})()'); }
+                  catch(e2) { errors.push(e.message); }
+                }
+              }
+              if (errors.length > 0) {
+                console.log('FAIL: ' + errors.join(' | '));
+                process.exit(1);
+              }
+            " 2>&1) || {
+              echo " JS SYNTAX ERROR in $htmlfile: $RESULT"
+              ERRORS=$((ERRORS + 1))
+            }
+          done
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo " BLOCKING DEPLOY: $ERRORS file(s) have JavaScript syntax errors!"
+            echo "Fix the errors above before deploying."
+            exit 1
+          fi
+          echo " All HTML files passed JavaScript syntax validation"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify deployment
+        run: |
+          echo " Checking GitHub Pages deployment status..."
+
+          # Wait a moment for CDN to propagate
+          sleep 10
+
+          # Check main HTML file
+          status=$(curl -o /dev/null -s -w "%{http_code}" "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html?_=${GITHUB_RUN_NUMBER}")
+          echo "Main page status: $status"
+
+          if [ "$status" != "200" ]; then
+            echo " Main page returned $status (may need time to propagate)"
+          else
+            echo " Main page accessible!"
+          fi
+
+          # Check CSS file
+          css_status=$(curl -o /dev/null -s -w "%{http_code}" "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw/css/dashboard.css?_=${GITHUB_RUN_NUMBER}")
+          echo "CSS file status: $css_status"
+
+          if [ "$css_status" != "200" ]; then
+            echo " CSS returned $css_status (may need time to propagate)"
+          else
+            echo " CSS file accessible!"
+          fi
+
+          echo " Deployment to GitHub Pages complete!"
+          echo " Live at: https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html"
+
+          echo ""
+          echo " Wired dashboards:"
+          for page in alpha/premium.html pair-fingerprints.html unified-dashboard.html goldmine-alerts.html forex-portfolio.html riseoftheclaw/scanner-log.html asterdex/index.html; do
+            pg_status=$(curl -o /dev/null -s -w "%{http_code}" "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/${page}?_=${GITHUB_RUN_NUMBER}")
+            echo " ${page}: $pg_status"
+          done
+
+      - name: Summary
+        run: |
+          echo "## Rise of the Claw Dashboard Deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Live URL:** https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Target:** GitHub Pages (50webs FTP currently unavailable)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Files Deployed:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Main dashboard HTML" >> $GITHUB_STEP_SUMMARY
+          echo "- CSS styles" >> $GITHUB_STEP_SUMMARY
+          echo "- JavaScript modules (charts, data-loader, dashboard)" >> $GITHUB_STEP_SUMMARY
+          echo "- Data files (algorithms, picks, performance stats)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Strategies Deployed (v4 27 total):**" >> $GITHUB_STEP_SUMMARY
+          echo "- 15 TIER_1 institutional strategies (Sharpe-weighted scoring)" >> $GITHUB_STEP_SUMMARY
+          echo "- 12 SCOUT experimental strategies" >> $GITHUB_STEP_SUMMARY
+          echo "- League Brackets: Champions | Premier | Challenger | Qualification | Danger Zone" >> $GITHUB_STEP_SUMMARY
+

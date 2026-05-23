@@ -1,0 +1,459 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "asset_class": "equity",
+    "sub_class": "penny_meme",
+    "generated_at": "2026-05-20T07:01:52.073659",
+    "engine": "penny_stock_multi_strategy_harness",
+    "pnl_win_threshold_bp": 5,
+    "pnl_sanity_cap_pct": 500
+  },
+  "pipeline": {
+    "emit": {
+      "description": "Raw signal generation from 100+ parametrized strategies",
+      "strategies_total": 16,
+      "signals_generated": 0
+    },
+    "ingest": {
+      "description": "Signal collection with metadata enrichment",
+      "signals_by_type": {}
+    },
+    "active_gate": {
+      "description": "Liquidity filter + risk management gates",
+      "min_daily_volume": 100000,
+      "max_position_pct": 0.02,
+      "hard_stop_pct": -0.05,
+      "slippage_bps": 7.5,
+      "spread_bps": 15.0
+    },
+    "smart_gate": {
+      "description": "Statistical validation with BH-FDR correction",
+      "min_sharpe": 1.0,
+      "max_drawdown_pct": 25.0,
+      "p_value_threshold": 0.05,
+      "bh_fdr_alpha": 0.05,
+      "strategies_passed": 16
+    },
+    "high_conviction": {
+      "description": "Ensemble selection of top 3-5 uncorrelated strategies",
+      "ensemble_size": 1,
+      "ensemble_members": [
+        "supp_bounce_lb10_tc3_PENNY1"
+      ]
+    },
+    "consensus": {
+      "description": "Cross-strategy agreement scoring",
+      "agreement_threshold": 0.6
+    },
+    "outcome": {
+      "description": "Trade execution and PnL tracking",
+      "trades_recorded": 2692
+    }
+  },
+  "ensemble": [
+    {
+      "strategy_name": "supp_bounce_lb10_tc3_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 148,
+      "win_rate": 0.4662,
+      "avg_pnl": 0.016877,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5983,
+      "sharpe_ratio": 11.3563,
+      "sortino_ratio": 1.2778991135516026e+16,
+      "max_drawdown": 0.112641,
+      "calmar_ratio": 377.5753,
+      "expectancy": 0.016877,
+      "p_value": 0.004322,
+      "bootstrap_sharpe_ci": [
+        3.2775,
+        18.8545
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 4.4836
+    }
+  ],
+  "all_validated": [
+    {
+      "strategy_name": "supp_bounce_lb20_tc3_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 173,
+      "win_rate": 0.5087,
+      "avg_pnl": 0.023226,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.8945,
+      "sharpe_ratio": 15.5951,
+      "sortino_ratio": 1.4832242492984748e+16,
+      "max_drawdown": 1.448428,
+      "calmar_ratio": 40.4095,
+      "expectancy": 0.023226,
+      "p_value": 4.9e-05,
+      "bootstrap_sharpe_ci": [
+        8.1203,
+        22.8367
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb10_tc3_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 140,
+      "win_rate": 0.5214,
+      "avg_pnl": 0.025134,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.9938,
+      "sharpe_ratio": 16.8891,
+      "sortino_ratio": 1.61021162604735e+16,
+      "max_drawdown": 1.21498,
+      "calmar_ratio": 52.1312,
+      "expectancy": 0.025134,
+      "p_value": 7.8e-05,
+      "bootstrap_sharpe_ci": [
+        8.3372,
+        26.0852
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb40_tc3_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 169,
+      "win_rate": 0.4911,
+      "avg_pnl": 0.020602,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.7661,
+      "sharpe_ratio": 13.8333,
+      "sortino_ratio": 1.447914285030211e+16,
+      "max_drawdown": 5.100832,
+      "calmar_ratio": 10.1783,
+      "expectancy": 0.020602,
+      "p_value": 0.000314,
+      "bootstrap_sharpe_ci": [
+        6.7746,
+        21.7565
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb15_tc2_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 179,
+      "win_rate": 0.486,
+      "avg_pnl": 0.019841,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.7305,
+      "sharpe_ratio": 13.3252,
+      "sortino_ratio": 1.1470006204797074e+16,
+      "max_drawdown": 1.644592,
+      "calmar_ratio": 30.4021,
+      "expectancy": 0.019841,
+      "p_value": 0.000347,
+      "bootstrap_sharpe_ci": [
+        6.1209,
+        20.7549
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb20_tc2_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 184,
+      "win_rate": 0.4837,
+      "avg_pnl": 0.019491,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.7144,
+      "sharpe_ratio": 13.0922,
+      "sortino_ratio": 1.1784923079577586e+16,
+      "max_drawdown": 1.621915,
+      "calmar_ratio": 30.284,
+      "expectancy": 0.019491,
+      "p_value": 0.000363,
+      "bootstrap_sharpe_ci": [
+        5.5416,
+        20.8741
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb10_tc2_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 172,
+      "win_rate": 0.4826,
+      "avg_pnl": 0.019321,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.7066,
+      "sharpe_ratio": 12.979,
+      "sortino_ratio": 1.1387807287960436e+16,
+      "max_drawdown": 1.562623,
+      "calmar_ratio": 31.1587,
+      "expectancy": 0.019321,
+      "p_value": 0.000601,
+      "bootstrap_sharpe_ci": [
+        5.4784,
+        20.0859
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb30_tc2_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 170,
+      "win_rate": 0.4647,
+      "avg_pnl": 0.016651,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5886,
+      "sharpe_ratio": 11.2067,
+      "sortino_ratio": 1.2376597153514036e+16,
+      "max_drawdown": 68.152918,
+      "calmar_ratio": 0.6157,
+      "expectancy": 0.016651,
+      "p_value": 0.002729,
+      "bootstrap_sharpe_ci": [
+        4.1866,
+        18.9206
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb10_tc3_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 148,
+      "win_rate": 0.4662,
+      "avg_pnl": 0.016877,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5983,
+      "sharpe_ratio": 11.3563,
+      "sortino_ratio": 1.2778991135516026e+16,
+      "max_drawdown": 0.112641,
+      "calmar_ratio": 377.5753,
+      "expectancy": 0.016877,
+      "p_value": 0.004322,
+      "bootstrap_sharpe_ci": [
+        3.2775,
+        18.8545
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 4.4836
+    },
+    {
+      "strategy_name": "supp_bounce_lb20_tc3_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 168,
+      "win_rate": 0.4583,
+      "avg_pnl": 0.015698,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5484,
+      "sharpe_ratio": 10.5757,
+      "sortino_ratio": 1.1418645770564318e+16,
+      "max_drawdown": 0.166928,
+      "calmar_ratio": 236.9868,
+      "expectancy": 0.015698,
+      "p_value": 0.004593,
+      "bootstrap_sharpe_ci": [
+        2.8519,
+        18.3548
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 4.1528
+    },
+    {
+      "strategy_name": "supp_bounce_lb30_tc3_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 168,
+      "win_rate": 0.4583,
+      "avg_pnl": 0.015698,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5484,
+      "sharpe_ratio": 10.5757,
+      "sortino_ratio": 1.1668238087952668e+16,
+      "max_drawdown": 68.152918,
+      "calmar_ratio": 0.5805,
+      "expectancy": 0.015698,
+      "p_value": 0.004593,
+      "bootstrap_sharpe_ci": [
+        3.4571,
+        18.3548
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb30_tc2_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 174,
+      "win_rate": 0.454,
+      "avg_pnl": 0.015054,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5217,
+      "sharpe_ratio": 10.1491,
+      "sortino_ratio": 9138211054031592.0,
+      "max_drawdown": 2.948937,
+      "calmar_ratio": 12.8641,
+      "expectancy": 0.015054,
+      "p_value": 0.005493,
+      "bootstrap_sharpe_ci": [
+        2.6844,
+        17.6364
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb30_tc3_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 172,
+      "win_rate": 0.4535,
+      "avg_pnl": 0.014974,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5185,
+      "sharpe_ratio": 10.0962,
+      "sortino_ratio": 8980683744453599.0,
+      "max_drawdown": 2.899258,
+      "calmar_ratio": 13.015,
+      "expectancy": 0.014974,
+      "p_value": 0.005952,
+      "bootstrap_sharpe_ci": [
+        3.1338,
+        18.269
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb20_tc2_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 173,
+      "win_rate": 0.4509,
+      "avg_pnl": 0.014582,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.5025,
+      "sharpe_ratio": 9.8369,
+      "sortino_ratio": 1.0819651145752628e+16,
+      "max_drawdown": 0.211089,
+      "calmar_ratio": 174.078,
+      "expectancy": 0.014582,
+      "p_value": 0.007016,
+      "bootstrap_sharpe_ci": [
+        2.3176,
+        16.7819
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 3.839
+    },
+    {
+      "strategy_name": "supp_bounce_lb10_tc2_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 165,
+      "win_rate": 0.4485,
+      "avg_pnl": 0.014225,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.4881,
+      "sharpe_ratio": 9.6012,
+      "sortino_ratio": 1.0304489473083212e+16,
+      "max_drawdown": 0.193959,
+      "calmar_ratio": 184.8241,
+      "expectancy": 0.014225,
+      "p_value": 0.009644,
+      "bootstrap_sharpe_ci": [
+        2.3212,
+        16.8825
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 3.7583
+    },
+    {
+      "strategy_name": "supp_bounce_lb15_tc2_PENNY1",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 170,
+      "win_rate": 0.4412,
+      "avg_pnl": 0.013133,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.4447,
+      "sharpe_ratio": 8.878,
+      "sortino_ratio": 9744320272259092.0,
+      "max_drawdown": 247.240876,
+      "calmar_ratio": 0.1339,
+      "expectancy": 0.013133,
+      "p_value": 0.014169,
+      "bootstrap_sharpe_ci": [
+        0.5714,
+        17.1035
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    },
+    {
+      "strategy_name": "supp_bounce_lb40_tc3_PENNY2",
+      "strategy_type": "SUPPORT_BOUNCE",
+      "total_trades": 167,
+      "win_rate": 0.4251,
+      "avg_pnl": 0.010736,
+      "avg_win": 0.096705,
+      "avg_loss": -0.052846,
+      "profit_factor": 1.3534,
+      "sharpe_ratio": 7.2894,
+      "sortino_ratio": 6554853537870946.0,
+      "max_drawdown": 30.98477,
+      "calmar_ratio": 0.8731,
+      "expectancy": 0.010736,
+      "p_value": 0.038145,
+      "bootstrap_sharpe_ci": [
+        -0.0073,
+        13.8226
+      ],
+      "bh_fdr_significant": true,
+      "walk_forward_passed": "True",
+      "composite_score": 0.0
+    }
+  ],
+  "latest_signals": [],
+  "risk_config": {
+    "min_daily_volume_dollars": 100000,
+    "max_position_pct": 0.02,
+    "hard_stop_pct": -0.05,
+    "time_exit_eod": true,
+    "overnight_holds": false,
+    "slippage_bps": 7.5,
+    "spread_bps": 15.0,
+    "round_trip_friction_bps": 30.0
+  }
+}

@@ -1,0 +1,62 @@
+name: DB Freshness Guardian
+
+# Monitors staleness of live_picks, resolver_outputs, and backtest_trades.
+# RED = CI failure (>6h live / >12h resolver / >1w backtests).
+# YELLOW = warning (>2h live / >4h resolver / >48h backtests).
+#
+# Push trigger: tools/db_freshness_check.py (see AGENTS.md push-trigger registry)
+# Secrets required: DB_PASS_STOCKS (or MYSQL_PASSWORD), DB_PASS_BACKTESTS (or MYSQL_PASSWORD)
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour
+  push:
+    branches: [main]
+    paths:
+      - tools/db_freshness_check.py
+      - .github/workflows/db-freshness-guardian.yml
+  workflow_dispatch:
+
+jobs:
+  freshness-check:
+    name: DB Freshness Check
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run DB freshness check
+        env:
+          # Canonical new names (preferred by db_env.py resolution chain)
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_PASS_BACKTESTS: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD }}
+          # Legacy names kept for backward compat
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+          DB_BACKTESTS_PASSWORD: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD || secrets.DB_BACKTESTS_PASSWORD }}
+          DB_FRESHNESS_OUTPUT: audit_dashboard/data/db_freshness.json
+        run: python tools/db_freshness_check.py
+        # Exit 0=GREEN, 1=YELLOW (warning, not failure), 2=RED (failure)
+        # continue-on-error: DB secrets may be absent in CI environment;
+        # report is still written + uploaded regardless of exit code.
+        continue-on-error: true
+
+      - name: Upload freshness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-freshness-report
+          path: audit_dashboard/data/db_freshness.json
+          retention-days: 7

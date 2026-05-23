@@ -1,0 +1,220 @@
+name: Social Media Prediction Tracker
+
+on:
+  schedule:
+    - cron: '30 */2 * * *'  # Every 2 hours
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'scrape, validate, or both'
+        required: false
+        default: 'both'
+
+permissions:
+  contents: write
+
+jobs:
+  track-predictions:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r predictions/requirements.txt pymysql
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+        continue-on-error: true
+
+      - name: Install crawl4ai browsers
+        run: python -m crawl4ai.install || true
+
+      # OPTIONAL: RSS feeds for Twitter (get from rss.app)
+      # Set these in GitHub Settings > Secrets and variables > Actions
+      - name: Run Twitter scraper
+        run: cd predictions && python scrapers/twitter_scraper.py
+        env:
+          RSS_CRYPTOMICHNL: ${{ secrets.RSS_CRYPTOMICHNL }}
+          RSS_CRYPTODONALT: ${{ secrets.RSS_CRYPTODONALT }}
+          RSS_CREDIBLECRYPTO: ${{ secrets.RSS_CREDIBLECRYPTO }}
+          RSS_DAVTHEWAVE: ${{ secrets.RSS_DAVTHEWAVE }}
+          RSS_SCOTTMELKER: ${{ secrets.RSS_SCOTTMELKER }}
+        continue-on-error: true
+
+      # Reddit scraper - no API needed, uses multiple scraping methods
+      - name: Run Reddit scraper
+        run: cd predictions && python scrapers/reddit_scraper.py
+        continue-on-error: true
+
+      # TradingView scraper - uses Playwright for JS rendering
+      - name: Run TradingView scraper
+        run: cd predictions && python scrapers/tradingview_scraper.py
+        continue-on-error: true
+
+      - name: Run Analyst scraper
+        run: cd predictions && python -c "from scrapers.analyst_scraper import run; run()"
+        continue-on-error: true
+
+      # Kalshi - US prediction market for crypto
+      - name: Run Kalshi scraper
+        run: cd predictions && python scrapers/kalshi_scraper.py
+        continue-on-error: true
+
+      # Limitless - Base chain prediction market
+      - name: Run Limitless scraper
+        run: cd predictions && python scrapers/limitless_scraper.py
+        continue-on-error: true
+
+      # Polymarket - crypto prediction markets via Gamma API
+      - name: Run Polymarket scraper
+        run: cd predictions && python scrapers/polymarket_scraper.py
+        continue-on-error: true
+
+      # StockTwits - crypto sentiment and predictions
+      - name: Run StockTwits scraper
+        run: cd predictions && python scrapers/stocktwits_scraper.py
+        continue-on-error: true
+
+      # CoinCodex - crypto price predictions and ratings
+      - name: Run CoinCodex scraper
+        run: cd predictions && python scrapers/coincodex_scraper.py
+        continue-on-error: true
+
+      # CoinMarketCap - community predictions
+      - name: Run CoinMarketCap scraper
+        run: cd predictions && python scrapers/coinmarketcap_scraper.py
+        continue-on-error: true
+
+      # 4chan /biz/ - anonymous crypto predictions
+      - name: Run 4chan scraper
+        run: cd predictions && python scrapers/fourchan_scraper.py
+        continue-on-error: true
+
+      # YouTube - crypto analyst channel predictions
+      - name: Run YouTube scraper
+        run: cd predictions && python scrapers/youtube_scraper.py
+        continue-on-error: true
+
+      # Crypto community forums - various prediction sources
+      - name: Run Crypto Community scraper
+        run: cd predictions && python scrapers/crypto_community_scraper.py
+        continue-on-error: true
+
+      # ── KOL Multi-Platform Scrapers ──
+      - name: Run Telegram KOL scraper
+        run: cd predictions && python scrapers/telegram_kol_scraper.py
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_SESSION: ${{ secrets.TELEGRAM_SESSION }}
+        continue-on-error: true
+
+      - name: Run YouTube KOL transcript scraper
+        run: cd predictions && python scrapers/youtube_kol_scraper.py
+        continue-on-error: true
+
+      - name: Run Substack KOL scraper
+        run: cd predictions && python scrapers/substack_kol_scraper.py
+        continue-on-error: true
+
+      - name: Run NewsAPI KOL scraper
+        run: cd predictions && python scrapers/newsapi_kol_scraper.py
+        env:
+          NEWSAPIDOTORG: ${{ secrets.NEWSAPIDOTORG }}
+          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+        continue-on-error: true
+
+      - name: Run GNews KOL scraper
+        run: cd predictions && python scrapers/gnews_kol_scraper.py
+        env:
+          GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
+        continue-on-error: true
+
+      - name: Run TheNewsAPI KOL scraper
+        run: cd predictions && python scrapers/thenewsapi_kol_scraper.py
+        env:
+          THENEWSAPI: ${{ secrets.THENEWSAPI }}
+        continue-on-error: true
+
+      - name: Run Mediastack news scraper
+        run: cd predictions && python scrapers/mediastack_kol_scraper.py
+        env:
+          MEDIASTACK_API_KEY: ${{ secrets.MEDIASTACK_API_KEY }}
+        continue-on-error: true
+
+      - name: Run Currents API news scraper
+        run: cd predictions && python scrapers/currents_kol_scraper.py
+        env:
+          CURRENTS_NEWS_API: ${{ secrets.CURRENTS_NEWS_API }}
+        continue-on-error: true
+
+      - name: Run Event Registry (newsapi.ai) scraper
+        run: cd predictions && python scrapers/eventregistry_kol_scraper.py
+        env:
+          NEWSAPIDOTAI: ${{ secrets.NEWSAPIDOTAI }}
+        continue-on-error: true
+
+      - name: Run Messari news scraper
+        run: cd predictions && python scrapers/messari_kol_scraper.py
+        env:
+          MESSARI_API_KEY: ${{ secrets.MESSARI_API_KEY }}
+        continue-on-error: true
+
+      - name: Run Web KOL scraper
+        run: cd predictions && python scrapers/web_kol_scraper.py
+        continue-on-error: true
+
+      # ── KOL Enrichment, Performance & Consensus ──
+      - name: Enrich predictions with live prices
+        run: cd predictions && python -c "from kol.enrich_predictions import enrich_active_predictions; enrich_active_predictions()"
+        continue-on-error: true
+
+      - name: Compute KOL performance stats
+        run: cd predictions && python -c "from kol.kol_performance_tracker import update_all_kol_stats; update_all_kol_stats()"
+        continue-on-error: true
+
+      - name: Generate KOL consensus signal
+        run: cd predictions && python -c "from kol.kol_consensus_engine import run; run()"
+        continue-on-error: true
+
+      - name: Verify KOL consensus JSON (HF-P3 data hygiene)
+        run: python tools/verify_kol_consensus_export.py
+
+      - name: Run price validator
+        run: cd predictions && python validation/price_validator.py
+
+      - name: Export leaderboard JSON
+        run: |
+          cd predictions && python -c "
+          from db import get_db, export_leaderboard_json
+          from pathlib import Path
+          conn = get_db()
+          export_leaderboard_json(conn, Path('data/leaderboard.json'))
+          conn.close()
+          print('Leaderboard exported')
+          "
+
+      - name: Push predictions to audit trail
+        run: python predictions/audit_push.py
+        continue-on-error: true
+
+      - name: Commit results
+        run: |
+          # Discard unstaged/untracked changes so pull --rebase can work
+          # (predictions.db is modified by scrapers but not committed)
+          git checkout -- . 2>/dev/null || true
+          git clean -fd 2>/dev/null || true
+          # Use safe commit+push with exponential backoff
+          bash .github/scripts/safe_commit_push.sh "Prediction tracker update $(date -u '+%Y-%m-%d %H:%M UTC')" predictions/data/
+

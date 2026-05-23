@@ -1,0 +1,32 @@
+# Live Trading Bot Requirements
+pandas==2.1.4
+numpy==1.26.2
+requests==2.31.0
+python-dotenv==1.0.0
+pyarrow>=14
+scikit-learn>=1.3.0
+scipy>=1.10.0
+
+# Bootstrap inference (arch.bootstrap: MovingBlockBootstrap, StationaryBootstrap)
+# Required by tools/block_bootstrap_ci.py -> tools/feed_risk_metrics.py -> tests/test_feed_risk_metrics.py
+arch>=7.0.0
+
+# Data fetching + CI test dependencies
+fredapi>=0.5.1
+pandas-datareader>=0.10.0
+
+# yfinance — primary OHLCV source for 153 equity/ETF/bond/futures/
+# commodity modules (alpha_engine/*.py). It was UNDECLARED: every CI job
+# that pip-installs requirements.txt then ran a yfinance scanner hit
+# ImportError (root cause of the ETF/Bond scanners emitting 0 picks).
+yfinance>=0.2.50
+
+# More undeclared third-party deps imported by repo code (same class as the
+# yfinance bug — found by a dependency audit). All are imported unguarded by
+# multiple alpha_engine/tools modules, so a pip-installed CI runner hits
+# ModuleNotFoundError. Import-name vs PyPI-name noted where they differ.
+pymysql>=1.1.0                 # `import pymysql`     — 54 files (22 unguarded)
+mysql-connector-python>=8.0.0  # `import mysql.connector` — 8 files (7 unguarded)
+redis>=5.0.0                   # `import redis`       — 20 files (7 unguarded)
+beautifulsoup4>=4.12.0         # `import bs4`         — 9 files (4 unguarded)
+PyYAML>=6.0                    # `import yaml`        — 5 files (4 unguarded)

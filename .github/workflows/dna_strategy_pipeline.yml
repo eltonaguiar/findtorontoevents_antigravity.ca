@@ -1,0 +1,388 @@
+name: DNA Strategy Pipeline
+
+on:
+  push:
+    branches: [main]
+    # NOTE: GitHub Actions does NOT allow both `paths` and `paths-ignore` on the
+    # same trigger — the workflow file becomes invalid and every run fails with
+    # "workflow file issue". We use negation patterns in `paths` to both include
+    # genome/** changes and exclude output files written by this workflow
+    # (prevents a self-triggering runaway loop).
+    paths:
+      - 'genome/**'
+      - '.github/workflows/dna_strategy_pipeline.yml'
+      - '!genome/active_picks.json'
+      - '!genome/strategy_registry.db'
+      - '!genome/phoenix_registry.db'
+      - '!genome/results/**'
+      - '!genome/data/**'
+  schedule:
+    # Run every 4 hours
+    - cron: '11 */4 * * *'  # Staggered from :00 mega-cluster
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Symbols to analyze (comma-separated)'
+        required: false
+        default: 'BTC,ETH,SOL'
+      regime:
+        description: 'Force market regime'
+        required: false
+        default: ''
+      max_picks:
+        description: 'Maximum picks to generate'
+        required: false
+        default: '5'
+
+concurrency:
+  group: dna-strategy
+  # 2026-04-27: flipped from `true` to `false`. The 6-job chain (evolve-strategies
+  # → generate-picks → phoenix-revival → factory-register → check-promotions →
+  # evaluate-promotions) routinely exceeds the 4h cron interval, and `true` was
+  # cancelling the entire chain mid-flight on the next firing — observed 2 of 3
+  # most-recent runs cancelled. Job-level `timeout-minutes: 45` per job (already
+  # set) bounds runaway execution, so letting an in-progress chain finish is the
+  # safer default. If queue depth grows >2, profile the slowest job (likely
+  # evolve-strategies backtest step) and shorten work per cycle.
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: '3.10'
+  GENOME_DB_PATH: 'genome/strategy_registry.db'
+
+jobs:
+  evolve-strategies:
+    name: Evolve Strategy Population
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # FIX 2026-04-06: added job-level timeout. Without this, the job ran indefinitely
+    # (observed: 1h54m and 4h40m before cancel-in-progress killed them). 45min is
+    # generous — typical runs complete in 15-25min.
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas pymoo requests
+
+      - name: Run Strategy Evolution
+        run: |
+          python genome/evolve_strategies.py \
+            --generations 20 \
+            --population 60 \
+            --mutation-rate 0.15 \
+            --islands 4 \
+            --onchain \
+            --output-dir genome/results
+      
+      - name: Upload evolution results
+        uses: actions/upload-artifact@v4
+        with:
+          name: evolution-results
+          path: |
+            genome/results/evolved_population_*.json
+            genome/results/evolution_history_*.json
+          retention-days: 30
+
+  generate-picks:
+    name: Generate Active Picks
+    needs: evolve-strategies
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    outputs:
+      picks_generated: ${{ steps.gen.outputs.picks_count }}
+      regime_detected: ${{ steps.gen.outputs.regime }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas requests
+
+      - name: Download evolution results
+        uses: actions/download-artifact@v4
+        with:
+          name: evolution-results
+          path: genome/results
+      
+      - name: Generate Picks
+        id: gen
+        run: |
+          SYMBOLS="${{ github.event.inputs.symbols || 'BTC,ETH,SOL' }}"
+          REGIME="${{ github.event.inputs.regime || '' }}"
+          MAX_PICKS="${{ github.event.inputs.max_picks || '5' }}"
+          
+          # Convert comma-separated to space-separated
+          SYMBOLS_LIST=$(echo $SYMBOLS | tr ',' ' ')
+          
+          if [ -n "$REGIME" ]; then
+            python genome/generate_picks.py \
+              --symbols $SYMBOLS_LIST \
+              --regime $REGIME \
+              --max-picks $MAX_PICKS \
+              --output genome/active_picks.json \
+              --tier-filter
+          else
+            python genome/generate_picks.py \
+              --symbols $SYMBOLS_LIST \
+              --max-picks $MAX_PICKS \
+              --output genome/active_picks.json \
+              --tier-filter
+          fi
+          
+          # Extract metadata for outputs
+          PICKS_COUNT=$(python -c "import json; d=json.load(open('genome/active_picks.json')); print(d['metadata']['total_picks'])")
+          REGIME=$(python -c "import json; d=json.load(open('genome/active_picks.json')); print(d['metadata']['market_regime'])")
+          
+          echo "picks_count=$PICKS_COUNT" >> $GITHUB_OUTPUT
+          echo "regime=$REGIME" >> $GITHUB_OUTPUT
+      
+      - name: Validate picks format
+        run: |
+          python -c "
+          import json
+          with open('genome/active_picks.json') as f:
+              data = json.load(f)
+              assert 'metadata' in data, 'Missing metadata'
+              assert 'picks' in data, 'Missing picks'
+              assert 'portfolio_summary' in data, 'Missing portfolio_summary'
+              for pick in data['picks']:
+                  assert 'symbol' in pick, 'Pick missing symbol'
+                  assert 'direction' in pick, 'Pick missing direction'
+                  assert 'entry_price' in pick, 'Pick missing entry_price'
+                  assert 'strategy_dna' in pick, 'Pick missing strategy_dna'
+          print('Validation passed!')
+          "
+      
+      - name: Commit and push picks
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add genome/active_picks.json
+          # FIX 2026-04-06: removed -f genome/strategy_registry.db and phoenix_registry.db
+          # strategy_registry.db grew past 100MB causing GitHub push rejection.
+          # DB files stay as workflow artifacts only (upload-artifact step above).
+          git add genome/results/
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update active picks - $(date -u +%Y-%m-%d_%H:%M:%S UTC) [${{ steps.gen.outputs.regime }}] [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+  phoenix-revival:
+    name: Check Phoenix Revival Candidates
+    needs: generate-picks
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas
+      
+      - name: Check Phoenix Candidates
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from genome import StrategyRegistry, MarketRegime
+          from genome.dna_backtester import PhoenixRevivalTracker
+          
+          registry = StrategyRegistry()
+          phoenix = PhoenixRevivalTracker()
+          
+          # Check for revival candidates
+          regime = MarketRegime('${{ needs.generate-picks.outputs.regime_detected }}')
+          candidates = phoenix.get_revival_candidates(
+              current_regime=regime,
+              min_score=0.6
+          )
+          
+          print(f'Phoenix Revival Check - Regime: {regime.value}')
+          print(f'Candidates found: {len(candidates)}')
+          
+          for c in candidates[:5]:
+              print(f\"  - {c['strategy_id']}: score={c['revival_score']:.2f}\")
+          "
+
+  notify:
+    name: Send Notifications
+    needs: [generate-picks, phoenix-revival]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    if: always()
+    
+    steps:
+      - name: Summary
+        run: |
+          echo "## DNA Strategy Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Picks Generated**: ${{ needs.generate-picks.outputs.picks_generated }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Market Regime**: ${{ needs.generate-picks.outputs.regime_detected }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date -u +%Y-%m-%d_%H:%M:%S UTC)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View active picks in \`genome/active_picks.json\`" >> $GITHUB_STEP_SUMMARY
+
+  factory-register:
+    name: Register DNA Factory Strategies
+    needs: evolve-strategies
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas requests
+
+      - name: Register strategies and export
+        run: |
+          python genome/dna_strategy_factory.py --register --export --stats
+
+      - name: Commit registry updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -f battleground/data/dna_factory.db battleground/data/dna_factory_registry.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No factory changes"
+          else
+            git commit -m "DNA Factory registry update $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+  check-promotions:
+    name: Quick Promotion Check
+    needs: [generate-picks]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql requests
+
+      - name: Check promotions and notify Discord
+        env:
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ejaguiar1_stocks
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ejaguiar1_stocks
+          DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: python genome/progressive_promotion.py --check --notify --summary
+
+  evaluate-promotions:
+    name: Evaluate Tier Promotions
+    needs: [generate-picks, factory-register]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas requests
+
+      - name: Evaluate promotions
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+          DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
+        run: |
+          python genome/progressive_promotion.py --evaluate --notify --summary
+
+      - name: Commit updated metrics
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -f battleground/data/dna_factory.db 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No metric changes"
+          else
+            git commit -m "DNA Factory promotion eval $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

@@ -1,0 +1,53 @@
+{
+  "strategy": "kronos_overlay",
+  "type": "sidecar_confidence_multiplier",
+  "status": "shipped_not_wired",
+  "wire_up_target": "alpha_engine/feed_hygiene.py (after polymarket_vol_filter v2)",
+  "rollback_envs": [
+    "KRONOS_OVERLAY_DISABLED=1",
+    "KRONOS_OVERLAY_DRY_RUN=1"
+  ],
+  "model": {
+    "family": "Kronos",
+    "license": "MIT",
+    "repo": "https://github.com/shiyu-coder/Kronos",
+    "default_variant": "Kronos-small",
+    "variants_available": {
+      "Kronos-mini": "4.1M",
+      "Kronos-small": "24.7M",
+      "Kronos-base": "102.3M",
+      "Kronos-large": "499.2M"
+    }
+  },
+  "tunables": {
+    "neutral_threshold_pct": 0.005,
+    "high_conviction_pct": 0.02,
+    "default_pred_len_bars": 24,
+    "lru_maxsize": 512
+  },
+  "multiplier_table": {
+    "agree_high_conviction": 1.2,
+    "agree_low_conviction": 1.1,
+    "neutral_or_unavailable": 1.0,
+    "disagree_low_conviction": 0.8,
+    "disagree_high_conviction": 0.6
+  },
+  "live_metrics": {
+    "n_picks_scored_dry_run": null,
+    "wr_agree_high_conv_pct": null,
+    "wr_agree_low_conv_pct": null,
+    "wr_disagree_low_conv_pct": null,
+    "wr_disagree_high_conv_pct": null,
+    "wr_baseline_pct": null,
+    "p95_latency_added_ms": null,
+    "as_of_utc": null,
+    "report_commit_sha": null
+  },
+  "wire_up_gate": {
+    "min_dry_run_picks": 500,
+    "min_dry_run_window_days": 14,
+    "min_wr_uplift_agree_high_pp": 5,
+    "min_wr_dampener_disagree_high_pp": 5,
+    "max_p95_latency_added_ms": 200
+  }
+}

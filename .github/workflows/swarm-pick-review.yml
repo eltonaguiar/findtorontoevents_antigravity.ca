@@ -1,0 +1,67 @@
+name: Swarm Pick Review (resolve + weekly + patterns)
+
+on:
+  schedule:
+    # 03:00 UTC daily = 23:00 EST previous day (or 22:00 EDT). Catches NY-close window.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas
+
+      - name: Resolve open swarm picks
+        run: python tools/swarm/outcome_resolver_swarm.py
+
+      - name: Weekly review (rolling 7d)
+        run: python tools/swarm/weekly_review.py --days 7
+
+      - name: All-time review (overwrites all-time.md)
+        run: python tools/swarm/weekly_review.py --all
+
+      - name: Pattern miner
+        run: python tools/swarm/pattern_miner.py
+
+      - name: Validate store
+        run: python tools/swarm/swarm_pick_schema.py
+
+      - name: Build AI leaderboard
+        # Read-only aggregator over swarm_picks.json (post-resolution above).
+        # Per-AI pick attribution — design in
+        # reports/design_per_ai_pick_attribution_2026-05-15.md.
+        run: python tools/ai_attribution/build_ai_leaderboard.py
+
+      - name: Commit refresh if changed
+        run: |
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh "chore(swarm-review): nightly resolver + leaderboard + patterns [skip ci]"               audit_dashboard/data/swarm_picks.json               audit_dashboard/data/swarm_leaderboard.json               audit_dashboard/data/swarm_pattern_tags.json               audit_dashboard/data/ai_leaderboard/               reports/swarm_review/
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add audit_dashboard/data/swarm_picks.json                     audit_dashboard/data/swarm_leaderboard.json                     audit_dashboard/data/swarm_pattern_tags.json                     audit_dashboard/data/ai_leaderboard/                     reports/swarm_review/
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(swarm-review): nightly resolver + leaderboard + patterns [skip ci]"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            else
+              echo "No changes to commit."
+            fi
+          fi

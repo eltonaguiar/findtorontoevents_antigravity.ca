@@ -1,0 +1,226 @@
+# .github/workflows/etf-bond-scanner.yml
+#
+# Runs ETF and Bond scanners daily on market days.
+# Part of Phase 2 remediation — see FOREX_COMMODITIES_BONDS.MD
+#
+# Schedule:
+#   ETF scanner: 13:35 UTC (9:35 AM ET) Mon-Fri — after market open
+#   Bond scanner: 14:00 UTC (10:00 AM ET) Mon-Fri — after FRED updates
+#
+# Both scanners write to alpha_engine/data/scanner_output/ and merge
+# into active_picks.json for downstream quality gates + dashboard.
+#
+# The merge step (`--merge`) rewrites active_picks.json IN THE RUNNER.
+# Without a commit step that change is destroyed when the runner is
+# torn down, so the scanners produced ZERO persisted picks. Each job
+# now commits the merged active_picks.json + its scanner_output file
+# back to main (rebase-retry loop for the storm-commit repo).
+
+name: ETF & Bond Scanner
+
+on:
+  schedule:
+    # ETF: 9:35 AM ET = 13:35 UTC (Mon-Fri)
+    - cron: '35 13 * * 1-5'
+    # Bond: 10:00 AM ET = 14:00 UTC (Mon-Fri)
+    - cron: '0 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      merge:
+        description: 'Merge picks into active_picks.json'
+        required: false
+        default: 'true'
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  etf-scan:
+    name: ETF Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Shallow-ish: enough history for the commit-step rebase onto
+          # recent origin/main. fetch-depth: 0 (full history) on this
+          # storm-commit repo makes checkout take 25+ min every run.
+          fetch-depth: 100
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run ETF Scanner
+        run: |
+          MERGE_FLAG=""
+          if [ "${{ inputs.merge }}" = "true" ] || [ -z "${{ inputs.merge }}" ]; then
+            MERGE_FLAG="--merge"
+          fi
+          python -m alpha_engine.etf_scanner $MERGE_FLAG
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+          MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+
+      - name: Commit merged ETF picks
+        if: ${{ inputs.merge != 'false' }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # --- Conflict-safe reset (BUG FIX) ---------------------------------
+          # The previous inline rebase loop left the working tree with unmerged
+          # files after a failed pull/rebase, so every subsequent run aborted
+          # with "Pulling is not possible because you have unmerged files".
+          # Stash the freshly-generated pick JSONs aside, abort any in-progress
+          # merge/rebase, hard-reset to a clean origin/main, then restore.
+          GEN_FILES="alpha_engine/data/active_picks.json alpha_engine/data/scanner_output/active_picks_etf.json"
+          mkdir -p /tmp/etf_gen_backup
+          for f in $GEN_FILES; do
+            if [ -f "$f" ]; then
+              mkdir -p "/tmp/etf_gen_backup/$(dirname "$f")"
+              cp "$f" "/tmp/etf_gen_backup/$f"
+            fi
+          done
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          git fetch origin main
+          git reset --hard origin/main
+          for f in $GEN_FILES; do
+            if [ -f "/tmp/etf_gen_backup/$f" ]; then
+              mkdir -p "$(dirname "$f")"
+              cp "/tmp/etf_gen_backup/$f" "$f"
+            fi
+          done
+          # -------------------------------------------------------------------
+
+          # active_picks.json is the file the dashboard ingests — it must
+          # persist. The scanner_output dump is best-effort (also uploaded
+          # as an artifact); add it tolerantly so a missing/renamed path
+          # never aborts the commit.
+          git add alpha_engine/data/active_picks.json
+          git add alpha_engine/data/scanner_output/active_picks_etf.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No ETF pick changes to commit"
+          else
+            git commit -m "chore: ETF scanner picks merge [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+      - name: Upload ETF picks
+        uses: actions/upload-artifact@v4
+        with:
+          name: etf-picks-${{ github.run_number }}
+          path: alpha_engine/data/scanner_output/active_picks_etf.json
+          retention-days: 30
+
+  bond-scan:
+    name: Bond Scanner
+    runs-on: ubuntu-latest
+    # Sequential after etf-scan: both jobs commit active_picks.json, and two
+    # concurrent commits race — the loser's rebase-retry conflicts and its
+    # picks are dropped (observed: ETF picks lost while Bond's persisted).
+    needs: etf-scan
+    if: ${{ always() }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Shallow-ish: enough history for the commit-step rebase onto
+          # recent origin/main. fetch-depth: 0 (full history) on this
+          # storm-commit repo makes checkout take 25+ min every run.
+          fetch-depth: 100
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Bond Scanner
+        run: |
+          MERGE_FLAG=""
+          if [ "${{ inputs.merge }}" = "true" ] || [ -z "${{ inputs.merge }}" ]; then
+            MERGE_FLAG="--merge"
+          fi
+          python -m alpha_engine.bond_scanner $MERGE_FLAG
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          SKIP_FRED: '1'
+          PYTHONPATH: ${{ github.workspace }}
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+          MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+
+      - name: Commit merged Bond picks
+        if: ${{ inputs.merge != 'false' }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # --- Conflict-safe reset (BUG FIX) ---------------------------------
+          # The previous inline rebase loop left the working tree with unmerged
+          # files after a failed pull/rebase, so every subsequent run aborted
+          # with "Pulling is not possible because you have unmerged files".
+          # Stash the freshly-generated pick JSONs aside, abort any in-progress
+          # merge/rebase, hard-reset to a clean origin/main, then restore.
+          #
+          # WRONG-PATH FIX: the bond scanner's PRIMARY output is the FLAT path
+          # alpha_engine/data/active_picks_bond.json — that is the file
+          # audit_trail/dashboard_generator.py reads (bond_scanner registry
+          # entry). scanner_output/active_picks_bond.json is only a secondary
+          # audit copy that nothing ingests. The old workflow staged only the
+          # scanner_output copy, so bond picks never reached /audit.
+          GEN_FILES="alpha_engine/data/active_picks.json alpha_engine/data/active_picks_bond.json alpha_engine/data/scanner_output/active_picks_bond.json"
+          mkdir -p /tmp/bond_gen_backup
+          for f in $GEN_FILES; do
+            if [ -f "$f" ]; then
+              mkdir -p "/tmp/bond_gen_backup/$(dirname "$f")"
+              cp "$f" "/tmp/bond_gen_backup/$f"
+            fi
+          done
+          git merge --abort 2>/dev/null || true
+          git rebase --abort 2>/dev/null || true
+          git fetch origin main
+          git reset --hard origin/main
+          for f in $GEN_FILES; do
+            if [ -f "/tmp/bond_gen_backup/$f" ]; then
+              mkdir -p "$(dirname "$f")"
+              cp "/tmp/bond_gen_backup/$f" "$f"
+            fi
+          done
+          # -------------------------------------------------------------------
+
+          # active_picks.json is the file the dashboard ingests for the merged
+          # pipeline; active_picks_bond.json (flat path) is the file the
+          # dashboard generator reads for the bond_scanner source. BOTH must
+          # persist. The scanner_output dump is best-effort (also uploaded as
+          # an artifact); add it tolerantly so a missing/renamed path never
+          # aborts the commit.
+          git add alpha_engine/data/active_picks.json
+          git add alpha_engine/data/active_picks_bond.json 2>/dev/null || true
+          git add alpha_engine/data/scanner_output/active_picks_bond.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No Bond pick changes to commit"
+          else
+            git commit -m "chore: Bond scanner picks merge [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+      - name: Upload Bond picks
+        uses: actions/upload-artifact@v4
+        with:
+          name: bond-picks-${{ github.run_number }}
+          path: alpha_engine/data/scanner_output/active_picks_bond.json
+          retention-days: 30

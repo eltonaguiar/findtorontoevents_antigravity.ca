@@ -1,0 +1,395 @@
+# Sync all databases from findtorontoevents.ca  torontoevent.net
+# 1. Deploys export runner to source server, exports all 8 DBs
+# 2. Deploys import runner to target server
+# 3. POSTs each dump to the import runner on torontoevent.net
+# 4. Cleans up both temp scripts
+name: "DB Sync: findtorontoevents.ca  torontoevent.net"
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 6:00 AM UTC (2 hours after backup at 4 AM)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  EXPORT_SCRIPT_PATH: "_db_export_tmp.php"
+  IMPORT_SCRIPT_PATH: "_db_import_tmp.php"
+
+jobs:
+  sync-databases:
+    name: "Sync databases to torontoevent.net"
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: sudo apt-get install -y lftp
+
+      #  Deploy export runner to SOURCE (findtorontoevents.ca) 
+      - name: Deploy export runner to findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          DB_CREDENTIALS_JSON: ${{ secrets.FINDTORONTOEVENTS_DB_CREDENTIALS }}
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, json
+
+          db_creds_json = os.environ.get('DB_CREDENTIALS_JSON', '{}')
+          token         = os.environ.get('DB_SCRIPT_TOKEN', '')
+
+          try:
+              creds = json.loads(db_creds_json)
+          except Exception:
+              creds = {}
+
+          # Build PHP 5.2 array literal for per-DB credential map
+          cred_map_parts = []
+          for dbname, dbcreds in creds.items():
+              u = dbcreds[0].replace("'", "\\'")
+              p = dbcreds[1].replace("'", "\\'")
+              cred_map_parts.append(f"'{dbname}' => array('{u}', '{p}')")
+          cred_map_php = 'array(' + ', '.join(cred_map_parts) + ')' if cred_map_parts else 'array()'
+
+          with open('scripts/db_export_runner.php', 'r') as f:
+              content = f.read()
+
+          content = content.replace('EXPORT_TOKEN_PLACEHOLDER', token)
+          content = content.replace('array(); // EXPORT_DB_CRED_MAP', cred_map_php + '; // EXPORT_DB_CRED_MAP')
+
+          with open('/tmp/export_runner.php', 'w') as f:
+              f.write(content)
+          print(" Export runner prepared (PHP 5.2 compatible) with per-DB credentials")
+          PYEOF
+
+          cat > /tmp/lftp_src_deploy.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd /findtorontoevents.ca
+          put /tmp/export_runner.php -o $EXPORT_SCRIPT_PATH
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_src_deploy.script
+          echo " Export runner deployed to findtorontoevents.ca"
+
+      #  Deploy import runner to TARGET (torontoevent.net) 
+      - name: Deploy import runner to torontoevent.net
+        env:
+          DST_FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+          DST_DB_USER: ${{ secrets.TORONTOEVENT_DB_USER }}
+          DST_DB_PASS: ${{ secrets.TORONTOEVENT_DB_PASS }}
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import os
+
+          db_user = os.environ.get('DST_DB_USER', 'admin')
+          db_pass = os.environ.get('DST_DB_PASS', '')
+          token   = os.environ.get('DB_SCRIPT_TOKEN', '')
+
+          with open('scripts/db_import_runner.php', 'r') as f:
+              content = f.read()
+
+          content = content.replace('IMPORT_TOKEN_PLACEHOLDER', token)
+          content = content.replace('IMPORT_DB_USER_PLACEHOLDER', db_user)
+          content = content.replace('IMPORT_DB_PASS_PLACEHOLDER', db_pass)
+
+          with open('/tmp/import_runner.php', 'w') as f:
+              f.write(content)
+          print(" Import runner prepared")
+          PYEOF
+
+          cat > /tmp/lftp_dst_deploy.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$DST_FTP_USER","$DST_FTP_PASS" "$DST_FTP_HOST"
+          put /tmp/import_runner.php -o $IMPORT_SCRIPT_PATH
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_dst_deploy.script
+          echo " Import runner deployed to torontoevent.net"
+
+      #  Verify export script is accessible 
+      - name: Verify export script deployed
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          echo " Verifying export script is accessible..."
+          RESP_FILE=$(mktemp)
+          HTTP_CODE=$(curl -s -o "$RESP_FILE" -w "%{http_code}" \
+            -H "User-Agent: GitHub-Actions-DB-Sync/1.0" \
+            "https://findtorontoevents.ca/_db_export_tmp.php?token=${DB_SCRIPT_TOKEN}&db=__ping__")
+          echo "  HTTP status: $HTTP_CODE"
+          echo "  Response body (first 500 chars):"
+          head -c 500 "$RESP_FILE" || true
+          echo ""
+          if [ "$HTTP_CODE" = "000" ] || [ "$HTTP_CODE" = "403" ] || [ "$HTTP_CODE" = "500" ] || [ "$HTTP_CODE" = "502" ] || [ "$HTTP_CODE" = "503" ]; then
+            echo " Export script failed (HTTP $HTTP_CODE). Check response above for PHP errors."
+            rm -f "$RESP_FILE"
+            exit 1
+          fi
+          # Verify response is valid JSON with ping=true
+          if ! python3 -c "import json,sys; d=json.load(open('$RESP_FILE')); assert d.get('ping')==True" 2>/dev/null; then
+            echo " Ping response is not valid JSON or missing ping flag"
+            rm -f "$RESP_FILE"
+            exit 1
+          fi
+          rm -f "$RESP_FILE"
+          echo " Export script is reachable and returns valid JSON"
+
+      #  Export databases one at a time (avoids PHP timeout) 
+      - name: Export databases from findtorontoevents.ca
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          mkdir -p /tmp/db_sync
+          echo " Exporting databases from findtorontoevents.ca (one at a time)..."
+
+          python3 - <<'PYEOF'
+          import urllib.request, json, os, time, sys
+
+          token = os.environ.get('DB_SCRIPT_TOKEN', '')
+          base_url = "https://findtorontoevents.ca/_db_export_tmp.php"
+
+          databases = [
+              'ejaguiar1_deals',
+              'ejaguiar1_events',
+              'ejaguiar1_favcreators',
+              'ejaguiar1_memecoin',
+              'ejaguiar1_news',
+              'ejaguiar1_sportsbet',
+              'ejaguiar1_stocks',
+              'ejaguiar1_tvmovietrailers',
+          ]
+
+          exported = 0
+          errors = []
+
+          for dbname in databases:
+              url = f"{base_url}?token={token}&db={dbname}"
+              print(f"\n Exporting {dbname}...")
+
+              raw_body = None
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(url)
+                      req.add_header('User-Agent', 'GitHub-Actions-DB-Sync/1.0')
+                      with urllib.request.urlopen(req, timeout=300) as resp:
+                          status = resp.status
+                          raw_body = resp.read()
+                          print(f"  HTTP {status}, response size: {len(raw_body)} bytes")
+
+                          if len(raw_body) == 0:
+                              raise ValueError("Empty response body (PHP may have timed out)")
+
+                          data = json.loads(raw_body)
+                      break
+                  except Exception as e:
+                      print(f"  Attempt {attempt+1} failed: {e}")
+                      if raw_body and len(raw_body) < 500:
+                          print(f"  Raw response: {raw_body[:500]}")
+                      if attempt == 2:
+                          errors.append(f"{dbname}: {e}")
+                          data = None
+                      else:
+                          time.sleep(15)
+
+              if data is None:
+                  continue
+
+              if data.get('errors'):
+                  print(f"    Export errors: {data['errors']}")
+                  errors.append(f"{dbname}: {data['errors']}")
+                  continue
+
+              dumps = data.get('dumps', {})
+              if dbname in dumps:
+                  out_path = f"/tmp/db_sync/{dbname}.b64gz"
+                  with open(out_path, 'w') as f:
+                      f.write(dumps[dbname])
+                  size_kb = len(dumps[dbname]) / 1024
+                  print(f"   {dbname}: {size_kb:.1f} KB (compressed)")
+                  exported += 1
+              else:
+                  errors.append(f"{dbname}: not found in response dumps")
+                  print(f"   {dbname}: not in response")
+
+          print(f"\n{'='*50}")
+          print(f"Total exported: {exported}/{len(databases)}")
+          if errors:
+              print(f"Errors: {errors}")
+          if exported == 0:
+              print(" No databases exported  aborting")
+              sys.exit(1)
+          PYEOF
+
+      #  Upload dumps to target via FTP (avoids HTTP 413 body limit) 
+      - name: Upload dumps to torontoevent.net via FTP
+        env:
+          DST_FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          DUMP_COUNT=$(ls /tmp/db_sync/*.b64gz 2>/dev/null | wc -l)
+          echo " Uploading $DUMP_COUNT dump files to torontoevent.net via FTP..."
+
+          cat > /tmp/lftp_upload_dumps.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$DST_FTP_USER","$DST_FTP_PASS" "$DST_FTP_HOST"
+          mkdir -p _sync_dumps
+          lcd /tmp/db_sync
+          mput -O _sync_dumps *.b64gz
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_upload_dumps.script
+          echo " Dump files uploaded to torontoevent.net/_sync_dumps/"
+
+      #  Trigger import on target (reads from disk, no body limit) 
+      - name: Import databases into torontoevent.net
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          echo " Importing databases into torontoevent.net (file mode)..."
+
+          python3 - <<'PYEOF'
+          import urllib.request, json, os, time
+          from pathlib import Path
+
+          token      = os.environ.get('DB_SCRIPT_TOKEN', '')
+          import_url = "https://torontoevent.net/_db_import_tmp.php"
+
+          dump_dir = Path("/tmp/db_sync")
+          success  = []
+          failed   = []
+
+          dump_files = sorted(dump_dir.glob("*.b64gz"))
+          if not dump_files:
+              print(" No dump files found  nothing to import")
+              exit(0)
+
+          # Run diagnostics first
+          diag_url = f"{import_url}?token={token}&db=__diag__"
+          try:
+              req = urllib.request.Request(diag_url)
+              req.add_header('User-Agent', 'GitHub-Actions-DB-Sync/1.0')
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  diag = json.loads(resp.read())
+              print(f" Target diagnostics:")
+              print(f"  PHP: {diag.get('php_version')}")
+              print(f"  exec: {diag.get('exec_available')}")
+              print(f"  PDO:  {diag.get('pdo_available')}")
+              print(f"  gzdecode: {diag.get('gzdecode_available')}")
+              print(f"  db_user: {diag.get('db_user')}")
+              print(f"  dump_dir: {diag.get('dump_dir_exists')}")
+              print(f"  dump_files: {diag.get('dump_files')}")
+              if diag.get('disabled_functions'):
+                  print(f"  disabled: {diag.get('disabled_functions')[:200]}")
+          except Exception as e:
+              print(f" Diagnostics failed: {e}")
+
+          for dump_file in dump_files:
+              dbname = dump_file.stem
+              size_kb = dump_file.stat().st_size / 1024
+              print(f"\n Importing {dbname} ({size_kb:.1f} KB)...")
+
+              url = f"{import_url}?token={token}&db={dbname}&file=1"
+              result = None
+
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(url)
+                      req.add_header('User-Agent', 'GitHub-Actions-DB-Sync/1.0')
+                      with urllib.request.urlopen(req, timeout=300) as resp:
+                          raw = resp.read()
+                          print(f"  HTTP {resp.status}, {len(raw)} bytes")
+                          result = json.loads(raw)
+                          # Print full response for debugging
+                          print(f"  Response: {json.dumps(result)}")
+                      break
+                  except Exception as e:
+                      print(f"  Attempt {attempt+1} for {dbname} failed: {e}")
+                      if attempt == 2:
+                          failed.append(f"{dbname}: {e}")
+                      else:
+                          time.sleep(10)
+
+              if result:
+                  if result.get('status') == 'ok':
+                      success.append(dbname)
+                      print(f"   {dbname}  OK (method={result.get('method')}, sql={result.get('sql_bytes')} bytes)")
+                  else:
+                      err = result.get('errors', result.get('error', 'unknown'))
+                      failed.append(f"{dbname}: {err}")
+                      print(f"   {dbname}  {err}")
+
+          print(f"\n{'='*50}")
+          print(f" Synced: {len(success)} databases")
+          if failed:
+              print(f" Failed ({len(failed)}):")
+              for f in failed:
+                  print(f"  - {f}")
+              exit(1)
+          PYEOF
+
+      #  Clean up temp scripts 
+      - name: Clean up temp scripts from both servers
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          DST_FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          echo "<?php http_response_code(404); exit;" > /tmp/stub.php
+
+          echo " Cleaning source server..."
+          cat > /tmp/lftp_src_clean.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd /findtorontoevents.ca
+          put /tmp/stub.php -o $EXPORT_SCRIPT_PATH
+          rm $EXPORT_SCRIPT_PATH
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_src_clean.script 2>/dev/null || echo " Source cleanup attempted"
+
+          echo " Cleaning mirror server (import script + dump files)..."
+          cat > /tmp/lftp_dst_clean.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$DST_FTP_USER","$DST_FTP_PASS" "$DST_FTP_HOST"
+          put /tmp/stub.php -o $IMPORT_SCRIPT_PATH
+          rm $IMPORT_SCRIPT_PATH
+          rm -rf _sync_dumps
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_dst_clean.script 2>/dev/null || echo " Mirror cleanup attempted"
+          echo " Cleanup complete"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "##  Database Sync Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Source** | findtorontoevents.ca |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Destination** | torontoevent.net |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Run time** | $(date -u '+%Y-%m-%d %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Databases synced: ejaguiar1_{deals,events,favcreators,memecoin,news,sportsbet,stocks,tvmovietrailers}" >> $GITHUB_STEP_SUMMARY
+

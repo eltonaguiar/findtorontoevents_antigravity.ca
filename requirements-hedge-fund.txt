@@ -1,0 +1,20 @@
+# Optional hedge-fund integration dependencies (opt-in sidecar).
+#
+# Install with: pip install -r requirements-hedge-fund.txt
+#
+# These libraries are imported by tools that are NOT on the production
+# pick-generation / scoring path (see CLAUDE.md "Wire-Up Rule"). They
+# back the following sidecars:
+#
+#   - tools/quantstats_tearsheets.py  -> quantstats (Apache-2.0)
+#   - tools/pypfopt_allocator.py      -> PyPortfolioOpt (MIT)
+#
+# The base requirements.txt is intentionally lean for the live trading
+# bot. Anything heavier (matplotlib / seaborn / cvxpy) lives here.
+
+# Per-asset-class HTML tear-sheets (drop-in)
+quantstats>=0.0.81
+
+# Hierarchical Risk Parity + Ledoit-Wolf shrinkage + EfficientFrontier
+# (sidecar to the existing hand-rolled tools/hrp_allocator.py)
+PyPortfolioOpt>=1.6.0

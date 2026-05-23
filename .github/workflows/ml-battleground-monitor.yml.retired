@@ -1,0 +1,61 @@
+# RETIRED 2026-04-18: dormant since mid-March 2026, no consumer downstream. To revive, rename back to .yml and re-enable schedule.
+name: "ML Battleground Pick Monitor"
+
+on:
+  # DISABLED 2026-03-12: ml_battleground has 1.9% WR across 107 trades = CATASTROPHIC. Kill per Antigravity audit.
+  # schedule:
+  # - cron: "20 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: superpowers-monitor-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+
+      - name: Run Pick Monitor
+        run: |
+          cd ml_battleground
+          python -m monitor_picks
+
+      - name: Commit results
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "superpowers@findtorontoevents.ca"
+          git add ml_battleground/system_a_filter/data/ || true
+          git add ml_battleground/system_b_regime/data/ || true
+          git add ml_battleground/system_c_deeplearn/data/ || true
+          git add ml_battleground/system_d_carry/data/ || true
+          git add ml_battleground/system_e_momentum/data/ || true
+          git add ml_battleground/ensemble_data/ || true
+          git add ml_battleground/shared_data/ || true
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m " Superpowers Monitor: pick validation $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying in ${i}0s..."
+            sleep ${i}0
+            git rebase --abort 2>/dev/null || true
+            git pull --rebase origin main || true
+          done
+

@@ -1,0 +1,147 @@
+{
+  "verdicts": [
+    {
+      "question_id": 1,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/_pr_capture.py:22-143 (capture_pr + embed_into_prompt); tools/swarm/prompts/pr_review_inline.md ({{PR_CAPTURE}} placeholder); swarm_runs/PR_REVIEW_ABORTED.md:line-verified-root-cause",
+      "recommendation": "No immediate code change needed. Consider adding a runtime assertion in worker_runner.py call_api_consultant that strips any 'gh pr view' / 'gh pr diff' literal strings from prompts dispatched to API engines as defense-in-depth.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 2,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/worker_runner.py:360-385 (call_claude — ALWAYS pipes via stdin; 6000-byte threshold removed; comment block documents PR_REVIEW_ABORTED.md verification)",
+      "recommendation": "No change needed. The inline comment should be promoted to a permanent KFM entry in SWARM_DESIGN_NOTES.md so future engine additions copy the stdin pattern.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 3,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/worker_runner.py:640-641 (call_api_consultant sets PYTHONIOENCODING=utf-8 and PYTHONUTF8=1 on child env); verified against PR #739 post-fix: 200 OK on both providers",
+      "recommendation": "No change needed. Consider adding an integration test fixture with table-drawing Unicode (U+2500 box-drawing chars) to prevent regression.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 4,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/api_consult.py:210-280 (_ollama_repair_wrap_dup handles both flavor A (bare LF inside JSON strings) and flavor B (mid-token duplicate replay)); also _ollama_normalize_smart_punct at line 193",
+      "recommendation": "No immediate change. The repair is heuristic-based; add a counter metric in the meta-file output showing how many repairs were applied per call so you can detect if ollama fixes the bug upstream.",
+      "confidence": "MED"
+    },
+    {
+      "question_id": 5,
+      "verdict": "FIX_INCOMPLETE",
+      "evidence": "tools/swarm/worker_runner.py:480-540 (call_agent has 24KB temp-file fallback for prompts >24KB, but PR_REVIEW_ABORTED.md and smoke tests show WinError 206 still occurs at 10KB for agent and openclaude)",
+      "recommendation": "Lower the agent temp-file threshold from 24_000 to 8_000 bytes (matching the observed 10KB failure ceiling with headroom). Apply the SAME temp-file fallback to call_openclaude (currently uses -p positional with ~6KB tested limit, but PR-review prompts exceed this). Document both thresholds in SWARM_DESIGN_NOTES.md.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 6,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/worker_runner.py:620-680 (call_codex JSONL parser extracts usage limit error from 'turn.completed' events and surfaces it in meta); tools/swarm/SWARM_DESIGN_NOTES.md (KFM documented)",
+      "recommendation": "Add a pre-flight check in worker_runner.py before calling codex: if swarm_stats.py historical data shows codex quota exhaustion within last 2 hours, skip the engine and emit a 'skipped: quota-capped' envelope instead of burning a subprocess call.",
+      "confidence": "MED"
+    },
+    {
+      "question_id": 7,
+      "verdict": "FIX_INCOMPLETE",
+      "evidence": "tools/swarm/api_consult.py:155-160 (call_openai_compat sets model_fingerprint from data.model); tools/swarm/worker_runner.py:715 (meta['model_fingerprint'] propagated to _calls.jsonl); BUT swarm_runs/SELF_REVIEW_PENDING_AUDIT_2026_05_03.md side-3 confirms NO automated detector for spoofed run-ids yet",
+      "recommendation": "Add a runtime spoof detector in schema_validate.py or swarm_inspect.py: compare model_fingerprint against the --model arg. If mismatch (e.g., requested 'grok-3-latest' but got 'gpt-4o'), flag SPOOFED_MODEL and downgrade confidence to LOW. Also validate that xai/cerebras run-ids contain expected date prefixes.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 8,
+      "verdict": "FIX_INCOMPLETE",
+      "evidence": "tools/swarm/worker_runner.py:780-790 (call_pty_engine auto-selects fileref mode for prompts >800 bytes); tools/swarm/_freebuff_test_ladder.py exists; BUT user states 'Untested end-to-end' and smoke test shows PONG works but 6.8KB brief not verified",
+      "recommendation": "Run one end-to-end test with the 6.8KB asset-class brief using --mode fileref and verify the output is >1000 bytes. If it fails, the 800-byte threshold may need to drop to 512 bytes or the temp file needs to be written to a path freebuff can actually Read (check sandbox permissions).",
+      "confidence": "MED"
+    },
+    {
+      "question_id": 9,
+      "verdict": "FIX_INCOMPLETE",
+      "evidence": "tools/swarm/worker_runner.py: call_codex uses stdin (line 650: _run(cmd, stdin_data=prompt)); call_claude uses stdin (line 365: _run(cmd, stdin_data=prompt)); BUT call_agent and call_openclaude still use positional -p for prompts below their respective thresholds. Smoke tests confirm agent fails at 10KB, openclaude at >6KB.",
+      "recommendation": "Implement a universal _run_stdin_or_tempfile() helper in worker_runner.py that ALL engines use: (1) try stdin pipe first; (2) if engine rejects stdin (agent), fall back to temp-file at 8KB threshold; (3) if temp-file fails, fail fast with descriptive error. Remove engine-specific ad-hoc logic.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 10,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/schema_review.json:42-51 (if/then rule: if severity in [blocking,major] then evidence.minLength=10); schema_validate.py enforces this; live-tested 9/9 fixture×level matrix",
+      "recommendation": "No change needed. Consider adding a 'strictness' YAML config field to schema_validate.py so operators can switch between strict/lenient/off at runtime without editing the JSON file.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 11,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/worker_runner.py:715-720 (meta carries retry_count, model_fingerprint, tokens_in/out, transport_status); tools/swarm/swarm_log.py (CallTimer writes to _calls.jsonl); tools/swarm/SPEC.md: imp-B audit-trail fields documented with sample row",
+      "recommendation": "No change needed. Add a schema_version field to _calls.jsonl rows so future imp-C/imp-D extensions don't break downstream parsers.",
+      "confidence": "HIGH"
+    },
+    {
+      "question_id": 12,
+      "verdict": "FIX_ADEQUATE",
+      "evidence": "tools/swarm/worker_runner.py:120-150 (_load_persona resolves names to agent_personas/*.md files, strips YAML frontmatter, raises FileNotFoundError on typos); tools/swarm/agent_personas/ directory with 8 personas; live-verified crypto-specialist shaping",
+      "recommendation": "Add a validation step that checks the persona body contains the required JSON schema reminder (if the task expects structured output) — some personas may inadvertently drop the schema contract.",
+      "confidence": "MED"
+    },
+    {
+      "question_id": 13,
+      "verdict": "FIX_INCOMPLETE",
+      "evidence": "swarm_runs/CONSENSUS_v2.md shows BOND is still 3-2 split requiring operator; swarm_runs/DISAGREEMENT_RESOLUTION.md exists but is manual; SELF_REVIEW_PENDING_AUDIT_2026_05_03.md lists auto-resolver as deferred L-effort",
+      "recommendation": "Implement a confidence-weighted voting pass in schema_validate.py or as a standalone merge-captain variant: assign weights per engine based on swarm_stats.py historical reliability (kimi=0.3, claude=0.25, etc.), compute weighted verdict, and auto-resolve when weighted confidence exceeds 0.75. Only defer to operator when below threshold.",
+      "confidence": "MED"
+    }
+  ],
+  "top_5_missed_issues": [
+    {
+      "rank": 1,
+      "severity": "HIGH",
+      "issue": "openrouter has ZERO live verification — the wiring is complete but smoke test failed due to subshell env inheritance. This means the 16th engine is dead code. If used in a production swarm, it will silently fail or fall back to empty output, causing consensus skew.",
+      "file_line": "tools/swarm/api_consult.py:58-68 (openrouter PROVIDERS block); tools/swarm/safety.py:37 (ENGINE_REQUIRED_KEYS lists OPENROUTER but no OPENROUTER_API_KEY fallback)"
+    },
+    {
+      "rank": 2,
+      "severity": "HIGH",
+      "issue": "swarm_inspect.py reports engines=0 healthy=0 suspect=0 for per-engine subdir layout. This means the automated health check is blind to all engine outputs when swarm_dispatch.ps1 uses subdirs. You're flying without an automated safety net.",
+      "file_line": "swarm_runs/PR_REVIEW_ABORTED.md:30 (swarm_inspect flags); user prompt: 'inspector_inspect.py doesn't recognise per-engine subdir layout'"
+    },
+    {
+      "rank": 3,
+      "severity": "MEDIUM",
+      "issue": "deepseek 56% ZOMBIE rate (16 calls / 9 ok) with SHORT/TINY threshold. The retry loop in call_api_consultant retries on output<200B, but deepseek's 'ok' responses may be near-empty JSON envelopes that pass the 200B check while being content-free. The 200B threshold is too coarse for JSON schemas.",
+      "file_line": "tools/swarm/worker_runner.py:670 (success = rc==0 and out_bytes >= 200); tools/swarm/swarm_stats.py (deepseek ZOMBIE classification)"
+    },
+    {
+      "rank": 4,
+      "severity": "MEDIUM",
+      "issue": "can_post() only checks role string, but there's no enforcement that the comment-poster role is ONLY assigned to one engine per run. A misconfigured swarm could assign comment-poster to multiple engines, causing duplicate or conflicting GitHub comments.",
+      "file_line": "tools/swarm/safety.py:120 (can_post returns role == 'comment-poster')"
+    },
+    {
+      "rank": 5,
+      "severity": "MEDIUM",
+      "issue": "The _pr_capture.py non-BMP stripper (line 42: _NON_BMP_RE) silently replaces emoji with '?', which destroys semantic meaning in PR bodies (e.g., status indicators). A reviewer seeing '?' instead of a red circle may misinterpret urgency. The stripper should preserve meaning via a lookup table or escape sequence.",
+      "file_line": "tools/swarm/_pr_capture.py:42-52 (_ascii_safe replaces all non-BMP with '?')"
+    }
+  ],
+  "top_3_architectural_undos": [
+    {
+      "choice": "PowerShell dispatcher (swarm_dispatch.ps1) + Python worker_runner.py hybrid",
+      "reason": "The split orchestration creates impedance mismatch: PS spawns Python jobs, Python writes JSON, PS aggregates. This causes the per-engine subdir layout bug (inspector sees 0 engines), Windows encoding issues (cp1252 vs UTF-8), and command-line length limits. A pure-Python asyncio dispatcher would unify subprocess management, eliminate PS quoting bugs, and make stdin piping universal.",
+      "evidence": "tools/swarm/worker_runner.py: entire file; swarm_runs/PR_REVIEW_ABORTED.md (Claude 'Ready. Awaiting PR review task.' caused by arg-passing issue in PS layer)"
+    },
+    {
+      "choice": "Engine-specific ad-hoc prompt delivery (positional -p vs stdin vs temp-file per engine)",
+      "reason": "Every engine has its own prompt-delivery logic in worker_runner.py (call_claude=stdin, call_kimi=-p, call_agent=positional+tempfile, call_codex=stdin, call_openclaude=-p). This creates a maintenance nightmare — adding an engine requires understanding Windows CreateProcess limits, npm shim behavior, and TTY handling. A unified _run_stdin_or_tempfile() helper would collapse 6 delivery paths into 1.",
+      "evidence": "tools/swarm/worker_runner.py:360-700 (6 different delivery mechanisms)"
+    },
+    {
+      "choice": "Flat JSONL _calls.jsonl with no schema versioning",
+      "reason": "The audit trail gains new fields (imp-B added 5 fields) but there's no schema_version in the JSONL rows. Downstream parsers (swarm_stats.py, swarm_inspect.py, external auditors) will break silently when imp-C adds fields. A '$schema' or 'v' field per row would prevent this.",
+      "evidence": "tools/swarm/SPEC.md (logging schema shows no version field); tools/swarm/swarm_log.py (CallTimer writes flat dict)"
+    }
+  ],
+  "kimi_feature_recommendation": "Adopt Kimi's hierarchical agent-decomposition pattern: instead of 16 peer workers all reviewing the same PR, use a 2-tier hierarchy. Tier-1: a 'scoping agent' (kimi or claude) reads the PR diff and breaks it into sub-tasks (e.g., 'security review', 'API contract review', 'test coverage review'). Tier-2: specialist agents (crypto-specialist, frontend-specialist, etc.) are assigned ONLY the relevant hunks. This reduces per-worker prompt size (solving the 8KB/19KB ceiling for agent/openclaude), increases specialization, and reduces fabrication because each worker sees less context to hallucinate against. The scoping agent's output becomes the {{PR_CAPTURE}} block, enriched with file-type metadata.",
+  "false_confidence_claim": "SPEC.md or METHODOLOGY.md likely claims that 'schema_validate.py enforces evidence requirements for all concerns' — but schema_review.json:48 shows evidence.minLength=10 only applies when severity is 'blocking' or 'major'. A 'minor' or 'question' concern can still have empty evidence and pass validation. METHODOLOGY.md section 6 probably presents schema_validate.py as a falsifiability gate without clarifying this coverage gap. A red-team worker could exploit this by downgrading all its fabrications to 'question' severity to bypass evidence requirements.",
+  "pr_capture_comparison": "Your _pr_capture.py and our ai-swarm approach solve the same problem (API engines can't run gh) but differ in architecture. YOURS: server-side capture in PowerShell dispatch, embedded via {{PR_CAPTURE}} placeholder in pr_review_inline.md. Pros: works today, no engine changes needed, captures real gh output. Cons: PS-specific, not reusable across platforms, captures at dispatch-time (stale if PR updates during long swarm run). OURS: each OpenAI-API adapter (deepseek, xai, etc.) is a Python class that runs in-process; we could add a pre-flight 'context_gatherer' step that calls gh directly via subprocess before prompting the API. Pros: pure Python, cross-platform, can refresh context per-engine. Cons: not yet implemented (our adapters don't have this). Recommendation: hybrid — keep _pr_capture.py but move it from PS to a Python module that both your swarm_dispatch.ps1 AND api_consult.py can import. Add a --refresh-interval flag so long-running swarms re-capture if PRs change."
+}

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breakout Arena — 3 Approaches, 1 Winner</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;color:#e0e0e0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:24px 32px;border-bottom:2px solid #e94560}
+.header h1{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
+.header .subtitle{color:#a0a0b0;font-size:14px}
+.header .updated{color:#666;font-size:12px;margin-top:8px}
+.arena{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px;max-width:1800px;margin:0 auto}
+@media(max-width:1200px){.arena{grid-template-columns:1fr}}
+.system-card{background:#12121e;border:1px solid #2a2a3e;border-radius:12px;overflow:hidden}
+.system-card.winner{border-color:#22c55e;box-shadow:0 0 20px rgba(34,197,94,0.15)}
+.card-header{padding:16px 20px;border-bottom:1px solid #2a2a3e;display:flex;justify-content:space-between;align-items:center}
+.card-header h2{font-size:18px;font-weight:600}
+.approach-a .card-header{background:linear-gradient(90deg,#1e3a5f 0%,#12121e 100%)}
+.approach-a .card-header h2{color:#3b82f6}
+.approach-b .card-header{background:linear-gradient(90deg,#3a1e5f 0%,#12121e 100%)}
+.approach-b .card-header h2{color:#a855f7}
+.approach-c .card-header{background:linear-gradient(90deg,#5f3a1e 0%,#12121e 100%)}
+.approach-c .card-header h2{color:#f59e0b}
+.badge{font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
+.badge-live{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+.badge-waiting{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44}
+.badge-error{background:#ef444422;color:#ef4444;border:1px solid #ef444444}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px}
+.stat{text-align:center;padding:8px 4px;background:#1a1a2e;border-radius:6px}
+.stat-value{font-size:18px;font-weight:700;color:#fff}
+.stat-value.positive{color:#22c55e}
+.stat-value.negative{color:#ef4444}
+.stat-label{font-size:10px;color:#888;text-transform:uppercase;margin-top:2px}
+.equity-chart{padding:12px 16px}
+.equity-chart canvas{width:100%;height:80px}
+.picks-section{padding:12px 16px}
+.picks-section h3{font-size:13px;color:#888;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px}
+.pick{background:#1a1a2e;border-radius:6px;padding:10px 12px;margin-bottom:6px;border-left:3px solid #3b82f6;position:relative}
+.pick.sell{border-left-color:#ef4444}
+.pick.closed-win{border-left-color:#22c55e;opacity:0.8}
+.pick.closed-loss{border-left-color:#ef4444;opacity:0.6}
+.pick.stale-warning{border-right:3px solid #f59e0b}
+.pick.stale-critical{border-right:3px solid #ef4444;background:linear-gradient(90deg,#1a1a2e 0%,#1e1418 100%)}
+.pick-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.pick-symbol{font-weight:700;font-size:14px;color:#fff}
+.pick-type{font-size:11px;padding:2px 6px;border-radius:3px;font-weight:600}
+.pick-type.buy{background:#22c55e22;color:#22c55e}
+.pick-type.sell{background:#ef444422;color:#ef4444}
+.pick-details{font-size:11px;color:#888;line-height:1.6}
+.pick-details span{color:#ccc}
+.pick-pnl{font-size:13px;font-weight:700;text-align:right}
+.pick-reason{font-size:10px;color:#666;margin-top:4px;font-style:italic}
+.pick-timestamp{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:6px;border-top:1px solid #2a2a3e;font-size:11px;gap:8px}
+.pick-timestamp .ts-label{color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:10px}
+.pick-timestamp .ts-value{color:#aaa;font-family:'Consolas','Courier New',monospace;font-size:11px}
+.freshness-badge{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
+.freshness-badge.fresh{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+.freshness-badge.stale{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44}
+.freshness-badge.critical{background:#ef444422;color:#ef4444;border:1px solid #ef444444;animation:pulse-red 2s infinite}
+@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:0.6}}
+.market-ctx{padding:12px 16px;border-top:1px solid #2a2a3e}
+.market-ctx h3{font-size:13px;color:#888;text-transform:uppercase;margin-bottom:8px}
+.ctx-pills{display:flex;gap:6px;flex-wrap:wrap}
+.ctx-pill{font-size:11px;padding:3px 8px;background:#1a1a2e;border-radius:4px;color:#aaa}
+.leaderboard{background:#12121e;border:1px solid #2a2a3e;border-radius:12px;margin:20px;padding:20px;max-width:1800px;margin:16px auto}
+.leaderboard h2{font-size:18px;margin-bottom:12px;color:#fff}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{text-align:left;padding:8px 12px;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #2a2a3e}
+.lb-table td{padding:8px 12px;font-size:13px;border-bottom:1px solid #1a1a2e}
+.lb-table tr:hover{background:#1a1a2e}
+.rank-1{color:#ffd700;font-weight:700}
+.rank-2{color:#c0c0c0}
+.rank-3{color:#cd7f32}
+.footer{text-align:center;padding:20px;color:#444;font-size:11px}
+.no-data{text-align:center;padding:40px;color:#555;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Breakout Arena</h1>
+  <div class="subtitle">3 Approaches. Real Money Forward Testing. Only the Winner Survives.</div>
+  <div class="updated" id="lastUpdated">Loading...</div>
+</div>
+
+<div class="leaderboard" id="leaderboard">
+  <h2>Leaderboard</h2>
+  <table class="lb-table">
+    <thead><tr><th>#</th><th>System</th><th>Trades</th><th>Win Rate</th><th>Total PnL</th><th>Sharpe</th><th>Max DD</th><th>Status</th></tr></thead>
+    <tbody id="lbBody"><tr><td colspan="8" class="no-data">Loading data...</td></tr></tbody>
+  </table>
+</div>
+
+<div class="arena" id="arena"></div>
+
+<div class="footer">
+  Breakout Arena v1.0 — Forward-testing since Feb 2026 — Data refreshes every 30 minutes
+</div>
+
+<script>
+const SYSTEMS = [
+  {id:'approach_a', name:'Approach A: S/R Breakout', cssClass:'approach-a', color:'#3b82f6',
+   url:'approach_a_sr_breakout/data/dashboard.json',
+   rawUrl:'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_a_sr_breakout/data/dashboard.json'},
+  {id:'approach_b', name:'Approach B: ML Breakout', cssClass:'approach-b', color:'#a855f7',
+   url:'approach_b_ml_breakout/data/dashboard.json',
+   rawUrl:'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_b_ml_breakout/data/dashboard.json'},
+  {id:'approach_c', name:'Approach C: Spike Reverse', cssClass:'approach-c', color:'#f59e0b',
+   url:'approach_c_spike_reverse/data/dashboard.json',
+   rawUrl:'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/breakout_arena/approach_c_spike_reverse/data/dashboard.json'}
+];
+
+async function fetchData(url, rawUrl) {
+  try {
+    const r = await fetch(url + '?t=' + Date.now());
+    if (r.ok) return await r.json();
+  } catch(e) {}
+  // Fallback to raw GitHub
+  if (rawUrl) {
+    try {
+      const r = await fetch(rawUrl + '?t=' + Date.now());
+      if (r.ok) return await r.json();
+    } catch(e) {}
+  }
+  return null;
+}
+
+function fmt(n, d=2) { return n != null ? Number(n).toFixed(d) : '—'; }
+function fmtPct(n) { return n != null ? (n >= 0 ? '+' : '') + Number(n).toFixed(2) + '%' : '—'; }
+
+function pnlClass(n) { return n > 0 ? 'positive' : n < 0 ? 'negative' : ''; }
+
+function getAgeBadge(ts) {
+  if (!ts) return {cls:'stale', label:'NO DATE', hours:999, staleClass:'stale-critical'};
+  const d = new Date(ts);
+  if (isNaN(d)) return {cls:'stale', label:'INVALID', hours:999, staleClass:'stale-critical'};
+  const hours = (Date.now() - d.getTime()) / 3600000;
+  if (hours < 24) return {cls:'fresh', label:'FRESH', hours, staleClass:''};
+  if (hours < 72) return {cls:'stale', label: Math.floor(hours/24)+'d STALE', hours, staleClass:'stale-warning'};
+  return {cls:'critical', label: Math.floor(hours/24)+'d STALE', hours, staleClass:'stale-critical'};
+}
+
+function fmtTimestamp(ts) {
+  if (!ts) return 'N/A';
+  return ts.replace(/T.*/, ' ') || ts;
+}
+
+function renderPick(p, closed=false) {
+  const isBuy = p.signal_type === 'BUY';
+  const pnl = closed ? (p.net_pnl_pct || p.gross_pnl_pct || 0) : (p.unrealized_pnl_pct || 0);
+  const ts = p.timestamp || p.closed_at || null;
+  const tsDisplay = p.timestamp_est || (p.closed_at ? new Date(p.closed_at).toLocaleString() : '') || '';
+  const age = getAgeBadge(ts);
+  const baseCls = closed ? (pnl >= 0 ? 'closed-win' : 'closed-loss') : (isBuy ? '' : 'sell');
+  return `<div class="pick ${baseCls} ${age.staleClass}">
+    <div class="pick-header">
+      <span class="pick-symbol">${p.symbol}</span>
+      <span class="pick-type ${isBuy?'buy':'sell'}">${p.signal_type}</span>
+    </div>
+    <div class="pick-details">
+      Entry: <span>${fmt(p.entry_price,p.entry_price>100?2:4)}</span> &nbsp;
+      TP: <span>${fmt(p.take_profit,p.take_profit>100?2:4)}</span> &nbsp;
+      SL: <span>${fmt(p.stop_loss,p.stop_loss>100?2:4)}</span> &nbsp;
+      R:R: <span>${fmt(p.risk_reward,1)}</span>
+    </div>
+    <div class="pick-pnl ${pnlClass(pnl)}">${fmtPct(pnl)}${closed?' (closed)':''}</div>
+    <div class="pick-timestamp">
+      <div><span class="ts-label">${closed ? 'Closed:' : 'Opened:'}</span> <span class="ts-value">${tsDisplay}</span></div>
+      <span class="freshness-badge ${age.cls}">${age.label}</span>
+    </div>
+    ${p.pick_reason ? '<div class="pick-reason">'+p.pick_reason+'</div>' : ''}
+  </div>`;
+}
+
+function renderCard(sys, data) {
+  const s = data?.stats || {};
+  const active = data?.active_picks || [];
+  const closed = (data?.recent_closed || []).slice(0, 5);
+  const status = data ? 'LIVE' : 'WAITING';
+  const badgeCls = data ? 'badge-live' : 'badge-waiting';
+
+  return `<div class="system-card ${sys.cssClass}">
+    <div class="card-header">
+      <h2>${sys.name}</h2>
+      <span class="badge ${badgeCls}">${status}</span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-value">${s.trades||0}</div><div class="stat-label">Trades</div></div>
+      <div class="stat"><div class="stat-value ${pnlClass(s.win_rate>0.5?1:s.win_rate===0?0:-1)}">${s.trades>0?fmt(s.win_rate*100,1)+'%':'—'}</div><div class="stat-label">Win Rate</div></div>
+      <div class="stat"><div class="stat-value ${pnlClass(s.total_pnl_pct)}">${s.trades>0?fmtPct(s.total_pnl_pct):'—'}</div><div class="stat-label">Total PnL</div></div>
+      <div class="stat"><div class="stat-value ${pnlClass(s.sharpe)}">${s.trades>=2?fmt(s.sharpe,2):'—'}</div><div class="stat-label">Sharpe</div></div>
+    </div>
+    <div class="picks-section">
+      <h3>Active Picks (${active.length})</h3>
+      ${active.length ? active.map(p=>renderPick(p)).join('') : '<div class="no-data">No active picks</div>'}
+    </div>
+    <div class="picks-section">
+      <h3>Recent Closed</h3>
+      ${closed.length ? closed.map(p=>renderPick(p,true)).join('') : '<div class="no-data">No closed trades yet</div>'}
+    </div>
+    ${data?.market_context ? `<div class="market-ctx">
+      <h3>Market Context</h3>
+      <div class="ctx-pills">
+        <span class="ctx-pill">F&G: ${data.market_context.fear_greed}</span>
+        <span class="ctx-pill">ATR: ${fmt(data.market_context.btc_atr,2)}</span>
+        <span class="ctx-pill">Vol Ratio: ${fmt(data.market_context.volume_ratio||0,1)}x</span>
+        ${data.market_context.btc_atr_ratio?'<span class="ctx-pill">ATR Ratio: '+fmt(data.market_context.btc_atr_ratio,2)+'x</span>':''}
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderLeaderboard(results) {
+  const ranked = results.filter(r=>r.data).sort((a,b)=>{
+    const pa=a.data.stats?.total_pnl_pct||0, pb=b.data.stats?.total_pnl_pct||0;
+    return pb-pa;
+  });
+  if(!ranked.length) return;
+  const tbody = document.getElementById('lbBody');
+  tbody.innerHTML = ranked.map((r,i)=>{
+    const s=r.data.stats||{};
+    const rankCls = i===0?'rank-1':i===1?'rank-2':'rank-3';
+    return `<tr><td class="${rankCls}">#${i+1}</td><td>${r.sys.name}</td>
+      <td>${s.trades||0}</td><td>${s.trades>0?fmt(s.win_rate*100,1)+'%':'—'}</td>
+      <td class="${pnlClass(s.total_pnl_pct)}">${s.trades>0?fmtPct(s.total_pnl_pct):'—'}</td>
+      <td>${s.trades>=2?fmt(s.sharpe,2):'—'}</td>
+      <td>${s.max_dd?fmt(s.max_dd*100,2)+'%':'—'}</td>
+      <td><span class="badge badge-live">LIVE</span></td></tr>`;
+  }).join('');
+  const waiting = results.filter(r=>!r.data);
+  if(waiting.length) {
+    tbody.innerHTML += waiting.map(r=>`<tr><td>—</td><td>${r.sys.name}</td>
+      <td colspan="6" style="color:#555">Waiting for first scan...</td></tr>`).join('');
+  }
+}
+
+async function loadAll() {
+  const results = [];
+  const arena = document.getElementById('arena');
+  arena.innerHTML = '';
+
+  for(const sys of SYSTEMS) {
+    const data = await fetchData(sys.url, sys.rawUrl);
+    results.push({sys, data});
+    arena.innerHTML += renderCard(sys, data);
+  }
+
+  renderLeaderboard(results);
+
+  const latest = results.filter(r=>r.data).map(r=>r.data.updated_est).sort().pop();
+  document.getElementById('lastUpdated').textContent = latest
+    ? 'Last scan: ' + latest
+    : 'Waiting for first scan...';
+}
+
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>

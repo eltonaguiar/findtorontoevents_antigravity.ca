@@ -1,0 +1,62 @@
+name: Daily Stock Picks Generator (STOCKSUNIFY)
+
+# Generates stock picks after US market close via TypeScript screener.
+# Writes STOCKSUNIFY/data/daily-stocks.json with latest multi-algorithm scores.
+#
+# Separate from daily-stock-refresh.yml (which imports picks via PHP API).
+# This workflow produces the raw scored universe that feeds downstream tools.
+
+on:
+  schedule:
+    - cron: '35 21 * * 1-5'  # 4:35 PM EST / 5:35 PM EDT on weekdays (21:35 UTC always runs after US market close at 4:00 PM ET in both timezones)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stocks-daily-generator
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install tsx (TypeScript runner)
+        working-directory: STOCKSUNIFY/scripts
+        run: npm install tsx typescript @types/node --save-dev --no-save 2>/dev/null || npx --yes tsx --version
+
+      - name: Generate daily stock picks
+        working-directory: STOCKSUNIFY/scripts
+        env:
+          POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY || '' }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY || '' }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY || '' }}
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY || '' }}
+        run: npx tsx generate-daily-stocks.ts
+
+      - name: Commit and push
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "antigravity-bot"
+          git config user.email "bot@findtorontoevents.ca"
+          git add STOCKSUNIFY/data/daily-stocks.json
+          if git diff --staged --quiet; then
+            echo "No changes to daily-stocks.json"
+          else
+            git commit -m "auto: daily stock picks $(date -u '+%Y-%m-%d') [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DARWIN ENGINE — DNA Evolution Paper Trading Portfolios | Genetic Strategy Evolution</title>
+<meta name="description" content="DNA Evolution paper trading portfolios tracking genetic programming, MAP-Elites evolution, ensemble coevolution, and audit ensemble DNA evolution strategies.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a12;--card:#1a1a2e;--card-hover:#22223a;--border:#2a2a3e;
+  --text:#e0e0e0;--text-dim:#888;--text-bright:#fff;
+  --genesis:#00ff88;--atlas:#00aaff;--nexus:#ff6600;--legion:#cc44ff;--phoenix:#ff4444;
+  --positive:#00ff88;--negative:#ff4444;--neutral:#ffaa00;
+  --consensus:linear-gradient(135deg,#00ff88,#00aaff,#ff6600,#cc44ff);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.6;min-height:100vh}
+a{color:var(--atlas);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.header{text-align:center;padding:2rem 1rem 1.2rem;border-bottom:1px solid var(--border)}
+.header h1{font-size:2.2rem;font-weight:800;letter-spacing:.12em;background:linear-gradient(135deg,var(--genesis),var(--atlas),var(--legion));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .subtitle{color:var(--text-dim);font-size:.95rem;margin-top:.2rem}
+.nav-links{margin-top:.7rem;display:flex;gap:1.2rem;justify-content:center;font-size:.9rem}
+
+.container{max-width:1400px;margin:0 auto;padding:1.5rem}
+
+/* Portfolio Tabs */
+.portfolio-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem;overflow-x:auto}
+.ptab{padding:.7rem 1.3rem;background:transparent;border:none;color:var(--text-dim);font-size:.85rem;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;font-weight:600}
+.ptab:hover{color:var(--text-bright)}
+.ptab.active{color:var(--text-bright)}
+.ptab.genesis.active{border-bottom-color:var(--genesis);color:var(--genesis)}
+.ptab.atlas.active{border-bottom-color:var(--atlas);color:var(--atlas)}
+.ptab.nexus.active{border-bottom-color:var(--nexus);color:var(--nexus)}
+.ptab.legion.active{border-bottom-color:var(--legion);color:var(--legion)}
+.ptab.consensus.active{border-bottom-color:var(--atlas);color:var(--text-bright)}
+.ptab.phoenix.active{border-bottom-color:var(--phoenix);color:var(--phoenix)}
+
+/* Portfolio Panel */
+.portfolio-panel{display:none}
+.portfolio-panel.active{display:block}
+
+/* Summary Cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-bottom:1.5rem}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center}
+.summary-card .val{font-size:1.6rem;font-weight:800;color:var(--text-bright)}
+.summary-card .lbl{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}
+.summary-card.positive .val{color:var(--positive)}
+.summary-card.negative .val{color:var(--negative)}
+
+/* Holdings Table */
+.section-label{font-size:1.1rem;font-weight:700;color:var(--text-bright);margin:1.5rem 0 .8rem;display:flex;align-items:center;gap:.5rem}
+.section-label .color-bar{width:4px;height:20px;border-radius:2px;display:inline-block}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:rgba(255,255,255,.04);text-align:left;padding:.65rem .7rem;font-weight:600;color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:.6rem .7rem;border-top:1px solid var(--border);white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.02)}
+.pnl-pos{color:var(--positive);font-weight:600}
+.pnl-neg{color:var(--negative);font-weight:600}
+
+/* Bar Chart */
+.chart-container{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1.5rem}
+.chart-title{font-size:.85rem;font-weight:600;color:var(--text-bright);margin-bottom:.8rem}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:140px;padding-top:10px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;min-width:18px;max-width:40px;height:100%;justify-content:flex-end}
+.bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .3s}
+.bar.positive{background:var(--positive)}
+.bar.negative{background:var(--negative)}
+.bar-label{font-size:.55rem;color:var(--text-dim);margin-top:4px;writing-mode:vertical-rl;text-orientation:mixed;max-height:50px;overflow:hidden}
+.bar-value{font-size:.6rem;color:var(--text-dim);margin-bottom:2px}
+.chart-empty{text-align:center;color:var(--text-dim);padding:2rem;font-size:.85rem}
+
+/* Consensus gradient border */
+.consensus-border{position:relative;border-radius:12px;padding:2px;background:linear-gradient(135deg,var(--genesis),var(--atlas),var(--nexus),var(--legion));background-size:300% 300%;animation:gradShift 6s ease infinite;margin-bottom:1.5rem}
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.consensus-border .inner{background:var(--card);border-radius:10px;padding:1.2rem}
+
+.loading{text-align:center;padding:2rem;color:var(--text-dim)}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--atlas);border-radius:50%;animation:spin .8s linear infinite;margin-right:.4rem;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.footer{text-align:center;padding:1.5rem 1rem;color:var(--text-dim);font-size:.72rem;border-top:1px solid var(--border);margin-top:2rem}
+
+@media(max-width:768px){
+  .header h1{font-size:1.6rem}
+  .summary-grid{grid-template-columns:1fr 1fr}
+  .portfolio-tabs{gap:0}
+  .ptab{padding:.5rem .7rem;font-size:.78rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DARWIN ENGINE</h1>
+  <div class="subtitle">Paper Trading Portfolios</div>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="../index.html">Genome Hub</a>
+  </div>
+</div>
+
+<div class="container">
+  <div style="background:#ef444422;border:1px solid #ef4444;border-radius:8px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:20px">⚠️</span>
+    <div>
+      <div style="color:#fca5a5;font-weight:700;font-size:14px">SIMULATED DATA — Not Real Prices</div>
+      <div style="color:#9ca3af;font-size:12px">These portfolios use backtested/simulated prices from genetic algorithm evolution. Entry/exit prices may not reflect actual market prices. The genome system generates trading strategies via DNA evolution — these "trades" test the evolved formulas against historical price data. Use the <a href="/audit/" style="color:#60a5fa">Audit Dashboard</a> for real-time validated picks.</div>
+    </div>
+  </div>
+  <div class="portfolio-tabs">
+    <button class="ptab genesis active" onclick="showPortfolio('genesis')">GENESIS</button>
+    <button class="ptab atlas" onclick="showPortfolio('atlas')">ATLAS</button>
+    <button class="ptab nexus" onclick="showPortfolio('nexus')">NEXUS</button>
+    <button class="ptab legion" onclick="showPortfolio('legion')">LEGION</button>
+    <button class="ptab consensus" onclick="showPortfolio('darwin_consensus')">DARWIN CONSENSUS</button>
+    <button class="ptab phoenix" onclick="showPortfolio('failure_evolver')">PHOENIX</button>
+  </div>
+
+  <div id="portfolio-genesis" class="portfolio-panel active"></div>
+  <div id="portfolio-atlas" class="portfolio-panel"></div>
+  <div id="portfolio-nexus" class="portfolio-panel"></div>
+  <div id="portfolio-legion" class="portfolio-panel"></div>
+  <div id="portfolio-darwin_consensus" class="portfolio-panel"></div>
+  <div id="portfolio-failure_evolver" class="portfolio-panel"></div>
+</div>
+
+<div class="footer">
+  DARWIN ENGINE &copy; 2026 &middot; Antigravity Trading Systems &middot; Paper trading only &mdash; no real funds
+</div>
+
+<script>
+const DATA_LOCAL = '../data/darwin_portfolios.json';
+const DATA_GH = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/darwin_portfolios.json';
+const ENGINES = ['genesis','atlas','nexus','legion','darwin_consensus','failure_evolver'];
+const ENGINE_NAMES = {genesis:'GENESIS',atlas:'ATLAS',nexus:'NEXUS',legion:'LEGION',darwin_consensus:'DARWIN CONSENSUS',failure_evolver:'PHOENIX'};
+const ENGINE_COLORS = {genesis:'#00ff88',atlas:'#00aaff',nexus:'#ff6600',legion:'#cc44ff',darwin_consensus:'#00aaff',failure_evolver:'#ff4444'};
+const ENGINE_TAB_CLASS = {genesis:'genesis',atlas:'atlas',nexus:'nexus',legion:'legion',darwin_consensus:'consensus',failure_evolver:'phoenix'};
+
+function fmt(v,d=2){if(v==null||v==='')return'—';const n=parseFloat(v);return isNaN(n)?v:n.toFixed(d)}
+function pct(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?v:(n<=1?n*100:n).toFixed(1)+'%'}
+function pnlClass(v){const n=parseFloat(v);return isNaN(n)?'':(n>=0?'pnl-pos':'pnl-neg')}
+function pnlSign(v){const n=parseFloat(v);if(isNaN(n))return'—';return(n>=0?'+':'')+n.toFixed(2)+'%'}
+function fmtDate(ts){
+  if(!ts||ts==='—')return'—';
+  try{
+    const d=new Date(ts);
+    if(isNaN(d.getTime()))return ts;
+    return d.toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})+' EST';
+  }catch{return ts;}
+}
+
+async function fetchJSON(url){
+  try{const r=await fetch(url+'?t='+Date.now());if(!r.ok)return null;return await r.json();}catch{return null;}
+}
+
+function buildBarChart(history, color, label) {
+  if (!history || history.length === 0) {
+    return `<div class="chart-container"><div class="chart-title">${label}</div><div class="chart-empty">No historical data available yet</div></div>`;
+  }
+  const vals = history.map(h => parseFloat(h.value || h.pnl || h.return || 0));
+  const maxAbs = Math.max(...vals.map(Math.abs), 1);
+  const maxH = 120;
+  let bars = '';
+  history.forEach((h, i) => {
+    const v = vals[i];
+    const height = Math.max(Math.abs(v) / maxAbs * maxH, 2);
+    const cls = v >= 0 ? 'positive' : 'negative';
+    const lbl = h.date || h.period || ('D' + (i+1));
+    bars += `<div class="bar-col">
+      <div class="bar-value">${v>=0?'+':''}${v.toFixed(1)}%</div>
+      <div class="bar ${cls}" style="height:${height}px;background:${v>=0?color:'var(--negative)'}"></div>
+      <div class="bar-label">${lbl}</div>
+    </div>`;
+  });
+  return `<div class="chart-container"><div class="chart-title">${label}</div><div class="bar-chart">${bars}</div></div>`;
+}
+
+function renderPortfolio(engine, data) {
+  const panel = document.getElementById('portfolio-' + engine);
+  const color = ENGINE_COLORS[engine];
+  const name = ENGINE_NAMES[engine];
+
+  if (!data) {
+    panel.innerHTML = `
+      <div class="summary-grid">
+        <div class="summary-card"><div class="val">$10,000</div><div class="lbl">Portfolio Value</div></div>
+        <div class="summary-card"><div class="val">—</div><div class="lbl">Total P&L</div></div>
+        <div class="summary-card"><div class="val">—</div><div class="lbl">Win Rate</div></div>
+        <div class="summary-card"><div class="val">—</div><div class="lbl">Sharpe Ratio</div></div>
+        <div class="summary-card"><div class="val">0</div><div class="lbl">Total Trades</div></div>
+        <div class="summary-card"><div class="val">—</div><div class="lbl">Max Drawdown</div></div>
+      </div>
+      ${engine==='consensus'?'<div class="consensus-border"><div class="inner">':''}
+      <div class="section-label"><span class="color-bar" style="background:${color}"></span> ${name} Holdings</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>Current</th><th>P&L</th><th>Strategy</th><th>Opened</th></tr></thead>
+        <tbody><tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:1.5rem">No holdings yet — waiting for ${name} engine signals</td></tr></tbody>
+      </table></div>
+      ${buildBarChart([], color, 'Performance History')}
+      ${engine==='consensus'?'</div></div>':''}
+    `;
+    return;
+  }
+
+  const portfolio = data.portfolio || data;
+  const holdings = portfolio.holdings || data.holdings || [];
+  const history = portfolio.history || data.history || [];
+  const stats = portfolio.stats || data.stats || {};
+  const totalPnl = parseFloat(stats.total_pnl || stats.pnl || 0);
+
+  let summaryHTML = `<div class="summary-grid">
+    <div class="summary-card ${totalPnl>=0?'positive':'negative'}"><div class="val">$${fmt(stats.portfolio_value || stats.value || 10000, 0)}</div><div class="lbl">Portfolio Value</div></div>
+    <div class="summary-card ${totalPnl>=0?'positive':'negative'}"><div class="val">${pnlSign(totalPnl)}</div><div class="lbl">Total P&L</div></div>
+    <div class="summary-card"><div class="val">${pct(stats.win_rate)}</div><div class="lbl">Win Rate</div></div>
+    <div class="summary-card"><div class="val">${fmt(stats.sharpe)}</div><div class="lbl">Sharpe Ratio</div></div>
+    <div class="summary-card"><div class="val">${stats.total_trades || holdings.length || 0}</div><div class="lbl">Total Trades</div></div>
+    <div class="summary-card ${parseFloat(stats.max_drawdown||0)<0?'negative':''}"><div class="val">${stats.max_drawdown ? fmt(stats.max_drawdown)+'%' : '—'}</div><div class="lbl">Max Drawdown</div></div>
+  </div>`;
+
+  let holdingsHTML = '';
+  if (holdings.length === 0) {
+    holdingsHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:1.2rem">No open holdings</td></tr>';
+  } else {
+    holdingsHTML = holdings.map(h => {
+      const pnl = parseFloat(h.pnl || h.unrealized_pnl || 0);
+      return `<tr>
+        <td style="font-weight:600;color:var(--text-bright)">${h.symbol||'—'}</td>
+        <td class="${(h.direction||'').toLowerCase()==='long'?'pnl-pos':'pnl-neg'}">${(h.direction||'—').toUpperCase()}</td>
+        <td>$${fmt(h.entry_price || h.entry)}</td>
+        <td>$${fmt(h.current_price || h.current)}</td>
+        <td class="${pnlClass(pnl)}">${pnlSign(pnl)}</td>
+        <td>${h.strategy||'—'}</td>
+        <td style="color:var(--text-dim)">${fmtDate(h.opened || h.timestamp)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Closed trades table
+  const closedTrades = portfolio.closed_trades || data.closed_trades || [];
+  let closedHTML = '';
+  if (closedTrades.length === 0) {
+    closedHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:1.2rem">No closed trades yet</td></tr>';
+  } else {
+    closedHTML = closedTrades.slice(0, 20).map(t => {
+      const pnl = parseFloat(t.pnl || t.return || 0);
+      return `<tr>
+        <td style="font-weight:600;color:var(--text-bright)">${t.symbol||'—'}</td>
+        <td class="${(t.direction||'').toLowerCase()==='long'?'pnl-pos':'pnl-neg'}">${(t.direction||'—').toUpperCase()}</td>
+        <td>$${fmt(t.entry_price || t.entry)}</td>
+        <td>$${fmt(t.exit_price || t.exit)}</td>
+        <td class="${pnlClass(pnl)}">${pnlSign(pnl)}</td>
+        <td>${t.strategy||'—'}</td>
+        <td style="color:var(--text-dim)">${fmtDate(t.opened)}</td>
+        <td style="color:var(--text-dim)">${fmtDate(t.closed || t.exit_date)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Portfolio value timeline (simple line via CSS bars)
+  const timeline = portfolio.value_timeline || data.value_timeline || [];
+  let timelineHTML = '';
+  if (timeline.length > 0) {
+    const values = timeline.map(t => parseFloat(t.value || 10000));
+    const minV = Math.min(...values) * 0.98;
+    const maxV = Math.max(...values) * 1.02;
+    const range = maxV - minV || 1;
+    const maxH = 120;
+    let bars = '';
+    timeline.forEach(t => {
+      const v = parseFloat(t.value || 10000);
+      const height = Math.max(((v - minV) / range) * maxH, 2);
+      const pnl = ((v / 10000) - 1) * 100;
+      const cls = pnl >= 0 ? 'positive' : 'negative';
+      bars += `<div class="bar-col">
+        <div class="bar-value">$${v.toFixed(0)}</div>
+        <div class="bar ${cls}" style="height:${height}px;background:${pnl>=0?color:'var(--negative)'}"></div>
+        <div class="bar-label">${t.date || ''}</div>
+      </div>`;
+    });
+    timelineHTML = `<div class="chart-container"><div class="chart-title">${name} — Portfolio Value Over Time</div><div class="bar-chart">${bars}</div></div>`;
+  } else {
+    timelineHTML = `<div class="chart-container"><div class="chart-title">${name} — Portfolio Value Over Time</div><div class="chart-empty">No value timeline data available yet</div></div>`;
+  }
+
+  // Win/Loss streak info
+  const streakInfo = stats.current_streak ? `<div class="summary-card ${stats.current_streak > 0 ? 'positive' : 'negative'}"><div class="val">${stats.current_streak > 0 ? '+' : ''}${stats.current_streak}</div><div class="lbl">Current Streak</div></div>` : '';
+  const profitFactorCard = stats.profit_factor ? `<div class="summary-card"><div class="val">${fmt(stats.profit_factor)}</div><div class="lbl">Profit Factor</div></div>` : '';
+
+  const wrap = engine === 'consensus';
+  panel.innerHTML = `
+    ${summaryHTML}
+    ${wrap?'<div class="consensus-border"><div class="inner">':''}
+    <div class="section-label"><span class="color-bar" style="background:${color}"></span> ${name} — Open Holdings</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>Current</th><th>P&L</th><th>Strategy</th><th>Opened</th></tr></thead>
+      <tbody>${holdingsHTML}</tbody>
+    </table></div>
+
+    <div class="section-label"><span class="color-bar" style="background:${color}"></span> ${name} — Closed Trades (Last 20)</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Strategy</th><th>Opened</th><th>Closed</th></tr></thead>
+      <tbody>${closedHTML}</tbody>
+    </table></div>
+
+    ${buildBarChart(history, color, name + ' — Daily Returns')}
+    ${timelineHTML}
+
+    ${streakInfo || profitFactorCard ? `<div class="section-label"><span class="color-bar" style="background:${color}"></span> Extended Stats</div><div class="summary-grid">${streakInfo}${profitFactorCard}</div>` : ''}
+    ${wrap?'</div></div>':''}
+  `;
+}
+
+function showPortfolio(id) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.portfolio-panel').forEach(p => p.classList.remove('active'));
+  const tabClass = ENGINE_TAB_CLASS[id] || id;
+  document.querySelector(`.ptab.${tabClass}`).classList.add('active');
+  document.getElementById('portfolio-'+id).classList.add('active');
+}
+
+async function loadAll() {
+  // Try local first (FTP co-deployed), fall back to GitHub raw
+  let data = await fetchJSON(DATA_LOCAL);
+  if (!data) data = await fetchJSON(DATA_GH);
+  const portfolios = data ? (data.portfolios || {}) : {};
+  ENGINES.forEach(e => {
+    const p = portfolios[e];
+    if (p) {
+      // Transform unified format to renderPortfolio expected format
+      renderPortfolio(e, {
+        stats: {
+          total_pnl: p.total_pnl_pct, win_rate: p.win_rate, sharpe: p.sharpe_ratio,
+          max_drawdown: p.max_drawdown, total_trades: p.total_trades, avg_hold: p.avg_holding_bars,
+          capital: p.capital, unrealized_pnl: p.unrealized_pnl_pct
+        },
+        holdings: (p.open_positions || []).map(pos => ({
+          symbol: pos.symbol, direction: pos.direction, entry_price: pos.entry_price,
+          current_price: pos.current_price, pnl_pct: pos.pnl_pct, strategy: pos.strategy,
+          opened: pos.entry_time
+        })),
+        closed_trades: (p.closed_trades || []).map(ct => ({
+          symbol: ct.symbol, direction: ct.direction,
+          entry_price: ct.entry_price, exit_price: ct.exit_price,
+          pnl: ct.pnl, strategy: ct.strategy,
+          opened: ct.opened, closed: ct.closed,
+          result: ct.result
+        })),
+        history: []
+      });
+    } else {
+      renderPortfolio(e, null);
+    }
+  });
+}
+
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>

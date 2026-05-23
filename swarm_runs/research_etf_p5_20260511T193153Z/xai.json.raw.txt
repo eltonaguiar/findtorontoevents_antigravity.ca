@@ -1,0 +1,40 @@
+{
+  "schema_version": "v1",
+  "engine": "AI-Engine-1",
+  "asset_class": "ETF",
+  "run_id": "run_2026-05-11T19-17-53Z",
+  "synthesis": [
+    {
+      "spec_id": "etf_carry_yield_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=77.12 and WR=80.0% are exceptional, and MDD=17.0% meets the Tier-2 floor, but n=5 is far too low for reliability. Cross-test shows independence, though the simplified-signal caveat limits confidence in the results.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_spread_arbitrage_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=1.97 is above the Tier-2 floor and WR=61.5% is acceptable, but MDD=19.7% is close to the limit and n=13 is too low for a confident verdict. Cross-test independence is noted, but the simplified-signal caveat undermines reliability.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_cross_asset_momentum_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=77.12 and WR=80.0% are strong, with MDD=17.0% within bounds, but n=5 is insufficient for a GO verdict. Cross-test independence is positive, yet the simplified-signal translation remains a concern.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_value_momentum_combo_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=77.12 and WR=80.0% are impressive, and MDD=17.0% is acceptable, but n=5 is critically low for reliability. Cross-test shows independence, though the simplified-signal caveat reduces trust in the backtest.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_diagnostic_momentum_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=77.12 and WR=80.0% are excellent, with MDD=17.0% meeting criteria, but n=5 is far below the threshold for confidence. Cross-test independence is noted, but the simplified-signal limitation impacts the verdict.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "MIXED",
+  "run_rationale": "While several candidates (etf_carry_yield_v1, etf_cross_asset_momentum_v1, etf_value_momentum_combo_v1, etf_diagnostic_momentum_v1) show exceptional PF and WR with acceptable MDD, the extremely low trade counts (n=5 for most) prevent a GO verdict across the board. The etf_spread_arbitrage_v1 also suffers from low n=13 and borderline MDD. The simplified-signal caveat further erodes confidence in the backtest results. Independence in cross-tests is a positive, but a retry is needed with a longer history to achieve n≥100 and a faithful-signal translator (v3) to validate the edge. A MIXED verdict reflects potential but significant blockers on sample size and signal fidelity."
+}

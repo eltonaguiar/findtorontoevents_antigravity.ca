@@ -1,0 +1,186 @@
+name: AI Tournament Pipeline — Daily Picks + DB Ingest
+
+on:
+  schedule:
+    # Daily at 12:00 UTC (before price tracker at 23:00 UTC)
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      force_regenerate:
+        description: 'Force re-generate picks for all models × personas'
+        type: boolean
+        default: false
+      skip_backfill:
+        description: 'Skip persona backfill step'
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Dry run (no DB writes)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ai-tournament-pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet pymysql yfinance requests
+
+      - name: Check existing picks state
+        id: check_state
+        run: |
+          echo "=== Existing picks files ==="
+          ls -la data/ai_tournament/picks_*.json 2>/dev/null || echo "(none yet)"
+          echo "=== Config mapping ==="
+          python3 -c "
+          import json, sys
+          try:
+              m = json.load(open('config/model_persona_mapping.json'))
+              total = sum(len(assignments)
+                          for mod in m['models'].values()
+                          for ast, pids in mod.get('assignments',{}).items()
+                          for _ in pids)
+              print(f'Total model x persona x asset_class combos: {total}')
+              for mid, cfg in m['models'].items():
+                  n = sum(len(pids) for pids in cfg.get('assignments',{}).values())
+                  print(f'  {mid:30s} {n} assignments')
+          except Exception as e:
+              print(f'::warning title=config_mapping::Could not load config/model_persona_mapping.json: {e}')
+          "
+        # Ensure this step always passes so pipeline continues
+        continue-on-error: true
+
+      - name: Generate picks fleet
+        env:
+          FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
+          # API keys — only set ones where you have a secret configured
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || '' }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY || '' }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || '' }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY || '' }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY || '' }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY || '' }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
+        run: |
+          echo "=== Generating tournament picks ==="
+          python tools/populate_picks.py || echo "::warning title=populate_picks::picks generation failed (see above)"
+
+      - name: Backfill persona IDs
+        if: ${{ !inputs.skip_backfill && !cancelled() }}
+        run: |
+          echo "=== Backfilling persona IDs ==="
+          KEY_FILES=$(ls -t data/ai_tournament/picks_*.json 2>/dev/null | head -5)
+          if [ -n "$KEY_FILES" ]; then
+            for f in $KEY_FILES; do
+              echo "  Processing $f ..."
+              python tools/backfill_persona_picks.py --in-place --file "$f" 2>&1 | tail -5
+            done
+          else
+            echo "  No picks files to backfill"
+          fi
+        # Soft-fail: persona backfill is not critical
+        continue-on-error: true
+
+      - name: Ingest to MySQL
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+        run: |
+          DRY_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          echo "=== Ingesting picks to MySQL ==="
+          python tools/ai_tournament/ingest_to_db.py $DRY_FLAG || echo "::warning title=mysql_ingest::MySQL ingest failed (see above — JSON files still saved)"
+        # Soft-fail: JSON files are the source of truth
+        continue-on-error: true
+
+      - name: Update leaderboard
+        run: |
+          echo "=== Updating leaderboard ==="
+          python tools/ai_tournament/update_leaderboard.py || echo "::warning title=leaderboard::Leaderboard update failed"
+          echo "=== Leaderboard output ==="
+          if [ -f 'audit_dashboard/data/ai_tournament_leaderboard.json' ]; then
+            python3 -c "
+          import json
+          lb = json.load(open('audit_dashboard/data/ai_tournament_leaderboard.json'))
+          for m in lb.get('models', []):
+              print(f\"  {m['model_id']:30s} picks={m['n_picks']} wr={m['wr']:.2%} pf={m['pf']:.2f} score={m['score']:.4f} tier={m['tier']}\")
+          "
+          else
+            echo "  (no leaderboard file yet)"
+          fi
+        # Soft-fail: leaderboard may not exist on first run
+        continue-on-error: true
+
+      - name: Copy latest picks to audit_dashboard/data
+        run: |
+          LATEST=$(ls -t data/ai_tournament/picks_*.json 2>/dev/null | head -1)
+          if [ -n "$LATEST" ]; then
+            cp "$LATEST" audit_dashboard/data/ai_tournament_picks_latest.json
+            echo "Copied $(basename $LATEST) → audit_dashboard/data/ai_tournament_picks_latest.json"
+          fi
+
+      - name: Verify output was produced
+        run: |
+          FAILED=0
+          if [ ! -f 'data/ai_tournament/picks_'$(date -u +%Y%m%d)'.json' ]; then
+            echo "::error title=no_picks::No picks file was generated for today"
+            FAILED=1
+          fi
+          if [ ! -f 'audit_dashboard/data/ai_tournament_picks_latest.json' ]; then
+            echo "::error title=no_latest::No latest picks snapshot was copied"
+            FAILED=1
+          fi
+          if [ $FAILED -eq 1 ]; then
+            exit 1
+          fi
+          echo "✅ All output files present"
+
+      - name: Commit results
+        run: |
+          git config user.name  "Tournament Bot"
+          git config user.email "tournament@findtorontoevents.ca"
+
+          git add data/ai_tournament/
+          git add audit_dashboard/data/ai_tournament_picks_latest.json
+          git add audit_dashboard/data/ai_tournament_leaderboard.json
+
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "chore(tournament): daily picks fleet $(date -u +%Y-%m-%d) [skip ci]"
+
+          for i in 1 2 3; do
+            git stash --include-untracked 2>/dev/null || true
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash pop 2>/dev/null || true
+            sleep ${i}0
+          done

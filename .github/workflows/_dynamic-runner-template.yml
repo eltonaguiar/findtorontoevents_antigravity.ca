@@ -1,0 +1,78 @@
+# Reusable Workflow Template: Dynamic Runner Selection
+# 
+# This template demonstrates how to make workflows run on either:
+# - GitHub Cloud Runners (ubuntu-latest) - default for scheduled runs
+# - Self-hosted WSL Runner (self-hosted) - available for manual triggers
+# - Direct WSL execution (bypass GitHub Actions entirely - fastest)
+#
+# Usage in your workflow:
+#   jobs:
+#     my-job:
+#       uses: ./.github/workflows/_dynamic-runner-template.yml
+#       with:
+#         runner: ${{ inputs.runner || 'ubuntu-latest' }}
+
+name: Dynamic Runner Template
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: 'Runner to use'
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+      timeout_minutes:
+        description: 'Job timeout in minutes'
+        required: false
+        default: 30
+        type: number
+    secrets:
+      DISCORD_WEBHOOK_URL:
+        required: false
+
+jobs:
+  dynamic-job:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Runner Info
+        run: |
+          echo "============================================"
+          echo "  Runner Information"
+          echo "============================================"
+          echo "Runner Name: ${{ runner.name }}"
+          echo "Runner OS: ${{ runner.os }}"
+          echo "Runner Arch: ${{ runner.arch }}"
+          echo "Selected Runner: ${{ inputs.runner }}"
+          echo "============================================"
+
+      - name: Setup Python (Cloud)
+        if: runner.os != 'Windows' && runner.environment != 'self-hosted'
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Setup Python (Self-hosted WSL)
+        if: runner.environment == 'self-hosted' || runner.os == 'Linux'
+        run: |
+          python3 --version
+          pip3 --version
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      # Your job steps here...
+
+      - name: Example Step
+        run: |
+          echo "Running on ${{ inputs.runner }}"
+          echo "This is where your actual work would happen"

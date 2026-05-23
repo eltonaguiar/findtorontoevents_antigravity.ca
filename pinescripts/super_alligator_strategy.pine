@@ -1,0 +1,165 @@
+//@version=5
+strategy(title="Super Alligator Strategy", shorttitle="SAlligStr", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=10, initial_capital=10000, commission_type=strategy.commission.percent, commission_value=0.04, slippage=2)
+
+// ─── SMMA Function ───────────────────────────────────────────────────────────
+smma(src, length) =>
+    smma = 0.0
+    smma := na(smma[1]) ? ta.sma(src, length) : (smma[1] * (length - 1) + src) / length
+    smma
+
+// ─── Alligator Inputs ────────────────────────────────────────────────────────
+jawLength   = input.int(13, minval=1, title="Jaw Length", group="Alligator", tooltip="Slowest line. Bill Williams default 13.")
+teethLength = input.int(8, minval=1, title="Teeth Length", group="Alligator", tooltip="Middle line. Default 8.")
+lipsLength  = input.int(5, minval=1, title="Lips Length", group="Alligator", tooltip="Fastest line. Default 5.")
+jawOffset   = input.int(8, title="Jaw Offset", group="Alligator", tooltip="Bars forward projection for Jaw. Default 8.")
+teethOffset = input.int(5, title="Teeth Offset", group="Alligator", tooltip="Bars forward projection for Teeth. Default 5.")
+lipsOffset  = input.int(3, title="Lips Offset", group="Alligator", tooltip="Bars forward projection for Lips. Default 3.")
+
+// ─── Signal Inputs ───────────────────────────────────────────────────────────
+gapPct = input.float(0.1, minval=0.0, step=0.01, title="Min Gap: Close vs Lips (%)", group="Signal", tooltip="How far close must be from Lips before signal fires. Higher = stronger momentum required.")
+markerDist = input.float(1.5, minval=0.1, step=0.1, title="Signal Marker Distance (ATR mult)", group="Signal", tooltip="How far signal triangle sits from candle.")
+
+// ─── Filter Inputs ───────────────────────────────────────────────────────────
+smaLength = input.int(200, minval=1, title="SMA Length", group="Filters")
+useVwap   = input.bool(true, title="Use VWAP Filter", group="Filters", tooltip="Buy requires close > VWAP, sell requires close < VWAP.")
+useSma    = input.bool(false, title="Use SMA Filter", group="Filters", tooltip="Buy requires close > SMA, sell requires close < SMA.")
+showSma   = input.bool(true, title="Show SMA", group="Filters")
+showVwap  = input.bool(true, title="Show VWAP", group="Filters")
+
+// ─── Strategy Inputs ─────────────────────────────────────────────────────────
+useTP     = input.bool(true, title="Use Take Profit", group="Strategy", tooltip="Exit at TP level based on ATR multiple.")
+useSL     = input.bool(true, title="Use Stop Loss", group="Strategy", tooltip="Exit at SL level based on ATR multiple.")
+tpMult    = input.float(3.0, minval=0.5, step=0.5, title="Take Profit (ATR mult)", group="Strategy", tooltip="TP distance as ATR multiple. Default 3.0.")
+slMult    = input.float(1.5, minval=0.5, step=0.5, title="Stop Loss (ATR mult)", group="Strategy", tooltip="SL distance as ATR multiple. Default 1.5.")
+useTrail  = input.bool(false, title="Use Trailing Stop", group="Strategy", tooltip="Trail stop behind price by ATR multiple after entry.")
+trailMult = input.float(2.0, minval=0.5, step=0.5, title="Trailing Stop (ATR mult)", group="Strategy", tooltip="Trail distance as ATR multiple.")
+exitOnFlip = input.bool(true, title="Exit on Opposite Signal", group="Strategy", tooltip="Close position when opposite signal fires.")
+maxBars   = input.int(50, minval=5, title="Max Bars in Trade", group="Strategy", tooltip="Force exit after N bars if still open. 0 = disabled.")
+
+// ─── Calculations ────────────────────────────────────────────────────────────
+jaw   = smma(hl2, jawLength)
+teeth = smma(hl2, teethLength)
+lips  = smma(hl2, lipsLength)
+sma200 = ta.sma(close, smaLength)
+vwap_val = ta.vwap
+atr = ta.atr(14)
+
+// ─── Displayed values (offset-adjusted) ──────────────────────────────────────
+lipsD  = lips[lipsOffset]
+jawD   = jaw[jawOffset]
+teethD = teeth[teethOffset]
+
+// ─── Gap between close and green line ────────────────────────────────────────
+gapOkBull = (close - lipsD) / close * 100 >= gapPct
+gapOkBear = (lipsD - close) / close * 100 >= gapPct
+
+// ─── VWAP / SMA filters ─────────────────────────────────────────────────────
+vwapOkBull = not useVwap or close > vwap_val
+vwapOkBear = not useVwap or close < vwap_val
+smaOkBull  = not useSma or close > sma200
+smaOkBear  = not useSma or close < sma200
+
+// ─── Mouth direction (fan open) ──────────────────────────────────────────────
+bullFan = lipsD > teethD and teethD > jawD
+bearFan = jawD > teethD and teethD > lipsD
+
+// ─── All conditions met ──────────────────────────────────────────────────────
+buyReady  = bullFan and gapOkBull and vwapOkBull and smaOkBull
+sellReady = bearFan and gapOkBear and vwapOkBear and smaOkBear
+
+// ─── Fire once on first bar all conditions align ─────────────────────────────
+buySignal  = buyReady and not buyReady[1]
+sellSignal = sellReady and not sellReady[1]
+
+// ─── Track bars since entry ──────────────────────────────────────────────────
+var int barsInTrade = 0
+if strategy.position_size != 0
+    barsInTrade += 1
+else
+    barsInTrade := 0
+
+// ─── TP/SL levels ────────────────────────────────────────────────────────────
+float tp_price = na
+float sl_price = na
+
+if strategy.position_size > 0
+    tp_price := strategy.position_avg_price + atr * tpMult
+    sl_price := strategy.position_avg_price - atr * slMult
+
+if strategy.position_size < 0
+    tp_price := strategy.position_avg_price - atr * tpMult
+    sl_price := strategy.position_avg_price + atr * slMult
+
+// ─── Entry Logic ─────────────────────────────────────────────────────────────
+if buySignal
+    if strategy.position_size < 0 and exitOnFlip
+        strategy.close("Short", comment="Flip to Long")
+    strategy.entry("Long", strategy.long)
+
+if sellSignal
+    if strategy.position_size > 0 and exitOnFlip
+        strategy.close("Long", comment="Flip to Short")
+    strategy.entry("Short", strategy.short)
+
+// ─── Exit Logic: TP/SL ──────────────────────────────────────────────────────
+if strategy.position_size > 0
+    if useTP and useSL
+        strategy.exit("Long Exit", "Long", limit=tp_price, stop=sl_price)
+    else if useTP
+        strategy.exit("Long TP", "Long", limit=tp_price)
+    else if useSL
+        strategy.exit("Long SL", "Long", stop=sl_price)
+
+if strategy.position_size < 0
+    if useTP and useSL
+        strategy.exit("Short Exit", "Short", limit=tp_price, stop=sl_price)
+    else if useTP
+        strategy.exit("Short TP", "Short", limit=tp_price)
+    else if useSL
+        strategy.exit("Short SL", "Short", stop=sl_price)
+
+// ─── Exit Logic: Trailing Stop ───────────────────────────────────────────────
+if useTrail and strategy.position_size > 0
+    strategy.exit("Long Trail", "Long", trail_points=atr * trailMult / syminfo.mintick, trail_offset=atr * trailMult / syminfo.mintick)
+
+if useTrail and strategy.position_size < 0
+    strategy.exit("Short Trail", "Short", trail_points=atr * trailMult / syminfo.mintick, trail_offset=atr * trailMult / syminfo.mintick)
+
+// ─── Exit Logic: Max Bars ────────────────────────────────────────────────────
+if maxBars > 0 and barsInTrade >= maxBars
+    if strategy.position_size > 0
+        strategy.close("Long", comment="Max bars")
+    if strategy.position_size < 0
+        strategy.close("Short", comment="Max bars")
+
+// ─── Exit Logic: Mouth closing (alligator sleeping) ─────────────────────────
+mouthClosing = math.abs(lipsD - jawD) < atr * 0.3
+if mouthClosing and strategy.position_size != 0 and barsInTrade > 5
+    if strategy.position_size > 0
+        strategy.close("Long", comment="Mouth closing")
+    if strategy.position_size < 0
+        strategy.close("Short", comment="Mouth closing")
+
+// ─── Plots ───────────────────────────────────────────────────────────────────
+plot(jaw, "Jaw", offset=jawOffset, color=#2962FF, linewidth=2)
+plot(teeth, "Teeth", offset=teethOffset, color=#E91E63, linewidth=2)
+plot(lips, "Lips", offset=lipsOffset, color=#66BB6A, linewidth=2)
+plot(sma200, "SMA", color=showSma ? color.new(color.orange, 0) : na, linewidth=1)
+plot(vwap_val, "VWAP", color=showVwap ? color.new(color.purple, 0) : na, linewidth=1)
+
+// ─── Signal markers ─────────────────────────────────────────────────────────
+plotshape(buySignal ? low - atr * markerDist : na, title="Buy", style=shape.triangleup, location=location.absolute, color=color.new(color.green, 0), size=size.tiny)
+plotshape(sellSignal ? high + atr * markerDist : na, title="Sell", style=shape.triangledown, location=location.absolute, color=color.new(color.red, 0), size=size.tiny)
+
+// ─── TP/SL visualization ────────────────────────────────────────────────────
+plot(strategy.position_size > 0 and useTP ? tp_price : na, "Long TP", color=color.new(color.green, 50), style=plot.style_linebr, linewidth=1)
+plot(strategy.position_size > 0 and useSL ? sl_price : na, "Long SL", color=color.new(color.red, 50), style=plot.style_linebr, linewidth=1)
+plot(strategy.position_size < 0 and useTP ? tp_price : na, "Short TP", color=color.new(color.green, 50), style=plot.style_linebr, linewidth=1)
+plot(strategy.position_size < 0 and useSL ? sl_price : na, "Short SL", color=color.new(color.red, 50), style=plot.style_linebr, linewidth=1)
+
+// ─── Background: position state ──────────────────────────────────────────────
+bgcolor(strategy.position_size > 0 ? color.new(color.green, 93) : strategy.position_size < 0 ? color.new(color.red, 93) : na, title="Position BG")
+
+// ─── Alerts ──────────────────────────────────────────────────────────────────
+alertcondition(buySignal, title="Super Alligator BUY", message="Super Alligator BUY signal fired")
+alertcondition(sellSignal, title="Super Alligator SELL", message="Super Alligator SELL signal fired")

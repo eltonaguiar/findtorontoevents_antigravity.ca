@@ -1,0 +1,56 @@
+name: Mercury 2  Weekly Retrain
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"       # Every Sunday at 2:00 AM UTC
+  workflow_dispatch:
+
+concurrency:
+  group: mercury2-retrain-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: write
+
+jobs:
+  retrain:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install numpy pandas xgboost lightgbm scikit-learn joblib requests scipy catboost
+
+      - name: Run Mercury 2 trainer
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Mercury 2 Weekly Retrain ==="
+          python -m mercury2 train
+
+      - name: Commit trained models
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Mercury 2 Bot"
+          git config user.email "mercury2@findtorontoevents.ca"
+          git add mercury2/models/ mercury2/data/training_summary.json || true
+          git add ml_battleground/retrain_trigger.json ml_battleground/baseline_metrics.json 2>/dev/null || true
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m " Mercury 2 retrain $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying in ${i}0s..."
+            sleep ${i}0
+            git rebase --abort 2>/dev/null || true
+            git pull --rebase origin main || true
+          done
+

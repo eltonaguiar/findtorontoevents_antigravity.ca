@@ -1,0 +1,144 @@
+# =============================================================================
+# Resolver Plan — Step 7 — active_picks_sync writer flip (Defect 3, Stage B)
+# =============================================================================
+# Manually-triggered workflow that runs alpha_engine/active_picks_sync.py in
+# APPLY mode against production MySQL. GHA runners are IP-allowlisted by
+# 50webs; desktop sessions are not — so the writer flip must run here.
+#
+# What it does: reads ACTIVE/OPEN rows from at_raw_picks, detects TP/SL/
+# time-exit transitions, and (in APPLY mode) UPDATEs at_raw_picks + appends
+# to alpha_engine/data/closed_picks.json. See
+# reports/RESOLUTION_PIPELINE_FIX_PLAN_2026-05-18.md Defect 3 / Stage B.
+#
+# SAFE-BY-DEFAULT:
+#   - confirm gate must equal 'APPLY-SYNC' or the run fails immediately
+#   - active_picks_sync only writes when BOTH --apply is passed AND env
+#     ACTIVE_PICKS_SYNC_APPLY=1 is set (double opt-in, see script line ~418)
+#   - --max-rows caps how many at_raw_picks rows are read per run
+#   - the OPEN/ACTIVE-only WHERE clause in apply_transition is a no-reopen guard
+# =============================================================================
+
+name: Resolver Step 7 — active_picks_sync APPLY
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "type APPLY-SYNC to proceed"
+        required: true
+        default: ""
+      max_rows:
+        description: "Max at_raw_picks rows to read per run (cap)"
+        required: true
+        default: '500'
+      asset_class:
+        description: "Asset class to process (CRYPTO/EQUITY/FOREX/COMMODITY/FUTURES/BOND/ETF). 2026-05-19 added — script's --asset-class flag was always present but the workflow input wasn't exposed."
+        required: true
+        default: 'CRYPTO'
+        type: choice
+        options:
+          - CRYPTO
+          - EQUITY
+          - FOREX
+          - COMMODITY
+          - FUTURES
+          - BOND
+          - ETF
+
+concurrency:
+  group: resolver-step7-apply
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  apply-sync:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # active_picks_sync needs pymysql for the DB and yfinance for non-crypto
+      # live prices (api_failover covers CRYPTO without yfinance).
+      - name: Install dependencies
+        run: python -m pip install pymysql yfinance
+
+      # GUARD — fail fast unless the operator typed the exact phrase.
+      - name: Confirm guard
+        run: |
+          if [ "${{ inputs.confirm }}" != "APPLY-SYNC" ]; then
+            echo "::error::confirm input must be exactly 'APPLY-SYNC' (got '${{ inputs.confirm }}'). Aborting."
+            exit 1
+          fi
+          echo "Confirm guard passed. max_rows = ${{ inputs.max_rows }}"
+
+      # active_picks_sync.connect() reads DB_STOCKS_* env vars; we also export
+      # the AUDIT_DB_* names for any shared imports. DB password secret name
+      # mirrors .github/workflows/mysql-trading-sync.yml exactly:
+      #   secrets.MYSQL_PASSWORD with fallback to secrets.AUDIT_DB_PASS.
+      # ACTIVE_PICKS_SYNC_APPLY=1 is the script's required second opt-in.
+      - name: Run active_picks_sync (APPLY mode)
+        env:
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_PORT: '3306'
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_PORT: '3306'
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          ACTIVE_PICKS_SYNC_APPLY: '1'
+          # 2026-05-19 fix: prior run ID 26127173274 failed `from alpha_engine
+          # import api_failover` because invoking the script by file path puts
+          # alpha_engine/ on sys.path (so `alpha_engine` is not importable).
+          # Run as a module from repo root so `import alpha_engine.*` resolves.
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          set -e
+          cd "${GITHUB_WORKSPACE}"
+          python -m alpha_engine.active_picks_sync \
+            --apply \
+            --asset-class ${{ inputs.asset_class }} \
+            --max-rows ${{ inputs.max_rows }}
+
+      # Print the shadow-diff / result summary the script wrote to reports/.
+      - name: Print result summary
+        if: always()
+        run: |
+          latest=$(ls -t reports/active_picks_sync_dryrun_*.json 2>/dev/null | head -1 || true)
+          if [ -z "$latest" ]; then
+            echo "::warning::No active_picks_sync result JSON found in reports/."
+            exit 0
+          fi
+          echo "Result file: $latest"
+          echo "---------------------------------------------------------------"
+          python - <<'PYEOF'
+          import glob, json, os
+          files = sorted(glob.glob("reports/active_picks_sync_dryrun_*.json"),
+                         key=os.path.getmtime)
+          if not files:
+              print("no result file")
+              raise SystemExit(0)
+          data = json.load(open(files[-1]))
+          print("mode:        ", data.get("mode"))
+          print("asset_class: ", data.get("asset_class"))
+          print("summary:")
+          for k, v in (data.get("summary") or {}).items():
+              print("  %-22s %s" % (k, v))
+          ar = data.get("apply_results")
+          if ar:
+              print("apply_results:")
+              for k, v in ar.items():
+                  print("  %-22s %s" % (k, v))
+          PYEOF

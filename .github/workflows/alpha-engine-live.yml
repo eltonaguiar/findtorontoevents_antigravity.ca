@@ -1,0 +1,897 @@
+name: ALPHA ENGINE - Live Autonomous Scanner
+
+on:
+  schedule:
+    # Every 2 hours at :03 — runs take 45-60min + 17min MySQL sync. See concurrency comment below.
+    - cron: '3 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'full-cycle'
+        type: choice
+        options:
+          - full-cycle
+          - validate-only
+          - generate-only
+          - report
+          - train-ml
+      runner:
+        description: 'Runner to use'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+
+concurrency:
+  group: alpha-engine-scanner
+  # FIX 2026-04-06: changed false->true. With cancel-in-progress=false, two runs
+  # would stack and BOTH time out at 55min (observed: 2 consecutive cancels at 55+59min).
+  # With true, new trigger cancels the old run so the latest always completes.
+  # FIX 2026-04-17 (Phase A): cron 1h -> 2h + timeout 55 -> 90 min so the 17-min
+  # "Full MySQL sync" step can finish before the next cron fires (was getting
+  # cancelled by hourly trigger). Pick freshness loss (1h -> 2h) is acceptable
+  # because Gainer Capture (15min) + Momentum Tracker (1h) refresh picks faster.
+  # Phase B (delta-only MySQL sync) is a separate future PR.
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  alpha-engine:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}  # Cloud default, self-hosted when local machine is on
+    defaults:
+      run:
+        shell: bash
+    timeout-minutes: 90  # 2026-04-17 Phase A: 55 -> 90 to fit 45-60min scan + 17min MySQL sync (was cancelling)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python (cloud)
+        if: runner.os != 'Windows'
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Set up Python (self-hosted Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "C:/Users/zerou/AppData/Local/Programs/Python/Python312" >> $GITHUB_PATH
+          echo "C:/Users/zerou/AppData/Local/Programs/Python/Python312/Scripts" >> $GITHUB_PATH
+          "C:/Users/zerou/AppData/Local/Programs/Python/Python312/python.exe" --version
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy scikit-learn joblib requests pymysql ccxt xgboost lightgbm pyarrow pytz && pip install catboost 2>/dev/null || echo "catboost unavailable (optional)"
+        env:
+          PIP_BREAK_SYSTEM_PACKAGES: "1"
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            echo "mode=full-cycle" >> $GITHUB_OUTPUT
+          fi
+
+      #  Enhanced Data Feeds (F&G)
+      - name: Enhanced Data Feeds (F&G)
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python cross_aggregation/enhanced_data_feeds.py || echo "Enhanced data feeds failed (non-fatal)"
+
+      #  Report only 
+      - name: Performance report
+        if: steps.mode.outputs.mode == 'report'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/forward_validator.py --report
+
+      #  ML training 
+      - name: Train ML model
+        if: steps.mode.outputs.mode == 'train-ml'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/scanner.py --train-ml || echo "ML training skipped (insufficient data)"
+
+      # Bootstrap PEAD earnings cache (per research/25_pead_risk_freshness_audit.md)
+      # PEAD ships in commit 4c65e6698a but emits zero picks because data/earnings/
+      # doesn't exist on disk; the vt_equity_earnings_drift_pead reads from cache,
+      # finds nothing, returns []. This step seeds the cache before the scanner runs.
+      # Step is non-fatal: if the fetcher fails (rate-limit / API down) the rest of
+      # the cycle proceeds with PEAD effectively disabled (current behavior).
+      - name: Bootstrap PEAD earnings cache (non-fatal)
+        if: steps.mode.outputs.mode != 'train-ml'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          UEPS_ENABLE_PEAD: "1"
+        run: |
+          mkdir -p data/earnings
+          python -c "
+          import os, json, sys
+          from pathlib import Path
+          # Only seed if cache is empty/missing — avoid clobbering fresh data
+          earnings_dir = Path('data/earnings')
+          existing = list(earnings_dir.glob('*/latest.json'))
+          if len(existing) >= 5:
+              print(f'PEAD earnings cache already populated ({len(existing)} tickers); skipping bootstrap')
+              sys.exit(0)
+          try:
+              from alpha_engine.earnings_calendar_fetcher import EarningsCalendarFetcher
+          except ImportError as e:
+              print(f'earnings_calendar_fetcher not importable yet: {e}; skipping bootstrap (non-fatal)')
+              sys.exit(0)
+          # Seed with the S&P 100 baseline (same universe as UEPS value screener)
+          tickers = ['AAPL','MSFT','GOOGL','AMZN','META','NVDA','TSLA','AVGO','LLY','UNH',
+                     'JPM','XOM','V','MA','PG','JNJ','HD','ORCL','COST','MRK',
+                     'CVX','ABBV','BAC','PEP','KO','ADBE','CRM','NFLX','TMO','MCD']
+          fetcher = EarningsCalendarFetcher()
+          ok, fail = 0, 0
+          for t in tickers:
+              try:
+                  rec = fetcher.fetch(t)
+                  if rec is not None and rec.source != 'missing':
+                      ok += 1
+                  else:
+                      fail += 1
+              except Exception as e:
+                  print(f'  {t}: bootstrap fetch failed: {e}')
+                  fail += 1
+          print(f'PEAD bootstrap: {ok} cached, {fail} failed (out of {len(tickers)})')
+          " || echo "PEAD bootstrap step failed (non-fatal — PEAD will return [] this cycle)"
+          # Fail-loud cache-size check (added 2026-04-30 — was silent on
+          # under-population, masking the empty-cache bug that kept
+          # vt_earnings_pead returning [] every run for ~2 weeks).
+          python -c "
+          import pathlib
+          d = pathlib.Path('data/earnings')
+          n = len([p for p in d.iterdir() if p.is_dir() and (p/'latest.json').exists()]) if d.exists() else 0
+          print(f'::notice::PEAD cache populated with {n} tickers')
+          if n < 10:
+              print(f'::warning::PEAD cache under-populated ({n} < 10 tickers) — vt_earnings_pead will return [] this cycle')
+          " || true
+
+      # Persist PEAD earnings cache across runs using actions/cache.
+      # Previous approach (git commit) caused repo bloat with ~24 data
+      # commits/day. actions/cache stores data outside git history while
+      # persisting across runs. 7-day key rotation via date prefix ensures
+      # cache stays fresh; restore-keys provides fallback to stale cache
+      # (better than cold-start). See Finding #3 in
+      # updates/2026-05-02-48h-code-review.md.
+      - name: Restore PEAD earnings cache
+        if: steps.mode.outputs.mode != 'train-ml'
+        uses: actions/cache@v4
+        with:
+          path: data/earnings/
+          key: pead-cache-${{ hashFiles('alpha_engine/data/tradingagents_watchlist.json') }}-${{ github.run_id }}
+          restore-keys: |
+            pead-cache-${{ hashFiles('alpha_engine/data/tradingagents_watchlist.json') }}-
+            pead-cache-
+
+      #  Full cycle: validate open picks + generate new + auto-tweak
+      - name: Full cycle (validate + generate + tweak)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          ALPHA_CONFLUENCE: "1"
+          ALPHA_TOURNAMENT: "1"
+          ALPHA_MIN_FAMILIES: "2"
+          CRYPTOPANIC_API_KEY: ${{ secrets.CRYPTOPANIC_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          ETHPLORER_API_KEY: ${{ secrets.ETHPLORER_API_KEY }}
+          # VIX regime gate (EQUITY): 11y backtest PF 4.55/Sharpe 1.98 when VIX<22
+          # reports/equity_vix_regime_breakthrough_20260513.md — swarm 3/3 consensus P1
+          VIX_REGIME_GATE_ENABLED: "1"
+          VIX_REGIME_GATE_THRESHOLD: "22"
+          # Concept drift auto-pause: KS_D/critical > 3x pauses CRYPTO+FOREX emissions
+          # Current live ratio 6.61x (SEVERE) — wired 2026-05-14, kill-switch: set to 0
+          DRIFT_PAUSE_GATE_ENABLED: "1"
+          DRIFT_PAUSE_RATIO: "3.0"
+          # Bond yield-curve slope strategy: uses FRED T10Y2Y (2s10s spread)
+          # bond_strategies.py::bond_yield_curve_slope — wired 2026-05-14
+          BOND_ENABLE_YIELD_CURVE: "1"
+          # Triple-barrier labeling: stamps triple_barrier_label on closed picks
+          # outcome_resolver.py::apply_triple_barrier_labels — enabled 2026-05-14
+          TRIPLE_BARRIER_ENABLED: "1"
+          # M-034: CRYPTO confidence-inversion gate — super_signals/luxalgo_filters conf>=0.85 anti-correlate WR
+          # Shadow-verified 2026-05-17: 0 false-reject on elite sources (mega_mutation/kimi/baby_strats)
+          CRYPTO_CONF_INVERSION_GATE: "1"
+          # PCG-5 enforce: portfolio gates (regime+duplicate+concentration+profit-lock+correlation)
+          # Shadow log (186 entries): 0 bad REJECT patterns on live picks; JNJ duplicate correctly caught
+          PCG5_ENFORCE: "1"
+          # M-042: COMMODITY SHORT-only gate (cta_replicator LONG WR=0%, multi_asset_cot/copytrader SHORT WR=77%)
+          COMMODITY_SHORT_ONLY: "1"
+          # A1 meta-label shadow gate — shadow mode ONLY (verdict logged, not enforced)
+          # Model: random_forest AUC=0.5795 on 941 post-resolver-v2.1 closed picks (2026-05-17)
+          # Enforce gate pending 7-day shadow accumulation review
+          META_LABEL_GATE: "1"
+        run: |
+          echo "============================================"
+          echo "  ALPHA ENGINE v2.0 - Premium Signal Service"
+          echo "  Confluence + Tournament System ACTIVE"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/production_scanner.py
+
+      #  Multi-Asset Scanner: forex, equity, commodity, futures strategies
+      - name: Multi-Asset Scanner (forex/equity/commodity/futures)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python multi_asset/scanner.py || echo 'Multi-asset scanner failed (non-fatal)'
+
+      # Stamp trust_tier + conviction on active picks (unblocks HC gate)
+      # Prior to this step being wired, trust_tier was None on 130/130 active
+      # picks, collapsing HC-gate pass rate to ~3% (2 of 67). The stamper
+      # (audit_trail/stamp_pick_quality.py) assigns tiers from closed-pick
+      # history: PROVEN if n>=10 AND wr>=55%; WATCH if n>=5 AND wr>=45%;
+      # MONITOR if n>=3 OR wr>=35%; AVOID if n>=5 AND wr<35%; else UNKNOWN.
+      # Also backfills RR (reward/risk) and flags HC picks (grade A/B).
+      # See reports/TIER_A_TRUST_TIER_PROMOTER_DIAGNOSIS_2026_04_22.md
+      - name: Stamp trust tiers on active picks
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m audit_trail.stamp_pick_quality alpha_engine/data/active_picks.json || echo 'Trust-tier stamping failed (non-fatal)'
+
+      #  ML Strategy Reviver
+      - name: ML Strategy Reviver
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/ml_strategy_reviver.py || echo 'ML Reviver failed (non-fatal)'
+
+      #  Isolated Signal Integrator 
+      - name: Isolated Signal Integrator
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/isolated_signal_integrator.py || echo 'Isolated integrator failed (non-fatal)'
+
+      #  Merge ML Crypto Predictor picks into alpha_engine data 
+      - name: Merge ML Predictor picks
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/ml_predictor_merger.py || echo "ML Predictor merger failed (non-fatal)"
+
+      #  Polymarket: run prediction scanner + merge signals into active picks 
+      - name: Run Polymarket signals
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/polymarket_signals.py || echo "Polymarket signals failed (non-fatal)"
+
+      - name: Merge Polymarket signals
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/polymarket_merger.py || echo "Polymarket merger failed (non-fatal)"
+
+      #  Kalshi: multi-timeframe crypto consensus signals 
+      - name: Run Kalshi signals
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/kalshi_signals.py || echo "Kalshi signals failed (non-fatal)"
+
+      #  Prediction Market Consensus: Polymarket + Kalshi cross-source agreement 
+      - name: Run Prediction Market Consensus
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/prediction_market_consensus.py || echo "Prediction market consensus failed (non-fatal)"
+
+      #  Prediction Market Agents: quality-gated cross-market consensus into active picks
+      - name: Run Prediction Market Agent Orchestrator
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m prediction_market_agents.orchestrator || echo "Prediction market agents failed (non-fatal)"
+
+      #  LunarCrush/Social sentiment signals (galaxy score equivalent via free APIs)
+      - name: Run LunarCrush social sentiment
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          LUNARCRUSH_API: ${{ secrets.LUNARCRUSH_API }}
+        run: python alpha_engine/lunarcrush_signal.py || echo "LunarCrush signals failed (non-fatal)"
+        continue-on-error: true
+        timeout-minutes: 3
+
+      #  CryptoPanic news sentiment + Fear & Greed contrarian signals
+      - name: Run CryptoPanic + F&G signals
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          CRYPTOPANIC_API_KEY: ${{ secrets.CRYPTOPANIC_API_KEY }}
+        run: python alpha_engine/cryptopanic_feargreed.py || echo "CryptoPanic/F&G signals failed (non-fatal)"
+        continue-on-error: true
+        timeout-minutes: 3
+
+      #  Universal Price Enricher: fetch live prices for ALL picks (crypto + forex + stocks)
+      - name: Universal Price Enricher
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/universal_price_enricher.py || echo "Universal price enricher failed (non-fatal)"
+
+      #  TP/SL Filler: add ATR-based TP/SL to picks missing them 
+      - name: Fill missing TP/SL (ATR-based)
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/tp_sl_filler.py || echo "TP/SL filler failed (non-fatal)"
+
+      #  Check Top Picks Outcome: resolve TP/SL hits with multi-source price check 
+      - name: Check top picks outcomes
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        run: python audit_dashboard/check_top_picks_outcome.py || echo "Outcome check failed (non-fatal)"
+
+      #  Elite Scorer: score ALL picks (including copy trader / CTA / multi-asset) 
+      - name: Score all picks with elite_scorer
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          from elite_scorer import enrich_picks_with_elite_score
+          from pathlib import Path
+          import json
+          ap = Path('data/active_picks.json')
+          data = json.loads(ap.read_text())
+          picks = data if isinstance(data, list) else data.get('picks', [])
+          unscored = sum(1 for p in picks if not p.get('elite_score'))
+          print(f'[ELITE] {unscored}/{len(picks)} picks need scoring')
+          enrich_picks_with_elite_score(picks, 'data')
+          if isinstance(data, dict):
+              data['picks'] = picks
+          else:
+              data = picks
+          ap.write_text(json.dumps(data, indent=2))
+          scored = sum(1 for p in picks if p.get('elite_score'))
+          print(f'[ELITE] {scored}/{len(picks)} picks now scored')
+          " || echo "Elite scorer failed (non-fatal)"
+
+      #  Enrich picks with RSI, VOL, regime, trust, HTF, strong signal 
+      - name: Enrich picks (RSI, regime, trust)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          import json, urllib.request
+          from pathlib import Path
+          ap = Path('data/active_picks.json')
+          data = json.loads(ap.read_text())
+          picks = data if isinstance(data, list) else data.get('picks', [])
+          # Load regime
+          regime = 'CHOPPY'
+          try:
+              hmm = json.loads(Path('data/hmm_regime.json').read_text())
+              regime = hmm.get('aggregate', {}).get('market_regime', hmm.get('market_regime', 'CHOPPY'))
+          except: pass
+          # Load strategy performance
+          try: sp = json.loads(Path('data/strategy_performance.json').read_text())
+          except: sp = {}
+          enriched = 0
+          for p in picks:
+              sym = (p.get('symbol') or '').upper().replace('-','')
+              cat = (p.get('asset_class') or p.get('category') or 'crypto').lower()
+              strat = p.get('strategy', '')
+              direction = (p.get('signal_type') or p.get('direction') or '').upper()
+              # Regime  only inject BTC crypto regime for crypto picks
+              # Forex/commodity/equity picks should not inherit BTC bull/bear labels
+              if not p.get('regime_at_entry') and cat in ('crypto', ''):
+                  p['regime_at_entry'] = regime
+                  p['market_regime'] = regime
+              # Track record
+              if strat in sp:
+                  perf = sp[strat]
+                  p['forward_wr'] = perf.get('win_rate', 0)
+                  p['forward_trades'] = perf.get('closed_picks', 0)
+                  wr = perf.get('win_rate', 0)
+                  trades = perf.get('closed_picks', 0)
+                  p['track_record'] = f'{trades}t {wr*100:.0f}%'
+                  if trades >= 10 and wr >= 0.55: p['trust_level'] = 'HIGH'
+                  elif trades >= 5 and wr >= 0.45: p['trust_level'] = 'MEDIUM'
+                  else: p['trust_level'] = 'LOW'
+              else:
+                  p.setdefault('trust_level', 'NEW')
+                  p.setdefault('track_record', '0t')
+              # RSI from Binance (crypto only)  6-mirror failover
+              if sym.endswith('USDT') and not p.get('rsi') and sym.isascii():
+                  klines = None
+                  for _mirror in ['https://api.binance.com','https://api1.binance.com','https://api2.binance.com','https://api3.binance.com','https://api4.binance.com','https://data-api.binance.vision']:
+                      try:
+                          url = f'{_mirror}/api/v3/klines?symbol={sym}&interval=1h&limit=15'
+                          req = urllib.request.Request(url, headers={'User-Agent': 'AE/1.0'})
+                          with urllib.request.urlopen(req, timeout=5) as resp:
+                              klines = json.loads(resp.read())
+                          if klines: break
+                      except: continue
+                  try:
+                      closes = [float(k[4]) for k in klines]
+                      volumes = [float(k[5]) for k in klines]
+                      if len(closes) >= 14:
+                          gains, losses = [], []
+                          for i in range(1, len(closes)):
+                              d = closes[i] - closes[i-1]
+                              gains.append(max(d,0)); losses.append(max(-d,0))
+                          ag = sum(gains[-14:])/14; al = sum(losses[-14:])/14
+                          rsi = 100 - (100/(1+(ag/al))) if al > 0 else 100
+                          p['rsi'] = round(rsi, 1)
+                          p['rsi_14'] = round(rsi, 1)
+                          avg_vol = sum(volumes[:-1])/max(len(volumes)-1,1)
+                          p['volume_ratio'] = round(volumes[-1]/avg_vol, 2) if avg_vol > 0 else 1.0
+                          enriched += 1
+                  except: pass
+              # RSI from yfinance (forex/commodity/equity: =X suffix or non-USDT)
+              elif not p.get('rsi') and (sym.endswith('=X') or cat in ('forex','commodity','equity','bond','futures')):
+                  try:
+                      import yfinance as _yf
+                      _yf_sym = sym if sym.endswith('=X') else sym
+                      _tk = _yf.Ticker(_yf_sym)
+                      _hist = _tk.history(period='5d', interval='1h')
+                      if _hist is not None and len(_hist) >= 14:
+                          closes = list(_hist['Close'])[-15:]
+                          if len(closes) >= 14:
+                              gains, losses = [], []
+                              for i in range(1, len(closes)):
+                                  d = closes[i] - closes[i-1]
+                                  gains.append(max(d,0)); losses.append(max(-d,0))
+                              ag = sum(gains[-14:])/14; al = sum(losses[-14:])/14
+                              rsi = 100 - (100/(1+(ag/al))) if al > 0 else 100
+                              p['rsi'] = round(rsi, 1)
+                              p['rsi_14'] = round(rsi, 1)
+                              vols = list(_hist['Volume'])[-15:] if 'Volume' in _hist.columns else []
+                              if vols and len(vols) >= 2:
+                                  avg_vol = sum(vols[:-1])/max(len(vols)-1,1)
+                                  p['volume_ratio'] = round(vols[-1]/avg_vol, 2) if avg_vol > 0 else 1.0
+                              enriched += 1
+                  except: pass
+              # HTF aligned
+              rsi_val = p.get('rsi') or p.get('rsi_14')
+              if rsi_val:
+                  r = float(rsi_val)
+                  if direction in ('BUY','LONG'): p['htf_aligned'] = 40 < r < 80
+                  elif direction in ('SELL','SHORT'): p['htf_aligned'] = r > 60
+                  else: p['htf_aligned'] = 40 < r < 60
+              # Strong signal
+              conf = float(p.get('confidence', 0) or 0)
+              p['strong_signal'] = (conf >= 0.75 and p.get('htf_aligned', False) and p.get('trust_level') in ('HIGH', 'MEDIUM'))
+          if isinstance(data, dict): data['picks'] = picks
+          else: data = picks
+          ap.write_text(json.dumps(data, indent=2, default=str))
+          print(f'[ENRICH] {enriched} picks got RSI/VOL, all {len(picks)} got regime/trust/HTF/strong')
+          " || echo "Enrichment failed (non-fatal)"
+
+      #  Score Floor: penalize low elite_score picks (keep all, adjust score) 
+      # Philosophy: all picks reach dashboard, low scores sort lower
+      - name: Apply elite_score penalties (no removal)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          from pathlib import Path
+          import json
+          ap = Path('data/active_picks.json')
+          data = json.loads(ap.read_text())
+          picks = data if isinstance(data, list) else data.get('picks', [])
+          penalized = 0
+          for p in picks:
+              es = p.get('elite_score')
+              if es is not None:
+                  try:
+                      val = float(es)
+                      if val < 25:
+                          p['_elite_penalty'] = True
+                          print(f'  [SCORE PENALTY] {p.get(\"symbol\")} {p.get(\"strategy\")} elite_score={es} (kept, low score)')
+                          penalized += 1
+                  except (TypeError, ValueError):
+                      pass
+          if isinstance(data, dict):
+              data['picks'] = picks
+          else:
+              data = picks
+          ap.write_text(json.dumps(data, indent=2))
+          print(f'[SCORE FLOOR] {penalized}/{len(picks)} picks penalized (elite_score < 25), all {len(picks)} kept')
+          " || echo "Score floor filter failed (non-fatal)"
+
+      #  Monte Carlo Quality Purge: remove picks from strategies with confirmed negative edge 
+      - name: Monte Carlo Quality Purge
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        run: python alpha_engine/mc_quality_purge.py || echo "MC quality purge failed (non-fatal)"
+
+      #  Validate only 
+      - name: Validate open picks
+        if: steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/forward_validator.py
+
+      #  Generate only 
+      - name: Generate new picks
+        if: steps.mode.outputs.mode == 'generate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          CRYPTOPANIC_API_KEY: ${{ secrets.CRYPTOPANIC_API_KEY }}
+        run: python alpha_engine/forward_validator.py --generate
+
+      #  ML Accelerator: turbo TP/SL + progress tracking 
+      - name: ML Training Accelerator
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        continue-on-error: true
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo " Running ML Training Accelerator..."
+          python -c "
+          import sys; sys.path.insert(0, '.')
+          from pick_accelerator import should_use_turbo, apply_turbo_to_active_picks, print_status, get_ml_status
+          status = get_ml_status()
+          print(f'ML Progress: {status[\"closed_picks\"]}/{status[\"ml_threshold\"]} ({status[\"pct_complete\"]}%)')
+          if should_use_turbo():
+              n = apply_turbo_to_active_picks()
+              print(f'Turbo applied to {n} active picks')
+          print_status()
+
+          # Auto-train ML if threshold reached
+          if status['closed_picks'] >= status['ml_threshold']:
+              print('MILESTONE: 50 closed picks reached! Training ML model...')
+              from ml_ranker import MLSignalRanker
+              from database import SQLiteStore
+              db = SQLiteStore()
+              ranker = MLSignalRanker()
+              result = ranker.train(db)
+              db.close()
+              print(f'ML Training result: {result}')
+          "
+
+      #  Winning Trade Monitor 
+      - name: Check for winning trades
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        run: python alpha_engine_winning_monitor.py
+
+      #  FreshPicks: Send new picks to #fresh-picks Discord channel 
+      - name: Send FreshPicks for new active picks
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'generate-only'
+        env:
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_FRESHPICKS" ]; then
+            python3 -c "
+          import json, os, sys
+          sys.path.insert(0, '.')
+          from cross_aggregation.freshpicks_notify import send_fresh_pick
+
+          picks_path = 'alpha_engine/data/active_picks.json'
+          closed_path = 'alpha_engine/data/closed_picks.json'
+          sent_path = 'alpha_engine/data/freshpicks_sent.json'
+
+          if not os.path.exists(picks_path):
+              print('No active_picks.json found')
+              exit(0)
+
+          picks = json.load(open(picks_path))
+          if not picks:
+              print('No active picks')
+              exit(0)
+
+          # Build FORWARD-ONLY performance stats (live TP/SL tracking)
+          stats = {'total': 0, 'active': len(picks), 'wins': 0, 'losses': 0,
+                   'win_rate': 0, 'realized_pnl_pct': 0, 'unrealized_pnl_pct': 0,
+                   'tracking_since': '', 'recent_closed': []}
+          try:
+              closed = json.load(open(closed_path))
+              wins = [c for c in closed if c.get('status') == 'WON']
+              losses = [c for c in closed if c.get('status') == 'LOST']
+              stats['total'] = len(closed)
+              stats['wins'] = len(wins)
+              stats['losses'] = len(losses)
+              stats['win_rate'] = len(wins) / len(closed) * 100 if closed else 0
+              stats['realized_pnl_pct'] = sum(c.get('pnl_pct', 0) * 100 for c in closed)
+              # Tracking start date from earliest closed pick
+              dates = [c.get('created_at', c.get('closed_at', ''))[:10] for c in closed if c.get('created_at') or c.get('closed_at')]
+              if dates:
+                  earliest = min(d for d in dates if d)
+                  stats['tracking_since'] = earliest
+              # Last 5 closed
+              for c in closed[-5:]:
+                  stats['recent_closed'].append({
+                      'symbol': c.get('symbol', '?'),
+                      'pnl_pct': c.get('pnl_pct', 0),
+                      'status': c.get('status', '?'),
+                      'strategy': c.get('strategy', ''),
+                  })
+              # Rolling WR (last 20 closed) + max drawdown
+              if len(closed) >= 20:
+                  last20 = closed[-20:]
+                  stats['rolling_wr_20'] = sum(1 for c in last20 if c.get('status') == 'WON') / 20 * 100
+              # Max drawdown from cumulative PnL
+              cum = 0; peak = 0; dd = 0
+              for c in closed:
+                  cum += c.get('pnl_pct', 0) * 100
+                  peak = max(peak, cum)
+                  dd = min(dd, cum - peak)
+              stats['max_drawdown_pct'] = round(dd, 2)
+          except: pass
+          # Unrealized from active
+          stats['unrealized_pnl_pct'] = sum(p.get('unrealized_pnl_pct', 0) * 100 for p in picks) / max(len(picks), 1)
+
+          # Load previously sent to avoid duplicates (track by pick id)
+          sent_ids = set()
+          if os.path.exists(sent_path):
+              try:
+                  sent_ids = set(json.load(open(sent_path)))
+              except: pass
+
+          new_picks = [p for p in picks if p.get('id','') not in sent_ids]
+          if not new_picks:
+              print(f'All {len(picks)} picks already sent to FreshPicks')
+              exit(0)
+
+          dashboard = 'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/'
+          sent = 0
+          for p in new_picks:
+              fp = {
+                  'symbol': p.get('symbol', ''),
+                  'direction': p.get('signal_type', 'BUY'),
+                  'entry_price': p.get('entry_price', 0),
+                  'tp_price': p.get('take_profit', 0),
+                  'sl_price': p.get('stop_loss', 0),
+                  'confidence': p.get('ml_score', p.get('confidence', 0)),
+                  'strategy': p.get('strategy', 'unknown'),
+                  'reason': p.get('reason', '')[:200],
+              }
+              if send_fresh_pick('Alpha Engine', fp, dashboard, stats=stats):
+                  sent += 1
+
+          # Save sent pick IDs (keep last 500 to prevent unbounded growth)
+          all_sent = list(sent_ids | {p.get('id','') for p in new_picks})
+          if len(all_sent) > 500: all_sent = all_sent[-500:]
+          json.dump(all_sent, open(sent_path, 'w'))
+          print(f'Sent {sent}/{len(new_picks)} new Alpha picks to #fresh-picks')
+          " || echo "FreshPicks notification failed (non-fatal)"
+          else
+            echo "No DISCORD_WEBHOOK_FRESHPICKS set, skipping"
+          fi
+
+      #  TL;DR Winner Report: what filter combos would've won 
+      - name: TL;DR Winner Report
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/tldr_winner_report.py || echo "TL;DR report failed (non-fatal)"
+
+      #  Score Corrector: detect scoring inversions & calibrate 
+      - name: Score Corrector (calibrate scoring)
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/score_corrector.py || echo "Score corrector failed (non-fatal)"
+
+      #  Portfolio Insight Monitor: cross-portfolio analysis 
+      - name: Portfolio Insight Monitor
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/portfolio_monitor.py || echo "Portfolio monitor failed (non-fatal)"
+
+      #  Auto-Tuner: evaluate + disable underperformers + boost winners
+      # Module path was 'auto_tuner' (broken — file is at alpha_engine/auto_tuner.py).
+      # Silent failure swallowed by '|| echo "non-fatal"' for 12+ days, leaving rf_model.pkl stale.
+      - name: Run Auto-Tuner (enforce strategy quality)
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.auto_tuner || echo "Auto-tuner run failed (non-fatal)"
+
+      #  Auto DNA Mutator: create inverse + amplification mutations 
+      - name: Auto DNA Mutator (mutate before kill)
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        continue-on-error: true
+        run: python alpha_engine/auto_dna_mutator.py || echo "Auto DNA Mutator failed (non-fatal)"
+
+      #  Walk-Forward Validation: detect overfitting per strategy 
+      - name: Walk-Forward Validation
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m walk_forward_validator --mode strategy --save || echo "Walk-forward validation skipped (non-fatal)"
+
+      #  Filter Danger Analyzer: flag proven-loser filter values 
+      - name: Filter Danger Analyzer
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        run: python alpha_engine/filter_danger_analyzer.py || echo "Filter danger analyzer failed (non-fatal)"
+
+      #  Strategy Consensus Matrix: true signal quality at strategy level 
+      - name: Strategy Consensus Matrix
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        run: python alpha_engine/strategy_consensus_matrix.py || echo "Strategy consensus matrix failed (non-fatal)"
+
+      #  Strong Signals: 5-filter institutional quality gate 
+      - name: Strong Signals Filter
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "Running Strong Signals 5-filter pipeline..."
+          python alpha_engine/strong_signals.py || echo "Strong signals filter failed (non-fatal)"
+
+      #  Smart Picks Tracker: resolve batches to WON/LOST via live prices 
+      - name: Track Smart Picks performance
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/smart_picks_tracker.py || echo "Smart picks tracker failed (non-fatal)"
+        continue-on-error: true
+
+      #  Institutional metrics: Sortino, drawdown, scorecard, overfit check 
+      - name: Compute institutional cycle metrics
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        run: |
+          cd alpha_engine
+          python cycle_metrics_runner.py || echo "Cycle metrics runner failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Verify audit sources staleness
+        run: python alpha_engine/audit_verify.py || echo "Audit verify failed"
+        continue-on-error: true
+
+      - name: Pipeline Health Monitor
+        run: python alpha_engine/pipeline_health_monitor.py --json --write-flags || echo "Health monitor failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Push Alpha Engine picks to Audit Trail
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+        run: python alpha_engine/audit_push.py 2>&1 || echo "Alpha audit push failed (non-fatal)"
+
+      #  Full MySQL Sync: sync ALL pick sources to ejaguiar1_stocks 
+      - name: Full MySQL sync (all sources)
+        if: steps.mode.outputs.mode == 'full-cycle'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_HOST: mysql.50webs.com
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          DB_NAME: ejaguiar1_stocks
+        run: python sync_all_picks_to_mysql.py 2>&1 || echo "Full MySQL sync failed (non-fatal)"
+
+      #  Commit results to git 
+      - name: Commit results
+        if: steps.mode.outputs.mode != 'report'
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add alpha_engine/data/
+          git add prediction_market_agents/data/ 2>/dev/null || true
+          git add copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true
+          git add copy_trader_intel/data/polymarket_picks.json 2>/dev/null || true
+          # Force-add trained ML model so it persists across CI runs
+          git add -f alpha_engine/data/rf_model.pkl 2>/dev/null || true
+          git add alpha_engine/data/freshpicks_sent.json 2>/dev/null || true
+          git add ml_crypto_predictor/enhanced_models/live_picks/all_picks_log.json 2>/dev/null || true
+          git add data/freshpicks_gate_state.json 2>/dev/null || true
+          git add data/audit_trail.db 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            # Build commit message from validation results
+            MSG=$(python -c "
+          import json
+          parts = []
+          try:
+              ap = json.load(open('alpha_engine/data/active_picks.json'))
+              parts.append(f'{len(ap)} active')
+          except: pass
+          try:
+              cp = json.load(open('alpha_engine/data/closed_picks.json'))
+              wins = sum(1 for p in cp if p.get('status')=='WON')
+              losses = sum(1 for p in cp if p.get('status')=='LOST')
+              if cp:
+                  wr = wins/(wins+losses)*100 if (wins+losses)>0 else 0
+                  parts.append(f'{len(cp)} closed (WR:{wr:.0f}%)')
+          except: pass
+          try:
+              tw = json.load(open('alpha_engine/data/strategy_tweaks.json'))
+              tc = tw.get('_meta',{}).get('total_changes',0)
+              if tc: parts.append(f'{tc} tweaks')
+          except: pass
+          print(', '.join(parts) if parts else 'cycle complete')
+          " 2>/dev/null || echo "cycle complete")
+
+            git commit -m "ALPHA ENGINE [$(date -u '+%Y-%m-%d %H:%M UTC')] - $MSG [skip ci]"
+            git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+
+            for i in 1 2 3; do
+              # Abort any stuck rebase from a previous attempt
+              git rebase --abort 2>/dev/null || true
+
+              # Try rebase first (clean history)
+              if git pull --rebase origin main 2>/dev/null; then
+                bash .github/scripts/safe_push.sh && break
+              else
+                echo "Rebase failed (likely JSON conflict), falling back to merge..."
+                git rebase --abort 2>/dev/null || true
+
+                # Merge strategy: keep our version of data files (we just generated them)
+                git pull origin main --no-rebase -X ours 2>/dev/null || true
+                bash .github/scripts/safe_push.sh && break
+              fi
+
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+
+      #  Summary 
+      - name: Print summary
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo ""
+          echo "============================================"
+          echo "  ALPHA ENGINE - Cycle Summary"
+          echo "============================================"
+          python -c "
+          import json
+          try:
+              ap = json.load(open('data/active_picks.json'))
+              print(f'  Active picks:    {len(ap)}')
+              for p in ap:
+                  pnl = p.get('unrealized_pnl_pct', 0)
+                  sym = f\"{p.get('signal_type','BUY'):4s} {p['symbol']:16s}\"
+                  print(f'    {sym} entry={p[\"entry_price\"]}  PnL={pnl*100:+.2f}%  [{p[\"strategy\"]}]')
+          except: print('  No active picks data')
+
+          try:
+              cp = json.load(open('data/closed_picks.json'))
+              wins = sum(1 for p in cp if p.get('status')=='WON')
+              losses = sum(1 for p in cp if p.get('status')=='LOST')
+              total_pnl = sum(p.get('pnl_dollar',0) for p in cp)
+              wr = wins/(wins+losses)*100 if (wins+losses)>0 else 0
+              print(f'')
+              print(f'  Closed picks:    {len(cp)}')
+              print(f'  Win/Loss:        {wins}/{losses} ({wr:.1f}%)')
+              print(f'  Total P&L:       \${total_pnl:+,.2f}')
+
+              # Last 5 closed
+              if cp:
+                  print(f'')
+                  print(f'  Recent closes:')
+                  for p in cp[-5:]:
+                      icon = 'W' if p.get('status')=='WON' else 'L'
+                      print(f'    [{icon}] {p[\"symbol\"]:16s} {p.get(\"pnl_pct\",0)*100:+.2f}% '
+                            f'{p.get(\"exit_reason\",\"?\")} [{p[\"strategy\"]}]')
+          except: print('  No closed picks yet')
+
+          try:
+              tw = json.load(open('data/strategy_tweaks.json'))
+              tc = tw.get('_meta',{}).get('total_changes',0)
+              if tc: print(f'  Auto-tweaks:     {tc} adjustments applied')
+          except: pass
+          " 2>/dev/null || echo "  Summary unavailable"
+          echo "============================================"
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "ALPHA ENGINE - Live Autonomous Scanner" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"

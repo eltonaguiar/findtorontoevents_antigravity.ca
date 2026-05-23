@@ -1,0 +1,208 @@
+name: Incubator Pipeline  Strategy Graduation
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 06:00 UTC
+  workflow_dispatch:
+
+# Without this the default GITHUB_TOKEN is read-only when secrets.GH_PAT is
+# unset, so the github.token fallback in the checkout step cannot push the
+# graduated-strategy commit back to main (403 denied to github-actions[bot]).
+permissions:
+  contents: write
+
+jobs:
+  incubator:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas yfinance scipy pymysql pyarrow
+
+      - name: Run incubator pipeline
+        env:
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ejaguiar1_stocks
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ejaguiar1_stocks
+        run: |
+          echo "======================================================"
+          echo "  Incubator Pipeline  Strategy Graduation Engine"
+          echo "======================================================"
+          cd alpha_engine && python -m incubator.run_incubator --budget 5000 --full --report
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/incubator_report.json alpha_engine/data/incubator_paper_ready.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Incubator pipeline run [$(date -u +%Y-%m-%d)]  strategy graduation results [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+      - name: Deploy to findtorontoevents.ca (50webs)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping 50webs deploy")
+              exit(0)
+
+          SITE_ROOT = "findtorontoevents.ca"
+
+          print(f"Connecting to {host} (50webs)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print("Connected")
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f"  Uploaded: {remote_path}")
+
+          uploaded = 0
+
+          # Upload dashboard HTML
+          html_path = Path("findcryptopairs/incubator.html")
+          if html_path.exists():
+              upload(ftp, html_path, f"{SITE_ROOT}/findcryptopairs/incubator.html")
+              uploaded += 1
+
+          # Upload JSON data files
+          for json_file in ["incubator_report.json", "incubator_paper_ready.json"]:
+              local = Path(f"alpha_engine/data/{json_file}")
+              if local.exists():
+                  upload(ftp, local, f"{SITE_ROOT}/findcryptopairs/{json_file}")
+                  uploaded += 1
+
+          ftp.quit()
+          print(f"\nDeployed {uploaded} files to findtorontoevents.ca")
+          PYEOF
+
+      - name: Deploy to torontoevent.net (GoDaddy)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping GoDaddy deploy")
+              exit(0)
+
+          print(f"Connecting to {host} (torontoevent.net)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print("Connected")
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f"  Uploaded: {remote_path}")
+
+          uploaded = 0
+
+          # Upload dashboard HTML
+          html_path = Path("findcryptopairs/incubator.html")
+          if html_path.exists():
+              upload(ftp, html_path, "findcryptopairs/incubator.html")
+              uploaded += 1
+
+          # Upload JSON data files
+          for json_file in ["incubator_report.json", "incubator_paper_ready.json"]:
+              local = Path(f"alpha_engine/data/{json_file}")
+              if local.exists():
+                  upload(ftp, local, f"findcryptopairs/{json_file}")
+                  uploaded += 1
+
+          ftp.quit()
+          print(f"\nDeployed {uploaded} files to torontoevent.net")
+          PYEOF
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "======================================================"
+          echo "       Incubator Pipeline Summary"
+          echo "======================================================"
+          echo " Dashboard: https://findtorontoevents.ca/findcryptopairs/incubator.html"
+          echo " Mirror:    https://torontoevent.net/findcryptopairs/incubator.html"
+          echo "======================================================"
+

@@ -1,0 +1,95 @@
+---
+description: Require JavaScript syntax validation (acorn) on every HTML file with inline <script> blocks before deploying. Prevents SyntaxError from reaching production.
+alwaysApply: true
+---
+
+# JavaScript Syntax Check for HTML Files Before Deploy
+
+**Every HTML file containing inline `<script>` blocks must pass the acorn syntax check before deployment.**
+
+**CRITICAL: A single syntax error in an inline script (missing method declaration, unclosed brace, stray token) causes an Uncaught SyntaxError that breaks the entire page for every user. This has happened in production (prototype-tactical.html — missing `update(dt) {` method header caused `Unexpected token '.'` on line 771). Prevention is mandatory.**
+
+## Why Playwright Alone Is Not Enough
+
+- The Playwright `no_js_errors.spec.ts` test only covers pages in its URL list (typically just the main `index.html`).
+- Game pages, VR pages, and other standalone HTML files with large inline scripts are **not covered** by Playwright unless explicitly added.
+- Static syntax analysis with acorn catches errors **before** any browser or server is involved — it's faster and more reliable.
+
+## Step 1: Self-Check While Writing Inline JS in HTML
+
+Before saving an HTML file with inline `<script>` blocks, mentally verify:
+
+- **Every `class { }` is properly closed** — missing closing `}` after the last method is the #1 inline-script error.
+- **Every method has its declaration** — `update(dt) {`, `render() {`, etc. A method body without its header causes `Unexpected token '.'`.
+- **Braces are balanced** — for every `{` there is a matching `}`. Count them if the script is large.
+- **No stray code outside method/function bodies** inside a class — `this.x = ...` is invalid at class-body level.
+- **Template literals and string escaping** — backtick strings with `${...}` must not be broken across edits.
+
+If you catch yourself writing any of these, **stop and fix immediately**.
+
+## Step 2: Run the Syntax Validator
+
+Run the validator **before deploying** whenever you create or modify any `.html` file that contains `<script>` blocks:
+
+```bash
+node tools/check_syntax.js path/to/file.html
+```
+
+For batch checking all game/VR pages:
+
+```bash
+node tools/check_syntax.js vr/game-arena/fps-v5/prototype-tactical.html
+node tools/check_syntax.js vr/game-arena/fps-arena.html
+node tools/check_syntax.js vr/game-arena/fighting-arena.html
+```
+
+Or check **all** HTML files with inline scripts at once:
+
+```powershell
+Get-ChildItem -Recurse -Filter *.html vr/ | ForEach-Object { node tools/check_syntax.js $_.FullName }
+```
+
+**Run it on the SPECIFIC file(s) you just edited** — do not skip this step even if you believe the code is clean.
+
+## Step 3: Zero Errors Required
+
+The script must exit with **code 0** (no errors) for the files you edited. If it reports errors, **fix them before deploying**. Common fixes:
+
+| Error | Fix |
+|-------|-----|
+| `Unexpected token '.'` in class body | A method declaration line (`update(dt) {`) was deleted. Add it back before the orphaned body. |
+| `Unexpected token '}'` | Extra closing brace, or a method/class was closed twice. Remove the duplicate. |
+| `Unexpected end of input` | Missing closing `}` for a class, method, or block. Add the missing brace. |
+| `Unexpected token 'identifier'` | Code outside any function/method in a class body. Wrap it in a method. |
+| `Unexpected string` | Broken template literal or mismatched quotes. Fix the string delimiters. |
+
+## Step 4: Also Run Playwright on the Specific Page
+
+After the acorn check passes, **also** run a Playwright JS-error check on the specific page to catch runtime issues (missing variables, bad DOM queries, network errors):
+
+```bash
+python tools/serve_local.py
+node -e "const{chromium}=require('playwright');(async()=>{const b=await chromium.launch();const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});await p.goto('http://localhost:5173/PATH/TO/FILE.html',{waitUntil:'networkidle',timeout:15000});await p.waitForTimeout(2000);console.log('Errors:',errs.length);errs.forEach(e=>console.log(' -',e));await b.close();process.exit(errs.length>0?1:0)})()"
+```
+
+Replace `PATH/TO/FILE.html` with the actual path (e.g. `vr/game-arena/fps-v5/prototype-tactical.html`).
+
+## Deploy Gate (MANDATORY)
+
+Do **not** deploy any HTML file until `check_syntax.js` passes on it. The deploy flow for HTML files is:
+
+1. Write/edit HTML file — self-check for class/method/brace issues
+2. `node tools/check_syntax.js <your-changed-file.html>` — **must exit 0**
+3. Local Playwright test on the specific page — zero `pageerror` events
+4. `python tools/deploy_to_ftp.py` (or `deploy_quick.py`)
+5. Remote Playwright verification on the live URL
+
+**If you skip step 2, you risk deploying a page that is completely broken for every user.**
+
+## How check_syntax.js Works
+
+- Extracts all `<script>` blocks from the HTML file
+- Skips `type="importmap"` and `type="module"` blocks (parsed differently)
+- Parses each remaining block with acorn (ES2022)
+- Reports the **HTML file line number** of any syntax error (not just the script-local line)
+- Exits 0 if all blocks parse, exits 1 if any fail

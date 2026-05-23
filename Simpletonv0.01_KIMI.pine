@@ -1,0 +1,331 @@
+// @version=6
+// Simpleton v0.01 KIMI - Enhanced (BTCUSDT)
+// Goal: Raise profit-factor on 5-/15-min charts while preserving 45-min / 1-h edge.
+// Multi-strategy back-tester with tighter RSI, volume filter, ADX & HTF trend,
+// ATR-scaled sizing, ATR-TP/SL, trailing stop, cooldown after exits.
+// @author=KIMI
+
+strategy("Simpleton v0.01 KIMI - Enhanced", shorttitle="SIMP_KIMI2", overlay=true, initial_capital=10000, default_qty_type=strategy.percent_of_equity, default_qty_value=10, commission_type=strategy.commission.percent, commission_value=0.05)
+
+// =========================================================================
+// INPUTS
+// =========================================================================
+
+strategyMode = input.string("Multi-Indicator", "Strategy Mode", options=["RSI-2 Mean Reversion", "SuperTrend", "MACD Crossover", "Triple EMA", "Bollinger Bands", "Multi-Indicator"], group="Strategy Settings")
+
+// -- Risk Management --
+useTPSL            = input.bool(true,  "Use Take-Profit / Stop-Loss", group="Risk Management")
+tpPercent          = input.float(3.0,  "Take-Profit % (fallback if ATR-TP off)", minval=0.1, maxval=50, step=0.1, group="Risk Management")
+slPercent          = input.float(2.0,  "Stop-Loss % (fallback if ATR-SL off)", minval=0.1, maxval=50, step=0.1, group="Risk Management")
+positionSizePct    = input.float(10.0, "Position Size (% of Equity)", minval=1, maxval=100, step=1, group="Risk Management")
+useATRSize         = input.bool(false, "Scale size with ATR", group="Risk Management")
+useTrailing        = input.bool(false, "Use trailing stop (ATR-based)", group="Risk Management")
+trailATRMult       = input.float(0.5,  "Trailing-stop ATR multiplier", minval=0.1, maxval=5, step=0.1, group="Risk Management")
+
+// -- HTF trend filter --
+useHTF   = input.bool(false, "Enable HTF trend filter (EMA-200)", group="Risk Management")
+higherTF = input.timeframe("D", "HTF for EMA-200", group="Risk Management")
+
+// -- ADX filter --
+useADX    = input.bool(false, "Enable ADX trend filter", group="ADX Settings")
+adxLength = input.int(14, "ADX Length", minval=5, maxval=30, group="ADX Settings")
+adxThresh = input.float(20.0, "ADX minimum for trend", minval=5, maxval=50, step=0.5, group="ADX Settings")
+
+// -- ATR-based TP/SL --
+useATRTP        = input.bool(false, "Use ATR-based TP/SL", group="Risk Management")
+atrTPMultiplier = input.float(1.5, "ATR TP multiplier", minval=0.5, maxval=5, step=0.1, group="Risk Management")
+atrSLMultiplier = input.float(1.0, "ATR SL multiplier", minval=0.5, maxval=5, step=0.1, group="Risk Management")
+
+// -- Cooldown --
+coolDownBars = input.int(0, "Bars to wait after exit before new entry", minval=0, maxval=30, group="Risk Management")
+
+// -- Repainting --
+repaintMode = input.bool(false, "Allow repainting (NOT RECOMMENDED)", group="Signal Integrity")
+
+// -- RSI-2 (tight vs classic) --
+rsiMode           = input.string("Classic", "RSI-2 Mode", options=["Classic", "Tight"], group="RSI-2 Settings")
+rsiLength         = input.int(2, "RSI Length", minval=2, maxval=14, group="RSI-2 Settings")
+rsiOversoldCls    = input.int(30, "RSI Oversold (Classic)", minval=10, maxval=40, group="RSI-2 Settings")
+rsiOverboughtCls  = input.int(70, "RSI Overbought (Classic)", minval=60, maxval=90, group="RSI-2 Settings")
+rsiOversoldTight  = input.int(10, "RSI Oversold (Tight)", minval=5, maxval=20, group="RSI-2 Settings")
+rsiOverboughtTight = input.int(90, "RSI Overbought (Tight)", minval=80, maxval=95, group="RSI-2 Settings")
+useTrendFilter    = input.bool(true, "Use 200-EMA trend filter (RSI-2)", group="RSI-2 Settings")
+
+// -- SuperTrend --
+stFactor = input.float(3.0, "SuperTrend Factor", minval=1, maxval=10, step=0.1, group="SuperTrend Settings")
+stPeriod = input.int(10, "SuperTrend ATR Period", minval=5, maxval=50, group="SuperTrend Settings")
+
+// -- MACD --
+macdFast   = input.int(12, "MACD Fast", minval=5, maxval=50, group="MACD Settings")
+macdSlow   = input.int(26, "MACD Slow", minval=10, maxval=100, group="MACD Settings")
+macdSignal = input.int(9, "MACD Signal", minval=5, maxval=50, group="MACD Settings")
+
+// -- Triple EMA --
+emaFastLen = input.int(9, "Fast EMA", minval=5, maxval=50, group="Triple EMA Settings")
+emaMedLen  = input.int(21, "Medium EMA", minval=10, maxval=100, group="Triple EMA Settings")
+emaSlowLen = input.int(50, "Slow EMA", minval=20, maxval=200, group="Triple EMA Settings")
+
+// -- Bollinger Bands --
+bbLength = input.int(20, "BB Length", minval=10, maxval=50, group="Bollinger Bands Settings")
+bbMult   = input.float(2.0, "BB Multiplier", minval=1, maxval=4, step=0.1, group="Bollinger Bands Settings")
+
+// -- Multi-indicator voting --
+minConfInput = input.int(2, "Base min confirmations", minval=1, maxval=5, group="Multi-Indicator Settings")
+
+// =========================================================================
+// CALCULATIONS
+// =========================================================================
+
+price = repaintMode ? close : close[1]
+
+// ATR
+atrVal = ta.atr(14)
+
+// HTF EMA-200 (macro trend)
+higherEMA200 = request.security(syminfo.tickerid, higherTF, ta.ema(close, 200))
+
+// ADX via ta.dmi() — ta.adx() does NOT exist in Pine v6
+[diPlus, diMinus, adxVal] = ta.dmi(adxLength, adxLength)
+
+// RSI-2 with mode-based thresholds
+rsi = ta.rsi(close, rsiLength)
+rsiOS = rsiMode == "Classic" ? rsiOversoldCls : rsiOversoldTight
+rsiOB = rsiMode == "Classic" ? rsiOverboughtCls : rsiOverboughtTight
+
+// 200-EMA on current TF
+ema200   = ta.ema(close, 200)
+trendUp  = close > ema200
+trendDown = close < ema200
+
+// SuperTrend
+[stValue, stDirection] = ta.supertrend(stFactor, stPeriod)
+
+// MACD
+[macdLine, signalLine, macdHist] = ta.macd(close, macdFast, macdSlow, macdSignal)
+
+// Triple EMA
+fastEMA   = ta.ema(close, emaFastLen)
+mediumEMA = ta.ema(close, emaMedLen)
+slowEMA   = ta.ema(close, emaSlowLen)
+
+// Bollinger Bands
+bbMiddle = ta.sma(close, bbLength)
+bbDev    = bbMult * ta.stdev(close, bbLength)
+bbUpper  = bbMiddle + bbDev
+bbLower  = bbMiddle - bbDev
+
+// Volume filter (20% above 20-bar avg)
+useVolFilter  = input.bool(false, "Enable volume filter", group="Risk Management")
+avgVolume     = ta.sma(volume, 20)
+volumeConfirm = useVolFilter ? volume > avgVolume * 1.2 : true
+
+// Dynamic confirmations (optional: bump to 3 on low TF)
+useAutoMinConf = input.bool(false, "Auto-raise min confirmations on low TF", group="Multi-Indicator Settings")
+minConf = useAutoMinConf and timeframe.isminutes and timeframe.multiplier <= 15 ? math.max(minConfInput, 3) : minConfInput
+
+// =========================================================================
+// SIGNALS
+// =========================================================================
+
+rsiBuy  = rsi < rsiOS and rsi[1] <= rsiOS and (not useTrendFilter or trendUp)
+rsiSell = rsi > rsiOB and rsi[1] >= rsiOB and (not useTrendFilter or trendDown)
+
+stBuy  = stDirection < 0 and stDirection[1] > 0
+stSell = stDirection > 0 and stDirection[1] < 0
+
+macdBuy  = macdLine > signalLine and macdLine[1] <= signalLine[1]
+macdSell = macdLine < signalLine and macdLine[1] >= signalLine[1]
+
+tripleEMABuy  = fastEMA > mediumEMA and mediumEMA > slowEMA and (fastEMA[1] <= mediumEMA[1] or fastEMA[2] <= mediumEMA[2])
+tripleEMASell = fastEMA < mediumEMA and mediumEMA < slowEMA and (fastEMA[1] >= mediumEMA[1] or fastEMA[2] >= mediumEMA[2])
+
+bbBuy  = close < bbLower and close[1] <= bbLower[1]
+bbSell = close > bbUpper and close[1] >= bbUpper[1]
+
+// -- Entry filters (volume + HTF trend + ADX) --
+bool longFilter  = volumeConfirm and (not useHTF or close > higherEMA200) and (not useADX or adxVal >= adxThresh)
+bool shortFilter = volumeConfirm and (not useHTF or close < higherEMA200) and (not useADX or adxVal >= adxThresh)
+
+rsiBuy  := rsiBuy  and longFilter
+rsiSell := rsiSell and shortFilter
+stBuy   := stBuy   and longFilter
+stSell  := stSell  and shortFilter
+macdBuy  := macdBuy  and longFilter
+macdSell := macdSell and shortFilter
+tripleEMABuy  := tripleEMABuy  and longFilter
+tripleEMASell := tripleEMASell and shortFilter
+bbBuy  := bbBuy  and longFilter
+bbSell := bbSell and shortFilter
+
+// Vote counters
+longVotes  = (rsiBuy  ? 1 : 0) + (stBuy  ? 1 : 0) + (macdBuy  ? 1 : 0) + (tripleEMABuy  ? 1 : 0) + (bbBuy  ? 1 : 0)
+shortVotes = (rsiSell ? 1 : 0) + (stSell ? 1 : 0) + (macdSell ? 1 : 0) + (tripleEMASell ? 1 : 0) + (bbSell ? 1 : 0)
+
+multiBuy  = longVotes  >= minConf
+multiSell = shortVotes >= minConf
+
+// =========================================================================
+// POSITION SIZING (ATR-scaled)
+// =========================================================================
+
+float posPct = positionSizePct
+if useATRSize and not na(atrVal)
+    posPct := math.max(1.0, positionSizePct * (atrVal / close) * 100)
+
+// =========================================================================
+// COOLDOWN
+// =========================================================================
+
+var int lastExitBar = na
+var float prevPosSize = 0.0
+
+// Detect when a position closes (goes flat or flips)
+if prevPosSize != 0 and (strategy.position_size == 0 or math.sign(strategy.position_size) != math.sign(prevPosSize))
+    lastExitBar := bar_index
+prevPosSize := strategy.position_size
+
+canEnter = na(lastExitBar) or (bar_index - lastExitBar) > coolDownBars
+
+// =========================================================================
+// ENTRY LOGIC
+// =========================================================================
+
+var string currentStrategy   = na
+var int    lastSignalStrength = 0
+
+if canEnter
+    if strategyMode == "RSI-2 Mean Reversion"
+        currentStrategy := "RSI-2"
+        if rsiBuy
+            strategy.entry("Long", strategy.long, qty=posPct)
+        if rsiSell
+            strategy.entry("Short", strategy.short, qty=posPct)
+        lastSignalStrength := rsiBuy or rsiSell ? 1 : 0
+
+    else if strategyMode == "SuperTrend"
+        currentStrategy := "SuperTrend"
+        if stBuy
+            strategy.entry("Long", strategy.long, qty=posPct)
+        if stSell
+            strategy.entry("Short", strategy.short, qty=posPct)
+        lastSignalStrength := stBuy or stSell ? 1 : 0
+
+    else if strategyMode == "MACD Crossover"
+        currentStrategy := "MACD"
+        if macdBuy
+            strategy.entry("Long", strategy.long, qty=posPct)
+        if macdSell
+            strategy.entry("Short", strategy.short, qty=posPct)
+        lastSignalStrength := macdBuy or macdSell ? 1 : 0
+
+    else if strategyMode == "Triple EMA"
+        currentStrategy := "Triple EMA"
+        if tripleEMABuy
+            strategy.entry("Long", strategy.long, qty=posPct)
+        if tripleEMASell
+            strategy.entry("Short", strategy.short, qty=posPct)
+        lastSignalStrength := tripleEMABuy or tripleEMASell ? 1 : 0
+
+    else if strategyMode == "Bollinger Bands"
+        currentStrategy := "Bollinger"
+        if bbBuy
+            strategy.entry("Long", strategy.long, qty=posPct)
+        if bbSell
+            strategy.entry("Short", strategy.short, qty=posPct)
+        lastSignalStrength := bbBuy or bbSell ? 1 : 0
+
+    else
+        currentStrategy := "Multi-Indicator"
+        if multiBuy
+            strategy.entry("Long", strategy.long, qty=posPct)
+        if multiSell
+            strategy.entry("Short", strategy.short, qty=posPct)
+        lastSignalStrength := math.max(longVotes, shortVotes)
+
+// =========================================================================
+// TP / SL / TRAILING (anchored to entry price, not current close)
+// =========================================================================
+
+if useTPSL
+    float ep = strategy.position_avg_price
+
+    if strategy.position_size > 0 and not na(ep)
+        float tpL = useATRTP ? ep + atrVal * atrTPMultiplier : ep * (1 + tpPercent / 100)
+        float slL = useATRTP ? ep - atrVal * atrSLMultiplier : ep * (1 - slPercent / 100)
+        if useTrailing
+            float trailTicks = math.round(atrVal * trailATRMult / syminfo.mintick)
+            strategy.exit("TP/SL Long", "Long", limit=tpL, stop=slL, trail_points=trailTicks, trail_offset=trailTicks)
+        else
+            strategy.exit("TP/SL Long", "Long", limit=tpL, stop=slL)
+
+    if strategy.position_size < 0 and not na(ep)
+        float tpS = useATRTP ? ep - atrVal * atrTPMultiplier : ep * (1 - tpPercent / 100)
+        float slS = useATRTP ? ep + atrVal * atrSLMultiplier : ep * (1 + slPercent / 100)
+        if useTrailing
+            float trailTicks = math.round(atrVal * trailATRMult / syminfo.mintick)
+            strategy.exit("TP/SL Short", "Short", limit=tpS, stop=slS, trail_points=trailTicks, trail_offset=trailTicks)
+        else
+            strategy.exit("TP/SL Short", "Short", limit=tpS, stop=slS)
+
+// =========================================================================
+// VISUALIZATION
+// =========================================================================
+
+plot(fastEMA, color=color.new(color.blue, 50), title="Fast EMA")
+plot(mediumEMA, color=color.new(color.orange, 50), title="Medium EMA")
+plot(slowEMA, color=color.new(color.purple, 50), title="Slow EMA")
+
+plot(stDirection < 0 ? stValue : na, color=color.green, style=plot.style_linebr, title="ST Support")
+plot(stDirection > 0 ? stValue : na, color=color.red, style=plot.style_linebr, title="ST Resistance")
+
+plot(bbUpper, color=color.new(color.gray, 70), title="BB Upper")
+plot(bbLower, color=color.new(color.gray, 70), title="BB Lower")
+
+plotshape(rsiBuy or stBuy or macdBuy or tripleEMABuy or bbBuy or multiBuy, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
+plotshape(rsiSell or stSell or macdSell or tripleEMASell or bbSell or multiSell, title="Sell Signal", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small)
+
+bgcolor(trendUp ? color.new(color.green, 90) : trendDown ? color.new(color.red, 90) : color.new(color.gray, 95), title="Trend Background")
+
+// =========================================================================
+// INFO TABLE
+// =========================================================================
+
+if barstate.islast
+    var table infoTable = table.new(position.top_right, 2, 10, bgcolor=color.new(color.black, 20), frame_width=1, frame_color=color.gray)
+
+    table.cell(infoTable, 0, 0, "Strategy", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 0, currentStrategy, text_color=color.yellow, text_size=size.small)
+
+    table.cell(infoTable, 0, 1, "Signal Strength", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 1, str.tostring(lastSignalStrength) + "/5", text_color=lastSignalStrength >= 3 ? color.green : lastSignalStrength >= 2 ? color.yellow : color.gray, text_size=size.small)
+
+    table.cell(infoTable, 0, 2, "Long Votes", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 2, str.tostring(longVotes) + "/5", text_color=color.green, text_size=size.small)
+
+    table.cell(infoTable, 0, 3, "Short Votes", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 3, str.tostring(shortVotes) + "/5", text_color=color.red, text_size=size.small)
+
+    table.cell(infoTable, 0, 4, "RSI", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 4, str.tostring(rsi, "#."), text_color=rsi < rsiOS ? color.green : rsi > rsiOB ? color.red : color.gray, text_size=size.small)
+
+    table.cell(infoTable, 0, 5, "Trend", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 5, trendUp ? "Bullish" : trendDown ? "Bearish" : "Neutral", text_color=trendUp ? color.green : trendDown ? color.red : color.gray, text_size=size.small)
+
+    table.cell(infoTable, 0, 6, "ADX", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 6, str.tostring(adxVal, "#.#"), text_color=adxVal >= adxThresh ? color.green : color.gray, text_size=size.small)
+
+    table.cell(infoTable, 0, 7, "TP/SL", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 7, useTPSL ? (useATRTP ? "ATR " + str.tostring(atrTPMultiplier) + "/" + str.tostring(atrSLMultiplier) : str.tostring(tpPercent) + "/" + str.tostring(slPercent) + "%") : "OFF", text_color=useTPSL ? color.white : color.gray, text_size=size.small)
+
+    table.cell(infoTable, 0, 8, "Cooldown", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 8, canEnter ? "Ready" : "Wait", text_color=canEnter ? color.green : color.red, text_size=size.small)
+
+    table.cell(infoTable, 0, 9, "Repainting", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 9, repaintMode ? "ON" : "OFF", text_color=repaintMode ? color.red : color.green, text_size=size.small)
+
+// =========================================================================
+// ALERTS
+// =========================================================================
+
+alertcondition(rsiBuy or stBuy or macdBuy or tripleEMABuy or bbBuy or multiBuy, title="Buy Signal", message="Simpleton KIMI: BUY Signal - {{ticker}} @ {{close}}")
+alertcondition(rsiSell or stSell or macdSell or tripleEMASell or bbSell or multiSell, title="Sell Signal", message="Simpleton KIMI: SELL Signal - {{ticker}} @ {{close}}")

@@ -1,0 +1,4362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Systems Hub — All Dashboards & Performance</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a12'/><path d='M6 24 L12 16 L18 20 L26 8' stroke='%23a855f7' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      background: #0a0a12;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 16px;
+      max-width: 1400px;
+      margin: 0 auto
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 4px
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: .85rem;
+      margin-bottom: 16px
+    }
+
+    .top-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px
+    }
+
+    .metric-card {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      min-width: 130px;
+      flex: 1
+    }
+
+    .metric-card .label {
+      color: #888;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    .metric-card .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 2px
+    }
+
+    .green {
+      color: #22c55e
+    }
+
+    .red {
+      color: #ef4444
+    }
+
+    .yellow {
+      color: #eab308
+    }
+
+    .blue {
+      color: #3b82f6
+    }
+
+    .purple {
+      color: #8b5cf6
+    }
+
+    .gray {
+      color: #888
+    }
+
+    .systems-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px
+    }
+
+    .sys-card {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color .2s
+    }
+
+    .sys-card:hover {
+      border-color: #3b82f6
+    }
+
+    .sys-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e1e3a
+    }
+
+    .sys-name {
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .sys-badge {
+      font-size: .65rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-transform: uppercase
+    }
+
+    .badge-best {
+      background: #22c55e22;
+      color: #22c55e;
+      border: 1px solid #22c55e44
+    }
+
+    .badge-new {
+      background: #3b82f622;
+      color: #3b82f6;
+      border: 1px solid #3b82f644
+    }
+
+    .badge-fix {
+      background: #eab30822;
+      color: #eab308;
+      border: 1px solid #eab30844
+    }
+
+    .badge-fail {
+      background: #ef444422;
+      color: #ef4444;
+      border: 1px solid #ef444444
+    }
+
+    .badge-dormant {
+      background: #66666622;
+      color: #999;
+      border: 1px solid #66666644
+    }
+
+    .disabled-banner {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06));
+      border: 1px solid rgba(239,68,68,0.35);
+      border-left: 4px solid #ef4444;
+      padding: 10px 14px;
+      font-size: .78rem;
+      color: #fca5a5;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5
+    }
+    .disabled-banner .db-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+    .disabled-banner .db-title {
+      font-weight: 700;
+      color: #ef4444;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-size: .72rem
+    }
+    .disabled-banner .db-reason {
+      color: #d4a0a0;
+      font-size: .72rem;
+      margin-top: 2px
+    }
+
+    .stale-banner {
+      background: linear-gradient(135deg, rgba(234,179,8,0.10), rgba(234,179,8,0.04));
+      border: 1px solid rgba(234,179,8,0.30);
+      border-left: 4px solid #eab308;
+      padding: 8px 14px;
+      font-size: .72rem;
+      color: #fde68a;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+    .stale-banner .sb-icon { font-size: 1rem; flex-shrink: 0 }
+
+    .sys-card.is-dormant {
+      opacity: 0.7;
+      border-color: #ef444444
+    }
+    .sys-card.is-dormant:hover {
+      opacity: 0.85;
+      border-color: #ef4444
+    }
+    .sys-card.is-stale {
+      border-color: #eab30844
+    }
+
+    .badge-solid {
+      background: #8b5cf622;
+      color: #8b5cf6;
+      border: 1px solid #8b5cf644
+    }
+
+    .badge-retrain {
+      background: #f9731622;
+      color: #f97316;
+      border: 1px solid #f9731644
+    }
+
+    .sys-next-scan {
+      font-size: .65rem;
+      color: #888;
+      padding: 2px 8px
+    }
+
+    .sys-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: #1e1e3a
+    }
+
+    .sys-stat {
+      background: #12121e;
+      padding: 8px 10px;
+      text-align: center
+    }
+
+    .sys-stat .sl {
+      font-size: .6rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .3px
+    }
+
+    .sys-stat .sv {
+      font-size: .95rem;
+      font-weight: 700;
+      margin-top: 1px
+    }
+
+    .sys-note {
+      padding: 6px 12px;
+      font-size: .7rem;
+      color: #666;
+      border-bottom: 1px solid #1e1e3a
+    }
+
+    .sys-note.warning {
+      color: #eab308;
+      background: #eab30808
+    }
+
+    .sys-note.info {
+      color: #3b82f6;
+      background: #3b82f608
+    }
+
+    .sys-picks {
+      padding: 8px 12px
+    }
+
+    .sys-picks::-webkit-scrollbar {
+      width: 4px
+    }
+
+    .sys-picks::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 2px
+    }
+
+    .pick-section-label {
+      font-size: .65rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 6px 0 3px;
+      border-bottom: 1px solid #1e1e3a;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .pick-section-label .dot-ind {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    .pick-section-label.active-section {
+      color: #22c55e
+    }
+
+    .pick-section-label.closed-section {
+      color: #888
+    }
+
+    .pick-row {
+      display: grid;
+      grid-template-columns: 70px 52px 44px 1fr 130px 90px;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 0;
+      border-bottom: 1px solid #0e0e1a;
+      font-size: .78rem
+    }
+
+    .pick-row:last-child {
+      border: none
+    }
+
+    .pick-row.active-pick {
+      background: #22c55e06;
+      border-left: 2px solid #22c55e44;
+      padding-left: 6px
+    }
+
+    .pick-row.closed-pick {
+      opacity: .7
+    }
+
+    .pick-sym {
+      font-weight: 600
+    }
+
+    .pick-status {
+      font-size: .55rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+      text-align: center;
+      white-space: nowrap
+    }
+
+    .pick-status.active {
+      background: #22c55e22;
+      color: #22c55e;
+      border: 1px solid #22c55e44
+    }
+
+    .pick-status.closed-win {
+      background: #3b82f622;
+      color: #3b82f6;
+      border: 1px solid #3b82f644
+    }
+
+    .pick-status.closed-loss {
+      background: #ef444422;
+      color: #ef4444;
+      border: 1px solid #ef444444
+    }
+
+    .pick-status.closed-neutral {
+      background: #66666622;
+      color: #999;
+      border: 1px solid #66666644
+    }
+
+    .pick-dir {
+      font-size: .6rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-align: center
+    }
+
+    .pick-dir.long {
+      background: #22c55e22;
+      color: #22c55e
+    }
+
+    .pick-dir.short {
+      background: #ef444422;
+      color: #ef4444
+    }
+
+    .pick-meta {
+      color: #888;
+      font-size: .7rem;
+      line-height: 1.3
+    }
+
+    .pick-meta .algo {
+      color: #aaa
+    }
+
+    .pick-meta .prices {
+      color: #666
+    }
+
+    .pick-date {
+      color: #555;
+      font-size: .65rem;
+      white-space: nowrap;
+      line-height: 1.3
+    }
+
+    .pick-pnl {
+      font-weight: 700;
+      min-width: 80px;
+      text-align: right;
+      font-size: .8rem
+    }
+
+    .pick-pnl .pnl-type {
+      font-size: .55rem;
+      font-weight: 400;
+      color: #888;
+      display: block
+    }
+
+    .sys-footer {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      border-top: 1px solid #1e1e3a;
+      flex-wrap: wrap
+    }
+
+    .sys-footer a {
+      font-size: .75rem;
+      color: #3b82f6;
+      text-decoration: none;
+      padding: 3px 10px;
+      border: 1px solid #3b82f644;
+      border-radius: 12px;
+      transition: all .2s
+    }
+
+    .sys-footer a:hover {
+      background: #3b82f622;
+      color: #60a5fa
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 20px 0 10px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .section-title .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    .no-picks {
+      color: #666;
+      font-size: .8rem;
+      padding: 8px 0;
+      font-style: italic
+    }
+
+    .refresh-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .refresh-bar .ts {
+      color: #666;
+      font-size: .75rem
+    }
+
+    .refresh-bar button {
+      background: #1e1e3a;
+      color: #888;
+      border: 1px solid #333;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .75rem
+    }
+
+    .refresh-bar button:hover {
+      color: #fff;
+      border-color: #3b82f6
+    }
+
+    .loading {
+      color: #666;
+      font-style: italic;
+      font-size: .8rem;
+      padding: 12px
+    }
+
+    .expand-btn {
+      background: none;
+      border: 1px solid #333;
+      color: #888;
+      padding: 3px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .7rem;
+      margin-top: 4px;
+      transition: all .2s
+    }
+
+    .expand-btn:hover {
+      color: #fff;
+      border-color: #3b82f6
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 8px 0;
+      margin-bottom: 12px;
+      font-size: .72rem;
+      color: #888
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .legend .dot-sm {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center
+    }
+
+    .filter-bar .label {
+      color: #888;
+      font-size: .75rem
+    }
+
+    .filter-pill {
+      background: #1e1e3a;
+      color: #888;
+      border: 1px solid #333;
+      padding: 4px 14px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: .72rem;
+      transition: all .2s
+    }
+
+    .filter-pill:hover {
+      color: #fff;
+      border-color: #3b82f6
+    }
+
+    .filter-pill.active {
+      background: #3b82f622;
+      color: #3b82f6;
+      border-color: #3b82f6
+    }
+
+    .filter-pill.fresh {
+      border-color: #22c55e44
+    }
+
+    .filter-pill.fresh.active {
+      background: #22c55e22;
+      color: #22c55e;
+      border-color: #22c55e
+    }
+
+    .sort-pill {
+      background: #1e1e3a;
+      color: #888;
+      border: 1px solid #333;
+      padding: 4px 14px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: .72rem;
+      transition: all .2s
+    }
+
+    .sort-pill:hover {
+      color: #fff;
+      border-color: #8b5cf6
+    }
+
+    .sort-pill.active {
+      background: #8b5cf622;
+      color: #8b5cf6;
+      border-color: #8b5cf6
+    }
+
+    .auto-refresh-badge {
+      font-size: .65rem;
+      color: #22c55e;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .auto-refresh-badge .pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite
+    }
+
+    .countdown {
+      font-size: .65rem;
+      color: #888;
+      margin-left: auto
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .fresh-banner {
+      background: #22c55e11;
+      border: 1px solid #22c55e33;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: none
+    }
+
+    .fresh-banner h2 {
+      font-size: 1rem;
+      color: #22c55e;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .fresh-banner .fresh-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 8px
+    }
+
+    .fresh-pick {
+      background: #12121e;
+      border: 1px solid #22c55e33;
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center
+    }
+
+    .fresh-pick .fp-sym {
+      font-weight: 700;
+      font-size: .9rem;
+      color: #fff
+    }
+
+    .fresh-pick .fp-meta {
+      font-size: .7rem;
+      color: #888;
+      line-height: 1.4
+    }
+
+    .fresh-pick .fp-pnl {
+      text-align: right;
+      font-weight: 700;
+      font-size: .85rem
+    }
+
+    .fp-gauge {
+      margin-top: 4px;
+      height: 6px;
+      background: #1e1e3a;
+      border-radius: 3px;
+      position: relative;
+      overflow: visible
+    }
+
+    .fp-gauge-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .3s
+    }
+
+    .fp-gauge-marker {
+      position: absolute;
+      top: -3px;
+      width: 2px;
+      height: 12px;
+      background: #fff;
+      border-radius: 1px;
+      transform: translateX(-50%)
+    }
+
+    .fp-gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #666;
+      margin-top: 2px
+    }
+
+    .fp-cur-price {
+      font-size: .7rem;
+      color: #aaa;
+      margin-top: 3px;
+      text-align: center
+    }
+
+    .fp-cur-price .price-val {
+      color: #fff;
+      font-weight: 600
+    }
+
+    .tooltip-wrap {
+      position: relative;
+      cursor: help
+    }
+
+    .tooltip-wrap .tip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a2e;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-width: 220px;
+      z-index: 999;
+      font-size: .72rem;
+      color: #ccc;
+      line-height: 1.5;
+      white-space: normal;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+      pointer-events: none
+    }
+
+    .tooltip-wrap .tip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #3b82f6
+    }
+
+    .tooltip-wrap:hover .tip {
+      display: block
+    }
+
+    /* Prevent right-edge clipping on top-bar metric cards with long tooltips */
+    #portfolioPnlCard .tip,
+    #apiHealthCard .tip {
+      left: auto;
+      right: 0;
+      transform: none
+    }
+
+    #portfolioPnlCard .tip::after,
+    #apiHealthCard .tip::after {
+      left: auto;
+      right: 18px;
+      transform: none
+    }
+
+    .tip .tip-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: .75rem;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 3px
+    }
+
+    .tip .tip-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 1px 0
+    }
+
+    .tip .tip-label {
+      color: #888
+    }
+
+    .tip .tip-val {
+      font-weight: 600
+    }
+
+    .tip .tip-val.green {
+      color: #22c55e
+    }
+
+    .tip .tip-val.red {
+      color: #ef4444
+    }
+
+    .tip .tip-formula {
+      color: #666;
+      font-style: italic;
+      font-size: .65rem;
+      margin-top: 4px;
+      border-top: 1px solid #1e1e3a;
+      padding-top: 3px
+    }
+
+    @media(max-width:600px) {
+      .systems-grid {
+        grid-template-columns: 1fr
+      }
+
+      .top-bar {
+        flex-direction: column
+      }
+
+      .sys-stats {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .pick-row {
+        grid-template-columns: 60px 44px 38px 1fr auto
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: flex-start
+      }
+
+      .fresh-banner .fresh-grid {
+        grid-template-columns: 1fr
+      }
+
+      .tooltip-wrap .tip {
+        left: 0;
+        transform: none;
+        min-width: 180px
+      }
+
+      .cal-grid {
+        grid-template-columns: repeat(7, 1fr) !important
+      }
+
+      .cal-day {
+        min-height: 56px !important
+      }
+
+      .cal-pnl {
+        font-size: 11px !important
+      }
+
+      .cal-filter-bar {
+        flex-direction: column;
+        align-items: flex-start
+      }
+
+      .cal-filter-group {
+        flex-wrap: wrap
+      }
+    }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #1e1e3a
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: .9rem;
+      font-weight: 600;
+      padding: 10px 24px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .2s;
+      font-family: inherit
+    }
+
+    .tab-btn:hover {
+      color: #ccc
+    }
+
+    .tab-btn.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6
+    }
+
+    .tab-btn .tab-badge {
+      font-size: .6rem;
+      background: #3b82f622;
+      color: #3b82f6;
+      padding: 1px 6px;
+      border-radius: 8px;
+      margin-left: 6px;
+      font-weight: 400
+    }
+
+    /* ── P&L CALENDAR ── */
+    .calendar-view {
+      display: none
+    }
+
+    .calendar-view.active {
+      display: block
+    }
+
+    .systems-view {
+      display: none
+    }
+
+    .systems-view.active {
+      display: block
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 11px
+    }
+
+    .cal-header {
+      text-align: center;
+      padding: 6px 4px;
+      color: #888;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    .cal-day {
+      position: relative;
+      min-height: 72px;
+      border-radius: 6px;
+      padding: 6px;
+      border: 1px solid #1e1e3a;
+      transition: all .15s;
+      cursor: default
+    }
+
+    .cal-day:hover {
+      border-color: #8b5cf6
+    }
+
+    .cal-day.future {
+      opacity: .3
+    }
+
+    .cal-day.empty {
+      border-color: transparent;
+      min-height: 0
+    }
+
+    .cal-day .cal-date {
+      font-size: 10px;
+      color: #888;
+      margin-bottom: 4px
+    }
+
+    .cal-day .cal-date.today {
+      color: #8b5cf6;
+      font-weight: 700
+    }
+
+    .cal-day .cal-pnl {
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      padding: 4px 0
+    }
+
+    .cal-day .cal-pnl.pos {
+      color: #22c55e
+    }
+
+    .cal-day .cal-pnl.neg {
+      color: #ef4444
+    }
+
+    .cal-day .cal-pnl.zero {
+      color: #888
+    }
+
+    .cal-day .cal-trades {
+      font-size: 9px;
+      color: #888;
+      text-align: center
+    }
+
+    .cal-day.day-green {
+      background: rgba(34, 197, 94, .08);
+      border-color: rgba(34, 197, 94, .3)
+    }
+
+    .cal-day.day-red {
+      background: rgba(239, 68, 68, .08);
+      border-color: rgba(239, 68, 68, .3)
+    }
+
+    .cal-day.day-neutral {
+      background: #12121e
+    }
+
+    .cal-month-label {
+      grid-column: 1/-1;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      padding: 12px 4px 4px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif
+    }
+
+    .cal-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px
+    }
+
+    .cal-summary-card {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 6px;
+      padding: 8px 12px;
+      text-align: center
+    }
+
+    .cal-stat-val {
+      font-size: 1.2rem;
+      font-weight: 700
+    }
+
+    .cal-stat-label {
+      font-size: .65rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-top: 2px
+    }
+
+    .cal-filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: flex-start
+    }
+
+    .cal-filter-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .cal-filter-group .cal-fg-label {
+      color: #888;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-right: 4px
+    }
+
+    .cal-fpill {
+      background: #1e1e3a;
+      color: #888;
+      border: 1px solid #333;
+      padding: 3px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: .7rem;
+      transition: all .2s;
+      white-space: nowrap
+    }
+
+    .cal-fpill:hover {
+      color: #fff;
+      border-color: #8b5cf6
+    }
+
+    .cal-fpill.active {
+      background: #8b5cf622;
+      color: #8b5cf6;
+      border-color: #8b5cf6
+    }
+
+    .cal-fpill .pill-count {
+      font-size: 9px;
+      opacity: .6;
+      margin-left: 3px
+    }
+
+    .cal-tooltip {
+      position: fixed;
+      display: none;
+      background: #1a1a2e;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-width: 280px;
+      max-width: 450px;
+      z-index: 9999;
+      font-size: .72rem;
+      color: #ccc;
+      line-height: 1.5;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .6);
+      pointer-events: none
+    }
+
+    .cal-breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 8px
+    }
+
+    .cal-breakdown-table th {
+      text-align: left;
+      padding: 6px 10px;
+      color: #888;
+      font-size: 9px;
+      text-transform: uppercase;
+      background: #12121e
+    }
+
+    .cal-breakdown-table td {
+      padding: 5px 10px;
+      border-top: 1px solid rgba(42, 42, 74, .3)
+    }
+
+    .cal-strategy-panel {
+      margin-top: 16px;
+      border: 1px solid #1e1e3a;
+      border-radius: 8px;
+      overflow: hidden
+    }
+
+    .cal-sp-head {
+      padding: 8px 12px;
+      background: #12121e;
+      font-size: 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px
+    }
+
+    .cal-sp-wrap {
+      padding: 10px 12px
+    }
+
+    .cal-sp-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .cal-sp-card {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 6px;
+      padding: 8px 10px;
+      text-align: center
+    }
+
+    .cal-sp-val {
+      font-size: 1.1rem;
+      font-weight: 700
+    }
+
+    .cal-sp-lab {
+      font-size: .62rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-top: 2px
+    }
+
+    .cal-sp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px
+    }
+
+    .cal-sp-table th {
+      text-align: left;
+      padding: 6px 8px;
+      color: #888;
+      font-size: 9px;
+      text-transform: uppercase;
+      background: #12121e
+    }
+
+    .cal-sp-table td {
+      padding: 5px 8px;
+      border-top: 1px solid rgba(42, 42, 74, .3)
+    }
+
+    .cal-sp-table td.right {
+      text-align: right;
+      font-family: 'SF Mono', 'Fira Code', monospace
+    }
+
+    .cal-sp-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-size: 9px;
+      border: 1px solid #333
+    }
+
+    .cal-sp-tag.active {
+      color: #22c55e;
+      border-color: #22c55e44;
+      background: #22c55e11
+    }
+
+    .cal-sp-tag.closed {
+      color: #888;
+      border-color: #6666;
+      background: #6661
+    }
+
+    .version-marker {
+      position: absolute;
+      top: 0;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      border: 1px solid #a78bfa;
+      cursor: help;
+      z-index: 2
+    }
+
+    .version-marker:hover {
+      transform: scale(1.3)
+    }
+
+    /* ── CODE RED / API HEALTH ── */
+    .code-red-banner {
+      display: none;
+      background: linear-gradient(135deg, #1a0808 0%, #2a0a0a 100%);
+      border: 2px solid #ef4444;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      animation: code-red-pulse 3s ease-in-out infinite
+    }
+
+    @keyframes code-red-pulse {
+
+      0%,
+      100% {
+        border-color: #ef4444;
+        box-shadow: 0 0 10px rgba(239, 68, 68, .2)
+      }
+
+      50% {
+        border-color: #ff6b6b;
+        box-shadow: 0 0 20px rgba(239, 68, 68, .4)
+      }
+    }
+
+    .code-red-banner.active {
+      display: block
+    }
+
+    .code-red-banner h2 {
+      color: #ef4444;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .code-red-banner h2 .cr-icon {
+      font-size: 1.2rem;
+      animation: cr-blink 1s step-end infinite
+    }
+
+    @keyframes cr-blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .code-red-banner .cr-issues {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 8px
+    }
+
+    .cr-issue {
+      background: #12121e;
+      border: 1px solid #ef444444;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: .75rem
+    }
+
+    .cr-issue .cr-api {
+      color: #ef4444;
+      font-weight: 700
+    }
+
+    .cr-issue .cr-detail {
+      color: #999;
+      margin-top: 2px
+    }
+
+    .cr-issue .cr-impact {
+      color: #eab308;
+      font-size: .7rem;
+      margin-top: 3px
+    }
+
+    .health-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px
+    }
+
+    .health-dot.ok {
+      background: #22c55e
+    }
+
+    .health-dot.degraded {
+      background: #eab308
+    }
+
+    .health-dot.down {
+      background: #ef4444;
+      animation: cr-blink 1.5s step-end infinite
+    }
+
+    .health-badge {
+      font-size: .6rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 6px
+    }
+
+    .health-badge.api-ok {
+      background: #22c55e22;
+      color: #22c55e;
+      border: 1px solid #22c55e44
+    }
+
+    .health-badge.api-degraded {
+      background: #eab30822;
+      color: #eab308;
+      border: 1px solid #eab30844
+    }
+
+    .health-badge.api-down {
+      background: #ef444422;
+      color: #ef4444;
+      border: 1px solid #ef444444;
+      animation: code-red-pulse 3s ease-in-out infinite
+    }
+
+    .quick-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0 14px
+    }
+
+    .quick-links a {
+      font-size: .78rem;
+      color: #9ab3ff;
+      text-decoration: none;
+      padding: 6px 12px;
+      border: 1px solid #2c3a72;
+      border-radius: 16px;
+      background: #10162a
+    }
+
+    .quick-links a:hover {
+      color: #c7d4ff;
+      border-color: #4f6bd9
+    }
+
+    .quick-links a.highlight {
+      background: linear-gradient(135deg, #a855f722, #06b6d422);
+      border-color: #a855f7;
+      color: #fff
+    }
+
+    /* ── DNA SYSTEM PANEL ── */
+    .dna-panel {
+      background: linear-gradient(135deg, #0d1117, #161b22);
+      border: 1px solid #a855f733;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px
+    }
+
+    .dna-panel h2 {
+      font-size: 1rem;
+      color: #a855f7;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .dna-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px
+    }
+
+    .dna-metric {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center
+    }
+
+    .dna-metric .label {
+      font-size: .65rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    .dna-metric .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #06b6d4;
+      margin-top: 4px
+    }
+
+    .dna-metric .sub {
+      font-size: .65rem;
+      color: #666;
+      margin-top: 2px
+    }
+
+    /* ── QUALITY SCORE PANEL ── */
+    .quality-panel {
+      background: linear-gradient(135deg, #0d1117, #161b22);
+      border: 1px solid #22c55e33;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px
+    }
+
+    .quality-panel h2 {
+      font-size: 1rem;
+      color: #22c55e;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .quality-gauge-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap
+    }
+
+    .quality-score-display {
+      background: #12121e;
+      border: 2px solid #22c55e44;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center
+    }
+
+    .quality-score-display .score {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #22c55e
+    }
+
+    .quality-score-display .label {
+      font-size: .6rem;
+      color: #888;
+      text-transform: uppercase
+    }
+
+    .quality-breakdown {
+      flex: 1;
+      min-width: 200px
+    }
+
+    .quality-bar {
+      background: #1e1e3a;
+      border-radius: 4px;
+      height: 8px;
+      margin: 4px 0;
+      overflow: hidden
+    }
+
+    .quality-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .5s ease
+    }
+
+    /* ── LEADERBOARD ── */
+    .leaderboard-panel {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px
+    }
+
+    .leaderboard-panel h2 {
+      font-size: 1rem;
+      color: #eab308;
+      margin-bottom: 12px
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .78rem
+    }
+
+    .leaderboard-table th {
+      text-align: left;
+      padding: 8px;
+      color: #888;
+      border-bottom: 1px solid #1e1e3a
+    }
+
+    .leaderboard-table td {
+      padding: 8px;
+      border-bottom: 1px solid #0e0e1a
+    }
+
+    .leaderboard-table tr:hover {
+      background: #1a1a2e
+    }
+
+    .rank-1 {
+      color: #eab308;
+      font-weight: 700
+    }
+
+    .rank-2 {
+      color: #c0c0c0;
+      font-weight: 700
+    }
+
+    .rank-3 {
+      color: #cd7f32;
+      font-weight: 700
+    }
+
+    /* ── UNIFIED PICK FEED ── */
+    .unified-feed {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      max-height: 500px;
+      overflow-y: auto
+    }
+
+    .unified-feed h2 {
+      font-size: 1rem;
+      color: #3b82f6;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .unified-pick {
+      display: grid;
+      grid-template-columns: auto 80px 60px 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #0e0e1a;
+      font-size: .78rem
+    }
+
+    .unified-pick:hover {
+      background: #1a1a2e
+    }
+
+    .unified-pick .sym {
+      font-weight: 600
+    }
+
+    .unified-pick .dir {
+      font-size: .6rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600
+    }
+
+    .unified-pick .dir.long {
+      background: #22c55e22;
+      color: #22c55e
+    }
+
+    .unified-pick .dir.short {
+      background: #ef444422;
+      color: #ef4444
+    }
+
+    .unified-pick .system {
+      color: #888;
+      font-size: .7rem
+    }
+
+    .unified-pick .quality {
+      font-size: .65rem;
+      padding: 1px 6px;
+      border-radius: 8px
+    }
+
+    .unified-pick .time {
+      color: #666;
+      font-size: .65rem
+    }
+
+    /* ── ENHANCED CONSENSUS MATRIX ── */
+    .consensus-panel {
+      background: #12121e;
+      border: 1px solid #8b5cf633;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 20px
+    }
+
+    .consensus-panel h2 {
+      font-size: 1rem;
+      color: #8b5cf6;
+      margin-bottom: 12px
+    }
+
+    .consensus-matrix {
+      display: grid;
+      gap: 1px;
+      background: #1e1e3a;
+      border-radius: 6px;
+      overflow: hidden;
+      font-family: 'SF Mono', monospace;
+      font-size: 11px
+    }
+
+    .consensus-row {
+      display: contents
+    }
+
+    .consensus-cell {
+      background: #12121e;
+      padding: 6px 8px;
+      text-align: center
+    }
+
+    .consensus-cell.header {
+      background: #1a1a2e;
+      color: #888;
+      font-weight: 600
+    }
+
+    .consensus-cell.system {
+      text-align: left;
+      color: #ccc
+    }
+
+    .consensus-cell.long {
+      background: #22c55e22;
+      color: #22c55e;
+      font-weight: 700
+    }
+
+    .consensus-cell.short {
+      background: #ef444422;
+      color: #ef4444;
+      font-weight: 700
+    }
+
+    .consensus-cell.agree {
+      background: #8b5cf622;
+      color: #8b5cf6;
+      font-weight: 700
+    }
+
+    /* ── SUPER SIGNAL ENHANCED ── */
+    .super-signal-enhanced {
+      background: linear-gradient(135deg, #8b5cf611, #3b82f611);
+      border: 1px solid #8b5cf633;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px
+    }
+
+    .super-signal-enhanced h2 {
+      font-size: 1.1rem;
+      color: #8b5cf6;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .super-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px
+    }
+
+    .super-card {
+      background: #12121e;
+      border: 1px solid #1e1e3a;
+      border-radius: 8px;
+      padding: 12px
+    }
+
+    .super-card.super-tier {
+      border-color: #8b5cf644;
+      background: #8b5cf608
+    }
+
+    .super-card.strong-tier {
+      border-color: #3b82f644;
+      background: #3b82f608
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Trading Systems Command Center</h1>
+  <p class="subtitle">All dashboards, latest picks, TP/SL, and historical performance in one place</p>
+  <div class="quick-links">
+    <a href="../superpowers/" target="_blank" rel="noopener">Open SUPERPOWERS Arena</a>
+    <a href="../predictions/dashboard/" target="_blank" rel="noopener">Open Predictions Dashboard</a>
+    <a href="../genome/" class="highlight" rel="noopener">🧬 DNA Genome Engine</a>
+    <a href="../battleground/" rel="noopener">Battleground Arena</a>
+  </div>
+
+  <!-- CODE RED: API Health Banner -->
+  <div class="code-red-banner" id="codeRedBanner">
+    <h2><span class="cr-icon">&#9888;</span> CODE RED — API Health Issues Detected</h2>
+    <div class="cr-issues" id="codeRedIssues"></div>
+  </div>
+
+  <!-- SYSTEM STATUS & QUALITY SUMMARY -->
+  <div id="hub-status-bar"
+    style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #30363d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.75rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="color:#3b82f6;font-weight:700;font-size:0.8rem">Hub Status & Quality</span>
+        <span id="hub-health-badge" style="padding:2px 8px;border-radius:8px;font-size:0.65rem;font-weight:600"></span>
+      </div>
+      <span id="hub-status-ts" style="color:#6b7280;font-size:0.7rem"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px">
+      <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+        <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Active Systems</div>
+        <div id="hub-sq-systems" style="color:#3b82f6;font-weight:700;font-size:1rem">--</div>
+      </div>
+      <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+        <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Total Active Picks</div>
+        <div id="hub-sq-picks" style="color:#22c55e;font-weight:700;font-size:1rem">--</div>
+      </div>
+      <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+        <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Best System WR</div>
+        <div id="hub-sq-bestwr" style="color:#22c55e;font-weight:700;font-size:1rem">--</div>
+      </div>
+      <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+        <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Portfolio P/L</div>
+        <div id="hub-sq-pnl" style="font-weight:700;font-size:1rem">--</div>
+      </div>
+      <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+        <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Quality Score</div>
+        <div id="hub-sq-quality" style="font-weight:700;font-size:1rem">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ML EXPLAINER — How the Hub's ML Systems Work -->
+  <div
+    style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #8b5cf633;border-radius:10px;padding:16px 20px;margin-bottom:16px;line-height:1.7">
+    <div style="font-size:14px;font-weight:700;color:#8b5cf6;margin-bottom:8px">Machine Learning Systems &mdash; Plain
+      English Guide</div>
+    <div style="font-size:12px;color:#e2e8f0">
+      <p style="margin-bottom:8px">This hub aggregates <strong>12+ trading systems</strong>. Here's what the ML terms
+        mean:</p>
+      <table style="width:100%;font-size:11px;border-collapse:collapse;margin:8px 0">
+        <tr style="background:#1a1a2e">
+          <th style="padding:6px 10px;text-align:left;color:#8b5cf6">Term</th>
+          <th style="padding:6px 10px;text-align:left;color:#888">What It Means (Simple)</th>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a">
+          <td style="padding:5px 10px;color:#22c55e;font-weight:600">XGBoost</td>
+          <td style="padding:5px 10px">Hundreds of tiny decision-makers vote together. Like asking 200 people and going
+            with majority. Used by Mercury 2 (3 models) and ML Battleground.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a">
+          <td style="padding:5px 10px;color:#3b82f6;font-weight:600">LightGBM</td>
+          <td style="padding:5px 10px">Similar to XGBoost but faster. Builds decision trees one leaf at a time. Used by
+            Crypto ML Edge (16 per-coin models) and Mercury 2 (gainer predictor).</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a">
+          <td style="padding:5px 10px;color:#a855f7;font-weight:600">Random Forest</td>
+          <td style="padding:5px 10px">100 separate decision trees, each trained on random slices of data, then vote.
+            Like a jury with 100 members. Used by KIMI, Claude Gainer, Alpha Engine.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a">
+          <td style="padding:5px 10px;color:#f59e0b;font-weight:600">GRU Neural Net</td>
+          <td style="padding:5px 10px">Artificial brain that reads price history in sequence (like reading a story).
+            Remembers important moments, forgets noise. Used by ML Battleground System C.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a">
+          <td style="padding:5px 10px;color:#ef4444;font-weight:600">DSR Gate</td>
+          <td style="padding:5px 10px">Deflated Sharpe Ratio &mdash; a statistical test asking "is this model's
+            performance real or just luck?" Models must pass to generate picks.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e1e3a">
+          <td style="padding:5px 10px;color:#22c55e;font-weight:600">Heuristic mode</td>
+          <td style="padding:5px 10px">Rule-based fallback when ML hasn't trained yet. Uses simple formulas (win rate,
+            Sharpe) instead of a trained model. Upgrades to ML automatically.</td>
+        </tr>
+        <tr>
+          <td style="padding:5px 10px;color:#3b82f6;font-weight:600">Walk-forward</td>
+          <td style="padding:5px 10px">Training on past data, testing on future data the model never saw. Prevents
+            "memorizing" history. Like studying chapters 1-8 then taking a test on chapter 9.</td>
+        </tr>
+      </table>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px">Each system card below shows its ML methodology and
+        validation status. Green badges = model passed validation. Red = needs retraining.</p>
+    </div>
+  </div>
+
+  <div class="refresh-bar">
+    <span class="ts" id="lastUpdate">Loading...</span>
+    <span class="auto-refresh-badge"><span class="pulse"></span> Auto-refreshes every 5 min</span>
+    <span class="countdown" id="nextRefresh"></span>
+    <button onclick="location.reload()">Refresh Now</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="systems" onclick="switchTab('systems')">Systems</button>
+    <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">P&L Calendar</button>
+    <a href="../superpowers/" class="tab-btn"
+      style="margin-left:auto;background:linear-gradient(135deg,#eab30822,#22c55e22);border:1px solid #eab30844;color:#eab308;text-decoration:none;display:flex;align-items:center;gap:6px">⚡
+      SUPERPOWERS ARENA</a>
+  </div>
+
+  <div class="systems-view active">
+    <div class="top-bar" id="topMetrics">
+      <div class="metric-card tooltip-wrap">
+        <div class="label">Fear & Greed</div>
+        <div class="value" id="fng">--</div>
+        <div class="tip">
+          <div class="tip-title">Fear & Greed Index</div>0-25 = Extreme Fear, 25-45 = Fear<br>45-55 = Neutral, 55-75 =
+          Greed<br>75-100 = Extreme Greed<div class="tip-formula">Source: alternative.me — aggregates volatility,
+            volume, social media, dominance, and trends.</div>
+        </div>
+      </div>
+      <div class="metric-card tooltip-wrap">
+        <div class="label">BTC Price</div>
+        <div class="value" id="btcPrice">--</div>
+        <div class="tip">
+          <div class="tip-title">Bitcoin Spot Price</div>
+          <div class="tip-formula">Live price from Binance BTCUSDT spot market. Updates on each page refresh.</div>
+        </div>
+      </div>
+      <div class="metric-card tooltip-wrap">
+        <div class="label">Active Systems</div>
+        <div class="value blue" id="totalSys">--</div>
+        <div class="tip">
+          <div class="tip-title">Active Systems</div>
+          <div class="tip-formula">Number of trading systems that have at least 1 active or closed pick. Dormant systems
+            with no data are excluded.</div>
+        </div>
+      </div>
+      <div class="metric-card tooltip-wrap">
+        <div class="label">Active Picks</div>
+        <div class="value green" id="totalActive">--</div>
+        <div class="tip">
+          <div class="tip-title">Active Picks (All Systems)</div>
+          <div class="tip-formula">Total open positions across all systems. These are currently live with TP/SL targets
+            — tradeable now.</div>
+        </div>
+      </div>
+      <div class="metric-card tooltip-wrap">
+        <div class="label">Closed Trades</div>
+        <div class="value" id="totalClosed">--</div>
+        <div class="tip">
+          <div class="tip-title">Closed Trades (All Systems)</div>
+          <div class="tip-formula">Total trades that have been closed by hitting TP, SL, or time-exit across all
+            systems.</div>
+        </div>
+      </div>
+      <div class="metric-card tooltip-wrap">
+        <div class="label">Best System WR</div>
+        <div class="value green" id="bestWR">--</div>
+        <div class="tip">
+          <div class="tip-title">Best System Win Rate</div>
+          <div class="tip-formula">Highest win rate among all systems with at least 1 closed trade. Win Rate = Wins ÷
+            (Wins + Losses) × 100.</div>
+        </div>
+      </div>
+      <div class="metric-card tooltip-wrap" id="portfolioPnlCard">
+        <div class="label">Portfolio Realized P/L</div>
+        <div class="value" id="portfolioPnl">--</div>
+      </div>
+      <div class="metric-card tooltip-wrap" id="apiHealthCard">
+        <div class="label">API Health</div>
+        <div class="value" id="apiHealthValue"><span class="gray">checking...</span></div>
+        <div class="tip" id="apiHealthTip">
+          <div class="tip-title">API Health Probes</div>
+          <div id="apiHealthDetail">Running health checks...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><span class="pick-status active" style="display:inline;font-size:.6rem">ACTIVE</span> = open position,
+        tradeable now</span>
+      <span><span class="pick-status closed-win" style="display:inline;font-size:.6rem">WIN</span> / <span
+          class="pick-status closed-loss" style="display:inline;font-size:.6rem">LOSS</span> = closed trade, final
+        result</span>
+      <span>Unrealized P/L = current profit on open position</span>
+      <span>Realized P/L = final profit on closed trade</span>
+    </div>
+
+    <!-- DNA SYSTEM PANEL -->
+    <div class="dna-panel" id="dnaPanel">
+      <h2>🧬 DNA Genome Engine — Strategy Evolution</h2>
+      <div class="dna-grid">
+        <div class="dna-metric">
+          <div class="label">Active DNA Sequences</div>
+          <div class="value" id="dnaActiveCount">--</div>
+          <div class="sub">Genetically evolved strategies</div>
+        </div>
+        <div class="dna-metric">
+          <div class="label">Evolution Generation</div>
+          <div class="value" id="dnaGeneration">--</div>
+          <div class="sub">Current algorithm generation</div>
+        </div>
+        <div class="dna-metric">
+          <div class="label">Phoenix Revivals</div>
+          <div class="value" id="dnaPhoenixCount">--</div>
+          <div class="sub">Strategies that recovered from DEAD</div>
+        </div>
+        <div class="dna-metric">
+          <div class="label">Genetic Diversity</div>
+          <div class="value" id="dnaDiversity">--</div>
+          <div class="sub">Unique chromosome patterns</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNAL QUALITY PANEL -->
+    <div class="quality-panel" id="qualityPanel">
+      <h2>📊 Real-Time Signal Quality Score</h2>
+      <div class="quality-gauge-container">
+        <div class="quality-score-display">
+          <div class="score" id="overallQualityScore">--</div>
+          <div class="label">Overall</div>
+        </div>
+        <div class="quality-breakdown">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:.75rem;color:#888">ML Ensemble Systems</span>
+            <span style="font-size:.75rem;color:#22c55e;font-weight:600" id="qualityMlScore">--</span>
+          </div>
+          <div class="quality-bar">
+            <div class="quality-fill" id="qualityMlBar" style="width:0%;background:#22c55e"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;margin-bottom:4px">
+            <span style="font-size:.75rem;color:#888">DNA Genome Systems</span>
+            <span style="font-size:.75rem;color:#06b6d4;font-weight:600" id="qualityDnaScore">--</span>
+          </div>
+          <div class="quality-bar">
+            <div class="quality-fill" id="qualityDnaBar" style="width:0%;background:#06b6d4"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;margin-bottom:4px">
+            <span style="font-size:.75rem;color:#888">Signal Aggregation</span>
+            <span style="font-size:.75rem;color:#8b5cf6;font-weight:600" id="qualityAggScore">--</span>
+          </div>
+          <div class="quality-bar">
+            <div class="quality-fill" id="qualityAggBar" style="width:0%;background:#8b5cf6"></div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;font-size:.75rem;color:#888;line-height:1.6">
+          <strong style="color:#ccc">How Quality is Calculated:</strong><br>
+          • Sharpe Ratio × 20 points<br>
+          • Win Rate × 30 points<br>
+          • (1 - Max Drawdown) × 20 points<br>
+          • +15 bonus for 3+ system consensus
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE LEADERBOARD -->
+    <div class="leaderboard-panel" id="leaderboardPanel">
+      <h2>🏆 Performance Leaderboard (30-Day Sharpe)</h2>
+      <table class="leaderboard-table" id="leaderboardTable">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>System</th>
+            <th>Category</th>
+            <th>Win Rate</th>
+            <th>Sharpe</th>
+            <th>Active Picks</th>
+            <th>Quality</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <tr>
+            <td colspan="7" style="text-align:center;color:#666;padding:20px">Loading leaderboard...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ENHANCED SUPER SIGNAL BANNER -->
+    <div class="super-signal-enhanced" id="superSignalEnhanced" style="display:none">
+      <h2>⚡ Cross-System Super Signals</h2>
+      <div class="super-grid" id="superSignalGrid"></div>
+    </div>
+
+    <div class="filter-bar">
+      <span class="label">View:</span>
+      <span class="filter-pill active" data-filter="all" onclick="setFilter('all')">All Picks</span>
+      <span class="filter-pill fresh" data-filter="fresh" onclick="setFilter('fresh')">Fresh Picks Only (Actionable
+        Now)</span>
+      <span class="filter-pill" data-filter="today" onclick="setFilter('today')">Today's Picks</span>
+      <span class="filter-pill" data-filter="closed" onclick="setFilter('closed')">Closed Only (History)</span>
+      <span style="margin-left:auto"></span>
+      <span class="label">Sort by:</span>
+      <span class="sort-pill active" data-sort="wr" onclick="setSort('wr')">Win Rate</span>
+      <span class="sort-pill" data-sort="pnl" onclick="setSort('pnl')">Realized P/L</span>
+      <span class="sort-pill" data-sort="active" onclick="setSort('active')">Active Picks</span>
+    </div>
+
+    <!-- Fresh picks banner — shows all actionable picks from all systems in one place -->
+    <div class="fresh-banner" id="freshBanner">
+      <h2><span class="pulse"
+          style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block"></span> Fresh Picks —
+        Act Now</h2>
+      <div class="fresh-grid" id="freshGrid"></div>
+    </div>
+
+    <!-- Super Signal banner — cross-pair/cross-system consensus detector -->
+    <div id="superSignalBanner"
+      style="background:#8b5cf611;border:1px solid #8b5cf633;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:none">
+      <h2 style="font-size:1rem;color:#8b5cf6;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:1.2rem">&#9889;</span> Super Signal — Market Consensus
+        <span id="superSignalTier" style="font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:600"></span>
+      </h2>
+      <div style="font-size:.8rem;color:#bbb;margin-bottom:8px">
+        <span id="superSignalDirection" style="font-weight:700;font-size:.95rem"></span>
+        <span id="superSignalMeta" style="color:#888"></span>
+      </div>
+      <div id="superSignalGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">
+      </div>
+    </div>
+
+    <!-- UNIFIED PICK FEED — All active picks from all systems, sorted by quality -->
+    <div class="unified-feed" id="unifiedFeed">
+      <h2>📡 Unified Pick Feed — All Systems</h2>
+      <div id="unifiedPickList">
+        <div style="color:#666;padding:20px;text-align:center">Loading unified pick feed...</div>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="dot" style="background:#22c55e"></span> Active Systems</div>
+    <div class="systems-grid" id="systemsGrid">
+      <div class="loading">Loading system data...</div>
+    </div>
+
+    <div class="section-title"><span class="dot" style="background:#666"></span> Dormant / Paused Systems</div>
+    <div class="systems-grid" id="dormantGrid"></div>
+
+    <!-- Cross-System Agreement Matrix -->
+    <div id="consensusMatrix" style="margin-top:20px;display:none">
+      <div class="section-title"><span class="dot" style="background:#8b5cf6"></span> Cross-System Agreement</div>
+      <div style="font-size:.7rem;color:#888;margin-bottom:8px">Which systems agree on which symbols right now. Green =
+        BUY consensus, Red = SELL consensus.</div>
+      <div id="consensusGrid" style="overflow-x:auto;font-family:'SF Mono','Fira Code',monospace;font-size:11px"></div>
+    </div>
+  </div><!-- end systems-view -->
+
+  <div class="calendar-view" id="calendarView">
+    <div class="cal-filter-bar" id="calFilterBar"></div>
+    <div id="calContainer">
+      <div class="loading">Loading calendar data...</div>
+    </div>
+    <div class="cal-tooltip" id="calTooltip"></div>
+  </div>
+
+  <script>
+    const BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+    const PAGES = 'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/';
+    const COD_BASE = 'https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/';
+
+    const SYSTEMS = [
+      {
+        id: 'mercury2', name: 'ML: Mercury 2', badge: 'retrain', scanInterval: 15,
+        methodology: 'Ensemble of 3 XGBoost models (conservative/aggressive/balanced) with F&G + ATR + funding rate guards. v1.3.0: MTF trend filter + tiered TP exits.',
+        statusNote: { type: 'warning', text: '<b>0/10 closed picks (0% WR)</b>. v1.0 was 77.8% WR → v1.1 dropped to 20% → v1.2 at 27% → v1.3 at 0%. Over-engineering killed it: each version added more guards that filtered out good signals. Ensemble confidence flat (0.52-0.61). <b>Needs model retrain or revert to v1.0 guard levels.</b>' },
+        activePath: BASE + 'mercury2/data/active_picks.json', closedPath: BASE + 'mercury2/data/closed_picks.json',
+        dashboard: PAGES + 'mercury2/',
+        extra: [{ label: 'Blueprint', url: 'https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/BLUEPRINT_ANALYSIS_v2.md' }]
+      },
+      {
+        id: 'claws_of_doom', name: 'ML: Claws of Doom (F)', badge: 'new', scanInterval: 15,
+        methodology: '6 strategies: Extreme Fear Contrarian, Crash Reversal, Momentum Breakout, RSI+SMA, EMA+RSI, Funding Carry.',
+        activePath: COD_BASE + 'active_picks.json', closedPath: COD_BASE + 'closed_picks.json',
+        dashboard: 'https://eltonaguiar.github.io/CLAWSOFDOOM/',
+        extra: [{ label: 'Source Repo', url: 'https://github.com/eltonaguiar/CLAWSOFDOOM' }]
+      },
+      {
+        id: 'alpha_engine', name: 'ML: Alpha Engine', badge: 'fix', scanInterval: 30,
+        methodology: '100 strategies (75 crypto + 11 forex + 14 equity). Connors RSI-2, VIX Spike, MVRV, on-chain analytics. Direction-restricted + boosted proven strategies.',
+        statusNote: { type: 'info', text: '<b>MAJOR OVERHAUL (Feb 26)</b>: 141 closed picks, 34.8% WR, -$5,751. Sharpe: -3.85<br><br><b style="color:#22c55e">✓ TOP 5 (boosted 3-4x):</b> community_london_breakout (100% WR, Sharpe 114.86) · multi_sigma_reversal (100%, Sharpe 40.32, SELL-only) · spike_macd_divergence (100%, Sharpe 25.36) · autocorrelation_exploiter (83%, Sharpe 26.23, SELL-only) · hurst_regime_adaptive (83%, Sharpe high, BUY-only)<br><br><b style="color:#ef4444">✗ 11 STRATEGIES KILLED:</b> smart_money_fvg (0/8) · fourier_cycle_detector (0/6) · halloween_effect (0/5) · cross_sectional_momentum (0/3) · exchange_netflow_reversal (0/3) · momentum_mean_rev_blend (0/3) + 5 more<br><br><b style="color:#3b82f6">FIXES:</b> SL widened 1.5→2.25x ATR (79/89 losses were stop-hunted) · Direction restrictions (SELL-only/BUY-only per strategy) · 4x boost for winners · ML strategies get patience (12+ picks before eval)<br><br>30 open picks: 15 green / 15 red. <a href="' + PAGES + 'alpha/" style="color:#60a5fa">→ Full dashboard</a>' },
+        activePath: BASE + 'alpha_engine/data/active_picks.json', closedPath: BASE + 'alpha_engine/data/closed_picks.json',
+        dashboard: PAGES + 'alpha/',
+        extra: [{ label: 'Premium', url: PAGES + 'alpha/premium.html' }]
+      },
+      {
+        id: 'kimi', name: 'KIMI Rise of the Claw', badge: 'solid', scanInterval: 15,
+        methodology: '81 algorithms across crypto, stocks, forex: pairs trading, CCI reversal, calendar effects, Betting Against Beta, momentum factors, carry trade. Elimination engine auto-removes underperformers.',
+        activePath: BASE + 'KIMI_RISEOFTHECLAW/data/active_picks.json', closedPath: null,
+        dashboard: PAGES + 'riseoftheclaw.html',
+        extra: [{ label: 'Scanner Log', url: PAGES + 'riseoftheclaw/scanner-log.html' }]
+      },
+      {
+        id: 'crypto_ml_edge', name: 'ML: Crypto ML Edge', badge: 'solid', scanInterval: 60,
+        methodology: 'LightGBM binary classifier. 10 models (5 pairs x 2 TF). DSR-gated validation. Isotonic calibration. Purged cross-validation.',
+        activePath: BASE + 'crypto_ml_edge/data/active_picks.json', closedPath: null,
+        dashboard: PAGES + 'edge/',
+        extra: []
+      },
+      {
+        id: 'claude_gainer', name: 'ML: Claude Gainer Tracker', badge: 'solid', scanInterval: 240,
+        methodology: 'XGBoost + LightGBM + RF ensemble. Reverse-engineers daily top gainer patterns from 5yr data. TP1=+5%, TP2=+10%, SL=-5%.',
+        activePath: BASE + 'claude_gainer_ml/tracker/claude_live_picks.json', closedPath: null,
+        dashboard: 'https://findtorontoevents.ca/updates/antigravity-ml-gainer.html',
+        extra: [{ label: 'Winners', url: 'https://findtorontoevents.ca/findcryptopairs/winners.html' }]
+      },
+      {
+        id: 'ml_bg_a', name: 'ML: Battleground A', badge: 'fail', scanInterval: 30, dormant: true,
+        methodology: 'XGBoost ML filter + EMA stack + Connors RSI-2 + Volume climax. Isotonic-calibrated probabilities.',
+        statusNote: { type: 'warning', text: '<b>DISABLED since Mar 10</b> — 0% WR across 15 closed trades. PANIC_SELL logic triggered exits too early in fear regimes.<br><br><b style="color:#3b82f6">ML AUDIT FIX (Mar 13):</b> Threshold lowered 30→15 picks, isotonic calibration added, feedback loop now sees 250+ picks from Alpha/Battleground/KIMI. ML filter is technically active but scanner workflow paused pending exit logic redesign.' },
+        activePath: BASE + 'ml_battleground/system_a_filter/data/active_picks.json', closedPath: BASE + 'ml_battleground/system_a_filter/data/closed_picks.json',
+        dashboard: PAGES + 'battleground/a/',
+        extra: [{ label: 'Arena', url: PAGES + 'battleground/' }]
+      },
+      {
+        id: 'ml_bg_b', name: 'ML: Battleground B', badge: 'dormant', scanInterval: 30, dormant: true,
+        methodology: 'Regime-aware adaptive. 3-layer HMM regime detection (HMM + adaptive + ADX@15) + ATR stops.',
+        statusNote: { type: 'warning', text: '<b>DISABLED since Feb 25</b> — No picks generated in 16+ days despite Feb 26 fear-mode fix. Regime classifier fix lowered confidence from 90% to 55%, but scanner workflow was disabled along with Systems A/C/D/E on Mar 12.<br><br><b>Why no updates:</b> The Battleground A-E scanner workflow was paused to stop losses from accumulating. Fix: re-enable after ML audit improvements (threshold, calibration, feedback loop) are validated.' },
+        activePath: BASE + 'ml_battleground/system_b_regime/data/active_picks.json', closedPath: BASE + 'ml_battleground/system_b_regime/data/closed_picks.json',
+        dashboard: PAGES + 'battleground/b/',
+        extra: []
+      },
+      {
+        id: 'ml_bg_c', name: 'ML: Battleground C', badge: 'fail', scanInterval: 30, dormant: true,
+        methodology: 'Dual-timeframe GRU-Attention neural net. Multi-head attention on 120-token sequence (60 bars x 2 TF).',
+        statusNote: { type: 'warning', text: '<b>DISABLED since Feb 24</b> — 0% WR. Highest ML confidence (0.84-0.93) yet worst performance — classic overfitting. Model memorized training patterns that don\'t generalize.<br><br><b style="color:#3b82f6">ML AUDIT NOTE (Mar 13):</b> Architecture is actually correct (attention ordering verified). Problem is insufficient training data, not architecture. Needs 500+ labeled examples before retraining. Waiting for feedback loop to accumulate data.' },
+        activePath: BASE + 'ml_battleground/system_c_deeplearn/data/active_picks.json', closedPath: BASE + 'ml_battleground/system_c_deeplearn/data/closed_picks.json',
+        dashboard: PAGES + 'battleground/c/',
+        extra: []
+      },
+      {
+        id: 'ml_bg_d', name: 'ML: Battleground D (Carry)', badge: 'dormant', scanInterval: 30, dormant: true,
+        methodology: 'Funding rate carry trade. Short overleveraged longs when funding > 0.03%. Binance Futures API with 3-retry cache.',
+        statusNote: { type: 'warning', text: '<b>DISABLED since Feb 25</b> — Scanner workflow paused on Mar 12. API fix (Feb 26) added 3 retries + 1h TTL cache, but system never generated picks before pause.<br><br><b>Why no updates:</b> Heuristic-only system (no ML). Funding rate carry logic works but entry signals are too rare — funding rarely exceeds 0.03% threshold outside extreme leverage events. New funding_rate_features.py (5 decomposed features) may improve detection if integrated.' },
+        activePath: BASE + 'ml_battleground/system_d_carry/data/active_picks.json', closedPath: BASE + 'ml_battleground/system_d_carry/data/closed_picks.json',
+        dashboard: PAGES + 'battleground/',
+        extra: []
+      },
+      {
+        id: 'ml_bg_e', name: 'ML: Battleground E (Momentum)', badge: 'dormant', scanInterval: 30, dormant: true,
+        methodology: 'Cross-sectional momentum ranking. Top/bottom 3 pairs by 7d return. F&G contrarian bias.',
+        statusNote: { type: 'warning', text: '<b>DISABLED since Feb 25</b> — Scanner workflow paused on Mar 12. Feb 26 fix resolved contradictory PANIC gate vs F&G contrarian logic, but system never generated picks before pause.<br><br><b>Why no updates:</b> Heuristic-only system (no ML). Cross-sectional momentum now being converted to ML features (cross_sectional_momentum.py) for System A/B instead of standalone picks.' },
+        activePath: BASE + 'ml_battleground/system_e_momentum/data/active_picks.json', closedPath: BASE + 'ml_battleground/system_e_momentum/data/closed_picks.json',
+        dashboard: PAGES + 'battleground/',
+        extra: []
+      },
+      {
+        id: 'signal_engine', name: 'Signal Engine', badge: 'dormant', scanInterval: 60,
+        methodology: 'Crypto signal generator with validation pipeline.',
+        activePath: BASE + 'crypto_signal_engine/data/active_picks.json', closedPath: null,
+        dashboard: PAGES + 'signal-engine/', extra: []
+      },
+      {
+        id: 'breakout_a', name: 'ML: Breakout Arena A', badge: 'dormant', scanInterval: 60,
+        methodology: 'Support/Resistance breakout detection. Volume ratio 1.3x + ATR expansion + min 1.5 R:R.',
+        statusNote: { type: 'info', text: '<b>0 PICKS since Feb 24</b> — Rules-based scanner (no ML). Requires S/R level breakout + volume spike on 4H BTC/ETH. Not a bug — Approach B (ML, last pick Mar 13) and Approach C (spike, Mar 12) work fine. Approach A just needs clean breakout conditions.' },
+        activePath: BASE + 'breakout_arena/approach_a_sr_breakout/data/active_picks.json', closedPath: BASE + 'breakout_arena/approach_a_sr_breakout/data/closed_picks.json',
+        dashboard: PAGES + 'arena/', extra: []
+      },
+      {
+        id: 'breakout_b', name: 'ML: Breakout Arena B', badge: 'solid', scanInterval: 60,
+        methodology: 'ML-based breakout detection.',
+        activePath: BASE + 'breakout_arena/approach_b_ml_breakout/data/active_picks.json', closedPath: BASE + 'breakout_arena/approach_b_ml_breakout/data/closed_picks.json',
+        dashboard: PAGES + 'arena/', extra: []
+      },
+      {
+        id: 'breakout_c', name: 'ML: Breakout Arena C', badge: 'solid', scanInterval: 60,
+        methodology: 'Spike reversal detection. Momentum continuation archetype scoring.',
+        activePath: BASE + 'breakout_arena/approach_c_spike_reverse/data/active_picks.json', closedPath: BASE + 'breakout_arena/approach_c_spike_reverse/data/closed_picks.json',
+        dashboard: PAGES + 'arena/', extra: []
+      },
+      {
+        id: 'ml_bg_ensemble', name: 'ML: Battleground Ensemble', badge: 'dormant', scanInterval: 30, dormant: true,
+        methodology: 'Meta-system aggregating Battleground A-E signals via majority vote + confidence weighting.',
+        statusNote: { type: 'warning', text: '<b>DISABLED since Feb 25</b> — Depends on Battleground A-E which were all disabled Mar 12 due to 1.9% WR across 107 trades. Ensemble cannot produce picks when all sub-systems are paused.' },
+        activePath: BASE + 'ml_battleground/ensemble_data/active_picks.json', closedPath: BASE + 'ml_battleground/ensemble_data/closed_picks.json',
+        dashboard: PAGES + 'battleground/',
+        extra: [{ label: 'Arena', url: PAGES + 'battleground/' }]
+      },
+      {
+        id: 'predictions', name: 'Predictions Engine', badge: 'dormant', scanInterval: 60, dormant: true,
+        methodology: 'Multi-analyst prediction aggregator. 12 scrapers: Twitter, Reddit, TradingView, Analyst, Kalshi, Limitless, Polymarket, StockTwits, CoinCodex, etc.',
+        statusNote: { type: 'warning', text: '<b>STALE since Mar 2</b> — Workflow runs every 2h but all 12 scrapers use <code>continue-on-error: true</code>, so API failures are silent. Likely cause: Twitter RSS feeds expired or prediction market APIs changed endpoints.<br><br><b>Fix needed:</b> Audit each scraper for API health. Add error notification when ALL scrapers return 0 results.' },
+        activePath: BASE + 'predictions/data/active_predictions.json', closedPath: null,
+        dashboard: PAGES + 'predictions/dashboard/',
+        extra: [{ label: 'Leaderboard', url: PAGES + 'predictions/dashboard/' }]
+      },
+      {
+        id: 'super_signal', name: 'Super Signal Engine', badge: 'new', scanInterval: 5,
+        methodology: 'Cross-pair + cross-system consensus detector. Fires when 60%+ of crypto pairs and 2+ systems agree on direction. Highest conviction signals.',
+        statusNote: { type: 'info', text: '<b>NEW</b>: Detects market-wide directional consensus. When most pairs AND multiple systems agree, trade confidence is significantly higher. Tiers: SUPER (70%+ pair consensus + 3 systems) or STRONG (60%+ pairs + 2 systems).' },
+        activePath: BASE + 'cross_aggregation/data/super_signals.json', closedPath: null,
+        dashboard: PAGES + 'monitor/',
+        extra: [{ label: 'Monitor', url: PAGES + 'monitor/' }]
+      },
+      {
+        id: 'ensemble', name: 'ML: BG Ensemble', badge: 'dormant', scanInterval: 30, dormant: true,
+        methodology: 'Consensus of Battleground Systems A+B+C. System B weighted 2x.',
+        statusNote: { type: 'warning', text: '<b>DISABLED</b> — Duplicate of ML: Battleground Ensemble entry. Depends on A-E which are all paused.' },
+        activePath: BASE + 'ml_battleground/ensemble_data/active_picks.json',
+        closedPath: BASE + 'ml_battleground/ensemble_data/closed_picks.json',
+        dashboard: null, extra: []
+      },
+      {
+        id: 'regime_terminal', name: 'Regime Terminal', badge: 'new', scanInterval: 30,
+        methodology: 'HMM regime detection. Identifies bull/bear/sideways market states and generates directional confidence signals.',
+        activePath: BASE + 'regime_terminal/data/active_signals.json', closedPath: null,
+        dashboard: PAGES + 'regime_terminal/', extra: []
+      },
+      {
+        id: 'ml_crypto_pred', name: 'ML: Claude Opus Predictor', badge: 'retrain', scanInterval: 240,
+        methodology: '1,745 trained RF/LightGBM models. Forward-test workflow added Mar 13 (every 4h). Feeds feedback loop.',
+        statusNote: { type: 'warning', text: '<b>STALE since Mar 8</b> — Models run but confidence/risk filters reject all picks in current market (same root cause as Signal Engine). <b style="color:#3b82f6">NEW (Mar 13):</b> ml-forward-test.yml workflow created to activate these 1,745 idle models every 4h. Fixed features_df NameError + schema incompatibility bugs in live_picks_tracker.py. Should start producing forward-test data on next run.' },
+        activePath: BASE + 'ml_crypto_predictor/enhanced_models/live_picks/active_picks.json',
+        closedPath: BASE + 'ml_crypto_predictor/enhanced_models/live_picks/closed_picks.json',
+        dashboard: null, extra: []
+      },
+      {
+        id: 'fc_crypto_pro', name: 'FC-CRYPTO PRO', badge: 'new', scanInterval: 30,
+        methodology: 'Cross-aggregation derived crypto signals with momentum and trend filters.',
+        activePath: BASE + 'data/fc_crypto_pro_picks.json', closedPath: null,
+        dashboard: null, extra: []
+      },
+      {
+        id: 'crypto_gainer', name: 'ML: Crypto Gainer', badge: 'new', scanInterval: 15,
+        methodology: 'ML-based crypto gainer prediction with live price tracking.',
+        activePath: BASE + 'crypto_gainer_ml/tracker/live_picks.json', closedPath: null,
+        dashboard: null, extra: []
+      },
+      {
+        id: 'quantum_fusion', name: 'QuantumFusion', badge: 'new', scanInterval: 60,
+        methodology: 'Quantum-inspired signal fusion engine combining multiple factor models.',
+        activePath: BASE + 'quantum_fusion_report.json', closedPath: null,
+        dashboard: null, extra: []
+      },
+      {
+        id: 'incubator_fwd', name: 'Incubator Forward Test', badge: 'new', scanInterval: 60,
+        methodology: '7 incubator strategies: Chronos-Bolt, DLinear, FundingRateCarry, OI-Divergence, SMC-FVG, Spike-MACD, VolatilityRegimeSwitch. Hourly forward-testing with persistent ledger.',
+        statusNote: { type: 'info', text: '<b>NEW (Mar 13)</b> — 7 strategies wired into hourly baby-strat-forward-paper.yml pipeline. Persistent trade ledger tracks TP/SL against live Binance prices. Once a strategy hits 10+ closed trades with 55-95% WR, it graduates to the Battleground dashboard.<br><br><b>Strategies:</b> volatility_regime_switch (Sharpe 6.14 in backtest), dlinear_baseline (AAAI 2023), oi_divergence_liquidation, smc_fair_value_gap, spike_macd_divergence (resurrected), chronos_bolt (zero-shot), funding_rate_carry' },
+        activePath: BASE + 'battleground/data/incubator_signals.json', closedPath: null,
+        dashboard: PAGES + 'battleground/', extra: [{ label: 'Arena', url: PAGES + 'battleground/' }]
+      },
+    ];
+
+    function normSym(s) { return (s || '').trim().toUpperCase().replace(/\//g, '').replace(/-/g, '').replace(/USD$/, 'USDT') }
+
+    const ENTRY_DATE_KEYS = [
+      'entryDate', 'timestamp_est', 'signal_time_est', 'timestamp', 'entry_time', 'created_at',
+      'entry_date', 'signal_time', 'opened_at', 'open_time', 'date_opened', 'issued_at', 'generated_at'
+    ];
+
+    const CLOSE_DATE_KEYS = [
+      'close_time', 'closed_time', 'exit_time_est', 'exit_time', 'closed_at',
+      'closeDate', 'exit_date', 'date_closed', 'closed_date'
+    ];
+
+    function pickFirstDateField(obj, keys) {
+      if (!obj || typeof obj !== 'object') return null;
+      for (const key of keys) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+        const val = obj[key];
+        if (val === null || val === undefined) continue;
+        const txt = String(val).trim();
+        if (!txt) continue;
+        return val;
+      }
+      return null;
+    }
+
+    function parseDateLoose(raw) {
+      if (raw === null || raw === undefined) return null;
+      if (raw instanceof Date) return isNaN(raw.getTime()) ? null : raw;
+
+      if (typeof raw === 'number' && Number.isFinite(raw)) {
+        const ms = raw < 1e12 ? raw * 1000 : raw;
+        const d = new Date(ms);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      const s = String(raw).trim();
+      if (!s) return null;
+
+      if (/^\d{10}$/.test(s)) {
+        const d = new Date(Number(s) * 1000);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      if (/^\d{13}$/.test(s)) {
+        const d = new Date(Number(s));
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const [y, m, d] = s.split('-').map(Number);
+        // Noon UTC preserves the intended calendar day when rendered in EST.
+        return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+      }
+
+      // Handle "2026-02-24T23:18:54 EST" format (EST timezone suffix)
+      const estMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\s*(EST|EDT|Eastern)$/i);
+      if (estMatch) {
+        const [, y, mo, d, h, mi, sec] = estMatch;
+        // EST = UTC-5, EDT = UTC-4
+        const offsetHours = s.toUpperCase().includes('EDT') ? 4 : 5;
+        return new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h) + offsetHours, Number(mi), Number(sec)));
+      }
+
+      const parsed = new Date(s);
+      if (!isNaN(parsed.getTime())) return parsed;
+      return null;
+    }
+
+    function toESTDateISO(raw) {
+      const d = parseDateLoose(raw);
+      if (!d) return null;
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(d);
+      const year = parts.find(p => p.type === 'year')?.value;
+      const month = parts.find(p => p.type === 'month')?.value;
+      const day = parts.find(p => p.type === 'day')?.value;
+      if (!year || !month || !day) return null;
+      return `${year}-${month}-${day}`;
+    }
+
+    function extractPicks(data) {
+      let arr = [];
+      if (Array.isArray(data)) arr = data;
+      else if (data && typeof data === 'object') {
+        for (const k of ['active_picks', 'activePicks', 'picks', 'signals', 'super_signals', 'active_predictions'])
+          if (Array.isArray(data[k])) { arr = data[k]; break; }
+        // Inherit parent-level generated_at into each pick (super_signals has it at top level only)
+        if (data.generated_at && arr.length) {
+          arr = arr.map(p => p.generated_at ? p : { ...p, generated_at: data.generated_at });
+        }
+      }
+      // Deduplicate: same symbol+direction+entry_price = same pick
+      if (arr.length > 50) {
+        const seen = new Set();
+        arr = arr.filter(p => {
+          const sym = (p.symbol || p.pair || p.ticker || '').toUpperCase();
+          const dir = (p.direction || p.signal_type || p.signal || '').toUpperCase();
+          const ep = p.entry_price || p.entryPrice || p.price || 0;
+          const key = `${sym}|${dir}|${ep}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+      return arr;
+    }
+
+    function getDir(p) {
+      const d = (p.direction || p.signal_type || p.signal || '').toUpperCase();
+      if (d.includes('BUY') || d.includes('LONG') || d.includes('BULLISH')) return 'LONG';
+      if (d.includes('SELL') || d.includes('SHORT') || d.includes('BEARISH')) return 'SHORT';
+      return d;
+    }
+
+    function fmtDateEST(raw) {
+      const d = parseDateLoose(raw);
+      if (!d) return null;
+      return d.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }) + ' EST';
+    }
+
+    function getEntryDate(p) {
+      return fmtDateEST(getEntryDateRaw(p));
+    }
+
+    function getCloseDate(p) {
+      return fmtDateEST(getCloseDateRaw(p));
+    }
+
+    function getEntryDateRaw(p) {
+      return pickFirstDateField(p, ENTRY_DATE_KEYS);
+    }
+
+    function getCloseDateRaw(p) {
+      return pickFirstDateField(p, CLOSE_DATE_KEYS);
+    }
+
+    function isPickFromToday(p) {
+      const dISO = toESTDateISO(getEntryDateRaw(p));
+      if (!dISO) return false;
+      const todayISO = toESTDateISO(new Date());
+      return dISO === todayISO;
+    }
+
+    function isClosedToday(p) {
+      const dISO = toESTDateISO(getCloseDateRaw(p));
+      if (!dISO) return false;
+      const todayISO = toESTDateISO(new Date());
+      return dISO === todayISO;
+    }
+
+    function getPnlInfo(p) {
+      if (p.realized_pnl_pct !== undefined && isClosed(p)) {
+        return { value: p.realized_pnl_pct, type: 'realized' };
+      }
+      if (p.unrealized_pnl_pct !== undefined) {
+        return { value: p.unrealized_pnl_pct, type: isClosed(p) ? 'realized' : 'unrealized' };
+      }
+      if (p.pnl_pct !== undefined) {
+        return { value: p.pnl_pct, type: isClosed(p) ? 'realized' : 'unrealized' };
+      }
+      const entry = p.entry_price || p.entryPrice || 0;
+      const cur = p.current_price || p.currentPrice || 0;
+      if (entry && cur) {
+        const dir = getDir(p);
+        let pnl;
+        if (dir === 'LONG') pnl = ((cur - entry) / entry * 100);
+        else if (dir === 'SHORT') pnl = ((entry - cur) / entry * 100);
+        else pnl = ((cur - entry) / entry * 100);
+        return { value: pnl, type: isClosed(p) ? 'realized' : 'unrealized' };
+      }
+      return { value: null, type: 'unknown' };
+    }
+
+    function getAlgoName(p) {
+      return p.algorithmName || p.algorithm || p.strategy_name || p.strategy || '';
+    }
+
+    function getAlgoTooltip(name) {
+      if (!name) return '';
+      const n = name.toLowerCase();
+      if (n.includes('super signal') || n.includes('super_signal')) return 'Cross-system consensus: fires when 60%+ of pairs AND 2+ systems agree. SUPER = 70%+ pairs + 3 systems.';
+      if (n.includes('betting-against-beta') || n.includes('betting_against_beta')) return 'Low-beta assets outperform high-beta on risk-adjusted basis (Frazzini & Pedersen 2014).';
+      if (n.includes('connors') || n.includes('rsi-2') || n.includes('rsi_2')) return 'Connors RSI-2 mean reversion: buy when RSI(2) is extremely oversold, sell when overbought.';
+      if (n.includes('vix') && n.includes('spike')) return 'VIX spike reversal: buy fear capitulation when VIX > 30 and RSI oversold.';
+      if (n.includes('funding') && n.includes('rate')) return 'Funding rate carry: short overleveraged longs when funding is extremely positive.';
+      if (n.includes('breakout')) return 'Price breakout strategy: enters when price breaks key support/resistance with volume confirmation.';
+      if (n.includes('momentum')) return 'Momentum: buys top performers expecting trend continuation (Jegadeesh & Titman 1993).';
+      return '';
+    }
+
+    function isWin(p) {
+      const s = (p.status || '').toUpperCase();
+      if (s.includes('WIN') || s === 'CLOSED_TP' || p.exit_reason === 'TP_HIT') return true;
+      if (s.includes('LOSS') || s === 'CLOSED_SL' || p.exit_reason === 'SL_HIT') return false;
+      const pnl = p.realized_pnl_pct;
+      if (pnl !== undefined) return pnl > 0;
+      return null;
+    }
+
+    function isClosed(p) {
+      const s = (p.status || '').toUpperCase();
+      return s.includes('WIN') || s.includes('LOSS') || s.includes('CLOSED') || s.includes('STOPPED') ||
+        s.includes('RESOLVED') || s.includes('EXPIRED') || s.includes('EXPIRE') ||
+        (p.exit_price != null) || (p.exit_reason != null) || getCloseDateRaw(p) !== null;
+    }
+
+    async function fetchJSON(url) {
+      try {
+        const r = await fetch(url, { cache: 'no-store' });
+        if (!r.ok) return null;
+        return await r.json();
+      } catch { return null }
+    }
+
+    // ── CODE RED: API Health Monitoring ──
+    const API_HEALTH_PROBES = [
+      { id: 'binance_spot', name: 'Binance Spot', url: 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', affects: ['alpha_engine', 'mercury2', 'ml_bg_a', 'ml_bg_b', 'ml_bg_c'] },
+      { id: 'binance_futures', name: 'Binance Futures', url: 'https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1', affects: ['alpha_engine', 'mercury2', 'ml_bg_a', 'ml_bg_b'] },
+      { id: 'fear_greed', name: 'Fear & Greed Index', url: 'https://api.alternative.me/fng/?limit=1', affects: ['alpha_engine', 'kimi', 'mercury2', 'claws_of_doom'] },
+      { id: 'bybit', name: 'Bybit (Fallback)', url: 'https://api.bybit.com/v5/market/tickers?category=spot&symbol=BTCUSDT', affects: ['alpha_engine'] },
+      { id: 'coingecko', name: 'CoinGecko', url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', affects: ['kimi', 'alpha_engine'] },
+      { id: 'deribit', name: 'Deribit Options', url: 'https://www.deribit.com/api/v2/public/get_index_price?index_name=btc_usd', affects: ['alpha_engine'] },
+      { id: 'github_raw', name: 'GitHub Raw (Data)', url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data/active_picks.json', affects: ['all'] },
+    ];
+
+    let apiHealthResults = {};
+
+    async function probeAPI(probe) {
+      const start = Date.now();
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const r = await fetch(probe.url, { cache: 'no-store', signal: controller.signal, mode: 'cors' });
+        clearTimeout(timeoutId);
+        const latency = Date.now() - start;
+        const status = r.status;
+        if (status === 451) return { id: probe.id, name: probe.name, status: 'blocked', code: 451, latency, affects: probe.affects, detail: 'Geo-blocked (HTTP 451)' };
+        if (status === 429) return { id: probe.id, name: probe.name, status: 'rate_limited', code: 429, latency, affects: probe.affects, detail: 'Rate limited (HTTP 429)' };
+        if (!r.ok) return { id: probe.id, name: probe.name, status: 'error', code: status, latency, affects: probe.affects, detail: `HTTP ${status}` };
+        return { id: probe.id, name: probe.name, status: 'ok', code: 200, latency, affects: probe.affects, detail: `${latency}ms` };
+      } catch (e) {
+        const latency = Date.now() - start;
+        if (e.name === 'AbortError') return { id: probe.id, name: probe.name, status: 'timeout', code: 0, latency: 8000, affects: probe.affects, detail: 'Timeout (>8s)' };
+        // CORS errors on browser-side probes are expected for some APIs — treat as "unknown" not "down"
+        if (e.message && e.message.includes('CORS')) return { id: probe.id, name: probe.name, status: 'cors_blocked', code: 0, latency, affects: probe.affects, detail: 'CORS (server-side OK)' };
+        return { id: probe.id, name: probe.name, status: 'down', code: 0, latency, affects: probe.affects, detail: e.message || 'Connection failed' };
+      }
+    }
+
+    async function runHealthProbes() {
+      const results = await Promise.all(API_HEALTH_PROBES.map(probeAPI));
+      apiHealthResults = {};
+      results.forEach(r => { apiHealthResults[r.id] = r; });
+      renderCodeRedBanner(results);
+      return results;
+    }
+
+    function renderCodeRedBanner(results) {
+      const issues = results.filter(r => r.status !== 'ok' && r.status !== 'cors_blocked');
+      const banner = document.getElementById('codeRedBanner');
+      const issueGrid = document.getElementById('codeRedIssues');
+
+      // Update top-bar API Health card
+      const healthVal = document.getElementById('apiHealthValue');
+      const healthDetail = document.getElementById('apiHealthDetail');
+      const okCount = results.filter(r => r.status === 'ok' || r.status === 'cors_blocked').length;
+      const total = results.length;
+      if (issues.length === 0) {
+        healthVal.innerHTML = `<span class="green">${okCount}/${total} OK</span>`;
+      } else {
+        const critical = issues.filter(r => ['down', 'blocked', 'timeout', 'error'].includes(r.status)).length;
+        if (critical > 0) healthVal.innerHTML = `<span class="red">${critical} DOWN</span>`;
+        else healthVal.innerHTML = `<span class="yellow">${issues.length} WARN</span>`;
+      }
+      healthDetail.innerHTML = results.map(r => {
+        const icon = r.status === 'ok' || r.status === 'cors_blocked' ? '<span class="health-dot ok"></span>'
+          : ['down', 'blocked', 'timeout', 'error'].includes(r.status) ? '<span class="health-dot down"></span>'
+            : '<span class="health-dot degraded"></span>';
+        return `<div class="tip-row">${icon}<span class="tip-label">${r.name}</span><span class="tip-val ${r.status === 'ok' || r.status === 'cors_blocked' ? 'green' : 'red'}">${r.detail}</span></div>`;
+      }).join('');
+
+      if (issues.length === 0) {
+        banner.classList.remove('active');
+        return;
+      }
+
+      // Separate critical (actual failures) from warnings (degraded)
+      const critical = issues.filter(r => ['down', 'blocked', 'timeout', 'error'].includes(r.status));
+      const warnings = issues.filter(r => r.status === 'rate_limited');
+
+      if (critical.length === 0 && warnings.length === 0) {
+        banner.classList.remove('active');
+        return;
+      }
+
+      banner.classList.add('active');
+      const bannerTitle = document.querySelector('#codeRedBanner h2');
+      if (critical.length > 0) {
+        bannerTitle.innerHTML = '<span class="cr-icon">&#9888;</span> CODE RED — ' + critical.length + ' API' + (critical.length > 1 ? 's' : '') + ' Down';
+      } else {
+        bannerTitle.innerHTML = '<span class="cr-icon">&#9888;</span> WARNING — ' + warnings.length + ' API' + (warnings.length > 1 ? 's' : '') + ' Degraded';
+        banner.style.borderColor = '#eab308';
+      }
+
+      issueGrid.innerHTML = issues.map(r => {
+        const affectedNames = r.affects.map(id => {
+          const sys = SYSTEMS.find(s => s.id === id);
+          return sys ? sys.name.replace('ML: ', '') : id;
+        }).join(', ');
+        const statusLabel = { down: 'DOWN', blocked: 'GEO-BLOCKED', timeout: 'TIMEOUT', error: 'HTTP ERROR', rate_limited: 'RATE LIMITED' }[r.status] || r.status.toUpperCase();
+        return `<div class="cr-issue">
+      <span class="cr-api"><span class="health-dot down"></span> ${r.name} — ${statusLabel}</span>
+      <div class="cr-detail">${r.detail}</div>
+      <div class="cr-impact">Affects: ${affectedNames}</div>
+    </div>`;
+      }).join('');
+    }
+
+    function getSystemHealth(sysId) {
+      // Check all probes that affect this system
+      const affecting = Object.values(apiHealthResults).filter(r => r.affects.includes(sysId) || r.affects.includes('all'));
+      if (affecting.length === 0) return 'unknown';
+      const hasDown = affecting.some(r => ['down', 'blocked', 'timeout', 'error'].includes(r.status));
+      const hasDegraded = affecting.some(r => r.status === 'rate_limited');
+      if (hasDown) return 'down';
+      if (hasDegraded) return 'degraded';
+      return 'ok';
+    }
+
+    function fmtPrice(v) {
+      if (!v) return '--';
+      if (v >= 1000) return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      if (v >= 1) return v.toFixed(4);
+      return v.toPrecision(4);
+    }
+
+    function getPickStatusTag(p) {
+      if (!isClosed(p)) {
+        return '<span class="pick-status active">ACTIVE</span>';
+      }
+      const w = isWin(p);
+      if (w === true) return '<span class="pick-status closed-win">WIN</span>';
+      if (w === false) return '<span class="pick-status closed-loss">LOSS</span>';
+      return '<span class="pick-status closed-neutral">CLOSED</span>';
+    }
+
+    function renderPick(p, showAlgo) {
+      const sym = normSym(p.symbol || p.pair || p.ticker || p.name || '?');
+      const dir = getDir(p);
+      const pnlInfo = getPnlInfo(p);
+      const entry = p.entry_price || p.entryPrice || p.price || 0;
+      const tp = p.take_profit || p.tp_price || p.targetPrice || p.tp || 0;
+      const sl = p.stop_loss || p.sl_price || p.stopPrice || p.sl || 0;
+      const closed = isClosed(p);
+      const entryDate = getEntryDate(p);
+      const closeDate = closed ? getCloseDate(p) : null;
+      const algo = showAlgo ? getAlgoName(p) : '';
+      const statusTag = getPickStatusTag(p);
+
+      // Staleness detection — flag active picks older than 7 days
+      const entryRaw = getEntryDateRaw(p);
+      const entryD = parseDateLoose(entryRaw);
+      const daysHeld = entryD ? (Date.now() - entryD.getTime()) / 86400000 : null;
+      const isStale = !closed && daysHeld !== null && daysHeld > 7;
+
+      const pnlVal = pnlInfo.value;
+      const pnlLabel = pnlInfo.type === 'realized' ? 'Realized' : pnlInfo.type === 'unrealized' ? 'Unrealized' : '';
+      const pnlColor = pnlVal > 0 ? 'green' : pnlVal < 0 ? 'red' : '';
+
+      let dateStr = '';
+      if (entryDate) dateStr += 'Opened: ' + entryDate;
+      else dateStr += 'Opened: no timestamp';
+      if (isStale) dateStr += '<br><span style="color:#f59e0b;font-size:10px">⚠ ' + Math.floor(daysHeld) + 'd old — may be stale</span>';
+      if (closed && closeDate) dateStr += '<br>Closed: ' + closeDate;
+      else if (closed) dateStr += '<br>Closed: no timestamp';
+
+      const rowClass = closed ? 'pick-row closed-pick' : 'pick-row active-pick';
+
+      return `<div class="${rowClass}">
+    <span class="pick-sym">${sym}</span>
+    ${statusTag}
+    <span class="pick-dir ${dir.toLowerCase()}">${dir}</span>
+    <span class="pick-meta">
+      ${algo ? '<span class="algo" title="' + getAlgoTooltip(algo).replace(/"/g,'&quot;') + '" style="' + (getAlgoTooltip(algo) ? 'cursor:help;text-decoration:underline dotted;text-underline-offset:2px' : '') + '">' + algo + '</span><br>' : ''}
+      <span class="prices">E:${fmtPrice(entry)} TP:${fmtPrice(tp)} SL:${fmtPrice(sl)}</span>
+    </span>
+    <span class="pick-date">${dateStr}</span>
+    <span class="pick-pnl ${pnlColor}">${pnlVal !== null ? (pnlVal > 0 ? '+' : '') + pnlVal.toFixed(2) + '%' : '--'}<span class="pnl-type">${pnlLabel}</span></span>
+  </div>`;
+    }
+
+    function renderSystemCard(sys, activeData, closedData) {
+      const activePicks = extractPicks(activeData);
+      const closedPicks = closedData ? extractPicks(closedData) : [];
+
+      const trueActive = activePicks.filter(p => !isClosed(p));
+      const closedInActive = activePicks.filter(p => isClosed(p));
+      const allClosed = [...closedPicks, ...closedInActive];
+
+      const wins = allClosed.filter(p => isWin(p) === true).length;
+      const losses = allClosed.filter(p => isWin(p) === false).length;
+      const totalClosed = wins + losses;
+      const wr = totalClosed > 0 ? (wins / totalClosed * 100) : null;
+
+      const closedPnls = allClosed.map(p => p.realized_pnl_pct ?? p.unrealized_pnl_pct ?? p.pnl_pct).filter(v => v !== undefined);
+      const realizedPnl = closedPnls.reduce((s, v) => s + v, 0);
+      const avgPnl = closedPnls.length > 0 ? realizedPnl / closedPnls.length : 0;
+      const minPnl = closedPnls.length > 0 ? Math.min(...closedPnls) : 0;
+      const maxPnl = closedPnls.length > 0 ? Math.max(...closedPnls) : 0;
+      const sortedPnls = [...closedPnls].sort((a, b) => a - b);
+      const medianPnl = sortedPnls.length > 0 ? (sortedPnls.length % 2 === 1 ? sortedPnls[Math.floor(sortedPnls.length / 2)] : (sortedPnls[sortedPnls.length / 2 - 1] + sortedPnls[sortedPnls.length / 2]) / 2) : 0;
+
+      const activePnls = trueActive.map(p => getPnlInfo(p).value).filter(v => v !== null);
+      const unrealizedPnl = activePnls.reduce((s, v) => s + v, 0);
+      const avgUnrealPnl = activePnls.length > 0 ? unrealizedPnl / activePnls.length : 0;
+
+      const badgeMap = {
+        best: ['badge-best', 'TOP PERFORMER'],
+        new: ['badge-new', 'NEW'],
+        fix: ['badge-fix', 'NEEDS FIX'],
+        fail: ['badge-fail', 'FAILING'],
+        dormant: ['badge-dormant', 'DORMANT'],
+        solid: ['badge-solid', 'SOLID'],
+        retrain: ['badge-retrain', 'RETRAINING']
+      };
+      const [badgeClass, badgeText] = badgeMap[sys.badge] || ['', ''];
+      const showAlgo = sys.id === 'kimi' || sys.id === 'claws_of_doom' || sys.id === 'alpha_engine';
+      const INITIAL_SHOW = 5;
+
+      // Should we hide sections based on filter?
+      const showActive = currentFilter !== 'closed';
+      const showClosed = currentFilter !== 'fresh';
+      const todayOnly = currentFilter === 'today';
+
+      // Next scan estimate
+      const nextScan = sys.scanInterval ? `Scans every ${sys.scanInterval} min` : '';
+
+      function tipVal(v, d = 2) { const s = v > 0 ? '+' : ''; return `<span class="tip-val ${v > 0 ? 'green' : v < 0 ? 'red' : ''}">${s}${v.toFixed(d)}%</span>` }
+
+      const wrTip = wr !== null ? `<div class="tip"><div class="tip-title">Win Rate Breakdown</div><div class="tip-row"><span class="tip-label">Wins</span><span class="tip-val green">${wins}</span></div><div class="tip-row"><span class="tip-label">Losses</span><span class="tip-val red">${losses}</span></div><div class="tip-row"><span class="tip-label">Total Closed</span><span class="tip-val">${totalClosed}</span></div><div class="tip-formula">Win Rate = Wins ÷ Total Closed × 100</div></div>` : '';
+
+      const realTip = totalClosed > 0 ? `<div class="tip"><div class="tip-title">Realized P/L Breakdown</div><div class="tip-row"><span class="tip-label">Sum of all closed</span>${tipVal(realizedPnl)}</div><div class="tip-row"><span class="tip-label">Average per trade</span>${tipVal(avgPnl)}</div><div class="tip-row"><span class="tip-label">Median</span>${tipVal(medianPnl)}</div><div class="tip-row"><span class="tip-label">Best trade</span>${tipVal(maxPnl)}</div><div class="tip-row"><span class="tip-label">Worst trade</span>${tipVal(minPnl)}</div><div class="tip-row"><span class="tip-label"># trades</span><span class="tip-val">${closedPnls.length}</span></div><div class="tip-formula">Realized P/L = sum of each closed trade's P/L%</div></div>` : '';
+
+      const unrealTip = trueActive.length > 0 ? `<div class="tip"><div class="tip-title">Unrealized P/L Breakdown</div><div class="tip-row"><span class="tip-label">Sum of open picks</span>${tipVal(unrealizedPnl)}</div><div class="tip-row"><span class="tip-label">Average per pick</span>${tipVal(avgUnrealPnl)}</div><div class="tip-row"><span class="tip-label"># active picks</span><span class="tip-val">${activePnls.length}</span></div><div class="tip-formula">Unrealized = current price vs entry price on open positions</div></div>` : '';
+
+      const activeTip = `<div class="tip"><div class="tip-title">Active Picks</div><div class="tip-row"><span class="tip-label">Open positions</span><span class="tip-val">${trueActive.length}</span></div><div class="tip-formula">Positions currently open with TP/SL targets. These are tradeable now.</div></div>`;
+
+      const closedTip = totalClosed > 0 ? `<div class="tip"><div class="tip-title">Closed Trades</div><div class="tip-row"><span class="tip-label">Wins</span><span class="tip-val green">${wins}</span></div><div class="tip-row"><span class="tip-label">Losses</span><span class="tip-val red">${losses}</span></div><div class="tip-formula">Trades that hit TP (win), SL (loss), or were time-exited.</div></div>` : '';
+
+      const health = getSystemHealth(sys.id);
+      const healthBadgeHtml = health === 'down' ? '<span class="health-badge api-down">API DOWN</span>'
+        : health === 'degraded' ? '<span class="health-badge api-degraded">API SLOW</span>'
+          : health === 'ok' ? '<span class="health-badge api-ok">API OK</span>' : '';
+
+      // Detect staleness: if newest pick is 48h+ old
+      const allPickDates = [...trueActive, ...allClosed].map(p => parseDateLoose(pickFirstDateField(p, ENTRY_DATE_KEYS))).filter(Boolean);
+      const newestPick = allPickDates.length > 0 ? new Date(Math.max(...allPickDates.map(d => d.getTime()))) : null;
+      const hoursStale = newestPick ? (Date.now() - newestPick.getTime()) / 3600000 : 999;
+      const isStale = !sys.dormant && hoursStale > 48 && trueActive.length === 0;
+      const daysStale = Math.floor(hoursStale / 24);
+
+      const cardClasses = ['sys-card'];
+      if (sys.dormant) cardClasses.push('is-dormant');
+      else if (isStale) cardClasses.push('is-stale');
+
+      const dormantReasons = {
+        'ml_bg_a': 'System A hit 48.2% drawdown (safety halt at 40%). ML filter is now active (threshold lowered 30→15) but scanner paused until drawdown recovers.',
+        'ml_bg_b': 'Scanner workflow disabled on Mar 12 to stop losses. Regime classifier works correctly (3-layer HMM verified) but needs ML audit fixes validated before re-enabling.',
+        'ml_bg_c': 'GRU-Attention model overfitted — 0% WR despite high confidence (0.84-0.93). Architecture correct but needs 500+ labeled examples to retrain. Waiting for feedback loop data.',
+        'ml_bg_d': 'Funding rate carry signals too rare — funding rarely exceeds 0.03% threshold. New funding_rate_features.py (5 decomposed features) created for better detection.',
+      };
+
+      let html = `<div class="${cardClasses.join(' ')}" id="card-${sys.id}" ${health === 'down' ? 'style="border-color:#ef4444"' : ''}>
+    <div class="sys-header">
+      <div class="sys-name">${sys.name} <span class="sys-badge ${badgeClass}">${badgeText}</span>${healthBadgeHtml}</div>
+      <span class="sys-next-scan">${nextScan}</span>
+    </div>`;
+
+      // Prominent DISABLED banner for dormant systems
+      if (sys.dormant) {
+        const reason = dormantReasons[sys.id] || 'This system\'s scanner workflow has been paused to prevent further losses. Awaiting ML audit fixes and validation before re-enabling.';
+        html += `<div class="disabled-banner">
+          <span class="db-icon">⛔</span>
+          <div>
+            <div class="db-title">System Disabled — Not Generating Picks</div>
+            <div class="db-reason">${reason}</div>
+          </div>
+        </div>`;
+      } else if (isStale) {
+        html += `<div class="stale-banner">
+          <span class="sb-icon">⚠️</span>
+          <span>No new picks in <strong>${daysStale} days</strong>. Last activity: ${newestPick ? newestPick.toLocaleDateString() : 'unknown'}. System may need investigation.</span>
+        </div>`;
+      }
+    html += `<div class="sys-stats">
+      <div class="sys-stat tooltip-wrap"><div class="sl">Win Rate</div><div class="sv ${wr !== null ? (wr >= 60 ? 'green' : wr >= 40 ? 'yellow' : 'red') : ''}">${wr !== null ? wr.toFixed(0) + '%' : '--'}</div>${wrTip}</div>
+      <div class="sys-stat tooltip-wrap"><div class="sl">Active Picks</div><div class="sv green">${trueActive.length}</div>${activeTip}</div>
+      <div class="sys-stat tooltip-wrap"><div class="sl">Closed Trades</div><div class="sv">${totalClosed || '--'}</div>${closedTip}</div>
+      <div class="sys-stat tooltip-wrap"><div class="sl">Realized P/L</div><div class="sv ${realizedPnl > 0 ? 'green' : realizedPnl < 0 ? 'red' : ''}">${totalClosed > 0 ? (realizedPnl > 0 ? '+' : '') + realizedPnl.toFixed(1) + '%' : '--'}</div>${realTip}</div>
+      <div class="sys-stat tooltip-wrap"><div class="sl">Unrealized P/L</div><div class="sv ${unrealizedPnl > 0 ? 'green' : unrealizedPnl < 0 ? 'red' : ''}">${trueActive.length > 0 ? (unrealizedPnl > 0 ? '+' : '') + unrealizedPnl.toFixed(1) + '%' : '--'}</div>${unrealTip}</div>
+    </div>
+    <div class="sys-note">${sys.methodology}</div>`;
+
+      if (sys.statusNote) {
+        html += `<div class="sys-note ${sys.statusNote.type}">${sys.statusNote.text}</div>`;
+      }
+
+      html += `<div class="sys-picks">`;
+
+      // Active picks section
+      const filteredActive = todayOnly ? trueActive.filter(p => isPickFromToday(p)) : trueActive;
+      if (showActive && filteredActive.length > 0) {
+        const label = todayOnly ? `${filteredActive.length} Active Pick${filteredActive.length > 1 ? 's' : ''} — Opened Today` : `${filteredActive.length} Active Pick${filteredActive.length > 1 ? 's' : ''} — Unrealized P/L: ${unrealizedPnl > 0 ? '+' : ''}${unrealizedPnl.toFixed(1)}%`;
+        html += `<div class="pick-section-label active-section"><span class="dot-ind" style="background:#22c55e"></span> ${label}</div>`;
+        const visibleActive = filteredActive.slice(0, INITIAL_SHOW);
+        const hiddenActive = filteredActive.slice(INITIAL_SHOW);
+        visibleActive.forEach(p => { html += renderPick(p, showAlgo); });
+        if (hiddenActive.length > 0) {
+          const expandId = 'expand-active-' + sys.id;
+          html += `<div id="${expandId}" style="display:none">`;
+          hiddenActive.forEach(p => { html += renderPick(p, showAlgo); });
+          html += `</div>`;
+          html += `<button class="expand-btn" onclick="toggleExpand('${expandId}',this)">Show ${hiddenActive.length} more active picks</button>`;
+        }
+      } else if (showActive && (currentFilter === 'fresh' || todayOnly)) {
+        html += `<div class="no-picks">${todayOnly ? 'No picks opened today' : 'No active picks right now'}</div>`;
+      }
+
+      // Closed picks section
+      const filteredClosed = todayOnly ? allClosed.filter(p => isClosedToday(p)) : allClosed;
+      const closedToShow = todayOnly ? filteredClosed : allClosed;
+      if (showClosed && closedToShow.length > 0) {
+        const closedLabel = todayOnly ? `${closedToShow.length} Closed Today` : `${allClosed.length} Closed Trade${allClosed.length > 1 ? 's' : ''} — ${wins}W / ${losses}L — Realized P/L: ${realizedPnl > 0 ? '+' : ''}${realizedPnl.toFixed(1)}%`;
+        html += `<div class="pick-section-label closed-section" style="margin-top:8px"><span class="dot-ind" style="background:#888"></span> ${closedLabel}</div>`;
+        const recentClosed = closedToShow.slice(-INITIAL_SHOW).reverse();
+        const olderClosed = closedToShow.slice(0, Math.max(0, closedToShow.length - INITIAL_SHOW)).reverse();
+        recentClosed.forEach(p => { html += renderPick(p, showAlgo); });
+        if (olderClosed.length > 0) {
+          const expandId = 'expand-closed-' + sys.id;
+          html += `<div id="${expandId}" style="display:none">`;
+          olderClosed.forEach(p => { html += renderPick(p, showAlgo); });
+          html += `</div>`;
+          html += `<button class="expand-btn" onclick="toggleExpand('${expandId}',this)">Show ${olderClosed.length} more closed trades</button>`;
+        }
+      }
+
+      if (filteredActive.length === 0 && closedToShow.length === 0) {
+        html += `<div class="no-picks">${todayOnly ? 'No picks opened or closed today' : 'No picks available'}</div>`;
+      }
+
+      html += `</div><div class="sys-footer">
+    <a href="${sys.dashboard}" target="_blank">Dashboard</a>`;
+      if (sys.extra) sys.extra.forEach(e => { html += `<a href="${e.url}" target="_blank">${e.label}</a>`; });
+      html += `</div></div>`;
+
+      return { html, activeCount: trueActive.length, closedCount: totalClosed || allClosed.length, wr, realizedPnl, unrealizedPnl, wins, losses, avgPnl, minPnl, maxPnl, medianPnl, trueActive, sysName: sys.name, sysId: sys.id };
+    }
+
+    let currentFilter = 'all';
+    let currentSort = 'wr';
+    let allResults = [];
+    let lastLoadTime = null;
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.filter === f));
+      renderAll();
+    }
+
+    function setSort(s) {
+      currentSort = s;
+      document.querySelectorAll('.sort-pill').forEach(p => p.classList.toggle('active', p.dataset.sort === s));
+      renderAll();
+    }
+
+    function toggleExpand(id, btn) {
+      const el = document.getElementById(id);
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        btn.textContent = 'Collapse';
+      } else {
+        el.style.display = 'none';
+        btn.textContent = 'Show more';
+      }
+    }
+
+    function renderFreshBanner(rendered) {
+      const banner = document.getElementById('freshBanner');
+      const grid = document.getElementById('freshGrid');
+
+      // Collect all active picks across all systems
+      let freshPicks = [];
+      rendered.forEach(({ sys, r }) => {
+        if (r.trueActive) {
+          r.trueActive.forEach(p => {
+            freshPicks.push({ pick: p, sysName: sys.name, sysId: sys.id });
+          });
+        }
+      });
+
+      if (currentFilter === 'fresh' && freshPicks.length > 0) {
+        banner.style.display = 'block';
+        let html = '';
+        freshPicks.forEach(({ pick: p, sysName }) => {
+          const sym = normSym(p.symbol || p.pair || p.ticker || p.name || '?');
+          const dir = getDir(p);
+          const pnlInfo = getPnlInfo(p);
+          const entry = p.entry_price || p.entryPrice || 0;
+          const tp = p.take_profit || p.tp_price || p.targetPrice || 0;
+          const sl = p.stop_loss || p.sl_price || p.stopPrice || 0;
+          const cur = p.current_price || p.currentPrice || 0;
+          const entryDate = getEntryDate(p);
+          const algo = getAlgoName(p);
+          const pnlVal = pnlInfo.value;
+          const pnlColor = pnlVal > 0 ? 'green' : pnlVal < 0 ? 'red' : '';
+
+          // Build gauge: SL ←——[entry]——[current]——→ TP
+          let gaugeHtml = '';
+          if (entry && tp && sl && cur) {
+            const range = Math.abs(tp - sl);
+            if (range > 0) {
+              const isLong = dir === 'LONG';
+              // Position current price as % between SL and TP
+              const low = isLong ? sl : tp;
+              const high = isLong ? tp : sl;
+              const entryPct = Math.max(0, Math.min(100, ((entry - low) / (high - low)) * 100));
+              const curPct = Math.max(0, Math.min(100, ((cur - low) / (high - low)) * 100));
+              const fillColor = curPct > entryPct ? '#22c55e' : '#ef4444';
+              const tpPct = isLong ? 100 : 0;
+              const slPct = isLong ? 0 : 100;
+              // Distance to TP and SL as %
+              const distToTP = ((Math.abs(tp - cur) / cur) * 100).toFixed(1);
+              const distToSL = ((Math.abs(cur - sl) / cur) * 100).toFixed(1);
+              gaugeHtml = `<div class="fp-cur-price">Now: <span class="price-val">$${fmtPrice(cur)}</span></div>
+            <div class="fp-gauge">
+              <div class="fp-gauge-fill" style="width:${curPct}%;background:${fillColor}"></div>
+              <div class="fp-gauge-marker" style="left:${entryPct}%;background:#eab308" title="Entry: $${fmtPrice(entry)}"></div>
+              <div class="fp-gauge-marker" style="left:${curPct}%;background:#fff" title="Current: $${fmtPrice(cur)}"></div>
+            </div>
+            <div class="fp-gauge-labels">
+              <span style="color:#ef4444">SL ${distToSL}% away</span>
+              <span style="color:#22c55e">TP ${distToTP}% away</span>
+            </div>`;
+            }
+          } else if (cur) {
+            gaugeHtml = `<div class="fp-cur-price">Now: <span class="price-val">$${fmtPrice(cur)}</span></div>`;
+          }
+
+          html += `<div class="fresh-pick">
+        <div>
+          <div class="fp-sym">${sym} <span class="pick-dir ${dir.toLowerCase()}" style="font-size:.55rem">${dir}</span></div>
+          <div style="font-size:.6rem;color:#22c55e">${sysName}</div>
+        </div>
+        <div class="fp-meta">
+          ${algo ? algo + '<br>' : ''}
+          E:${fmtPrice(entry)} TP:${fmtPrice(tp)} SL:${fmtPrice(sl)}<br>
+          ${entryDate ? entryDate : 'No timestamp'}
+          ${gaugeHtml}
+        </div>
+        <div class="fp-pnl ${pnlColor}">${pnlVal !== null ? (pnlVal > 0 ? '+' : '') + pnlVal.toFixed(2) + '%' : '--'}<div style="font-size:.55rem;color:#888;font-weight:400">Unrealized</div></div>
+      </div>`;
+        });
+        grid.innerHTML = html;
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    function renderAll(aggregatorData) {
+      let activeGrid = '', dormantGrid = '';
+      let totalActive = 0, totalClosed = 0, bestWR = 0, bestWRName = '', activeSysCount = 0, portfolioRealizedPnl = 0;
+      let portfolioBreakdown = [];
+
+      const rendered = allResults.map(({ sys, active, closed }) => {
+        const r = renderSystemCard(sys, active, closed);
+        return { sys, r };
+      });
+
+      rendered.sort((a, b) => {
+        if (currentSort === 'wr') return (b.r.wr || 0) - (a.r.wr || 0);
+        if (currentSort === 'pnl') return (b.r.realizedPnl || 0) - (a.r.realizedPnl || 0);
+        if (currentSort === 'active') return (b.r.activeCount || 0) - (a.r.activeCount || 0);
+        return 0;
+      });
+
+      rendered.forEach(({ sys, r }) => {
+        totalActive += r.activeCount;
+        totalClosed += r.closedCount;
+        portfolioRealizedPnl += r.realizedPnl || 0;
+        if (r.closedCount > 0) portfolioBreakdown.push({ name: sys.name, pnl: r.realizedPnl || 0, wr: r.wr, wins: r.wins, closed: r.closedCount });
+        if (r.wr !== null && r.wr > bestWR) { bestWR = r.wr; bestWRName = sys.name; }
+
+        if (sys.badge === 'dormant' || sys.dormant || (r.activeCount === 0 && r.closedCount === 0)) {
+          dormantGrid += r.html;
+        } else {
+          activeGrid += r.html;
+          activeSysCount++;
+        }
+      });
+
+      document.getElementById('systemsGrid').innerHTML = activeGrid || '<div class="loading">No active systems found</div>';
+      document.getElementById('dormantGrid').innerHTML = dormantGrid || '<div class="loading">None</div>';
+      document.getElementById('totalSys').textContent = activeSysCount;
+      document.getElementById('totalActive').textContent = totalActive;
+      document.getElementById('totalClosed').textContent = totalClosed;
+      document.getElementById('bestWR').textContent = bestWR > 0 ? bestWR.toFixed(0) + '% (' + bestWRName + ')' : '--';
+
+      // Portfolio Realized P/L with tooltip
+      const pCard = document.getElementById('portfolioPnlCard');
+      let pTipHtml = `<div class="tip" style="min-width:260px"><div class="tip-title">Portfolio Realized P/L — By System</div>`;
+      portfolioBreakdown.sort((a, b) => b.pnl - a.pnl).forEach(s => {
+        const sign = s.pnl > 0 ? '+' : '';
+        const clr = s.pnl > 0 ? 'green' : s.pnl < 0 ? 'red' : '';
+        pTipHtml += `<div class="tip-row"><span class="tip-label">${s.name}</span><span class="tip-val ${clr}">${sign}${s.pnl.toFixed(1)}% (${s.closed} trades)</span></div>`;
+      });
+      pTipHtml += `<div class="tip-formula">Portfolio P/L = sum of realized P/L from each system.<br>Each system's realized P/L = sum of individual trade P/L%.</div></div>`;
+      pCard.innerHTML = `<div class="label">Portfolio Realized P/L</div><div class="value ${portfolioRealizedPnl > 0 ? 'green' : portfolioRealizedPnl < 0 ? 'red' : ''}">${(portfolioRealizedPnl > 0 ? '+' : '') + portfolioRealizedPnl.toFixed(1)}%</div>${pTipHtml}`;
+
+      document.getElementById('lastUpdate').textContent = 'Last refreshed: ' + new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) + ' EST';
+      lastLoadTime = Date.now();
+
+      // Render fresh picks banner
+      renderFreshBanner(rendered);
+      // Render cross-system agreement matrix
+      renderConsensusMatrix();
+
+      // Populate hub status & quality bar
+      const hubTs = document.getElementById('hub-status-ts');
+      if (hubTs) hubTs.textContent = 'As of ' + new Date().toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }) + ' EST';
+      const hel = (id) => document.getElementById(id);
+      if (hel('hub-sq-systems')) hel('hub-sq-systems').textContent = activeSysCount;
+      if (hel('hub-sq-picks')) hel('hub-sq-picks').textContent = totalActive;
+      if (hel('hub-sq-bestwr')) hel('hub-sq-bestwr').textContent = bestWR > 0 ? bestWR.toFixed(0) + '%' : '--';
+      const hubPnl = hel('hub-sq-pnl');
+      if (hubPnl) { hubPnl.textContent = (portfolioRealizedPnl > 0 ? '+' : '') + portfolioRealizedPnl.toFixed(1) + '%'; hubPnl.style.color = portfolioRealizedPnl > 0 ? '#22c55e' : portfolioRealizedPnl < 0 ? '#ef4444' : '#888'; }
+      const hubQ = hel('hub-sq-quality');
+      if (hubQ) { const q = Math.min(100, Math.round(bestWR * 0.6 + (activeSysCount > 3 ? 20 : activeSysCount * 5) + (totalActive > 5 ? 20 : totalActive * 3))); hubQ.textContent = q + '/100'; hubQ.style.color = q >= 70 ? '#22c55e' : q >= 50 ? '#eab308' : '#ef4444'; }
+      const hubBadge = hel('hub-health-badge');
+      if (hubBadge) { if (activeSysCount >= 3 && bestWR >= 55) { hubBadge.textContent = 'HEALTHY'; hubBadge.style.background = '#22c55e22'; hubBadge.style.color = '#22c55e'; } else if (activeSysCount >= 1) { hubBadge.textContent = 'MODERATE'; hubBadge.style.background = '#eab30822'; hubBadge.style.color = '#eab308'; } else { hubBadge.textContent = 'NEEDS ATTENTION'; hubBadge.style.background = '#ef444422'; hubBadge.style.color = '#ef4444'; } }
+    }
+
+    function updateCountdown() {
+      if (!lastLoadTime) return;
+      const elapsed = Math.floor((Date.now() - lastLoadTime) / 1000);
+      const remaining = Math.max(0, 300 - elapsed);
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      document.getElementById('nextRefresh').textContent = `Next refresh in ${m}:${String(s).padStart(2, '0')}`;
+      if (remaining <= 0) document.getElementById('nextRefresh').textContent = 'Refreshing...';
+    }
+
+    async function loadAll() {
+      // Run health probes in parallel with data fetches
+      const healthPromise = runHealthProbes();
+      const [fngData, btcData, aggregatorData] = await Promise.all([
+        fetchJSON('https://api.alternative.me/fng/?limit=1'),
+        fetchJSON('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD')
+          .then(d => d && d.USD ? { price: d.USD } : null)
+          .catch(() => fetchJSON('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+            .then(d => d && d.bitcoin ? { price: d.bitcoin.usd } : null)
+            .catch(() => null)),
+        fetchJSON('../signal_aggregator/data/dashboard_data.json').catch(() => null)
+      ]);
+      await healthPromise; // Ensure health results are ready before rendering cards
+      if (fngData) {
+        const v = fngData.data[0].value;
+        const el = document.getElementById('fng');
+        el.textContent = v + ' (' + fngData.data[0].value_classification + ')';
+        el.className = 'value ' + (v <= 25 ? 'red' : v <= 45 ? 'yellow' : 'green');
+      }
+      if (btcData) document.getElementById('btcPrice').textContent = '$' + parseFloat(btcData.price).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+      const promises = SYSTEMS.map(async sys => {
+        const [active, closed] = await Promise.all([
+          fetchJSON(sys.activePath),
+          sys.closedPath ? fetchJSON(sys.closedPath) : null
+        ]);
+        return { sys, active, closed };
+      });
+
+      allResults = await Promise.all(promises);
+      renderAll(aggregatorData);
+
+      // Load Super Signal data
+      try {
+        const superData = await fetchJSON(BASE + 'cross_aggregation/data/super_signals.json');
+        renderSuperSignal(superData);
+      } catch (e) { /* non-fatal */ }
+
+      // Update aggregator-enhanced panels if data available
+      if (aggregatorData) {
+        updateAggregatorPanels(aggregatorData);
+      }
+    }
+
+    function renderSuperSignal(data) {
+      const banner = document.getElementById('superSignalBanner');
+      if (!banner) return;
+      if (!data || !data.super_signals || data.super_signals.length === 0) {
+        // Still show market direction info if we have it
+        if (data && data.market_direction && data.market_direction !== 'NEUTRAL' && data.active_symbols >= 4) {
+          banner.style.display = 'block';
+          banner.style.background = data.market_direction === 'LONG' ? '#22c55e08' : '#ef444408';
+          banner.style.borderColor = data.market_direction === 'LONG' ? '#22c55e33' : '#ef444433';
+          const dirEl = document.getElementById('superSignalDirection');
+          const metaEl = document.getElementById('superSignalMeta');
+          const tierEl = document.getElementById('superSignalTier');
+          const gridEl = document.getElementById('superSignalGrid');
+          dirEl.textContent = 'Market leaning ' + data.market_direction;
+          dirEl.style.color = data.market_direction === 'LONG' ? '#22c55e' : '#ef4444';
+          metaEl.textContent = ` — ${(data.cross_pair_ratio * 100).toFixed(0)}% of ${data.active_symbols} symbols agree (${data.systems_reporting} systems reporting)`;
+          tierEl.textContent = 'MONITOR';
+          tierEl.style.background = '#eab30822';
+          tierEl.style.color = '#eab308';
+          tierEl.style.border = '1px solid #eab30844';
+          gridEl.innerHTML = '';
+        } else {
+          banner.style.display = 'none';
+        }
+        return;
+      }
+
+      banner.style.display = 'block';
+      const hasSuper = data.super_signals.some(s => s.signal_tier === 'SUPER');
+      banner.style.background = hasSuper ? '#8b5cf611' : '#3b82f611';
+      banner.style.borderColor = hasSuper ? '#8b5cf633' : '#3b82f633';
+
+      const dirEl = document.getElementById('superSignalDirection');
+      const metaEl = document.getElementById('superSignalMeta');
+      const tierEl = document.getElementById('superSignalTier');
+      const gridEl = document.getElementById('superSignalGrid');
+
+      dirEl.textContent = data.market_direction;
+      dirEl.style.color = data.market_direction === 'LONG' ? '#22c55e' : '#ef4444';
+      metaEl.textContent = ` — ${(data.cross_pair_ratio * 100).toFixed(0)}% pair consensus across ${data.active_symbols} symbols | ${data.systems_reporting} systems`;
+
+      const topTier = hasSuper ? 'SUPER' : 'STRONG';
+      tierEl.textContent = topTier;
+      tierEl.style.background = hasSuper ? '#8b5cf622' : '#3b82f622';
+      tierEl.style.color = hasSuper ? '#8b5cf6' : '#3b82f6';
+      tierEl.style.border = '1px solid ' + (hasSuper ? '#8b5cf644' : '#3b82f644');
+
+      let html = '';
+      for (const sig of data.super_signals.slice(0, 6)) {
+        const dirColor = sig.direction === 'LONG' ? '#22c55e' : '#ef4444';
+        const tierBg = sig.signal_tier === 'SUPER' ? '#8b5cf6' : '#3b82f6';
+        html += `<div style="background:#12121e;border:1px solid ${dirColor}33;border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <span style="font-weight:700;font-size:.9rem;color:#fff">${sig.symbol}</span>
+        <span style="font-size:.6rem;padding:1px 6px;border-radius:4px;background:${dirColor}22;color:${dirColor};margin-left:6px">${sig.direction}</span>
+        <span style="font-size:.55rem;padding:1px 5px;border-radius:4px;background:${tierBg}22;color:${tierBg};margin-left:4px">${sig.signal_tier}</span>
+      </div>
+      <div style="text-align:right;font-size:.7rem;color:#888">
+        <div>${sig.agreement_count} systems agree</div>
+        <div style="color:#aaa;font-weight:600">${(sig.confidence * 100).toFixed(0)}% conf</div>
+      </div>
+    </div>`;
+      }
+      gridEl.innerHTML = html;
+    }
+
+    function renderConsensusMatrix() {
+      const container = document.getElementById('consensusMatrix');
+      const grid = document.getElementById('consensusGrid');
+      if (!container || !grid || !allResults) return;
+
+      // Collect all active picks by system and symbol
+      const systemPicks = {};  // {systemName: {symbol: direction}}
+      const allSymbols = new Set();
+
+      for (const { sys, active } of allResults) {
+        if (!active) continue;
+        const picks = extractPicks(active);
+        if (!picks.length) continue;
+        const sysName = sys.name.replace('ML: ', '').substring(0, 12);
+        systemPicks[sysName] = {};
+        for (const p of picks) {
+          if (isClosed(p)) continue;
+          const sym = normSym(p.symbol || p.pair || p.ticker || p.name || '');
+          const dir = getDir(p);
+          if (sym && dir) {
+            systemPicks[sysName][sym] = dir;
+            allSymbols.add(sym);
+          }
+        }
+      }
+
+      const systems = Object.keys(systemPicks).filter(s => Object.keys(systemPicks[s]).length > 0);
+      const symbols = [...allSymbols].sort();
+
+      if (systems.length < 2 || symbols.length < 2) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'block';
+
+      // Build table
+      let html = '<table style="border-collapse:collapse;width:100%">';
+      html += '<tr><th style="padding:4px 8px;color:#888;text-align:left;font-size:10px;border-bottom:1px solid #1e1e3a">System</th>';
+      for (const sym of symbols) {
+        html += `<th style="padding:4px 6px;color:#888;text-align:center;font-size:9px;border-bottom:1px solid #1e1e3a;white-space:nowrap">${sym.replace('USDT', '')}</th>`;
+      }
+      html += '</tr>';
+
+      for (const sys of systems) {
+        html += `<tr><td style="padding:3px 8px;color:#ccc;font-size:10px;border-bottom:1px solid #0e0e1a;white-space:nowrap">${sys}</td>`;
+        for (const sym of symbols) {
+          const dir = systemPicks[sys][sym];
+          let cell = '';
+          if (dir === 'LONG') cell = '<span style="color:#22c55e;font-weight:700">&#9650;</span>';
+          else if (dir === 'SHORT') cell = '<span style="color:#ef4444;font-weight:700">&#9660;</span>';
+          else cell = '<span style="color:#333">-</span>';
+          html += `<td style="padding:3px 6px;text-align:center;border-bottom:1px solid #0e0e1a">${cell}</td>`;
+        }
+        html += '</tr>';
+      }
+
+      // Summary row: agreement count
+      html += '<tr style="border-top:2px solid #1e1e3a"><td style="padding:4px 8px;color:#8b5cf6;font-weight:700;font-size:10px">AGREE</td>';
+      for (const sym of symbols) {
+        let longs = 0, shorts = 0;
+        for (const sys of systems) {
+          if (systemPicks[sys][sym] === 'LONG') longs++;
+          if (systemPicks[sys][sym] === 'SHORT') shorts++;
+        }
+        const total = longs + shorts;
+        const agree = Math.max(longs, shorts);
+        const color = agree >= 3 ? (longs > shorts ? '#22c55e' : '#ef4444') : agree >= 2 ? '#eab308' : '#666';
+        html += `<td style="padding:4px 6px;text-align:center;font-weight:700;color:${color};font-size:10px">${agree > 0 ? agree : '-'}</td>`;
+      }
+      html += '</tr>';
+
+      html += '</table>';
+      grid.innerHTML = html;
+    }
+
+    // Auto-refresh every 5 minutes
+    setInterval(loadAll, 5 * 60 * 1000);
+    // Update countdown every second
+    setInterval(updateCountdown, 1000);
+
+    loadAll();
+
+    // ── TAB SWITCHING ──
+    let currentTab = 'systems';
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      document.querySelector('.systems-view').classList.toggle('active', tab === 'systems');
+      document.querySelector('.calendar-view').classList.toggle('active', tab === 'calendar');
+      if (tab === 'calendar') renderCalendar();
+    }
+
+    // ── P&L CALENDAR ──
+    const calFilterState = { system: 'all', strategies: new Set(), range: '60' };
+    let versionEpochs = {}; // { systemId: [{date, message, sha}] }
+
+    // Scanner files to track for version changes
+    const SCANNER_PATHS = {
+      mercury2: 'mercury2/scanner.py',
+      alpha_engine: 'alpha_engine/scanner.py',
+      kimi: 'KIMI_RISEOFTHECLAW/live_scanner.py',
+      claws_of_doom: null, // external repo
+      crypto_ml_edge: 'crypto_ml_edge/pipeline_train.py',
+      claude_gainer: 'claude_gainer_ml/train_model.py',
+      ml_bg_a: 'ml_battleground/system_a_filter/pilot_a.py',
+      ml_bg_b: 'ml_battleground/system_b_regime/pilot_b.py',
+      ml_bg_c: 'ml_battleground/system_c_deeplearn/pilot_c.py',
+    };
+
+    async function fetchVersionEpochs() {
+      const REPO_API = 'https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/commits';
+      const promises = Object.entries(SCANNER_PATHS).map(async ([sysId, path]) => {
+        if (!path) return;
+        try {
+          const r = await fetch(`${REPO_API}?path=${path}&per_page=30`, { cache: 'no-store' });
+          if (!r.ok) return;
+          const commits = await r.json();
+          versionEpochs[sysId] = commits.map(c => ({
+            date: c.commit.author.date.slice(0, 10),
+            message: c.commit.message.split('\n')[0].slice(0, 80),
+            sha: c.sha.slice(0, 7)
+          }));
+        } catch (e) { }
+      });
+      await Promise.all(promises);
+    }
+
+    function escH(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    function getCloseDateISO(p) {
+      return toESTDateISO(getCloseDateRaw(p));
+    }
+
+    function getEntryDateISO(p) {
+      return toESTDateISO(getEntryDateRaw(p));
+    }
+
+    function collectAllClosedTrades() {
+      const trades = [];
+      allResults.forEach(({ sys, active, closed }) => {
+        const activePicks = extractPicks(active);
+        const closedPicks = closed ? extractPicks(closed) : [];
+        const closedInActive = activePicks.filter(p => isClosed(p));
+        const allClosed = [...closedPicks, ...closedInActive];
+
+        allClosed.forEach(p => {
+          const date = getCloseDateISO(p) || getEntryDateISO(p);
+          if (!date) return;
+          const pnlInfo = getPnlInfo(p);
+          const pnl = pnlInfo.value;
+          if (pnl === null) return;
+          const won = isWin(p);
+          const strategy = getAlgoName(p) || 'default';
+          const version = p.version || null;
+          trades.push({
+            date,
+            symbol: normSym(p.symbol || p.pair || p.ticker || p.name || '?'),
+            pnl,
+            won: won === true,
+            lost: won === false,
+            strategy,
+            system: sys.id,
+            systemName: sys.name,
+            version,
+            entryDate: getEntryDate(p),
+            closeDate: getCloseDate(p)
+          });
+        });
+      });
+      return trades;
+    }
+
+    function collectAllPickRows() {
+      const rows = [];
+      const dedupe = new Map();
+
+      allResults.forEach(({ sys, active, closed }) => {
+        const activePicks = extractPicks(active);
+        const closedPicks = closed ? extractPicks(closed) : [];
+        const merged = [...activePicks, ...closedPicks];
+
+        merged.forEach(p => {
+          const entryRaw = getEntryDateRaw(p);
+          const closeRaw = getCloseDateRaw(p);
+          const symbol = normSym(p.symbol || p.pair || p.ticker || p.name || '?');
+          const strategy = getAlgoName(p) || 'default';
+          const dir = getDir(p) || '?';
+          const closedFlag = isClosed(p);
+          const pnlInfo = getPnlInfo(p);
+
+          const key = [
+            sys.id,
+            p.id || '',
+            strategy,
+            symbol,
+            dir,
+            entryRaw || '',
+            closeRaw || '',
+            p.status || ''
+          ].join('|');
+
+          const row = {
+            key,
+            system: sys.id,
+            systemName: sys.name,
+            strategy,
+            symbol,
+            direction: dir,
+            status: closedFlag ? 'closed' : 'active',
+            won: isWin(p) === true,
+            lost: isWin(p) === false,
+            entryPrice: p.entry_price ?? p.entryPrice ?? null,
+            takeProfit: p.take_profit ?? p.tp_price ?? p.targetPrice ?? null,
+            stopLoss: p.stop_loss ?? p.sl_price ?? p.stopPrice ?? null,
+            pnl: pnlInfo.value,
+            pnlType: closedFlag ? 'realized' : (pnlInfo.type === 'unrealized' ? 'unrealized' : 'unknown'),
+            openRaw: entryRaw,
+            closeRaw: closeRaw,
+            openDateISO: toESTDateISO(entryRaw),
+            closeDateISO: toESTDateISO(closeRaw),
+            openLabel: fmtDateEST(entryRaw) || 'no timestamp',
+            closeLabel: fmtDateEST(closeRaw) || (closedFlag ? 'no timestamp' : '\u2014'),
+            openTs: (() => {
+              const d = parseDateLoose(entryRaw);
+              return d ? d.getTime() : 0;
+            })(),
+            closeTs: (() => {
+              const d = parseDateLoose(closeRaw);
+              return d ? d.getTime() : 0;
+            })()
+          };
+
+          const prev = dedupe.get(key);
+          if (!prev || (row.status === 'closed' && prev.status !== 'closed')) {
+            dedupe.set(key, row);
+          }
+        });
+      });
+
+      dedupe.forEach(v => rows.push(v));
+      return rows;
+    }
+
+    function fmtSignedPct(v, digits = 2) {
+      if (v === null || v === undefined || Number.isNaN(Number(v))) return '--';
+      const n = Number(v);
+      return `${n > 0 ? '+' : ''}${n.toFixed(digits)}%`;
+    }
+
+    function computePicksPerDay(dayCounter, totalPicks) {
+      const activeDays = Object.keys(dayCounter).length;
+      if (activeDays === 0) return 0;
+      return totalPicks / activeDays;
+    }
+
+    function buildStrategyInsightsPanel(rows) {
+      if (!rows || rows.length === 0) {
+        return `<div class="cal-strategy-panel">
+      <div class="cal-sp-head">Strategy Activity (Filtered)</div>
+      <div class="cal-sp-wrap"><div class="loading">No picks for current filters.</div></div>
+    </div>`;
+      }
+
+      const agg = {};
+      const globalOpenDays = {};
+      let totalRealized = 0;
+      let totalUnrealized = 0;
+      let totalActive = 0;
+      let totalClosed = 0;
+
+      rows.forEach(r => {
+        const k = `${r.systemName} / ${r.strategy}`;
+        if (!agg[k]) {
+          agg[k] = {
+            key: k,
+            systemName: r.systemName,
+            strategy: r.strategy,
+            picks: 0,
+            active: 0,
+            closed: 0,
+            realized: 0,
+            unrealized: 0,
+            openDays: {},
+            latestOpenTs: 0,
+            latestCloseTs: 0,
+            latestOpenLabel: '--',
+            latestCloseLabel: '--'
+          };
+        }
+        const a = agg[k];
+        a.picks += 1;
+
+        if (r.openDateISO) {
+          a.openDays[r.openDateISO] = (a.openDays[r.openDateISO] || 0) + 1;
+          globalOpenDays[r.openDateISO] = (globalOpenDays[r.openDateISO] || 0) + 1;
+        }
+        if (r.openTs && r.openTs >= a.latestOpenTs) {
+          a.latestOpenTs = r.openTs;
+          a.latestOpenLabel = r.openLabel;
+        }
+        if (r.closeTs && r.closeTs >= a.latestCloseTs) {
+          a.latestCloseTs = r.closeTs;
+          a.latestCloseLabel = r.closeLabel;
+        }
+
+        if (r.status === 'closed') {
+          a.closed += 1;
+          totalClosed += 1;
+          if (r.pnl !== null) {
+            a.realized += Number(r.pnl);
+            totalRealized += Number(r.pnl);
+          }
+        } else {
+          a.active += 1;
+          totalActive += 1;
+          if (r.pnl !== null) {
+            a.unrealized += Number(r.pnl);
+            totalUnrealized += Number(r.pnl);
+          }
+        }
+      });
+
+      const entries = Object.values(agg).sort((a, b) => {
+        if (b.picks !== a.picks) return b.picks - a.picks;
+        return b.latestOpenTs - a.latestOpenTs;
+      });
+
+      const latestOpenRow = [...rows].sort((a, b) => b.openTs - a.openTs)[0];
+      const overallPPD = computePicksPerDay(globalOpenDays, rows.length);
+      const realizedColor = totalRealized > 0 ? '#22c55e' : totalRealized < 0 ? '#ef4444' : '#888';
+      const unrealColor = totalUnrealized > 0 ? '#22c55e' : totalUnrealized < 0 ? '#ef4444' : '#888';
+
+      let html = `<div class="cal-strategy-panel">
+    <div class="cal-sp-head">Strategy Activity (Filtered)</div>
+    <div class="cal-sp-wrap">
+      <div class="cal-sp-summary">
+        <div class="cal-sp-card"><div class="cal-sp-val">${entries.length}</div><div class="cal-sp-lab">Strategies</div></div>
+        <div class="cal-sp-card"><div class="cal-sp-val">${overallPPD.toFixed(2)}</div><div class="cal-sp-lab">Picks / Day</div></div>
+        <div class="cal-sp-card"><div class="cal-sp-val">${totalActive} / ${totalClosed}</div><div class="cal-sp-lab">Active / Closed</div></div>
+        <div class="cal-sp-card"><div class="cal-sp-val" style="color:${realizedColor}">${fmtSignedPct(totalRealized)}</div><div class="cal-sp-lab">Realized P/L</div></div>
+        <div class="cal-sp-card"><div class="cal-sp-val" style="color:${unrealColor}">${fmtSignedPct(totalUnrealized)}</div><div class="cal-sp-lab">Unrealized P/L</div></div>
+        <div class="cal-sp-card"><div class="cal-sp-val" style="font-size:.75rem;line-height:1.2">${escH((latestOpenRow && latestOpenRow.openLabel) || '--')}</div><div class="cal-sp-lab">Latest Pick (EST)</div></div>
+      </div>
+
+      <table class="cal-sp-table">
+        <tr>
+          <th>Strategy</th>
+          <th class="right">Picks/Day</th>
+          <th class="right">Picks</th>
+          <th class="right">Active</th>
+          <th class="right">Closed</th>
+          <th>Latest Opened (EST)</th>
+          <th>Latest Closed (EST)</th>
+          <th class="right">Realized</th>
+          <th class="right">Unrealized</th>
+        </tr>`;
+
+      entries.slice(0, 60).forEach(a => {
+        const ppd = computePicksPerDay(a.openDays, a.picks);
+        const rColor = a.realized > 0 ? '#22c55e' : a.realized < 0 ? '#ef4444' : '#888';
+        const uColor = a.unrealized > 0 ? '#22c55e' : a.unrealized < 0 ? '#ef4444' : '#888';
+        html += `<tr>
+      <td>${escH(`${a.systemName} / ${a.strategy}`.replace(/_/g, ' '))}</td>
+      <td class="right">${ppd.toFixed(2)}</td>
+      <td class="right">${a.picks}</td>
+      <td class="right"><span class="cal-sp-tag active">${a.active}</span></td>
+      <td class="right"><span class="cal-sp-tag closed">${a.closed}</span></td>
+      <td>${escH(a.latestOpenLabel)}</td>
+      <td>${escH(a.latestCloseLabel)}</td>
+      <td class="right" style="color:${rColor};font-weight:600">${fmtSignedPct(a.realized)}</td>
+      <td class="right" style="color:${uColor};font-weight:600">${fmtSignedPct(a.unrealized)}</td>
+    </tr>`;
+      });
+
+      html += `</table>`;
+
+      const recent = [...rows].sort((a, b) => {
+        const ta = Math.max(a.openTs || 0, a.closeTs || 0);
+        const tb = Math.max(b.openTs || 0, b.closeTs || 0);
+        return tb - ta;
+      }).slice(0, 80);
+
+      html += `<div style="height:10px"></div>
+    <table class="cal-sp-table">
+      <tr>
+        <th>Status</th>
+        <th>System / Strategy</th>
+        <th>Symbol</th>
+        <th>Dir</th>
+        <th class="right">Entry</th>
+        <th class="right">TP</th>
+        <th class="right">SL</th>
+        <th>Opened (EST)</th>
+        <th>Closed (EST)</th>
+        <th class="right">P/L</th>
+      </tr>`;
+
+      recent.forEach(r => {
+        const pnlColor = r.pnl > 0 ? '#22c55e' : r.pnl < 0 ? '#ef4444' : '#888';
+        html += `<tr>
+      <td>${r.status === 'closed' ? '<span class="cal-sp-tag closed">Closed</span>' : '<span class="cal-sp-tag active">Active</span>'}</td>
+      <td>${escH(`${r.systemName} / ${r.strategy}`.replace(/_/g, ' '))}</td>
+      <td>${escH(r.symbol)}</td>
+      <td>${escH(r.direction)}</td>
+      <td class="right">${escH(fmtPrice(Number(r.entryPrice)))}</td>
+      <td class="right">${escH(fmtPrice(Number(r.takeProfit)))}</td>
+      <td class="right">${escH(fmtPrice(Number(r.stopLoss)))}</td>
+      <td>${escH(r.openLabel)}</td>
+      <td>${escH(r.closeLabel)}</td>
+      <td class="right" style="color:${pnlColor};font-weight:600">${fmtSignedPct(r.pnl)}</td>
+    </tr>`;
+      });
+
+      html += `</table></div></div>`;
+      return html;
+    }
+
+    function getVersionForDate(sysId, dateStr) {
+      const epochs = versionEpochs[sysId];
+      if (!epochs || !epochs.length) return null;
+      // Find the most recent commit before or on this date
+      for (const e of epochs) {
+        if (e.date <= dateStr) return e;
+      }
+      return epochs[epochs.length - 1];
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('calContainer');
+      const filterBar = document.getElementById('calFilterBar');
+      const tooltip = document.getElementById('calTooltip');
+
+      const allTrades = collectAllClosedTrades();
+      const allPickRows = collectAllPickRows();
+      if (allTrades.length === 0) {
+        container.innerHTML = '<div class="loading">No closed trades yet. Calendar populates as picks close.</div>' + buildStrategyInsightsPanel(allPickRows);
+        filterBar.innerHTML = '';
+        return;
+      }
+
+      // Collect unique systems and strategies
+      const systemSet = new Set(allTrades.map(t => t.system));
+      const allSystems = [...systemSet];
+      const sysNameMap = {};
+      allTrades.forEach(t => { sysNameMap[t.system] = t.systemName; });
+
+      // Filter trades based on current filter state
+      let filtered = allTrades;
+      if (calFilterState.system !== 'all') {
+        filtered = filtered.filter(t => t.system === calFilterState.system);
+      }
+
+      // Get strategies from filtered (by system) trades
+      const stratCounts = {};
+      filtered.forEach(t => { stratCounts[t.strategy] = (stratCounts[t.strategy] || 0) + 1; });
+      const allStrategies = Object.keys(stratCounts).sort((a, b) => (stratCounts[b] || 0) - (stratCounts[a] || 0));
+      const hasStratFilter = calFilterState.strategies.size > 0;
+
+      if (hasStratFilter) {
+        filtered = filtered.filter(t => calFilterState.strategies.has(t.strategy));
+      }
+
+      // Time range filter
+      const now = new Date();
+      const rangeDays = calFilterState.range === 'all' ? 9999 : parseInt(calFilterState.range);
+      const rangeStart = new Date(now);
+      rangeStart.setDate(rangeStart.getDate() - rangeDays);
+      const rangeStartStr = toESTDateISO(rangeStart) || rangeStart.toISOString().slice(0, 10);
+      filtered = filtered.filter(t => t.date >= rangeStartStr);
+
+      // Filtered strategy activity rows (open + closed) for drilldown panel.
+      let statsRows = allPickRows;
+      if (calFilterState.system !== 'all') {
+        statsRows = statsRows.filter(r => r.system === calFilterState.system);
+      }
+      if (hasStratFilter) {
+        statsRows = statsRows.filter(r => calFilterState.strategies.has(r.strategy));
+      }
+      statsRows = statsRows.filter(r => {
+        const refDate = r.closeDateISO || r.openDateISO;
+        return refDate && refDate >= rangeStartStr;
+      });
+
+      // ── Build filter bar ──
+      let fHtml = '';
+
+      // System filter
+      fHtml += '<div class="cal-filter-group"><span class="cal-fg-label">System</span>';
+      fHtml += `<button class="cal-fpill ${calFilterState.system === 'all' ? 'active' : ''}" data-calg="system" data-calv="all">All<span class="pill-count">${allTrades.length}</span></button>`;
+      allSystems.forEach(s => {
+        const count = allTrades.filter(t => t.system === s).length;
+        if (count === 0) return;
+        const label = (sysNameMap[s] || s).replace('ML: ', '');
+        fHtml += `<button class="cal-fpill ${calFilterState.system === s ? 'active' : ''}" data-calg="system" data-calv="${escH(s)}">${escH(label)}<span class="pill-count">${count}</span></button>`;
+      });
+      fHtml += '</div>';
+
+      // Strategy filter (multi-select)
+      if (allStrategies.length > 1) {
+        fHtml += '<div class="cal-filter-group"><span class="cal-fg-label">Strategy</span>';
+        fHtml += `<button class="cal-fpill ${!hasStratFilter ? 'active' : ''}" data-calg="strategy" data-calv="all">All<span class="pill-count">${allStrategies.length}</span></button>`;
+        allStrategies.slice(0, 30).forEach(s => {
+          const label = s.replace(/_/g, ' ');
+          const short = label.length > 22 ? label.slice(0, 20) + '..' : label;
+          const isActive = calFilterState.strategies.has(s);
+          fHtml += `<button class="cal-fpill ${isActive ? 'active' : ''}" data-calg="strategy" data-calv="${escH(s)}" title="${escH(label)} (${stratCounts[s]} trades)">${escH(short)}<span class="pill-count">${stratCounts[s] || 0}</span></button>`;
+        });
+        fHtml += '</div>';
+      }
+
+      // Time range
+      fHtml += '<div class="cal-filter-group"><span class="cal-fg-label">Range</span>';
+      ['35', '60', '90', 'all'].forEach(r => {
+        const label = r === 'all' ? 'All Time' : r + ' days';
+        fHtml += `<button class="cal-fpill ${calFilterState.range === r ? 'active' : ''}" data-calg="range" data-calv="${r}">${label}</button>`;
+      });
+      fHtml += '</div>';
+
+      filterBar.innerHTML = fHtml;
+
+      // Attach filter click handlers
+      filterBar.querySelectorAll('.cal-fpill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const group = btn.dataset.calg;
+          const val = btn.dataset.calv;
+          if (group === 'system') {
+            calFilterState.system = val;
+            calFilterState.strategies.clear(); // reset strategy filter when system changes
+          } else if (group === 'strategy') {
+            if (val === 'all') { calFilterState.strategies.clear(); }
+            else {
+              if (calFilterState.strategies.has(val)) calFilterState.strategies.delete(val);
+              else calFilterState.strategies.add(val);
+            }
+          } else if (group === 'range') {
+            calFilterState.range = val;
+          }
+          renderCalendar();
+        });
+      });
+
+      // ── Group by date ──
+      const byDate = {};
+      filtered.forEach(t => {
+        if (!byDate[t.date]) byDate[t.date] = { pnl: 0, trades: 0, wins: 0, losses: 0, breakdown: {} };
+        byDate[t.date].pnl += t.pnl;
+        byDate[t.date].trades++;
+        if (t.won) byDate[t.date].wins++;
+        else if (t.lost) byDate[t.date].losses++;
+        // Per-system+strategy breakdown
+        const bKey = t.systemName + ' / ' + t.strategy;
+        if (!byDate[t.date].breakdown[bKey]) byDate[t.date].breakdown[bKey] = { pnl: 0, trades: 0, wins: 0, losses: 0, symbols: [] };
+        const bk = byDate[t.date].breakdown[bKey];
+        bk.pnl += t.pnl;
+        bk.trades++;
+        if (t.won) bk.wins++;
+        else if (t.lost) bk.losses++;
+        bk.symbols.push({ symbol: t.symbol, pnl: t.pnl, won: t.won });
+      });
+
+      const dates = Object.keys(byDate).sort();
+      if (dates.length === 0) {
+        container.innerHTML = '<div class="loading">No trades match current filters.</div>' + buildStrategyInsightsPanel(statsRows);
+        return;
+      }
+
+      // Calculate date range
+      const today = new Date();
+      const displayDays = Math.min(rangeDays, 90);
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - (displayDays === 9999 ? 90 : displayDays - 1));
+      // Align to start of week (Sunday)
+      startDate.setDate(startDate.getDate() - startDate.getDay());
+
+      // Collect version change dates for current system filter
+      const versionDates = new Set();
+      if (calFilterState.system !== 'all') {
+        const epochs = versionEpochs[calFilterState.system] || [];
+        epochs.forEach(e => versionDates.add(e.date));
+      }
+
+      // Summary stats
+      let totalPnl = 0, greenDays = 0, redDays = 0, totalTrades = 0;
+      for (const [, d] of Object.entries(byDate)) {
+        totalPnl += d.pnl;
+        totalTrades += d.trades;
+        if (d.pnl > 0) greenDays++;
+        else if (d.pnl < 0) redDays++;
+      }
+
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      let html = '<div class="cal-grid">';
+      dayNames.forEach(d => { html += `<div class="cal-header">${d}</div>`; });
+
+      // Build calendar cells
+      let currentMonth = '';
+      const cursor = new Date(startDate);
+      const totalCells = Math.max(42, Math.ceil((today - startDate) / 86400000 / 7) * 7 + 7);
+
+      for (let i = 0; i < totalCells; i++) {
+        const dateStr = cursor.toISOString().slice(0, 10);
+        const monthStr = cursor.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        const isFuture = cursor > today;
+        const isToday = dateStr === today.toISOString().slice(0, 10);
+
+        if (monthStr !== currentMonth && cursor.getDay() === 0) {
+          currentMonth = monthStr;
+          html += `<div class="cal-month-label">${monthStr}</div>`;
+          dayNames.forEach(d => { html += `<div class="cal-header">${d}</div>`; });
+        }
+
+        const d = byDate[dateStr];
+        const hasVersion = versionDates.has(dateStr);
+        const versionHtml = hasVersion ? `<div class="version-marker" title="Strategy version changed"></div>` : '';
+
+        if (isFuture) {
+          html += `<div class="cal-day future"><div class="cal-date">${cursor.getDate()}</div><div class="cal-pnl zero">\u2014</div></div>`;
+        } else if (d) {
+          const cls = d.pnl > 0 ? 'day-green' : d.pnl < 0 ? 'day-red' : 'day-neutral';
+          const pnlCls = d.pnl > 0 ? 'pos' : d.pnl < 0 ? 'neg' : 'zero';
+          const sign = d.pnl > 0 ? '+' : '';
+          const bkEntries = Object.entries(d.breakdown).sort((a, b) => Math.abs(b[1].pnl) - Math.abs(a[1].pnl));
+          let bkJson = '';
+          try { bkJson = JSON.stringify(bkEntries.map(([s, v]) => [s, v.pnl, v.wins, v.losses, v.symbols])); } catch (e) { }
+          html += `<div class="cal-day ${cls} cal-hover" data-date="${dateStr}" data-bk="${escH(bkJson)}">
+        ${versionHtml}
+        <div class="cal-date ${isToday ? 'today' : ''}">${cursor.getDate()}</div>
+        <div class="cal-pnl ${pnlCls}">${sign}${d.pnl.toFixed(1)}%</div>
+        <div class="cal-trades">${d.wins}W/${d.losses}L</div>
+      </div>`;
+        } else {
+          html += `<div class="cal-day day-neutral">
+        ${versionHtml}
+        <div class="cal-date ${isToday ? 'today' : ''}">${cursor.getDate()}</div>
+        <div class="cal-pnl zero">\u2014</div>
+      </div>`;
+        }
+        cursor.setDate(cursor.getDate() + 1);
+        if (isFuture && cursor.getDay() === 0) break; // stop after completing the week that contains today
+      }
+      html += '</div>';
+
+      // Summary row
+      const pnlColor = totalPnl > 0 ? '#22c55e' : totalPnl < 0 ? '#ef4444' : '#888';
+      const winDayRate = (greenDays + redDays) > 0 ? ((greenDays / (greenDays + redDays)) * 100).toFixed(0) : '0';
+      html += `<div class="cal-summary">
+    <div class="cal-summary-card"><div class="cal-stat-val" style="color:${pnlColor}">${totalPnl > 0 ? '+' : ''}${totalPnl.toFixed(2)}%</div><div class="cal-stat-label">Total P&L</div></div>
+    <div class="cal-summary-card"><div class="cal-stat-val" style="color:#22c55e">${greenDays}</div><div class="cal-stat-label">Green Days</div></div>
+    <div class="cal-summary-card"><div class="cal-stat-val" style="color:#ef4444">${redDays}</div><div class="cal-stat-label">Red Days</div></div>
+    <div class="cal-summary-card"><div class="cal-stat-val">${totalTrades}</div><div class="cal-stat-label">Total Trades</div></div>
+    <div class="cal-summary-card"><div class="cal-stat-val">${winDayRate}%</div><div class="cal-stat-label">Win Day Rate</div></div>
+  </div>`;
+
+      // ── Strategy Breakdown Table ──
+      const stratAgg = {};
+      filtered.forEach(t => {
+        const key = t.systemName + ' / ' + t.strategy;
+        if (!stratAgg[key]) stratAgg[key] = { pnl: 0, wins: 0, losses: 0, trades: 0, symbols: new Set(), system: t.systemName, strategy: t.strategy, versions: new Set() };
+        const a = stratAgg[key];
+        a.pnl += t.pnl;
+        a.trades++;
+        a.symbols.add(t.symbol);
+        if (t.won) a.wins++;
+        else if (t.lost) a.losses++;
+        if (t.version) a.versions.add(t.version);
+      });
+
+      const stratEntries = Object.entries(stratAgg).sort((a, b) => b[1].pnl - a[1].pnl);
+      if (stratEntries.length > 0) {
+        html += `<div style="margin-top:16px;border:1px solid #1e1e3a;border-radius:8px;overflow:hidden;">
+      <div style="padding:8px 12px;background:#12121e;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;">Strategy Breakdown</div>
+      <table class="cal-breakdown-table">
+      <tr><th style="text-align:left">System / Strategy</th><th style="text-align:center">Trades</th><th style="text-align:center">W</th><th style="text-align:center">L</th><th style="text-align:center">WR</th><th style="text-align:right">P&L</th><th style="text-align:left">Version</th><th style="text-align:left">Symbols</th></tr>`;
+        stratEntries.forEach(([key, a]) => {
+          const wr = (a.wins + a.losses) > 0 ? ((a.wins / (a.wins + a.losses)) * 100).toFixed(0) : '-';
+          const wrColor = Number(wr) > 55 ? '#22c55e' : Number(wr) < 45 ? '#ef4444' : '#888';
+          const pColor = a.pnl > 0 ? '#22c55e' : a.pnl < 0 ? '#ef4444' : '#888';
+          const syms = [...a.symbols].slice(0, 4).join(', ') + (a.symbols.size > 4 ? ` +${a.symbols.size - 4}` : '');
+          const ver = a.versions.size > 0 ? [...a.versions].join(', ') : '-';
+          html += `<tr>
+        <td style="color:#a78bfa;">${escH(key.replace(/_/g, ' '))}</td>
+        <td style="text-align:center">${a.trades}</td>
+        <td style="text-align:center;color:#22c55e">${a.wins}</td>
+        <td style="text-align:center;color:#ef4444">${a.losses}</td>
+        <td style="text-align:center;color:${wrColor};font-weight:600">${wr}%</td>
+        <td style="text-align:right;color:${pColor};font-weight:600">${a.pnl > 0 ? '+' : ''}${a.pnl.toFixed(2)}%</td>
+        <td style="color:#8b5cf6;font-size:10px">${escH(ver)}</td>
+        <td style="font-size:10px;color:#666">${escH(syms)}</td>
+      </tr>`;
+        });
+        html += '</table></div>';
+      }
+
+      html += buildStrategyInsightsPanel(statsRows);
+
+      // ── Version Timeline (if filtering by single system) ──
+      if (calFilterState.system !== 'all') {
+        const epochs = versionEpochs[calFilterState.system] || [];
+        if (epochs.length > 0) {
+          html += `<div style="margin-top:16px;border:1px solid #1e1e3a;border-radius:8px;overflow:hidden;">
+        <div style="padding:8px 12px;background:#12121e;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;">Version History (from git commits on scanner file)</div>
+        <div style="padding:8px 12px;">`;
+          epochs.slice(0, 10).forEach((e, i) => {
+            // Calculate stats for this version epoch
+            const nextDate = i > 0 ? epochs[i - 1].date : '9999-99-99';
+            const epochTrades = filtered.filter(t => t.date >= e.date && t.date < nextDate);
+            const eWins = epochTrades.filter(t => t.won).length;
+            const eLosses = epochTrades.filter(t => t.lost).length;
+            const ePnl = epochTrades.reduce((s, t) => s + t.pnl, 0);
+            const eWr = (eWins + eLosses) > 0 ? ((eWins / (eWins + eLosses)) * 100).toFixed(0) + '%' : '-';
+            const pColor = ePnl > 0 ? '#22c55e' : ePnl < 0 ? '#ef4444' : '#888';
+            html += `<div style="display:flex;gap:12px;align-items:center;padding:4px 0;border-bottom:1px solid #1e1e3a66;font-size:.75rem;">
+          <span style="color:#8b5cf6;min-width:60px">${e.date}</span>
+          <span style="color:#666;min-width:50px;font-family:monospace">${e.sha}</span>
+          <span style="flex:1;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(e.message)}</span>
+          <span style="min-width:80px;text-align:right;color:${pColor};font-weight:600">${epochTrades.length > 0 ? (ePnl > 0 ? '+' : '') + ePnl.toFixed(1) + '%' : '-'}</span>
+          <span style="min-width:50px;text-align:right;color:#888">${eWr} WR</span>
+          <span style="min-width:40px;text-align:right;color:#888">${epochTrades.length}t</span>
+        </div>`;
+          });
+          html += '</div></div>';
+        }
+      }
+
+      container.innerHTML = html;
+
+      // ── Hover tooltips on calendar days ──
+      container.querySelectorAll('.cal-hover').forEach(cell => {
+        cell.addEventListener('mouseenter', (e) => {
+          const date = cell.dataset.date;
+          let bk = [];
+          try { bk = JSON.parse(cell.dataset.bk || '[]'); } catch (ex) { }
+          if (!bk.length) return;
+
+          let tip = `<div style="font-weight:700;margin-bottom:6px;font-size:12px;color:#fff;">${date}</div>`;
+          tip += '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+          tip += '<tr style="color:#888;border-bottom:1px solid rgba(255,255,255,.1)"><th style="text-align:left;padding:2px 4px;">System / Strategy</th><th style="text-align:right;padding:2px 4px;">P&L</th><th style="text-align:center;padding:2px 4px;">W/L</th><th style="text-align:left;padding:2px 4px;">Symbols</th></tr>';
+          bk.forEach(([label, pnl, wins, losses, symbols]) => {
+            const pnlColor = pnl > 0 ? '#22c55e' : pnl < 0 ? '#ef4444' : '#888';
+            const symList = (symbols || []).map(s => {
+              const sc = s.pnl > 0 ? 'color:#22c55e' : s.pnl < 0 ? 'color:#ef4444' : '';
+              const tag = s.won ? ' \u2705' : ' \u274C';
+              return `<span style="${sc}">${s.symbol}${tag}</span>`;
+            }).join(', ');
+            tip += `<tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+          <td style="padding:3px 4px;">${escH(label.replace(/_/g, ' '))}</td>
+          <td style="text-align:right;padding:3px 4px;color:${pnlColor};font-weight:600">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+          <td style="text-align:center;padding:3px 4px;">${wins}W/${losses}L</td>
+          <td style="padding:3px 4px;font-size:10px">${symList}</td>
+        </tr>`;
+          });
+          tip += '</table>';
+
+          tooltip.innerHTML = tip;
+          tooltip.style.display = 'block';
+          const rect = cell.getBoundingClientRect();
+          tooltip.style.left = Math.min(rect.left, window.innerWidth - 460) + 'px';
+          tooltip.style.top = (rect.bottom + 8) + 'px';
+        });
+        cell.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+      });
+    }
+
+    // Fetch version epochs in background (non-blocking)
+    fetchVersionEpochs().then(() => {
+      if (currentTab === 'calendar') renderCalendar();
+    });
+
+    // ── ENHANCED HUB FEATURES: DNA, QUALITY SCORE, LEADERBOARD ──
+
+    // Load external modules and initialize enhanced features
+    let qualityScorerInstance = null;
+    let consensusEngineInstance = null;
+
+    async function initializeEnhancedFeatures() {
+      try {
+        // Initialize quality scorer
+        qualityScorerInstance = new QualityScorer();
+
+        // Initialize consensus engine
+        consensusEngineInstance = new ConsensusEngine('data/systems_manifest.json');
+        await consensusEngineInstance.initialize();
+
+        // Add listener for consensus updates
+        consensusEngineInstance.addListener((data) => {
+          renderSuperSignalEnhanced(data.superSignals);
+          renderConsensusMatrixEnhanced();
+        });
+
+        // Start fetching data
+        await consensusEngineInstance.fetchAllSystems();
+
+        // Start auto-refresh (every 60 seconds)
+        consensusEngineInstance.startAutoRefresh(60);
+
+        // Initial renders
+        renderDNAPanel();
+        renderQualityPanel();
+        renderLeaderboard();
+        renderUnifiedPickFeed();
+
+      } catch (error) {
+        console.error('[EnhancedFeatures] Initialization error:', error);
+      }
+    }
+
+    // Render DNA Panel
+    function renderDNAPanel() {
+      const systems = consensusEngineInstance?.systemData;
+      if (!systems) return;
+
+      let dnaCount = 0;
+      let phoenixCount = 0;
+      let maxGen = 0;
+
+      systems.forEach((data, sysId) => {
+        const sys = data.system;
+        if (sys.category === 'permutation' || sys.id === 'dna_genome') {
+          dnaCount++;
+          if (sys.dna_encoding) maxGen = Math.max(maxGen, sys.dna_encoding.generation || 0);
+        }
+        if (sys.badge === 'phoenix' || sys.features?.includes('phoenix_detection')) {
+          phoenixCount++;
+        }
+      });
+
+      document.getElementById('dnaActiveCount').textContent = dnaCount || '--';
+      document.getElementById('dnaGeneration').textContent = maxGen > 0 ? `G-${maxGen}` : 'G-1';
+      document.getElementById('dnaPhoenixCount').textContent = phoenixCount || '0';
+      document.getElementById('dnaDiversity').textContent = dnaCount > 0 ? dnaCount * 4 : '--';
+    }
+
+    // Render Quality Panel - uses system-level metrics from closed picks
+    function renderQualityPanel() {
+      if (!qualityScorerInstance || !consensusEngineInstance) return;
+
+      const systems = consensusEngineInstance.systemData;
+      if (!systems || systems.size === 0) return;
+
+      let totalScore = 0;
+      let mlScore = 0;
+      let dnaScore = 0;
+      let aggScore = 0;
+      let count = 0;
+      let mlCount = 0, dnaCount = 0, aggCount = 0;
+
+      systems.forEach((data, sysId) => {
+        // Use closed picks from the consensus engine for system-level metrics
+        const closedPicks = consensusEngineInstance.systemClosedData.get(sysId) || [];
+        const metrics = calculateMetricsFromClosedPicks(closedPicks);
+        const score = qualityScorerInstance.calculateSystemQuality(metrics);
+
+        totalScore += score;
+        count++;
+
+        const category = data.system.category;
+        if (category === 'ml_ensemble') { mlScore += score; mlCount++; }
+        else if (category === 'permutation') { dnaScore += score; dnaCount++; }
+        else if (category === 'signal_aggregation') { aggScore += score; aggCount++; }
+      });
+
+      const overall = count > 0 ? Math.round(totalScore / count) : 0;
+      const mlAvg = mlCount > 0 ? Math.round(mlScore / mlCount) : 0;
+      const dnaAvg = dnaCount > 0 ? Math.round(dnaScore / dnaCount) : 0;
+      const aggAvg = aggCount > 0 ? Math.round(aggScore / aggCount) : 0;
+
+      // Update displays
+      document.getElementById('overallQualityScore').textContent = overall;
+      document.getElementById('overallQualityScore').style.color =
+        overall >= 70 ? '#22c55e' : overall >= 50 ? '#eab308' : '#ef4444';
+
+      document.getElementById('qualityMlScore').textContent = mlAvg;
+      document.getElementById('qualityMlBar').style.width = mlAvg + '%';
+
+      document.getElementById('qualityDnaScore').textContent = dnaAvg;
+      document.getElementById('qualityDnaBar').style.width = dnaAvg + '%';
+
+      document.getElementById('qualityAggScore').textContent = aggAvg;
+      document.getElementById('qualityAggBar').style.width = aggAvg + '%';
+    }
+
+    // Render Performance Leaderboard
+    function renderLeaderboard() {
+      if (!consensusEngineInstance) return;
+
+      const leaderboard = consensusEngineInstance.getSystemLeaderboard();
+      const tbody = document.getElementById('leaderboardBody');
+
+      if (!leaderboard || leaderboard.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;padding:20px">No data available</td></tr>';
+        return;
+      }
+
+      let html = '';
+      leaderboard.slice(0, 10).forEach((sys, idx) => {
+        const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : '';
+        const wrColor = sys.winRate >= 0.55 ? '#22c55e' : sys.winRate < 0.45 ? '#ef4444' : '#888';
+        const qualityColor = sys.qualityScore >= 70 ? '#22c55e' : sys.qualityScore >= 50 ? '#eab308' : '#ef4444';
+
+        html += `
+      <tr>
+        <td class="${rankClass}">${idx + 1}</td>
+        <td><strong>${sys.systemName.replace('ML: ', '')}</strong></td>
+        <td><span style="font-size:.7rem;color:#888">${sys.category.replace(/_/g, ' ')}</span></td>
+        <td style="color:${wrColor};font-weight:600">${(sys.winRate * 100).toFixed(0)}%</td>
+        <td style="color:${sys.sharpe30 > 0 ? '#22c55e' : '#888'}">${sys.sharpe30.toFixed(2)}</td>
+        <td>${sys.activePicks}</td>
+        <td><span style="background:${qualityColor}22;color:${qualityColor};padding:2px 8px;border-radius:8px;font-size:.7rem">${sys.qualityScore}</span></td>
+      </tr>
+    `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    // Render Unified Pick Feed
+    function renderUnifiedPickFeed() {
+      if (!consensusEngineInstance) return;
+
+      // Collect all picks from all systems
+      const allPicks = [];
+      consensusEngineInstance.systemData.forEach((data, sysId) => {
+        const picks = data.data || [];
+        // Get system-level quality from closed picks instead of per-pick quality
+        const closedPicks = consensusEngineInstance.systemClosedData.get(sysId) || [];
+        const sysMetrics = calculateMetricsFromClosedPicks(closedPicks);
+        const sysQuality = qualityScorerInstance?.calculateSystemQuality(sysMetrics) || 50;
+        picks.forEach(pick => {
+          allPicks.push({
+            ...pick,
+            systemName: data.system.name,
+            systemId: sysId,
+            quality: sysQuality
+          });
+        });
+      });
+
+      // Sort by quality (highest first)
+      allPicks.sort((a, b) => (b.quality || 0) - (a.quality || 0));
+
+      // Render the feed
+      const list = document.getElementById('unifiedPickList');
+      if (!list) return;
+
+      if (allPicks.length === 0) {
+        list.innerHTML = '<div style="color:#666;padding:20px;text-align:center">No active picks from any system</div>';
+        return;
+      }
+
+      let html = '';
+      allPicks.slice(0, 20).forEach(pick => {
+        const dirClass = pick.direction === 'LONG' ? 'long' : 'short';
+        const qualityColor = pick.quality >= 70 ? '#22c55e' : pick.quality >= 50 ? '#eab308' : '#ef4444';
+        const timeAgo = formatTimeAgo(pick.timestamp);
+
+        html += `
+      <div class="unified-pick">
+        <span class="sym">${pick.symbol}</span>
+        <span class="dir ${dirClass}">${pick.direction}</span>
+        <span class="system">${pick.systemName.replace('ML: ', '').substring(0, 15)}</span>
+        <span style="font-size:.7rem;color:#666">E:${pick.entryPrice} TP:${pick.targetPrice} SL:${pick.stopPrice}</span>
+        <span class="quality" style="background:${qualityColor}22;color:${qualityColor}">Q:${pick.quality}</span>
+        <span class="time">${timeAgo}</span>
+      </div>
+    `;
+      });
+
+      if (allPicks.length > 20) {
+        html += `<div style="text-align:center;padding:10px;color:#666;font-size:.75rem">+ ${allPicks.length - 20} more picks</div>`;
+      }
+
+      list.innerHTML = html;
+    }
+
+    // Helper: Format time ago
+    function formatTimeAgo(timestamp) {
+      if (!timestamp) return 'unknown';
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    }
+
+    // Render Enhanced Super Signals
+    function renderSuperSignalEnhanced(signals) {
+      const banner = document.getElementById('superSignalEnhanced');
+      const grid = document.getElementById('superSignalGrid');
+
+      if (!signals || signals.length === 0) {
+        banner.style.display = 'none';
+        return;
+      }
+
+      banner.style.display = 'block';
+
+      let html = '';
+      signals.slice(0, 8).forEach(sig => {
+        const isSuper = sig.tier === 'SUPER';
+        const tierClass = isSuper ? 'super-tier' : 'strong-tier';
+        const dirColor = sig.direction === 'LONG' ? '#22c55e' : '#ef4444';
+        const qualityGrade = sig.qualityScore >= 70 ? 'A' : sig.qualityScore >= 50 ? 'B' : 'C';
+        const qualityColor = sig.qualityScore >= 70 ? '#22c55e' : sig.qualityScore >= 50 ? '#eab308' : '#ef4444';
+
+        html += `
+      <div class="super-card ${tierClass}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:700;font-size:1.1rem;color:#fff">${sig.symbol}</span>
+          <span style="font-size:.65rem;padding:2px 8px;border-radius:4px;background:${dirColor}22;color:${dirColor};font-weight:600">${sig.direction}</span>
+        </div>
+        <div style="font-size:.75rem;color:#888;margin-bottom:6px">
+          ${sig.agreeingSystems}/${sig.totalSystems} systems agree 
+          <span style="color:#8b5cf6;font-weight:600">(${(sig.consensusRatio * 100).toFixed(0)}%)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.65rem;color:#666">Quality: <span style="color:${qualityColor};font-weight:600">${sig.qualityScore} (${qualityGrade})</span></span>
+          <span style="font-size:.6rem;padding:1px 6px;border-radius:4px;background:${isSuper ? '#8b5cf6' : '#3b82f6'}22;color:${isSuper ? '#8b5cf6' : '#3b82f6'}">${sig.tier}</span>
+        </div>
+      </div>
+    `;
+      });
+
+      grid.innerHTML = html;
+    }
+
+    // Render Enhanced Consensus Matrix
+    function renderConsensusMatrixEnhanced() {
+      if (!consensusEngineInstance) return;
+
+      const container = document.getElementById('consensusMatrix');
+      const grid = document.getElementById('consensusGrid');
+
+      if (!container || !grid) return;
+
+      // Use the engine's render method
+      const html = consensusEngineInstance.renderConsensusMatrixTable();
+      if (html) {
+        container.style.display = 'block';
+        grid.innerHTML = html;
+      }
+    }
+
+    // Helper: calculate metrics from normalized closed picks (from consensus engine)
+    function calculateMetricsFromClosedPicks(closedPicks) {
+      if (!closedPicks || closedPicks.length === 0) {
+        return { totalTrades: 0, winRate: 0, sharpe: 0, maxDrawdown: 0, consensusCount: 1 };
+      }
+
+      const pnls = closedPicks.map(p => p.pnlPct || 0);
+      const wins = closedPicks.filter(p => (p.pnlPct || 0) > 0).length;
+      const winRate = closedPicks.length > 0 ? wins / closedPicks.length : 0;
+      const avgPnl = pnls.reduce((a, b) => a + b, 0) / pnls.length;
+
+      // Simplified Sharpe
+      let sharpe = 0;
+      if (pnls.length > 1) {
+        const variance = pnls.reduce((sum, r) => sum + Math.pow(r - avgPnl, 2), 0) / pnls.length;
+        const stdDev = Math.sqrt(variance);
+        sharpe = stdDev > 0 ? avgPnl / stdDev : 0;
+      }
+
+      // Max drawdown
+      let cumulative = 0, peak = 0, maxDD = 0;
+      for (const pnl of pnls) {
+        cumulative += pnl;
+        if (cumulative > peak) peak = cumulative;
+        const dd = peak - cumulative;
+        if (dd > maxDD) maxDD = dd;
+      }
+      const maxDrawdown = peak > 0 ? maxDD / (peak + 100) : maxDD / 100;
+
+      return {
+        totalTrades: closedPicks.length,
+        winRate,
+        sharpe,
+        maxDrawdown,
+        consensusCount: 1
+      };
+    }
+
+    // Legacy helper: calculate metrics from active picks (fallback)
+    function calculateMetricsForPicks(picks) {
+      const closedPicks = picks.filter(p => p.raw?.exit_price || p.raw?.status?.toLowerCase().includes('closed'));
+      const wins = closedPicks.filter(p => (p.raw?.realized_pnl_pct || p.raw?.pnl_pct || 0) > 0).length;
+      const winRate = closedPicks.length > 0 ? wins / closedPicks.length : 0;
+
+      const pnls = closedPicks.map(p => p.raw?.realized_pnl_pct || p.raw?.pnl_pct || 0);
+      const avgPnl = pnls.length > 0 ? pnls.reduce((a, b) => a + b, 0) / pnls.length : 0;
+
+      let sharpe = 0;
+      if (pnls.length > 1) {
+        const variance = pnls.reduce((sum, r) => sum + Math.pow(r - avgPnl, 2), 0) / pnls.length;
+        const stdDev = Math.sqrt(variance);
+        sharpe = stdDev > 0 ? avgPnl / stdDev : 0;
+      }
+
+      return {
+        totalTrades: closedPicks.length,
+        winRate,
+        sharpe,
+        maxDrawdown: 0.15,
+        consensusCount: 1
+      };
+    }
+
+    // Initialize enhanced features after main load
+    setTimeout(initializeEnhancedFeatures, 1000);
+
+    // Update enhanced displays on each renderAll
+    const originalRenderAll = renderAll;
+    renderAll = function () {
+      originalRenderAll();
+      if (qualityScorerInstance && consensusEngineInstance) {
+        renderQualityPanel();
+        renderLeaderboard();
+        renderDNAPanel();
+      }
+    };
+  </script>
+
+  <!-- Load Enhanced Hub Modules -->
+  <script src="js/quality_scorer.js"></script>
+  <script src="js/consensus_engine.js"></script>
+</body>
+
+</html>

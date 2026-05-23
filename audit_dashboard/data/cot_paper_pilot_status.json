@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-05-22T19:22:03.600689+00:00",
+  "strategy_name": "cot_positioning",
+  "symbol": "CT=F",
+  "asset_class": "COMMODITY",
+  "tier": "SHADOW_INSUFFICIENT_N",
+  "dsr": null,
+  "dsr_note": "DSR withheld: only 5 unique CFTC COT releases (need >=20). The prior DSR=1.0 / TIER_1_RENAISSANCE headline was an over-emission artifact (~20x re-emission of the same weekly release inflated n and WR). DSR=1.0 cannot be honestly emitted on this sample. See reports/cot_paper_pilot_overemission_falsified_20260513.md ; reports/cot_timing_leakage_audit_2026-05-13.md.",
+  "tier_note": "Tier downgraded to SHADOW_INSUFFICIENT_N: deduped n=5 < 20 unique releases.",
+  "falsification_refs": [
+    "reports/cot_paper_pilot_overemission_falsified_20260513.md",
+    "reports/cot_timing_leakage_audit_2026-05-13.md"
+  ],
+  "evidence_source": "deduped paper-pilot ledger (one trade per CFTC COT release week)",
+  "contract_spec": {
+    "exchange": "ICE Futures US",
+    "size_lbs": 50000,
+    "tick_usd": 5.0,
+    "round_trip_cost_usd": 10.0,
+    "base_price_usd_per_lb": 0.7,
+    "notional_usd": 35000.0,
+    "micro_contract_available": false
+  },
+  "window_days": 90,
+  "stats": {
+    "n_total": 5,
+    "n_wins": 2,
+    "n_losses": 3,
+    "wr_pct": 40.0,
+    "cum_pnl_usd": -51.29,
+    "avg_pnl_per_trade_usd": -10.26,
+    "expected_per_trade_low_usd": 3.4,
+    "expected_per_trade_high_usd": 13.4,
+    "n_unique_releases": 5,
+    "n_raw_emissions": 130,
+    "over_emission_ratio": 26.0,
+    "dedup_basis": "one trade per unique CFTC COT release week (Tue report period)",
+    "trades": [
+      {
+        "id": "multi_asset_cot_positioning::CT=F::2026-04-23_0435",
+        "release_week": "2026-W17",
+        "status": "LOST",
+        "direction": "SHORT",
+        "entry_price": 76.330002,
+        "exit_price": 78.831787,
+        "pnl_pct": -0.0328,
+        "pnl_usd_gross": -11.48,
+        "pnl_usd_net": -21.48,
+        "cum_pnl_net": -21.48,
+        "created_at": "2026-04-23 04:35:59",
+        "closed_at": ""
+      },
+      {
+        "id": "multi_asset_cot_positioning::CT=F::2026-04-28_0445",
+        "release_week": "2026-W18",
+        "status": "LOST",
+        "direction": "SHORT",
+        "entry_price": 77.330002,
+        "exit_price": 79.735358,
+        "pnl_pct": -0.0311,
+        "pnl_usd_gross": -10.88,
+        "pnl_usd_net": -20.88,
+        "cum_pnl_net": -42.36,
+        "created_at": "2026-04-28 04:45:17",
+        "closed_at": ""
+      },
+      {
+        "id": "multi_asset_cot_positioning::CT=F::2026-05-05_0702",
+        "release_week": "2026-W19",
+        "status": "WON",
+        "direction": "SHORT",
+        "entry_price": 80.580002,
+        "exit_price": 77.102861,
+        "pnl_pct": 0.0432,
+        "pnl_usd_gross": 15.12,
+        "pnl_usd_net": 5.12,
+        "cum_pnl_net": -37.24,
+        "created_at": "2026-05-05 07:02:40",
+        "closed_at": ""
+      },
+      {
+        "id": "multi_asset_cot_positioning::CT=F::2026-05-12_0829",
+        "release_week": "2026-W20",
+        "status": "WON",
+        "direction": "SHORT",
+        "entry_price": 87.349998,
+        "exit_price": 81.077143,
+        "pnl_pct": 0.0718,
+        "pnl_usd_gross": 25.13,
+        "pnl_usd_net": 15.13,
+        "cum_pnl_net": -22.11,
+        "created_at": "2026-05-12 08:29:16",
+        "closed_at": ""
+      },
+      {
+        "id": "multi_asset_cot_positioning::CT=F::2026-05-19_1516",
+        "release_week": "2026-W21",
+        "status": "LOST",
+        "direction": "SHORT",
+        "entry_price": 82.650002,
+        "exit_price": 87.183215,
+        "pnl_pct": -0.0548,
+        "pnl_usd_gross": -19.18,
+        "pnl_usd_net": -29.18,
+        "cum_pnl_net": -51.29,
+        "created_at": "2026-05-19 15:16:48",
+        "closed_at": ""
+      }
+    ]
+  },
+  "graduation_gate": {
+    "verdict": "BELOW_EXPECTED",
+    "detail": "avg $-10.26 below tolerance floor $4.20; investigate before sizing",
+    "ready_for_live": false
+  },
+  "codex_state_machine": {
+    "current_state": "OOS_READY",
+    "next_state": "OOS_READY",
+    "target_state": "LIVE_ELIGIBLE",
+    "global_blockers": [
+      "all-classes-first per Codex governance (currently 0/6 SHADOW)",
+      "user single-class deviation accepted 2026-05-12"
+    ]
+  },
+  "nfa": "Research surface only. No real-money sizing without explicit user approval + graduation gate clear."
+}

@@ -1,0 +1,131 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    KIMI_FEB172026 - QUICK REFERENCE                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ INSTALLATION (DO THIS FIRST)                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Double-click →  INSTALL_AND_START.bat
+                (One-time setup, auto-starts trading)
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ EVERYDAY USE                                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+System runs automatically on Windows startup - NO ACTION NEEDED
+
+Optional commands:
+  START_TRADING.bat          →  Start manually
+  TEST_AND_VALIDATE.bat      →  Test system
+  type logs\autonomous.log   →  View logs
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DASHBOARD (OPTIONAL)                                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Start:   python monitor_dashboard.py
+View:    http://localhost:8000
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CONFIGURATION FILE                                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Location:  data\autonomous_config.json
+
+Important settings:
+  {
+    "scan_interval_minutes": 5,       // How often to scan
+    "min_confidence_threshold": 0.65, // Min win probability
+    "position_size_usd": 1000,        // Position size
+    "max_positions": 5,               // Max open trades
+    "crypto_24h": true                // 24/7 scanning
+  }
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SIGNAL FORMAT                                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Example signal:
+  {
+    "symbol": "BTC-USD",
+    "direction": "LONG",
+    "entry_price": 96500.00,
+    "take_profit": 98500.00,
+    "stop_loss": 95500.00,
+    "win_probability": 0.72,
+    "confidence": 0.85
+  }
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ KEY LOCATIONS                                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Logs:       KIMI_FEB172026\logs\autonomous.log
+Database:   KIMI_FEB172026\data\kimi_trading.db
+Status:     KIMI_FEB172026\data\system_status.json
+Config:     KIMI_FEB172026\data\autonomous_config.json
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PERFORMANCE TARGETS                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Win Rate:        >65%
+Sharpe Ratio:    >1.5
+Max Drawdown:    <15%
+Profit Factor:   >1.3
+
+Auto-adjusts if below targets!
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ STOPPING THE SYSTEM                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Temporary:  Press Ctrl+C in the window
+Permanent:  Delete shortcut from:
+            %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 10 ALGORITHMS RUNNING                                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+1. Pump Detector          6. Whale Detector
+2. Order Book Imbalance   7. Funding Reversal
+3. Liquidation Cascade    8. Multi-Exchange
+4. Acceleration Burst     9. SMC Order Block
+5. Trending Spike        10. SMC Fair Value Gap
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TROUBLESHOOTING                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Won't start?      →  Run TEST_AND_VALIDATE.bat
+No signals?       →  Check internet connection
+Poor performance? →  System auto-tunes, check logs
+Need help?        →  Read SYSTEM_SUMMARY.txt
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ONE-LINE SUMMARY                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+RUN:  INSTALL_AND_START.bat
+THEN: Forget about it - system runs itself!
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║  Version: 11.0.0-AUTO  |  68 Algorithms  |  30+ Symbols  |  24/7 Operation   ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

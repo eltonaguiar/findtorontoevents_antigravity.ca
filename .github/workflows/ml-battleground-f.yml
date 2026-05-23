@@ -1,0 +1,265 @@
+name: ML Battleground System F (Claws of Doom)
+
+on:
+  # RE-ENABLED 2026-03-13: System F has 52.5% WR, +41% PnL wrongly killed in blanket disable.
+  # This is a SYNC job only (fetches from external CLAWSOFDOOM repo), not a scanner.
+  schedule:
+    - cron: '47 * * * *' # Staggered from :50 to reduce push contention
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ml-battleground-f
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Sync Claws of Doom data
+        run: |
+          echo "=== System F: Claws of Doom Syncing from CLAWSOFDOOM repo ==="
+          mkdir -p ml_battleground/system_f_clawsofdoom/data
+
+          # Fetch active_picks.json
+          curl -sL -o ml_battleground/system_f_clawsofdoom/data/active_picks.json \
+            "https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/active_picks.json" || true
+
+          # Fetch closed_picks.json
+          curl -sL -o ml_battleground/system_f_clawsofdoom/data/closed_picks.json \
+            "https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/closed_picks.json" || true
+
+          # Fetch full picks.json (includes market snapshot, strategies, audit trail)
+          curl -sL -o ml_battleground/system_f_clawsofdoom/data/picks.json \
+            "https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/picks.json" || true
+
+          # Fetch picks history
+          curl -sL -o ml_battleground/system_f_clawsofdoom/data/picks_history.json \
+            "https://raw.githubusercontent.com/eltonaguiar/CLAWSOFDOOM/main/docs/picks_history.json" || true
+
+          # Generate scan_summary.json for cross-system compatibility
+          python3 -c "
+          import json
+          from datetime import datetime, timezone
+
+          try:
+              active = json.load(open('ml_battleground/system_f_clawsofdoom/data/active_picks.json'))
+              closed = json.load(open('ml_battleground/system_f_clawsofdoom/data/closed_picks.json'))
+              picks_data = json.load(open('ml_battleground/system_f_clawsofdoom/data/picks.json'))
+          except:
+              active, closed, picks_data = [], [], {}
+
+          wins = sum(1 for c in closed if c.get('exit_reason') == 'TP_HIT')
+          total = len(closed)
+          wr = (wins / total * 100) if total > 0 else 0
+          pnl = sum(c.get('realized_pnl_pct', 0) for c in closed)
+          fg = picks_data.get('market_snapshot', {}).get('fear_greed', 0)
+
+          summary = {
+              'timestamp': datetime.now(timezone.utc).isoformat(),
+              'system': 'system_f_clawsofdoom',
+              'system_label': 'Claws of Doom',
+              'version': picks_data.get('version', '3.1.0'),
+              'active_count': len(active),
+              'closed_count': total,
+              'win_rate': round(wr, 1),
+              'total_pnl_pct': round(pnl, 2),
+              'fear_greed': fg,
+              'wins': wins,
+              'losses': total - wins,
+              'dashboard': 'https://eltonaguiar.github.io/CLAWSOFDOOM/',
+          }
+          json.dump(summary, open('ml_battleground/system_f_clawsofdoom/data/scan_summary.json', 'w'), indent=2)
+          print(f' Active: {len(active)} | Closed: {total} | WR: {wr:.1f}% | PnL: {pnl:.2f}%')
+          "
+
+      - name: Send Discord Notifications
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+        run: |
+          pip install -q requests
+          python3 << 'PYEOF'
+          import json, os, requests
+          from datetime import datetime, timezone, timedelta
+          EST = timezone(timedelta(hours=-5))
+
+          webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
+          if not webhook:
+              print(' No DISCORD_WEBHOOK_URL set, skipping')
+              exit(0)
+
+          try:
+              active = json.load(open('ml_battleground/system_f_clawsofdoom/data/active_picks.json'))
+              if not isinstance(active, list):
+                  active = []
+              closed = json.load(open('ml_battleground/system_f_clawsofdoom/data/closed_picks.json'))
+              if not isinstance(closed, list):
+                  closed = []
+              picks_data = json.load(open('ml_battleground/system_f_clawsofdoom/data/picks.json'))
+              if not isinstance(picks_data, dict):
+                  picks_data = {}
+          except Exception:
+              active, closed, picks_data = [], [], {}
+
+          wins = sum(1 for c in closed if c.get('exit_reason') == 'TP_HIT')
+          total = len(closed)
+          wr = (wins / total * 100) if total > 0 else 0
+          pnl = sum(c.get('realized_pnl_pct', 0) for c in closed)
+          pnl_dollar = sum(c.get('realized_pnl_dollar', 0) for c in closed)
+          fg = picks_data.get('market_snapshot', {}).get('fear_greed', 0)
+
+          color = 0x00FF66 if wr >= 60 else (0xFF6600 if wr >= 40 else 0xFF3333)
+
+          fields = [
+              {'name': 'Active Picks', 'value': str(len(active)), 'inline': True},
+              {'name': 'Closed', 'value': f'{wins}W / {total - wins}L ({total} total)', 'inline': True},
+              {'name': 'Win Rate', 'value': f'**{wr:.1f}%**', 'inline': True},
+              {'name': 'Realized PnL', 'value': f'**{pnl:+.2f}%** (${abs(pnl_dollar):.2f})', 'inline': True},
+              {'name': 'F&G Index', 'value': str(fg), 'inline': True},
+              {'name': 'Strategies', 'value': '6 (3L/2S/1C)', 'inline': True},
+          ]
+
+          if active:
+              lines = []
+              for p in active[:8]:
+                  u = p.get('unrealized_pnl_pct', 0)
+                  sign = '+' if u >= 0 else ''
+                  lines.append(f"`{p['symbol']:10s}` {p.get('direction','LONG')} {sign}{u:.2f}%")
+              unrealized = sum(p.get('unrealized_pnl_pct', 0) for p in active)
+              usign = '+' if unrealized >= 0 else ''
+              lines.append(f'**Unrealized: {usign}{unrealized:.2f}%**')
+              fields.append({'name': 'Open Positions', 'value': '\n'.join(lines)})
+
+          new_picks = picks_data.get('picks', [])
+          if new_picks:
+              np_lines = [f"`{p['symbol']:10s}` {p.get('direction','LONG')} conf={p.get('confidence',0)*100:.0f}%" for p in new_picks[:5]]
+              fields.append({'name': 'Latest Scan Picks', 'value': '\n'.join(np_lines)})
+
+          embed = {
+              'title': 'CLAWS OF DOOM v3 System F Status',
+              'color': color,
+              'fields': fields,
+              'footer': {'text': 'System F Claws of Doom | https://eltonaguiar.github.io/CLAWSOFDOOM/'},
+              'url': 'https://eltonaguiar.github.io/CLAWSOFDOOM/',
+          }
+
+          try:
+              r = requests.post(webhook, json={'embeds': [embed]}, timeout=10)
+              print(f' Discord status: sent ({r.status_code})')
+          except Exception as e:
+              print(f' Discord status: failed ({e})')
+
+          # FreshPicks channel new picks only
+          fp_webhook = os.environ.get('DISCORD_WEBHOOK_FRESHPICKS', '')
+          if fp_webhook and new_picks:
+              now_est = datetime.now(EST).strftime('%Y-%m-%d %I:%M %p EST')
+              for p in new_picks:
+                  sym = p.get('symbol', '???')
+                  direction = p.get('direction', 'LONG')
+                  entry = p.get('entry_price', 0)
+                  tp = p.get('tp_price', 0)
+                  sl = p.get('sl_price', 0)
+                  conf = p.get('confidence', 0)
+                  strategy = p.get('strategy_name', p.get('strategy', 'unknown'))
+                  reason = p.get('reason', '')
+                  tp_pct = ((tp / entry - 1) * 100) if entry and tp else 0
+                  sl_pct = ((1 - sl / entry) * 100) if entry and sl else 0
+                  conf_str = f'{conf*100:.0f}%' if conf <= 1 else f'{conf:.0f}%'
+                  dir_emoji = '\U0001f7e2' if direction == 'LONG' else '\U0001f534'
+                  fp_color = 0x22C55E if direction == 'LONG' else 0xEF4444
+                  # FORWARD-ONLY performance stats (conservative trust thresholds)
+                  if total < 5: trust = '\u26a0\ufe0f Too Early'
+                  elif total < 20: trust = '\u26a0\ufe0f Small Sample'
+                  elif wr >= 60: trust = '\u2705 Solid'
+                  elif wr >= 50: trust = '\U0001f7e1 Moderate'
+                  else: trust = '\U0001f534 Weak'
+                  unrealized_avg = sum(a.get('unrealized_pnl_pct', 0) for a in active) / max(len(active), 1)
+                  stats_text = f'**{trust}** | WR: **{wr:.1f}%** ({wins}W/{total-wins}L) | {total} closed picks\nRealized P/L: **{pnl:+.2f}%** | Unrealized: **{unrealized_avg:+.2f}%** | {len(active)} active\n*Forward performance only (live TP/SL tracking)*'
+                  # Last 5 closed
+                  recent_lines = []
+                  for rc in closed[-5:]:
+                      rc_pnl = rc.get('realized_pnl_pct', 0)
+                      rc_icon = '\u2705' if rc.get('exit_reason') == 'TP_HIT' else '\u274c'
+                      recent_lines.append(f'{rc_icon} `{rc.get("symbol","?"):12s}` {rc_pnl:+.2f}% [{rc.get("strategy_name", rc.get("strategy",""))}]')
+
+                  fp_fields = [
+                          {'name': 'Entry', 'value': f'${entry:,.2f}', 'inline': True},
+                          {'name': f'Target (+{tp_pct:.1f}%)', 'value': f'${tp:,.2f}', 'inline': True},
+                          {'name': f'Stop (-{sl_pct:.1f}%)', 'value': f'${sl:,.2f}', 'inline': True},
+                          {'name': 'Confidence', 'value': conf_str, 'inline': True},
+                          {'name': 'Strategy', 'value': strategy, 'inline': True},
+                          {'name': 'System', 'value': 'Claws of Doom v3', 'inline': True},
+                          {'name': '\U0001f4ca Forward Performance (Live Tracked)', 'value': stats_text, 'inline': False},
+                  ]
+                  if recent_lines:
+                      fp_fields.append({'name': '\U0001f4cb Last 5 Closed (Forward)', 'value': '\n'.join(recent_lines), 'inline': False})
+
+                  fp_embed = {
+                      'title': f'{dir_emoji} {direction}: {sym}',
+                      'color': fp_color,
+                      'fields': fp_fields,
+                      'description': f'{reason[:200]}\n[View Dashboard](https://eltonaguiar.github.io/CLAWSOFDOOM/)',
+                      'footer': {'text': f'Claws of Doom (System F) | {now_est}'},
+                      'timestamp': datetime.now(timezone.utc).isoformat(),
+                  }
+                  try:
+                      r2 = requests.post(fp_webhook, json={'embeds': [fp_embed]}, timeout=10)
+                      print(f' FreshPicks: {sym} {direction} sent ({r2.status_code})')
+                  except Exception as e2:
+                      print(f' FreshPicks: {sym} failed ({e2})')
+          PYEOF
+
+      - name: Push Battleground F picks to Audit Trail
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          # 2026-04-17: audit_push.py needs pymysql for MySQL writes. The
+          # earlier commit claim about adding pymysql to ml-battleground-f.yml
+          # did not actually land — the pip install step above only installs
+          # requests. Without pymysql, every run logged:
+          #   "MySQL write failed after 3 attempts: No module named 'pymysql'"
+          pip install -q pymysql
+          python ml_battleground/audit_push.py 2>&1 || echo "Battleground audit push failed (non-fatal)"
+
+      - name: Commit synced data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ml_battleground/system_f_clawsofdoom/data/ || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "System F Claws of Doom: sync $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase origin main || true
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          fi
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "ML-Battleground-System-F" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+
+      - name: Notify ML channel on failure
+        if: failure()
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          WORKFLOW_NAME="ML-Battleground-System-F"
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"\\u274c ML Job FAILED: $WORKFLOW_NAME\", \"description\": \"Job: ${{ github.job }}\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nBranch: ${{ github.ref_name }}\", \"color\": 15158332, \"timestamp\": \"$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}]}" \
+            "$DISCORD_ML_CHANNEL" || true
+

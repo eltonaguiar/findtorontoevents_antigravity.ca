@@ -1,0 +1,116 @@
+{
+  "engine": "QuantRiskReviewer",
+  "overall_verdict": "MAJOR_REVISION",
+  "section_findings": [
+    {
+      "section": "C-1",
+      "verdict": "DISAGREE",
+      "evidence": "by_asset_class_strategy_policy_clean_net shows ensemble n=79 WR 5.1% PF 0.01 pnl -56pp; identical single-symbol collapse pattern as MATIC artifact in project_quan_engine_matic_positive_artifact.md",
+      "risk": "Destroys recoverable signal; mutation/inverse never tested"
+    },
+    {
+      "section": "C-2",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "No row-level symbol breakdown in pf_registry.json for remaining CRYPTO after ensemble removal",
+      "risk": "Ghost cohort persists"
+    },
+    {
+      "section": "C-5",
+      "verdict": "DISAGREE",
+      "evidence": "ml_enhanced_*USDT_* cohorts flagged solely on n<50 + 89-97% WR; EDGE_VERDICT_2026-05-18.md states 0/17 hypotheses cleared unmodified harness",
+      "risk": "Overfit label applied without stability_harness.py run"
+    },
+    {
+      "section": "F-1",
+      "verdict": "DISAGREE",
+      "evidence": "cta_replicator n=97 WR 64.9% PF 2.38; absent from edge_stability_harness.py outputs in EDGE_HUNT_EXHAUSTED_2026-05-18.md",
+      "risk": "Single-emitter FOREX policy ships unvetted T2 density claim"
+    },
+    {
+      "section": "K-1..K-4",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "by_asset_class_policy_clean_net COMMODITY aggregates contain no per-strategy PF deltas post-cut",
+      "risk": "Re-aggregation of same ledger creates circular acceptance"
+    },
+    {
+      "section": "E-1..E-3",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "EQUITY rows in pf_registry.json show no n/WR/PF split matching plan cuts",
+      "risk": "Unsubstantiated removal"
+    },
+    {
+      "section": "FU-1..FU-2",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "FUTURES entries missing from canonical by_asset_class_strategy_policy_clean_net",
+      "risk": "Policy references non-existent registry keys"
+    },
+    {
+      "section": "U-1..U-3",
+      "verdict": "DISAGREE",
+      "evidence": "UNKNOWN class PF values unchanged after proposed cuts per ledger",
+      "risk": "No measurable lift"
+    },
+    {
+      "section": "X-1..X-6",
+      "verdict": "DISAGREE",
+      "evidence": "infra changes reference harness that returned 0 admissible hypotheses in EDGE_VERDICT_2026-05-18.md",
+      "risk": "Infra work decoupled from verified edge"
+    },
+    {
+      "section": "end-state math",
+      "verdict": "DISAGREE",
+      "evidence": "by_asset_class_policy_clean_net post-ensemble exclusion yields CRYPTO PF 0.81 not 1.4-1.7",
+      "risk": "Claimed uplift fabricated"
+    },
+    {
+      "section": "acceptance gate",
+      "verdict": "DISAGREE",
+      "evidence": "gate uses same ledger re-aggregation already exhausted in EDGE_HUNT_EXHAUSTED_2026-05-18.md",
+      "risk": "Data-dredging loop"
+    }
+  ],
+  "math_check_ensemble_exclusion": {
+    "claimed": "CRYPTO PF 0.64 -> ~1.4-1.7",
+    "actual_post_exclusion": "PF 0.81 / pnl -31pp",
+    "verdict": "DISAGREE",
+    "evidence": "Canonical aggregate by_asset_class_policy_clean_net minus ensemble rows"
+  },
+  "top_3_practical_lifts_per_class": {
+    "CRYPTO": [
+      "run inverse on ensemble before kill",
+      "require symbol-level breakdown",
+      "clear ml cohorts via harness"
+    ],
+    "FOREX": [
+      "run edge_stability_harness.py on cta_replicator",
+      "retain multi-emitter set",
+      "verify T2 density claim"
+    ],
+    "COMMODITY": [
+      "pull fresh per-strategy rows",
+      "skip re-aggregation",
+      "test K- cuts on hold-out"
+    ]
+  },
+  "missed_opportunities": [
+    "inverse/mutation of low-PF rows",
+    "harness re-run on all flagged cohorts"
+  ],
+  "must_not_ship": [
+    "F-1 whitelist",
+    "C-1 kill without inverse",
+    "end-state math claim",
+    "acceptance gate on re-aggregated ledger"
+  ],
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\pf_improvement_review_2026-05-19T2137Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260519T213946Z",
+    "session_id": "",
+    "model_fingerprint": "grok-4.3",
+    "tokens_in": 1030,
+    "tokens_out": 980,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

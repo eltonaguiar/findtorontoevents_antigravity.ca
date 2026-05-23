@@ -1,0 +1,91 @@
+function playMovieFromBrowse(index) {
+            _browseScrolling = true;
+
+            // Stop any currently playing video
+            var current = document.querySelector('.video-card iframe[src*="autoplay=1"]');
+            if (current) {
+                var s = current.src;
+                current.src = '';
+                setTimeout(function() { current.src = s.replace(/autoplay=1/, 'autoplay=0'); }, 50);
+            }
+
+            _removeBrowseOverlay();
+            // Always close browse view and blur search input (dismisses mobile keyboard)
+            var browseViewEl = document.getElementById('browseView');
+            browseViewEl.classList.remove('active');
+            var searchInput = document.getElementById('browseSearchInput');
+            if (searchInput) searchInput.blur();
+            document.getElementById('muteOverlay').classList.add('hidden');
+
+            var movie = filteredMovies[index];
+            if (!movie || !movie.trailer_id) {
+                console.error('[playMovieFromBrowse] No movie or trailer_id at index', index);
+                _browseScrolling = false;
+                // Do NOT re-open browse view â just show toast so the search box stays closed
+                showToast('Trailer not available for this title', 'warning');
+                return;
+            }
+
+            console.log('[playMovieFromBrowse] Playing ' + movie.title + ' (index=' + index + ', trailer=' + movie.trailer_id + ')');
+
+            var container = document.getElementById('container');
+            var targetTop = index * window.innerHeight;
+            var muted = (videoMuteStates[index] === false) ? 0 : 1;
+
+            var ytSrc = 'https://www.youtube.com/embed/' + movie.trailer_id +
+                '?autoplay=1&mute=' + muted + '&controls=1&playsinline=1&loop=0&modestbranding=1&rel=0&enablejsapi=1';
+
+            // === OVERLAY CREATION ===
+            // Create a fullscreen fixed overlay IMMEDIATELY (no scroll, no delay).
+            // z-index 99990 ensures it's above ALL page elements (filter bar 50,
+            // hamburger 200, freestyle 300) but below toasts (99999).
+            var overlay = document.createElement('div');
+            overlay.id = 'browse-play-overlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99990;background:#000;';
+
+            var iframe = document.createElement('iframe');
+            iframe.id = 'browse-player-frame';
+            iframe.src = ytSrc;
+            iframe.style.cssText = 'position:absolute;top:0;left:0;width:100vw;height:100vh;border:none;';
+            iframe.setAttribute('loading', 'eager');
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+
+            overlay.appendChild(iframe);
+
+            // Close button (â) â top-right
+            var closeBtn = document.createElement('button');
+            closeBtn.textContent = '\u2715';
+            closeBtn.style.cssText = 'position:absolute;top:16px;right:16px;z-index:2;width:48px;height:48px;background:rgba(0,0,0,0.7);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:50%;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);';
+            closeBtn.onclick = function() {
+                _dismissBrowseOverlay(container, targetTop);
+            };
+            overlay.appendChild(closeBtn);
+
+            // Unmute button
+            if (muted) {
+                var unmBtn = document.createElement('button');
+                unmBtn.id = 'browse-unmute-btn';
+                unmBtn.textContent = '\uD83D\uDD07 Tap to Unmute';
+                unmBtn.style.cssText = 'position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:2;padding:12px 24px;background:rgba(255,68,68,0.95);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;';
+                unmBtn.onclick = function() {
+                    iframe.src = iframe.src.replace(/mute=1/, 'mute=0');
+                    videoMuteStates[index] = false;
+                    unmBtn.remove();
+                };
+                overlay.appendChild(unmBtn);
+            }
+
+            // Movie title label â bottom-left
+            var titleLabel = document.createElement('div');
+            titleLabel.style.cssText = 'position:absolute;bottom:20px;left:20px;z-index:2;color:#fff;font-size:18px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,0.8);pointer-events:none;';
+            titleLabel.textContent = movie.title + (movie.release_year ? ' (' + movie.release_year + ')' : '');
+            overlay.appendChild(titleLabel);
+
+            // Add to DOM IMMEDIATELY â no setTimeout, no scroll dependency
+            document.body.appendChild(overlay);
+            console.log('[playMovieFromBrowse] Overlay created for ' + movie.title);
+
+            // Set up YouTube player API for auto-advance on video end
+            if (typeof YT !== 'undefined' && YT.Player) {
+                iframe.addEventListener('load', 

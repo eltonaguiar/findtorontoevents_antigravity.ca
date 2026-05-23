@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATM Challenge — Strategy Evolution Arena</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a12; color: #c8c8d8; font-family: 'Segoe UI', -apple-system, sans-serif; min-height: 100vh; }
+    .header { text-align: center; padding: 30px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .header h1 { font-size: 28px; font-weight: 200; letter-spacing: 4px; color: #fff; }
+    .header .subtitle { color: #667; font-size: 13px; margin-top: 6px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: #12121f; border: 1px solid #1e1e30; border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-card .label { font-size: 11px; color: #667; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .stat-card .value { font-size: 22px; font-weight: 300; color: #fff; }
+    .stat-card .value.positive { color: #22c55e; }
+    .stat-card .value.negative { color: #ef4444; }
+    .section { background: #12121f; border: 1px solid #1e1e30; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    .section h3 { font-size: 14px; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .tier-badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+    .tier-ELITE { background: #f59e0b33; color: #f59e0b; border: 1px solid #f59e0b55; }
+    .tier-CHAMPION { background: #22c55e33; color: #22c55e; border: 1px solid #22c55e55; }
+    .tier-CONTENDER { background: #3b82f633; color: #3b82f6; border: 1px solid #3b82f655; }
+    .tier-INCUBATOR { background: #64748b33; color: #64748b; border: 1px solid #64748b55; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 10px; color: #667; font-weight: 500; border-bottom: 1px solid #1e1e30; }
+    td { padding: 8px 10px; border-bottom: 1px solid #0f0f1a; }
+    .positive { color: #22c55e; }
+    .negative { color: #ef4444; }
+    .graveyard { opacity: 0.5; }
+    .updated { text-align: center; color: #445; font-size: 11px; padding: 20px; }
+    @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ATM CHALLENGE</h1>
+    <div class="subtitle">Strategy Evolution Arena — Survive or Die</div>
+  </div>
+  <div class="container">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="section">
+      <h3>Top 10 Strategies (by Sharpe)</h3>
+      <table id="top10Table">
+        <thead><tr><th>Rank</th><th>Strategy</th><th>Tier</th><th>WR</th><th>PnL</th><th>Sharpe</th><th>Trades</th><th>Gen</th></tr></thead>
+        <tbody id="top10Body"><tr><td colspan="8" style="color:#445">Loading...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="section">
+      <h3>Elite Tier</h3>
+      <table id="eliteTable">
+        <thead><tr><th>Strategy</th><th>WR</th><th>PnL</th><th>Sharpe</th><th>Trades</th><th>Max DD</th></tr></thead>
+        <tbody id="eliteBody"><tr><td colspan="6" style="color:#445">No elite strategies yet — earn your place</td></tr></tbody>
+      </table>
+    </div>
+    <div class="section">
+      <h3>Champion Tier</h3>
+      <table id="champTable">
+        <thead><tr><th>Strategy</th><th>WR</th><th>PnL</th><th>Sharpe</th><th>Trades</th></tr></thead>
+        <tbody id="champBody"><tr><td colspan="5" style="color:#445">No champions yet</td></tr></tbody>
+      </table>
+    </div>
+    <div class="section graveyard">
+      <h3>Graveyard (Eliminated)</h3>
+      <table id="graveyardTable">
+        <thead><tr><th>Strategy</th><th>WR</th><th>PnL</th><th>Trades</th><th>Cause of Death</th></tr></thead>
+        <tbody id="graveyardBody"><tr><td colspan="5" style="color:#445">No casualties yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="updated" id="updatedAt">Loading...</div>
+  <script>
+    const DATA_URLS = [
+      'data/atm_leaderboard.json',
+      'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/trading/data/atm_leaderboard.json',
+    ];
+
+    async function loadData() {
+      for (const url of DATA_URLS) {
+        try {
+          const resp = await fetch(url + '?t=' + Date.now());
+          if (!resp.ok) continue;
+          const d = await resp.json();
+          render(d);
+          return;
+        } catch (e) { continue; }
+      }
+      document.getElementById('updatedAt').textContent = 'Failed to load data';
+    }
+
+    function render(d) {
+      const s = d.stats || {};
+      const grid = document.getElementById('statsGrid');
+      const tc = s.tier_counts || {};
+      grid.innerHTML = [
+        card('Active', s.active_variants || 0),
+        card('Eliminated', s.eliminated_variants || 0, 'negative'),
+        card('Total Trades', s.total_backtested_trades || 0),
+        card('Elite', tc.ELITE || 0, 'positive'),
+        card('Champions', tc.CHAMPION || 0, 'positive'),
+        card('Contenders', tc.CONTENDER || 0),
+      ].join('');
+
+      renderTable('top10Body', d.top10 || [], (v, i) =>
+        `<tr><td>#${i+1}</td><td>${v.name}</td><td><span class="tier-badge tier-${v.tier}">${v.tier}</span></td>` +
+        `<td>${v.win_rate}%</td><td class="${v.total_pnl >= 0 ? 'positive' : 'negative'}">$${v.total_pnl.toFixed(2)}</td>` +
+        `<td>${v.sharpe.toFixed(2)}</td><td>${v.total_trades}</td><td>${v.generation || 0}</td></tr>`
+      );
+
+      renderTable('eliteBody', (d.tiers || {}).ELITE || [], v =>
+        `<tr><td>${v.name}</td><td>${v.win_rate}%</td>` +
+        `<td class="${v.total_pnl >= 0 ? 'positive' : 'negative'}">$${v.total_pnl.toFixed(2)}</td>` +
+        `<td>${v.sharpe.toFixed(2)}</td><td>${v.total_trades}</td><td>$${(v.max_drawdown||0).toFixed(2)}</td></tr>`
+      );
+
+      renderTable('champBody', (d.tiers || {}).CHAMPION || [], v =>
+        `<tr><td>${v.name}</td><td>${v.win_rate}%</td>` +
+        `<td class="${v.total_pnl >= 0 ? 'positive' : 'negative'}">$${v.total_pnl.toFixed(2)}</td>` +
+        `<td>${v.sharpe.toFixed(2)}</td><td>${v.total_trades}</td></tr>`
+      );
+
+      renderTable('graveyardBody', d.graveyard || [], v =>
+        `<tr><td>${v.name}</td><td class="negative">${v.win_rate}%</td>` +
+        `<td class="negative">$${v.total_pnl.toFixed(2)}</td><td>${v.total_trades}</td>` +
+        `<td>WR < 35%</td></tr>`
+      );
+
+      document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(d.generated_at).toLocaleString() + ' | Auto-refreshes every 30s';
+    }
+
+    function card(label, value, cls) {
+      return `<div class="stat-card"><div class="label">${label}</div><div class="value ${cls||''}">${value}</div></div>`;
+    }
+
+    function renderTable(id, items, fn) {
+      const tbody = document.getElementById(id);
+      if (!items.length) return;
+      tbody.innerHTML = items.map((v, i) => fn(v, i)).join('');
+    }
+
+    loadData();
+    setInterval(loadData, 30000);
+  </script>
+</body>
+</html>

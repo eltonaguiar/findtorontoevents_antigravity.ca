@@ -1,0 +1,82 @@
+name: strategy_performance.json no-regression guard
+
+# Guards against PRs that shrink strategy coverage in
+# alpha_engine/data/strategy_performance.json. Coverage regression here
+# breaks every Wilson LB consumer (elite_scorer, dashboard, conviction_stack).
+#
+# The file should only grow (via forward_validator merge-write) or be pruned
+# by the 30-day cron (tools/prune_strategy_performance.py). A PR that drops
+# the count below max(previous, 5) indicates the writer regression has
+# returned. Ref: PR #257/#258.
+
+on:
+  pull_request:
+    paths:
+      - 'alpha_engine/data/strategy_performance.json'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Compare strategy counts (base vs head)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+
+          path = "alpha_engine/data/strategy_performance.json"
+          floor = 5  # Current minimum floor per PR #258
+          base_sha = os.environ["BASE_SHA"]
+
+          def count_at(sha):
+              try:
+                  blob = subprocess.check_output(
+                      ["git", "show", f"{sha}:{path}"], stderr=subprocess.DEVNULL
+                  )
+              except subprocess.CalledProcessError:
+                  return None
+              try:
+                  data = json.loads(blob)
+              except json.JSONDecodeError:
+                  return None
+              return len(data) if isinstance(data, dict) else None
+
+          prev = count_at(base_sha)
+          try:
+              with open(path, "r", encoding="utf-8") as f:
+                  cur = len(json.load(f))
+          except Exception as e:
+              print(f"ERROR reading PR-head file: {e!r}")
+              sys.exit(1)
+
+          threshold = max(prev or 0, floor)
+          print(f"base_sha={base_sha} prev={prev} head={cur} floor={floor} threshold={threshold}")
+
+          if cur < threshold:
+              print(
+                  f"::error::strategy_performance.json regression: head={cur} < "
+                  f"max(prev={prev}, floor={floor})={threshold}. "
+                  f"This indicates the writer is replacing the file instead of "
+                  f"upserting. Ref: PR #257/#258 and save_strategy_performance() "
+                  f"in alpha_engine/forward_validator.py."
+              )
+              sys.exit(1)
+          print("OK: no coverage regression")
+          PY

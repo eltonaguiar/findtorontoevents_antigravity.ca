@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimi's Claw API Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #eee;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00d4aa;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00d4aa 0%, #00a884 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 170, 0.4);
+        }
+        
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-title {
+            font-size: 1.2rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .endpoint-url {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #00d4aa;
+            background: rgba(0, 212, 170, 0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #444;
+            color: #888;
+        }
+        
+        .status-loading {
+            background: #f0a500;
+            color: #1a1a2e;
+        }
+        
+        .status-success {
+            background: #00d4aa;
+            color: #1a1a2e;
+        }
+        
+        .status-error {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .info-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #fff;
+            word-break: break-all;
+        }
+        
+        .info-value.http-ok {
+            color: #00d4aa;
+        }
+        
+        .info-value.http-error {
+            color: #e74c3c;
+        }
+        
+        .json-valid {
+            color: #00d4aa;
+        }
+        
+        .json-invalid {
+            color: #e74c3c;
+        }
+        
+        .response-section {
+            margin-top: 15px;
+        }
+        
+        .section-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #888;
+            padding: 8px 16px;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        
+        .tab-btn.active {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+        }
+        
+        .tab-content {
+            display: none;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0 8px 8px 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #ddd;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .json-key {
+            color: #9cdcfe;
+        }
+        
+        .json-string {
+            color: #ce9178;
+        }
+        
+        .json-number {
+            color: #b5cea8;
+        }
+        
+        .json-boolean {
+            color: #569cd6;
+        }
+        
+        .json-null {
+            color: #569cd6;
+        }
+        
+        .error-message {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid #e74c3c;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            color: #e74c3c;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .summary {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .summary h2 {
+            color: #00d4aa;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        .summary-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .summary-label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 30px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Kimi's Claw API Test</h1>
+        <p class="subtitle">Testing competition.php endpoints</p>
+        
+        <div class="controls">
+            <button id="runTests" onclick="runAllTests()">Run All Tests</button>
+            <button id="clearResults" onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <!-- Status Endpoint Test -->
+        <div class="test-section" id="statusSection">
+            <div class="test-header">
+                <div>
+                    <div class="test-title">
+                        📊 Status Endpoint
+                        <span class="status-badge status-pending" id="statusBadge">Pending</span>
+                    </div>
+                    <div class="endpoint-url">./api/competition.php?action=status</div>
+                </div>
+            </div>
+            
+            <div class="info-grid" id="statusInfo">
+                <div class="info-card">
+                    <div class="info-label">HTTP Status</div>
+                    <div class="info-value" id="statusHttp">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Content-Type</div>
+                    <div class="info-value" id="statusContentType">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Response Time</div>
+                    <div class="info-value" id="statusTime">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">JSON Valid</div>
+                    <div class="info-value" id="statusJsonValid">-</div>
+                </div>
+            </div>
+            
+            <div class="error-message hidden" id="statusError"></div>
+            
+            <div class="response-section" id="statusResponse" style="display: none;">
+                <div class="section-tabs">
+                    <button class="tab-btn active" onclick="switchTab('status', 'parsed')">Parsed Data</button>
+                    <button class="tab-btn" onclick="switchTab('status', 'raw')">Raw Response</button>
+                </div>
+                <div class="tab-content active" id="status-parsed">
+                    <pre id="statusParsedContent"></pre>
+                </div>
+                <div class="tab-content" id="status-raw">
+                    <pre id="statusRawContent"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Endpoint Test -->
+        <div class="test-section" id="dashboardSection">
+            <div class="test-header">
+                <div>
+                    <div class="test-title">
+                        📈 Dashboard Endpoint
+                        <span class="status-badge status-pending" id="dashboardBadge">Pending</span>
+                    </div>
+                    <div class="endpoint-url">./api/competition.php?action=dashboard</div>
+                </div>
+            </div>
+            
+            <div class="info-grid" id="dashboardInfo">
+                <div class="info-card">
+                    <div class="info-label">HTTP Status</div>
+                    <div class="info-value" id="dashboardHttp">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Content-Type</div>
+                    <div class="info-value" id="dashboardContentType">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Response Time</div>
+                    <div class="info-value" id="dashboardTime">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">JSON Valid</div>
+                    <div class="info-value" id="dashboardJsonValid">-</div>
+                </div>
+            </div>
+            
+            <div class="error-message hidden" id="dashboardError"></div>
+            
+            <div class="response-section" id="dashboardResponse" style="display: none;">
+                <div class="section-tabs">
+                    <button class="tab-btn active" onclick="switchTab('dashboard', 'parsed')">Parsed Data</button>
+                    <button class="tab-btn" onclick="switchTab('dashboard', 'raw')">Raw Response</button>
+                </div>
+                <div class="tab-content active" id="dashboard-parsed">
+                    <pre id="dashboardParsedContent"></pre>
+                </div>
+                <div class="tab-content" id="dashboard-raw">
+                    <pre id="dashboardRawContent"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary -->
+        <div class="summary" id="summary" style="display: none;">
+            <h2>📋 Test Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value" id="totalTests">2</div>
+                    <div class="summary-label">Total Tests</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="passedTests">0</div>
+                    <div class="summary-label">Passed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="failedTests">0</div>
+                    <div class="summary-label">Failed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="avgTime">-</div>
+                    <div class="summary-label">Avg Response Time</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timestamp" id="timestamp"></div>
+    </div>
+    
+    <script>
+        // Store test results
+        const testResults = {
+            status: null,
+            dashboard: null
+        };
+        
+        // Syntax highlight JSON
+        function syntaxHighlight(json) {
+            if (typeof json !== 'string') {
+                json = JSON.stringify(json, null, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(?:\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(?=\s*:))/g, '<span class="json-key">$1</span>')
+                       .replace(/("(?:\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")/g, '<span class="json-string">$1</span>')
+                       .replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>')
+                       .replace(/\b(null)\b/g, '<span class="json-null">$1</span>')
+                       .replace(/\b(\d+\.?\d*)\b/g, '<span class="json-number">$1</span>');
+        }
+        
+        // Switch tabs
+        function switchTab(endpoint, tab) {
+            const section = document.getElementById(endpoint + 'Response');
+            const tabs = section.querySelectorAll('.tab-btn');
+            const contents = section.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(endpoint + '-' + tab).classList.add('active');
+        }
+        
+        // Update badge
+        function updateBadge(elementId, status) {
+            const badge = document.getElementById(elementId);
+            badge.className = 'status-badge status-' + status;
+            badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        // Test an endpoint
+        async function testEndpoint(endpoint, action) {
+            const startTime = performance.now();
+            const url = `./api/competition.php?action=${action}`;
+            
+            updateBadge(endpoint + 'Badge', 'loading');
+            document.getElementById(endpoint + 'Response').style.display = 'none';
+            document.getElementById(endpoint + 'Error').classList.add('hidden');
+            
+            // Reset info values
+            document.getElementById(endpoint + 'Http').textContent = '-';
+            document.getElementById(endpoint + 'Http').className = 'info-value';
+            document.getElementById(endpoint + 'ContentType').textContent = '-';
+            document.getElementById(endpoint + 'Time').textContent = '-';
+            document.getElementById(endpoint + 'JsonValid').textContent = '-';
+            document.getElementById(endpoint + 'JsonValid').className = 'info-value';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const endTime = performance.now();
+                const responseTime = (endTime - startTime).toFixed(2);
+                
+                // Get response details
+                const httpStatus = response.status;
+                const contentType = response.headers.get('content-type') || 'Not specified';
+                
+                // Display HTTP status
+                const httpElement = document.getElementById(endpoint + 'Http');
+                httpElement.textContent = httpStatus + (response.ok ? ' OK' : ' Error');
+                httpElement.className = 'info-value ' + (response.ok ? 'http-ok' : 'http-error');
+                
+                // Display content type
+                document.getElementById(endpoint + 'ContentType').textContent = contentType;
+                
+                // Display response time
+                document.getElementById(endpoint + 'Time').textContent = responseTime + ' ms';
+                
+                // Get raw response text
+                const rawText = await response.text();
+                
+                // Try to parse as JSON
+                let parsedData = null;
+                let isValidJson = false;
+                let parseError = null;
+                
+                try {
+                    parsedData = JSON.parse(rawText);
+                    isValidJson = true;
+                } catch (e) {
+                    parseError = e.message;
+                }
+                
+                // Display JSON validity
+                const jsonValidElement = document.getElementById(endpoint + 'JsonValid');
+                jsonValidElement.textContent = isValidJson ? '✓ Yes' : '✗ No';
+                jsonValidElement.className = 'info-value ' + (isValidJson ? 'json-valid' : 'json-invalid');
+                
+                // Store result
+                testResults[endpoint] = {
+                    success: response.ok && isValidJson,
+                    httpStatus: httpStatus,
+                    responseTime: parseFloat(responseTime),
+                    isValidJson: isValidJson,
+                    error: parseError
+                };
+                
+                // Show response section
+                document.getElementById(endpoint + 'Response').style.display = 'block';
+                
+                // Display raw response
+                document.getElementById(endpoint + 'RawContent').innerHTML = syntaxHighlight(rawText);
+                
+                // Display parsed data or error
+                if (isValidJson) {
+                    document.getElementById(endpoint + 'ParsedContent').innerHTML = syntaxHighlight(parsedData);
+                    updateBadge(endpoint + 'Badge', 'success');
+                } else {
+                    document.getElementById(endpoint + 'ParsedContent').innerHTML = 
+                        '<span style="color: #e74c3c;">Invalid JSON: ' + parseError + '</span>';
+                    
+                    // Show error message
+                    const errorDiv = document.getElementById(endpoint + 'Error');
+                    errorDiv.textContent = 'JSON Parse Error: ' + parseError;
+                    errorDiv.classList.remove('hidden');
+                    
+                    updateBadge(endpoint + 'Badge', 'error');
+                }
+                
+            } catch (error) {
+                const endTime = performance.now();
+                const responseTime = (endTime - startTime).toFixed(2);
+                
+                // Display error
+                const httpElement = document.getElementById(endpoint + 'Http');
+                httpElement.textContent = 'Network Error';
+                httpElement.className = 'info-value http-error';
+                
+                document.getElementById(endpoint + 'Time').textContent = responseTime + ' ms';
+                
+                const jsonValidElement = document.getElementById(endpoint + 'JsonValid');
+                jsonValidElement.textContent = '✗ No';
+                jsonValidElement.className = 'info-value json-invalid';
+                
+                // Show error message
+                const errorDiv = document.getElementById(endpoint + 'Error');
+                errorDiv.textContent = 'Fetch Error: ' + error.message;
+                errorDiv.classList.remove('hidden');
+                
+                updateBadge(endpoint + 'Badge', 'error');
+                
+                // Store result
+                testResults[endpoint] = {
+                    success: false,
+                    httpStatus: 0,
+                    responseTime: parseFloat(responseTime),
+                    isValidJson: false,
+                    error: error.message
+                };
+            }
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            const btn = document.getElementById('runTests');
+            btn.disabled = true;
+            btn.textContent = 'Running Tests...';
+            
+            // Clear previous results
+            clearResults();
+            
+            // Run tests sequentially
+            await testEndpoint('status', 'status');
+            await testEndpoint('dashboard', 'dashboard');
+            
+            // Update summary
+            updateSummary();
+            
+            // Update timestamp
+            document.getElementById('timestamp').textContent = 'Last run: ' + new Date().toLocaleString();
+            
+            btn.disabled = false;
+            btn.textContent = 'Run All Tests';
+        }
+        
+        // Update summary
+        function updateSummary() {
+            let passed = 0;
+            let failed = 0;
+            let totalTime = 0;
+            let count = 0;
+            
+            for (const key in testResults) {
+                if (testResults[key]) {
+                    if (testResults[key].success) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                    totalTime += testResults[key].responseTime;
+                    count++;
+                }
+            }
+            
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            document.getElementById('avgTime').textContent = count > 0 ? (totalTime / count).toFixed(2) + ' ms' : '-';
+            
+            document.getElementById('summary').style.display = 'block';
+        }
+        
+        // Clear results
+        function clearResults() {
+            // Reset status
+            updateBadge('statusBadge', 'pending');
+            updateBadge('dashboardBadge', 'pending');
+            
+            // Hide responses
+            document.getElementById('statusResponse').style.display = 'none';
+            document.getElementById('dashboardResponse').style.display = 'none';
+            
+            // Hide errors
+            document.getElementById('statusError').classList.add('hidden');
+            document.getElementById('dashboardError').classList.add('hidden');
+            
+            // Reset info values
+            ['status', 'dashboard'].forEach(endpoint => {
+                document.getElementById(endpoint + 'Http').textContent = '-';
+                document.getElementById(endpoint + 'Http').className = 'info-value';
+                document.getElementById(endpoint + 'ContentType').textContent = '-';
+                document.getElementById(endpoint + 'Time').textContent = '-';
+                document.getElementById(endpoint + 'JsonValid').textContent = '-';
+                document.getElementById(endpoint + 'JsonValid').className = 'info-value';
+            });
+            
+            // Hide summary
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('timestamp').textContent = '';
+            
+            // Reset results
+            testResults.status = null;
+            testResults.dashboard = null;
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Don't auto-run, let user click the button
+            // runAllTests();
+        });
+    </script>
+</body>
+</html>

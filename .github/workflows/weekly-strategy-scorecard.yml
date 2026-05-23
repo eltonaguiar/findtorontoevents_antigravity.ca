@@ -1,0 +1,51 @@
+name: Weekly Strategy Scorecard
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Sunday midnight UTC
+  workflow_dispatch:
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -q numpy pandas
+
+      - name: Generate scorecard
+        run: |
+          mkdir -p tools/data updates
+          DATE=$(date -u +%Y-%m-%d)
+          
+          # Full prover run
+          python tools/strategy_prover/strategy_prover.py --all \
+            --output tools/data/strategy_prover_results.json 2>&1 | tee tools/data/prover_log.txt
+          
+          # Scorecard markdown
+          python tools/strategy_prover/strategy_prover.py --scorecard \
+            > "updates/${DATE}-strategy-scorecard.md" 2>&1
+          
+          # Drift monitor (demo mode for now — wire to real baselines later)
+          python tools/strategy_prover/drift_monitor.py --demo \
+            > tools/data/drift_report.txt 2>&1 || true
+
+      - name: Commit scorecard
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Strategy Prover Bot"
+          git config user.email "prover@bot"
+          git add tools/data/ updates/ || true
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Weekly strategy scorecard $(date -u +%Y-%m-%d) [skip ci]"
+          bash .github/scripts/safe_push.sh || echo "Push failed (non-fatal)"

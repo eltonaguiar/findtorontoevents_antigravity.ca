@@ -1,0 +1,40 @@
+{
+  "schema_version": "v1",
+  "engine": "ChatGPT-4o",
+  "asset_class": "FOREX",
+  "run_id": "run_2026-05-11T19-14-54Z",
+  "synthesis": [
+    {
+      "spec_id": "forex_momentum_uup_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Backtest PF=1.61 and WR=56.7% look promising, but only 30 trades were observed and the signal is a simplified SMA crossover rather than the true momentum/volatility rule, making the result unreliable.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_value_momentum_combo_fxA_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.7, WR=41.7% and Sharpe negative already fail Tier‑2; with just 12 trades and a placeholder SMA crossover signal, there is no credible edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_regime_conditional_hybrid_fxA_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Identical performance to the previous FXA candidate (PF=0.7, WR=41.7%, n=12) and suffers from the same simplified‑signal issue, so no actionable edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_dollar_carry_uup_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=1.61 and WR=56.7% meet the PF/WR thresholds but only 30 trades were recorded; the entry logic is currently reduced to an SMA crossover, so the backtest is not trustworthy enough for deployment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_risk_parity_multi_etf_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "While PF=1.61, WR=56.7% look decent, the strategy has only 30 trades and the entry is a placeholder SMA crossover rather than the intended multi‑ETF risk‑parity construction, leaving the edge unverified.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "None of the candidates satisfy the Tier‑2 floor because every backtest is based on fewer than 100 trades, and all signals are currently simplified approximations of the intended logic. The promising PF and WR figures for the UUP‑based strategies are outweighed by the limited trade count and the lack of a faithful signal implementation, so no edge can be confirmed at this stage. Further data (longer history) and a proper spec‑to‑signal translation are required before any candidate can be considered for production."
+}

@@ -1,0 +1,71 @@
+# 3-axis autopsy + compat matrix + week-over-week WR decay diff.
+# See docs/MUTATION_THREE_AXIS_PROTOCOL.md
+name: Mutation analysis report
+
+'on':
+  workflow_dispatch:
+  schedule:
+    - cron: '25 6 * * 1' # Mondays 06:25 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Restore previous compat matrix
+        id: cache_prev
+        uses: actions/cache/restore@v4
+        with:
+          path: mutation_artifacts/compat_matrix_prev.csv
+          key: mutation-compat-${{ github.run_id }}
+          restore-keys: |
+            mutation-compat-
+
+      - name: Run mutation analysis
+        run: |
+          mkdir -p mutation_artifacts
+          python tools/mutation_analysis.py \
+            --json alpha_engine/data/closed_picks.json \
+            -o mutation_artifacts/full_report.txt \
+            --matrix-csv mutation_artifacts/compat_matrix.csv \
+            --min-trades 5
+
+      - name: Matrix week-over-week decay check
+        run: |
+          if [ -f mutation_artifacts/compat_matrix_prev.csv ]; then
+            python tools/matrix_diff.py \
+              mutation_artifacts/compat_matrix_prev.csv \
+              mutation_artifacts/compat_matrix.csv \
+              --threshold 15 \
+              -o mutation_artifacts/matrix_wr_decay.txt
+          else
+            echo "# No previous matrix (first run or cold cache)" > mutation_artifacts/matrix_wr_decay.txt
+          fi
+
+      - name: Stage matrix for next run
+        run: cp mutation_artifacts/compat_matrix.csv mutation_artifacts/compat_matrix_prev.csv
+
+      - name: Save compat matrix cache
+        uses: actions/cache/save@v4
+        with:
+          path: mutation_artifacts/compat_matrix_prev.csv
+          key: mutation-compat-${{ github.run_id }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-analysis-${{ github.sha }}
+          path: mutation_artifacts/
+          retention-days: 90

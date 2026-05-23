@@ -1,0 +1,711 @@
+{
+  "_metadata": {
+    "research_date": "2026-03-21",
+    "purpose": "Verified forex/futures/commodity copy traders with auditable track records",
+    "confidence": "MEDIUM - sourced from web research, individual stats need live verification",
+    "platforms_researched": [
+      "Myfxbook",
+      "Darwinex",
+      "ZuluTrade",
+      "eToro",
+      "FTMO",
+      "Collective2",
+      "TradingView"
+    ]
+  },
+
+  "platforms": {
+    "myfxbook": {
+      "verification_method": "Direct broker account connection via read-only investor password",
+      "verification_level": "HIGH - connects to live broker accounts, verifies balance/equity/trades in real-time",
+      "api_available": true,
+      "api_details": {
+        "base_url": "https://www.myfxbook.com/api",
+        "auth": "Email/password login, returns session ID (IP-bound, 1-month TTL)",
+        "endpoints": [
+          "login.json",
+          "logout.json",
+          "get-my-accounts.json",
+          "get-open-trades.json",
+          "get-open-orders.json",
+          "get-history.json",
+          "get-daily-gain.json"
+        ],
+        "limitation": "API only accesses YOUR accounts - cannot programmatically scrape other users' systems. Would need web scraping for community data.",
+        "node_client": "npm install myfxbook-api-client",
+        "python_client": "pip install myfxbook",
+        "api_version": "v1.38 (Oct 2025)"
+      },
+      "scraping_feasibility": "MEDIUM - API limited to own accounts; community/systems pages require HTML scraping (403 on direct fetch, needs browser automation)",
+      "top_verified_systems": [
+        {
+          "name": "FX Stabilizer",
+          "type": "EA/Robot",
+          "total_gain_pct": 3715,
+          "monthly_return_pct": 3.13,
+          "max_drawdown_pct": 12,
+          "profit_factor": 1.84,
+          "total_trades": 4334,
+          "trading_days": 3549,
+          "verified": true,
+          "instruments": "Multi-pair forex",
+          "strategy_type": "Trend following with stabilization",
+          "notes": "Nearly 10 years of verified live trading"
+        },
+        {
+          "name": "FX Proctor Max",
+          "type": "EA/Robot",
+          "total_gain_pct": 433,
+          "monthly_return_pct": 17.07,
+          "max_drawdown_pct": 13,
+          "profit_factor": 3.28,
+          "total_trades": 464,
+          "trading_days": 323,
+          "verified": true,
+          "instruments": "Forex majors",
+          "strategy_type": "Aggressive scalping",
+          "notes": "High monthly return but short track record"
+        },
+        {
+          "name": "FX Constant",
+          "type": "EA/Robot",
+          "total_gain_pct": 152,
+          "monthly_return_pct": 12.3,
+          "max_drawdown_pct": 14,
+          "profit_factor": 2.56,
+          "total_trades": 157,
+          "trading_days": 237,
+          "verified": true,
+          "instruments": "Forex",
+          "strategy_type": "Conservative scalping"
+        },
+        {
+          "name": "Forex Robotron",
+          "type": "EA/Robot",
+          "total_gain_pct": 1224,
+          "monthly_return_pct": 38.5,
+          "max_drawdown_pct": 17,
+          "profit_factor": 4.53,
+          "total_trades": 745,
+          "trading_days": 241,
+          "verified": true,
+          "instruments": "Forex",
+          "strategy_type": "Aggressive automated trading",
+          "notes": "Extremely high monthly return - likely high risk despite low drawdown shown"
+        },
+        {
+          "name": "Night Hunter Pro",
+          "type": "EA/Robot",
+          "developer": "Valeriia Mishchenko",
+          "total_gain_pct": 215,
+          "monthly_return_pct": 1.4,
+          "max_drawdown_pct": 30,
+          "profit_factor": null,
+          "total_trades": null,
+          "trading_days": 1460,
+          "verified": true,
+          "instruments": ["GBPUSD", "EURUSD", "EURCHF", "USDCAD", "USDCHF", "CHFJPY", "AUDCAD", "EURCAD", "EURAUD", "EURGBP", "EURJPY", "AUDJPY"],
+          "strategy_type": "Night scalping (21:00-01:00 broker time)",
+          "features": ["News filter", "Stock crash protection", "No martingale", "Fixed stop loss", "FTMO/FIFO compatible"],
+          "notes": "4+ years verified live. Most reputable scalping EA in MQL marketplace."
+        },
+        {
+          "name": "Forex Fury",
+          "type": "EA/Robot",
+          "total_gain_pct": 85,
+          "monthly_return_pct": null,
+          "max_drawdown_pct": 41.9,
+          "profit_factor": null,
+          "win_rate_pct": 93,
+          "total_trades": null,
+          "trading_days": 1460,
+          "verified": true,
+          "instruments": ["GBPUSD"],
+          "strategy_type": "Low-frequency scalping",
+          "notes": "48 months verified. Claims 93% win rate."
+        },
+        {
+          "name": "Forex Gump EA",
+          "type": "EA/Robot",
+          "total_gain_pct": 708,
+          "monthly_return_pct": 6.9,
+          "max_drawdown_pct": 33,
+          "profit_factor": 1.86,
+          "total_trades": 17940,
+          "trading_days": 920,
+          "verified": true,
+          "instruments": "Multi-pair forex",
+          "strategy_type": "High-frequency automated",
+          "notes": "Very high trade count - likely grid or martingale element"
+        },
+        {
+          "name": "BF Scalper Pro",
+          "type": "EA/Robot",
+          "total_gain_pct": 287,
+          "monthly_return_pct": 1.66,
+          "max_drawdown_pct": 39,
+          "profit_factor": 1.23,
+          "total_trades": 4453,
+          "trading_days": 2469,
+          "verified": true,
+          "instruments": "Forex",
+          "strategy_type": "Scalping",
+          "notes": "Nearly 7 years of live data but low profit factor"
+        }
+      ]
+    },
+
+    "darwinex": {
+      "verification_method": "Regulated broker (FCA/CNMV) - all trades executed through Darwinex servers, independently audited",
+      "verification_level": "HIGHEST - regulated financial product, DARWIN indices are synthetic assets with verified underlying trading",
+      "api_available": true,
+      "api_details": {
+        "apis": [
+          {
+            "name": "Darwin Info API",
+            "purpose": "DARWIN quotes and investment attributes",
+            "auth": "OAuth2 access token"
+          },
+          {
+            "name": "Investor Account Info API",
+            "purpose": "Account status, investments, trades, conditional orders",
+            "auth": "OAuth2 access token (3600s TTL)"
+          },
+          {
+            "name": "Darwin Trading API",
+            "purpose": "Buy/sell DARWINs, conditional orders, leverage management",
+            "auth": "OAuth2 access token"
+          },
+          {
+            "name": "Quote WebSocket API",
+            "purpose": "Real-time tick-level DARWIN quotes",
+            "auth": "OAuth2 access token"
+          }
+        ],
+        "documentation": "https://api.darwinex.com/store/",
+        "python_package": "pip install darwinexapis",
+        "github": "https://github.com/darwinex/darwinexapis",
+        "data_api_token_ttl": "6 months",
+        "trading_api_token_ttl": "3600 seconds"
+      },
+      "scraping_feasibility": "HIGH - official Python package and REST APIs available. Can get DARWIN performance data, quotes, and even invest programmatically.",
+      "fee_structure": {
+        "management_fee": "1.2% annual on invested equity",
+        "performance_fee": "20% on investor profits"
+      },
+      "top_darwins_silver_jan2026": [
+        {
+          "ticker": "GRT",
+          "monthly_return_pct": 10.65,
+          "six_month_return_pct": 23.63,
+          "six_month_max_drawdown_pct": -4.09,
+          "latest_allocation_eur": 375000,
+          "historical_max_allocation_eur": 435000
+        },
+        {
+          "ticker": "BVU",
+          "monthly_return_pct": 7.61,
+          "six_month_return_pct": 34.97,
+          "six_month_max_drawdown_pct": -4.03,
+          "latest_allocation_eur": 315000,
+          "historical_max_allocation_eur": 600000
+        },
+        {
+          "ticker": "PMZ",
+          "monthly_return_pct": 14.30,
+          "six_month_return_pct": 22.93,
+          "six_month_max_drawdown_pct": -4.23,
+          "latest_allocation_eur": 265000,
+          "historical_max_allocation_eur": 1172711
+        },
+        {
+          "ticker": "YNE",
+          "monthly_return_pct": 12.72,
+          "six_month_return_pct": 24.34,
+          "six_month_max_drawdown_pct": -5.15,
+          "latest_allocation_eur": 220000,
+          "historical_max_allocation_eur": 355000
+        },
+        {
+          "ticker": "QRQS",
+          "monthly_return_pct": 8.02,
+          "six_month_return_pct": 23.00,
+          "six_month_max_drawdown_pct": -2.96,
+          "latest_allocation_eur": 190000,
+          "historical_max_allocation_eur": 505000
+        },
+        {
+          "ticker": "KVO",
+          "monthly_return_pct": 7.73,
+          "six_month_return_pct": 28.63,
+          "six_month_max_drawdown_pct": -3.62,
+          "latest_allocation_eur": 165000,
+          "historical_max_allocation_eur": 485000
+        },
+        {
+          "ticker": "GWVV",
+          "monthly_return_pct": 8.91,
+          "six_month_return_pct": 24.54,
+          "six_month_max_drawdown_pct": -5.02,
+          "latest_allocation_eur": 145000,
+          "historical_max_allocation_eur": 345000
+        },
+        {
+          "ticker": "CHVE",
+          "monthly_return_pct": 7.72,
+          "six_month_return_pct": 24.34,
+          "six_month_max_drawdown_pct": -3.24,
+          "latest_allocation_eur": 130000,
+          "historical_max_allocation_eur": 350000
+        },
+        {
+          "ticker": "CIDY",
+          "monthly_return_pct": 10.37,
+          "six_month_return_pct": 24.66,
+          "six_month_max_drawdown_pct": -5.54,
+          "latest_allocation_eur": 115000,
+          "historical_max_allocation_eur": 400000
+        },
+        {
+          "ticker": "QXC",
+          "monthly_return_pct": 23.35,
+          "six_month_return_pct": 51.54,
+          "six_month_max_drawdown_pct": -5.08,
+          "latest_allocation_eur": 110000,
+          "historical_max_allocation_eur": 110000,
+          "notes": "New entrant - very high return, first allocation"
+        }
+      ],
+      "top_darwins_gold_jan2026": [
+        {
+          "ticker": "WMH",
+          "monthly_return_pct": 24.93,
+          "latest_allocation_eur": 500000,
+          "historical_max_allocation_eur": 815000
+        },
+        {
+          "ticker": "XUV",
+          "monthly_return_pct": 19.55,
+          "latest_allocation_eur": 350000,
+          "historical_max_allocation_eur": 640000
+        },
+        {
+          "ticker": "SAIE",
+          "monthly_return_pct": 18.95,
+          "latest_allocation_eur": 275000,
+          "historical_max_allocation_eur": 495000
+        },
+        {
+          "ticker": "YPIU",
+          "monthly_return_pct": 14.83,
+          "latest_allocation_eur": 210000,
+          "historical_max_allocation_eur": 815000
+        },
+        {
+          "ticker": "IGED",
+          "monthly_return_pct": 13.09,
+          "latest_allocation_eur": 170000,
+          "historical_max_allocation_eur": 375000
+        },
+        {
+          "ticker": "PAVD",
+          "monthly_return_pct": 12.03,
+          "latest_allocation_eur": 145000,
+          "historical_max_allocation_eur": 205000
+        },
+        {
+          "ticker": "ZKJO",
+          "monthly_return_pct": 11.72,
+          "latest_allocation_eur": 130000,
+          "historical_max_allocation_eur": 530000
+        },
+        {
+          "ticker": "JHOA",
+          "monthly_return_pct": 11.42,
+          "latest_allocation_eur": 125000,
+          "historical_max_allocation_eur": 440000
+        },
+        {
+          "ticker": "KEPU",
+          "monthly_return_pct": 11.41,
+          "latest_allocation_eur": 120000,
+          "historical_max_allocation_eur": 540000
+        },
+        {
+          "ticker": "EOQ",
+          "monthly_return_pct": 11.07,
+          "latest_allocation_eur": 115000,
+          "historical_max_allocation_eur": 275000
+        }
+      ],
+      "notable_darwins_2025": [
+        {
+          "ticker": "JRMZ",
+          "monthly_return_pct": 13.13,
+          "notes": "Top performer in late 2025"
+        },
+        {
+          "ticker": "TGVF",
+          "allocation_eur": 850000,
+          "monthly_return_aug2025_pct": 12.09,
+          "notes": "Largest allocation - sustained performance"
+        },
+        {
+          "ticker": "JHSH",
+          "monthly_return_nov2025_pct": 11.27,
+          "allocation_eur": 500000,
+          "provider": "AAA7",
+          "notes": "Synthetic financial index managed by Darwinex"
+        }
+      ]
+    },
+
+    "zulutrade": {
+      "verification_method": "Trading stats auto-verified from connected broker accounts. Claims/bios NOT verified.",
+      "verification_level": "MEDIUM - trading statistics are real, but trader backgrounds and strategy descriptions are unverified",
+      "api_available": false,
+      "api_details": {
+        "official_api": "None found - no official public API documentation",
+        "community_tools": [
+          {
+            "name": "python-zulu-trader",
+            "url": "https://github.com/webfarmer/python-zulu-trader",
+            "language": "Python",
+            "purpose": "Unofficial API wrapper"
+          }
+        ],
+        "signal_delivery": "Trades auto-replicated to follower accounts via broker connection"
+      },
+      "scraping_feasibility": "LOW - no official API, would need browser automation to scrape trader rankings",
+      "platform_stats": {
+        "signal_providers": "90,000+",
+        "total_users": "2,400,000+",
+        "countries": "150+",
+        "total_volume_traded": "$800B+"
+      },
+      "ranking_criteria": {
+        "minimum_history": "12 weeks",
+        "max_drawdown_for_top1000": "30%",
+        "min_profit_per_trade": "3 pips",
+        "ranking_update": "Daily",
+        "ranking_algorithm": "Proprietary (not disclosed)"
+      },
+      "top_traders": [],
+      "notes": "ZuluTrade rankings are dynamic and not available through search - must visit platform directly. No specific trader names found in research."
+    },
+
+    "etoro": {
+      "verification_method": "All trading on eToro platform - portfolio data is real and publicly viewable",
+      "verification_level": "HIGH - regulated broker (FCA/CySEC/ASIC), all trades executed on their platform, portfolios are public",
+      "api_available": true,
+      "api_details": {
+        "portal": "https://api-portal.etoro.com/",
+        "status": "Early rollout - available to select users (launched Oct 2025)",
+        "capabilities": [
+          "Real-time market prices, spreads, execution rates",
+          "Portfolio data: PnL, open positions, trading history for public accounts",
+          "Trading: order execution, cancellations, stop-loss/take-profit management",
+          "CopyTrader functionality"
+        ],
+        "auth": "Verified eToro account required",
+        "limitation": "Still in early access, not available to all users"
+      },
+      "scraping_feasibility": "MEDIUM - new API is promising but in early access. Web scraping of public profiles is possible.",
+      "popular_investor_tiers": ["Cadet", "Rising Star", "Champion", "Elite"],
+      "tier_requirements": {
+        "risk_score_max": 7,
+        "max_drawdown_pct": 30,
+        "earn": "Percentage of AUM under copy"
+      },
+      "top_traders_forex_commodity": [
+        {
+          "username": "@OlivierDanvel",
+          "name": "Olivier Jean Andre Danvel",
+          "aum": "$5M+",
+          "risk_score": null,
+          "strategy_type": "Forex trading",
+          "experience": "20+ years professional fund manager",
+          "performance": null,
+          "asset_focus": "Forex",
+          "verified": true,
+          "notes": "One of the most popular forex-focused popular investors"
+        },
+        {
+          "username": "@thomaspj",
+          "name": "Thomas Parry Jones",
+          "copiers": 26000,
+          "risk_score": 4,
+          "asset_focus": ["Stocks", "Gold", "Retail"],
+          "strategy_type": "Macro investing",
+          "performance_2023_2024_pct": 30,
+          "profitable_since": 2019,
+          "verified": true
+        },
+        {
+          "username": "@JeppeKirkBonde",
+          "name": "Jeppe Kirk Bonde",
+          "copiers": 34000,
+          "aum": "$100M+",
+          "risk_score": 4,
+          "asset_focus": ["Stocks", "ETFs", "Crypto"],
+          "avg_annual_return_since_2013_pct": 25,
+          "performance_2023_2024_pct": 20,
+          "min_copy_investment": 20000,
+          "verified": true
+        },
+        {
+          "username": "@fundmanagerzech",
+          "name": "Zheng Bin",
+          "copiers": 8000,
+          "risk_score": 4,
+          "asset_focus": ["Stocks (90%)", "Crypto", "Currencies", "ETFs"],
+          "performance_2023_2024_pct": 20,
+          "profitable_weeks_pct": 62.5,
+          "min_copy_investment": 500,
+          "verified": true
+        },
+        {
+          "username": "@RichardStroud",
+          "name": "Richard Stroud",
+          "risk_score": 5,
+          "popular_investor_since": "March 2020",
+          "asset_focus": "Mixed",
+          "verified": true,
+          "notes": "3+ years track record"
+        }
+      ],
+      "platform_stats": {
+        "forex_pairs": 55,
+        "etfs": 432,
+        "indices": 21,
+        "commodities": 32,
+        "stocks": 4100,
+        "copyable_investors": 4000,
+        "investor_countries": 70
+      }
+    },
+
+    "ftmo": {
+      "verification_method": "Prop firm - traders must pass evaluation, trade with firm capital on demo accounts with real market conditions",
+      "verification_level": "MEDIUM-HIGH - trades are verified by FTMO, but accounts are demo (simulated environment with real pricing)",
+      "api_available": false,
+      "api_details": {
+        "official_api": "None - leaderboard is dynamically loaded on website",
+        "limitation": "No programmatic access to leaderboard or individual trader data"
+      },
+      "scraping_feasibility": "LOW - leaderboard loads dynamically (JS), requires browser automation. No way to copy signals.",
+      "platform_stats": {
+        "total_payouts": "$200M+ since 2015",
+        "evaluation": "Two-phase challenge process"
+      },
+      "notable_traders": [
+        {
+          "name": "Juan",
+          "country": "Costa Rica",
+          "account_size": 400000,
+          "achievement": "15 consecutive payouts",
+          "monthly_profit_pct": "2-3%",
+          "instruments": ["GBPJPY"],
+          "strategy_type": "Swing trading - price action, Fibonacci, liquidity analysis",
+          "risk_per_trade_pct": 0.13,
+          "session": "New York only",
+          "verified": true
+        },
+        {
+          "name": "Pepijn",
+          "country": "Netherlands",
+          "age": 19,
+          "best_month_profit": 76000,
+          "instruments": ["Forex majors", "Cross pairs", "Gold"],
+          "strategy_type": "Top-down analysis, price action, Fibonacci",
+          "risk_per_trade_pct": 1.0,
+          "session": "London (15-30 min delay after open)",
+          "timeframe": "5-minute for entries",
+          "verified": true
+        },
+        {
+          "name": "Paul",
+          "country": "United States",
+          "total_payout": 500000,
+          "instruments": ["Forex"],
+          "strategy_type": "Fundamental - COT report, economic news, RSI/MACD/Fibonacci",
+          "analysis_start": "Monthly charts",
+          "profit_taking": "Gradual scaling out",
+          "verified": true
+        }
+      ],
+      "common_winning_strategies": [
+        "London Open Volatility Breakout",
+        "Price Action + EMA Trend Filter + Institutional Order Flow",
+        "Breakout + Retest + Trend Confirmation",
+        "Mean Reversion at Validated Levels",
+        "Session-Based Rules (London/NY)"
+      ]
+    },
+
+    "collective2": {
+      "verification_method": "All trades verified through broker-linked execution (AutoTrading). Hypothetical fills also tracked separately.",
+      "verification_level": "MEDIUM-HIGH - broker-linked fills are verified, but some strategies show simulated results",
+      "api_available": true,
+      "api_details": {
+        "documentation": "https://collective2.com/api-docs/latest",
+        "apis": [
+          {
+            "name": "Signal Entry API",
+            "purpose": "Place trades and send trading instructions programmatically",
+            "protocol": "HTTP REST"
+          },
+          {
+            "name": "AutoTrading API (C2ATI)",
+            "purpose": "Pull trading information, manage autotrading between C2 and broker accounts",
+            "protocol": "HTTP REST",
+            "auth": "C2 username/password"
+          }
+        ],
+        "capabilities": [
+          "Retrieve list of subscribed strategies",
+          "Get real-time signals from strategies",
+          "Execute trades based on signals",
+          "Test client available for development"
+        ],
+        "quantconnect_integration": "https://www.quantconnect.com/docs/v2/writing-algorithms/live-trading/signal-exports/collective2"
+      },
+      "scraping_feasibility": "HIGH - official API supports pulling trading signals programmatically for subscribed strategies",
+      "platform_stats": {
+        "total_strategies": "12,000+",
+        "total_members": "78,000+",
+        "supported_assets": ["Stocks", "Options", "Futures", "Forex"]
+      },
+      "notable_strategies": [
+        {
+          "name": "QUANT AI Gold and Silver",
+          "cumulative_return_pct": 62.5,
+          "start_date": "2025-09-23",
+          "instruments": ["Gold", "Silver"],
+          "strategy_type": "Quantitative commodity trading",
+          "notes": "Relatively new - 6 months track record"
+        },
+        {
+          "name": "Steady Equity Growth",
+          "cumulative_return_pct": 10.4,
+          "start_date": "2025-04-23",
+          "strategy_type": "Conservative equity",
+          "notes": "Low return but steady"
+        }
+      ],
+      "notes": "Platform pages return 403 on direct fetch - need to browse directly for full strategy listings. QuantConnect integration is a bonus for algo traders."
+    },
+
+    "tradingview": {
+      "verification_method": "Ideas are public with timestamps - accuracy can be tracked post-publication. No formal verification of fills.",
+      "verification_level": "LOW - ideas are published forecasts, not verified trades. No proof of execution.",
+      "api_available": false,
+      "api_details": {
+        "official_api": "No public API for accessing user ideas/signals",
+        "pine_script": "Can create alerts that trigger via webhooks",
+        "webhook_integration": "TradingView alerts can trigger external systems via webhook URLs"
+      },
+      "scraping_feasibility": "LOW - no API for idea/signal data. Would need to scrape individual profile pages. Alerts via webhooks is the only programmatic integration.",
+      "platform_stats": {
+        "total_users": "60M+",
+        "broker_integrations": "110+"
+      },
+      "top_traders": [],
+      "notes": "TradingView is best used as a charting/alert platform, not as a verified signal source. Ideas are unexecuted forecasts. Use Pine Script + webhooks for alert-based signal generation instead."
+    }
+  },
+
+  "platform_comparison": {
+    "verification_ranking": [
+      {"rank": 1, "platform": "Darwinex", "level": "HIGHEST", "reason": "FCA-regulated, trades executed on their servers, DARWIN indices independently audited"},
+      {"rank": 2, "platform": "eToro", "level": "HIGH", "reason": "FCA/CySEC/ASIC regulated, all trades on-platform, public portfolios"},
+      {"rank": 3, "platform": "Myfxbook", "level": "HIGH", "reason": "Direct broker connection, read-only investor password verification"},
+      {"rank": 4, "platform": "Collective2", "level": "MEDIUM-HIGH", "reason": "Broker-linked AutoTrading verifies fills, but some simulated results"},
+      {"rank": 5, "platform": "FTMO", "level": "MEDIUM-HIGH", "reason": "Firm-verified but demo accounts (simulated environment)"},
+      {"rank": 6, "platform": "ZuluTrade", "level": "MEDIUM", "reason": "Stats auto-verified but trader backgrounds unverified"},
+      {"rank": 7, "platform": "TradingView", "level": "LOW", "reason": "Published ideas only, no verified execution"}
+    ],
+    "api_ranking": [
+      {"rank": 1, "platform": "Darwinex", "reason": "Full REST + WebSocket APIs, Python package, can invest programmatically"},
+      {"rank": 2, "platform": "Collective2", "reason": "Signal Entry + AutoTrading APIs, QuantConnect integration"},
+      {"rank": 3, "platform": "Myfxbook", "reason": "API exists but limited to own accounts"},
+      {"rank": 4, "platform": "eToro", "reason": "New public API (Oct 2025) but early access only"},
+      {"rank": 5, "platform": "ZuluTrade", "reason": "No official API, unofficial Python wrapper exists"},
+      {"rank": 6, "platform": "FTMO", "reason": "No API, dynamic website"},
+      {"rank": 7, "platform": "TradingView", "reason": "No signal API, only webhook alerts"}
+    ],
+    "signal_copy_feasibility": [
+      {"platform": "Darwinex", "can_copy_signals": true, "method": "Invest in DARWINs via API (actual copy trading)"},
+      {"platform": "Collective2", "can_copy_signals": true, "method": "AutoTrading API mirrors trades to broker account"},
+      {"platform": "eToro", "can_copy_signals": true, "method": "CopyTrader via API (early access)"},
+      {"platform": "ZuluTrade", "can_copy_signals": true, "method": "Platform auto-replicates via broker connection (not programmable)"},
+      {"platform": "Myfxbook", "can_copy_signals": false, "method": "API only reads own accounts - cannot extract other traders' signals"},
+      {"platform": "FTMO", "can_copy_signals": false, "method": "No signal export capability"},
+      {"platform": "TradingView", "can_copy_signals": false, "method": "Only webhook alerts from your own strategies"}
+    ]
+  },
+
+  "recommended_integration_priority": [
+    {
+      "priority": 1,
+      "platform": "Darwinex",
+      "reason": "Highest verification level + full API suite + Python package. Can programmatically monitor DARWIN performance and even invest.",
+      "integration_effort": "LOW - pip install darwinexapis, OAuth2 auth",
+      "data_available": ["DARWIN quotes", "Performance history", "Investment attributes", "D-Score", "Real-time quotes via WebSocket"],
+      "cost": "Free API access for data, trading requires funded account"
+    },
+    {
+      "priority": 2,
+      "platform": "Collective2",
+      "reason": "Verified fills + official API for signal retrieval. Can autotrade or monitor signals from 12K+ strategies.",
+      "integration_effort": "MEDIUM - REST API, need subscription to access strategy signals",
+      "data_available": ["Strategy signals", "Performance history", "Trade details"],
+      "cost": "Strategy subscription required ($50-300/mo per strategy)"
+    },
+    {
+      "priority": 3,
+      "platform": "Myfxbook",
+      "reason": "Largest database of verified forex accounts. API limited but can scrape top systems.",
+      "integration_effort": "MEDIUM-HIGH - API only for own accounts, scraping needed for community data",
+      "data_available": ["Own account data via API", "Community stats via web scraping"],
+      "cost": "Free for API, scraping requires infrastructure"
+    },
+    {
+      "priority": 4,
+      "platform": "eToro",
+      "reason": "Public API launching, huge user base, regulated. Good for monitoring popular investor performance.",
+      "integration_effort": "HIGH - API in early access, may need to waitlist",
+      "data_available": ["Portfolio data for public accounts", "Market data", "CopyTrader functionality"],
+      "cost": "Free API, copy trading requires funded eToro account"
+    }
+  ],
+
+  "strategy_patterns_from_top_traders": {
+    "most_common_instruments": [
+      "GBPUSD", "EURUSD", "GBPJPY", "XAUUSD (Gold)", "USDJPY",
+      "EURCHF", "USDCAD", "EURJPY", "AUDJPY", "USDCHF"
+    ],
+    "most_common_strategies": [
+      "Night/Asian session scalping (21:00-01:00)",
+      "London session breakout",
+      "Price action + Fibonacci retracement",
+      "Fundamental + COT report analysis",
+      "Mean reversion with RSI/Bollinger",
+      "EMA stack trend following",
+      "Swing trading with top-down multi-timeframe analysis"
+    ],
+    "common_risk_management": {
+      "risk_per_trade": "0.13% to 1%",
+      "max_drawdown_target": "Under 30%",
+      "no_martingale": "Consistent among successful traders",
+      "fixed_stop_loss": "Universal among verified profitable traders",
+      "session_filtering": "London and NY sessions dominate"
+    },
+    "average_hold_times": {
+      "scalping_eas": "Minutes to hours",
+      "intraday_manual": "1-8 hours",
+      "swing_trading": "1-5 days",
+      "position_trading": "Weeks to months"
+    }
+  }
+}

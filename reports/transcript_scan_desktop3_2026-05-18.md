@@ -1,0 +1,151 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\e--findtorontoevents-antigravity-ca\058134a6-cd18-4c9f-a996-1906913d2c23.jsonl`
+- turns: 37 · chunks: 14 · provider: deepseek
+- deduped action items: 88
+
+## Action items (deduped across chunks)
+
+- [DONE] Drop CLAUDE_DESKTOP3_2026-05-18_0554EST.MD file
+- [OPEN] Summarize changes to the .MD file (what was accomplished, remaining, per-asset-class profitability with statistical edge)
+- [OPEN] Create "ask grok" skill
+- [UNCLEAR] Run /swarm-engines to confirm Grok is wired
+- [UNCLEAR] Test wsl grok -p path
+- [UNCLEAR] Dispatch Fork 2 builders
+- [OPEN] Commit consult-grok skill + 7 other global-only skills to .claude/skills/ and push to GitHub
+- [OPEN] Land Fork 2 P1/P2 edge work — H-008 BOND continuous-position variant + funding-rate collector — verified network-free
+- [OPEN] Update reports/PATH_TO_PROVEN_EDGE + hypothesis_registry
+- [OPEN] Write CLAUDE_DESKTOP3 summary MD
+- [OPEN] Commit to main and broadcast via /dropchat-multipc
+- [DONE] Create `consult-grok` skill and copy 7 global-only skills into repo `.claude/skills/`
+- [DONE] Create `tools/funding_rate_collector.py` (P2(a) funding-rate collector)
+- [DONE] Implement H-008 continuous-position agent in `tools/new_signal_research.py` and `tools/test_new_signal_research.py`
+- [DONE] Run `py_compile` on both files
+- [DONE] Run `python tools/test_new_signal_research.py` — all tests passed
+- [OPEN] Commit skills + Fork 2 work to main + push + broadcast (once H-008 returns)
+- [OPEN] Run live backtest: `python tools/new_signal_research.py --signal bond-continuous` with internet for real harness verdict
+- [DONE] Update PATH doc to reflect H-006/H-007/H-008 rejection resolution
+- [DONE] Re-apply PATH doc edits after peer revert
+- [OPEN] Recreate and commit storm-wiped uncommitted files
+- [DONE] Push 3 commits to origin/main
+- [OPEN] Broadcast
+- [OPEN] Memory
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Send broadcast via adapter to `192.168.2.32:8788` with topic `SESSION_SUMMARY`
+- [OPEN] Verify send landed using `protocol_inspect tail --limit 5`
+- [OPEN] Drain DMs addressed to `claude-desktop` via `freebuff_adapter poll`
+- [OPEN] Drain broadcasts via `freebuff_adapter poll --peer-id all`
+- [OPEN] Triage each peer message by topic and act accordingly
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii` binary is on PATH and version 0.11.2 (if server fails to start)
+- [OPEN] Reinstall `iii.exe` if missing (download zip, extract to `%USERPROFILE%\.local\bin\`)
+- [OPEN] Store a memory via `/agentmemory remember <text>` (e.g., an asset edge finding or bug fix)
+- [OPEN] Search memories via `/agentmemory search <query>`
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a memory by ID via `/agentmemory forget <id>`
+- [OPEN] Import recent Claude Code session transcripts via `agentmemory import-jsonl --max-files 50`
+- [OPEN] Check server health via `curl http://localhost:3111/agentmemory/health`
+- [DONE] Verify tool exists: `python tools/holographic_memory.py dump 2>&1 | head -5`
+- [DONE] Record session summary into holographic memory (write-decision or fact set for the 2026-05-18 session)
+- [DONE] Git commit and push holographic memory changes with `[skip ci]`
+- [OPEN] Pre-register H-009/H-010/H-011 (next step surfaced by assistant)
+- [DONE] Create `consult-grok` skill (verified live)
+- [DONE] Vendor 8 global-only skills into repo `.claude/skills/` (committed)
+- [DONE] Implement H-008 BOND continuous-position variant (tests passed)
+- [DONE] Create funding-rate collector + daily workflow (live fetch)
+- [DONE] Push 4 commits to `main` (git log empty)
+- [DONE] Broadcast dropchat + agentmemory + holographic memory (envelope confirmed)
+- [OPEN] Implement H-009 COMMODITY inventory-surprise × roll-yield
+- [OPEN] Implement H-010/H-011 EQUITY/ETF PEAD + 12-1 cross-sectional momentum
+- [OPEN] Determine which AI model (e.g., Cerebras, Mercury) is ideal for processing giant files in one shot
+- [OPEN] Have that model code review latest .MD files
+- [OPEN] Summarize action items related to master plan for per-asset-class world-class performance
+- [OPEN] Build H-002 (EQUITY PEAD SUE decile drift)
+- [OPEN] Build H-003 (ETF 12-1 cross-sectional momentum)
+- [OPEN] Build H-004 (COMMODITY inventory-surprise × roll-yield)
+- [OPEN] Run Gemini review of latest .MD files against MASTER_ENHANCEMENT_PLAN_2026_05_18.md
+- [DONE] Run tests to check current status (pytest on options_flow and onchain_crypto signals)
+- [OPEN] Write comprehensive summary document covering action plan, accomplishments, files generated/modified, next steps, and contribution to PnL/profit factor/Sharpe ratio per asset class
+- [OPEN] Fix options_flow.py import issue (file missing from main repo; needs to be written or path corrected)
+- [DONE] Vendor 8 skills to repo `.claude/skills/` (including consult-grok)
+- [DONE] Update PATH doc + CLAUDE_DESKTOP3 log + funding-archive .gitkeep
+- [DONE] Fork 2 P1/P2 — H-008 continuous-position variant + funding-rate collector
+- [DONE] Holographic-memory update
+- [DONE] Store agentmemory entry, holographic learning+decision, update reference-grok-headless memory, send dropchat broadcast
+- [DONE] Turn H-008 from UNTESTED into harness-testable via `research_bond_continuous()`
+- [DONE] Create `tools/funding_rate_collector.py` + workflow
+- [DONE] Record Fork 2 = 0/3 all REJECTED in `reports/PATH_TO_PROVEN_EDGE_2026-05-18.md`
+- [DONE] Write session log `CLAUDE_DESKTOP3_*.MD`
+- [OPEN] Background agent completes H-002, H-003, H-004 as harness-gated sidecars
+- [OPEN] Verify H-002/03/04 agent completion → confirm pushed
+- [OPEN] Gemini reviews latest `.MD`s vs `MASTER_ENHANCEMENT_PLAN_2026-05-18.md` → action items per asset class
+- [OPEN] Resolve kilo's registry ID collision; relay H-013-already-dead finding
+- [OPEN] Determine which AI model is ideal for processing giant files in one shot (Cerebras, Mercury, etc.)
+- [OPEN] Have that model code-review latest `.MD` files and summarize action items related to master plan for world-class performance per asset class
+- [DONE] Verify Gemini CLI returns PONG and parseable .response field
+- [OPEN] Wait for H-002/H-003/H-004 agent to finish building (EQUITY PEAD / ETF 12-1 momentum / COMMODITY inventory-surprise modules + forward_signal_research_2026-05-18.md)
+- [OPEN] Verify agent's work once it lands
+- [OPEN] Bundle latest .MD files (including new agent report)
+- [OPEN] Have Gemini review bundled .MD files against MASTER_ENHANCEMENT_PLAN_2026_05_18.md
+- [OPEN] Produce per-asset-class action items for world-class performance
+- [UNCLEAR] Determine which AI model is ideal for processing giant files in one shot (Cerebras, Mercury, etc.) — user asked this but assistant selected Gemini instead; no comparison shown
+- [DONE] Build H-002/03/04 research modules (agent completed, committed)
+- [DONE] Run Gemini review of .MD bundle (background task completed)
+- [DONE] Save Gemini review as report + commit (assistant stated pushed)
+- [OPEN] Run `/swarm-transcript-review` (queued, not shown completed)
+- [OPEN] Run `/dropchat-multipc` (queued, not shown completed)
+
+## OPEN (52)
+
+- [OPEN] Summarize changes to the .MD file (what was accomplished, remaining, per-asset-class profitability with statistical edge)
+- [OPEN] Create "ask grok" skill
+- [OPEN] Commit consult-grok skill + 7 other global-only skills to .claude/skills/ and push to GitHub
+- [OPEN] Land Fork 2 P1/P2 edge work — H-008 BOND continuous-position variant + funding-rate collector — verified network-free
+- [OPEN] Update reports/PATH_TO_PROVEN_EDGE + hypothesis_registry
+- [OPEN] Write CLAUDE_DESKTOP3 summary MD
+- [OPEN] Commit to main and broadcast via /dropchat-multipc
+- [OPEN] Commit skills + Fork 2 work to main + push + broadcast (once H-008 returns)
+- [OPEN] Run live backtest: `python tools/new_signal_research.py --signal bond-continuous` with internet for real harness verdict
+- [OPEN] Recreate and commit storm-wiped uncommitted files
+- [OPEN] Broadcast
+- [OPEN] Memory
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Send broadcast via adapter to `192.168.2.32:8788` with topic `SESSION_SUMMARY`
+- [OPEN] Verify send landed using `protocol_inspect tail --limit 5`
+- [OPEN] Drain DMs addressed to `claude-desktop` via `freebuff_adapter poll`
+- [OPEN] Drain broadcasts via `freebuff_adapter poll --peer-id all`
+- [OPEN] Triage each peer message by topic and act accordingly
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii` binary is on PATH and version 0.11.2 (if server fails to start)
+- [OPEN] Reinstall `iii.exe` if missing (download zip, extract to `%USERPROFILE%\.local\bin\`)
+- [OPEN] Store a memory via `/agentmemory remember <text>` (e.g., an asset edge finding or bug fix)
+- [OPEN] Search memories via `/agentmemory search <query>`
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a memory by ID via `/agentmemory forget <id>`
+- [OPEN] Import recent Claude Code session transcripts via `agentmemory import-jsonl --max-files 50`
+- [OPEN] Check server health via `curl http://localhost:3111/agentmemory/health`
+- [OPEN] Pre-register H-009/H-010/H-011 (next step surfaced by assistant)
+- [OPEN] Implement H-009 COMMODITY inventory-surprise × roll-yield
+- [OPEN] Implement H-010/H-011 EQUITY/ETF PEAD + 12-1 cross-sectional momentum
+- [OPEN] Determine which AI model (e.g., Cerebras, Mercury) is ideal for processing giant files in one shot
+- [OPEN] Have that model code review latest .MD files
+- [OPEN] Summarize action items related to master plan for per-asset-class world-class performance
+- [OPEN] Build H-002 (EQUITY PEAD SUE decile drift)
+- [OPEN] Build H-003 (ETF 12-1 cross-sectional momentum)
+- [OPEN] Build H-004 (COMMODITY inventory-surprise × roll-yield)
+- [OPEN] Run Gemini review of latest .MD files against MASTER_ENHANCEMENT_PLAN_2026_05_18.md
+- [OPEN] Write comprehensive summary document covering action plan, accomplishments, files generated/modified, next steps, and contribution to PnL/profit factor/Sharpe ratio per asset class
+- [OPEN] Fix options_flow.py import issue (file missing from main repo; needs to be written or path corrected)
+- [OPEN] Background agent completes H-002, H-003, H-004 as harness-gated sidecars
+- [OPEN] Verify H-002/03/04 agent completion → confirm pushed
+- [OPEN] Gemini reviews latest `.MD`s vs `MASTER_ENHANCEMENT_PLAN_2026-05-18.md` → action items per asset class
+- [OPEN] Resolve kilo's registry ID collision; relay H-013-already-dead finding
+- [OPEN] Determine which AI model is ideal for processing giant files in one shot (Cerebras, Mercury, etc.)
+- [OPEN] Have that model code-review latest `.MD` files and summarize action items related to master plan for world-class performance per asset class
+- [OPEN] Wait for H-002/H-003/H-004 agent to finish building (EQUITY PEAD / ETF 12-1 momentum / COMMODITY inventory-surprise modules + forward_signal_research_2026-05-18.md)
+- [OPEN] Verify agent's work once it lands
+- [OPEN] Bundle latest .MD files (including new agent report)
+- [OPEN] Have Gemini review bundled .MD files against MASTER_ENHANCEMENT_PLAN_2026_05_18.md
+- [OPEN] Produce per-asset-class action items for world-class performance
+- [OPEN] Run `/swarm-transcript-review` (queued, not shown completed)
+- [OPEN] Run `/dropchat-multipc` (queued, not shown completed)

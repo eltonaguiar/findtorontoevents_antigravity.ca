@@ -1,0 +1,79 @@
+{
+  "strategy_name": "crypto_soc_intraday_time_slices_a10_v1",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T21:30:00Z",
+  "status": "backtest_failed",
+  "strategy_type": "social_inspired_intraday_time_slices",
+  "unique_value": "Social-theme composite (intraday_time_slices) with regime/VEI/orderflow/session confluence.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "adaptive",
+  "backtest_metrics": {
+    "sharpe": -10.9,
+    "win_rate": 0.22,
+    "max_drawdown": 0.0237,
+    "total_trades": 9,
+    "profit_factor": 0.11,
+    "total_return": -0.0234,
+    "timestamp": "2026-02-27T00:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "EMA(18/52)",
+    "ZScore(18)",
+    "Breakout(27)",
+    "ATRshort/ATRlong (10/46)",
+    "DeltaProxyFlow",
+    "SessionConfluence"
+  ],
+  "entry_conditions": [
+    "Composite exceeds directional threshold",
+    "VEI regime gate passes",
+    "Micro-noise filter passes"
+  ],
+  "exit_conditions": [
+    "Take profit: 1.90x ATR",
+    "Stop loss: 1.50x ATR"
+  ],
+  "parameters": {
+    "fast_ema": 18,
+    "slow_ema": 52,
+    "z_window": 18,
+    "breakout_window": 27,
+    "vol_window": 18,
+    "atr_short": 10,
+    "atr_long": 46,
+    "atr_gate": 1.16,
+    "vol_ratio_gate": 1.0,
+    "trend_w": 0.2751,
+    "meanrev_w": 0.0985,
+    "breakout_w": 0.1458,
+    "volstate_w": 0.1289,
+    "flow_w": 0.1245,
+    "session_w": 0.2273,
+    "long_threshold": 0.49,
+    "short_threshold": 0.49,
+    "tp_atr": 1.9,
+    "sl_atr": 1.5,
+    "cooldown": 2
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": null,
+    "completed_at": null,
+    "days_remaining": null
+  },
+  "forward_metrics": {
+    "win_rate": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "total_trades": null
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  }
+}

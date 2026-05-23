@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Health Check — What-If Analysis | Find Toronto Events</title>
+  <meta name="description" content="Is our crypto prediction system worth real capital? What-if scenarios, strategy diagnostics, and hedge-fund-grade analysis.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#06060e;--bg2:#0d0d1a;--bg3:#151528;--bg4:#1e1e3a;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4;--orange:#f97316;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--border:rgba(255,255,255,0.06);--glow:rgba(59,130,246,0.15)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .container{max-width:1400px;margin:0 auto;padding:20px}
+    .hero{text-align:center;padding:48px 20px 32px;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 50%,rgba(59,130,246,0.08) 0%,transparent 50%);pointer-events:none}
+    .hero h1{font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff 0%,#3b82f6 50%,#a855f7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+    .hero .sub{color:var(--text2);font-size:14px;max-width:700px;margin:0 auto 16px}
+    .hero .verdict{display:inline-block;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .verdict-pos{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+    .verdict-neg{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+    .verdict-warn{background:rgba(234,179,8,0.15);color:var(--yellow);border:1px solid rgba(234,179,8,0.3)}
+
+    /* Budget selector */
+    .budget-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:24px 0;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+    .budget-bar label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;display:flex;align-items:center;margin-right:12px}
+    .bud-btn{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s}
+    .bud-btn:hover{border-color:var(--blue);color:var(--text)}
+    .bud-btn.active{background:linear-gradient(135deg,#3b82f6,#6366f1);border-color:transparent;color:#fff;box-shadow:0 4px 20px rgba(59,130,246,0.3)}
+
+    /* Cards grid */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;transition:all .2s}
+    .stat-card:hover{border-color:var(--blue);transform:translateY(-2px)}
+    .stat-card .val{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace}
+    .stat-card .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+    .stat-card .sub{font-size:10px;color:var(--text3);margin-top:2px}
+    .c-green{color:var(--green)}.c-red{color:var(--red)}.c-yellow{color:var(--yellow)}.c-blue{color:var(--blue)}.c-purple{color:var(--purple)}.c-cyan{color:var(--cyan)}.c-orange{color:var(--orange)}
+
+    /* Sections */
+    .section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+    .section h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .section .desc{font-size:12px;color:var(--text3);margin-bottom:16px}
+
+    /* Tables */
+    .tbl-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+    th{background:var(--bg3);padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);position:sticky;top:0;cursor:pointer}
+    td{padding:10px 12px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+    tr:hover td{background:var(--bg3)}
+    .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase}
+    .b-win{background:rgba(34,197,94,.15);color:#22c55e}.b-loss{background:rgba(239,68,68,.15);color:#ef4444}
+    .b-open{background:rgba(59,130,246,.15);color:#3b82f6}.b-sell{background:rgba(239,68,68,.12);color:#f87171}
+    .b-buy{background:rgba(34,197,94,.12);color:#4ade80}
+    .pnl-pos{color:var(--green)}.pnl-neg{color:var(--red)}
+
+    /* Scenario cards */
+    .scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+    .scenario-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden}
+    .scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+    .scenario-card.best::before{background:linear-gradient(90deg,var(--green),var(--cyan))}
+    .scenario-card.mid::before{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+    .scenario-card.bad::before{background:linear-gradient(90deg,var(--red),var(--orange))}
+    .scenario-card h3{font-size:14px;font-weight:700;color:#fff;margin-bottom:8px}
+    .scenario-card .metric{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--border)}
+    .scenario-card .metric:last-child{border:none}
+    .scenario-card .metric .k{color:var(--text2)}.scenario-card .metric .v{font-family:'JetBrains Mono',monospace;font-weight:600}
+
+    /* Benchmark bar */
+    .bench-bar{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12px}
+    .bench-bar .bar-track{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;position:relative}
+    .bench-bar .bar-fill{height:100%;border-radius:4px;transition:width .6s}
+    .bench-bar .bar-label{width:120px;color:var(--text2);font-size:11px}
+    .bench-bar .bar-val{width:60px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:11px}
+
+    /* Pagination */
+    .pagination{display:flex;gap:8px;justify-content:center;margin-top:16px}
+    .pg-btn{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s}
+    .pg-btn:hover{border-color:var(--blue);color:var(--text)}
+    .pg-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+    .pg-info{font-size:12px;color:var(--text3);text-align:center;margin-top:8px}
+
+    /* Hidden gem pulse */
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,0.4)}50%{box-shadow:0 0 20px 4px rgba(168,85,247,0.2)}}
+    .gem{animation:pulse 2s infinite}
+
+    /* Questions checklist */
+    .q-list{list-style:none;padding:0}
+    .q-list li{padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;display:flex;align-items:flex-start;gap:8px}
+    .q-list li::before{content:'';width:16px;height:16px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;margin-top:2px}
+    .q-list li.pass::before{background:var(--green);border-color:var(--green)}
+    .q-list li.fail::before{background:var(--red);border-color:var(--red)}
+    .q-list li.warn::before{background:var(--yellow);border-color:var(--yellow)}
+
+    @media(max-width:768px){.stat-grid{grid-template-columns:repeat(2,1fr)}.scenario-grid{grid-template-columns:1fr}.budget-bar{flex-direction:column;align-items:stretch}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <h1>🚀 Antigravity Health Check</h1>
+    <div class="sub">Is our crypto prediction system worth real capital? What-if analysis, strategy diagnostics, and hidden gem discovery — thinking like a hedge fund, not a signal group.</div>
+    <div id="mainVerdict" class="verdict verdict-warn">LOADING ANALYSIS...</div>
+  </div>
+
+  <!-- Budget Selector -->
+  <div class="budget-bar">
+    <label>💰 Investment Level:</label>
+    <button class="bud-btn active" data-budget="200" onclick="setBudget(200)">Low ($200/pick)</button>
+    <button class="bud-btn" data-budget="500" onclick="setBudget(500)">Medium ($500)</button>
+    <button class="bud-btn" data-budget="1000" onclick="setBudget(1000)">High ($1,000)</button>
+    <button class="bud-btn" data-budget="2000" onclick="setBudget(2000)">Very High ($2,000)</button>
+    <button class="bud-btn" data-budget="5000" onclick="setBudget(5000)">Extreme ($5,000)</button>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stat-grid" id="summaryGrid"></div>
+
+  <!-- PART 1: Real Edge Assessment -->
+  <div class="section">
+    <h2>📊 Part 1 — Is There Real Edge?</h2>
+    <div class="desc">Before optimization, we must answer: does expectancy justify deploying capital?</div>
+    <div id="edgeMetrics" class="stat-grid"></div>
+    <ul class="q-list" id="edgeChecklist"></ul>
+  </div>
+
+  <!-- PART 2: What-If Scenarios -->
+  <div class="section">
+    <h2>🎯 Part 2 — What-If Scenarios</h2>
+    <div class="desc">If you had invested in our picks at different allocation strategies, here's what would have happened.</div>
+    <div class="scenario-grid" id="scenarioGrid"></div>
+  </div>
+
+  <!-- PART 3: Benchmark Comparison -->
+  <div class="section">
+    <h2>📈 Part 3 — vs. Benchmarks (Is It Worth It?)</h2>
+    <div class="desc">Annualized return comparison against risk-free and market alternatives.</div>
+    <div id="benchmarks"></div>
+  </div>
+
+  <!-- PART 4: Trade-by-Trade Breakdown -->
+  <div class="section">
+    <h2>📋 Part 4 — Trade-by-Trade Breakdown</h2>
+    <div class="desc">Every closed pick with TP/SL, P&L, and strategy. Click "Next" to see more.</div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Date</th><th>Strategy</th><th>Symbol</th><th>Dir</th><th>Entry</th><th>Exit</th><th>TP</th><th>SL</th><th>P/L $</th><th>P/L %</th><th>Exit Reason</th><th>Status</th>
+      </tr></thead><tbody id="tradeBody"></tbody></table>
+    </div>
+    <div class="pagination" id="tradePagination"></div>
+    <div class="pg-info" id="tradePageInfo"></div>
+  </div>
+
+  <!-- PART 5: Strategy Diagnostics -->
+  <div class="section">
+    <h2>🔬 Part 5 — Strategy Diagnostics</h2>
+    <div class="desc">Per-strategy expectancy, Kelly fraction, profit factor, and hidden gem discovery.</div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Strategy</th><th>Trades</th><th>Win %</th><th>Avg Win</th><th>Avg Loss</th><th>Expectancy</th><th>Kelly</th><th>Sharpe</th><th>Profit Factor</th><th>Total P/L</th><th>Verdict</th>
+      </tr></thead><tbody id="stratBody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- PART 6: Hidden Gem Discovery -->
+  <div class="section gem">
+    <h2>💎 Part 6 — Hidden Gem Discovery</h2>
+    <div class="desc">Ranked by expectancy (not win rate). Sometimes the "worst-looking" strategy has the best long-term edge.</div>
+    <div id="hiddenGems"></div>
+  </div>
+
+  <!-- PART 7: Quant Fund Questions -->
+  <div class="section">
+    <h2>🏦 Part 7 — Would a Quant Fund Deploy Capital?</h2>
+    <div class="desc">The brutally honest diagnostic checklist. Green = pass, Red = fail, Yellow = borderline.</div>
+    <ul class="q-list" id="quantChecklist"></ul>
+  </div>
+
+  <div style="text-align:center;padding:32px;color:var(--text3);font-size:11px">
+    <p>Antigravity Health Check — built by the research lab at findtorontoevents.ca</p>
+    <p>Data refreshed from live strategy performance + closed/active picks</p>
+    <p style="margin-top:8px"><a href="index.html" style="color:var(--blue);text-decoration:none">← Back to Updates Hub</a></p>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA LOADING
+// ============================================================
+const BASE = '../alpha_engine/data/';
+let closedPicks=[], activePicks=[], stratPerf={}, budget=200, tradePage=1;
+const PER_PAGE=15;
+
+async function loadJSON(p){try{const r=await fetch(BASE+p);return r.ok?r.json():null}catch{return null}}
+
+async function init(){
+  [closedPicks,activePicks,stratPerf]=await Promise.all([
+    loadJSON('closed_picks.json'),loadJSON('active_picks.json'),loadJSON('strategy_performance.json')
+  ]);
+  closedPicks=closedPicks||[];activePicks=activePicks||[];stratPerf=stratPerf||{};
+  render();
+}
+
+// ============================================================
+// BUDGET SELECTOR
+// ============================================================
+function setBudget(b){
+  budget=b;
+  document.querySelectorAll('.bud-btn').forEach(x=>{x.classList.toggle('active',+x.dataset.budget===b)});
+  render();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmt$(v){return(v>=0?'+':'')+v.toFixed(2)}
+function fmtPct(v){return(v>=0?'+':'')+(v*100).toFixed(2)+'%'}
+function pnlClass(v){return v>=0?'pnl-pos':'pnl-neg'}
+function fmtPrice(p){if(!p)return'—';return p>100?p.toFixed(2):p>1?p.toFixed(4):p.toFixed(8)}
+
+// ============================================================
+// MAIN RENDER
+// ============================================================
+function render(){
+  const closed=closedPicks.filter(p=>p.pnl_dollar!==undefined);
+  const wins=closed.filter(p=>p.pnl_dollar>0);
+  const losses=closed.filter(p=>p.pnl_dollar<=0);
+  const totalPnl=closed.reduce((s,p)=>s+p.pnl_dollar,0);
+  const winRate=closed.length?wins.length/closed.length:0;
+  const avgWin=wins.length?wins.reduce((s,p)=>s+p.pnl_pct,0)/wins.length:0;
+  const avgLoss=losses.length?losses.reduce((s,p)=>s+p.pnl_pct,0)/losses.length:0;
+  const expectancy=(winRate*avgWin)+((1-winRate)*avgLoss);
+  const avgRR=avgLoss!==0?Math.abs(avgWin/avgLoss):0;
+  const kelly=avgRR!==0?winRate-(1-winRate)/avgRR:0;
+
+  // Days active
+  const dates=closed.map(p=>new Date(p.exit_date||p.entry_date));
+  const minDate=dates.length?new Date(Math.min(...dates)):new Date();
+  const maxDate=dates.length?new Date(Math.max(...dates)):new Date();
+  const daysActive=Math.max(1,Math.ceil((maxDate-minDate)/(1000*60*60*24)));
+  const dailyReturn=closed.length?expectancy:0;
+  const annualizedReturn=dailyReturn*365/Math.max(daysActive,1)*closed.length;
+
+  // Summary Grid
+  const sg=document.getElementById('summaryGrid');
+  sg.innerHTML=`
+    <div class="stat-card"><div class="val c-blue">${closed.length}</div><div class="lbl">Closed Picks</div></div>
+    <div class="stat-card"><div class="val c-cyan">${activePicks.length}</div><div class="lbl">Active Picks</div></div>
+    <div class="stat-card"><div class="val ${winRate>=0.5?'c-green':'c-red'}">${(winRate*100).toFixed(1)}%</div><div class="lbl">Win Rate</div></div>
+    <div class="stat-card"><div class="val ${totalPnl>=0?'c-green':'c-red'}">${fmt$(totalPnl)}</div><div class="lbl">Total P/L ($)</div><div class="sub">at $2K/pick</div></div>
+    <div class="stat-card"><div class="val ${expectancy>=0?'c-green':'c-red'}">${(expectancy*100).toFixed(3)}%</div><div class="lbl">Expectancy</div></div>
+    <div class="stat-card"><div class="val ${kelly>=0?'c-green':'c-red'}">${kelly.toFixed(3)}</div><div class="lbl">Kelly Fraction</div></div>
+    <div class="stat-card"><div class="val c-purple">${Object.keys(stratPerf).length}</div><div class="lbl">Strategies Tracked</div></div>
+    <div class="stat-card"><div class="val c-orange">${daysActive}d</div><div class="lbl">Days Active</div></div>
+  `;
+
+  // Verdict
+  const vd=document.getElementById('mainVerdict');
+  if(expectancy>0&&kelly>0){vd.textContent='✅ POSITIVE EDGE DETECTED — CAUTIOUSLY VIABLE';vd.className='verdict verdict-pos'}
+  else if(expectancy>-0.005){vd.textContent='⚠️ MARGINAL EDGE — NOT YET PROVEN';vd.className='verdict verdict-warn'}
+  else{vd.textContent='❌ NEGATIVE EXPECTANCY — DO NOT DEPLOY REAL CAPITAL';vd.className='verdict verdict-neg'}
+
+  // Edge metrics
+  document.getElementById('edgeMetrics').innerHTML=`
+    <div class="stat-card"><div class="val ${avgWin>0?'c-green':'c-red'}">${(avgWin*100).toFixed(2)}%</div><div class="lbl">Avg Win</div></div>
+    <div class="stat-card"><div class="val c-red">${(avgLoss*100).toFixed(2)}%</div><div class="lbl">Avg Loss</div></div>
+    <div class="stat-card"><div class="val c-blue">${avgRR.toFixed(2)}</div><div class="lbl">Avg R:R</div></div>
+    <div class="stat-card"><div class="val ${expectancy>=0?'c-green':'c-red'}">${(expectancy*100).toFixed(3)}%</div><div class="lbl">Expectancy / Trade</div></div>
+  `;
+
+  // Edge checklist
+  const ec=document.getElementById('edgeChecklist');
+  ec.innerHTML=[
+    [expectancy>0,'Expectancy is positive','Expectancy is NEGATIVE — no edge exists'],
+    [winRate>0.4,'Win rate above 40%','Win rate below 40% — signals unreliable'],
+    [avgRR>1,'Risk:Reward ratio > 1:1','R:R below 1:1 — losses bigger than wins'],
+    [kelly>0,'Kelly fraction positive — edge exists','Kelly NEGATIVE — mathematically guaranteed to lose'],
+    [kelly>0.05,'Kelly > 5% — meaningful edge','Kelly too small — edge may be noise'],
+  ].map(([pass,good,bad])=>`<li class="${pass?'pass':'fail'}">${pass?good:bad}</li>`).join('');
+
+  // Scenarios
+  renderScenarios(closed,wins,losses,winRate,avgWin,avgLoss,expectancy);
+  renderBenchmarks(expectancy,daysActive,closed.length);
+  renderTrades(closed);
+  renderStrategyTable();
+  renderHiddenGems();
+  renderQuantChecklist(expectancy,kelly,winRate,avgRR,totalPnl,daysActive,closed.length);
+}
+
+// ============================================================
+// WHAT-IF SCENARIOS
+// ============================================================
+function renderScenarios(closed,wins,losses,wr,aw,al,exp){
+  const sg=document.getElementById('scenarioGrid');
+  const strategies=Object.entries(stratPerf).filter(([,v])=>v.closed_picks>0).sort((a,b)=>b[1].total_pnl_dollar-a[1].total_pnl_dollar);
+  const top3=strategies.slice(0,3);
+  const topStrat=strategies[0];
+
+  // Scenario 1: Equal across all strategies
+  const allPnl=closed.reduce((s,p)=>s+(p.pnl_pct||0),0);
+  const s1Dollar=allPnl*budget;
+
+  // Scenario 2: Top 3 strategies only
+  const top3Names=new Set(top3.map(([n])=>n));
+  const top3Picks=closed.filter(p=>top3Names.has(p.strategy));
+  const s2Pnl=top3Picks.reduce((s,p)=>s+(p.pnl_pct||0),0);
+  const s2Dollar=s2Pnl*budget;
+
+  // Scenario 3: All into best strategy
+  const bestPicks=topStrat?closed.filter(p=>p.strategy===topStrat[0]):[];
+  const s3Pnl=bestPicks.reduce((s,p)=>s+(p.pnl_pct||0),0);
+  const s3Dollar=s3Pnl*budget;
+
+  // Scenario 4: Only SELL signals
+  const sellPicks=closed.filter(p=>p.signal_type==='SELL');
+  const s4Pnl=sellPicks.reduce((s,p)=>s+(p.pnl_pct||0),0);
+  const s4Dollar=s4Pnl*budget;
+
+  // Scenario 5: Only high confidence (>0.75)
+  const hiConf=closed.filter(p=>(p.confidence||0)>0.75);
+  const s5Pnl=hiConf.reduce((s,p)=>s+(p.pnl_pct||0),0);
+  const s5Dollar=s5Pnl*budget;
+
+  const scenarios=[
+    {title:'All Strategies (Equal Weight)',picks:closed.length,pnl:s1Dollar,pct:allPnl,cls:s1Dollar>=0?'best':'bad'},
+    {title:'Top 3 Strategies Only',picks:top3Picks.length,pnl:s2Dollar,pct:s2Pnl,cls:s2Dollar>=0?'best':'mid'},
+    {title:`Best Strategy Only (${topStrat?topStrat[0]:'—'})`,picks:bestPicks.length,pnl:s3Dollar,pct:s3Pnl,cls:s3Dollar>=0?'best':'bad'},
+    {title:'SELL Signals Only (Shorts)',picks:sellPicks.length,pnl:s4Dollar,pct:s4Pnl,cls:s4Dollar>=0?'best':'mid'},
+    {title:'High Confidence Only (>75%)',picks:hiConf.length,pnl:s5Dollar,pct:s5Pnl,cls:s5Dollar>=0?'best':'bad'},
+    {title:'GIC Equivalent (5% APY, risk-free)',picks:'—',pnl:budget*0.05/12*2,pct:0.05/12*2,cls:'mid'},
+  ];
+
+  sg.innerHTML=scenarios.map(s=>`
+    <div class="scenario-card ${s.cls}">
+      <h3>${s.title}</h3>
+      <div class="metric"><span class="k">Picks Traded</span><span class="v">${s.picks}</span></div>
+      <div class="metric"><span class="k">Budget/Pick</span><span class="v">$${budget.toLocaleString()}</span></div>
+      <div class="metric"><span class="k">Total P/L</span><span class="v ${s.pnl>=0?'c-green':'c-red'}">${fmt$(s.pnl)}</span></div>
+      <div class="metric"><span class="k">Return %</span><span class="v ${s.pct>=0?'c-green':'c-red'}">${(s.pct*100).toFixed(2)}%</span></div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// BENCHMARKS
+// ============================================================
+function renderBenchmarks(exp,days,trades){
+  const annualized=exp*trades/days*365*100;
+  const benchmarks=[
+    {name:'🏦 GIC (Risk-Free)',val:5,color:'var(--yellow)'},
+    {name:'📊 S&P 500 (VOO)',val:17,color:'var(--blue)'},
+    {name:'📈 Vanguard Growth (VIGIX)',val:20,color:'var(--cyan)'},
+    {name:'🎯 Our System (Annualized)',val:annualized,color:annualized>5?'var(--green)':'var(--red)'},
+    {name:'🏆 Crypto Quant Fund Avg',val:48,color:'var(--purple)'},
+  ];
+  const max=Math.max(60,...benchmarks.map(b=>Math.abs(b.val)));
+  document.getElementById('benchmarks').innerHTML=benchmarks.map(b=>`
+    <div class="bench-bar">
+      <span class="bar-label">${b.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(1,Math.abs(b.val)/max*100)}%;background:${b.color}"></div></div>
+      <span class="bar-val" style="color:${b.color}">${b.val.toFixed(1)}%</span>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// TRADE TABLE (PAGINATED)
+// ============================================================
+function renderTrades(closed){
+  const sorted=[...closed].sort((a,b)=>new Date(b.exit_date||b.entry_date)-new Date(a.exit_date||a.entry_date));
+  const totalPages=Math.ceil(sorted.length/PER_PAGE);
+  const page=Math.min(tradePage,totalPages);
+  const start=(page-1)*PER_PAGE;
+  const slice=sorted.slice(start,start+PER_PAGE);
+
+  document.getElementById('tradeBody').innerHTML=slice.map(p=>{
+    const pnlD=p.pnl_dollar||0;const pnlP=(p.pnl_pct||0)*100;
+    const scaledPnl=pnlD/2000*budget;
+    return`<tr>
+      <td>${p.exit_date||p.entry_date}</td>
+      <td style="color:var(--text)">${p.strategy}</td>
+      <td><strong>${p.symbol}</strong></td>
+      <td><span class="badge ${p.signal_type==='BUY'?'b-buy':'b-sell'}">${p.signal_type}</span></td>
+      <td>${fmtPrice(p.entry_price)}</td>
+      <td>${fmtPrice(p.exit_price)}</td>
+      <td style="color:var(--text3)">${fmtPrice(p.take_profit)}</td>
+      <td style="color:var(--text3)">${fmtPrice(p.stop_loss)}</td>
+      <td class="${pnlClass(scaledPnl)}">${fmt$(scaledPnl)}</td>
+      <td class="${pnlClass(pnlP)}">${pnlP.toFixed(2)}%</td>
+      <td><span class="badge ${p.exit_reason==='TP_HIT'?'b-win':p.exit_reason==='SL_HIT'?'b-loss':'b-open'}">${p.exit_reason||'—'}</span></td>
+      <td><span class="badge ${p.status==='WON'?'b-win':'b-loss'}">${p.status}</span></td>
+    </tr>`}).join('');
+
+  // Pagination
+  const pg=document.getElementById('tradePagination');
+  let btns='';
+  for(let i=1;i<=totalPages;i++){
+    if(totalPages>10&&Math.abs(i-page)>3&&i!==1&&i!==totalPages)continue;
+    btns+=`<button class="pg-btn ${i===page?'active':''}" onclick="tradePage=${i};render()">${i}</button>`;
+  }
+  pg.innerHTML=btns;
+  document.getElementById('tradePageInfo').textContent=`Showing ${start+1}-${Math.min(start+PER_PAGE,sorted.length)} of ${sorted.length} trades (Page ${page}/${totalPages})`;
+}
+
+// ============================================================
+// STRATEGY TABLE
+// ============================================================
+function renderStrategyTable(){
+  const entries=Object.entries(stratPerf).filter(([,v])=>v.closed_picks>0).sort((a,b)=>b[1].total_pnl_dollar-a[1].total_pnl_dollar);
+  document.getElementById('stratBody').innerHTML=entries.map(([name,s])=>{
+    const wr=s.win_rate||0;const exp=s.avg_pnl_pct||0;
+    const wins=s.wins||0;const losses=s.losses||0;
+    const avgW=wins>0&&s.total_pnl_dollar>0?s.total_pnl_dollar/wins:0;
+    const avgL=losses>0?Math.abs(s.total_pnl_dollar-avgW*wins)/losses:0;
+    const verdict=s.kelly_fraction>0&&s.total_pnl_dollar>0?'💎 EDGE':'☠️ DEAD';
+    const vClass=s.kelly_fraction>0&&s.total_pnl_dollar>0?'c-green':'c-red';
+    return`<tr>
+      <td style="color:var(--text)">${name}</td>
+      <td>${s.closed_picks}</td>
+      <td class="${wr>=0.5?'c-green':'c-red'}">${(wr*100).toFixed(1)}%</td>
+      <td class="c-green">${(s.avg_mfe*100||0).toFixed(2)}%</td>
+      <td class="c-red">${(s.avg_mae*100||0).toFixed(2)}%</td>
+      <td class="${exp>=0?'c-green':'c-red'}">${(exp*100).toFixed(3)}%</td>
+      <td class="${(s.kelly_fraction||0)>=0?'c-green':'c-red'}">${(s.kelly_fraction||0).toFixed(3)}</td>
+      <td class="${(s.sharpe||0)>=0?'c-green':'c-red'}">${(s.sharpe||0).toFixed(2)}</td>
+      <td class="${(s.profit_factor||0)>=1?'c-green':'c-red'}">${(s.profit_factor||0).toFixed(2)}</td>
+      <td class="${(s.total_pnl_dollar||0)>=0?'c-green':'c-red'}">${fmt$(s.total_pnl_dollar||0)}</td>
+      <td class="${vClass}">${verdict}</td>
+    </tr>`}).join('');
+}
+
+// ============================================================
+// HIDDEN GEM DISCOVERY
+// ============================================================
+function renderHiddenGems(){
+  const entries=Object.entries(stratPerf).filter(([,v])=>v.closed_picks>=2);
+  // Rank by expectancy, not win rate
+  entries.sort((a,b)=>(b[1].avg_pnl_pct||0)-(a[1].avg_pnl_pct||0));
+
+  const gems=entries.slice(0,5);
+  const cont=document.getElementById('hiddenGems');
+  if(!gems.length){cont.innerHTML='<p style="color:var(--text3)">Not enough data for hidden gem analysis.</p>';return}
+
+  cont.innerHTML=`
+    <p style="color:var(--text2);font-size:13px;margin-bottom:12px">⚡ Top 5 by <strong>expectancy</strong> (not win rate). Some "losers" by WR are winners by expected value:</p>
+    ${gems.map(([name,s],i)=>{
+      const isGem=s.avg_pnl_pct>0&&s.win_rate<0.5;
+      return`<div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border-left:3px solid ${s.avg_pnl_pct>0?'var(--green)':'var(--red)'}">
+        <span style="font-size:20px;width:32px;text-align:center">${i===0?'💎':i<3?'⭐':'📊'}</span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px;color:#fff">${name} ${isGem?'<span style="color:var(--purple);font-size:11px">← HIDDEN GEM</span>':''}</div>
+          <div style="font-size:11px;color:var(--text2)">WR: ${(s.win_rate*100).toFixed(0)}% | Exp: ${((s.avg_pnl_pct||0)*100).toFixed(3)}% | Kelly: ${(s.kelly_fraction||0).toFixed(3)} | Trades: ${s.closed_picks}</div>
+        </div>
+        <div style="font-family:'JetBrains Mono';font-weight:700;font-size:14px" class="${(s.total_pnl_dollar||0)>=0?'c-green':'c-red'}">${fmt$(s.total_pnl_dollar||0)}</div>
+      </div>`}).join('')}
+  `;
+}
+
+// ============================================================
+// QUANT FUND CHECKLIST
+// ============================================================
+function renderQuantChecklist(exp,kelly,wr,rr,totalPnl,days,trades){
+  const annRet=exp*trades/days*365;
+  const items=[
+    [exp>0,'Edge is statistically positive','Edge is NEGATIVE — no deployment'],
+    [kelly>0,'Kelly fraction positive','Kelly NEGATIVE — guaranteed ruin'],
+    [wr>0.35,'Win rate survivable (>35%)','Win rate dangerously low'],
+    [rr>1,'Risk:Reward ratio > 1:1','R:R unfavorable — losses exceed wins'],
+    [annRet>0.05,'Annualized return > GIC (5%)','Cannot beat risk-free GIC'],
+    [annRet>0.17,'Annualized return > S&P 500', 'Does not beat simple index fund'],
+    [annRet>0.34,'Annualized return > VIGIX (34%)','Does not beat best mutual fund'],
+    [totalPnl>0,'Total P/L positive','System has lost money overall'],
+    [trades>=20,'Sufficient sample size (20+ trades)','Not enough trades for statistical significance'],
+    [days>=14,'System running 14+ days','Too early to judge — need more time'],
+  ];
+  const passes=items.filter(([p])=>p).length;
+  document.getElementById('quantChecklist').innerHTML=items.map(([pass,good,bad])=>
+    `<li class="${pass?'pass':'fail'}">${pass?'✅ '+good:'❌ '+bad}</li>`
+  ).join('')+`
+    <li style="padding:16px;background:var(--bg3);border-radius:8px;margin-top:12px;font-weight:700;font-size:14px;color:#fff">
+      Score: ${passes}/${items.length} — ${passes>=8?'🟢 Deployable':passes>=5?'🟡 Needs Work':'🔴 Do NOT deploy capital'}
+    </li>`;
+}
+
+// Initialize
+init();
+</script>
+</body>
+</html>

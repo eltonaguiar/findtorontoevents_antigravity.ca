@@ -1,0 +1,22 @@
+# tools/swarm — minimal Python deps.
+#
+# All runtime modules use the stdlib by default. Optional packages
+# below unlock features; each has a graceful fallback or a clear
+# install hint when missing.
+
+# Strict JSON-Schema validation in schema_validate.py.
+# Falls back to a hand-rolled validator if missing.
+jsonschema>=4.0
+
+# Required only if you use the `cerebras` engine (api_consult.py imports
+# cerebras.cloud.sdk lazily; raises with a clear hint if missing).
+cerebras-cloud-sdk>=1.0
+
+# YAML config support for swarm_run.py / swarm_followup.py --config <path>.yaml.
+# Read by config_loader.load_config(); loader hard-fails with an actionable
+# install hint if missing, so installs are only required when actually using
+# YAML configs.
+pyyaml>=6.0
+
+# PTY driver dependencies (pywinpty / pyte) removed 2026-05-04 alongside the
+# freebuff engine. Restore here if a new TUI/PTY engine is added.

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuanEngine -- Prop Firm Grade Predictions</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0a12;--card:#12121e;--card-border:#1e1e30;
+    --text:#e0e0e8;--text-muted:#8888a0;--text-dim:#55556a;
+    --green:#22c55e;--green-dim:#16a34a;--red:#ef4444;--red-dim:#dc2626;
+    --yellow:#eab308;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4;
+    --accent:#6366f1;--accent-glow:rgba(99,102,241,.15);
+    --orange:#f97316;
+  }
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.5;
+    min-height:100vh;padding:0;
+  }
+  a{color:var(--accent);text-decoration:none}
+  .container{max-width:1480px;margin:0 auto;padding:20px 24px 40px}
+  /* --- Header --- */
+  .header{text-align:center;padding:40px 0 32px;position:relative}
+  .header::after{
+    content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  }
+  .header h1{
+    font-size:2.2rem;font-weight:700;letter-spacing:-.02em;
+    background:linear-gradient(135deg,#e0e0e8,var(--accent));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+  .header .subtitle{color:var(--text-muted);font-size:.95rem;margin-top:6px}
+  .version-badge{
+    display:inline-block;margin-top:10px;padding:3px 12px;font-size:.75rem;
+    background:var(--accent-glow);border:1px solid var(--accent);border-radius:20px;
+    color:var(--accent);font-weight:600;letter-spacing:.04em;
+  }
+  .last-update{color:var(--text-dim);font-size:.8rem;margin-top:8px}
+  /* --- KPI Cards --- */
+  .kpi-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;margin:28px 0;
+  }
+  .kpi-card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:12px;
+    padding:18px;text-align:center;transition:transform .2s,border-color .2s;
+  }
+  .kpi-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .kpi-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+  .kpi-value{font-size:1.7rem;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+  .kpi-sub{font-size:.72rem;color:var(--text-dim)}
+  .kpi-value.green{color:var(--green)}.kpi-value.red{color:var(--red)}.kpi-value.yellow{color:var(--yellow)}.kpi-value.neutral{color:var(--text)}
+  .kpi-value.blue{color:var(--blue)}.kpi-value.purple{color:var(--purple)}.kpi-value.cyan{color:var(--cyan)}.kpi-value.orange{color:var(--orange)}
+  /* --- Section --- */
+  .section{margin:32px 0}
+  .section-title{
+    font-size:1.15rem;font-weight:600;margin-bottom:14px;
+    padding-bottom:8px;border-bottom:1px solid var(--card-border);
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-title .icon{font-size:1.1rem}
+  .section-title .count{
+    font-size:.75rem;background:var(--accent-glow);border:1px solid var(--accent);
+    border-radius:12px;padding:1px 10px;color:var(--accent);font-weight:600;
+  }
+  /* --- Tables --- */
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--card-border)}
+  .data-table{width:100%;border-collapse:collapse;background:var(--card);min-width:1100px}
+  .data-table th{
+    background:#16162a;text-align:left;padding:10px 12px;
+    font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);
+    position:sticky;top:0;white-space:nowrap;cursor:pointer;user-select:none;
+  }
+  .data-table th:hover{color:var(--accent)}
+  .data-table td{
+    padding:10px 12px;border-top:1px solid var(--card-border);font-size:.83rem;
+    white-space:nowrap;font-variant-numeric:tabular-nums;
+  }
+  .data-table tbody tr{transition:background .15s}
+  .data-table tbody tr:hover{background:rgba(99,102,241,.06)}
+  /* Direction badges */
+  .dir-buy{color:var(--green);font-weight:700}.dir-sell{color:var(--red);font-weight:700}
+  /* Mode badges */
+  .mode-badge{
+    display:inline-block;padding:2px 10px;border-radius:10px;font-size:.72rem;
+    font-weight:600;letter-spacing:.04em;
+  }
+  .mode-SCALP{background:rgba(6,182,212,.15);color:var(--cyan);border:1px solid rgba(6,182,212,.3)}
+  .mode-SWING{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
+  .mode-POSITION{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+  /* Verdict badges */
+  .verdict{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.72rem;font-weight:700;letter-spacing:.03em}
+  .verdict-STRONG_BUY{background:rgba(34,197,94,.2);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+  .verdict-BUY{background:rgba(34,197,94,.1);color:#6ee7b7;border:1px solid rgba(34,197,94,.2)}
+  .verdict-NEUTRAL{background:rgba(136,136,160,.1);color:var(--text-muted);border:1px solid rgba(136,136,160,.2)}
+  .verdict-SELL{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+  .verdict-STRONG_SELL{background:rgba(239,68,68,.2);color:var(--red);border:1px solid rgba(239,68,68,.4)}
+  /* Regime badges */
+  .regime{display:inline-block;padding:1px 8px;border-radius:8px;font-size:.68rem;font-weight:600;letter-spacing:.03em}
+  .regime-TRENDING{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+  .regime-MEAN_REVERSION{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+  .regime-RANDOM{background:rgba(136,136,160,.1);color:var(--text-muted);border:1px solid rgba(136,136,160,.2)}
+  /* Score bar */
+  .score-bar{display:flex;align-items:center;gap:5px}
+  .score-track{width:50px;height:7px;background:#1e1e30;border-radius:4px;overflow:hidden}
+  .score-fill{height:100%;border-radius:4px}
+  /* Confidence bar */
+  .conf-bar{display:flex;align-items:center;gap:6px}
+  .conf-track{width:60px;height:6px;background:#1e1e30;border-radius:3px;overflow:hidden}
+  .conf-fill{height:100%;border-radius:3px;transition:width .4s}
+  /* Health */
+  .health-safe{color:var(--green)}.health-caution{color:var(--yellow)}.health-danger{color:var(--red)}.health-panic{color:var(--orange)}
+  /* P&L */
+  .pnl-pos{color:var(--green)}.pnl-neg{color:var(--red)}
+  /* --- Mode Cards --- */
+  .mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .mode-card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:12px;
+    padding:20px;transition:transform .2s,border-color .2s;
+  }
+  .mode-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .mode-card h3{font-size:1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .mode-stat{display:flex;justify-content:space-between;padding:6px 0;font-size:.88rem}
+  .mode-stat .label{color:var(--text-muted)}.mode-stat .val{font-weight:600;font-variant-numeric:tabular-nums}
+  /* --- Market Summary Banner --- */
+  .market-banner{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;
+    padding:20px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:24px;
+  }
+  .mb-item{text-align:center}
+  .mb-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+  .mb-value{font-size:1.2rem;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  /* --- Factor pills --- */
+  .factors{display:flex;flex-wrap:wrap;gap:4px;max-width:320px}
+  .factor-pill{
+    display:inline-block;padding:1px 8px;border-radius:8px;font-size:.65rem;
+    background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);color:var(--text-muted);
+    white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;
+  }
+  /* --- Targets Table --- */
+  .targets-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+  .targets-table th{
+    background:#16162a;text-align:left;padding:12px 16px;
+    font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);
+  }
+  .targets-table td{
+    padding:12px 16px;border-top:1px solid var(--card-border);font-size:.9rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .targets-table tr:hover td{background:rgba(99,102,241,.04)}
+  .status-pass{color:var(--green);font-weight:700;font-size:1.1rem}
+  .status-fail{color:var(--red);font-weight:700;font-size:1.1rem}
+  /* --- Tabs --- */
+  .tab-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .tab-btn{
+    padding:6px 18px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;
+    background:var(--card);border:1px solid var(--card-border);color:var(--text-muted);transition:.2s;
+  }
+  .tab-btn:hover{border-color:var(--accent);color:var(--text)}
+  .tab-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+  /* --- Footer --- */
+  .footer{
+    text-align:center;padding:32px 0 0;margin-top:40px;
+    border-top:1px solid var(--card-border);color:var(--text-dim);font-size:.8rem;
+  }
+  /* --- Loading / Error --- */
+  .loading{text-align:center;padding:60px;color:var(--text-muted)}
+  .loading .spinner{
+    width:36px;height:36px;border:3px solid var(--card-border);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-banner{
+    background:rgba(239,68,68,.1);border:1px solid var(--red);border-radius:10px;
+    padding:16px 20px;margin:20px 0;color:var(--red);font-size:.9rem;text-align:center;
+  }
+  .empty-state{text-align:center;padding:40px;color:var(--text-dim);font-size:.9rem}
+  /* --- Animations --- */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .fade-up{animation:fadeUp .4s ease-out both}
+  .fade-up:nth-child(2){animation-delay:.05s}
+  .fade-up:nth-child(3){animation-delay:.1s}
+  .fade-up:nth-child(4){animation-delay:.15s}
+  .fade-up:nth-child(5){animation-delay:.2s}
+  .fade-up:nth-child(6){animation-delay:.25s}
+  @media(max-width:768px){
+    .container{padding:12px 12px 32px}
+    .header h1{font-size:1.6rem}
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .kpi-value{font-size:1.3rem}
+    .market-banner{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header fade-up">
+    <h1>QuanEngine -- Prop Firm Grade Predictions</h1>
+    <div class="subtitle">Regime-aware ensemble &bull; 50% consensus gate &bull; 45 pairs scanned &bull; Walk-forward validated</div>
+    <div class="version-badge">v1.1.0</div>
+    <div class="last-update" id="lastUpdate">Loading...</div>
+    <div id="priceStatus" style="color:var(--text-dim);font-size:.75rem;margin-top:4px;font-family:monospace">Prices: waiting for update...</div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card fade-up"><div class="kpi-label">Fear &amp; Greed</div><div class="kpi-value orange" id="kpiFG">--</div><div class="kpi-sub" id="kpiFGLabel">index</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Market Bias</div><div class="kpi-value neutral" id="kpiBias">--</div><div class="kpi-sub">composite score</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Active Picks</div><div class="kpi-value cyan" id="kpiActive">--</div><div class="kpi-sub">open positions</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Next Best Buys</div><div class="kpi-value green" id="kpiNextBuys">--</div><div class="kpi-sub">opportunities</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Pairs Scanned</div><div class="kpi-value purple" id="kpiScanned">--</div><div class="kpi-sub">extended universe</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Avg RSI(14)</div><div class="kpi-value neutral" id="kpiAvgRSI">--</div><div class="kpi-sub">market-wide</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Avg 24h Change</div><div class="kpi-value neutral" id="kpiAvg24h">--</div><div class="kpi-sub">all pairs</div></div>
+    <div class="kpi-card fade-up"><div class="kpi-label">Win Rate</div><div class="kpi-value neutral" id="kpiWR">--</div><div class="kpi-sub">target: 65%</div></div>
+  </div>
+
+  <!-- Market Summary Banner -->
+  <div class="market-banner fade-up" id="marketBanner" style="display:none">
+    <div class="mb-item"><div class="mb-label">Strong Buy</div><div class="mb-value" style="color:var(--green)" id="mbSB">0</div></div>
+    <div class="mb-item"><div class="mb-label">Buy</div><div class="mb-value" style="color:#6ee7b7" id="mbB">0</div></div>
+    <div class="mb-item"><div class="mb-label">Neutral</div><div class="mb-value" style="color:var(--text-muted)" id="mbN">0</div></div>
+    <div class="mb-item"><div class="mb-label">Sell</div><div class="mb-value" style="color:#fca5a5" id="mbS">0</div></div>
+    <div class="mb-item"><div class="mb-label">Strong Sell</div><div class="mb-value" style="color:var(--red)" id="mbSS">0</div></div>
+    <div class="mb-item"><div class="mb-label">Trending</div><div class="mb-value" style="color:var(--blue)" id="mbTrend">0</div></div>
+    <div class="mb-item"><div class="mb-label">Mean Rev</div><div class="mb-value" style="color:var(--purple)" id="mbMR">0</div></div>
+    <div class="mb-item"><div class="mb-label">Random</div><div class="mb-value" style="color:var(--text-dim)" id="mbRand">0</div></div>
+  </div>
+
+  <!-- Active Picks -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#128640;</span> Active Picks <span class="count" id="activeCount">0</span></div>
+    <div class="table-wrap">
+      <table class="data-table" id="activeTable">
+        <thead><tr>
+          <th>Symbol</th><th>Direction</th><th>Mode</th><th>Entry</th><th>Live Price</th><th>TP</th><th>SL</th>
+          <th>R:R</th><th>Unreal. P&amp;L</th><th>Confidence</th><th>Consensus</th><th>Size</th><th>Entry Time</th><th>Health</th>
+        </tr></thead>
+        <tbody id="activeBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="activeEmpty" style="display:none">No active picks right now. Scanner runs every 30 min.</div>
+  </div>
+
+  <!-- Next Best Picks -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#127775;</span> Next Best Picks <span class="count" id="nextCount">0</span></div>
+    <p style="color:var(--text-muted);font-size:.82rem;margin:-8px 0 14px">Highest-scoring opportunities across 45 pairs. Ranked by composite buy/sell score using RSI, EMA structure, Bollinger Bands, volume, regime, and Fear &amp; Greed.</p>
+    <div class="table-wrap">
+      <table class="data-table" id="nextTable">
+        <thead><tr>
+          <th>Symbol</th><th>Verdict</th><th>Buy Score</th><th>Price</th><th>RSI(14)</th><th>RSI(2)</th>
+          <th>24h %</th><th>7d %</th><th>ATR %</th><th>Regime</th><th>BB %</th><th>Key Factors</th>
+        </tr></thead>
+        <tbody id="nextBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="nextEmpty" style="display:none">No strong candidates right now.</div>
+  </div>
+
+  <!-- Full Market Overview -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#127760;</span> Full Market Overview <span class="count" id="overviewCount">0</span></div>
+    <div class="tab-row" id="overviewTabs">
+      <button class="tab-btn active" data-filter="ALL">All</button>
+      <button class="tab-btn" data-filter="STRONG_BUY">Strong Buy</button>
+      <button class="tab-btn" data-filter="BUY">Buy</button>
+      <button class="tab-btn" data-filter="NEUTRAL">Neutral</button>
+      <button class="tab-btn" data-filter="SELL">Sell</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="overviewTable">
+        <thead><tr>
+          <th data-sort="symbol">Symbol</th><th data-sort="verdict">Verdict</th>
+          <th data-sort="buy_score">Buy</th><th data-sort="sell_score">Sell</th>
+          <th data-sort="price">Price</th><th data-sort="rsi_14">RSI</th>
+          <th data-sort="pct_24h">24h %</th><th data-sort="pct_7d">7d %</th>
+          <th data-sort="atr_pct">ATR %</th><th data-sort="regime">Regime</th>
+          <th>SMA200</th><th data-sort="volume_ratio">Vol</th>
+        </tr></thead>
+        <tbody id="overviewBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Targets -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#127919;</span> Performance vs Targets</div>
+    <div class="table-wrap">
+      <table class="targets-table" id="targetsTable">
+        <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Stretch</th><th>Status</th></tr></thead>
+        <tbody id="targetsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Performance by Mode -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#128202;</span> Performance by Mode</div>
+    <div class="mode-grid" id="modeGrid"></div>
+  </div>
+
+  <!-- Closed Picks -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#128218;</span> Recent Closed Picks</div>
+    <div class="table-wrap">
+      <table class="data-table" id="closedTable">
+        <thead><tr>
+          <th>Symbol</th><th>Direction</th><th>Mode</th><th>Entry</th><th>Exit</th>
+          <th>P&amp;L %</th><th>Exit Reason</th><th>Hold Time</th>
+        </tr></thead>
+        <tbody id="closedBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="closedEmpty" style="display:none">No closed picks yet. First trades are live!</div>
+  </div>
+
+  <!-- Prop Firm Compliance -->
+  <div class="section fade-up">
+    <div class="section-title"><span class="icon">&#127942;</span> Prop Firm Challenge Compliance</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+      <div class="mode-card">
+        <h3 style="color:var(--accent)">How QuanEngine Meets Prop Firm Rules</h3>
+        <p style="color:var(--text-muted);font-size:.85rem;line-height:1.7;margin-top:8px">
+          Prop firm challenges (FTMO, MyForexFunds, The5ers, etc.) typically require traders to hit a <strong>profit target of 8-10%</strong> within 30-60 days while staying within a <strong>maximum drawdown of 5-10%</strong> (daily 4-5%). Our system is designed specifically to operate within these constraints.
+        </p>
+        <div style="margin-top:16px">
+          <div class="mode-stat"><span class="label">Profit Target</span><span class="val" style="color:var(--green)">8-10% in 30d</span></div>
+          <div class="mode-stat"><span class="label">Our R:R per trade</span><span class="val">2:1 minimum</span></div>
+          <div class="mode-stat"><span class="label">Trades needed @ 2:1</span><span class="val">~15-20 winning trades</span></div>
+          <div class="mode-stat"><span class="label">With 65% WR</span><span class="val" style="color:var(--green)">~10 net wins in 30d</span></div>
+        </div>
+      </div>
+
+      <div class="mode-card">
+        <h3 style="color:var(--red)">Risk Management Rules</h3>
+        <div style="margin-top:8px">
+          <div class="mode-stat"><span class="label">Max Daily Drawdown</span><span class="val">4-5% (firm rule)</span></div>
+          <div class="mode-stat"><span class="label">Our Max Daily Loss</span><span class="val" style="color:var(--green)">&lt;3% (Half-Kelly sizing)</span></div>
+          <div class="mode-stat"><span class="label">Max Total Drawdown</span><span class="val">8-10% (firm rule)</span></div>
+          <div class="mode-stat"><span class="label">Our Max Drawdown Target</span><span class="val" style="color:var(--green)">&lt;5% (position caps)</span></div>
+          <div class="mode-stat"><span class="label">Position Size Cap</span><span class="val">3% SCALP / 5% SWING</span></div>
+          <div class="mode-stat"><span class="label">Max Concurrent</span><span class="val">6 total (3 per mode)</span></div>
+          <div class="mode-stat"><span class="label">Correlation Filter</span><span class="val">Skip if &gt;0.7 correlated</span></div>
+        </div>
+      </div>
+
+      <div class="mode-card">
+        <h3 style="color:var(--cyan)">Never Sits Idle</h3>
+        <p style="color:var(--text-muted);font-size:.85rem;line-height:1.7;margin-top:8px">
+          Prop firm challenges have <strong>time limits</strong> &mdash; you can't wait for "perfect" setups. QuanEngine uses 4 always-on prop strategies that fire in ANY market condition, even during extreme fear or bear markets:
+        </p>
+        <div style="margin-top:12px">
+          <div class="mode-stat"><span class="label">RSI Momentum</span><span class="val">No SMA200 gate</span></div>
+          <div class="mode-stat"><span class="label">ATR Breakout</span><span class="val">Direction-agnostic</span></div>
+          <div class="mode-stat"><span class="label">EMA Crossover</span><span class="val">Works in downtrends</span></div>
+          <div class="mode-stat"><span class="label">Fear/Greed Contrarian</span><span class="val">BUY at extreme fear</span></div>
+        </div>
+        <p style="color:var(--text-dim);font-size:.78rem;margin-top:12px">During PANIC markets, position sizes are reduced to 10% of normal (0.3% instead of 3%) to protect the challenge account while still generating activity.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3 style="color:var(--purple)">3-Mode Time Horizon</h3>
+        <p style="color:var(--text-muted);font-size:.85rem;line-height:1.7;margin-top:8px">
+          Each signal is routed to the optimal timeframe based on regime strength and volatility:
+        </p>
+        <div style="margin-top:12px">
+          <div class="mode-stat"><span class="label"><span class="mode-badge mode-SCALP">SCALP</span></span><span class="val">1-2h hold, 2:1 R:R</span></div>
+          <div class="mode-stat"><span class="label"><span class="mode-badge mode-SWING">SWING</span></span><span class="val">24-48h hold, 2.8:1 R:R</span></div>
+          <div class="mode-stat"><span class="label"><span class="mode-badge mode-POSITION">POSITION</span></span><span class="val">~30d hold, 3.6:1 R:R</span></div>
+        </div>
+        <p style="color:var(--text-dim);font-size:.78rem;margin-top:12px">ATR-based TP/SL levels adapt to each coin's volatility. Trailing stops activate at 1.5x ATR profit for SWING and 2x ATR for POSITION modes.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3 style="color:var(--yellow)">Regime-Aware Ensemble</h3>
+        <p style="color:var(--text-muted);font-size:.85rem;line-height:1.7;margin-top:8px">
+          The Hurst exponent classifies each coin's market regime (trending vs mean-reverting vs random walk). Strategy pools are weighted accordingly:
+        </p>
+        <div style="margin-top:12px">
+          <div class="mode-stat"><span class="label">H &gt; 0.55</span><span class="val"><span class="regime regime-TRENDING">TRENDING</span> pool at full weight</span></div>
+          <div class="mode-stat"><span class="label">H &lt; 0.45</span><span class="val"><span class="regime regime-MEAN_REVERSION">MEAN REV</span> pool at full weight</span></div>
+          <div class="mode-stat"><span class="label">0.45-0.55</span><span class="val"><span class="regime regime-RANDOM">RANDOM</span> prop pool only</span></div>
+          <div class="mode-stat"><span class="label">Consensus</span><span class="val">50%+ of voters must agree</span></div>
+        </div>
+        <p style="color:var(--text-dim);font-size:.78rem;margin-top:12px">12 strategies across 3 pools (4 trending, 4 mean-reversion, 4 prop) vote on every signal. No single strategy can force a trade.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3 style="color:var(--green)">Forward-Tested &amp; Audited</h3>
+        <p style="color:var(--text-muted);font-size:.85rem;line-height:1.7;margin-top:8px">
+          Every signal is tracked in SQLite with Binance price validation. Auto-closes at TP, SL, or max hold time. Results feed into the central audit trail.
+        </p>
+        <div style="margin-top:12px">
+          <div class="mode-stat"><span class="label">Scan Frequency</span><span class="val">Every 30 minutes</span></div>
+          <div class="mode-stat"><span class="label">Price Source</span><span class="val">Binance spot API</span></div>
+          <div class="mode-stat"><span class="label">45 Pairs</span><span class="val">BTC, ETH, SOL + 42 alts</span></div>
+          <div class="mode-stat"><span class="label">Audit Trail</span><span class="val">SQLite + MySQL dual-write</span></div>
+          <div class="mode-stat"><span class="label">Walk-Forward</span><span class="val">8 anti-overfit checks</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Built by Claude Code &bull; QuanEngine v1.1 &bull; 45 pairs &bull; Regime-aware consensus ensemble<br>
+    Designed for prop firm challenges (FTMO, MyForexFunds, The5ers, TopStep) &bull; Half-Kelly sizing &bull; ATR-based TP/SL<br>
+    <span id="refreshNote">Auto-refreshes every 5 minutes</span>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading" id="loadingOverlay">
+  <div class="spinner"></div>
+  Fetching QuanEngine data...
+</div>
+
+<script>
+(function(){
+  const SIGNALS_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/quan_engine/data/active_signals.json';
+  const ANALYSIS_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/quan_engine/data/market_analysis.json';
+  const REFRESH_MS = 5 * 60 * 1000;
+
+  let overviewData = [];  // For filtering/sorting
+  let currentFilter = 'ALL';
+  let sortCol = 'buy_score';
+  let sortDir = -1; // -1 = desc
+
+  function $(id){ return document.getElementById(id); }
+
+  function fmtPrice(v){
+    if(v == null) return '--';
+    const n = Number(v);
+    if(isNaN(n)) return '--';
+    if(n >= 1000) return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(n >= 1) return n.toFixed(4);
+    if(n >= 0.001) return n.toFixed(6);
+    return n.toFixed(8);
+  }
+
+  function fmtPct(v,dec){
+    if(v == null) return '--';
+    return (Number(v)*100).toFixed(dec||1)+'%';
+  }
+
+  function fmtPctRaw(v,dec){
+    if(v == null) return '--';
+    return Number(v).toFixed(dec||1)+'%';
+  }
+
+  function fmtChange(v){
+    if(v == null) return '--';
+    const n = Number(v);
+    const cls = n >= 0 ? 'pnl-pos' : 'pnl-neg';
+    return `<span class="${cls}">${n >= 0 ? '+' : ''}${n.toFixed(2)}%</span>`;
+  }
+
+  function timeSince(iso){
+    if(!iso) return '--';
+    const diff = Date.now() - new Date(iso).getTime();
+    if(diff < 0) return 'just now';
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    if(h > 24){ const d = Math.floor(h/24); return d+'d '+(h%24)+'h'; }
+    return h+'h '+m+'m';
+  }
+
+  function scoreColor(v){ return v >= 85 ? 'var(--green)' : v >= 70 ? '#6ee7b7' : v >= 55 ? 'var(--yellow)' : 'var(--text-muted)'; }
+  function rsiColor(v){ return v < 30 ? 'var(--green)' : v > 70 ? 'var(--red)' : v < 40 ? '#6ee7b7' : v > 60 ? '#fca5a5' : 'var(--text)'; }
+  function wrColor(v){ return v >= 0.65 ? 'green' : v >= 0.50 ? 'yellow' : 'red'; }
+
+  function healthIcon(h){
+    if(!h) return '<span class="health-safe">&#9679; OK</span>';
+    const l = (h+'').toUpperCase();
+    if(l === 'SAFE' || l === 'HEALTHY') return '<span class="health-safe">&#9679; SAFE</span>';
+    if(l === 'CAUTION' || l === 'WARNING') return '<span class="health-caution">&#9679; CAUTION</span>';
+    if(l === 'PANIC') return '<span class="health-panic">&#9679; PANIC</span>';
+    return '<span class="health-danger">&#9679; DANGER</span>';
+  }
+
+  function calcRR(entry, tp, sl){
+    if(!entry || !tp || !sl) return '--';
+    const risk = Math.abs(entry - sl);
+    const reward = Math.abs(tp - entry);
+    if(risk === 0) return '--';
+    return (reward/risk).toFixed(2);
+  }
+
+  function fgLabel(v){
+    if(v <= 10) return 'Extreme Fear';
+    if(v <= 25) return 'Fear';
+    if(v <= 45) return 'Neutral-Fear';
+    if(v <= 55) return 'Neutral';
+    if(v <= 75) return 'Greed';
+    return 'Extreme Greed';
+  }
+
+  function fgColor(v){
+    if(v <= 25) return 'red';
+    if(v <= 45) return 'orange';
+    if(v <= 55) return 'yellow';
+    if(v <= 75) return 'green';
+    return 'green';
+  }
+
+  // --- Live Price Engine with 3-source failover ---
+  const PriceEngine = {
+    cache: {},
+    cacheTTL: 30000,
+
+    coinMap: {
+      'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana',
+      'XRPUSDT': 'ripple', 'BNBUSDT': 'binancecoin', 'ADAUSDT': 'cardano',
+      'DOGEUSDT': 'dogecoin', 'AVAXUSDT': 'avalanche-2', 'DOTUSDT': 'polkadot',
+      'LINKUSDT': 'chainlink', 'MATICUSDT': 'matic-network', 'LTCUSDT': 'litecoin',
+      'UNIUSDT': 'uniswap', 'ATOMUSDT': 'cosmos', 'NEARUSDT': 'near',
+      'AAVEUSDT': 'aave', 'SHIBUSDT': 'shiba-inu', 'TRXUSDT': 'tron',
+      'ARBUSDT': 'arbitrum', 'OPUSDT': 'optimism', 'SUIUSDT': 'sui',
+      'APTUSDT': 'aptos', 'INJUSDT': 'injective-protocol', 'TIAUSDT': 'celestia',
+    },
+
+    async fetchPrices(symbols) {
+      const prices = {};
+
+      // Source 1: Binance bulk ticker (fastest, most accurate)
+      try {
+        const bases = ['https://api.binance.com', 'https://api1.binance.com', 'https://data-api.binance.vision'];
+        let resp = null;
+        for(const base of bases){
+          try { resp = await fetch(base + '/api/v3/ticker/price'); if(resp.ok) break; } catch(e){ continue; }
+        }
+        if(resp && resp.ok){
+          const data = await resp.json();
+          const lookup = {};
+          data.forEach(t => lookup[t.symbol] = parseFloat(t.price));
+          symbols.forEach(s => {
+            if(lookup[s]) prices[s] = lookup[s];
+          });
+          if(Object.keys(prices).length > 0) return prices;
+        }
+      } catch(e){ console.warn('Binance bulk failed:', e.message); }
+
+      // Source 2: CoinGecko (free, no key)
+      try {
+        const ids = [...new Set(symbols.map(s => this.coinMap[s]).filter(Boolean))].join(',');
+        if(ids){
+          const resp = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+          if(resp.ok){
+            const data = await resp.json();
+            symbols.forEach(s => {
+              const id = this.coinMap[s];
+              if(id && data[id]) prices[s] = data[id].usd;
+            });
+            if(Object.keys(prices).length > 0) return prices;
+          }
+        }
+      } catch(e){ console.warn('CoinGecko failed:', e.message); }
+
+      // Source 3: CryptoCompare
+      try {
+        const fsyms = [...new Set(symbols.map(s => s.replace('USDT','').replace('-USD','')))].join(',');
+        const resp = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${fsyms}&tsyms=USD`);
+        if(resp.ok){
+          const data = await resp.json();
+          symbols.forEach(s => {
+            const base = s.replace('USDT','').replace('-USD','');
+            if(data[base] && data[base].USD) prices[s] = data[base].USD;
+          });
+        }
+      } catch(e){ console.warn('CryptoCompare failed:', e.message); }
+
+      return prices;
+    },
+
+    async getLive(symbols) {
+      const now = Date.now();
+      const stale = symbols.filter(s => !this.cache[s] || (now - this.cache[s].ts) > this.cacheTTL);
+      if(stale.length > 0){
+        const fresh = await this.fetchPrices(stale);
+        Object.entries(fresh).forEach(([s, p]) => {
+          this.cache[s] = { price: p, ts: now };
+        });
+      }
+      const result = {};
+      symbols.forEach(s => { if(this.cache[s]) result[s] = this.cache[s].price; });
+      return result;
+    }
+  };
+
+  // Backwards-compatible wrapper used by render()
+  async function fetchLivePrices(symbols){
+    return PriceEngine.getLive(symbols);
+  }
+
+  function calcUnrealizedPnl(pick, livePrice){
+    if(!livePrice || !pick.entry_price) return null;
+    const dir = (pick.direction||'').toUpperCase();
+    if(dir === 'BUY') return ((livePrice - pick.entry_price) / pick.entry_price) * 100;
+    if(dir === 'SELL') return ((pick.entry_price - livePrice) / pick.entry_price) * 100;
+    return null;
+  }
+
+  function toEST(isoStr){
+    if(!isoStr) return '--';
+    try {
+      const d = new Date(isoStr + (isoStr.endsWith('Z') ? '' : 'Z'));
+      return d.toLocaleString('en-US', { timeZone:'America/New_York', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true }) + ' EST';
+    } catch(e) { return '--'; }
+  }
+
+  // --- Render ---
+  async function render(signals, analysis){
+    $('loadingOverlay').style.display = 'none';
+
+    const tsRaw = analysis ? analysis.updated_at : (signals ? signals.updated_at : null);
+    if(tsRaw){
+      const estStr = toEST(tsRaw);
+      $('lastUpdate').textContent = 'Last updated: ' + estStr + ' (' + timeSince(tsRaw) + ' ago)';
+    }
+
+    const picks = (signals ? signals.active_picks : []) || [];
+    const perf = (signals ? signals.performance : {}) || {};
+    const summary = (analysis ? analysis.market_summary : {}) || {};
+    const nextBuys = (analysis ? analysis.next_best_buys : []) || [];
+    const nextSells = (analysis ? analysis.next_best_sells : []) || [];
+    overviewData = (analysis ? analysis.market_overview : []) || [];
+
+    // --- KPIs ---
+    const fng = summary.fear_greed;
+    if(fng != null){
+      $('kpiFG').textContent = fng;
+      $('kpiFG').className = 'kpi-value ' + fgColor(fng);
+      $('kpiFGLabel').textContent = fgLabel(fng);
+    }
+
+    const bias = summary.market_bias || '--';
+    $('kpiBias').textContent = bias;
+    $('kpiBias').className = 'kpi-value ' + (bias === 'BULLISH' ? 'green' : bias === 'BEARISH' ? 'red' : 'yellow');
+
+    const activePicks = picks.filter(p => (p.status||'ACTIVE').toUpperCase() === 'ACTIVE')
+      .sort((a,b) => (b.confidence||0) - (a.confidence||0));
+    $('kpiActive').textContent = activePicks.length;
+    $('kpiNextBuys').textContent = nextBuys.length;
+    $('kpiScanned').textContent = summary.symbols_scanned || overviewData.length || '--';
+
+    if(summary.avg_rsi_14 != null){
+      $('kpiAvgRSI').textContent = summary.avg_rsi_14.toFixed(1);
+      $('kpiAvgRSI').style.color = rsiColor(summary.avg_rsi_14);
+    }
+    if(summary.avg_24h_change != null){
+      const v = summary.avg_24h_change;
+      $('kpiAvg24h').textContent = (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+      $('kpiAvg24h').className = 'kpi-value ' + (v >= 0 ? 'green' : 'red');
+    }
+
+    // Closed picks from signals
+    const closedPicks = (signals ? signals.closed_picks : []) || [];
+
+    const wr = perf.win_rate;
+    if(wr != null && perf.total_trades > 0){
+      $('kpiWR').textContent = fmtPct(wr);
+      $('kpiWR').className = 'kpi-value ' + wrColor(wr);
+    } else {
+      $('kpiWR').textContent = activePicks.length > 0 ? 'Live' : '--';
+      $('kpiWR').className = 'kpi-value cyan';
+    }
+
+    // --- Market Summary Banner ---
+    if(summary.verdict_distribution){
+      $('marketBanner').style.display = 'grid';
+      const vd = summary.verdict_distribution;
+      const rd = summary.regime_distribution || {};
+      $('mbSB').textContent = vd.STRONG_BUY || 0;
+      $('mbB').textContent = vd.BUY || 0;
+      $('mbN').textContent = vd.NEUTRAL || 0;
+      $('mbS').textContent = vd.SELL || 0;
+      $('mbSS').textContent = vd.STRONG_SELL || 0;
+      $('mbTrend').textContent = rd.TRENDING || 0;
+      $('mbMR').textContent = rd.MEAN_REVERSION || 0;
+      $('mbRand').textContent = rd.RANDOM || 0;
+    }
+
+    // --- Fetch live prices for active picks ---
+    const activeSymbols = [...new Set(activePicks.map(p => p.symbol).filter(Boolean))];
+    let livePrices = {};
+    if(activeSymbols.length > 0){
+      livePrices = await fetchLivePrices(activeSymbols);
+    }
+
+    // Compute unrealized P&L for active picks
+    activePicks.forEach(p => {
+      const lp = livePrices[p.symbol];
+      p._livePrice = lp || null;
+      p._unrealizedPnl = calcUnrealizedPnl(p, lp);
+    });
+
+    // --- Active Picks ---
+    $('activeCount').textContent = activePicks.length;
+
+    if(activePicks.length === 0){
+      $('activeBody').innerHTML = '';
+      $('activeEmpty').style.display = 'block';
+    } else {
+      $('activeEmpty').style.display = 'none';
+      $('activeBody').innerHTML = activePicks.map(p => {
+        const dir = (p.direction||'').toUpperCase();
+        const mode = (p.mode||'SWING').toUpperCase();
+        const conf = p.confidence || 0;
+        const confPct = (conf*100).toFixed(0);
+        const confColor = conf >= 0.7 ? 'var(--green)' : conf >= 0.5 ? 'var(--yellow)' : 'var(--red)';
+        const consPct = p.consensus_pct != null ? fmtPct(p.consensus_pct,0) : '--';
+        const rr = calcRR(p.entry_price, p.take_profit, p.stop_loss);
+        const upnl = p._unrealizedPnl;
+        const upnlStr = upnl != null ? ((upnl>=0?'+':'')+upnl.toFixed(2)+'%') : '--';
+        const upnlCls = upnl != null ? (upnl >= 0 ? 'pnl-pos' : 'pnl-neg') : '';
+        const estTime = toEST(p.entry_time);
+        return `<tr>
+          <td><strong>${p.symbol||'--'}</strong></td>
+          <td class="${dir==='BUY'?'dir-buy':'dir-sell'}">${dir}</td>
+          <td><span class="mode-badge mode-${mode}">${mode}</span></td>
+          <td>${fmtPrice(p.entry_price)}</td>
+          <td>${p._livePrice ? fmtPrice(p._livePrice) : '--'}</td>
+          <td>${fmtPrice(p.take_profit)}</td>
+          <td>${fmtPrice(p.stop_loss)}</td>
+          <td>${rr}</td>
+          <td class="${upnlCls}" style="font-weight:700">${upnlStr}</td>
+          <td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:${confPct}%;background:${confColor}"></div></div><span>${confPct}%</span></div></td>
+          <td>${consPct}</td>
+          <td>${p.position_size != null ? (p.position_size*100).toFixed(1)+'%' : '--'}</td>
+          <td title="${estTime}">${timeSince(p.entry_time)}<br><span style="font-size:.65rem;color:var(--text-dim)">${estTime}</span></td>
+          <td>${healthIcon(p.health_at_entry || p.health)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // --- Next Best Picks ---
+    const allNext = [...nextBuys, ...nextSells];
+    $('nextCount').textContent = allNext.length;
+
+    if(allNext.length === 0){
+      $('nextBody').innerHTML = '';
+      $('nextEmpty').style.display = 'block';
+    } else {
+      $('nextEmpty').style.display = 'none';
+      $('nextBody').innerHTML = allNext.map(p => {
+        const v = p.verdict || 'NEUTRAL';
+        const isSell = v.includes('SELL');
+        const mainScore = isSell ? p.sell_score : p.buy_score;
+        const factors = (p.factors || []).slice(0,4);
+        return `<tr>
+          <td><strong>${p.symbol}</strong></td>
+          <td><span class="verdict verdict-${v}">${v.replace('_',' ')}</span></td>
+          <td><div class="score-bar"><div class="score-track"><div class="score-fill" style="width:${mainScore}%;background:${scoreColor(mainScore)}"></div></div><span style="color:${scoreColor(mainScore)}">${mainScore}</span></div></td>
+          <td>${fmtPrice(p.price)}</td>
+          <td style="color:${rsiColor(p.rsi_14)}">${p.rsi_14}</td>
+          <td style="color:${rsiColor(p.rsi_2)}">${p.rsi_2}</td>
+          <td>${fmtChange(p.pct_24h)}</td>
+          <td>${fmtChange(p.pct_7d)}</td>
+          <td>${p.atr_pct}%</td>
+          <td><span class="regime regime-${p.regime}">${p.regime}</span></td>
+          <td>${(p.bb_pct*100).toFixed(0)}%</td>
+          <td><div class="factors">${factors.map(f=>'<span class="factor-pill" title="'+f+'">'+f+'</span>').join('')}</div></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // --- Full Market Overview ---
+    renderOverview();
+
+    // --- Targets (use closed trades if available, otherwise show active trade metrics) ---
+    const sh = perf.sharpe;
+    const pf = perf.profit_factor;
+    const dd = perf.max_drawdown;
+    const totalClosed = perf.total_trades || closedPicks.length || 0;
+
+    // Calculate unrealized portfolio metrics from active picks
+    const activeWithPnl = activePicks.filter(p => p._unrealizedPnl != null);
+    const avgUnrealized = activeWithPnl.length > 0 ? activeWithPnl.reduce((s,p) => s + p._unrealizedPnl, 0) / activeWithPnl.length : null;
+    const totalUnrealized = activeWithPnl.length > 0 ? activeWithPnl.reduce((s,p) => s + p._unrealizedPnl, 0) : null;
+    const avgConfidence = activePicks.length > 0 ? activePicks.reduce((s,p) => s + (p.confidence||0), 0) / activePicks.length : null;
+    const avgConsensus = activePicks.length > 0 ? activePicks.reduce((s,p) => s + (p.consensus_pct||0), 0) / activePicks.length : null;
+
+    let targets;
+    if(totalClosed > 0){
+      targets = [
+        { metric:'Win Rate', current: wr, fmt: v=>fmtPct(v), target:'65%', stretch:'70%', pass: wr != null && wr >= 0.65 },
+        { metric:'Sharpe Ratio', current: sh, fmt: v=>v!=null?v.toFixed(2):'--', target:'>2.0', stretch:'>3.0', pass: sh != null && sh >= 2.0 },
+        { metric:'Profit Factor', current: pf, fmt: v=>v!=null?v.toFixed(2):'--', target:'>2.0', stretch:'>2.5', pass: pf != null && pf >= 2.0 },
+        { metric:'Max Drawdown', current: dd, fmt: v=>v!=null?fmtPctRaw(v):'--', target:'<15%', stretch:'<10%', pass: dd != null && dd < 15 },
+      ];
+    } else {
+      // Show active portfolio metrics when no closed trades yet
+      targets = [
+        { metric:'Active Trades', current: activePicks.length, fmt: v=>v+'', target:'3-6', stretch:'6+', pass: activePicks.length >= 3 },
+        { metric:'Avg Unrealized P&L', current: avgUnrealized, fmt: v=>v!=null?(v>=0?'+':'')+v.toFixed(2)+'%':'Fetching...', target:'>0%', stretch:'>1%', pass: avgUnrealized != null && avgUnrealized > 0 },
+        { metric:'Total Unrealized P&L', current: totalUnrealized, fmt: v=>v!=null?(v>=0?'+':'')+v.toFixed(2)+'%':'Fetching...', target:'>0%', stretch:'>3%', pass: totalUnrealized != null && totalUnrealized > 0 },
+        { metric:'Avg Confidence', current: avgConfidence, fmt: v=>v!=null?(v*100).toFixed(0)+'%':'--', target:'>60%', stretch:'>70%', pass: avgConfidence != null && avgConfidence >= 0.6 },
+        { metric:'Avg Consensus', current: avgConsensus, fmt: v=>v!=null?(v*100).toFixed(0)+'%':'--', target:'>60%', stretch:'>75%', pass: avgConsensus != null && avgConsensus >= 0.6 },
+        { metric:'Closed Trades', current: 0, fmt: v=>v+'', target:'>0', stretch:'>10', pass: false },
+      ];
+    }
+    $('targetsBody').innerHTML = targets.map(t => `<tr>
+      <td>${t.metric}</td><td>${t.fmt(t.current)}</td><td>${t.target}</td><td>${t.stretch}</td>
+      <td class="${t.current != null ? (t.pass ? 'status-pass' : 'status-fail') : ''}">${t.current != null ? (t.pass ? '&#10003;' : '&#10007;') : '--'}</td>
+    </tr>`).join('');
+
+    // --- Mode Cards (include active trades per mode) ---
+    const byMode = perf.by_mode || {};
+    const modeNames = ['SCALP','SWING','POSITION'];
+    $('modeGrid').innerHTML = modeNames.map(m => {
+      const d = byMode[m] || {};
+      const mwr = d.win_rate;
+      const closedPnl = d.total_pnl;
+      const closedCount = d.trades || 0;
+      // Count active picks in this mode
+      const activeInMode = activePicks.filter(p => (p.mode||'').toUpperCase() === m);
+      const activeCount = activeInMode.length;
+      // Unrealized P&L for this mode
+      const modeWithPnl = activeInMode.filter(p => p._unrealizedPnl != null);
+      const modeUnrealized = modeWithPnl.length > 0 ? modeWithPnl.reduce((s,p) => s + p._unrealizedPnl, 0) : null;
+      const modeAvgConf = activeInMode.length > 0 ? activeInMode.reduce((s,p) => s + (p.confidence||0), 0) / activeInMode.length : null;
+      return `<div class="mode-card">
+        <h3><span class="mode-badge mode-${m}">${m}</span></h3>
+        <div class="mode-stat"><span class="label">Active</span><span class="val" style="color:${activeCount > 0 ? 'var(--cyan)' : 'var(--text-dim)'}">${activeCount}</span></div>
+        <div class="mode-stat"><span class="label">Closed</span><span class="val">${closedCount}</span></div>
+        <div class="mode-stat"><span class="label">Win Rate</span><span class="val" style="color:${mwr!=null?(mwr>=0.6?'var(--green)':mwr>=0.5?'var(--yellow)':'var(--red)'):'var(--text-dim)'}">${mwr!=null?fmtPct(mwr):(closedCount===0?'N/A':'--')}</span></div>
+        <div class="mode-stat"><span class="label">Closed P&amp;L</span><span class="val ${closedPnl!=null?(closedPnl>=0?'pnl-pos':'pnl-neg'):''}">${closedPnl!=null?(closedPnl>=0?'+':'')+closedPnl.toFixed(2)+'%':(closedCount===0?'N/A':'--')}</span></div>
+        <div class="mode-stat"><span class="label">Unrealized P&amp;L</span><span class="val ${modeUnrealized!=null?(modeUnrealized>=0?'pnl-pos':'pnl-neg'):''}">${modeUnrealized!=null?(modeUnrealized>=0?'+':'')+modeUnrealized.toFixed(2)+'%':(activeCount===0?'N/A':'Fetching...')}</span></div>
+        <div class="mode-stat"><span class="label">Avg Confidence</span><span class="val">${modeAvgConf!=null?(modeAvgConf*100).toFixed(0)+'%':(activeCount===0?'N/A':'--')}</span></div>
+      </div>`;
+    }).join('');
+
+    // --- Closed Picks ---
+    const recentClosed = closedPicks.slice(0, 20);
+    if(recentClosed.length === 0){
+      $('closedBody').innerHTML = '';
+      $('closedEmpty').style.display = 'block';
+    } else {
+      $('closedEmpty').style.display = 'none';
+      $('closedBody').innerHTML = recentClosed.map(p => {
+        const dir = (p.direction||'').toUpperCase();
+        const mode = (p.mode||'SWING').toUpperCase();
+        const pnl = p.pnl_pct != null ? p.pnl_pct : p.pnl;
+        const pnlStr = pnl != null ? ((pnl>=0?'+':'')+pnl.toFixed(2)+'%') : '--';
+        const pnlClass = pnl != null ? (pnl >= 0 ? 'pnl-pos' : 'pnl-neg') : '';
+        return `<tr>
+          <td><strong>${p.symbol||'--'}</strong></td>
+          <td class="${dir==='BUY'?'dir-buy':'dir-sell'}">${dir}</td>
+          <td><span class="mode-badge mode-${mode}">${mode}</span></td>
+          <td>${fmtPrice(p.entry_price)}</td>
+          <td>${fmtPrice(p.exit_price)}</td>
+          <td class="${pnlClass}">${pnlStr}</td>
+          <td>${p.exit_reason||'--'}</td>
+          <td>${p.hold_bars ? p.hold_bars+'h' : '--'}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  function renderOverview(){
+    let data = overviewData;
+    if(currentFilter !== 'ALL'){
+      data = data.filter(m => m.verdict === currentFilter);
+    }
+    // Sort
+    data.sort((a,b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if(typeof va === 'string') return sortDir * va.localeCompare(vb);
+      return sortDir * ((va||0) - (vb||0));
+    });
+
+    $('overviewCount').textContent = data.length;
+    $('overviewBody').innerHTML = data.map(m => {
+      const v = m.verdict || 'NEUTRAL';
+      return `<tr>
+        <td><strong>${m.symbol}</strong></td>
+        <td><span class="verdict verdict-${v}">${v.replace('_',' ')}</span></td>
+        <td style="color:${scoreColor(m.buy_score)}">${m.buy_score}</td>
+        <td style="color:${m.sell_score >= 70 ? 'var(--red)' : 'var(--text-dim)'}">${m.sell_score}</td>
+        <td>${fmtPrice(m.price)}</td>
+        <td style="color:${rsiColor(m.rsi_14)}">${m.rsi_14}</td>
+        <td>${fmtChange(m.pct_24h)}</td>
+        <td>${fmtChange(m.pct_7d)}</td>
+        <td>${m.atr_pct}%</td>
+        <td><span class="regime regime-${m.regime}">${m.regime}</span></td>
+        <td>${m.above_sma200 ? '<span style="color:var(--green)">Above</span>' : '<span style="color:var(--red)">Below</span>'}</td>
+        <td>${m.volume_ratio}x</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // --- Tab filtering ---
+  document.querySelectorAll('#overviewTabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#overviewTabs .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderOverview();
+    });
+  });
+
+  // --- Column sorting ---
+  document.querySelectorAll('#overviewTable th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if(sortCol === col) sortDir *= -1;
+      else { sortCol = col; sortDir = -1; }
+      renderOverview();
+    });
+  });
+
+  // --- Generic sortable headers for Active & Closed tables ---
+  function makeSortable(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const headers = table.querySelectorAll('th');
+    headers.forEach((th, colIdx) => {
+      th.style.cursor = 'pointer';
+      th.title = 'Click to sort';
+      th.addEventListener('click', () => {
+        const tbody = table.querySelector('tbody') || table;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const asc = th.dataset.sort !== 'asc';
+        th.dataset.sort = asc ? 'asc' : 'desc';
+        headers.forEach(h => { if (h !== th) delete h.dataset.sort; });
+        headers.forEach(h => h.textContent = h.textContent.replace(/ [\u25B2\u25BC]/g, ''));
+        th.textContent = th.textContent + (asc ? ' \u25B2' : ' \u25BC');
+        rows.sort((a, b) => {
+          const aVal = a.cells[colIdx]?.textContent.trim() || '';
+          const bVal = b.cells[colIdx]?.textContent.trim() || '';
+          const aNum = parseFloat(aVal.replace(/[^0-9.\-]/g, ''));
+          const bNum = parseFloat(bVal.replace(/[^0-9.\-]/g, ''));
+          if (!isNaN(aNum) && !isNaN(bNum)) return asc ? aNum - bNum : bNum - aNum;
+          return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        });
+        rows.forEach(r => tbody.appendChild(r));
+      });
+    });
+  }
+  makeSortable('activeTable');
+  makeSortable('closedTable');
+  makeSortable('nextTable');
+  makeSortable('targetsTable');
+
+  function showError(msg){
+    $('loadingOverlay').innerHTML = `<div class="error-banner">${msg}<br><small>Will retry in 5 minutes.</small></div>`;
+  }
+
+  // --- 30-second live price refresh for Active Picks table ---
+  // Stores the last-rendered active picks so the price loop can update them without a full data reload
+  let _lastActivePicks = [];
+
+  async function refreshActivePrices(){
+    const picks = _lastActivePicks;
+    if(!picks || picks.length === 0) return;
+
+    const symbols = [...new Set(picks.map(p => p.symbol).filter(Boolean))];
+    if(symbols.length === 0) return;
+
+    try {
+      const prices = await PriceEngine.getLive(symbols);
+      let updated = 0;
+
+      picks.forEach(p => {
+        const lp = prices[p.symbol];
+        if(!lp) return;
+        p._livePrice = lp;
+        p._unrealizedPnl = calcUnrealizedPnl(p, lp);
+        updated++;
+      });
+
+      if(updated > 0){
+        // Update the active picks table rows in-place (faster than full re-render)
+        const tbody = $('activeBody');
+        if(tbody){
+          const rows = tbody.querySelectorAll('tr');
+          rows.forEach((row, i) => {
+            const pick = picks[i];
+            if(!pick) return;
+            const cells = row.querySelectorAll('td');
+            // Active table columns: Symbol(0), Dir(1), Mode(2), Entry(3), Live Price(4), TP(5), SL(6), RR(7), PnL(8), Conf(9), Cons(10), Size(11), Time(12), Health(13)
+            if(cells.length < 9) return;
+
+            // Update Live Price cell (col 4)
+            if(pick._livePrice && cells[4]){
+              cells[4].textContent = fmtPrice(pick._livePrice);
+            }
+
+            // Update Unrealized P&L cell (col 8)
+            if(pick._unrealizedPnl != null && cells[8]){
+              const upnl = pick._unrealizedPnl;
+              const sign = upnl >= 0 ? '+' : '';
+              const cls = upnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+              cells[8].className = cls;
+              cells[8].style.fontWeight = '700';
+              cells[8].textContent = sign + upnl.toFixed(2) + '%';
+            }
+          });
+        }
+
+        // Also update any unrealized P&L in the Targets / Mode cards (recalculate from picks)
+        const activeWithPnl = picks.filter(p => p._unrealizedPnl != null);
+        const totalUnrealized = activeWithPnl.length > 0 ? activeWithPnl.reduce((s,p) => s + p._unrealizedPnl, 0) : null;
+        // Update targets table avg/total rows if they exist (scan by text content)
+        const targetsRows = document.querySelectorAll('#targetsBody tr');
+        targetsRows.forEach(row => {
+          const label = row.cells[0]?.textContent || '';
+          if(label === 'Avg Unrealized P&L' && totalUnrealized != null && activeWithPnl.length > 0){
+            const avg = totalUnrealized / activeWithPnl.length;
+            const pass = avg > 0;
+            if(row.cells[1]) row.cells[1].textContent = (avg >= 0 ? '+' : '') + avg.toFixed(2) + '%';
+            if(row.cells[4]) { row.cells[4].className = pass ? 'status-pass' : 'status-fail'; row.cells[4].innerHTML = pass ? '&#10003;' : '&#10007;'; }
+          }
+          if(label === 'Total Unrealized P&L' && totalUnrealized != null){
+            const pass = totalUnrealized > 0;
+            if(row.cells[1]) row.cells[1].textContent = (totalUnrealized >= 0 ? '+' : '') + totalUnrealized.toFixed(2) + '%';
+            if(row.cells[4]) { row.cells[4].className = pass ? 'status-pass' : 'status-fail'; row.cells[4].innerHTML = pass ? '&#10003;' : '&#10007;'; }
+          }
+        });
+
+        const estTime = new Date().toLocaleTimeString('en-US', {timeZone: 'America/New_York', hour12: true});
+        const psEl = $('priceStatus');
+        if(psEl){
+          psEl.textContent = `Prices: Live (${estTime} ET) — ${updated} active picks — 30s refresh`;
+          psEl.style.color = 'var(--green)';
+        }
+      }
+    } catch(e){
+      console.warn('Live price refresh failed:', e.message);
+      const psEl = $('priceStatus');
+      if(psEl){ psEl.textContent = 'Prices: update failed — retrying in 30s'; psEl.style.color = 'var(--yellow)'; }
+    }
+  }
+
+  // Patch render() to store active picks reference for the 30s loop
+  const _origRender = render;
+  async function renderWithPriceTracking(signals, analysis){
+    await _origRender(signals, analysis);
+    // Store active picks reference (picks are the same objects render() patched with _livePrice)
+    if(signals && signals.active_picks){
+      _lastActivePicks = signals.active_picks.filter(p => (p.status||'ACTIVE').toUpperCase() === 'ACTIVE');
+    }
+    const psEl = $('priceStatus');
+    if(psEl && _lastActivePicks.length > 0){
+      const estTime = new Date().toLocaleTimeString('en-US', {timeZone: 'America/New_York', hour12: true});
+      psEl.textContent = `Prices: Live (${estTime} ET) — ${_lastActivePicks.length} active picks — 30s refresh`;
+      psEl.style.color = 'var(--green)';
+    }
+  }
+
+  // Override render for the full data fetch cycle
+  // (fetchData calls render directly so we reassign it in this closure scope)
+  // Since render is a const/var in this scope, we rebind fetchData to use the wrapped version
+  async function fetchDataWithPriceTracking(){
+    try {
+      const [sigResp, anaResp] = await Promise.all([
+        fetch(SIGNALS_URL + '?t=' + Date.now()).catch(() => null),
+        fetch(ANALYSIS_URL + '?t=' + Date.now()).catch(() => null),
+      ]);
+      const signals = sigResp && sigResp.ok ? await sigResp.json() : null;
+      const analysis = anaResp && anaResp.ok ? await anaResp.json() : null;
+      if(!signals && !analysis) throw new Error('Both data sources failed');
+      await renderWithPriceTracking(signals, analysis);
+    } catch(e){
+      console.error('Fetch error:', e);
+      showError('Failed to load data: ' + e.message);
+    }
+  }
+
+  fetchDataWithPriceTracking();
+  setInterval(fetchDataWithPriceTracking, REFRESH_MS);
+
+  // 30-second price-only refresh (runs between full data fetches)
+  setTimeout(refreshActivePrices, 5000);   // first run 5s after load
+  setInterval(refreshActivePrices, 30000); // then every 30s
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+name: GHA stale workflows audit
+
+on:
+  schedule:
+    - cron: '30 5 * * *' # Daily 05:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Scan workflows (30d threshold)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          set -e
+          python tools/find_stale_github_workflows.py 30 --summary-file "$GITHUB_STEP_SUMMARY"
+          python tools/check_workflow_sparse_safe_push.py

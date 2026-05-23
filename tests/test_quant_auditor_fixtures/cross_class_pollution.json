@@ -1,0 +1,38 @@
+{
+  "_fixture_meta": {
+    "name": "cross_class_pollution",
+    "rule_under_test": "charter:cross-class-pollution (deep variant only)",
+    "expected_verdict": "REJECT",
+    "expected_rule_id": "charter:cross-class-pollution",
+    "expected_in": "quant-performance-auditor-deep",
+    "expected_in_fast_variant": "WARN_or_skip (fast variant doesn't run cross-class step)",
+    "notes": "multi_asset_copytrader has WR 27.2% across n=1276 picks spanning BOND/COMMODITY/EQUITY/FOREX/FUTURES. The deep variant's step 6 should detect this 5-class drag and emit one synthesis claim."
+  },
+  "performance": {
+    "asset_class_health": {
+      "BOND":      {"status": "thin_sample", "sample_tier": "thin", "sizing_allowed": false, "resolved_n": 18,   "win_rate": 0.556, "total_pnl_pct": 0.04, "profit_factor": 1.72, "min_display_n": 100},
+      "COMMODITY": {"status": "stable",      "sample_tier": "stable", "sizing_allowed": true, "resolved_n": 839,  "win_rate": 0.496, "total_pnl_pct": 0.31, "profit_factor": 2.20, "min_display_n": 100},
+      "EQUITY":    {"status": "stable",      "sample_tier": "stable", "sizing_allowed": true, "resolved_n": 429,  "win_rate": 0.527, "total_pnl_pct": 0.21, "profit_factor": 1.40, "min_display_n": 100},
+      "FOREX":     {"status": "stressed",    "sample_tier": "stable", "sizing_allowed": false, "resolved_n": 1263, "win_rate": 0.457, "total_pnl_pct": -0.18, "profit_factor": 0.29, "min_display_n": 100},
+      "FUTURES":   {"status": "thin_sample", "sample_tier": "thin", "sizing_allowed": false, "resolved_n": 2,    "win_rate": 0.5,   "total_pnl_pct": 0.0,  "profit_factor": 1.0,  "min_display_n": 100}
+    },
+    "systems": {
+      "multi_asset_copytrader": {
+        "resolved_n": 1276,
+        "win_rate": 0.272,
+        "profit_factor": 1.37,
+        "asset_classes": ["BOND", "COMMODITY", "EQUITY", "FOREX", "FUTURES"],
+        "strategies": {
+          "forex_rsi2_mean_reversion": {"resolved_n": 609, "win_rate": 0.25, "profit_factor": 0.62},
+          "futures_momentum":          {"resolved_n": 539, "win_rate": 0.204, "profit_factor": 0.71}
+        }
+      }
+    },
+    "by_asset_class": {}
+  },
+  "walk_forward_by_class": {},
+  "performance_alerts": [],
+  "shadow_probation": {"enabled": false, "shadow_picks": [], "candidate_strategies": []},
+  "picks": {"active": []},
+  "recent_closed": []
+}

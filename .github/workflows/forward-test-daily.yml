@@ -1,0 +1,117 @@
+# Forward Test: Generate daily picks + resolve open picks every 6 hours
+# This creates REAL forward-facing predictions tracked against live prices
+name: Forward Test Daily
+
+on:
+  schedule:
+    - cron: '30 14 * * 1-5'   # Generate: weekdays 9:30 AM EST (14:30 UTC)
+    - cron: '0 16,20,0,4 * * *'  # Resolve: every 6h (11AM, 3PM, 7PM, 11PM EST)
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        default: 'both'
+        type: choice
+        options: ['generate', 'resolve', 'both']
+
+permissions:
+  contents: write
+
+jobs:
+  forward-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ inputs.action }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" = "14" ]; then
+              echo "action=both" >> $GITHUB_OUTPUT
+            else
+              echo "action=resolve" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Generate forward picks
+        if: steps.action.outputs.action == 'generate' || steps.action.outputs.action == 'both'
+        run: python3 STOCKS/competition/forward_test.py generate
+        timeout-minutes: 10
+
+      - name: Resolve open picks
+        if: steps.action.outputs.action == 'resolve' || steps.action.outputs.action == 'both'
+        run: python3 STOCKS/competition/forward_test.py resolve
+        timeout-minutes: 10
+
+      - name: Print status
+        run: python3 STOCKS/competition/forward_test.py status
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add STOCKS/competition/forward_picks.json
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            ACTION="${{ steps.action.outputs.action }}"
+            git commit -m "forward-test: ${ACTION} picks ($(date -u '+%Y-%m-%d %H:%M UTC')) [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          fi
+
+      - name: Deploy forward_picks.json to live site via FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::warning::FTP credentials not configured. Skipping FTP deploy."
+            exit 0
+          fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+          REMOTE_BASE="/findtorontoevents.ca"
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+          set ssl:verify-certificate no
+          set net:timeout 30
+          set net:max-retries 3
+          mkdir -p $REMOTE_BASE/STOCKS/competition
+          cd $REMOTE_BASE/STOCKS/competition
+          put STOCKS/competition/forward_picks.json
+          echo "Forward picks deployed to live site"
+          bye
+          FTPEOF
+          echo "Live: https://findtorontoevents.ca/STOCKS/competition/"
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Forward Test Daily" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

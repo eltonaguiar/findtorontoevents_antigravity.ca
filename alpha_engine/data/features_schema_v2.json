@@ -1,0 +1,300 @@
+{
+  "schema_version": "2.0.0",
+  "generated_at": "2026-03-26T00:00:00Z",
+  "description": "Updated feature registry for Alpha Engine ML pipeline. 39 features from MLSignalRanker.FEATURES (Phase 14).",
+  "features": {
+    "strategy_encoded": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "hash",
+      "critical": true,
+      "description": "Hash-based strategy ID: hash(name) % 100 / 100"
+    },
+    "confidence": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "strategy",
+      "critical": true,
+      "description": "Strategy raw confidence score"
+    },
+    "volume_ratio": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "Volume vs 20d average, normalized /10, capped at 1.0"
+    },
+    "risk_reward": {
+      "type": "float",
+      "range": [0.0, 2.0],
+      "source": "entry_tp_sl",
+      "critical": true,
+      "description": "TP/SL ratio (often >1.0, normalized as needed)"
+    },
+    "direction_encoded": {
+      "type": "int",
+      "range": [-1, 1],
+      "source": "signal",
+      "critical": true,
+      "description": "LONG/BUY=1, SHORT/SELL=-1"
+    },
+    "strategy_win_rate": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "computed",
+      "critical": true,
+      "description": "Strategy historical win rate"
+    },
+    "strategy_sharpe": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "computed",
+      "critical": true,
+      "description": "Strategy historical Sharpe, normalized /3"
+    },
+    "strategy_closed_picks": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "computed",
+      "critical": false,
+      "description": "Number of closed picks, normalized /100"
+    },
+    "hour_utc": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "timestamp",
+      "critical": true,
+      "description": "Hour of signal (0-23) normalized to 0-1"
+    },
+    "hour_sin": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "timestamp",
+      "critical": true,
+      "description": "sin(2*pi*hour/24) -- cyclic encoding"
+    },
+    "hour_cos": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "timestamp",
+      "critical": false,
+      "description": "cos(2*pi*hour/24) -- cyclic encoding"
+    },
+    "day_of_week": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "timestamp",
+      "critical": false,
+      "description": "Day of week (0=Monday) normalized to 0-1"
+    },
+    "is_weekend": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "timestamp",
+      "critical": false,
+      "description": "1.0 if Saturday or Sunday, else 0.0"
+    },
+    "hour_x_vol": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "computed",
+      "critical": false,
+      "description": "hour_sin * volatility proxy"
+    },
+    "sl_distance_pct": {
+      "type": "float",
+      "range": [0.0, 0.5],
+      "source": "entry_sl",
+      "critical": true,
+      "description": "Stop-loss distance as % of entry price"
+    },
+    "tp_distance_pct": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "entry_tp",
+      "critical": true,
+      "description": "Take-profit distance as % of entry price"
+    },
+    "rr_asymmetry": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "computed",
+      "critical": false,
+      "description": "(tp_dist - sl_dist) / (tp_dist + sl_dist), trade shape"
+    },
+    "funding_rate_raw": {
+      "type": "float",
+      "range": [-0.01, 0.01],
+      "source": "binance_api",
+      "critical": false,
+      "description": "Current 8h funding rate from Binance futures"
+    },
+    "funding_z_30d": {
+      "type": "float",
+      "range": [-3.0, 3.0],
+      "source": "binance_api",
+      "critical": false,
+      "description": "Z-score of funding vs 30-day rolling mean"
+    },
+    "funding_persistence": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "binance_api",
+      "critical": false,
+      "description": "Consecutive same-sign funding periods, normalized"
+    },
+    "orderbook_imbalance": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "l2_data",
+      "critical": false,
+      "description": "Bid-ask imbalance from L2 depth, default 0"
+    },
+    "vpin_toxicity": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "l2_data",
+      "critical": false,
+      "description": "Volume-sync probability of informed trading, default 0.5"
+    },
+    "funding_rate_norm": {
+      "type": "float",
+      "range": [-3.0, 3.0],
+      "source": "binance_api",
+      "critical": false,
+      "description": "Funding rate / 0.01, clipped to [-3, 3], default 0"
+    },
+    "obi_delta_5": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "l2_data",
+      "critical": false,
+      "description": "OBI change over last 5 scans, default 0"
+    },
+    "obi_delta_15": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "l2_data",
+      "critical": false,
+      "description": "OBI change over last 15 scans, default 0"
+    },
+    "obi_acceleration": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "l2_data",
+      "critical": false,
+      "description": "Second derivative of OBI, default 0"
+    },
+    "fear_greed_norm": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "alternative_me",
+      "critical": false,
+      "description": "Fear & Greed 0-100 normalized to 0-1 (50=neutral)"
+    },
+    "cs_momentum_rank": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "cross_sectional",
+      "critical": false,
+      "description": "Percentile rank of 7d return vs universe"
+    },
+    "cs_relative_strength": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "cross_sectional",
+      "critical": false,
+      "description": "7d return minus BTC 7d return, clipped"
+    },
+    "cs_dispersion": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "cross_sectional",
+      "critical": false,
+      "description": "Std dev of all symbols' 7d returns, normalized"
+    },
+    "cs_leader_lag": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "cross_sectional",
+      "critical": false,
+      "description": "Correlation of symbol returns with BTC lagged returns"
+    },
+    "close_to_vwap": {
+      "type": "float",
+      "range": [-0.1, 0.1],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "Deviation of close from VWAP"
+    },
+    "garman_klass_vol": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "GK volatility: 0.5*ln(H/L)^2 - (2ln2-1)*ln(C/O)^2"
+    },
+    "fng_gradient": {
+      "type": "float",
+      "range": [-1.0, 1.0],
+      "source": "alternative_me",
+      "critical": false,
+      "description": "Fear & Greed rate of change"
+    },
+    "risk_reward_raw": {
+      "type": "float",
+      "range": [0.0, 10.0],
+      "source": "strategy",
+      "critical": false,
+      "description": "Raw risk-reward from strategy, capped at 10"
+    },
+    "mom30": {
+      "type": "float",
+      "range": [-0.5, 0.5],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "30-period momentum"
+    },
+    "rsi30": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "30-period RSI (Wilder), normalized to 0-1"
+    },
+    "macd_hist_norm": {
+      "type": "float",
+      "range": [-0.05, 0.05],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "MACD histogram / price"
+    },
+    "stoch_k30": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "30-period Stochastic %K"
+    },
+    "stoch_d30": {
+      "type": "float",
+      "range": [0.0, 1.0],
+      "source": "ohlcv",
+      "critical": false,
+      "description": "3-period SMA of %K30"
+    }
+  },
+  "removed_features_v1_to_v2": [
+    "category_encoded",
+    "rsi_at_entry",
+    "atr_at_entry",
+    "regime_encoded",
+    "hour_x_vol"
+  ],
+  "notes": [
+    "Phase 14 (2026-03-26): Updated to match ml_ranker.py FEATURES list",
+    "Removed features with zero importance per Boruta analysis",
+    "Added time feature extraction from timestamp in _extract_ml_features",
+    "Critical features: strategy_encoded, confidence, direction_encoded, sl_distance_pct, tp_distance_pct"
+  ]
+}

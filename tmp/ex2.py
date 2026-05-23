@@ -1,0 +1,10 @@
+c=open(r'TORONTOEVENTS_ANTIGRAVITY\MOVIESHOWS2\app.html',encoding='utf-8').read()  
+import sys,io  
+sys.stdout=io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8',errors='replace')  
+idx2=c.find('data-index=',c.find('data-index=')+1)  
+idx3=c.find('data-index=',idx2+1)  
+print('=== CARD 2 FULL ===')  
+print(c[idx2-50:idx3+50])  
+print()  
+print('=== HEAD SECTION ===')  
+print(c[:2000]) 

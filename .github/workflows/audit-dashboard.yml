@@ -1,0 +1,1237 @@
+name: Unified Audit Dashboard
+
+'on':
+  schedule:
+    - cron: '10 * * * *'  # Once per hour at :10 (job takes 30-35min, needs full hour gap)
+  # 2026-05-19: push trigger REMOVED entirely (4-AI consensus — Grok + swarm
+  # deepseek/xai/kilo). In this storm-commit repo, push-triggered runs piled
+  # into the `dashboard-publish-push` concurrency group faster than the ~35-min
+  # job could drain, so GitHub auto-cancelled the intermediate queued runs
+  # (cancelled runs verified with jobs_executed=0 — never started). That waste
+  # had zero correctness benefit: the hourly cron above already guarantees a
+  # full refresh within the hour, and any merged source-code change is picked
+  # up by the next scheduled run. Need an immediate refresh after a code change?
+  # use `workflow_dispatch` below. Dropping `push:` also lets `concurrency.group`
+  # collapse to a single `dashboard-publish` group and makes the
+  # `github.event_name != 'push'` job-`if` guard always-true (kept harmless).
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner (ubuntu-latest or self-hosted)'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+
+concurrency:
+  # 2026-05-19: collapsed to a single group now that the `push:` trigger is
+  # gone (see the `on:` block above). Only `schedule` and `workflow_dispatch`
+  # remain — the prior event-type split (`dashboard-publish-{push|cron}`) and
+  # the cancel-cascade workarounds it carried are no longer needed.
+  # cancel-in-progress=false: scheduled/dispatch runs QUEUE and finish in order
+  # so a long pipeline (30-35min, Stage-A active_picks_sync -> Stage B) is never
+  # cut off mid-flight.
+  group: dashboard-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-deploy:
+    # Belt-and-suspenders: skip push-triggered runs whose commit has [skip ci].
+    # Adds a second layer of protection beyond GitHub's native [skip ci] skip
+    # and the source-code-only path filtering above.
+    # Scheduled and workflow_dispatch events always pass this check.
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}  # Cloud default, pick self-hosted when local machine is on
+    timeout-minutes: 115  # Long generator + commit/push + FTP; 90m still saw mid-step cancellations (stale /audit).
+    #
+    # 5 consecutive cron runs were cancelling at the 45-min mark in the "Commit updated data"
+    # step, specifically during the `python -m audit_trail.dashboard_generator` re-run (needed
+    # to pick up peer template.html edits during the 45-min window per the 2026-04-05
+    # bug-fix comment below). Timeline of the fatal run 24292849309:
+    #   22:17:48Z job start
+    #   22:17 ÔåÆ 22:48 (30.5 min)  steps 1-19: data gen + HTML build + JS validation ÔåÆ SUCCESS
+    #   22:48 ÔåÆ 22:59 (11 min)    commit step git dance: fetch/add/stash/rebase/stash-pop
+    #                             with 11 conflict files ÔåÆ resolution via checkout --ours
+    #   22:59:29Z                 generator re-run starts
+    #   23:02:48Z                 job hits 45-min timeout window
+    #   23:03:03Z                 ##[error]The operation was canceled
+    #                             (generator killed mid-regeneration at ~3.5 min into re-run)
+    #   Step 21 "Deploy to all 3 FTP sites in parallel" ÔåÆ SKIPPED (prior step cancelled)
+    #   Live site stale from 2026-04-10 21:21Z (last successful deploy) to 2026-04-11 20:35Z
+    #
+    # Bumping to 60 minutes gives the existing flow ~15 min of headroom so the generator
+    # re-run + git push 5-retry loop can complete even when the pre-generator rebase dance
+    # takes its full 11 minutes. No logic changes — minimal surgical fix.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # 2026-04-27: changed fetch-depth 1 -> 0 (full clone) to avoid
+          # `git fetch --unshallow` in the commit step (16-18 min on a 5GB repo).
+          # 2026-05-22: the repo .git has since grown to ~19GB (a 44MB
+          # dashboard_data.json is committed every hour — 17GB historical-blob
+          # pack). A full-blob clone now HANGS actions/checkout — runs
+          # 26284532166 (11:14) and 26289708726 (13:09) both timed out with the
+          # Checkout step stuck `in_progress` for 60+ min, zero log output.
+          # `filter: blob:none` keeps ALL commit + tree history (so the commit
+          # step still needs no --unshallow) but skips downloading the ~17GB of
+          # historical blobs — blobs are fetched lazily on demand. The working
+          # tree is fully materialised (current blobs are fetched). This treats
+          # the checkout hang; the root cause (committing a 44MB JSON hourly)
+          # still needs fixing — see reports/AUDIT_STAT_VALIDATION_2026-05-22.md.
+          fetch-depth: 0
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Auto-regenerate predictable + scanner AI-Challenge picks
+        # Round 6+ (2026-04-18): LLM tournament ended, but predictable &
+        # scanner curators are data-driven and can be regenerated from
+        # alpha_engine/data/active_picks.json. Failure is non-blocking.
+        continue-on-error: true
+        run: python tools/regenerate_predictable_scanner_picks.py --write --verbose
+
+      - name: Merge AI Challenge round picks into per-curator files
+        run: python audit_dashboard/merge_ai_challenge_picks.py
+
+      - name: Refresh prediction-market inputs
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python copy_trader_intel/polymarket_scraper.py || echo "Polymarket wallet scan failed (non-fatal)"
+          python alpha_engine/polymarket_signals.py || echo "Polymarket reverse-engineering failed (non-fatal)"
+          python alpha_engine/kalshi_signals.py || echo "Kalshi scan failed (non-fatal)"
+          python alpha_engine/prediction_market_consensus.py || echo "Prediction market consensus failed (non-fatal)"
+          python -m prediction_market_agents.orchestrator || echo "Prediction market agents failed (non-fatal)"
+          python alpha_engine/combined_confidence_strategy.py || echo "Combined confidence strategy failed (non-fatal)"
+
+      - name: Resolve active picks (TP/SL/time exits) across all systems
+        id: resolve_active_picks
+        run: |
+          pip install pymysql -q
+          python -m audit_trail.universal_pick_resolver
+        timeout-minutes: 20  # 2026-04-16: was 8 — resolver was hitting step cap under load
+        continue-on-error: false  # 2026-05-20: was true — Kimi-flagged silent fail; f1370a3 resolver fix requires fail-hard to surface errors
+        env:
+          PICK_OUTCOMES_MYSQL_ENABLED: '1'
+
+      - name: Sync paper trades to MySQL (paper_trades + paper_portfolio_daily)
+        id: paper_trade_mysql_sync
+        continue-on-error: false  # 2026-05-20: fail-hard on MySQL sync per Kimi audit
+        env:
+          PICK_OUTCOMES_MYSQL_ENABLED: '1'
+          PAPER_TRADE_MYSQL_ENABLED: '1'
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+        run: |
+          pip install pymysql -q 2>/dev/null || true
+          python tools/paper_trade_mysql_writer.py || echo "Paper trade MySQL writer skipped (no paper positions or config missing)"
+
+      - name: Fetch stock prices (server-side)
+        id: fetch_stock_prices
+        run: |
+          # Quick batch fetch  dashboard_generator also fetches equity prices,
+          # but this pre-populates data/stock_prices.json for other consumers.
+          pip install yfinance -q
+          timeout 60 python audit_trail/fetch_stock_prices.py || echo "Stock price fetch skipped (timeout/error)"
+        continue-on-error: true
+        timeout-minutes: 2
+
+      - name: Run pre-scanners in parallel (regime flip, regime detection, funding rate, BTC breakout)
+        id: regime_check
+        continue-on-error: true
+        run: |
+          python3 - <<'PYEOF'
+          import subprocess, sys, os
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+
+          def run_task(name, cmd):
+              """Run a shell command, return (name, returncode, stdout, stderr)."""
+              try:
+                  r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
+                  return (name, r.returncode, r.stdout.strip(), r.stderr.strip())
+              except subprocess.TimeoutExpired:
+                  return (name, 1, "", "Timed out after 120s")
+              except Exception as e:
+                  return (name, 1, "", str(e))
+
+          tasks = {
+              "Regime flip check": (
+                  'python -c "from alpha_engine.regime_flip_detector import check_flip; '
+                  "print('yes' if check_flip() else 'no')\" 2>/dev/null | tail -1 | tr -d '\\r\\n'"
+              ),
+              "Regime detection": (
+                  "python -m alpha_engine.regime_position_sizer"
+              ),
+              "Funding rate scanner": (
+                  'python -c "import urllib.request; urllib.request.urlopen(\'https://fapi.binance.com/fapi/v1/ping\', timeout=3)" 2>/dev/null '
+                  "&& python -m alpha_engine.funding_rate_arb "
+                  '|| echo "Funding rate scanner skipped (Binance Futures unreachable)"'
+              ),
+              "BTC breakout scanner": (
+                  "python -m alpha_engine.btc_breakout_strategy"
+              ),
+          }
+
+          results = {}
+          with ThreadPoolExecutor(max_workers=4) as pool:
+              futures = {pool.submit(run_task, name, cmd): name for name, cmd in tasks.items()}
+              for future in as_completed(futures):
+                  name, rc, stdout, stderr = future.result()
+                  results[name] = (rc, stdout, stderr)
+                  status = "OK" if rc == 0 else "WARN"
+                  print(f"[{status}] {name} (exit {rc})")
+                  if stdout:
+                      for line in stdout.splitlines():
+                          print(f"  {line}")
+                  if stderr and rc != 0:
+                      for line in stderr.splitlines()[:5]:
+                          print(f"  stderr: {line}")
+
+          # Extract regime flip result for GITHUB_OUTPUT
+          flip_rc, flip_out, _ = results.get("Regime flip check", (1, "", ""))
+          flip = "yes" if flip_out.strip().endswith("yes") else "no"
+          gh_output = os.environ.get("GITHUB_OUTPUT", "")
+          if gh_output:
+              with open(gh_output, "a") as f:
+                  f.write(f"regime_flipped={flip}\n")
+          if flip == "yes":
+              print("REGIME FLIP DETECTED - forcing full regeneration")
+
+          print(f"\nAll 4 pre-scanners completed ({sum(1 for rc,_,_ in results.values() if rc==0)}/4 succeeded)")
+          PYEOF
+
+      - name: Run DB health check (PnL integrity, ghost rows, OPEN bloat → audit_dashboard/data/db_health.json)
+        id: db_health_check
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          DB_HEALTH_READ_TIMEOUT: '180'
+          PYTHONUTF8: '1'
+        run: python tools/db_health_check.py --quick || echo "db_health_check non-fatal"
+        continue-on-error: true
+
+      - name: Run anti-overfit audit sidecar (DSR per strategy — SUPREME EDGE P1)
+        id: anti_overfit_sidecar
+        env:
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: |
+          pip install pymysql -q 2>/dev/null || true
+          python tools/anti_overfit_audit_sidecar.py --min-n 20 || echo "anti_overfit sidecar failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run research sidecars (Agent C external-research — 4 academically-backed)
+        id: research_sidecars
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          python tools/research/commodity_carry_momo.py || echo "commodity_carry_momo failed (non-fatal)"
+          python tools/research/sector_dual_momentum.py || echo "sector_dual_momentum failed (non-fatal)"
+          python tools/research/ust_tsmom.py || echo "ust_tsmom failed (non-fatal)"
+          python tools/research/overnight_intraday_reversal.py || echo "overnight_intraday_reversal failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run COT paper pilot (cot_positioning + CT=F SHADOW state tracker)
+        id: cot_paper_pilot
+        env:
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: |
+          pip install pymysql -q 2>/dev/null || true
+          python alpha_engine/strategies/cot_paper_pilot.py --window-days 90 || echo "cot_paper_pilot failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run Crypto paper pilot (mega_mutation CRYPTO SHADOW forward-tracker)
+        id: crypto_paper_pilot
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          python alpha_engine/strategies/crypto_paper_pilot.py || echo "crypto_paper_pilot failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run Top-N rank backtest (EQUITY hindsight replay — answers "would top-10 have been profitable")
+        id: top_n_rank_backtest
+        env:
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: |
+          pip install pymysql -q || echo "::warning title=pymysql install failed::Top-5 Rank Backtest panel will be empty this run — pip install pymysql failed (see log above)"
+          python tools/top_n_rank_backtest.py --n 10 --asset-class EQUITY --lookback-days 90 || echo "top_n_rank_backtest failed (non-fatal)"
+          # 2026-05-21: generator hardened (tools/top_n_rank_backtest.py) — always
+          # writes real generated_at + error + _note. Placeholder below is defense only.
+          python -c "import json,os; p='audit_dashboard/data/top_n_rank_backtest.json'; os.path.exists(p) or (os.makedirs(os.path.dirname(p),exist_ok=True), open(p,'w',encoding='utf-8').write(json.dumps({'generated_at':None,'windows':{},'detail':{},'_note':'placeholder - top_n_rank_backtest generator failed or produced no rows this run'},indent=2)), print('wrote placeholder '+p))"
+        continue-on-error: true
+
+      - name: Run COT Step 7 risk-of-ruin Monte Carlo (cot_positioning + CT=F at $5k/$10k/$25k tiers)
+        id: cot_step7_ror_mc
+        env:
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: |
+          pip install pymysql -q 2>/dev/null || true
+          python tools/cot_step7_risk_of_ruin_mc.py --sims 10000 --seq-trades 50 || echo "cot_step7_ror_mc failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Effective-N reporter (Newey-West autocorrelation correction per Renaissance + Two Sigma R3 blind spots)
+        id: effective_n_reporter
+        run: python tools/effective_n_reporter.py --min-n 30 || echo "effective_n non-fatal"
+        continue-on-error: true
+
+      - name: Operator status check (validation/alerting snapshot — Grok next-step #2)
+        id: operator_status
+        run: python tools/operator_status_check.py || echo "operator_status non-fatal"
+        continue-on-error: true
+
+      - name: ml_gatekeeper A/B sleeve decision (Phase D — reads OLD/NEW sleeves + closed_picks, runs z-test)
+        id: ml_gatekeeper_ab_decision
+        run: python tools/ml_gatekeeper_ab_decision.py --min-n 30 --wr-delta-pp 2.0 --p-threshold 0.10 || echo "ab_decision non-fatal"
+        continue-on-error: true
+
+      - name: Active picks sync (LIVE — reads at_raw_picks, applies TP/SL/time-exit transitions)
+        id: active_picks_sync_live
+        env:
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+          # Stage B (2026-05-18): flip to live writer. Dry-run ran cleanly for 6 days
+          # across all asset classes (Stage A, 2026-05-18). User-approved 2026-05-18.
+          # ACTIVE_PICKS_SYNC_APPLY=1 + --apply together enable live MySQL writes.
+          ACTIVE_PICKS_SYNC_APPLY: '1'
+        run: |
+          pip install pymysql yfinance -q 2>/dev/null || true
+          for AC in CRYPTO EQUITY FOREX COMMODITY BOND ETF FUTURES; do
+            python -m alpha_engine.active_picks_sync --asset-class "$AC" --max-symbols 200 --apply \
+              || echo "active_picks_sync $AC failed (non-fatal)"
+          done
+        continue-on-error: true
+
+      - name: Run Hyro QuanBridge (refresh regime + ensemble + risk gate)
+        id: hyro_quan_bridge
+        run: python tools/hyro_quan_bridge.py --symbols BTCUSDT ETHUSDT SOLUSDT AVAXUSDT XRPUSDT BNBUSDT DOGEUSDT LINKUSDT ADAUSDT DOTUSDT NEARUSDT SUIUSDT ARBUSDT APTUSDT PEPEUSDT --save --verbose || echo "Hyro QuanBridge failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run Hyro pick performance validator (signal strength scoring)
+        id: hyro_pick_perf
+        run: python tools/hyro_pick_performance_validator.py --save --lookback-days 30 || echo "Hyro pick perf validator failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run Hyro ML pick optimizer (adaptive edge scoring + drift detection)
+        id: hyro_ml_optimizer
+        run: |
+          pip install 'scikit-learn==1.3.2' -q 2>/dev/null || true
+          python tools/hyro_ml_pick_optimizer.py --save || echo "Hyro ML optimizer failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run Hyro enhanced scoring (technical indicators on picks)
+        id: hyro_enhanced_scoring
+        run: python alpha_engine/hyrotrader_enhanced_scoring.py
+        continue-on-error: true
+
+      - name: Hyro pipeline outcome (must not silently look healthy when steps fail)
+        if: always()
+        run: |
+          set -e
+          h1="${{ steps.hyro_quan_bridge.outcome }}"
+          h2="${{ steps.hyro_pick_perf.outcome }}"
+          h3="${{ steps.hyro_ml_optimizer.outcome }}"
+          h4="${{ steps.hyro_enhanced_scoring.outcome }}"
+          echo "hyro_quan_bridge=$h1 hyro_pick_perf=$h2 hyro_ml_optimizer=$h3 hyro_enhanced_scoring=$h4"
+          failed=""
+          for pair in "quan_bridge:$h1" "pick_perf:$h2" "ml_optimizer:$h3" "enhanced_scoring:$h4"; do
+            name="${pair%%:*}"
+            oc="${pair#*:}"
+            if [ "$oc" != "success" ]; then
+              failed="${failed}${name}=${oc} "
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "::warning::Hyro sub-step(s) non-success: $failed — /audit Hyro JSON or ML rankings may be stale; see pipeline_health.json and step logs."
+            exit 1
+          fi
+        continue-on-error: true
+
+      - name: Run technical analyzer
+        id: technical_analyzer
+        run: python copy_trader_intel/technical_analyzer.py || echo "Technical analyzer warning (non-fatal)"
+        continue-on-error: true
+
+      - name: Run non-crypto consensus engine
+        id: non_crypto_consensus
+        run: python -m copy_trader_intel.non_crypto_consensus || echo "Non-crypto consensus warning (non-fatal)"
+        continue-on-error: true
+
+      - name: Enhance non-crypto picks with TA + whale validation
+        id: non_crypto_quality
+        run: python copy_trader_intel/non_crypto_quality_enhancer.py || echo "Non-crypto quality enhancer warning (non-fatal)"
+        continue-on-error: true
+
+      - name: Run contrarian consensus scanner
+        id: contrarian_consensus
+        run: python alpha_engine/contrarian_consensus.py || echo "Contrarian consensus warning (non-fatal)"
+        continue-on-error: true
+
+      - name: Run walk-forward validation
+        id: walkforward_validation
+        run: python -m alpha_engine.walkforward_validator || echo "Walk-forward validation warning (non-fatal)"
+        continue-on-error: true
+
+      - name: Run ML Gatekeeper (pick quality scoring)
+        id: ml_gatekeeper
+        run: |
+          pip install 'scikit-learn==1.3.2' 'scipy>=1.10.0,<1.14' -q 2>/dev/null || true
+          python ml_gatekeeper/gatekeeper.py || echo "ML Gatekeeper warning (non-fatal)"
+        continue-on-error: true
+
+      - name: Run ML Consensus (multi-system agreement)
+        id: ml_consensus
+        run: python ml_consensus/consensus.py || echo "ML Consensus warning (non-fatal)"
+        continue-on-error: true
+
+      - name: ML metrics summary (gatekeeper + audit consensus artifacts)
+        if: always()
+        run: python tools/ml_metrics_ci_summary.py
+        continue-on-error: true
+
+      - name: Generate dashboard payload and build HTML
+        env:
+          # 2026-04-18: Flip Phase-1 confidence gate to SHADOW mode to unblock
+          # the 267->12 active-picks collapse. The 0.80 threshold (commit
+          # bdd9ab1ed2) was calibrated on one emitter's confidence distribution
+          # but deployed as a universal CRYPTO filter. Emitters like
+          # copy_trader_highscore (conf maxes at 0.68) and claude_gainer_st
+          # (all conf=0.690) cannot clear 0.80 by design and were 100% wiped
+          # from the dashboard. Shadow mode tags picks with
+          # `_phase1_conf_shadow_reject` instead of dropping them, so we
+          # forward-observe real impact for 48h before a proper per-source
+          # recalibration. See filter-chain investigation in session notes.
+          PHASE1_CONF_GATE_ENABLED: shadow
+          # 2026-05-03: Enable JPY-aware corruption-filter divergence threshold
+          # (10x -> 50x for JPY pairs only). PR #729 shipped this filter behind
+          # opt-in env flag; enabling in prod activates the FOREX rescue path
+          # documented in reports/FOREX_RESCUE_CONSOLIDATED_2026_05_03.md.
+          # Filter location: audit_trail/dashboard_generator.py:4163-4267
+          # Goal: recover ~405/911 JPY-pair FOREX picks currently over-rejected,
+          # projected FOREX PF lift 0.27 -> ~1.15-1.25 (5x).
+          # Rollback: remove this env line; default behavior restores.
+          PNL_PCT_CORRUPT_DIVERGENCE_JPY_RELAX: '1'
+          # 2026-05-15: Enable UEPS long-horizon gate bypass after 14-day shadow.
+          # Shadow period started 2026-05-01 (B28 merge); 14d expires 2026-05-15.
+          # Skips short-term filters (raw-score-55 floor, BLOCKED_SYMBOLS feed
+          # blacklist, elite_grade D momentum grade) for source_system=ueps +
+          # trade_timeframe=POSITION picks only. All real safety gates remain
+          # active (trust_score, status, wf_verdict, forward_wr floor, etc.).
+          # Scope: quality_gates.py:_ueps_long_horizon_bypass_active() ~line 2052.
+          # Rollback: remove this env line; default behavior (bypass=OFF) restores.
+          UEPS_LONG_HORIZON_GATE_BYPASS_ENABLED: '1'
+          # 2026-05-16: VIX regime gate — shadow mode (EQUITY PF lift).
+          # Backtest: EQUITY top-5 momentum + VIX<22 = PF 4.55 / Sharpe 1.98 /
+          # MDD 16.8% vs all-time PF 1.55 (reports/equity_vix_regime_breakthrough_20260513.md).
+          # Shadow mode logs WARNING("VIX regime gate SHADOW: would reject pick for
+          # symbol=X, VIX=Y") without actually rejecting picks — zero live impact.
+          # Operators monitor logs for 7d to validate signal quality, then flip to "1"
+          # (active enforcement). Gate implementation: audit_trail/vix_regime_gate.py.
+          # Rollback: set to "0" or remove this line; default behavior restores.
+          VIX_REGIME_GATE_ENABLED: shadow
+          # 2026-05-18: M-047 EQUITY shadow floor at elite_score>=50.
+          # kimi_riseoftheclaw EQUITY strategies (gap-and-go-stocks PF=14.81, etc.) have
+          # elite_score 50-54, below the production >=55 gate. Shadow mode logs these picks
+          # to reports/equity_shadow_floor_log.jsonl WITHOUT changing production behavior.
+          # After 30d accumulation, check WR of 50-54 picks. If WR>52%, lower gate to 50.
+          # Rollback: set to "0" or remove this line.
+          EQUITY_SHADOW_FLOOR_50: '1'
+          # 2026-05-19 resolver step 3: enforce monotone-conservative shadow gates (downgrade-only).
+          MDD_GATE_ENFORCE: '1'
+          ML_ENHANCED_CRYPTO_QUARANTINE: '1'
+        run: |
+          python -m alpha_engine.score_booster || echo "Score booster warning (non-fatal)"
+          # M-067: build the canonical PF registry BEFORE the dashboard
+          # generator, so the generator can READ it when AUDIT_HEALTH_SOURCE=
+          # registry. With the default (recompute) this ordering is harmless.
+          python tools/build_pf_registry.py || echo "PF registry build warning (non-fatal)"
+          python -m audit_trail.dashboard_generator
+          python -m audit_dashboard.blueprint_generator
+
+      - name: Reconcile canonical PF registry vs /audit verdict
+        # A8 / Move #1 / M-067: reconcile_pf_registry.py cross-checks the
+        # registry (net policy-clean view) against the freshly-generated
+        # asset_class_health and exits 2 on divergence. NON-BLOCKING for now
+        # (continue-on-error) — the divergence table is surfaced in the CI log
+        # so drift is visible; flip to a hard gate once AUDIT_HEALTH_SOURCE=
+        # registry is the default and verdict == registry by construction.
+        continue-on-error: true
+        run: |
+          python tools/reconcile_pf_registry.py || echo "PF reconciliation divergence — see table above (non-fatal until verdict aligns)"
+
+      - name: Validate per-asset quality gates
+        env:
+          QUALITY_GATE_MODE: ${{ vars.QUALITY_GATE_MODE || 'warn' }}
+        run: |
+          python audit_trail/quality_monitor.py --check-per-asset --output-json audit_trail/data/asset_quality_monitor.json
+          python audit_trail/check_asset_quality_gate.py
+
+      - name: Non-crypto pick class audit (counts + mirror diff)
+        id: non_crypto_pick_audit
+        env:
+          MULTI_ASSET_MIRROR: multi_asset/data/active_picks.json
+          # Optional: STRICT_PICK_CLASS_COUNTS=1 and PICK_COUNT_MIN_* to fail the job
+        run: python tools/non_crypto_pick_audit.py audit_trail/data/dashboard_payload.json
+        continue-on-error: true
+
+      - name: Sync portfolio data to MySQL (ejaguiar1_stocks)
+        id: mysql_sync
+        continue-on-error: true
+        env:
+          # 2026-04-17 v2: PREVIOUS revision exported MYSQL_HOST/USER/DB from stale
+          # DB_HOST/DB_USER/DB_NAME secrets (last updated 2026-02-16, point to a
+          # different database). audit_sync.py's env-resolution at line 859-862 takes
+          # MYSQL_* FIRST via `or` chain — so stale user shadowed the correct
+          # AUDIT_DB_USER, producing 1045 Access denied. Drop the MYSQL_* exports
+          # entirely so the AUDIT_DB_* values flow through. consensus-outcome-tracker
+          # uses these exact 4 vars (no MYSQL_*) and runs success every cycle.
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_PORT: '3306'
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+        run: |
+          pip install pymysql -q 2>/dev/null || true
+          python alpha_engine/audit_sync.py 2>&1 || echo "Audit sync failed (non-fatal)"
+
+      - name: Run system trend detector
+        id: system_trend_detector
+        run: python alpha_engine/system_trend_detector.py
+        continue-on-error: true
+
+      - name: Build pipeline health report (soft-fail visibility)
+        if: always()
+        env:
+          RESOLVE_ACTIVE_PICKS_OUTCOME: ${{ steps.resolve_active_picks.outcome }}
+          FETCH_STOCK_PRICES_OUTCOME: ${{ steps.fetch_stock_prices.outcome }}
+          REGIME_CHECK_OUTCOME: ${{ steps.regime_check.outcome }}
+          HYRO_QUAN_BRIDGE_OUTCOME: ${{ steps.hyro_quan_bridge.outcome }}
+          HYRO_PICK_PERF_OUTCOME: ${{ steps.hyro_pick_perf.outcome }}
+          HYRO_ML_OPTIMIZER_OUTCOME: ${{ steps.hyro_ml_optimizer.outcome }}
+          HYRO_ENHANCED_SCORING_OUTCOME: ${{ steps.hyro_enhanced_scoring.outcome }}
+          TECHNICAL_ANALYZER_OUTCOME: ${{ steps.technical_analyzer.outcome }}
+          NON_CRYPTO_CONSENSUS_OUTCOME: ${{ steps.non_crypto_consensus.outcome }}
+          NON_CRYPTO_QUALITY_OUTCOME: ${{ steps.non_crypto_quality.outcome }}
+          CONTRARIAN_CONSENSUS_OUTCOME: ${{ steps.contrarian_consensus.outcome }}
+          WALKFORWARD_VALIDATION_OUTCOME: ${{ steps.walkforward_validation.outcome }}
+          NON_CRYPTO_PICK_AUDIT_OUTCOME: ${{ steps.non_crypto_pick_audit.outcome }}
+          MYSQL_SYNC_OUTCOME: ${{ steps.mysql_sync.outcome }}
+          SYSTEM_TREND_DETECTOR_OUTCOME: ${{ steps.system_trend_detector.outcome }}
+          ML_GATEKEEPER_OUTCOME: ${{ steps.ml_gatekeeper.outcome }}
+          ML_CONSENSUS_OUTCOME: ${{ steps.ml_consensus.outcome }}
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          outcomes = {
+              "resolve_active_picks": os.getenv("RESOLVE_ACTIVE_PICKS_OUTCOME", "unknown"),
+              "fetch_stock_prices": os.getenv("FETCH_STOCK_PRICES_OUTCOME", "unknown"),
+              "regime_check": os.getenv("REGIME_CHECK_OUTCOME", "unknown"),
+              "hyro_quan_bridge": os.getenv("HYRO_QUAN_BRIDGE_OUTCOME", "unknown"),
+              "hyro_pick_perf": os.getenv("HYRO_PICK_PERF_OUTCOME", "unknown"),
+              "hyro_ml_optimizer": os.getenv("HYRO_ML_OPTIMIZER_OUTCOME", "unknown"),
+              "hyro_enhanced_scoring": os.getenv("HYRO_ENHANCED_SCORING_OUTCOME", "unknown"),
+              "technical_analyzer": os.getenv("TECHNICAL_ANALYZER_OUTCOME", "unknown"),
+              "non_crypto_consensus": os.getenv("NON_CRYPTO_CONSENSUS_OUTCOME", "unknown"),
+              "non_crypto_quality": os.getenv("NON_CRYPTO_QUALITY_OUTCOME", "unknown"),
+              "contrarian_consensus": os.getenv("CONTRARIAN_CONSENSUS_OUTCOME", "unknown"),
+              "walkforward_validation": os.getenv("WALKFORWARD_VALIDATION_OUTCOME", "unknown"),
+              "non_crypto_pick_audit": os.getenv("NON_CRYPTO_PICK_AUDIT_OUTCOME", "unknown"),
+              "mysql_sync": os.getenv("MYSQL_SYNC_OUTCOME", "unknown"),
+              "system_trend_detector": os.getenv("SYSTEM_TREND_DETECTOR_OUTCOME", "unknown"),
+              "ml_gatekeeper": os.getenv("ML_GATEKEEPER_OUTCOME", "unknown"),
+              "ml_consensus": os.getenv("ML_CONSENSUS_OUTCOME", "unknown"),
+          }
+
+          degraded = sorted([k for k, v in outcomes.items() if v != "success"])
+
+          payload_path = Path("audit_trail/data/dashboard_payload.json")
+          freshness = {}
+          if payload_path.exists():
+              try:
+                  payload = json.loads(payload_path.read_text(encoding="utf-8"))
+                  freshness = payload.get("data_freshness") or {}
+              except Exception:
+                  freshness = {"stale_warning": True, "error": "payload parse failed"}
+          else:
+              freshness = {"stale_warning": True, "error": "payload missing"}
+
+          report = {
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "status": "degraded" if degraded else "healthy",
+              "degraded_steps": degraded,
+              "step_outcomes": outcomes,
+              "data_freshness": freshness,
+          }
+
+          out = Path("audit_trail/data/pipeline_health.json")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+          lines = [
+              "## Audit Pipeline Health",
+              f"- status: **{report['status']}**",
+              f"- degraded_steps: {len(degraded)}",
+              f"- data_freshness.stale_warning: {freshness.get('stale_warning')}",
+              f"- data_freshness.age_hours: {freshness.get('age_hours', 'n/a')}",
+              "",
+              "### Step outcomes",
+          ]
+          for key, value in outcomes.items():
+              lines.append(f"- `{key}`: `{value}`")
+          summary_path = os.getenv("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as f:
+                  f.write("\n".join(lines) + "\n")
+
+          print(json.dumps(report, indent=2))
+          PYEOF
+
+      - name: Validate JavaScript in dashboard HTML (Node.js)
+        run: |
+          node -e "
+          const fs = require('fs');
+          const files = ['audit_dashboard/index.html', 'audit_dashboard/template.html'];
+          let errors = 0;
+          for (const file of files) {
+            if (!fs.existsSync(file)) continue;
+            const html = fs.readFileSync(file, 'utf8');
+            // Check for git conflict markers
+            if (html.includes('<<<<<<<') || html.includes('>>>>>>>')) {
+              console.error(file + ': git conflict markers found!');
+              errors++;
+            }
+            // Extract and syntax-check small script blocks (skip large ones — new Function chokes on 700K+ inline JS)
+            const regex = /<script[^>]*>([\s\S]*?)<\/script>/g;
+            let m, i = 0;
+            while ((m = regex.exec(html)) !== null) {
+              if (m[1].length > 50000) { i++; continue; }
+              try {
+                new Function(m[1]);
+              } catch (e) {
+                console.error(file + ' script#' + i + ': ' + e.message);
+                errors++;
+              }
+              i++;
+            }
+          }
+          if (errors > 0) { console.error(errors + ' error(s) found'); process.exit(1); }
+          console.log('JS validation passed for all dashboard files');
+          "
+
+      - name: Commit updated data
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          # Disable submodule recursion  orphaned .claude/skills/obsidian ref in history causes exit 128
+          git config --global submodule.recurse false
+          git config --global protocol.version 2
+          # safe_push.sh handles shallow repos via --deepen=150 internally;
+          # workflow-level `git fetch --unshallow` was blowing up disk on
+          # ubuntu-latest runners (.git is 37GB). See PR for chronic-failure
+          # context.
+          # ---------------------------------------------------------------------------
+          # PHASE 1: Stage and commit generated files locally
+          # ---------------------------------------------------------------------------
+          # ml_gatekeeper/models/* + ml_consensus/models/* added 2026-04-28: trainer runs hourly
+          # via this workflow but no commit step staged the artifacts, so models last refreshed
+          # main on 2026-04-15 and were 12+ days stale despite per-cycle retraining.
+          # 2026-05-22 repo-bloat fix: audit_dashboard/data/dashboard_data.json
+          # (~44MB) and audit_trail/data/dashboard_payload.json (~57MB) are
+          # DELIBERATELY NOT in this list — they are regenerated + FTP-deployed
+          # every run, and committing them added ~100MB/hr to .git history
+          # (19GB repo → checkout hangs). They are .gitignored; do not re-add.
+          # See reports/AUDIT_STAT_VALIDATION_2026-05-22.md.
+          for f in audit_trail/data/non_crypto_pick_audit.json audit_trail/data/universal_resolved_picks.json audit_trail/data/stock_prices.json audit_trail/data/pipeline_health.json audit_trail/data/feed_health_report.json audit_dashboard/index.html audit_dashboard/data/pf_registry.json audit_dashboard/data/db_health.json audit_dashboard/data/cot_paper_pilot_status.json audit_dashboard/data/crypto_mega_mutation_paper_pilot.json audit_dashboard/data/top_n_rank_backtest.json audit_dashboard/data/cot_step7_ror_mc.json audit_dashboard/data/ml_gatekeeper_ab_decision.json audit_dashboard/data/effective_n_report.json audit_dashboard/trading_blueprint.html audit_dashboard/data/ai_challenge_*.json audit_dashboard/data/hyro_quan_bridge.json audit_dashboard/data/hyrotrader_picks.json audit_dashboard/data/hyrotrader_enhanced_picks.json audit_dashboard/data/hyrotrader_short_term_entries.json audit_dashboard/data/hyro_live_strategies.json audit_dashboard/data/hyrotrader_journal.json audit_dashboard/data/hyro_backtest_results.json audit_dashboard/data/hyro_pick_performance.json audit_dashboard/data/hyro_ml_pick_rankings.json alpha_engine/data/active_picks.json alpha_engine/data/contrarian_picks.json alpha_engine/data/polymarket_signals.json alpha_engine/data/kalshi_signals.json alpha_engine/data/prediction_market_picks.json alpha_engine/data/system_trends.json alpha_engine/data/funding_rate_picks.json alpha_engine/data/btc_breakout_picks.json alpha_engine/data/regime_report.json alpha_engine/data/regime_flip_alert.json alpha_engine/data/cot_emitted_releases.json copy_trader_intel/data/technical_analysis.json copy_trader_intel/data/polymarket_trader_profiles.json copy_trader_intel/data/polymarket_picks.json copy_trader_intel/data/non_crypto_consensus_picks.json copy_trader_intel/data/non_crypto_enhanced_picks.json prediction_market_agents/data/*.json ml_gatekeeper/models/*.joblib ml_gatekeeper/models/*.json ml_gatekeeper/models/*.npy ml_consensus/models/*.json; do
+            # Guard: skip files that don't exist to avoid noisy pathspec errors
+            # (e.g. funding_rate_picks.json may not be generated every run)
+            [ -f "$f" ] || continue
+            git add "$f" 2>&1 || true
+          done
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          # Block conflict-marker commits on staged payload files (issue #141)
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "chore(audit-dashboard): refresh payload [skip ci]"
+          # ---------------------------------------------------------------------------
+          # PHASE 2: Push with merge — commit-first-then-merge (replaces rebase)
+          #
+          # Old flow (rebase): commit → pull --rebase -X theirs → re-gen → amend → push
+          #   Problem: rebase replays our massive data commit on top of constantly-moving
+          #   origin/main, causing conflicts → abort → hard reset → re-generate (3-5min
+          #   wasted per attempt). 5 consecutive rebase failures = job failure = stale site.
+          #
+          # New flow (merge): commit → pull --no-rebase -X ours → push
+          #   - Merge creates a merge commit combining our data with remote changes
+          #   - -X ours: on conflict, prefer our freshly generated data files (correct)
+          #   - No re-generation needed — our commit is never thrown away
+          #     (exception: conflict-marker hatch on lines ~516-521 can regenerate)
+          #   - Retries are fast (~5s instead of ~5min) since no regeneration
+          #   - More retries (10) with shorter backoff since each attempt is cheap
+          # ---------------------------------------------------------------------------
+          # PHASE 2a: Park unstaged tracked changes so `git pull` can run.
+          # Some sibling steps in this workflow (and code they invoke) write to files
+          # outside our documented commit list above — most notably
+          # alpha_engine/data/strategy_performance.json, which is owned by
+          # alpha-engine-live.yml / prune-strategy-performance.yml. Without this stash,
+          # `git pull` aborts with "Your local changes to the following files would be
+          # overwritten by merge" and all 10 retries fail identically (~27 min wasted),
+          # which is the failure pattern observed on run 24923115839.
+          # We do NOT pop the stash: those files belong to other workflows' commit
+          # steps. The runner is ephemeral so an orphaned stash entry is harmless.
+          # Only modified tracked files trigger "would be overwritten by merge" — no -u
+          # (untracked artifacts like __pycache__ never block pull and we don't want
+          # to hide them from the FTP deploy step that runs after this).
+          git stash push -m "audit-dashboard: park out-of-scope changes before merge" 2>&1 || true
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            # Merge: combine our local commit with latest origin/main
+            # --no-rebase: use merge (not rebase) — avoids replaying our commit
+            # -X ours: on conflict, prefer our local (generated) data files
+            # --no-edit: auto-generate merge commit message
+            git pull --no-rebase --no-recurse-submodules -X ours --no-edit origin main || {
+              echo "Merge failed on attempt $i, aborting..."
+              # `git merge --abort` can legitimately fail with "no merge to abort"
+              # when the pull failed at the working-tree check rather than during
+              # an actual merge — that's not an error worth surfacing.
+              git merge --abort 2>&1 || true
+              # Rare edge case: if merge fails even with -X ours, just retry
+              delay=$((2 ** i + RANDOM % 10)); [ $delay -gt 120 ] && delay=$((120 + RANDOM % 10))
+              echo "Retrying after merge failure in ${delay}s..."
+              sleep "$delay"
+              continue
+            }
+            # Safety check: conflict markers in generated files (belt-and-suspenders)
+            if grep -rq '<<<<<<' audit_dashboard/index.html; then
+              echo "Conflict markers found in index.html after merge — regenerating"
+              python -m audit_trail.dashboard_generator 2>&1 || true
+              # dashboard_data.json / dashboard_payload.json intentionally NOT
+              # re-added here — see the repo-bloat note on the PHASE 1 git-add
+              # loop above. They are .gitignored and FTP-deployed, not committed.
+              git add audit_dashboard/index.html || true
+              bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+              git commit --amend --no-edit
+            fi
+            # Verify publish consistency (advisory check — non-fatal by design)
+            python3 .github/scripts/verify_dashboard_publish_consistency.py || true
+            # Push attempt (sanitize output to avoid leaking PAT in error messages).
+            # NOTE: `set -e` (default in GHA shell: bash) exits the step on a failed
+            # command-substitution assignment BEFORE `push_rc=$?` runs. Without the
+            # `|| push_rc=$?` guard the entire 10-attempt retry loop is dead code on
+            # any push failure (verified in run 25002175275: zero "Push attempt N
+            # failed" lines between "Publish consistency OK" and the step error).
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed successfully on attempt $i"
+              push_ok=true
+              break
+            fi
+            # Permanent rejection: branch protection / pre-receive hook / GitHub
+            # error codes (GH001 large file, GH006 protected branch, GH007 signed
+            # commits, etc). Retrying produces identical rejection but burns
+            # ~20min across 10 attempts, so fail fast (mirrors safe_push.sh:185).
+            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
+              echo "ERROR: Push permanently rejected by remote (branch protection / pre-receive hook) — aborting retry loop"
+              break
+            fi
+            # Exponential backoff with jitter: 2s, 4s, 8s, 16s... capped at 120s
+            # Jitter preserved at cap to avoid synchronized retries colliding
+            delay=$((2 ** i + RANDOM % 10)); [ $delay -gt 120 ] && delay=$((120 + RANDOM % 10))
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All push attempts failed — another workflow likely has the lock"
+            exit 1
+          fi
+
+      - name: Deploy to all 3 FTP sites in parallel
+        # 2026-04-27: ADDED `if: always()` so FTP deploy runs even when the
+        # preceding "Commit updated data" step fails. Previously, when commit/push
+        # failed (push-lock contention or auth), GitHub Actions auto-skipped this
+        # step despite continue-on-error=true on the prior step — leaving the
+        # live findtorontoevents.ca/audit/ data file STALE while the green check
+        # at the URL gave a false sense of health. Now the FTP path runs
+        # unconditionally, so the freshly-generated dashboard_data.json reaches
+        # the public site even when the GitHub-side commit lost the push race.
+        # See updates/2026-04-27-workflow-health-investigation.md.
+        if: always()
+        continue-on-error: true
+        env:
+          FTP_50WEBS_HOST: ${{ secrets.FTP_HOST }}
+          FTP_50WEBS_USER: ${{ secrets.FTP_USER }}
+          FTP_50WEBS_PASS: ${{ secrets.FTP_PASS }}
+          FTP_GODADDY_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_GODADDY_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_GODADDY_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, sys, traceback
+          from pathlib import Path
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+
+          # ---------------------------------------------------------------------------
+          # Helper: upload a single file to an FTP connection
+          # ---------------------------------------------------------------------------
+          def ftp_upload(ftp, local_path, remote_dir, remote_name, site_label):
+              p = Path(local_path)
+              if not p.exists():
+                  return
+              try:
+                  ftp.cwd(remote_dir)
+              except Exception:
+                  pass
+              with open(p, "rb") as f:
+                  ftp.storbinary(f"STOR {remote_name}", f)
+              print(f"  [{site_label}] {p.stat().st_size}B -> {remote_dir}/{remote_name}")
+
+          def ensure_dir(ftp, path):
+              try:
+                  ftp.mkd(path)
+              except Exception:
+                  pass
+
+          def ensure_nested_dir(ftp, path):
+              path = (path or "").strip("/")
+              if not path:
+                  return
+              start = ftp.pwd()
+              try:
+                  ftp.cwd("/")
+                  for part in path.split("/"):
+                      if not part:
+                          continue
+                      ensure_dir(ftp, part)
+                      ftp.cwd(part)
+              finally:
+                  try:
+                      ftp.cwd(start)
+                  except Exception:
+                      pass
+
+          def upload_research_tree(ftp, remote_prefix, site_label):
+              root = Path("research/asset_class")
+              if not root.exists():
+                  print(f"  [{site_label}] research/asset_class missing; skipping research artifact deploy")
+                  return
+
+              for local_file in root.rglob("*"):
+                  if not local_file.is_file():
+                      continue
+                  rel = local_file.relative_to(root)
+                  rel_parent = rel.parent.as_posix()
+                  remote_dir = remote_prefix if rel_parent in ("", ".") else f"{remote_prefix}/{rel_parent}"
+                  ensure_nested_dir(ftp, remote_dir)
+                  ftp_upload(ftp, str(local_file), remote_dir, local_file.name, site_label)
+
+          # ---------------------------------------------------------------------------
+          # Site deploy functions
+          # ---------------------------------------------------------------------------
+          def deploy_findtorontoevents():
+              """Deploy to findtorontoevents.ca (50webs, SITE_ROOT prefix)."""
+              host = os.environ.get("FTP_50WEBS_HOST", "")
+              user = os.environ.get("FTP_50WEBS_USER", "")
+              pwd  = os.environ.get("FTP_50WEBS_PASS", "")
+              if not all([host, user, pwd]):
+                  return "findtorontoevents.ca: SKIPPED (no credentials)"
+
+              SITE_ROOT = "findtorontoevents.ca"
+              label = "findtorontoevents.ca"
+              # 2026-05-19: timeout 30->300s. The 17-22MB dashboard_data.json
+              # upload exceeded the 30s socket timeout -> socket.timeout caught
+              # by the per-file except -> big file silently never uploaded ->
+              # live /audit data frozen 47h + empty tiles. 300s covers it.
+              ftp = ftplib.FTP(host, timeout=300)
+              ftp.login(user, pwd)
+              ftp.cwd(SITE_ROOT)
+              ensure_dir(ftp, "audit")
+              ftp.cwd("audit")
+
+              # Main dashboard
+              ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
+              ftp_upload(ftp, "audit_dashboard/dashboard_enhancements.js", f"/{SITE_ROOT}/audit", "dashboard_enhancements.js", label)
+              # 2026-05-19: index.html <script src>s these 3 too — never deployed -> 404
+              for jsf in ["money_ready_filter.js", "hc_filter.js", "validation_metrics.js"]:
+                  try:
+                      ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
+                  except Exception as e:
+                      print(f"  [{label}] Failed {jsf}: {e}")
+              ftp_upload(ftp, "audit_dashboard/funds.html", f"/{SITE_ROOT}/audit", "funds.html", label)
+
+              # Apache config: gzip + cache-control. Without mod_deflate the
+              # 17-22 MB dashboard_data.json times out on mobile cellular and
+              # surfaces the misleading "No data loaded" empty state from
+              # template.html:16375.
+              try:
+                  ftp_upload(ftp, "audit_dashboard/.htaccess", f"/{SITE_ROOT}/audit", ".htaccess", label)
+              except Exception as e:
+                  print(f"  [{label}] .htaccess upload failed (non-fatal): {e}")
+
+              # Data folder
+              ensure_dir(ftp, "data")
+              data_dir = Path("audit_dashboard/data")
+              if data_dir.exists():
+                  # 2026-05-19: dashboard_data.json is 17.8MB and sorts mid-
+                  # alphabet; uploading it mid-loop exhausts the FTP session so
+                  # later files (pf_registry.json, money_ready_verdict.json)
+                  # never upload -> 404. Defer the big file to LAST.
+                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json"}
+                  _jsons = sorted(data_dir.glob("*.json"),
+                                  key=lambda p: (p.name == "dashboard_data.json", p.name))
+                  for df in _jsons:
+                      try:
+                          ftp_upload(ftp, str(df), f"/{SITE_ROOT}/audit/data", df.name, label)
+                      except Exception as e:
+                          if df.name in _critical:
+                              print(f"::warning title=audit-deploy::[{label}] CRITICAL file {df.name} failed to upload: {e}")
+                          else:
+                              print(f"  [{label}] Failed {df.name}: {e}")
+
+              # Extra data from audit_trail
+              for src_path, name in [
+                  ("audit_trail/data/dashboard_payload.json", "dashboard_payload.json"),
+                  ("audit_trail/data/stock_prices.json", "stock_prices.json"),
+              ]:
+                  try:
+                      ftp_upload(ftp, src_path, f"/{SITE_ROOT}/audit/data", name, label)
+                  except Exception as e:
+                      print(f"  [{label}] Failed {name}: {e}")
+
+              # ml_gatekeeper data (page fetches ../ml_gatekeeper/data/active_picks.json)
+              try:
+                  ftp.cwd(f"/{SITE_ROOT}")
+                  for d in ["ml_gatekeeper", "ml_gatekeeper/data"]:
+                      ensure_dir(ftp, d)
+                  ftp_upload(ftp, "ml_gatekeeper/data/active_picks.json",
+                             f"/{SITE_ROOT}/ml_gatekeeper/data", "active_picks.json", label)
+              except Exception as e:
+                  print(f"  [{label}] ml_gatekeeper data deploy failed (non-fatal): {e}")
+
+              # HTML pages
+              ftp.cwd(f"/{SITE_ROOT}/audit")
+              for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+                           "kimi_top_picks.html", "antigravity_picks.html", "portfolio_history.html",
+                           "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
+                           "real_money.html", "research_sidecars.html", "research_index.html",
+                           "ai_leaderboard.html", "ai-tournament.html",
+                           "hyrotrader/index.html"]:
+                  try:
+                      ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
+                  except Exception:
+                      pass
+
+              # Research run artifacts (for /audit/research/asset_class/* links)
+              try:
+                  upload_research_tree(ftp, f"/{SITE_ROOT}/audit/research/asset_class", label)
+              except Exception as e:
+                  print(f"  [{label}] research artifact deploy failed (non-fatal): {e}")
+
+              # KIMI genome data
+              try:
+                  ftp.cwd(f"/{SITE_ROOT}")
+                  for d in ["genome", "genome/data"]:
+                      ensure_dir(ftp, d)
+                  for kf in ["kimi_best_3_current.json", "kimi_top_picks_dashboard.json"]:
+                      try:
+                          ftp_upload(ftp, f"genome/data/{kf}", f"/{SITE_ROOT}/genome/data", kf, label)
+                      except Exception:
+                          pass
+              except Exception as e:
+                  print(f"  [{label}] KIMI genome deploy failed (non-fatal): {e}")
+
+              # all-dashboards.html -> investments/
+              dash = Path("investments/all-dashboards.html")
+              if dash.exists():
+                  ftp.cwd(f"/{SITE_ROOT}")
+                  ensure_dir(ftp, "investments")
+                  ftp_upload(ftp, str(dash), f"/{SITE_ROOT}/investments", "all-dashboards.html", label)
+
+              ftp.quit()
+              return f"{label}: OK"
+
+          def deploy_torontoevent_net():
+              """Deploy to torontoevent.net (GoDaddy, root = /)."""
+              host = os.environ.get("FTP_GODADDY_HOST", "")
+              user = os.environ.get("FTP_GODADDY_USER", "")
+              pwd  = os.environ.get("FTP_GODADDY_PASS", "")
+              if not all([host, user, pwd]):
+                  return "torontoevent.net: SKIPPED (no credentials)"
+
+              # 2026-04-17 host-guard: this function uses ROOT-RELATIVE paths
+              # (/audit, /audit/data, /investments) which are only valid on a
+              # single-tenant host. If FTP_GODADDY_HOST ever resolves to a 50webs
+              # multi-site host, every file lands at FTP root and corrupts other
+              # sites' layouts. Refuse loudly instead of silently corrupting.
+              if "50webs" in host.lower() or "ejaguiar" in host.lower():
+                  return f"torontoevent.net: REFUSED — host {host!r} is multi-tenant 50webs; root-relative deploy would corrupt other sites"
+
+              label = "torontoevent.net"
+              ftp = ftplib.FTP(host, timeout=300)
+              ftp.login(user, pwd)
+              ensure_dir(ftp, "audit")
+              ftp.cwd("audit")
+
+              # Main dashboard
+              ftp_upload(ftp, "audit_dashboard/index.html", "/audit", "index.html", label)
+              # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
+              for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
+                          "hc_filter.js", "validation_metrics.js"]:
+                  try:
+                      ftp_upload(ftp, f"audit_dashboard/{jsf}", "/audit", jsf, label)
+                  except Exception as e:
+                      print(f"  [{label}] Failed {jsf}: {e}")
+
+              # Data folder
+              ensure_dir(ftp, "data")
+              data_dir = Path("audit_dashboard/data")
+              if data_dir.exists():
+                  # 2026-05-19: defer 17.8MB dashboard_data.json to LAST so it
+                  # doesn't exhaust the FTP session before critical files.
+                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json"}
+                  _jsons = sorted(data_dir.glob("*.json"),
+                                  key=lambda p: (p.name == "dashboard_data.json", p.name))
+                  for df in _jsons:
+                      try:
+                          ftp_upload(ftp, str(df), "/audit/data", df.name, label)
+                      except Exception as e:
+                          if df.name in _critical:
+                              print(f"::warning title=audit-deploy::[{label}] CRITICAL file {df.name} failed to upload: {e}")
+                          else:
+                              print(f"  [{label}] Failed {df.name}: {e}")
+
+              # Extra data from audit_trail
+              for src_path, name in [
+                  ("audit_trail/data/dashboard_payload.json", "dashboard_payload.json"),
+                  ("audit_trail/data/stock_prices.json", "stock_prices.json"),
+              ]:
+                  try:
+                      ftp_upload(ftp, src_path, "/audit/data", name, label)
+                  except Exception as e:
+                      print(f"  [{label}] Failed {name}: {e}")
+
+              # ml_gatekeeper data (page fetches ../ml_gatekeeper/data/active_picks.json)
+              try:
+                  ftp.cwd("/")
+                  for d in ["ml_gatekeeper", "ml_gatekeeper/data"]:
+                      ensure_dir(ftp, d)
+                  ftp_upload(ftp, "ml_gatekeeper/data/active_picks.json",
+                             "/ml_gatekeeper/data", "active_picks.json", label)
+              except Exception as e:
+                  print(f"  [{label}] ml_gatekeeper data deploy failed (non-fatal): {e}")
+
+              # HTML pages
+              ftp.cwd("/audit")
+              for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+                           "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
+                           "real_money.html", "research_sidecars.html", "research_index.html",
+                           "ai_leaderboard.html", "ai-tournament.html"]:
+                  try:
+                      ftp_upload(ftp, f"audit_dashboard/{page}", "/audit", page, label)
+                  except Exception:
+                      pass
+
+              # Research run artifacts (for /audit/research/asset_class/* links)
+              try:
+                  upload_research_tree(ftp, "/audit/research/asset_class", label)
+              except Exception as e:
+                  print(f"  [{label}] research artifact deploy failed (non-fatal): {e}")
+
+              # all-dashboards.html -> investments/
+              dash = Path("investments/all-dashboards.html")
+              if dash.exists():
+                  ftp.cwd("/")
+                  ensure_dir(ftp, "investments")
+                  ftp_upload(ftp, str(dash), "/investments", "all-dashboards.html", label)
+
+              ftp.quit()
+              return f"{label}: OK"
+
+          def deploy_tdotevent_ca():
+              """Deploy to tdotevent.ca (50webs, SITE_ROOT prefix)."""
+              host = os.environ.get("FTP_50WEBS_HOST", "")
+              user = os.environ.get("FTP_50WEBS_USER", "")
+              pwd  = os.environ.get("FTP_50WEBS_PASS", "")
+              if not all([host, user, pwd]):
+                  return "tdotevent.ca: SKIPPED (no credentials)"
+
+              SITE_ROOT = "tdotevent.ca"
+              label = "tdotevent.ca"
+              ftp = ftplib.FTP(host, timeout=300)
+              ftp.login(user, pwd)
+              ftp.cwd(SITE_ROOT)
+              ensure_dir(ftp, "audit")
+              ftp.cwd("audit")
+
+              # Main dashboard + HTML pages
+              ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
+              # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
+              for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
+                          "hc_filter.js", "validation_metrics.js"]:
+                  try:
+                      ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
+                  except Exception as e:
+                      print(f"  [{label}] Failed {jsf}: {e}")
+              for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
+                           "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
+                           "real_money.html", "research_sidecars.html", "research_index.html",
+                           "ai_leaderboard.html", "ai-tournament.html"]:
+                  try:
+                      ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
+                  except Exception:
+                      pass
+
+              # Research run artifacts (for /audit/research/asset_class/* links)
+              try:
+                  upload_research_tree(ftp, f"/{SITE_ROOT}/audit/research/asset_class", label)
+              except Exception as e:
+                  print(f"  [{label}] research artifact deploy failed (non-fatal): {e}")
+
+              # Data folder
+              ensure_dir(ftp, "data")
+              data_dir = Path("audit_dashboard/data")
+              if data_dir.exists():
+                  # 2026-05-19: defer 17.8MB dashboard_data.json to LAST so it
+                  # doesn't exhaust the FTP session before critical files.
+                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json"}
+                  _jsons = sorted(data_dir.glob("*.json"),
+                                  key=lambda p: (p.name == "dashboard_data.json", p.name))
+                  for df in _jsons:
+                      try:
+                          ftp_upload(ftp, str(df), f"/{SITE_ROOT}/audit/data", df.name, label)
+                      except Exception as e:
+                          if df.name in _critical:
+                              print(f"::warning title=audit-deploy::[{label}] CRITICAL file {df.name} failed to upload: {e}")
+                          else:
+                              print(f"  [{label}] Failed {df.name}: {e}")
+
+              # Extra data from audit_trail
+              for src_path, name in [
+                  ("audit_trail/data/dashboard_payload.json", "dashboard_payload.json"),
+                  ("audit_trail/data/stock_prices.json", "stock_prices.json"),
+              ]:
+                  try:
+                      ftp_upload(ftp, src_path, f"/{SITE_ROOT}/audit/data", name, label)
+                  except Exception as e:
+                      print(f"  [{label}] Failed {name}: {e}")
+
+              # ml_gatekeeper data (page fetches ../ml_gatekeeper/data/active_picks.json)
+              try:
+                  ftp.cwd(f"/{SITE_ROOT}")
+                  for d in ["ml_gatekeeper", "ml_gatekeeper/data"]:
+                      ensure_dir(ftp, d)
+                  ftp_upload(ftp, "ml_gatekeeper/data/active_picks.json",
+                             f"/{SITE_ROOT}/ml_gatekeeper/data", "active_picks.json", label)
+              except Exception as e:
+                  print(f"  [{label}] ml_gatekeeper data deploy failed (non-fatal): {e}")
+
+              ftp.quit()
+              return f"{label}: OK"
+
+          # ---------------------------------------------------------------------------
+          # Run all 3 deploys in parallel
+          # ---------------------------------------------------------------------------
+          src = Path("audit_dashboard/index.html")
+          if not src.exists():
+              print("index.html not found, skipping all FTP deploys")
+              sys.exit(0)
+
+          results = {}
+          with ThreadPoolExecutor(max_workers=3) as pool:
+              futures = {
+                  pool.submit(deploy_findtorontoevents): "findtorontoevents.ca",
+                  pool.submit(deploy_torontoevent_net): "torontoevent.net",
+                  pool.submit(deploy_tdotevent_ca): "tdotevent.ca",
+              }
+              for future in as_completed(futures):
+                  site = futures[future]
+                  try:
+                      msg = future.result()
+                      results[site] = True
+                      print(f"[OK] {msg}")
+                  except Exception as e:
+                      results[site] = False
+                      print(f"[FAIL] {site}: {e}")
+                      traceback.print_exc()
+
+          ok = sum(1 for v in results.values() if v)
+          total = len(results)
+          print(f"\nFTP deploy: {ok}/{total} sites succeeded")
+          # Non-fatal: don't exit(1) even if some fail
+          PYEOF
+
+      - name: Verify URLs
+        if: always()
+        run: |
+          sleep 8
+          echo "=== Checking live URLs ==="
+          # GH Pages publishes to /audit/ (not /audit_dashboard/) per deploy-riseoftheclaw.yml — old URL produced false 404s in monitoring noise.
+          s1=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit/" 2>/dev/null || echo "000")
+          s2=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://findtorontoevents.ca/audit/" 2>/dev/null || echo "000")
+          s3=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://torontoevent.net/audit/" 2>/dev/null || echo "000")
+          echo "GitHub Pages:             $s1"
+          echo "findtorontoevents.ca/audit: $s2"
+          echo "torontoevent.net/audit:     $s3"
+          s4=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://findtorontoevents.ca/investments/all-dashboards.html" 2>/dev/null || echo "000")
+          echo "findtorontoevents.ca/investments: $s4"
+
+          # Freshness content check for the primary public site (catches silent FTP partial failures)
+          echo "=== Freshness content check (findtorontoevents.ca/audit) ==="
+          banner=$(curl -sL --max-time 15 "https://findtorontoevents.ca/audit/" 2>/dev/null | grep -oE 'Static data updated [0-9-]+' | head -1 || echo "no-banner")
+          echo "Live banner: $banner"
+          if echo "$banner" | grep -qE '2026-05-(1[6-9]|2[0-9])'; then
+            echo "Freshness: OK (recent banner date)"
+          else
+            echo "::warning title=audit-deploy-stale::Live findtorontoevents.ca/audit still shows old banner: $banner (expected 2026-05-20 or later). FTP deploy likely partial or failed for the main site."
+          fi

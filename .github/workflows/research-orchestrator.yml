@@ -1,0 +1,146 @@
+# Asset-class research orchestrator — weekly cron + manual dispatch.
+#
+# Fires P1+P2+P5 swarms across all 7 asset classes, runs P3+P4 backtest +
+# cross-test, refreshes /audit/research_index.html. ~$1-2 per weekly run
+# across 21 swarm passes (cost-capped via existing tools/swarm/swarm_run.py
+# cost guards).
+#
+# DEFAULTS:
+# - schedule: weekly Saturday 06:00 UTC (low conflict with other crons).
+# - workflow_dispatch: manual trigger with `class` input to refresh one
+#   class only.
+# - secrets required: DEEPSEEK_API, CEREBRAS_API, X_AI_KEY (or X_AI_SECONDOP).
+#   INCEPTION_AI_KEY optional. No swarm engine = workflow no-ops gracefully.
+#
+# OUTPUT:
+# - swarm_runs/research_<class>_p{1,2,5}_<ts>/  — per-pass raw output
+# - research/asset_class/<class>/run_<ts>/      — rendered HTML pages
+# - audit_dashboard/research_index.html         — refreshed index
+# - committed back to main with `[skip ci]` after each successful run
+
+name: Research Orchestrator (weekly)
+
+'on':
+  schedule:
+    - cron: '0 6 * * 6'   # Saturday 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      asset_class:
+        description: 'Single class to refresh (or "all")'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - bond
+          - forex
+          - equity
+          - crypto
+          - etf
+          - futures
+          - commodity
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: |
+          python -m pip install --quiet pandas numpy yfinance pyyaml
+
+      - name: Pre-flight — secret keys present
+        run: |
+          MISSING=""
+          [ -n "${DEEPSEEK_API:-}" ] || MISSING="$MISSING DEEPSEEK_API"
+          [ -n "${CEREBRAS_API:-}" ] || MISSING="$MISSING CEREBRAS_API"
+          [ -n "${X_AI_KEY:-}${X_AI_SECONDOP:-}" ] || MISSING="$MISSING X_AI_KEY"
+          if [ -n "$MISSING" ]; then
+            echo "::warning::missing swarm engine keys:$MISSING"
+            echo "::warning::workflow will run with reduced engine pool"
+          fi
+        env:
+          DEEPSEEK_API: ${{ secrets.DEEPSEEK_API }}
+          CEREBRAS_API: ${{ secrets.CEREBRAS_API }}
+          X_AI_KEY: ${{ secrets.X_AI_KEY }}
+          X_AI_SECONDOP: ${{ secrets.X_AI_SECONDOP }}
+
+      - name: Run research orchestrator (full pipeline per class)
+        env:
+          DEEPSEEK_API: ${{ secrets.DEEPSEEK_API }}
+          CEREBRAS_API: ${{ secrets.CEREBRAS_API }}
+          X_AI_KEY: ${{ secrets.X_AI_KEY }}
+          X_AI_SECONDOP: ${{ secrets.X_AI_SECONDOP }}
+          INCEPTION_AI_KEY: ${{ secrets.INCEPTION_AI_KEY }}
+        run: |
+          set -e
+          CLASS_INPUT="${{ inputs.asset_class || 'all' }}"
+          if [ "$CLASS_INPUT" = "all" ]; then
+            CLASSES="bond forex equity crypto etf futures commodity"
+          else
+            CLASSES="$CLASS_INPUT"
+          fi
+          for cls in $CLASSES; do
+            echo "::group::P1 + P2 + P5 — $cls"
+            # P1
+            python -m tools.research.fire_class_p1 --class "$cls" || echo "::warning::P1 failed for $cls"
+            # Build P2 briefing
+            python -m tools.research.build_p2_briefing --class "$cls" || true
+            # P2
+            python tools/swarm/swarm_run.py --config "tools/swarm/examples/research_${cls}_p2.yaml" || true
+            # First orchestrator run (P3+P4)
+            python -m tools.research.orchestrator --class "$cls" --enable-swarm || true
+            # P5 briefing from latest run
+            LATEST=$(ls -td "research/asset_class/${cls}/run_"* 2>/dev/null | head -1 || echo "")
+            if [ -n "$LATEST" ]; then
+              python -m tools.research.build_p5_briefing --class "$cls" --run "$LATEST" || true
+              cp "swarm_runs/briefing_research_${cls}_p5_$(basename "$LATEST").md" \
+                 "swarm_runs/briefing_research_${cls}_p5_LATEST.md" || true
+              python tools/swarm/swarm_run.py --config "tools/swarm/examples/research_${cls}_p5.yaml" || true
+              # Re-run orchestrator picking up P5 swarm output
+              python -m tools.research.orchestrator --class "$cls" --enable-swarm || true
+            fi
+            echo "::endgroup::"
+          done
+          # Refresh index after all classes
+          python -m tools.research.build_research_index
+
+      - name: Commit + push results
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/ swarm_runs/research_*_p1_* swarm_runs/research_*_p2_* swarm_runs/research_*_p5_* swarm_runs/briefing_research_*.md audit_dashboard/research_index.html 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no research changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(research): weekly orchestrator refresh $(date -u +%Y-%m-%d) [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main || break
+            git push origin HEAD:main && break
+            sleep $((i * 5))
+          done
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-orchestrator-${{ github.run_id }}
+          path: |
+            research/
+            audit_dashboard/research_index.html
+          retention-days: 30

@@ -1,0 +1,617 @@
+#!/usr/bin/env python3
+"""
+mysql_trading_sync.py -- Sync Alpha Engine picks to MySQL (50webs)
+==================================================================
+Reads active_picks.json and closed_picks.json, then upserts all records
+into the `trading_picks` table on ejaguiar1_stocks @ mysql.50webs.com.
+
+Usage:
+    python alpha_engine/mysql_trading_sync.py
+    python alpha_engine/mysql_trading_sync.py --dry-run
+"""
+
+import json
+import logging
+import os
+import sys
+import time
+import math
+import argparse
+from pathlib import Path
+from datetime import datetime, timezone
+
+logger = logging.getLogger("mysql_trading_sync")
+
+# ── Ensure pymysql is available ──────────────────────────────────────────────
+try:
+    import pymysql
+    import pymysql.cursors
+except ImportError:
+    print("[mysql_trading_sync] Installing pymysql...")
+    import subprocess
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "pymysql"],
+        stdout=subprocess.DEVNULL,
+    )
+    import pymysql
+    import pymysql.cursors
+
+# ── Configuration ────────────────────────────────────────────────────────────
+SCRIPT_DIR = Path(__file__).resolve().parent
+DATA_DIR = SCRIPT_DIR / "data"
+
+ACTIVE_PICKS_FILE = DATA_DIR / "active_picks.json"
+CLOSED_PICKS_FILE = DATA_DIR / "closed_picks.json"
+
+# Database credentials — same as db_sync.py uses for ejaguiar1_stocks
+DB_HOST = os.environ.get("DB_HOST", "mysql.50webs.com")
+DB_PORT = int(os.environ.get("DB_PORT", "3306"))
+DB_USER = os.environ.get("DB_USER", "ejaguiar1_stocks")
+DB_NAME = os.environ.get("DB_NAME", "ejaguiar1_stocks")
+
+
+def resolve_db_password():
+    """MySQL password from env; empty workflow env must not override 50webs default."""
+    for key in ("DB_PASS", "AUDIT_DB_PASS", "MYSQL_PASSWORD"):
+        v = os.environ.get(key)
+        if v is not None and str(v).strip() != "":
+            return str(v).strip()
+    return "stocks"
+
+# Retry settings (50webs can be unreliable)
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # seconds
+
+# ── Table DDL ────────────────────────────────────────────────────────────────
+CREATE_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS trading_picks (
+    id VARCHAR(100) PRIMARY KEY,
+    symbol VARCHAR(20),
+    direction VARCHAR(10),
+    strategy VARCHAR(100),
+    entry_price DECIMAL(20,8),
+    take_profit DECIMAL(20,8),
+    stop_loss DECIMAL(20,8),
+    confidence DECIMAL(5,4),
+    elite_score INT,
+    trust_score INT,
+    category VARCHAR(20),
+    source_system VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'ACTIVE',
+    pnl_pct DECIMAL(10,4),
+    exit_price DECIMAL(20,8),
+    created_at DATETIME,
+    closed_at DATETIME,
+    exit_reason VARCHAR(30),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+"""
+
+# ── Upsert SQL ───────────────────────────────────────────────────────────────
+UPSERT_SQL = """
+INSERT INTO trading_picks
+    (id, symbol, direction, strategy, entry_price, take_profit, stop_loss,
+     confidence, elite_score, trust_score, category, source_system,
+     status, pnl_pct, exit_price, created_at, closed_at, exit_reason)
+VALUES
+    (%(id)s, %(symbol)s, %(direction)s, %(strategy)s, %(entry_price)s,
+     %(take_profit)s, %(stop_loss)s, %(confidence)s, %(elite_score)s,
+     %(trust_score)s, %(category)s, %(source_system)s, %(status)s,
+     %(pnl_pct)s, %(exit_price)s, %(created_at)s, %(closed_at)s, %(exit_reason)s)
+ON DUPLICATE KEY UPDATE
+    symbol       = VALUES(symbol),
+    direction    = VALUES(direction),
+    strategy     = VALUES(strategy),
+    entry_price  = VALUES(entry_price),
+    take_profit  = VALUES(take_profit),
+    stop_loss    = VALUES(stop_loss),
+    confidence   = VALUES(confidence),
+    elite_score  = VALUES(elite_score),
+    trust_score  = VALUES(trust_score),
+    category     = VALUES(category),
+    source_system= VALUES(source_system),
+    status       = VALUES(status),
+    pnl_pct      = VALUES(pnl_pct),
+    exit_price   = VALUES(exit_price),
+    created_at   = VALUES(created_at),
+    closed_at    = VALUES(closed_at),
+    exit_reason  = VALUES(exit_reason);
+"""
+
+
+def log_ok(msg):
+    print(f"  [OK]  {msg}")
+
+
+def log_err(msg):
+    print(f"  [ERR] {msg}", file=sys.stderr)
+
+
+def log_info(msg):
+    print(f"  [..] {msg}")
+
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def parse_datetime(val):
+    """Parse various datetime formats from the JSON files. Returns str or None."""
+    if not val:
+        return None
+    # Strip timezone info for MySQL DATETIME compatibility
+    for fmt in (
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d",
+    ):
+        try:
+            dt = datetime.strptime(val, fmt)
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
+def _safe_float(val):
+    """Convert to finite float or None for DB-safe inserts."""
+    if val is None or val == "":
+        return None
+    try:
+        f = float(val)
+    except (ValueError, TypeError):
+        return None
+    if math.isnan(f) or math.isinf(f):
+        return None
+    return f
+
+
+def pick_to_row(pick):
+    """Convert a JSON pick dict to a flat dict matching the DB columns."""
+    raw_status = str(pick.get("status", "ACTIVE") or "ACTIVE").upper()
+    exit_reason = str(pick.get("exit_reason", "") or "").upper()
+
+    # closed_picks sources commonly emit CLOSED/FLAT instead of final outcome.
+    # Derive canonical terminal status for MySQL analytics.
+    if raw_status in ("CLOSED", "FLAT"):
+        if exit_reason in ("TP", "TP_HIT", "TP_HIT_RESOLVED", "TP2_HIT", "TP1_HIT"):
+            status = "WON"
+        elif exit_reason in ("SL", "SL_HIT", "STOP_LOSS", "ATR_TRAIL", "TRAIL", "TRAIL_SL", "SL_HIT_RESOLVED"):
+            status = "LOST"
+        elif exit_reason in ("TIME_EXIT", "MAX_HOLD", "EXPIRED", "FORCE_CLOSED_TOXIC"):
+            status = "EXPIRED"
+        else:
+            # Fallback: infer from PnL sign when exit_reason is ambiguous.
+            pnl_raw = pick.get("pnl_pct")
+            if pnl_raw is None:
+                pnl_raw = pick.get("unrealized_pnl_pct")
+            pnl_f = _safe_float(pnl_raw)
+            if pnl_f is None:
+                pnl_f = 0.0
+            if pnl_f > 0:
+                status = "WON"
+            elif pnl_f < 0:
+                status = "LOST"
+            else:
+                status = "EXPIRED"
+    else:
+        status = raw_status
+
+    # Determine closed_at: use exit_date if present.
+    # 2026-05-10: + exit_time fallback. battleground/data/closed_picks.json and
+    # alpha_engine/data/active_picks.json emit `exit_time` (not exit_date /
+    # closed_at). Without this fallback, all 115 battleground closed picks
+    # land in MySQL with closed_at=NULL — driving 57,710 of 66,058 NULL
+    # closed_at rows (87%) per dry-run preview at
+    # reports/battleground_timestamp_gap_2026-05-10/preview.csv.
+    closed_at = None
+    if status not in ("ACTIVE", "OPEN"):
+        closed_at = (
+            parse_datetime(pick.get("exit_date"))
+            or parse_datetime(pick.get("closed_at"))
+            or parse_datetime(pick.get("exit_time"))
+        )
+
+    # Persist explicit exit price for closed picks when available.
+    exit_price = pick.get("exit_price")
+    if exit_price is None:
+        exit_price = pick.get("exitPrice")
+    exit_price = _safe_float(exit_price)
+
+    # pnl_pct can be in different fields
+    pnl = pick.get("pnl_pct")
+    if pnl is None:
+        pnl = pick.get("unrealized_pnl_pct")
+    # closed_picks payloads are percent values already (e.g. -0.751 == -0.751%).
+    # Do not auto-scale values below 1.0.
+    pnl = _safe_float(pnl)
+    if pnl is not None:
+        pnl = round(pnl, 4)
+        # 2026-05-09 — Anomaly clamp.
+        # `reports/db_query_bank_2026-05-07/FINDINGS.md` Critical Finding #0:
+        # `category='forex'` rows had `pnl_pct` range -106,700.679 to +95.58
+        # (avg -57.47, stddev 2,346) — single outlier swamped system-wide PF
+        # to 0.063 vs sane crypto ~0. Root cause is upstream: raw price-diff
+        # or pip count being passed in as % for some forex resolver paths.
+        # While that's tracked separately for fix, this writer-level guard
+        # rejects any pnl_pct outside the [-100, 200]% sanity envelope —
+        # logs the anomaly so the upstream source can be identified.
+        if not (-100.0 <= pnl <= 200.0):
+            logger.warning(
+                "pnl_pct anomaly clamp: pick %s symbol=%s category=%s "
+                "raw=%s — dropping to None (out of [-100, 200] range)",
+                (pick.get("id") or "?")[:60],
+                (pick.get("symbol") or "?")[:20],
+                (pick.get("category") or "?")[:20],
+                pnl,
+            )
+            pnl = None
+
+    # 2026-05-09 — Category inference for NULL/empty rows.
+    # swarm_runs/next_steps_perf_2026-05-09 (4/4 vote) showed 7 of top 10
+    # 30d winners are tagged category='' or NULL — invisible to filters even
+    # though they're plainly crypto symbols. Backfill from symbol shape:
+    #   *USDT / *USD / *USDC / *PERP / -USD → crypto
+    #   has-equals-F (e.g., CL=F) → futures
+    #   has-equals-X (e.g., EURUSD=X) → forex
+    # Only applied when the source pick gives empty/None — never overrides.
+    raw_cat = str(pick.get("category") or "").strip().lower()
+    if not raw_cat:
+        sym = str(pick.get("symbol") or "").upper()
+        if sym.endswith(("USDT", "USDC", "BUSD", "DAI", "PERP")):
+            raw_cat = "crypto"
+        elif sym.endswith("-USD"):
+            raw_cat = "crypto"
+        elif sym.endswith("=F"):
+            raw_cat = "futures"
+        elif sym.endswith("=X"):
+            raw_cat = "forex"
+        # else: leave empty — caller knows their pick is unclassifiable
+
+    return {
+        "id": pick.get("id", "")[:100],
+        "symbol": (pick.get("symbol") or "")[:20],
+        "direction": (pick.get("direction") or pick.get("signal_type") or "")[:10],
+        "strategy": (pick.get("strategy") or "")[:100],
+        "entry_price": _safe_float(pick.get("entry_price")),
+        "take_profit": _safe_float(pick.get("take_profit")),
+        "stop_loss": _safe_float(pick.get("stop_loss")),
+        "confidence": _safe_float(pick.get("confidence")),
+        "elite_score": _safe_float(pick.get("elite_score")),
+        "trust_score": _safe_float(pick.get("trust_score")),
+        "category": raw_cat[:20],
+        "source_system": (pick.get("source_system") or "alpha_engine")[:50],
+        "status": status[:20],
+        "pnl_pct": pnl,
+        "exit_price": exit_price,
+        # 2026-05-10: + entry_time fallback. battleground + alpha_engine emit
+        # `entry_time` (not created_at / detected_at / timestamp). See
+        # reports/battleground_timestamp_gap_2026-05-10/preview.csv.
+        "created_at": parse_datetime(
+            pick.get("created_at")
+            or pick.get("detected_at")
+            or pick.get("timestamp")
+            or pick.get("entry_time")
+        ),
+        "closed_at": closed_at,
+        "exit_reason": (pick.get("exit_reason") or "")[:30] or None,
+    }
+
+
+def load_picks(filepath):
+    """Load picks from a JSON file. Returns list of dicts or empty list."""
+    if not filepath.exists():
+        log_info(f"File not found, skipping: {filepath.name}")
+        return []
+    try:
+        data = json.loads(filepath.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            for key in (
+                "picks",
+                "active_picks",
+                "closed_picks",
+                "signals",
+                "crypto_signals",
+                "stock_signals",
+                "forex_signals",
+                "active",
+                "closed",
+                "forward_picks",
+                "activeSignals",
+                "closedSignals",
+                "super_signals",
+                "data",
+                "results",
+                "positions",
+                "winners",
+                "items",
+                "rows",
+                "contested_picks",
+                "top_picks",
+                "trades",
+                "closed_trades",
+                "live_signals",
+                "open_picks",
+            ):
+                if key in data and isinstance(data[key], list):
+                    return data[key]
+            nested_picks = data.get("picks")
+            if isinstance(nested_picks, dict):
+                for key in ("active", "recent_closed", "smart_picks", "closed"):
+                    if isinstance(nested_picks.get(key), list):
+                        return nested_picks[key]
+
+            list_values = [v for v in data.values() if isinstance(v, list)]
+            if len(list_values) == 1:
+                return list_values[0]
+
+            log_info(f"No pick list found in {filepath.name}, skipping object payload")
+            return []
+        log_err(f"Expected list/object in {filepath.name}, got {type(data).__name__}")
+        return []
+    except (json.JSONDecodeError, OSError) as e:
+        log_err(f"Failed to read {filepath.name}: {e}")
+        return []
+
+
+def connect_with_retry():
+    """Connect to MySQL with retries for 50webs reliability."""
+    last_err = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            conn = pymysql.connect(
+                host=DB_HOST,
+                port=DB_PORT,
+                user=DB_USER,
+                password=resolve_db_password(),
+                database=DB_NAME,
+                connect_timeout=15,
+                read_timeout=30,
+                write_timeout=30,
+                charset="utf8mb4",
+                cursorclass=pymysql.cursors.DictCursor,
+            )
+            return conn
+        except pymysql.Error as e:
+            last_err = e
+            if attempt < MAX_RETRIES:
+                log_info(
+                    f"Connection attempt {attempt}/{MAX_RETRIES} failed: {e} "
+                    f"— retrying in {RETRY_DELAY}s"
+                )
+                time.sleep(RETRY_DELAY)
+            else:
+                log_err(
+                    f"All {MAX_RETRIES} connection attempts failed. Last error: {e}"
+                )
+    raise last_err
+
+
+# ── Main sync logic ─────────────────────────────────────────────────────────
+
+def sync(dry_run=False):
+    """Load picks from JSON files and upsert to MySQL."""
+    print("=" * 60)
+    print("  Alpha Engine -> MySQL Trading Picks Sync")
+    print(f"  Target: {DB_USER}@{DB_HOST}/{DB_NAME}")
+    print(f"  Time:   {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC")
+    print("=" * 60)
+
+    # Load picks from ALL JSON_PICK_SOURCES
+    try:
+        sys.path.insert(0, str(SCRIPT_DIR.parent))
+        from audit_trail.dashboard_generator import JSON_PICK_SOURCES
+    except ImportError:
+        log_err("Failed to import JSON_PICK_SOURCES from dashboard_generator")
+        JSON_PICK_SOURCES = [
+            ("alpha_engine", "alpha_engine/data/active_picks.json", "alpha_engine/data/closed_picks.json")
+        ]
+
+    all_active = []
+    all_closed = []
+    
+    for sys_name, active_rel, closed_rel in JSON_PICK_SOURCES:
+        src_active = []
+        src_closed = []
+        
+        if active_rel:
+            active_path = SCRIPT_DIR.parent / active_rel
+            src_active = load_picks(active_path)
+            
+        if closed_rel:
+            closed_path = SCRIPT_DIR.parent / closed_rel
+            src_closed = load_picks(closed_path)
+        
+        # Tag source if missing
+        for p in src_active:
+            p['source_system'] = p.get('source_system') or sys_name
+        for p in src_closed:
+            p['source_system'] = p.get('source_system') or sys_name
+            
+        all_active.extend(src_active)
+        all_closed.extend(src_closed)
+
+    log_ok(f"Loaded {len(all_active)} active + {len(all_closed)} closed picks across {len(JSON_PICK_SOURCES)} sources")
+
+    if not all_active and not all_closed:
+        log_info("No picks to sync. Done.")
+        return 0
+
+    # 2026-05-09 — Elite-score backfill before sync.
+    # `reports/portfolio_lessons_2026-05-08.md` showed 92% of crypto picks
+    # (3,128 of 3,394 in 14d) had elite_score=NULL, which made them
+    # invisible to the cycle picks workflow. Polymarket-derived sources
+    # (prediction_market_agents, copy_trader_polymarket, polymarket_whale_tracker,
+    # polymarket_momentum, short_dominant_engine) bypass elite_scorer in their
+    # own pipelines. Backfill here so every pick reaching trading_picks gets
+    # scored once. Skipped on import failure so the sync still runs in
+    # environments where elite_scorer's MC-results data files aren't present.
+    unscored_pre = sum(
+        1 for p in all_active + all_closed
+        if p.get("elite_score") is None or p.get("elite_score") == ""
+    )
+    try:
+        from alpha_engine.elite_scorer import enrich_picks_with_elite_score
+        # Score the combined unique-ids list (in-place mutation on shared dicts).
+        enrich_picks_with_elite_score(list(all_active) + list(all_closed))
+        unscored_post = sum(
+            1 for p in all_active + all_closed
+            if p.get("elite_score") is None or p.get("elite_score") == ""
+        )
+        log_ok(
+            f"elite_score backfill: scored {unscored_pre - unscored_post} "
+            f"of {unscored_pre} previously-unscored picks "
+            f"(remaining unscored: {unscored_post})"
+        )
+    except ImportError as e:
+        log_err(f"elite_scorer import failed — proceeding without backfill: {e}")
+    except Exception as e:
+        log_err(f"elite_scorer backfill error — proceeding with partial fill: {e}")
+
+    # Build rows
+    rows = []
+    seen_ids = set()
+    for pick in all_active + all_closed:
+        pid = pick.get("id", "")
+        if not pid or pid in seen_ids:
+            continue
+        seen_ids.add(pid)
+        try:
+            rows.append(pick_to_row(pick))
+        except Exception as e:
+            continue
+
+    log_ok(f"Prepared {len(rows)} unique rows for upsert")
+
+    if dry_run:
+        log_info("[DRY RUN] Would upsert the following picks:")
+        for r in rows[:5]:
+            print(f"    {r['id'][:50]}  {r['symbol']:>10}  {r['status']:>8}  pnl={r['pnl_pct']}")
+        if len(rows) > 5:
+            print(f"    ... and {len(rows) - 5} more")
+        return 0
+
+    # Connect
+    log_info(f"Connecting to {DB_HOST}...")
+    conn = connect_with_retry()
+    log_ok(f"Connected to MySQL ({DB_HOST})")
+
+    cursor = conn.cursor()
+
+    # Create table if not exists
+    try:
+        cursor.execute(CREATE_TABLE_SQL)
+        # Backward-compatible migration: older deployments may not have exit_price.
+        try:
+            cursor.execute(
+                "ALTER TABLE trading_picks ADD COLUMN exit_price DECIMAL(20,8) NULL AFTER pnl_pct"
+            )
+            log_ok("Added missing column `exit_price` to trading_picks")
+        except pymysql.Error as col_err:
+            # 1060 = duplicate column name (already exists)
+            if getattr(col_err, "args", [None])[0] != 1060:
+                raise
+        conn.commit()
+        log_ok("Table `trading_picks` ensured")
+        # Composite indexes for query performance (IF NOT EXISTS via CREATE INDEX ... IGNORE)
+        _idx_stmts = [
+            "CREATE INDEX idx_tp_strategy_status ON trading_picks(strategy, status)",
+            "CREATE INDEX idx_tp_asset_status ON trading_picks(category, status)",
+            "CREATE INDEX idx_tp_created ON trading_picks(created_at)",
+            "CREATE INDEX idx_tp_closed ON trading_picks(closed_at)",
+            "CREATE INDEX idx_tp_confidence ON trading_picks(confidence)",
+        ]
+        for stmt in _idx_stmts:
+            try:
+                cursor.execute(stmt)
+                conn.commit()
+            except pymysql.Error as idx_err:
+                if getattr(idx_err, "args", [None])[0] != 1061:  # 1061 = duplicate key name
+                    log_warn(f"Index creation warning: {idx_err}")
+        log_ok("trading_picks indexes ensured")
+        # at_pick_outcomes — created here so resolver can write outcomes without
+        # a separate DDL migration step
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS at_pick_outcomes (
+                pick_id           CHAR(36) PRIMARY KEY,
+                symbol            VARCHAR(50),
+                strategy          VARCHAR(200),
+                asset_class       VARCHAR(20),
+                status            ENUM('OPEN','WON','LOST','EXPIRED','FLAT') NOT NULL,
+                resolution_method ENUM('TP_HIT','SL_HIT','TIME_EXPIRED','MANUAL'),
+                pnl_pct           DECIMAL(10,4),
+                resolved_at       DATETIME,
+                resolver_version  VARCHAR(20),
+                INDEX idx_po_status   (status),
+                INDEX idx_po_strategy (strategy),
+                INDEX idx_po_resolved (resolved_at),
+                INDEX idx_po_asset    (asset_class)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """)
+        conn.commit()
+        log_ok("Table `at_pick_outcomes` ensured")
+    except pymysql.Error as e:
+        log_err(f"Failed to create table: {e}")
+        conn.close()
+        return 1
+
+    # Upsert rows in batches
+    inserted = 0
+    errors = 0
+    batch_size = 50
+
+    for i in range(0, len(rows), batch_size):
+        batch = rows[i : i + batch_size]
+        for row in batch:
+            try:
+                cursor.execute(UPSERT_SQL, row)
+                inserted += 1
+            except pymysql.Error as e:
+                errors += 1
+                if errors <= 5:
+                    log_err(f"Upsert failed for {row['id'][:50]}: {e}")
+        try:
+            conn.commit()
+        except pymysql.Error as e:
+            log_err(f"Commit failed for batch starting at {i}: {e}")
+            errors += len(batch)
+
+    # Summary
+    print()
+    print("-" * 60)
+    log_ok(f"Sync complete: {inserted} upserted, {errors} errors")
+
+    # Quick count verification
+    try:
+        cursor.execute("SELECT COUNT(*) AS cnt FROM trading_picks")
+        total = cursor.fetchone()["cnt"]
+        cursor.execute(
+            "SELECT COUNT(*) AS cnt FROM trading_picks WHERE status = 'ACTIVE'"
+        )
+        active_cnt = cursor.fetchone()["cnt"]
+        log_ok(f"DB totals: {total} picks ({active_cnt} active)")
+    except pymysql.Error:
+        pass
+
+    conn.close()
+    return 0 if errors == 0 else 1
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Sync Alpha Engine picks to MySQL (50webs)"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be synced without writing to DB",
+    )
+    args = parser.parse_args()
+    sys.exit(sync(dry_run=args.dry_run))
+
+
+if __name__ == "__main__":
+    main()

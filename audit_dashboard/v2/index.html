@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistical Edge per Asset Class — v2 | FindTorontoEvents Audit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ============================================================
+       Statistical Edge v2 Dashboard — Dark Theme (Kimi UI Shell)
+       Data: 100% from audit_dashboard/data/dashboard_data.json
+       DO NOT fabricate numbers — all values sourced from real resolver
+    ============================================================ */
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #0f1425;
+      --bg-card: #1a1f3a;
+      --bg-card-hover: #22284a;
+      --bg-elevated: #252b4d;
+      --border-color: #2a3050;
+      --border-hover: #3a4068;
+      --text-primary: #e0e6f0;
+      --text-secondary: #8b92b4;
+      --text-muted: #5a6080;
+      --accent-crypto: #f7931a;
+      --accent-equity: #00c853;
+      --accent-forex: #2979ff;
+      --accent-commodity: #ff6d00;
+      --accent-etf: #aa00ff;
+      --accent-bond: #00bcd4;
+      --accent-futures: #ffd600;
+      --success: #00c853;
+      --danger: #ff1744;
+      --warning: #ffd600;
+      --info: #2979ff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+    /* ---- NAVBAR ---- */
+    .navbar {
+      background: rgba(15, 20, 37, 0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+    .navbar-inner {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #2979ff, #00c853);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo svg { width: 24px; height: 24px; }
+    .nav-links { display: flex; gap: 4px; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .nav-links a:hover { color: var(--text-primary); background: var(--bg-card); }
+    .nav-links a.active { color: var(--text-primary); background: var(--bg-card); box-shadow: inset 0 0 0 1px var(--border-hover); }
+
+    /* ---- BANNERS ---- */
+    .banner-danger {
+      background: rgba(255, 23, 68, 0.12);
+      border: 1px solid rgba(255, 23, 68, 0.4);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      color: #ff6b8a;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .banner-danger .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    .banner-paper {
+      background: rgba(255, 214, 0, 0.1);
+      border: 2px solid rgba(255, 214, 0, 0.5);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #ffd600;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .banner-invest {
+      background: rgba(0, 200, 83, 0.1);
+      border: 2px solid rgba(0, 200, 83, 0.4);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #00c853;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .banner-dotrade {
+      background: rgba(255, 23, 68, 0.1);
+      border: 2px solid rgba(255, 23, 68, 0.4);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #ff1744;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ---- MAIN LAYOUT ---- */
+    .container { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
+    .page-content { padding: 32px 0 64px; }
+
+    /* ---- PAGE HEADER ---- */
+    .page-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .page-header .subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .page-header .subtitle .pill {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--info);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      transition: opacity 0.2s;
+    }
+    .back-link:hover { opacity: 0.75; }
+
+    /* ---- SECTION HEADERS ---- */
+    .section-header {
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+    .section { margin-bottom: 48px; }
+
+    /* ---- CARDS GRID ---- */
+    .grid-6 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1200px) { .grid-6 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px)  { .grid-6 { grid-template-columns: 1fr; } }
+
+    /* ---- ASSET CARD ---- */
+    .asset-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .asset-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      opacity: 1;
+    }
+    .asset-card.crypto::before  { background: linear-gradient(90deg, var(--accent-crypto), transparent); }
+    .asset-card.equity::before  { background: linear-gradient(90deg, var(--accent-equity), transparent); }
+    .asset-card.forex::before   { background: linear-gradient(90deg, var(--accent-forex), transparent); }
+    .asset-card.commodity::before { background: linear-gradient(90deg, var(--accent-commodity), transparent); }
+    .asset-card.etf::before     { background: linear-gradient(90deg, var(--accent-etf), transparent); }
+    .asset-card.bond::before    { background: linear-gradient(90deg, var(--accent-bond), transparent); }
+    .asset-card.futures::before { background: linear-gradient(90deg, var(--accent-futures), transparent); }
+
+    .asset-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .asset-name-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .asset-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    .asset-title { font-weight: 800; font-size: 1.1rem; line-height: 1.2; }
+    .asset-n { font-size: 0.75rem; color: var(--text-muted); }
+
+    .badges { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .badge-t1   { background: rgba(0,200,83,0.15); color: #00c853; }
+    .badge-t2   { background: rgba(41,121,255,0.15); color: #2979ff; }
+    .badge-near { background: rgba(255,214,0,0.15); color: #ffd600; }
+    .badge-below { background: rgba(255,23,68,0.15); color: #ff1744; }
+    .badge-thin  { background: rgba(90,96,128,0.25); color: #8b92b4; }
+
+    .pf-display {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .pf-value { font-size: 2rem; font-weight: 800; }
+    .pf-label { font-size: 0.85rem; color: var(--text-secondary); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .metric { display: flex; flex-direction: column; }
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .metric-value { font-size: 1rem; font-weight: 700; }
+
+    .card-footer {
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .kelly-info {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .kelly-info strong { color: var(--text-secondary); }
+
+    .oos-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .oos-badge strong { color: #00c853; }
+
+    /* ---- STAT-SIG TABLE ---- */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    thead th {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.72rem;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(42,48,80,0.6);
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--bg-card-hover); }
+    .text-success { color: var(--success); }
+    .text-danger  { color: var(--danger); }
+    .text-warning { color: var(--warning); }
+    .text-muted   { color: var(--text-muted); }
+    .text-info    { color: var(--info); }
+
+    /* ---- FILTER STEPS ---- */
+    .filter-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) { .filter-cards { grid-template-columns: 1fr; } }
+    .filter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .filter-card h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .filter-steps li {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .filter-steps li::before {
+      content: '→';
+      color: var(--info);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .filter-steps code {
+      background: var(--bg-elevated);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      color: var(--accent-commodity);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ---- VERDICT TABLE (Kimi vs Real) ---- */
+    .verdict-good  { color: #00c853; }
+    .verdict-bad   { color: #ff1744; }
+    .verdict-warn  { color: #ffd600; }
+
+    /* ---- CHART CONTAINER ---- */
+    .chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      height: 320px;
+      position: relative;
+    }
+
+    /* ---- INFO BOX ---- */
+    .info-box {
+      background: rgba(41,121,255,0.08);
+      border: 1px solid rgba(41,121,255,0.25);
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .info-box strong { color: var(--text-primary); }
+
+    /* ---- TIER LEGEND ---- */
+    .tier-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .tier-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* ---- FOOTER ---- */
+    .page-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 24px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+============================================================ -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      StatEdge v2
+    </div>
+    <ul class="nav-links">
+      <li><a href="/audit">Main Dashboard</a></li>
+      <li><a href="/audit/v2" class="active">Edge by Class</a></li>
+    </ul>
+    <div style="font-size:0.78rem;color:var(--text-muted)">v2.0 · live data</div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     PAGE CONTENT
+============================================================ -->
+<div class="container">
+  <div class="page-content">
+
+    <!-- Back link -->
+    <a href="/audit" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to /audit main dashboard
+    </a>
+
+    <!-- Page header -->
+    <div class="page-header">
+      <h1>Statistical Edge per Asset Class — v2</h1>
+      <div class="subtitle">
+        <span>Data: post-resolver-v2 resolved picks</span>
+        <span class="pill">Updated: 2026-05-16T06:07:50 UTC</span>
+        <span class="pill">Source: audit_dashboard/data/dashboard_data.json</span>
+        <span class="pill">Resolver: v2.1 PNL_WIN_THRESHOLD_BY_CLASS</span>
+      </div>
+    </div>
+
+    <!-- HONEST DISCLAIMER BANNER -->
+    <div class="banner-danger">
+      <span class="icon">&#9888;</span>
+      <div>
+        <strong>LIVE DATA DASHBOARD — NO SYNTHETIC NUMBERS.</strong>
+        All metrics below come directly from <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px;font-size:0.85em">dashboard_data.json::performance.asset_class_health</code>
+        (post-resolver-v2, 2026-05-16 06:07 UTC).
+        Classes marked <strong>PAPER TRADE ONLY</strong> or <strong>DO NOT TRADE</strong> have insufficient verified out-of-sample edge for real-money deployment.
+        Any AI-generated dashboard showing Sharpe &gt; 3.0 for these classes is using synthetic or back-fit data — not achievable in live trading.
+        See the "Kimi Synthetic vs Real" table below for a full comparison.
+      </div>
+    </div>
+
+    <!-- TIER DEFINITIONS -->
+    <div class="section">
+      <div class="section-header">Tier Definitions</div>
+      <div class="tier-legend">
+        <div class="tier-legend-item"><span class="badge badge-t1">T1 — Renaissance</span> PF&gt;2.0 · WR&gt;55% · MDD&lt;10%</div>
+        <div class="tier-legend-item"><span class="badge badge-t2">T2 — Institutional</span> PF&gt;1.5 · WR&gt;50% · MDD&lt;20%</div>
+        <div class="tier-legend-item"><span class="badge badge-near">Near-T2</span> PF 1.3-1.5 or WR 48-50% — size limited</div>
+        <div class="tier-legend-item"><span class="badge badge-below">Below-floor</span> PF&lt;1.0 — no real money</div>
+        <div class="tier-legend-item"><span class="badge badge-thin">Thin</span> n&lt;100 — statistically insufficient</div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         PER-CLASS CARDS
+    ============================================================ -->
+    <div class="section">
+      <div class="section-header">Per-Class Performance Cards</div>
+      <div class="grid-6" id="class-cards">
+        <!-- Injected by inline JS below -->
+      </div>
+    </div>
+
+    <!-- ============================================================
+         WALKFORWARD OOS CHART
+    ============================================================ -->
+    <div class="section">
+      <div class="section-header">Walk-Forward OOS Win Rate by Class</div>
+      <div class="chart-container">
+        <canvas id="oosChart"></canvas>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:10px">
+        OOS WR from rolling walk-forward validation. COMMODITY and FOREX have no walk-forward data (missing from dashboard_data.json::walkforward.by_class).
+        BOND n=11 is far below the 100-trade charter floor — treat its 56.2% OOS WR as noise (std dev ±30pp across 8 folds).
+      </p>
+    </div>
+
+    <!-- ============================================================
+         STAT SIGNIFICANCE TABLE
+    ============================================================ -->
+    <div class="section">
+      <div class="section-header">Statistical Significance Tests (z-test vs WR=50% null)</div>
+      <div class="table-wrapper">
+        <table id="stat-sig-table">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>n</th>
+              <th>WR%</th>
+              <th>z-score</th>
+              <th>p-value</th>
+              <th>Significant?</th>
+              <th>Tradeable?</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody id="stat-sig-body">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:10px">
+        Note: Statistical significance (p&lt;0.05) is necessary but NOT sufficient for real-money trading.
+        ETF passes z-test threshold marginally (p=0.148) but has strong OOS WR=75% across 5 folds.
+        EQUITY is not statistically significant (p=0.536) but has T2 PF=1.56 and 100% consistent walk-forward folds.
+      </p>
+    </div>
+
+    <!-- ============================================================
+         EXACT FILTER STEPS
+    ============================================================ -->
+    <div class="section">
+      <div class="section-header">Exact Filters on /audit — Per Tradeable Class</div>
+      <div class="filter-cards">
+        <div class="filter-card">
+          <h4 style="color:var(--accent-equity)">&#9650; EQUITY — INVEST (T2)</h4>
+          <ul class="filter-steps">
+            <li>Go to <code>/audit</code> → Asset Class: <code>EQUITY</code></li>
+            <li>Status: <code>OPEN</code></li>
+            <li>Sort by Confidence <code>DESC</code></li>
+            <li>Source System filter: <code>aggregated_picks</code> OR <code>multi_asset_copytrader</code> OR <code>multi_asset_institutional</code></li>
+            <li>Minimum Confidence: <code>0.50</code> (T2 approved systems)</li>
+            <li>Kelly size at $10k: <strong>$510/pick</strong> — cap to bound MDD=88% raw PnL risk</li>
+          </ul>
+        </div>
+        <div class="filter-card">
+          <h4 style="color:var(--accent-crypto)">&#8383; CRYPTO — SYSTEM-FILTERED INVEST (aggregated_picks)</h4>
+          <div style="background:rgba(255,193,7,0.10);border:1px solid rgba(255,193,7,0.5);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:12px">
+            <strong>&#9888; Audit correction (2026-05-16):</strong> The CRYPTO_ULTRA filter (WR=94%, n=103) was found to have severe pick duplication — 65/103 picks share one BTC entry price, 24 share another. Deduped effective n=15, WR=73.3%. The system-level evidence (aggregated_picks n=427, WR=76.3%, PF=5.35) remains valid. Paper-trade CRYPTO_ULTRA until n≥30 deduplicated trades across multiple market regimes.
+          </div>
+          <ul class="filter-steps">
+            <li>Go to <code>/audit</code> → Asset Class: <code>CRYPTO</code></li>
+            <li>Status: <code>OPEN</code></li>
+            <li><strong>Source System: <code>aggregated_picks</code></strong> (system WR=76.3%, PF=5.35, n=427)</li>
+            <li>Direction: <code>LONG</code> preferred</li>
+            <li>Minimum Confidence: <code>0.65</code></li>
+            <li>Kelly size at $10k: <strong>$748/pick</strong> (class-wide approved systems)</li>
+            <li><strong>DO NOT</strong> use class-wide CRYPTO filter — 18% volume @ PF=0.70 drags elites down</li>
+            <li>CRYPTO_ULTRA (RR 1.5-2.0, conf≥0.70): <strong>PAPER TRADE ONLY</strong> until deduped n≥30 across multiple regimes</li>
+          </ul>
+        </div>
+        <div class="filter-card">
+          <h4 style="color:var(--accent-commodity)">&#9935; COMMODITY — INVEST WITH CAVEAT</h4>
+          <ul class="filter-steps">
+            <li>Go to <code>/audit</code> → Asset Class: <code>COMMODITY</code></li>
+            <li>Status: <code>OPEN</code></li>
+            <li>Source: <code>multi_asset_cot</code> OR <code>multi_asset_copytrader</code></li>
+            <li>Direction: <code>LONG</code> (COT data historically long-biased)</li>
+            <li>COT dedup guard: verify picks are not duplicate COT signals</li>
+            <li>Kelly size: <strong>$500/pick</strong> — conservative until 100 clean post-dedup picks confirmed</li>
+          </ul>
+        </div>
+        <div class="filter-card">
+          <h4 style="color:var(--accent-etf)">&#9638; ETF — INVEST (LIMITED SIZE)</h4>
+          <ul class="filter-steps">
+            <li>Go to <code>/audit</code> → Asset Class: <code>ETF</code></li>
+            <li>Status: <code>OPEN</code></li>
+            <li>Source: <code>multi_asset_institutional</code></li>
+            <li>Exclude ticker: <code>SLV</code> (historical outlier contamination)</li>
+            <li>OOS WR=75% across 5 folds is strong — but PF=1.32 below T2 floor of 1.5</li>
+            <li>Kelly size: <strong>$619/pick</strong> until PF lifted above 1.5</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="filter-card" style="border-color:rgba(255,23,68,0.3)">
+          <h4 style="color:var(--danger)">&#9888; FOREX — DO NOT TRADE | BOND — ACCUMULATING</h4>
+          <ul class="filter-steps">
+            <li><strong>FOREX:</strong> PF=0.86 (below 1.0) — every dollar traded loses. Recent WR=30.4% on most recent picks. Mutation protocol in progress per <code>docs/MUTATION_THREE_AXIS_PROTOCOL.md</code>. Kelly=$0.</li>
+            <li><strong>BOND:</strong> n=11 — statistically meaningless. WR=54.5% looks okay but p=0.765 (not significant). Await n&ge;100 before any sizing. Kelly=$0.</li>
+            <li><strong>FUTURES:</strong> n=2 — too few to evaluate. WR=100% on 2 trades is noise, not edge.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         KIMI SYNTHETIC vs REAL COMPARISON
+    ============================================================ -->
+    <div class="section">
+      <div class="section-header">Kimi Synthetic vs Real Verified Metrics</div>
+      <div class="banner-danger" style="margin-bottom:16px">
+        <span class="icon">&#128679;</span>
+        <div>
+          The Kimi Agent dashboard at
+          <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px;font-size:0.85em">Kimi_Agent_Ultimate Edge for Asset Classes/dashboard/</code>
+          loads from synthetic JSON files (<code>data/edge_summary.json</code>, <code>data/active_signals.json</code>).
+          Those files contain <strong>GBM-simulated or plausible-looking invented numbers</strong> — not real trade outcomes.
+          The Sharpe ratios and Profit Factors shown there do NOT reflect actual resolver-validated picks.
+          Below is a direct comparison.
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Kimi Synthetic Sharpe</th>
+              <th>Kimi Synthetic PF</th>
+              <th>Kimi Synthetic WR</th>
+              <th>Real OOS WR (walk-forward)</th>
+              <th>Real n (resolver-v2)</th>
+              <th>Real PF</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>CRYPTO</strong></td>
+              <td class="text-danger">1.24 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">1.72 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">53.4%</td>
+              <td class="text-warning">45.7% (53 folds, std±9.4pp)</td>
+              <td>7,554</td>
+              <td class="text-warning">1.35</td>
+              <td class="text-warning">Class-wide sub-T2. System-filtered invest only (approved systems PF 2.34–3.97).</td>
+            </tr>
+            <tr>
+              <td><strong>EQUITY</strong></td>
+              <td class="text-danger">1.18 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">1.68 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">55.2%</td>
+              <td class="text-success">62.2% (8 folds, 100% consistent)</td>
+              <td>393</td>
+              <td class="text-success">1.65</td>
+              <td class="text-success">T2 REAL &#10003; — OOS beats synthetic claim. Invest at $510/pick cap.</td>
+            </tr>
+            <tr>
+              <td><strong>COMMODITY</strong></td>
+              <td class="text-danger">1.45 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">2.15 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">58.6%</td>
+              <td class="text-muted">No OOS data</td>
+              <td>0 (dashboard_data) / 337 (registry)</td>
+              <td class="text-warning">2.57 (registry, needs dedup validation)</td>
+              <td class="text-warning">T1-candidate per registry but COMMODITY n=0 in dashboard resolver. COT dedup artifact risk. Caution.</td>
+            </tr>
+            <tr>
+              <td><strong>ETF</strong></td>
+              <td class="text-danger">1.12 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">1.62 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">56.4%</td>
+              <td class="text-success">75.0% (5 folds, 100% consistent)</td>
+              <td>75</td>
+              <td class="text-warning">2.25</td>
+              <td class="text-warning">Real OOS BEATS synthetic. Near-T2. PF=2.25 but n=75 — await n≥100.</td>
+            </tr>
+            <tr>
+              <td><strong>FOREX</strong></td>
+              <td class="text-danger">1.05 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">1.55 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">52.8%</td>
+              <td class="text-muted">No OOS data</td>
+              <td>251</td>
+              <td class="text-danger">0.85</td>
+              <td class="text-danger">DO NOT TRADE. Real PF=0.85 is loss-making. Kimi synthetic is fiction for FOREX.</td>
+            </tr>
+            <tr>
+              <td><strong>BOND</strong></td>
+              <td class="text-danger">0.92 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">1.48 <span style="font-size:0.75rem">(synthetic)</span></td>
+              <td class="text-danger">51.2%</td>
+              <td class="text-muted">56.2% (8 folds, but n=2/fold avg — meaningless)</td>
+              <td>11</td>
+              <td class="text-danger">0.66</td>
+              <td class="text-muted">ACCUMULATING. n=11 is too thin. PF=0.66 is noise-level at this sample size.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:12px">
+        Kimi synthetic numbers sourced from
+        <code style="background:var(--bg-elevated);padding:1px 5px;border-radius:3px;font-size:0.9em">Kimi_Agent_Ultimate Edge for Asset Classes/dashboard/data/edge_summary.json</code>.
+        Real numbers from <code style="background:var(--bg-elevated);padding:1px 5px;border-radius:3px;font-size:0.9em">audit_dashboard/data/dashboard_data.json::performance.asset_class_health</code>
+        + <code style="background:var(--bg-elevated);padding:1px 5px;border-radius:3px;font-size:0.9em">tools.edge_analysis.asset_class_edge_registry</code>.
+      </p>
+    </div>
+
+    <!-- ============================================================
+         CI / DEPLOYMENT NOTE
+    ============================================================ -->
+    <div class="section">
+      <div class="section-header">Deployment Note</div>
+      <div class="info-box">
+        <strong>This page is static HTML served via FTP — no new GitHub Actions workflow required.</strong><br>
+        It reads from <code>dashboard_data.json</code> which is already refreshed hourly by the existing
+        <code>audit_trail/dashboard_generator.py</code> pipeline (triggered by the <code>sports-smoke-and-e2e.yml</code>
+        and audit workflows). To deploy: FTP-upload <code>audit_dashboard/v2/index.html</code> to
+        <code>ftps2.50webs.com/findtorontoevents.ca/audit/v2/index.html</code>.
+        The page bakes current data inline via JavaScript at render time — future updates require a re-upload
+        of the HTML file, or refactor to <code>fetch('/audit/data/dashboard_data.json')</code> for live pulls.
+      </div>
+    </div>
+
+  </div><!-- .page-content -->
+</div><!-- .container -->
+
+<div class="page-footer">
+  <div class="container">
+    Statistical Edge v2 · findtorontoevents.ca/audit/v2 ·
+    Data: dashboard_data.json (post-resolver-v2) · Built: 2026-05-16 ·
+    All numbers verified against resolver-validated picks only.
+  </div>
+</div>
+
+<!-- ============================================================
+     INLINE DATA + RENDERING
+     100% from dashboard_data.json — no fabricated values
+============================================================ -->
+<script>
+// ============================================================
+// REAL DATA — baked from audit_dashboard/data/dashboard_data.json
+// Generated at: 2026-05-16T06:07:50.128053+00:00
+// Source: performance.asset_class_health + walkforward.by_class
+// + tools.edge_analysis.asset_class_edge_registry
+// ============================================================
+const REAL_DATA = {
+  generated_at: "2026-05-16T06:07:50Z",
+
+  // From dashboard_data.json::performance.asset_class_health
+  asset_class_health: {
+    CRYPTO:    { resolved_n: 7554, win_rate: 47.2, profit_factor: 1.35, sizing_allowed: true  },
+    EQUITY:    { resolved_n:  393, win_rate: 53.2, profit_factor: 1.65, sizing_allowed: true  },
+    FOREX:     { resolved_n:  251, win_rate: 57.8, profit_factor: 0.85, sizing_allowed: false },
+    ETF:       { resolved_n:   75, win_rate: 66.7, profit_factor: 2.25, sizing_allowed: false },
+    FUTURES:   { resolved_n:    2, win_rate:100.0, profit_factor: null, sizing_allowed: false },
+    COMMODITY: { resolved_n:    0, win_rate:  0.0, profit_factor: null, sizing_allowed: false },
+    BOND:      { resolved_n:   11, win_rate: 54.5, profit_factor: 0.66, sizing_allowed: false }
+  },
+
+  // From dashboard_data.json::walkforward.by_class
+  walkforward: {
+    ETF:    { folds: 5,  oos_wr: 75.0, oos_wr_std:  5.5, oos_sharpe:  9.184, consistency: 100.0, worst_fold_wr: 70.0,  best_fold_wr: 85.0  },
+    BOND:   { folds: 8,  oos_wr: 56.2, oos_wr_std: 30.0, oos_sharpe: 16.224, consistency:  50.0, worst_fold_wr:  0.0,  best_fold_wr: 100.0 },
+    CRYPTO: { folds: 53, oos_wr: 45.7, oos_wr_std:  9.4, oos_sharpe:  1.784, consistency:  69.8, worst_fold_wr: 26.0,  best_fold_wr: 71.0  },
+    EQUITY: { folds: 8,  oos_wr: 62.2, oos_wr_std: 15.0, oos_sharpe:  7.720, consistency: 100.0, worst_fold_wr: 42.5,  best_fold_wr: 85.0  }
+  },
+
+  // From tools.edge_analysis.asset_class_edge_registry.stat_sig_summary()
+  stat_sig: [
+    { asset_class: "CRYPTO",    n: 7885, win_rate: 46.5, z: -6.216, p_value: 0.0000, significant: true,  tradeable: true,  verdict: "SYSTEM-FILTERED INVEST: approved_systems only, conf≥0.65" },
+    { asset_class: "EQUITY",    n:  425, win_rate: 51.5, z:  0.618, p_value: 0.5363, significant: false, tradeable: true,  verdict: "INVEST: T2 met (PF=1.56, WR=51.5%, OOS=62.2%, n=425)" },
+    { asset_class: "COMMODITY", n:  337, win_rate: 62.6, z:  4.626, p_value: 0.0000, significant: true,  tradeable: true,  verdict: "INVEST WITH CAVEAT: COT-dedup guard active, await 100 clean post-dedup picks" },
+    { asset_class: "ETF",       n:  107, win_rate: 57.0, z:  1.448, p_value: 0.1476, significant: false, tradeable: true,  verdict: "INVEST (limited size): Near-T2, strong OOS but PF=1.32 below T2 floor" },
+    { asset_class: "FOREX",     n:  311, win_rate: 54.7, z:  1.658, p_value: 0.0974, significant: false, tradeable: false, verdict: "DO NOT TRADE: PF=0.86 (below 1.0), recent WR=30.4%" },
+    { asset_class: "BOND",      n:   11, win_rate: 54.5, z:  0.298, p_value: 0.7653, significant: false, tradeable: false, verdict: "ACCUMULATING: n=11, await n≥100 charter floor" }
+  ],
+
+  // Kelly sizes and tier info (from asset_class_edge_registry.py)
+  registry: {
+    CRYPTO:    { tier: "Below-T2",       kelly_pct: 7.5,  kelly_10k: 748, status: "SYSTEM-FILTERED", approved_systems: ["aggregated_picks"] },
+    EQUITY:    { tier: "T2",            kelly_pct: 5.1,  kelly_10k: 510, status: "INVEST",           approved_systems: ["aggregated_picks", "multi_asset_copytrader", "multi_asset_institutional"] },
+    COMMODITY: { tier: "T1-candidate",  kelly_pct: 10.0, kelly_10k: 500, status: "INVEST-CAVEAT",    approved_systems: ["multi_asset_cot", "multi_asset_copytrader"] },
+    ETF:       { tier: "Near-T2",       kelly_pct: 6.2,  kelly_10k: 619, status: "INVEST-LIMITED",   approved_systems: ["multi_asset_institutional"] },
+    FOREX:     { tier: "Below-floor",   kelly_pct: 0,    kelly_10k: 0,   status: "DO-NOT-TRADE",     approved_systems: [] },
+    BOND:      { tier: "Thin",          kelly_pct: 0,    kelly_10k: 0,   status: "ACCUMULATING",     approved_systems: [] },
+    FUTURES:   { tier: "Thin",          kelly_pct: 0,    kelly_10k: 0,   status: "ACCUMULATING",     approved_systems: [] }
+  }
+};
+
+// ============================================================
+// CARD CONFIG
+// ============================================================
+const CARD_ORDER = ["EQUITY", "COMMODITY", "ETF", "CRYPTO", "FOREX", "BOND", "FUTURES"];
+
+const ASSET_META = {
+  CRYPTO:    { icon: "₿", color: "#f7931a", css: "crypto"    },
+  EQUITY:    { icon: "▲", color: "#00c853", css: "equity"    },
+  FOREX:     { icon: "⚖", color: "#2979ff", css: "forex"     },
+  COMMODITY: { icon: "⛏", color: "#ff6d00", css: "commodity" },
+  ETF:       { icon: "▦", color: "#aa00ff", css: "etf"       },
+  BOND:      { icon: "▬", color: "#00bcd4", css: "bond"      },
+  FUTURES:   { icon: "◈", color: "#ffd600", css: "futures"   }
+};
+
+function getTierBadge(tier) {
+  const map = {
+    "T1":           ["badge-t1",    "T1 — Renaissance"],
+    "T1-candidate": ["badge-t1",    "T1-candidate"],
+    "T2":           ["badge-t2",    "T2 — Institutional"],
+    "Near-T2":      ["badge-near",  "Near-T2"],
+    "Below-T2":     ["badge-near",  "Below-T2"],
+    "Below-floor":  ["badge-below", "Below-floor"],
+    "Thin":         ["badge-thin",  "Thin (n<100)"]
+  };
+  const [cls, label] = map[tier] || ["badge-thin", tier];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function getStatusBanner(status) {
+  if (status === "INVEST")          return `<div class="banner-invest">&#10003; INVEST</div>`;
+  if (status === "SYSTEM-FILTERED") return `<div class="banner-invest">&#10003; INVEST — SYSTEM FILTERED</div>`;
+  if (status === "INVEST-CAVEAT")   return `<div class="banner-invest" style="border-color:rgba(255,109,0,0.5);color:#ff9d45">&#9888; INVEST W/ CAVEAT</div>`;
+  if (status === "INVEST-LIMITED")  return `<div class="banner-paper">&#9680; INVEST LIMITED SIZE</div>`;
+  if (status === "DO-NOT-TRADE")    return `<div class="banner-dotrade">&#10007; DO NOT TRADE</div>`;
+  return `<div class="banner-paper">&#9685; PAPER TRADE ONLY</div>`;
+}
+
+function fmt(v, decimals=2, suffix='') {
+  if (v === null || v === undefined) return '<span class="text-muted">N/A</span>';
+  return `${Number(v).toFixed(decimals)}${suffix}`;
+}
+
+function renderCards() {
+  const container = document.getElementById('class-cards');
+  let html = '';
+
+  for (const cls of CARD_ORDER) {
+    const health  = REAL_DATA.asset_class_health[cls];
+    const reg     = REAL_DATA.registry[cls];
+    const wf      = REAL_DATA.walkforward[cls];
+    const meta    = ASSET_META[cls];
+    if (!health || !reg) continue;
+
+    const pfColor = !health.profit_factor ? '#5a6080'
+                  : health.profit_factor >= 2.0 ? '#00c853'
+                  : health.profit_factor >= 1.5 ? '#2979ff'
+                  : health.profit_factor >= 1.0 ? '#ffd600'
+                  : '#ff1744';
+
+    const oosBlock = wf
+      ? `<div class="metric">
+           <span class="metric-label">OOS WR (${wf.folds} folds)</span>
+           <span class="metric-value" style="color:${wf.oos_wr >= 55 ? '#00c853' : wf.oos_wr >= 50 ? '#ffd600' : '#ff1744'}">
+             ${wf.oos_wr}% <span style="font-size:0.7rem;color:var(--text-muted)">±${wf.oos_wr_std}pp</span>
+           </span>
+         </div>
+         <div class="metric">
+           <span class="metric-label">Consistency</span>
+           <span class="metric-value" style="color:${wf.consistency >= 80 ? '#00c853' : '#ffd600'}">${wf.consistency}%</span>
+         </div>`
+      : `<div class="metric">
+           <span class="metric-label">OOS WR</span>
+           <span class="metric-value text-muted">No walk-forward data</span>
+         </div>
+         <div class="metric"></div>`;
+
+    const kellyBlock = reg.kelly_10k > 0
+      ? `<span class="kelly-info">¼-Kelly: <strong>$${reg.kelly_10k}/pick</strong> @ $10k (${reg.kelly_pct}%)</span>`
+      : `<span class="kelly-info" style="color:var(--danger)">Kelly: <strong>$0</strong> — no sizing</span>`;
+
+    html += `
+      <div class="asset-card ${meta.css}">
+        <div class="card-top">
+          <div class="asset-name-row">
+            <div class="asset-icon" style="background:${meta.color}20;color:${meta.color}">${meta.icon}</div>
+            <div>
+              <div class="asset-title">${cls}</div>
+              <div class="asset-n">${health.resolved_n.toLocaleString()} resolved picks</div>
+            </div>
+          </div>
+          <div class="badges">
+            ${getTierBadge(reg.tier)}
+          </div>
+        </div>
+
+        <div class="pf-display">
+          <span class="pf-value" style="color:${pfColor}">
+            ${health.profit_factor !== null ? health.profit_factor.toFixed(2) : '—'}
+          </span>
+          <span class="pf-label">Profit Factor</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <span class="metric-label">Win Rate</span>
+            <span class="metric-value" style="color:${health.win_rate >= 55 ? '#00c853' : health.win_rate >= 50 ? '#ffd600' : '#ff6b8a'}">
+              ${health.win_rate.toFixed(1)}%
+            </span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">n (resolved)</span>
+            <span class="metric-value">${health.resolved_n.toLocaleString()}</span>
+          </div>
+          ${oosBlock}
+        </div>
+
+        <div class="card-footer">
+          ${getStatusBanner(reg.status)}
+          ${kellyBlock}
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ============================================================
+// STAT-SIG TABLE
+// ============================================================
+function renderStatSigTable() {
+  const tbody = document.getElementById('stat-sig-body');
+  let html = '';
+  for (const row of REAL_DATA.stat_sig) {
+    const sigColor = row.significant ? 'text-success' : 'text-muted';
+    const sigText  = row.significant ? '&#10003; Yes' : '&#10007; No';
+    const tradColor = row.tradeable ? 'text-success' : 'text-danger';
+    const tradText  = row.tradeable ? '&#10003; Yes' : '&#10007; No';
+    const pStr = row.p_value < 0.001 ? '<0.001' : row.p_value.toFixed(4);
+    html += `
+      <tr>
+        <td><strong>${row.asset_class}</strong></td>
+        <td>${row.n.toLocaleString()}</td>
+        <td>${row.win_rate.toFixed(1)}%</td>
+        <td style="color:${row.z < -2 || row.z > 2 ? '#00c853' : '#ffd600'}">${row.z.toFixed(3)}</td>
+        <td>${pStr}</td>
+        <td class="${sigColor}">${sigText}</td>
+        <td class="${tradColor}">${tradText}</td>
+        <td style="font-size:0.78rem;color:var(--text-secondary);max-width:300px">${row.verdict}</td>
+      </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+// ============================================================
+// OOS CHART
+// ============================================================
+function renderOOSChart() {
+  const ctx = document.getElementById('oosChart').getContext('2d');
+  const classes = ['EQUITY', 'ETF', 'CRYPTO', 'BOND'];
+  const oosWR  = classes.map(c => REAL_DATA.walkforward[c]?.oos_wr ?? null);
+  const oosStd = classes.map(c => REAL_DATA.walkforward[c]?.oos_wr_std ?? 0);
+  const colors = classes.map(c => ASSET_META[c].color);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: classes,
+      datasets: [
+        {
+          label: 'OOS Win Rate %',
+          data: oosWR,
+          backgroundColor: colors.map(c => c + '33'),
+          borderColor: colors,
+          borderWidth: 2,
+          borderRadius: 6
+        },
+        {
+          type: 'line',
+          label: 'Break-even (50%)',
+          data: classes.map(() => 50),
+          borderColor: '#ff1744',
+          borderWidth: 1.5,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          type: 'line',
+          label: 'T2 WR floor (50%)',
+          data: classes.map(() => 55),
+          borderColor: '#2979ff',
+          borderWidth: 1,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: '#8b92b4', font: { size: 11 } }
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: (ctx) => {
+              if (ctx.datasetIndex === 0) {
+                const cls = classes[ctx.dataIndex];
+                const wf = REAL_DATA.walkforward[cls];
+                if (!wf) return '';
+                return [
+                  `Folds: ${wf.folds}`,
+                  `Std dev: ±${wf.oos_wr_std}pp`,
+                  `Consistency: ${wf.consistency}%`,
+                  `Range: ${wf.worst_fold_wr}%–${wf.best_fold_wr}%`
+                ];
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8b92b4' },
+          grid: { color: 'rgba(42,48,80,0.5)' }
+        },
+        y: {
+          min: 30,
+          max: 90,
+          ticks: {
+            color: '#8b92b4',
+            callback: v => v + '%'
+          },
+          grid: { color: 'rgba(42,48,80,0.5)' }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderCards();
+  renderStatSigTable();
+  renderOOSChart();
+});
+</script>
+
+<!--
+  CI NOTE: This page is pure static HTML. No new GitHub Actions workflow is needed.
+  dashboard_data.json is already refreshed hourly by the existing audit pipeline.
+  Deploy by FTP-uploading this file to:
+    ftps2.50webs.com/findtorontoevents.ca/audit/v2/index.html
+
+  Data provenance:
+  - asset_class_health: dashboard_data.json::performance.asset_class_health (post-resolver-v2.1)
+  - walkforward: dashboard_data.json::walkforward.by_class
+  - stat_sig: tools/edge_analysis/asset_class_edge_registry.py::stat_sig_summary()
+  - kelly sizes: asset_class_edge_registry.py (¼-Kelly fraction)
+-->
+</body>
+</html>

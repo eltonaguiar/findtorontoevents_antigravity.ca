@@ -1,0 +1,43 @@
+name: Daily Runs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_dispatch:
+
+jobs:
+  run-daily:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    env:
+      SM_API_BASE: ${{ secrets.SM_API_BASE }}
+      SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance numpy hmmlearn requests xgboost pandas arch scipy
+
+      - name: Run HMM regime
+        run: cd scripts && python hmm_regime.py
+
+      - name: Run Kelly sizer
+        run: cd scripts && python kelly_sizer.py
+
+      - name: Run correlation pruner
+        run: cd scripts && python corr_pruner.py
+
+      - name: Run meta labeler training
+        run: cd scripts && python meta_label.py
+
+      - name: Run GARCH vol forecast
+        run: cd scripts && python garch_vol.py
+

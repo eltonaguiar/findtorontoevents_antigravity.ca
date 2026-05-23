@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crypto Paper Pilot — mega_mutation</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg: #0b1020; --card: #111a33; --border: #1f2a4a;
+    --text: #e7ecff; --muted: #94a3b8;
+    --green: #22c55e; --red: #ef4444; --amber: #facc15; --cyan: #06b6d4; --violet: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 0; }
+  header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #111a33, #0b1020); position: sticky; top: 0; z-index: 10; }
+  header h1 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  nav { padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--card); display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+  nav a { color: var(--cyan); text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+  main { padding: 16px 20px; max-width: 1400px; margin: 0 auto; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat { font-size: 22px; font-weight: 600; line-height: 1.1; }
+  .stat.green { color: var(--green); }
+  .stat.red { color: var(--red); }
+  .stat.amber { color: var(--amber); }
+  .stat.cyan { color: var(--cyan); }
+  .stat-sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.t1 { background: rgba(167,139,250,0.15); color: var(--violet); }
+  .badge.green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge.red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge.amber { background: rgba(250,204,21,0.15); color: var(--amber); }
+  .badge.cyan { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  section { margin: 20px 0; }
+  section h2 { font-size: 14px; margin: 0 0 10px; color: var(--text); border-left: 3px solid var(--cyan); padding-left: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; background: var(--card); position: sticky; top: 0; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.won td.status { color: var(--green); }
+  tr.lost td.status { color: var(--red); }
+  tr.open td.status { color: var(--amber); }
+  .equity-curve { width: 100%; height: 180px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+  .nfa-banner { background: linear-gradient(90deg, rgba(250,204,21,0.10), rgba(167,139,250,0.10)); border: 1px solid rgba(250,204,21,0.4); padding: 8px 12px; border-radius: 6px; color: var(--amber); font-size: 12px; margin-bottom: 12px; }
+  .blockers { font-size: 12px; color: var(--muted); }
+  .blockers li { margin: 4px 0; }
+  .loading { padding: 40px; text-align: center; color: var(--muted); }
+  .err { padding: 12px; background: rgba(239,68,68,0.10); border: 1px solid var(--red); color: #fca5a5; border-radius: 6px; }
+  details { margin: 8px 0; }
+  summary { cursor: pointer; color: var(--cyan); font-size: 12px; padding: 4px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Crypto Paper Pilot — <code style="color:var(--violet)">mega_mutation</code> · <code style="color:var(--cyan)">CRYPTO</code></h1>
+  <div class="sub">SHADOW forward-tracker · in-sample n=72 PF 2.19 WR 56.9% · API-failover live resolution · <strong style="color:var(--amber)">NFA — paper only, never real capital</strong></div>
+</header>
+<nav>
+  <a href="/audit/">&larr; /audit dashboard</a>
+  <a href="/audit/paper_pilot.html">COT Paper Pilot</a>
+  <a href="/audit/edge_stability.html">Edge stability harness</a>
+  <a href="/audit/anti_overfit.html">DSR audit</a>
+  <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity/blob/main/reports/PER_CLASS_CANDIDATE_TRADES_2026-05-18.md" target="_blank" rel="noopener">Candidate-set report</a>
+  <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity/blob/main/reports/MAGIC_FILTER_HUNT_2026-05-18.md" target="_blank" rel="noopener">Magic-filter hunt</a>
+</nav>
+<main id="root">
+  <div class="loading">Loading paper-pilot status&hellip;</div>
+</main>
+<script>
+'use strict';
+
+const DATA_URL = 'data/crypto_mega_mutation_paper_pilot.json';
+
+function fmtPct(v) {
+  if (v == null || isNaN(v)) return '—';
+  return Number(v).toFixed(2) + '%';
+}
+function fmtNum(v, dp) {
+  if (v == null || isNaN(v)) return '—';
+  return Number(v).toFixed(dp == null ? 4 : dp);
+}
+function gateBadge(verdict) {
+  if (verdict === 'FORWARD_CONFIRMED') return '<span class="badge green">FORWARD CONFIRMED</span>';
+  if (verdict === 'HOLDING') return '<span class="badge cyan">HOLDING</span>';
+  if (verdict === 'FORWARD_FAILED') return '<span class="badge red">FORWARD FAILED</span>';
+  if (verdict === 'INSUFFICIENT_DATA') return '<span class="badge amber">INSUFFICIENT DATA</span>';
+  return '<span class="badge red">' + (verdict || 'UNKNOWN') + '</span>';
+}
+
+function renderEquityCurve(trades) {
+  if (!trades || trades.length < 2) return '';
+  const ys = trades.map(t => Number(t.cum_pnl_pct) || 0);
+  const w = 1200, h = 160, pad = 8;
+  const yMin = Math.min(0, ...ys), yMax = Math.max(0, ...ys);
+  const yRange = (yMax - yMin) || 1;
+  const stepX = (w - 2 * pad) / Math.max(1, ys.length - 1);
+  const pts = ys.map((y, i) => {
+    const x = pad + i * stepX;
+    const py = h - pad - ((y - yMin) / yRange) * (h - 2 * pad);
+    return x.toFixed(1) + ',' + py.toFixed(1);
+  }).join(' ');
+  const zeroY = h - pad - ((0 - yMin) / yRange) * (h - 2 * pad);
+  const last = ys[ys.length - 1];
+  const stroke = last >= 0 ? '#22c55e' : '#ef4444';
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="equity-curve">' +
+    '<line x1="' + pad + '" x2="' + (w - pad) + '" y1="' + zeroY.toFixed(1) + '" y2="' + zeroY.toFixed(1) + '" stroke="#334155" stroke-dasharray="4 4"/>' +
+    '<polyline fill="none" stroke="' + stroke + '" stroke-width="1.8" points="' + pts + '"/>' +
+    '<text x="' + (w - pad - 4) + '" y="14" text-anchor="end" fill="#94a3b8" font-size="11">cum_pnl ' + fmtPct(last) + '</text>' +
+    '<text x="' + (pad + 4) + '" y="14" fill="#94a3b8" font-size="11">' + ys.length + ' resolved trades</text>' +
+    '</svg>';
+}
+
+function renderTradesTable(trades) {
+  if (!trades || !trades.length) return '<div class="loading">No forward-resolved trades yet.</div>';
+  const rows = trades.slice().reverse().slice(0, 200).map(t => {
+    const cls = t.status === 'WON' ? 'won' : 'lost';
+    return '<tr class="' + cls + '">' +
+      '<td>' + (t.exit_ts || '').slice(0, 16).replace('T', ' ') + '</td>' +
+      '<td>' + (t.symbol || '') + '</td>' +
+      '<td>' + (t.direction || '') + '</td>' +
+      '<td class="status">' + t.status + '</td>' +
+      '<td>' + (t.exit_reason || '') + '</td>' +
+      '<td class="num">' + fmtNum(t.entry_price) + '</td>' +
+      '<td class="num">' + fmtNum(t.exit_price) + '</td>' +
+      '<td class="num">' + fmtPct(t.pnl_pct) + '</td>' +
+      '<td class="num">' + fmtPct(t.cum_pnl_pct) + '</td>' +
+      '</tr>';
+  }).join('');
+  return '<div style="overflow-x:auto;max-height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:6px"><table>' +
+    '<thead><tr><th>exit</th><th>symbol</th><th>dir</th><th>status</th><th>reason</th><th>entry</th><th>exit$</th><th>pnl%</th><th>cum%</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+
+function renderOpenTable(picks) {
+  const open = (picks || []).filter(p => p.status === 'OPEN');
+  if (!open.length) return '<div class="loading">No open picks — all forward-resolved.</div>';
+  const rows = open.slice(0, 200).map(p =>
+    '<tr class="open">' +
+      '<td>' + (p.pick_id || '') + '</td>' +
+      '<td>' + (p.symbol || '') + '</td>' +
+      '<td>' + (p.direction || '') + '</td>' +
+      '<td class="num">' + fmtNum(p.entry_price) + '</td>' +
+      '<td class="num">' + fmtNum(p.take_profit) + '</td>' +
+      '<td class="num">' + fmtNum(p.stop_loss) + '</td>' +
+      '<td class="num">' + fmtNum(p.last_price) + '</td>' +
+      '<td class="status">OPEN</td>' +
+    '</tr>').join('');
+  return '<div style="overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:6px"><table>' +
+    '<thead><tr><th>id</th><th>symbol</th><th>dir</th><th>entry</th><th>tp</th><th>sl</th><th>last</th><th>status</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+
+function render(p) {
+  const root = document.getElementById('root');
+  const s = p.stats || {};
+  const g = p.graduation_gate || {};
+  const sm = p.state_machine || {};
+  const ins = p.in_sample_reference || {};
+  const pf = (typeof s.profit_factor === 'number') ? s.profit_factor : null;
+  const wrColor = s.wr_pct >= 55 ? 'green' : (s.wr_pct >= 50 ? 'amber' : 'red');
+  const pfColor = pf == null ? 'amber' : (pf >= 1.5 ? 'green' : (pf >= 1.0 ? 'amber' : 'red'));
+  const cumColor = (s.cum_pnl_pct || 0) >= 0 ? 'green' : 'red';
+
+  root.innerHTML =
+    '<div class="nfa-banner">⚠ ' + (p.nfa || 'NFA — paper only.') + '</div>' +
+    '<section><h2>Pilot identity</h2>' +
+      '<div class="grid">' +
+        '<div class="card"><h3>Strategy</h3><div class="stat cyan">' + (p.strategy_name || '?') + '</div><div class="stat-sub">' + (p.asset_class || '?') + ' · ' + (p.pilot_kind || '') + '</div></div>' +
+        '<div class="card"><h3>In-sample reference</h3><div class="stat">PF ' + fmtNum(ins.pf, 2) + '</div><div class="stat-sub">n=' + (ins.n || 0) + ' · WR ' + fmtNum(ins.wr_pct, 1) + '% · +' + fmtNum(ins.total_pnl_pct, 1) + '%</div></div>' +
+        '<div class="card"><h3>Graduation gate</h3><div class="stat">' + gateBadge(g.verdict) + '</div><div class="stat-sub">' + (g.detail || '') + '</div></div>' +
+        '<div class="card"><h3>Generated</h3><div class="stat" style="font-size:14px">' + (p.generated_at || '').slice(0, 19).replace('T', ' ') + 'Z</div><div class="stat-sub">max hold ' + (p.max_hold_days || 0) + 'd</div></div>' +
+      '</div></section>' +
+    '<section><h2>Forward paper P&amp;L</h2>' +
+      '<div class="grid">' +
+        '<div class="card"><h3>Resolved trades</h3><div class="stat">' + (s.n_total || 0) + '</div><div class="stat-sub">' + (s.n_wins || 0) + ' won · ' + (s.n_losses || 0) + ' lost · ' + (s.n_open || 0) + ' open</div></div>' +
+        '<div class="card"><h3>Forward win rate</h3><div class="stat ' + wrColor + '">' + fmtPct(s.wr_pct) + '</div><div class="stat-sub">in-sample ' + fmtNum(ins.wr_pct, 1) + '%</div></div>' +
+        '<div class="card"><h3>Profit factor</h3><div class="stat ' + pfColor + '">' + (pf == null ? '—' : fmtNum(pf, 2)) + '</div><div class="stat-sub">forward-confirm floor ≥ 1.5</div></div>' +
+        '<div class="card"><h3>Cumulative pnl</h3><div class="stat ' + cumColor + '">' + fmtPct(s.cum_pnl_pct) + '</div><div class="stat-sub">avg ' + fmtPct(s.avg_pnl_per_trade_pct) + ' / trade</div></div>' +
+      '</div>' +
+      '<div style="margin-top:12px">' + renderEquityCurve(s.trades) + '</div>' +
+    '</section>' +
+    '<section><h2>State machine</h2>' +
+      '<div class="card">' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">' +
+          '<span class="badge t1">' + (sm.current_state || '?') + '</span>' +
+          '<span style="color:var(--muted)">→</span>' +
+          '<span class="badge amber">' + (sm.next_state || '?') + '</span>' +
+          '<span style="color:var(--muted)">→</span>' +
+          '<span class="badge green">' + (sm.target_state || '?') + '</span>' +
+        '</div>' +
+        '<div class="blockers"><strong>Notes:</strong><ul>' +
+          (sm.notes || []).map(b => '<li>' + b + '</li>').join('') +
+        '</ul></div>' +
+      '</div></section>' +
+    '<section><h2>Open picks (' + (s.n_open || 0) + ')</h2>' +
+      '<details open><summary>Show open ledger</summary>' + renderOpenTable(p.picks) + '</details>' +
+    '</section>' +
+    '<section><h2>Forward-resolved trades</h2>' +
+      '<details><summary>Show resolved ledger (' + (s.trades || []).length + ' rows)</summary>' +
+        renderTradesTable(s.trades) +
+      '</details></section>' +
+    '<section><h2>Resolution &amp; evidence</h2>' +
+      '<div class="card"><div class="stat-sub" style="font-size:12px;color:var(--text)">' + (p.evidence_source || '?') + '</div>' +
+        '<div class="stat-sub" style="margin-top:6px">API-failover chain: ' + (p.api_failover_chain || []).join(' → ') + '</div>' +
+        '<div class="stat-sub" style="margin-top:6px">Seed source: <code>' + (p.seed_source || '?') + '</code></div>' +
+      '</div>' +
+    '</section>';
+}
+
+fetch(DATA_URL + '?t=' + Date.now())
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(render)
+  .catch(e => {
+    document.getElementById('root').innerHTML = '<div class="err">Failed to load <code>' + DATA_URL + '</code>: ' + e.message + '</div>';
+  });
+</script>
+</body>
+</html>

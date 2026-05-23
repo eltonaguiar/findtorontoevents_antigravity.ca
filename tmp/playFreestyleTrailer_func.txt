@@ -1,0 +1,19 @@
+function playFreestyleTrailer(index) {
+            const item = freestyleResults[index];
+            if (!item || !item.trailer_id) return;
+
+            // Close freestyle overlay and play in the main player
+            closeFreestyle();
+
+            const tempMovie = makeFreestyleMovie(item);
+
+            // Add to filtered movies temporarily and play
+            filteredMovies = [tempMovie, ...filteredMovies];
+            currentIndex = 0;
+            renderMovies(filteredMovies);
+            if (typeof playTrailer === 'function') {
+                playTrailer(0);
+            }
+        }
+
+        

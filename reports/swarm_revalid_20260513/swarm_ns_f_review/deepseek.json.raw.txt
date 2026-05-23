@@ -1,0 +1,18 @@
+```json
+{
+  "verdict": "APPROVE_WITH_CAVEATS",
+  "merge_decision": "MERGE",
+  "code_quality_score": 8,
+  "concerns": [
+    "Environment variable default ON may cause unexpected rejections in dev/test if not explicitly set",
+    "btc_below_200ma boolean fallback could be stale if not refreshed per pick cycle",
+    "No logging/warning when gate triggers (only audit trail reason set)"
+  ],
+  "missing_edge_cases": [
+    "Case where btc_regime key exists but value is None/empty string (currently passes through as not bear)",
+    "Case where direction is 'LONG' but signal_type is 'BUY' (both handled, but mixed casing like 'Long' not tested explicitly)",
+    "Case where btc_below_200ma is explicitly False vs missing key (both treated as non-bear, which is correct)"
+  ],
+  "stacking_concern_with_existing_gates": "low — NS-D fires first on ml_crypto_pred LONG, NS-F catches remaining CRYPTO LONGs in bear regime. No double-reject since NS-D only applies to specific signal source, not universal CRYPTO LONG."
+}
+```

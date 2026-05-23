@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMI_CLAW_CHATBOT_2026-02-17 - Algorithm Battle Royale</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🐾</div>
+                    <div class="logo-text">
+                        <h1>KIMI_CLAW_CHATBOT_2026-02-17</h1>
+                        <p>
+                            Algorithm Battle Royale
+                            <span id="dataSourceBadge" style="background: #3b82f6; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: 600; cursor: help;" title="Click for data audit trail">🔴 LIVE DATA</span>
+                        </p>
+                        <div style="margin-top: 4px; font-size: 11px; color: #8888aa; display: flex; gap: 4px;">
+                            <button id="btnLiveMode" onclick="setDataMode('live')" class="mode-toggle-btn active" style="background: #3b82f6; border: 1px solid #3b82f6; color: #ffffff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; transition: all 0.2s;">LIVE</button>
+                            <button id="btnBacktestMode" onclick="setDataMode('backtest')" class="mode-toggle-btn" style="background: transparent; border: 1px solid #22c55e; color: #22c55e; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; transition: all 0.2s;">BACK-TEST</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <div class="last-updated">
+                        <span class="pulse-dot"></span>
+                        <span id="lastUpdated">Updating...</span>
+                    </div>
+                    <div class="refresh-toggle">
+                        <label>Auto-refresh:</label>
+                        <select id="refreshInterval" onchange="setRefreshInterval()">
+                            <option value="30" selected>30s</option>
+                            <option value="60">1m</option>
+                            <option value="300">5m</option>
+                            <option value="0">Off</option>
+                        </select>
+                    </div>
+                    <button class="btn-refresh" onclick="manualRefresh()" title="Refresh Now">
+                        🔄
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Launch Status Banner (shown when in LIVE mode with no active trades) -->
+        <div id="launchStatusBanner" style="display: none; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); padding: 16px; margin: 0; border-bottom: 2px solid #60a5fa;">
+            <div style="max-width: 1400px; margin: 0 auto;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 32px; animation: pulse 2s infinite;">🚀</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+                            LIVE Competition Launched - February 16, 2026
+                        </div>
+                        <div style="font-size: 13px; color: #e0e7ff; line-height: 1.5;">
+                            All 10 algorithms started with <strong>$10,000</strong> and are now scanning markets for their first entry signals.
+                            <strong>Picks and performance will appear here as algorithms make trades.</strong>
+                            Dashboard updates automatically every 15 minutes.
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: #bfdbfe; text-transform: uppercase; margin-bottom: 2px;">Next Update</div>
+                        <div id="nextUpdateTime" style="font-size: 14px; font-weight: 600; color: #ffffff;">~15 min</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ML EXPLAINER — How KIMI's Brain Works -->
+        <div style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #30363d;border-radius:10px;padding:16px 20px;margin:0 20px 16px;line-height:1.7;font-family:'SF Mono','Fira Code',monospace">
+          <div style="font-size:15px;font-weight:700;color:#a855f7;margin-bottom:10px">How KIMI's Machine Learning Works (Plain English)</div>
+          <div style="font-size:12px;color:#e0e0e8">
+            <p style="margin-bottom:10px"><strong style="color:#22c55e">What are the 81 algorithms?</strong> &mdash; KIMI runs 81 different trading strategies simultaneously &mdash; like 81 expert traders each with their own style. Some watch for whale wallet movements, others track funding rates, some follow momentum, others look for oversold bounces. Each algorithm scans the market independently every 15 minutes.</p>
+            <p style="margin-bottom:10px"><strong style="color:#22c55e">What is the ML Signal Ranker?</strong> &mdash; Not all 81 algorithms are equally good. The ML Signal Ranker uses a <strong>Random Forest</strong> model to learn which algorithms are actually winning trades in the current market. Think of it like a sports coach who tracks which players score the most goals, then gives them more playing time.</p>
+            <p style="margin-bottom:10px"><strong style="color:#22c55e">What is Random Forest?</strong> &mdash; Imagine you ask 100 different decision trees (like flowcharts) to vote on whether an algorithm's signal will win. Each tree was trained on slightly different data, so they each have a unique perspective. The majority vote becomes the prediction. It's called a "forest" because it's many trees working together.</p>
+            <p style="margin-bottom:10px"><strong style="color:#22c55e">Heuristic vs ML mode:</strong> &mdash; KIMI starts in <strong style="color:#f59e0b">heuristic mode</strong> (rule-based scoring using win rate + Sharpe ratio). Once 50+ trades are closed, it automatically trains the Random Forest model and switches to <strong style="color:#3b82f6">ML mode</strong> &mdash; learning from real results instead of just rules. Current status: <strong style="color:#f59e0b">Heuristic</strong> (accumulating trade data).</p>
+            <p style="margin-bottom:10px"><strong style="color:#22c55e">How does ranking affect picks?</strong> &mdash; Each algorithm gets a weight from 0.1 (weak) to 0.75 (strong). Higher-weighted algorithms get larger position sizes. Algorithms that keep losing get their weight reduced, and eventually get eliminated from the competition entirely.</p>
+            <p><strong style="color:#22c55e">The Elimination Engine:</strong> &mdash; Algorithms that perform badly go through: <span style="color:#f59e0b">Active</span> &rarr; <span style="color:#ff8844">Danger Zone</span> (3 failures) &rarr; <span style="color:#ff4444">Probation</span> (5 failures) &rarr; <span style="color:#888">Eliminated</span>. New challenger algorithms can replace eliminated ones. It's survival of the fittest.</p>
+          </div>
+        </div>
+
+        <!-- Category Filter -->
+        <nav class="category-nav">
+            <button class="cat-btn active" data-category="all" onclick="filterCategory('all')">
+                <span class="cat-icon">🏆</span>
+                <span>All Algorithms</span>
+            </button>
+            <button class="cat-btn" data-category="stock" onclick="filterCategory('stock')">
+                <span class="cat-icon">📈</span>
+                <span>Stocks</span>
+            </button>
+            <button class="cat-btn" data-category="penny" onclick="filterCategory('penny')">
+                <span class="cat-icon">💎</span>
+                <span>Penny Stocks</span>
+            </button>
+            <button class="cat-btn" data-category="crypto" onclick="filterCategory('crypto')">
+                <span class="cat-icon">₿</span>
+                <span>Crypto</span>
+            </button>
+            <button class="cat-btn" data-category="meme" onclick="filterCategory('meme')">
+                <span class="cat-icon">🚀</span>
+                <span>Meme Coins</span>
+            </button>
+            <button class="cat-btn" data-category="forex" onclick="filterCategory('forex')">
+                <span class="cat-icon">💱</span>
+                <span>Forex</span>
+            </button>
+        </nav>
+
+        <!-- Performance Cards -->
+        <section class="performance-cards">
+            <div class="perf-card gold">
+                <div class="perf-label">Top Performer</div>
+                <div class="perf-value" id="topPerformer">--</div>
+                <div class="perf-sub" id="topPerformerReturn">--</div>
+            </div>
+            <div class="perf-card cyan">
+                <div class="perf-label">Best Win Rate</div>
+                <div class="perf-value" id="bestWinRate">--</div>
+                <div class="perf-sub" id="bestWinRateAlgo">--</div>
+            </div>
+            <div class="perf-card purple">
+                <div class="perf-label">Most Active</div>
+                <div class="perf-value" id="mostActive">--</div>
+                <div class="perf-sub" id="mostActiveCount">-- picks</div>
+            </div>
+            <div class="perf-card green">
+                <div class="perf-label">Best Sharpe</div>
+                <div class="perf-value" id="bestSharpe">--</div>
+                <div class="perf-sub" id="bestSharpeAlgo">--</div>
+            </div>
+            <div class="perf-card blue">
+                <div class="perf-label">Lowest Drawdown</div>
+                <div class="perf-value" id="lowestDrawdown">--</div>
+                <div class="perf-sub" id="lowestDrawdownAlgo">--</div>
+            </div>
+        </section>
+
+        <!-- Main Chart Section -->
+        <section class="chart-section">
+            <div class="section-header">
+                <h2>Portfolio Growth Competition</h2>
+                <div class="chart-legend" id="chartLegend"></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            <div class="chart-controls">
+                <button class="time-btn active" onclick="setTimeRange('7d')">7D</button>
+                <button class="time-btn" onclick="setTimeRange('30d')">30D</button>
+                <button class="time-btn" onclick="setTimeRange('90d')">90D</button>
+                <button class="time-btn" onclick="setTimeRange('all')">ALL</button>
+            </div>
+        </section>
+
+        <!-- Leaderboard -->
+        <section class="leaderboard-section">
+            <div class="section-header">
+                <h2>🏆 Algorithm Leaderboard</h2>
+                <div class="sort-controls">
+                    <label>Sort by:</label>
+                    <select id="sortBy" onchange="sortLeaderboard()">
+                        <option value="return">Total Return</option>
+                        <option value="winRate">Win Rate</option>
+                        <option value="sharpe">Sharpe Ratio</option>
+                        <option value="value">Portfolio Value</option>
+                    </select>
+                </div>
+            </div>
+            <div class="leaderboard-table-wrapper">
+                <table class="leaderboard-table" id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Algorithm</th>
+                            <th>Category</th>
+                            <th>Portfolio Value</th>
+                            <th>Total Return</th>
+                            <th>Win Rate</th>
+                            <th>Active Picks</th>
+                            <th>Sharpe</th>
+                            <th>Max DD</th>
+                            <th>7-Day Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <tr><td colspan="10" class="loading-cell">Loading algorithms...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Active Picks -->
+        <section class="picks-section">
+            <div class="section-header">
+                <h2>📊 Active Picks</h2>
+                <div class="picks-filters">
+                    <input type="text" id="pickSearch" placeholder="Search symbol..." onkeyup="filterPicks()">
+                    <select id="pickCategoryFilter" onchange="filterPicks()">
+                        <option value="all">All Categories</option>
+                        <option value="stock">Stocks</option>
+                        <option value="penny">Penny Stocks</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="meme">Meme Coins</option>
+                        <option value="forex">Forex</option>
+                    </select>
+                </div>
+            </div>
+            <div class="picks-table-wrapper">
+                <table class="picks-table" id="picksTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Category</th>
+                            <th>Entry Date (EST)</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>P&L %</th>
+                            <th>P&L $</th>
+                            <th>Days Held</th>
+                            <th>Signal</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="picksBody">
+                        <tr><td colspan="11" class="loading-cell">Loading picks...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Category Breakdown -->
+        <section class="breakdown-section">
+            <div class="section-header">
+                <h2>📈 Category Performance</h2>
+            </div>
+            <div class="breakdown-grid" id="breakdownGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>RISE OF THE CLAW - Algorithm Competition Dashboard</p>
+                <div class="footer-links">
+                    <a href="/findstocks/portfolio2/">Stock Portfolio</a>
+                    <a href="/findcryptopairs/">Crypto Scanner</a>
+                    <a href="/findforex2/">Forex</a>
+                    <button onclick="exportData()">📥 Export Data</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Algorithm Detail Modal -->
+    <div class="modal" id="algoModal">
+        <div class="modal-content" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3 id="modalAlgoName">Algorithm Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody" style="max-height: 70vh; overflow-y: auto;">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/charts.js"></script>
+    <script src="js/data-mode-switcher.js"></script>
+    <script src="js/data-loader.js"></script>
+    <script src="js/audit-trail.js"></script>
+    <script src="js/dashboard.js"></script>
+
+    <style>
+        /* Mode toggle button styles */
+        #btnLiveMode.active,
+        #btnBacktestMode.active {
+            background: currentColor !important;
+            color: #0a0a12 !important;
+            font-weight: 600;
+        }
+    </style>
+</body>
+</html>

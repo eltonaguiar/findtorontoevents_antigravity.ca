@@ -1,0 +1,114 @@
+name: ML Gatekeeper A/B Bootstrap
+
+# One-shot workflow_dispatch to produce BOTH model bundles required by
+# ml_gatekeeper.gatekeeper.score_active_picks_ab():
+#   - gatekeeper_old.joblib  (with leakage features — baseline)
+#   - gatekeeper_new.joblib  (leakage-purged via ML_GATE_DROP_LEAKAGE=1)
+#
+# Until both files exist, score_active_picks_ab() falls back to single-model
+# scoring and the entire A/B infrastructure (ab_analysis.py, rollback tracker,
+# Phase D z-test, Phase E streak tracker) does nothing.
+#
+# Run manually via:
+#   gh workflow run ml-gatekeeper-ab-bootstrap.yml
+#
+# After both runs the artifacts are committed to main with [skip ci]; the
+# next audit-dashboard cron cycle will use them via score_active_picks_ab().
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Manual-only workflow; never cancel a running bootstrap mid-commit.
+# Prior run 25758017776 trained both bundles successfully then got cancelled
+# at the Commit step by concurrency preempt — 30 min of compute wasted.
+concurrency:
+  group: ml-gatekeeper-ab-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth=50 — deep enough that git push doesn't need an
+          # --unshallow at commit time (which took 27min and got cancelled
+          # on prior run 25759721266). Still much faster than full clone.
+          fetch-depth: 50
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install 'scikit-learn==1.3.2' 'scipy>=1.10.0,<1.14' joblib numpy
+
+      - name: Train OLD bundle (leakage features present)
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          # Ensure leakage env is NOT set
+          unset ML_GATE_DROP_LEAKAGE
+          python ml_gatekeeper/gatekeeper.py
+          ls -la ml_gatekeeper/models/
+          mv ml_gatekeeper/models/gatekeeper_model.joblib ml_gatekeeper/models/gatekeeper_old.joblib
+          echo "OLD bundle size:"
+          ls -la ml_gatekeeper/models/gatekeeper_old.joblib
+
+      - name: Train NEW bundle (leakage-purged)
+        env:
+          PYTHONUTF8: '1'
+          ML_GATE_DROP_LEAKAGE: '1'
+        run: |
+          python ml_gatekeeper/gatekeeper.py
+          ls -la ml_gatekeeper/models/
+          mv ml_gatekeeper/models/gatekeeper_model.joblib ml_gatekeeper/models/gatekeeper_new.joblib
+          echo "NEW bundle size:"
+          ls -la ml_gatekeeper/models/gatekeeper_new.joblib
+
+      - name: Verify both bundles loadable + leakage_dropped flag
+        run: |
+          python - <<'PY'
+          import joblib
+          from pathlib import Path
+          ROOT = Path("ml_gatekeeper/models")
+          old = joblib.load(ROOT / "gatekeeper_old.joblib")
+          new = joblib.load(ROOT / "gatekeeper_new.joblib")
+          print(f"OLD leakage_dropped: {old.get('leakage_dropped')}")
+          print(f"OLD trained_at:     {old.get('trained_at_iso')}")
+          print(f"OLD n_features:     {old.get('n_features')}")
+          print(f"NEW leakage_dropped: {new.get('leakage_dropped')}")
+          print(f"NEW trained_at:     {new.get('trained_at_iso')}")
+          print(f"NEW n_features:     {new.get('n_features')}")
+          print(f"NEW dropped_names:  {new.get('dropped_feature_names', [])}")
+          assert old.get('leakage_dropped') is False, "OLD bundle must NOT have leakage_dropped=True"
+          assert new.get('leakage_dropped') is True, "NEW bundle MUST have leakage_dropped=True"
+          assert new.get('dropped_feature_names'), "NEW bundle must list dropped features"
+          print("OK both bundles validated")
+          PY
+
+      - name: Commit bundles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ml_gatekeeper/models/gatekeeper_old.joblib ml_gatekeeper/models/gatekeeper_new.joblib
+          if git diff --cached --quiet; then
+            echo "No bundle changes to commit"
+          else
+            git commit -m "feat(ml-gate-ab): bootstrap gatekeeper_old + gatekeeper_new bundles [skip ci]" -m "Produces the two model bundles required by score_active_picks_ab(): gatekeeper_old.joblib (with leakage features; baseline arm) and gatekeeper_new.joblib (leakage-purged via ML_GATE_DROP_LEAKAGE=1). Without these, the entire A/B infrastructure (ab_analysis.py, Phase D z-test, Phase E rollback tracker) does nothing. From the next cron cycle onward, score_active_picks_ab() produces real OLD+NEW splits."
+            # Retry-with-rebase loop. Prior runs left a stale gatekeeper_model.joblib
+            # from training that blocked rebase; --autostash handles it.
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash origin main && git push && break
+              echo "push retry $i/5"
+              sleep $((i*2))
+            done
+          fi

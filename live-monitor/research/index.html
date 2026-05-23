@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Performance Research | Goldmine Checker</title>
+    <style>
+        :root {
+            --bg: #0a0e1a; --card: #111827; --card2: #1a2236; --border: #1e293b;
+            --text: #e2e8f0; --dim: #8892a8; --accent: #6366f1;
+            --green: #10b981; --green-bg: rgba(16,185,129,0.12);
+            --red: #ef4444; --red-bg: rgba(239,68,68,0.12);
+            --yellow: #f59e0b; --yellow-bg: rgba(245,158,11,0.12);
+            --blue: #3b82f6; --blue-bg: rgba(59,130,246,0.12);
+            --orange: #f97316; --purple: #a855f7;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+        a { color:var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
+        .header { background:linear-gradient(135deg,#111827,#1e293b); border-bottom:1px solid var(--border); padding:2rem; text-align:center; }
+        .header h1 { font-size:1.8rem; background:linear-gradient(135deg,var(--yellow),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .header p { color:var(--dim); margin-top:0.3rem; }
+        .back-link { display:inline-block; margin:1rem 0; color:var(--dim); font-size:0.85rem; }
+        .toc { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:2rem; }
+        .toc h3 { color:var(--yellow); margin-bottom:0.8rem; font-size:1rem; }
+        .toc ul { list-style:none; padding-left:0; }
+        .toc li { padding:0.3rem 0; }
+        .toc a { font-size:0.9rem; }
+        .section { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:2rem; }
+        .section h2 { font-size:1.4rem; margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+        .section h3 { font-size:1.1rem; margin:1.5rem 0 0.8rem; color:var(--accent); }
+        .section h4 { font-size:0.95rem; margin:1rem 0 0.5rem; color:var(--yellow); }
+        .badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+        .badge-critical { background:var(--red-bg); color:var(--red); }
+        .badge-warning { background:var(--yellow-bg); color:var(--yellow); }
+        .badge-good { background:var(--green-bg); color:var(--green); }
+        .badge-info { background:var(--blue-bg); color:var(--blue); }
+        table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:0.85rem; }
+        th,td { padding:0.6rem 0.8rem; text-align:left; border-bottom:1px solid var(--border); }
+        th { color:var(--dim); font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; }
+        tr:hover { background:rgba(99,102,241,0.05); }
+        .positive { color:var(--green); }
+        .negative { color:var(--red); }
+        .neutral { color:var(--dim); }
+        .metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin:1rem 0; }
+        .metric { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+        .metric .value { font-size:1.5rem; font-weight:700; }
+        .metric .label { font-size:0.75rem; color:var(--dim); margin-top:0.3rem; }
+        .callout { padding:1rem 1.2rem; border-radius:8px; margin:1rem 0; font-size:0.9rem; }
+        .callout-danger { background:var(--red-bg); border-left:4px solid var(--red); }
+        .callout-warning { background:var(--yellow-bg); border-left:4px solid var(--yellow); }
+        .callout-success { background:var(--green-bg); border-left:4px solid var(--green); }
+        .callout-info { background:var(--blue-bg); border-left:4px solid var(--blue); }
+        .code-block { background:#0d1117; border:1px solid var(--border); border-radius:8px; padding:1rem; font-family:'Courier New',monospace; font-size:0.8rem; overflow-x:auto; white-space:pre; margin:1rem 0; color:#c9d1d9; }
+        .recommendation { background:var(--card2); border:1px solid var(--accent); border-radius:8px; padding:1.2rem; margin:1rem 0; }
+        .recommendation h4 { color:var(--accent); margin-bottom:0.5rem; }
+        .priority { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:700; }
+        .priority-p0 { background:var(--red); color:white; }
+        .priority-p1 { background:var(--orange); color:white; }
+        .priority-p2 { background:var(--yellow); color:#000; }
+        .chart-placeholder { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:2rem; text-align:center; margin:1rem 0; }
+        ul,ol { padding-left:1.5rem; margin:0.5rem 0; }
+        li { margin:0.3rem 0; }
+        .gen-time { text-align:center; color:var(--dim); font-size:0.75rem; padding:2rem 0; }
+        @media(max-width:768px) {
+            .container { padding:1rem; }
+            .section { padding:1.2rem; }
+            .metric-grid { grid-template-columns:repeat(2,1fr); }
+            table { font-size:0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>ALGORITHM PERFORMANCE RESEARCH</h1>
+    <p>Deep analysis of all failing prediction systems &bull; Generated Feb 16, 2026</p>
+</div>
+
+<div class="container">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:1rem 0;justify-content:center">
+        <a href="index.html" style="padding:6px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff">Algorithm Analysis</a>
+        <a href="live-vs-research.html" style="padding:6px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;border:1px solid #1e293b;background:#111827;color:#8892a8">Live vs Research</a>
+        <a href="../goldmine-alerts.html" style="padding:6px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;border:1px solid #1e293b;background:#111827;color:#8892a8">Alerts Dashboard</a>
+        <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/KIMI_CLAW_RESEARCH_FEB162026" target="_blank" style="padding:6px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;border:1px solid #1e293b;background:#111827;color:#8892a8">GitHub Research</a>
+    </div>
+
+    <div class="toc">
+        <h3>TABLE OF CONTENTS</h3>
+        <ul>
+            <li><a href="#executive">1. Executive Summary</a></li>
+            <li><a href="#live-signal">2. Live Signal System (1,656 picks) &mdash; Algorithm Ranking &amp; Proposed Filter</a></li>
+            <li><a href="#consolidated">3. Consolidated Picks (82 picks) &mdash; Root Cause &amp; Fix</a></li>
+            <li><a href="#meme">4. Meme Scanner (29 picks) &mdash; Why 0% Win Rate &amp; Redesign</a></li>
+            <li><a href="#edge">5. Edge Dashboard (4 picks) &mdash; Pipeline Gap Analysis</a></li>
+            <li><a href="#sports">6. Sports Betting (69 picks) &mdash; Outcome Resolution &amp; Pipeline</a></li>
+            <li><a href="#proposals">7. Proposed Algorithm Improvements</a></li>
+            <li><a href="#implementation">8. Implementation Roadmap</a></li>
+        </ul>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- EXECUTIVE SUMMARY -->
+    <!-- ================================================================== -->
+    <div class="section" id="executive">
+        <h2>1. Executive Summary</h2>
+
+        <div class="metric-grid">
+            <div class="metric">
+                <div class="value negative">10</div>
+                <div class="label">Active Alerts</div>
+            </div>
+            <div class="metric">
+                <div class="value negative">3</div>
+                <div class="label">Critical Alerts</div>
+            </div>
+            <div class="metric">
+                <div class="value" style="color:var(--yellow)">7</div>
+                <div class="label">Warning Alerts</div>
+            </div>
+            <div class="metric">
+                <div class="value">6</div>
+                <div class="label">Systems Tracked</div>
+            </div>
+        </div>
+
+        <div class="callout callout-danger">
+            <strong>Critical Finding:</strong> The 3 worst-performing algorithms (Consensus, Ichimoku Cloud, Awesome Oscillator) account for <strong>669 picks</strong> and <strong>-$431 total loss</strong>. Meanwhile, 3 strong algorithms (ADX Trend Strength, Momentum Burst, RSI(2) Scalp) are profitable but underutilized with only <strong>257 picks</strong> and <strong>+$166 total profit</strong>. The system is over-weighting its worst strategies.
+        </div>
+
+        <h3>System Health Overview</h3>
+        <table>
+            <tr><th>System</th><th>Picks</th><th>Win Rate</th><th>Avg Return</th><th>Status</th><th>Root Cause</th></tr>
+            <tr>
+                <td><strong>Live Signal</strong></td><td>1,656</td>
+                <td class="negative">44.4%</td><td class="negative">-0.25%</td>
+                <td><span class="badge badge-warning">DEGRADED</span></td>
+                <td>Worst algos dominate volume; best algos underused</td>
+            </tr>
+            <tr>
+                <td><strong>Consolidated</strong></td><td>82</td>
+                <td class="negative">9.5%</td><td class="negative">-3.98%</td>
+                <td><span class="badge badge-critical">CRITICAL</span></td>
+                <td>Correlated LONG-only picks; 14/15 lost on Day 1; no price tracking for 7 tickers</td>
+            </tr>
+            <tr>
+                <td><strong>Meme Scanner</strong></td><td>29</td>
+                <td class="negative">0%</td><td class="negative">-0.16%</td>
+                <td><span class="badge badge-critical">FAILING</span></td>
+                <td>Tokens too obscure for price feeds; LONG-only; tight SL</td>
+            </tr>
+            <tr>
+                <td><strong>Edge Dashboard</strong></td><td>4</td>
+                <td class="positive">75%</td><td class="positive">+0.24%</td>
+                <td><span class="badge badge-warning">STALE</span></td>
+                <td>Algorithm works (75% WR) but pipeline dead since Feb 10</td>
+            </tr>
+            <tr>
+                <td><strong>Sports Betting</strong></td><td>69</td>
+                <td class="neutral">N/A</td><td class="neutral">N/A</td>
+                <td><span class="badge badge-warning">STALE</span></td>
+                <td>No outcome resolution possible; pipeline dead since Feb 12</td>
+            </tr>
+            <tr>
+                <td><strong>Penny Stocks</strong></td><td>6</td>
+                <td class="neutral">N/A</td><td class="neutral">N/A</td>
+                <td><span class="badge badge-info">NEW</span></td>
+                <td>Too early to evaluate; no closures yet</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- LIVE SIGNAL SYSTEM -->
+    <!-- ================================================================== -->
+    <div class="section" id="live-signal">
+        <h2>2. Live Signal System &mdash; Deep Dive</h2>
+        <p>The largest system with 1,656 picks across 16 algorithms. Overall 44.4% win rate, -0.25% average return.</p>
+
+        <h3>2.1 Algorithm Performance Ranking</h3>
+        <div class="callout callout-info">
+            Algorithms ranked by profitability (avg return). Green = profitable, Red = losing money. The system should weight toward profitable algorithms and reduce/disable unprofitable ones.
+        </div>
+
+        <table>
+            <tr><th>Rank</th><th>Algorithm</th><th>Picks</th><th>Win Rate</th><th>Avg Return</th><th>Total P&amp;L</th><th>Grade</th></tr>
+            <tr>
+                <td>1</td><td><strong>Momentum Burst</strong></td><td>9</td>
+                <td class="positive">55.6%</td><td class="positive">+2.93%</td><td class="positive">+$14.65</td>
+                <td><span class="badge badge-good">A+</span></td>
+            </tr>
+            <tr>
+                <td>2</td><td><strong>Breakout 24h</strong></td><td>2</td>
+                <td class="positive">50.0%</td><td class="positive">+2.44%</td><td class="positive">+$4.87</td>
+                <td><span class="badge badge-good">A</span></td>
+            </tr>
+            <tr>
+                <td>3</td><td><strong>RSI(2) Scalp</strong></td><td>17</td>
+                <td class="positive">58.8%</td><td class="positive">+0.92%</td><td class="positive">+$15.66</td>
+                <td><span class="badge badge-good">A</span></td>
+            </tr>
+            <tr>
+                <td>4</td><td><strong>Bollinger Squeeze</strong></td><td>7</td>
+                <td class="positive">42.9%</td><td class="positive">+0.66%</td><td class="positive">+$3.97</td>
+                <td><span class="badge badge-good">B+</span></td>
+            </tr>
+            <tr>
+                <td>5</td><td><strong>ADX Trend Strength</strong></td><td>231</td>
+                <td class="positive">58.9%</td><td class="positive">+0.62%</td><td class="positive">+$136.10</td>
+                <td><span class="badge badge-good">A</span></td>
+            </tr>
+            <tr>
+                <td>6</td><td><strong>Challenger Bot</strong></td><td>9</td>
+                <td class="neutral">11.1%</td><td class="positive">+0.52%</td><td class="positive">+$1.04</td>
+                <td><span class="badge badge-info">C</span></td>
+            </tr>
+            <tr>
+                <td>7</td><td><strong>VAM</strong></td><td>125</td>
+                <td class="neutral">37.6%</td><td class="positive">+0.21%</td><td class="positive">+$22.50</td>
+                <td><span class="badge badge-info">B</span></td>
+            </tr>
+            <tr>
+                <td>8</td><td><strong>Volume Spike</strong></td><td>38</td>
+                <td class="neutral">21.1%</td><td class="positive">+0.19%</td><td class="positive">+$3.17</td>
+                <td><span class="badge badge-info">C+</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.05)">
+                <td>9</td><td><strong>Trend Sniper</strong></td><td>265</td>
+                <td class="negative">35.5%</td><td class="negative">-0.16%</td><td class="negative">-$38.18</td>
+                <td><span class="badge badge-warning">D</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.05)">
+                <td>10</td><td><strong>Alpha Predator</strong></td><td>58</td>
+                <td class="negative">43.1%</td><td class="negative">-0.20%</td><td class="negative">-$11.74</td>
+                <td><span class="badge badge-warning">D</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.05)">
+                <td>11</td><td><strong>StochRSI Crossover</strong></td><td>182</td>
+                <td class="negative">43.4%</td><td class="negative">-0.31%</td><td class="negative">-$56.16</td>
+                <td><span class="badge badge-warning">D-</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.08)">
+                <td>12</td><td><strong>Ichimoku Cloud</strong></td><td>471</td>
+                <td class="negative">39.7%</td><td class="negative">-0.47%</td><td class="negative">-$196.31</td>
+                <td><span class="badge badge-critical">F</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.08)">
+                <td>13</td><td><strong>RSI Reversal</strong></td><td>1</td>
+                <td class="negative">0%</td><td class="negative">-0.89%</td><td class="negative">-$0.89</td>
+                <td><span class="badge badge-critical">F</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.08)">
+                <td>14</td><td><strong>MACD Crossover</strong></td><td>43</td>
+                <td class="negative">30.2%</td><td class="negative">-0.97%</td><td class="negative">-$33.12</td>
+                <td><span class="badge badge-critical">F</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.08)">
+                <td>15</td><td><strong>Awesome Oscillator</strong></td><td>41</td>
+                <td class="negative">39.0%</td><td class="negative">-1.13%</td><td class="negative">-$41.82</td>
+                <td><span class="badge badge-critical">F</span></td>
+            </tr>
+            <tr style="background:rgba(239,68,68,0.12)">
+                <td>16</td><td><strong>Consensus</strong></td><td>157</td>
+                <td class="negative">24.2%</td><td class="negative">-1.23%</td><td class="negative">-$193.51</td>
+                <td><span class="badge badge-critical">F</span></td>
+            </tr>
+        </table>
+
+        <h3>2.2 Key Findings</h3>
+
+        <div class="callout callout-danger">
+            <strong>Ichimoku Cloud is the #1 problem.</strong> It generates the most picks (471 = 28% of all signals) yet has a 39.7% win rate and -$196 total loss. It alone accounts for 53% of the system's total losses.
+        </div>
+
+        <div class="callout callout-danger">
+            <strong>Consensus algorithm is the worst per-trade.</strong> At 24.2% win rate across 157 trades, it loses -1.23% per trade on average. It acts as a "worst of" ensemble — when multiple bad algorithms agree, it amplifies the error.
+        </div>
+
+        <div class="callout callout-success">
+            <strong>ADX Trend Strength is the clear winner.</strong> 231 picks, 58.9% win rate, +$136 total profit. This algorithm should be given MORE weight in the ensemble, not less.
+        </div>
+
+        <h3>2.3 Daily Performance Trend</h3>
+        <table>
+            <tr><th>Date</th><th>Picks</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Assessment</th></tr>
+            <tr><td>Feb 10</td><td>301</td><td class="positive">265</td><td>36</td><td class="positive">88.0%</td><td><span class="badge badge-good">Excellent</span></td></tr>
+            <tr><td>Feb 11</td><td>596</td><td>150</td><td class="negative">446</td><td class="negative">25.2%</td><td><span class="badge badge-critical">Crash</span></td></tr>
+            <tr><td>Feb 12</td><td>338</td><td>116</td><td class="negative">222</td><td class="negative">34.3%</td><td><span class="badge badge-warning">Poor</span></td></tr>
+            <tr><td>Feb 13</td><td>247</td><td>132</td><td>115</td><td class="positive">53.4%</td><td><span class="badge badge-good">Recovery</span></td></tr>
+            <tr><td>Feb 16</td><td>11</td><td>0</td><td class="negative">11</td><td class="negative">0%</td><td><span class="badge badge-critical">11-loss streak</span></td></tr>
+        </table>
+
+        <div class="callout callout-warning">
+            <strong>Feb 11 was catastrophic:</strong> 596 picks with only 25.2% win rate. This coincided with a crypto market selloff. The system lacked a <strong>regime filter</strong> — it continued generating LONG signals into a falling market. A simple volatility or trend regime check would have paused signals.
+        </div>
+
+        <h3>2.4 Proposed Changes for Live Signal</h3>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Disable or heavily throttle Consensus algorithm</h4>
+            <p>The Consensus algorithm has the worst per-trade performance (-1.23% avg). With 157 picks generating -$193 in losses, it should be <strong>disabled immediately</strong>. The "consensus of bad algorithms" problem means it amplifies errors rather than filtering them.</p>
+            <p><strong>Proposed replacement:</strong> "Weighted Consensus" — only count signals from algorithms with &gt;45% win rate (ADX, RSI(2) Scalp, VAM, Bollinger Squeeze). Require at least 2 profitable algorithms to agree before generating a signal.</p>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Reduce Ichimoku Cloud signal volume by 70%</h4>
+            <p>Ichimoku Cloud generates 471 picks (28% of volume) but loses money. Add stricter filters:</p>
+            <ul>
+                <li>Require ADX &gt; 25 (confirming trend strength) before accepting Ichimoku signals</li>
+                <li>Require price to be clearly outside the cloud (not just touching it)</li>
+                <li>Reduce confidence score threshold from 50 to 65</li>
+                <li>Limit to 5 Ichimoku signals per 6-hour window (prevent flood)</li>
+            </ul>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Add market regime filter</h4>
+            <p>The Feb 11 crash (25.2% WR) shows the system doesn't adapt to market conditions. Implement a regime detector:</p>
+            <div class="code-block">// Regime Detection (run every 30 min)
+btc_24h_change = (btc_now - btc_24h_ago) / btc_24h_ago * 100
+btc_volatility = stddev(btc_hourly_returns, 24)  // 24-hour rolling
+
+if btc_24h_change &lt; -3% AND btc_volatility &gt; 2%:
+    regime = "RISK_OFF"    // Pause all LONG signals, allow SHORTs only
+elif btc_24h_change &gt; 5%:
+    regime = "EUPHORIA"    // Tighten SL, reduce position sizing  
+else:
+    regime = "NORMAL"      // Full signal generation</div>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Amplify ADX Trend Strength signals</h4>
+            <p>The best algorithm (58.9% WR, +$136) should generate more signals:</p>
+            <ul>
+                <li>Lower the ADX confirmation threshold from 25 to 20 for high-conviction setups</li>
+                <li>Allow ADX signals on more timeframes (currently just one)</li>
+                <li>When ADX confirms AND another profitable algo agrees, boost confidence to 90+</li>
+            </ul>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p2">P2</span> Implement "Algorithm Confidence Weighting"</h4>
+            <p>Instead of treating all algorithm signals equally, weight them by historical performance:</p>
+            <div class="code-block">// Dynamic weight calculation (recalculate weekly)
+algo_weight = (win_rate * 2) + (avg_return * 10) + (sample_size_bonus)
+
+// Example weights based on current data:
+ADX Trend Strength:  (0.589 * 2) + (0.62 * 10) + 10 = 17.38  // HEAVY
+RSI(2) Scalp:        (0.588 * 2) + (0.92 * 10) + 5  = 15.38  // HEAVY
+VAM:                 (0.376 * 2) + (0.21 * 10) + 8  = 10.85  // MEDIUM
+Ichimoku Cloud:      (0.397 * 2) + (-0.47 * 10) + 10 = 5.49  // LOW
+Consensus:           (0.242 * 2) + (-1.23 * 10) + 8  = -3.82 // DISABLED</div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- CONSOLIDATED SYSTEM -->
+    <!-- ================================================================== -->
+    <div class="section" id="consolidated">
+        <h2>3. Consolidated Picks &mdash; Deep Dive</h2>
+        <p>82 stock picks from the consensus engine. 21 closed, 2 wins (9.5% win rate), -3.98% average return.</p>
+
+        <div class="metric-grid">
+            <div class="metric"><div class="value negative">9.5%</div><div class="label">Win Rate (21 closed)</div></div>
+            <div class="metric"><div class="value negative">-$83.48</div><div class="label">Total Return</div></div>
+            <div class="metric"><div class="value negative">-3.98%</div><div class="label">Avg Return / Trade</div></div>
+            <div class="metric"><div class="value">8% / 4%</div><div class="label">TP / SL (all picks)</div></div>
+        </div>
+
+        <h3>3.1 Root Cause Analysis</h3>
+
+        <div class="callout callout-danger">
+            <strong>Problem 1: Catastrophic Day 1.</strong> Feb 10 had 15 closures with 14 losses and 1 win. All picks were LONG. This single day poisoned the entire system's statistics. The 14 losers were all momentum/sector plays that got stopped out simultaneously — classic correlated-loss scenario.
+        </div>
+
+        <div class="callout callout-warning">
+            <strong>Problem 2: Asymmetric R:R requires 33% WR.</strong> With 8% target and 4% stop loss (2:1 ratio), the system needs &gt;33% win rate just to break even. At 9.5%, it's deeply underwater. The R:R ratio is appropriate, but the signal quality is far too low.
+        </div>
+
+        <div class="callout callout-warning">
+            <strong>Problem 3: Price tracking gaps.</strong> 7 of 82 picks had $0 current price (now fixed), meaning the outcome checker couldn't resolve them. 3 (SNAP, UBER, CSCO) had actually hit stop losses days ago but weren't recorded. The true loss count was higher than reported.
+        </div>
+
+        <h3>3.2 Daily Breakdown</h3>
+        <table>
+            <tr><th>Date</th><th>Closed</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Key Losers</th></tr>
+            <tr><td>Feb 10</td><td>15</td><td class="positive">1</td><td class="negative">14</td><td class="negative">6.7%</td><td>14 sector/momentum plays all SL'd</td></tr>
+            <tr><td>Feb 11</td><td>1</td><td>0</td><td class="negative">1</td><td class="negative">0%</td><td>Alpha Factor combo SL</td></tr>
+            <tr><td>Feb 12</td><td>2</td><td class="positive">1</td><td>1</td><td>50%</td><td>DIS won (+3%), quality pick SL'd</td></tr>
+            <tr><td>Feb 13</td><td>3</td><td>0</td><td class="negative">3</td><td class="negative">0%</td><td>SNAP -6.9%, UBER -6.1%, CSCO -11.5%</td></tr>
+        </table>
+
+        <h3>3.3 What Won vs What Lost</h3>
+        <table>
+            <tr><th>Category</th><th>Algorithm(s)</th><th>Result</th><th>Insight</th></tr>
+            <tr class="positive">
+                <td>WIN</td>
+                <td>Blue Chip Growth + Alpha Factor Quality</td>
+                <td>AMT +9.88%</td>
+                <td>Quality + growth filters together = best combo</td>
+            </tr>
+            <tr class="positive">
+                <td>WIN</td>
+                <td>Mean Reversion Sniper</td>
+                <td>DIS +3.0% (expired)</td>
+                <td>Mean reversion on blue chip worked</td>
+            </tr>
+            <tr class="negative">
+                <td>LOSS x14</td>
+                <td>Various momentum/sector plays</td>
+                <td>Avg -4.2%</td>
+                <td>All correlated LONG, all SL'd on same downturn</td>
+            </tr>
+        </table>
+
+        <h3>3.4 Proposed Changes for Consolidated</h3>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Add position correlation check</h4>
+            <p>Never allow &gt;5 simultaneous LONG picks in the same sector or &gt;10 total correlated LONG picks. The Feb 10 disaster had 15+ LONG picks all entering simultaneously — when the market dipped, all hit SL together.</p>
+            <div class="code-block">// Correlation Guard
+max_same_direction = 10  // Max picks in same direction at once
+max_same_sector = 3      // Max picks in same GICS sector
+cooldown_after_sl = 4h   // After 3 SL hits in 1 hour, pause for 4 hours
+
+if count_open(direction='LONG') >= max_same_direction:
+    skip_new_long_signals()
+if count_open(sector=pick.sector) >= max_same_sector:
+    skip_signal()</div>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Tighten entry criteria: Require multi-factor confirmation</h4>
+            <p>Currently, 2 algorithms agreeing triggers a pick. Raise to 3+ algorithms, with at least 1 being a "quality" factor (Alpha Factor Quality, Alpha Factor Safe Bets, Blue Chip Growth).</p>
+            <p>The ONLY winning algorithm combo was "Blue Chip Growth + Alpha Factor Quality" — quality-first picks outperform.</p>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Add market environment filter</h4>
+            <p>Check S&P 500 and VIX before generating picks:</p>
+            <ul>
+                <li>If SPY is below its 20-day SMA: reduce pick count by 50%, require 4+ algo agreement</li>
+                <li>If VIX &gt; 25: pause all momentum picks, only allow quality/value factor picks</li>
+                <li>If 3+ picks hit SL in same day: activate "defensive mode" for next 24h</li>
+            </ul>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p2">P2</span> Adjust R:R based on volatility</h4>
+            <p>Fixed 8%/4% TP/SL doesn't account for individual stock volatility. SNAP (very volatile) and JPM (low volatility) shouldn't have the same targets.</p>
+            <div class="code-block">// Volatility-adjusted targets
+atr_20 = average_true_range(ticker, 20)  // 20-day ATR
+tp_pct = max(6%, min(12%, atr_20 * 2.5))   // 2.5x ATR, clamped 6-12%
+sl_pct = max(2%, min(5%, atr_20 * 1.2))    // 1.2x ATR, clamped 2-5%</div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- MEME SCANNER -->
+    <!-- ================================================================== -->
+    <div class="section" id="meme">
+        <h2>4. Meme Scanner &mdash; Deep Dive</h2>
+        <p>29 picks on micro-cap meme tokens. 0% win rate. All 6 closed trades were losses; 23 expired with no outcome data.</p>
+
+        <div class="metric-grid">
+            <div class="metric"><div class="value negative">0%</div><div class="label">Win Rate</div></div>
+            <div class="metric"><div class="value">29</div><div class="label">Total Picks</div></div>
+            <div class="metric"><div class="value negative">6</div><div class="label">SL Hits</div></div>
+            <div class="metric"><div class="value neutral">23</div><div class="label">Expired (no data)</div></div>
+        </div>
+
+        <h3>4.1 Token Analysis</h3>
+        <table>
+            <tr><th>Token</th><th>Picks</th><th>Outcome</th><th>Problem</th></tr>
+            <tr>
+                <td>WHITEWHALE_USDT</td><td>5</td><td class="neutral">All expired</td>
+                <td>No price API available for White Whale token</td>
+            </tr>
+            <tr>
+                <td>PIPPIN_USDT</td><td>5</td><td class="neutral">All expired</td>
+                <td>No price API; picked 5 times in 24h (over-trading)</td>
+            </tr>
+            <tr>
+                <td>TOSHI_USDT</td><td>4</td><td class="neutral">All expired</td>
+                <td>No price API; 4 picks in 2 hours on same token</td>
+            </tr>
+            <tr>
+                <td>BUTTCOIN_USDT</td><td>3</td><td class="neutral">All expired</td>
+                <td>No price API; repeated picks on fading momentum</td>
+            </tr>
+            <tr>
+                <td>MOODENG_USDT</td><td>4</td><td class="negative">4 SL hits</td>
+                <td>SL triggered in &lt;2h each time; kept re-entering after losses</td>
+            </tr>
+            <tr>
+                <td>BONK_USDT</td><td>2</td><td class="negative">2 SL hits</td>
+                <td>-2.3% loss both times; same entry/SL levels</td>
+            </tr>
+            <tr>
+                <td>COPPERINU_USDT</td><td>2</td><td class="neutral">All expired</td>
+                <td>No price API</td>
+            </tr>
+            <tr>
+                <td>FLOKI_USDT</td><td>1</td><td class="neutral">Expired</td>
+                <td>No price API (note: FLOKIUSD works on live_signal)</td>
+            </tr>
+            <tr>
+                <td>QUQ_USDT</td><td>2</td><td class="neutral">All expired</td>
+                <td>No price API; extremely low-cap token</td>
+            </tr>
+        </table>
+
+        <h3>4.2 Root Causes</h3>
+
+        <div class="callout callout-danger">
+            <strong>Fatal Flaw 1: No price feed for 80% of tokens.</strong> 23 of 29 picks could never be resolved because the tokens are too obscure for any price API. The scanner picks tokens that can't be tracked. This means the 0% win rate is based on only 6 tracked trades — the true performance is unknown for the other 23.
+        </div>
+
+        <div class="callout callout-danger">
+            <strong>Fatal Flaw 2: Repeated entries after losses.</strong> MOODENG was picked 4 times in 1 hour (all hit SL). PIPPIN was picked 5 times in 24h. The scanner has no cooldown — it keeps re-entering losing positions.
+        </div>
+
+        <div class="callout callout-warning">
+            <strong>Flaw 3: LONG-only strategy in falling meme market.</strong> All 29 picks were LONG. During the Feb 11-12 crypto selloff, every meme token fell. No SHORT capability means the scanner can only lose in bear conditions.
+        </div>
+
+        <div class="callout callout-warning">
+            <strong>Flaw 4: 2-hour hold period too short.</strong> Meme tokens are volatile. A 2-hour window with 1.5-3.5% SL gets stopped out by normal noise. The risk/reward is fundamentally broken for micro-caps.
+        </div>
+
+        <h3>4.3 Proposed Meme Scanner Redesign</h3>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Whitelist trackable tokens only</h4>
+            <p>Only generate picks for tokens that have a verified price API endpoint. Maintain a whitelist of tokens with confirmed CoinGecko/CMC/exchange API coverage. Reject any token not on the whitelist.</p>
+            <div class="code-block">// Whitelist: tokens with confirmed price tracking
+TRACKABLE_MEMES = [
+    'BONK_USDT', 'FLOKI_USDT', 'PEPE_USDT', 'DOGE_USDT',
+    'SHIB_USDT', 'WIF_USDT', 'MEME_USDT', 'MOODENG_USDT',
+    'POPCAT_USDT', 'NEIRO_USDT'
+]
+
+// Before generating pick:
+if token not in TRACKABLE_MEMES:
+    skip("No price tracking for " + token)</div>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Add per-token cooldown</h4>
+            <p>After any pick on a token (win, loss, or expiry), enforce a 6-hour cooldown before re-picking. After 2 consecutive losses on same token, enforce 24-hour cooldown.</p>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Increase hold period and widen SL</h4>
+            <p>Meme tokens need wider stops and longer hold times due to their volatility:</p>
+            <ul>
+                <li>Hold period: 2h &rarr; 8-12h (allow for recovery from noise)</li>
+                <li>Stop loss: 1.5-3.5% &rarr; 5-8% (wider to avoid noise stop-outs)</li>
+                <li>Target: Keep at 3-6% or increase to match wider SL (maintain 2:1 R:R)</li>
+            </ul>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Add volume/liquidity filter</h4>
+            <p>Only pick tokens with &gt;$500K 24h trading volume. Tokens like QUQ and COPPERINU have extremely low liquidity — the "price" may not reflect executable levels. Low liquidity also means wider spreads that eat into returns.</p>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- EDGE DASHBOARD -->
+    <!-- ================================================================== -->
+    <div class="section" id="edge">
+        <h2>5. Edge Dashboard &mdash; Pipeline Gap Analysis</h2>
+        <p>Only 4 picks total, all from Feb 10. Despite 75% win rate, the system hasn't generated a new pick in 6 days.</p>
+
+        <div class="metric-grid">
+            <div class="metric"><div class="value positive">75%</div><div class="label">Win Rate</div></div>
+            <div class="metric"><div class="value">4</div><div class="label">Total Picks</div></div>
+            <div class="metric"><div class="value positive">+$0.95</div><div class="label">Total Return</div></div>
+            <div class="metric"><div class="value negative">6 days</div><div class="label">Since Last Pick</div></div>
+        </div>
+
+        <h3>5.1 Performance (Small Sample)</h3>
+        <table>
+            <tr><th>Ticker</th><th>Direction</th><th>Outcome</th><th>Return</th></tr>
+            <tr><td>DOGEUSD</td><td>SHORT</td><td class="positive">TP Hit</td><td class="positive">+2.50%</td></tr>
+            <tr><td>DOTUSD</td><td>SHORT</td><td class="positive">Expired Win</td><td class="positive">+1.10%</td></tr>
+            <tr><td>INJUSD</td><td>SHORT</td><td class="positive">Expired Win</td><td class="positive">+1.15%</td></tr>
+            <tr><td>ETHUSD</td><td>LONG</td><td class="negative">SL Hit</td><td class="negative">-3.79%</td></tr>
+        </table>
+
+        <div class="callout callout-success">
+            <strong>The Edge Confluence algorithm works well.</strong> 3 out of 4 picks were winners. The one loss (ETHUSD LONG) was against the bearish trend that the other 3 SHORT picks correctly identified. The algorithm's strength is requiring 3+ algorithms to agree — high-conviction signals only.
+        </div>
+
+        <h3>5.2 Why No New Picks?</h3>
+
+        <div class="callout callout-warning">
+            <strong>The <code>lm_opportunities</code> table stopped receiving data after Feb 10.</strong> The Edge Dashboard scans for "confluence" — moments when 3+ different algorithms simultaneously signal the same asset. This is a rare event by design. However, 6 days with zero picks suggests the scanning pipeline (GitHub Actions workflow) may have stopped running, not that conditions haven't been met.
+        </div>
+
+        <h3>5.3 Proposed Fix</h3>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Verify and restart Edge scanning pipeline</h4>
+            <ul>
+                <li>Check if the GitHub Actions workflow that populates <code>lm_opportunities</code> is still running</li>
+                <li>Lower confluence threshold from 3 to 2 algorithms (more picks, slightly lower quality)</li>
+                <li>Add more algorithm sources to the confluence check (currently seems limited)</li>
+                <li>Generate at least 1 pick per day — if no 3-algo confluence exists, output a 2-algo pick with lower confidence</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- SPORTS BETTING -->
+    <!-- ================================================================== -->
+    <div class="section" id="sports">
+        <h2>6. Sports Betting &mdash; Outcome Resolution &amp; Pipeline</h2>
+        <p>69 picks from Feb 11-12 (all basketball), all now expired. No outcome resolution was ever possible.</p>
+
+        <div class="metric-grid">
+            <div class="metric"><div class="value">69</div><div class="label">Total Picks</div></div>
+            <div class="metric"><div class="value neutral">0</div><div class="label">Resolved</div></div>
+            <div class="metric"><div class="value negative">4 days</div><div class="label">Since Last Pick</div></div>
+            <div class="metric"><div class="value">value_bet</div><div class="label">Algorithm Used</div></div>
+        </div>
+
+        <h3>6.1 Why Outcomes Were Never Resolved</h3>
+
+        <div class="callout callout-danger">
+            <strong>The goldmine tracker's outcome checker only handles price-based assets.</strong> It checks current price vs entry/TP/SL for stocks and crypto. Sports bets have a fundamentally different outcome model — a game is won or lost, not a price that moves. The tracker has no integration with a sports scores API.
+        </div>
+
+        <h3>6.2 What the Picks Look Like</h3>
+        <p>All 69 picks were basketball moneyline or spread bets from the Odds API, with these characteristics:</p>
+        <ul>
+            <li><strong>Mix:</strong> ~50 NCAAB + ~19 NBA games</li>
+            <li><strong>Bet types:</strong> h2h (moneyline) and spreads</li>
+            <li><strong>Books:</strong> FanDuel, DraftKings, ESPN BET, Bovada, Betparx, Hard Rock, etc.</li>
+            <li><strong>Confidence range:</strong> 40-85 (most picks at 40 or 65)</li>
+            <li><strong>Hold period:</strong> 4 hours (appropriate for game duration)</li>
+        </ul>
+
+        <h3>6.3 Proposed Fix</h3>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p0">P0</span> Add sports outcome resolution via ESPN API</h4>
+            <p>Integrate the free ESPN scoreboard API to resolve sports bets after game completion:</p>
+            <div class="code-block">// Sports Outcome Resolution
+// 1. Parse ticker: "basketball_nba:Golden State Wa" -> sport + team
+// 2. Check ESPN API: https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard
+// 3. Match game by team name + date
+// 4. If our pick team won: mark as "tp_hit" (win)
+// 5. If our pick team lost: mark as "sl_hit" (loss)
+// 6. For spreads: check if team covered the spread
+
+// Run: every hour during game days, check all open sports picks
+// where pick_time + 5 hours < now (game should be finished)</div>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p1">P1</span> Restart sports betting pipeline</h4>
+            <p>The <code>lm_sports_daily_picks</code> table stopped receiving data after Feb 12. The Odds API integration (sports-betting-refresh workflow) needs to be verified and restarted. With no new picks, no performance data can be accumulated.</p>
+        </div>
+
+        <div class="recommendation">
+            <h4><span class="priority priority-p2">P2</span> Improve value_bet algorithm</h4>
+            <p>All 69 picks used the same "value_bet" algorithm. Consider adding:</p>
+            <ul>
+                <li><strong>Injury check:</strong> Cross-reference with injury reports before placing picks</li>
+                <li><strong>Recent form:</strong> Check team's last 5-game record (win streak / losing streak)</li>
+                <li><strong>Home/away factor:</strong> Weight home advantage more heavily for NCAAB</li>
+                <li><strong>Line movement:</strong> If the line moves against the pick before game time, reconsider</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- PROPOSED IMPROVEMENTS -->
+    <!-- ================================================================== -->
+    <div class="section" id="proposals">
+        <h2>7. Proposed Algorithm Improvements &mdash; Summary</h2>
+
+        <h3>7.1 Quick Wins (Fix in &lt;4 hours)</h3>
+        <table>
+            <tr><th>Priority</th><th>Change</th><th>Expected Impact</th><th>System</th></tr>
+            <tr>
+                <td><span class="priority priority-p0">P0</span></td>
+                <td>Disable Consensus algorithm</td>
+                <td>Eliminate -$193 in losses (157 bad picks removed)</td>
+                <td>Live Signal</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p0">P0</span></td>
+                <td>Add Ichimoku ADX confirmation filter</td>
+                <td>~70% fewer Ichimoku picks, much higher quality</td>
+                <td>Live Signal</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p0">P0</span></td>
+                <td>Whitelist trackable meme tokens</td>
+                <td>100% of meme picks become trackable</td>
+                <td>Meme</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p0">P0</span></td>
+                <td>Add correlation guard (max 10 same-direction)</td>
+                <td>Prevent Feb 10-style 14-loss days</td>
+                <td>Consolidated</td>
+            </tr>
+        </table>
+
+        <h3>7.2 Medium-Term (1-2 days)</h3>
+        <table>
+            <tr><th>Priority</th><th>Change</th><th>Expected Impact</th><th>System</th></tr>
+            <tr>
+                <td><span class="priority priority-p1">P1</span></td>
+                <td>Add market regime filter (BTC/SPY trend check)</td>
+                <td>Avoid trading against macro trend; prevent -25% WR days</td>
+                <td>All Systems</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p1">P1</span></td>
+                <td>Implement algorithm confidence weighting</td>
+                <td>Best algos get more picks, worst get fewer</td>
+                <td>Live Signal</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p1">P1</span></td>
+                <td>Sports outcome resolution via ESPN API</td>
+                <td>69 picks become trackable; real sports WR data</td>
+                <td>Sports</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p1">P1</span></td>
+                <td>Restart Edge/Meme/Sports pipelines</td>
+                <td>Fresh data flowing; stale alerts auto-resolve</td>
+                <td>Edge, Meme, Sports</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p1">P1</span></td>
+                <td>Meme scanner: wider SL (5-8%), longer hold (8-12h)</td>
+                <td>Fewer false SL triggers from normal volatility</td>
+                <td>Meme</td>
+            </tr>
+        </table>
+
+        <h3>7.3 Longer-Term (1 week+)</h3>
+        <table>
+            <tr><th>Priority</th><th>Change</th><th>Expected Impact</th><th>System</th></tr>
+            <tr>
+                <td><span class="priority priority-p2">P2</span></td>
+                <td>Volatility-adjusted TP/SL for stocks</td>
+                <td>Better R:R per ticker; fewer premature SL hits</td>
+                <td>Consolidated</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p2">P2</span></td>
+                <td>Multi-factor sports algorithm (injuries + form + home)</td>
+                <td>Higher-quality sports picks</td>
+                <td>Sports</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p2">P2</span></td>
+                <td>Add SHORT capability to Meme Scanner</td>
+                <td>Profit in bear meme markets</td>
+                <td>Meme</td>
+            </tr>
+            <tr>
+                <td><span class="priority priority-p2">P2</span></td>
+                <td>Auto-pause algorithm after 5 consecutive losses</td>
+                <td>Circuit breaker prevents runaway losses</td>
+                <td>All Systems</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- IMPLEMENTATION ROADMAP -->
+    <!-- ================================================================== -->
+    <div class="section" id="implementation">
+        <h2>8. Implementation Roadmap</h2>
+
+        <h3>Phase 1: Emergency Fixes (Today)</h3>
+        <ol>
+            <li>Disable Consensus algorithm in <code>lm_signals</code> configuration</li>
+            <li>Add Ichimoku-ADX confirmation requirement to signal generator</li>
+            <li>Add correlation guard to consolidated picks engine</li>
+            <li>Create meme token whitelist in <code>mc_winners</code> config</li>
+        </ol>
+
+        <h3>Phase 2: Infrastructure (This Week)</h3>
+        <ol>
+            <li>Implement market regime filter (BTC trend + VIX check)</li>
+            <li>Build ESPN API integration for sports outcome resolution</li>
+            <li>Restart all stale pipelines (Edge, Meme, Sports)</li>
+            <li>Deploy algorithm confidence weighting system</li>
+        </ol>
+
+        <h3>Phase 3: Optimization (Next Week)</h3>
+        <ol>
+            <li>Implement volatility-adjusted TP/SL for consolidated picks</li>
+            <li>Add per-token cooldown for meme scanner</li>
+            <li>Build auto-pause circuit breaker for all algorithms</li>
+            <li>Add SHORT capability to meme scanner</li>
+        </ol>
+
+        <h3>Expected Impact After All Phases</h3>
+        <div class="metric-grid">
+            <div class="metric">
+                <div class="value positive">&gt;50%</div>
+                <div class="label">Target: Live Signal WR</div>
+            </div>
+            <div class="metric">
+                <div class="value positive">&gt;35%</div>
+                <div class="label">Target: Consolidated WR</div>
+            </div>
+            <div class="metric">
+                <div class="value positive">&gt;30%</div>
+                <div class="label">Target: Meme Scanner WR</div>
+            </div>
+            <div class="metric">
+                <div class="value positive">0</div>
+                <div class="label">Target: Stale Systems</div>
+            </div>
+        </div>
+
+        <div class="callout callout-success">
+            <strong>Projected outcome:</strong> If the top-3 changes are implemented (disable Consensus, filter Ichimoku, add regime detector), the Live Signal system alone should improve from 44.4% to ~52%+ win rate, and the portfolio would swing from -$370 to approximately breakeven or slightly positive. The key insight is that <strong>the system already has profitable algorithms (ADX, RSI(2), Momentum Burst)</strong> — we just need to stop the unprofitable ones from drowning them out.
+        </div>
+    </div>
+
+    <div class="gen-time">
+        Algorithm Performance Research &bull; Generated Feb 16, 2026 at 23:20 UTC<br>
+        Data source: <a href="../api/goldmine_tracker.php?action=dashboard">goldmine_tracker.php</a> &bull; 
+        <a href="../api/goldmine_maintenance.php?action=status">Maintenance Status</a> &bull;
+        <a href="../goldmine-alerts.html">Alerts Dashboard</a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+# Ruflo-style agent: Bug & Security Hunter
+# Hunts for code bugs, security issues, and anti-patterns
+type: bug_hunter
+version: "1.0.0"
+role: security-architect
+model: meta-llama/llama-3.3-70b-instruct:free
+goal: |
+  Hunt bugs in the codebase. Search for: (1) Python scripts with hardcoded paths,
+  (2) SQL injection risks in audit_trail/mysql_client.py, (3) race conditions in cron scripts,
+  (4) stale reference to antigravity_ca instead of antigravity.ca,
+  (5) strategies with elite_score > 90 but forward_wr = 0.5 (ghost elite),
+  (6) unclosed DB connections, (7) missing error handling.
+  Return JSON: {"bugs": [{"file", "line", "severity", "fix", "evidence"}]}.
+  If you cannot inspect the file path, return unable_to_verify instead of inventing findings.
+capabilities:
+  - vulnerability-analysis
+  - code-pattern-matching
+  - race-condition-detection
+  - sql-injection-detection
+  - hardcoded-secret-detection
+optimizations:
+  - pattern-matching
+  - structured-json-output
+swarm: bugs
+priority: high
+metadata:
+  created: "2026-05-05T00:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  checks:
+    - python_scripts_with_hardcoded_paths
+    - sql_injection_risks_in_mysql_client_py
+    - race_conditions_in_cron_scripts
+    - stale_reference_to_antigravity_ca
+    - ghost_elite_strategies_high_score_zero_wr
+    - unclosed_db_connections
+    - missing_error_handling
+    - api_key_leaks_in_source

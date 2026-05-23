@@ -1,0 +1,87 @@
+name: Prune strategy_performance.json (30d)
+
+# Daily cron that drops entries from alpha_engine/data/strategy_performance.json
+# whose `last_seen` ISO timestamp is older than 30 days. Uses the prune_stale()
+# helper shipped with atomic_json (commit 1002af0cfa). Defensive: entries
+# without a parseable timestamp are kept.
+#
+# See `tools/prune_strategy_performance.py` for the script and
+# `updates/2026-04-17-deferred-execution-plans.md` Plan 6 for context.
+
+on:
+  schedule:
+    # Daily at 03:00 UTC (off-cluster from hourly :00/:03 cron herd)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run only (report what would be pruned, do not write)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+# Single-writer for this file. cancel-in-progress: false because the script is
+# fast (seconds) and we'd rather let an in-flight run finish than lose its
+# pruned-count log entry.
+concurrency:
+  group: prune-strategy-performance
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run prune script
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python tools/prune_strategy_performance.py --dry-run
+          else
+            python tools/prune_strategy_performance.py
+          fi
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet alpha_engine/data/strategy_performance.json 2>/dev/null; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes -- nothing to commit"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "strategy_performance.json was modified by prune"
+          fi
+
+      - name: Commit + push pruned file
+        if: steps.changes.outputs.changed == 'true' && github.event.inputs.dry_run != 'true'
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/strategy_performance.json
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "auto: prune strategy_performance.json (30d) ${TIMESTAMP} [skip ci]" || {
+            echo "Nothing staged to commit -- exiting cleanly"
+            exit 0
+          }
+          bash .github/scripts/safe_push.sh

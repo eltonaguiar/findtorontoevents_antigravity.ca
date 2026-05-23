@@ -1,0 +1,157 @@
+{
+  "version": "1.0",
+  "built_at": "2026-03-23T22:41:53.816685Z",
+  "n_training_samples": 2000,
+  "n_winners": 113,
+  "base_win_rate": 5.7,
+  "top_features": [
+    "strategy_fwd_wr",
+    "technical_buy_tfs",
+    "sb_technical_alignment",
+    "sb_ml_score",
+    "sb_leverage_safety",
+    "sb_source_system",
+    "rr_ratio",
+    "confidence"
+  ],
+  "feature_medians": {
+    "strategy_fwd_wr": 37.8,
+    "technical_buy_tfs": 3,
+    "sb_technical_alignment": 5.0,
+    "sb_ml_score": 3.0,
+    "sb_leverage_safety": 8.0,
+    "sb_source_system": 12.0,
+    "rr_ratio": 1.67,
+    "confidence": 0.6411
+  },
+  "tree": {
+    "feature": "strategy_fwd_wr",
+    "threshold": 47.9,
+    "win_rate": 32.0,
+    "n_samples": 2000,
+    "left": {
+      "feature": "strategy_fwd_wr",
+      "threshold": 31.0,
+      "win_rate": 26.8,
+      "n_samples": 1632,
+      "left": {
+        "feature": "sb_source_system",
+        "threshold": 15.0,
+        "win_rate": 7.0,
+        "n_samples": 201,
+        "left": {
+          "leaf": true,
+          "win_rate": 1.1,
+          "prediction": 0,
+          "n_samples": 91
+        },
+        "right": {
+          "leaf": true,
+          "win_rate": 11.8,
+          "prediction": 0,
+          "n_samples": 110
+        }
+      },
+      "right": {
+        "feature": "rr_ratio",
+        "threshold": 1.375,
+        "win_rate": 29.6,
+        "n_samples": 1431,
+        "left": {
+          "leaf": true,
+          "win_rate": 63.6,
+          "prediction": 1,
+          "n_samples": 33
+        },
+        "right": {
+          "leaf": true,
+          "win_rate": 28.8,
+          "prediction": 0,
+          "n_samples": 1398
+        }
+      }
+    },
+    "right": {
+      "feature": "sb_technical_alignment",
+      "threshold": -20.0,
+      "win_rate": 55.2,
+      "n_samples": 368,
+      "left": {
+        "feature": "technical_buy_tfs",
+        "threshold": 1.5,
+        "win_rate": 4.8,
+        "n_samples": 21,
+        "left": {
+          "leaf": true,
+          "win_rate": 0.0,
+          "prediction": 0,
+          "n_samples": 14
+        },
+        "right": {
+          "leaf": true,
+          "win_rate": 14.3,
+          "prediction": 0,
+          "n_samples": 7
+        }
+      },
+      "right": {
+        "feature": "strategy_fwd_wr",
+        "threshold": 54.4,
+        "win_rate": 58.2,
+        "n_samples": 347,
+        "left": {
+          "leaf": true,
+          "win_rate": 53.0,
+          "prediction": 1,
+          "n_samples": 253
+        },
+        "right": {
+          "leaf": true,
+          "win_rate": 72.3,
+          "prediction": 1,
+          "n_samples": 94
+        }
+      }
+    }
+  },
+  "linear_weights": {
+    "strategy_fwd_wr": 0.419,
+    "technical_buy_tfs": 0.235,
+    "sb_technical_alignment": 0.173,
+    "sb_ml_score": 0.031,
+    "sb_leverage_safety": 0.045,
+    "sb_source_system": -0.027,
+    "rr_ratio": -0.029,
+    "confidence": -0.083
+  },
+  "linear_base_wr": 0.3205,
+  "ensemble_tree_weight": 0.4,
+  "rules_plain_english": [
+    "IF strategy_fwd_wr <= 47.9 AND IF strategy_fwd_wr <= 31.0 AND IF sb_source_system <= 15.0 AND THEN P(win) = 1.1% (n=91)",
+    "IF strategy_fwd_wr <= 47.9 AND IF strategy_fwd_wr <= 31.0 AND IF sb_source_system > 15.0 AND THEN P(win) = 11.8% (n=110)",
+    "IF strategy_fwd_wr <= 47.9 AND IF strategy_fwd_wr > 31.0 AND IF rr_ratio <= 1.375 AND THEN P(win) = 63.6% (n=33)",
+    "IF strategy_fwd_wr <= 47.9 AND IF strategy_fwd_wr > 31.0 AND IF rr_ratio > 1.375 AND THEN P(win) = 28.8% (n=1398)",
+    "IF strategy_fwd_wr > 47.9 AND IF sb_technical_alignment <= -20.0 AND IF technical_buy_tfs <= 1.5 AND THEN P(win) = 0.0% (n=14)",
+    "IF strategy_fwd_wr > 47.9 AND IF sb_technical_alignment <= -20.0 AND IF technical_buy_tfs > 1.5 AND THEN P(win) = 14.3% (n=7)",
+    "IF strategy_fwd_wr > 47.9 AND IF sb_technical_alignment > -20.0 AND IF strategy_fwd_wr <= 54.4 AND THEN P(win) = 53.0% (n=253)",
+    "IF strategy_fwd_wr > 47.9 AND IF sb_technical_alignment > -20.0 AND IF strategy_fwd_wr > 54.4 AND THEN P(win) = 72.3% (n=94)"
+  ],
+  "backtest": {
+    "train_size": 1400,
+    "test_size": 600,
+    "model_quartile_wr": {
+      "Q1": 64.0,
+      "Q2": 45.3,
+      "Q3": 35.3,
+      "Q4": 55.3
+    },
+    "model_q4_q1_spread": -8.700000000000003,
+    "current_quartile_wr": {
+      "Q1": 50.7,
+      "Q2": 29.3,
+      "Q3": 44.7,
+      "Q4": 75.3
+    },
+    "current_q4_q1_spread": 24.599999999999994
+  }
+}

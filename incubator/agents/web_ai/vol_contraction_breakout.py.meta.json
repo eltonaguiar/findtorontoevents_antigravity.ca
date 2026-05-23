@@ -1,0 +1,48 @@
+{
+  "strategy_name": "vol_contraction_breakout",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T22:40:00Z",
+  "status": "backtest_failed",
+  "strategy_type": "vol_contraction_breakout",
+  "unique_value": "Pure contraction-filtered VCP-style breakout. No RSI, no MACD, no crossovers.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "low_vol_to_expansion",
+  "indicators": [
+    "ATR(14)",
+    "ATR_MA(50)",
+    "Rolling_High(20)"
+  ],
+  "entry_conditions": [
+    "ATR ratio < 0.75",
+    "Close > 20-period high"
+  ],
+  "exit_conditions": [
+    "TP: 2.5x ATR",
+    "SL: 1.5x ATR"
+  ],
+  "parameters": {
+    "atr_period": 14,
+    "regime_lookback": 50,
+    "contraction_threshold": 0.75,
+    "breakout_lookback": 20,
+    "tp_atr": 2.5,
+    "sl_atr": 1.5
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai"
+  },
+  "backtest_metrics": {
+    "sharpe": null,
+    "win_rate": null,
+    "max_drawdown": null,
+    "total_trades": 0,
+    "profit_factor": null,
+    "total_return": 0.0,
+    "timestamp": "2026-02-27T00:00:00Z",
+    "data_source": "real_crypto_db"
+  }
+}

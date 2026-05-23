@@ -1,0 +1,66 @@
+name: Winner Pattern Precursor Scanner
+
+on:
+  schedule:
+    # Every 30 minutes, staggered away from :00/:30 mega-cluster
+    - cron: '18,48 * * * *'
+  workflow_dispatch:
+    inputs:
+      top_n:
+        description: 'Number of top symbols to scan'
+        required: false
+        default: '50'
+        type: string
+
+concurrency:
+  group: winner-pattern-scanner-writer
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  winner-pattern-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas
+
+      - name: Run Winner Pattern Scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          GITHUB_ACTIONS: 'true'
+        run: python alpha_engine/winner_pattern_strategy.py
+
+      - name: Check for changes
+        id: changes
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          git diff --quiet precursor_picks.json precursor_history.json active_picks.json 2>/dev/null && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit results
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/precursor_picks.json alpha_engine/data/precursor_history.json alpha_engine/data/active_picks.json
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          PICK_COUNT=$(python3 -c "import json; d=json.load(open('alpha_engine/data/precursor_picks.json')); print(len(d))" 2>/dev/null || echo "0")
+          git commit -m "Winner pattern scan ${TIMESTAMP} - ${PICK_COUNT} picks [skip ci]" || echo "No changes to commit"
+          git pull --rebase origin main
+          bash .github/scripts/safe_push.sh
+

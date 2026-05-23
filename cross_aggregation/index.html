@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<title>Cross-System Forward Test Monitor</title>
+<style>
+  :root {
+    --bg: #0a0a12; --card: #12121e; --border: #1e1e3a;
+    --green: #22c55e; --red: #ef4444; --yellow: #eab308; --blue: #3b82f6;
+    --text: #e2e8f0; --muted: #94a3b8; --accent: #8b5cf6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 13px; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .header h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .metrics-bar { display: flex; gap: 12px; padding: 16px 24px; flex-wrap: wrap; border-bottom: 1px solid var(--border); background: #0d0d18; }
+  .metric { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; min-width: 130px; flex: 1; }
+  .metric .label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .metric .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .metric .value.green { color: var(--green); }
+  .metric .value.red { color: var(--red); }
+  .metric .value.yellow { color: var(--yellow); }
+  .metric .value.blue { color: var(--blue); }
+  .metric .detail { color: var(--muted); font-size: 10px; margin-top: 2px; }
+  .section { padding: 16px 24px; }
+  .section-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); border-bottom: 1px solid var(--border); background: #0d0d18; position: sticky; top: 0; }
+  td { padding: 8px 10px; border-bottom: 1px solid #141428; font-size: 12px; }
+  tr:hover { background: #14142a; }
+  .pnl-pos { color: var(--green); font-weight: 600; }
+  .pnl-neg { color: var(--red); font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .badge-long { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-short { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-tp { background: rgba(34,197,94,0.25); color: var(--green); border: 1px solid var(--green); }
+  .badge-sl { background: rgba(239,68,68,0.25); color: var(--red); border: 1px solid var(--red); }
+  .badge-open { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-await { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .badge-stale { background: rgba(239,68,68,0.12); color: var(--red); font-weight: 700; }
+  .stale-row { background: rgba(239,68,68,0.04); }
+  .badge-consensus { background: rgba(139,92,246,0.2); color: var(--accent); border: 1px solid var(--accent); }
+  .conf-bar { display: inline-block; height: 6px; border-radius: 3px; background: var(--border); width: 60px; vertical-align: middle; margin-left: 6px; }
+  .conf-fill { height: 100%; border-radius: 3px; }
+  .systems-list { display: flex; gap: 4px; flex-wrap: wrap; }
+  .sys-chip { background: #1a1a30; padding: 1px 6px; border-radius: 3px; font-size: 10px; color: var(--muted); }
+  .conflict-row { background: rgba(234,179,8,0.05); }
+  .conflict-row td { border-left: 3px solid var(--yellow); }
+  .health-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .health-safe { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .health-caution { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .health-warning { background: orange; box-shadow: 0 0 6px orange; }
+  .health-panic { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .footer { text-align: center; padding: 16px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); }
+  .refresh-btn { background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 11px; font-family: inherit; }
+  .refresh-btn:hover { opacity: 0.85; }
+  .loading { color: var(--muted); text-align: center; padding: 40px; }
+  .tp-proximity { font-size: 10px; color: var(--muted); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } .metrics-bar { gap: 8px; } .metric { min-width: 100px; } }
+  .p0-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  .p0-box h3 { color: var(--red); font-size: 12px; margin-bottom: 6px; }
+  .p0-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+  .auto-refresh { font-size: 10px; color: var(--muted); margin-left: 12px; }
+  .filter-bar { display: flex; gap: 8px; padding: 0 24px 12px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-right: 4px; }
+  .filter-btn { padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; transition: all .2s; font-family: inherit; }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: rgba(139,92,246,0.15); border-color: var(--accent); color: var(--accent); }
+  .dir-stats-bar { display: flex; gap: 16px; padding: 0 24px 16px; flex-wrap: wrap; }
+  .dir-stat-pill { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 12px; }
+  .dir-stat-pill .pill-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 2px; }
+  .dir-stat-pill .pill-vals { display: flex; gap: 10px; font-weight: 700; font-size: 13px; }
+  th.sortable { cursor: pointer; user-select: none; position: relative; }
+  th.sortable:hover { color: var(--accent); }
+  th.sortable::after { content: '⇅'; margin-left: 4px; font-size: 9px; opacity: 0.4; }
+  th.sortable.sort-asc::after { content: '▲'; opacity: 1; color: var(--accent); }
+  th.sortable.sort-desc::after { content: '▼'; opacity: 1; color: var(--accent); }
+  .asset-filter-bar { display: flex; gap: 6px; padding: 0 24px 8px; flex-wrap: wrap; align-items: center; }
+  .asset-btn { padding: 3px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; transition: all .2s; font-family: inherit; }
+  .asset-btn:hover { border-color: var(--blue); color: var(--text); }
+  .asset-btn.active { background: rgba(59,130,246,0.15); border-color: var(--blue); color: var(--blue); }
+  .consensus-analytics { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+  .analytics-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .analytics-card h4 { color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .analytics-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; border-bottom: 1px solid #141428; }
+  .analytics-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <div>
+      <h1><span>CROSS-SYSTEM</span> Forward Test Monitor</h1>
+      <div class="subtitle">Consensus-validated picks across 12 trading systems | Auto-refreshes every 60s</div>
+    </div>
+    <div>
+      <button class="refresh-btn" onclick="refreshAll()">Refresh Now</button>
+      <span class="auto-refresh" id="countdown">Next refresh: 60s</span>
+    </div>
+  </div>
+</div>
+
+<!-- SYSTEM STATUS & QUALITY SUMMARY -->
+<div style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #30363d;border-radius:8px;padding:10px 24px;font-size:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="color:var(--accent);font-weight:700;font-size:13px">Cross-System Status & Quality</span>
+      <span id="xsys-health-badge" style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600"></span>
+    </div>
+    <span id="xsys-status-ts" style="color:#6b7280;font-size:11px"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
+    <div style="background:#1e293b;border-radius:6px;padding:5px 8px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Systems Tracked</div>
+      <div style="color:var(--blue);font-weight:700;font-size:13px">12</div>
+    </div>
+    <div style="background:#1e293b;border-radius:6px;padding:5px 8px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Aggregation</div>
+      <div style="color:var(--accent);font-weight:700;font-size:11px">Consensus Vote</div>
+    </div>
+    <div style="background:#1e293b;border-radius:6px;padding:5px 8px;text-align:center">
+      <div style="color:#888;font-size:9px;text-transform:uppercase">Refresh Rate</div>
+      <div style="color:var(--muted);font-weight:700;font-size:13px">60s</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var ts=document.getElementById('xsys-status-ts');
+  if(ts) ts.textContent='As of '+new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true})+' EST';
+  var b=document.getElementById('xsys-health-badge');
+  if(b){b.textContent='ACTIVE';b.style.background='#22c55e22';b.style.color='#22c55e';}
+})();
+</script>
+
+<!-- ML EXPLAINER -->
+<div style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #8b5cf633;border-radius:10px;padding:14px 24px;margin:0;line-height:1.7;border-bottom:1px solid var(--border)">
+  <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px">How Cross-System Consensus Works (Plain English)</div>
+  <div style="font-size:12px;color:var(--text)">
+    <p style="margin-bottom:6px"><strong style="color:#22c55e">What is consensus?</strong> &mdash; Instead of trusting one system, the Cross-System Monitor checks if <em>multiple</em> independent systems agree. If Mercury 2, KIMI, and Alpha Engine all say "BUY BTCUSDT", that signal is stronger than any single system alone. Like asking 3 doctors instead of 1.</p>
+    <p style="margin-bottom:6px"><strong style="color:#22c55e">Which systems feed in?</strong> &mdash; 12 systems: Mercury 2 (XGBoost), KIMI (81 algorithms + RF ranker), Alpha Engine (100 strategies + LightGBM), Crypto ML Edge (per-coin LightGBM), Claude Gainer (RF + XGBoost), ML Battleground (3 systems), Signal Engine, Breakout detectors, and more.</p>
+    <p style="font-size:11px;color:var(--muted)">A "consensus pick" means &ge;2 independent systems agree on the same symbol and direction. More systems agreeing = higher confidence. The monitor also detects <strong>conflicts</strong> (one system says BUY while another says SELL).</p>
+  </div>
+</div>
+
+<div class="metrics-bar" id="metrics">
+  <div class="metric"><div class="label">Fear & Greed</div><div class="value" id="fng-val">--</div><div class="detail" id="fng-label">Loading...</div></div>
+  <div class="metric"><div class="label">BTC Price</div><div class="value blue" id="btc-price">--</div><div class="detail" id="btc-change"></div></div>
+  <div class="metric"><div class="label">Market Health</div><div class="value" id="health-val"><span class="health-indicator"></span>--</div><div class="detail" id="health-detail"></div></div>
+  <div class="metric"><div class="label">Consensus Picks</div><div class="value blue" id="consensus-count">--</div><div class="detail" id="consensus-detail"></div></div>
+  <div class="metric"><div class="label">TP Hits</div><div class="value green" id="tp-count">--</div><div class="detail" id="tp-detail"></div></div>
+  <div class="metric"><div class="label">SL Hits</div><div class="value red" id="sl-count">--</div><div class="detail" id="sl-detail"></div></div>
+  <div class="metric"><div class="label">Avg P&L</div><div class="value" id="avg-pnl">--</div><div class="detail" id="pnl-detail"></div></div>
+</div>
+
+<div class="filter-bar">
+  <span class="filter-label">Direction:</span>
+  <button class="filter-btn active" onclick="setDirFilter('ALL')">All</button>
+  <button class="filter-btn" onclick="setDirFilter('LONG')">LONG</button>
+  <button class="filter-btn" onclick="setDirFilter('SHORT')">SHORT</button>
+</div>
+<div class="asset-filter-bar">
+  <span class="filter-label">Asset:</span>
+  <button class="asset-btn active" onclick="setAssetFilter('ALL')">All</button>
+  <button class="asset-btn" onclick="setAssetFilter('CRYPTO')">Crypto</button>
+  <button class="asset-btn" onclick="setAssetFilter('FOREX')">Forex</button>
+  <button class="asset-btn" onclick="setAssetFilter('EQUITY')">Equity</button>
+</div>
+<div class="filter-bar" style="padding-top:0">
+  <span class="filter-label">Status:</span>
+  <button class="filter-btn status-filter-btn active" onclick="setStatusFilter('all')">All</button>
+  <button class="filter-btn status-filter-btn" onclick="setStatusFilter('OPEN')">Open</button>
+  <button class="filter-btn status-filter-btn" onclick="setStatusFilter('HIT TP')">Hit TP</button>
+  <button class="filter-btn status-filter-btn" onclick="setStatusFilter('HIT SL')">Hit SL</button>
+  <button class="filter-btn status-filter-btn" onclick="setStatusFilter('NO ENTRY')">No Entry</button>
+  <button class="filter-btn status-filter-btn" onclick="setStatusFilter('CANDIDATES')" style="background:#22c55e22;color:#22c55e;border-color:#22c55e">&#127919; Entry Candidates</button>
+</div>
+<div class="dir-stats-bar" id="dir-stats-bar"></div>
+
+<div class="section">
+  <div class="section-title">Consensus Picks (>=3 Systems Agree) <span id="consensus-filter-count" style="font-size:12px;color:var(--muted);font-weight:normal"></span>
+    <button onclick="exportToExcel()" style="background:#217346;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:0.85em;float:right;font-family:inherit" title="Export to CSV/Excel">&#128202; Export Excel</button>
+  </div>
+  <table>
+    <thead><tr><th class="sortable" onclick="sortConsensus('symbol')">Symbol</th><th class="sortable" onclick="sortConsensus('direction')">Direction</th><th class="sortable" onclick="sortConsensus('confidence')">Confidence</th><th class="sortable" onclick="sortConsensus('time')">Consensus Time (EST)</th><th class="sortable" onclick="sortConsensus('entry')">Entry</th><th class="sortable" onclick="sortConsensus('live')">Live</th><th class="sortable" onclick="sortConsensus('pnl')">P&L</th><th>TP</th><th>SL</th><th class="sortable" onclick="sortConsensus('status')">Status</th><th class="sortable" onclick="sortConsensus('systems')">Systems</th></tr></thead>
+    <tbody id="consensus-body"><tr><td colspan="11" class="loading">Loading consensus picks...</td></tr></tbody>
+  </table>
+</div>
+
+<!-- SYSTEM PERFORMANCE LEADERBOARD -->
+<div class="section" id="leaderboard-section" style="display:none;">
+  <div class="section-title">System Performance Leaderboard <span id="leaderboard-subtitle" style="font-size:11px;color:var(--muted);font-weight:normal;text-transform:none;letter-spacing:0"></span></div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+    Performance of each system when participating in consensus picks. Systems with WR &lt; 45% are flagged for review.
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th><th class="sortable" onclick="sortLeaderboard('name')">System</th><th class="sortable" onclick="sortLeaderboard('total')">Trades</th><th>W/L</th><th class="sortable" onclick="sortLeaderboard('wr')">Win Rate</th>
+      <th class="sortable" onclick="sortLeaderboard('cumPnl')">Cum. PnL %</th><th class="sortable" onclick="sortLeaderboard('avgPnl')">Avg PnL %</th><th class="sortable" onclick="sortLeaderboard('best')">Best</th><th class="sortable" onclick="sortLeaderboard('worst')">Worst</th><th class="sortable" onclick="sortLeaderboard('status')">Status</th>
+    </tr></thead>
+    <tbody id="leaderboard-body"><tr><td colspan="10" class="loading">Loading system performance...</td></tr></tbody>
+  </table>
+</div>
+
+<!-- CONSENSUS PERFORMANCE ANALYTICS -->
+<div class="section" id="consensus-analytics-section" style="display:none;">
+  <div class="section-title">Consensus Performance Analytics <span id="analytics-subtitle" style="font-size:11px;color:var(--muted);font-weight:normal;text-transform:none;letter-spacing:0"></span></div>
+  <div class="consensus-analytics" id="consensus-analytics"></div>
+</div>
+
+<!-- SUPER TIER LIVE STATS -->
+<div class="section" id="super-stats-section" style="display:none;">
+  <div class="section-title" id="super-stats-header">SUPER Tier Performance</div>
+  <div id="super-stats-content" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+</div>
+
+<div class="section">
+  <div class="section-title">All Active Picks by System <span id="all-filter-count" style="font-size:12px;color:var(--muted);font-weight:normal"></span></div>
+  <table>
+    <thead><tr><th class="sortable" onclick="sortAllPicks('system')">System</th><th class="sortable" onclick="sortAllPicks('symbol')">Symbol</th><th class="sortable" onclick="sortAllPicks('dir')">Dir</th><th class="sortable" onclick="sortAllPicks('conf')">Conf</th><th class="sortable" onclick="sortAllPicks('time')">Opened (EST)</th><th class="sortable" onclick="sortAllPicks('entry')">Entry</th><th class="sortable" onclick="sortAllPicks('live')">Live</th><th class="sortable" onclick="sortAllPicks('pnl')">P&L</th><th>TP</th><th>SL</th><th class="sortable" onclick="sortAllPicks('status')">Status</th></tr></thead>
+    <tbody id="all-picks-body"><tr><td colspan="11" class="loading">Loading all system picks...</td></tr></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="grid-2">
+    <div>
+      <div class="section-title">P0 Fix Validation</div>
+      <div class="p0-box" id="p0-box">
+        <h3>Capitulation Guard (F&G <= 15 blocks shorts)</h3>
+        <div id="p0-stats">Loading...</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">System Status</div>
+      <table>
+        <thead><tr><th>System</th><th>Picks</th><th>Status</th></tr></thead>
+        <tbody id="system-status"><tr><td colspan="3" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Blocked Conflicts</div>
+  <table>
+    <thead><tr><th>Symbol</th><th>Long Systems</th><th>Short Systems</th><th>Resolution</th></tr></thead>
+    <tbody id="conflicts-body"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Cross-System Signal Aggregator v1.2 | 11 Trading Systems | Consensus Threshold: 3 | Last updated: <span id="last-update">--</span> | <span id="price-source" style="color:#888">Prices: connecting...</span>
+</div>
+
+<script>
+const REPO = 'eltonaguiar/findtorontoevents_antigravity.ca';
+const BRANCH = 'main';
+const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
+const BINANCE = 'https://api.binance.com/api/v3/ticker/price';
+const BINANCE_PROXY = 'https://api.binance.us/api/v3/ticker/price';
+const COINGECKO = 'https://api.coingecko.com/api/v3/simple/price';
+const CRYPTOCOMPARE = 'https://min-api.cryptocompare.com/data/pricemulti';
+const FNG_URL = 'https://api.alternative.me/fng/?limit=1';
+let _priceSource = 'none'; // Track which API is serving prices
+
+// Non-crypto symbols that should not be sent to crypto APIs
+const NON_CRYPTO = new Set(['SPY','QQQ','GLD','TLT','IWM','COPX','SLV','VDE','COIN',
+  'HYG','NIO','AAPL','NVDA','AMD','GOOGL','MSFT','META','AMZN','TSLA',
+  'ABG','AMRZ','AVBC','CGBD','EOSE','FFIN','FSSL','GRNT','HOG','MYGN','SSP','TSLX','XZO',
+  'GBPJPY=X','EURUSD=X','USDJPY=X','USDMXN=X','AUDUSD=X','AUDJPY=X',
+  'NZDUSD=X','GBPUSD=X','USDCAD=X','USDCHF=X','EURJPY=X',
+  'YM=F','ES=F','NQ=F','DEX:SCUBA']);
+
+// Classify asset type from symbol
+function assetClass(sym) {
+  if (NON_CRYPTO.has(sym)) {
+    if (sym.includes('=X')) return 'FOREX';
+    if (sym.includes('=F')) return 'FUTURES';
+    return 'EQUITY';
+  }
+  if (sym.startsWith('DEX:')) return 'EQUITY';
+  return 'CRYPTO';
+}
+
+const SYSTEMS = {
+  'Mercury 2':      'mercury2/data/active_picks.json',
+  'Alpha Engine':   'alpha_engine/data/active_picks.json',
+  'KIMI':           'KIMI_RISEOFTHECLAW/data/active_picks.json',
+  'Signal Engine':  'crypto_signal_engine/data/active_picks.json',
+  'ML Edge':        'crypto_ml_edge/data/active_picks.json',
+  'ML BG A':        'ml_battleground/system_a_filter/data/active_picks.json',
+  'ML BG B':        'ml_battleground/system_b_regime/data/active_picks.json',
+  'ML BG C':        'ml_battleground/system_c_deeplearn/data/active_picks.json',
+  'Breakout A':     'breakout_arena/approach_a_sr_breakout/data/active_picks.json',
+  'Breakout B':     'breakout_arena/approach_b_ml_breakout/data/active_picks.json',
+  'Breakout C':     'breakout_arena/approach_c_spike_reverse/data/active_picks.json',
+  'Claws of Doom':  'ml_battleground/system_f_clawsofdoom/data/active_picks.json',
+  'Smart Money':    'smart_money/data/active_picks.json',
+};
+
+let prices = {};
+let fng = null;
+let countdown = 60;
+let _dirFilter = 'ALL';
+let _assetFilter = 'ALL';
+let _statusFilter = 'all';
+let _lastConsensus = [];
+let _lastAllPicks = [];
+let _lastSystemStats = {};
+let _consensusSortKey = 'time';
+let _consensusSortDir = 'desc';
+let _allPicksSortKey = 'time';
+let _allPicksSortDir = 'desc';
+let _leaderboardSortKey = 'wr';
+let _leaderboardSortDir = 'desc';
+let _lastLeaderboardData = [];
+
+function setDirFilter(dir) {
+  _dirFilter = dir;
+  document.querySelectorAll('.filter-btn:not(.status-filter-btn)').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderConsensus(_lastConsensus);
+  renderAllPicks(_lastAllPicks);
+  renderDirStatsBar(_lastAllPicks);
+}
+
+function setAssetFilter(cls) {
+  _assetFilter = cls;
+  document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderConsensus(_lastConsensus);
+  renderAllPicks(_lastAllPicks);
+  renderDirStatsBar(_lastAllPicks);
+}
+
+function setStatusFilter(s) {
+  _statusFilter = s;
+  document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderConsensus(_lastConsensus);
+  renderAllPicks(_lastAllPicks);
+}
+
+function updateSortHeaders(tableSelector, sortKey) {
+  document.querySelectorAll(`${tableSelector} th.sortable`).forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+  });
+  const active = document.querySelector(`${tableSelector} th.sortable[onclick*="'${sortKey}'"]`);
+  if (active) active.classList.add(arguments[2] === 'asc' ? 'sort-asc' : 'sort-desc');
+}
+
+function sortConsensus(key) {
+  if (_consensusSortKey === key) _consensusSortDir = _consensusSortDir === 'asc' ? 'desc' : 'asc';
+  else { _consensusSortKey = key; _consensusSortDir = key === 'symbol' || key === 'direction' ? 'asc' : 'desc'; }
+  renderConsensus(_lastConsensus);
+}
+
+function sortAllPicks(key) {
+  if (_allPicksSortKey === key) _allPicksSortDir = _allPicksSortDir === 'asc' ? 'desc' : 'asc';
+  else { _allPicksSortKey = key; _allPicksSortDir = key === 'system' || key === 'symbol' ? 'asc' : 'desc'; }
+  renderAllPicks(_lastAllPicks);
+}
+
+function sortLeaderboard(key) {
+  if (_leaderboardSortKey === key) _leaderboardSortDir = _leaderboardSortDir === 'asc' ? 'desc' : 'asc';
+  else { _leaderboardSortKey = key; _leaderboardSortDir = key === 'name' ? 'asc' : 'desc'; }
+  renderLeaderboardSorted();
+}
+
+function renderDirStatsBar(allPicks) {
+  const bar = document.getElementById('dir-stats-bar');
+  const dirs = ['LONG', 'SHORT'];
+  const assetFiltered = _assetFilter === 'ALL' ? allPicks : allPicks.filter(p => assetClass(p.symbol) === _assetFilter);
+  bar.innerHTML = dirs.map(d => {
+    const picks = assetFiltered.filter(p => p.dir === d);
+    if (!picks.length) return '';
+    const withPnl = picks.filter(p => p.pnl !== null);
+    const avgPnl = withPnl.length ? (withPnl.reduce((s, p) => s + p.pnl, 0) / withPnl.length) : 0;
+    const tpHits = picks.filter(p => p.status === 'HIT TP').length;
+    const slHits = picks.filter(p => p.status === 'HIT SL').length;
+    const dirColor = d === 'LONG' ? 'var(--green)' : 'var(--red)';
+    const pnlColor = avgPnl >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<div class="dir-stat-pill">
+      <div class="pill-label" style="color:${dirColor}">${d}</div>
+      <div class="pill-vals">
+        <span>${picks.length} picks</span>
+        <span style="color:${pnlColor}">${avgPnl >= 0 ? '+' : ''}${avgPnl.toFixed(2)}% avg</span>
+        <span style="color:var(--green)">${tpHits} TP</span>
+        <span style="color:var(--red)">${slHits} SL</span>
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+function normSym(s) {
+  s = s.trim().toUpperCase().replace(/\//g, '').replace(/-/g, '');
+  if (s.endsWith('USD') && !s.endsWith('USDT')) s += 'T';
+  return s;
+}
+
+function normDir(d) {
+  d = (d || '').toUpperCase().trim();
+  if (['LONG','BUY'].includes(d)) return 'LONG';
+  if (['SHORT','SELL'].includes(d)) return 'SHORT';
+  return null;
+}
+
+function fmt(n, dec=2) {
+  if (n === null || n === undefined || n === 0) return '--';
+  return Number(n).toLocaleString(undefined, {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+
+function pnlClass(v) { return v >= 0 ? 'pnl-pos' : 'pnl-neg'; }
+
+function computePnl(entry, live, dir) {
+  if (!entry || !live) return null;
+  return dir === 'LONG' ? (live - entry) / entry * 100 : (entry - live) / entry * 100;
+}
+
+function checkTpSl(entry, live, tp, sl, dir) {
+  if (dir === 'LONG') {
+    if (tp && live >= tp) return 'HIT TP';
+    if (sl && live <= sl) return 'HIT SL';
+  } else {
+    if (tp && live <= tp) return 'HIT TP';
+    if (sl && live >= sl) return 'HIT SL';
+  }
+  return 'OPEN';
+}
+
+function tpDistance(live, tp, dir) {
+  if (!tp || !live) return null;
+  return dir === 'LONG' ? (tp - live) / live * 100 : (live - tp) / live * 100;
+}
+
+async function fetchJSON(url) {
+  try {
+    const r = await fetch(url, {cache: 'no-store'});
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+// CoinGecko ID mapping for failover
+const SYM_TO_CG = {
+  BTCUSDT:'bitcoin', ETHUSDT:'ethereum', SOLUSDT:'solana', BNBUSDT:'binancecoin',
+  XRPUSDT:'ripple', DOGEUSDT:'dogecoin', AVAXUSDT:'avalanche-2', ADAUSDT:'cardano',
+  DOTUSDT:'polkadot', LINKUSDT:'chainlink', PEPEUSDT:'pepe',
+  MATICUSDT:'matic-network', NEARUSDT:'near', APTUSDT:'aptos',
+  ARBUSDT:'arbitrum', OPUSDT:'optimism', ATOMUSDT:'cosmos',
+  UNIUSDT:'uniswap', AAVEUSDT:'aave', SHIBUSDT:'shiba-inu',
+  SUIUSDT:'sui', FTMUSDT:'fantom', INJUSDT:'injective-protocol',
+  RUNEUSDT:'thorchain', TIAUSDT:'celestia', SEIUSDT:'sei-network',
+};
+
+// CryptoCompare symbol mapping (strip USDT suffix for CC API)
+const SYM_TO_CC = {};
+for (const s of Object.keys(SYM_TO_CG)) {
+  SYM_TO_CC[s] = s.replace(/USDT$/, '');
+}
+
+async function fetchPricesBinance(endpoint, batch) {
+  const r = await fetch(`${endpoint}?symbols=${JSON.stringify(batch)}`, {cache:'no-store'});
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const data = await r.json();
+  if (!Array.isArray(data) || data.length === 0) throw new Error('Empty response');
+  data.forEach(d => { prices[d.symbol] = parseFloat(d.price); });
+  return data.length;
+}
+
+async function fetchPricesCryptoCompare(symbols) {
+  // CryptoCompare supports CORS and is free for price data
+  const cryptoSyms = symbols.filter(s => !NON_CRYPTO.has(s) && !s.includes('=') && !s.includes(':'));
+  const ccSyms = cryptoSyms.map(s => SYM_TO_CC[s] || s.replace(/USDT$/, '')).filter(Boolean);
+  const unique = [...new Set(ccSyms)];
+  if (!unique.length) throw new Error('No symbols for CryptoCompare');
+  // Batch into chunks that stay under 300 char fsyms limit
+  let count = 0;
+  for (let i = 0; i < unique.length; i += 25) {
+    const batch = unique.slice(i, i + 25);
+    const url = `${CRYPTOCOMPARE}?fsyms=${batch.join(',')}&tsyms=USD`;
+    const r = await fetch(url, {cache:'no-store'});
+    if (!r.ok) continue;
+    const data = await r.json();
+    if (data.Response === 'Error') continue;
+    for (const [cc, vals] of Object.entries(data)) {
+      if (vals && vals.USD) {
+        prices[cc + 'USDT'] = vals.USD;
+        count++;
+      }
+    }
+  }
+  if (count === 0) throw new Error('No prices in CryptoCompare response');
+  return count;
+}
+
+async function fetchPricesCoinGecko(symbols) {
+  const cryptoSyms = symbols.filter(s => !NON_CRYPTO.has(s));
+  const ids = cryptoSyms.map(s => SYM_TO_CG[s]).filter(Boolean);
+  if (!ids.length) throw new Error('No CoinGecko IDs for symbols');
+  const url = `${COINGECKO}?ids=${ids.join(',')}&vs_currencies=usd`;
+  const r = await fetch(url, {cache:'no-store'});
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const data = await r.json();
+  const cgToSym = {};
+  for (const [sym, cgId] of Object.entries(SYM_TO_CG)) { cgToSym[cgId] = sym; }
+  let count = 0;
+  for (const [cgId, vals] of Object.entries(data)) {
+    const sym = cgToSym[cgId];
+    if (sym && vals.usd) { prices[sym] = vals.usd; count++; }
+  }
+  if (count === 0) throw new Error('No prices in CoinGecko response');
+  return count;
+}
+
+async function fetchPricesFromSnapshot(symbols) {
+  // Fallback: load pre-baked prices from GitHub Actions aggregator output
+  const data = await fetchJSON(`${RAW}/cross_aggregation/data/price_snapshot.json`);
+  if (!data || !data.prices) throw new Error('No price snapshot');
+  let count = 0;
+  for (const [sym, price] of Object.entries(data.prices)) {
+    if (price > 0) { prices[sym] = price; count++; }
+  }
+  if (count === 0) throw new Error('Empty price snapshot');
+  const age = data.generated_at ? Math.round((Date.now() - new Date(data.generated_at).getTime()) / 60000) : '?';
+  _priceSource = `Snapshot (${count} symbols, ${age}min old)`;
+  return count;
+}
+
+async function fetchPrices(extraSymbols) {
+  const base = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','DOGEUSDT','AVAXUSDT','ADAUSDT','DOTUSDT','LINKUSDT','PEPEUSDT'];
+  const all = [...new Set([...base, ...(extraSymbols || [])])];
+  // Filter out non-crypto symbols for crypto APIs
+  const cryptoBatch = all.filter(s => !NON_CRYPTO.has(s)).slice(0, 100);
+
+  // Strategy 1: CryptoCompare (CORS-friendly, best for browsers)
+  try {
+    const n = await fetchPricesCryptoCompare(cryptoBatch);
+    _priceSource = `CryptoCompare (${n} symbols)`;
+    console.log('Price source: CryptoCompare', n, 'symbols');
+    return;
+  } catch(e) { console.warn('CryptoCompare failed:', e.message); }
+
+  // Strategy 2: Binance.com direct (works when not CORS-blocked)
+  try {
+    const n = await fetchPricesBinance(BINANCE, cryptoBatch);
+    _priceSource = `Binance (${n} symbols)`;
+    console.log('Price source: Binance.com', n, 'symbols');
+    return;
+  } catch(e) { console.warn('Binance.com failed:', e.message); }
+
+  // Strategy 3: CoinGecko
+  try {
+    const n = await fetchPricesCoinGecko(cryptoBatch);
+    _priceSource = `CoinGecko (${n} symbols)`;
+    console.log('Price source: CoinGecko', n, 'symbols');
+    return;
+  } catch(e) { console.warn('CoinGecko failed:', e.message); }
+
+  // Strategy 4: Pre-baked price snapshot from GitHub Actions
+  try {
+    const n = await fetchPricesFromSnapshot(cryptoBatch);
+    console.log('Price source: Snapshot', n, 'symbols');
+    return;
+  } catch(e) { console.warn('Price snapshot failed:', e.message); }
+
+  _priceSource = 'ALL FAILED';
+  console.error('All price APIs failed — prices unavailable');
+}
+
+function toEST(isoStr) {
+  if (!isoStr) return '--';
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d)) return '--';
+    return d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) + ' EST';
+  } catch { return '--'; }
+}
+
+async function fetchFNG() {
+  let fngData = null;
+
+  // Try primary API
+  try {
+    const data = await fetchJSON(FNG_URL);
+    if (data && data.data) fngData = data.data[0];
+  } catch(e) { console.warn('FNG primary failed:', e); }
+
+  // Fallback: CoinGecko global data (derive F&G from BTC market data)
+  if (!fngData) {
+    try {
+      const data = await fetchJSON('https://api.coingecko.com/api/v3/global');
+      if (data && data.data) {
+        // Approximate F&G from market cap change
+        const mcChange = data.data.market_cap_change_percentage_24h_usd || 0;
+        const approxFng = Math.max(1, Math.min(100, Math.round(50 + mcChange * 5)));
+        fngData = { value: approxFng, value_classification: approxFng <= 25 ? 'Extreme Fear' : approxFng <= 45 ? 'Fear' : approxFng <= 55 ? 'Neutral' : approxFng <= 75 ? 'Greed' : 'Extreme Greed' };
+        console.log('FNG approximated from CoinGecko global:', approxFng);
+      }
+    } catch(e) { console.warn('FNG fallback also failed:', e); }
+  }
+
+  if (fngData) {
+    fng = parseInt(fngData.value);
+    const cls = fngData.value_classification;
+    const el = document.getElementById('fng-val');
+    el.textContent = fng;
+    el.className = 'value ' + (fng <= 20 ? 'red' : fng <= 40 ? 'yellow' : 'green');
+    document.getElementById('fng-label').textContent = cls;
+
+    // Health indicator
+    const hv = document.getElementById('health-val');
+    const hd = document.getElementById('health-detail');
+    if (fng <= 15) { hv.innerHTML = '<span class="health-indicator health-panic"></span>PANIC'; hd.textContent = 'Shorts blocked, buys only'; }
+    else if (fng <= 25) { hv.innerHTML = '<span class="health-indicator health-warning"></span>WARNING'; hd.textContent = '25% size, conf>=0.70'; }
+    else if (fng <= 35) { hv.innerHTML = '<span class="health-indicator health-caution"></span>CAUTION'; hd.textContent = '50% size, conf>=0.55'; }
+    else { hv.innerHTML = '<span class="health-indicator health-safe"></span>SAFE'; hd.textContent = 'Trade freely'; }
+  }
+}
+
+function extractPicks(data) {
+  if (Array.isArray(data)) return data;
+  if (typeof data === 'object' && data) {
+    for (const k of ['active_picks','activePicks','picks','signals']) {
+      if (Array.isArray(data[k])) return data[k];
+    }
+  }
+  return [];
+}
+
+function getField(pick, ...keys) {
+  for (const k of keys) { if (pick[k] !== undefined && pick[k] !== null) return pick[k]; }
+  return 0;
+}
+
+async function loadAllPicks() {
+  const rawPicks = [];
+  const systemStats = {};
+
+  // Phase 1: collect all picks and their symbols
+  const promises = Object.entries(SYSTEMS).map(async ([name, path]) => {
+    const data = await fetchJSON(`${RAW}/${path}`);
+    const picks = data ? extractPicks(data) : [];
+    systemStats[name] = picks.length;
+
+    for (const p of picks) {
+      const sym = normSym(p.symbol || p.pair || '');
+      const dir = normDir(p.direction || p.signal_type || p.signal || '');
+      if (!sym || !dir) continue;
+      const entry = parseFloat(getField(p, 'entry', 'entry_price', 'entryPrice')) || 0;
+      const tp = parseFloat(getField(p, 'tp', 'take_profit', 'targetPrice', 'tp_price', 'tp1_price', 'tp_price_1_5', 'target_price')) || 0;
+      const sl = parseFloat(getField(p, 'sl', 'stop_loss', 'stopPrice', 'sl_price', 'stop_price')) || 0;
+      let conf = parseFloat(getField(p, 'confidence', 'ml_score', 'signalProbability')) || 0;
+      if (conf > 1) conf /= 100;
+      const entryDate = p.entry_date || p.entryDate || p.timestamp || p.generated_at || p.issued_at || p.scraped_at || p.scan_time || p.time || '';
+      rawPicks.push({ system: name, symbol: sym, dir, entry, tp, sl, conf, entryDate, strategy: p.strategy || p.strategies || '' });
+    }
+  });
+  await Promise.all(promises);
+
+  // Phase 2: fetch prices for ALL symbols found in picks
+  const pickSymbols = [...new Set(rawPicks.map(p => p.symbol))];
+  await fetchPrices(pickSymbols);
+
+  // Phase 3: compute live PnL and status with updated prices
+  // If no live price available, use entry price as fallback (avoids "NO PRICE" errors)
+  const allPicks = rawPicks.map(p => {
+    const liveRaw = prices[p.symbol] || 0;
+    const hasLivePrice = liveRaw > 0;
+    const live = hasLivePrice ? liveRaw : p.entry;  // fallback to entry price
+    const pnl = hasLivePrice && p.entry ? computePnl(p.entry, live, p.dir) : null;
+    const status = p.entry ? (hasLivePrice ? checkTpSl(p.entry, live, p.tp, p.sl, p.dir) : 'AWAITING PRICE') : (hasLivePrice ? 'OPEN' : 'NO ENTRY');
+    return { ...p, live, pnl, status, hasLivePrice };
+  });
+
+  return { allPicks, systemStats };
+}
+
+async function loadConsensus() {
+  return await fetchJSON(`${RAW}/data/aggregated_picks.json`) || [];
+}
+
+function consensusSortVal(p, key) {
+  const sym = normSym(p.symbol);
+  const live = prices[sym] || p.entry || 0;
+  const pnl = live && p.entry ? computePnl(p.entry, live, p.direction) : null;
+  switch(key) {
+    case 'symbol': return sym;
+    case 'direction': return p.direction || '';
+    case 'confidence': return p.confidence || 0;
+    case 'time': return p.generated_at ? new Date(p.generated_at).getTime() : 0;
+    case 'entry': return p.entry || 0;
+    case 'live': return live;
+    case 'pnl': return pnl !== null ? pnl : -9999;
+    case 'status': return p.entry ? 1 : 0;
+    case 'systems': return p.agreement_count || 0;
+    default: return 0;
+  }
+}
+
+function renderConsensus(consensus) {
+  _lastConsensus = consensus;
+  const tbody = document.getElementById('consensus-body');
+  // Sort consensus
+  const sk = _consensusSortKey, sd = _consensusSortDir;
+  consensus.sort((a, b) => {
+    const va = consensusSortVal(a, sk), vb = consensusSortVal(b, sk);
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : (va - vb);
+    return sd === 'asc' ? cmp : -cmp;
+  });
+  updateSortHeaders('.section:first-of-type table', sk, sd);
+  let filtered = _dirFilter === 'ALL' ? consensus : consensus.filter(p => (p.direction || '').toUpperCase() === _dirFilter);
+  if (_assetFilter !== 'ALL') filtered = filtered.filter(p => assetClass(normSym(p.symbol)) === _assetFilter);
+  // Status filter
+  if (_statusFilter !== 'all') {
+    filtered = filtered.filter(p => {
+      const sym = normSym(p.symbol);
+      const liveRaw = prices[sym] || 0;
+      const hasLive = liveRaw > 0;
+      const live = hasLive ? liveRaw : (p.entry || 0);
+      const st = p.entry ? (hasLive ? checkTpSl(p.entry, live, p.tp, p.sl, p.direction) : 'AWAITING PRICE') : (hasLive ? 'OPEN' : 'NO ENTRY');
+      if (_statusFilter === 'CANDIDATES') {
+        if (st !== 'OPEN') return false;
+        const isLong = p.direction === 'LONG';
+        const tpDist = isLong ? (p.tp - live) / live * 100 : (live - p.tp) / live * 100;
+        return tpDist >= 30;
+      }
+      return st === _statusFilter;
+    });
+  }
+  const filterLabel = _dirFilter !== 'ALL' || _statusFilter !== 'all' ? `(${filtered.length}/${consensus.length} shown)` : '';
+  document.getElementById('consensus-filter-count').textContent = filterLabel;
+  if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="11" class="loading">No matching consensus picks</td></tr>`; return; }
+
+  let tpHits = 0, slHits = 0;
+  tbody.innerHTML = filtered.map(p => {
+    const sym = normSym(p.symbol);
+    const liveRaw = prices[sym] || 0;
+    const hasLive = liveRaw > 0;
+    const live = hasLive ? liveRaw : (p.entry || 0);
+    const pnl = hasLive && p.entry ? computePnl(p.entry, live, p.direction) : null;
+    let status = p.entry ? (hasLive ? checkTpSl(p.entry, live, p.tp, p.sl, p.direction) : 'AWAITING PRICE') : 'NO ENTRY';
+    // If no entry but we have a live price, treat as OPEN with live reference
+    if (!p.entry && hasLive) status = 'OPEN';
+    const tpDist = tpDistance(live, p.tp, p.direction);
+    if (status === 'HIT TP') tpHits++;
+    if (status === 'HIT SL') slHits++;
+
+    // TP/SL Gauge
+    const slPrice = p.sl || 0;
+    const tpPrice = p.tp || 0;
+    const entryPrice = p.entry || 0;
+    let gaugeHtml = '';
+    if (slPrice && tpPrice && live) {
+      const isLong = p.direction === 'LONG';
+      const totalRange = Math.abs(tpPrice - slPrice);
+      let position;
+      if (isLong) {
+        position = (live - slPrice) / totalRange * 100;
+      } else {
+        position = (slPrice - live) / totalRange * 100;
+      }
+      position = Math.max(0, Math.min(100, position));
+      const gaugeColor = position > 66 ? '#22c55e' : position > 33 ? '#f59e0b' : '#ef4444';
+      gaugeHtml = `<div style="width:100%;height:6px;background:#333;border-radius:3px;margin-top:4px;position:relative" title="SL ← ${position.toFixed(0)}% → TP"><div style="position:absolute;left:0;height:100%;width:${position}%;background:${gaugeColor};border-radius:3px"></div><div style="position:absolute;left:${position}%;top:-3px;width:3px;height:12px;background:white;border-radius:1px"></div></div>`;
+    }
+
+    // Staleness for consensus picks
+    const genAt = p.generated_at || '';
+    let conStale = '';
+    if (genAt) {
+      const ageMs = Date.now() - new Date(genAt).getTime();
+      const ageH = ageMs / 3600000;
+      if (ageH > 48) {
+        const days = Math.floor(ageH / 24);
+        conStale = `<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:4px" title="Consensus is ${days}d old">&#9888; ${days}d old</span>`;
+      }
+    }
+
+    const dirBadge = p.direction === 'LONG' ? 'badge-long' : 'badge-short';
+    const statusBadge = status === 'HIT TP' ? 'badge-tp' : status === 'HIT SL' ? 'badge-sl' : status === 'AWAITING PRICE' ? 'badge-await' : status === 'NO ENTRY' ? 'badge-await' : 'badge-open';
+    const confPct = Math.round((p.confidence || 0) * 100);
+    const confColor = confPct >= 80 ? 'var(--green)' : confPct >= 60 ? 'var(--yellow)' : 'var(--red)';
+    const confBreakdown = p.confidence_breakdown || {};
+    const tooltipText = `Confidence: ${confPct}%\nBase: ${confBreakdown.base || 'N/A'}\nWR Boost: ${confBreakdown.wr_boost || 'N/A'}\nConsensus: ${confBreakdown.consensus || 'N/A'}\nBeta Score: ${p.beta_score || 'N/A'}/100`;
+    const systems = (p.source_systems || []);
+    const uniqueSys = [...new Set(systems)];
+    const liveLabel = hasLive ? '' : '<span style="color:var(--muted);font-size:9px"> (entry)</span>';
+    const entryDisplay = p.entry ? `$${fmt(p.entry)}` : (hasLive ? `<span style="color:var(--yellow);font-size:10px">~$${fmt(liveRaw)}</span><br><span style="color:var(--muted);font-size:9px">(live ref)</span>` : '<span style="color:var(--muted)">--</span>');
+    const acBadge = assetClass(sym);
+    const acColor = acBadge === 'CRYPTO' ? 'var(--accent)' : acBadge === 'FOREX' ? 'var(--blue)' : 'var(--green)';
+
+    return `<tr>
+      <td><strong>${p.symbol}</strong> <span class="badge badge-consensus">${p.agreement_count}/${p.total_systems}</span>${acBadge !== 'CRYPTO' ? ` <span style="font-size:9px;color:${acColor}">${acBadge}</span>` : ''}</td>
+      <td><span class="badge ${dirBadge}">${p.direction}</span></td>
+      <td title="${tooltipText}" style="cursor:help"><div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:6px;background:#333;border-radius:3px"><div style="height:100%;width:${confPct}%;background:${confColor};border-radius:3px"></div></div><span style="color:${confColor}">${confPct}%</span></div></td>
+      <td style="font-size:11px;white-space:nowrap;">${toEST(genAt)}${conStale}</td>
+      <td>${entryDisplay}${gaugeHtml}</td>
+      <td>$${fmt(live)}${liveLabel}</td>
+      <td class="${pnlClass(pnl)}">${pnl !== null ? (pnl >= 0 ? '+' : '') + fmt(pnl) + '%' : '--'}</td>
+      <td>$${fmt(p.tp)}${tpDist !== null ? '<br><span class="tp-proximity">' + fmt(tpDist,1) + '% away</span>' : ''}</td>
+      <td>$${fmt(p.sl)}</td>
+      <td><span class="badge ${statusBadge}">${status}</span></td>
+      <td><div class="systems-list">${uniqueSys.map(s => `<span class="sys-chip">${s}</span>`).join('')}</div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('consensus-count').textContent = consensus.length;
+  document.getElementById('consensus-detail').textContent = `${tpHits} hit TP, ${slHits} hit SL`;
+}
+
+function pickAgeMs(p) {
+  if (!p.entryDate) return Infinity;
+  const d = new Date(p.entryDate);
+  return isNaN(d) ? Infinity : Date.now() - d.getTime();
+}
+
+function stalenessTag(p) {
+  const ms = pickAgeMs(p);
+  if (ms === Infinity) return '<span style="color:var(--yellow);font-size:10px;margin-left:4px" title="No timestamp available">&#9888; no time</span>';
+  const hours = ms / 3600000;
+  if (hours > 48) {
+    const days = Math.floor(hours / 24);
+    return `<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:4px" title="This pick is ${days}d old and may be stale">&#9888; ${days}d old</span>`;
+  }
+  return '';
+}
+
+function allPicksSortVal(p, key) {
+  switch(key) {
+    case 'system': return p.system;
+    case 'symbol': return p.symbol;
+    case 'dir': return p.dir;
+    case 'conf': return p.conf;
+    case 'time': return p.entryDate ? new Date(p.entryDate).getTime() : 0;
+    case 'entry': return p.entry || 0;
+    case 'live': return p.live || 0;
+    case 'pnl': return p.pnl !== null ? p.pnl : -9999;
+    case 'status': return p.status;
+    default: return 0;
+  }
+}
+
+function renderAllPicks(allPicks) {
+  _lastAllPicks = allPicks;
+  const tbody = document.getElementById('all-picks-body');
+  // Sort by selected column
+  const sk = _allPicksSortKey, sd = _allPicksSortDir;
+  allPicks.sort((a, b) => {
+    const va = allPicksSortVal(a, sk), vb = allPicksSortVal(b, sk);
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : (va - vb);
+    return sd === 'asc' ? cmp : -cmp;
+  });
+  let filtered = _dirFilter === 'ALL' ? allPicks : allPicks.filter(p => p.dir === _dirFilter);
+  if (_assetFilter !== 'ALL') filtered = filtered.filter(p => assetClass(p.symbol) === _assetFilter);
+  document.getElementById('all-filter-count').textContent = _dirFilter !== 'ALL' || _assetFilter !== 'ALL' ? `(${filtered.length}/${allPicks.length} shown)` : '';
+
+  let tpTotal = 0, slTotal = 0, pnlSum = 0, pnlCount = 0;
+  let shortsBlocked = 0, shortsLoss = 0;
+
+  tbody.innerHTML = filtered.map(p => {
+    if (p.status === 'HIT TP') tpTotal++;
+    if (p.status === 'HIT SL') slTotal++;
+    if (p.pnl !== null && Math.abs(p.pnl) < 200) { pnlSum += p.pnl; pnlCount++; }
+    if (p.dir === 'SHORT' && fng !== null && fng <= 15) { shortsBlocked++; if (p.pnl < 0) shortsLoss += p.pnl; }
+
+    const dirBadge = p.dir === 'LONG' ? 'badge-long' : 'badge-short';
+    const statusBadge = p.status === 'HIT TP' ? 'badge-tp' : p.status === 'HIT SL' ? 'badge-sl' : p.status === 'AWAITING PRICE' ? 'badge-await' : 'badge-open';
+    const confPct = Math.round(p.conf * 100);
+
+    const isStale = pickAgeMs(p) > 48 * 3600000;
+    return `<tr${isStale ? ' class="stale-row"' : ''}>
+      <td>${p.system}${isStale ? ' <span class="badge badge-stale">STALE</span>' : ''}</td>
+      <td><strong>${p.symbol}</strong></td>
+      <td><span class="badge ${dirBadge}">${p.dir}</span></td>
+      <td title="Confidence: system signal strength. 80%+=High, 60-79%=Medium, <60%=Low">${confPct}%</td>
+      <td style="font-size:11px;white-space:nowrap;">${toEST(p.entryDate)}${stalenessTag(p)}</td>
+      <td>$${fmt(p.entry, p.entry < 1 ? 6 : 2)}</td>
+      <td>${p.hasLivePrice ? '' : '<span style="color:var(--yellow);font-size:9px">&#9888;</span>'}$${fmt(p.live, p.live < 1 ? 6 : 2)}${p.hasLivePrice ? '' : '<span style="color:var(--muted);font-size:9px"> (entry)</span>'}</td>
+      <td class="${pnlClass(p.pnl)}">${p.pnl !== null ? (p.pnl >= 0 ? '+' : '') + fmt(p.pnl) + '%' : '--'}</td>
+      <td>$${fmt(p.tp, p.tp < 1 ? 6 : 2)}</td>
+      <td>$${fmt(p.sl, p.sl < 1 ? 6 : 2)}</td>
+      <td><span class="badge ${statusBadge}">${p.status}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tp-count').textContent = tpTotal;
+  document.getElementById('sl-count').textContent = slTotal;
+  // Calculate avg P&L excluding outliers (>200% are likely data errors)
+  const validPnls = filtered.filter(p => p.pnl !== null && Math.abs(p.pnl) < 200).map(p => p.pnl);
+  const avgPnl = validPnls.length ? validPnls.reduce((s, v) => s + v, 0) / validPnls.length : 0;
+  const medianPnl = validPnls.length ? validPnls.sort((a, b) => a - b)[Math.floor(validPnls.length / 2)] : 0;
+  const outliers = filtered.filter(p => p.pnl !== null && Math.abs(p.pnl) >= 200).length;
+  const avgEl = document.getElementById('avg-pnl');
+  avgEl.textContent = (avgPnl >= 0 ? '+' : '') + fmt(avgPnl) + '%';
+  avgEl.className = 'value ' + (avgPnl >= 0 ? 'green' : 'red');
+  document.getElementById('pnl-detail').textContent = `${validPnls.length} tracked${outliers ? `, ${outliers} outliers excluded` : ''} | median: ${medianPnl >= 0 ? '+' : ''}${fmt(medianPnl)}%`;
+
+  // P0 validation
+  const p0Box = document.getElementById('p0-stats');
+  const shorts = allPicks.filter(p => p.dir === 'SHORT');
+  if (fng !== null && fng <= 15 && shorts.length > 0) {
+    const totalShortLoss = shorts.filter(p => p.pnl < 0).reduce((s, p) => s + p.pnl, 0);
+    p0Box.innerHTML = `
+      <div class="p0-stat"><span>Active shorts:</span><span class="pnl-neg">${shorts.length}</span></div>
+      <div class="p0-stat"><span>Would be blocked (F&G=${fng}):</span><span class="pnl-pos">${shorts.length}/${shorts.length}</span></div>
+      <div class="p0-stat"><span>Total short losses:</span><span class="pnl-neg">${fmt(totalShortLoss)}%</span></div>
+      <div class="p0-stat"><span>Avg short P&L:</span><span class="pnl-neg">${fmt(totalShortLoss / shorts.length)}%</span></div>
+      <div style="margin-top:8px;font-size:11px;color:var(--green);">All ${shorts.length} shorts BLOCKED by capitulation guard. Loss avoided.</div>
+    `;
+  } else if (shorts.length === 0) {
+    p0Box.innerHTML = '<div style="color:var(--green);">No active shorts. Capitulation guard not needed.</div>';
+  } else {
+    p0Box.innerHTML = `<div>F&G=${fng || '??'} — shorts allowed (above threshold 15).</div>`;
+  }
+}
+
+function renderSystemStatus(stats) {
+  const tbody = document.getElementById('system-status');
+  tbody.innerHTML = Object.entries(stats).map(([name, count]) => {
+    const status = count > 0 ? `<span style="color:var(--green);">${count} picks</span>` : '<span style="color:var(--muted);">offline</span>';
+    return `<tr><td>${name}</td><td>${count}</td><td>${status}</td></tr>`;
+  }).join('');
+}
+
+function renderLeaderboardSorted() {
+  const sk = _leaderboardSortKey, sd = _leaderboardSortDir;
+  const sorted = [..._lastLeaderboardData].sort((a, b) => {
+    let va, vb;
+    if (sk === 'name') { va = a.name; vb = b.name; }
+    else if (sk === 'status') { va = a.statusScore; vb = b.statusScore; }
+    else { va = a[sk]; vb = b[sk]; }
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : (va - vb);
+    return sd === 'asc' ? cmp : -cmp;
+  });
+
+  const tbody = document.getElementById('leaderboard-body');
+  tbody.innerHTML = sorted.map((s, i) => {
+    const wrColor = s.wr > 55 ? 'var(--green)' : s.wr >= 45 ? 'var(--yellow)' : 'var(--red)';
+    const wrBg = s.wr > 55 ? 'rgba(34,197,94,0.08)' : s.wr >= 45 ? 'rgba(234,179,8,0.08)' : 'rgba(239,68,68,0.08)';
+    // Small-sample warning: consensus trades < 10 means WR is unreliable
+    const sampleWarning = s.total < 10 ? ' <span title="Small sample — WR unreliable with fewer than 10 consensus trades" style="color:var(--yellow);font-size:10px;cursor:help">&#9888; small sample</span>' : '';
+    const statusLabel = s.wr > 55 ? `<span style="color:var(--green);font-weight:600">&#10003; Strong</span>${sampleWarning}`
+      : s.wr >= 45 ? `<span style="color:var(--yellow);font-weight:600">&#9679; Neutral</span>${sampleWarning}`
+      : `<span style="color:var(--red);font-weight:600">&#9888; Review</span>${sampleWarning}`;
+    const pnlCls = s.cumPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+    const avgCls = s.avgPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+    const SYS_LINKS = {
+      'battleground': 'battleground/', 'kimi': 'KIMI_RISEOFTHECLAW/', 'alpha_engine': 'alpha_engine/',
+      'rapid_fire': 'ml_battleground/', 'genome': 'genome/', 'mercury2': 'mercury/',
+      'quan_engine': 'quan_engine/', 'incubator_gainer': 'incubator/', 'claude_gainer_st': 'claude_gainer_ml/',
+      'mega_mutation': 'genome/mutation_lab/', 'coinglass_strategies': 'coinglass_strategies/',
+      'ml_crypto_pred': 'ml_crypto_predictor/', 'luxalgo_filters': 'battleground/',
+      'incubator_fwd': 'incubator/', 'breakout_b': 'breakout_arena/', 'predictions': '',
+      'Mercury 2': 'mercury2/', 'Alpha Engine': 'alpha_engine/', 'KIMI': 'KIMI_RISEOFTHECLAW/',
+      'Signal Engine': 'crypto_signal_engine/', 'ML Edge': 'crypto_ml_edge/',
+      'ML BG A': 'ml_battleground/system_a_filter/', 'ML BG B': 'ml_battleground/system_b_regime/',
+      'ML BG C': 'ml_battleground/system_c_deeplearn/',
+      'Breakout A': 'breakout_arena/approach_a_sr_breakout/', 'Breakout B': 'breakout_arena/approach_b_ml_breakout/',
+      'Breakout C': 'breakout_arena/approach_c_spike_reverse/', 'Claws of Doom': 'ml_battleground/system_f_clawsofdoom/',
+      'smart_money': 'smart_money/',
+    };
+    const sysDir = SYS_LINKS[s.name] || '';
+    const sysUrl = sysDir ? `https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/${sysDir}` : '';
+    const sysNameHtml = sysUrl ? `<a href="${sysUrl}" target="_blank" style="color:#60a5fa;text-decoration:none">${s.name}</a>` : s.name;
+    return `<tr style="background:${wrBg}">
+      <td style="color:var(--muted);font-weight:700">${i + 1}</td>
+      <td><strong>${sysNameHtml}</strong></td>
+      <td>${s.total}</td>
+      <td><span style="color:var(--green)">${s.wins}W</span> / <span style="color:var(--red)">${s.losses}L</span></td>
+      <td style="font-weight:700;color:${wrColor}">${s.wr.toFixed(1)}%</td>
+      <td class="${pnlCls}" style="font-weight:600">${s.cumPnl >= 0 ? '+' : ''}${s.cumPnl.toFixed(1)}%</td>
+      <td class="${avgCls}">${s.avgPnl >= 0 ? '+' : ''}${s.avgPnl.toFixed(2)}%</td>
+      <td style="color:var(--green)">${s.best >= 0 ? '+' : ''}${s.best.toFixed(2)}%</td>
+      <td style="color:var(--red)">${s.worst >= 0 ? '+' : ''}${s.worst.toFixed(2)}%</td>
+      <td>${statusLabel}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderConsensusAnalytics(closed, active) {
+  const section = document.getElementById('consensus-analytics-section');
+  const container = document.getElementById('consensus-analytics');
+  if (!closed.length && !active.length) return;
+  section.style.display = '';
+
+  // 1. Performance by agreement level
+  const byAgreement = {};
+  closed.forEach(t => {
+    const lvl = t.agreement_count || 2;
+    if (!byAgreement[lvl]) byAgreement[lvl] = { wins: 0, losses: 0, pnls: [] };
+    if (t.status === 'WON') byAgreement[lvl].wins++;
+    else byAgreement[lvl].losses++;
+    byAgreement[lvl].pnls.push(t.pnl_pct || 0);
+  });
+
+  let agreementHtml = '';
+  Object.keys(byAgreement).sort((a, b) => b - a).forEach(lvl => {
+    const d = byAgreement[lvl];
+    const total = d.wins + d.losses;
+    const wr = total > 0 ? (d.wins / total * 100).toFixed(0) : 0;
+    const avg = d.pnls.length ? (d.pnls.reduce((s, v) => s + v, 0) / d.pnls.length).toFixed(2) : 0;
+    const wrColor = wr > 55 ? 'var(--green)' : wr >= 45 ? 'var(--yellow)' : 'var(--red)';
+    agreementHtml += `<div class="analytics-row">
+      <span>${lvl}+ systems agree</span>
+      <span>${total} trades | <span style="color:${wrColor};font-weight:700">${wr}% WR</span> | avg ${avg >= 0 ? '+' : ''}${avg}%</span>
+    </div>`;
+  });
+
+  // 2. Performance by system pair (top combos)
+  const pairMap = {};
+  closed.forEach(t => {
+    const sys = (t.source_systems || []).sort();
+    if (sys.length < 2) return;
+    // Generate all pairs
+    for (let i = 0; i < sys.length; i++) {
+      for (let j = i + 1; j < sys.length; j++) {
+        const key = sys[i] + ' + ' + sys[j];
+        if (!pairMap[key]) pairMap[key] = { wins: 0, losses: 0, pnls: [] };
+        if (t.status === 'WON') pairMap[key].wins++;
+        else pairMap[key].losses++;
+        pairMap[key].pnls.push(t.pnl_pct || 0);
+      }
+    }
+  });
+
+  const topPairs = Object.entries(pairMap)
+    .map(([pair, d]) => {
+      const total = d.wins + d.losses;
+      return { pair, total, wins: d.wins, wr: total > 0 ? d.wins / total * 100 : 0, avg: d.pnls.reduce((s, v) => s + v, 0) / d.pnls.length };
+    })
+    .filter(p => p.total >= 3)
+    .sort((a, b) => b.wr - a.wr || b.total - a.total)
+    .slice(0, 10);
+
+  let pairsHtml = '';
+  if (topPairs.length) {
+    topPairs.forEach(p => {
+      const wrColor = p.wr > 55 ? 'var(--green)' : p.wr >= 45 ? 'var(--yellow)' : 'var(--red)';
+      pairsHtml += `<div class="analytics-row">
+        <span style="font-size:11px">${p.pair}</span>
+        <span>${p.total}t | <span style="color:${wrColor};font-weight:700">${p.wr.toFixed(0)}% WR</span></span>
+      </div>`;
+    });
+  } else {
+    pairsHtml = '<div style="color:var(--muted);font-size:11px">Need 3+ closed trades per pair</div>';
+  }
+
+  // 3. Performance by symbol
+  const symMap = {};
+  closed.forEach(t => {
+    const sym = t.symbol;
+    if (!symMap[sym]) symMap[sym] = { wins: 0, losses: 0, pnls: [] };
+    if (t.status === 'WON') symMap[sym].wins++;
+    else symMap[sym].losses++;
+    symMap[sym].pnls.push(t.pnl_pct || 0);
+  });
+
+  const topSyms = Object.entries(symMap)
+    .map(([sym, d]) => {
+      const total = d.wins + d.losses;
+      return { sym, total, wins: d.wins, wr: total > 0 ? d.wins / total * 100 : 0, avg: d.pnls.reduce((s, v) => s + v, 0) / d.pnls.length };
+    })
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  let symsHtml = '';
+  topSyms.forEach(s => {
+    const wrColor = s.wr > 55 ? 'var(--green)' : s.wr >= 45 ? 'var(--yellow)' : 'var(--red)';
+    symsHtml += `<div class="analytics-row">
+      <span><strong>${s.sym}</strong></span>
+      <span>${s.total}t | <span style="color:${wrColor};font-weight:700">${s.wr.toFixed(0)}% WR</span> | avg ${s.avg >= 0 ? '+' : ''}${s.avg.toFixed(2)}%</span>
+    </div>`;
+  });
+
+  // 4. Overall consensus stats
+  const totalClosed = closed.length;
+  const totalWins = closed.filter(t => t.status === 'WON').length;
+  const totalWR = totalClosed > 0 ? (totalWins / totalClosed * 100).toFixed(1) : 0;
+  const totalPnl = closed.reduce((s, t) => s + (t.pnl_pct || 0), 0);
+  const avgPnlClosed = totalClosed > 0 ? (totalPnl / totalClosed).toFixed(2) : 0;
+
+  container.innerHTML = `
+    <div class="analytics-card">
+      <h4>Overall Consensus Performance</h4>
+      <div class="analytics-row"><span>Total Closed</span><span style="font-weight:700">${totalClosed}</span></div>
+      <div class="analytics-row"><span>Win Rate</span><span style="font-weight:700;color:${totalWR > 55 ? 'var(--green)' : totalWR >= 45 ? 'var(--yellow)' : 'var(--red)'}">${totalWR}%</span></div>
+      <div class="analytics-row"><span>Avg P&L per Trade</span><span class="${avgPnlClosed >= 0 ? 'pnl-pos' : 'pnl-neg'}">${avgPnlClosed >= 0 ? '+' : ''}${avgPnlClosed}%</span></div>
+      <div class="analytics-row"><span>Cum. P&L</span><span class="${totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(1)}%</span></div>
+      <div class="analytics-row"><span>Active Positions</span><span style="color:var(--blue)">${active.length}</span></div>
+    </div>
+    <div class="analytics-card">
+      <h4>By Agreement Level (closed trades)</h4>
+      ${agreementHtml || '<div style="color:var(--muted)">No closed data</div>'}
+    </div>
+    <div class="analytics-card">
+      <h4>Top System Pairs (3+ trades)</h4>
+      ${pairsHtml}
+    </div>
+    <div class="analytics-card">
+      <h4>By Symbol (most traded)</h4>
+      ${symsHtml || '<div style="color:var(--muted)">No closed data</div>'}
+    </div>
+  `;
+
+  document.getElementById('analytics-subtitle').textContent = `(${totalClosed} closed, ${active.length} active)`;
+}
+
+async function loadLeaderboard() {
+  try {
+    const data = await fetchJSON(`${RAW}/cross_aggregation/data/consensus_outcomes.json`);
+    if (!data) return;
+    const closed = data.closed || [];
+    const active = data.active || [];
+    if (!closed.length) return;
+
+    // Compute per-system stats from closed trades
+    const systemMap = {};
+    closed.forEach(trade => {
+      const systems = trade.source_systems || [];
+      const isWin = trade.status === 'WON';
+      const pnl = trade.pnl_pct || 0;
+      systems.forEach(sys => {
+        if (!systemMap[sys]) systemMap[sys] = { wins: 0, losses: 0, pnlList: [] };
+        if (isWin) systemMap[sys].wins++; else systemMap[sys].losses++;
+        systemMap[sys].pnlList.push(pnl);
+      });
+    });
+
+    // Build system data
+    _lastLeaderboardData = Object.entries(systemMap).map(([name, s]) => {
+      const total = s.wins + s.losses;
+      const wr = total > 0 ? (s.wins / total * 100) : 0;
+      const cumPnl = s.pnlList.reduce((a, b) => a + b, 0);
+      const avgPnl = s.pnlList.length ? cumPnl / s.pnlList.length : 0;
+      const best = s.pnlList.length ? Math.max(...s.pnlList) : 0;
+      const worst = s.pnlList.length ? Math.min(...s.pnlList) : 0;
+      const statusScore = wr > 55 ? 2 : wr >= 45 ? 1 : 0;
+      return { name, wins: s.wins, losses: s.losses, total, wr, cumPnl, avgPnl, best, worst, statusScore };
+    });
+    renderLeaderboardSorted();
+
+    // Build consensus analytics
+    renderConsensusAnalytics(closed, active);
+
+    document.getElementById('leaderboard-section').style.display = '';
+    document.getElementById('leaderboard-subtitle').textContent = `(${_lastLeaderboardData.length} systems, ${closed.length} closed trades)`;
+
+    // SUPER tier dynamic stats
+    const superClosed = closed.filter(t => t.consensus_tier === 'SUPER');
+    const superActive = active.filter(t => t.consensus_tier === 'SUPER');
+    if (superClosed.length > 0 || superActive.length > 0) {
+      const superWins = superClosed.filter(t => t.status === 'WON').length;
+      const superLosses = superClosed.filter(t => t.status === 'LOST').length;
+      const superTotal = superWins + superLosses;
+      const superWR = superTotal > 0 ? (superWins / superTotal * 100) : 0;
+      const superPnl = superClosed.reduce((s, t) => s + (t.pnl_pct || 0), 0);
+      const superAvg = superClosed.length > 0 ? superPnl / superClosed.length : 0;
+      const wrColor = superWR >= 60 ? 'var(--green)' : superWR >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+      document.getElementById('super-stats-header').innerHTML = `SUPER Tier Performance <span style="font-size:12px;color:var(--muted);font-weight:normal;text-transform:none;letter-spacing:0;margin-left:8px">${superWins}W/${superLosses}L = ${superWR.toFixed(0)}% WR</span>`;
+
+      document.getElementById('super-stats-content').innerHTML = [
+        { label: 'SUPER Active', value: superActive.length, color: 'var(--accent)' },
+        { label: 'SUPER Closed', value: superTotal, color: 'var(--blue)' },
+        { label: 'SUPER Win Rate', value: superWR.toFixed(0) + '%', color: wrColor },
+        { label: 'SUPER Cum. PnL', value: (superPnl >= 0 ? '+' : '') + superPnl.toFixed(1) + '%', color: superPnl >= 0 ? 'var(--green)' : 'var(--red)' },
+        { label: 'SUPER Avg PnL', value: (superAvg >= 0 ? '+' : '') + superAvg.toFixed(2) + '%', color: superAvg >= 0 ? 'var(--green)' : 'var(--red)' },
+      ].map(s => `<div class="metric" style="min-width:110px;flex:1">
+        <div class="label">${s.label}</div>
+        <div class="value" style="color:${s.color};font-size:20px">${s.value}</div>
+      </div>`).join('');
+
+      document.getElementById('super-stats-section').style.display = '';
+    }
+  } catch(e) { console.warn('Leaderboard load failed:', e); }
+}
+
+function exportToExcel() {
+  const table = document.getElementById('consensus-body');
+  if (!table) return;
+  const rows = table.querySelectorAll('tr');
+  let csv = 'Symbol,Direction,Confidence,Beta Score,Beta Qualified,Time,Entry,Live,P&L,TP,SL,Status,Systems\n';
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 10) return;
+    const vals = Array.from(cells).map(c => {
+      let t = c.innerText.replace(/,/g, '').replace(/\n/g, ' ').replace(/"/g, '""').trim();
+      return '"' + t + '"';
+    });
+    csv += vals.join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'consensus_picks_' + new Date().toISOString().slice(0,10) + '.csv';
+  link.click();
+}
+
+async function refreshAll() {
+  countdown = 60;
+  document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+  const btcEl = document.getElementById('btc-price');
+
+  try {
+    await Promise.all([fetchPrices(), fetchFNG()]);
+  } catch(e) { console.warn('Price/FNG fetch error (non-fatal):', e); }
+
+  // Show price source status
+  const srcEl = document.getElementById('price-source');
+  if (_priceSource === 'ALL FAILED') {
+    srcEl.innerHTML = '<span style="color:var(--red)">Prices: OFFLINE</span>';
+  } else if (_priceSource !== 'none') {
+    srcEl.innerHTML = `<span style="color:var(--green)">via ${_priceSource}</span>`;
+  }
+
+  if (prices.BTCUSDT) {
+    btcEl.textContent = '$' + fmt(prices.BTCUSDT, 0);
+  }
+
+  // Load consensus and all system picks
+  let consensus = [], allPicks = [], systemStats = {};
+  try {
+    const [con, ap] = await Promise.all([loadConsensus(), loadAllPicks()]);
+    consensus = con || [];
+    allPicks = ap.allPicks || [];
+    systemStats = ap.systemStats || {};
+  } catch(e) {
+    console.error('Data load failed:', e);
+    document.getElementById('consensus-body').innerHTML =
+      `<tr><td colspan="11" style="color:var(--red);padding:16px">Data load error: ${e.message}</td></tr>`;
+    return;
+  }
+
+  // Also fetch prices for any consensus-only symbols
+  const conSyms = consensus.map(p => normSym(p.symbol)).filter(s => s && !prices[s]);
+  if (conSyms.length) { try { await fetchPrices(conSyms); } catch(e) { console.warn('Extra price fetch failed:', e); } }
+
+  _lastSystemStats = systemStats;
+  try { renderConsensus(consensus); } catch(e) { console.error('renderConsensus error:', e); }
+  try { renderAllPicks(allPicks); } catch(e) { console.error('renderAllPicks error:', e); }
+  try { renderSystemStatus(systemStats); } catch(e) { console.error('renderSystemStatus error:', e); }
+  try { renderDirStatsBar(allPicks); } catch(e) { console.error('renderDirStatsBar error:', e); }
+  try { await loadLeaderboard(); } catch(e) { console.error('loadLeaderboard error:', e); }
+}
+
+// Auto-refresh countdown
+setInterval(() => {
+  countdown--;
+  document.getElementById('countdown').textContent = `Next refresh: ${countdown}s`;
+  if (countdown <= 0) refreshAll();
+}, 1000);
+
+// Initial load with error visibility
+refreshAll().catch(err => {
+  console.error('refreshAll failed:', err);
+  document.getElementById('consensus-body').innerHTML =
+    `<tr><td colspan="11" style="color:var(--red);padding:16px">Error loading data: ${err.message}<br>Please try refreshing (Ctrl+Shift+R)</td></tr>`;
+});
+</script>
+<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,0.95);border-top:1px solid #2a2a4a;padding:6px 16px;font-size:11px;color:#888;text-align:center;z-index:9999;backdrop-filter:blur(4px);">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
+</body>
+</html>

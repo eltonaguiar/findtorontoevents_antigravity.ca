@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regime Terminal v1.0 — HMM Market Regime Detection</title>
+<style>
+  :root {
+    --bg: #0a0a12; --surface: #12121e; --surface2: #1a1a2e;
+    --border: #2a2a3e; --text: #e0e0e0; --text2: #8888aa;
+    --green: #22c55e; --red: #ef4444; --blue: #3b82f6; --orange: #f97316;
+    --yellow: #eab308; --purple: #a855f7; --gray: #6b7280;
+    --crash: #dc2626; --strong-bear: #ef4444; --mild-bear: #f97316;
+    --neutral: #6b7280; --accum: #3b82f6; --mild-bull: #22c55e; --strong-bull: #16a34a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace; font-size: 13px; min-height: 100vh; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  header { text-align: center; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, var(--blue), var(--purple), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; }
+  header .subtitle { color: var(--text2); font-size: 13px; }
+  header .meta { display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  header .meta span { color: var(--text2); }
+  header .meta span b { color: var(--text); }
+
+  /* Tooltips */
+  .tip { position: relative; border-bottom: 1px dotted var(--purple); cursor: help; color: var(--purple); }
+  .tip:hover::after {
+    content: attr(data-tip);
+    position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+    background: #1e1e2f; color: var(--text); border: 1px solid var(--purple); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.5; white-space: normal; width: 280px;
+    z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.6); pointer-events: none;
+  }
+  .tip:hover::before {
+    content: ''; position: absolute; left: 50%; bottom: calc(100% + 2px); transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: var(--purple); z-index: 1001;
+  }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--border); overflow-x: auto; }
+  .tab { padding: 10px 20px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .tab:hover { color: var(--text); background: var(--surface); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); background: var(--surface); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Overview Cards */
+  .overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat-card .label { color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .stat-card .value { font-size: 26px; font-weight: 700; }
+  .stat-card .sub { color: var(--text2); font-size: 11px; margin-top: 4px; }
+
+  /* Category Sections */
+  .category { margin-bottom: 24px; }
+  .category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .category-header h2 { font-size: 16px; font-weight: 600; }
+  .category-header .badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--surface2); color: var(--text2); }
+
+  /* Regime Table */
+  .regime-table { width: 100%; border-collapse: collapse; }
+  .regime-table th { text-align: left; padding: 8px 10px; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  .regime-table td { padding: 8px 10px; border-bottom: 1px solid rgba(42,42,62,0.5); vertical-align: middle; }
+  .regime-table tr:hover { background: var(--surface2); }
+  .regime-table .ticker { font-weight: 600; color: var(--text); font-size: 13px; }
+  .regime-table .price { color: var(--text2); }
+
+  /* Regime Badge */
+  .regime-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .regime-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .regime-Crash { background: rgba(220,38,38,0.15); color: var(--crash); }
+  .regime-Crash .dot { background: var(--crash); }
+  .regime-Strong-Bear { background: rgba(239,68,68,0.15); color: var(--strong-bear); }
+  .regime-Strong-Bear .dot { background: var(--strong-bear); }
+  .regime-Mild-Bear { background: rgba(249,115,22,0.15); color: var(--mild-bear); }
+  .regime-Mild-Bear .dot { background: var(--mild-bear); }
+  .regime-Chop-Neutral { background: rgba(107,114,128,0.15); color: var(--neutral); }
+  .regime-Chop-Neutral .dot { background: var(--neutral); }
+  .regime-Accumulation { background: rgba(59,130,246,0.15); color: var(--accum); }
+  .regime-Accumulation .dot { background: var(--accum); }
+  .regime-Mild-Bull { background: rgba(34,197,94,0.15); color: var(--mild-bull); }
+  .regime-Mild-Bull .dot { background: var(--mild-bull); }
+  .regime-Strong-Bull { background: rgba(22,163,106,0.15); color: var(--strong-bull); }
+  .regime-Strong-Bull .dot { background: var(--strong-bull); }
+
+  /* Confidence Bar */
+  .conf-bar { display: flex; align-items: center; gap: 6px; }
+  .conf-track { width: 60px; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 3px; }
+  .conf-text { font-size: 12px; min-width: 36px; }
+
+  /* Signal Badge */
+  .signal { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .signal-LONG { background: rgba(34,197,94,0.2); color: var(--green); }
+  .signal-SHORT { background: rgba(239,68,68,0.2); color: var(--red); }
+  .signal-CASH { background: rgba(107,114,128,0.2); color: var(--gray); }
+  .signal-WAIT { background: rgba(234,179,8,0.2); color: var(--yellow); }
+
+  /* Confirmations */
+  .confirms { display: flex; gap: 2px; align-items: center; }
+  .confirm-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .confirm-dot.on { background: var(--green); }
+  .confirm-dot.off { background: var(--surface2); }
+  .confirms .count { margin-left: 4px; font-size: 11px; color: var(--text2); }
+
+  /* Active Signals Panel */
+  .signals-panel { background: var(--surface); border: 1px solid var(--green); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .signals-panel h3 { color: var(--green); font-size: 14px; margin-bottom: 12px; }
+  .signal-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(42,42,62,0.5); flex-wrap: wrap; }
+  .signal-row:last-child { border-bottom: none; }
+
+  /* Comparison Table */
+  .comparison { margin-top: 24px; }
+  .comparison h3 { font-size: 16px; margin-bottom: 12px; }
+  .comp-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; }
+  .comp-table th { background: var(--surface2); padding: 10px 12px; text-align: left; color: var(--text2); font-size: 11px; text-transform: uppercase; }
+  .comp-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .comp-table .winner { color: var(--green); font-weight: 600; }
+  .comp-table .loser { color: var(--red); }
+
+  /* Regime Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Progress Bar */
+  .progress-wrap { background: var(--surface2); border-radius: 8px; overflow: hidden; height: 24px; position: relative; margin: 8px 0; }
+  .progress-fill { height: 100%; border-radius: 8px; transition: width 0.3s; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .progress-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+
+  /* Info Cards */
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .info-card h4 { font-size: 15px; margin-bottom: 12px; color: var(--blue); }
+  .info-card p { color: var(--text2); line-height: 1.7; margin-bottom: 10px; }
+  .info-card ul { padding-left: 20px; margin: 8px 0; }
+  .info-card li { color: var(--text2); line-height: 1.8; }
+  .info-card li b { color: var(--text); }
+
+  /* Health Check Grid */
+  .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .health-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; }
+  .health-icon { font-size: 24px; width: 40px; text-align: center; }
+  .health-info { flex: 1; }
+  .health-info .name { font-weight: 600; font-size: 13px; }
+  .health-info .detail { color: var(--text2); font-size: 11px; margin-top: 2px; }
+  .health-ok { border-color: var(--green); }
+  .health-warn { border-color: var(--orange); }
+  .health-fail { border-color: var(--red); }
+
+  /* Schedule */
+  .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .schedule-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+  .schedule-item .freq { font-size: 20px; font-weight: 700; color: var(--blue); }
+  .schedule-item .label { color: var(--text2); font-size: 11px; margin-top: 4px; }
+  .schedule-item .next { color: var(--green); font-size: 12px; margin-top: 6px; }
+
+  /* Footer */
+  footer { text-align: center; padding: 20px 0; color: var(--text2); font-size: 11px; border-top: 1px solid var(--border); margin-top: 24px; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .loading .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid var(--surface2); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Returns */
+  .ret-pos { color: var(--green); }
+  .ret-neg { color: var(--red); }
+  .ret-flat { color: var(--text2); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .regime-table { font-size: 11px; }
+    .regime-table th, .regime-table td { padding: 6px 5px; }
+    .overview { grid-template-columns: repeat(3, 1fr); }
+    .tabs { font-size: 12px; }
+    .tab { padding: 8px 12px; }
+    .tip:hover::after { width: 220px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>REGIME TERMINAL</h1>
+    <div class="subtitle">
+      <span class="tip" data-tip="A Hidden Markov Model is an AI that finds hidden patterns in data. It assumes the market moves through invisible 'states' (like bull/bear) and uses math to figure out which state we're probably in right now.">Hidden Markov Model</span> —
+      <span class="tip" data-tip="A Gaussian distribution (bell curve) describes how data clusters around an average. The model uses these bell curves to calculate the probability of being in each market state.">Gaussian</span>
+      Regime Detection Engine v1.0
+    </div>
+    <div class="meta">
+      <span>Engine: <b><span class="tip" data-tip="GaussianHMM uses bell-curve math to classify markets into 7 hidden states. Each state has its own pattern of returns and volatility.">GaussianHMM</span> (7 states)</b></span>
+      <span>Updated: <b id="last-update">Loading...</b></span>
+      <span>Markets: <b id="market-count">-</b></span>
+      <span>Next scan: <b id="next-scan" style="color:var(--green)">-</b></span>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="regimes">Market Regimes</div>
+    <div class="tab" data-tab="ml-status">ML Status</div>
+    <div class="tab" data-tab="how-it-works">How It Works</div>
+    <div class="tab" data-tab="pipeline">Pipeline Health</div>
+    <div class="tab" data-tab="comparison">Model Comparison</div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 1: Market Regimes (default view) -->
+  <!-- ============================================================== -->
+  <div class="tab-content active" id="tab-regimes">
+    <!-- Regime Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background: var(--strong-bull)"></div>
+        <span class="tip" data-tip="Prices are rising strongly with high confidence. The AI sees a clear upward pattern in returns, volume, and momentum.">Strong Bull</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--mild-bull)"></div>
+        <span class="tip" data-tip="Prices are gently rising. The upward trend is present but not as strong or certain.">Mild Bull</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--accum)"></div>
+        <span class="tip" data-tip="Smart money may be quietly buying. Prices aren't clearly up or down yet, but volume patterns suggest preparation for a move up.">Accumulation</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--neutral)"></div>
+        <span class="tip" data-tip="The market is going sideways with no clear direction. Also called 'choppy' or 'ranging'. Best to wait for a clearer signal.">Chop/Neutral</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--mild-bear)"></div>
+        <span class="tip" data-tip="Prices are gently declining. The downward trend exists but isn't dramatic.">Mild Bear</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--strong-bear)"></div>
+        <span class="tip" data-tip="Prices are dropping significantly with high confidence. The AI sees strong downward momentum.">Strong Bear</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--crash)"></div>
+        <span class="tip" data-tip="Extreme sell-off with panic-level volatility. Rare and dangerous state. The model detected a crash-like pattern.">Crash</span></div>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="overview" id="overview">
+      <div class="stat-card"><div class="label">Total Scanned</div><div class="value" id="stat-total">-</div><div class="sub">assets analyzed</div></div>
+      <div class="stat-card"><div class="label"><span class="tip" data-tip="Assets where the AI thinks prices are likely going up.">Bullish</span></div><div class="value ret-pos" id="stat-bull">-</div></div>
+      <div class="stat-card"><div class="label"><span class="tip" data-tip="Assets where the AI thinks prices are likely going down.">Bearish</span></div><div class="value ret-neg" id="stat-bear">-</div></div>
+      <div class="stat-card"><div class="label">Neutral</div><div class="value" id="stat-neutral" style="color:var(--gray)">-</div></div>
+      <div class="stat-card"><div class="label"><span class="tip" data-tip="Signals are actionable BUY/SELL recommendations where the AI is confident enough AND at least 7 of 8 technical checks agree.">Active Signals</span></div><div class="value" id="stat-signals" style="color:var(--purple)">-</div></div>
+      <div class="stat-card"><div class="label">Scan Time</div><div class="value" id="stat-time" style="color:var(--text2);font-size:18px">-</div></div>
+    </div>
+
+    <!-- Active Signals -->
+    <div class="signals-panel" id="signals-panel" style="display:none">
+      <h3>Active Regime Signals (<span class="tip" data-tip="7 out of 8 technical indicators must agree before the AI generates a signal. This prevents false alarms.">7/8 Confirmations Required</span>)</h3>
+      <div id="signals-list"></div>
+    </div>
+
+    <!-- Signal Legend -->
+    <div class="info-card" style="padding:12px 16px;margin-bottom:16px;border-color:var(--surface2);">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12px;">
+        <span style="color:var(--text2);font-weight:600;">Signal Guide:</span>
+        <span><span class="signal signal-LONG">LONG</span> Bullish regime confirmed for 3+ bars — buy zone</span>
+        <span><span class="signal signal-SHORT">SHORT</span> Bearish regime confirmed for 3+ bars — sell zone</span>
+        <span><span class="signal signal-CASH">CASH</span> Neutral/choppy regime — stay out</span>
+        <span><span class="signal signal-WAIT">WAIT</span> Regime transitioning — not stable for 3 bars yet (even with high confirms)</span>
+      </div>
+    </div>
+
+    <!-- Market Categories -->
+    <div id="categories"><div class="loading"><div class="spinner"></div><br>Loading regime data...</div></div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 2: ML Status -->
+  <!-- ============================================================== -->
+  <div class="tab-content" id="tab-ml-status">
+    <div class="info-card">
+      <h4>Machine Learning Training Status</h4>
+      <p>Our trading infrastructure has 3 ML systems. Here's where each one stands:</p>
+    </div>
+
+    <!-- HMM Status -->
+    <div class="info-card" style="border-color: var(--green);">
+      <h4 style="color: var(--green);">1. <span class="tip" data-tip="Hidden Markov Model — an AI that detects invisible market 'moods' by analyzing price patterns with bell-curve math.">HMM</span> Regime Terminal — OPERATIONAL</h4>
+      <p><b style="color:var(--green)">Status: FULLY TRAINED</b> — This is the only system that can train immediately because it learns from <b>price data</b> (17,000+ observations), not trade outcomes.</p>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:100%;background:var(--green);">TRAINED</div>
+      </div>
+      <ul>
+        <li>Scans <b id="ml-markets">36</b> markets every <b>30 minutes</b></li>
+        <li>Classifies each into 1 of 7 <span class="tip" data-tip="A regime is the current 'mood' or state of the market — like bull, bear, neutral, or crash. The AI detects these hidden states automatically.">regimes</span></li>
+        <li>Uses <span class="tip" data-tip="The Expectation-Maximization algorithm is the training method. It starts with a guess, then alternates between: (E) figuring out what regime each day was probably in, and (M) adjusting the model parameters to better fit the data. It repeats until the model converges.">EM algorithm</span> with <span class="tip" data-tip="The model tries 5 different random starting points and picks the best result. This prevents it from getting stuck in a bad solution.">5 random restarts</span></li>
+        <li>Feeds regime data to KIMI and Alpha Engine via <span class="tip" data-tip="The bridge converts the 7-state HMM output into simpler formats that other systems can use. KIMI gets bull/bear/neutral, Alpha Engine gets trending/ranging/transitional.">Regime Bridge</span></li>
+        <li><b>Last scan:</b> <span id="ml-hmm-last">-</span></li>
+      </ul>
+    </div>
+
+    <!-- Alpha Engine RF Status -->
+    <div class="info-card" style="border-color: var(--orange);">
+      <h4 style="color: var(--orange);">2. Alpha Engine <span class="tip" data-tip="Random Forest is an AI that makes predictions by creating hundreds of 'decision trees' (like a flowchart of yes/no questions) and averaging their answers. It's like asking 200 experts and going with the majority vote.">Random Forest</span> — TRAINING IN PROGRESS</h4>
+      <p><b style="color:var(--orange)">Status: HEURISTIC MODE</b> — Needs 50 closed trade outcomes to begin <i>experimental</i> training. Currently using rule-based scoring (this is the professionally correct cold-start approach).</p>
+      <div class="progress-wrap">
+        <div class="progress-fill" id="alpha-progress" style="width:16%;background:var(--orange);"></div>
+        <div class="progress-label" id="alpha-progress-label">8 / 50 closed picks (16%)</div>
+      </div>
+      <ul>
+        <li><b id="alpha-closed">8</b> closed picks so far (need <b>50</b> for experimental, <b>150+</b> for reliable ML)</li>
+        <li><b id="alpha-active">20</b> active picks being tracked</li>
+        <li><span class="tip" data-tip="Turbo Mode tightens take-profit and stop-loss levels to close trades faster. For example, crypto take-profit drops from 20% to 6%. This gets us to 50 closed picks sooner so the AI can start learning.">Turbo Mode</span>: <b id="alpha-turbo" style="color:var(--green)">ACTIVE</b> — accelerating pick closure</li>
+        <li>18 features (will reduce to 5-6 for first training to prevent <span class="tip" data-tip="Overfitting is when an AI memorizes the training data instead of learning general patterns. Like a student who memorizes test answers but can't solve new problems. With 18 features and only 50 picks, the model has too many 'questions' for too few 'examples'.">overfitting</span>)</li>
+        <li>Est. <b>50 picks</b> (~10-15 days) → experimental | <b>150 picks</b> (~2-3 months) → useful | <b>300 picks</b> (~5 months) → production</li>
+        <li>Runs every <b>15 minutes</b> via GitHub Actions</li>
+      </ul>
+    </div>
+
+    <!-- KIMI RF Status -->
+    <div class="info-card" style="border-color: var(--red);">
+      <h4 style="color: var(--red);">3. KIMI <span class="tip" data-tip="Random Forest is an AI that creates hundreds of decision trees and averages their predictions. Think of it as polling 200 independent experts.">Random Forest</span> — WAITING FOR DATA</h4>
+      <p><b style="color:var(--red)">Status: HEURISTIC MODE</b> — Zero closed picks. The KIMI tournament system generates picks but doesn't yet close and record them for ML training.</p>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:0%;background:var(--red);"></div>
+        <div class="progress-label">0 / 50 closed picks</div>
+      </div>
+      <ul>
+        <li>81 algorithms compete in a tournament bracket</li>
+        <li>Uses <span class="tip" data-tip="In heuristic mode, the system uses hand-crafted rules (like weighting win rate and Sharpe ratio) instead of learned AI patterns. It works, but doesn't improve over time.">heuristic scoring</span> until enough data accumulates</li>
+        <li>Now receiving HMM regime data via the bridge</li>
+        <li>Runs every <b>15 minutes</b> via GitHub Actions</li>
+      </ul>
+    </div>
+
+    <!-- ML Readiness Timeline -->
+    <div class="info-card" style="border-color: var(--purple);">
+      <h4 style="color: var(--purple);">Realistic ML Readiness Timeline</h4>
+      <p style="color:var(--text2);margin-bottom:12px;">Based on academic research (Lopez de Prado 2018, BMC Medical Informatics 2021) and current pick accumulation rates. This is an honest assessment — not hype.</p>
+      <table class="comp-table" style="margin-bottom:16px;">
+        <thead>
+          <tr><th>Phase</th><th>Picks Needed</th><th>Estimated Date</th><th>What Happens</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--green);font-weight:600">NOW — Heuristic Mode</td>
+            <td>0-50 picks</td>
+            <td style="color:var(--green)">Feb-Apr 2026</td>
+            <td>Rule-based scoring (Sharpe + win rate + tier bonuses). <b>This is the correct approach.</b> Professionals do exactly this during cold-start.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--orange);font-weight:600">Experimental ML</td>
+            <td>50-150 picks</td>
+            <td style="color:var(--orange)">~May-Jun 2026</td>
+            <td>RF starts training with <b>reduced feature set</b> (5-6 features only). Runs alongside heuristic — does NOT replace it. High overfitting risk.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--blue);font-weight:600">ML Becomes Useful</td>
+            <td>150-300 picks</td>
+            <td style="color:var(--blue)">~Aug-Oct 2026</td>
+            <td>Walk-forward validation begins. Model blended 30/70 with heuristic. Feature count increases as data supports it.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--purple);font-weight:600">ML Primary Ranker</td>
+            <td>300+ picks</td>
+            <td style="color:var(--purple)">Late 2026+</td>
+            <td>Full 14-18 feature model. Purged cross-validation. Model confidence high enough to serve as primary signal ranker.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--text2);">
+        <b>Why so long?</b> Random Forest with 14-18 features needs at minimum 10-20 observations per feature (140-360 picks) to avoid overfitting.
+        Our 50-pick threshold is for <i>experimental</i> training only — not production-quality predictions.
+        The HMM bypasses this entirely by learning from price data (17,000+ observations), which is why it's operational now.
+      </p>
+    </div>
+
+    <!-- Schedule -->
+    <div class="info-card">
+      <h4>Automated Scan Schedule</h4>
+      <div class="schedule-grid">
+        <div class="schedule-item">
+          <div class="freq">Every 30 min</div>
+          <div class="label">Regime Terminal (HMM)</div>
+          <div class="next" id="sched-regime">Next: -</div>
+        </div>
+        <div class="schedule-item">
+          <div class="freq">Every 15 min</div>
+          <div class="label">Alpha Engine</div>
+          <div class="next" id="sched-alpha">Next: -</div>
+        </div>
+        <div class="schedule-item">
+          <div class="freq">Every 15 min</div>
+          <div class="label">KIMI Rise of the Claw</div>
+          <div class="next" id="sched-kimi">Next: -</div>
+        </div>
+        <div class="schedule-item">
+          <div class="freq">After each scan</div>
+          <div class="label">Regime Bridge</div>
+          <div class="next">Runs automatically</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 3: How It Works -->
+  <!-- ============================================================== -->
+  <div class="tab-content" id="tab-how-it-works">
+    <div class="info-card">
+      <h4>What Is a Hidden Markov Model (HMM)?</h4>
+      <p>Imagine the stock market has different <b>"moods"</b> — sometimes it's excited and prices go up (bull), sometimes it's scared and prices crash (bear), sometimes it's confused and goes sideways (neutral). These moods are <b>hidden</b> — you can't directly see them. You can only see the <b>results</b>: price changes, volume, and volatility.</p>
+      <p>An HMM is an AI that works backwards from the results to figure out what mood the market is probably in. It's like being a detective: you can't see the criminal, but you can see the evidence and deduce what happened.</p>
+    </div>
+
+    <div class="info-card">
+      <h4>How Does It Learn?</h4>
+      <p>The learning process has 3 steps:</p>
+      <ul>
+        <li><b>Step 1 — Gather Evidence:</b> For each asset, we download the last year of daily data: price returns, volume changes, volatility, and momentum. These are the "clues."</li>
+        <li><b>Step 2 — Train the Model (<span class="tip" data-tip="Expectation-Maximization: the AI alternates between guessing which state each day belongs to, then adjusting its parameters to better explain the data. Like repeatedly refining a theory until it fits the evidence.">EM Algorithm</span>):</b> The AI assumes there are 7 hidden states. It starts with random guesses, then repeatedly: (a) estimates which state each day was probably in, and (b) adjusts its <span class="tip" data-tip="Gaussian parameters are the mean (average) and variance (spread) of the bell curve for each state. For example, in 'Strong Bull' the average daily return might be +0.5%, while in 'Crash' it might be -3%.">Gaussian parameters</span> to better fit the data. After ~200 rounds, it converges.</li>
+        <li><b>Step 3 — Classify Today:</b> Using the trained model, it calculates the <span class="tip" data-tip="Posterior probability is the AI's confidence that the market is in a specific state AFTER seeing all the evidence. For example, '94% Strong Bear' means there's a 94% chance we're in a strong bear market.">posterior probability</span> of being in each of the 7 states right now.</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h4>The 5 Features (Clues the AI Uses)</h4>
+      <ul>
+        <li><b><span class="tip" data-tip="How much the price changed today, expressed as a logarithmic percentage. Log returns are used because they're mathematically cleaner for modeling.">Log Return</span>:</b> Today's price change (e.g., +1.2%)</li>
+        <li><b><span class="tip" data-tip="How wild the price swings are. Measured as the daily high minus low, divided by the closing price. High volatility = big swings = more uncertainty.">Volatility</span>:</b> How much the price swings (high minus low)</li>
+        <li><b><span class="tip" data-tip="Today's trading volume compared to the recent average. High volume often confirms a trend; low volume suggests the move may be weak.">Volume Change</span>:</b> Is trading activity above or below normal?</li>
+        <li><b><span class="tip" data-tip="The average daily return over the past 5 days. Shows the short-term direction: are we trending up or down this week?">5-Day Momentum</span>:</b> Short-term trend direction</li>
+        <li><b><span class="tip" data-tip="The average daily return over the past 20 days. Shows the medium-term direction: what's the overall trend this month?">20-Day Momentum</span>:</b> Medium-term trend direction</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h4>The 7 Hidden States (Regimes)</h4>
+      <p>After training, the AI sorts the 7 states by their average return:</p>
+      <ul>
+        <li><b style="color:var(--crash)">Crash</b> — Extreme negative returns, very high volatility. Rare but dangerous.</li>
+        <li><b style="color:var(--strong-bear)">Strong Bear</b> — Significantly negative returns, elevated volatility.</li>
+        <li><b style="color:var(--mild-bear)">Mild Bear</b> — Slightly negative returns, moderate volatility.</li>
+        <li><b style="color:var(--neutral)">Chop/Neutral</b> — Near-zero returns, medium volatility. Market going sideways.</li>
+        <li><b style="color:var(--accum)">Accumulation</b> — Slightly positive returns but with specific volume patterns suggesting buildup.</li>
+        <li><b style="color:var(--mild-bull)">Mild Bull</b> — Moderately positive returns, lower volatility.</li>
+        <li><b style="color:var(--strong-bull)">Strong Bull</b> — Strongly positive returns, trending momentum.</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h4>8-Point Confirmation System</h4>
+      <p>Even when the HMM says "this is a bull market," we don't blindly trust it. We require at least 7 of 8 <span class="tip" data-tip="Technical indicators are mathematical calculations based on price/volume data that traders use to gauge market direction. We use 8 different ones as a 'sanity check' on the HMM's regime classification.">technical indicators</span> to agree before generating a signal:</p>
+      <ul>
+        <li><b><span class="tip" data-tip="Relative Strength Index measures if an asset is overbought (>70) or oversold (<30). It ranges from 0 to 100.">RSI</span></b> — Not overbought/oversold</li>
+        <li><b><span class="tip" data-tip="Moving Average Convergence Divergence — tracks the relationship between two moving averages. When the fast line crosses above the slow line, it's bullish.">MACD</span></b> — Trend direction confirms</li>
+        <li><b><span class="tip" data-tip="Exponential Moving Average — a smoothed average of recent prices that gives more weight to recent data. A 'cross' happens when a short-term EMA crosses above a long-term EMA.">EMA Cross</span></b> — Short-term above long-term</li>
+        <li><b>Volume</b> — Above-average trading activity</li>
+        <li><b>Momentum</b> — Price direction matches regime</li>
+        <li><b><span class="tip" data-tip="Bollinger Bands are lines drawn 2 standard deviations above and below a moving average. They show when prices are unusually high or low compared to recent history.">Bollinger Bands</span></b> — Position within bands</li>
+        <li><b><span class="tip" data-tip="Average True Range measures volatility — how much the price typically moves in a day. Used to set appropriate stop-loss levels.">ATR</span></b> — Volatility appropriate for regime</li>
+        <li><b>Trend Alignment</b> — 50d and 200d moving averages agree</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h4>Why Is This Better Than Traditional Approaches?</h4>
+      <p>Most trading algorithms use fixed rules like "if RSI &lt; 30, buy." The problem? Markets change. A rule that works in a calm market fails in a crash.</p>
+      <p>The HMM <b>adapts</b> because it first figures out what <i>type</i> of market we're in, then applies the right strategy. It's like a doctor who first diagnoses the disease before prescribing medicine, instead of giving everyone the same pill.</p>
+      <p>This approach was pioneered by <b>Renaissance Technologies</b>, the most successful hedge fund in history (66% annual returns for 30 years).</p>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 4: Pipeline Health -->
+  <!-- ============================================================== -->
+  <div class="tab-content" id="tab-pipeline">
+    <div class="info-card">
+      <h4>Pipeline Health Dashboard</h4>
+      <p>Real-time status of all automated systems. Green = healthy, orange = needs attention, red = broken.</p>
+    </div>
+
+    <div class="health-grid" id="health-checks">
+      <div class="health-item" id="health-hmm">
+        <div class="health-icon">-</div>
+        <div class="health-info">
+          <div class="name">HMM Regime Scanner</div>
+          <div class="detail" id="health-hmm-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="health-item" id="health-bridge">
+        <div class="health-icon">-</div>
+        <div class="health-info">
+          <div class="name">Regime Bridge (HMM to KIMI + Alpha)</div>
+          <div class="detail" id="health-bridge-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="health-item" id="health-alpha">
+        <div class="health-icon">-</div>
+        <div class="health-info">
+          <div class="name">Alpha Engine Scanner</div>
+          <div class="detail" id="health-alpha-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="health-item" id="health-kimi">
+        <div class="health-icon">-</div>
+        <div class="health-info">
+          <div class="name">KIMI Rise of the Claw</div>
+          <div class="detail" id="health-kimi-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="health-item" id="health-deploy">
+        <div class="health-icon">-</div>
+        <div class="health-info">
+          <div class="name">GitHub Pages Deployment</div>
+          <div class="detail" id="health-deploy-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="health-item" id="health-turbo">
+        <div class="health-icon">-</div>
+        <div class="health-info">
+          <div class="name">ML Accelerator (Turbo Mode)</div>
+          <div class="detail" id="health-turbo-detail">Checking...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card" style="margin-top: 16px;">
+      <h4>Recent Pipeline Log</h4>
+      <div id="pipeline-log" style="font-size: 12px; color: var(--text2); max-height: 300px; overflow-y: auto;">
+        Loading log...
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 5: Model Comparison -->
+  <!-- ============================================================== -->
+  <div class="tab-content" id="tab-comparison">
+    <div class="comparison">
+      <h3>ML Model Comparison: <span class="tip" data-tip="Hidden Markov Model — detects hidden market states using Gaussian probability distributions.">HMM</span> vs Current Systems</h3>
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>HMM Regime Terminal</th>
+            <th>KIMI ML Ranker</th>
+            <th>Alpha Engine ML</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tip" data-tip="The type of AI algorithm used. Different algorithms have different strengths.">Algorithm</span></td>
+            <td class="winner"><span class="tip" data-tip="Gaussian HMM models 7 hidden market states, each described by a bell-curve distribution of returns and volatility.">Gaussian HMM (7 states)</span></td>
+            <td><span class="tip" data-tip="Random Forest creates 200 decision trees that each vote on whether a trade will win or lose.">Random Forest (200 trees)</span></td>
+            <td><span class="tip" data-tip="Same as KIMI — 200 decision trees, but with different input features.">Random Forest (200 trees)</span></td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="What data the AI learns from. More data generally means better predictions.">Training Data</span></td>
+            <td class="winner">17,000+ price observations</td>
+            <td class="loser">0/50 trade outcomes</td>
+            <td class="loser">2/50 trade outcomes</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="Can the AI actually learn right now, or is it stuck waiting for data?">Can Train Now?</span></td>
+            <td class="winner">YES — trains on market data</td>
+            <td class="loser">NO — <span class="tip" data-tip="The chicken-and-egg problem: the AI needs trade results to learn, but it needs to learn before it can make good trades. The HMM solves this by learning from price data instead.">chicken-and-egg</span></td>
+            <td class="loser">NO — insufficient picks</td>
+          </tr>
+          <tr>
+            <td>Approach</td>
+            <td class="winner"><span class="tip" data-tip="Instead of predicting individual trades, it classifies the entire market environment. This tells other systems WHEN to trade and HOW aggressively.">Probabilistic regime detection</span></td>
+            <td><span class="tip" data-tip="Looks at past trades and tries to predict which future signals will be winners. Only works after seeing 50+ trade results.">Post-hoc signal scoring</span></td>
+            <td>Post-hoc signal scoring</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="The input measurements the AI looks at to make its decisions. More isn't always better — quality matters.">Features</span></td>
+            <td>5 (return, <span class="tip" data-tip="Volatility measures how much prices swing. High volatility = big swings.">vol</span>, volume, <span class="tip" data-tip="Momentum measures the speed and direction of price movement over a period.">momentum</span> x2)</td>
+            <td>14 (mixed categories)</td>
+            <td>18 (mixed indicators)</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="How often the model retrains itself to adapt to changing market conditions.">Adaptation</span></td>
+            <td class="winner">Retrains every scan on latest data</td>
+            <td class="loser">Retrains every 25 picks</td>
+            <td class="loser">Retrains every 25 picks</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="Whether the system knows what 'mood' the market is in. A system that knows we're in a bear market can avoid buying.">Regime Awareness</span></td>
+            <td class="winner">Core feature (7 states)</td>
+            <td class="loser">None (single <span class="tip" data-tip="ADX (Average Directional Index) measures trend strength. It's just one number, unlike HMM's full probabilistic regime classification.">ADX</span> check)</td>
+            <td class="loser">None (single ADX check)</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="How the AI expresses certainty. Higher confidence = the AI is more sure about its classification.">Confidence</span></td>
+            <td class="winner"><span class="tip" data-tip="After seeing today's data, the model calculates the exact probability of being in each of the 7 states. The highest probability becomes the confidence score.">Gaussian posterior probability</span></td>
+            <td><span class="tip" data-tip="The Random Forest has each of its 200 trees vote. The confidence is the percentage of trees that voted 'win'.">RF class probability</span></td>
+            <td>RF class probability</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="Walk-forward validation tests the model on data it hasn't seen yet, simulating real trading. It trains on 365 days, then tests on the next 30, and repeats.">Walk-Forward</span></td>
+            <td class="winner">Built-in (365d train / 30d test)</td>
+            <td class="loser">No (<span class="tip" data-tip="5-fold cross-validation splits the data into 5 parts and tests on each. It's a good sanity check but less realistic than walk-forward testing.">5-fold CV</span> only)</td>
+            <td class="loser">No (5-fold CV only)</td>
+          </tr>
+          <tr>
+            <td><span class="tip" data-tip="Whether the model accounts for the real costs of trading: broker fees (basis points) and the price moving against you when you execute (slippage).">Transaction Costs</span></td>
+            <td class="winner">Modeled (<span class="tip" data-tip="10 basis points = 0.10% fee per trade, plus 5 basis points = 0.05% estimated slippage. This is realistic for crypto and stock trading.">10bps + 5bps slippage</span>)</td>
+            <td class="loser">Not modeled</td>
+            <td class="loser">Not modeled</td>
+          </tr>
+          <tr>
+            <td>Markets</td>
+            <td class="winner">Crypto + Meme + Forex + Stocks + Penny</td>
+            <td>Crypto + Forex (limited)</td>
+            <td>Crypto + Forex + Equity</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Regime Terminal v1.0.0 — Gaussian HMM Regime Detection | Inspired by Renaissance Technologies<br>
+    <span style="color:var(--text2)">Part of FindTorontoEvents Trading Infrastructure | Not financial advice</span>
+  </footer>
+</div>
+
+<script>
+// ─── Data URLs ───
+const DATA_URL = 'data/regime_state.json';
+const GH_DATA_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/regime_terminal/data/regime_state.json';
+const ALPHA_PICKS_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json';
+const ALPHA_CLOSED_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/closed_picks.json';
+const SIGNALS_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/regime_terminal/data/active_signals.json';
+
+const REGIME_CSS = {
+  'Crash': 'Crash', 'Strong Bear': 'Strong-Bear', 'Mild Bear': 'Mild-Bear',
+  'Chop/Neutral': 'Chop-Neutral', 'Accumulation': 'Accumulation',
+  'Mild Bull': 'Mild-Bull', 'Strong Bull': 'Strong-Bull'
+};
+
+// ─── Tab Switching ───
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── Next Scan Calculation ───
+function calcNextScan(intervalMin) {
+  const now = new Date();
+  const mins = now.getUTCMinutes();
+  const nextMin = Math.ceil(mins / intervalMin) * intervalMin;
+  const next = new Date(now);
+  next.setUTCMinutes(nextMin, 0, 0);
+  if (next <= now) next.setUTCMinutes(next.getUTCMinutes() + intervalMin);
+  const diff = Math.round((next - now) / 60000);
+  return diff + ' min';
+}
+
+function updateSchedule() {
+  document.getElementById('next-scan').textContent = 'in ~' + calcNextScan(30);
+  document.getElementById('sched-regime').textContent = 'Next: ~' + calcNextScan(30);
+  document.getElementById('sched-alpha').textContent = 'Next: ~' + calcNextScan(15);
+  document.getElementById('sched-kimi').textContent = 'Next: ~' + calcNextScan(15);
+}
+updateSchedule();
+setInterval(updateSchedule, 60000);
+
+// ─── Regime Data Loading ───
+async function loadData() {
+  let data = null;
+  for (const url of [DATA_URL, GH_DATA_URL]) {
+    try {
+      const r = await fetch(url + '?t=' + Date.now());
+      if (r.ok) { data = await r.json(); break; }
+    } catch(e) { continue; }
+  }
+  if (!data) {
+    document.getElementById('categories').innerHTML =
+      '<div class="loading">No data available yet. Waiting for first scan...</div>';
+    return;
+  }
+  renderDashboard(data);
+  runHealthChecks(data);
+}
+
+function renderDashboard(data) {
+  // Meta
+  const genAt = new Date(data.generated_at);
+  document.getElementById('last-update').textContent = genAt.toLocaleString();
+  document.getElementById('market-count').textContent = data.market_overview.total_scanned;
+  document.getElementById('stat-total').textContent = data.market_overview.total_scanned;
+  document.getElementById('stat-bull').textContent = data.market_overview.bull_count;
+  document.getElementById('stat-bear').textContent = data.market_overview.bear_count;
+  document.getElementById('stat-neutral').textContent = data.market_overview.neutral_count;
+  document.getElementById('stat-signals').textContent = data.signals.length;
+  document.getElementById('stat-time').textContent = data.elapsed_seconds + 's';
+  document.getElementById('ml-markets').textContent = data.market_overview.total_scanned;
+  document.getElementById('ml-hmm-last').textContent = genAt.toLocaleString();
+
+  // Active Signals
+  if (data.signals && data.signals.length > 0) {
+    const panel = document.getElementById('signals-panel');
+    panel.style.display = 'block';
+    const list = document.getElementById('signals-list');
+    list.innerHTML = data.signals.map(s => `
+      <div class="signal-row">
+        <span class="signal signal-${s.signal}">${s.signal}</span>
+        <span class="ticker" style="font-weight:700;min-width:100px">${s.ticker}</span>
+        <span class="regime-badge regime-${REGIME_CSS[s.regime] || 'Chop-Neutral'}">
+          <span class="dot"></span>${s.regime}
+        </span>
+        <span style="color:var(--text2)">Conf: ${(s.confidence * 100).toFixed(0)}%</span>
+        <span style="color:var(--text2)">Leverage: ${s.leverage}x</span>
+        <span style="color:var(--text2)">${s.confirmations}/8 confirms</span>
+        <span style="color:var(--text2)">$${s.price?.toLocaleString()}</span>
+      </div>
+    `).join('');
+  }
+
+  // Categories
+  const cats = document.getElementById('categories');
+  cats.innerHTML = '';
+  const catNames = { crypto: 'Crypto (Large Cap)', meme: 'Meme Coins', forex: 'Forex Majors', stocks: 'Stocks (Large Cap)', penny: 'Penny / Growth' };
+
+  for (const [cat, tickers] of Object.entries(data.regimes)) {
+    const entries = Object.entries(tickers);
+    if (entries.length === 0) continue;
+
+    const section = document.createElement('div');
+    section.className = 'category';
+    section.innerHTML = `
+      <div class="category-header">
+        <h2>${catNames[cat] || cat}</h2>
+        <span class="badge">${entries.length} tickers</span>
+      </div>
+      <table class="regime-table">
+        <thead><tr>
+          <th>Ticker</th><th>Price</th>
+          <th><span class="tip" data-tip="The market's current hidden state as detected by the HMM AI. The model identifies 7 possible states based on return patterns and volatility.">Regime</span></th>
+          <th><span class="tip" data-tip="How sure the AI is about this classification. 100% = very certain. 50% = coin flip. Based on Gaussian posterior probability — the model calculates the probability of each state and reports the highest.">Confidence</span></th>
+          <th><span class="tip" data-tip="LONG = buy signal (bullish regime confirmed). SHORT = sell signal (bearish regime confirmed). CASH = stay out (neutral/choppy regime). WAIT = regime is transitioning (hasn't been stable for 3+ bars yet). NOTE: WAIT can appear even with high confirmations — the regime must persist for 3 consecutive periods before generating a signal. This 'hysteresis' filter prevents whipsawing on regime transitions.">Signal</span></th>
+          <th><span class="tip" data-tip="8 technical indicators checked as a sanity filter. Each green dot = one indicator agrees. The 8 checks are: (1) RSI alignment — not overbought/oversold. (2) MACD direction — histogram confirms trend. (3) EMA cross — 9-day EMA vs 21-day EMA. (4) Volume — above 20-day average. (5) Momentum — 5-day price direction matches. (6) Bollinger position — price vs 20-day SMA. (7) ATR expansion — volatility appropriate. (8) Trend alignment — 50d SMA vs 200d SMA. Need 7/8 to generate an active signal.">Confirms</span></th>
+          <th><span class="tip" data-tip="Relative Strength Index (0-100). Below 30 = oversold (may bounce up). Above 70 = overbought (may pull back). Between 30-70 = neutral zone.">RSI</span></th>
+          <th><span class="tip" data-tip="The HMM calculates transition probabilities — the likelihood of moving from the current regime to each other regime. This shows the most probable next state.">Next Likely</span></th>
+          <th><span class="tip" data-tip="Price change over the last 24 hours.">1D</span></th>
+          <th><span class="tip" data-tip="Price change over the last 7 days.">7D</span></th>
+          <th><span class="tip" data-tip="Price change over the last 30 days.">30D</span></th>
+        </tr></thead>
+        <tbody>
+          ${entries.map(([ticker, r]) => {
+            const regCss = REGIME_CSS[r.regime] || 'Chop-Neutral';
+            const confPct = (r.confidence * 100).toFixed(0);
+            const confColor = r.confidence > 0.7 ? 'var(--green)' : r.confidence > 0.4 ? 'var(--yellow)' : 'var(--red)';
+            const confirms = r.confirmations || 0;
+            const confirmDots = Array.from({length: 8}, (_, i) =>
+              '<span class="confirm-dot ' + (i < confirms ? 'on' : 'off') + '"></span>').join('');
+            const retClass = v => v > 0 ? 'ret-pos' : v < 0 ? 'ret-neg' : 'ret-flat';
+            const retFmt = v => v != null ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : '-';
+            const ret = r.returns || {};
+            return '<tr>' +
+              '<td class="ticker">' + ticker + '</td>' +
+              '<td class="price">$' + (r.price?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: r.price > 100 ? 2 : 4}) || '-') + '</td>' +
+              '<td><span class="regime-badge regime-' + regCss + '"><span class="dot"></span>' + r.regime + '</span></td>' +
+              '<td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:' + confPct + '%;background:' + confColor + '"></div></div><span class="conf-text" style="color:' + confColor + '">' + confPct + '%</span></div></td>' +
+              '<td><span class="signal signal-' + r.signal + '" title="' + (r.signal_reason || '') + '">' + r.signal + '</span></td>' +
+              '<td><div class="confirms" title="' + (r.confirmation_details ? Object.entries(r.confirmation_details).map(function(e){return e[0]+': '+(e[1]?'✓':'✗')}).join(', ') : '') + '">' + confirmDots + '<span class="count">' + confirms + '/8</span></div></td>' +
+              '<td style="color:' + (r.rsi > 70 ? 'var(--red)' : r.rsi < 30 ? 'var(--green)' : 'var(--text2)') + '">' + (r.rsi?.toFixed(0) || '-') + '</td>' +
+              '<td style="color:var(--text2);font-size:11px">' + (r.most_likely_next || '-') + '</td>' +
+              '<td class="' + retClass(ret['1d']) + '">' + retFmt(ret['1d']) + '</td>' +
+              '<td class="' + retClass(ret['7d']) + '">' + retFmt(ret['7d']) + '</td>' +
+              '<td class="' + retClass(ret['30d']) + '">' + retFmt(ret['30d']) + '</td>' +
+              '</tr>';
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+    cats.appendChild(section);
+  }
+}
+
+// ─── Health Checks ───
+async function runHealthChecks(regimeData) {
+  const log = [];
+  const now = new Date();
+
+  function setHealth(id, ok, detail) {
+    const el = document.getElementById(id);
+    const icon = el.querySelector('.health-icon');
+    const detailEl = document.getElementById(id + '-detail');
+    el.className = 'health-item ' + (ok === true ? 'health-ok' : ok === 'warn' ? 'health-warn' : 'health-fail');
+    icon.textContent = ok === true ? '✓' : ok === 'warn' ? '!' : '✗';
+    detailEl.textContent = detail;
+    log.push('[' + (ok === true ? 'OK' : ok === 'warn' ? 'WARN' : 'FAIL') + '] ' + detail);
+  }
+
+  // HMM check
+  if (regimeData) {
+    const genAt = new Date(regimeData.generated_at);
+    const ageMin = Math.round((now - genAt) / 60000);
+    const ok = ageMin < 45 ? true : ageMin < 120 ? 'warn' : false;
+    setHealth('health-hmm', ok, 'Last scan: ' + ageMin + ' min ago (' + genAt.toLocaleTimeString() + ') — ' + regimeData.market_overview.total_scanned + ' markets');
+  } else {
+    setHealth('health-hmm', false, 'No regime data found');
+  }
+
+  // Bridge check
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/STOCKS/competition/.regime_cache.json?t=' + Date.now());
+    if (r.ok) {
+      const d = await r.json();
+      setHealth('health-bridge', true, 'Bridge active — regime: ' + d.regime + ', crypto: ' + d.crypto_regime);
+    } else {
+      setHealth('health-bridge', 'warn', 'Bridge output not found (HTTP ' + r.status + ')');
+    }
+  } catch(e) {
+    setHealth('health-bridge', false, 'Bridge check failed: ' + e.message);
+  }
+
+  // Alpha Engine check
+  try {
+    const r = await fetch(ALPHA_CLOSED_URL + '?t=' + Date.now());
+    if (r.ok) {
+      const closed = await r.json();
+      const active_r = await fetch(ALPHA_PICKS_URL + '?t=' + Date.now());
+      const active = active_r.ok ? await active_r.json() : [];
+      const pct = Math.round(closed.length / 50 * 100);
+      document.getElementById('alpha-closed').textContent = closed.length;
+      document.getElementById('alpha-active').textContent = active.length;
+      document.getElementById('alpha-progress').style.width = pct + '%';
+      document.getElementById('alpha-progress-label').textContent = closed.length + ' / 50 closed picks (' + pct + '%)';
+      setHealth('health-alpha', closed.length > 0 ? true : 'warn', closed.length + ' closed, ' + active.length + ' active picks');
+    } else {
+      setHealth('health-alpha', 'warn', 'Could not fetch Alpha data');
+    }
+  } catch(e) {
+    setHealth('health-alpha', 'warn', 'Alpha check failed: ' + e.message);
+  }
+
+  // KIMI check
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/live_competition.json?t=' + Date.now());
+    if (r.ok) {
+      const d = await r.json();
+      const algos = d.algorithms?.length || 0;
+      setHealth('health-kimi', true, algos + ' algorithms loaded');
+    } else {
+      setHealth('health-kimi', 'warn', 'KIMI data not accessible (HTTP ' + r.status + ')');
+    }
+  } catch(e) {
+    setHealth('health-kimi', false, 'KIMI check failed: ' + e.message);
+  }
+
+  // Deploy check
+  try {
+    const r = await fetch('https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html', { method: 'HEAD' });
+    setHealth('health-deploy', r.ok ? true : 'warn', 'GitHub Pages: HTTP ' + r.status);
+  } catch(e) {
+    setHealth('health-deploy', false, 'GitHub Pages check failed');
+  }
+
+  // Turbo check
+  try {
+    const r = await fetch(ALPHA_CLOSED_URL + '?t=' + Date.now());
+    if (r.ok) {
+      const closed = await r.json();
+      const turboActive = closed.length < 50;
+      setHealth('health-turbo', turboActive ? true : 'warn',
+        turboActive ? 'Turbo ON — ' + (50 - closed.length) + ' picks remaining to ML unlock' : 'Turbo OFF — ML threshold reached!');
+    }
+  } catch(e) {
+    setHealth('health-turbo', 'warn', 'Cannot determine turbo status');
+  }
+
+  // Render log
+  const logEl = document.getElementById('pipeline-log');
+  const ts = now.toLocaleString();
+  logEl.innerHTML = '<div style="color:var(--blue);margin-bottom:8px">Health check at ' + ts + '</div>' +
+    log.map(l => {
+      const color = l.startsWith('[OK]') ? 'var(--green)' : l.startsWith('[WARN]') ? 'var(--orange)' : 'var(--red)';
+      return '<div style="color:' + color + ';padding:2px 0">' + l + '</div>';
+    }).join('');
+}
+
+// ─── Init ───
+loadData();
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>

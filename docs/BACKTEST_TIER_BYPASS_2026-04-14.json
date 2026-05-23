@@ -1,0 +1,183 @@
+{
+  "generated_at": "2026-04-14",
+  "source": "audit_dashboard/data/dashboard_data.json.picks.recent_closed",
+  "n_closed_picks": 3500,
+  "tier_config": {
+    "version": 2,
+    "min_forward_wr_pct": 50.0,
+    "min_forward_trades": 3,
+    "elite_min": 30,
+    "elite_max": 90,
+    "fear_greed_substrings": [
+      "fear_greed_contrarian"
+    ],
+    "tier_s_symbols": [
+      "DOTUSDT",
+      "SUIUSDT",
+      "LTCUSDT",
+      "NEARUSDT",
+      "XRPUSDT"
+    ],
+    "tier_a_extra_symbols": [
+      "LINKUSDT",
+      "ATOMUSDT",
+      "AVAXUSDT",
+      "SOLUSDT",
+      "ADAUSDT",
+      "BNBUSDT"
+    ],
+    "tier_a_alt_short_symbols": [
+      "DOGEUSDT",
+      "SHIBUSDT",
+      "1000SHIBUSDT",
+      "PEPEUSDT",
+      "1000PEPEUSDT",
+      "SOLUSDT"
+    ],
+    "tier_b_major_symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "bull_neutral_substrings": [
+      "bull",
+      "neutral",
+      "uptrend",
+      "trending_up",
+      "trend_up",
+      "sideways"
+    ],
+    "exclude_from_tier_s_regime": [
+      "bear",
+      "weak",
+      "crash",
+      "down",
+      "downtrend",
+      "ranging",
+      "choppy"
+    ],
+    "bear_regime_substrings": [
+      "bear",
+      "weak",
+      "crash",
+      "down",
+      "downtrend"
+    ],
+    "non_crypto_tier_a_strategies": [
+      "pead_earnings_drift",
+      "quality_value"
+    ],
+    "non_crypto_tier_b_strategies": [
+      "pead_earnings_drift",
+      "quality_minus_junk",
+      "quality_value",
+      "earnings_drift"
+    ],
+    "non_crypto_tier_a_confidence_threshold": 0.82,
+    "non_crypto_tier_b_confidence_threshold": 0.75,
+    "doc": "HF conviction tiers v2 \u2014 relaxed for sparse forward data + non-crypto. v1 filtered 98% of picks."
+  },
+  "stamp_counts": {
+    "NONE": 3173,
+    "B": 327
+  },
+  "main_partition": {
+    "UNSTAMPED_WR<45": {
+      "n": 1560,
+      "wr": 32.56,
+      "pf": 0.654,
+      "sum": -661.83,
+      "avg": -0.424
+    },
+    "UNSTAMPED_WR>=45": {
+      "n": 1613,
+      "wr": 51.77,
+      "pf": 1.83,
+      "sum": 736.63,
+      "avg": 0.457
+    },
+    "STAMPED_WR>=45": {
+      "n": 262,
+      "wr": 56.49,
+      "pf": 1.729,
+      "sum": 84.8,
+      "avg": 0.324
+    },
+    "STAMPED_WR<45": {
+      "n": 65,
+      "wr": 49.23,
+      "pf": 1.596,
+      "sum": 29.58,
+      "avg": 0.455
+    }
+  },
+  "decision_test": {
+    "A1_stamped_fwdWR_lt_45": {
+      "n": 65,
+      "wr": 49.23,
+      "pf": 1.596,
+      "sum": 29.58,
+      "avg": 0.455
+    },
+    "B1_unstamped_fwdWR_lt_45": {
+      "n": 1560,
+      "wr": 32.56,
+      "pf": 0.654,
+      "sum": -661.83,
+      "avg": -0.424
+    },
+    "A2_stamped_fwdWR_gte_45": {
+      "n": 262,
+      "wr": 56.49,
+      "pf": 1.729,
+      "sum": 84.8,
+      "avg": 0.324
+    },
+    "B2_unstamped_fwdWR_gte_45": {
+      "n": 1613,
+      "wr": 51.77,
+      "pf": 1.83,
+      "sum": 736.63,
+      "avg": 0.457
+    },
+    "wr_delta_A1_minus_B1_pp": 16.669999999999995,
+    "decision_criteria_met": true,
+    "verdict": "OPTION B has merit (stamped-low-WR outperforms baseline-low-WR)"
+  },
+  "per_tier_stamped_low_wr": {
+    "S": {
+      "n": 0,
+      "wr": 0.0,
+      "pf": 0.0,
+      "sum": 0.0,
+      "avg": 0.0
+    },
+    "A": {
+      "n": 0,
+      "wr": 0.0,
+      "pf": 0.0,
+      "sum": 0.0,
+      "avg": 0.0
+    },
+    "B": {
+      "n": 65,
+      "wr": 49.23,
+      "pf": 1.596,
+      "sum": 29.58,
+      "avg": 0.455
+    }
+  },
+  "per_asset_class_stamped_low_wr": {
+    "CRYPTO": {
+      "n": 65,
+      "wr": 49.23,
+      "pf": 1.596,
+      "sum": 29.58,
+      "avg": 0.455
+    }
+  },
+  "caveats": [
+    "strat_fwd_wr is the CURRENT value, not the value at pick-creation time. Introduces look-ahead bias.",
+    "Historical closed picks do not carry hf_conviction_tier natively; tier was re-stamped via classify_hf_conviction_tier() using the CURRENT classifier logic.",
+    "Closed-pick sample includes many auto-expired and time-exit picks; not all are definitive TP/SL resolutions."
+  ]
+}

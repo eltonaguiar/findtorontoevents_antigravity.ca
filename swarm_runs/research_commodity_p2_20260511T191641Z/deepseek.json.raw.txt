@@ -1,0 +1,90 @@
+```json
+{
+  "schema_version": "v1",
+  "engine": "deepseek",
+  "asset_class": "COMMODITY",
+  "candidates": [
+    {
+      "spec_id": "commodity_ts_momentum_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD when 12-month (252d) return > 0 AND 1-month (21d) return > 0; short GLD when 12-month return < 0 AND 1-month return < 0",
+      "exit": "exit on 12-month momentum sign flip or 60 trading day hold (whichever first)",
+      "sizing": "fixed 100% of capital per signal (long or short), no leverage",
+      "universe": ["GLD"],
+      "regime_filter": "skip when GLD 90-day realized volatility > 25% annualized (avoid extreme vol regimes)",
+      "source_refs": ["https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum-in-Commodities"],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.6,
+      "expected_wr": 55.0,
+      "expected_mdd_pct": 18.0,
+      "expected_n_per_year": 8,
+      "rationale": "Time-series momentum on gold (GLD) should replicate the robust trend-following edge documented by Miffre & Rallis (2007), with gold's lower volatility and persistent trends likely yielding favorable risk-adjusted returns over 2020-2025."
+    },
+    {
+      "spec_id": "commodity_carry_gold_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD when 3-month futures curve slope (proxied by GLD price vs 3-month forward price from ETF structure) is backwardated (slope > 0); short when contango (slope < 0)",
+      "exit": "exit on carry sign flip or 30 trading day hold",
+      "sizing": "fixed 100% of capital per signal",
+      "universe": ["GLD"],
+      "regime_filter": "skip when GLD 60-day average daily volume < 5 million shares (low liquidity regime)",
+      "source_refs": ["https://www.bis.org/publ/work853.pdf", "https://www.bis.org/publ/work732.pdf"],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.5,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 16.0,
+      "expected_n_per_year": 12,
+      "rationale": "Carry strategy on gold using ETF structure as proxy for futures curve slope should capture the 0.8% monthly carry premium documented by Boons & Prado (2019), with gold's persistent backwardation periods providing positive roll yield."
+    },
+    {
+      "spec_id": "commodity_value_agriculture_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long DBA when 5-year price relative to 200-day moving average < 0.8 (cheap); short DBA when 5-year price relative to 200-day moving average > 1.2 (expensive)",
+      "exit": "exit when price reverts to 0.95-1.05 of 200-day MA or 90 trading day hold",
+      "sizing": "fixed 100% of capital per signal",
+      "universe": ["DBA"],
+      "regime_filter": "skip when DBA 200-day volatility > 30% annualized (avoid extreme agricultural shocks)",
+      "source_refs": ["https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.5,
+      "expected_wr": 50.0,
+      "expected_mdd_pct": 19.0,
+      "expected_n_per_year": 6,
+      "rationale": "Value strategy on DBA (agricultural commodity ETF) using 5-year price relative to moving average should replicate Bianchi et al. (2018) 0.6% monthly alpha, with agricultural commodities exhibiting mean-reversion tendencies."
+    },
+    {
+      "spec_id": "commodity_momentum_cross_sectional_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long top 2 commodities by 12-month momentum (GLD, SLV, PPLT, PALL, CPER, DBA); short bottom 2 by 12-month momentum; equal-weight long/short",
+      "exit": "rebalance monthly; exit all positions on rebalance day",
+      "sizing": "equal-weight long/short, each leg 50% of capital (net zero beta)",
+      "universe": ["GLD", "SLV", "PPLT", "PALL", "CPER", "DBA"],
+      "regime_filter": "skip when average cross-sectional dispersion of 12-month returns across universe < 5% (low momentum dispersion regime)",
+      "source_refs": ["https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective"],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.7,
+      "expected_wr": 58.0,
+      "expected_mdd_pct": 14.0,
+      "expected_n_per_year": 12,
+      "rationale": "Cross-sectional momentum across commodity ETFs should capture the 0.8% monthly return documented by Asness et al. (2013), with diversification across 6 symbols reducing idiosyncratic risk and improving Sharpe ratio."
+    },
+    {
+      "spec_id": "commodity_carry_momentum_combined_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD when both 12-month momentum > 0 AND carry (proxied by 3-month forward curve slope) > 0; short when both < 0; else flat",
+      "exit": "exit on either momentum or carry sign flip, or 45 trading day hold",
+      "sizing": "fixed 100% of capital per signal",
+      "universe": ["GLD"],
+      "regime_filter": "skip when GLD 30-day correlation to SPY > 0.7 (high equity beta regime reduces commodity-specific edge)",
+      "source_refs": ["https://www.bis.org/publ/work853.pdf"],
+      "proposed_by_engine": "deepseek",
+      "expected_pf": 1.8,
+      "expected_wr": 60.0,
+      "expected_mdd_pct": 12.0,
+      "expected_n_per_year": 6,
+      "rationale": "Combined carry+momentum on gold should improve Sharpe ratio by 40% as per Boons & Prado (2019), with orthogonal signals reducing false positives and enhancing risk-adjusted returns."
+    }
+  ],
+  "notes_to_p3": "Focus backtesting on GLD as primary symbol due to liquidity and clean ETF structure. For cross-sectional strategy, ensure rebalancing accounts for ETF trading costs (0.1-0.3% spread). The carry proxy using ETF structure may need calibration—use GLD's net asset value vs. spot gold as alternative. Monitor 2020 COVID vol spike and 2022 rate hike regimes as stress tests. If all strategies fail Tier-2 floors, consider NO_EDGE verdict for commodity ETFs due to structural decay of futures-based premia in ETF wrappers."
+}
+```

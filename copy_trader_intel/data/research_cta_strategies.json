@@ -1,0 +1,642 @@
+{
+  "meta": {
+    "title": "CTA / Managed Futures Strategy Replication Research",
+    "researched": "2026-03-21",
+    "confidence": "HIGH",
+    "sources_count": 35,
+    "strategies_count": 12
+  },
+
+  "cta_performance_data_sources": {
+    "sg_cta_index": {
+      "name": "Societe Generale CTA Index",
+      "url": "https://wholesale.banking.societegenerale.com/en/prime-services-indices/",
+      "methodology_url": "https://wholesale.banking.societegenerale.com/fileadmin/indices_feeds/SG_CTA_Index_Methodology.pdf",
+      "description": "Equal-weighted index of 20 largest CTAs by AUM. Reconstituted annually.",
+      "aum_threshold_2026": "$1.9 billion",
+      "inception": "2000-01-01",
+      "frequency": "daily",
+      "net_of_fees": true,
+      "performance": {
+        "2022": "+20.0%",
+        "2023": "-3.7%",
+        "2024": "+2.4%",
+        "2025_ytd_may": "-0.9%"
+      }
+    },
+    "sg_trend_indicator": {
+      "name": "SG Trend Indicator",
+      "url": "https://wholesale.banking.societegenerale.com/fileadmin/indices_feeds/ti_screen/index.html",
+      "description": "Daily report on trend-following exposure across asset classes"
+    },
+    "barclay_hedge": {
+      "name": "BarclayHedge CTA Index",
+      "url": "https://www.barclayhedge.com/solutions/assets-under-management/cta/",
+      "description": "Self-reported CTA performance database. Survivorship bias present."
+    },
+    "eurekahedge": {
+      "name": "Eurekahedge CTA/Managed Futures Index",
+      "url": "https://www.eurekahedge.com/",
+      "description": "Tracks CTAs globally. Equal-weighted."
+    },
+    "iasg": {
+      "name": "IASG Managed Futures Database",
+      "url": "https://www.iasg.com/managed-futures/performance",
+      "description": "Managed futures screener with performance rankings"
+    },
+    "nilsson_hedge": {
+      "name": "Nilsson Hedge",
+      "url": "https://www.nilssonhedge.com/",
+      "description": "Free CTA database with performance data"
+    }
+  },
+
+  "free_data_sources": {
+    "aqr_datasets": {
+      "url": "https://www.aqr.com/Insights/Datasets",
+      "datasets": {
+        "tsmom_factors_monthly": {
+          "url": "https://www.aqr.com/Insights/Datasets/Time-Series-Momentum-Factors-Monthly",
+          "description": "Monthly excess returns for long/short TSMOM factors. 58 instruments. Starts 1985.",
+          "asset_classes": ["equity_indices", "currencies", "commodities", "government_bonds"],
+          "updated": "monthly"
+        },
+        "value_momentum_everywhere": {
+          "description": "Value and momentum return premia across 8 markets/asset classes"
+        },
+        "betting_against_beta": {
+          "description": "Long/short BAB equity factors for US and 23 international markets"
+        }
+      }
+    },
+    "kenneth_french_library": {
+      "url": "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html",
+      "description": "Factor returns (Fama-French 3/5 factors, momentum, etc.)"
+    },
+    "fred": {
+      "url": "https://fred.stlouisfed.org/",
+      "description": "Federal Reserve Economic Data. Interest rates, yield curves, macro data.",
+      "useful_series": [
+        "DFF (Fed Funds Rate)",
+        "DGS10 (10-Year Treasury)",
+        "T10Y2Y (Yield Curve Spread)",
+        "VIXCLS (VIX Close)"
+      ]
+    },
+    "yfinance": {
+      "description": "Free Python library for Yahoo Finance data. Covers futures, ETFs, forex, equities."
+    }
+  },
+
+  "replication_etfs": {
+    "DBMF": {
+      "name": "iMGP DBi Managed Futures Strategy ETF",
+      "aum": "$1B+",
+      "expense_ratio": "0.85%",
+      "approach": "Regression-based replication of top 20 CTA hedge funds",
+      "correlation_to_sg_cta": "~0.80",
+      "performance_2022": "+31.57%"
+    },
+    "KMLM": {
+      "name": "KraneShares Mount Lucas Managed Futures Index Strategy ETF",
+      "expense_ratio": "0.90%",
+      "approach": "Tracks KFA MLM Index: 22 liquid futures (11 commodities, 6 currencies, 5 bonds)",
+      "correlation_to_dbmf": "0.70",
+      "performance_2022": "+44.75%"
+    },
+    "CTA": {
+      "name": "Simplify Managed Futures Strategy ETF",
+      "approach": "Systematic trend-following",
+      "two_year_annualized": "10.1%"
+    }
+  },
+
+  "academic_papers": {
+    "moskowitz_ooi_pedersen_2012": {
+      "title": "Time Series Momentum",
+      "authors": "Tobias Moskowitz, Yao Hua Ooi, Lasse Heje Pedersen",
+      "journal": "Journal of Financial Economics",
+      "url": "http://docs.lhpedersen.com/TimeSeriesMomentum.pdf",
+      "ssrn": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2089463",
+      "key_finding": "12-month TSMOM delivers significant positive returns across 58 liquid futures. Sharpe 1.31.",
+      "data_available": "https://www.aqr.com/Insights/Datasets/Time-Series-Momentum-Original-Paper-Data"
+    },
+    "hurst_ooi_pedersen_2017": {
+      "title": "A Century of Evidence on Trend-Following Investing",
+      "authors": "Brian Hurst, Yao Hua Ooi, Lasse Heje Pedersen",
+      "journal": "Journal of Portfolio Management",
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2993026",
+      "key_finding": "Blended 1/3/12 month TSMOM works in every decade since 1880. 67 markets, 4 asset classes. Crisis alpha in 8 of 10 largest drawdowns.",
+      "universe": {
+        "commodities": 29,
+        "equity_indices": 11,
+        "bond_markets": 15,
+        "currency_pairs": 12,
+        "total": 67
+      },
+      "period": "1880-2016"
+    },
+    "baltas_kosowski_2020": {
+      "title": "Demystifying Time-Series Momentum Strategies",
+      "authors": "Nick Baltas, Robert Kosowski",
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2140091",
+      "key_finding": "More efficient volatility estimation reduces turnover. TREND rule (scaled positions by signal strength) outperforms binary approach. Post-2008 underperformance explained by increased pairwise correlations."
+    },
+    "fung_hsieh_2001": {
+      "title": "The Risk in Hedge Fund Strategies: Theory and Evidence from Trend Followers",
+      "authors": "William Fung, David Hsieh",
+      "key_finding": "CTA returns replicated by lookback straddles on bonds, currencies, commodities, equities, and short-term interest rates."
+    },
+    "hamill_rattray_van_hemert_2016": {
+      "title": "Trend Following: Equity and Bond Crisis Alpha",
+      "key_finding": "Trend following provides crisis alpha (positive returns during equity bear markets), especially on short side."
+    },
+    "gorton_rouwenhorst_2006": {
+      "title": "Facts and Fantasies about Commodity Futures",
+      "key_finding": "Commodity carry (backwardation premium) generates 11.7% annual return. 0.49 Sharpe. High max drawdown (-78%)."
+    },
+    "virtus_replication_2025": {
+      "title": "Tracking Trend: A Closer Look at Managed Futures Index Replication",
+      "authors": "Kaminski and Zhao",
+      "url": "https://www.virtus.com/assets/files/8x7/2025.02---etf-replication---kaminski-and-zhao_9093.pdf",
+      "key_finding": "Informed regression replication achieves lowest tracking error. Mechanical replication provides 82% correlation and 5.81% tracking error."
+    },
+    "bayesian_cta_replication_2025": {
+      "title": "Re-evaluating Short- and Long-Term Trend Factors in CTA Replication",
+      "url": "https://arxiv.org/pdf/2507.15876",
+      "key_finding": "Bayesian graphical model tracking short/long-term and market-beta exposures outperforms classic multi-month breakouts on Sharpe and drawdown efficiency."
+    }
+  },
+
+  "strategies": {
+    "trend_following": {
+      "family": "Trend Following",
+      "risk_budget": "50%",
+      "description": "The dominant CTA strategy family. ~70% of CTA returns come from trend following.",
+
+      "strategies": {
+        "tsmom_blend": {
+          "name": "Time-Series Momentum (Blended 1/3/12m)",
+          "id": "cta_tsmom_blend",
+          "source": "Moskowitz, Ooi, Pedersen (2012); Hurst, Ooi, Pedersen (2017)",
+          "confidence": "HIGH",
+          "rules": {
+            "signal": "If past N-month excess return > 0, go LONG; if < 0, go SHORT",
+            "lookbacks_days": [21, 63, 252],
+            "lookbacks_months": [1, 3, 12],
+            "blending": "Equal-weight average of 3 lookback signals",
+            "threshold": "If blend > 0.33 = LONG, < -0.33 = SHORT, else FLAT",
+            "position_sizing": "Inversely proportional to 60-day realized volatility",
+            "rebalance": "Monthly (1st trading day)",
+            "holding_period": "1 month"
+          },
+          "universe": {
+            "total_instruments": 58,
+            "commodities": 24,
+            "currencies": 12,
+            "equity_indices": 9,
+            "government_bonds": 13
+          },
+          "performance": {
+            "annual_return_alpha": "20.7%",
+            "sharpe_ratio": 1.31,
+            "volatility": "15.74%",
+            "max_drawdown": "-33.87%",
+            "backtest_period": "1965-2009",
+            "works_since": "1880 (every decade)"
+          },
+          "implementation": {
+            "data_needed": "12+ months daily OHLCV per instrument",
+            "data_source": "yfinance (=F futures tickers + ETF proxies)",
+            "compute_time": "< 5 seconds for 40 instruments",
+            "dependencies": "pandas, numpy only"
+          }
+        },
+
+        "donchian_breakout": {
+          "name": "Donchian Channel Breakout (Turtle System 2)",
+          "id": "cta_donchian_55",
+          "source": "Richard Dennis / Curtis Faith (1983)",
+          "confidence": "HIGH",
+          "rules": {
+            "entry_long": "Price exceeds 55-day highest high",
+            "entry_short": "Price falls below 55-day lowest low",
+            "exit_long": "Price hits 20-day lowest low",
+            "exit_short": "Price hits 20-day highest high",
+            "position_sizing": "Risk 2% of capital per trade",
+            "unit_size": "(0.02 * Account) / (ATR(30) * Dollar_per_Point)",
+            "initial_stop": "2 * ATR(30) from entry",
+            "max_units": 4,
+            "pyramiding": "Add 1 unit per 0.5 * ATR(30) favorable move"
+          },
+          "performance": {
+            "original_turtles_cagr": "80%+ (1984-1988, extraordinary period)",
+            "modern_sharpe": "0.5-0.8",
+            "still_profitable": true,
+            "best_markets": ["trending commodities", "FX"]
+          },
+          "implementation_notes": "Use System 2 only (55-day). Skip pyramiding for simplicity. Simpler and more robust."
+        },
+
+        "dual_ma_crossover": {
+          "name": "Dual Moving Average Crossover (50/200)",
+          "id": "cta_ma_crossover",
+          "source": "Standard technical analysis, widely validated",
+          "confidence": "HIGH",
+          "rules": {
+            "fast_ma": "50-day SMA",
+            "slow_ma": "200-day SMA",
+            "buy_signal": "Fast MA crosses above Slow MA (Golden Cross)",
+            "sell_signal": "Fast MA crosses below Slow MA (Death Cross)",
+            "position_sizing": "Volatility-targeted (same as TSMOM)"
+          },
+          "performance": {
+            "sharpe": "0.4-0.7 standalone",
+            "profitable_pct": "90% of DMAC combinations profitable out-of-sample (Duke study)",
+            "works_across": ["equities", "commodities", "FX", "bonds"]
+          },
+          "implementation_notes": "Apply to all ~30 instruments. Requires 200 days of data minimum."
+        }
+      }
+    },
+
+    "carry": {
+      "family": "Carry Strategies",
+      "risk_budget": "25%",
+      "description": "Earn the yield/premium. Uncorrelated to trend following.",
+
+      "strategies": {
+        "fx_carry": {
+          "name": "FX Carry Trade",
+          "id": "cta_fx_carry",
+          "source": "Lustig & Verdelhan (2007)",
+          "confidence": "HIGH",
+          "rules": {
+            "signal": "Long 3 highest-yielding currencies, short 3 lowest-yielding",
+            "yield_proxy": "Central bank prime rates",
+            "rebalance": "Monthly",
+            "universe": "G10 currencies (avoid EM for crash risk reduction)"
+          },
+          "g10_currencies": [
+            "EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X",
+            "NZDUSD=X", "USDCAD=X", "USDCHF=X", "USDNOK=X", "USDSEK=X"
+          ],
+          "performance": {
+            "annual_return": "7.27%",
+            "sharpe_ratio": "0.76 (basic), 0.99 (forward discount adjusted), 1.07 (combined)",
+            "max_drawdown": "-32.05%",
+            "risk": "Negative skewness. Crash risk during risk-off events."
+          },
+          "warnings": [
+            "JPY carry unwind Aug 2024 caused significant losses",
+            "NOT suitable as equity hedge",
+            "Cap at 25% of risk budget"
+          ]
+        },
+
+        "commodity_carry": {
+          "name": "Commodity Term Structure Carry",
+          "id": "cta_commodity_carry",
+          "source": "Gorton & Rouwenhorst (2006); Quantpedia",
+          "confidence": "MEDIUM",
+          "rules": {
+            "signal": "Long top 20% by roll return (backwardated), short bottom 20% (contangoed)",
+            "roll_return_calc": "(Front_month - Next_month) / Front_month",
+            "rebalance": "Monthly",
+            "weighting": "Equal-weight within quintiles"
+          },
+          "performance": {
+            "annual_return": "11.73%",
+            "sharpe_ratio": 0.49,
+            "max_drawdown": "-78.06%",
+            "note": "HIGH max drawdown - needs strict position sizing"
+          },
+          "implementation_challenge": "Requires front and back month futures prices. yfinance may only provide continuous contract (=F). May need to use commodity ETF proxies or calculate roll from individual months.",
+          "warnings": [
+            "Does NOT hedge equity downturns",
+            "Roll cost drag: 0.5-1% annually",
+            "Max drawdown is extreme without position sizing"
+          ]
+        },
+
+        "vix_carry": {
+          "name": "VIX Contango Carry",
+          "id": "cta_vix_carry",
+          "source": "Szado (2009); Quantpedia",
+          "confidence": "MEDIUM",
+          "rules": {
+            "entry_short_vol": "VIX futures in contango AND daily roll > 0.10 points",
+            "entry_long_vol": "VIX futures in backwardation AND daily roll < -0.10 points",
+            "daily_roll": "(VIX_futures - VIX_spot) / business_days_to_settlement",
+            "hold_period": "5 trading days",
+            "min_days_to_expiry": 10,
+            "hedge": "E-mini S&P 500 futures proportional to regression beta"
+          },
+          "performance": {
+            "annual_return": "19.67%",
+            "backtest_period": "2007-2011",
+            "contango_frequency": "84% of the time",
+            "late_2024_monthly_roll_yield": "~5.4%",
+            "warning": "Out-of-sample alpha deteriorating"
+          },
+          "implementation_notes": "Use VIXY/SVXY ETFs as proxy. Simpler rule: if VIX < 20 and VIX curve in contango, signal SHORT vol (long SVXY)."
+        }
+      }
+    },
+
+    "mean_reversion": {
+      "family": "Mean Reversion",
+      "risk_budget": "15%",
+      "description": "Countertrend strategies. Must include regime filter.",
+
+      "strategies": {
+        "bollinger_reversion": {
+          "name": "Bollinger Band Mean Reversion",
+          "id": "cta_bb_reversion",
+          "source": "John Bollinger; widely validated",
+          "confidence": "MEDIUM",
+          "rules": {
+            "bollinger_period": 20,
+            "bollinger_std": 2.0,
+            "buy_signal": "Price touches lower band AND RSI(14) < 30 AND close above lower band",
+            "sell_signal": "Price touches upper band AND RSI(14) > 70 AND close below upper band",
+            "take_profit": "Price reaches middle band (20-SMA)",
+            "stop_loss": "1.5 * ATR(14) from entry",
+            "regime_filter": "ADX(14) < 25 (non-trending markets only)"
+          },
+          "performance": {
+            "win_rate": "55-65%",
+            "sharpe": "Not well documented for this exact setup",
+            "best_markets": ["gold", "crude oil", "major FX pairs"],
+            "fails_in": "Strong trending markets without regime filter"
+          }
+        },
+
+        "rsi2_equity": {
+          "name": "RSI-2 Mean Reversion (Connors)",
+          "id": "cta_rsi2_equity",
+          "source": "Larry Connors (2010); QuantifiedStrategies",
+          "confidence": "HIGH (US equities ONLY)",
+          "rules": {
+            "filter": "Price > 200-day SMA (bull market only)",
+            "buy_signal": "RSI(2) < 5",
+            "sell_signal": "RSI(2) > 70",
+            "enhancement": "Cumulative RSI variant for stronger signals"
+          },
+          "performance": {
+            "win_rate_spy": "75.7%",
+            "win_rate_qqq": "75.3%",
+            "sharpe": "4.8-6.5 (backtested)",
+            "cagr_25yr": "8.2%",
+            "max_drawdown": "16%"
+          },
+          "scope_restriction": {
+            "works": ["SPY", "QQQ", "FTSE 100"],
+            "does_NOT_work": ["commodities", "forex", "international equities", "crypto"],
+            "reason": "Only validated for US equity indices. Disappointing results on CAC40, Nikkei, Hang Seng."
+          }
+        },
+
+        "gold_silver_pairs": {
+          "name": "Gold/Silver Ratio Pairs Trade",
+          "id": "cta_gold_silver_pairs",
+          "source": "CME Group; standard commodity spread",
+          "confidence": "MEDIUM",
+          "rules": {
+            "ratio_calc": "GC=F / SI=F",
+            "historical_mean": "60-70",
+            "buy_silver_sell_gold": "Ratio > 80 (silver relatively cheap)",
+            "buy_gold_sell_silver": "Ratio < 50 (gold relatively cheap)",
+            "alternative_entry": "Bollinger Bands (20,2) on the ratio",
+            "exit": "Ratio reverts to 20-period mean",
+            "position_sizing": "Dollar-neutral (equal dollar long and short)"
+          },
+          "performance": {
+            "sharpe": "0.5-0.8",
+            "correlation_to_directional": "Low",
+            "margin_advantage": "35-55% margin credit on CME recognized spreads"
+          },
+          "additional_pairs": [
+            {"pair": "Corn/Wheat (ZC=F / ZW=F)", "type": "agricultural", "seasonality": true},
+            {"pair": "Soybean/Corn (ZS=F / ZC=F)", "type": "agricultural", "seasonality": true},
+            {"pair": "Soybean Crush (ZS=F vs ZM=F + ZL=F)", "type": "processing margin", "seasonality": true}
+          ]
+        }
+      }
+    },
+
+    "volatility_portfolio": {
+      "family": "Volatility & Portfolio Construction",
+      "risk_budget": "10%",
+      "description": "Risk management wrapper for all strategies.",
+
+      "strategies": {
+        "vol_targeting": {
+          "name": "Cross-Asset Volatility Targeting",
+          "id": "cta_vol_target",
+          "source": "Standard CTA practice; Pedersen (2012)",
+          "confidence": "HIGH",
+          "rules": {
+            "for_each_instrument": "Calculate 60-day realized volatility (annualized)",
+            "target_portfolio_vol": "10% annualized",
+            "position_weight": "(Target_Vol / Instrument_Vol) * (1 / N_instruments)",
+            "leverage_cap": "3x maximum per instrument",
+            "rebalance": "Monthly or when vol changes > 20%",
+            "vol_formula": "returns.std() * sqrt(252)"
+          },
+          "performance": {
+            "sharpe_improvement": "0.2-0.5 vs equal-weight",
+            "drawdown_reduction": "20-40%"
+          }
+        },
+
+        "volatility_risk_premium": {
+          "name": "Volatility Risk Premium (VRP)",
+          "id": "cta_vrp",
+          "source": "Bollen & Whaley (2004); Carr & Wu (2009)",
+          "confidence": "MEDIUM",
+          "rules": {
+            "vrp_calc": "VIX - 20-day realized vol of SPX",
+            "sell_vol_signal": "VRP > 5 points",
+            "buy_vol_signal": "VRP < 0 points (crisis)",
+            "instrument": "SVXY (short VIX) or VIXY (long VIX)",
+            "position_size": "Proportional to VRP magnitude, max 5% of portfolio",
+            "stop_loss": "2x ATR, daily monitoring"
+          },
+          "performance": {
+            "vrp_positive_pct": "85%+",
+            "average_monthly_vrp": "3-5 vol points",
+            "tail_risk": "Catastrophic (Feb 2018 Volmageddon)"
+          },
+          "warnings": [
+            "NEVER more than 5% of portfolio",
+            "This is a signal/overlay, not a core strategy",
+            "Requires daily monitoring for tail events"
+          ]
+        },
+
+        "combined_portfolio": {
+          "name": "Combined CTA Portfolio (Meta-Strategy)",
+          "id": "cta_combined",
+          "source": "AQR Demystifying Managed Futures; Hurst et al. (2017)",
+          "confidence": "HIGH",
+          "rules": {
+            "weighting": "Risk parity across strategy families",
+            "risk_budgets": {
+              "trend_following": "50%",
+              "carry": "25%",
+              "mean_reversion": "15%",
+              "volatility": "10%"
+            },
+            "rebalance_allocation": "Quarterly",
+            "total_vol_target": "10% annualized"
+          },
+          "expected_performance": {
+            "sharpe": "0.8-1.2",
+            "max_drawdown": "-15% to -25%",
+            "correlation_to_equities": "-0.1 to 0.1",
+            "crisis_alpha": true
+          }
+        }
+      }
+    }
+  },
+
+  "yfinance_universe": {
+    "commodities": {
+      "precious_metals": [
+        {"ticker": "GC=F", "name": "Gold", "sector": "precious_metals"},
+        {"ticker": "SI=F", "name": "Silver", "sector": "precious_metals"},
+        {"ticker": "PL=F", "name": "Platinum", "sector": "precious_metals"}
+      ],
+      "energy": [
+        {"ticker": "CL=F", "name": "Crude Oil WTI", "sector": "energy"},
+        {"ticker": "BZ=F", "name": "Brent Crude", "sector": "energy"},
+        {"ticker": "NG=F", "name": "Natural Gas", "sector": "energy"},
+        {"ticker": "HO=F", "name": "Heating Oil", "sector": "energy"},
+        {"ticker": "RB=F", "name": "RBOB Gasoline", "sector": "energy"}
+      ],
+      "agriculture": [
+        {"ticker": "ZC=F", "name": "Corn", "sector": "agriculture"},
+        {"ticker": "ZW=F", "name": "Wheat", "sector": "agriculture"},
+        {"ticker": "ZS=F", "name": "Soybeans", "sector": "agriculture"},
+        {"ticker": "ZM=F", "name": "Soybean Meal", "sector": "agriculture"},
+        {"ticker": "ZL=F", "name": "Soybean Oil", "sector": "agriculture"},
+        {"ticker": "KC=F", "name": "Coffee", "sector": "agriculture"},
+        {"ticker": "SB=F", "name": "Sugar", "sector": "agriculture"},
+        {"ticker": "CC=F", "name": "Cocoa", "sector": "agriculture"},
+        {"ticker": "CT=F", "name": "Cotton", "sector": "agriculture"}
+      ],
+      "industrial_metals": [
+        {"ticker": "HG=F", "name": "Copper", "sector": "industrial_metals"}
+      ],
+      "livestock": [
+        {"ticker": "LE=F", "name": "Live Cattle", "sector": "livestock"},
+        {"ticker": "HE=F", "name": "Lean Hogs", "sector": "livestock"}
+      ]
+    },
+    "equity_indices": [
+      {"ticker": "ES=F", "name": "S&P 500 E-mini", "etf_proxy": "SPY"},
+      {"ticker": "NQ=F", "name": "Nasdaq 100 E-mini", "etf_proxy": "QQQ"},
+      {"ticker": "YM=F", "name": "Dow Jones E-mini", "etf_proxy": "DIA"},
+      {"ticker": "RTY=F", "name": "Russell 2000 E-mini", "etf_proxy": "IWM"},
+      {"ticker": "EWJ", "name": "Japan (Nikkei proxy)", "type": "etf"},
+      {"ticker": "EWG", "name": "Germany (DAX proxy)", "type": "etf"},
+      {"ticker": "EWU", "name": "UK (FTSE proxy)", "type": "etf"},
+      {"ticker": "FXI", "name": "China (Hang Seng proxy)", "type": "etf"},
+      {"ticker": "EEM", "name": "Emerging Markets", "type": "etf"}
+    ],
+    "bonds": [
+      {"ticker": "ZB=F", "name": "US 30-Year Bond"},
+      {"ticker": "ZN=F", "name": "US 10-Year Note"},
+      {"ticker": "ZF=F", "name": "US 5-Year Note"},
+      {"ticker": "TLT", "name": "20+ Year Treasury ETF", "type": "etf"},
+      {"ticker": "IEF", "name": "7-10 Year Treasury ETF", "type": "etf"},
+      {"ticker": "BWX", "name": "International Treasury ETF", "type": "etf"}
+    ],
+    "fx_pairs": [
+      {"ticker": "EURUSD=X", "name": "EUR/USD", "carry_category": "varies"},
+      {"ticker": "GBPUSD=X", "name": "GBP/USD", "carry_category": "varies"},
+      {"ticker": "USDJPY=X", "name": "USD/JPY", "carry_category": "low_yield_short"},
+      {"ticker": "AUDUSD=X", "name": "AUD/USD", "carry_category": "high_yield_long"},
+      {"ticker": "NZDUSD=X", "name": "NZD/USD", "carry_category": "high_yield_long"},
+      {"ticker": "USDCAD=X", "name": "USD/CAD", "carry_category": "varies"},
+      {"ticker": "USDCHF=X", "name": "USD/CHF", "carry_category": "low_yield_short"},
+      {"ticker": "USDNOK=X", "name": "USD/NOK", "carry_category": "varies"},
+      {"ticker": "USDSEK=X", "name": "USD/SEK", "carry_category": "varies"}
+    ],
+    "volatility": [
+      {"ticker": "^VIX", "name": "VIX Spot", "note": "Index only, not tradeable"},
+      {"ticker": "VIXY", "name": "VIX Short-Term Futures ETF"},
+      {"ticker": "SVXY", "name": "Short VIX Short-Term ETF"}
+    ]
+  },
+
+  "implementation_priority": {
+    "phase_1_mvp": {
+      "strategies": ["cta_tsmom_blend", "cta_donchian_55", "cta_ma_crossover", "cta_vol_target"],
+      "instruments": 30,
+      "estimated_sharpe": "0.6-0.9",
+      "complexity": "LOW-MEDIUM",
+      "data_requirements": "12+ months daily OHLCV from yfinance"
+    },
+    "phase_2_carry": {
+      "strategies": ["cta_fx_carry", "cta_commodity_carry", "cta_vix_carry"],
+      "instruments": "+9 FX pairs, VIX",
+      "estimated_sharpe_addition": "+0.1-0.2 (diversification)",
+      "complexity": "MEDIUM",
+      "data_requirements": "Interest rate data from FRED, VIX data"
+    },
+    "phase_3_mean_reversion": {
+      "strategies": ["cta_bb_reversion", "cta_rsi2_equity", "cta_gold_silver_pairs"],
+      "instruments": "Subset of existing",
+      "estimated_sharpe_addition": "+0.05-0.15",
+      "complexity": "MEDIUM",
+      "requires": "Regime detection (ADX filter)"
+    },
+    "phase_4_portfolio": {
+      "strategies": ["cta_vrp", "cta_combined"],
+      "instruments": "All from above",
+      "estimated_combined_sharpe": "0.8-1.2",
+      "complexity": "MEDIUM-HIGH"
+    }
+  },
+
+  "position_sizing_formulas": {
+    "volatility_target": {
+      "formula": "weight = (target_vol / instrument_vol) * (1 / N)",
+      "target_vol": 0.10,
+      "vol_lookback_days": 60,
+      "annualization_factor": 15.87,
+      "max_leverage_per_instrument": 3.0,
+      "note": "instrument_vol = daily_returns.std() * sqrt(252)"
+    },
+    "turtle_unit_size": {
+      "formula": "unit = (0.02 * account) / (ATR_30 * dollar_per_point)",
+      "risk_per_trade": 0.02,
+      "atr_period": 30,
+      "initial_stop": "2 * ATR(30)",
+      "max_units": 4
+    },
+    "equal_risk_contribution": {
+      "formula": "weight_i = (1 / vol_i) / sum(1 / vol_j for all j)",
+      "note": "Inverse-volatility weighting ensures equal risk from each position"
+    }
+  },
+
+  "expected_combined_performance": {
+    "conservative_estimate": {
+      "annual_return": "6-10%",
+      "sharpe_ratio": "0.6-0.8",
+      "max_drawdown": "-20% to -30%",
+      "correlation_to_sp500": "-0.1 to 0.1"
+    },
+    "optimistic_estimate": {
+      "annual_return": "10-15%",
+      "sharpe_ratio": "0.8-1.2",
+      "max_drawdown": "-15% to -20%",
+      "correlation_to_sp500": "-0.1 to 0.1"
+    },
+    "note": "Conservative estimate accounts for implementation slippage, data issues, and post-publication decay. Optimistic assumes clean execution and favorable market conditions."
+  }
+}

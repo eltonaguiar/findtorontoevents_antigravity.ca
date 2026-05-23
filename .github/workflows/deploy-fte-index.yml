@@ -1,0 +1,203 @@
+name: Deploy findtorontoevents.ca core site
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'TORONTOEVENTS_ANTIGRAVITY/index.html'
+      - 'TORONTOEVENTS_ANTIGRAVITY/next_htaccess'
+      - 'events.json'
+      - 'next/events.json'
+      - 'last_update.json'
+      - '.github/workflows/deploy-fte-index.yml'
+  workflow_run:
+    workflows: ["Scrape events"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Inject dynamic deploy version into index.html
+        run: |
+          VERSION="$(date -u +%Y-%m-%d)-$(git rev-parse --short HEAD)"
+          echo "Deploy version: ${VERSION}"
+          sed -i "s/2026-01-29-parallel-fix/${VERSION}/g" TORONTOEVENTS_ANTIGRAVITY/index.html
+
+      - name: Validate site payload before FTP upload
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          # 2026-04-18: changed from bare `marker in text` substring check to
+          # line-anchored regex. The old check fired on the bare string
+          # '=======' anywhere in the file, which false-positives on event
+          # descriptions that include visual separator lines of equals signs
+          # (e.g. "...call 833-MUSCLE-M=======================Muscle Men..."
+          # in French translation dividers). Real conflict markers are always
+          # at the start of a line with specific formatting.
+          _MARKER_RE = re.compile(r"^(<<<<<<< |=======$|>>>>>>> )", re.MULTILINE)
+
+          def _has_markers(text: str) -> bool:
+              return _MARKER_RE.search(text) is not None
+
+          def load_json(path: Path):
+              text = path.read_text(encoding="utf-8")
+              if _has_markers(text):
+                  raise SystemExit(f"{path} contains unresolved git conflict markers")
+              return json.loads(text)
+
+          index_path = Path("TORONTOEVENTS_ANTIGRAVITY/index.html")
+          if not index_path.is_file():
+              raise SystemExit(f"Missing site HTML: {index_path}")
+          index_text = index_path.read_text(encoding="utf-8")
+          if _has_markers(index_text):
+              raise SystemExit(f"{index_path} contains unresolved git conflict markers")
+
+          root_events = load_json(Path("events.json"))
+          next_events_path = Path("next/events.json")
+          if not next_events_path.is_file():
+              raise SystemExit("Missing next/events.json; frontend fetches /next/events.json in production")
+          next_events = load_json(next_events_path)
+          if len(root_events) != len(next_events):
+              raise SystemExit(
+                  f"events.json ({len(root_events)}) and next/events.json ({len(next_events)}) differ"
+              )
+
+          last_update = Path("last_update.json")
+          if last_update.is_file():
+              load_json(last_update)
+
+          print(f"Validated payload: index.html + {len(root_events)} events + next/events.json parity OK")
+          PY
+
+      - name: Upload core site files to findtorontoevents.ca (50webs FTP)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PY'
+          import ftplib
+          import os
+          import sys
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pw = os.environ.get("FTP_PASS", "")
+          if not all([host, user, pw]):
+              print("Missing FTP credentials")
+              sys.exit(1)
+
+          uploads = [
+              (Path("TORONTOEVENTS_ANTIGRAVITY/index.html"), "findtorontoevents.ca/index.html", True),
+              (Path("events.json"), "findtorontoevents.ca/events.json", False),
+              (Path("events.json"), "findtorontoevents.ca/next/events.json", False),
+          ]
+          # next_htaccess in the repo is uploaded as `.htaccess` to the next/
+          # directory on 50webs. It enables Apache mod_deflate for
+          # application/json so the 16 MB events.json doesn't time out the
+          # React fetch hook on mobile. See file header for full rationale.
+          next_htaccess = Path("TORONTOEVENTS_ANTIGRAVITY/next_htaccess")
+          if next_htaccess.is_file():
+              uploads.append((next_htaccess, "findtorontoevents.ca/next/.htaccess", False))
+          last_update = Path("last_update.json")
+          if last_update.is_file():
+              uploads.append((last_update, "findtorontoevents.ca/last_update.json", False))
+
+          def ensure_dir(ftp, remote_dir: str):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part:
+                      continue
+                  try:
+                      ftp.cwd(part)
+                  except ftplib.error_perm:
+                      ftp.mkd(part)
+                      ftp.cwd(part)
+
+          print(f"Connecting to {host}...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+
+          for local_path, remote_path, backup in uploads:
+              if not local_path.is_file():
+                  raise SystemExit(f"Missing local file for deploy: {local_path}")
+              remote_dir, remote_name = remote_path.rsplit("/", 1)
+              ensure_dir(ftp, remote_dir)
+              if backup:
+                  try:
+                      with open("/tmp/fte_core_backup.bin", "wb") as f:
+                          ftp.retrbinary(f"RETR {remote_name}", f.write)
+                      with open("/tmp/fte_core_backup.bin", "rb") as f:
+                          ftp.storbinary(f"STOR {remote_name}.bak", f)
+                      print(f"Backup created: {remote_path}.bak")
+                  except Exception as exc:
+                      print(f"Backup skipped for {remote_path}: {exc}")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {remote_name}", f)
+              print(f"Uploaded {local_path} -> /{remote_path} ({local_path.stat().st_size} bytes)")
+
+          ftp.quit()
+          print("Core site deploy complete")
+          PY
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import time
+          import urllib.request
+          from pathlib import Path
+
+          def sha256_bytes(payload: bytes) -> str:
+              return hashlib.sha256(payload).hexdigest()
+
+          def fetch(url: str) -> bytes:
+              # 2026-04-18: dropped `Cache-Control: no-cache` request header.
+              # 50webs CDN returned HTTP 412 Precondition Failed when that
+              # header was present (run 24611185333). The query-string
+              # cache-bust below is sufficient to defeat caching. Also added
+              # a real User-Agent because some WAFs block bare urllib.
+              req = urllib.request.Request(
+                  url,
+                  headers={"User-Agent": "github-actions-deploy-verify/1.0"},
+              )
+              with urllib.request.urlopen(req, timeout=60) as resp:
+                  return resp.read()
+
+          cache_bust = f"?_={int(time.time())}"
+          local_index = Path("TORONTOEVENTS_ANTIGRAVITY/index.html").read_bytes()
+          remote_index = fetch("https://findtorontoevents.ca/index.html" + cache_bust)
+          local_events = Path("events.json").read_bytes()
+          remote_events = fetch("https://findtorontoevents.ca/next/events.json" + cache_bust)
+
+          index_match = sha256_bytes(local_index) == sha256_bytes(remote_index)
+          events_match = sha256_bytes(local_events) == sha256_bytes(remote_events)
+
+          print(f"index.html sha256 local={sha256_bytes(local_index)} remote={sha256_bytes(remote_index)}")
+          print(f"events.json sha256 local={sha256_bytes(local_events)} remote={sha256_bytes(remote_events)}")
+          print(f"events.json local_count={len(json.loads(local_events))} remote_count={len(json.loads(remote_events))}")
+
+          if not index_match:
+              raise SystemExit("Remote index.html does not match local TORONTOEVENTS_ANTIGRAVITY/index.html")
+          if not events_match:
+              raise SystemExit("Remote /next/events.json does not match local events.json")
+
+          print("findtorontoevents.ca core site matches repo payload")
+          PY

@@ -1,0 +1,113 @@
+name: Statistical Rigor Validation - Thousands of Signals
+
+on:
+  # Run daily to accumulate signals
+  schedule:
+    - cron: '0 0 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      min_signals:
+        description: 'Minimum signals required for validation'
+        required: false
+        default: '1000'
+
+permissions:
+  contents: write
+
+jobs:
+  statistical-validation:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pandas scipy requests
+        
+    - name:  Run Statistical Validation
+      run: |
+        echo ""
+        echo "   STATISTICAL RIGOR VALIDATION SYSTEM                         "
+        echo ""
+        echo "  Requirements:                                                  "
+        echo "   Minimum 1,000 signals (not 64)                               "
+        echo "   P-value < 0.05 for significance                              "
+        echo "   Bootstrap 10,000 iterations                                  "
+        echo "   Monte Carlo 10,000 simulations                               "
+        echo "   Regime splitting analysis                                    "
+        echo ""
+        echo ""
+        
+        python statistical_validator.py
+        
+    - name:  Generate Validation Report
+      run: |
+        cat > STATISTICAL_VALIDATION_REPORT.md << 'REPORT'
+        # Statistical Validation Report - $(date -u '+%Y-%m-%d %H:%M UTC')
+        
+        ## Statistical Rigor Requirements
+        
+        ### Why 64 Picks is Meaningless
+        - **64 picks over 6 months** = Random noise
+        - **Law of large numbers**: Need thousands for statistical significance
+        - **Type I error**: 5% chance of false positive with small sample
+        - **Survivorship bias**: Cherry-picking winning periods
+        
+        ### Our Validation Standards
+        
+        | Requirement | Minimum | Target | Why |
+        |-------------|---------|--------|-----|
+        | Sample Size | 1,000 | 10,000 | Central limit theorem |
+        | P-value | < 0.05 | < 0.01 | Statistical significance |
+        | Bootstrap Iterations | 10,000 | 100,000 | Confidence intervals |
+        | Monte Carlo Sims | 10,000 | 100,000 | Profit probability |
+        | Regime Observations | 100 per | 500 per | Robustness across conditions |
+        
+        ### Statistical Tests Applied
+        
+        1. **T-Test**: Is mean return significantly > 0?
+        2. **Bootstrap**: Sharpe ratio confidence intervals
+        3. **Monte Carlo**: Probability of profitability
+        4. **Regime Splitting**: Performance in bull/bear/high-vol/low-vol
+        5. **Information Ratio**: Excess return vs benchmark
+        
+        ### Current Status
+        
+        **Building signal database...**
+        
+        Target: 10,000+ signals before statistical validation
+        Current: Collecting via hourly battle tests
+        
+        **Strategies Being Validated:**
+        - Mean Reversion
+        - Williams %R
+        - CCI Strategy
+        - Pairs Trading
+        - Flash Crash Reversal
+        
+        REPORT
+        
+    - name:  Commit results
+      run: |
+        git config --local user.email "validator@statistical.ai"
+        git config --local user.name " Statistical Validator"
+        
+        git add statistical_validation.log || true
+        git add STATISTICAL_VALIDATION_REPORT.md || true
+        
+        git commit -m "Statistical validation run $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" || echo "No changes"
+        
+        bash .github/scripts/safe_push.sh
+

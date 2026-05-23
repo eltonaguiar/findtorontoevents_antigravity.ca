@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMI_CLAW_CHATBOT_2026-02-17 - Algorithm Battle Royale</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🐾</div>
+                    <div class="logo-text">
+                        <h1>KIMI_CLAW_CHATBOT_2026-02-17</h1>
+                        <p>Algorithm Battle Royale
+                            <span id="backtestBadge" style="background: #f59e0b; color: #0a0a12; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: 600; cursor: help;" title="Historical backtest results from Yahoo Finance data (2020-present). NOT live trades." onclick="showBacktestDisclaimer()">📊 BACKTESTED</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <div class="last-updated">
+                        <span class="pulse-dot"></span>
+                        <span id="lastUpdated">Updating...</span>
+                    </div>
+                    <div class="refresh-toggle">
+                        <label>Auto-refresh:</label>
+                        <select id="refreshInterval" onchange="setRefreshInterval()">
+                            <option value="30">30s</option>
+                            <option value="60" selected>1m</option>
+                            <option value="300">5m</option>
+                            <option value="0">Off</option>
+                        </select>
+                    </div>
+                    <button class="btn-refresh" onclick="manualRefresh()" title="Refresh Now">
+                        🔄
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Backtest Disclaimer Banner -->
+        <div id="backtestBanner" style="background: linear-gradient(135deg, #78350f 0%, #92400e 100%); padding: 12px 16px; margin: 0; border-bottom: 2px solid #f59e0b;">
+            <div style="max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 24px;">📊</div>
+                <div style="flex: 1; font-size: 13px; color: #fef3c7; line-height: 1.5;">
+                    <strong>BACKTESTED DATA</strong> &mdash; Results from running 5 Tier 1 strategies against <strong>real Yahoo Finance market data</strong> (2020 to present).
+                    Past performance does NOT guarantee future results.
+                    Data source: SPY, QQQ, BTC-USD via Yahoo Finance. Updated daily by <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/backtest-and-deploy.yml" target="_blank" style="color: #fde68a;">GitHub Actions</a>.
+                    <span id="backtestLastRun" style="color: #fbbf24;"></span>
+                </div>
+                <div>
+                    <a href="/riseoftheclaw.html" style="background: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap;">View LIVE Competition →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Filter -->
+        <nav class="category-nav">
+            <button class="cat-btn active" data-category="all" onclick="filterCategory('all')">
+                <span class="cat-icon">🏆</span>
+                <span>All Algorithms</span>
+            </button>
+            <button class="cat-btn" data-category="stock" onclick="filterCategory('stock')">
+                <span class="cat-icon">📈</span>
+                <span>Stocks</span>
+            </button>
+            <button class="cat-btn" data-category="penny" onclick="filterCategory('penny')">
+                <span class="cat-icon">💎</span>
+                <span>Penny Stocks</span>
+            </button>
+            <button class="cat-btn" data-category="crypto" onclick="filterCategory('crypto')">
+                <span class="cat-icon">₿</span>
+                <span>Crypto</span>
+            </button>
+            <button class="cat-btn" data-category="meme" onclick="filterCategory('meme')">
+                <span class="cat-icon">🚀</span>
+                <span>Meme Coins</span>
+            </button>
+            <button class="cat-btn" data-category="forex" onclick="filterCategory('forex')">
+                <span class="cat-icon">💱</span>
+                <span>Forex</span>
+            </button>
+        </nav>
+
+        <!-- Performance Cards -->
+        <section class="performance-cards">
+            <div class="perf-card gold">
+                <div class="perf-label">Top Performer</div>
+                <div class="perf-value" id="topPerformer">--</div>
+                <div class="perf-sub" id="topPerformerReturn">--</div>
+            </div>
+            <div class="perf-card cyan">
+                <div class="perf-label">Best Win Rate</div>
+                <div class="perf-value" id="bestWinRate">--</div>
+                <div class="perf-sub" id="bestWinRateAlgo">--</div>
+            </div>
+            <div class="perf-card purple">
+                <div class="perf-label">Most Active</div>
+                <div class="perf-value" id="mostActive">--</div>
+                <div class="perf-sub" id="mostActiveCount">-- picks</div>
+            </div>
+            <div class="perf-card green">
+                <div class="perf-label">Best Sharpe</div>
+                <div class="perf-value" id="bestSharpe">--</div>
+                <div class="perf-sub" id="bestSharpeAlgo">--</div>
+            </div>
+            <div class="perf-card blue">
+                <div class="perf-label">Lowest Drawdown</div>
+                <div class="perf-value" id="lowestDrawdown">--</div>
+                <div class="perf-sub" id="lowestDrawdownAlgo">--</div>
+            </div>
+        </section>
+
+        <!-- Main Chart Section -->
+        <section class="chart-section">
+            <div class="section-header">
+                <h2>Portfolio Growth Competition</h2>
+                <div class="chart-legend" id="chartLegend"></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            <div class="chart-controls">
+                <button class="time-btn active" onclick="setTimeRange('7d')">7D</button>
+                <button class="time-btn" onclick="setTimeRange('30d')">30D</button>
+                <button class="time-btn" onclick="setTimeRange('90d')">90D</button>
+                <button class="time-btn" onclick="setTimeRange('all')">ALL</button>
+            </div>
+        </section>
+
+        <!-- Leaderboard -->
+        <section class="leaderboard-section">
+            <div class="section-header">
+                <h2>🏆 Algorithm Leaderboard</h2>
+                <div class="sort-controls">
+                    <label>Sort by:</label>
+                    <select id="sortBy" onchange="sortLeaderboard()">
+                        <option value="return">Total Return</option>
+                        <option value="winRate">Win Rate</option>
+                        <option value="sharpe">Sharpe Ratio</option>
+                        <option value="value">Portfolio Value</option>
+                    </select>
+                </div>
+            </div>
+            <div class="leaderboard-table-wrapper">
+                <table class="leaderboard-table" id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Algorithm</th>
+                            <th>Category</th>
+                            <th>Portfolio Value</th>
+                            <th>Total Return</th>
+                            <th>Win Rate</th>
+                            <th>Active Picks</th>
+                            <th>Sharpe</th>
+                            <th>Max DD</th>
+                            <th>7-Day Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <tr><td colspan="10" class="loading-cell">Loading algorithms...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Active Picks -->
+        <section class="picks-section">
+            <div class="section-header">
+                <h2>📊 Active Picks</h2>
+                <div class="picks-filters">
+                    <input type="text" id="pickSearch" placeholder="Search symbol..." onkeyup="filterPicks()">
+                    <select id="pickCategoryFilter" onchange="filterPicks()">
+                        <option value="all">All Categories</option>
+                        <option value="stock">Stocks</option>
+                        <option value="penny">Penny Stocks</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="meme">Meme Coins</option>
+                        <option value="forex">Forex</option>
+                    </select>
+                </div>
+            </div>
+            <div class="picks-table-wrapper">
+                <table class="picks-table" id="picksTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Category</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>P&L %</th>
+                            <th>Days Held</th>
+                            <th>Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="picksBody">
+                        <tr><td colspan="8" class="loading-cell">Loading picks...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Category Breakdown -->
+        <section class="breakdown-section">
+            <div class="section-header">
+                <h2>📈 Category Performance</h2>
+            </div>
+            <div class="breakdown-grid" id="breakdownGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>RISE OF THE CLAW - Algorithm Competition Dashboard</p>
+                <div class="footer-links">
+                    <a href="/findstocks/portfolio2/">Stock Portfolio</a>
+                    <a href="/findcryptopairs/">Crypto Scanner</a>
+                    <a href="/findforex2/">Forex</a>
+                    <button onclick="exportData()">📥 Export Data</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Algorithm Detail Modal -->
+    <div class="modal" id="algoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalAlgoName">Algorithm Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/charts.js"></script>
+    <script src="js/data-loader.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+    // Show last run timestamp
+    (async function() {
+        try {
+            var info = await fetchLastRunInfo();
+            if (info && info.lastRun) {
+                var el = document.getElementById('backtestLastRun');
+                if (el) el.textContent = ' | Last run: ' + new Date(info.lastRun).toLocaleString();
+            }
+        } catch(e) {}
+    })();
+
+    // Backtest disclaimer modal
+    function showBacktestDisclaimer() {
+        var modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.style.zIndex = '10000';
+        modal.innerHTML = '' +
+            '<div class="modal-content" style="max-width: 600px;">' +
+                '<div class="modal-header">' +
+                    '<h3>📊 Backtest Data Disclaimer</h3>' +
+                    '<button class="modal-close" onclick="this.closest(\'.modal\').remove()">&times;</button>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                    '<div style="background: #3d2e0f; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">' +
+                        '<div style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #fde68a;">This is BACKTESTED data, not live trading.</div>' +
+                        '<div style="font-size: 13px; color: #fef3c7; line-height: 1.6;">' +
+                            'These results show how 5 validated strategies <strong>would have performed</strong> ' +
+                            'against real historical market data from Yahoo Finance (2020 to present). ' +
+                            'They do NOT represent actual trades or guaranteed future performance.' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="margin-bottom: 16px;">' +
+                        '<h4 style="margin-bottom: 8px;">Data Sources</h4>' +
+                        '<div style="font-size: 13px; color: #8888aa; line-height: 1.8;">' +
+                            '&bull; <strong>SPY</strong> (S&P 500 ETF) &mdash; Yahoo Finance<br>' +
+                            '&bull; <strong>QQQ</strong> (Nasdaq 100 ETF) &mdash; Yahoo Finance<br>' +
+                            '&bull; <strong>BTC-USD</strong> (Bitcoin) &mdash; Yahoo Finance<br>' +
+                            '&bull; Period: 2020-01-01 to present<br>' +
+                            '&bull; Updated daily at 6 AM UTC via GitHub Actions' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="margin-bottom: 16px;">' +
+                        '<h4 style="margin-bottom: 8px;">Strategies</h4>' +
+                        '<div style="font-size: 13px; color: #8888aa; line-height: 1.8;">' +
+                            '1. <strong>Funding Rate Arbitrage</strong> &mdash; Crypto funding rate dislocations (BTC-USD)<br>' +
+                            '2. <strong>Pairs Trading</strong> &mdash; SPY/QQQ cointegration mean-reversion<br>' +
+                            '3. <strong>Betting Against Beta</strong> &mdash; Low-beta premium on SPY<br>' +
+                            '4. <strong>Flash Crash Reversal</strong> &mdash; Extreme sell-off snap-backs (BTC-USD)<br>' +
+                            '5. <strong>Quality Minus Junk</strong> &mdash; Price-derived quality factor on SPY' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="background: rgba(245,158,11,0.1); border-left: 3px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 16px;">' +
+                        '<div style="font-weight: 600; color: #f59e0b; margin-bottom: 4px;">Limitations</div>' +
+                        '<div style="font-size: 12px; color: #e0e0f0; line-height: 1.6;">' +
+                            '&bull; Backtests suffer from look-ahead bias and survivorship bias<br>' +
+                            '&bull; Transaction costs and slippage are estimated, not exact<br>' +
+                            '&bull; Past performance does NOT predict future results<br>' +
+                            '&bull; These strategies were selected from 635+ candidates after forward-test validation (only 5 survived)' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="font-size: 12px; color: #8888aa;">' +
+                        'Verify: <a href="data/dashboard_data.json" target="_blank" style="color: #f59e0b;">dashboard_data.json</a> | ' +
+                        '<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/KIMI_CLAW_RESEARCH_FEB162026" target="_blank" style="color: #f59e0b;">Source code</a> | ' +
+                        '<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/backtest-and-deploy.yml" target="_blank" style="color: #f59e0b;">Workflow runs</a>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(modal);
+        modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+    }
+    </script>
+</body>
+</html>

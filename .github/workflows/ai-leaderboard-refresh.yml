@@ -1,0 +1,40 @@
+name: AI Leaderboard Refresh
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 06:00 UTC
+  workflow_dispatch:      # Manual trigger for on-demand refresh
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          update-environment: false
+
+      - name: Build leaderboard
+        run: python tools/ai_attribution/build_ai_leaderboard.py
+
+      - name: Commit updated leaderboard
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/ai_leaderboard/
+          git diff --cached --quiet || git commit -m "chore(ai-leaderboard): weekly refresh $(date -u '+%Y-%m-%d') [skip ci]"
+          bash .github/scripts/safe_push.sh

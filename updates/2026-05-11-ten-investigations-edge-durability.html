@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 investigations for durable edge across asset classes (May 11, 2026) | findtorontoevents</title>
+    <meta name="description" content="Per-investigation assessment of 10 angles for surfacing trustworthy edge: rolling-window profiling, edge-decay heatmap, cross-symbol variance, strategy clustering, regime weighting, locked-window OOS, top-N portfolio slice, feature drift, meta-learning estimator, peer-review rubric. Research tooling — NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-05-11-ten-investigations-edge-durability.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.65; }
+        .container { max-width: 980px; margin: 0 auto; padding: 36px 20px 60px; }
+        header { background: linear-gradient(135deg, #1a2540 0%, #0f1629 100%); padding: 32px; border-radius: 16px; margin-bottom: 28px; border: 1px solid #2a3f5f; }
+        h1 { font-size: 1.75em; color: #a78bfa; margin-bottom: 12px; }
+        .nfa-banner { background: rgba(239, 68, 68, 0.2); border: 2px solid #ef4444; color: #fecaca; padding: 14px 16px; border-radius: 12px; font-weight: 700; text-align: center; margin-bottom: 18px; font-size: 1.02em; }
+        .nfa-sub { font-weight: 400; font-size: 0.85em; margin-top: 8px; color: #fca5a5; line-height: 1.5; }
+        .section { background: #111827; padding: 24px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #1f2937; }
+        h2 { color: #34d399; font-size: 1.25em; margin-bottom: 12px; border-left: 4px solid #34d399; padding-left: 10px; }
+        h3 { color: #fbbf24; font-size: 1.05em; margin: 16px 0 8px; }
+        p, li { color: #d1d5db; margin-bottom: 8px; }
+        ul, ol { padding-left: 22px; }
+        code { background: rgba(167,139,250,0.12); color: #c4b5fd; padding: 1px 6px; border-radius: 4px; font-size: 0.92em; font-family: 'Consolas','Menlo',monospace; }
+        pre { background: #0a0e1a; padding: 14px 16px; border-radius: 8px; border: 1px solid #1f2937; overflow-x: auto; margin: 10px 0; font-size: 0.88em; }
+        pre code { background: transparent; color: #e0e6ed; padding: 0; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.78em; font-weight: 700; margin-right: 6px; }
+        .b-built { background: rgba(34,197,94,0.18); color: #86efac; border: 1px solid rgba(34,197,94,0.45); }
+        .b-partial { background: rgba(251,191,36,0.18); color: #fcd34d; border: 1px solid rgba(251,191,36,0.45); }
+        .b-missing { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid rgba(239,68,68,0.45); }
+        .b-cost { background: rgba(56,189,248,0.14); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.40); }
+        .meta-row { font-size: 0.86em; color: #94a3b8; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #1f2937; font-size: 0.92em; }
+        th { color: #a78bfa; background: rgba(167,139,250,0.06); }
+        td code { font-size: 0.86em; }
+        a { color: #60a5fa; }
+        .investigation { border-left: 4px solid #6366f1; }
+        .priority-1 { border-left-color: #22c55e; }
+        .priority-2 { border-left-color: #fbbf24; }
+        .priority-3 { border-left-color: #94a3b8; }
+        .combo-box { background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(59,130,246,0.06)); border: 1px solid rgba(34,197,94,0.35); padding: 18px; border-radius: 10px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+    <h1>10 investigations for durable edge across asset classes</h1>
+    <div class="nfa-banner">RESEARCH SURFACE &mdash; NOT FINANCIAL ADVICE
+        <div class="nfa-sub">Per-investigation assessment + implementation plans. No /audit production gate changes from this doc. Numbers cited come from <code>audit_dashboard/data/dashboard_data.json</code> at the timestamp below.</div>
+    </div>
+    <div class="meta-row">Published 2026-05-11T19:35Z &middot; Branch <code>feat/audit-dashboard-enhancements-hermes-2026-05-09</code> &middot; Data snapshot generated_at 2026-05-10T04Z</div>
+</header>
+
+<div class="section">
+    <h2>Tl;dr</h2>
+    <p>Ten angles surfaced for durable cross-class edge. <strong>4 already built or partially built</strong>, <strong>6 net-new</strong>. Highest-value net-new pair: <strong>#1 rolling-window profiling × #2 edge-decay heatmap</strong> (shared compute kernel, single dashboard widget, no production-strategy risk).</p>
+    <p>System already has: rolling-30d metrics, walk-forward by_class, hf_decay_watchlist, regime annotations (VIX/BTC.D/DXY), concept_drift KS statistics, TA baseline benchmark grid, walk-forward Tier-1 promotion gate, benchmark-relative 30d excess return per system.</p>
+    <p>What's missing: rolling-window panels at multiple horizons, edge-decay heatmap, top-N portfolio slice simulator, meta-learning gate-pass predictor, formal peer-review rubric.</p>
+</div>
+
+<div class="section investigation priority-1">
+    <h2>#1 Temporal-stability profiling &mdash; rolling Sharpe/Sortino/Consistency/Excess at 7d/30d/90d/1y/3y</h2>
+    <p><span class="badge b-partial">PARTIAL</span><span class="badge b-cost">~1d work</span></p>
+    <h3>Current state</h3>
+    <p><code>hf_stats.rolling_metrics</code> already emits a 14-row history but only at one window (<code>window_days=30</code>). Most recent: 2026-04-22 net_sharpe 0.1605 / WR 42.98% / n=3134 / max_drawdown_pct 721.91 / ulcer_index 362.7. Earlier 2026-04-09: net_sharpe 0.3695 / WR 48.05% / n=768 / max_drawdown_pct 105.17. <strong>Sharpe halved and ulcer 6&times;'d in 13d</strong> &mdash; visible because rolling exists, invisible at multiple horizons because they don't.</p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Add <code>ROLLING_WINDOWS_DAYS = [7, 30, 90, 365, 1095]</code> in <code>audit_trail/dashboard_generator.py</code>.</li>
+        <li>Parameterize the existing <code>_compute_rolling_metrics(closed, window_days)</code> helper; emit <code>hf_stats.rolling_by_window[window_days]</code> as a list of timestamp-keyed rows.</li>
+        <li>Per asset class: pre-group <code>closed</code> by <code>asset_class</code>, run the same kernel <em>n_classes &times; n_windows</em> times. Skip windows where <code>n_trades &lt; 30</code> (statistical floor).</li>
+        <li>Frontend: add Chart.js line chart of net_sharpe per window, one line per asset class. Stable + monotonically-improving line at long horizons = durable; short-window noise but stable long = healthy convergence.</li>
+    </ol>
+    <h3>Risk</h3>
+    <p>LOW. Read-only on closed picks; no production-gate change. CPU adds &lt;3s per dashboard build (verified by extrapolation from current 14-row build).</p>
+</div>
+
+<div class="section investigation priority-1">
+    <h2>#2 Edge-decay heatmap &mdash; class &times; horizon &rarr; excess-return matrix</h2>
+    <p><span class="badge b-missing">NOT BUILT</span><span class="badge b-cost">~0.5d on top of #1</span></p>
+    <h3>Rationale</h3>
+    <p>Pairs naturally with #1: same rolling-window kernel, different cell aggregation. Highlights classes where edge erodes fast (CRYPTO post-quarantine) vs. classes that stay robust (ETF walk-forward consistency 100% on 4 folds).</p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Compute matrix <code>excess_return[class][window_days]</code> where excess = sum(pnl_pct in window) &minus; benchmark_return(class, window_days). Benchmark already wired in <code>tools/live_market_fetcher.benchmark_return()</code>; commit <code>cf229ea31ba</code> added per-system 30d. Extend for 7/30/90/365/1095.</li>
+        <li>Emit under <code>edge_decay_heatmap</code> top-level key in dashboard_data.json.</li>
+        <li>Frontend: CSS grid color cells (red &lt; &minus;5pp, amber 0&plusmn;5pp, green &gt; +5pp) with cell-tooltip showing n_trades + benchmark used.</li>
+        <li>Sort columns left-to-right shortest-to-longest horizon so monotonic-decay strategies show a clear color gradient.</li>
+    </ol>
+</div>
+
+<div class="section investigation priority-2">
+    <h2>#3 Cross-symbol variance &mdash; per-class std-dev of edge metrics across symbols</h2>
+    <p><span class="badge b-partial">PARTIAL</span><span class="badge b-cost">~0.5d</span></p>
+    <h3>Current state</h3>
+    <p><code>tools/run_tv_backtest_benchmark.py</code> already emits per-symbol PF/Sharpe/WR/MDD/trades across 7 symbols. Sample 7-symbol full run (<code>reports/tv_backtest_benchmark_20260511T173937Z.json</code>): only QQQ:rsi passes robustness&ge;0.60 AND trades&ge;5 across the entire grid. <strong>That's the cross-symbol variance signal &mdash; 6/7 winners are statistical noise.</strong></p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Same grid expanded to <em>10 symbols per class</em> via per-class watchlist in <code>tools/run_tv_backtest_benchmark.py</code>: CRYPTO=BTC/ETH/SOL/AVAX/MATIC/LINK/DOGE/XRP/ADA/BNB; EQUITY=SPY/QQQ/IWM/AAPL/MSFT/NVDA/META/AMZN/GOOGL/TSLA; etc.</li>
+        <li>Emit <code>std_dev_by_class[class][metric] = standard deviation across symbols</code>. High std on PF + low std on WR = symbol-luck issue; low std on both = class-wide signal.</li>
+        <li>Wire <code>by_class.cross_symbol_std</code> into TA-baseline panel renderer (Opt A, commit <code>4ea32d227cf</code>).</li>
+    </ol>
+</div>
+
+<div class="section investigation priority-3">
+    <h2>#4 Strategy-type clustering &mdash; group by feature family, compare cluster Sharpe</h2>
+    <p><span class="badge b-missing">NOT BUILT</span><span class="badge b-cost">~2d</span></p>
+    <h3>Current state</h3>
+    <p>System has <em>30+ named strategies</em> but no canonical feature taxonomy. The peer-research orchestrator (PR 3) keyword-routes spec.entry text to 6 signal handlers (sma_cross / rsi_mr / momentum / mean_reversion_zscore / breakout / buy_and_hold) &mdash; that's the closest existing taxonomy. <code>alpha_engine/ml_ranker.py</code> + <code>feature_health.py</code> exist but operate per-pick, not per-strategy-family.</p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Tag each strategy with binary feature vector: <code>[uses_ma, uses_rsi, uses_volume, uses_sentiment, uses_orderbook, uses_funding, uses_breakout, uses_mean_reversion]</code>. Hand-curated for ~30 strategies, ~1h work.</li>
+        <li>K-means k=4 on the binary matrix. Likely surfaces: (a) MA-cross trend, (b) mean-reversion oscillator, (c) breakout/volume-impulse, (d) ML-ensemble blend.</li>
+        <li>Per cluster compute rolling Sharpe at 30d/90d/1y across the same windows used in #1. Resilient cluster = stable Sharpe across regime shift (2026-04-22 VIX collapse pivot).</li>
+        <li>Emit <code>strategy_clusters</code> top-level key. Render as small grouped bar chart per cluster.</li>
+    </ol>
+    <h3>Caveat</h3>
+    <p>Hand-curated feature tags are subjective. Consider <strong>auto-tagging via LLM</strong> (cheap-engine call per strategy with spec text) once #6 v3 spec-translator from the research orchestrator is shipped.</p>
+</div>
+
+<div class="section investigation priority-2">
+    <h2>#5 Regime-sensitive edge weighting &mdash; tag picks with prevailing regime, recompute per regime</h2>
+    <p><span class="badge b-partial">PARTIAL</span><span class="badge b-cost">~1d</span></p>
+    <h3>Current state</h3>
+    <p>Heavy infrastructure already exists. <code>tools/live_market_fetcher.py</code> classifies VIX (COMPLACENCY/NORMAL/ELEVATED/PANIC), BTC.D (RISING_STRONG/RISING_MILD/FALLING), DXY (USD_WEAK/STRONG/FLAT), equity regime (RIPPING/GAINING/FLAT/FALLING). <code>audit_trail/quality_gates.py:4111</code> annotates picks at gate time. <code>regime_validation</code> block exists in dashboard_data.json but currently <code>TRENDING_UP/DOWN/RANGING/HIGH_VOL/CRASH</code> all show <code>total=0</code> &mdash; the regime tag isn't being persisted into closed-pick rows.</p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Bug-fix: <code>audit_trail/quality_gates.py</code> <em>computes</em> regime tags but doesn't <em>persist</em> them to pick.regime_tag. Add persistence step in <code>passes_active_gate</code>.</li>
+        <li>Backfill closed picks by joining <code>closed.timestamp</code> against the historical regime cache. Need a regime-history file &mdash; today <code>live_market_regime.json</code> is point-in-time. Add daily snapshot to <code>tools/live_market_fetcher.py</code> writing to <code>audit_dashboard/data/regime_history/<UTC-date>.json</code>.</li>
+        <li>Compute <code>per_regime_metrics[regime][class] = {sharpe, wr, n_trades}</code>. Strategies that only deliver in one regime get <code>fragile=true</code> flag.</li>
+        <li>Surface in dashboard: per-system "edge regime profile" badge (regime in which the system was best, n, Sharpe).</li>
+    </ol>
+    <h3>Risk note</h3>
+    <p>Concept-drift root-cause report (<code>reports/concept_drift_root_cause_2026-05-11.md</code>) confirmed VIX -44.64% / 30d collapse is the real driver. Most current "edge" was earned in PANIC-vol regime that no longer exists. Without per-regime tagging, every Tier-2 claim is implicitly regime-conditioned.</p>
+</div>
+
+<div class="section investigation priority-1">
+    <h2>#6 Locked-window OOS forward-test &mdash; freeze model at T-30, run T+30 forward-only</h2>
+    <p><span class="badge b-built">BUILT</span><span class="badge b-cost">~0d (wire-in only)</span></p>
+    <h3>Current state</h3>
+    <p>Walk-forward by_class in <code>alpha_engine/walkforward_validator.py</code> already does locked-window train/test splits. <code>dashboard_data.json::walkforward.by_class</code>: ETF folds=4 consistency=100% oos_sharpe=11.41; EQUITY folds=8 consistency=75% oos_sharpe=6.43; CRYPTO folds=25 consistency=84% oos_sharpe=2.57; FOREX folds=52 consistency=48.1% oos_sharpe=-3.74. Opt B (commit <code>cf4e924744a</code>) wired this into Tier-1 promotion gate.</p>
+    <h3>What's missing</h3>
+    <ol>
+        <li><strong>Per-strategy walk-forward.</strong> Currently only by_class. <code>walk_forward_by_strategy()</code> would isolate which strategies pass/fail OOS within a class. Useful as a kill-list seed.</li>
+        <li><strong>Forward-only "post-quarantine" cohort.</strong> Lock dataset cutoff at quarantine commit timestamp; run 30d forward; compare to walk-forward OOS to validate the quarantine improved system Sharpe. Use commit <code>d884694ace2</code> (2026-05-10 P0 quarantine) as cutoff.</li>
+        <li>Surface as <code>walkforward.by_strategy</code> in dashboard payload + table in /audit.</li>
+    </ol>
+</div>
+
+<div class="section investigation priority-2">
+    <h2>#7 Edge-per-capital-allocation slice &mdash; top-N portfolio Monte Carlo</h2>
+    <p><span class="badge b-missing">NOT BUILT</span><span class="badge b-cost">~1.5d</span></p>
+    <h3>Rationale</h3>
+    <p>Settles concentration-vs-diversification debate empirically. Current 6 Tier-2 verified systems span PF 1.84 to PF 19.19 &mdash; equal-weight is probably wrong, max-weight on PF 19.19 (<code>multi_asset_cot</code> n=130) is probably also wrong.</p>
+    <h3>Plan</h3>
+    <ol>
+        <li>For each class, rank systems by recent <code>excess_return_30d_pct</code> (already wired by W4, commit <code>cf229ea31ba</code>).</li>
+        <li>For N in {1, 3, 5, 10, 20}: simulate equal-weight top-N portfolio. Walk-forward by 30-day rebalance.</li>
+        <li>Emit <code>portfolio_topN[class][N] = {sharpe, mdd, n_trades, holding_period_mean, turnover_pct}</code>.</li>
+        <li>Render Pareto frontier: x=concentration (N), y=Sharpe, color=MDD. Inflection point = optimal N.</li>
+    </ol>
+</div>
+
+<div class="section investigation priority-3">
+    <h2>#8 Feature-importance drift detection &mdash; per-feature KS statistics, flag &gt; 0.2</h2>
+    <p><span class="badge b-partial">PARTIAL</span><span class="badge b-cost">~1.5d</span></p>
+    <h3>Current state</h3>
+    <p><code>hf_stats.concept_drift</code> emits ONE system-wide KS_D=0.313 (vs critical 0.047). That's <em>output</em>-distribution drift on pnl_pct. <strong>Input-feature drift is not computed.</strong> <code>alpha_engine/feature_health.py</code> + <code>ml_drift_repair_workflow.py</code> exist but are not wired to dashboard_data.json.</p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Pick 8 canonical features per asset class. For CRYPTO: <code>1d_realized_vol, 7d_realized_vol, volume_z, funding_rate, oi_chg_24h, btc_d, vix, dxy_chg_30d</code>.</li>
+        <li>Snapshot daily feature distributions to <code>audit_dashboard/data/feature_dist_history/<UTC-date>.parquet</code> (or .json if no parquet available).</li>
+        <li>Compute KS-D between current distribution and 90d-back distribution per feature. Flag when KS &gt; 0.20.</li>
+        <li>Emit <code>feature_drift[class][feature] = {ks_D, ks_critical, alert_on}</code>.</li>
+        <li>Dashboard surface: small drift-grid alongside concept_drift block.</li>
+    </ol>
+    <h3>Caveat</h3>
+    <p>Snapshot history needs at least 90d of accumulated data before this is actionable. Start writing snapshots <em>today</em> so the readout is meaningful in Aug.</p>
+</div>
+
+<div class="section investigation priority-3">
+    <h2>#9 Meta-learning edge estimator &mdash; predict walk-forward gate-pass probability</h2>
+    <p><span class="badge b-missing">NOT BUILT</span><span class="badge b-cost">~3d</span></p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Build labeled dataset: every (strategy, class, timestamp) row labeled <code>gate_pass = 1</code> if walk-forward consistency &ge; 60 AND oos_sharpe &gt; 0 (Opt B gate definition), else 0.</li>
+        <li>Features per row: trailing-30d PF, trailing-30d Sharpe, n_trades_30d, recent_drawdown, regime tags, concept_drift_KS, cross-symbol_std (from #3).</li>
+        <li>Logistic regression first (interpretable, low overfit risk). Cross-validate with purged-KFold (no temporal leakage). Already have <code>mlfinlab</code> purged-CV shim in repo (per <code>project_next_phase_integrations_2026_04_22.md</code>).</li>
+        <li>Emit predicted <code>p_gate_pass</code> per system in dashboard_data.json.</li>
+        <li>Display as 0-100 "trust score v2" alongside existing trust_score (ρ=+0.196 per <code>project_performance_reality.md</code>).</li>
+    </ol>
+    <h3>Risk</h3>
+    <p>MEDIUM. ML estimator over a small training set (n &lt; 200 strategies) can overfit. Use <code>walk-forward gate</code> as the ground truth label only after Opt B (commit <code>cf4e924744a</code>) accumulates ~3mo of demotions for label balance.</p>
+</div>
+
+<div class="section investigation priority-2">
+    <h2>#10 Peer-review "edge-confidence" rubric &mdash; 2-analyst scoring per candidate</h2>
+    <p><span class="badge b-missing">NOT BUILT</span><span class="badge b-cost">~0.5d (rubric); ongoing labor (reviews)</span></p>
+    <h3>Plan</h3>
+    <ol>
+        <li>Draft <code>docs/EDGE_REVIEW_RUBRIC.md</code> with 6-axis scoring 1-5: (1) data-quality, (2) regime-fit, (3) statistical significance (n, p-value), (4) backtest-leakage controls (purge gap, embargo), (5) cross-symbol generalization, (6) cost-honesty (slippage + funding + execution latency modeled).</li>
+        <li>Score range 6-30. Auto-promote candidates only if BOTH reviewers score &ge; 22 <em>and</em> walk-forward gate passes.</li>
+        <li>Record scores in <code>audit_dashboard/data/peer_review/<system_name>_<date>.json</code>. Surface latest score on /audit system card.</li>
+        <li>Run via swarm: deepseek + xai + cerebras each score independently as cheap multi-AI proxy for human reviewers. Cost ~$0.15 per system.</li>
+    </ol>
+</div>
+
+<div class="section">
+    <h2>Priority matrix</h2>
+    <table>
+        <thead><tr><th>#</th><th>Investigation</th><th>State</th><th>Effort</th><th>Risk</th><th>Pairs with</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td>Rolling-window profiling</td><td>PARTIAL</td><td>1d</td><td>LOW</td><td>#2, #5, #6</td></tr>
+            <tr><td>2</td><td>Edge-decay heatmap</td><td>NEW</td><td>0.5d</td><td>LOW</td><td>#1</td></tr>
+            <tr><td>6</td><td>Locked-window OOS</td><td>BUILT</td><td>0d</td><td>LOW</td><td>Opt B already shipped</td></tr>
+            <tr><td>5</td><td>Regime-sensitive weighting</td><td>PARTIAL (bug-fix)</td><td>1d</td><td>LOW</td><td>#1, #8</td></tr>
+            <tr><td>3</td><td>Cross-symbol variance</td><td>PARTIAL</td><td>0.5d</td><td>LOW</td><td>Opt A panel</td></tr>
+            <tr><td>7</td><td>Top-N portfolio Monte Carlo</td><td>NEW</td><td>1.5d</td><td>MED</td><td>W4 (excess_return_30d)</td></tr>
+            <tr><td>10</td><td>Peer-review rubric</td><td>NEW</td><td>0.5d + labor</td><td>LOW</td><td>#9</td></tr>
+            <tr><td>4</td><td>Strategy clustering</td><td>NEW</td><td>2d</td><td>MED</td><td>Research orchestrator v3</td></tr>
+            <tr><td>8</td><td>Feature-drift KS</td><td>PARTIAL</td><td>1.5d</td><td>MED</td><td>#5 regime history</td></tr>
+            <tr><td>9</td><td>Meta-learning gate-pass</td><td>NEW</td><td>3d</td><td>MED-HIGH</td><td>#10, #3</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="combo-box">
+    <h2 style="border-left-color:#22c55e;color:#22c55e">Quick-win combo &mdash; ship next</h2>
+    <p><strong>Wave 1 (1.5d): #1 + #2.</strong> Shared kernel, single dashboard widget, zero production-strategy risk. Surfaces edge durability per class at a glance.</p>
+    <p><strong>Wave 2 (1d): #5 bug-fix + #3.</strong> Persists regime tag on picks (closes the <code>regime_validation.regime_wr_breakdown</code> all-zero rows). Extends Opt A panel with cross-symbol std-dev.</p>
+    <p><strong>Wave 3 (1.5d): #7.</strong> Top-N portfolio simulator. Settles concentration debate empirically before any real-money sizing decision.</p>
+    <p>Total: ~4d effort for 4 of the 10 angles, no production-gate risk, additive to dashboard only.</p>
+</div>
+
+<div class="section">
+    <h2>What this connects to (already-shipped this session)</h2>
+    <ul>
+        <li><code>cf4e924744a</code> &mdash; Opt B walk-forward Tier-1 promotion gate (consistency&ge;60 + sharpe&gt;0) &mdash; satisfies #6 wiring requirement</li>
+        <li><code>cf229ea31ba</code> &mdash; W4 benchmark-relative 30d return per system &mdash; foundation for #2 + #7</li>
+        <li><code>4ea32d227cf</code> &mdash; Opt A TA-baseline panel &mdash; surface for #3</li>
+        <li><code>82a34bc0fdb</code> &mdash; <code>tools/live_market_fetcher.py</code> &mdash; foundation for #5 + #8</li>
+        <li><code>reports/concept_drift_root_cause_2026-05-11.md</code> &mdash; documents WHY #5 + #1 matter (VIX -44.64% / 30d regime collapse since 2026-04-22)</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>References</h2>
+    <ul>
+        <li><code>audit_dashboard/data/dashboard_data.json</code> &mdash; payload contract</li>
+        <li><code>docs/PERFORMANCE_CHARTER.md</code> &mdash; tier thresholds</li>
+        <li><code>reports/tradingview_backtest_benchmark_2026-05-11.md</code> &mdash; Opt A/B origin</li>
+        <li><code>reports/financial_datasets_edge_recommendations_2026-05-10T07Z.md</code> &mdash; W4 origin</li>
+        <li><code>reports/concept_drift_root_cause_2026-05-11.md</code> &mdash; T4 conclusion</li>
+        <li><code>reports/quarantine_verification_2026-05-11T19Z_16h_plus.md</code> &mdash; 37h post-quarantine check</li>
+        <li>Branch <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/feat/audit-dashboard-enhancements-hermes-2026-05-09"><code>feat/audit-dashboard-enhancements-hermes-2026-05-09</code></a></li>
+    </ul>
+</div>
+
+<p style="text-align:center;color:#64748b;font-size:0.85em;margin-top:24px">
+    Generated 2026-05-11. Research surface &mdash; not financial advice. See <a href="/audit/">/audit/</a> for live dashboard.
+</p>
+
+</div>
+</body>
+</html>

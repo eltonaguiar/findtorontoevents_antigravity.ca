@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antigravity Alpha Engine — Performance Analysis</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a12;--card:#12121e;--border:#1a1a2e;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--yellow:#f59e0b;--purple:#8b5cf6;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1400px;margin:0 auto;padding:16px}
+/* Header */
+.header{text-align:center;padding:32px 16px 24px;border-bottom:1px solid var(--border)}
+.header h1{font-size:1.8rem;font-weight:700;background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .subtitle{color:var(--text2);font-size:.85rem;margin-top:4px}
+.header .last-updated{color:var(--text3);font-size:.75rem;margin-top:8px}
+/* Stats Bar */
+.stats-bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:20px 0;border-bottom:1px solid var(--border)}
+.stat-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;min-width:130px}
+.stat-item .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:4px}
+.stat-item .value{font-size:1.3rem;font-weight:700}
+.stat-item .value.positive{color:var(--green)}.stat-item .value.negative{color:var(--red)}
+/* Filters */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;padding:16px 0;align-items:center}
+.filter-bar label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.filter-btn{background:var(--card);border:1px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:20px;cursor:pointer;font-size:.78rem;transition:all .2s}
+.filter-btn:hover,.filter-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+/* Section */
+.section{margin:28px 0}
+.section-title{font-size:1.15rem;font-weight:600;margin-bottom:14px;padding-left:12px;border-left:3px solid var(--purple)}
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#0e0e1a;color:var(--text2);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:.5px;padding:10px 12px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0}
+th:hover{color:var(--text)}
+th .sort-arrow{margin-left:4px;opacity:.4;font-size:.65rem}
+th.sorted .sort-arrow{opacity:1;color:var(--purple)}
+td{padding:9px 12px;border-top:1px solid var(--border);white-space:nowrap}
+tr:hover{background:rgba(139,92,246,.04)}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.badge-proven{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-promising{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-underperforming{background:rgba(245,158,11,.15);color:var(--yellow)}
+.badge-broken{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-long{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-short{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-open{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-new{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-enhanced{background:rgba(249,115,22,.15);color:var(--orange)}
+.badge-closed{background:rgba(148,163,184,.15);color:var(--text2)}
+/* Cards */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.pos-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;transition:transform .2s,box-shadow .2s}
+.pos-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.pos-card .symbol{font-size:1.2rem;font-weight:700}
+.pos-card .pnl-big{font-size:1.6rem;font-weight:700;margin:8px 0}
+.pos-card .meta{font-size:.75rem;color:var(--text2)}
+.pos-card .meta span{margin-right:12px}
+/* Progress bar SL-TP */
+.progress-track{height:6px;background:#1e1e30;border-radius:3px;margin:10px 0;position:relative}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s}
+.progress-marker{position:absolute;top:-3px;width:3px;height:12px;background:var(--text);border-radius:2px;transform:translateX(-50%)}
+/* Pie / bar charts (CSS-only) */
+.chart-row{display:flex;flex-wrap:wrap;gap:20px}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;flex:1;min-width:250px}
+.chart-box h4{font-size:.85rem;color:var(--text2);margin-bottom:12px}
+.bar-chart .bar-item{margin-bottom:8px}
+.bar-chart .bar-label{font-size:.75rem;color:var(--text2);margin-bottom:3px;display:flex;justify-content:space-between}
+.bar-chart .bar-track{height:8px;background:#1e1e30;border-radius:4px;overflow:hidden}
+.bar-chart .bar-fill{height:100%;border-radius:4px;transition:width .6s}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.metric-item{text-align:center}
+.metric-item .m-val{font-size:1.3rem;font-weight:700}
+.metric-item .m-label{font-size:.7rem;color:var(--text2);text-transform:uppercase}
+/* Loading / Error */
+.loading{text-align:center;padding:60px;color:var(--text2)}
+.loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:14px;border-radius:8px;text-align:center;font-size:.85rem}
+/* Footer */
+.footer{text-align:center;padding:32px 16px;border-top:1px solid var(--border);color:var(--text3);font-size:.78rem;margin-top:40px}
+.footer a{margin:0 10px}
+/* Responsive */
+@media(max-width:768px){
+  .container{padding:8px}
+  .stat-item{min-width:100px;padding:10px 14px}
+  .stat-item .value{font-size:1rem}
+  .cards-grid{grid-template-columns:1fr}
+  .header h1{font-size:1.3rem}
+  table{font-size:.74rem}
+  td,th{padding:7px 8px}
+}
+/* Comparison table */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.sys-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.sys-card h4{font-size:.95rem;margin-bottom:8px}
+.sys-card .sys-stat{font-size:.78rem;color:var(--text2);margin-bottom:4px}
+.consensus-badge{background:rgba(139,92,246,.2);color:var(--purple);padding:3px 10px;border-radius:10px;font-size:.72rem;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Antigravity Alpha Engine — Performance Analysis</h1>
+  <div class="subtitle">Live Forward-Test Results | Not Financial Advice</div>
+  <div class="last-updated" id="lastUpdated">Loading...</div>
+</div>
+
+<div class="container">
+  <!-- Stats Bar -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-item"><div class="label">Total Trades</div><div class="value" id="sTotalTrades">--</div></div>
+    <div class="stat-item"><div class="label">Win Rate</div><div class="value" id="sWinRate">--</div></div>
+    <div class="stat-item"><div class="label">Total P&amp;L</div><div class="value" id="sTotalPnl">--</div></div>
+    <div class="stat-item"><div class="label">Max Drawdown</div><div class="value" id="sMaxDD">--</div></div>
+    <div class="stat-item"><div class="label">Profit Factor</div><div class="value" id="sPF">--</div></div>
+    <div class="stat-item"><div class="label">Open Positions</div><div class="value" id="sOpen">--</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <label>Asset:</label>
+    <button class="filter-btn active" data-filter="asset" data-val="all">All</button>
+    <button class="filter-btn" data-filter="asset" data-val="crypto">Crypto</button>
+    <button class="filter-btn" data-filter="asset" data-val="forex">Forex</button>
+    <button class="filter-btn" data-filter="asset" data-val="stock">Stock</button>
+    <label style="margin-left:12px">Direction:</label>
+    <button class="filter-btn active" data-filter="dir" data-val="all">All</button>
+    <button class="filter-btn" data-filter="dir" data-val="LONG">Long</button>
+    <button class="filter-btn" data-filter="dir" data-val="SHORT">Short</button>
+    <label style="margin-left:12px">Status:</label>
+    <button class="filter-btn active" data-filter="status" data-val="all">All</button>
+    <button class="filter-btn" data-filter="status" data-val="OPEN">Open</button>
+    <button class="filter-btn" data-filter="status" data-val="CLOSED">Closed</button>
+  </div>
+
+  <!-- Section 1: Strategy Leaderboard -->
+  <div class="section" id="secLeaderboard">
+    <div class="section-title">Strategy Leaderboard</div>
+    <div id="leaderboardContent"><div class="loading"><div class="spinner"></div><br>Loading strategies...</div></div>
+  </div>
+
+  <!-- Section 2: This Week's Trades -->
+  <div class="section" id="secWeekly">
+    <div class="section-title">This Week's Trades</div>
+    <div id="weeklyContent"><div class="loading"><div class="spinner"></div><br>Loading trades...</div></div>
+  </div>
+
+  <!-- Section 3: Open Positions Monitor -->
+  <div class="section" id="secOpenPos">
+    <div class="section-title">Open Positions Monitor</div>
+    <div id="openPosContent"><div class="loading"><div class="spinner"></div><br>Loading positions...</div></div>
+  </div>
+
+  <!-- Section 4: System Comparison -->
+  <div class="section" id="secComparison">
+    <div class="section-title">System Comparison</div>
+    <div id="comparisonContent"><div class="loading"><div class="spinner"></div><br>Loading comparison...</div></div>
+  </div>
+
+  <!-- Section 5: Strategy Lab (Isolation Tracking) -->
+  <div class="section" id="secStratLab">
+    <div class="section-title">Strategy Lab — Isolation Tracking</div>
+    <div id="stratLabContent"><div class="loading"><div class="spinner"></div><br>Loading strategy isolations...</div></div>
+  </div>
+
+  <!-- Section 6: Risk Metrics -->
+  <div class="section" id="secRisk">
+    <div class="section-title">Risk Metrics</div>
+    <div id="riskContent"><div class="loading"><div class="spinner"></div><br>Calculating risk...</div></div>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="../alpha/">Alpha Engine Dashboard</a> |
+  <a href="https://findtorontoevents.ca/updates/">Updates</a> |
+  <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/">GitHub Pages Mirror</a>
+  <br><br>
+  Auto-refreshes every 5 minutes. All times in EST (UTC-5). Not financial advice.
+</div>
+
+<script>
+// ── State ──
+let activePicks = [], closedPicks = [], stratPerf = {}, trackRecord = null, stratIsolations = [];
+let filters = { asset: 'all', dir: 'all', status: 'all' };
+let sortState = { leaderboard: { col: 'total_pnl_dollar', asc: false }, weekly: { col: 'timestamp', asc: false } };
+
+// ── Helpers ──
+const $ = id => document.getElementById(id);
+const fmt = (n, d=2) => n == null ? '--' : Number(n).toFixed(d);
+const fmtDollar = n => n == null ? '--' : (n >= 0 ? '+' : '') + '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtPct = n => n == null ? '--' : (n >= 0 ? '+' : '') + (n * 100).toFixed(2) + '%';
+const fmtPctRaw = n => n == null ? '--' : (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const pnlClass = n => n == null ? '' : n >= 0 ? 'positive' : 'negative';
+const pnlColor = n => n == null ? 'var(--text2)' : n >= 0 ? 'var(--green)' : 'var(--red)';
+
+function fmtPrice(p) {
+  if (p == null) return '--';
+  if (Math.abs(p) < 0.01) return p.toFixed(6);
+  if (Math.abs(p) < 1) return p.toFixed(4);
+  if (Math.abs(p) < 100) return p.toFixed(2);
+  return p.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function toEST(isoStr) {
+  if (!isoStr) return '--';
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleString('en-US', { timeZone:'America/New_York', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true }) + ' EST';
+  } catch { return isoStr; }
+}
+
+function classifyAsset(symbol, category) {
+  if (category) {
+    const c = category.toLowerCase();
+    if (c === 'crypto' || c === 'meme') return 'crypto';
+    if (c === 'forex') return 'forex';
+    if (c === 'stock' || c === 'equity') return 'stock';
+  }
+  if (!symbol) return 'crypto';
+  const s = symbol.toUpperCase();
+  if (s.includes('=X') || s.includes('USD') && (s.startsWith('EUR') || s.startsWith('GBP') || s.startsWith('JPY') || s.startsWith('AUD') || s.startsWith('CAD') || s.startsWith('CHF') || s.startsWith('NZD'))) return 'forex';
+  if (['SPY','QQQ','AAPL','MSFT','TSLA','AMZN','GOOG','META','NVDA','AMD'].some(t => s.startsWith(t))) return 'stock';
+  return 'crypto';
+}
+
+function statusBadge(wr, trades) {
+  if (trades >= 3 && wr === 0) return '<span class="badge badge-broken">BROKEN</span>';
+  if (trades >= 3 && wr < 0.4) return '<span class="badge badge-underperforming">UNDERPERFORMING</span>';
+  if (trades >= 5 && wr >= 0.6) return '<span class="badge badge-proven">PROVEN</span>';
+  if (wr >= 0.5 || trades < 3) return '<span class="badge badge-promising">PROMISING</span>';
+  return '<span class="badge badge-promising">PROMISING</span>';
+}
+
+function dirBadge(d) {
+  return d === 'SHORT' ? '<span class="badge badge-short">SHORT</span>' : '<span class="badge badge-long">LONG</span>';
+}
+
+function statusPickBadge(s) {
+  const st = (s||'').toUpperCase();
+  return st === 'OPEN' ? '<span class="badge badge-open">OPEN</span>' : '<span class="badge badge-closed">CLOSED</span>';
+}
+
+function matchesFilter(pick) {
+  const asset = classifyAsset(pick.symbol, pick.category);
+  if (filters.asset !== 'all' && asset !== filters.asset) return false;
+  const dir = (pick.direction || (pick.signal_type === 'SELL' ? 'SHORT' : 'LONG')).toUpperCase();
+  if (filters.dir !== 'all' && dir !== filters.dir) return false;
+  const st = (pick.status || '').toUpperCase();
+  if (filters.status !== 'all') {
+    if (filters.status === 'OPEN' && st !== 'OPEN') return false;
+    if (filters.status === 'CLOSED' && st !== 'OPEN' && st !== 'closed' && st === 'OPEN') return false;
+    if (filters.status === 'CLOSED' && st === 'OPEN') return false;
+  }
+  return true;
+}
+
+// ── Data fetch ──
+async function fetchJSON(url) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function loadData() {
+  const [ap, cp, sp, tr, si] = await Promise.all([
+    fetchJSON('data/active_picks.json'),
+    fetchJSON('data/closed_picks.json'),
+    fetchJSON('data/strategy_performance.json'),
+    fetchJSON('data/track_record.json'),
+    fetchJSON('data/strategy_isolation_config.json')
+  ]);
+  activePicks = ap || [];
+  closedPicks = cp || [];
+  stratPerf = sp || {};
+  trackRecord = tr || null;
+  stratIsolations = (si && si.strategy_isolations) ? si.strategy_isolations : [];
+  renderAll();
+}
+
+// ── Render all ──
+function renderAll() {
+  renderStatsBar();
+  renderLeaderboard();
+  renderWeekly();
+  renderOpenPositions();
+  renderStratLab();
+  renderComparison();
+  renderRisk();
+}
+
+// ── Stats Bar ──
+function renderStatsBar() {
+  const allClosed = closedPicks.length;
+  const wins = closedPicks.filter(p => (p.pnl_pct||0) > 0).length;
+  const wr = allClosed > 0 ? wins / allClosed : 0;
+  const totalPnl = closedPicks.reduce((s,p) => s + (p.pnl_dollar||0), 0);
+  const openCount = activePicks.length;
+
+  // Use track_record if available, else compute
+  const trO = trackRecord?.overall;
+  const totalTrades = trO ? trO.total_trades : allClosed;
+  const winRate = trO ? trO.win_rate : wr;
+  const pnl = trO ? trO.total_pnl_dollar : totalPnl;
+  const maxDD = trO ? trO.max_drawdown_pct : computeMaxDD();
+  const pf = trO ? trO.profit_factor : computePF();
+
+  $('sTotalTrades').textContent = totalTrades;
+  $('sWinRate').textContent = (winRate * 100).toFixed(1) + '%';
+  $('sWinRate').className = 'value ' + (winRate >= 0.5 ? 'positive' : 'negative');
+  $('sTotalPnl').textContent = fmtDollar(pnl);
+  $('sTotalPnl').className = 'value ' + pnlClass(pnl);
+  $('sMaxDD').textContent = fmt(maxDD, 1) + '%';
+  $('sMaxDD').className = 'value negative';
+  $('sPF').textContent = fmt(pf, 2);
+  $('sPF').className = 'value ' + (pf >= 1 ? 'positive' : 'negative');
+  $('sOpen').textContent = openCount;
+
+  // Last updated
+  let latest = null;
+  for (const p of activePicks) { if (p.last_checked && (!latest || p.last_checked > latest)) latest = p.last_checked; }
+  $('lastUpdated').textContent = latest ? 'Last updated: ' + toEST(latest) : 'Data loaded';
+}
+
+function computeMaxDD() {
+  let peak = 0, dd = 0, equity = 0;
+  for (const p of closedPicks) { equity += (p.pnl_dollar||0); if (equity > peak) peak = equity; const cur = peak - equity; if (cur > dd) dd = cur; }
+  return peak > 0 ? -(dd / peak * 100) : 0;
+}
+
+function computePF() {
+  let grossWin = 0, grossLoss = 0;
+  for (const p of closedPicks) { const d = p.pnl_dollar||0; if (d > 0) grossWin += d; else grossLoss += Math.abs(d); }
+  return grossLoss > 0 ? grossWin / grossLoss : grossWin > 0 ? 99.99 : 0;
+}
+
+// ── Section 1: Strategy Leaderboard ──
+function renderLeaderboard() {
+  const cols = [
+    { key:'rank', label:'#', sortable:false },
+    { key:'strategy', label:'Strategy', sortable:true },
+    { key:'closed_picks', label:'Trades', sortable:true },
+    { key:'win_rate', label:'Win Rate', sortable:true },
+    { key:'total_pnl_dollar', label:'Total P&L ($)', sortable:true },
+    { key:'avg_pnl_pct', label:'Avg P&L (%)', sortable:true },
+    { key:'sharpe', label:'Sharpe', sortable:true },
+    { key:'max_drawdown', label:'Max DD', sortable:true },
+    { key:'profit_factor', label:'PF', sortable:true },
+    { key:'status', label:'Status', sortable:true }
+  ];
+
+  let rows = Object.entries(stratPerf).map(([name, s]) => ({
+    strategy: name,
+    closed_picks: s.closed_picks || 0,
+    win_rate: s.win_rate || 0,
+    total_pnl_dollar: s.total_pnl_dollar || 0,
+    avg_pnl_pct: s.avg_pnl_pct || 0,
+    sharpe: s.sharpe || 0,
+    max_drawdown: s.max_drawdown || 0,
+    profit_factor: s.profit_factor || 0,
+    avg_hold_days: s.avg_hold_days || 0,
+    status_val: getStatusVal(s.win_rate, s.closed_picks)
+  }));
+
+  // Sort
+  const { col, asc } = sortState.leaderboard;
+  rows.sort((a, b) => {
+    let va = col === 'status' ? a.status_val : a[col];
+    let vb = col === 'status' ? b.status_val : b[col];
+    if (typeof va === 'string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return asc ? va - vb : vb - va;
+  });
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+  for (const c of cols) {
+    const sorted = sortState.leaderboard.col === c.key;
+    const arrow = sorted ? (sortState.leaderboard.asc ? '\u25B2' : '\u25BC') : '\u25BC';
+    html += `<th class="${sorted?'sorted':''}" ${c.sortable?`onclick="sortLeaderboard('${c.key}')"`:''}>
+      ${c.label}${c.sortable?`<span class="sort-arrow">${arrow}</span>`:''}
+    </th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  rows.forEach((r, i) => {
+    html += `<tr>
+      <td>${i+1}</td>
+      <td style="font-weight:600">${formatStratName(r.strategy)}</td>
+      <td>${r.closed_picks}</td>
+      <td style="color:${pnlColor(r.win_rate - 0.5)}">${(r.win_rate*100).toFixed(1)}%</td>
+      <td style="color:${pnlColor(r.total_pnl_dollar)};font-weight:600">${fmtDollar(r.total_pnl_dollar)}</td>
+      <td style="color:${pnlColor(r.avg_pnl_pct)}">${fmtPct(r.avg_pnl_pct)}</td>
+      <td>${fmt(r.sharpe,1)}</td>
+      <td style="color:var(--red)">${fmtPct(r.max_drawdown)}</td>
+      <td style="color:${pnlColor(r.profit_factor - 1)}">${fmt(r.profit_factor,2)}</td>
+      <td>${statusBadge(r.win_rate, r.closed_picks)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (rows.length === 0) html = '<div class="error-msg">No strategy performance data available</div>';
+  $('leaderboardContent').innerHTML = html;
+}
+
+function getStatusVal(wr, trades) {
+  if (trades >= 3 && wr === 0) return 0;
+  if (trades >= 3 && wr < 0.4) return 1;
+  if (trades >= 5 && wr >= 0.6) return 3;
+  return 2;
+}
+
+function formatStratName(s) {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function sortLeaderboard(col) {
+  if (sortState.leaderboard.col === col) sortState.leaderboard.asc = !sortState.leaderboard.asc;
+  else { sortState.leaderboard.col = col; sortState.leaderboard.asc = false; }
+  renderLeaderboard();
+}
+
+// ── Section 2: This Week's Trades ──
+function renderWeekly() {
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const allPicks = [
+    ...activePicks.map(p => ({...p, _status:'OPEN'})),
+    ...closedPicks.map(p => ({...p, _status:'CLOSED'}))
+  ];
+
+  let weekly = allPicks.filter(p => {
+    const d = new Date(p.timestamp || p.created_at || p.entry_date);
+    return d >= weekAgo;
+  }).filter(matchesFilter);
+
+  // Sort by timestamp desc
+  const { col, asc } = sortState.weekly;
+  weekly.sort((a, b) => {
+    if (col === 'timestamp') {
+      const da = new Date(a.timestamp || a.created_at || a.entry_date).getTime();
+      const db = new Date(b.timestamp || b.created_at || b.entry_date).getTime();
+      return asc ? da - db : db - da;
+    }
+    let va = a[col], vb = b[col];
+    if (typeof va === 'string') return asc ? (va||'').localeCompare(vb||'') : (vb||'').localeCompare(va||'');
+    return asc ? (va||0) - (vb||0) : (vb||0) - (va||0);
+  });
+
+  if (weekly.length === 0) {
+    $('weeklyContent').innerHTML = '<div class="error-msg">No trades in the last 7 days</div>';
+    return;
+  }
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+  const wCols = ['Entry Date (EST)','Exit Date (EST)','Symbol','Dir','Strategy','Entry','Cur/Exit','P&L %','P&L $','MAE %','MFE %','Status','Days','Conf','Exit Reason'];
+  wCols.forEach(c => { html += `<th>${c}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  for (const p of weekly) {
+    const dir = (p.direction || (p.signal_type === 'SELL' ? 'SHORT' : 'LONG')).toUpperCase();
+    const isOpen = p._status === 'OPEN';
+    const pnlPct = isOpen ? (p.unrealized_pnl_pct||0) : (p.pnl_pct||0);
+    const pnlDol = isOpen ? null : (p.pnl_dollar||0);
+    const curPrice = isOpen ? p.current_price : p.exit_price;
+    const conf = p.confidence != null ? (p.confidence * 100).toFixed(0) + '%' : '--';
+
+    const exitDateStr = isOpen ? '<span style="color:var(--text3)">Still open</span>' : toEST(p.exit_date || p.last_checked);
+
+    html += `<tr>
+      <td>${toEST(p.timestamp || p.created_at || p.entry_date)}</td>
+      <td>${exitDateStr}</td>
+      <td style="font-weight:600">${p.symbol||'--'}</td>
+      <td>${dirBadge(dir)}</td>
+      <td>${formatStratName(p.strategy||'--')}</td>
+      <td>${fmtPrice(p.entry_price)}</td>
+      <td>${fmtPrice(curPrice)}</td>
+      <td style="color:${pnlColor(pnlPct)};font-weight:600">${fmtPct(pnlPct)}</td>
+      <td style="color:${pnlColor(pnlDol)}">${pnlDol != null ? fmtDollar(pnlDol) : '--'}</td>
+      <td style="color:var(--red)">${p.mae != null ? fmtPct(p.mae) : '--'}</td>
+      <td style="color:var(--green)">${p.mfe != null ? fmtPct(p.mfe) : '--'}</td>
+      <td>${statusPickBadge(p._status)}</td>
+      <td>${p.hold_days != null ? p.hold_days : '--'}</td>
+      <td>${conf}</td>
+      <td>${isOpen ? '--' : (p.exit_reason||'--')}</td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  $('weeklyContent').innerHTML = html;
+}
+
+// ── Section 3: Open Positions ──
+function renderOpenPositions() {
+  const filtered = activePicks.filter(matchesFilter);
+  if (filtered.length === 0) {
+    $('openPosContent').innerHTML = '<div class="error-msg">No open positions matching filters</div>';
+    return;
+  }
+
+  let html = '<div class="cards-grid">';
+  for (const p of filtered) {
+    const dir = (p.direction || (p.signal_type === 'SELL' ? 'SHORT' : 'LONG')).toUpperCase();
+    const pnl = p.unrealized_pnl_pct || 0;
+    const conf = p.confidence != null ? (p.confidence * 100).toFixed(0) + '%' : '--';
+
+    // Progress bar: position between SL and TP
+    let progressHtml = '';
+    if (p.stop_loss != null && p.take_profit != null && p.current_price != null) {
+      const sl = p.stop_loss, tp = p.take_profit, cur = p.current_price, entry = p.entry_price;
+      const range = Math.abs(tp - sl);
+      let pctPos, entryPct;
+      if (dir === 'LONG') {
+        pctPos = range > 0 ? Math.max(0, Math.min(100, (cur - sl) / range * 100)) : 50;
+        entryPct = range > 0 ? Math.max(0, Math.min(100, (entry - sl) / range * 100)) : 50;
+      } else {
+        pctPos = range > 0 ? Math.max(0, Math.min(100, (sl - cur) / range * 100)) : 50;
+        entryPct = range > 0 ? Math.max(0, Math.min(100, (sl - entry) / range * 100)) : 50;
+      }
+      const barColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+      progressHtml = `
+        <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--text3);margin-top:8px">
+          <span>SL ${fmtPrice(sl)}</span><span>TP ${fmtPrice(tp)}</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pctPos}%;background:${barColor}"></div>
+          <div class="progress-marker" style="left:${entryPct}%;background:var(--text3)" title="Entry"></div>
+        </div>`;
+    }
+
+    html += `
+      <div class="pos-card" style="border-left:3px solid ${pnl >= 0 ? 'var(--green)' : 'var(--red)'}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="symbol">${p.symbol||'--'}</span>
+          ${dirBadge(dir)}
+        </div>
+        <div style="margin-top:4px;font-size:.7rem;color:var(--text3)">
+          Entered: ${toEST(p.timestamp || p.created_at || p.entry_date)}
+        </div>
+        <div style="margin-top:4px;font-size:.82rem;color:var(--text2)">
+          ${fmtPrice(p.entry_price)} <span style="color:var(--text3)">\u2192</span> ${fmtPrice(p.current_price)}
+        </div>
+        <div class="pnl-big" style="color:${pnlColor(pnl)}">${fmtPct(pnl)}</div>
+        ${progressHtml}
+        <div class="meta" style="margin-top:10px">
+          <span title="Strategy">${formatStratName(p.strategy||'')}</span>
+        </div>
+        <div class="meta" style="margin-top:4px">
+          <span>Conf: ${conf}</span>
+          <span>Hold: ${p.hold_days||0}d</span>
+          <span style="color:var(--green)">MFE: ${p.mfe != null ? fmtPct(p.mfe) : '--'}</span>
+          <span style="color:var(--red)">MAE: ${p.mae != null ? fmtPct(p.mae) : '--'}</span>
+        </div>
+      </div>`;
+  }
+  html += '</div>';
+  $('openPosContent').innerHTML = html;
+}
+
+// ── Section 4: System Comparison ──
+function renderComparison() {
+  // Build Alpha Engine summary
+  const alphaSymbols = activePicks.map(p => p.symbol).filter(Boolean);
+  const alphaDirs = {};
+  activePicks.forEach(p => { const d = (p.direction||'LONG').toUpperCase(); alphaDirs[p.symbol] = d; });
+
+  const alphaWR = closedPicks.length > 0
+    ? (closedPicks.filter(p => (p.pnl_pct||0) > 0).length / closedPicks.length * 100).toFixed(1) + '%'
+    : '--';
+
+  // We reference KIMI and Cross-Aggregator conceptually
+  let html = '<div class="comparison-grid">';
+
+  // Alpha Engine card
+  html += `
+    <div class="sys-card" style="border-top:3px solid var(--purple)">
+      <h4 style="color:var(--purple)">Alpha Engine</h4>
+      <div class="sys-stat">Open positions: <strong>${activePicks.length}</strong></div>
+      <div class="sys-stat">Closed trades: <strong>${closedPicks.length}</strong></div>
+      <div class="sys-stat">Win rate: <strong>${alphaWR}</strong></div>
+      <div class="sys-stat" style="margin-top:8px">Active symbols:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+        ${[...new Set(alphaSymbols)].slice(0, 15).map(s =>
+          `<span style="font-size:.72rem;background:rgba(139,92,246,.15);color:var(--purple);padding:2px 6px;border-radius:8px">${s} ${alphaDirs[s]==='SHORT'?'\u25BC':'\u25B2'}</span>`
+        ).join('')}
+      </div>
+    </div>`;
+
+  // KIMI card (linked)
+  html += `
+    <div class="sys-card" style="border-top:3px solid var(--yellow)">
+      <h4 style="color:var(--yellow)">KIMI Rise of the Claw</h4>
+      <div class="sys-stat">81 algorithm ensemble scanner</div>
+      <div class="sys-stat">15-minute scan interval</div>
+      <div class="sys-stat" style="margin-top:8px">
+        <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/monitor/" target="_blank">View Dashboard \u2192</a>
+      </div>
+      <div style="margin-top:8px;font-size:.72rem;color:var(--text3)">
+        Consensus picks shown when cross-aggregator data available
+      </div>
+    </div>`;
+
+  // Cross-Aggregator card
+  html += `
+    <div class="sys-card" style="border-top:3px solid var(--blue)">
+      <h4 style="color:var(--blue)">Cross-Aggregator</h4>
+      <div class="sys-stat">Multi-system consensus engine</div>
+      <div class="sys-stat">5-minute update interval</div>
+      <div class="sys-stat" style="margin-top:8px">Checks agreement between:</div>
+      <div style="font-size:.75rem;color:var(--text2);margin-top:4px">
+        Alpha Engine + KIMI + External signals
+      </div>
+      <div style="margin-top:8px">
+        ${alphaSymbols.length > 0 ? `<span class="consensus-badge">${alphaSymbols.length} Alpha Engine positions active</span>` : ''}
+      </div>
+    </div>`;
+
+  html += '</div>';
+  $('comparisonContent').innerHTML = html;
+}
+
+// ── Section 5: Risk Metrics ──
+function renderRisk() {
+  const allPicks = [...activePicks, ...closedPicks];
+  // Asset class distribution
+  const assetCounts = { crypto: 0, forex: 0, stock: 0 };
+  allPicks.forEach(p => { const a = classifyAsset(p.symbol, p.category); assetCounts[a] = (assetCounts[a]||0) + 1; });
+  const total = allPicks.length || 1;
+
+  // Direction bias
+  let longs = 0, shorts = 0;
+  allPicks.forEach(p => {
+    const d = (p.direction || (p.signal_type === 'SELL' ? 'SHORT' : 'LONG')).toUpperCase();
+    if (d === 'SHORT') shorts++; else longs++;
+  });
+
+  // Average hold time
+  const holdDays = allPicks.filter(p => p.hold_days != null).map(p => p.hold_days);
+  const avgHold = holdDays.length > 0 ? (holdDays.reduce((a,b)=>a+b,0)/holdDays.length).toFixed(1) : '--';
+
+  // Win/loss streaks
+  let maxWin = 0, maxLoss = 0, curWin = 0, curLoss = 0;
+  closedPicks.forEach(p => {
+    if ((p.pnl_pct||0) > 0) { curWin++; curLoss = 0; if (curWin > maxWin) maxWin = curWin; }
+    else { curLoss++; curWin = 0; if (curLoss > maxLoss) maxLoss = curLoss; }
+  });
+  const trO = trackRecord?.overall;
+  if (trO) { maxWin = trO.max_win_streak || maxWin; maxLoss = trO.max_loss_streak || maxLoss; }
+
+  let html = '<div class="chart-row">';
+
+  // Asset allocation
+  html += `
+    <div class="chart-box">
+      <h4>Portfolio Allocation by Asset Class</h4>
+      <div class="bar-chart">
+        <div class="bar-item">
+          <div class="bar-label"><span>Crypto</span><span>${(assetCounts.crypto/total*100).toFixed(1)}% (${assetCounts.crypto})</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${assetCounts.crypto/total*100}%;background:var(--purple)"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Forex</span><span>${(assetCounts.forex/total*100).toFixed(1)}% (${assetCounts.forex})</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${assetCounts.forex/total*100}%;background:var(--blue)"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Stocks</span><span>${(assetCounts.stock/total*100).toFixed(1)}% (${assetCounts.stock})</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${assetCounts.stock/total*100}%;background:var(--green)"></div></div>
+        </div>
+      </div>
+    </div>`;
+
+  // Direction bias
+  const longPct = total > 0 ? longs / total * 100 : 50;
+  html += `
+    <div class="chart-box">
+      <h4>Direction Bias</h4>
+      <div class="bar-chart">
+        <div class="bar-item">
+          <div class="bar-label"><span>LONG</span><span>${longPct.toFixed(1)}% (${longs})</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${longPct}%;background:var(--green)"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>SHORT</span><span>${(100-longPct).toFixed(1)}% (${shorts})</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${100-longPct}%;background:var(--red)"></div></div>
+        </div>
+      </div>
+      <div class="metric-grid" style="margin-top:16px">
+        <div class="metric-item">
+          <div class="m-val">${avgHold}</div>
+          <div class="m-label">Avg Hold (days)</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-val" style="color:var(--green)">${maxWin}</div>
+          <div class="m-label">Best Win Streak</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-val" style="color:var(--red)">${maxLoss}</div>
+          <div class="m-label">Worst Loss Streak</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-val">${closedPicks.length}</div>
+          <div class="m-label">Total Closed</div>
+        </div>
+      </div>
+    </div>`;
+
+  html += '</div>';
+
+  // Top winners and losers
+  const sorted = [...closedPicks].sort((a,b) => (b.pnl_dollar||0) - (a.pnl_dollar||0));
+  const topWin = sorted.slice(0, 5);
+  const topLoss = sorted.slice(-5).reverse();
+
+  html += '<div class="chart-row" style="margin-top:16px">';
+  html += `<div class="chart-box"><h4>Top 5 Winners</h4>`;
+  if (topWin.length > 0) {
+    html += '<div class="bar-chart">';
+    const maxVal = Math.max(...topWin.map(p => Math.abs(p.pnl_dollar||0)), 1);
+    topWin.forEach(p => {
+      const pct = Math.abs(p.pnl_dollar||0) / maxVal * 100;
+      html += `<div class="bar-item">
+        <div class="bar-label"><span>${p.symbol} (${formatStratName(p.strategy||'')})</span><span style="color:var(--green)">${fmtDollar(p.pnl_dollar)}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--green)"></div></div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += `<div class="chart-box"><h4>Top 5 Losers</h4>`;
+  if (topLoss.length > 0) {
+    html += '<div class="bar-chart">';
+    const maxVal = Math.max(...topLoss.map(p => Math.abs(p.pnl_dollar||0)), 1);
+    topLoss.forEach(p => {
+      const pct = Math.abs(p.pnl_dollar||0) / maxVal * 100;
+      html += `<div class="bar-item">
+        <div class="bar-label"><span>${p.symbol} (${formatStratName(p.strategy||'')})</span><span style="color:var(--red)">${fmtDollar(p.pnl_dollar)}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--red)"></div></div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  html += '</div></div>';
+
+  $('riskContent').innerHTML = html;
+}
+
+// ── Section 5: Strategy Lab ──
+function renderStratLab() {
+  if (stratIsolations.length === 0) {
+    $('stratLabContent').innerHTML = '<div class="error-msg">No strategy isolation configs found</div>';
+    return;
+  }
+
+  // Enrich isolations with live performance data from stratPerf and closedPicks
+  const enriched = stratIsolations.map(iso => {
+    const livePerf = stratPerf[iso.strategy] || null;
+    const liveTrades = livePerf ? (livePerf.closed_picks || 0) : 0;
+    const liveWR = livePerf ? ((livePerf.win_rate || 0) * 100) : null;
+    const livePF = livePerf ? (livePerf.profit_factor || null) : null;
+    const fwdTrades = liveTrades > 0 ? liveTrades : iso.fwd_trades;
+    const fwdWR = liveWR != null && liveTrades > 0 ? liveWR : iso.fwd_wr;
+    const targetMet = fwdWR != null && fwdWR >= iso.target_wr;
+    const pfMet = livePF != null && livePF >= iso.target_pf;
+    const progress = iso.review_at_trades > 0 ? Math.min(100, fwdTrades / iso.review_at_trades * 100) : 0;
+    return { ...iso, fwdTrades, fwdWR, livePF, targetMet, pfMet, progress };
+  });
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+  const cols = ['Strategy', 'Status', 'Walk-Fwd', 'Backtest WR', 'Live WR', 'Trades', 'Target WR', 'Target PF', 'Live PF', 'WR Met', 'Progress', 'Notes'];
+  cols.forEach(c => { html += `<th>${c}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  for (const s of enriched) {
+    const statusClass = s.status === 'PROVEN' ? 'badge-proven' : s.status === 'ENHANCED' ? 'badge-promising' : 'badge-open';
+    const wfClass = s.walk_forward === 'PASSED' ? 'color:var(--green)' : 'color:var(--yellow)';
+    const wrColor = s.fwdWR != null ? (s.targetMet ? 'color:var(--green);font-weight:600' : 'color:var(--red)') : 'color:var(--text3)';
+    const pfColor = s.livePF != null ? (s.pfMet ? 'color:var(--green)' : 'color:var(--red)') : 'color:var(--text3)';
+    const metIcon = s.fwdWR == null ? '--' : s.targetMet ? '<span style="color:var(--green);font-weight:700">YES</span>' : '<span style="color:var(--red)">NO</span>';
+    const progressColor = s.progress >= 100 ? 'var(--green)' : s.progress >= 50 ? 'var(--yellow)' : 'var(--purple)';
+
+    html += `<tr>
+      <td style="font-weight:600">${s.label}</td>
+      <td><span class="badge ${statusClass}">${s.status}</span></td>
+      <td style="${wfClass}">${s.walk_forward}</td>
+      <td>${s.backtest_wr != null ? s.backtest_wr.toFixed(1) + '%' : '--'}</td>
+      <td style="${wrColor}">${s.fwdWR != null ? s.fwdWR.toFixed(1) + '%' : 'Awaiting'}</td>
+      <td>${s.fwdTrades}</td>
+      <td>${s.target_wr}%</td>
+      <td>${s.target_pf.toFixed(1)}</td>
+      <td style="${pfColor}">${s.livePF != null ? s.livePF.toFixed(2) : '--'}</td>
+      <td>${metIcon}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="progress-track" style="width:60px;height:5px">
+            <div class="progress-fill" style="width:${s.progress}%;background:${progressColor}"></div>
+          </div>
+          <span style="font-size:.7rem;color:var(--text2)">${s.fwdTrades}/${s.review_at_trades}</span>
+        </div>
+      </td>
+      <td style="font-size:.72rem;color:var(--text2);max-width:220px;white-space:normal">${s.notes}</td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+
+  // Summary cards
+  const proven = enriched.filter(s => s.status === 'PROVEN');
+  const newStrats = enriched.filter(s => s.status === 'NEW' || s.status === 'ENHANCED');
+  const meetingTarget = enriched.filter(s => s.targetMet);
+
+  html += `<div class="chart-row" style="margin-top:16px">
+    <div class="chart-box">
+      <h4>Isolation Summary</h4>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <div class="m-val" style="color:var(--green)">${proven.length}</div>
+          <div class="m-label">Walk-Forward Proven</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-val" style="color:var(--blue)">${newStrats.length}</div>
+          <div class="m-label">Forward Testing</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-val" style="color:${meetingTarget.length > 0 ? 'var(--green)' : 'var(--text3)'}">${meetingTarget.length}/${enriched.length}</div>
+          <div class="m-label">Meeting Target WR</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-val">${enriched.reduce((a,s) => a + s.fwdTrades, 0)}</div>
+          <div class="m-label">Total Isolated Trades</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-box">
+      <h4>Review Protocol</h4>
+      <div style="font-size:.82rem;color:var(--text2);line-height:1.8">
+        <div>1. Each strategy tracked independently</div>
+        <div>2. Review at trade threshold (see Progress column)</div>
+        <div>3. Kill if WR falls below target - 10%</div>
+        <div>4. Promote to PROVEN after walk-forward validation</div>
+        <div>5. Only PROVEN strategies get full capital allocation</div>
+      </div>
+    </div>
+  </div>`;
+
+  $('stratLabContent').innerHTML = html;
+}
+
+// ── Filter handlers ──
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const group = btn.dataset.filter;
+    const val = btn.dataset.val;
+    filters[group] = val;
+    // Update active states
+    document.querySelectorAll(`.filter-btn[data-filter="${group}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderWeekly();
+    renderOpenPositions();
+  });
+});
+
+// ── Init + auto-refresh ──
+loadData();
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>

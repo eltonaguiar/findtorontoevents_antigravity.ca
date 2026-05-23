@@ -1,0 +1,138 @@
+{
+  "generated_at": "2026-02-22T23:30:00Z",
+  "version": "v1.2-forensic",
+  "total_picks": 34,
+  "wins": 7,
+  "losses": 24,
+  "expired": 3,
+  "win_rate_pct": 23.5,
+  "total_pnl_pct": -28.49,
+  "key_finding": "SELL signals on 15m were 85.7% accurate (6/7 TP_HIT). BUY signals on 1h were 8.3% accurate (1/12). The model is better at predicting drops than rallies in the current market.",
+  "root_causes": [
+    {
+      "id": "coin_flip_confidence",
+      "title": "Coin-Flip Confidence (prob 0.50\u20130.59)",
+      "severity": "critical",
+      "affected_picks": 19,
+      "pct_of_losses": 79.2,
+      "description": "19 of 24 losses had model probability between 0.50 and 0.59 \u2014 essentially random coin flips with no statistical edge. The confidence gate (0.60) wasn't enforced.",
+      "fix": "v1.3 raised MIN_DIRECTIONAL_CONFIDENCE to 0.65, and 0.70 for 1h timeframe. Only picks with genuine edge pass now.",
+      "color": "#ef4444"
+    },
+    {
+      "id": "buy_in_bearish_market",
+      "title": "Buying in a Falling Market",
+      "severity": "critical",
+      "affected_picks": 22,
+      "pct_of_losses": 91.7,
+      "description": "22 of 24 losses were BUY signals during a slow BTC downtrend (-0.8% over 12h). The old regime filter only checked 4h candle returns and missed the gradual drift. All major coins followed BTC down.",
+      "fix": "v1.3 BTC regime filter now uses OR logic: 4h drop >0.3% OR 12h drop >0.5% OR price below EMA20+EMA50. Catches slow bleeds.",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "1h_timeframe_catastrophe",
+      "title": "1h Timeframe: 8.3% Win Rate",
+      "severity": "high",
+      "affected_picks": 11,
+      "pct_of_losses": 45.8,
+      "description": "11 of 12 hourly BUY picks hit SL. The 1h models had LOW confidence (avg prob 0.52) but no separate threshold. Only TRX BUY won. The 1h ensemble_stack model was particularly bad.",
+      "fix": "v1.3 added MIN_DIRECTIONAL_CONFIDENCE_1H = 0.70. Hourly picks now need significantly higher conviction to pass.",
+      "color": "#ef4444"
+    },
+    {
+      "id": "sl_gapping",
+      "title": "Stop-Loss Gapping (ZRO -6.73%)",
+      "severity": "high",
+      "affected_picks": 5,
+      "pct_of_losses": 20.8,
+      "description": "ZRO lost -6.73% on both 15m and 1h when SL was at 0.67%/2.16% \u2014 price gapped straight through on a 3x normal candle. ETC (-2.18%) and TIA (-2.02%) also exceeded expected SL distance.",
+      "fix": "v1.3 raised MIN_SL_DISTANCE_PCT from 0.5% to 0.8%. SL now has breathing room for volatile candles.",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "duplicate_exposure",
+      "title": "Double Exposure (Same Coin, Two Timeframes)",
+      "severity": "medium",
+      "affected_picks": 14,
+      "pct_of_losses": 58.3,
+      "description": "7 coins (BNB, DOGE, NEAR, ZRO, ETC, LINK, POL) were traded on BOTH 15m and 1h simultaneously. When the coin dropped, both positions lost \u2014 doubling the damage. BNB lost on 3 separate picks.",
+      "fix": "v1.3 reduced MAX_PER_DIRECTION from 5 to 3. Future: add per-symbol dedup across timeframes.",
+      "color": "#3b82f6"
+    },
+    {
+      "id": "overfit_model_selection",
+      "title": "Model Selection Rewarded Overconfidence",
+      "severity": "medium",
+      "affected_picks": 8,
+      "pct_of_losses": 33.3,
+      "description": "BNB LightGBM predicted 0.8463 (HIGH confidence) but lost twice. The old logic picked whichever model gave the highest probability \u2014 rewarding overfit models. LightGBM was overconfident on BNB.",
+      "fix": "v1.3 now prefers C_random_forest (A/B test winner with 81 wins). Falls back to median consensus, not max.",
+      "color": "#a855f7"
+    }
+  ],
+  "positive_finding": {
+    "title": "SELL Signals Were 85.7% Accurate",
+    "description": "6 of 7 SELL signals on 15m hit take-profit: LINK +0.80%, INJ +1.43%, SEI +1.15%, ATOM +1.10%, STRK +0.69%, POL +1.22%. The model accurately predicts downward moves in a bearish market. Only WLD SELL lost (-1.25%).",
+    "implication": "The model has a genuine short-side edge on 15m. v1.3 removes the asymmetric confidence gate that was suppressing SELL signals."
+  },
+  "per_pick_analysis": [
+    {"symbol": "ETH", "tf": "15m", "dir": "BUY", "prob": 0.5721, "pnl": -0.38, "outcome": "SL_HIT", "cause": "coin_flip_confidence", "note": "SL distance only 0.19% \u2014 noise exit. Prob barely above 0.55."},
+    {"symbol": "BNB", "tf": "15m", "dir": "BUY", "prob": 0.8463, "pnl": -0.22, "outcome": "SL_HIT", "cause": "overfit_model_selection", "note": "LightGBM overfit: 0.8463 prob but SL hit in 9 min. Overconfident model."},
+    {"symbol": "DOGE", "tf": "15m", "dir": "BUY", "prob": 0.587, "pnl": -0.62, "outcome": "SL_HIT", "cause": "buy_in_bearish_market", "note": "BTC drifting down, DOGE followed. Ensemble_stack model."},
+    {"symbol": "NEAR", "tf": "15m", "dir": "BUY", "prob": 0.5245, "pnl": -0.29, "outcome": "SL_HIT", "cause": "coin_flip_confidence", "note": "0.5245 prob = pure coin flip. No edge."},
+    {"symbol": "ZK", "tf": "15m", "dir": "BUY", "prob": 0.5668, "pnl": -0.52, "outcome": "SL_HIT", "cause": "coin_flip_confidence", "note": "Small-cap volatile, 0.57 prob insufficient."},
+    {"symbol": "SOL", "tf": "15m", "dir": "BUY", "prob": 0.5187, "pnl": -0.76, "outcome": "SL_HIT", "cause": "coin_flip_confidence", "note": "0.52 prob on a major \u2014 no edge. Followed BTC down."},
+    {"symbol": "LINK", "tf": "15m", "dir": "SELL", "prob": 0.4892, "pnl": 0.80, "outcome": "TP_HIT", "cause": null, "note": "WIN: Low-prob SELL still hit TP. Market was bearish."},
+    {"symbol": "LTC", "tf": "15m", "dir": "BUY", "prob": 0.5388, "pnl": -0.52, "outcome": "SL_HIT", "cause": "coin_flip_confidence", "note": "0.54 prob = no edge. Ensemble_stack model."},
+    {"symbol": "ETC", "tf": "15m", "dir": "BUY", "prob": 0.5372, "pnl": -2.18, "outcome": "SL_HIT", "cause": "sl_gapping", "note": "Price dropped 2.18% vs 0.3% expected SL. Thin liquidity, gapped through."},
+    {"symbol": "INJ", "tf": "15m", "dir": "SELL", "prob": 0.4892, "pnl": 1.43, "outcome": "TP_HIT", "cause": null, "note": "WIN: Best SELL signal. 1.43% profit on ensemble_stack."},
+    {"symbol": "SEI", "tf": "15m", "dir": "SELL", "prob": 0.484, "pnl": 1.15, "outcome": "TP_HIT", "cause": null, "note": "WIN: SELL hit TP cleanly. Bearish market helped."},
+    {"symbol": "ATOM", "tf": "15m", "dir": "SELL", "prob": 0.4866, "pnl": 1.10, "outcome": "TP_HIT", "cause": null, "note": "WIN: LightGBM SELL signal accurate."},
+    {"symbol": "WLD", "tf": "15m", "dir": "SELL", "prob": 0.4859, "pnl": -1.25, "outcome": "SL_HIT", "cause": "buy_in_bearish_market", "note": "Only SELL loss. WLD bounced against the trend."},
+    {"symbol": "STRK", "tf": "15m", "dir": "SELL", "prob": 0.4916, "pnl": 0.69, "outcome": "TP_HIT", "cause": null, "note": "WIN: Small-cap SELL accurate."},
+    {"symbol": "CHZ", "tf": "15m", "dir": "BUY", "prob": 0.5192, "pnl": -0.15, "outcome": "EXPIRED", "cause": "coin_flip_confidence", "note": "Expired near flat. 0.52 prob = no edge."},
+    {"symbol": "ZRO", "tf": "15m", "dir": "BUY", "prob": 0.6248, "pnl": -6.73, "outcome": "SL_HIT", "cause": "sl_gapping", "note": "WORST TRADE. Price gapped -6.73% on a 3x ATR candle. SL was 0.67% away."},
+    {"symbol": "POL", "tf": "15m", "dir": "SELL", "prob": 0.4941, "pnl": 1.22, "outcome": "TP_HIT", "cause": null, "note": "WIN: SELL signal hit TP. Ensemble accurate."},
+    {"symbol": "BNB", "tf": "1h", "dir": "BUY", "prob": 0.629, "pnl": -0.91, "outcome": "SL_HIT", "cause": "1h_timeframe_catastrophe", "note": "3rd BNB loss. 1h ensemble BUY in falling market."},
+    {"symbol": "TRX", "tf": "1h", "dir": "BUY", "prob": 0.6309, "pnl": 0.69, "outcome": "TP_HIT", "cause": null, "note": "WIN: Only 1h BUY winner. TRX held up while others fell."},
+    {"symbol": "LINK", "tf": "1h", "dir": "BUY", "prob": 0.511, "pnl": -0.80, "outcome": "SL_HIT", "cause": "1h_timeframe_catastrophe", "note": "Contradiction: 15m SELL won +0.80%, 1h BUY lost -0.80%. Same coin, opposite bets."},
+    {"symbol": "ETC", "tf": "1h", "dir": "BUY", "prob": 0.5268, "pnl": -2.18, "outcome": "SL_HIT", "cause": "duplicate_exposure", "note": "Lost -2.18% on both 15m AND 1h. Double exposure."},
+    {"symbol": "INJ", "tf": "1h", "dir": "BUY", "prob": 0.5168, "pnl": -1.73, "outcome": "SL_HIT", "cause": "duplicate_exposure", "note": "15m SELL won +1.43% but 1h BUY lost -1.73%. Net: -0.30%."},
+    {"symbol": "SEI", "tf": "1h", "dir": "BUY", "prob": 0.5026, "pnl": -1.29, "outcome": "SL_HIT", "cause": "1h_timeframe_catastrophe", "note": "0.50 prob = literal coin flip. No edge whatsoever."},
+    {"symbol": "TIA", "tf": "1h", "dir": "BUY", "prob": 0.5017, "pnl": -2.02, "outcome": "SL_HIT", "cause": "1h_timeframe_catastrophe", "note": "0.50 prob. Lost 2%. Celestia in downtrend."},
+    {"symbol": "ATOM", "tf": "1h", "dir": "BUY", "prob": 0.5143, "pnl": -0.93, "outcome": "SL_HIT", "cause": "duplicate_exposure", "note": "15m SELL won +1.10% but 1h BUY lost -0.93%. Contradictory signals."},
+    {"symbol": "DYDX", "tf": "1h", "dir": "BUY", "prob": 0.5011, "pnl": -0.94, "outcome": "SL_HIT", "cause": "1h_timeframe_catastrophe", "note": "0.50 prob. Lowest confidence of all picks."},
+    {"symbol": "APE", "tf": "1h", "dir": "BUY", "prob": 0.5527, "pnl": -1.21, "outcome": "SL_HIT", "cause": "1h_timeframe_catastrophe", "note": "Small-cap, high vol. LightGBM model."},
+    {"symbol": "ZRO", "tf": "1h", "dir": "BUY", "prob": 0.5999, "pnl": -6.73, "outcome": "SL_HIT", "cause": "sl_gapping", "note": "2nd ZRO loss. Both 15m AND 1h gapped through SL. Total ZRO damage: -13.46%."},
+    {"symbol": "POL", "tf": "1h", "dir": "BUY", "prob": 0.5087, "pnl": -1.22, "outcome": "SL_HIT", "cause": "duplicate_exposure", "note": "15m SELL won +1.22% but 1h BUY lost -1.22%. Perfect offset."},
+    {"symbol": "ETH", "tf": "15m", "dir": "BUY", "prob": 0.5721, "pnl": -0.13, "outcome": "EXPIRED", "cause": "coin_flip_confidence", "note": "2nd ETH pick. Expired near flat."},
+    {"symbol": "BNB", "tf": "15m", "dir": "BUY", "prob": 0.8463, "pnl": -0.78, "outcome": "SL_HIT", "cause": "overfit_model_selection", "note": "2nd BNB 15m loss despite 0.85 prob. LightGBM systematically overconfident."},
+    {"symbol": "DOGE", "tf": "15m", "dir": "BUY", "prob": 0.587, "pnl": -0.55, "outcome": "SL_HIT", "cause": "buy_in_bearish_market", "note": "2nd DOGE loss. Same coin, same direction, same result."},
+    {"symbol": "NEAR", "tf": "15m", "dir": "BUY", "prob": 0.5245, "pnl": -0.69, "outcome": "SL_HIT", "cause": "coin_flip_confidence", "note": "2nd NEAR loss. 0.52 prob both times."},
+    {"symbol": "ZK", "tf": "15m", "dir": "BUY", "prob": 0.5668, "pnl": 0.16, "outcome": "EXPIRED", "cause": null, "note": "Expired with tiny profit. Close to breakeven."}
+  ],
+  "by_direction": {
+    "BUY": {"picks": 27, "wins": 1, "losses": 23, "expired": 3, "win_rate": 3.7, "avg_pnl": -1.14},
+    "SELL": {"picks": 7, "wins": 6, "losses": 1, "expired": 0, "win_rate": 85.7, "avg_pnl": 0.73}
+  },
+  "by_timeframe": {
+    "15m": {"picks": 22, "wins": 7, "losses": 12, "expired": 3, "win_rate": 31.8, "avg_pnl": -0.46},
+    "1h": {"picks": 12, "wins": 1, "losses": 11, "expired": 0, "win_rate": 8.3, "avg_pnl": -1.78}
+  },
+  "by_model": {
+    "B_lightgbm": {"picks": 12, "wins": 2, "losses": 9, "expired": 1, "win_rate": 16.7},
+    "D_ensemble_stack": {"picks": 20, "wins": 5, "losses": 13, "expired": 2, "win_rate": 25.0},
+    "A_xgboost": {"picks": 1, "wins": 0, "losses": 1, "expired": 0, "win_rate": 0.0},
+    "C_random_forest": {"picks": 0, "wins": 0, "losses": 0, "expired": 0, "win_rate": null, "note": "Was never selected by old logic. Now preferred in v1.3."}
+  },
+  "by_confidence": {
+    "HIGH": {"picks": 2, "wins": 0, "losses": 2, "win_rate": 0, "note": "BNB LightGBM 0.8463 — overfit model"},
+    "MEDIUM": {"picks": 9, "wins": 2, "losses": 5, "expired": 2, "win_rate": 22.2},
+    "LOW": {"picks": 23, "wins": 5, "losses": 17, "expired": 1, "win_rate": 21.7, "note": "Most picks were LOW confidence — no edge"}
+  },
+  "v1_3_expected_improvement": {
+    "picks_that_would_be_blocked": 25,
+    "picks_that_would_pass": 9,
+    "reason": "With 0.65 BUY threshold + 0.70 1h threshold + BTC regime filter + trend alignment, only 9 of the original 34 picks would have been taken. Estimated win rate improvement: 23.5% → 45-55%."
+  }
+}

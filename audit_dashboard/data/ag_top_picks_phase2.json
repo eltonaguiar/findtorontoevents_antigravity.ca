@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-03-14T21:20:00+00:00",
+  "agent": "Antigravity",
+  "phase": 2,
+  "methodology": "v2.0 Regime-Aware Scoring — 2 SHORTs (trend-aligned, proven targets) + 1 contrarian LONG (F&G extreme fear play, testing TRUMP exception pattern). Phase 1 lessons: regime filter, volume gate $50M+, dynamic R:R 1.07-1.50, kill oversold bounce LONGs. Research-backed: funding rate crowding, BTC.D risk-off, CVD divergence signals.",
+  "regime_context": {
+    "regime": "TRENDING_DOWN",
+    "direction_bias": "SHORT",
+    "fng": 16,
+    "btc_dominance_trend": "RISING",
+    "funding_rate_signal": "POSITIVE (longs paying shorts — crowded long)",
+    "contrarian_note": "F&G=16 is extreme fear — historically a MEDIUM-TERM buying signal (Nasdaq backtest: F&G≤20 → 1,145% ROI). But short-term regime still bearish. Testing with 1 disciplined contrarian LONG mimicking Phase 1 TRUMP pattern."
+  },
+  "top_picks": [
+    {
+      "rank": 1,
+      "strategy": "regime_momentum_short_v2",
+      "symbol": "BTCUSDT",
+      "category": "crypto",
+      "signal_type": "SHORT",
+      "direction": "SHORT",
+      "entry_price": 70500.00,
+      "take_profit": 68985.00,
+      "stop_loss": 71910.00,
+      "risk_reward": 1.07,
+      "confidence": 0.86,
+      "status": "ACTIVE",
+      "outcome": "PENDING",
+      "pnl_pct": 0,
+      "round": 2,
+      "phase": 2,
+      "scoring_version": "v2.0_regime_aware",
+      "rationale": "BTC 4H+1H both TRENDING_DOWN. Funding rate positive (crowded longs). OI elevated = liquidation cascade risk. BTC.D rising = risk-off. Phase 1: Grok/Mercury BTC SHORTs all profitable. Conservative 2.15% TP. SL 2.0% above entry.",
+      "data_sources": ["4H_ema_trend", "funding_rate", "open_interest", "btc_dominance", "phase_1_results"]
+    },
+    {
+      "rank": 2,
+      "strategy": "regime_momentum_short_v2",
+      "symbol": "ETHUSDT",
+      "category": "crypto",
+      "signal_type": "SHORT",
+      "direction": "SHORT",
+      "entry_price": 2065.00,
+      "take_profit": 2013.35,
+      "stop_loss": 2106.30,
+      "risk_reward": 1.25,
+      "confidence": 0.83,
+      "status": "ACTIVE",
+      "outcome": "PENDING",
+      "pnl_pct": 0,
+      "round": 2,
+      "phase": 2,
+      "scoring_version": "v2.0_regime_aware",
+      "rationale": "ETH highest daily range (6.77%) = amplified downside. ETH/BTC ratio weakening. Phase 1: Grok +1.06%, Mercury +0.94% on ETH shorts. 2.5% TP target (ETH volatility). SL 2.0% above entry.",
+      "data_sources": ["4H_ema_trend", "eth_btc_ratio", "daily_range", "phase_1_results"]
+    },
+    {
+      "rank": 3,
+      "strategy": "fng_contrarian_momentum_long",
+      "symbol": "TRUMPUSDT",
+      "category": "crypto",
+      "signal_type": "BUY",
+      "direction": "LONG",
+      "entry_price": 4.10,
+      "take_profit": 4.22,
+      "stop_loss": 4.02,
+      "risk_reward": 1.50,
+      "confidence": 0.70,
+      "status": "CLOSED",
+      "outcome": "SL_HIT",
+      "pnl_pct": -1.95,
+      "closed_at": "2026-03-15T01:30:00+00:00",
+      "closed_price": 4.02,
+      "round": 2,
+      "phase": 2,
+      "scoring_version": "v2.0_regime_aware",
+      "rationale": "CONTRARIAN PLAY — F&G=16 extreme fear = historically buying opp. TRUMP was ONLY LONG that won Phase 1 (+2.09% in 17 min). Low BTC correlation. TIGHT 2.93% TP mimicking Phase 1 winning pattern. TIGHT 1.95% SL. Max 4h hold — momentum play only.",
+      "post_mortem": "SL HIT at $4.02 — TRUMP dropped to $3.998. F&G contrarian hypothesis FAILED in short-term. Confirms Phase 1 lesson: LONGs in bear regime fail even with extreme fear. F&G=16 may be medium-term bullish (3-14d) but NOT 4h momentum bullish.",
+      "data_sources": ["fng_index", "phase_1_exception_analysis", "btc_correlation", "momentum"]
+    }
+  ],
+  "phase1_summary": {
+    "record": "0W-3L-0A",
+    "losses": [
+      "TAOUSDT -4.12% SL_HIT — momentum cascade failed in downtrend",
+      "ADAUSDT -1.24% SL_HIT — RSI bounce failed in downtrend",
+      "RENDERUSDT -3.00% SL_HIT — EMA stack overpowered by regime"
+    ],
+    "lesson": "Worst performer at -2.79% avg. All LONGs failed. Phase 2: regime filter + 2 SHORTs + 1 hypothesis-testing contrarian LONG."
+  },
+  "lifetime_stats": {
+    "phase1_picks": 3,
+    "phase2_picks": 3,
+    "total_picks": 6,
+    "wins": 0,
+    "losses": 4,
+    "active": 2,
+    "win_rate_closed": 0.0,
+    "net_realized_usd": -103.13,
+    "account_equity": 99896.87
+  },
+  "research_enhancements": {
+    "implemented_in_phase2": [
+      "Regime filter (4H EMA trend alignment)",
+      "Volume gate ($50M minimum)",
+      "Dynamic R:R (1.07-1.50 based on asset volatility)",
+      "Kill oversold-bounce LONGs in downtrend",
+      "BTC dominance trend as risk-on/off signal",
+      "Funding rate as crowding indicator",
+      "Phase 1 exception analysis (TRUMP pattern replication)"
+    ],
+    "proposed_for_phase3": [
+      "CVD divergence detection (bottom/top reversal signal)",
+      "Open Interest rate-of-change for liquidation cascade warning",
+      "On-chain exchange netflow (Glassnode/Nansen API)",
+      "Orderbook imbalance scoring (30% alpha per Grok research)",
+      "Multi-timeframe 1H+4H+Daily alignment scoring",
+      "ML ranker integration (XGBoost predicted Sharpe)",
+      "BTC.D breakout/breakdown as altcoin rotation trigger"
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Loading... | FindTorontoEvents</title>
+<meta http-equiv="refresh" content="15">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px}
+.container{max-width:500px}
+h1{font-size:2rem;margin-bottom:12px;background:linear-gradient(135deg,#00ff88,#0088ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+p{color:#888;margin-bottom:16px;line-height:1.6}
+.spinner{width:40px;height:40px;border:3px solid #1e1e3a;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:24px}
+.links a{display:inline-flex;align-items:center;padding:8px 14px;border-radius:8px;border:1px solid #2b2b54;background:#131327;color:#bfc8ff;text-decoration:none;font-size:.82rem;transition:all .2s}
+.links a:hover{border-color:#3b82f6;background:#18213f}
+.countdown{color:#666;font-size:.75rem;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="spinner"></div>
+<h1>Site Updating</h1>
+<p>The page you requested is being deployed. It will be available in a few seconds.</p>
+<p style="font-size:.85rem">This page auto-refreshes every 15 seconds.</p>
+<div class="links">
+<a href="/findtorontoevents_antigravity.ca/">Home</a>
+<a href="/findtorontoevents_antigravity.ca/battleground/">Battleground</a>
+<a href="/findtorontoevents_antigravity.ca/alpha/">Alpha Engine</a>
+<a href="/findtorontoevents_antigravity.ca/predictions/">Predictions</a>
+<a href="/findtorontoevents_antigravity.ca/updates/">Updates</a>
+</div>
+<p class="countdown" id="cd">Refreshing in 15s...</p>
+</div>
+<script>
+let s=15;const el=document.getElementById('cd');
+setInterval(()=>{s--;if(s<=0)s=15;el.textContent='Refreshing in '+s+'s...';},1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+name: ALPHA ENGINE - Trend Catcher (4H Adaptive)
+
+on:
+  schedule:
+    # Run every 4 hours aligned with candle close
+    - cron: '5 0,4,8,12,16,20 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'scan'
+        type: choice
+        options:
+          - scan
+          - backtest
+
+concurrency:
+  group: alpha-trend-catcher
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  trend-catcher:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            echo "mode=scan" >> $GITHUB_OUTPUT
+          fi
+
+      #  Live scan 
+      - name: Trend Catcher Live Scan
+        if: steps.mode.outputs.mode == 'scan'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  TREND CATCHER - Adaptive 4H Trend Detection"
+          echo "  SuperTrend + EMA Stack + Donchian + Keltner"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/trend_catcher.py
+
+      #  Backtest 
+      - name: Trend Catcher Backtest (90d)
+        if: steps.mode.outputs.mode == 'backtest'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  TREND CATCHER BACKTEST - 90 days, 4H candles"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/trend_catcher.py --backtest
+
+      #  Commit results 
+      - name: Commit backtest results
+        if: steps.mode.outputs.mode == 'backtest'
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/trend_catcher_backtest.json || true
+          git diff --cached --quiet || git commit -m "data: trend catcher backtest results $(date -u '+%Y-%m-%d') [skip ci]"
+          bash .github/scripts/safe_push.sh
+

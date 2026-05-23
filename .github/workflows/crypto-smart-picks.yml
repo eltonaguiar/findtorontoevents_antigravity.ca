@@ -1,0 +1,133 @@
+name: CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner
+
+on:
+  schedule:
+    - cron: '47 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'scan'
+        type: choice
+        options:
+          - scan
+          - backtest
+          - both
+
+concurrency:
+  group: crypto-smart-picks
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  crypto-smart-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          MODE="${{ inputs.mode || 'scan' }}"
+          # Run backtest once daily at midnight UTC, otherwise just scan
+          HOUR=$(date -u +%H)
+          MINUTE=$(date -u +%M)
+          if [ "$MODE" = "both" ] || ([ "$MODE" = "scan" ] && [ "$HOUR" = "00" ] && [ "$MINUTE" = "00" ]); then
+            echo "run_backtest=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_backtest=false" >> $GITHUB_OUTPUT
+          fi
+          if [ "$MODE" = "backtest" ]; then
+            echo "run_scan=false" >> $GITHUB_OUTPUT
+          else
+            echo "run_scan=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run backtest (daily or on demand)
+        if: steps.mode.outputs.run_backtest == 'true'
+        run: |
+          echo "=== Running Crypto Portfolio A/B/C/D Backtest ==="
+          cd alpha_engine
+          python crypto_portfolio_backtest.py
+          echo "=== Backtest complete ==="
+        env:
+          GITHUB_ACTIONS: "true"
+
+      - name: Refresh CoinGecko ADV cache
+        if: steps.mode.outputs.run_scan == 'true'
+        run: |
+          echo "=== Refreshing CoinGecko 24h ADV cache (liquidity gate) ==="
+          python tools/coingecko_adv_fetcher.py --top 500 || echo "CoinGecko ADV refresh failed — gate will fail-open"
+        env:
+          GITHUB_ACTIONS: "true"
+
+      - name: Run smart picks scanner
+        if: steps.mode.outputs.run_scan == 'true'
+        run: |
+          echo "=== Running Crypto Smart Picks Scanner ==="
+          cd alpha_engine
+          python crypto_smart_picks.py
+          echo "=== Scan complete ==="
+        env:
+          GITHUB_ACTIONS: "true"
+
+      - name: Display results
+        if: always()
+        run: |
+          echo "=== Backtest Results ==="
+          if [ -f alpha_engine/data/crypto_portfolio_backtest.json ]; then
+            python3 -c "
+          import json
+          with open('alpha_engine/data/crypto_portfolio_backtest.json') as f:
+              d = json.load(f)
+          if 'ranking' in d:
+              print('Portfolio Ranking:')
+              for r in d['ranking']:
+                  print(f\"  {r['name']}: score={r['score']}, WR={r['win_rate']}%, return={r['total_return']}%\")
+              print(f\"Winner: {d['winner']['portfolio']}\")
+          "
+          else
+            echo "No backtest results yet"
+          fi
+          echo ""
+          echo "=== Smart Picks ==="
+          if [ -f alpha_engine/data/crypto_smart_picks.json ]; then
+            python3 -c "
+          import json
+          with open('alpha_engine/data/crypto_smart_picks.json') as f:
+              d = json.load(f)
+          print(f\"Signals found: {d.get('signals_found', 0)}\")
+          for p in d.get('active_picks', []):
+              print(f\"  {p['direction']} {p['symbol']} via {p['strategy']} (conf={p['confidence']}, portfolio={p['portfolio']})\")
+          "
+          else
+            echo "No smart picks yet"
+          fi
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/crypto_portfolio_backtest.json alpha_engine/data/crypto_smart_picks.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+            git commit -m "Crypto Smart Picks: scan + portfolio update - $TIMESTAMP [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

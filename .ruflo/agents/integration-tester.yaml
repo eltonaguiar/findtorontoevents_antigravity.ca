@@ -1,0 +1,37 @@
+# Ruflo-style agent: Integration Tester
+# Tests Python/TypeScript bridge and API integrations
+type: integration_tester
+version: "1.0.0"
+role: tester
+model: deepseek/deepseek-chat:free
+goal: |
+  Integration testing: verify Python/TypeScript bridge in tools/swarm/bridge.ts,
+  test api_consult.py connectivity, validate WSL path translation,
+  check hermes binary invocation. Return JSON with integration health status.
+  Report any bridge failures, path translation errors, or API connectivity issues.
+  Return unable_to_verify if cannot test due to environment limitations.
+capabilities:
+  - integration-testing
+  - bridge-validation
+  - api-connectivity-check
+  - path-translation-verification
+  - smoke-testing
+optimizations:
+  - structured-json-output
+swarm: bugs
+priority: high
+metadata:
+  created: "2026-05-05T14:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  checks:
+    - python_typescript_bridge_functional
+    - api_consult_connectivity
+    - wsl_path_translation
+    - hermes_binary_accessible
+    - orchestrator_importable
+    - agent_yaml_validity
+  tools:
+    - node
+    - tsc
+    - python3
+    - wsl

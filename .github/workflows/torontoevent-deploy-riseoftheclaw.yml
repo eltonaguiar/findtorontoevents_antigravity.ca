@@ -1,0 +1,365 @@
+# Deploy Rise of the Claw Dashboard to torontoevent.net via FTP
+# (FTP is available on new GoDaddy host - no GitHub Pages needed)
+name: "[torontoevent.net] Deploy Rise of the Claw"
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Was */15 main scanner at */20 deploys, this just mirrors
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'KIMI_RISEOFTHECLAW/**'
+      - 'tools/**'
+      - 'alpha_engine/live_dashboard.html'
+      - 'pair-fingerprints.html'
+      - 'updates/unified-dashboard.html'
+      - 'live-monitor/goldmine-alerts.html'
+      - 'findforex2/portfolio/index.html'
+      - '.github/workflows/torontoevent-deploy-riseoftheclaw.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Fix broken submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          echo " Installing dependencies..."
+          pip install pandas numpy yfinance "ccxt>=4.3.80,<4.4" requests statsmodels pytz \
+            scikit-learn joblib telethon tweepy
+
+      - name: Run Live Trading Pipeline
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          CRYPTOQUANT_API_KEY: ${{ secrets.CRYPTOQUANT_API_KEY }}
+          CURRENCYLAYER_API_KEY: ${{ secrets.CURRENCYLAYER_API_KEY }}
+          COINDESK_API_KEY: ${{ secrets.COINDESK_API_KEY }}
+          CRYPTOSCAN_API_KEY: ${{ secrets.CRYPTOSCAN_API_KEY }}
+        run: |
+          echo " Running live trading pipeline..."
+          python KIMI_RISEOFTHECLAW/live_scanner.py
+
+          if [ $? -ne 0 ]; then
+            echo " Pipeline failed!"
+            exit 1
+          fi
+
+          echo " Pipeline complete v11.0 81 algorithms (ML Signal Ranking + Pump Accel + Order Book Imbalance + Liq Cascade + BTC 4H RSI/MACD + Altseason Rotation + Fear&Greed Rev + BB Squeeze + London Breakout + DXY Reversal + Carry Trade + Forex RSI/EMA + SQLite + Auto-Elimination + CoinGecko Pro + CryptoQuant + CurrencyLayer)"
+          echo " Sortino+Sharpe | ML Weights | Pump Detector | OrderBook Imbalance | Liq Cascade | Funding Rate Rev | BTC RSI/MACD 4H | Altseason | Fear/Greed Rev | BB Squeeze | RSI Div | BTCDom Rev | London Breakout | DXY Rev | Carry Trade | Forex RSI/EMA | VIX | VIX Term | CryptoFunding | CrossSectMom | PriceAccel | ADXTrend | AdaptiveStop | KellySize | CallSurge | GapAndGo | ZScoreMeanRev | VWAPReclaim | MTFAlign | HHHL | DualMomentum | BreadthThrust | VRSI | FibBounce | 52wHighBreakout | VolContraction | MACDHiddenDiv | Intermarket | Macro | PCR | Reddit WSB | Trailing | Breadth | CorrDedup | EarningsDrift | PostEarningsRev | RSIDivergence | StochRSI | ParSAR | Aroon | VIXMeanRev | ShortSqueeze | AltSeason | CMF | WhaleProxy | CalEffect | STSentiment | OPEXMom | DeribitContrarian | ApeWisdom"
+
+      - name: Run Signal Tracker (validate TP/SL outcomes)
+        run: |
+          echo " Running signal tracker to validate TP/SL outcomes..."
+          # Run one-shot check (no --loop since we run on schedule)
+          python KIMI_RISEOFTHECLAW/signal_tracker.py || echo "Signal tracker warning (non-fatal)"
+          echo " Signal tracking complete"
+
+      - name: Prepare deployment directory
+        run: |
+          echo " Preparing Rise of the Claw deployment for torontoevent.net..."
+
+          mkdir -p deploy_riseoftheclaw/riseoftheclaw/{css,js,data}
+          mkdir -p deploy_riseoftheclaw/alpha
+          mkdir -p deploy_riseoftheclaw/KIMI_RISEOFTHECLAW
+
+          # Copy and rename main HTML
+          cp KIMI_RISEOFTHECLAW/index.html deploy_riseoftheclaw/riseoftheclaw.html
+
+          # Update paths for torontoevent.net (no subpath prefix needed)
+          sed -i 's|href="css/|href="/riseoftheclaw/css/|g' deploy_riseoftheclaw/riseoftheclaw.html
+          sed -i 's|src="js/|src="/riseoftheclaw/js/|g' deploy_riseoftheclaw/riseoftheclaw.html
+
+          # Copy supporting files
+          cp -r KIMI_RISEOFTHECLAW/css/* deploy_riseoftheclaw/riseoftheclaw/css/
+          cp -r KIMI_RISEOFTHECLAW/js/* deploy_riseoftheclaw/riseoftheclaw/js/
+          cp -r KIMI_RISEOFTHECLAW/data/* deploy_riseoftheclaw/riseoftheclaw/data/
+
+          # Copy Alpha Engine dashboard (optional - may not exist)
+          cp alpha_engine/live_dashboard.html deploy_riseoftheclaw/alpha/index.html || echo " alpha_engine/live_dashboard.html not found, skipping"
+
+          # Wired-up trading dashboards (all fetch from GitHub raw JSON)
+          cp pair-fingerprints.html deploy_riseoftheclaw/pair-fingerprints.html
+          cp KIMI_RISEOFTHECLAW/scanner_log.html deploy_riseoftheclaw/riseoftheclaw/scanner-log.html
+          cp updates/unified-dashboard.html deploy_riseoftheclaw/unified-dashboard.html
+          cp live-monitor/goldmine-alerts.html deploy_riseoftheclaw/goldmine-alerts.html
+          cp findforex2/portfolio/index.html deploy_riseoftheclaw/forex-portfolio.html
+
+          # Also copy dashboard_live.html (Antigravity Alpha live dashboard)
+          cp KIMI_RISEOFTHECLAW/dashboard_live.html deploy_riseoftheclaw/KIMI_RISEOFTHECLAW/dashboard_live.html || true
+
+          # DARWIN ENGINE DNA Evolution dashboards
+          mkdir -p deploy_riseoftheclaw/dna
+          mkdir -p deploy_riseoftheclaw/genome/dashboard
+          mkdir -p deploy_riseoftheclaw/genome/data
+          cp dna/index.html deploy_riseoftheclaw/dna/index.html 2>/dev/null || true
+          cp genome/dashboard/index.html deploy_riseoftheclaw/genome/dashboard/index.html 2>/dev/null || true
+          cp genome/dna_performance.html deploy_riseoftheclaw/genome/dna_performance.html 2>/dev/null || true
+          cp genome/dashboard/paper_portfolios.html deploy_riseoftheclaw/genome/dashboard/paper_portfolios.html 2>/dev/null || true
+          cp genome/data/*.json deploy_riseoftheclaw/genome/data/ 2>/dev/null || true
+
+          echo " Deployment directory ready"
+
+      - name: Deploy to torontoevent.net via FTP
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print(" FTP credentials not set, skipping deploy")
+              exit(0)
+
+          src = Path("deploy_riseoftheclaw")
+
+          print(f" Connecting to {host} (torontoevent.net)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print(" Connected")
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f" mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f" {remote_path}")
+
+          uploaded = 0
+
+          # Upload main HTML to root
+          upload(ftp, src / "riseoftheclaw.html", "riseoftheclaw.html")
+          uploaded += 1
+
+          # Upload CSS, JS, data subdirectories
+          for subdir in ["css", "js", "data"]:
+              subpath = src / "riseoftheclaw" / subdir
+              if subpath.exists():
+                  for f in subpath.glob("*"):
+                      if f.is_file():
+                          upload(ftp, f, f"riseoftheclaw/{subdir}/{f.name}")
+                          uploaded += 1
+
+          # Upload Alpha Engine dashboard
+          alpha_html = src / "alpha" / "index.html"
+          if alpha_html.exists():
+              upload(ftp, alpha_html, "alpha/index.html")
+              uploaded += 1
+
+          # Upload wired trading dashboards
+          dashboard_files = {
+              "pair-fingerprints.html": "pair-fingerprints.html",
+              "riseoftheclaw/scanner-log.html": "riseoftheclaw/scanner-log.html",
+              "unified-dashboard.html": "unified-dashboard.html",
+              "goldmine-alerts.html": "goldmine-alerts.html",
+              "forex-portfolio.html": "forex-portfolio.html",
+          }
+          for local_name, remote_name in dashboard_files.items():
+              local_file = src / local_name
+              if local_file.exists():
+                  upload(ftp, local_file, remote_name)
+                  uploaded += 1
+
+          # Upload dashboard_live.html to original path
+          dl = src / "KIMI_RISEOFTHECLAW" / "dashboard_live.html"
+          if dl.exists():
+              upload(ftp, dl, "KIMI_RISEOFTHECLAW/dashboard_live.html")
+              uploaded += 1
+
+          ftp.quit()
+          print(f"\n Deployed {uploaded} files to torontoevent.net")
+          PYEOF
+
+      - name: Deploy to findtorontoevents.ca (50webs) via FTP
+        continue-on-error: true # 50webs has intermittent FTP timeouts; torontoevent.net is the primary
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print(" FTP credentials not set for findtorontoevents.ca, skipping")
+              exit(0)
+
+          src = Path("deploy_riseoftheclaw")
+
+          print(f" Connecting to {host} (findtorontoevents.ca / 50webs)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print(" Connected")
+
+          # 50webs path is /findtorontoevents.ca/ for site root
+          SITE_ROOT = "findtorontoevents.ca"
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f" mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f" {remote_path}")
+
+          uploaded = 0
+
+          # Upload main HTML to site root
+          upload(ftp, src / "riseoftheclaw.html", f"{SITE_ROOT}/riseoftheclaw.html")
+          uploaded += 1
+
+          # Upload CSS, JS, data subdirectories
+          for subdir in ["css", "js", "data"]:
+              subpath = src / "riseoftheclaw" / subdir
+              if subpath.exists():
+                  for f in subpath.glob("*"):
+                      if f.is_file():
+                          upload(ftp, f, f"{SITE_ROOT}/riseoftheclaw/{subdir}/{f.name}")
+                          uploaded += 1
+
+          # Upload Alpha Engine dashboard
+          alpha_html = src / "alpha" / "index.html"
+          if alpha_html.exists():
+              upload(ftp, alpha_html, f"{SITE_ROOT}/alpha/index.html")
+              uploaded += 1
+
+          # Upload wired trading dashboards
+          dashboard_files = {
+              "pair-fingerprints.html": "pair-fingerprints.html",
+              "riseoftheclaw/scanner-log.html": "riseoftheclaw/scanner-log.html",
+              "unified-dashboard.html": "unified-dashboard.html",
+              "goldmine-alerts.html": "goldmine-alerts.html",
+              "forex-portfolio.html": "forex-portfolio.html",
+          }
+          for local_name, remote_name in dashboard_files.items():
+              local_file = src / local_name
+              if local_file.exists():
+                  upload(ftp, local_file, f"{SITE_ROOT}/{remote_name}")
+                  uploaded += 1
+
+          # Upload dashboard_live.html to original path
+          dl = src / "KIMI_RISEOFTHECLAW" / "dashboard_live.html"
+          if dl.exists():
+              upload(ftp, dl, f"{SITE_ROOT}/KIMI_RISEOFTHECLAW/dashboard_live.html")
+              uploaded += 1
+
+          ftp.quit()
+          print(f"\n Deployed {uploaded} files to findtorontoevents.ca (50webs)")
+          PYEOF
+
+      - name: Verify deployment
+        continue-on-error: true  # informational health check — a curl timeout must not fail the deploy
+        run: |
+          echo " Checking deployments..."
+          sleep 10
+
+          status=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://torontoevent.net/riseoftheclaw.html?_=${GITHUB_RUN_NUMBER}" || echo "000")
+          echo "torontoevent.net main: $status"
+
+          status2=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://findtorontoevents.ca/riseoftheclaw.html?_=${GITHUB_RUN_NUMBER}" || echo "000")
+          echo "findtorontoevents.ca main: $status2"
+
+          if [ "$status" = "200" ]; then
+            echo " Rise of the Claw live on torontoevent.net!"
+          else
+            echo " torontoevent.net returned $status"
+          fi
+          if [ "$status2" = "200" ]; then
+            echo " Rise of the Claw live on findtorontoevents.ca!"
+          else
+            echo " findtorontoevents.ca returned $status2 (may need time)"
+          fi
+
+          echo ""
+          echo " Wired dashboards (torontoevent.net):"
+          for page in pair-fingerprints.html unified-dashboard.html goldmine-alerts.html forex-portfolio.html riseoftheclaw/scanner-log.html; do
+            pg_status=$(curl -o /dev/null -s -w "%{http_code}" --max-time 10 "https://torontoevent.net/${page}?_=${GITHUB_RUN_NUMBER}" || echo "000")
+            echo " ${page}: $pg_status"
+          done
+
+          echo ""
+          echo " Wired dashboards (findtorontoevents.ca):"
+          for page in pair-fingerprints.html unified-dashboard.html goldmine-alerts.html forex-portfolio.html; do
+            pg_status=$(curl -o /dev/null -s -w "%{http_code}" --max-time 10 "https://findtorontoevents.ca/${page}?_=${GITHUB_RUN_NUMBER}" || echo "000")
+            echo " ${page}: $pg_status"
+          done
+
+      - name: Summary
+        run: |
+          echo "## Rise of the Claw Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Site | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Primary** | https://findtorontoevents.ca/riseoftheclaw.html |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Mirror** | https://torontoevent.net/riseoftheclaw.html |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Files:** HTML, CSS, JS (incl. jobs-log.js), data/live_competition.json, data/scan_runs.json" >> $GITHUB_STEP_SUMMARY
+

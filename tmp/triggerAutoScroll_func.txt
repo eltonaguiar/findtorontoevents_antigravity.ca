@@ -1,0 +1,30 @@
+function triggerAutoScroll() {
+            if (!autoScrollSettings.enabled) return;
+
+            const cards = document.querySelectorAll('.video-card');
+            if (cards.length === 0) return;
+
+            // Find current playing card
+            let currentIndex = -1;
+            cards.forEach((card, index) => {
+                const rect = card.getBoundingClientRect();
+                const isInView = rect.top >= 0 && rect.top < window.innerHeight / 2;
+                if (isInView) {
+                    currentIndex = index;
+                }
+            });
+
+            // Scroll to next card
+            const nextIndex = currentIndex + 1;
+            if (nextIndex < cards.length) {
+                cards[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                console.log('ð¬ Auto-scrolled to video', nextIndex + 1, '(triggered by video end)');
+            } else {
+                // Loop back to first video
+                cards[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                console.log('ð Auto-scrolled back to first video (triggered by video end)');
+            }
+        }
+
+        // YouTube IFrame API callback when video state changes
+        

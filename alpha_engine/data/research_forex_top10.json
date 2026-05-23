@@ -1,0 +1,273 @@
+{
+  "meta": {
+    "title": "Top 10 Forex Price Prediction Techniques — Research Validation",
+    "date": "2026-03-15",
+    "author": "Claude Opus (Alpha Engine Research)",
+    "methodology": "Academic papers (JFE, JFQA, RFS, BIS), professional quant results (AQR, Man Group, Macrosynergy), central bank working papers. Focus on 2024-2026 publications with backreferences to seminal works.",
+    "note": "Forex markets: Sunday 17:00 ET — Friday 17:00 ET. Currently closed (weekend). Markets reopen Sunday evening."
+  },
+  "existing_strategies": {
+    "summary": "We currently have 10 forex strategies: 7 in forex_strategies.py (carry_trade_momentum, forex_mean_reversion_200d, jpy_risk_off, dxy_correlation_regime, forex_bollinger_squeeze, session_momentum_continuation, dxy_rsi_mean_reversion) + 3 community (community_ema_8_21_scalp_forex, community_london_breakout_v2_forex, community_forex_zscore_mean_reversion)",
+    "our_forex_results": {
+      "total_closed_picks": 8,
+      "community_london_breakout_v2_forex": "0W-0L/6 (all expired/neutral)",
+      "hurst_regime_adaptive": "0W-0L/1",
+      "proven_triple_ema_pullback": "0W-0L/1",
+      "note": "Very small sample — no forex strategy has achieved a win yet. All 8 picks ended neutral or expired."
+    }
+  },
+  "strategies": [
+    {
+      "rank": 1,
+      "name": "Carry Trade with Volatility Timing",
+      "description": "Long high-yield currencies, short low-yield currencies. The forward rate bias (violation of uncovered interest parity) is the most robust anomaly in FX. Enhanced with volatility timing: reduce position when FX realized vol spikes (carry unwind protection). Valuation adjustment (PPP-based) further boosts Sharpe from 0.47 to 0.62.",
+      "source": "Koijen, Moskowitz & Pedersen (2018) 'Carry' JFE; Burnside, Eichenbaum & Rebelo (2011) 'Carry Trades and Risk' NBER; Macrosynergy (2024) 'Advanced FX Carry with Valuation Adjustment'; Daniel, Hodrick & Lu (2017) 'The Carry Trade' Critical Finance Review; AQR Alternative Thinking 2025 Q1",
+      "expected_wr": "58-65%",
+      "expected_sharpe": "0.76-1.07 (baseline 0.76, vol-timed 0.84, combined signals 1.07)",
+      "implemented": true,
+      "our_strategy": "carry_trade_momentum",
+      "our_wr": "N/A (0 closed picks)",
+      "implementation_notes": "Our version uses 20d momentum filter + 50d SMA + RSI<75. MISSING: (1) volatility timing — reduce/exit when 20d realized vol > 1.5x 60d avg, (2) valuation adjustment — weight by PPP deviation, (3) portfolio construction — should be long top-3 yield, short bottom-3 yield across 8+ pairs. Current implementation only goes long high-yield pairs, missing the short leg which provides hedge during carry unwinds.",
+      "best_pairs": ["AUDUSD=X", "NZDUSD=X", "USDJPY=X", "USDMXN=X", "USDTRY=X", "USDBRL=X", "EURJPY=X", "AUDJPY=X"],
+      "parameters": {
+        "lookback_momentum": "1-12 months (12m optimal per Moskowitz et al.)",
+        "vol_timing_window": "20d realized vol vs 60d baseline",
+        "vol_reduction_threshold": "1.5x baseline → half position; 2.0x → exit",
+        "rebalance_frequency": "monthly",
+        "tp_atr_mult": 3.0,
+        "sl_atr_mult": 1.2,
+        "yield_diff_minimum": "2.0% annualized"
+      }
+    },
+    {
+      "rank": 2,
+      "name": "FX Time-Series Momentum (TSMOM)",
+      "description": "Go long currencies with positive past returns, short those with negative past returns. The 12-month lookback with 1-month holding period is the canonical specification. Works across all major and EM currencies. Returns are distinct from carry — low correlation means combining carry + TSMOM significantly improves portfolio Sharpe.",
+      "source": "Moskowitz, Ooi & Pedersen (2012) 'Time Series Momentum' JFE; Menkhoff, Sarno, Schmeling & Schrimpf (2012) 'Currency Momentum Strategies' JFE; AQR TSMOM Factor Dataset (updated monthly through 2025); BIS Working Paper 366 'Currency Momentum Strategies'",
+      "expected_wr": "53-58%",
+      "expected_sharpe": "0.60-0.90 (standalone); 1.2-1.5 when combined with carry",
+      "implemented": "partial",
+      "our_strategy": "session_momentum_continuation (daily proxy only)",
+      "our_wr": "N/A (0 closed picks)",
+      "implementation_notes": "Our session_momentum_continuation only looks at 1-day moves (>0.4%) with MACD confirmation. This is NOT true TSMOM. True TSMOM uses 12-month lookback, signs the position based on past 12m return, and holds for 1 month. NEED: (1) proper 12m lookback signal, (2) cross-sectional component — long top quintile, short bottom quintile, (3) monthly rebalance, (4) volatility-scaled positions (target 10% annualized vol per position). Transaction costs matter: bid-ask spreads lower profitability significantly for EM pairs.",
+      "best_pairs": ["EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X", "USDCAD=X", "NZDUSD=X", "USDCHF=X", "EURGBP=X"],
+      "parameters": {
+        "lookback_months": 12,
+        "holding_period_months": 1,
+        "vol_target_annual": 0.10,
+        "min_pairs_in_portfolio": 6,
+        "transaction_cost_budget_bps": 5,
+        "rebalance": "monthly, end-of-month"
+      }
+    },
+    {
+      "rank": 3,
+      "name": "FX Volatility Risk Premium (VRP) Harvesting",
+      "description": "Systematically sell FX options (straddles/strangles) and delta-hedge. Implied volatility consistently exceeds realized volatility in FX markets, creating a persistent risk premium. Machine learning models (gradient boosting on macro features) can time when the VRP is widest, improving Sharpe from ~1.0 to 2.0+.",
+      "source": "Sorokin (2016) 'Systematic Delta-Hedging in FX Options' SSRN; ScienceDirect (2022) 'Trading the FX VRP with ML and Alternative Data'; Quantpedia 'Volatility Risk Premium Effect'; Hedge Fund Journal 'Harvesting the VRP Globally'",
+      "expected_wr": "62-70%",
+      "expected_sharpe": "1.03-3.0+ (after costs, depending on sophistication)",
+      "implemented": false,
+      "our_strategy": null,
+      "our_wr": "N/A",
+      "implementation_notes": "NOT implemented. This is the highest-Sharpe strategy in FX but requires options market access. Implementation path: (1) Sell 1-week ATM straddles on EUR/USD, GBP/USD, USD/JPY, (2) Delta-hedge daily, (3) Use implied-realized vol spread as sizing signal — larger position when spread is wide, (4) Exit or reduce when VIX spikes >25. PROXY without options: trade Bollinger Band mean reversion when BB width > 2x 60d average (captures the same vol compression → expansion cycle). Our forex_bollinger_squeeze partially captures this.",
+      "best_pairs": ["EURUSD=X", "USDJPY=X", "GBPUSD=X", "AUDUSD=X"],
+      "parameters": {
+        "option_tenor": "1 week",
+        "delta_hedge_frequency": "daily",
+        "min_iv_rv_spread": "2.0 vol points",
+        "max_notional_pct": "5% of portfolio per pair",
+        "vix_cutoff": 25,
+        "proxy_bb_width_threshold": "2x 60d average bandwidth"
+      }
+    },
+    {
+      "rank": 4,
+      "name": "PPP-Based Value Mean Reversion",
+      "description": "Trade currencies back toward purchasing power parity fair value. Currencies that are cheap (undervalued vs PPP) tend to appreciate over 1-5 year horizons. Half-life of PPP reversion is ~4 years, but combining with momentum timing (enter only when momentum confirms) shortens effective holding to 3-12 months. The OECD Big Mac Index and relative CPI are common fair-value measures.",
+      "source": "Asness, Moskowitz & Pedersen (2013) 'Value and Momentum Everywhere' JFE; Macrosynergy (2024) 'Advanced FX Carry with Valuation Adjustment'; Frankel & Rose (1996) NBER; Arghyrou (2026) 'Exchange Rate Risk and PPP Deviations' IJFE; Cogent Economics (2025) 'PPP Revisited: Panel Study with Structural Breaks'",
+      "expected_wr": "52-58%",
+      "expected_sharpe": "0.40-0.65 (standalone); 0.80-1.10 when combined with carry/momentum",
+      "implemented": "partial",
+      "our_strategy": "forex_mean_reversion_200d (technical proxy only)",
+      "our_wr": "N/A (0 closed picks)",
+      "implementation_notes": "Our forex_mean_reversion_200d uses z-score from 200d SMA — this is a TECHNICAL mean reversion, not fundamental PPP-based. TRUE PPP value: (1) compute real exchange rate = nominal rate * (foreign CPI / domestic CPI), (2) compare to 5-year or 10-year average, (3) z-score > 1.5 = overvalued (sell), z-score < -1.5 = undervalued (buy). OECD publishes PPP data quarterly. Key improvement: combine PPP value signal with our carry signal — Macrosynergy 2024 shows this lifts Sharpe from 0.47 to 0.62.",
+      "best_pairs": ["EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X", "NZDUSD=X", "USDCAD=X", "USDCHF=X", "EURSEK=X"],
+      "parameters": {
+        "ppp_lookback_years": "5-10 (OECD annual data)",
+        "zscore_threshold_entry": 1.5,
+        "zscore_threshold_exit": 0.5,
+        "momentum_confirmation": "3-month return must align with value direction",
+        "rebalance": "quarterly",
+        "max_holding_months": 12
+      }
+    },
+    {
+      "rank": 5,
+      "name": "COT Positioning Contrarian Strategy",
+      "description": "Use CFTC Commitment of Traders data to identify extreme speculative positioning. When non-commercial (speculative) net position reaches historical extremes (>90th or <10th percentile over 3 years), fade the crowd. Large speculators tend to be right in trends but wrong at turning points. The signal is weekly (Tuesday data, Friday release).",
+      "source": "CFTC COT Reports (weekly); EarnForex COT Strategy Backtest (2016-2024); Tradeciety COT Analysis; BIS research on speculative positioning and FX returns",
+      "expected_wr": "55-62%",
+      "expected_sharpe": "0.50-0.80",
+      "implemented": false,
+      "our_strategy": null,
+      "our_wr": "N/A",
+      "implementation_notes": "NOT implemented. Data source: CFTC weekly COT reports (free, published every Friday). Implementation: (1) Download COT data for CME FX futures (EUR, GBP, JPY, AUD, CAD, CHF, NZD, MXN), (2) Compute net speculative position = non-commercial long - non-commercial short, (3) Z-score over 156 weeks (3 years), (4) Signal: z > 1.5 = crowded long → SELL, z < -1.5 = crowded short → BUY, (5) Confirm with 20d price momentum turning. Hold until z reverts to [-0.5, 0.5]. Profitable on all major pairs except AUD/USD per backtest data.",
+      "best_pairs": ["EURUSD=X", "USDJPY=X", "GBPUSD=X", "USDCAD=X", "USDCHF=X", "AUDUSD=X", "NZDUSD=X", "USDMXN=X"],
+      "parameters": {
+        "zscore_lookback_weeks": 156,
+        "extreme_threshold": 1.5,
+        "exit_threshold": 0.5,
+        "momentum_confirmation_days": 20,
+        "data_lag": "3 days (Tuesday snapshot, Friday release)",
+        "rebalance": "weekly (every Friday after COT release)"
+      }
+    },
+    {
+      "rank": 6,
+      "name": "Dollar Smile Regime Strategy",
+      "description": "Trade USD based on the 'Dollar Smile' framework (Stephen Jen / Morgan Stanley, 2001): USD strengthens in both risk-off (safe haven) AND US-growth-outperformance (right side of smile). USD weakens when global growth is synchronized. Classify regime using VIX + US vs. global PMI differential, then position accordingly.",
+      "source": "Stephen Jen / Morgan Stanley (2001, reaffirmed 2024-2025); Morgan Stanley 'Why the Dollar Still Smiles' (June 2025); Volity 'Dollar Smile Theory in Forex' (2024); FusionMarkets 'Interest Rate Divergence 2025'",
+      "expected_wr": "55-62%",
+      "expected_sharpe": "0.50-0.75",
+      "implemented": "partial",
+      "our_strategy": "dxy_correlation_regime + jpy_risk_off (capture parts of the smile)",
+      "our_wr": "N/A (0 closed picks)",
+      "implementation_notes": "Our dxy_correlation_regime trades DXY trends (middle of smile) and jpy_risk_off captures the left side. MISSING: (1) Unified regime classifier — use VIX level + ISM PMI vs. global PMI to determine which 'phase' we're in, (2) Right side of smile — when US PMI > global PMI by >3 points AND VIX < 20, go long USD vs. EUR/GBP/AUD, (3) Left side — when VIX > 25, long USD vs. risk currencies (AUD, NZD, CAD, EM), (4) Middle — when VIX 15-20 and PMIs synchronized, short USD vs. high-yielders. Morgan Stanley confirmed framework still valid despite 11% USD decline in 2025.",
+      "best_pairs": ["EURUSD=X", "AUDUSD=X", "USDJPY=X", "NZDUSD=X", "USDCAD=X", "USDMXN=X"],
+      "parameters": {
+        "vix_risk_off_threshold": 25,
+        "vix_risk_on_threshold": 15,
+        "pmi_differential_threshold": 3.0,
+        "regime_classification": "3-state: risk-off / synchronized / US-outperformance",
+        "position_sizing": "1x for trend, 0.5x for counter-trend regime shifts",
+        "rebalance": "weekly or on VIX regime change"
+      }
+    },
+    {
+      "rank": 7,
+      "name": "Macro Event Straddle (FOMC / NFP / CPI)",
+      "description": "Trade the volatility expansion around scheduled macro events. Two approaches: (1) Pre-event: buy volatility (straddle) before FOMC/NFP/CPI when implied vol is low vs. historical event-day realized vol. (2) Post-event: trade the breakout direction after the initial 15-min spike settles, using the event-day range as support/resistance. The Fed Funds Futures implied probability vs. actual decision creates the largest moves.",
+      "source": "Federal Reserve FEDS Paper 2025-022 'Investor Attention and News Announcements'; FXEmpire 'News-driven FX Trading' (2025); QuantifiedStrategies.com 'NFP Trading Strategy Backtest'; FBS Academy 'Trading Strategy on NFP and CPI Releases' (2024)",
+      "expected_wr": "50-58% (directional); 60-68% (volatility expansion)",
+      "expected_sharpe": "0.40-0.70 (high variance, event-dependent)",
+      "implemented": false,
+      "our_strategy": null,
+      "our_wr": "N/A",
+      "implementation_notes": "NOT implemented. Challenging with daily data — requires intraday. PRACTICAL approach with daily bars: (1) Identify FOMC dates (8x/year), NFP (12x/year), CPI (12x/year), (2) On event day, if |daily move| > 1.5x ATR(14), enter continuation trade next day in same direction, (3) TP = 1.5x ATR, SL = 1x ATR, (4) Key: compare actual vs. consensus — surprise magnitude drives the move. WARNING: spreads widen dramatically during events (EUR/USD from 1 pip to 10+ pips). Only trade AFTER the initial spike, not during.",
+      "best_pairs": ["EURUSD=X", "USDJPY=X", "GBPUSD=X", "XAUUSD=X"],
+      "parameters": {
+        "events": ["FOMC (8/year)", "NFP (12/year)", "CPI (12/year)", "ECB (8/year)", "BOJ (8/year)"],
+        "surprise_threshold_atr": 1.5,
+        "entry_timing": "next day open after event day close",
+        "tp_atr_mult": 1.5,
+        "sl_atr_mult": 1.0,
+        "max_holding_days": 5,
+        "spread_buffer_pips": 5
+      }
+    },
+    {
+      "rank": 8,
+      "name": "Retail Sentiment Contrarian (SSI/IG Client Sentiment)",
+      "description": "Fade retail positioning extremes. When >70% of retail traders are long a pair, go short (and vice versa). Retail traders are statistically net losers (74-89% lose money per ESMA data), making their aggregate positioning a reliable contrarian indicator. Works best in trending markets where retail fights the trend.",
+      "source": "DailyFX SSI (Speculative Sentiment Index); IG Client Sentiment Data (free, real-time); FXSSI Retail Sentiment; ESMA (2018) 'Measures on CFDs' — 74-89% retail loss rate; Dukascopy SWFX Sentiment Index",
+      "expected_wr": "55-63%",
+      "expected_sharpe": "0.45-0.70",
+      "implemented": false,
+      "our_strategy": null,
+      "our_wr": "N/A",
+      "implementation_notes": "NOT implemented. Free data sources: DailyFX SSI (updated twice daily), IG Client Sentiment (real-time), FXSSI (multiple brokers). Implementation: (1) Scrape retail sentiment ratio for each major pair, (2) Signal: >70% retail long → SELL, >70% retail short → BUY, (3) Confirm with ADX > 20 (trending market required), (4) Stronger signal when sentiment is extreme AND price is making new highs/lows in the opposite direction. NOT a standalone strategy — best as confirmation filter for carry/momentum signals.",
+      "best_pairs": ["EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X", "XAUUSD=X", "USDCAD=X"],
+      "parameters": {
+        "extreme_threshold_pct": 70,
+        "adx_minimum": 20,
+        "data_sources": ["DailyFX SSI", "IG Client Sentiment", "FXSSI"],
+        "update_frequency": "twice daily",
+        "confirmation_required": true,
+        "tp_atr_mult": 2.0,
+        "sl_atr_mult": 1.0
+      }
+    },
+    {
+      "rank": 9,
+      "name": "Interest Rate Differential Momentum (Forward Rate Bias)",
+      "description": "Exploit the forward rate bias: high-yield currencies depreciate LESS than the forward rate implies (or appreciate). This is the theoretical foundation of carry trade but implemented differently — focus on CHANGES in rate differentials rather than levels. When a central bank surprises hawkish (rate > expected), go long that currency for 1-3 months. BOJ hiking in Jan 2025 (first in 17 years) was a textbook signal for JPY strength.",
+      "source": "FusionMarkets 'Interest Rate Divergence 2025'; Macrosynergy 'Explaining FX Forward Bias' (2024); Fama (1984) 'Forward and Spot Exchange Rates' JME; AInvest 'Central Bank Policy Divergence 2025'",
+      "expected_wr": "55-62%",
+      "expected_sharpe": "0.55-0.85",
+      "implemented": "partial",
+      "our_strategy": "carry_trade_momentum (level-based, not change-based)",
+      "our_wr": "N/A (0 closed picks)",
+      "implementation_notes": "Our carry_trade_momentum uses static yield differentials. MISSING: (1) Rate CHANGE signal — when a central bank raises/cuts unexpectedly vs. OIS-implied rate, enter immediately, (2) Track Fed Funds Futures, ECB deposit rate, BOJ rate, BOE rate, RBA rate, RBNZ rate, BOC rate, (3) Signal: hawkish surprise = rate > OIS-implied → long that currency for 1-3 months, (4) Key 2025 context: ECB cut from 3.00% to 2.50% (Jan-Mar 2025), BOJ hiked 0.25% (Jan 2025) — these divergences drove EUR/JPY and USD/JPY trends.",
+      "best_pairs": ["EURUSD=X", "USDJPY=X", "GBPUSD=X", "AUDUSD=X", "NZDUSD=X", "USDCAD=X"],
+      "parameters": {
+        "rate_sources": ["Fed Funds Futures", "ECB OIS", "BOJ OIS", "BOE SONIA"],
+        "surprise_threshold_bps": 10,
+        "holding_period_months": "1-3",
+        "entry_timing": "within 24h of rate decision",
+        "tp_pct": "2-3% of pair value",
+        "sl_pct": "1-1.5% of pair value",
+        "events_per_year_per_bank": "6-8"
+      }
+    },
+    {
+      "rank": 10,
+      "name": "Cross-Currency Basis / Triangular Arbitrage Proxy",
+      "description": "Exploit temporary mispricings between related currency pairs. True triangular arbitrage (e.g., EUR/USD * USD/JPY vs. EUR/JPY) is arbitraged away in milliseconds by HFT. But cross-currency BASIS (the cost of swapping currencies via FX swaps vs. interest rate differential) shows persistent dislocations, especially around quarter-end and year-end. Trade the basis when it widens beyond 2 standard deviations.",
+      "source": "BIS 'Arbitrage in FX Markets' Working Paper; Wikipedia 'Triangular Arbitrage'; AdmiralMarkets 'Forex Arbitrage Strategy 2026'; FinanceMagnates 'Arbitrage, HFT, Quant Strategies in FX'",
+      "expected_wr": "60-70% (basis trades); near-100% theoretical (pure arb, but captured by HFT)",
+      "expected_sharpe": "0.30-0.50 (basis proxy); >2.0 (pure arb, inaccessible to retail)",
+      "implemented": false,
+      "our_strategy": null,
+      "our_wr": "N/A",
+      "implementation_notes": "NOT directly implementable without institutional FX swap access. PROXY approach: (1) Monitor EUR/USD * USD/JPY vs. EUR/JPY synthetic — if deviation > 20 pips, the pair with wider spread is mispriced, (2) Statistical arbitrage: compute rolling correlation between related pairs (e.g., AUD/USD and NZD/USD, r > 0.85), trade the spread when z-score > 2, (3) Quarter-end/year-end basis widening is predictable — USD funding stress causes EUR/USD basis to blow out. This is more relevant for institutional than retail. Our community_forex_zscore_mean_reversion partially captures the stat-arb concept.",
+      "best_pairs": ["EURUSD/USDJPY/EURJPY triangle", "AUDUSD/NZDUSD spread", "EURGBP/EURUSD/GBPUSD triangle"],
+      "parameters": {
+        "correlation_lookback_days": 60,
+        "correlation_minimum": 0.85,
+        "zscore_entry": 2.0,
+        "zscore_exit": 0.5,
+        "max_holding_days": 10,
+        "quarter_end_window_days": 5,
+        "min_deviation_pips": 20
+      }
+    }
+  ],
+  "portfolio_recommendation": {
+    "optimal_combination": "Carry + TSMOM + Value (the 'holy trinity' of FX factors per AQR/Asness et al. 2013)",
+    "combined_expected_sharpe": "1.2-1.8 (low correlation between factors provides diversification benefit)",
+    "implementation_priority": [
+      "1. Fix carry_trade_momentum — add volatility timing + short leg (quick win, highest standalone Sharpe)",
+      "2. Implement true TSMOM with 12m lookback (distinct from carry, provides diversification)",
+      "3. Add COT positioning as confirmation filter (free weekly data, easy to scrape)",
+      "4. Add retail sentiment contrarian as second confirmation filter",
+      "5. Implement Dollar Smile regime classifier to unify existing DXY + JPY strategies",
+      "6. Add macro event straddle for FOMC/NFP/CPI (event-driven alpha, uncorrelated)"
+    ],
+    "risk_management": {
+      "max_correlation_per_direction": "Never have >3 correlated USD positions in same direction",
+      "vol_scaling": "Target 10% annualized vol per position, scale by inverse realized vol",
+      "drawdown_limit": "Reduce all positions by 50% if portfolio drawdown exceeds 5%",
+      "carry_unwind_protection": "If VIX > 25 AND JPY strengthening >1% in 24h, exit all carry positions immediately"
+    }
+  },
+  "gap_analysis": {
+    "well_covered": [
+      "Carry trade (rank 1) — implemented but needs volatility timing",
+      "Mean reversion (rank 4) — technical proxy exists, needs PPP fundamental overlay",
+      "Dollar regime (rank 6) — partially covered by dxy_correlation_regime + jpy_risk_off"
+    ],
+    "partially_covered": [
+      "TSMOM (rank 2) — session_momentum is a weak proxy, need true 12m signal",
+      "Rate differential momentum (rank 9) — carry uses static yields, need change-based signal"
+    ],
+    "not_implemented": [
+      "FX Volatility Risk Premium (rank 3) — highest Sharpe, needs options access or proxy",
+      "COT Positioning (rank 5) — free CFTC data, straightforward to implement",
+      "Macro Event Straddle (rank 7) — needs event calendar + surprise data",
+      "Retail Sentiment Contrarian (rank 8) — free data from DailyFX/IG/FXSSI",
+      "Cross-Currency Basis (rank 10) — institutional, but stat-arb proxy feasible"
+    ],
+    "biggest_opportunity": "COT Positioning (rank 5) — free weekly data, 55-62% WR, 0.50-0.80 Sharpe, and completely unimplemented. Can be added as a confirmation filter to ALL existing strategies at minimal cost."
+  }
+}

@@ -1,0 +1,459 @@
+// This Pine Script(TM) v6 source code is subject to the terms of the Mozilla Public License 2.0
+// Antigravity Elite v1.4 — Backtestable Strategy
+// Top-performing strategies from 13 autonomous ML trading systems
+// Built by Claude Opus 4.6 | Feb 25, 2026
+// v1.5.0: Auto-Detect crypto → Elite Consensus (was EMA Stack = whipsaw),
+//        removed low-TF short override (shorts lose in all backtests),
+//        minScore relaxation 0.67→0.85 (tighter consensus gate)
+// v1.4.2: BB squeeze filter for VSR/Sigma, ATR + Funding dashboard rows
+// v1.4.1: TF-adaptive + 4 quality fixes
+//        Vol spike tightened (1.15/1.05), consensus requires 2+ votes,
+//        maxBars 16 on low TF, SL floor 0.2% minimum distance
+//@version=6
+strategy("Antigravity Elite v1.4 [7-Strategy Engine]", shorttitle="AGElite", overlay=true, pyramiding=0, default_qty_type=strategy.percent_of_equity, default_qty_value=10, commission_type=strategy.commission.percent, commission_value=0.1, slippage=2, initial_capital=10000, calc_on_every_tick=false, max_labels_count=50, max_lines_count=50, max_bars_back=500)
+
+// ═══════════════════════════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════════════════════════
+string GP_MAIN = "─── Strategy Selection ───"
+string i_strategy = input.string("Auto-Detect", "Active Strategy", options=["Auto-Detect","Mercury Fear Contrarian","Connors RSI-2","Volatility Spike Reversal","EMA Stack Momentum","Supertrend Trend","Multi-Sigma Reversal","Elite Consensus"], group=GP_MAIN, tooltip="Auto-Detect picks best strategy for current asset. Elite Consensus requires N strategies to agree.")
+bool i_nonRepaint = input.bool(true, "Non-Repainting Mode", group=GP_MAIN, tooltip="Only signals on confirmed (closed) bars")
+string i_htfTrend = input.string("None", "HTF Trend Filter", options=["None","15","60","240","D","W"], group=GP_MAIN, tooltip="Higher timeframe EMA200 trend gate. Default None for all-timeframe compatibility.")
+bool i_longOnly = input.bool(true, "Long-Only Mode (Crypto)", group=GP_MAIN, tooltip="Disables short entries for crypto assets. On low TF (<=1H) with TF Adaptive ON, shorts are re-enabled automatically.")
+bool i_tfAdaptive = input.bool(true, "TF Adaptive Mode", group=GP_MAIN, tooltip="Auto-relaxes thresholds on 1H and below. Keeps 4H+ settings untouched. Disable to use raw input values on all TFs.")
+
+string GP_RISK = "─── Risk Management ───"
+bool i_useTP = input.bool(false, "Enable Fixed TP", group=GP_RISK, tooltip="Off by default — exit on signal reversal instead. Enable for fixed ATR-based take profit.")
+float i_tpMult = input.float(3.0, "TP ATR Multiplier", minval=0.5, maxval=10, step=0.5, group=GP_RISK)
+float i_slMult = input.float(2.0, "SL ATR Multiplier", minval=0.5, maxval=5, step=0.25, group=GP_RISK, tooltip="Protective stop only. 2.0x ATR = wide enough to avoid noise on BTC.")
+int i_atrLen = input.int(14, "ATR Length", minval=5, maxval=50, group=GP_RISK)
+int i_maxBars = input.int(100, "Max Bars in Trade", minval=10, maxval=500, group=GP_RISK, tooltip="Time-based exit. 100 bars on 4H = ~17 days. Auto-reduced to 16 on low TF (~16h).")
+int i_cooldown = input.int(2, "Min Bars Between Trades", minval=0, maxval=50, group=GP_RISK, tooltip="Prevents rapid re-entry after exit. Auto-reduced to 1 on low TF.")
+bool i_useTrail = input.bool(false, "Enable Trailing Stop", group=GP_RISK, tooltip="Off by default — trailing was cutting winners short.")
+float i_trailMult = input.float(2.0, "Trail ATR Multiplier", minval=0.5, maxval=5.0, step=0.25, group=GP_RISK)
+
+string GP_PARAMS = "─── Strategy Parameters ───"
+int i_rsiLen = input.int(2, "RSI Length (Connors)", minval=2, maxval=14, group=GP_PARAMS)
+int i_rsiOS = input.int(10, "RSI Oversold", minval=1, maxval=30, group=GP_PARAMS, tooltip="Auto-relaxed to 15 on low TF when TF Adaptive is ON.")
+int i_rsiOB = input.int(90, "RSI Overbought", minval=70, maxval=99, group=GP_PARAMS, tooltip="Auto-relaxed to 85 on low TF when TF Adaptive is ON.")
+float i_atrSpikeMult = input.float(1.5, "ATR Spike Multiplier (vs 30-bar avg)", minval=1.0, maxval=4.0, step=0.1, group=GP_PARAMS, tooltip="Auto-reduced to ×0.8 on low TF (1.5 → 1.2).")
+int i_emaFast = input.int(9, "EMA Fast", minval=3, maxval=50, group=GP_PARAMS)
+int i_emaSlow = input.int(21, "EMA Slow", minval=10, maxval=100, group=GP_PARAMS)
+float i_bbSigma = input.float(2.6, "Multi-Sigma BB Width", minval=2.0, maxval=4.0, step=0.1, group=GP_PARAMS)
+float i_stFactor = input.float(3.0, "Supertrend Factor", minval=1.0, maxval=6.0, step=0.5, group=GP_PARAMS)
+int i_stLen = input.int(10, "Supertrend ATR Len", minval=5, maxval=30, group=GP_PARAMS)
+int i_adxLen = input.int(14, "ADX Length", minval=7, maxval=30, group=GP_PARAMS)
+int i_adxTrend = input.int(25, "ADX Trend Threshold", minval=15, maxval=40, group=GP_PARAMS, tooltip="ADX above this = strong trend (for Supertrend confirmation)")
+int i_adxRange = input.int(20, "ADX Range Threshold", minval=10, maxval=30, group=GP_PARAMS, tooltip="ADX below this = range-bound (for Vol Spike, Multi-Sigma)")
+
+string GP_CONSENSUS = "─── Elite Consensus ───"
+float i_minScore = input.float(1.5, "Min Weighted Score", minval=0.5, maxval=4.0, step=0.1, group=GP_CONSENSUS, tooltip="Auto-reduced to ×0.67 on low TF (1.5 → 1.0).")
+bool i_c1 = input.bool(true, "Mercury Fear", group=GP_CONSENSUS)
+bool i_c2 = input.bool(true, "Connors RSI-2", group=GP_CONSENSUS)
+bool i_c3 = input.bool(true, "Vol Spike Rev", group=GP_CONSENSUS)
+bool i_c4 = input.bool(true, "EMA Stack", group=GP_CONSENSUS)
+bool i_c5 = input.bool(true, "Supertrend", group=GP_CONSENSUS)
+bool i_c6 = input.bool(true, "Multi-Sigma", group=GP_CONSENSUS)
+bool i_c7 = input.bool(false, "Funding Proxy", group=GP_CONSENSUS)
+
+string GP_VIS = "─── Visual Settings ───"
+bool i_showLabels = input.bool(true, "Show Signal Labels", group=GP_VIS)
+bool i_showDash = input.bool(true, "Show Dashboard", group=GP_VIS)
+color i_longColor = input.color(#22c55e, "Long Color", group=GP_VIS)
+color i_shortColor = input.color(#ef4444, "Short Color", group=GP_VIS)
+
+// ═══════════════════════════════════════════════════════════════
+// TF-ADAPTIVE PARAMETER ADJUSTMENT
+// ═══════════════════════════════════════════════════════════════
+// Detect if we're on a low timeframe (1H = 3600 seconds or less)
+int tfSeconds = timeframe.in_seconds()
+bool isLowTF = i_tfAdaptive and tfSeconds <= 3600
+
+// Effective parameters — auto-adjusted on low TF, raw values on high TF
+int eff_rsiOS = isLowTF ? math.max(i_rsiOS, 15) : i_rsiOS
+int eff_rsiOB = isLowTF ? math.min(i_rsiOB, 85) : i_rsiOB
+float eff_atrSpikeMult = isLowTF ? i_atrSpikeMult * 0.8 : i_atrSpikeMult
+int eff_cooldown = isLowTF ? math.min(i_cooldown, 1) : i_cooldown
+int eff_maxBars = isLowTF ? math.min(i_maxBars, 16) : i_maxBars
+float eff_minScore = isLowTF ? i_minScore * 0.85 : i_minScore
+// Keep long-only on crypto regardless of TF (shorts consistently underperform in backtests)
+bool eff_longOnly = i_longOnly
+
+// ═══════════════════════════════════════════════════════════════
+// CORE CALCULATIONS
+// ═══════════════════════════════════════════════════════════════
+bool barOK = i_nonRepaint ? barstate.isconfirmed : true
+float atr = ta.atr(i_atrLen)
+float e9 = ta.ema(close, i_emaFast)
+float e21 = ta.ema(close, i_emaSlow)
+float e50 = ta.ema(close, 50)
+float e200 = ta.ema(close, 200)
+float rsi2 = ta.rsi(close, i_rsiLen)
+float rsi14 = ta.rsi(close, 14)
+[macdLine, macdSig, macdHist] = ta.macd(close, 12, 26, 9)
+[bbMid, bbUp, bbLow] = ta.bb(close, 20, 2.0)
+float bbUpSigma = bbMid + i_bbSigma * ta.stdev(close, 20)
+float bbLowSigma = bbMid - i_bbSigma * ta.stdev(close, 20)
+float bbWidth = bbUp - bbLow
+bool bbSqueeze = bbWidth < ta.sma(bbWidth, 20) * 0.85
+[stVal, stDir] = ta.supertrend(i_stFactor, i_stLen)
+float vwapVal = ta.vwap(hlc3)
+float fundingProxy = (close - vwapVal) / atr
+
+// ── ADX for regime detection (Pine v6: use ta.dmi) ──
+[diPlus, diMinus, adxVal] = ta.dmi(i_adxLen, i_adxLen)
+bool strongTrend = adxVal > i_adxTrend
+bool rangeBound = adxVal < i_adxRange
+
+// ── MACD confirmation filter (used by Mercury only, NOT EMA) ──
+bool macdBull = macdHist > 0
+bool macdBear = macdHist < 0
+
+// ── Rolling ATR spike (uses effective multiplier) ──
+float atrBaseline = ta.sma(atr, 30)
+bool atrSpike = atr > atrBaseline * eff_atrSpikeMult
+
+// ── Refined volume spike (relaxed on low TF) ──
+float volSMA = ta.sma(volume, 20)
+float vol3 = ta.sma(volume, 3)
+float volMult1 = isLowTF ? 1.15 : 1.2
+float volMult2 = isLowTF ? 1.05 : 1.1
+bool volSpike = vol3 > volSMA * volMult1 and volume > volume[1] * volMult2
+
+// ── Asset detection ──
+string sym = syminfo.ticker
+bool isCrypto = str.contains(sym, "BTC") or str.contains(sym, "ETH") or str.contains(sym, "SOL") or str.contains(sym, "DOGE") or str.contains(sym, "ADA") or str.contains(sym, "XRP") or str.contains(sym, "BNB") or str.contains(sym, "DOT") or str.contains(sym, "AVAX") or str.contains(sym, "LINK") or str.contains(sym, "USDT") or str.contains(sym, "USDC")
+bool isForex = str.contains(sym, "USD") and (str.contains(sym, "EUR") or str.contains(sym, "GBP") or str.contains(sym, "JPY") or str.contains(sym, "AUD") or str.contains(sym, "CAD") or str.contains(sym, "CHF") or str.contains(sym, "NZD"))
+bool longOnlyMode = eff_longOnly and isCrypto
+
+// ── HTF Trend (NO LOOKAHEAD — realistic backtest) ──
+float htfEma200 = e200
+if i_htfTrend == "15"
+    htfEma200 := request.security(syminfo.tickerid, "15", ta.ema(close, 200), lookahead=barmerge.lookahead_off)
+if i_htfTrend == "60"
+    htfEma200 := request.security(syminfo.tickerid, "60", ta.ema(close, 200), lookahead=barmerge.lookahead_off)
+if i_htfTrend == "240"
+    htfEma200 := request.security(syminfo.tickerid, "240", ta.ema(close, 200), lookahead=barmerge.lookahead_off)
+if i_htfTrend == "D"
+    htfEma200 := request.security(syminfo.tickerid, "D", ta.ema(close, 200), lookahead=barmerge.lookahead_off)
+if i_htfTrend == "W"
+    htfEma200 := request.security(syminfo.tickerid, "W", ta.ema(close, 200), lookahead=barmerge.lookahead_off)
+
+bool htfBullish = i_htfTrend == "None" ? true : (not na(htfEma200) and close > htfEma200)
+bool htfBearish = i_htfTrend == "None" ? true : (not na(htfEma200) and close < htfEma200)
+
+// ═══════════════════════════════════════════════════════════════
+// STRATEGY SIGNALS (uses effective thresholds)
+// ═══════════════════════════════════════════════════════════════
+// S1: Mercury Fear Contrarian (80% WR) — contrarian, no HTF filter
+// Low TF: RSI thresholds relaxed (35→40 not needed, already at 40/70)
+bool mercLong = rsi14 < 40 and close < e200 and atrSpike and close > low[1] and volSpike and macdBull and barOK
+bool mercShort = rsi14 > 70 and close > e200 and atrSpike and close < high[1] and volSpike and macdBear and barOK
+
+// S2: Connors RSI-2 (75.7% WR) — mean reversion (uses effective RSI thresholds)
+bool cr2Long = rsi2 < eff_rsiOS and close > e200 and barOK
+bool cr2Short = rsi2 > eff_rsiOB and close < e200 and barOK
+
+// S3: Volatility Spike Reversal (72% WR) — reversal, range-bound
+bool vsrLong = atrSpike and close > open and close[1] < open[1] and rsi14 < 40 and (rangeBound or bbSqueeze) and barOK
+bool vsrShort = atrSpike and close < open and close[1] > open[1] and rsi14 > 60 and (rangeBound or bbSqueeze) and barOK
+
+// S4: EMA Stack Momentum — v1.3.1: EMA 9/21 cross + EMA50 trend filter
+bool emaCrossUp = ta.crossover(e9, e21)
+bool emaCrossDown = ta.crossunder(e9, e21)
+bool emaLong = emaCrossUp and close > e50 and barOK
+bool emaShort = emaCrossDown and close < e50 and barOK
+bool emaExitLong = emaCrossDown and barOK
+bool emaExitShort = emaCrossUp and barOK
+
+// S5: Supertrend — with ADX confirmation
+bool stCrossUp = ta.crossover(close, stVal)
+bool stCrossDown = ta.crossunder(close, stVal)
+bool stLong = stCrossUp and stDir == -1 and strongTrend and barOK
+bool stShort = stCrossDown and stDir == 1 and strongTrend and barOK
+
+// S6: Multi-Sigma Reversal — range-bound
+bool sigmaLong = close[1] < bbLowSigma and close > bbLowSigma and volSpike and (rangeBound or bbSqueeze) and barOK
+bool sigmaShort = close[1] > bbUpSigma and close < bbUpSigma and volSpike and (rangeBound or bbSqueeze) and barOK
+
+// S7: Funding Rate Proxy
+bool fundLong = fundingProxy < -2.0 and rsi14 < 40 and barOK
+bool fundShort = fundingProxy > 2.0 and rsi14 > 60 and barOK
+
+// ═══════════════════════════════════════════════════════════════
+// WEIGHTED CONSENSUS (weights = historic WR)
+// ═══════════════════════════════════════════════════════════════
+float bullScore = 0.0
+float bearScore = 0.0
+if i_c1 and mercLong
+    bullScore += 0.80
+if i_c2 and cr2Long
+    bullScore += 0.76
+if i_c3 and vsrLong
+    bullScore += 0.72
+if i_c4 and emaLong
+    bullScore += 0.68
+if i_c5 and stLong
+    bullScore += 0.65
+if i_c6 and sigmaLong
+    bullScore += 0.66
+if i_c7 and fundLong
+    bullScore += 0.60
+if i_c1 and mercShort
+    bearScore += 0.80
+if i_c2 and cr2Short
+    bearScore += 0.76
+if i_c3 and vsrShort
+    bearScore += 0.72
+if i_c4 and emaShort
+    bearScore += 0.68
+if i_c5 and stShort
+    bearScore += 0.65
+if i_c6 and sigmaShort
+    bearScore += 0.66
+if i_c7 and fundShort
+    bearScore += 0.60
+
+int bullVotes = 0
+int bearVotes = 0
+if i_c1 and mercLong
+    bullVotes += 1
+if i_c2 and cr2Long
+    bullVotes += 1
+if i_c3 and vsrLong
+    bullVotes += 1
+if i_c4 and emaLong
+    bullVotes += 1
+if i_c5 and stLong
+    bullVotes += 1
+if i_c6 and sigmaLong
+    bullVotes += 1
+if i_c7 and fundLong
+    bullVotes += 1
+if i_c1 and mercShort
+    bearVotes += 1
+if i_c2 and cr2Short
+    bearVotes += 1
+if i_c3 and vsrShort
+    bearVotes += 1
+if i_c4 and emaShort
+    bearVotes += 1
+if i_c5 and stShort
+    bearVotes += 1
+if i_c6 and sigmaShort
+    bearVotes += 1
+if i_c7 and fundShort
+    bearVotes += 1
+
+// Uses effective min score (lowered on low TF) + requires 2+ strategies to agree
+bool consensusLong = bullVotes >= 2 and bullScore >= eff_minScore
+bool consensusShort = bearVotes >= 2 and bearScore >= eff_minScore
+
+// ═══════════════════════════════════════════════════════════════
+// ASSET DETECTION + ROUTING
+// ═══════════════════════════════════════════════════════════════
+// Auto-Detect: crypto → Elite Consensus (requires 2+ strategies to agree)
+// EMA Stack alone generates too many whipsaw trades on crypto
+string autoStrat = "Elite Consensus"
+if isForex
+    autoStrat := "EMA Stack Momentum"
+if str.contains(sym, "SPY") or str.contains(sym, "QQQ") or str.contains(sym, "AAPL")
+    autoStrat := "Connors RSI-2"
+
+string activeStrat = i_strategy == "Auto-Detect" ? autoStrat : i_strategy
+
+// ═══════════════════════════════════════════════════════════════
+// FINAL SIGNAL DISPATCH
+// ═══════════════════════════════════════════════════════════════
+bool goLong = false
+bool goShort = false
+bool exitLong = false
+bool exitShort = false
+
+if activeStrat == "Mercury Fear Contrarian"
+    goLong := mercLong
+    goShort := mercShort
+if activeStrat == "Connors RSI-2"
+    goLong := cr2Long and htfBullish
+    goShort := cr2Short and htfBearish
+if activeStrat == "Volatility Spike Reversal"
+    goLong := vsrLong and htfBullish
+    goShort := vsrShort and htfBearish
+if activeStrat == "EMA Stack Momentum"
+    goLong := emaLong and htfBullish
+    goShort := emaShort and htfBearish
+    exitLong := emaExitLong
+    exitShort := emaExitShort
+if activeStrat == "Supertrend Trend"
+    goLong := stLong and htfBullish
+    goShort := stShort and htfBearish
+if activeStrat == "Multi-Sigma Reversal"
+    goLong := sigmaLong and htfBullish
+    goShort := sigmaShort and htfBearish
+if activeStrat == "Elite Consensus"
+    goLong := consensusLong and htfBullish
+    goShort := consensusShort and htfBearish
+
+// ── Long-only mode: suppress shorts (auto-disabled on low TF) ──
+if longOnlyMode
+    goShort := false
+
+// ── Cooldown: prevent rapid re-entry (uses effective cooldown) ──
+int barsSinceFlat = ta.barssince(strategy.position_size == 0 and strategy.position_size[1] != 0)
+bool cooldownOK = na(barsSinceFlat) or barsSinceFlat >= eff_cooldown
+goLong := goLong and cooldownOK
+goShort := goShort and cooldownOK
+
+// ═══════════════════════════════════════════════════════════════
+// STRATEGY EXECUTION + TP/SL TRACKING
+// ═══════════════════════════════════════════════════════════════
+// SL floor: minimum 0.2% distance prevents sub-penny stops on low-ATR bars
+float slDist = math.max(atr * i_slMult, close * 0.002)
+float slLong = close - slDist
+float slShort = close + slDist
+
+// Persistent TP/SL levels for plotting (set on entry, cleared on flat)
+var float plotTP = na
+var float plotSL = na
+var float plotEntry = na
+
+if goLong
+    strategy.entry("Long", strategy.long)
+    plotEntry := close
+    plotSL := slLong
+    if i_useTP
+        float tpLong = close + atr * i_tpMult
+        plotTP := tpLong
+        if i_useTrail
+            float trailOffset = atr * i_trailMult
+            strategy.exit("Long TP/SL", "Long", limit=tpLong, stop=slLong, trail_offset=trailOffset, trail_points=trailOffset)
+        else
+            strategy.exit("Long TP/SL", "Long", limit=tpLong, stop=slLong)
+    else
+        plotTP := na
+        if i_useTrail
+            float trailOffset = atr * i_trailMult
+            strategy.exit("Long SL", "Long", stop=slLong, trail_offset=trailOffset, trail_points=trailOffset)
+        else
+            strategy.exit("Long SL", "Long", stop=slLong)
+
+if goShort
+    strategy.entry("Short", strategy.short)
+    plotEntry := close
+    plotSL := slShort
+    if i_useTP
+        float tpShort = close - atr * i_tpMult
+        plotTP := tpShort
+        if i_useTrail
+            float trailOffset = atr * i_trailMult
+            strategy.exit("Short TP/SL", "Short", limit=tpShort, stop=slShort, trail_offset=trailOffset, trail_points=trailOffset)
+        else
+            strategy.exit("Short TP/SL", "Short", limit=tpShort, stop=slShort)
+    else
+        plotTP := na
+        if i_useTrail
+            float trailOffset = atr * i_trailMult
+            strategy.exit("Short SL", "Short", stop=slShort, trail_offset=trailOffset, trail_points=trailOffset)
+        else
+            strategy.exit("Short SL", "Short", stop=slShort)
+
+// Clear levels when flat
+if strategy.position_size == 0
+    plotTP := na
+    plotSL := na
+    plotEntry := na
+
+// ── Signal-based exit: close on opposite EMA cross ──
+if exitLong and strategy.position_size > 0
+    strategy.close("Long", comment="EMA Cross Exit")
+if exitShort and strategy.position_size < 0
+    strategy.close("Short", comment="EMA Cross Exit")
+
+// ── Time-based exit (uses effective maxBars) ──
+if strategy.opentrades > 0
+    if bar_index - strategy.opentrades.entry_bar_index(0) >= eff_maxBars
+        strategy.close_all(comment="Time Exit")
+
+// ═══════════════════════════════════════════════════════════════
+// OVERLAYS
+// ═══════════════════════════════════════════════════════════════
+plot(stVal, "Supertrend", color=stDir == -1 ? i_longColor : i_shortColor, linewidth=1)
+plot(e9, "EMA 9", color=color.new(#3b82f6, 40), linewidth=2)
+plot(e21, "EMA 21", color=color.new(#8b5cf6, 40), linewidth=2)
+plot(e50, "EMA 50", color=color.new(#f97316, 50), linewidth=1)
+plot(e200, "EMA 200", color=color.new(#f59e0b, 40), linewidth=2)
+plot(bbUpSigma, "BB Upper Sigma", color=color.new(#ef4444, 80), linewidth=1, style=plot.style_circles)
+plot(bbLowSigma, "BB Lower Sigma", color=color.new(#22c55e, 80), linewidth=1, style=plot.style_circles)
+
+// ── TP / SL / Entry level lines (visible while in a trade) ──
+plot(plotEntry, "Entry", color=color.new(#3b82f6, 30), linewidth=1, style=plot.style_linebr)
+plot(plotTP, "TP Level", color=color.new(#22c55e, 30), linewidth=2, style=plot.style_linebr)
+plot(plotSL, "SL Level", color=color.new(#ef4444, 30), linewidth=2, style=plot.style_linebr)
+
+plotshape(goLong and i_showLabels, "Long Signal", style=shape.triangleup, location=location.belowbar, color=i_longColor, size=size.small, text="LONG")
+plotshape(goShort and i_showLabels and not longOnlyMode, "Short Signal", style=shape.triangledown, location=location.abovebar, color=i_shortColor, size=size.small, text="SHORT")
+plotshape(exitLong and i_showLabels and strategy.position_size > 0, "Exit Long", style=shape.xcross, location=location.abovebar, color=#f59e0b, size=size.tiny, text="EXIT")
+
+bgcolor(goLong ? color.new(i_longColor, 92) : goShort and not longOnlyMode ? color.new(i_shortColor, 92) : na)
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+var table dash = table.new(position.top_right, 3, 12, bgcolor=#12121e, border_color=#1e1e3a, border_width=1, frame_color=#1e1e3a, frame_width=1)
+if barstate.islast and i_showDash
+    string modeStr = longOnlyMode ? "LONG ONLY" : "Long+Short"
+    string tfStr = isLowTF ? "LowTF" : "HiTF"
+    table.cell(dash, 0, 0, "AG Elite v1.4", text_color=#ffffff, text_size=size.small, text_halign=text.align_left, bgcolor=#1a1a2e)
+    table.cell(dash, 1, 0, activeStrat, text_color=#3b82f6, text_size=size.small, text_halign=text.align_center, bgcolor=#1a1a2e)
+    table.cell(dash, 2, 0, modeStr, text_color=longOnlyMode ? #22c55e : #888888, text_size=size.small, text_halign=text.align_right, bgcolor=#1a1a2e)
+    // Row 1: TF Adaptive status
+    table.cell(dash, 0, 1, "TF Mode", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 1, tfStr, text_color=isLowTF ? #f59e0b : #22c55e, text_size=size.tiny, text_halign=text.align_center)
+    string adaptStr = isLowTF ? "RSI " + str.tostring(eff_rsiOS) + "/" + str.tostring(eff_rsiOB) + " CD:" + str.tostring(eff_cooldown) + " MB:" + str.tostring(eff_maxBars) : "Default params"
+    table.cell(dash, 2, 1, adaptStr, text_color=isLowTF ? #f59e0b : #666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 2: EMA
+    table.cell(dash, 0, 2, "EMA 9/21", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 2, e9 > e21 ? "BULL" : "BEAR", text_color=e9 > e21 ? #22c55e : #ef4444, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 2, close > e200 ? "> EMA200" : "< EMA200", text_color=close > e200 ? #22c55e : #ef4444, text_size=size.tiny, text_halign=text.align_right)
+    // Row 3: RSI-2
+    table.cell(dash, 0, 3, "RSI-2", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 3, str.tostring(rsi2, "#.0"), text_color=rsi2 < 20 ? #22c55e : rsi2 > 80 ? #ef4444 : #888888, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 3, rsi2 < eff_rsiOS ? "OVERSOLD" : rsi2 > eff_rsiOB ? "OVERBOUGHT" : "Neutral", text_color=rsi2 < eff_rsiOS ? #22c55e : rsi2 > eff_rsiOB ? #ef4444 : #666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 4: RSI-14
+    table.cell(dash, 0, 4, "RSI-14", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 4, str.tostring(rsi14, "#.0"), text_color=rsi14 < 35 ? #22c55e : rsi14 > 70 ? #ef4444 : #888888, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 4, rsi14 < 35 ? "FEAR" : rsi14 > 70 ? "GREED" : "Neutral", text_color=rsi14 < 35 ? #22c55e : rsi14 > 70 ? #ef4444 : #666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 5: ADX
+    table.cell(dash, 0, 5, "ADX", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 5, str.tostring(adxVal, "#.0"), text_color=strongTrend ? #22c55e : rangeBound ? #3b82f6 : #888888, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 5, strongTrend ? "TREND" : rangeBound ? "RANGE" : "Mixed", text_color=strongTrend ? #22c55e : rangeBound ? #3b82f6 : #666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 6: Supertrend
+    table.cell(dash, 0, 6, "Supertrend", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 6, stDir == -1 ? "BULL" : "BEAR", text_color=stDir == -1 ? #22c55e : #ef4444, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 6, str.tostring(stVal, "#.2"), text_color=#666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 7: HTF Trend
+    table.cell(dash, 0, 7, "HTF Trend", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 7, htfBullish ? "BULL" : "BEAR", text_color=htfBullish ? #22c55e : #ef4444, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 7, i_htfTrend == "None" ? "OFF" : i_htfTrend + " EMA200", text_color=#666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 8: Consensus
+    string bullStr = str.tostring(bullVotes) + "/7 (" + str.tostring(bullScore, "#.1") + ")"
+    string bearStr = str.tostring(bearVotes) + "/7 (" + str.tostring(bearScore, "#.1") + ")"
+    table.cell(dash, 0, 8, "Consensus", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 8, bullStr, text_color=consensusLong ? #22c55e : #888888, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 8, bearStr, text_color=consensusShort ? #ef4444 : #888888, text_size=size.tiny, text_halign=text.align_right)
+    // Row 9: Signal
+    string sigLabel = goLong ? ">>> LONG <<<" : goShort and not longOnlyMode ? ">>> SHORT <<<" : "No Signal"
+    color sigColor = goLong ? #22c55e : goShort and not longOnlyMode ? #ef4444 : #666666
+    table.cell(dash, 0, 9, sigLabel, text_color=sigColor, text_size=size.small, text_halign=text.align_left, bgcolor=#0a0a12)
+    table.cell(dash, 1, 9, activeStrat, text_color=sigColor, text_size=size.small, text_halign=text.align_center, bgcolor=#0a0a12)
+    table.cell(dash, 2, 9, sym, text_color=#888888, text_size=size.small, text_halign=text.align_right, bgcolor=#0a0a12)
+    // Row 10: ATR
+    string atrStr = str.tostring(atr, "#.3")
+    table.cell(dash, 0, 10, "ATR", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 10, atrStr, text_color=atrSpike ? #f59e0b : #22c55e, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 10, atrSpike ? "SPIKE" : "Normal", text_color=atrSpike ? #f59e0b : #666666, text_size=size.tiny, text_halign=text.align_right)
+    // Row 11: Funding Proxy
+    string fundStr = str.tostring(fundingProxy, "#.2")
+    table.cell(dash, 0, 11, "Funding", text_color=#888888, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(dash, 1, 11, fundStr, text_color=fundingProxy < -2.0 ? #22c55e : fundingProxy > 2.0 ? #ef4444 : #888888, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(dash, 2, 11, fundingProxy < -2.0 ? "BEARISH" : fundingProxy > 2.0 ? "BULLISH" : "Neutral", text_color=fundingProxy < -2.0 ? #22c55e : fundingProxy > 2.0 ? #ef4444 : #666666, text_size=size.tiny, text_halign=text.align_right)

@@ -1,0 +1,24 @@
+{
+  "item_1_vix_yc_wire_up": {
+    "verdict": "PROCEED",
+    "merge_safety": "safe",
+    "function_name_concern": "rename_required",
+    "default_state": "OFF",
+    "biggest_risk": "Stale 4h cache data could miss intraday YC inversions, leading to incorrect rejections.",
+    "concrete_changes_recommended": [
+      "audit_trail/vix_regime_gate.py: Rename should_reject_equity_pick() to should_reject_pick() to reflect broader scope including YC.",
+      "audit_trail/vix_regime_gate.py: Add docstring to clarify dual VIX/YC rejection logic in renamed function.",
+      "audit_trail/vix_regime_gate.py: Implement _fetch_yc_now() and get_cached_yc() with 4h TTL as proposed.",
+      "audit_trail/vix_regime_gate.py: Add YC_REGIME_GATE_ENABLED=0 and configurable YC threshold defaulting to 0.0.",
+      "audit_trail/vix_regime_gate.py: Update rejection logic to check both VIX and YC when enabled."
+    ]
+  },
+  "item_2_ns_a_db_verify": {
+    "recommended_option": "A",
+    "rationale": "Manual SQL via Bash is the fastest way to verify PF 21.86 against raw DB, bypassing cron issues and avoiding new script overhead.",
+    "expected_outcome": "verifies edge",
+    "blocking_for_real_money_sizing": "yes"
+  },
+  "priority_order": ["item_2_first"],
+  "single_most_important_consideration_across_both": "Verifying the multi_asset_cot PF 21.86 via DB is critical before any real-money sizing, outweighing the YC integration timeline."
+}

@@ -1,0 +1,79 @@
+{
+  "strategy_name": "crypto_soc_trend_filtered_meanrev_a06_v1",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T21:30:00Z",
+  "status": "backtest_failed",
+  "strategy_type": "social_inspired_trend_filtered_meanrev",
+  "unique_value": "Social-theme composite (trend_filtered_meanrev) with regime/VEI/orderflow/session confluence.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "adaptive",
+  "backtest_metrics": {
+    "sharpe": -7.1,
+    "win_rate": 0.36,
+    "max_drawdown": 0.0795,
+    "total_trades": 25,
+    "profit_factor": 0.29,
+    "total_return": -0.0763,
+    "timestamp": "2026-02-27T00:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "EMA(10/70)",
+    "ZScore(22)",
+    "Breakout(15)",
+    "ATRshort/ATRlong (10/30)",
+    "DeltaProxyFlow",
+    "SessionConfluence"
+  ],
+  "entry_conditions": [
+    "Composite exceeds directional threshold",
+    "VEI regime gate passes",
+    "Micro-noise filter passes"
+  ],
+  "exit_conditions": [
+    "Take profit: 2.15x ATR",
+    "Stop loss: 1.50x ATR"
+  ],
+  "parameters": {
+    "fast_ema": 10,
+    "slow_ema": 70,
+    "z_window": 22,
+    "breakout_window": 15,
+    "vol_window": 23,
+    "atr_short": 10,
+    "atr_long": 30,
+    "atr_gate": 1.0,
+    "vol_ratio_gate": 1.05,
+    "trend_w": 0.2639,
+    "meanrev_w": 0.3367,
+    "breakout_w": 0.0787,
+    "volstate_w": 0.1409,
+    "flow_w": 0.1006,
+    "session_w": 0.0792,
+    "long_threshold": 0.42,
+    "short_threshold": 0.42,
+    "tp_atr": 2.15,
+    "sl_atr": 1.5,
+    "cooldown": 1
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": null,
+    "completed_at": null,
+    "days_remaining": null
+  },
+  "forward_metrics": {
+    "win_rate": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "total_trades": null
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  }
+}

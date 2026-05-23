@@ -1,0 +1,309 @@
+//@version=5
+indicator("Ensemble_Validator_STEPFUN", overlay=true, max_labels_count=500)
+
+// ============================================
+// MIX-AND-MATCH INDICATOR COMBINATION SYSTEM
+// Test different indicator combinations and see validation results
+// ============================================
+
+// ——— INPUT PARAMETERS ———
+// Select which indicators to include in the ensemble
+use_rsi2 = input.bool(true, "RSI-2")
+use_macd = input.bool(true, "MACD Crossover")
+use_bb_squeeze = input.bool(true, "Bollinger Squeeze")
+use_volume = input.bool(true, "Volume Spike")
+use_triple_ema = input.bool(true, "Triple EMA")
+use_ichimoku = input.bool(true, "Ichimoku Cloud")
+
+// Individual indicator strength thresholds
+rsi2_min_strength = input.int(2, "RSI-2 Min Strength", minval=1, maxval=4)
+macd_min_strength = input.int(2, "MACD Min Strength", minval=1, maxval=4)
+bb_min_strength = input.int(2, "BB Min Strength", minval=1, maxval=4)
+volume_min_strength = input.int(3, "Volume Min Strength", minval=1, maxval=4)
+ema_min_strength = input.int(2, "EMA Min Strength", minval=1, maxval=4)
+ichimoku_min_strength = input.int(2, "Ichimoku Min Strength", minval=1, maxval=4)
+
+// Consensus threshold (percentage of active indicators that must agree)
+consensus_threshold = input.float(60.0, "Consensus Threshold %", minval=0, maxval=100, step=5)
+
+// Show validation table
+show_validation = input.bool(true, "Show Validation Table")
+
+// ============================================
+// INDICATOR CALCULATIONS
+// ============================================
+
+// RSI-2
+rsi2 = ta.rsi(close, 2)
+rsi2_buy = rsi2[1] < 30 and rsi2 >= 30
+rsi2_sell = rsi2[1] > 70 and rsi2 <= 70
+rsi2_strength = rsi2_buy or rsi2_sell ? 3 : 1
+
+// MACD
+[macd_line, signal_line, _] = ta.macd(close, 12, 26, 9)
+macd_buy = macd_line[1] <= signal_line[1] and macd_line > signal_line
+macd_sell = macd_line[1] >= signal_line[1] and macd_line < signal_line
+macd_strength = macd_buy or macd_sell ? 2 : 1
+
+// Bollinger Squeeze
+bb_basis = ta.sma(close, 20)
+bb_upper = bb_basis + 2 * ta.stdev(close, 20)
+bb_lower = bb_basis - 2 * ta.stdev(close, 20)
+bb_width = (bb_upper - bb_lower) / bb_basis
+bb_squeeze = bb_width < 0.05
+bb_buy = bb_squeeze and close[1] <= bb_lower[1] and close > bb_lower
+bb_sell = bb_squeeze and close[1] >= bb_upper[1] and close < bb_upper
+bb_strength = bb_buy or bb_sell ? 3 : 1
+
+// Volume Spike
+volume_ma = ta.sma(volume, 20)
+volume_spike = volume > volume_ma * 2.0
+volume_buy = volume_spike and close > open and close > close[1]
+volume_sell = volume_spike and close < open and close < close[1]
+volume_strength = volume_buy or volume_sell ? 4 : 1
+
+// Triple EMA
+ema1 = ta.ema(close, 5)
+ema2 = ta.ema(close, 10)
+ema3 = ta.ema(close, 20)
+ema_buy = ema1 > ema2 and ema2 > ema3 and ema1 > ema1[1]
+ema_sell = ema1 < ema2 and ema2 < ema3 and ema1 < ema1[1]
+ema_strength = ema_buy or ema_sell ? 2 : 1
+
+// Ichimoku
+tenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+kijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+senkou_a = (tenkan + kijun) / 2
+senkou_b = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+cloud_top = math.max(senkou_a, senkou_b)
+cloud_bottom = math.min(senkou_a, senkou_b)
+ichimoku_buy = close > cloud_top and tenkan > kijun
+ichimoku_sell = close < cloud_bottom and tenkan < kijun
+ichimoku_strength = ichimoku_buy or ichimoku_sell ? 2 : 1
+
+// ============================================
+// VOTING SYSTEM
+// ============================================
+
+// Count active indicators
+total_active = (use_rsi2 ? 1 : 0) + (use_macd ? 1 : 0) + (use_bb_squeeze ? 1 : 0) + (use_volume ? 1 : 0) + (use_triple_ema ? 1 : 0) + (use_ichimoku ? 1 : 0)
+
+// Count buy/sell votes with strength weighting
+buy_votes = 0
+sell_votes = 0
+total_buy_strength = 0
+total_sell_strength = 0
+
+if use_rsi2
+    if rsi2_buy and rsi2_strength >= rsi2_min_strength
+        buy_votes += 1
+        total_buy_strength += rsi2_strength
+    if rsi2_sell and rsi2_strength >= rsi2_min_strength
+        sell_votes += 1
+        total_sell_strength += rsi2_strength
+
+if use_macd
+    if macd_buy and macd_strength >= macd_min_strength
+        buy_votes += 1
+        total_buy_strength += macd_strength
+    if macd_sell and macd_strength >= macd_min_strength
+        sell_votes += 1
+        total_sell_strength += macd_strength
+
+if use_bb_squeeze
+    if bb_buy and bb_strength >= bb_min_strength
+        buy_votes += 1
+        total_buy_strength += bb_strength
+    if bb_sell and bb_strength >= bb_min_strength
+        sell_votes += 1
+        total_sell_strength += bb_strength
+
+if use_volume
+    if volume_buy and volume_strength >= volume_min_strength
+        buy_votes += 1
+        total_buy_strength += volume_strength
+    if volume_sell and volume_strength >= volume_min_strength
+        sell_votes += 1
+        total_sell_strength += volume_strength
+
+if use_triple_ema
+    if ema_buy and ema_strength >= ema_min_strength
+        buy_votes += 1
+        total_buy_strength += ema_strength
+    if ema_sell and ema_strength >= ema_min_strength
+        sell_votes += 1
+        total_sell_strength += ema_strength
+
+if use_ichimoku
+    if ichimoku_buy and ichimoku_strength >= ichimoku_min_strength
+        buy_votes += 1
+        total_buy_strength += ichimoku_strength
+    if ichimoku_sell and ichimoku_strength >= ichimoku_min_strength
+        sell_votes += 1
+        total_sell_strength += ichimoku_strength
+
+// ============================================
+// CONSENSUS VALIDATION
+// ============================================
+
+// Check if consensus threshold is met
+buy_consensus = total_active > 0 ? (buy_votes / total_active) * 100 >= consensus_threshold : false
+sell_consensus = total_active > 0 ? (sell_votes / total_active) * 100 >= consensus_threshold : false
+
+// Calculate average strength
+avg_buy_strength = buy_votes > 0 ? total_buy_strength / buy_votes : 0
+avg_sell_strength = sell_votes > 0 ? total_sell_strength / sell_votes : 0
+
+// Final signal
+final_buy = buy_consensus and avg_buy_strength >= 2
+final_sell = sell_consensus and avg_sell_strength >= 2
+
+// Signal strength (1-4)
+signal_strength = final_buy or final_sell ? math.max(avg_buy_strength, avg_sell_strength) : 0
+
+// ============================================
+// VALIDATION METRICS
+// ============================================
+
+// Calculate agreement percentage
+agreement_pct = total_active > 0 ? (math.max(buy_votes, sell_votes) / total_active) * 100 : 0
+
+// Signal quality score (0-100)
+quality_score = (agreement_pct * 0.4) + (signal_strength * 15) + (total_active * 10)  // More indicators = higher confidence
+
+// ============================================
+// PLOTTING
+// ============================================
+
+// Chart signals (arrows on chart)
+plotshape(final_buy, title="Ensemble Buy", location=location.belowbar, color=color.new(color.green, 0), style=shape.circle, size=size.small, text="BUY")
+plotshape(final_sell, title="Ensemble Sell", location=location.abovebar, color=color.new(color.red, 0), style=shape.circle, size=size.small, text="SELL")
+bgcolor(final_buy ? color.new(color.green, 85) : final_sell ? color.new(color.red, 85) : na)
+
+// Data Window plots (hidden from chart, visible in Data Window)
+// These match what the table shows so there's no confusion
+plot(buy_votes, title="Buy Votes", color=color.new(color.green, 100), display=display.data_window)
+plot(sell_votes, title="Sell Votes", color=color.new(color.red, 100), display=display.data_window)
+plot(total_active, title="Active Indicators", color=color.new(color.blue, 100), display=display.data_window)
+plot(agreement_pct, title="Agreement %", color=color.new(color.orange, 100), display=display.data_window)
+plot(signal_strength, title="Avg Strength", color=color.new(color.purple, 100), display=display.data_window)
+plot(final_buy ? 1 : final_sell ? -1 : 0, title="Signal (1=BUY -1=SELL)", color=color.new(color.white, 100), display=display.data_window)
+plot(quality_score, title="Quality Score", color=color.new(color.yellow, 100), display=display.data_window)
+
+// ============================================
+// VALIDATION TABLE (top-right: indicator voting grid)
+// ============================================
+
+if show_validation and barstate.islast
+    var table vt = table.new(position.top_right, 3, 10, border_width=1)
+
+    // Header row
+    table.cell(vt, 0, 0, "INDICATOR", bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+    table.cell(vt, 1, 0, "VOTE", bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+    table.cell(vt, 2, 0, "STR", bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+
+    // RSI-2
+    string rsi2_vote = rsi2_buy ? "BUY" : rsi2_sell ? "SELL" : "-"
+    color rsi2_bg = rsi2_buy ? #0d5e2e : rsi2_sell ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 1, use_rsi2 ? "RSI-2" : "RSI-2 (off)", bgcolor=#1a1a2e, text_color=use_rsi2 ? color.white : #555555, text_size=size.small)
+    table.cell(vt, 1, 1, rsi2_vote, bgcolor=rsi2_bg, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 1, str.tostring(rsi2_strength) + "/4", bgcolor=#1a1a2e, text_color=rsi2_strength >= 3 ? #00ff88 : #ff8800, text_size=size.small)
+
+    // MACD
+    string macd_vote = macd_buy ? "BUY" : macd_sell ? "SELL" : "-"
+    color macd_bg = macd_buy ? #0d5e2e : macd_sell ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 2, use_macd ? "MACD" : "MACD (off)", bgcolor=#1a1a2e, text_color=use_macd ? color.white : #555555, text_size=size.small)
+    table.cell(vt, 1, 2, macd_vote, bgcolor=macd_bg, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 2, str.tostring(macd_strength) + "/4", bgcolor=#1a1a2e, text_color=macd_strength >= 3 ? #00ff88 : #ff8800, text_size=size.small)
+
+    // Bollinger Squeeze
+    string bb_vote = bb_buy ? "BUY" : bb_sell ? "SELL" : "-"
+    color bb_bg = bb_buy ? #0d5e2e : bb_sell ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 3, use_bb_squeeze ? "BB Squeeze" : "BB Sq (off)", bgcolor=#1a1a2e, text_color=use_bb_squeeze ? color.white : #555555, text_size=size.small)
+    table.cell(vt, 1, 3, bb_vote, bgcolor=bb_bg, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 3, str.tostring(bb_strength) + "/4", bgcolor=#1a1a2e, text_color=bb_strength >= 3 ? #00ff88 : #ff8800, text_size=size.small)
+
+    // Volume Spike
+    string vol_vote = volume_buy ? "BUY" : volume_sell ? "SELL" : "-"
+    color vol_bg = volume_buy ? #0d5e2e : volume_sell ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 4, use_volume ? "Volume" : "Volume (off)", bgcolor=#1a1a2e, text_color=use_volume ? color.white : #555555, text_size=size.small)
+    table.cell(vt, 1, 4, vol_vote, bgcolor=vol_bg, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 4, str.tostring(volume_strength) + "/4", bgcolor=#1a1a2e, text_color=volume_strength >= 3 ? #00ff88 : #ff8800, text_size=size.small)
+
+    // Triple EMA
+    string ema_vote = ema_buy ? "BUY" : ema_sell ? "SELL" : "-"
+    color ema_bg = ema_buy ? #0d5e2e : ema_sell ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 5, use_triple_ema ? "Triple EMA" : "EMA (off)", bgcolor=#1a1a2e, text_color=use_triple_ema ? color.white : #555555, text_size=size.small)
+    table.cell(vt, 1, 5, ema_vote, bgcolor=ema_bg, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 5, str.tostring(ema_strength) + "/4", bgcolor=#1a1a2e, text_color=ema_strength >= 3 ? #00ff88 : #ff8800, text_size=size.small)
+
+    // Ichimoku
+    string ichi_vote = ichimoku_buy ? "BUY" : ichimoku_sell ? "SELL" : "-"
+    color ichi_bg = ichimoku_buy ? #0d5e2e : ichimoku_sell ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 6, use_ichimoku ? "Ichimoku" : "Ichi (off)", bgcolor=#1a1a2e, text_color=use_ichimoku ? color.white : #555555, text_size=size.small)
+    table.cell(vt, 1, 6, ichi_vote, bgcolor=ichi_bg, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 6, str.tostring(ichimoku_strength) + "/4", bgcolor=#1a1a2e, text_color=ichimoku_strength >= 3 ? #00ff88 : #ff8800, text_size=size.small)
+
+    // Separator
+    table.cell(vt, 0, 7, "", bgcolor=#333344)
+    table.cell(vt, 1, 7, "", bgcolor=#333344)
+    table.cell(vt, 2, 7, "", bgcolor=#333344)
+
+    // Consensus bar: "3/6 BUY" or "2/6 SELL" or "NO CONSENSUS"
+    int dominant_votes = math.max(buy_votes, sell_votes)
+    string consensus_dir = buy_votes > sell_votes ? "BUY" : sell_votes > buy_votes ? "SELL" : "MIXED"
+    string consensus_txt = str.tostring(dominant_votes) + "/" + str.tostring(total_active) + " " + consensus_dir
+    color consensus_bg = buy_consensus ? #0d5e2e : sell_consensus ? #7a1a1a : #2a2a3e
+    table.cell(vt, 0, 8, consensus_txt, bgcolor=consensus_bg, text_color=color.white, text_size=size.normal)
+    table.cell(vt, 1, 8, str.tostring(agreement_pct, "#") + "%", bgcolor=consensus_bg, text_color=agreement_pct >= 60 ? #00ff88 : #ff8800, text_size=size.normal)
+    table.cell(vt, 2, 8, str.tostring(signal_strength, "#.#"), bgcolor=consensus_bg, text_color=color.white, text_size=size.small)
+
+    // Final verdict row - big and clear
+    signal_text = final_buy ? "BUY" : final_sell ? "SELL" : "WAIT"
+    signal_color = final_buy ? #00cc55 : final_sell ? #cc3333 : #555555
+    table.cell(vt, 0, 9, signal_text, bgcolor=signal_color, text_color=color.white, text_size=size.large)
+    // Confidence label
+    string conf = agreement_pct >= 80 ? "STRONG" : agreement_pct >= 60 ? "MODERATE" : "WEAK"
+    table.cell(vt, 1, 9, conf, bgcolor=signal_color, text_color=color.white, text_size=size.small)
+    table.cell(vt, 2, 9, "", bgcolor=signal_color)
+
+// ============================================
+// SUMMARY BOX (bottom-right: plain-English explanation)
+// ============================================
+
+if show_validation and barstate.islast
+    var table summary = table.new(position.bottom_right, 1, 6, border_width=1)
+
+    // Title
+    table.cell(summary, 0, 0, "HOW TO READ THIS", bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+
+    // What it does
+    table.cell(summary, 0, 1, "6 indicators vote BUY, SELL, or no opinion.", bgcolor=#1a1a2e, text_color=#cccccc, text_size=size.small)
+    table.cell(summary, 0, 2, "When " + str.tostring(math.round(consensus_threshold)) + "%+ agree = signal fires.", bgcolor=#1a1a2e, text_color=#cccccc, text_size=size.small)
+
+    // Current status in plain English
+    int dominant_v = math.max(buy_votes, sell_votes)
+    string direction = buy_votes > sell_votes ? "buying" : sell_votes > buy_votes ? "selling" : "undecided"
+    string status_line = str.tostring(dominant_v) + " of " + str.tostring(total_active) + " indicators say " + direction
+    table.cell(summary, 0, 3, status_line, bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+
+    // Actionable advice
+    string advice = "No clear pattern yet. Stay patient."
+    if final_buy
+        advice := agreement_pct >= 80 ? "Strong buy consensus. High confidence." : "Buy signal, but not unanimous. Use caution."
+    else if final_sell
+        advice := agreement_pct >= 80 ? "Strong sell consensus. High confidence." : "Sell signal, but not unanimous. Use caution."
+    else if dominant_v >= 2
+        advice := "Indicators are leaning but not enough agree yet."
+    color advice_bg = final_buy ? #0d3d1e : final_sell ? #3d0d0d : #2a2a3e
+    table.cell(summary, 0, 4, advice, bgcolor=advice_bg, text_color=color.white, text_size=size.small)
+
+    // Strength explanation
+    string str_explain = "STR = signal strength (1-4). Higher = more conviction."
+    table.cell(summary, 0, 5, str_explain, bgcolor=#1a1a2e, text_color=#666688, text_size=size.tiny)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(final_buy, "Ensemble Buy", "STEPFUN Ensemble Buy Signal | {{ticker}} @ {{close}}")
+alertcondition(final_sell, "Ensemble Sell", "STEPFUN Ensemble Sell Signal | {{ticker}} @ {{close}}")

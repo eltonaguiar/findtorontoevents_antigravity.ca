@@ -1,0 +1,155 @@
+name: Forex Agent
+
+on:
+  schedule:
+    # Four times daily on weekdays — aligns with major FX sessions
+    # London open 08:00 GMT (08:00 UTC), NY open 13:30 UTC, London close 17:00 UTC, Asia open 00:00 UTC
+    - cron: '0 0,8,13,17 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable verbose debug output'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: forex-agent
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  forex-scan:
+    name: Forex Scanner
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          update-environment: false
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Run Forex scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python - <<'EOF'
+          import sys, json
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+
+          import pandas as pd
+          import yfinance as yf
+
+          from config import FOREX_SYMBOLS
+          from forex_strategies import (
+              carry_trade, asian_range_breakout, orb_breakout,
+              connors_rsi2_forex, cross_sectional_momentum_forex,
+              cot_positioning_forex, london_session_breakout, mean_reversion_200d,
+          )
+          from elite_scorer import compute_elite_score
+
+          # ── fetch data ────────────────────────────────────────────────────
+          extra_syms = ["^VIX", "DX=F"]  # VIX for macro gate; DXY for DXY trend check
+          print(f"Fetching data for {len(FOREX_SYMBOLS)} forex pairs...")
+          data = {}
+          for sym in list(FOREX_SYMBOLS.keys()) + extra_syms:
+              try:
+                  df = yf.Ticker(sym).history(period="1y")
+                  if not df.empty:
+                      data[sym] = df
+              except Exception as e:
+                  print(f"  WARN fetch failed {sym}: {e}")
+          print(f"  Loaded {len(data)} symbols")
+
+          # fail-open guard: refuse to exit green on < 50% symbol load rate
+          _n_req = len(FOREX_SYMBOLS)
+          _n_loaded = sum(1 for s in FOREX_SYMBOLS if s in data)
+          if _n_loaded < max(1, _n_req) * 0.50:
+              print(f"::error::DATA FETCH FAILURE — only {_n_loaded}/{_n_req} forex symbols loaded "
+                    f"(yfinance empty/delisted); refusing to exit green on missing data")
+              sys.exit(1)
+
+          # ── run strategies ────────────────────────────────────────────────
+          picks = []
+          for fn in [
+              carry_trade, asian_range_breakout, orb_breakout,
+              connors_rsi2_forex, cross_sectional_momentum_forex,
+              cot_positioning_forex, london_session_breakout, mean_reversion_200d,
+          ]:
+              try:
+                  picks += fn(data)
+              except Exception as e:
+                  print(f"  WARN strategy {fn.__name__} failed: {e}")
+
+          # ── score ─────────────────────────────────────────────────────────
+          for p in picks:
+              p.update(compute_elite_score(p))
+
+          # ── curate (forex floor: 0.50) ────────────────────────────────────
+          quality = sorted(
+              [p for p in picks if float(p.get("confidence", 0) or 0) >= 0.50
+               and float(p.get("risk_reward", 0) or 0) >= 1.00
+               and float(p.get("elite_score", 0) or 0) >= 50],
+              key=lambda p: (p.get("elite_score", 0), p.get("confidence", 0)),
+              reverse=True,
+          )
+
+          # Win-rate analysis from closed picks: Forex 29.9% WR (-40.65% PnL, PF 0.42)
+          # Root cause: TP too wide (0.8% never hit on daily bars), no vol-regime gate
+          # Fix applied in forex_macro_gate (non_crypto_quality_gate.py): vol-ratio > 2x blocks entry
+          win_rate_note = "Live WR: 29.9% (44/147 closed) — forex_macro_gate now blocks high-vol spikes"
+
+          out = {
+              "agent": "forex",
+              "timestamp": pd.Timestamp.now().isoformat(),
+              "total_raw": len(picks),
+              "quality": len(quality),
+              "symbols_tracked": len(FOREX_SYMBOLS),
+              "strategies_run": 8,
+              "live_performance_note": win_rate_note,
+              "picks": quality,
+          }
+          Path("non_crypto_agent/data").mkdir(parents=True, exist_ok=True)
+          Path("non_crypto_agent/data/forex_picks.json").write_text(
+              json.dumps(out, indent=2, default=str)
+          )
+          print(f"Forex agent: {len(quality)} quality picks from {len(picks)} raw")
+          for p in quality[:5]:
+              print(f"  {p['symbol']} {p.get('signal_type','?')} conf={p.get('confidence',0):.2f} rr={p.get('risk_reward',0):.2f} strategy={p.get('strategy','?')}")
+
+          print(f"\n=== FOREX AGENT SUMMARY ===")
+          print(f"Symbols tracked : {len(FOREX_SYMBOLS)}")
+          print(f"Raw picks       : {len(picks)}")
+          print(f"Quality picks   : {len(quality)}")
+          print(f"Performance note: {win_rate_note}")
+          EOF
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add non_crypto_agent/data/forex_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Forex agent: $(date -u '+%Y-%m-%d %H:%M') UTC scan [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh

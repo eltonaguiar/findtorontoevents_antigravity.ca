@@ -1,0 +1,22 @@
+```json
+{
+  "calculate_smart_score_wireup_verdict": "APPROVE",
+  "calculate_smart_score_concerns": [
+    "The try/except swallows any exception from _pacp_score, making debugging harder if the predictor crashes.",
+    "The shadow field is added to the pick dict but never removed; downstream consumers may see an unexpected key.",
+    "The blend ratio (0.4) is hard‑coded; if the per‑asset‑class model is tuned for a different weighting the score could be biased."
+  ],
+  "passes_active_gate_wireup_verdict": "REQUEST_CHANGES",
+  "passes_active_gate_concerns": [
+    "Reading active_picks.json on every gate evaluation incurs disk I/O on every pick, which can dominate runtime for large dashboards.",
+    "The file is read without any caching or throttling; concurrent builds may cause race conditions or stale reads.",
+    "The environment flag name (CONCENTRATION_CAP_ENABLED) is not documented alongside the other feature flags."
+  ],
+  "io_cost_concern_on_active_gate": "HIGH",
+  "recommended_cache_pattern_for_active_picks": "module‑level @functools.lru_cache(maxsize=1) wrapper with a time‑based invalidation (e.g. using cachetools.ttl_cache(ttl=30))",
+  "blend_ratio_0_4_vs_0_5_vs_other": "0.5 – a 50/50 blend is the most neutral default; if a different business weighting is required it should be made configurable rather than hard‑coded.",
+  "shadow_logging_field_name": "per_class_smart_score_shadow",
+  "must_clear_shadow_field_on_pick_save": "true",
+  "single_biggest_risk_of_this_wireup": "Repeated disk reads of active_picks.json on every gate call can cause severe performance degradation and may serve stale data to the concentration‑cap check."
+}
+```

@@ -1,0 +1,28 @@
+function renderMovies(movies) {
+            const container = document.getElementById('container');
+            container.innerHTML = '';
+
+            // Reset per-video mute states when re-rendering
+            videoMuteStates = {};
+
+            movies.forEach((movie, index) => {
+                const card = createMovieCard(movie, index);
+                container.appendChild(card);
+            });
+
+            // If user previously enabled sound, unmute new videos and update UI
+            if (userEnabledSound) {
+                const allIframes = document.querySelectorAll('#container iframe');
+                allIframes.forEach((iframe, idx) => {
+                    videoMuteStates[idx] = false;
+                    iframe.src = iframe.src.replace(/mute=1/, 'mute=0');
+                    const btn = iframe.parentElement.querySelector('.unmute-btn');
+                    if (btn) btn.textContent = 'ð';
+                });
+            }
+
+            // Update mute overlay to reflect current state
+            updateMuteOverlay();
+        }
+
+        

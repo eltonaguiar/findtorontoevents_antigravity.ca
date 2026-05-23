@@ -1,0 +1,211 @@
+{
+  "backtest_timestamp": "2026-03-24T23:09:00.299632+00:00",
+  "config": {
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT",
+      "XRPUSDT",
+      "DOGEUSDT",
+      "AVAXUSDT",
+      "DOTUSDT",
+      "LINKUSDT",
+      "NEARUSDT",
+      "FETUSDT",
+      "RENDERUSDT"
+    ],
+    "interval": "4h",
+    "candles": 540,
+    "period_days": 90,
+    "initial_capital": 10000.0,
+    "position_size_pct": 5.0
+  },
+  "symbols_loaded": 12,
+  "symbols_data": {
+    "BTCUSDT": 540,
+    "ETHUSDT": 540,
+    "SOLUSDT": 540,
+    "BNBUSDT": 540,
+    "XRPUSDT": 540,
+    "DOGEUSDT": 540,
+    "AVAXUSDT": 540,
+    "DOTUSDT": 540,
+    "LINKUSDT": 540,
+    "NEARUSDT": 540,
+    "FETUSDT": 540,
+    "RENDERUSDT": 540
+  },
+  "portfolios": {
+    "A_golden_filter": {
+      "name": "Portfolio A: Golden Filter",
+      "metrics": {
+        "win_rate": 41.78,
+        "profit_factor": 1.047,
+        "sharpe": 0.639,
+        "sortino": 0.776,
+        "max_drawdown_pct": 4.08,
+        "total_return_pct": 0.77,
+        "num_trades": 225,
+        "best_trade_pct": 7.074,
+        "worst_trade_pct": -5.136,
+        "avg_trade_pct": 0.071,
+        "wins": 94,
+        "losses": 131,
+        "gross_profit": 357.96,
+        "gross_loss": 342.002,
+        "final_equity": 10076.94,
+        "best_trade_detail": "FETUSDT +7.07%",
+        "worst_trade_detail": "FETUSDT -5.14%"
+      },
+      "description": "LONG only + Confidence >= 0.70 + R:R [1.0-2.0) + TP 1.5x ATR / SL 1.0x ATR",
+      "score": 16.104
+    },
+    "B_copy_trader": {
+      "name": "Portfolio B: Copy Trader Only",
+      "metrics": {
+        "win_rate": 29.87,
+        "profit_factor": 0.826,
+        "sharpe": -2.611,
+        "sortino": -3.451,
+        "max_drawdown_pct": 1.84,
+        "total_return_pct": -1.48,
+        "num_trades": 231,
+        "best_trade_pct": 6.377,
+        "worst_trade_pct": -3.5,
+        "avg_trade_pct": -0.128,
+        "wins": 69,
+        "losses": 162,
+        "gross_profit": 141.323,
+        "gross_loss": 170.996,
+        "final_equity": 9852.08,
+        "best_trade_detail": "RENDERUSDT +6.38%",
+        "worst_trade_detail": "DOTUSDT -3.50%"
+      },
+      "description": "copy_hl_NMTD_25M (81% WR) + binance_smart_money (55% WR) picks",
+      "sub_strategies": {
+        "copy_hl_NMTD_25M": {
+          "win_rate": 28.9,
+          "profit_factor": 0.824,
+          "sharpe": -2.707,
+          "sortino": -3.683,
+          "max_drawdown_pct": 1.49,
+          "total_return_pct": -1.35,
+          "num_trades": 218,
+          "best_trade_pct": 2.0,
+          "worst_trade_pct": -1.0,
+          "avg_trade_pct": -0.124,
+          "wins": 63,
+          "losses": 155,
+          "gross_profit": 126.0,
+          "gross_loss": 153.0,
+          "final_equity": 9865.41,
+          "best_trade_detail": "ETHUSDT +2.00%",
+          "worst_trade_detail": "ETHUSDT -1.00%"
+        },
+        "binance_smart_money": {
+          "win_rate": 46.15,
+          "profit_factor": 0.851,
+          "sharpe": -0.473,
+          "sortino": -0.534,
+          "max_drawdown_pct": 0.66,
+          "total_return_pct": -0.14,
+          "num_trades": 13,
+          "best_trade_pct": 6.377,
+          "worst_trade_pct": -3.5,
+          "avg_trade_pct": -0.206,
+          "wins": 6,
+          "losses": 7,
+          "gross_profit": 15.323,
+          "gross_loss": 17.996,
+          "final_equity": 9986.49,
+          "best_trade_detail": "RENDERUSDT +6.38%",
+          "worst_trade_detail": "DOTUSDT -3.50%"
+        }
+      },
+      "score": 7.466
+    },
+    "C_momentum_volume": {
+      "name": "Portfolio C: Momentum + Volume",
+      "metrics": {
+        "win_rate": 34.48,
+        "profit_factor": 0.753,
+        "sharpe": -1.665,
+        "sortino": -2.12,
+        "max_drawdown_pct": 1.01,
+        "total_return_pct": -0.64,
+        "num_trades": 58,
+        "best_trade_pct": 6.551,
+        "worst_trade_pct": -2.864,
+        "avg_trade_pct": -0.221,
+        "wins": 20,
+        "losses": 38,
+        "gross_profit": 38.944,
+        "gross_loss": 51.736,
+        "final_equity": 9935.95,
+        "best_trade_detail": "LINKUSDT +6.55%",
+        "worst_trade_detail": "SOLUSDT -2.86%"
+      },
+      "description": "Price > 20-EMA + Vol > 2x avg + RSI 40-65, TP +5% / SL -3% / Trailing 3%",
+      "score": 10.017
+    },
+    "D_mean_reversion": {
+      "name": "Portfolio D: Mean Reversion",
+      "metrics": {
+        "win_rate": 60.34,
+        "profit_factor": 1.217,
+        "sharpe": 1.264,
+        "sortino": 1.112,
+        "max_drawdown_pct": 0.79,
+        "total_return_pct": 0.57,
+        "num_trades": 58,
+        "best_trade_pct": 6.321,
+        "worst_trade_pct": -3.0,
+        "avg_trade_pct": 0.196,
+        "wins": 35,
+        "losses": 23,
+        "gross_profit": 63.922,
+        "gross_loss": 52.539,
+        "final_equity": 10056.67,
+        "best_trade_detail": "DOTUSDT +6.32%",
+        "worst_trade_detail": "LINKUSDT -3.00%"
+      },
+      "description": "RSI(2) < 10 + Price > 200-SMA, exit at RSI(2) > 60, SL -3%",
+      "score": 22.838
+    }
+  },
+  "winner": {
+    "portfolio": "Portfolio D: Mean Reversion",
+    "score": 22.838,
+    "win_rate": 60.34,
+    "profit_factor": 1.217,
+    "total_return_pct": 0.57,
+    "sharpe": 1.264
+  },
+  "ranking": [
+    {
+      "name": "Portfolio D: Mean Reversion",
+      "score": 22.838,
+      "win_rate": 60.34,
+      "total_return": 0.57
+    },
+    {
+      "name": "Portfolio A: Golden Filter",
+      "score": 16.104,
+      "win_rate": 41.78,
+      "total_return": 0.77
+    },
+    {
+      "name": "Portfolio C: Momentum + Volume",
+      "score": 10.017,
+      "win_rate": 34.48,
+      "total_return": -0.64
+    },
+    {
+      "name": "Portfolio B: Copy Trader Only",
+      "score": 7.466,
+      "win_rate": 29.87,
+      "total_return": -1.48
+    }
+  ]
+}

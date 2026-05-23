@@ -1,0 +1,224 @@
+name: Autonomous Trading Bot - Runs Automatically Every 4 Hours
+
+on:
+  # Run automatically every 4 hours (no user action needed!)
+  schedule:
+    - cron: '0 */4 * * *' # 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
+  
+  # Also run on every push to main (when code updates)
+  push:
+    branches:
+      - main
+    paths:
+      - 'live_trading_bot_canada.py'
+      - '.github/workflows/autonomous_trading.yml'
+  
+  # Allow manual trigger (optional)
+  workflow_dispatch:
+
+# Grant permissions for the bot to commit results back to repo
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  trade:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+        fetch-depth: 0
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run Autonomous Trading Bot
+      env:
+        # FREE DATA MODE - No exchange account needed!
+        PRIMARY_EXCHANGE: 'FREE_DATA'
+        
+        # API Keys from GitHub Secrets
+        COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        CRYPTOCOMPARE_API_KEY: ${{ secrets.CRYPTOCOMPARE_API_KEY }}
+        CURRENCY_LAYER_API_KEY: ${{ secrets.CURRENCY_LAYER_API_KEY }}
+        
+        # Paper trading mode (simulated - no real money)
+        DRY_RUN: 'true'
+        
+        # Initial capital for simulation
+        INITIAL_CAPITAL: '10000'
+        
+      run: |
+        echo " Starting Autonomous Trading Bot..."
+        echo " Data Source: CoinGecko + CryptoCompare (FREE)"
+        echo " Mode: Paper Trading (Simulated)"
+        echo " Schedule: Every 4 hours"
+        echo ""
+        python live_trading_bot_canada.py
+        
+    - name: Upload trading results
+      uses: actions/upload-artifact@v4
+      with:
+        name: trading-results-${{ github.run_number }}-${{ github.run_id }}
+        path: |
+          trading_results.json
+          trading_bot.log
+        retention-days: 90
+        
+    - name: Generate Performance Report
+      run: |
+        echo " Generating performance summary..."
+        python3 << 'PYEOF'
+        import json, os
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        lines = []
+        lines.append("# Autonomous Trading Bot - Performance Report")
+        lines.append("")
+        lines.append(f"**Last Updated:** {now}")
+        lines.append("")
+
+        if not os.path.isfile("trading_results.json"):
+            lines.append("> No trading_results.json found. The bot may not have completed its cycle.")
+            lines.append("")
+        else:
+            try:
+                with open("trading_results.json") as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, Exception) as e:
+                lines.append(f"> Error reading trading_results.json: {e}")
+                data = {}
+
+            stats = data.get("stats", {})
+            portfolio = data.get("portfolio", {})
+            config = data.get("config", {})
+            positions = portfolio.get("positions", {})
+            history = data.get("trade_history", [])
+
+            # Summary table
+            lines.append("## Portfolio Summary")
+            lines.append("")
+            lines.append("| Metric | Value |")
+            lines.append("|--------|-------|")
+            lines.append(f"| Initial Capital | ${config.get('initial_capital', 'N/A'):,.2f} |")
+            lines.append(f"| Current Equity | ${stats.get('current_equity', portfolio.get('equity', 0)):,.2f} |")
+            lines.append(f"| Cash | ${portfolio.get('cash', 0):,.2f} |")
+            lines.append(f"| Return | {stats.get('return_pct', portfolio.get('return_pct', 0)):.2f}% |")
+            lines.append(f"| Total Trades | {stats.get('total_trades', len(history))} |")
+            lines.append(f"| Win Rate | {stats.get('win_rate', 0):.1f}% |")
+            lines.append(f"| Total PnL | ${stats.get('total_pnl', 0):,.2f} |")
+            lines.append(f"| Avg Trade | ${stats.get('avg_trade', 0):,.2f} |")
+            lines.append(f"| Risk Per Trade | {config.get('risk_per_trade', 0)*100:.1f}% |")
+            lines.append(f"| Max Positions | {config.get('max_positions', 'N/A')} |")
+            lines.append("")
+
+            # Open positions
+            if positions:
+                lines.append(f"## Open Positions ({len(positions)})")
+                lines.append("")
+                lines.append("| Symbol | Direction | Entry Price | Stop Loss | Take Profit | Strategy |")
+                lines.append("|--------|-----------|-------------|-----------|-------------|----------|")
+                for sym, pos in positions.items():
+                    lines.append(
+                        f"| {sym} | {pos.get('direction', '?')} "
+                        f"| ${pos.get('entry_price', 0):,.2f} "
+                        f"| ${pos.get('stop_loss', 0):,.2f} "
+                        f"| ${pos.get('take_profit', 0):,.2f} "
+                        f"| {pos.get('strategy', '?')} |"
+                    )
+                lines.append("")
+            else:
+                lines.append("## Open Positions")
+                lines.append("No open positions.")
+                lines.append("")
+
+            # Trade history
+            if history:
+                lines.append(f"## Recent Trade History ({len(history)} trades)")
+                lines.append("")
+                lines.append("| Symbol | Direction | Entry | Exit | PnL | Strategy |")
+                lines.append("|--------|-----------|-------|------|-----|----------|")
+                for t in history[-20:]:
+                    lines.append(
+                        f"| {t.get('symbol', '?')} | {t.get('direction', '?')} "
+                        f"| ${t.get('entry_price', 0):,.2f} "
+                        f"| ${t.get('exit_price', 0):,.2f} "
+                        f"| ${t.get('pnl', 0):,.2f} "
+                        f"| {t.get('strategy', '?')} |"
+                    )
+                lines.append("")
+
+        lines.append("---")
+        lines.append("")
+        lines.append("*This report is auto-generated every 4 hours by the autonomous trading bot.*")
+
+        with open("PERFORMANCE_REPORT.md", "w") as f:
+            f.write("\n".join(lines) + "\n")
+
+        print(f"Report written to PERFORMANCE_REPORT.md ({len(lines)} lines)")
+        PYEOF
+        
+    - name: Commit results back to repository
+      run: |
+        git config --local user.email "bot@trading-system.ai"
+        git config --local user.name " Autonomous Trading Bot"
+        
+        # Add all result files
+        git add trading_results.json || true
+        git add trading_bot.log || true
+        git add PERFORMANCE_REPORT.md || true
+
+        # Create a nice commit message with timestamp
+        TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m " Auto: Trading cycle complete - $TIMESTAMP
+
+         Results:
+        - Data: CoinGecko + CryptoCompare (FREE)
+        - Mode: Paper Trading
+        - Run: #${{ github.run_number }}
+
+        [skip ci]"
+          # Push back to repo with retry logic
+          bash .github/scripts/safe_push.sh
+        fi
+        
+    - name: Summary
+      run: |
+        echo ""
+        echo ""
+        echo " AUTONOMOUS TRADING BOT - CYCLE COMPLETE "
+        echo ""
+        echo " Data Source: CoinGecko + CryptoCompare (FREE) "
+        echo " Mode: Paper Trading (No Real Money) "
+        echo " Schedule: Every 4 hours automatically "
+        echo " Results: Committed to repository "
+        echo " Next Run: $(date -u -d '+4 hours' '+%Y-%m-%d %H:%M UTC') "
+        echo ""
+        echo ""
+        if [ -f trading_results.json ]; then
+          echo " Current Portfolio Status:"
+          python3 -c "import json; data=json.load(open('trading_results.json')); print(f\" Equity: \${data['portfolio']['equity']:,.2f}\"); print(f\" Return: {data['portfolio']['return_pct']:+.2f}%\"); print(f\" Trades: {data['stats']['total_trades']}\")"
+        fi
+

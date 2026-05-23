@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto ML Edge Engine — GSD</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0a12;--bg2:#11111b;--bg3:#1a1a2e;--bg4:#232340;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+    --green:#22c55e;--green-bg:rgba(34,197,94,.12);
+    --red:#ef4444;--red-bg:rgba(239,68,68,.12);
+    --yellow:#eab308;--yellow-bg:rgba(234,179,8,.12);
+    --blue:#3b82f6;--blue-bg:rgba(59,130,246,.12);
+    --purple:#a855f7;--purple-bg:rgba(168,85,247,.12);
+    --border:#2a2a3e;--radius:8px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+  a{color:var(--blue);text-decoration:none}
+
+  /* Header */
+  .header{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 100%);border-bottom:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .header-left{display:flex;align-items:center;gap:16px}
+  .header h1{font-size:1.5rem;font-weight:700;letter-spacing:-.02em}
+  .header h1 .gsd{color:var(--green);font-weight:800}
+  .header-meta{display:flex;gap:16px;align-items:center;font-size:.8rem;color:var(--text3)}
+  .version-badge{background:var(--bg4);padding:2px 10px;border-radius:12px;font-size:.7rem;color:var(--text2);border:1px solid var(--border)}
+  .refresh-timer{font-size:.75rem;color:var(--text3)}
+
+  /* Status bar */
+  .status-bar{display:flex;gap:16px;padding:12px 24px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+  .status-item{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text2)}
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .status-dot.active{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .status-dot.inactive{background:var(--red);box-shadow:0 0 6px var(--red)}
+  .status-dot.warning{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+
+  /* Container */
+  .container{max-width:1400px;margin:0 auto;padding:20px 24px}
+
+  /* Tabs */
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg2);border-radius:var(--radius);padding:4px;border:1px solid var(--border)}
+  .tab{padding:10px 24px;border-radius:6px;cursor:pointer;font-size:.88rem;font-weight:500;color:var(--text3);transition:all .2s;border:none;background:none}
+  .tab:hover{color:var(--text2)}
+  .tab.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+
+  /* Cards grid */
+  .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+  .metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+  .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+  .metric-card.green::before{background:var(--green)}
+  .metric-card.red::before{background:var(--red)}
+  .metric-card.blue::before{background:var(--blue)}
+  .metric-card.yellow::before{background:var(--yellow)}
+  .metric-card.purple::before{background:var(--purple)}
+  .metric-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:6px}
+  .metric-value{font-size:1.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .metric-sub{font-size:.75rem;color:var(--text3);margin-top:4px}
+
+  /* Assessment box */
+  .assessment{border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;border:1px solid}
+  .assessment.edge{background:var(--green-bg);border-color:rgba(34,197,94,.3)}
+  .assessment.early{background:var(--yellow-bg);border-color:rgba(234,179,8,.3)}
+  .assessment.noedge{background:var(--red-bg);border-color:rgba(239,68,68,.3)}
+  .assessment-title{font-size:1rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .assessment-title .icon{font-size:1.2rem}
+  .assessment-body{font-size:.88rem;color:var(--text2);line-height:1.6}
+  .assessment-note{font-size:.8rem;color:var(--text3);line-height:1.5}
+
+  /* Tables */
+  .table-section{margin-bottom:24px}
+  .table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .table-header h2{font-size:1.1rem;font-weight:600}
+  .table-header .count{font-size:.8rem;color:var(--text3);background:var(--bg3);padding:2px 10px;border-radius:10px}
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2)}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  thead{background:var(--bg3)}
+  th{text-align:left;padding:10px 14px;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);white-space:nowrap;cursor:pointer;user-select:none}
+  th:hover{color:var(--text2)}
+  th.sorted-asc::after{content:' \u25B2';font-size:.6rem}
+  th.sorted-desc::after{content:' \u25BC';font-size:.6rem}
+  td{padding:10px 14px;border-top:1px solid var(--border);white-space:nowrap}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .long{color:var(--green)}
+  .short{color:var(--red)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;text-transform:uppercase}
+  .badge-long{background:var(--green-bg);color:var(--green)}
+  .badge-short{background:var(--red-bg);color:var(--red)}
+  .badge-win{background:var(--green-bg);color:var(--green)}
+  .badge-loss{background:var(--red-bg);color:var(--red)}
+  .badge-timeout{background:var(--yellow-bg);color:var(--yellow)}
+  .badge-active{background:var(--blue-bg);color:var(--blue)}
+  .badge-high{background:var(--green-bg);color:var(--green)}
+  .badge-medium{background:var(--yellow-bg);color:var(--yellow)}
+  .badge-watch{background:rgba(148,163,184,.12);color:var(--text3)}
+  .badge-crypto{background:rgba(251,146,60,.12);color:#fb923c;font-size:.65rem}
+  .badge-etf{background:rgba(56,189,248,.12);color:#38bdf8;font-size:.65rem}
+  .badge-commodity{background:rgba(234,179,8,.12);color:#eab308;font-size:.65rem}
+  .strategy-filter{padding:3px 10px;border-radius:12px;font-size:.7rem;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .2s}
+  .strategy-filter:hover,.strategy-filter.active{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+  .badge-stock{background:rgba(168,85,247,.12);color:#a855f7;font-size:.65rem}
+  .badge-forex{background:rgba(52,211,153,.12);color:#34d399;font-size:.65rem}
+  .asset-desc{font-size:.68rem;color:var(--text3);display:block;margin-top:1px}
+  /* Asset class filters */
+  .asset-filters{display:flex;gap:4px}
+  .filter-btn{padding:4px 12px;border-radius:12px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer;transition:all .2s}
+  .filter-btn:hover{color:var(--text2);border-color:var(--text3)}
+  .filter-btn.active{background:var(--blue-bg);color:var(--blue);border-color:rgba(59,130,246,.4)}
+  .filter-btn[data-filter="crypto"].active{background:rgba(251,146,60,.15);color:#fb923c;border-color:rgba(251,146,60,.4)}
+  .filter-btn[data-filter="etf"].active{background:rgba(56,189,248,.15);color:#38bdf8;border-color:rgba(56,189,248,.4)}
+  .filter-btn[data-filter="stock"].active{background:rgba(168,85,247,.15);color:#a855f7;border-color:rgba(168,85,247,.4)}
+  .filter-btn[data-filter="forex"].active{background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.4)}
+
+  .audit-toggle{cursor:pointer;color:var(--blue);font-size:.75rem;margin-left:8px;text-decoration:underline}
+  .audit-panel{display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-top:8px;font-size:.8rem;line-height:1.6}
+  .audit-panel.open{display:block}
+  .audit-panel .audit-label{color:var(--text3);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;margin-top:8px}
+  .audit-panel .audit-label:first-child{margin-top:0}
+  .audit-panel ul{padding-left:16px;margin:4px 0}
+  .audit-panel li{color:var(--text2)}
+  .strategy-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .strategy-chip{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:2px 10px;font-size:.72rem;color:var(--text2)}
+  .confidence-bar{width:60px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}
+  .confidence-fill{height:100%;border-radius:3px}
+
+  /* Scrollable history */
+  .history-wrap{max-height:400px;overflow-y:auto}
+  .history-wrap::-webkit-scrollbar{width:6px}
+  .history-wrap::-webkit-scrollbar-track{background:var(--bg2)}
+  .history-wrap::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+  /* Health grid */
+  .health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+  .health-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+  .health-card .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:6px}
+  .health-card .value{font-size:1.2rem;font-weight:600}
+
+  /* Empty state */
+  .empty{text-align:center;padding:48px 24px;color:var(--text3)}
+  .empty .icon{font-size:2.5rem;margin-bottom:12px;opacity:.4}
+  .empty p{font-size:.9rem}
+
+  /* Loading */
+  .loading{text-align:center;padding:60px;color:var(--text3)}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Error */
+  .error-box{background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;font-size:.88rem;color:var(--red)}
+
+  /* Footer */
+  .footer{text-align:center;padding:24px;font-size:.75rem;color:var(--text3);border-top:1px solid var(--border);margin-top:40px}
+
+  /* Responsive */
+  @media(max-width:768px){
+    .header{padding:16px}
+    .header h1{font-size:1.2rem}
+    .container{padding:16px}
+    .metrics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    .metric-value{font-size:1.3rem}
+    .tabs{flex-wrap:wrap}
+    .tab{padding:8px 16px;font-size:.82rem}
+    td,th{padding:8px 10px;font-size:.78rem}
+  }
+  @media(max-width:480px){
+    .metrics-grid{grid-template-columns:1fr 1fr}
+    .metric-card{padding:14px}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>Crypto ML Edge Engine -- <span class="gsd">GSD</span></h1>
+    <span class="version-badge" id="versionBadge">v1.0.0</span>
+  </div>
+  <div class="header-meta">
+    <span id="lastUpdated">Last updated: --</span>
+    <span class="refresh-timer" id="refreshTimer">Next refresh: 5:00</span>
+  </div>
+</header>
+
+    <div class="status-bar" id="statusBar">
+  <div class="status-item">
+    <span class="status-dot inactive" id="systemDot"></span>
+    <span id="systemStatus">System: Loading...</span>
+  </div>
+  <div class="status-item">
+    <span id="modelsLoaded">Models: --</span>
+  </div>
+  <div class="status-item">
+    <span id="lastScan">Last scan: --</span>
+  </div>
+  <div class="status-item">
+    <span id="nextScan">Next scan: --</span>
+  </div>
+  <div class="status-item">
+    <span id="dsrStatus">DSR: --</span>
+  </div>
+  <div class="status-item">
+    <span id="capitalBase">Capital: --</span>
+  </div>
+  <div class="status-item">
+    <span id="quickScanTime">Quick scan: --</span>
+  </div>
+  <div class="status-item" id="strategyChips"></div>
+</div>
+
+<div class="container">
+
+  <!-- ML EXPLAINER -->
+  <div style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #22c55e33;border-radius:10px;padding:16px 20px;margin-bottom:16px;line-height:1.7">
+    <div style="font-size:14px;font-weight:700;color:#22c55e;margin-bottom:8px">How Crypto ML Edge Works &mdash; Plain English</div>
+    <div style="font-size:12px;color:#e2e8f0">
+      <p style="margin-bottom:8px"><strong style="color:#22c55e">What are the "16 trained models"?</strong> &mdash; Crypto ML Edge trains a separate LightGBM model for each coin (BTC, ETH, SOL, etc.) at each timeframe (1h, 4h). That means: 8 coins &times; 2 timeframes = 16 models. Each model is a specialist &mdash; the BTC-1h model only knows Bitcoin hourly patterns, while the SOL-4h model only knows Solana 4-hour patterns. Specialists beat generalists.</p>
+      <p style="margin-bottom:8px"><strong style="color:#22c55e">What is LightGBM?</strong> &mdash; LightGBM (Light Gradient Boosting Machine) is similar to XGBoost but faster. It builds decision trees one leaf at a time instead of one level at a time, making it better at finding complex patterns with less computing power. Think of it as a faster, more efficient version of XGBoost.</p>
+      <p style="margin-bottom:8px"><strong style="color:#22c55e">How does it pick features?</strong> &mdash; The system uses <strong>SHAP</strong> (SHapley Additive exPlanations) to automatically figure out which indicators actually matter for each coin. For BTC, maybe RSI and volume ratio are most important. For DOGE, maybe social sentiment matters more. SHAP removes useless features so the model doesn't get confused by noise.</p>
+      <p style="margin-bottom:8px"><strong style="color:#22c55e">How do picks appear here?</strong> &mdash; Every 30 min: fetch latest data &rarr; run all 16 models &rarr; each model outputs a confidence score (0-100%) &rarr; apply DSR validation gate &rarr; picks above threshold become active with TP/SL levels. The "Edge" tab shows model-driven picks. The "Quick" tab shows simpler rule-based signals that don't use ML.</p>
+      <p><strong style="color:#22c55e">Walk-forward validation:</strong> &mdash; Models are trained using a technique where they're always tested on data they've <em>never seen</em>. Imagine teaching someone with chapters 1-8 of a textbook, then testing them on chapter 9. This prevents "overfitting" (memorizing history instead of learning real patterns).</p>
+    </div>
+  </div>
+
+  <div id="errorContainer"></div>
+  <div id="loadingState" class="loading">
+    <div class="spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <div id="dashboardContent" style="display:none">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="edge" onclick="switchTab('edge')">Edge Engine</button>
+      <button class="tab" data-tab="gainer" onclick="switchTab('gainer')">Gainer Detector</button>
+      <button class="tab" data-tab="health" onclick="switchTab('health')">Model Health</button>
+      <button class="tab" data-tab="methodology" onclick="switchTab('methodology')">Methodology</button>
+    </div>
+
+    <!-- ===== Edge Engine Tab ===== -->
+    <div class="tab-content active" id="tab-edge">
+
+      <!-- Honest Assessment -->
+      <div class="assessment early" id="assessment">
+        <div class="assessment-title">
+          <span class="icon" id="assessIcon">--</span>
+          <span id="assessTitle">Honest Forward-Test Assessment</span>
+        </div>
+        <div class="assessment-body" id="assessBody">Loading assessment...</div>
+        <div class="assessment-note" id="assessmentNote" style="margin-top:8px;font-size:.8rem;color:var(--text3);border-top:1px dashed var(--border);padding-top:8px;"></div>
+      </div>
+
+      <!-- Performance metrics -->
+      <div class="metrics-grid" id="edgeMetrics">
+        <div class="metric-card green">
+          <div class="metric-label">Win Rate</div>
+          <div class="metric-value" id="mWinRate">--</div>
+          <div class="metric-sub" id="mWinSub">-- / -- picks</div>
+        </div>
+        <div class="metric-card blue">
+          <div class="metric-label">Sharpe Ratio</div>
+          <div class="metric-value" id="mSharpe">--</div>
+          <div class="metric-sub">Estimated from closed picks</div>
+        </div>
+        <div class="metric-card purple">
+          <div class="metric-label">Total Return</div>
+          <div class="metric-value" id="mReturn">--</div>
+          <div class="metric-sub" id="mReturnSub">On $10,000 base</div>
+        </div>
+        <div class="metric-card yellow">
+          <div class="metric-label">Total Picks</div>
+          <div class="metric-value" id="mTotal">--</div>
+          <div class="metric-sub" id="mTotalSub">W: -- / L: -- / T: --</div>
+        </div>
+      </div>
+
+      <!-- Active picks -->
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Active Picks</h2>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="asset-filters" id="assetFilters">
+              <button class="filter-btn active" data-filter="all" onclick="filterAssetClass('all')">All</button>
+              <button class="filter-btn" data-filter="crypto" onclick="filterAssetClass('crypto')">Crypto</button>
+              <button class="filter-btn" data-filter="etf" onclick="filterAssetClass('etf')">ETF</button>
+              <button class="filter-btn" data-filter="stock" onclick="filterAssetClass('stock')">Stock</button>
+              <button class="filter-btn" data-filter="forex" onclick="filterAssetClass('forex')">Forex</button>
+            </div>
+            <span class="count" id="activeCount">0</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="activeTable">
+            <thead>
+              <tr>
+                <th data-sort="pair">Pair</th>
+                <th data-sort="asset_class">Asset</th>
+                <th data-sort="direction">Dir</th>
+                <th data-sort="tier">Tier</th>
+                <th data-sort="confidence" class="sorted-desc">Confidence</th>
+                <th data-sort="entry_price">Entry</th>
+                <th data-sort="tp">TP</th>
+                <th data-sort="sl">SL</th>
+                <th data-sort="position_size">Size</th>
+                <th data-sort="current_price">Now</th>
+                <th data-sort="pnl">P&L</th>
+                <th data-sort="strategy">Strategy</th>
+                <th data-sort="opened_at">Time (EST)</th>
+                <th>Audit</th>
+              </tr>
+            </thead>
+            <tbody id="activeBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Closed picks -->
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Closed Picks History</h2>
+          <span class="count" id="closedCount">0</span>
+        </div>
+        <div class="history-wrap">
+          <div class="table-wrap">
+            <table id="closedTable">
+              <thead>
+                <tr>
+                  <th data-sort="pair">Pair</th>
+                  <th data-sort="direction">Dir</th>
+                  <th data-sort="result">Result</th>
+                  <th data-sort="pnl_pct">P&L %</th>
+                  <th data-sort="confidence">Conf</th>
+                  <th data-sort="entry_price">Entry</th>
+                  <th data-sort="exit_price">Exit</th>
+                  <th data-sort="closed_at">Closed</th>
+                </tr>
+              </thead>
+              <tbody id="closedBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Gainer Detector Tab ===== -->
+    <div class="tab-content" id="tab-gainer">
+
+      <!-- Gainer metrics -->
+      <div class="metrics-grid" id="gainerMetrics">
+        <div class="metric-card green">
+          <div class="metric-label">Gainer Win Rate</div>
+          <div class="metric-value" id="gWinRate">--</div>
+          <div class="metric-sub" id="gWinSub">-- / -- picks</div>
+        </div>
+        <div class="metric-card purple">
+          <div class="metric-label">Gainer Return</div>
+          <div class="metric-value" id="gReturn">--</div>
+          <div class="metric-sub">Gainer detector picks</div>
+        </div>
+        <div class="metric-card yellow">
+          <div class="metric-label">Total Gainer Picks</div>
+          <div class="metric-value" id="gTotal">--</div>
+          <div class="metric-sub" id="gTotalSub">W: -- / L: -- / T: --</div>
+        </div>
+      </div>
+
+      <!-- Gainer active picks -->
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Active Gainer Picks</h2>
+          <span class="count" id="gainerActiveCount">0</span>
+        </div>
+        <div class="table-wrap">
+          <table id="gainerTable">
+            <thead>
+              <tr>
+                <th data-sort="pair">Pair</th>
+                <th data-sort="direction">Dir</th>
+                <th data-sort="confidence">Confidence</th>
+                <th data-sort="entry_price">Entry</th>
+                <th data-sort="tp">TP</th>
+                <th data-sort="sl">SL</th>
+                <th data-sort="position_size">Size</th>
+                <th data-sort="opened_at">Time</th>
+              </tr>
+            </thead>
+            <tbody id="gainerBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Model Health Tab ===== -->
+    <div class="tab-content" id="tab-health">
+      <div class="health-grid">
+        <div class="health-card">
+          <div class="label">Models Loaded</div>
+          <div class="value" id="hModels" style="color:var(--blue)">--</div>
+        </div>
+        <div class="health-card">
+          <div class="label">Last Training</div>
+          <div class="value" id="hTraining" style="font-size:.9rem">--</div>
+        </div>
+        <div class="health-card">
+          <div class="label">Last Scan</div>
+          <div class="value" id="hScan" style="font-size:.9rem">--</div>
+        </div>
+        <div class="health-card">
+          <div class="label">DSR Pass</div>
+          <div class="value" id="hDSRPass" style="color:var(--green)">--</div>
+        </div>
+        <div class="health-card">
+          <div class="label">DSR Fail</div>
+          <div class="value" id="hDSRFail" style="color:var(--red)">--</div>
+        </div>
+        <div class="health-card">
+          <div class="label">Validation</div>
+          <div class="value" id="hValidation" style="color:var(--yellow)">--</div>
+        </div>
+      </div>
+
+      <div class="assessment early" id="healthAssessment">
+        <div class="assessment-title">
+          <span class="icon">*</span>
+          <span>Model Health Summary</span>
+        </div>
+        <div class="assessment-body" id="healthBody">Loading health data...</div>
+      </div>
+    </div>
+
+    <!-- ===== Methodology Tab ===== -->
+    <div class="tab-content" id="tab-methodology">
+      <div style="max-width:900px">
+
+        <div class="assessment edge" style="margin-bottom:24px">
+          <div class="assessment-title"><span class="icon">*</span><span>How This System Works</span></div>
+          <div class="assessment-body">
+            The Crypto ML Edge Engine uses <strong>academically proven, statistically validated strategies</strong> -- not black-box ML predictions.
+            Every pick comes with a full audit trail showing exactly why it was generated, what indicators triggered, and the academic source backing the strategy.
+            The system runs autonomously via GitHub Actions, scanning markets every <strong>30 minutes</strong> and tracking all open positions against live prices.
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-header"><h2>Active Strategies</h2><div style="display:flex;gap:6px;flex-wrap:wrap" id="strategyFilters"></div></div>
+          <div class="table-wrap">
+            <table id="strategyTable">
+              <thead>
+                <tr>
+                  <th>Strategy</th>
+                  <th>Status</th>
+                  <th>Asset Classes</th>
+                  <th>Win Rate</th>
+                  <th>Inception</th>
+                  <th>Last Updated</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-strategy="connors_rsi2" data-status="proven" data-gen="gen1">
+                  <td><strong>Connors RSI-2</strong><div style="font-size:.7rem;color:var(--text3);margin-top:2px">Buys RSI-2 &lt; 5 oversold dips. Now scans SPY, QQQ, IWM, GLD, SLV, VDE, COPX + crypto.</div></td>
+                  <td><span class="badge badge-high" title="Statistically proven: p &lt; 0.001 on SPY/QQQ">PROVEN</span></td>
+                  <td><span class="badge badge-crypto">Crypto</span> <span class="badge badge-etf">ETF</span> <span class="badge badge-commodity">Commodity</span></td>
+                  <td style="color:var(--green)">75.7%</td>
+                  <td title="Strategy inception: Feb 18, 2026" style="font-size:.78rem;cursor:help">Feb 18</td>
+                  <td title="Last code update: Feb 24, 2026 — added SLV, VDE, COPX tickers" style="font-size:.78rem;cursor:help;color:var(--green)">Feb 24</td>
+                  <td style="font-size:.72rem">Connors &amp; Alvarez (2008)</td>
+                </tr>
+                <tr data-strategy="vix_crypto_fear" data-status="proven" data-gen="gen1">
+                  <td><strong>VIX/Fear Reversal</strong><div style="font-size:.7rem;color:var(--text3);margin-top:2px">Buys extreme fear (F&amp;G &lt; 15). Currently active: F&amp;G = 8.</div></td>
+                  <td><span class="badge badge-high" title="Historically 100% within 30 days at F&amp;G &lt; 10">PROVEN</span></td>
+                  <td><span class="badge badge-crypto">Crypto</span> <span class="badge badge-etf">ETF</span></td>
+                  <td style="color:var(--green)">72.0%</td>
+                  <td title="Strategy inception: Feb 18, 2026" style="font-size:.78rem;cursor:help">Feb 18</td>
+                  <td title="Last code update: Feb 23, 2026" style="font-size:.78rem;cursor:help">Feb 23</td>
+                  <td style="font-size:.72rem">F&amp;G Index contrarian</td>
+                </tr>
+                <tr data-strategy="fib_trend_pullback" data-status="new" data-gen="gen2">
+                  <td><strong>Fib Trend Pullback</strong><div style="font-size:.7rem;color:var(--text3);margin-top:2px">3-layer confluence: 50/200 MA trend + Fibonacci retracement + RSI confirmation. Scans crypto + ETFs + commodities.</div></td>
+                  <td><span class="badge badge-medium" title="New strategy, forward-testing in progress">NEW</span></td>
+                  <td><span class="badge badge-crypto">Crypto</span> <span class="badge badge-etf">ETF</span> <span class="badge badge-commodity">Commodity</span></td>
+                  <td style="color:var(--yellow)">TBD</td>
+                  <td title="Strategy inception: Feb 24, 2026" style="font-size:.78rem;cursor:help;color:var(--green)">Feb 24</td>
+                  <td title="Last code update: Feb 24, 2026 — initial release" style="font-size:.78rem;cursor:help;color:var(--green)">Feb 24</td>
+                  <td style="font-size:.72rem">Brock (1992) + Osler (2000) + Wilder (1978)</td>
+                </tr>
+                <tr data-strategy="funding_rate" data-status="blocked" data-gen="gen1">
+                  <td><strong>Funding Rate Carry</strong><div style="font-size:.7rem;color:var(--text3);margin-top:2px">Goes long on extreme negative funding. Blocked: Binance Futures API geo-restricted from CI.</div></td>
+                  <td><span class="badge badge-watch" title="Cannot run in CI due to Binance geo-block (HTTP 451)">BLOCKED</span></td>
+                  <td><span class="badge badge-crypto">Crypto</span></td>
+                  <td style="color:var(--green)">71.0%</td>
+                  <td title="Strategy inception: Feb 18, 2026" style="font-size:.78rem;cursor:help">Feb 18</td>
+                  <td title="Last code update: Feb 18, 2026 — awaiting CI fix" style="font-size:.78rem;cursor:help;color:var(--text3)">Feb 18</td>
+                  <td style="font-size:.72rem">Binance perp funding research</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:8px;font-size:.72rem;color:var(--text3)">
+            Hover over dates for details. <span style="color:var(--green)">Green dates</span> = updated in last 48h.
+            Strategies labeled PROVEN have statistically significant backtests (p &lt; 0.05). NEW strategies are in forward-testing.
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-header"><h2>System Operations</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Value</th><th>Details</th></tr></thead>
+              <tbody>
+                <tr><td>Scan Frequency</td><td style="color:var(--blue)">Every 30 min</td><td style="font-size:.78rem">GitHub Actions cron schedule. Checks for new signals + tracks open positions.</td></tr>
+                <tr><td>Capital Base</td><td style="color:var(--green)">$10,000</td><td style="font-size:.78rem">Simulated starting capital. Position sizes are 2-5% per trade based on confidence.</td></tr>
+                <tr><td>Max Concurrent Picks</td><td>10</td><td style="font-size:.78rem">Prevents over-concentration. New picks queued if all slots full.</td></tr>
+                <tr><td>Position Sizing</td><td>2-5% of capital</td><td style="font-size:.78rem">Scaled by confidence: 60% conf = 2%, 75%+ conf = 4.4%. Hard cap at 5%.</td></tr>
+                <tr><td>Max Hold Time</td><td>10 bars</td><td style="font-size:.78rem">Auto-closes positions after 10 daily bars. Mean reversion should resolve in 2-5 days — if it hasn't by day 10, the thesis is wrong.</td></tr>
+                <tr><td>Confidence Threshold</td><td>60%</td><td style="font-size:.78rem">Picks below 60% are filtered out. Only high-conviction signals are published.</td></tr>
+                <tr><td>Risk/Reward</td><td>1.2-1.5:1</td><td style="font-size:.78rem">TP is 1.2x ATR (crypto) or 1.5x ATR (ETF). Tight targets match mean reversion reality — capture the bounce, not a trend reversal.</td></tr>
+                <tr><td>Falling Knife Filter</td><td>20% max below SMA</td><td style="font-size:.78rem">Rejects signals where price is &gt;20% below 200 SMA. Connors RSI-2 was proven on temporary dips in uptrends, not structural bear markets.</td></tr>
+                <tr><td>Price Tracking</td><td>Binance + CoinGecko</td><td style="font-size:.78rem">Tries Binance API first, falls back to CoinGecko for CI environments where Binance is geo-blocked (451).</td></tr>
+                <tr><td>Data Refresh</td><td>5 min (dashboard)</td><td style="font-size:.78rem">Dashboard auto-fetches latest active_picks.json every 5 minutes from GitHub raw.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-header"><h2>Tier Classification</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tier</th><th>Criteria</th><th>Position Size</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge badge-high">HIGH</span></td><td>Confidence &ge; 75% AND Risk/Reward &ge; 1.5:1</td><td>~4.4% ($440)</td></tr>
+                <tr><td><span class="badge badge-medium">MEDIUM</span></td><td>Confidence &ge; 65%</td><td>~3.6% ($356)</td></tr>
+                <tr><td><span class="badge badge-watch">WATCH</span></td><td>Confidence 60-65%</td><td>~2.0% ($200)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-header"><h2>Statistical Validation</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Backtest</th><th>Win Rate</th><th>p-value</th><th>Sharpe</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Connors RSI-2 on SPY (2000-2025)</td><td style="color:var(--green)">75.7%</td><td>6e-06</td><td>4.84</td><td style="color:var(--green)">PROVEN</td></tr>
+                <tr><td>Connors RSI-2 on QQQ (2000-2025)</td><td style="color:var(--green)">75.3%</td><td>8e-06</td><td>6.55</td><td style="color:var(--green)">PROVEN</td></tr>
+                <tr><td>VIX Spike Reversal (2008-2025)</td><td style="color:var(--green)">72.0%</td><td>0.022</td><td>6.20</td><td style="color:var(--green)">PROVEN</td></tr>
+                <tr><td>Connors RSI-2 on BTC (2017-2025)</td><td style="color:var(--green)">62.5%</td><td>0.009</td><td>2.35</td><td style="color:var(--green)">PROVEN</td></tr>
+                <tr><td>Funding Rate Carry on DOGE</td><td style="color:var(--green)">71.0%</td><td>~0.042</td><td>8.19</td><td style="color:var(--yellow)">MARGINAL</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="assessment early" style="margin-top:24px">
+          <div class="assessment-title"><span class="icon">*</span><span>Strategy Generations</span></div>
+          <div class="assessment-body">
+            <strong>Gen 1 (Feb 18-23):</strong> Connors RSI-2, Funding Rate Carry, VIX/Fear Reversal. These are the proven foundation strategies with backtested win rates of 71-76%.
+            <strong>Gen 2 (Feb 24+):</strong> Fib Trend Pullback (3-layer confluence) + expanded asset universe (SLV, VDE, COPX). These are newer strategies in forward-testing.
+            <strong>ML Pilots (Feb 24+):</strong> TA Ensemble (22-feature LightGBM), News Sentiment (headline scraping + contrarian), Multi-Asset Momentum (cross-asset signals). Training and calibrating.
+            <strong>Killed:</strong> double_top_bottom_detector was disabled after -$14,088 loss (5.6% WR on 18 trades).
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  Crypto ML Edge Engine -- GSD | Auto-refreshes every 5 minutes | Data from forward-testing only
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* --- Config --- */
+  const DATA_URLS = [
+    './active_picks.json',
+    '../data/active_picks.json',
+    'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_ml_edge/data/active_picks.json'
+  ];
+  const REFRESH_MS = 5 * 60 * 1000;
+  let refreshCountdown = REFRESH_MS / 1000;
+  let sortState = {};
+  let currentData = null;
+
+  /* --- Fetch with fallback --- */
+  async function fetchData() {
+    for (const url of DATA_URLS) {
+      try {
+        const resp = await fetch(url, { cache: 'no-store' });
+        if (resp.ok) {
+          const data = await resp.json();
+          return data;
+        }
+      } catch (e) {
+        console.warn('Fetch failed for', url, e.message);
+      }
+    }
+    return null;
+  }
+
+  /* --- Render --- */
+  function render(data) {
+    currentData = data;
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+    document.getElementById('errorContainer').innerHTML = '';
+
+    // Version + time
+    document.getElementById('versionBadge').textContent = 'v' + (data.engine_version || '1.0.0');
+    document.getElementById('lastUpdated').textContent = 'Last updated: ' + formatTime(data.generated_at);
+
+    // Status bar
+    const health = data.model_health || {};
+    const perf = data.performance || {};
+    const hasActivity = (perf.total_picks || 0) > 0 || (data.picks || []).length > 0;
+    const dot = document.getElementById('systemDot');
+    const statusEl = document.getElementById('systemStatus');
+    if (hasActivity) {
+      dot.className = 'status-dot active';
+      statusEl.textContent = 'System: Active';
+    } else if (health.models_loaded > 0) {
+      dot.className = 'status-dot warning';
+      statusEl.textContent = 'System: Standby';
+    } else {
+      dot.className = 'status-dot inactive';
+      statusEl.textContent = 'System: Inactive';
+    }
+    document.getElementById('modelsLoaded').textContent = 'Models: ' + (health.models_loaded || 0);
+    document.getElementById('lastScan').textContent = 'Last scan: ' + (health.last_scan ? formatTime(health.last_scan) : 'Never');
+
+    // Next scan countdown (every 30 minutes: HH:00 and HH:30 UTC)
+    const now = new Date();
+    const nextScan = new Date(now);
+    const minutes = now.getUTCMinutes();
+    if (minutes < 30) {
+      nextScan.setUTCHours(now.getUTCHours(), 30, 0, 0);
+    } else {
+      nextScan.setUTCHours(now.getUTCHours() + 1, 0, 0, 0);
+    }
+    const diffMs = nextScan - now;
+    const diffMins = Math.ceil(diffMs / 60000);
+    const nextScanText = diffMins < 60 ? `${diffMins}m` : `${Math.floor(diffMins/60)}h ${diffMins%60}m`;
+    document.getElementById('nextScan').textContent = 'Next scan: ' + nextScanText;
+
+    document.getElementById('dsrStatus').textContent = 'DSR: ' + (health.dsr_pass_count || 0) + ' pass / ' + (health.dsr_fail_count || 0) + ' fail';
+    document.getElementById('capitalBase').textContent = 'Capital: $' + (data.capital_base || 10000).toLocaleString();
+
+    // Quick engine status
+    var qe = data.quick_engine || {};
+    document.getElementById('quickScanTime').textContent = 'Quick scan: ' + (qe.last_scan_est || 'Never');
+    var chipsEl = document.getElementById('strategyChips');
+    var counts = qe.strategy_counts || {};
+    chipsEl.innerHTML = '<div class="strategy-chips">' +
+      Object.entries(counts).map(function(e) { return '<span class="strategy-chip">' + esc(e[0].replace(/_/g,' ')) + ': ' + e[1] + '</span>'; }).join('') +
+      '</div>';
+
+    renderEdgeMetrics(perf);
+    renderAssessment(perf);
+    renderActivePicks(data.picks || []);
+    renderClosedPicks(data.closed_picks || []);
+    renderGainerTab(data);
+    renderHealth(health);
+  }
+
+  function renderEdgeMetrics(p) {
+    const wr = p.total_picks > 0 ? p.win_rate : 0;
+    document.getElementById('mWinRate').textContent = wr.toFixed(1) + '%';
+    document.getElementById('mWinRate').style.color = wr > 55 ? 'var(--green)' : wr > 45 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('mWinSub').textContent = (p.wins || 0) + ' / ' + (p.total_picks || 0) + ' picks';
+
+    const sharpe = p.sharpe_estimate || 0;
+    document.getElementById('mSharpe').textContent = sharpe.toFixed(2);
+    document.getElementById('mSharpe').style.color = sharpe > 1 ? 'var(--green)' : sharpe > 0 ? 'var(--yellow)' : 'var(--red)';
+
+    const ret = p.total_return_pct || 0;
+    document.getElementById('mReturn').textContent = (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
+    document.getElementById('mReturn').style.color = ret >= 0 ? 'var(--green)' : 'var(--red)';
+
+    document.getElementById('mTotal').textContent = p.total_picks || 0;
+    document.getElementById('mTotalSub').textContent = 'W: ' + (p.wins||0) + ' / L: ' + (p.losses||0) + ' / T: ' + (p.timeouts||0);
+  }
+
+  function renderAssessment(p) {
+    const el = document.getElementById('assessment');
+    const title = document.getElementById('assessTitle');
+    const body = document.getElementById('assessBody');
+    const icon = document.getElementById('assessIcon');
+    const note = document.getElementById('assessmentNote');
+
+    const totalPicks = p.total_picks || 0;
+    const winRate = p.win_rate || 0;
+    const sharpe = p.sharpe_estimate || 0;
+
+    // Build explanatory note based on current state
+    let explanation = '';
+
+    if (totalPicks < 30) {
+      el.className = 'assessment early';
+      icon.textContent = '\u26A0';
+      title.textContent = 'Early Stage -- Insufficient Data';
+      body.textContent = 'The system has only ' + totalPicks + ' closed picks. A minimum of 30 picks is needed for statistically meaningful results. Forward testing continues.';
+      explanation = '<strong>What\'s happening:</strong> ' +
+        'The system is in early forward-testing with limited data. ' +
+        'Multiple strategies are being evaluated simultaneously — some proven (Connors RSI-2, VIX/Fear Reversal) and others experimental. ' +
+        'The overall win rate reflects this mixture. ' +
+        '<br><br><strong>Models & fixes in progress:</strong> ' +
+        'ML models are being retrained daily via GitHub Actions. The best performers will be promoted to live trading once they pass DSR validation (p ≥ 0.95). ' +
+        'Failing models are automatically flagged for retraining. Next full scan occurs every 30 minutes.';
+    } else if (winRate > 55) {
+      el.className = 'assessment edge';
+      icon.textContent = '\u2713';
+      title.textContent = 'System is Showing Edge -- Forward Testing Positive';
+      body.textContent = 'Win rate of ' + winRate.toFixed(1) + '% across ' + totalPicks + ' picks with Sharpe ' + sharpe.toFixed(2) + '. The system is demonstrating a measurable edge in live forward testing.';
+      explanation = '<strong>Note:</strong> ' +
+        'Winning strategies are labeled <strong>PROVEN</strong> in the methodology tab. ' +
+        'New strategies undergo forward testing before being promoted. ' +
+        'Models are continuously monitored and retrained weekly to adapt to market regime changes.';
+    } else {
+      el.className = 'assessment noedge';
+      icon.textContent = '\u2717';
+      title.textContent = 'System NOT Yet Winning -- Active Research Phase';
+      body.textContent = 'Win rate of ' + winRate.toFixed(1) + '% across ' + totalPicks + ' picks is below the 55% threshold. The system does not yet have a proven overall edge.';
+      explanation = '<strong>Why win rate is low:</strong> ' +
+        'The overall metric includes <strong>experimental strategies</strong> that are intentionally being tested in live conditions to gather real-world failure data. ' +
+        'Some strategies (e.g., smart_money_fvg, spike_volume_explosion) have been <strong>killed</strong> after showing negative results, but their closed picks remain in the historical record. ' +
+        'Only <strong>PROVEN</strong> strategies (Connors RSI-2: 75.7% WR, VIX/Fear Reversal: 72% WR) are considered statistically validated.<br><br>' +
+        '<strong>What\'s being fixed:</strong> ' +
+        'ML models are retrained daily via GitHub Actions at midnight UTC. ' +
+        'Only models that pass DSR validation (Deflated Sharpe Rate p ≥ 0.95) are deployed. ' +
+        'Current model health shows many failing DSR gates — these are being rebuilt with improved features and regime filters. ' +
+        'Next full scan: every 30 minutes (auto-refresh below).';
+    }
+
+    note.innerHTML = explanation;
+  }
+
+  function renderActivePicks(picks) {
+    document.getElementById('activeCount').textContent = picks.length;
+    const tbody = document.getElementById('activeBody');
+    if (picks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="14" class="empty"><div class="icon">---</div><p>No active picks. Quick Scanner runs every 30 minutes.</p></td></tr>';
+      return;
+    }
+    const sorted = [...picks].sort((a,b) => (b.confidence||0) - (a.confidence||0));
+    tbody.innerHTML = sorted.map((p, i) => {
+      const dir = (p.direction||'long').toUpperCase();
+      const conf = ((p.confidence||0) * 100);
+      const confColor = conf >= 75 ? 'var(--green)' : conf >= 60 ? 'var(--yellow)' : 'var(--red)';
+      const tier = (p.tier||'WATCH').toUpperCase();
+      const tierClass = tier === 'HIGH' ? 'high' : tier === 'MEDIUM' ? 'medium' : 'watch';
+      const audit = p.audit || {};
+      const strategy = audit.strategy_name || p.source || 'edge';
+      const timeEst = p.signal_time_est || formatTime(p.signal_time);
+      const auditId = 'audit-' + i;
+
+      const assetClass = (p.asset_class || 'Crypto').toLowerCase();
+      const assetLabel = p.asset_class || 'Crypto';
+      const assetDesc = p.asset_description || '';
+
+      let auditHtml = '';
+      if (audit.reasons && audit.reasons.length) {
+        auditHtml = '<tr><td colspan="14"><div class="audit-panel" id="' + auditId + '">' +
+          '<div class="audit-label">Why This Pick</div><ul>' +
+          audit.reasons.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul>' +
+          (audit.academic_source ? '<div class="audit-label">Source</div><p>' + esc(audit.academic_source) + '</p>' : '') +
+          (audit.strategy_indicators ? '<div class="audit-label">Indicators</div><p>' +
+            Object.entries(audit.strategy_indicators).map(([k,v]) => esc(k) + ': ' + v).join(' | ') + '</p>' : '') +
+          (audit.confidence_factors ? '<div class="audit-label">Confidence Breakdown</div><ul>' +
+            audit.confidence_factors.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>' : '') +
+          '</div></td></tr>';
+      }
+
+      return '<tr>' +
+        '<td><strong>' + esc(p.symbol_display || p.pair || '--') + '</strong>' +
+          (assetDesc ? '<span class="asset-desc">' + esc(assetDesc) + '</span>' : '') + '</td>' +
+        '<td><span class="badge badge-' + assetClass + '">' + esc(assetLabel) + '</span></td>' +
+        '<td><span class="badge badge-' + (dir==='LONG'?'long':'short') + '">' + dir + '</span></td>' +
+        '<td><span class="badge badge-' + tierClass + '">' + tier + '</span></td>' +
+        '<td>' + conf.toFixed(1) + '%<span class="confidence-bar"><span class="confidence-fill" style="width:' + Math.min(conf,100) + '%;background:' + confColor + '"></span></span></td>' +
+        '<td>' + fmtPrice(p.entry_price) + '</td>' +
+        '<td class="long">' + fmtPrice(p.tp_price) + '</td>' +
+        '<td class="short">' + fmtPrice(p.sl_price) + '</td>' +
+        '<td>$' + (p.position_size_usd||0).toFixed(0) + '</td>' +
+        '<td>' + (p.current_price ? fmtPrice(p.current_price) : '<span style="color:var(--text3)">--</span>') + '</td>' +
+        '<td style="color:' + ((p.unrealized_pnl_pct||0) >= 0 ? 'var(--green)' : 'var(--red)') + ';font-weight:600">' +
+          (p.unrealized_pnl_pct != null ? ((p.unrealized_pnl_pct >= 0 ? '+' : '') + p.unrealized_pnl_pct.toFixed(2) + '%') : '--') + '</td>' +
+        '<td style="font-size:.75rem">' + esc(strategy) + '</td>' +
+        '<td style="font-size:.75rem">' + esc(timeEst) + '</td>' +
+        '<td>' + (audit.reasons ? '<span class="audit-toggle" onclick="toggleAudit(\'' + auditId + '\')">Why?</span>' : '--') + '</td>' +
+      '</tr>' + auditHtml;
+    }).join('');
+  }
+
+  function renderClosedPicks(picks) {
+    document.getElementById('closedCount').textContent = picks.length;
+    const tbody = document.getElementById('closedBody');
+    if (picks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty"><div class="icon">---</div><p>No closed picks yet. History will appear as picks hit TP/SL.</p></td></tr>';
+      return;
+    }
+    const sorted = [...picks].sort((a,b) => new Date(b.closed_at||0) - new Date(a.closed_at||0));
+    tbody.innerHTML = sorted.map(p => {
+      const dir = (p.direction||'LONG').toUpperCase();
+      const res = (p.result||'').toLowerCase();
+      const pnl = p.pnl_pct || 0;
+      return '<tr>' +
+        '<td><strong>' + esc(p.pair||'--') + '</strong></td>' +
+        '<td><span class="badge badge-' + (dir==='LONG'?'long':'short') + '">' + dir + '</span></td>' +
+        '<td><span class="badge badge-' + (res==='win'?'win':res==='loss'?'loss':'timeout') + '">' + esc(p.result||'--') + '</span></td>' +
+        '<td style="color:' + (pnl>=0?'var(--green)':'var(--red)') + '">' + (pnl>=0?'+':'') + pnl.toFixed(2) + '%</td>' +
+        '<td>' + ((p.confidence||0) * 100).toFixed(1) + '%</td>' +
+        '<td>' + fmtPrice(p.entry_price) + '</td>' +
+        '<td>' + fmtPrice(p.exit_price) + '</td>' +
+        '<td>' + formatTime(p.closed_at) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function renderGainerTab(data) {
+    const gp = data.gainer_performance || {};
+    const picks = data.gainer_picks || [];
+
+    const wr = gp.total_picks > 0 ? gp.win_rate : 0;
+    document.getElementById('gWinRate').textContent = wr.toFixed(1) + '%';
+    document.getElementById('gWinRate').style.color = wr > 55 ? 'var(--green)' : wr > 45 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('gWinSub').textContent = (gp.wins||0) + ' / ' + (gp.total_picks||0) + ' picks';
+
+    const ret = gp.total_return_pct || 0;
+    document.getElementById('gReturn').textContent = (ret>=0?'+':'') + ret.toFixed(2) + '%';
+    document.getElementById('gReturn').style.color = ret >= 0 ? 'var(--green)' : 'var(--red)';
+
+    document.getElementById('gTotal').textContent = gp.total_picks || 0;
+    document.getElementById('gTotalSub').textContent = 'W: ' + (gp.wins||0) + ' / L: ' + (gp.losses||0) + ' / T: ' + (gp.timeouts||0);
+
+    document.getElementById('gainerActiveCount').textContent = picks.length;
+    const tbody = document.getElementById('gainerBody');
+    if (picks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty"><div class="icon">---</div><p><strong>Gainer Detector coming soon.</strong> The breakout scanner requires direct Binance API access for real-time momentum data, which is geo-restricted from GitHub Actions CI runners (HTTP 451). The CoinGecko fallback does not provide the tick-level data needed for momentum spike detection.<br><br>' +
+        '<strong>Status:</strong> The Gainer Detector code is complete and runs successfully from local/desktop environments. To see live picks, the scanner must run from a non-restricted server location. This will be resolved by deploying to a VPS or enabling Binance API access in the CI environment.<br><br>' +
+        'The scanner runs every 30 minutes. Check the <strong>status bar</strong> above for the next scan countdown. When running from an allowed region, this tab will populate with pre-pump probabilities and breakout signals.</p></td></tr>';
+      return;
+    }
+    const sorted = [...picks].sort((a,b) => (b.confidence||0) - (a.confidence||0));
+    tbody.innerHTML = sorted.map(p => {
+      const dir = (p.direction||'LONG').toUpperCase();
+      const conf = (p.confidence||0);
+      const confColor = conf >= 70 ? 'var(--green)' : conf >= 50 ? 'var(--yellow)' : 'var(--red)';
+      return '<tr>' +
+        '<td><strong>' + esc(p.pair||'--') + '</strong></td>' +
+        '<td><span class="badge badge-' + (dir==='LONG'?'long':'short') + '">' + dir + '</span></td>' +
+        '<td>' + conf.toFixed(1) + '%<span class="confidence-bar"><span class="confidence-fill" style="width:' + conf + '%;background:' + confColor + '"></span></span></td>' +
+        '<td>' + fmtPrice(p.entry_price) + '</td>' +
+        '<td class="long">' + fmtPrice(p.tp) + '</td>' +
+        '<td class="short">' + fmtPrice(p.sl) + '</td>' +
+        '<td>$' + (p.position_size||0).toFixed(0) + '</td>' +
+        '<td>' + formatTime(p.opened_at) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function renderHealth(h) {
+    document.getElementById('hModels').textContent = h.models_loaded || 0;
+    document.getElementById('hTraining').textContent = h.last_training ? formatTime(h.last_training) : 'Never';
+    document.getElementById('hScan').textContent = h.last_scan ? formatTime(h.last_scan) : 'Never';
+    document.getElementById('hDSRPass').textContent = h.dsr_pass_count || 0;
+    document.getElementById('hDSRFail').textContent = h.dsr_fail_count || 0;
+
+    const total = (h.dsr_pass_count||0) + (h.dsr_fail_count||0);
+    const passRate = total > 0 ? ((h.dsr_pass_count||0) / total * 100) : 0;
+    document.getElementById('hValidation').textContent = total > 0 ? passRate.toFixed(0) + '% pass' : 'No data';
+    document.getElementById('hValidation').style.color = passRate >= 80 ? 'var(--green)' : passRate >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+    const bodyEl = document.getElementById('healthBody');
+    const qe = currentData ? currentData.quick_engine : null;
+    const quickActive = qe && qe.strategies_active > 0;
+
+    if (quickActive && (h.models_loaded||0) === 0) {
+      bodyEl.innerHTML = '<strong>Quick Engine Mode</strong> — The Edge Engine is currently running ' +
+        (qe.strategies_active || 0) + ' proven statistical strategies (Connors RSI-2, VIX/Fear Reversal, Fib Trend Pullback) that do not require ML models. ' +
+        'These strategies are based on academic research with historically documented edges (71-76% win rates). ' +
+        'ML model training will begin automatically once sufficient closed picks accumulate for supervised learning. ' +
+        'Last scan: ' + (qe.last_scan_est || (h.last_scan ? formatTime(h.last_scan) : 'Never')) + '.';
+      var ha = document.getElementById('healthAssessment');
+      if (ha) { ha.className = 'assessment edge'; }
+    } else if (total === 0 && !h.last_scan) {
+      bodyEl.innerHTML = 'No models have been loaded or scanned yet. The scanner runs automatically via GitHub Actions every 30 minutes. ' +
+        'Once running, models will be loaded and health metrics will appear here. ' +
+        'Check the <strong>status bar</strong> above for the last scan timestamp and next scan countdown.';
+    } else {
+      const modelsOk = (h.models_loaded||0) > 0;
+      const healthStatus = modelsOk && passRate >= 50 ? 'Currently within acceptable bounds' : 'Models require attention';
+      bodyEl.innerHTML = '<strong>ML Model Health</strong><br>' +
+        (h.models_loaded||0) + ' models loaded. DSR validation: <span style="color:' + (passRate >= 80 ? 'var(--green)' : passRate >= 50 ? 'var(--yellow)' : 'var(--red)') + ';font-weight:600">' + (h.dsr_pass_count||0) + ' pass, ' + (h.dsr_fail_count||0) + ' fail</span> (' + passRate.toFixed(0) + '% pass rate).<br>' +
+        healthStatus + '.<br>' +
+        'Last scan: ' + (h.last_scan ? formatTime(h.last_scan) : 'Never') + '. ' +
+        '<span style="font-size:.8rem;color:var(--text3)">Models with failing DSR are automatically retrained during the nightly GitHub Actions run (midnight UTC).</span>';
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'none';
+    document.getElementById('errorContainer').innerHTML = '<div class="error-box">' + esc(msg) + '</div>';
+  }
+
+  /* --- Tabs --- */
+  window.switchTab = function(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+  };
+
+  window.toggleAudit = function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  };
+
+  /* --- Asset class filtering --- */
+  let currentAssetFilter = 'all';
+
+  window.filterAssetClass = function(filter) {
+    currentAssetFilter = filter;
+    document.querySelectorAll('#assetFilters .filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === filter);
+    });
+    if (currentData) {
+      const picks = currentData.picks || [];
+      const filtered = filter === 'all' ? picks : picks.filter(p => (p.asset_class || 'Crypto').toLowerCase() === filter);
+      renderActivePicks(filtered);
+      // Update count to show filtered/total
+      document.getElementById('activeCount').textContent = filter === 'all' ? picks.length : filtered.length + ' / ' + picks.length;
+    }
+  };
+
+  /* --- Column sorting --- */
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', function() {
+      const table = this.closest('table');
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      if (rows.length === 0 || rows[0].querySelector('.empty')) return;
+
+      const col = this.dataset.sort;
+      const idx = Array.from(this.parentElement.children).indexOf(this);
+      const key = table.id + '_' + col;
+      const asc = sortState[key] === 'desc';
+      sortState[key] = asc ? 'asc' : 'desc';
+
+      // Update header classes
+      this.parentElement.querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc','sorted-desc'));
+      this.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+
+      rows.sort((a,b) => {
+        let va = a.children[idx]?.textContent.trim() || '';
+        let vb = b.children[idx]?.textContent.trim() || '';
+        const na = parseFloat(va.replace(/[^0-9.\-]/g,''));
+        const nb = parseFloat(vb.replace(/[^0-9.\-]/g,''));
+        if (!isNaN(na) && !isNaN(nb)) {
+          return asc ? na - nb : nb - na;
+        }
+        return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+
+  /* --- Helpers --- */
+  function formatTime(ts) {
+    if (!ts) return '--';
+    try {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return ts;
+      const now = new Date();
+      const diff = (now - d) / 1000;
+      if (diff < 60) return Math.floor(diff) + 's ago';
+      if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+      return d.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',hour12:false});
+    } catch(e) { return ts; }
+  }
+
+  function fmtPrice(v) {
+    if (v == null) return '--';
+    const n = parseFloat(v);
+    if (isNaN(n)) return '--';
+    if (n >= 1000) return '$' + n.toFixed(2);
+    if (n >= 1) return '$' + n.toFixed(4);
+    return '$' + n.toFixed(6);
+  }
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  /* --- Live Price Fetching --- */
+  const PAIR_TO_CG_ID = {
+    'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana',
+    'BNBUSDT': 'binancecoin', 'XRPUSDT': 'ripple', 'DOGEUSDT': 'dogecoin',
+    'ADAUSDT': 'cardano', 'AVAXUSDT': 'avalanche-2', 'LINKUSDT': 'chainlink',
+    'DOTUSDT': 'polkadot', 'SUIUSDT': 'sui', 'NEARUSDT': 'near',
+    'APTUSDT': 'aptos', 'ARBUSDT': 'arbitrum', 'INJUSDT': 'injective-protocol',
+    'MATICUSDT': 'matic-network',
+  };
+  const ETF_SYMBOLS = ['SPY', 'QQQ', 'IWM', 'GLD', 'TLT'];
+
+  async function fetchLivePrices(picks) {
+    if (!picks || picks.length === 0) return {};
+    const prices = {};
+
+    // Collect CoinGecko IDs for crypto pairs
+    const cgIds = [];
+    const cgPairMap = {};
+    picks.forEach(p => {
+      const pair = p.pair || '';
+      const cgId = PAIR_TO_CG_ID[pair];
+      if (cgId && !cgPairMap[cgId]) {
+        cgIds.push(cgId);
+        cgPairMap[cgId] = pair;
+      }
+    });
+
+    // Fetch crypto prices from CoinGecko (CORS-friendly, no API key)
+    if (cgIds.length > 0) {
+      try {
+        const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + cgIds.join(',') + '&vs_currencies=usd', { cache: 'no-store' });
+        if (resp.ok) {
+          const data = await resp.json();
+          for (const [cgId, pair] of Object.entries(cgPairMap)) {
+            if (data[cgId] && data[cgId].usd) {
+              prices[pair] = data[cgId].usd;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('CoinGecko price fetch failed:', e.message);
+      }
+    }
+
+    // Fetch ETF prices from Yahoo Finance via allorigins proxy
+    const etfPairs = picks.filter(p => ETF_SYMBOLS.includes(p.pair)).map(p => p.pair);
+    for (const sym of [...new Set(etfPairs)]) {
+      try {
+        const yUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?range=1d&interval=1d';
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(yUrl);
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        if (resp.ok) {
+          const data = await resp.json();
+          const meta = data?.chart?.result?.[0]?.meta;
+          if (meta && meta.regularMarketPrice) {
+            prices[sym] = meta.regularMarketPrice;
+          }
+        }
+      } catch (e) {
+        console.warn('Yahoo Finance fetch failed for', sym, e.message);
+      }
+    }
+
+    return prices;
+  }
+
+  function updatePicksWithPrices(picks, prices) {
+    if (!picks || Object.keys(prices).length === 0) return;
+    let updated = false;
+    picks.forEach(p => {
+      const pair = p.pair || '';
+      if (prices[pair] != null) {
+        p.current_price = prices[pair];
+        const entry = p.entry_price || 0;
+        if (entry > 0) {
+          const dir = (p.direction || 'long').toLowerCase();
+          if (dir === 'long') {
+            p.unrealized_pnl_pct = ((prices[pair] - entry) / entry) * 100;
+          } else {
+            p.unrealized_pnl_pct = ((entry - prices[pair]) / entry) * 100;
+          }
+          p.unrealized_pnl_pct = Math.round(p.unrealized_pnl_pct * 100) / 100;
+        }
+        updated = true;
+      }
+    });
+    return updated;
+  }
+
+  /* --- Init + refresh --- */
+  async function load() {
+    const data = await fetchData();
+    if (data) {
+      // Fetch live prices and update picks before rendering
+      const picks = data.picks || [];
+      const prices = await fetchLivePrices(picks);
+      updatePicksWithPrices(picks, prices);
+      render(data);
+    } else {
+      showError('Failed to load data from all sources. Check that active_picks.json exists and is accessible.');
+    }
+  }
+
+  function startRefreshTimer() {
+    refreshCountdown = REFRESH_MS / 1000;
+    setInterval(() => {
+      refreshCountdown--;
+      if (refreshCountdown <= 0) {
+        refreshCountdown = REFRESH_MS / 1000;
+        load();
+      }
+      const m = Math.floor(refreshCountdown / 60);
+      const s = refreshCountdown % 60;
+      document.getElementById('refreshTimer').textContent = 'Next refresh: ' + m + ':' + String(s).padStart(2,'0');
+    }, 1000);
+  }
+
+  load();
+  startRefreshTimer();
+
+  // Strategy table filters
+  (function(){
+    var filters = document.getElementById('strategyFilters');
+    if (!filters) return;
+    var labels = [
+      {key:'all', text:'All'},
+      {key:'proven', text:'Proven'},
+      {key:'new', text:'New'},
+      {key:'blocked', text:'Blocked'}
+    ];
+    labels.forEach(function(f){
+      var btn = document.createElement('button');
+      btn.className = 'strategy-filter' + (f.key === 'all' ? ' active' : '');
+      btn.textContent = f.text;
+      btn.onclick = function(){
+        filters.querySelectorAll('.strategy-filter').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        var rows = document.querySelectorAll('#strategyTable tbody tr');
+        rows.forEach(function(row){
+          if (f.key === 'all') { row.style.display = ''; return; }
+          row.style.display = row.getAttribute('data-status') === f.key ? '' : 'none';
+        });
+      };
+      filters.appendChild(btn);
+    });
+  })();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+name: Claude's Test - Portfolio Manager
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  push:
+    branches: [main]
+    paths:
+      - 'audit_dashboard/portfolio_manager.py'
+      - '.github/workflows/claudes-test-portfolios.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: claudes-test
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  manage-portfolios:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run portfolio manager
+        run: python -m audit_dashboard.portfolio_manager
+
+      - name: Commit updated state and dashboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/claudes_test_state.json audit_dashboard/data/claudes_test_dashboard.json audit_dashboard/claudes_test.html
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git stash
+          git pull --rebase -X theirs origin main 2>/dev/null || {
+            git rebase --abort 2>/dev/null
+            git checkout --theirs -- alpha_engine/data/ 2>/dev/null
+            git add alpha_engine/data/ 2>/dev/null
+            git pull --no-rebase -X theirs origin main 2>/dev/null || true
+          }
+          git stash pop || {
+            # BUG FIX 2026-04-05 (mirrors 108b99aa85): prefer --ours (locally-stashed
+            # freshly-generated files) over --theirs (origin's stale version).
+            # Pre-fix order silently reverted this workflow's regenerated files.
+            git diff --name-only --diff-filter=U | while read -r f; do
+              git checkout --ours -- "$f" 2>/dev/null || git checkout --theirs -- "$f" 2>/dev/null || true
+              git add "$f" 2>/dev/null || true
+            done
+          }
+          git add audit_dashboard/data/claudes_test_state.json audit_dashboard/data/claudes_test_dashboard.json audit_dashboard/claudes_test.html
+          git diff --cached --quiet && echo "No changes after pull" && exit 0
+          # issue #141: block conflict-marker commits after stash-pop recovery
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "chore(claudes-test): update portfolio state [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main 2>/dev/null || {
+              git rebase --abort 2>/dev/null
+              git checkout --theirs -- alpha_engine/data/ 2>/dev/null
+              git add alpha_engine/data/ 2>/dev/null
+              git pull --no-rebase -X theirs origin main 2>/dev/null || true
+            }
+            bash .github/scripts/safe_push.sh && break
+            echo "Retry $i..."
+            sleep $((i * 3))
+          done
+
+      - name: Deploy to findtorontoevents.ca via FTP
+        continue-on-error: true
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, sys
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping")
+              sys.exit(0)
+
+          src = Path("audit_dashboard/claudes_test.html")
+          if not src.exists():
+              print("claudes_test.html not found")
+              sys.exit(0)
+
+          SITE_ROOT = "findtorontoevents.ca"
+          try:
+              ftp = ftplib.FTP(host, timeout=30)
+              ftp.login(user, pwd)
+              ftp.cwd(SITE_ROOT)
+              try:
+                  ftp.mkd("audit")
+              except Exception:
+                  pass
+              ftp.cwd("audit")
+              with open(src, "rb") as f:
+                  ftp.storbinary("STOR claudes_test.html", f)
+              print(f"Uploaded to findtorontoevents.ca/audit/claudes_test.html")
+
+              # Also deploy to tdotevent.ca (same host, different root)
+              try:
+                  ftp2 = ftplib.FTP(host, timeout=30)
+                  ftp2.login(user, pwd)
+                  ftp2.cwd("tdotevent.ca")
+                  try:
+                      ftp2.mkd("audit")
+                  except Exception:
+                      pass
+                  ftp2.cwd("audit")
+                  with open(src, "rb") as f:
+                      ftp2.storbinary("STOR claudes_test.html", f)
+                  print(f"Uploaded to tdotevent.ca/audit/claudes_test.html")
+                  ftp2.quit()
+              except Exception as e:
+                  print(f"FTP to tdotevent.ca failed (non-fatal): {e}")
+
+              ftp.quit()
+          except Exception as e:
+              print(f"FTP failed: {e}")
+              sys.exit(1)
+          PYEOF
+

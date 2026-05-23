@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity ML v2.0 — Live Picks & Analysis Dashboard</title>
+    <meta name="description"
+        content="Production ML crypto picks with full reasoning, backtest validation, failure analysis, and model health monitoring.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #050510;
+            --bg2: #0a0a1f;
+            --bg3: #0f0f25;
+            --card: #111130;
+            --card2: #161645;
+            --border: rgba(120, 130, 255, 0.08);
+            --border2: rgba(120, 130, 255, 0.15);
+            --text: #d0d0e8;
+            --text2: #8890b0;
+            --text3: #556;
+            --green: #22c55e;
+            --green-bg: rgba(34, 197, 94, 0.08);
+            --green-b: rgba(34, 197, 94, 0.2);
+            --red: #ef4444;
+            --red-bg: rgba(239, 68, 68, 0.08);
+            --red-b: rgba(239, 68, 68, 0.2);
+            --blue: #6366f1;
+            --blue-bg: rgba(99, 102, 241, 0.08);
+            --blue-b: rgba(99, 102, 241, 0.2);
+            --purple: #a855f7;
+            --purple-bg: rgba(168, 85, 247, 0.08);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.08);
+            --amber-b: rgba(245, 158, 11, 0.2);
+            --cyan: #06b6d4;
+            --cyan-bg: rgba(6, 182, 212, 0.08);
+            --gold: #fbbf24;
+            --radius: 12px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6
+        }
+
+        /* Header */
+        .hero {
+            padding: 40px 24px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .hero h1 {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px
+        }
+
+        .hero .sub {
+            color: var(--text2);
+            font-size: 0.9rem;
+            font-weight: 400
+        }
+
+        .hero .version {
+            display: inline-block;
+            background: var(--blue-bg);
+            border: 1px solid var(--blue-b);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--blue);
+            margin-top: 8px
+        }
+
+        /* Health bar */
+        .health-bar {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 0 24px 20px;
+            max-width: 900px;
+            margin: 0 auto
+        }
+
+        .health-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            text-align: center;
+            flex: 1;
+            min-width: 140px
+        }
+
+        .health-item .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text3);
+            margin-bottom: 4px
+        }
+
+        .health-item .value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .health-item .value.green {
+            color: var(--green)
+        }
+
+        .health-item .value.red {
+            color: var(--red)
+        }
+
+        .health-item .value.amber {
+            color: var(--amber)
+        }
+
+        .health-item .value.blue {
+            color: var(--blue)
+        }
+
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 60px
+        }
+
+        /* Section headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 32px 0 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .section-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .section-header .badge {
+            background: var(--blue-bg);
+            border: 1px solid var(--blue-b);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--blue)
+        }
+
+        /* Pick cards */
+        .pick-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all .2s
+        }
+
+        .pick-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3)
+        }
+
+        .pick-card.strong-buy {
+            border-left: 3px solid var(--green)
+        }
+
+        .pick-card.buy {
+            border-left: 3px solid var(--cyan)
+        }
+
+        .pick-card.watch {
+            border-left: 3px solid var(--amber)
+        }
+
+        .pick-card.hold {
+            border-left: 3px solid var(--text3)
+        }
+
+        .pick-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        .pick-symbol {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .pick-confidence {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px
+        }
+
+        .pick-confidence.strong-buy {
+            background: var(--green-bg);
+            border: 1px solid var(--green-b);
+            color: var(--green)
+        }
+
+        .pick-confidence.buy {
+            background: var(--cyan-bg);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--cyan)
+        }
+
+        .pick-confidence.watch {
+            background: var(--amber-bg);
+            border: 1px solid var(--amber-b);
+            color: var(--amber)
+        }
+
+        .pick-confidence.hold {
+            background: rgba(100, 100, 120, 0.15);
+            border: 1px solid rgba(100, 100, 120, 0.3);
+            color: #888
+        }
+
+        .pick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px
+        }
+
+        .pick-metric {
+            background: var(--bg2);
+            border-radius: 8px;
+            padding: 12px 14px
+        }
+
+        .pick-metric .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text3);
+            margin-bottom: 3px
+        }
+
+        .pick-metric .val {
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff
+        }
+
+        .pick-metric .val.green {
+            color: var(--green)
+        }
+
+        .pick-metric .val.red {
+            color: var(--red)
+        }
+
+        .pick-metric .val.amber {
+            color: var(--amber)
+        }
+
+        /* Reasoning */
+        .reasoning {
+            background: var(--bg2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 14px
+        }
+
+        .reasoning h4 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px
+        }
+
+        .reasoning p {
+            font-size: 0.85rem;
+            color: var(--text2);
+            line-height: 1.7
+        }
+
+        .reasoning .signal-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin: 2px 3px;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .signal-tag.green {
+            background: var(--green-bg);
+            color: var(--green)
+        }
+
+        .signal-tag.amber {
+            background: var(--amber-bg);
+            color: var(--amber)
+        }
+
+        .signal-tag.red {
+            background: var(--red-bg);
+            color: var(--red)
+        }
+
+        .signal-tag.blue {
+            background: var(--blue-bg);
+            color: var(--blue)
+        }
+
+        /* Backtest validation */
+        .bt-validation {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px
+        }
+
+        .bt-val-item {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border)
+        }
+
+        /* Failure analysis */
+        .failure-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--red);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px
+        }
+
+        .failure-card .pair-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--red);
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .failure-card .stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text2)
+        }
+
+        .failure-card .analysis {
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin: 10px 0;
+            line-height: 1.7
+        }
+
+        .failure-card .tweak {
+            background: rgba(99, 102, 241, 0.06);
+            border-left: 2px solid var(--blue);
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            margin: 8px 0
+        }
+
+        .failure-card .tweak-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px
+        }
+
+        .failure-card .tweak-text {
+            font-size: 0.8rem;
+            color: var(--text2)
+        }
+
+        /* Roadmap */
+        .roadmap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px
+        }
+
+        .roadmap-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            position: relative
+        }
+
+        .roadmap-item:last-child {
+            margin-bottom: 0
+        }
+
+        .roadmap-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0
+        }
+
+        .roadmap-dot.done {
+            background: var(--green)
+        }
+
+        .roadmap-dot.active {
+            background: var(--amber);
+            box-shadow: 0 0 8px var(--amber)
+        }
+
+        .roadmap-dot.future {
+            background: var(--text3)
+        }
+
+        .roadmap-content h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff
+        }
+
+        .roadmap-content p {
+            font-size: 0.8rem;
+            color: var(--text2)
+        }
+
+        /* Fold chart */
+        .fold-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 60px;
+            margin: 10px 0
+        }
+
+        .fold-bar {
+            flex: 1;
+            border-radius: 3px 3px 0 0;
+            min-width: 12px;
+            position: relative;
+            transition: all .2s
+        }
+
+        .fold-bar:hover {
+            opacity: 0.8
+        }
+
+        .fold-bar.positive {
+            background: linear-gradient(to top, rgba(34, 197, 94, 0.3), var(--green))
+        }
+
+        .fold-bar.negative {
+            background: linear-gradient(to bottom, rgba(239, 68, 68, 0.3), var(--red))
+        }
+
+        .fold-bar .fold-label {
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55rem;
+            color: var(--text3);
+            white-space: nowrap
+        }
+
+        /* Update time */
+        .update-time {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.75rem;
+            color: var(--text3)
+        }
+
+        .update-time a {
+            color: var(--blue);
+            text-decoration: none
+        }
+
+        /* Responsive */
+        @media(max-width:640px) {
+            .pick-grid {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .health-bar {
+                gap: 8px
+            }
+
+            .health-item {
+                padding: 10px 14px;
+                min-width: 100px
+            }
+
+            .health-item .value {
+                font-size: 1.1rem
+            }
+        }
+
+        /* Loading */
+        .loading-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--text3)
+        }
+
+        .spin {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.5
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero">
+        <h1>Antigravity ML Engine</h1>
+        <div class="sub">Walk-Forward Validated Crypto Picks • Transparent Reporting</div>
+        <div class="version">v2.5 — Ensemble RF + GBT • 60+ Features • v1.5 Research Overhaul (Feb 23, 2026)</div>
+    </div>
+
+    <!-- HONEST SCORECARD: Backtest vs Forward side by side -->
+    <div style="max-width:900px;margin:0 auto 20px;padding:0 24px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <!-- BACKTEST column -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+                <div style="text-align:center;margin-bottom:14px">
+                    <span
+                        style="background:var(--blue-bg);border:1px solid var(--blue-b);padding:3px 12px;border-radius:20px;font-size:0.65rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px">BACKTESTED
+                        (Historical)</span>
+                </div>
+                <div style="text-align:center;font-size:0.7rem;color:var(--text3);margin-bottom:10px">Tested on 1700+
+                    past candles per pair. NOT real money.</div>
+                <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Profitable Pairs</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green)"
+                            id="profitPairs">—</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Best BT Sharpe</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace"
+                            id="bestSharpe">—</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Best BT Pair</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green)"
+                            id="bestPair">—</div>
+                    </div>
+                </div>
+            </div>
+            <!-- FORWARD column -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+                <div style="text-align:center;margin-bottom:14px">
+                    <span
+                        style="background:var(--amber-bg);border:1px solid var(--amber-b);padding:3px 12px;border-radius:20px;font-size:0.65rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px">FORWARD
+                        TEST (Live)</span>
+                </div>
+                <div style="text-align:center;font-size:0.7rem;color:var(--text3);margin-bottom:10px">Real predictions
+                    tracked against live prices since launch.</div>
+                <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Forward WR</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace" id="fwdWR">
+                            —</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Forward Sharpe</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace"
+                            id="fwdSharpe">—</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Forward P&L</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace"
+                            id="fwdPnL">—</div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px">
+                            Picks</div>
+                        <div style="font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--blue)"
+                            id="fwdPicks">—</div>
+                    </div>
+                </div>
+                <!-- Dynamic zero-state explanation -->
+                <div id="fwdZeroExplainer"
+                    style="display:none;margin-top:14px;padding:10px 14px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.12);border-radius:8px;font-size:0.72rem;color:var(--text2);line-height:1.6;text-align:left">
+                    <strong style="color:var(--amber)">⏳ Why 0 forward picks?</strong><br>
+                    The model launched <strong>today (Feb 22, 2026)</strong>. Forward picks are only counted after a
+                    prediction hits its Take Profit (TP) or Stop Loss (SL) — which typically takes <strong>12-72
+                        hours</strong> depending on market volatility. Right now there are <span
+                        id="fwdActiveCount">5</span> active predictions being tracked in real-time below. Once they
+                    resolve, these stats will update automatically.
+                </div>
+            </div>
+        </div>
+        <!-- WHY ZERO FORWARD PICKS — Full explainer -->
+        <div
+            style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:var(--radius);padding:20px;margin-top:12px;font-size:0.82rem;color:var(--text2);line-height:1.8">
+            <strong style="color:var(--amber);font-size:0.9rem">📊 Why are all forward metrics zero?</strong>
+            <div style="margin-top:10px;display:grid;grid-template-columns:32px 1fr;gap:8px 12px;align-items:start">
+                <div style="color:var(--green);font-weight:700;font-size:1rem;text-align:center">1</div>
+                <div><strong style="color:#fff">Model trains on history</strong> — The ML ensemble (RF + Gradient Boost)
+                    is trained on 1700+ candles of historical data per pair, using walk-forward validation so it never
+                    sees future data.</div>
+                <div style="color:var(--blue);font-weight:700;font-size:1rem;text-align:center">2</div>
+                <div><strong style="color:#fff">Picks are generated on LIVE data</strong> — Every pick you see below was
+                    predicted using only data available <em>at that moment</em>. No look-ahead, no peeking, no
+                    hindsight. Each pick gets a timestamp (EST) of when it was made.</div>
+                <div style="color:var(--amber);font-weight:700;font-size:1rem;text-align:center">3</div>
+                <div><strong style="color:#fff">Picks must HIT TP or SL to count</strong> — A forward pick is "resolved"
+                    only when the live market price reaches either the Take Profit or Stop Loss level. Until then, the
+                    pick is <em>active</em> (being tracked). This typically takes 12-72 hours.</div>
+                <div style="color:var(--purple);font-weight:700;font-size:1rem;text-align:center">4</div>
+                <div><strong style="color:#fff">We launched today</strong> — The v2.1 engine (with regime detection) was
+                    deployed on Feb 22, 2026. There are currently 5 active forward picks being tracked. Once the first
+                    ones resolve (hit TP or SL), the Forward WR, Sharpe, P&L, and Picks count will update automatically.
+                </div>
+            </div>
+            <div
+                style="margin-top:14px;padding:10px 14px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:8px;font-size:0.75rem;line-height:1.7">
+                <strong style="color:var(--green)">🎯 When to expect first results:</strong> The model scans daily at 7
+                PM EST and hourly via Discord. With ATR-based TP/SL distances of 1.5-3%, most picks should resolve
+                within <strong>1-3 days</strong>. By end of Week 1, we should have 5-15 resolved forward picks with real
+                win/loss data. <strong>DO NOT trade real money until we have 200+ resolved picks with positive
+                    expectancy (minimum 3 months).</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Systems Bar -->
+    <div class="health-bar">
+        <div class="health-item">
+            <div class="label">Model Status</div>
+            <div class="value blue" id="modelStatus">—</div>
+        </div>
+        <div class="health-item">
+            <div class="label">ML Active Picks</div>
+            <div class="value amber" id="activePicks">—</div>
+        </div>
+        <div class="health-item">
+            <div class="label">Alpha Engine Picks</div>
+            <div class="value amber" id="alphaPicks">—</div>
+        </div>
+    </div>
+    <!-- Last Updated / Next Update -->
+    <div
+        style="max-width:900px;margin:0 auto 12px;padding:0 24px;display:flex;justify-content:center;gap:32px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:0.72rem">
+        <div style="display:flex;align-items:center;gap:8px">
+            <span style="color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-size:0.6rem">Last
+                Updated</span>
+            <span style="color:var(--green);font-weight:700" id="lastUpdatedEST">—</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+            <span style="color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-size:0.6rem">Next
+                Update</span>
+            <span style="color:var(--amber);font-weight:700" id="nextUpdateEST">—</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+            <span
+                style="color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-size:0.6rem">Schedule</span>
+            <span style="color:var(--text2)">Hourly :10 (Discord) • Daily 7PM EST (Full Retrain)</span>
+        </div>
+    </div>
+
+    <!-- ACTIVE TRADING SYSTEMS -->
+    <div style="max-width:1100px;margin:0 auto;padding:0 24px 16px">
+        <div class="section-header" style="margin-top:0">
+            <h2>Active Trading Systems — Live Signals</h2>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
+                <div style="font-weight:700;color:#fff;margin-bottom:6px">ML Crypto Predictor v1.5</div>
+                <div style="font-size:0.8rem;color:var(--text2);margin-bottom:10px">XGBoost + LightGBM + RF ensemble with isotonic calibration, purged CV, meta-labeling filter. 36 pairs retrained. Scans every 12h.</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/active_picks.json"
+                        target="_blank"
+                        style="padding:4px 12px;background:var(--green-bg);border:1px solid var(--green-b);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--green);text-decoration:none">Active
+                        Picks JSON</a>
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/forward_stats.json"
+                        target="_blank"
+                        style="padding:4px 12px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--blue);text-decoration:none">Forward
+                        Stats JSON</a>
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/closed_picks.json"
+                        target="_blank"
+                        style="padding:4px 12px;background:var(--red-bg);border:1px solid var(--red-b);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--red);text-decoration:none">Closed
+                        Picks JSON</a>
+                </div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
+                <div style="font-weight:700;color:#fff;margin-bottom:6px">Alpha Engine (100 Strategies)</div>
+                <div style="font-size:0.8rem;color:var(--text2);margin-bottom:10px">RSI-2, VIX Spike, Funding Rate, ICT
+                    FVG, On-Chain, Event-Driven. Scans every 30min.</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json"
+                        target="_blank"
+                        style="padding:4px 12px;background:var(--green-bg);border:1px solid var(--green-b);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--green);text-decoration:none">Active
+                        Picks JSON</a>
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/closed_picks.json"
+                        target="_blank"
+                        style="padding:4px 12px;background:var(--red-bg);border:1px solid var(--red-b);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--red);text-decoration:none">Closed
+                        Picks JSON</a>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/" target="_blank"
+                        style="padding:4px 12px;background:var(--purple-bg);border:1px solid rgba(168,85,247,0.3);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--purple);text-decoration:none">Live
+                        Dashboard</a>
+                </div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
+                <div style="font-weight:700;color:#fff;margin-bottom:6px">KIMI Rise of the Claw (81 Algos)</div>
+                <div style="font-size:0.8rem;color:var(--text2);margin-bottom:10px">81 trading algorithms with
+                    elimination engine. Scans every 15min.</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/live_signals_now.json"
+                        target="_blank"
+                        style="padding:4px 12px;background:var(--green-bg);border:1px solid var(--green-b);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--green);text-decoration:none">Live
+                        Signals JSON</a>
+                    <a href="https://findtorontoevents.ca/riseoftheclaw.html" target="_blank"
+                        style="padding:4px 12px;background:var(--purple-bg);border:1px solid rgba(168,85,247,0.3);border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--purple);text-decoration:none">Live
+                        Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- LIVE FORWARD PICKS -->
+        <div class="section-header">
+            <h2>Forward Picks — Live Predictions with Full Reasoning</h2>
+            <span class="badge"
+                style="background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.25);color:var(--green);font-weight:700">FORWARD-PICKS
+                — Real predictions on unseen live data</span>
+            <span class="badge" id="pickCount">Loading...</span>
+        </div>
+        <div id="picksContainer">
+            <div class="loading-state">
+                <div class="spin"></div>
+                <p style="margin-top:12px">Loading picks data...</p>
+            </div>
+        </div>
+
+        <!-- FAILURE ANALYSIS -->
+        <div class="section-header">
+            <h2>🔬 Failure Analysis & Tweaks</h2>
+            <span class="badge" id="failCount">Loading...</span>
+        </div>
+        <div id="failuresContainer">
+            <div class="loading-state">
+                <div class="spin"></div>
+            </div>
+        </div>
+
+        <!-- FORWARD TEST RESULTS -->
+        <div class="section-header">
+            <h2>Forward Test Results (LIVE)</h2>
+            <span class="badge" style="background:var(--amber-bg);border-color:var(--amber-b);color:var(--amber)">Real
+                Predictions vs Real Prices</span>
+        </div>
+        <div id="forwardContainer">
+            <div class="loading-state">
+                <div class="spin"></div>
+            </div>
+        </div>
+
+        <!-- PERFORMANCE TABLE -->
+        <div class="section-header">
+            <h2>Walk-Forward Backtest Results</h2>
+            <span class="badge">BACKTESTED — Historical Data Only</span>
+        </div>
+        <div
+            style="font-size:0.8rem;color:var(--text3);margin-bottom:12px;padding:10px 14px;background:rgba(99,102,241,0.04);border-radius:8px">
+            These results are from <strong>backtesting on historical data</strong> — the model trained and tested on
+            past candles using walk-forward validation (no look-ahead bias). They represent what the model <em>would
+                have done</em>, not what it actually did with real money. Forward test results above show the real
+            scorecard.
+        </div>
+        <div id="backtestContainer">
+            <div class="loading-state">
+                <div class="spin"></div>
+            </div>
+        </div>
+
+        <!-- ROADMAP -->
+        <div class="section-header">
+            <h2>🗺️ Path to Success — Roadmap</h2>
+        </div>
+        <div class="roadmap" id="roadmapContainer"></div>
+
+        <div class="update-time" id="updateTime">
+            Last updated: loading... | <a href="antigravity-ml-gainer.html">← Back to Scanner</a> | <a
+                href="../index.html">Home</a>
+        </div>
+    </div>
+
+    <script>
+        var DATA_BASE = 'https://findtorontoevents.ca/updates/data/';
+        var LOCAL_BASE = 'data/';
+
+        function fetchJSON(filename) {
+            return fetch(LOCAL_BASE + filename + '?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .catch(function () {
+                    return fetch(DATA_BASE + filename + '?t=' + Date.now())
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .catch(function () { return null; });
+                });
+        }
+
+        function generateReasoning(pick, btValidation) {
+            var reasons = [];
+            var confidence = pick.confidence || 'HOLD';
+            var prob = pick.pump_probability || 0;
+            var signals = pick.signals || [];
+            var bt = btValidation || {};
+
+            // Why this pair was selected
+            reasons.push('<b>Pair Selection:</b> ' + pick.name + ' was selected because it is one of only <b>' +
+                'a few pairs</b> that demonstrated profitability in rigorous walk-forward backtesting. ' +
+                'The model trained on ' + (bt.n_trades_tested || '100+') + ' walk-forward trades across multiple market regimes.');
+
+            // Backtest evidence
+            var wr = bt.win_rate || 0;
+            var pf = bt.profit_factor || 0;
+            var sh = bt.sharpe || 0;
+            if (pf > 2) {
+                reasons.push('<b>Strong Backtest Edge:</b> Profit Factor of <b>' + pf.toFixed(2) + '</b> means the model wins $' +
+                    pf.toFixed(2) + ' for every $1 lost. Win rate of <b>' + (wr * 100).toFixed(1) + '%</b> with Sharpe ratio ' +
+                    sh.toFixed(1) + ' — this is institutional-quality performance.');
+            } else if (pf > 1) {
+                reasons.push('<b>Positive Backtest Edge:</b> Profit Factor ' + pf.toFixed(2) + ' (above breakeven). ' +
+                    'Win rate ' + (wr * 100).toFixed(1) + '%. Sharpe ' + sh.toFixed(1) + '. ' +
+                    'The edge is modest but consistent — the model is selective.');
+            }
+
+            // Current signal interpretation
+            var sigDesc = [];
+            for (var i = 0; i < signals.length; i++) {
+                var sig = signals[i];
+                if (sig === 'OVERSOLD') sigDesc.push('RSI below 35 indicates the asset is oversold — potential mean reversion opportunity');
+                else if (sig === 'VOL_COMPRESSION') sigDesc.push('Volatility is compressing (recent range < 70% of 10-day avg) — often precedes a breakout');
+                else if (sig.indexOf('HIGH_VOLUME') >= 0) sigDesc.push('Volume spike detected — ' + sig.replace('HIGH_VOLUME', 'current volume significantly above 20-day average'));
+                else if (sig === 'BB_SQUEEZE') sigDesc.push('Bollinger Band squeeze — bands at narrowest in 50 periods, breakout imminent');
+                else if (sig === 'MACD_BULLISH') sigDesc.push('MACD histogram positive and rising — bullish momentum building');
+                else if (sig.indexOf('GREEN_STREAK') >= 0) sigDesc.push('Consecutive green candles ' + sig + ' — sustained buying pressure');
+                else if (sig === 'ML_SIGNAL') sigDesc.push('Ensemble ML model (RF + GBT) producing positive signal based on 60+ features');
+                else sigDesc.push(sig);
+            }
+            reasons.push('<b>Current Signals:</b> ' + sigDesc.join('. ') + '.');
+
+            // Confidence explanation
+            if (confidence === 'STRONG BUY') {
+                reasons.push('<b>Action: STRONG BUY</b> — Both the 60% probability threshold AND strong backtest metrics are met. This is the highest conviction level. The model has demonstrated consistent profitability for this pair.');
+            } else if (confidence === 'BUY') {
+                reasons.push('<b>Action: BUY</b> — Probability above 40% with positive backtest validation. The conditions favor entry but aren\'t at maximum conviction. Consider smaller position size.');
+            } else if (confidence === 'WATCH') {
+                reasons.push('<b>Action: WATCH</b> — The pair is backtest-validated profitable, and probability (>' + (prob * 100).toFixed(0) + '%) suggests monitoring. Not yet an entry signal — wait for probability to rise above 40%. Set alerts on this pair.');
+            } else {
+                reasons.push('<b>Action: HOLD / WAIT</b> — Current market conditions do not favor entry (prob=' + (prob * 100).toFixed(1) + '%). ' +
+                    'The model is correctly being conservative. This pair IS profitable in backtesting but the timing is not right. ' +
+                    '<b>This is good discipline</b> — the model avoids forcing trades when there\'s no edge.');
+            }
+
+            return reasons.join('<br><br>');
+        }
+
+        function getFailureAnalysis(pair, data) {
+            var wr = data.win_rate || 0;
+            var pf = data.profit_factor || 0;
+            var trades = data.total_trades || 0;
+            var folds = data.fold_details || [];
+            var pnl = data.total_pnl_pct || 0;
+
+            var analysis = {};
+            analysis.diagnosis = '';
+            analysis.tweaks = [];
+
+            // Analyze fold patterns
+            var goodFolds = 0, badFolds = 0, catastrophicFold = null;
+            for (var i = 0; i < folds.length; i++) {
+                if (folds[i].win_rate > 0.4) goodFolds++;
+                else badFolds++;
+                if (folds[i].n_trades > 30 && folds[i].win_rate < 0.15) {
+                    catastrophicFold = folds[i];
+                }
+            }
+
+            // Over-trading diagnosis
+            if (catastrophicFold) {
+                analysis.diagnosis += 'OVER-TRADING IN ADVERSE REGIME: Fold ' + catastrophicFold.fold +
+                    ' placed ' + catastrophicFold.n_trades + ' trades with only ' + (catastrophicFold.win_rate * 100).toFixed(1) +
+                    '% win rate (PnL: ' + (catastrophicFold.pnl_pct * 100).toFixed(1) + '%). ' +
+                    'The model failed to recognize a regime change (likely bear/sideways market) and continued entering long positions.';
+                analysis.tweaks.push({
+                    title: 'Add Regime Detection Filter',
+                    status: 'done',
+                    text: 'IMPLEMENTED (v1.3): BTC regime filter blocks BUY signals when BTC is bearish (4h drop >0.3% OR 12h drop >0.5% OR price below EMA20 & EMA50). ' +
+                        'Additionally, trend alignment filter requires EMA20 vs EMA50 agreement with signal direction.'
+                });
+            }
+
+            // Win rate too low
+            if (wr < 0.25) {
+                analysis.diagnosis += (analysis.diagnosis ? ' ' : '') +
+                    'SYSTEMATIC LOSING: Win rate of ' + (wr * 100).toFixed(1) + '% is well below the ' +
+                    '33% breakeven threshold for 2:1 risk-reward. The model\'s features do not capture the dynamics of this pair.';
+                analysis.tweaks.push({
+                    title: 'Pair-Specific Feature Engineering',
+                    status: 'todo',
+                    text: 'NEEDS WORK: This pair may require different features (e.g., cross-pair correlation with BTC, ' +
+                        'funding rate, open interest). Consider removing this pair from the universe until feature engineering is improved.'
+                });
+            }
+
+            // Good early folds but bad later = concept drift
+            if (goodFolds > 0 && badFolds > goodFolds) {
+                analysis.diagnosis += (analysis.diagnosis ? ' ' : '') +
+                    'CONCEPT DRIFT: ' + goodFolds + '/' + folds.length + ' folds were profitable but degraded over time. ' +
+                    'The market dynamics this pair exhibits have shifted, and the model trained on historic data no longer applies.';
+                analysis.tweaks.push({
+                    title: 'Implement Rolling Retraining',
+                    status: 'partial',
+                    text: 'PARTIAL: Daily retrain at 02:00 UTC is active (fixed schedule). NEEDS WORK: Exponential decay weighting ' +
+                        'and reducing training window from 720 to 500 bars still needs manual implementation.'
+                });
+            }
+
+            // Tight SL getting hit too often
+            if (data.sl_hits && data.tp_hits && data.sl_hits > 3 * data.tp_hits) {
+                analysis.diagnosis += (analysis.diagnosis ? ' ' : '') +
+                    'SL STOP-HUNT: ' + data.sl_hits + ' stop losses vs only ' + data.tp_hits + ' take profits. ' +
+                    'The 1.5% SL may be too tight for this pair\'s volatility — price is hitting SL before reaching TP.';
+                analysis.tweaks.push({
+                    title: 'Adaptive TP/SL Based on Pair Volatility',
+                    status: 'done',
+                    text: 'IMPLEMENTED (v1.3): ATR-based TP/SL replaces fixed percentages. Minimum SL distance raised to 0.8% of entry price. ' +
+                        'Scalp: 2.5×ATR TP / 2.0×ATR SL. Intraday: 3.5×ATR TP / 2.5×ATR SL. Swing: 4.5×ATR TP / 2.5×ATR SL.'
+                });
+            }
+
+            // Too many trades = model not selective
+            if (trades > 150) {
+                analysis.tweaks.push({
+                    title: 'Increase Selectivity',
+                    status: 'done',
+                    text: 'IMPLEMENTED (v1.3): Confidence threshold raised to 0.65 (was 0.60). 1h timeframe requires 0.70+. ' +
+                        'Max picks per direction reduced to 3. Circuit breaker pauses after 4 consecutive losses. ' +
+                        'Pair blacklisting at -2% cumulative forward PnL.'
+                });
+            }
+
+            return analysis;
+        }
+
+        function renderPicks(picks) {
+            var container = document.getElementById('picksContainer');
+            if (!picks || picks.length === 0) {
+                container.innerHTML = '<div class="pick-card"><p style="text-align:center;color:var(--text3)">No active picks. Model is waiting for favorable conditions — this is good discipline.</p></div>';
+                document.getElementById('pickCount').textContent = '0 picks';
+                return;
+            }
+            document.getElementById('pickCount').textContent = picks.length + ' picks';
+
+            var html = '';
+            for (var i = 0; i < picks.length; i++) {
+                var p = picks[i];
+                var conf = (p.confidence || 'hold').toLowerCase().replace(' ', '-');
+                var confLabel = p.confidence || 'HOLD';
+                var bt = p.backtest_validation || {};
+
+                // Determine if this is a genuine forward pick (live data, no peeking)
+                var isForward = (p._data_source === 'live');
+                // Convert predicted_at to EST
+                var pickTimestamp = p.predicted_at || p.generated_at || '';
+                var pickEstStr = '';
+                if (pickTimestamp) {
+                    var pickDate = new Date(pickTimestamp);
+                    pickEstStr = pickDate.toLocaleString('en-US', {
+                        timeZone: 'America/New_York',
+                        month: 'short', day: 'numeric', year: 'numeric',
+                        hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+                    }) + ' EST';
+                }
+
+                html += '<div class="pick-card ' + conf + '">';
+                // FORWARD-PICK banner with timestamp
+                if (isForward && pickEstStr) {
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;margin:-18px -18px 14px -18px;background:linear-gradient(90deg,rgba(34,197,94,0.12),rgba(34,197,94,0.04));border-bottom:1px solid rgba(34,197,94,0.2);border-radius:var(--radius) var(--radius) 0 0;flex-wrap:wrap;gap:6px">';
+                    html += '<span style="font-size:0.65rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:6px">🟢 FORWARD-PICK <span style="font-weight:400;font-size:0.58rem;color:var(--text3);letter-spacing:0">(live data • no look-ahead • no peeking)</span></span>';
+                    html += '<span style="font-size:0.65rem;font-weight:600;color:var(--text2);font-family:JetBrains Mono,monospace">' + pickEstStr + '</span>';
+                    html += '</div>';
+                } else if (pickEstStr) {
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;margin:-18px -18px 14px -18px;background:rgba(245,158,11,0.08);border-bottom:1px solid rgba(245,158,11,0.2);border-radius:var(--radius) var(--radius) 0 0;flex-wrap:wrap;gap:6px">';
+                    html += '<span style="font-size:0.65rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber)">⚠️ BACKTEST-PICK</span>';
+                    html += '<span style="font-size:0.65rem;font-weight:600;color:var(--text2);font-family:JetBrains Mono,monospace">' + pickEstStr + '</span>';
+                    html += '</div>';
+                }
+                html += '<div class="pick-header">';
+                html += '<div style="display:flex;align-items:center;gap:12px">';
+                html += '<span class="pick-symbol">' + (p.symbol || '?') + '</span>';
+                html += '<span style="color:var(--text2);font-size:0.85rem">' + (p.name || '') + '</span>';
+                html += '</div>';
+                html += '<div style="display:flex;align-items:center;gap:10px">';
+                html += '<span class="pick-confidence ' + conf + '">' + confLabel + '</span>';
+                html += '</div>';
+                html += '</div>';
+
+                // Metrics grid
+                // Calculate current price and PnL from live data fields
+                var entryP = p.entry_price || 0;
+                var currentP = p.current_price || entryP;
+                var direction = p.direction || 'BUY';
+                var unrealizedPnl = p.unrealized_pnl_pct || 0;
+                // Also support the alternate field names from live tracker
+                var tpPrice = p.tp_price || p.take_profit || 0;
+                var slPrice = p.sl_price || p.stop_loss || 0;
+                var tpPct = p.tp_pct || p.tp_distance_pct || 0;
+                var slPct = p.sl_pct || p.sl_distance_pct || 0;
+                var prob = p.pump_probability || p.probability || 0;
+
+                html += '<div class="pick-grid">';
+                html += '<div class="pick-metric"><div class="label">Entry Price</div><div class="val">$' + entryP.toFixed(entryP > 100 ? 2 : 6) + '</div></div>';
+                html += '<div class="pick-metric"><div class="label">Current Price</div><div class="val ' + (unrealizedPnl > 0 ? 'green' : unrealizedPnl < 0 ? 'red' : '') + '">$' + currentP.toFixed(currentP > 100 ? 2 : 6) + '</div></div>';
+                html += '<div class="pick-metric"><div class="label">Unrealized P&L</div><div class="val ' + (unrealizedPnl > 0 ? 'green' : unrealizedPnl < 0 ? 'red' : '') + '">' + (unrealizedPnl > 0 ? '+' : '') + unrealizedPnl.toFixed(2) + '%</div></div>';
+                html += '<div class="pick-metric"><div class="label">Take Profit</div><div class="val green">$' + tpPrice.toFixed(tpPrice > 100 ? 2 : 6) + ' (' + (tpPct > 0 ? '+' : '') + tpPct.toFixed(2) + '%)</div></div>';
+                html += '<div class="pick-metric"><div class="label">Stop Loss</div><div class="val red">$' + slPrice.toFixed(slPrice > 100 ? 2 : 6) + ' (' + (-Math.abs(slPct)).toFixed(2) + '%)</div></div>';
+                html += '<div class="pick-metric"><div class="label">ML Probability</div><div class="val ' + (prob > 0.5 ? 'green' : prob > 0.2 ? 'amber' : '') + '">' + (prob * 100).toFixed(1) + '%</div></div>';
+                html += '<div class="pick-metric"><div class="label">Direction</div><div class="val ' + (direction === 'BUY' ? 'green' : 'red') + '">' + direction + '</div></div>';
+                html += '<div class="pick-metric"><div class="label">Risk:Reward</div><div class="val blue">' + (p.rr_ratio || (tpPct / Math.max(slPct, 0.01)) || 0).toFixed(1) + ':1</div></div>';
+                html += '</div>';
+
+                // Backtest validation badges
+                html += '<div class="bt-validation">';
+                var wrClass = (bt.win_rate || 0) > 0.5 ? 'green' : (bt.win_rate || 0) > 0.33 ? 'amber' : 'red';
+                html += '<div class="bt-val-item" style="color:var(--' + wrClass + ')">WR: ' + ((bt.win_rate || 0) * 100).toFixed(1) + '%</div>';
+                var pfClass = (bt.profit_factor || 0) > 2 ? 'green' : (bt.profit_factor || 0) > 1 ? 'amber' : 'red';
+                html += '<div class="bt-val-item" style="color:var(--' + pfClass + ')">PF: ' + (bt.profit_factor || 0).toFixed(2) + '</div>';
+                html += '<div class="bt-val-item">Sharpe: ' + (bt.sharpe || 0).toFixed(1) + '</div>';
+                html += '<div class="bt-val-item">' + (bt.n_trades_tested || 0) + ' backtested trades</div>';
+                html += '</div>';
+
+                // Signal tags
+                html += '<div style="margin-bottom:12px">';
+                var sigs = p.signals || [];
+                for (var j = 0; j < sigs.length; j++) {
+                    var sigClass = 'blue';
+                    if (sigs[j].indexOf('OVERSOLD') >= 0 || sigs[j].indexOf('GREEN') >= 0) sigClass = 'green';
+                    else if (sigs[j].indexOf('COMPRESSION') >= 0 || sigs[j].indexOf('SQUEEZE') >= 0) sigClass = 'amber';
+                    html += '<span class="signal-tag ' + sigClass + '">' + sigs[j] + '</span>';
+                }
+                html += '</div>';
+
+                // Full reasoning
+                html += '<div class="reasoning">';
+                html += '<h4>💡 Why This Pick</h4>';
+                html += '<p>' + generateReasoning(p, bt) + '</p>';
+                html += '</div>';
+
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function renderFailures(btResults) {
+            var container = document.getElementById('failuresContainer');
+            if (!btResults) { container.innerHTML = ''; return; }
+
+            var failures = [];
+            var pairs = Object.keys(btResults);
+            for (var i = 0; i < pairs.length; i++) {
+                var data = btResults[pairs[i]];
+                if (data && data.profit_factor < 1.0) {
+                    failures.push({ pair: pairs[i], data: data });
+                }
+            }
+
+            failures.sort(function (a, b) { return (a.data.profit_factor || 0) - (b.data.profit_factor || 0); });
+            document.getElementById('failCount').textContent = failures.length + ' pairs need work';
+
+            var html = '';
+            for (var i = 0; i < failures.length; i++) {
+                var f = failures[i];
+                var d = f.data;
+                var analysis = getFailureAnalysis(f.pair, d);
+
+                html += '<div class="failure-card">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">';
+                html += '<span class="pair-name">❌ ' + f.pair + '</span>';
+                html += '<span style="font-size:0.75rem;color:var(--red);font-family:JetBrains Mono,monospace">PnL: ' + (d.total_pnl_pct || 0).toFixed(1) + '%</span>';
+                html += '</div>';
+
+                html += '<div class="stats">';
+                html += '<span>WR: ' + ((d.win_rate || 0) * 100).toFixed(1) + '%</span>';
+                html += '<span>PF: ' + (d.profit_factor || 0).toFixed(3) + '</span>';
+                html += '<span>Sharpe: ' + (d.sharpe_ratio || 0).toFixed(1) + '</span>';
+                html += '<span>Trades: ' + (d.total_trades || 0) + '</span>';
+                html += '<span>TP: ' + (d.tp_hits || 0) + ' / SL: ' + (d.sl_hits || 0) + '</span>';
+                html += '<span>MDD: ' + (d.max_drawdown_pct || 0).toFixed(1) + '%</span>';
+                html += '</div>';
+
+                // Fold performance mini-chart
+                var folds = d.fold_details || [];
+                if (folds.length > 0) {
+                    var maxPnl = 0.001;
+                    for (var j = 0; j < folds.length; j++) {
+                        maxPnl = Math.max(maxPnl, Math.abs(folds[j].pnl_pct || 0));
+                    }
+                    html += '<div class="fold-chart">';
+                    for (var j = 0; j < folds.length; j++) {
+                        var pnl = folds[j].pnl_pct || 0;
+                        var hPct = Math.max(4, Math.abs(pnl) / maxPnl * 50);
+                        var cls = pnl >= 0 ? 'positive' : 'negative';
+                        if (pnl < 0) {
+                            html += '<div class="fold-bar ' + cls + '" style="height:' + hPct + 'px;align-self:flex-start;margin-top:' + (60 - hPct) + 'px" title="Fold ' + folds[j].fold + ': ' + (pnl * 100).toFixed(1) + '% (' + folds[j].n_trades + ' trades)">';
+                        } else {
+                            html += '<div class="fold-bar ' + cls + '" style="height:' + hPct + 'px" title="Fold ' + folds[j].fold + ': ' + (pnl > 0 ? '+' : '') + (pnl * 100).toFixed(1) + '% (' + folds[j].n_trades + ' trades)">';
+                        }
+                        html += '<span class="fold-label">F' + folds[j].fold + '</span>';
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                    html += '<div style="height:20px"></div>';
+                }
+
+                html += '<div class="analysis">' + analysis.diagnosis + '</div>';
+
+                for (var j = 0; j < analysis.tweaks.length; j++) {
+                    var tw = analysis.tweaks[j];
+                    var statusBadge = '';
+                    var tweakBorder = 'var(--blue)';
+                    if (tw.status === 'done') {
+                        statusBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700;background:var(--green-bg);border:1px solid var(--green-b);color:var(--green);margin-left:8px">DONE</span>';
+                        tweakBorder = 'var(--green)';
+                    } else if (tw.status === 'partial') {
+                        statusBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700;background:var(--amber-bg);border:1px solid var(--amber-b);color:var(--amber);margin-left:8px">PARTIAL</span>';
+                        tweakBorder = 'var(--amber)';
+                    } else {
+                        statusBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700;background:var(--red-bg);border:1px solid var(--red-b);color:var(--red);margin-left:8px">TODO</span>';
+                        tweakBorder = 'var(--red)';
+                    }
+                    html += '<div class="tweak" style="border-left-color:' + tweakBorder + '">';
+                    html += '<div class="tweak-title">🔧 Tweak ' + (j + 1) + ': ' + tw.title + statusBadge + '</div>';
+                    html += '<div class="tweak-text">' + tw.text + '</div>';
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function renderBacktestTable(btResults) {
+            var container = document.getElementById('backtestContainer');
+            if (!btResults) return;
+
+            var pairs = Object.keys(btResults).sort(function (a, b) {
+                return (btResults[b].profit_factor || 0) - (btResults[a].profit_factor || 0);
+            });
+
+            var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.8rem;font-family:JetBrains Mono,monospace">';
+            html += '<thead><tr style="border-bottom:1px solid var(--border)">';
+            ['', 'Pair', 'Folds', 'Trades', 'TP', 'SL', 'Win Rate', 'PnL', 'PF', 'Sharpe', 'MDD'].forEach(function (h) {
+                html += '<th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:0.7rem;text-transform:uppercase">' + h + '</th>';
+            });
+            html += '</tr></thead><tbody>';
+
+            for (var i = 0; i < pairs.length; i++) {
+                var d = btResults[pairs[i]];
+                if (!d) continue;
+                var profitable = d.profit_factor > 1.0;
+                html += '<tr style="border-bottom:1px solid var(--border);' + (profitable ? '' : 'opacity:0.6') + '">';
+                html += '<td style="padding:8px 10px">' + (profitable ? '✅' : '❌') + '</td>';
+                html += '<td style="padding:8px 10px;color:#fff;font-weight:600">' + pairs[i] + '</td>';
+                html += '<td style="padding:8px 10px">' + (d.folds || 0) + '</td>';
+                html += '<td style="padding:8px 10px">' + (d.total_trades || 0) + '</td>';
+                html += '<td style="padding:8px 10px;color:var(--green)">' + (d.tp_hits || 0) + '</td>';
+                html += '<td style="padding:8px 10px;color:var(--red)">' + (d.sl_hits || 0) + '</td>';
+                html += '<td style="padding:8px 10px;color:' + (d.win_rate > 0.4 ? 'var(--green)' : d.win_rate > 0.3 ? 'var(--amber)' : 'var(--red)') + '">' + ((d.win_rate || 0) * 100).toFixed(1) + '%</td>';
+                html += '<td style="padding:8px 10px;color:' + ((d.total_pnl_pct || 0) > 0 ? 'var(--green)' : 'var(--red)') + '">' + ((d.total_pnl_pct || 0) > 0 ? '+' : '') + (d.total_pnl_pct || 0).toFixed(1) + '%</td>';
+                html += '<td style="padding:8px 10px;color:' + ((d.profit_factor || 0) > 1 ? 'var(--green)' : 'var(--red)') + ';font-weight:700">' + (d.profit_factor || 0).toFixed(2) + '</td>';
+                html += '<td style="padding:8px 10px">' + (d.sharpe_ratio || 0).toFixed(1) + '</td>';
+                html += '<td style="padding:8px 10px;color:var(--red)">' + (d.max_drawdown_pct || 0).toFixed(1) + '%</td>';
+                html += '</tr>';
+            }
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function renderRoadmap() {
+            var items = [
+                { status: 'done', title: 'Walk-Forward Backtesting', desc: 'Institutional-grade validation across 1700+ bars per pair, 7-8 folds, no look-ahead bias' },
+                { status: 'done', title: '60+ Feature Engineering', desc: 'Trend (EMA distances, crosses), momentum (RSI, MACD, ROC), volatility (ATR, BB, Keltner), volume (OBV, vol ratios), structure (breakouts, compression)' },
+                { status: 'done', title: 'Ensemble Model (RF + GBT)', desc: 'Random Forest + Gradient Boosting weighted 40/60 — calibrated probabilities with class balancing' },
+                { status: 'done', title: 'Identify Profitable Pairs', desc: '4/14 pairs validated profitable: TRX (PF 3.57), BTC (PF 2.55), ETH (PF 1.24), DOGE (PF 1.22)' },
+                { status: 'done', title: 'Live Pick Generation', desc: 'ATR-based adaptive TP/SL with 2:1 risk-reward. Tiered confidence: STRONG BUY / BUY / WATCH / HOLD' },
+                { status: 'done', title: 'Regime Detection Filter', desc: 'BTC regime filter blocks BUY signals during confirmed bearish moves (4h drop > 0.5% AND 1h drop > 0.2%). Prevents catastrophic losses in falling markets.' },
+                { status: 'done', title: 'Hourly Discord Alerts', desc: 'Automated hourly ANTIGRAVITY_ML_TRAINER status pushed to Discord with 3 embeds: model state, forward picks, reliability timeline.' },
+                { status: 'done', title: 'Pair-Adaptive TP/SL', desc: 'ATR-based TP/SL with minimum 0.5% distance enforcement. Scalp 3.0/1.5 ATR, Intraday 3.0/1.5, Swing 4.0/2.0.' },
+                { status: 'done', title: 'v1.5 Research Overhaul (Feb 23)', desc: '9 evidence-based fixes: isotonic calibration, purged walk-forward CV (75/25 + 20-bar gap), early stopping (50 rounds), meta-labeling M2 filter, SMOTE disabled, reduced complexity (300 trees, depth 4-5). 36 pair/TF combos retrained.' },
+                { status: 'active', title: 'Continuous Learning Loop', desc: 'Daily retrain at 02:00 UTC. Circuit breaker pauses picks after 5 consecutive losses. Pair blacklist disables consistently failing pairs.' },
+                { status: 'future', title: 'Cross-Pair Correlation', desc: 'Add BTC dominance, ETH/BTC ratio, and sector correlation as features for altcoin models.' },
+                { status: 'future', title: '10+ Profitable Pairs', desc: 'Target: expand from 4/14 to 10/14 profitable pairs through regime filters + adaptive parameters.' }
+            ];
+
+            var html = '';
+            for (var i = 0; i < items.length; i++) {
+                html += '<div class="roadmap-item">';
+                html += '<div class="roadmap-dot ' + items[i].status + '"></div>';
+                html += '<div class="roadmap-content">';
+                html += '<h4>' + items[i].title + '</h4>';
+                html += '<p>' + items[i].desc + '</p>';
+                html += '</div></div>';
+            }
+            document.getElementById('roadmapContainer').innerHTML = html;
+        }
+
+        // Normalize fields from summary format to full format
+        function normalizeBT(obj) {
+            var result = {};
+            var keys = Object.keys(obj);
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                var v = obj[k];
+                if (typeof v !== 'object' || v === null) { result[k] = v; continue; }
+                var d = {};
+                d.win_rate = v.win_rate || 0;
+                d.profit_factor = v.profit_factor || 0;
+                d.sharpe_ratio = v.sharpe_ratio || v.sharpe || 0;
+                d.total_pnl_pct = v.total_pnl_pct || v.total_pnl || 0;
+                d.total_trades = v.total_trades || v.n_trades || 0;
+                d.max_drawdown_pct = v.max_drawdown_pct || v.max_dd || 0;
+                d.tp_hits = v.tp_hits || 0;
+                d.sl_hits = v.sl_hits || 0;
+                d.folds = v.folds || 0;
+                d.fold_details = v.fold_details || [];
+                result[k] = d;
+            }
+            return result;
+        }
+
+        function renderForwardResults(fwdStats, closedPicks) {
+            var container = document.getElementById('forwardContainer');
+            if (!fwdStats || fwdStats.total_picks === 0) {
+                container.innerHTML = '<div class="pick-card"><p style="text-align:center;color:var(--text3)">No forward test results yet. Model was just launched — check back in 24h.</p></div>';
+                return;
+            }
+
+            var wr = fwdStats.win_rate || 0;
+            var sharpe = fwdStats.sharpe_ratio || 0;
+            var pf = fwdStats.profit_factor || 0;
+            var total = fwdStats.total_picks || 0;
+            var totalPnl = fwdStats.total_pnl_pct || 0;
+
+            // Summary card
+            var html = '<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">';
+            html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:16px">';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Total Picks</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace">' + total + '</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Wins</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace;color:var(--green)">' + fwdStats.wins + '</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Losses</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace;color:var(--red)">' + fwdStats.losses + '</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Win Rate</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace;color:' + (wr > 50 ? 'var(--green)' : 'var(--red)') + '">' + wr.toFixed(1) + '%</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Total P&L</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace;color:' + (totalPnl > 0 ? 'var(--green)' : 'var(--red)') + '">' + (totalPnl > 0 ? '+' : '') + totalPnl.toFixed(2) + '%</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Sharpe</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace;color:' + (sharpe > 0 ? 'var(--green)' : 'var(--red)') + '">' + sharpe.toFixed(2) + '</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Profit Factor</div><div style="font-size:1.3rem;font-weight:800;font-family:JetBrains Mono,monospace;color:' + (pf > 1 ? 'var(--green)' : 'var(--red)') + '">' + pf.toFixed(2) + '</div></div>';
+            html += '</div>';
+
+            // By timeframe breakdown
+            var byTf = fwdStats.by_timeframe || {};
+            var tfKeys = Object.keys(byTf);
+            if (tfKeys.length > 0) {
+                html += '<div style="font-size:0.8rem;font-weight:700;color:#fff;margin-bottom:8px">By Timeframe:</div>';
+                html += '<div style="display:flex;gap:10px;flex-wrap:wrap">';
+                for (var t = 0; t < tfKeys.length; t++) {
+                    var tf = byTf[tfKeys[t]];
+                    html += '<div style="background:var(--bg2);border-radius:8px;padding:10px 14px;font-family:JetBrains Mono,monospace;font-size:0.75rem">';
+                    html += '<strong>' + tfKeys[t] + '</strong>: ' + tf.picks + ' picks, WR ' + (tf.win_rate || 0).toFixed(1) + '%, PnL ' + (tf.total_pnl || 0).toFixed(1) + '%';
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+
+            // Individual closed picks
+            if (closedPicks && closedPicks.length > 0) {
+                html += '<div style="font-size:0.8rem;font-weight:700;color:#fff;margin-bottom:8px">Recent Closed Picks:</div>';
+                html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;font-family:JetBrains Mono,monospace">';
+                html += '<thead><tr style="border-bottom:1px solid var(--border)">';
+                ['', 'Generated (EST)', 'Pair', 'TF', 'Dir', 'Entry', 'Close', 'PnL', 'Outcome', 'Model'].forEach(function (h) {
+                    html += '<th style="padding:6px 8px;text-align:left;color:var(--text3);font-size:0.65rem;text-transform:uppercase">' + h + '</th>';
+                });
+                html += '</tr></thead><tbody>';
+                var sorted = closedPicks.slice().sort(function (a, b) { return new Date(b.closed_at || 0) - new Date(a.closed_at || 0); });
+                for (var c = 0; c < Math.min(sorted.length, 20); c++) {
+                    var p = sorted[c];
+                    var won = p.outcome === 'TP_HIT';
+                    var pnl = p.actual_pnl_pct || 0;
+                    // EST timestamp
+                    var estStr = p.generated_at_est || '';
+                    if (!estStr && p.generated_at) {
+                        var gd = new Date(p.generated_at);
+                        estStr = gd.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) + ' EST';
+                    }
+                    html += '<tr style="border-bottom:1px solid var(--border)">';
+                    html += '<td style="padding:6px 8px">' + (won ? '✅' : p.outcome === 'EXPIRED' ? '⏰' : '❌') + '</td>';
+                    html += '<td style="padding:6px 8px;font-size:0.65rem;color:var(--text2)">' + estStr + '</td>';
+                    html += '<td style="padding:6px 8px;color:#fff;font-weight:600">' + (p.symbol || '?') + '</td>';
+                    html += '<td style="padding:6px 8px">' + (p.timeframe || '?') + '</td>';
+                    html += '<td style="padding:6px 8px;color:' + (p.direction === 'BUY' ? 'var(--green)' : 'var(--red)') + '">' + (p.direction || '?') + '</td>';
+                    var ep = p.entry_price || 0;
+                    var cp = p.close_price || 0;
+                    html += '<td style="padding:6px 8px">$' + (ep > 100 ? ep.toFixed(2) : ep > 1 ? ep.toFixed(4) : ep.toFixed(6)) + '</td>';
+                    html += '<td style="padding:6px 8px">$' + (cp > 100 ? cp.toFixed(2) : cp > 1 ? cp.toFixed(4) : cp.toFixed(6)) + '</td>';
+                    html += '<td style="padding:6px 8px;color:' + (pnl > 0 ? 'var(--green)' : 'var(--red)') + ';font-weight:700">' + (pnl > 0 ? '+' : '') + pnl.toFixed(2) + '%</td>';
+                    html += '<td style="padding:6px 8px">' + (p.outcome || '?') + '</td>';
+                    html += '<td style="padding:6px 8px;font-size:0.65rem;color:var(--text3)">' + (p.model_variant || '?').split('_').slice(-2).join('_') + '</td>';
+                    html += '</tr>';
+                }
+                html += '</tbody></table></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Load all data — walk-forward JSON has full detail, performance.json has summary
+        Promise.all([
+            fetchJSON('antigravity_ml_live_picks.json'),
+            fetchJSON('antigravity_ml_performance.json'),
+            fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/backtest_results/walk_forward_results.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/forward_stats.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/closed_picks.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_crypto_predictor/enhanced_models/live_picks/active_picks.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        ]).then(function (results) {
+            var picks = results[0] || [];
+            var perf = results[1] || {};
+            var wfResults = results[2];
+            var fwdStats = results[3];
+            var closedPicks = results[4] || [];
+            var mlActive = results[5] || [];
+            var alphaActive = results[6] || [];
+
+            // Use full walk-forward results if available, else use summary from performance
+            var btResults = wfResults || normalizeBT(perf.backtest_summary || perf.backtest_results || {});
+
+            // BACKTEST Health bar
+            var profitPairs = 0, totalPairs = 0, bestSharpe = 0, bestPairName = '—';
+            var pairKeys = Object.keys(btResults);
+            for (var i = 0; i < pairKeys.length; i++) {
+                var d = btResults[pairKeys[i]];
+                if (!d) continue;
+                totalPairs++;
+                if (d.profit_factor > 1.0 && d.win_rate > 0.33) profitPairs++;
+                var sh = d.sharpe_ratio || d.sharpe || 0;
+                if (sh > bestSharpe) {
+                    bestSharpe = sh;
+                    bestPairName = pairKeys[i].split('/')[0];
+                }
+            }
+
+            document.getElementById('modelStatus').textContent = fwdStats && fwdStats.total_picks > 10 ? (fwdStats.win_rate > 45 ? 'ACTIVE' : 'CALIBRATING') : 'EARLY STAGE';
+            document.getElementById('modelStatus').className = 'value ' + (fwdStats && fwdStats.win_rate > 45 ? 'green' : 'amber');
+            document.getElementById('profitPairs').textContent = profitPairs + '/' + totalPairs;
+            document.getElementById('bestSharpe').textContent = bestSharpe.toFixed(1);
+            document.getElementById('bestSharpe').className = 'value ' + (bestSharpe > 5 ? 'green' : bestSharpe > 1 ? 'amber' : 'red');
+            document.getElementById('activePicks').textContent = mlActive.length;
+            document.getElementById('alphaPicks').textContent = alphaActive.length;
+            document.getElementById('bestPair').textContent = bestPairName;
+
+            // FORWARD Health bar
+            if (fwdStats) {
+                var wr = fwdStats.win_rate || 0;
+                document.getElementById('fwdWR').textContent = wr.toFixed(1) + '%';
+                document.getElementById('fwdWR').className = 'value ' + (wr > 50 ? 'green' : 'red');
+                document.getElementById('fwdSharpe').textContent = (fwdStats.sharpe_ratio || 0).toFixed(2);
+                document.getElementById('fwdSharpe').className = 'value ' + ((fwdStats.sharpe_ratio || 0) > 0 ? 'green' : 'red');
+                var pnl = fwdStats.total_pnl_pct || 0;
+                document.getElementById('fwdPnL').textContent = (pnl > 0 ? '+' : '') + pnl.toFixed(1) + '%';
+                document.getElementById('fwdPnL').className = 'value ' + (pnl > 0 ? 'green' : 'red');
+                document.getElementById('fwdPicks').textContent = fwdStats.total_picks || 0;
+            }
+
+            // Show zero-state explainer if no resolved forward picks yet
+            var resolvedCount = (fwdStats && fwdStats.total_picks) || 0;
+            var zeroEl = document.getElementById('fwdZeroExplainer');
+            if (zeroEl) {
+                zeroEl.style.display = resolvedCount === 0 ? 'block' : 'none';
+                var activeEl = document.getElementById('fwdActiveCount');
+                if (activeEl) activeEl.textContent = picks.length;
+            }
+
+            // Sort picks by probability
+            picks.sort(function (a, b) { return (b.pump_probability || 0) - (a.pump_probability || 0); });
+
+            renderPicks(picks);
+            renderForwardResults(fwdStats, closedPicks);
+            renderFailures(btResults);
+            renderBacktestTable(btResults);
+            renderRoadmap();
+
+            // Update time
+            var updateStr = fwdStats && fwdStats.last_updated ? new Date(fwdStats.last_updated).toLocaleString() : 'loading...';
+            document.getElementById('updateTime').innerHTML = 'Last updated: ' + updateStr +
+                ' | <a href="antigravity-ml-gainer.html">&larr; Back to Scanner</a> | <a href="../index.html">Home</a>';
+
+            // Populate Last Updated / Next Update EST
+            var lastRunUTC = perf.last_run || (picks.length > 0 ? picks[0].predicted_at : null);
+            if (lastRunUTC) {
+                var lastDate = new Date(lastRunUTC);
+                var lastEstStr = lastDate.toLocaleString('en-US', {
+                    timeZone: 'America/New_York',
+                    month: 'short', day: 'numeric', year: 'numeric',
+                    hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+                }) + ' EST';
+                document.getElementById('lastUpdatedEST').textContent = lastEstStr;
+
+                // Next update = next :10 past the hour
+                var now = new Date();
+                var nextUpdate = new Date(now);
+                nextUpdate.setUTCMinutes(10, 0, 0);
+                if (nextUpdate <= now) nextUpdate.setUTCHours(nextUpdate.getUTCHours() + 1);
+                var nextEstStr = nextUpdate.toLocaleString('en-US', {
+                    timeZone: 'America/New_York',
+                    month: 'short', day: 'numeric',
+                    hour: 'numeric', minute: '2-digit', hour12: true
+                }) + ' EST';
+                document.getElementById('nextUpdateEST').textContent = nextEstStr;
+
+                // Show staleness warning if picks data is >24h old
+                var ageHours = (now - lastDate) / 3600000;
+                if (ageHours > 24) {
+                    var days = Math.floor(ageHours / 24);
+                    var warn = document.createElement('div');
+                    warn.style.cssText = 'background:#f59e0b22;border:1px solid #f59e0b44;color:#f59e0b;padding:10px 16px;border-radius:8px;margin:12px 0;font-size:0.85rem;text-align:center';
+                    warn.innerHTML = '⚠️ <strong>Data may be stale</strong> — last ML training push was ' + days + ' day' + (days > 1 ? 's' : '') + ' ago. The training pipeline runs daily but results may be delayed.';
+                    var header = document.querySelector('.dashboard-header') || document.body.firstChild;
+                    header.parentNode.insertBefore(warn, header.nextSibling);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

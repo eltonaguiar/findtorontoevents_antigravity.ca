@@ -1,0 +1,57 @@
+name: AI Tournament Price Tracker
+
+on:
+  schedule:
+    # Daily at 23:00 UTC (after all major market closes)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      force_resolve:
+        description: 'Force re-resolve all picks (use after data correction)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  track-prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet yfinance requests python-binance scipy numpy
+
+      - name: Fetch prices and resolve picks
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+          FORCE_RESOLVE: ${{ github.event.inputs.force_resolve }}
+        run: python tools/ai_tournament/price_tracker.py
+
+      - name: Update leaderboard
+        run: python tools/ai_tournament/update_leaderboard.py
+
+      - name: Commit results
+        run: |
+          git config user.name  "Hermes Agent"
+          git config user.email "noreply@anthropic.com"
+          git add audit_dashboard/data/ai_tournament_leaderboard.json
+          git add data/ai_tournament/
+          git add audit_dashboard/data/ai_tournament_picks_latest.json || true
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore(tournament): daily price update $(date -u +%Y-%m-%d) [skip ci]"
+          git pull --rebase origin main
+          git push

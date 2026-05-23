@@ -1,0 +1,83 @@
+name: ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds
+
+on:
+  schedule:
+    - cron: '2,32 * * * *' # Every 30 min catch entries before gap widens
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alpha-engine-fast
+  cancel-in-progress: false  # was true — 100% cancellation rate (25min runs on 30min cron)
+
+jobs:
+  alpha-fast:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 40  # was 25, kept timing out (runs take 25min on 30min cron)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            alpha_engine
+            shared
+          sparse-checkout-cone-mode: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy scikit-learn joblib requests
+
+      - name: Run Alpha Engine FAST variant
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          ALPHA_FAST_MODE: "1"
+          ALPHA_CONFLUENCE: "1"
+          ALPHA_TOURNAMENT: "1"
+          ALPHA_MIN_FAMILIES: "2"
+        run: |
+          echo "============================================"
+          echo " ALPHA ENGINE FAST Tight TP/SL Variant"
+          echo " 50% tighter TP/SL, 50% shorter holds"
+          echo " $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/production_scanner.py
+
+      - name: Commit fast variant data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/active_picks_fast.json alpha_engine/data/closed_picks_fast.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Alpha Engine FAST: $(date -u '+%Y-%m-%d %H:%M') [AUTO] [skip ci]"
+
+      - name: Push with retry
+        run: |
+          push_ok=false
+          for i in 1 2 3 4 5; do
+            if bash .github/scripts/safe_push.sh; then
+              echo "Push succeeded on attempt $i"
+              push_ok=true
+              break
+            fi
+            if [ "$i" -lt 5 ]; then
+              delay=$((i * 5))
+              echo "Push attempt $i failed, retrying in ${delay}s..."
+              sleep "$delay"
+            fi
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: all push attempts failed"
+            exit 1
+          fi
+

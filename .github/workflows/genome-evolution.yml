@@ -1,0 +1,118 @@
+name: Strategy Genome Evolution
+
+on:
+  schedule:
+    - cron: '0 6 * * 0' # Weekly: Sunday 6AM UTC (1AM EST)
+  workflow_dispatch:
+    inputs:
+      generations:
+        description: 'Number of GA generations'
+        required: false
+        default: '10'
+      population:
+        description: 'Population size'
+        required: false
+        default: '40'
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'evolve'
+        type: choice
+        options:
+          - evolve
+          - phoenix
+          - full
+
+jobs:
+  evolve:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install pandas numpy scipy
+
+      - name: Refresh price data
+        run: |
+          python -c "
+          import sqlite3, json, urllib.request, time, os
+          symbols = ['BTC/USDT','ETH/USDT','SOL/USDT','DOGE/USDT','XRP/USDT',
+                     'ADA/USDT','DOT/USDT','AVAX/USDT','LINK/USDT','MATIC/USDT']
+          # Mirror list with failover — data-api.binance.vision is not geo-blocked
+          bases = [
+              'https://data-api.binance.vision',
+              'https://api1.binance.com',
+              'https://api2.binance.com',
+              'https://api3.binance.com',
+              'https://api.binance.com',
+              'https://api.binance.us',
+          ]
+          # In GitHub Actions, prefer non-geo-blocked endpoints
+          if os.environ.get('GITHUB_ACTIONS'):
+              bases = [b for b in bases if b not in ('https://api.binance.com',)] + ['https://api.binance.com']
+          conn = sqlite3.connect('crypto_data.db')
+          conn.execute('''CREATE TABLE IF NOT EXISTS klines (
+              pair TEXT, timestamp TEXT, open REAL, high REAL, low REAL, close REAL, volume REAL,
+              PRIMARY KEY (pair, timestamp))''')
+          for sym in symbols:
+              api_sym = sym.replace('/','')
+              fetched = False
+              for base in bases:
+                  url = f'{base}/api/v3/klines?symbol={api_sym}&interval=1h&limit=1000'
+                  try:
+                      req = urllib.request.Request(url, headers={'User-Agent': 'GenomeEvolution/1.0'})
+                      data = json.loads(urllib.request.urlopen(req, timeout=15).read())
+                      rows = [(sym, str(int(d[0])), float(d[1]), float(d[2]), float(d[3]), float(d[4]), float(d[5])) for d in data]
+                      conn.executemany('INSERT OR REPLACE INTO klines VALUES (?,?,?,?,?,?,?)', rows)
+                      conn.commit()
+                      print(f' Updated {sym}: {len(rows)} bars (via {base})')
+                      fetched = True
+                      break
+                  except Exception as e:
+                      print(f'   {base} failed for {sym}: {e}')
+                      continue
+              if not fetched:
+                  print(f' SKIP {sym}: all endpoints failed')
+              time.sleep(0.5)
+          conn.close()
+          "
+
+      - name: Run Strategy Genome Evolution
+        run: |
+          GENS=${{ github.event.inputs.generations || '10' }}
+          POP=${{ github.event.inputs.population || '40' }}
+          MODE=${{ github.event.inputs.mode || 'evolve' }}
+          python quant_lab/strategy_genome.py --generations $GENS --population $POP --mode $MODE
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add quant_lab/genome_results/ crypto_data.db
+          git diff --staged --quiet || git commit -m "Genome evolution run [$(date -u +%Y-%m-%d)] top strategy: $(python -c "
+          import json, glob
+          files = sorted(glob.glob('quant_lab/genome_results/genome_results_*.json'))
+          if files:
+              data = json.load(open(files[-1]))
+              if data:
+                  print(f\"{data[0].get('name','?')[:30]} fitness={data[0].get('fitness_score',0):.3f}\")
+              else: print('no results')
+          else: print('no files')
+          ") [skip ci]"
+          bash .github/scripts/safe_push.sh
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Strategy Genome Evolution" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

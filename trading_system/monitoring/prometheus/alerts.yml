@@ -1,0 +1,154 @@
+# Prometheus Alert Rules
+
+groups:
+  - name: trading-system-critical
+    interval: 10s
+    rules:
+      # Circuit breaker activated
+      - alert: CircuitBreakerActivated
+        expr: trading_circuit_breaker_active == 1
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker activated"
+          description: "Trading has been halted due to {{ $labels.reason }}"
+
+      # Data feed stale
+      - alert: DataFeedStale
+        expr: time() - trading_last_tick_timestamp > 5
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Data feed is stale"
+          description: "No tick data received for {{ $value }} seconds"
+
+      # Order execution failure
+      - alert: OrderExecutionFailure
+        expr: rate(trading_orders_rejected_total[1m]) > 0.1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "High order rejection rate"
+          description: "Order rejection rate is {{ $value }} per second"
+
+      # Exchange connection lost
+      - alert: ExchangeConnectionLost
+        expr: trading_exchange_connected == 0
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Exchange connection lost"
+          description: "Connection to {{ $labels.exchange }} has been lost"
+
+  - name: trading-system-warning
+    interval: 30s
+    rules:
+      # High latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, rate(trading_latency_seconds_bucket[5m])) > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High trading latency"
+          description: "P99 latency is {{ $value }}s"
+
+      # Position limit approaching
+      - alert: PositionLimitApproaching
+        expr: trading_position_value / trading_max_position_value > 0.8
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Position limit approaching"
+          description: "Position for {{ $labels.symbol }} is at {{ $value | humanizePercentage }} of limit"
+
+      # Daily loss warning
+      - alert: DailyLossWarning
+        expr: trading_daily_pnl < -25000
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Daily loss warning"
+          description: "Daily P&L is ${{ $value | humanize }}"
+
+      # Queue depth high
+      - alert: HighQueueDepth
+        expr: trading_queue_depth > 1000
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High queue depth"
+          description: "Queue depth for {{ $labels.queue }} is {{ $value }}"
+
+  - name: infrastructure
+    interval: 30s
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}%"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}%"
+
+      # Disk space low
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value }}%"
+
+      # Pod crash looping
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod crash looping"
+          description: "Pod {{ $labels.pod }} is crash looping"
+
+  - name: database
+    interval: 30s
+    rules:
+      # Database connection pool exhausted
+      - alert: DBConnectionPoolExhausted
+        expr: trading_db_connections_active / trading_db_connections_max > 0.9
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "DB connections at {{ $value | humanizePercentage }}"
+
+      # Slow database queries
+      - alert: SlowDBQueries
+        expr: rate(trading_db_query_duration_seconds_sum[5m]) / rate(trading_db_query_duration_seconds_count[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries"
+          description: "Average query time is {{ $value }}s"

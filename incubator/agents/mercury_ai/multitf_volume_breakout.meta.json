@@ -1,0 +1,34 @@
+{
+  "strategy_name": "multitf_volume_breakout",
+  "class_name": "MultiTF_VolumeBreakoutStrategy",
+  "agent_id": "mercury_ai",
+  "version": "1.0.0",
+  "source": "Inception - Mercury AI",
+  "category": "breakout",
+  "description": "1h breakout with 4h EMA trend filter + volume surge confirmation. Avoids low-volume noise breakouts.",
+  "indicators": ["EMA-20 (1h)", "EMA-50 (4h proxy)", "Volume EMA-20", "ATR-14"],
+  "entry_conditions": [
+    "4h EMA-20 > EMA-50 (uptrend)",
+    "1h close > 1h EMA-20",
+    "1h volume > 2x EMA-20 of volume",
+    "Candle range > 0.5x ATR-14"
+  ],
+  "exit_conditions": {
+    "take_profit": "entry + 1.5x ATR-14",
+    "stop_loss": "entry - 1.0x ATR-14"
+  },
+  "parameters": {
+    "ema_fast": 20,
+    "ema_slow": 50,
+    "vol_mult": 2.0,
+    "atr_mult_tp": 1.5,
+    "atr_mult_sl": 1.0,
+    "atr_period": 14,
+    "ema_4h_fast": 80,
+    "ema_4h_slow": 200
+  },
+  "expected_regime": "trending, moderately volatile",
+  "direction": "long_only",
+  "status": "validating",
+  "created_at": "2026-02-27"
+}

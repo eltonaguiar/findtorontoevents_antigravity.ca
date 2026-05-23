@@ -1,0 +1,117 @@
+name: ALPHA ENGINE - Equity 52wk High Breakout Scanner
+
+# Serialise against itself to avoid race conditions on active_picks.json.
+# cancel-in-progress: false queues rather than drops (picks are additive).
+concurrency:
+  group: alpha-equity-breakout-push
+  cancel-in-progress: false
+
+on:
+  schedule:
+    # Weekdays at 22:30 UTC — after market close, after main daily scan at 22:00
+    - cron: '30 22 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — scan without writing picks to active_picks.json"
+        type: boolean
+        default: false
+      symbols:
+        description: "Comma-separated symbols to override default universe (optional)"
+        type: string
+        default: ""
+      top_n:
+        description: "Cap symbol universe to top-N (optional, ignored if symbols set)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  equity-breakout-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy
+
+      - name: Run equity breakout scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          DRY_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+
+          SYM_FLAG=""
+          if [ -n "${{ inputs.symbols }}" ]; then
+            SYM_FLAG="--symbols ${{ inputs.symbols }}"
+          fi
+
+          TOP_FLAG=""
+          if [ -n "${{ inputs.top_n }}" ]; then
+            TOP_FLAG="--top-n ${{ inputs.top_n }}"
+          fi
+
+          python alpha_engine/equity_breakout_scanner.py \
+            $DRY_FLAG \
+            $SYM_FLAG \
+            $TOP_FLAG
+
+      - name: Commit new picks
+        if: inputs.dry_run != 'true'
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Equity Breakout Bot"
+          git config user.email "equity-breakout@findtorontoevents.ca"
+          git add alpha_engine/data/active_picks.json
+          if git diff --cached --quiet; then
+            echo "No new picks to commit"
+            exit 0
+          fi
+          git commit -m "feat(equity): equity breakout picks $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${{ github.repository }}.git"
+          # Retry push loop — pattern mirrors alpha-engine-etf.yml (push-storm resilience).
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            delay=$((i * i * 5 + RANDOM % 30))
+            [ $delay -gt 120 ] && delay=$((120 + RANDOM % 30))
+            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
+              echo "Rebase failed on attempt $i (next delay ${delay}s)"
+              git rebase --abort 2>/dev/null || true
+              sleep "$delay"
+              continue
+            }
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed on attempt $i"
+              push_ok=true
+              break
+            fi
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All 10 push attempts failed — picks generated, next cycle self-heals."
+            exit 1
+          fi

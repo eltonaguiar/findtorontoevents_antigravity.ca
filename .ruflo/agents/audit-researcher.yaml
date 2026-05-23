@@ -1,0 +1,39 @@
+# Ruflo-style agent: Audit Performance Researcher
+# Analyzes strategy performance from audit dashboard data
+type: audit_researcher
+version: "1.0.0"
+role: researcher
+model: google/gemini-2.0-flash-exp:free
+goal: |
+  Analyze the findtorontoevents.ca /audit dashboard data.
+  Read audit_trail/data/universal_resolved_picks.json, battleground/data/*,
+  and MySQL picks tables (via audit_trail/mysql_client.py or direct SQL).
+  Identify: (1) strategies with forward_wr < 0.55, (2) stale strategies (no picks in 7+ days),
+  (3) non-crypto elite score starvation, (4) anti-predictive weight leakage,
+  (5) retired strategies still emitting. Return ONLY JSON: {"findings": [...], "top_actions": [...]}.
+  If files or MySQL cannot be inspected, return unable_to_verify instead of synthetic metrics.
+capabilities:
+  - strategy-performance-analysis
+  - win-rate-auditing
+  - stale-strategy-detection
+  - elite-score-validation
+  - anti-predictive-leakage-detection
+optimizations:
+  - structured-json-output
+  - context-caching
+swarm: audit
+priority: high
+metadata:
+  created: "2026-05-05T00:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  dataSources:
+    - audit_trail/data/universal_resolved_picks.json
+    - battleground/data/chatgpt_combined_signals.json
+    - updates/strong_strategy_per_asset_class_*.md
+    - MySQL picks tables via audit_trail/mysql_client.py
+  checks:
+    - strategies_with_forward_wr_below_0.55
+    - stale_strategies_no_picks_7plus_days
+    - non_crypto_elite_score_starvation
+    - anti_predictive_weight_leakage
+    - retired_strategies_still_emitting

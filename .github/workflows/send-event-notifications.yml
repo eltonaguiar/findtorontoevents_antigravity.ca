@@ -1,0 +1,100 @@
+name: Send Event Notifications (DISABLED)
+
+# DISABLED Feb 26 2026  email notifications not needed, 401 auth issue with 50webs .env
+# To re-enable: uncomment the schedule triggers below
+on:
+  # schedule:
+  #   - cron: '0 13 * * *'
+  #   - cron: '0 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      notification_type:
+        description: 'Notification type (daily or weekly)'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+
+jobs:
+  send-daily:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # Run daily job every day except when manually triggered
+    if: github.event_name == 'schedule' && github.event.schedule == '0 13 * * *' || (github.event_name == 'workflow_dispatch' && github.event.inputs.notification_type == 'daily')
+    env:
+      EVENT_NOTIFY_API_KEY: ${{ secrets.EVENT_NOTIFY_API_KEY }}
+    
+    steps:
+    - name: Send Daily Dating Event Notifications
+      run: |
+        echo "Sending daily dating event notifications..."
+        response=$(curl -s -w "\n%{http_code}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          -A "Mozilla/5.0 (compatible; FindTorontoEvents-Notify/1.0)" \
+          -d '{"type":"daily"}' \
+          "https://findtorontoevents.ca/fc/api/send_event_notifications.php?type=daily")
+        
+        http_code=$(echo "$response" | tail -n1)
+        body=$(echo "$response" | sed '$d')
+        
+        echo "HTTP Status: $http_code"
+        echo "Response: $body"
+        
+        if [ "$http_code" != "200" ]; then
+          echo "::error::Failed to send daily notifications (HTTP $http_code)"
+          exit 1
+        fi
+        
+        echo "$body" | python3 -c "
+        import sys, json
+        data = json.load(sys.stdin)
+        print(f\"Events found: {data.get('events_found', 0)}\")
+        print(f\"Subscribers: {data.get('subscribers', 0)}\")
+        print(f\"Sent: {data.get('sent', 0)}\")
+        if data.get('errors'):
+            print(f\"Errors: {data.get('errors')}\")
+        "
+
+  send-weekly:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # Run weekly job on Mondays or when manually triggered
+    if: github.event_name == 'schedule' && github.event.schedule == '0 13 * * 1' || (github.event_name == 'workflow_dispatch' && github.event.inputs.notification_type == 'weekly')
+    env:
+      EVENT_NOTIFY_API_KEY: ${{ secrets.EVENT_NOTIFY_API_KEY }}
+    
+    steps:
+    - name: Send Weekly Dating Event Notifications
+      run: |
+        echo "Sending weekly dating event notifications..."
+        response=$(curl -s -w "\n%{http_code}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          -A "Mozilla/5.0 (compatible; FindTorontoEvents-Notify/1.0)" \
+          -d '{"type":"weekly"}' \
+          "https://findtorontoevents.ca/fc/api/send_event_notifications.php?type=weekly")
+        
+        http_code=$(echo "$response" | tail -n1)
+        body=$(echo "$response" | sed '$d')
+        
+        echo "HTTP Status: $http_code"
+        echo "Response: $body"
+        
+        if [ "$http_code" != "200" ]; then
+          echo "::error::Failed to send weekly notifications (HTTP $http_code)"
+          exit 1
+        fi
+        
+        echo "$body" | python3 -c "
+        import sys, json
+        data = json.load(sys.stdin)
+        print(f\"Events found: {data.get('events_found', 0)}\")
+        print(f\"Subscribers: {data.get('subscribers', 0)}\")
+        print(f\"Sent: {data.get('sent', 0)}\")
+        if data.get('errors'):
+            print(f\"Errors: {data.get('errors')}\")
+        "
+

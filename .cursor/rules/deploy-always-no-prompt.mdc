@@ -1,0 +1,19 @@
+---
+description: Deploy only after local verification passes (no JS errors). Never deploy with a broken chunk. Never ask to deploy—just run deploy after local passes.
+globs: 
+alwaysApply: true
+---
+
+# Deploy only after local verification (no prompt)
+
+When you make or complete **coding changes that affect the live site** (index.html, next/_next/, favcreators/public/api/, api/, etc.):
+
+1. **Test locally first. Do not deploy until local verification passes.**
+   - **For any HTML file with inline `<script>` blocks** (VR pages, game pages, etc.): run `node tools/check_syntax.js <file.html>` first — it must **exit 0** (acorn parses all script blocks). This catches class/method/brace errors statically before any browser test. See rule `js-syntax-check-html.mdc`.
+   - If you changed **next/_next/static/chunks/a2ac3a6616d60872.js** (or patch_nav_js.py): run `python tools/verify_events_loading.py` — it must **exit 0** (acorn parses the chunk). Then run `python tools/serve_local.py` and `npx playwright test tests/no_js_errors.spec.ts` — must pass (no SyntaxError). If the chunk has a syntax error, fix it (e.g. copy from sister project `E:\findtorontoevents.ca\_next\static\chunks\a2ac3a6616d60872.js` then `python tools/patch_nav_js.py`) and re-verify. **Only after no JS errors locally**, run deploy.
+   - For other changes: run local test (serve_local + playwright no_js_errors or verify:local) and confirm no errors before deploying.
+2. **Then deploy.** Run `python tools/deploy_to_ftp.py` from the project root. Do **not** ask "Should I deploy?" — deploy automatically once local verification passes.
+3. **After deploy, run setup yourself.** Call any one-time setup URLs (e.g. `ensure_debug_log_table.php`, events-api `setup_tables.php`) to apply schema; do not ask the user to open phpMyAdmin or run SQL. See rule `deploy-and-setup-independently.mdc`.
+4. **Never deploy a broken chunk.** A syntax error in the main chunk breaks the events page for everyone. Verify first; deploy only when tests pass.
+
+**Summary:** Test locally, confirm no errors (especially no SyntaxError), then deploy. Do not waste the user's time by deploying broken JS.

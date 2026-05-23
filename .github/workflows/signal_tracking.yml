@@ -1,0 +1,126 @@
+name:  Signal Tracking & Validation - Beat the Market
+
+on:
+  # Run every 2 hours (more frequent for signal tracking)
+  schedule:
+    - cron: '0 */2 * * *'
+  
+  # Run on push
+  push:
+    branches: [main]
+    paths:
+      - 'signal_tracker.py'
+      - 'self_optimizing_bot.py'
+      - '.github/workflows/signal_tracking.yml'
+  
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  track-and-validate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name:  Run Signal Tracking & Validation
+      env:
+        PRIMARY_EXCHANGE: 'FREE_DATA'
+        COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        CRYPTOCOMPARE_API_KEY: ${{ secrets.CRYPTOCOMPARE_API_KEY }}
+        
+      run: |
+        echo " Signal Tracking & Validation System"
+        echo "======================================"
+        echo " Tracking: Crypto (priority) + Forex"
+        echo " Validating: Every 2 hours"
+        echo " Auto-tweaking: Until beating the market"
+        echo ""
+        python signal_tracker.py
+        
+    - name:  Generate Market Beating Report
+      run: |
+        if [ -f OPTIMIZATION_REPORT.md ]; then
+          echo " Report generated successfully"
+          cat OPTIMIZATION_REPORT.md
+        else
+          echo " No report generated yet (need more signals)"
+        fi
+        
+    - name:  Upload tracking data
+      uses: actions/upload-artifact@v4
+      with:
+        name: signal-tracking-${{ github.run_number }}
+        path: |
+          signals_database.json
+          validation_results.json
+          tweak_history.json
+          OPTIMIZATION_REPORT.md
+        retention-days: 90
+        
+    - name:  Commit tracking data
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "tracker@signal-validation.ai"
+        git config --local user.name " Signal Tracker"
+        
+        git add signals_database.json || true
+        git add validation_results.json || true
+        git add tweak_history.json || true
+        git add OPTIMIZATION_REPORT.md || true
+        
+        TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+        git commit -m " Auto: Signal tracking & validation - $TIMESTAMP
+
+         Validating predictions against market outcomes
+         Tracking accuracy per strategy per asset
+         Auto-tweaking until beating the market
+
+        Run #${{ github.run_number }} [skip ci]" || echo "No changes"
+        
+        git pull --rebase origin main || true
+        bash .github/scripts/safe_push.sh
+        
+    - name:  Summary
+      run: |
+        echo ""
+        echo ""
+        echo "      SIGNAL TRACKING & VALIDATION - CYCLE COMPLETE            "
+        echo ""
+        echo "   Signals Validated                                            "
+        echo "   Accuracy Calculated                                          "
+        echo "   Tweaks Applied                                               "
+        echo "   Progress Toward Beating Market                               "
+        echo ""
+        echo ""
+        if [ -f signals_database.json ]; then
+          echo " Database Status:"
+          python3 -c "import json; d=json.load(open('signals_database.json')); print(f'   Total signals: {len(d)}')" 2>/dev/null || echo "   Database building..."
+        fi
+

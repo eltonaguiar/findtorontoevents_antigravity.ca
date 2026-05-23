@@ -1,0 +1,78 @@
+{
+  "strategy_name": "whale_vwap_breakout",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T19:45:00Z",
+  "status": "backtest_failed",
+  "strategy_type": "onchain_confirmed_breakout",
+  "unique_value": "VWAP breakout is validated by hourly whale inflow acceleration and negative funding bias, filtering weak retail-only breakouts.",
+  "asset_class": "crypto",
+  "timeframe": "1m",
+  "expected_regime": "moderate_range_to_expansion",
+  "backtest_metrics": {
+    "sharpe": null,
+    "win_rate": null,
+    "max_drawdown": null,
+    "total_trades": 0,
+    "profit_factor": null,
+    "total_return": 0.0,
+    "timestamp": "2026-02-27T00:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "Rolling VWAP(60)",
+    "Whale Inflow Ratio (1h / 24h avg)",
+    "ATR(14)",
+    "Realized Volatility Spike Filter",
+    "Funding Rate Sign"
+  ],
+  "entry_conditions": [
+    "Price > VWAP by at least 0.5%",
+    "Whale hourly inflow > 2x 24h average",
+    "Funding rate < 0",
+    "Realized vol ratio < 1.2"
+  ],
+  "exit_conditions": [
+    "Take profit: 2.0x ATR",
+    "Stop loss: 1.5x ATR"
+  ],
+  "parameters": {
+    "vwap_window": 60,
+    "vwap_thr": 0.005,
+    "whale_mult": 2.0,
+    "atr_period": 14,
+    "tp_atr": 2.0,
+    "sl_atr": 1.5,
+    "vol_window": 30,
+    "vol_thr": 1.2
+  },
+  "validation_history": [
+    {
+      "stage": "sandbox",
+      "status": "created",
+      "metrics": {
+        "signals_generated": null,
+        "test_bars": null,
+        "timestamp": "2026-02-26T19:45:00Z"
+      },
+      "timestamp": "2026-02-26T19:45:00Z"
+    }
+  ],
+  "paper_trading": {
+    "started_at": null,
+    "completed_at": null,
+    "days_remaining": null
+  },
+  "forward_metrics": {
+    "win_rate": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "total_trades": null
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  }
+}

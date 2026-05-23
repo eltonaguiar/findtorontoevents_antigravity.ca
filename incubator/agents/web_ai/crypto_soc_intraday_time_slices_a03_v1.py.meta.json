@@ -1,0 +1,229 @@
+{
+  "strategy_name": "crypto_soc_intraday_time_slices_a03_v1",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T21:30:00Z",
+  "status": "paper_trading",
+  "strategy_type": "social_inspired_intraday_time_slices",
+  "unique_value": "Social-theme composite (intraday_time_slices) with regime/VEI/orderflow/session confluence.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "adaptive",
+  "backtest_metrics": {
+    "sharpe": 4.83,
+    "win_rate": 0.4,
+    "max_drawdown": 0.0044,
+    "total_trades": 10,
+    "profit_factor": 4.41,
+    "total_return": 0.024,
+    "timestamp": "2026-02-27T00:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "EMA(16/52)",
+    "ZScore(30)",
+    "Breakout(24)",
+    "ATRshort/ATRlong (11/42)",
+    "DeltaProxyFlow",
+    "SessionConfluence"
+  ],
+  "entry_conditions": [
+    "Composite exceeds directional threshold",
+    "VEI regime gate passes",
+    "Micro-noise filter passes"
+  ],
+  "exit_conditions": [
+    "Take profit: 2.65x ATR",
+    "Stop loss: 1.70x ATR"
+  ],
+  "parameters": {
+    "fast_ema": 16,
+    "slow_ema": 52,
+    "z_window": 30,
+    "breakout_window": 24,
+    "vol_window": 33,
+    "atr_short": 11,
+    "atr_long": 42,
+    "atr_gate": 1.12,
+    "vol_ratio_gate": 1.15,
+    "trend_w": 0.2194,
+    "meanrev_w": 0.1327,
+    "breakout_w": 0.1684,
+    "volstate_w": 0.1148,
+    "flow_w": 0.1173,
+    "session_w": 0.2474,
+    "long_threshold": 0.42,
+    "short_threshold": 0.42,
+    "tp_atr": 2.65,
+    "sl_atr": 1.7,
+    "cooldown": 1
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": "2026-02-24T05:53:08.916001+00:00",
+    "end_date": "2026-03-29T05:53:08.916001+00:00",
+    "days_remaining": 0,
+    "days_elapsed": 87,
+    "trades_count": 5,
+    "current_pnl": -3.977,
+    "progress_pct": 100.0,
+    "daily_pnl": [
+      {
+        "date": "2026-03-16",
+        "pnl": -29.30067,
+        "pnl_pct": -0.3987,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1
+      },
+      {
+        "date": "2026-03-19",
+        "pnl": -90.468441,
+        "pnl_pct": -1.307,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1
+      },
+      {
+        "date": "2026-03-22",
+        "pnl": -59.129811,
+        "pnl_pct": -0.8675,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1
+      },
+      {
+        "date": "2026-04-06",
+        "pnl": -21.52845,
+        "pnl_pct": -0.3091,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1
+      },
+      {
+        "date": "2026-05-04",
+        "pnl": -87.657255,
+        "pnl_pct": -1.0947,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1
+      }
+    ],
+    "last_updated": "2026-05-22T19:58:27.730254+00:00"
+  },
+  "forward_metrics": {
+    "win_rate": 0.0,
+    "sharpe": -32.59119,
+    "max_drawdown": 0.039178,
+    "total_trades": 5
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  },
+  "forward_daily_pnl": [
+    {
+      "date": "2026-03-16",
+      "pnl": -29.30067,
+      "pnl_pct": -0.3987,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "date": "2026-03-19",
+      "pnl": -90.468441,
+      "pnl_pct": -1.307,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "date": "2026-03-22",
+      "pnl": -59.129811,
+      "pnl_pct": -0.8675,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "date": "2026-04-06",
+      "pnl": -21.52845,
+      "pnl_pct": -0.3091,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "date": "2026-05-04",
+      "pnl": -87.657255,
+      "pnl_pct": -1.0947,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1
+    }
+  ],
+  "forward_live_picks": [],
+  "forward_live_pick_count": 0,
+  "forward_last_updated": "2026-05-22T19:58:27.730254+00:00",
+  "forward_data_source": "real_market_data_crypto_db",
+  "forward_trades": [
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-03-16T03:00:00+00:00",
+      "exit_time": "2026-03-16T15:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 73573.2,
+      "exit_price": 73279.9,
+      "pnl_pct": -0.3987,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-03-19T12:00:00+00:00",
+      "exit_time": "2026-03-19T19:00:00+00:00",
+      "direction": "SHORT",
+      "entry_price": 69286.4,
+      "exit_price": 70191.99,
+      "pnl_pct": -1.307,
+      "exit_reason": "SL",
+      "bars_held": 7
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-03-22T11:00:00+00:00",
+      "exit_time": "2026-03-22T15:00:00+00:00",
+      "direction": "SHORT",
+      "entry_price": 68229.3,
+      "exit_price": 68821.19,
+      "pnl_pct": -0.8675,
+      "exit_reason": "SL",
+      "bars_held": 4
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-04-06T09:00:00+00:00",
+      "exit_time": "2026-04-06T21:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 69726.6,
+      "exit_price": 69511.1,
+      "pnl_pct": -0.3091,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-05-04T02:00:00+00:00",
+      "exit_time": "2026-05-04T10:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 80157.6,
+      "exit_price": 79280.15,
+      "pnl_pct": -1.0947,
+      "exit_reason": "SL",
+      "bars_held": 8
+    }
+  ]
+}

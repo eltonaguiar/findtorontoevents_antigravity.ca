@@ -1,0 +1,29 @@
+{
+  "name": "inverse_extreme_oversold_bounce",
+  "description": "Inverse of 'extreme_oversold_bounce' across ETF/EQUITY/FOREX. Parent has 14% WR on n=14. Instead of buying oversold bounces, SHORT them (fade the bounce). The 'oversold bounce' thesis fails because these assets continue falling after the initial bounce signal.",
+  "parent_strategy": "extreme_oversold_bounce",
+  "mutation_type": "inverse",
+  "asset_class": null,
+  "wired_in_scanner": false,
+  "status": "awaiting_forward_test",
+  "created": "2026-04-14T07:41:00-04:00",
+  "evidence": {
+    "parent_wr": 14.3,
+    "parent_pf": 0.00,
+    "parent_n": 14,
+    "parent_assets": ["ETF", "EQUITY", "FOREX", "FUTURES"],
+    "inverse_theoretical_wr": 85.7
+  },
+  "config": {
+    "source_strategy_substring": "extreme_oversold_bounce",
+    "flip_direction": true,
+    "tp_sl_from_parent": true
+  },
+  "validation_checklist": {
+    "layer_1_backtest": false,
+    "layer_2_oos": false,
+    "layer_2_5_quality_gates": false,
+    "layer_6_forward_test_n20": false,
+    "layer_6_forward_test_pf_1_5": false
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "engine": "AI-Engine-1",
+  "asset_class": "FOREX",
+  "run_id": "run_2026-05-11T19-14-54Z",
+  "synthesis": [
+    {
+      "spec_id": "forex_momentum_uup_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.61 and WR=56.7% meet T2 floor, and MDD=11.3% is acceptable, but n=30 is far below the required 100 trades, indicating insufficient statistical reliability. Cross-test shows independence, which is positive, though the simplified-signal caveat limits confidence in the spec translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_value_momentum_combo_fxA_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.7 and WR=41.7% fail T2 floor, with MDD=18.1% acceptable but Sharpe=-0.19 signaling poor risk-adjusted returns. n=12 is critically low, and despite cross-test independence, the simplified-signal caveat further undermines confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_regime_conditional_hybrid_fxA_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.7 and WR=41.7% fail T2 floor, with MDD=18.1% acceptable but Sharpe=-0.19 indicating negative risk-adjusted returns. n=12 is far too low for reliability, and the simplified-signal caveat adds uncertainty despite cross-test independence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_dollar_carry_uup_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.61 and WR=56.7% meet T2 floor, with MDD=11.3% acceptable, but n=30 is well below the 100-trade threshold for reliability. Cross-test independence is a plus, though the simplified-signal caveat limits full trust in the spec translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_risk_parity_multi_etf_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.61 and WR=56.7% meet T2 floor, with MDD=11.3% acceptable, but n=30 falls short of the 100-trade requirement for confidence. Cross-test shows independence, which is encouraging, but the simplified-signal caveat reduces certainty in the results.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "MIXED",
+  "run_rationale": "This run yields a MIXED verdict due to partial edge in three candidates (forex_momentum_uup_v1, forex_dollar_carry_uup_v1, forex_risk_parity_multi_etf_v1) with PF=1.61 and WR>50%, but all suffer from critically low trade counts (n=30 or less), far below the T2 floor of 100 trades, rendering statistical reliability questionable. The simplified-signal caveat further blocks confidence until a faithful-signal translator is implemented in v3. A retry is warranted with a longer historical window to increase n and after signal translation fidelity is improved.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_forex_p5_20260511T193150Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T193216Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 1749,
+    "tokens_out": 727,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

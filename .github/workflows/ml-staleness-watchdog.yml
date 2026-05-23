@@ -1,0 +1,76 @@
+name: ML Model Staleness Watchdog
+
+# Daily check that ML model artifacts have been retrained within threshold.
+# Origin: 2026-04-28 — Workstream A surfaced a 12-day silent regression in
+# alpha_engine/auto_tuner.py (module-path bug at alpha-engine-live.yml:592)
+# that was never noticed because no CI step asserted artifact freshness.
+# Cursor's alignment addendum (updates/2026-04-28-claude-cursor-alignment-addendum.md)
+# made this a Top-5 ROI guardrail.
+#
+# Mode: warn-only initially (`--warn-only`). Flip to hard-fail after:
+#   1. Workstream B resolver fix lands (clears ML training-label contamination).
+#   2. One full retraining cycle completes for the 6 currently-stale artifacts.
+#   3. Reviewer audits TRACKED_ARTIFACTS list in tools/assert_model_freshness.py.
+#
+# Schedule: daily at 13:00 UTC (avoids dense push-storm windows + matches
+# `hc-parity.yml`'s validation-only weekly cadence pattern).
+
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch: {}
+  pull_request:
+    # Run on PRs that touch the artifact list itself or training pipelines.
+    paths:
+      - 'tools/assert_model_freshness.py'
+      - 'alpha_engine/auto_tuner.py'
+      - 'alpha_engine/crypto_ml_tuner.py'
+      - 'alpha_engine/ml_ranker.py'
+      - 'ml_gatekeeper/gatekeeper.py'
+      - 'ml_battleground/retrain_on_live.py'
+      - 'ml_crypto_predictor/enhanced_models/feedback_trainer.py'
+      - 'mercury2/trainer.py'
+      - 'claude_gainer_ml/trigger_retraining.py'
+      - 'crypto_ml_edge/**'
+      - '.github/workflows/ml-staleness-watchdog.yml'
+
+concurrency:
+  group: ml-staleness-watchdog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check-freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run staleness check (warn-only)
+        # WARN-ONLY MODE: prints stale-artifact list but exits 0 so CI does
+        # not block. Flip to hard-fail by removing --warn-only after the
+        # 3 conditions in the file header are met.
+        run: |
+          python tools/assert_model_freshness.py \
+            --threshold-days 7 \
+            --warn-only \
+            --json-out /tmp/freshness.json
+          echo
+          echo '## Summary'
+          python -c "import json; d=json.load(open('/tmp/freshness.json')); c=d['counts']; print(f\"fresh={c.get('fresh',0)} stale={c.get('stale',0)} missing={c.get('missing',0)} skipped={c.get('skipped',0)}\")"
+
+      - name: Upload freshness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-staleness-report
+          path: /tmp/freshness.json
+          if-no-files-found: warn

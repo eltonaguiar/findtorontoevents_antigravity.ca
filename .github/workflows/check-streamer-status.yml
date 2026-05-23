@@ -1,0 +1,40 @@
+name: Check Streamer Live Status
+
+on:
+  schedule:
+    # Run every 2 hours (was */30  reduced to ease queue pressure)
+    - cron: '0 */2 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  check-streamers:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+    
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+    
+    - name: Run streamer status check
+      env:
+        FC_API_BASE: 'https://findtorontoevents.ca/fc'
+        FC_CHECKER_EMAIL: 'github-actions@findtorontoevents.ca'
+        FC_MAX_STREAMERS: '50'  # Check up to 50 streamers per run
+        FC_MIN_AGE_MINUTES: '30'  # Prioritize those not checked in 30 minutes (matches cron interval)
+      run: |
+        python .github/scripts/check_streamer_status.py
+    
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: streamer-check-results
+        path: |
+          streamer_check_results.json
+          streamer_check_log.txt
+        retention-days: 7
+

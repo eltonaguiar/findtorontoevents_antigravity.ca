@@ -1,0 +1,55 @@
+name: Dashboard Pick Trader
+
+on:
+  schedule:
+    # Every 15 minutes, aligned with audit dashboard refresh
+    - cron: '43 * * * *' # Staggered from :48 to reduce push contention
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dashboard-pick-trader
+  cancel-in-progress: true
+
+jobs:
+  trade-dashboard-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas
+
+      - name: Run Dashboard Pick Trader
+        run: python alpha_engine/dashboard_pick_trader.py
+
+      - name: Check for portfolio changes
+        id: changes
+        run: |
+          git diff --quiet alpha_engine/data/portfolio_1x.json alpha_engine/data/portfolio_20x.json alpha_engine/data/dashboard_trader_log.json 2>/dev/null && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit portfolio changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/portfolio_1x.json alpha_engine/data/portfolio_20x.json alpha_engine/data/dashboard_trader_log.json
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "Dashboard pick trader: ${TIMESTAMP} [skip ci]" || true
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

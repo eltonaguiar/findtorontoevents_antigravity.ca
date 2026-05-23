@@ -1,0 +1,54 @@
+name: "[torontoevent.net] Goldmine Tracker - Archive & Maintain"
+
+on:
+  schedule:
+    # Run 3x daily: 2 AM, 1 PM, 7 PM EST (7 AM, 6 PM, midnight UTC)
+    - cron: '0 7 * * *'     # 2 AM EST - overnight cleanup
+    - cron: '0 18 * * *'    # 1 PM EST - intraday check
+    - cron: '0 0 * * *'     # 7 PM EST - evening close
+  workflow_dispatch:
+
+jobs:
+  track-and-maintain:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Archive new picks & check outcomes
+        run: |
+          echo " Triggering goldmine tracker archive + outcomes on torontoevent.net..."
+
+          # Step 1: Archive new picks from all source systems
+          ARCHIVE=$(curl -sf --max-time 25 \
+            "https://torontoevent.net/live-monitor/api/goldmine_tracker.php?action=archive_and_check" \
+            2>&1 || echo '{"ok":false,"error":"timeout or blocked"}')
+          echo "Archive response: $ARCHIVE"
+
+          # Step 2: Run maintenance (expire stale picks, deduplicate alerts, fix prices)
+          echo ""
+          echo " Running maintenance tasks..."
+          MAINT=$(curl -sf --max-time 25 \
+            "https://torontoevent.net/live-monitor/api/goldmine_maintenance.php?action=run" \
+            2>&1 || echo '{"ok":false,"error":"timeout or blocked"}')
+          echo "Maintenance response: $MAINT"
+
+          # Step 3: Check final status
+          echo ""
+          echo " Final status check..."
+          STATUS=$(curl -sf --max-time 10 \
+            "https://torontoevent.net/live-monitor/api/goldmine_maintenance.php?action=status" \
+            2>&1 || echo '{"ok":false,"error":"timeout"}')
+          echo "Status: $STATUS"
+
+          # Step 4: Show alert count
+          echo ""
+          echo " Current alerts..."
+          ALERTS=$(curl -sf --max-time 10 \
+            "https://torontoevent.net/live-monitor/api/goldmine_tracker.php?action=alerts" \
+            2>&1 || echo '{"ok":false}')
+          ALERT_COUNT=$(echo "$ALERTS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('active_count','?'))" 2>/dev/null || echo "?")
+          echo "Active alerts: $ALERT_COUNT"
+
+          echo ""
+          echo " Goldmine tracker maintenance complete on torontoevent.net"
+

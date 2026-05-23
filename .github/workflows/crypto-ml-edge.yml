@@ -1,0 +1,161 @@
+name: "Crypto ML Edge GSD Scanner"
+
+on:
+  schedule:
+    - cron: "*/30 * * * *" # Every 30 minutes (PIPE-03)
+  workflow_dispatch: # Manual trigger
+  push:
+    paths:
+      - "crypto_ml_edge/**"
+      - ".github/workflows/crypto-ml-edge.yml"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: crypto-ml-edge-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.12"
+
+      - name: Install dependencies
+        # 3-attempt retry: PyPI/CDN occasionally returns transient SSL errors
+        # (DECRYPTION_FAILED_OR_BAD_RECORD_MAC) that fail single-shot installs.
+        # See run 24534541232 / Codebuff diagnosis updates/NEEDED_FIXES_2026-04-18.md.
+        run: |
+          for attempt in 1 2 3; do
+            if pip install --upgrade pip && pip install pandas numpy requests lightgbm scikit-learn joblib shap optuna yfinance; then
+              echo "pip install succeeded on attempt $attempt"
+              exit 0
+            fi
+            echo "pip install attempt $attempt failed; retrying in 10s..."
+            sleep 10
+          done
+          echo "pip install failed after 3 attempts"
+          exit 1
+
+      - name: Run Quick Scanner (Proven Strategies)
+        env:
+          PYTHONPATH: .
+        continue-on-error: true
+        run: |
+          echo "GSD Quick Engine Scanning proven strategies..."
+          python -c "
+          from crypto_ml_edge.quick_scanner import quick_scan
+          data = quick_scan()
+          qe = data.get('quick_engine', {})
+          print(f'Quick scan: {sum(qe.get(\"strategy_counts\", {}).values())} new picks')
+          print(f'Strategies: {qe.get(\"strategy_counts\", {})}')
+          print(f'Scan time: {qe.get(\"last_scan_est\", \"?\")}')
+          "
+
+      - name: Run Edge Engine Scanner
+        env:
+          PYTHONPATH: .
+        run: |
+          echo "GSD Edge Engine Scan cycle starting..."
+          python -c "
+          from crypto_ml_edge.scanner import scan, track_picks
+          import json
+
+          # Track existing picks first
+          track_picks()
+
+          # Run new scan
+          result = scan()
+          print(f'Scan complete: {len(result.get(\"picks\", []))} active picks')
+          "
+
+      - name: Run Gainer Detector
+        env:
+          PYTHONPATH: .
+        continue-on-error: true
+        run: |
+          echo "GSD Gainer Detector Scanning for breakouts..."
+          python -c "
+          from crypto_ml_edge.gainer_detector import GainerEngine
+          from crypto_ml_edge.features.engine import fetch_ohlcv
+          from crypto_ml_edge.config import DEFAULT_PAIRS
+          import json
+
+          engine = GainerEngine()
+          ohlcv = {}
+          for pair in DEFAULT_PAIRS[:5]:
+              try:
+                  df = fetch_ohlcv(pair, '1h', limit=200)
+                  if df is not None and len(df) > 0:
+                      ohlcv[pair] = df
+              except Exception:
+                  pass
+          if ohlcv:
+              signals = engine.run_scan(ohlcv)
+              print(f'Gainer scan: {len(signals)} signals detected')
+          else:
+              print('Gainer scan: skipped (no OHLCV data available)')
+          "
+
+      - name: Send Discord Notification
+        if: always()
+        env:
+          # DISABLED: system underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PYTHONPATH: .
+        continue-on-error: true
+        run: |
+          python -c "
+          import json
+          from crypto_ml_edge.discord_notify import send_scan_notification
+          try:
+              with open('crypto_ml_edge/data/active_picks.json') as f:
+                  data = json.load(f)
+          except FileNotFoundError:
+              data = {'picks': [], 'performance': {}}
+          n_strats = data.get('quick_engine', {}).get('strategies_active', 0)
+          send_scan_notification(data, n_models=n_strats)
+          "
+
+      - name: Push Edge picks to Audit Trail
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python crypto_ml_edge/audit_push.py 2>&1 || echo "Edge audit push failed (non-fatal)"
+
+      - name: Commit updated picks
+        # Skip push on PR branches — safe_push.sh tries `git push origin main`
+        # which fails on non-main checkouts ("src refspec main does not match any").
+        # Scan data only needs to persist when running on the main branch.
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add crypto_ml_edge/data/active_picks.json
+          git add data/audit_trail.db 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "GSD Edge Engine: auto-update picks $(date -u +%Y-%m-%d\ %H:%M\ UTC) [skip ci]"
+          bash .github/scripts/safe_push.sh
+
+      - name: Notify ML channel on failure
+        if: failure()
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"\\u274c ML Job FAILED: ${{ github.workflow }}\", \"description\": \"Job: ${{ github.job }}\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nBranch: ${{ github.ref_name }}\", \"color\": 15158332, \"timestamp\": \"$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}]}" \
+            "$DISCORD_ML_CHANNEL" || true
+
+  # Dashboard deployment handled by deploy-pages.yml (triggered on push to main)
+  # The scan job's git push will trigger deploy-pages.yml which copies
+  # crypto_ml_edge/dashboard/ + data/ to site/edge/
+

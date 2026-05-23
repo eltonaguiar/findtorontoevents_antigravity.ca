@@ -1,0 +1,63 @@
+# 4-turn FOREX deep-dive chain (Goal #1 — phenomenal /audit performance).
+#
+# Single engine (deepseek), four sequential turns:
+#   1. priming   — re-use the asset-class audit briefing as warm-up context.
+#   2. analysis  — narrow focus to the FOREX class drag (PF 0.27 / WR 46.4%).
+#   3. critique  — self-critique to surface the weakest claim.
+#   4. final     — emit a JSON answer per the original audit contract; the
+#                  result is also copied to <out_dir>/final.json for stable
+#                  downstream consumption.
+#
+# Each turn after #1 inherits the prior session via worker_runner --from-session
+# (which routes to claude --resume / API JSONL replay / MD-context fallback
+# depending on the engine — deepseek hits the API replay path).
+#
+# Run:
+#   python tools/swarm/swarm_followup.py --config tools/swarm/examples/forex_deep_dive.yaml
+
+name: forex_deep_dive_${TS}
+engine: deepseek
+model: deepseek-chat
+out_dir: swarm_runs/followup_forex_${TS}
+json_strict: false
+
+turns:
+  - name: priming
+    prompt_file: swarm_runs/briefing_asset_class_audit.md
+
+  - name: analysis
+    prompt: |
+      Now zoom into the FOREX asset class only. Using the briefing you just
+      summarised, answer:
+        1. What is the dominant source of the PF 0.27 / WR 46.4% drag —
+           one or two specific source_systems, or breadth across many?
+        2. Which `mutate-before-kill` axis (signal / sizing / regime) is
+           most likely to recover edge per docs/MUTATION_THREE_AXIS_PROTOCOL.md?
+        3. What dataset slice would falsify your hypothesis in <30 minutes?
+      Be explicit; cite specific numbers from the briefing.
+
+  - name: critique
+    prompt: |
+      Critique your own analysis from the previous turn. Answer:
+        - Which single claim is the weakest — i.e. most likely to be wrong
+          if we ran the falsification test?
+        - What unstated assumption underpins your `mutate-before-kill` axis
+          choice?
+        - If a peer reviewer pushed back, which two sentences would you
+          retract first?
+      Be specific. No hedging.
+
+  - name: final
+    prompt: |
+      Final answer. Emit valid JSON ONLY (no prose, no fences) with this shape:
+
+      {
+        "asset_class": "FOREX",
+        "primary_drag": "<one sentence>",
+        "recommended_axis": "signal | sizing | regime",
+        "falsification_query": "<one-line description of the dataset slice>",
+        "weakest_claim": "<one sentence verbatim from the critique turn>",
+        "confidence": "LOW | MEDIUM | HIGH",
+        "next_action": "<single PR-sized step>"
+      }
+    capture_to: final.json

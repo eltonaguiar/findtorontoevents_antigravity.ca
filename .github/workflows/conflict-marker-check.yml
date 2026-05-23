@@ -1,0 +1,45 @@
+name: Conflict Marker Check
+
+# Fail fast on any git merge conflict markers that sneak into committed files.
+# Added 2026-04-10 after a 442-file unresolved merge silently blackholed the
+# non-crypto dashboard: scanners wrote fresh data on top of conflict markers
+# and json.load swallowed the ValueError, producing 13/1357 active picks.
+
+'on':
+  push:
+    branches: [main, 'copilot/**', 'codebuff/**']
+  pull_request:
+  workflow_dispatch:
+
+# Storm-commit repo: a newer push supersedes the in-flight check run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    # 2026-04-20: bumped 3->6 min + switched to shallow clone. fetch-depth:0
+    # on the repo's full history was timing out actions/checkout@v6 at 3m+.
+    # This job only runs `git grep` on the working tree — no history needed.
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Scan tracked files for conflict markers
+        run: |
+          set -e
+          echo "Scanning tracked files for unresolved merge markers..."
+          # git grep over tracked files only; ignores .git/ automatically
+          # Look for actual conflict markers at line start (not matches inside diffs/docs)
+          if git grep -nE '^(<<<<<<< |=======$|>>>>>>> )' -- \
+                ':(exclude).github/workflows/conflict-marker-check.yml' \
+                ':(exclude)docs/**' \
+                > /tmp/conflict_hits.txt; then
+            echo "::error::Unresolved merge conflict markers found in tracked files:"
+            cat /tmp/conflict_hits.txt
+            exit 1
+          fi
+          echo "OK - no conflict markers in tracked files."

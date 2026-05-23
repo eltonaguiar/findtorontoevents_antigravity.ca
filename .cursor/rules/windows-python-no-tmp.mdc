@@ -1,0 +1,19 @@
+---
+description: On Windows, never run repo Python via Unix /tmp paths — use workspace-relative paths.
+alwaysApply: true
+---
+
+# Windows: no `/tmp/` for repo scripts
+
+When running Python **in this workspace** on **Windows** (Cursor, Antigravity, agents):
+
+1. **Do not** invoke `python /tmp/check_active_picks.py` or any `/tmp/...` path. PowerShell resolves that to `E:\tmp\...` or `C:\tmp\...`, which usually **does not exist** and produces `Errno 2`.
+2. **Do** run pick quality analysis from repo root:
+   ```powershell
+   python alpha_engine/check_active_picks.py
+   ```
+   Or use the VS Code task **Run: check_active_picks** / `.vscode/launch.json` **Python: check_active_picks**.
+3. Optional one-time shim: if an external tool **must** call `/tmp/check_active_picks.py`, install the shim with:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File tools/install_check_active_picks_shim.ps1
+   ```

@@ -1,0 +1,34 @@
+name: Discord Channel Heartbeat
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Every 4 hours
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  heartbeat:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Post heartbeat to Discord channels
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+          DISCORD_WEBHOOK_CONVICTION: ${{ secrets.DISCORD_WEBHOOK_CONVICTION }}
+        run: python scripts/discord_heartbeat.py
+

@@ -1,0 +1,139 @@
+{
+  "strategy_isolations": [
+    {
+      "strategy": "crypto_keltner_compression_expansion_v1",
+      "label": "Keltner BTC (PROVEN, p=0.0007)",
+      "status": "PROVEN",
+      "fwd_wr": 66.1,
+      "fwd_trades": 59,
+      "backtest_wr": 72.9,
+      "walk_forward": "PASSED",
+      "target_wr": 65,
+      "target_pf": 2.0,
+      "review_at_trades": 100,
+      "notes": "Only strategy with p<0.001. Walk-forward WR IMPROVED OOS."
+    },
+    {
+      "strategy": "keltner_compression_expansion_sol_v1",
+      "label": "Keltner SOL (PROVEN)",
+      "status": "PROVEN",
+      "fwd_wr": 64.1,
+      "fwd_trades": 39,
+      "backtest_wr": 68.5,
+      "walk_forward": "PASSED",
+      "target_wr": 60,
+      "target_pf": 1.8,
+      "review_at_trades": 80,
+      "notes": "SOL variant of Keltner compression. Walk-forward validated, consistent edge."
+    },
+    {
+      "strategy": "multi_period_rsi_confluence_eth",
+      "label": "Multi-RSI ETH (PROVEN)",
+      "status": "PROVEN",
+      "fwd_wr": 60.5,
+      "fwd_trades": 38,
+      "backtest_wr": 65.0,
+      "walk_forward": "PASSED",
+      "target_wr": 58,
+      "target_pf": 1.5,
+      "review_at_trades": 80,
+      "notes": "Multi-period RSI confluence on ETH. Steady edge, moderate trade frequency."
+    },
+    {
+      "strategy": "multi_period_rsi_confluence_xrp",
+      "label": "Multi-RSI XRP (PROVEN)",
+      "status": "PROVEN",
+      "fwd_wr": 64.0,
+      "fwd_trades": 25,
+      "backtest_wr": 67.2,
+      "walk_forward": "PASSED",
+      "target_wr": 60,
+      "target_pf": 1.6,
+      "review_at_trades": 60,
+      "notes": "XRP variant. Lower trade count but strong WR. Needs more trades to confirm."
+    },
+    {
+      "strategy": "connors_r3_survivor",
+      "label": "Connors R3 Survivor (NEW)",
+      "status": "NEW",
+      "fwd_wr": null,
+      "fwd_trades": 0,
+      "backtest_wr": 71.0,
+      "walk_forward": "PENDING",
+      "target_wr": 65,
+      "target_pf": 2.0,
+      "review_at_trades": 50,
+      "notes": "71% backtest WR over 790 trades. Survived elimination. Forward test starts now."
+    },
+    {
+      "strategy": "sentiment_price_divergence",
+      "label": "Sentiment Divergence (NEW)",
+      "status": "NEW",
+      "fwd_wr": null,
+      "fwd_trades": 0,
+      "backtest_wr": null,
+      "walk_forward": "PENDING",
+      "target_wr": 55,
+      "target_pf": 1.5,
+      "review_at_trades": 30,
+      "notes": "New strategy. Detects price-sentiment divergence. Zero live trades, pure forward test."
+    },
+    {
+      "strategy": "cascade_contrarian",
+      "label": "Cascade Contrarian (NEW)",
+      "status": "NEW",
+      "fwd_wr": null,
+      "fwd_trades": 0,
+      "backtest_wr": null,
+      "walk_forward": "PENDING",
+      "target_wr": 55,
+      "target_pf": 1.5,
+      "review_at_trades": 30,
+      "notes": "Contrarian entry after liquidation cascades. Needs live validation."
+    },
+    {
+      "strategy": "basis_carry",
+      "label": "Basis Carry (NEW)",
+      "status": "NEW",
+      "fwd_wr": null,
+      "fwd_trades": 0,
+      "backtest_wr": null,
+      "walk_forward": "PENDING",
+      "target_wr": 60,
+      "target_pf": 1.8,
+      "review_at_trades": 30,
+      "notes": "Futures basis carry trade. Market-neutral strategy, needs forward data."
+    },
+    {
+      "strategy": "regime_sentinel",
+      "label": "Regime Sentinel (NEW)",
+      "status": "NEW",
+      "fwd_wr": null,
+      "fwd_trades": 0,
+      "backtest_wr": null,
+      "walk_forward": "PENDING",
+      "target_wr": 55,
+      "target_pf": 1.3,
+      "review_at_trades": 30,
+      "notes": "Regime detection filter. Acts as signal gatekeeper, not standalone entry."
+    },
+    {
+      "strategy": "vpin_informed_flow",
+      "label": "VPIN + OFI (ENHANCED)",
+      "status": "ENHANCED",
+      "fwd_wr": null,
+      "fwd_trades": 0,
+      "backtest_wr": null,
+      "walk_forward": "PENDING",
+      "target_wr": 58,
+      "target_pf": 1.6,
+      "review_at_trades": 40,
+      "notes": "Existing VPIN enhanced with Order Flow Imbalance (OFI). Reset counter for modified version."
+    }
+  ],
+  "metadata": {
+    "created": "2026-03-16",
+    "purpose": "Isolate individual strategies for independent performance measurement",
+    "review_protocol": "Check each strategy at review_at_trades threshold. Kill if WR < target_wr - 10%."
+  }
+}

@@ -1,0 +1,183 @@
+name: Quant Auditor (deep nightly)
+
+# Nightly run of the quant-performance-auditor-deep agent profile against
+# main. Posts the structured result as a workflow artifact + commits an
+# audit-trail summary file under reports/quant_auditor_deep/.
+#
+# Differences from the fast (PR) variant:
+#   - sonnet model (full reasoning), 2000-sim Monte Carlo
+#   - honours overrides/<ticket>.yaml
+#   - emits structured log[] for trend dashboards
+#   - cross-class pollution + walk-forward consistency checks enabled
+#   - no PR comment; commit goes to main with [skip ci]
+#
+# Quarterly bump: change cron + model in this file to opus when running the
+# charter review.
+
+'on':
+  schedule:
+    - cron: '15 6 * * *'   # 06:15 UTC — after most data-refresh workflows settle
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Override model (default: sonnet; use opus for quarterly review)'
+        required: false
+        default: 'sonnet'
+      bootstraps:
+        description: 'Monte Carlo bootstrap count (default 2000)'
+        required: false
+        default: '2000'
+
+permissions:
+  contents: write   # commit reports/quant_auditor_deep/<date>.json
+  actions: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install validators
+        run: python -m pip install --quiet pyyaml jsonschema
+
+      - name: Validate charter + schema
+        run: |
+          python -c "
+          import yaml, json
+          y = yaml.safe_load(open('config/charter_floors.yaml'))
+          assert y['schema_version'] == 'v1.2'
+          s = json.load(open('tools/audit/schema_review_v1_2.json'))
+          assert s['title'].endswith('(v1.2)')
+          print('charter:', y['schema_version'], '| schema:', s['title'])
+          "
+
+      - name: Sweep expired overrides
+        # Don't fail on expired files — the deep agent's job is to surface them.
+        # But emit a workflow notice so the cron log shows pending cleanups.
+        run: |
+          python - <<'PY'
+          import yaml, glob, datetime
+          today = datetime.date.today()
+          expired = []
+          for f in sorted(glob.glob('overrides/*.yaml')):
+              if f.endswith('README.md'): continue
+              try:
+                  d = yaml.safe_load(open(f))
+                  exp = d.get('expires_at')
+                  if isinstance(exp, datetime.date) and exp < today:
+                      expired.append((f, str(exp)))
+                  elif isinstance(exp, str):
+                      ed = datetime.date.fromisoformat(exp)
+                      if ed < today: expired.append((f, exp))
+              except Exception as e:
+                  print(f'::warning::could not parse {f}: {e}')
+          for f, exp in expired:
+              print(f'::warning::expired override (expires_at={exp}): {f}')
+          PY
+
+      - name: Run quant-performance-auditor-deep
+        env:
+          MODEL: ${{ inputs.model || 'sonnet' }}
+          BOOTSTRAPS: ${{ inputs.bootstraps || '2000' }}
+        run: |
+          mkdir -p tmp/audit reports/quant_auditor_deep
+          STAMP=$(date -u +%Y-%m-%dT%H-%M-%SZ)
+          echo "TIMESTAMP=$STAMP" >> $GITHUB_ENV
+          # The committed file is date-only (see OUT= below + the commit step);
+          # export DATE_ONLY so OUT_FILE matches it and the summary step can
+          # actually open the file the cp produced.
+          echo "DATE_ONLY=${STAMP%%T*}" >> $GITHUB_ENV
+          if ! command -v claude >/dev/null 2>&1; then
+            echo "::notice::claude CLI not available — emitting placeholder result for audit trail."
+            cat > tmp/audit/result.json <<EOF
+          {
+            "schema_version": "v1.2",
+            "agent": "quant-performance-auditor-deep",
+            "model_fingerprint": "$MODEL",
+            "run_at_utc": "$STAMP",
+            "verdict": "INSUFFICIENT_DATA",
+            "summary": "claude CLI not available in this runner — placeholder result.",
+            "claims": [],
+            "warnings": [],
+            "log": []
+          }
+          EOF
+            exit 0
+          fi
+          # Deep variant has no self-timeout; outer guard at 22 minutes.
+          timeout 1320 claude code agent quant-performance-auditor-deep \
+            --model "$MODEL" \
+            --input audit_dashboard/data/dashboard_data.json \
+            --output tmp/audit/result.json \
+            --param bootstraps="$BOOTSTRAPS" \
+            || echo "::warning::deep agent exited non-zero — see tmp/audit/result.json"
+
+      - name: Validate result against output schema
+        run: |
+          python -c "
+          import json, sys
+          from jsonschema import validate, ValidationError
+          schema = json.load(open('tools/audit/schema_review_v1_2.json'))
+          result = json.load(open('tmp/audit/result.json'))
+          try: validate(result, schema)
+          except ValidationError as e:
+              print('::error::output failed schema validation:', e.message); sys.exit(1)
+          print('verdict:', result.get('verdict'), '| claims:', len(result.get('claims', [])), '| log entries:', len(result.get('log', [])))
+          "
+
+      - name: Commit nightly result + summary
+        run: |
+          STAMP="${TIMESTAMP:-$(date -u +%Y-%m-%dT%H-%M-%SZ)}"
+          DATE_ONLY=$(echo "$STAMP" | cut -d'T' -f1)
+          OUT="reports/quant_auditor_deep/${DATE_ONLY}.json"
+          cp tmp/audit/result.json "$OUT"
+          # Tiny human-readable summary for trend dashboards.
+          python - <<PY
+          import json, os
+          r = json.load(open(os.environ['OUT_FILE']))
+          lines = [
+              f"# quant-auditor-deep — {os.environ['STAMP']}",
+              "",
+              f"- verdict: **{r.get('verdict','?')}**",
+              f"- claims: {len(r.get('claims', []))}",
+              f"- warnings: {len(r.get('warnings', []))}",
+              f"- log entries: {len(r.get('log', []))}",
+              "",
+              "## Top claims (max 10)",
+          ]
+          for c in r.get('claims', [])[:10]:
+              lines.append(f"- **{c.get('severity','?')}** \`{c.get('rule_id','?')}\` — {c.get('claim','')[:200]}")
+          open(os.environ['OUT_FILE'].replace('.json','.md'),'w').write('\n'.join(lines))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUT" "${OUT%.json}.md"
+          # Skip ci tag — this commit doesn't trigger downstream workflows.
+          if git diff --staged --quiet; then
+            echo "no audit-trail change to commit"
+          else
+            git commit -m "chore(audit): quant-auditor-deep nightly $DATE_ONLY [skip ci]"
+            git push origin main || echo "::warning::push failed — likely concurrent main update; will retry next run"
+          fi
+        env:
+          # Must match OUT= in the step body (date-only), not TIMESTAMP —
+          # the cp writes <date>.json, so the summary step must read the same.
+          OUT_FILE: reports/quant_auditor_deep/${{ env.DATE_ONLY }}.json
+          STAMP: ${{ env.TIMESTAMP }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quant-auditor-deep-${{ env.TIMESTAMP }}
+          path: tmp/audit/result.json
+          retention-days: 30

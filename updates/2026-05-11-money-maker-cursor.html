@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money-Maker Plan — Cursor (May 11, 2026) | findtorontoevents</title>
+    <meta name="description" content="Cursor plan-mode output for /audit real-money readiness. 4-phase fast-track of EQUITY/COMMODITY/ETF with FOREX/CRYPTO/BOND containment. NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-05-11-money-maker-cursor.html">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e1a;color:#e0e6ed;line-height:1.65}
+        .container{max-width:1100px;margin:0 auto;padding:36px 20px 60px}
+        header{background:linear-gradient(135deg,#1a2540 0%,#0f1629 100%);padding:32px;border-radius:16px;margin-bottom:24px;border:1px solid #2a3f5f}
+        h1{font-size:1.8em;color:#22d3ee;margin-bottom:10px}
+        h2{color:#34d399;font-size:1.25em;margin:18px 0 10px;border-left:4px solid #34d399;padding-left:10px}
+        h3{color:#fbbf24;font-size:1.05em;margin:14px 0 6px}
+        .nfa-banner{background:rgba(239,68,68,0.20);border:2px solid #ef4444;color:#fecaca;padding:13px 16px;border-radius:12px;font-weight:700;text-align:center;margin-bottom:14px}
+        .section{background:#111827;padding:22px;border-radius:12px;margin-bottom:14px;border:1px solid #1f2937}
+        p,li{color:#d1d5db;margin-bottom:7px}
+        ul,ol{padding-left:22px}
+        code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:Consolas,Menlo,monospace}
+        table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.9em}
+        th,td{padding:7px 9px;text-align:left;border-bottom:1px solid #1f2937;vertical-align:top}
+        th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700}
+        a{color:#60a5fa}
+        .meta-row{font-size:0.85em;color:#94a3b8;margin-bottom:14px}
+        .v-strong{color:#86efac;font-weight:700}
+        .v-warn{color:#fbbf24;font-weight:700}
+        .v-bad{color:#fca5a5;font-weight:700}
+        .phase{border-left:4px solid #6366f1;padding-left:14px;margin:12px 0}
+        .phase-1{border-left-color:#22c55e}
+        .phase-2{border-left-color:#60a5fa}
+        .phase-3{border-left-color:#f59e0b}
+        .phase-4{border-left-color:#a78bfa}
+        .back{font-size:0.9em;color:#60a5fa;margin-bottom:14px;display:inline-block}
+    </style>
+</head>
+<body>
+<div class="container">
+
+<a class="back" href="/updates/">&larr; Back to Updates</a> &middot; <a class="back" href="/updates/2026-05-11-money-maker-multi-agent-comparison.html">Comparison page &rarr;</a>
+
+<header>
+    <h1>Money-Maker Plan — Cursor</h1>
+    <div class="nfa-banner">RESEARCH SURFACE — NOT FINANCIAL ADVICE</div>
+    <div class="meta-row">Source: <code>C:\Users\zerou\.cursor\plans\real_money_edge_plan_ed80c0d8.plan.md</code> &middot; Generated 2026-05-11 &middot; Cursor Plan Mode output</div>
+</header>
+
+<div class="section">
+    <h2>Overview</h2>
+    <p>Build a fast-track, evidence-backed program to move each asset class toward Tier-2 live-capital readiness, using current <code>/audit</code> metrics, walk-forward validation, and MySQL/GitHub Actions data health gates. Prioritize immediate edge capture in EQUITY/COMMODITY/ETF while aggressively containing FOREX/overfit risk and closing missing validation coverage.</p>
+</div>
+
+<div class="section">
+    <h2>Current baseline (from live <code>/audit</code> data)</h2>
+    <p>Source: <code>audit_dashboard/data/dashboard_data.json::performance.asset_class_health</code></p>
+    <table>
+        <thead><tr><th>Class</th><th>n</th><th>WR %</th><th>PF</th><th>Verdict</th></tr></thead>
+        <tbody>
+            <tr><td>COMMODITY</td><td>408</td><td>67.4</td><td class="v-strong">3.92</td><td>strong</td></tr>
+            <tr><td>EQUITY</td><td>443</td><td>54.0</td><td class="v-warn">1.60</td><td>Tier-2 candidate</td></tr>
+            <tr><td>ETF</td><td>100</td><td>60.0</td><td class="v-warn">1.48</td><td>near Tier-2 PF threshold</td></tr>
+            <tr><td>CRYPTO</td><td>7875</td><td>47.4</td><td>1.39</td><td>below Tier-2</td></tr>
+            <tr><td>FOREX</td><td>1825</td><td>41.8</td><td class="v-bad">0.28</td><td>stressed; sizing disabled</td></tr>
+            <tr><td>BOND</td><td>11</td><td>54.5</td><td>0.66</td><td>thin sample</td></tr>
+        </tbody>
+    </table>
+    <ul>
+        <li>Walk-forward coverage exists only for ETF, CRYPTO, FOREX, EQUITY; <strong>COMMODITY + BOND missing</strong>.</li>
+        <li>Drift risk active: <code>hf_stats.concept_drift.drift_alert=true</code>, high KS distance.</li>
+        <li>Overfit detector flags 12 rows (mostly <code>baby_strats</code>) in <code>fwd_vs_bt_divergence.rows</code>.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Pipeline reality check (GHA + MySQL)</h2>
+    <ul>
+        <li><code>/audit</code> refreshed hourly by <code>.github/workflows/audit-dashboard.yml</code> (cron + push paths + FTP deploy).</li>
+        <li>Dashboard generation merges local + MySQL non-crypto history via <code>audit_trail/dashboard_generator.py</code> using <code>mysql_fetch_closed_non_crypto(max_age_days=365, limit=5000)</code> from <code>trading_picks</code>.</li>
+        <li>Read path for <code>/audit</code> performance uses <code>ejaguiar1_stocks</code> (<code>trading_picks</code>) via <code>audit_trail/mysql_client.py</code>.</li>
+        <li><code>ejaguiar1_backtests</code> exists mainly for <code>bt_backtest_*</code> writes; not the primary read source yet.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Money-Maker skill status</h2>
+    <ul>
+        <li><code>money-maker-ready</code> is live at <code>.claude/skills/money-maker-ready/SKILL.md</code>.</li>
+        <li>The specific proposal/report paths cited in the prompt were not found in Cursor's repo snapshot; plan uses the live skill plus current data files as source of truth.</li>
+    </ul>
+</div>
+
+<div class="section phase phase-1">
+    <h2>Phase 1 — 72h Triage and Guardrails (no new capital yet)</h2>
+    <ul>
+        <li>Run a deterministic money-maker audit report from current payload (freshness + per-class + walk-forward + divergence + drift).</li>
+        <li>Add hard pre-capital gate: any class with <code>drift_alert=true</code> OR missing walk-forward class block is auto-<code>paper_only</code> regardless of PF/WR.</li>
+        <li>Create ranked "dragger quarantine candidates" from <code>fwd_vs_bt_divergence.rows</code> and low-PF systems; route through mutation/investigation protocol docs before any blocklist edits.</li>
+    </ul>
+</div>
+
+<div class="section phase phase-2">
+    <h2>Phase 2 — Fast-track classes with measurable edge</h2>
+    <h3>EQUITY (primary scale candidate)</h3>
+    <ul>
+        <li>Target: hold PF≥1.5, WR≥50, n from 443 to 600+ while keeping max drawdown within charter.</li>
+        <li>Action: increase only top validated EQUITY strategies (by forward PF/WR); cap exposure per <code>docs/PERFORMANCE_CHARTER.md</code>.</li>
+    </ul>
+    <h3>COMMODITY (primary alpha candidate)</h3>
+    <ul>
+        <li>Target: preserve PF≥2.0 and WR≥55 through walk-forward verification (currently missing by-class walk-forward section).</li>
+        <li>Action: add commodity class to walk-forward output path in <code>alpha_engine/walkforward_validator.py</code>; verify surfacing in <code>audit_trail/dashboard_generator.py</code>.</li>
+    </ul>
+    <h3>ETF (near-threshold candidate)</h3>
+    <ul>
+        <li>Target: PF lift from 1.48 to ≥1.5 with n from 100 to 180+; keep consistency ≥80%.</li>
+        <li>Action: controlled emitter expansion only for ETF strategies with positive OOS decay + acceptable drawdown.</li>
+    </ul>
+</div>
+
+<div class="section phase phase-3">
+    <h2>Phase 3 — Contain and repair weak classes</h2>
+    <h3>FOREX (stressed)</h3>
+    <ul>
+        <li>Keep sizing disabled until PF≥1.2 and WR≥45 for sustained rolling window.</li>
+        <li>Run dedicated deep-dive report; isolate worst strategy/symbol clusters from divergence + low-PF buckets.</li>
+    </ul>
+    <h3>CRYPTO (high-volume, sub-tier)</h3>
+    <ul>
+        <li>Do not scale gross capital despite large sample until PF≥1.5 on post-quarantine forward window.</li>
+        <li>Apply targeted quarantine to overfit baby_strats families flagged in divergence table; do not broad-kill source systems.</li>
+    </ul>
+    <h3>BOND (thin sample)</h3>
+    <ul>
+        <li>Keep paper-only until n≥100; focus on data generation quality before optimization.</li>
+    </ul>
+</div>
+
+<div class="section phase phase-4">
+    <h2>Phase 4 — Database and data-contract upgrades</h2>
+    <ul>
+        <li>Add explicit <code>/audit</code> telemetry card for DB lineage: "what % of class stats came from local JSON vs MySQL rows" using <code>audit_trail/dashboard_generator.py</code>.</li>
+        <li>Add optional backtests-vs-live consistency checks pulling <code>ejaguiar1_backtests</code> aggregates (read-only); surface divergence beside <code>fwd_vs_bt_divergence</code>.</li>
+        <li>Keep primary live-performance truth on <code>ejaguiar1_stocks.trading_picks</code> until backtests DB schema and sync quality are proven stable.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Success criteria</h2>
+    <h3>Within 7 days</h3>
+    <ul>
+        <li>All classes shown in <code>walkforward.by_class</code> or explicitly labeled <code>UNVERIFIED</code> in <code>/audit</code>.</li>
+        <li>Drift alert either cleared or class-level sizing guard active with visible status.</li>
+        <li>Top 10 draggers have disposition (<code>quarantine</code>, <code>mutate</code>, or <code>monitor</code>) with rationale.</li>
+    </ul>
+    <h3>Within 14 days</h3>
+    <ul>
+        <li>EQUITY and COMMODITY maintain Tier-2 metrics on rolling forward window.</li>
+        <li>ETF crosses PF≥1.5 with n≥150.</li>
+        <li>FOREX PF improves materially from stressed baseline OR remains hard-capped (no silent re-enable).</li>
+    </ul>
+    <h3>Real-money ready gate</h3>
+    <ul>
+        <li>At least 2 asset classes sustain Tier-2 (<code>PF≥1.5</code>, <code>WR≥50</code>, <code>n≥100</code>, drawdown within charter) for consecutive monitoring windows AND pass drift/divergence checks.</li>
+    </ul>
+</div>
+
+</div>
+</body>
+</html>

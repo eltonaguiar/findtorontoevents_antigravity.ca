@@ -1,0 +1,91 @@
+{
+  "schema_version": "v1",
+  "engine": "ChatGPT-4",
+  "asset_class": "COMMODITY",
+  "candidates": [
+    {
+      "spec_id": "commodity_ts_momentum_gold_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD when 30d return > 0 AND 60d SMA of GLD is rising",
+      "exit": "close position when 30d return <= 0 OR after 90 days",
+      "sizing": "allocate 2% of portfolio equity to each GLD trade (fixed fractional)",
+      "universe": ["GLD"],
+      "regime_filter": "skip when 30d rolling volatility of GLD > 2.0%",
+      "source_refs": ["https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum-in-Commodities"],
+      "proposed_by_engine": "ChatGPT-4",
+      "expected_pf": 1.6,
+      "expected_wr": 55.0,
+      "expected_mdd_pct": 12.0,
+      "expected_n_per_year": 25,
+      "rationale": "Time‑series momentum has been shown to generate >0.5 Sharpe in commodity futures; applying the same rule to the gold ETF yields frequent signals and should meet Tier‑2 thresholds."
+    },
+    {
+      "spec_id": "commodity_cross_sectional_momentum_v1",
+      "asset_class": "COMMODITY",
+      "entry": "at month start compute 60d total return for each ETF in ['GLD','SLV','PPLT','PALL','CPER','DBA']; go long top 2 and short bottom 2",
+      "exit": "rebalance monthly, closing all positions at month end",
+      "sizing": "equal risk weight to each leg targeting 10% annualized portfolio volatility",
+      "universe": ["GLD", "SLV", "PPLT", "PALL", "CPER", "DBA"],
+      "regime_filter": "skip month when 30d rolling volatility of SPY > 1.5%",
+      "source_refs": ["https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective"],
+      "proposed_by_engine": "ChatGPT-4",
+      "expected_pf": 1.8,
+      "expected_wr": 60.0,
+      "expected_mdd_pct": 15.0,
+      "expected_n_per_year": 48,
+      "rationale": "Cross‑sectional momentum is robust across commodities; monthly rebalancing across six ETFs creates many trades while preserving a strong risk‑adjusted return."
+    },
+    {
+      "spec_id": "commodity_carry_value_gold_silver_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD when price < 0.95 * 200d SMA AND short GLD when price > 1.05 * 200d SMA; same rule for SLV",
+      "exit": "close when price crosses its 200d SMA",
+      "sizing": "fixed 1% of portfolio equity per leg (long or short)",
+      "universe": ["GLD", "SLV"],
+      "regime_filter": "skip when 30d rolling volatility of GLD or SLV > 2.5%",
+      "source_refs": ["https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"],
+      "proposed_by_engine": "ChatGPT-4",
+      "expected_pf": 1.5,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 18.0,
+      "expected_n_per_year": 30,
+      "rationale": "The value strategy (price relative to long‑term average) generated ~0.6% monthly alpha in futures; applying it to gold and silver ETFs should capture similar mispricing while keeping turnover high enough for >100 trades."
+    },
+    {
+      "spec_id": "commodity_energy_momentum_carry_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long CPER when 30d return > 0 AND CPER price > 12‑month SMA (proxy for backwardation)",
+      "exit": "close when 30d return <= 0 OR CPER price falls below 12‑month SMA",
+      "sizing": "scale to target 8% annualized portfolio volatility",
+      "universe": ["CPER"],
+      "regime_filter": "skip when VIX (proxied by 30d SPY volatility) > 25",
+      "source_refs": ["https://www.bis.org/publ/work853.pdf"],
+      "proposed_by_engine": "ChatGPT-4",
+      "expected_pf": 1.7,
+      "expected_wr": 58.0,
+      "expected_mdd_pct": 14.0,
+      "expected_n_per_year": 20,
+      "rationale": "Combining momentum with a simple carry proxy mirrors the joint carry‑momentum effect documented for commodities and should generate a strong Sharpe on the energy ETF."
+    },
+    {
+      "spec_id": "commodity_agri_momentum_value_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long DBA when 60d return > 0 AND DBA price < 0.97 * 200d SMA",
+      "exit": "close when 60d return <= 0 OR price crosses above 200d SMA",
+      "sizing": "fixed 2% of portfolio equity per trade",
+      "universe": ["DBA"],
+      "regime_filter": "skip when 30d rolling volatility of DBA > 2.0% OR when 30d SPY volatility > 1.5%",
+      "source_refs": [
+        "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective",
+        "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+      ],
+      "proposed_by_engine": "ChatGPT-4",
+      "expected_pf": 1.6,
+      "expected_wr": 55.0,
+      "expected_mdd_pct": 16.0,
+      "expected_n_per_year": 25,
+      "rationale": "Agricultural commodities exhibit both momentum and value signals; layering a value filter on top of momentum reduces drawdowns while preserving trade frequency."
+    }
+  ],
+  "notes_to_p3": "Focus on daily price data for the six ETFs; implement rolling windows for momentum and SMA calculations; ensure regime filters use volatility computed from the same ETF series to avoid external data dependencies. Verify that trade counts exceed 100 over the 2020‑2025 window."
+}

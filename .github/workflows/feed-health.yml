@@ -1,0 +1,31 @@
+# Validates audit_trail/data/dashboard_payload.json vs JSON_PICK_SOURCES (committed snapshot).
+# For full freshness, ensure workflow runs after generator commits or use self-hosted runner with latest payload.
+name: Feed Health Check
+
+on:
+  schedule:
+    - cron: "25 */1 * * *" # hourly at :25 (offset from audit-dashboard hourly)
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Fetch dashboard payload (FTP — file is gitignored, regenerated hourly)
+        run: |
+          mkdir -p audit_trail/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
+            -o audit_trail/data/dashboard_payload.json || echo "::warning::dashboard_payload.json fetch failed — downstream step may degrade"
+
+      - name: Run payload health check
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          # 30h: long dashboard + queue can leave payload ~24h old before success; still catches dead pipelines.
+          MAX_AGE_SECONDS: "108000"
+        run: python audit_trail/feed_health_check.py --once

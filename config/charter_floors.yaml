@@ -1,0 +1,143 @@
+# config/charter_floors.yaml
+#
+# Externalised charter floors + risk caps for the quant-performance-auditor
+# agent variants (`*-fast`, `*-deep`). The original `quant-performance-auditor`
+# inlines these — the variants read this file at runtime so updates ship
+# without touching the agent profile.
+#
+# Source of truth: docs/PERFORMANCE_CHARTER.md +
+#   CRYPTO_ML_WORLDCLASS_RESEARCH/researchers_001_030/researcher_005_risk_management.md
+# Cross-checked against: reports/hedge_fund_performance_review_*.md tier table.
+#
+# Updates require a PR. Emergency overrides go in overrides/<ticket>.yaml
+# (consumed by the deep variant, ignored by the fast variant).
+schema_version: "v1.2"
+
+# ───────────────────────── Tier floors ─────────────────────────
+# A claim about a strategy or asset class can only be graded T1/T2 if it
+# clears these jointly. Failing any one collapses the verdict to the next
+# tier down (or `candidate` / `thin_sample`).
+tiers:
+  T1:
+    pf_min: 2.0
+    wr_min: 0.55
+    mdd_max: 0.10
+    n_min: 100
+  T2:
+    pf_min: 1.5
+    wr_min: 0.50
+    mdd_max: 0.20
+    n_min: 100
+  candidate:
+    n_min: 10
+    n_max: 99
+  thin_sample:
+    n_max: 9
+
+# ────────────────────── Position sizing caps ───────────────────
+sizing:
+  kelly_ceiling_crypto: 0.25         # Quarter Kelly. Full Kelly is never used in practice.
+  kelly_unproven_n_lt: 100           # Below this n, drop to eighth Kelly:
+  kelly_unproven: 0.125
+  per_trade_equity_cap: 0.05         # 5% of equity per trade, hard cap.
+  per_trade_risk_cap: 0.02           # stop_distance × position_size / equity ≤ 0.02
+  total_exposure_cap: 0.20           # 20% of equity total portfolio.
+  reject_if_kelly_le_zero: true      # f* ≤ 0 → reject (no edge).
+
+# ────────────────────────── Stops (ATR) ─────────────────────────
+# Multipliers on ATR(14) unless otherwise noted; floors are absolute % of price.
+# Fixed-percentage stops on 15m crypto are rejected outright.
+stops:
+  crypto_15m: { atr_multiplier_min: 2.5, atr_multiplier_max: 3.5, floor_pct: 0.010 }
+  crypto_1h:  { atr_multiplier:     2.5,                          floor_pct: 0.015 }
+  crypto_4h:  { atr_multiplier:     3.0,                          floor_pct: 0.025 }
+  crypto_1d:  { atr_multiplier:     3.0,  atr_lookback: 20,       floor_pct: 0.040 }
+  cost_safety_multiplier: 3          # Stop distance ≥ 3× round-trip transaction cost.
+  reject_fixed_pct_15m: true
+
+# ─────────────────── Drawdown circuit breakers ──────────────────
+drawdown_circuit_breakers:
+  yellow:  { dd_pct: 0.05, size_multiplier: 0.50, label: "reduce 50%" }
+  orange:  { dd_pct: 0.10, size_multiplier: 0.25, label: "reduce 75%" }
+  red:     { dd_pct: 0.15, size_multiplier: 0.0,  label: "halt new trades" }
+  black:   { dd_pct: 0.20, size_multiplier: 0.0,  label: "close all + recovery protocol" }
+  daily_loss_limit:   0.02
+  weekly_loss_limit:  0.05
+  monthly_loss_limit: 0.10
+  reject_if_missing_limits: true
+
+# ─────────────────── Consecutive-loss scaling ───────────────────
+consecutive_loss_scaling:
+  - { losses: 2,    size_multiplier: 0.50 }
+  - { losses: 3,    size_multiplier: 0.25 }
+  - { losses: 4,    size_multiplier: 0.25 }
+  - { losses: 5,    size_multiplier: 0.0,  action: "STOP — likely regime change, not bad luck" }
+
+# ───────────────────── Cost-aware filtering ─────────────────────
+costs:
+  default_round_trip_pct: 0.001       # Fallback cost when source data missing.
+  flag_if_cost_missing: true
+  edge_min_multiplier: 3              # Expected move ≥ 3× round-trip cost.
+  # Break-even WR formula: WR_min = 1 / (1 + R:R). Reject "edge" claims that
+  # don't compute and clear this.
+  enforce_break_even_wr: true
+
+# ────────────────── Volatility targeting (regime) ────────────────
+volatility_target:
+  vol_pct_lt_20:      1.20
+  vol_pct_20_to_80:   1.00
+  vol_pct_80_to_95:   0.50
+  vol_pct_gt_95:      0.25
+  annualized_target_min: 0.10
+  annualized_target_max: 0.15
+  reject_continuous_resizing: true     # Use regime-conditional only (60% less turnover, same Sharpe).
+
+# ───────────────── Monte Carlo validation gate ──────────────────
+monte_carlo:
+  bootstraps_full:  2000
+  bootstraps_fast:  500              # `-fast` variant uses this; deep uses full.
+  random_seed: 42                     # Deterministic for audit-trail reproducibility.
+  max_runtime_s: 30
+  pass_criteria:
+    sharpe_ci95_lower_gt: 0.0
+    median_max_drawdown_lt: 0.25
+    p_profitable_gt: 0.70
+    worst_losing_streak_ci95_lt: 15
+  fail_action: reject                  # All four must pass; failing any one rejects.
+
+# ───────────────────── Hard "do not trade" gates ─────────────────
+hard_gates:
+  - rule: "30d Sharpe < 0"
+  - rule: "2 consecutive weeks of Sharpe < -0.5"
+  - rule: "active circuit breaker (any tier)"
+  - rule: "daily/weekly/monthly loss limit hit"
+
+# ────────────────────────── Range checks ─────────────────────────
+# Sanity bounds on input metrics. Auditor must flag values outside these
+# (likely unit mismatch — see feedback_cycle10_unit_mismatch_bug.md).
+range_checks:
+  win_rate:        { min: 0.0,   max: 1.0 }
+  max_drawdown:    { min: 0.0,   max: 1.0 }
+  profit_factor:   { min: 0.0,   max: 100.0 }
+  pnl_pct:         { min: -10.0, max: 10.0 }   # Decimal form; >|10.0| likely % not decimal.
+  sample_size:     { min: 0,     max: 1000000 }
+
+# ───────────────────────── Unit normalisation ────────────────────
+# All metrics must be normalised to decimals before evaluation.
+# E.g. WR field "win_rate": 52.7 → 0.527. The auditor logs the conversion.
+units:
+  normalise_pct_to_decimal: true
+  detect_threshold: 1.5    # If value > 1.5 it's almost certainly a % needing /100.
+
+# ────────────────────────── Override policy ──────────────────────
+# Approved exceptions live in overrides/<ticket_id>.yaml.
+# The deep variant honours overrides if their `expires_at` is in the future
+# AND the file is signed off in PR description. The fast variant ignores
+# overrides entirely (CI-time should be deterministic).
+overrides:
+  honoured_by:
+    - quant-performance-auditor-deep
+  ignored_by:
+    - quant-performance-auditor-fast
+    - quant-performance-auditor                 # original
+  required_fields: [ticket_id, expires_at, override_reason, approver]

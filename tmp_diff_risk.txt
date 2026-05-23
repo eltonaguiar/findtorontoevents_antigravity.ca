@@ -1,0 +1,117 @@
+diff --git a/alpha_engine/risk_controls.py b/alpha_engine/risk_controls.py
+index 1d24abe6d3..42de7845ec 100644
+--- a/alpha_engine/risk_controls.py
++++ b/alpha_engine/risk_controls.py
+@@ -500,6 +500,98 @@ def apply_consecutive_loss_filter(
+         return active_picks
+ 
+ 
++# ===================================================================
++# 4. PER-SYMBOL PnL CIRCUIT BREAKER
++# ===================================================================
++# Data: TRXUSDT lost -3,172% total, -2,882% in 7 days alone.
++# A per-symbol cap prevents single-asset blowups from wiping all gains.
++PER_SYMBOL_MAX_LOSS_PCT = -10.0   # Hard cap: close all picks on a symbol at -10% total PnL
++PER_SYMBOL_MAX_ACTIVE = 3         # Max concurrent picks per symbol
++
++
++def check_per_symbol_concentration(
++    active_picks: list[dict],
++    closed_picks: list[dict],
++) -> list[dict]:
++    """Per-symbol circuit breaker: cap losses and concentration per symbol.
++
++    - If a symbol's total realized PnL (7d) exceeds PER_SYMBOL_MAX_LOSS_PCT,
++      drop all active picks for that symbol.
++    - If more than PER_SYMBOL_MAX_ACTIVE picks are open on one symbol,
++      keep only the top-scoring ones.
++
++    Returns filtered active picks list.
++    """
++    try:
++        now = _now_utc()
++        seven_days_ago = (now - timedelta(days=7)).strftime("%Y-%m-%d")
++
++        # Compute per-symbol realized PnL from recent closed picks
++        symbol_pnl: dict[str, float] = {}
++        for p in closed_picks:
++            close_date = p.get("exit_date", "") or p.get("closed_at", "")
++            if close_date < seven_days_ago:
++                continue
++            sym = (p.get("symbol") or "").upper()
++            pnl = p.get("pnl_pct")
++            if sym and pnl is not None:
++                symbol_pnl[sym] = symbol_pnl.get(sym, 0.0) + float(pnl)
++
++        # Identify blown symbols (realized PnL worse than cap)
++        blown_symbols = set()
++        for sym, total_pnl in symbol_pnl.items():
++            total_pct = total_pnl * 100.0  # Convert decimal to percentage
++            if total_pct <= PER_SYMBOL_MAX_LOSS_PCT:
++                blown_symbols.add(sym)
++                print(f"  [SYMBOL CB] {sym} breached per-symbol limit: "
++                      f"{total_pct:.1f}% (cap={PER_SYMBOL_MAX_LOSS_PCT}%) — dropping all active picks")
++
++        # Filter out blown symbols
++        kept = []
++        dropped_blown = 0
++        for p in active_picks:
++            sym = (p.get("symbol") or "").upper()
++            if sym in blown_symbols:
++                dropped_blown += 1
++                continue
++            kept.append(p)
++
++        # Enforce per-symbol concentration limit on remaining
++        from collections import defaultdict
++        sym_groups: dict[str, list[dict]] = defaultdict(list)
++        for p in kept:
++            sym = (p.get("symbol") or "").upper()
++            sym_groups[sym].append(p)
++
++        final = []
++        dropped_conc = 0
++        for sym, picks in sym_groups.items():
++            if len(picks) <= PER_SYMBOL_MAX_ACTIVE:
++                final.extend(picks)
++            else:
++                # Keep top N by score
++                sorted_picks = sorted(
++                    picks,
++                    key=lambda x: float(x.get("score", 0) or x.get("elite_score", 0) or 0),
++                    reverse=True,
++                )
++                final.extend(sorted_picks[:PER_SYMBOL_MAX_ACTIVE])
++                dropped_conc += len(sorted_picks) - PER_SYMBOL_MAX_ACTIVE
++                print(f"  [SYMBOL CB] {sym}: {len(picks)} active picks > limit {PER_SYMBOL_MAX_ACTIVE}, "
++                      f"keeping top {PER_SYMBOL_MAX_ACTIVE} by score")
++
++        total_dropped = dropped_blown + dropped_conc
++        if total_dropped:
++            print(f"  [SYMBOL CB] Dropped {total_dropped} picks "
++                  f"(blown={dropped_blown}, concentration={dropped_conc})")
++
++        return final
++
++    except Exception as e:
++        print(f"  [SYMBOL CB] Check failed (safe fallback=no changes): {e}")
++        return active_picks
++
++
+ # ===================================================================
+ # MASTER FUNCTION: Run all risk controls
+ # ===================================================================
+@@ -558,6 +650,13 @@ def run_all_risk_controls(
+             active_picks = apply_consecutive_loss_filter(active_picks, disabled)
+             report["actions_taken"].append(f"consec_loss_disable:{len(disabled)}_strategies")
+ 
++        # 4. Per-symbol PnL circuit breaker + concentration limit
++        before_sym = len(active_picks)
++        active_picks = check_per_symbol_concentration(active_picks, closed_picks)
++        if len(active_picks) < before_sym:
++            report["actions_taken"].append(
++                f"symbol_cb:dropped_{before_sym - len(active_picks)}_picks")
++
+         report["picks_after"] = len(active_picks)
+ 
+         if report["actions_taken"]:

@@ -1,0 +1,56 @@
+{
+  "analysis": {
+    "summary": "The 8 active picks score between 2-45 out of 110, placing them all in D/F grade territory. This is expected behavior from the elite_scorer, not a bug. The scoring system is intentionally conservative because it was calibrated for 20x leverage safety where false positives are catastrophic. These picks score low because they fail multiple gating criteria simultaneously, particularly forward validation (0/10 trades = capped at 6 pts) and ML confidence (heuristic/external systems get capped scores). The fact that 5/8 are reportedly winning short-term does NOT invalidate the scoring -- short-term unrealized PnL is noise, not signal.",
+    "market_context": {
+      "regime": "ACCUMULATION/CRASH (canonical)",
+      "fear_greed": 26,
+      "mvrv": 0.761,
+      "funding_rate": "0.0052% (neutral)",
+      "interpretation": "Market is in choppy/accumulation phase. MVRV < 1.0 suggests undervaluation. F&G at 26 is near fear. This environment favors mean-reversion and contrarian strategies, which explains why some low-score picks are temporarily profitable."
+    }
+  },
+  "score_breakdown_issues": {
+    "issue_1_no_forward_validation": {
+      "impact": "Loses up to 24 points (30 max, capped at 6 for <10 trades)",
+      "explanation": "These strategies (battleground, coinglass, quan_engine, luxalgo) are external systems without tracked forward-test history in strategy_performance.json. The forward_wr component requires 10+ closed trades with >55% WR for full marks. With 0 trades, they get at most 6 points. This is the SINGLE BIGGEST drag on scores.",
+      "affected_picks": "All 8 picks"
+    },
+    "issue_2_ml_score_missing_or_heuristic": {
+      "impact": "Loses 15-25 points (35 max)",
+      "explanation": "External systems (coinglass, quan_engine, luxalgo, battleground) likely don't have ML probability scores from the alpha engine's LightGBM/ensemble models. Without ml_score or with heuristic fallback, picks get capped at 20/35 points. Most of these probably score 5-15 in this component.",
+      "affected_picks": "All 8 picks"
+    },
+    "issue_3_no_confluence": {
+      "impact": "Loses up to 8 points",
+      "explanation": "Single-strategy picks with no confluence_strategies list get 0 confluence points. The BTC picks have 3 SHORTs from different systems but they are not linked as confluent signals -- they are treated as independent picks.",
+      "affected_picks": "All 8 picks"
+    },
+    "issue_4_no_monte_carlo": {
+      "impact": "Loses up to 5 points",
+      "explanation": "External strategies have no Monte Carlo simulation results in monte_carlo_results.json.",
+      "affected_picks": "All 8 picks"
+    },
+    "issue_5_no_leverage_safety": {
+      "impact": "Loses up to 10 points",
+      "explanation": "Without stop_loss prices, tight-stop bonus cannot be calculated. Without high ML score, leverage safety bonus is minimal.",
+      "affected_picks": "Most picks"
+    },
+    "issue_6_conflicting_signals_not_penalized": {
+      "impact": "Scoring does NOT penalize contradictions",
+      "explanation": "3 BTC SHORTs + 1 BTC LONG at nearly the same price is a clear sign of market indecision, yet each pick is scored independently. The system has no mechanism to detect and penalize conflicting picks on the same asset. Similarly, XRP has 1 LONG + 1 SHORT -- a pure wash. A scoring system that emits both BUY and SELL on the same asset at the same time is expressing uncertainty, which should lower confidence on ALL those picks."
+    }
+  },
+  "scoring_verdict": {
+    "is_scoring_too_conservative": "No -- the scoring is correctly conservative for its purpose (20x leveraged portfolio). These picks SHOULD score low because they have zero track record, no ML validation, and no confluence. The 1x portfolio (portfolio_1x.json) already proved this: 9 trades, 0 wins, -$9.11 loss. The scored picks (57-71 range) all hit stop loss.",
+    "are_low_score_picks_good": "Unlikely. The claim that '5 of 8 are winning' is based on unrealized PnL at a single point in time. The portfolio_1x.json data shows that even HIGHER-scored picks (57-71) went to 0/9 wins. Low-score picks have even less evidence supporting them.",
+    "real_problem": "The real issue is not that scores are too low -- it's that the system generates too many conflicting signals. Having BTC LONG and BTC SHORT active simultaneously means the system is uncertain. In a CHOPPY regime, the correct response is FEWER picks with higher conviction, not more picks hedging each other."
+  },
+  "recommendation": {
+    "action_1": "Add a conflict detector: before emitting picks, check if the same symbol has opposing active signals. If so, either cancel both or only emit the higher-conviction one.",
+    "action_2": "Track these 8 picks in portfolio_lowscore_test.json for 48 hours. If the win rate exceeds 50%, the forward_wr gating threshold (10 trades minimum) may need loosening for external systems.",
+    "action_3": "Consider a separate scoring pathway for external systems (coinglass, quan_engine, luxalgo) that weights their own reported win rates or backtests instead of requiring alpha engine forward validation.",
+    "action_4": "The BTC net-SHORT bias (3 SHORT vs 1 LONG) could be used as a weak directional signal. Build an aggregation layer that computes net direction per symbol across all systems.",
+    "action_5": "Do NOT lower the scoring thresholds to make these picks look better. The portfolio_1x.json 0/9 record proves the scoring is if anything too generous, not too strict."
+  },
+  "generated_at": "2026-03-18T19:30:00Z"
+}

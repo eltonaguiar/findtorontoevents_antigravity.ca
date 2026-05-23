@@ -1,0 +1,112 @@
+# Data Quality Gates — per asset class
+# Generated 2026-05-12. Mentioned in:
+#   - reports/grok_solo_week1_checklist_2026-05-12.md Day 2
+#   - reports/ernie_week1_detailed_checklist_2026-05-12.md Day 2
+#   - reports/mimo_full_framework_2026-05-12.md Day 1 + Part 3
+#
+# Validation rules consumed by tools/db_health_check.py + future
+# tools/data_quality_validator.py. Each gate is a hard fail unless
+# tagged `severity: warn`.
+#
+# ALL THRESHOLDS ARE SESSION-CONSERVATIVE — calibrate via 30-day
+# observation post-Week-1. Bump severity=warn → severity=fail after
+# 2 cycles of green.
+
+schema_version: "v1/2026-05-12"
+
+global:
+  zero_pnl_pct_max: 5.0       # >5% of terminal rows with pnl=0 → fail (target <1%)
+  missing_exit_pct_max: 2.0   # >2% of WON/LOST without exit_price → fail
+  resolver_age_hours_max: 24  # last WON/LOST write >24h old → fail
+  schema_drift_columns: []    # populated by check_pnl_integrity on column count change
+
+crypto:
+  symbols_min: 10             # need at least 10 distinct symbols in last 24h
+  feed_age_seconds_max: 30    # tick-feed age >30s = stale
+  price_outlier_sigma: 5.0    # spike >5σ from rolling 1h mean
+  cross_exchange_spread_pct_max: 0.5   # BTC across Binance/Coinbase/Kraken
+  volume_drop_ratio_min: 0.1  # current/rolling_avg <0.1 = critical drop
+  funding_rate_extreme_pct: 0.1  # >0.1% per 8h flags crowded perp positioning
+  pnl_window_days: 7
+
+memecoin:
+  symbols_min: 5
+  feed_age_seconds_max: 60
+  price_outlier_sigma: 7.0    # memecoins genuinely have 7σ moves
+  pnl_window_days: 7
+  severity: warn              # class quarantined; warn-only on quality
+
+forex:
+  symbols_min: 7              # 7 major pairs minimum
+  feed_age_seconds_max: 15
+  price_outlier_sigma: 4.0
+  cross_provider_spread_pips_max: 2.0   # OANDA vs IB
+  session_aware: true         # London/NY overlap 07:00-17:00 UTC
+  central_bank_window_hours: 2  # reduce confidence ±2h around FOMC/ECB/BOJ/BOE
+  pnl_window_days: 30
+  severity: warn              # class blocked currently
+
+equity:
+  symbols_min: 50
+  feed_age_seconds_max: 300   # 5min for daily close-based equity
+  price_outlier_sigma: 4.0
+  earnings_calendar_check: true  # flag picks within 2 trading days of earnings
+  pnl_window_days: 30
+
+etf:
+  symbols_min: 20
+  feed_age_seconds_max: 300
+  nav_vs_market_spread_bp_max: 50  # 0.5% premium/discount alert
+  pnl_window_days: 30
+
+commodity:
+  symbols_min: 5
+  feed_age_seconds_max: 600   # 10min for futures
+  price_outlier_sigma: 4.5
+  cot_release_day: friday     # 3:30pm ET; flag picks created Mon for COT-driven strats
+  roll_yield_check: true
+  pnl_window_days: 30
+
+futures:
+  symbols_min: 3
+  feed_age_seconds_max: 600
+  price_outlier_sigma: 4.0
+  roll_calendar_check: true   # expiry handling
+  pnl_window_days: 30
+  severity: warn              # only CT=F+GC=F are real per FUTURES deep-dive
+
+bond:
+  symbols_min: 8              # TLT/IEF/SHY/LQD/HYG/AGG/BND/EMB minimum
+  feed_age_seconds_max: 600
+  price_outlier_sigma: 3.5    # bonds are low-vol
+  fred_api_required: false    # SKIP_FRED env override per commit 293017a5cc9
+  yield_curve_consistency: true  # 10Y > 2Y > 1Y or document inversion
+  pnl_window_days: 30
+
+penny_stock:
+  symbols_min: 5
+  feed_age_seconds_max: 300
+  price_outlier_sigma: 6.0    # penny stocks have wider noise
+  pnl_window_days: 30
+  severity: warn              # class flagged sub-floor; warn-only
+
+# Cross-class checks (run once per cycle, not per feed)
+cross_class:
+  correlation_regime_max: 0.7      # if mean(|cross-class corr|) > 0.7 → alert
+  drawdown_concurrent_classes_max: 2  # if 2+ classes hit DD >5% in same week → reduce all sleeves 50%
+  ml_staleness_max_days: 7         # mtime gate; matches enhanced-ml-crypto.yml
+  ghost_row_total_max: 500000      # alert if db_health.json::ghost_rows.total > 500k
+
+# Quarantine triggers (per strategy)
+auto_quarantine:
+  rolling_30d_sharpe_min: -1.0     # < -1.0 = auto-quarantine
+  rolling_30d_sharpe_warn: -0.5    # < -0.5 = warning
+  max_drawdown_pct: 15             # > 15% from peak = auto-quarantine
+  no_signals_days: 14              # 14d silent = review flag
+  data_feed_outage_hours: 24       # 24h outage = quarantine dependent strategies
+
+# NFA
+nfa: |
+  Research surface only. These thresholds are session-conservative; calibrate
+  via 30-day observation. Real-money sizing remains gated on the 10-step
+  Lopez de Prado AFML readiness pipeline regardless of which gates pass.

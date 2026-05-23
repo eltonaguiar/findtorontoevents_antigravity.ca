@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health Alerts | Goldmine Checker</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2235;
+            --border: #1e293b;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --green: #10b981;
+            --green-dim: rgba(16, 185, 129, 0.12);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.12);
+            --yellow: #f59e0b;
+            --yellow-dim: rgba(245, 158, 11, 0.12);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.12);
+            --purple: #a855f7;
+            --purple-dim: rgba(168, 85, 247, 0.12);
+            --orange: #f97316;
+            --orange-dim: rgba(249, 115, 22, 0.12);
+            --cyan: #06b6d4;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #111827 0%, #1a1030 50%, #1e1020 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .back-link {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+        .back-link:hover { color: var(--text); text-decoration: none; }
+        .header h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, var(--red), var(--yellow), #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        .live-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: blink 1.5s infinite;
+            margin-right: 4px;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+        .refresh-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .refresh-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text);
+            border-color: var(--text-dim);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ── KPI row ── */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .kpi-card h3 {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 0.3rem;
+        }
+        .kpi-card .value { font-size: 2rem; font-weight: 700; }
+        .kpi-card .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+        /* ── Filter Bar ── */
+        .filter-bar {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+            align-items: center;
+        }
+        .filter-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 0.2rem;
+            font-weight: 600;
+        }
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .filter-btn:hover { border-color: var(--blue); color: var(--text); }
+        .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+        .filter-sep {
+            width: 1px; height: 20px;
+            background: var(--border);
+            margin: 0 0.4rem;
+        }
+
+        /* ── Alert Cards ── */
+        .alert-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.2rem 1.2rem 1.4rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--border);
+            transition: background 0.15s;
+        }
+        .alert-card:hover { background: var(--bg-card-hover); }
+        .alert-card.severity-critical { border-left-color: var(--red); }
+        .alert-card.severity-warning  { border-left-color: var(--yellow); }
+
+        .alert-top {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge-critical { background: var(--red-dim); color: var(--red); }
+        .badge-warning  { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-system   { background: var(--blue-dim); color: var(--blue); }
+        .badge-type     { background: var(--purple-dim); color: var(--purple); }
+
+        .alert-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .alert-desc {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .alert-metrics {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        .metric-item { font-size: 0.82rem; }
+        .metric-label { color: var(--text-dim); }
+        .metric-value { font-weight: 600; }
+        .metric-value.bad { color: var(--red); }
+        .metric-value.thresh { color: var(--yellow); }
+        .metric-bar {
+            display: inline-block;
+            width: 80px; height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            position: relative;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+        .metric-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            position: absolute;
+            left: 0; top: 0;
+        }
+
+        .alert-tickers {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        .ticker-tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(226, 232, 240, 0.08);
+            color: var(--text);
+        }
+
+        .alert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .alert-date { font-size: 0.75rem; color: var(--text-dim); }
+        .btn-view {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .btn-view:hover { opacity: 0.85; text-decoration: none; }
+        .btn-view-critical { background: var(--red); color: #fff; }
+        .btn-view-warning  { background: var(--yellow); color: #000; }
+
+        /* ── Suggested Actions ── */
+        .actions-section { margin-top: 1.5rem; }
+        .section-title {
+            font-size: 1rem;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.75rem;
+        }
+        .action-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+        }
+        .action-card h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .action-card ul { list-style: none; padding: 0; }
+        .action-card li {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            padding: 3px 0 3px 14px;
+            position: relative;
+            line-height: 1.4;
+        }
+        .action-card li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 10px;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--text-dim);
+        }
+        .action-card.active { border-color: var(--yellow); }
+        .action-card.active h4 { color: var(--yellow); }
+        .action-card.active li::before { background: var(--yellow); }
+
+        /* ── Empty / Loading / Error ── */
+        .loading { text-align: center; padding: 3rem 1rem; color: var(--text-dim); }
+        .empty-state { text-align: center; padding: 3rem 1rem; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 0.8rem; opacity: 0.6; }
+        .empty-state h2 { color: var(--green); font-size: 1.2rem; margin-bottom: 0.4rem; }
+        .empty-state p { color: var(--text-dim); font-size: 0.9rem; }
+        .error-box {
+            background: var(--red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 0.8rem;
+            color: #fca5a5;
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+        .pulse { animation: pulse-anim 2s ease-in-out infinite; }
+        @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1.5rem;
+        }
+
+        /* ── System Summary Grid ── */
+        .sys-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .sys-chip {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.78rem;
+        }
+        .sys-chip:hover { border-color: var(--blue); background: var(--bg-card-hover); }
+        .sys-chip .sys-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .sys-chip .sys-count { font-size: 1.1rem; font-weight: 700; }
+        .sys-chip.has-critical .sys-count { color: var(--red); }
+        .sys-chip.has-warning .sys-count { color: var(--yellow); }
+        .sys-chip.has-none .sys-count { color: var(--green); }
+        .sys-chip.active { border-color: var(--blue); background: rgba(59, 130, 246, 0.08); }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .header h1 { font-size: 1.3rem; }
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+            .action-grid { grid-template-columns: 1fr; }
+            .container { padding: 1rem; }
+            .sys-summary { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="goldmine-dashboard.html" class="back-link">&larr; Dashboard</a>
+            <h1>SYSTEM HEALTH ALERTS</h1>
+        </div>
+        <div class="header-right">
+            <span><span class="live-dot"></span>Auto-refresh <span id="countdown">60</span>s</span>
+            <button class="refresh-btn" onclick="loadAlerts()">Refresh Now</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- KPIs -->
+        <div class="kpi-row" id="kpi-row">
+            <div class="kpi-card">
+                <h3>Total Alerts</h3>
+                <div class="value" id="kpi-total">--</div>
+                <div class="sub" id="kpi-total-sub">Fetching alert summary...</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Critical</h3>
+                <div class="value" id="kpi-critical" style="color: var(--red);">--</div>
+                <div class="sub">Immediate action</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Warning</h3>
+                <div class="value" id="kpi-warning" style="color: var(--yellow);">--</div>
+                <div class="sub">Monitor closely</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Systems Affected</h3>
+                <div class="value" id="kpi-systems" style="color: var(--blue);">--</div>
+                <div class="sub" id="kpi-systems-sub">&nbsp;</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Alert Types</h3>
+                <div class="value" id="kpi-types" style="font-size: 1.3rem; color: var(--purple);">--</div>
+                <div class="sub" id="kpi-types-sub">&nbsp;</div>
+            </div>
+        </div>
+
+        <!-- Research Link Banner -->
+        <div style="background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(168,85,247,0.08));border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+            <div>
+                <span style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">Algorithm Performance Research</span>
+                <span style="font-size:0.8rem;color:#94a3b8;margin-left:0.5rem;">Deep analysis of all failing systems with proposed fixes</span>
+            </div>
+            <a href="research/" style="display:inline-block;padding:6px 16px;border-radius:6px;font-size:0.8rem;font-weight:600;background:#6366f1;color:#fff;text-decoration:none;">View Research &rarr;</a>
+        </div>
+
+        <!-- System Summary Chips -->
+        <div class="sys-summary" id="sys-summary"></div>
+
+        <!-- Filters -->
+        <div class="filter-bar" id="filter-bar">
+            <span class="filter-label">Severity:</span>
+            <button class="filter-btn active" onclick="filterSev('all')">All</button>
+            <button class="filter-btn" onclick="filterSev('critical')">Critical</button>
+            <button class="filter-btn" onclick="filterSev('warning')">Warning</button>
+            <div class="filter-sep"></div>
+            <span class="filter-label">Type:</span>
+            <button class="filter-btn active" onclick="filterType('all')" data-filter-type="all">All Types</button>
+        </div>
+
+        <!-- Alert Cards -->
+        <div id="alerts-container">
+            <div class="loading"><div class="pulse">Loading alerts...</div></div>
+        </div>
+
+        <!-- Suggested Actions -->
+        <div class="actions-section" id="actions-section" style="display: none;">
+            <h3 class="section-title">Suggested Actions by Alert Type</h3>
+            <div class="action-grid" id="action-grid"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Goldmine Checker &mdash; System Health Alerts &bull; Monitoring 12+ prediction systems &bull; Auto-refreshes every 60s
+    </div>
+
+    <script>
+        var API_BASE = '/live-monitor/api/goldmine_tracker.php';
+        var allAlerts = [];
+        var currentSevFilter = 'all';
+        var currentTypeFilter = 'all';
+        var currentSysFilter = 'all';
+        var refreshTimer = null;
+        var countdownVal = 60;
+
+        // System display names
+        var SYSTEM_NAMES = {
+            'consolidated': 'Consolidated',
+            'live_signal': 'Live Signals',
+            'edge': 'Edge Finder',
+            'meme': 'Meme Scanner',
+            'sports': 'Sports Betting',
+            'horizon': 'Horizon Picks',
+            'top_picks': 'Top Picks',
+            'penny': 'Penny Stocks',
+            'conviction': 'Conviction',
+            'paper_trading': 'Paper Trading',
+            'portfolio': 'Portfolio-Wide'
+        };
+
+        // Alert type suggested actions
+        var SUGGESTED_ACTIONS = {
+            accuracy_drop: {
+                title: 'Accuracy Drop',
+                items: [
+                    'Review algorithm parameters and consider re-tuning',
+                    'Check if market regime has changed (bull/bear/sideways)',
+                    'Compare learned vs original parameter performance',
+                    'Consider pausing this system until accuracy recovers'
+                ]
+            },
+            losing_streak: {
+                title: 'Losing Streak',
+                items: [
+                    'Check for data source issues or delayed feeds',
+                    'Verify price feeds are returning accurate data',
+                    'Check if correlated assets are all failing (sector issue)',
+                    'Verify regime gate is functioning correctly'
+                ]
+            },
+            stale_data: {
+                title: 'Stale Data',
+                items: [
+                    'Check GitHub Actions workflow run history',
+                    'Verify API keys have not expired or been rotated',
+                    'Test data source endpoints manually for errors',
+                    'Review server error logs for timeouts or 5xx errors'
+                ]
+            },
+            zero_picks: {
+                title: 'Zero Picks',
+                items: [
+                    'Data pipeline may be broken \u2014 check refresh workflows',
+                    'Verify upstream data sources are returning results',
+                    'Check if signal strength thresholds are too strict',
+                    'Run a manual archive to see if picks exist but were not captured'
+                ]
+            },
+            rapid_decline: {
+                title: 'Rapid Decline',
+                items: [
+                    'Compare 7-day vs 30-day accuracy to see decline rate',
+                    'Check if a specific ticker is dragging down performance',
+                    'Consider reverting to original (hardcoded) parameters',
+                    'Investigate if external event impacted correlated assets'
+                ]
+            },
+            negative_roi: {
+                title: 'Negative ROI',
+                items: [
+                    'Review risk/reward ratio settings (TP vs SL percentages)',
+                    'Check if position sizing is appropriate for volatility',
+                    'Analyze worst-performing tickers and consider blacklisting',
+                    'Compare system ROI against buy-and-hold benchmark'
+                ]
+            },
+            algo_underperform: {
+                title: 'Algorithm Underperformance',
+                items: [
+                    'Check this specific algorithm\'s recent trades in detail',
+                    'Compare learned vs original parameters for this algo',
+                    'Consider disabling this algorithm temporarily',
+                    'Review if algo is suited for current market conditions'
+                ]
+            },
+            bankroll_drawdown: {
+                title: 'Bankroll Drawdown',
+                items: [
+                    'Reduce bet sizing percentage immediately',
+                    'Review which sports/markets are causing losses',
+                    'Check if odds sources are providing stale data',
+                    'Consider pausing auto-betting until model is reviewed'
+                ]
+            },
+            conviction_failing: {
+                title: 'Conviction Model Failing',
+                items: [
+                    'Review conviction score weighting across 9 dimensions',
+                    'Check if any dimension data source has gone stale',
+                    'Compare high-conviction vs low-conviction accuracy',
+                    'Consider lowering the conviction threshold for alerts'
+                ]
+            },
+            drawdown: {
+                title: 'Paper Trading Drawdown',
+                items: [
+                    'Review which algorithms are generating losing trades',
+                    'Check if regime gate is properly blocking risky entries',
+                    'Verify stop-loss levels are being honored',
+                    'Consider reducing maximum open positions temporarily'
+                ]
+            },
+            systemic_failure: {
+                title: 'Systemic Failure',
+                items: [
+                    'Check if a broad market event is causing correlated failures',
+                    'Verify all data sources and API connections are healthy',
+                    'Review if a recent deployment broke multiple systems',
+                    'Consider enabling conservative mode across all systems'
+                ]
+            },
+            open_positions_bleeding: {
+                title: 'Open Positions Bleeding',
+                items: [
+                    'Review which open positions have the worst unrealized losses',
+                    'Check if stop-losses should be tightened on open trades',
+                    'Consider closing the worst-performing positions manually',
+                    'Verify price feeds are accurate for affected tickers'
+                ]
+            }
+        };
+
+        // ── Dashboard Health Checks ──
+        var DASHBOARD_URLS = [
+            {name:'KIMI Rise of the Claw', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html'},
+            {name:'Alpha Engine', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/'},
+            {name:'Pair Fingerprints', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/pair-fingerprints.html'},
+            {name:'Unified Dashboard', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/unified-dashboard.html'},
+            {name:'Goldmine Alerts', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/goldmine-alerts.html'},
+            {name:'Forex Portfolio', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/forex-portfolio.html'},
+            {name:'Scanner Log', url:'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw/scanner-log.html'}
+        ];
+
+        function checkDashboardHealth() {
+            DASHBOARD_URLS.forEach(function(dash) {
+                fetch(dash.url, {method:'HEAD', mode:'no-cors', cache:'no-cache'}).then(function(r) {
+                    // no-cors returns opaque response (status=0) — if we get here, server is reachable
+                }).catch(function(err) {
+                    allAlerts.push({severity:'critical', title:dash.name+' Dashboard Down',
+                        description:'Could not reach '+dash.url+'. Dashboard may be offline or deployment failed.',
+                        source_system:'consolidated', alert_type:'stale_data', metric_value:0,
+                        threshold_value:1, affected_tickers:'', created_at:new Date().toISOString()});
+                    renderAll(); // re-render to show new alert
+                });
+            });
+            // Also verify JSON data feeds are accessible
+            var dataFeeds = [
+                {name:'Active Picks JSON', url:'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json'},
+                {name:'Live Signals JSON', url:'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/live_signals_now.json'},
+                {name:'Scan Runs JSON', url:'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/scan_runs.json'}
+            ];
+            dataFeeds.forEach(function(feed) {
+                fetch(feed.url, {cache:'no-cache'}).then(function(r) {
+                    if (!r.ok) {
+                        allAlerts.push({severity:'critical', title:feed.name+' Feed Error (HTTP '+r.status+')',
+                            description:'Data feed at '+feed.url+' returned HTTP '+r.status+'. Dashboards will show stale data.',
+                            source_system:'consolidated', alert_type:'stale_data', metric_value:r.status,
+                            threshold_value:200, affected_tickers:'', created_at:new Date().toISOString()});
+                        renderAll();
+                    }
+                }).catch(function(err) {
+                    allAlerts.push({severity:'critical', title:feed.name+' Feed Unreachable',
+                        description:'Cannot reach '+feed.url+'. Error: '+err.message,
+                        source_system:'consolidated', alert_type:'stale_data', metric_value:0,
+                        threshold_value:1, affected_tickers:'', created_at:new Date().toISOString()});
+                    renderAll();
+                });
+            });
+        }
+
+        // ── Load Alerts ──
+        function loadAlerts() {
+            var container = document.getElementById('alerts-container');
+            container.innerHTML = '<div class="loading"><div class="pulse">Loading alerts...</div></div>';
+            var GH = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+            var t = Date.now();
+            Promise.all([
+                fetch(GH + 'alpha_engine/data/active_picks.json?t=' + t).then(function(r){return r.ok?r.json():[]}).catch(function(){return []}),
+                fetch(GH + 'KIMI_RISEOFTHECLAW/data/scan_runs.json?t=' + t).then(function(r){return r.ok?r.json():[]}).catch(function(){return []}),
+                fetch(GH + 'KIMI_RISEOFTHECLAW/data/live_signals_now.json?t=' + t).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}})
+            ]).then(function(results) {
+                var picks = results[0], scanRuns = results[1], kimiData = results[2];
+                allAlerts = [];
+                // Check for stale scanner
+                if (scanRuns.length > 0) {
+                    var latest = scanRuns[scanRuns.length - 1];
+                    var hrs = (Date.now() - new Date(latest.timestamp).getTime()) / 3600000;
+                    if (hrs > 1) allAlerts.push({severity:hrs>4?'critical':'warning', title:'Scanner Not Running',
+                        description:'KIMI scanner last ran '+Math.floor(hrs)+'h ago. Expected interval: every 15 min.',
+                        source_system:'live_signal', alert_type:'stale_data', metric_value:Math.floor(hrs*60),
+                        threshold_value:20, affected_tickers:'', created_at:new Date().toISOString()});
+                }
+                // Check for bleeding positions
+                var losers = picks.filter(function(p){return parseFloat(p.unrealized_pnl_pct||0)<-5});
+                if (losers.length >= 3) allAlerts.push({severity:losers.length>=5?'critical':'warning',
+                    title:losers.length+' Picks Down >5%', description:'Multiple active picks showing significant unrealized losses.',
+                    source_system:'consolidated', alert_type:'open_positions_bleeding', metric_value:losers.length,
+                    threshold_value:3, affected_tickers:losers.map(function(p){return p.symbol}).join(','),
+                    created_at:new Date().toISOString()});
+                // Check for zero picks
+                if (picks.length === 0) allAlerts.push({severity:'warning', title:'Zero Active Picks',
+                    description:'No active picks across any strategy. Signal generation may be stalled.',
+                    source_system:'consolidated', alert_type:'zero_picks', metric_value:0, threshold_value:5,
+                    affected_tickers:'', created_at:new Date().toISOString()});
+                // Strategy-level health
+                var sp = {};
+                picks.forEach(function(p){
+                    var s=p.strategy||'?'; if(!sp[s]) sp[s]={t:0,l:0,syms:[]};
+                    sp[s].t++; if(parseFloat(p.unrealized_pnl_pct||0)<0) sp[s].l++; sp[s].syms.push(p.symbol);
+                });
+                Object.keys(sp).forEach(function(s){
+                    var d=sp[s];
+                    if(d.t>=3 && d.l/d.t>0.7) allAlerts.push({severity:'warning',
+                        title:s.replace(/_/g,' ')+' \u2014 High Loss Rate',
+                        description:d.l+' of '+d.t+' picks are negative. Consider reviewing this strategy.',
+                        source_system:'consolidated', alert_type:'algo_underperform',
+                        metric_value:((d.t-d.l)/d.t*100).toFixed(1), threshold_value:50,
+                        affected_tickers:d.syms.join(','), created_at:new Date().toISOString()});
+                });
+                // Fear & Greed warning
+                var fg = kimiData.market_overview ? kimiData.market_overview.fear_greed : null;
+                if (fg !== null && fg !== undefined && fg < 25) allAlerts.push({severity:'warning',
+                    title:'Extreme Fear \u2014 F&G Index at '+fg,
+                    description:'Market sentiment in extreme fear. Consider defensive positioning.',
+                    source_system:'consolidated', alert_type:'rapid_decline', metric_value:fg, threshold_value:25,
+                    affected_tickers:'BTC,ETH', created_at:new Date().toISOString()});
+                // Low pick count warning (scanner running but producing few signals)
+                var cryptoSigs = (kimiData.crypto_signals || []).length;
+                var stockSigs = (kimiData.stock_signals || []).length;
+                if (picks.length > 0 && cryptoSigs + stockSigs <= 1) allAlerts.push({severity:'warning',
+                    title:'Low Signal Output \u2014 Only '+(cryptoSigs+stockSigs)+' active signal(s)',
+                    description:'Scanner is running but generating very few signals. May need alternative data sources or API health check.',
+                    source_system:'live_signal', alert_type:'stale_data', metric_value:cryptoSigs+stockSigs,
+                    threshold_value:3, affected_tickers:'', created_at:new Date().toISOString()});
+                // Data freshness check (live_signals_now.json age)
+                var genAt = kimiData.generated_at;
+                if (genAt) {
+                    var dataAge = (Date.now() - new Date(genAt).getTime()) / 3600000;
+                    if (dataAge > 2) allAlerts.push({severity:dataAge>8?'critical':'warning',
+                        title:'Signal Data Stale \u2014 '+Math.floor(dataAge)+'h old',
+                        description:'live_signals_now.json was generated '+Math.floor(dataAge)+' hours ago. Pipeline may be failing.',
+                        source_system:'live_signal', alert_type:'stale_data', metric_value:Math.floor(dataAge),
+                        threshold_value:1, affected_tickers:'', created_at:new Date().toISOString()});
+                }
+                // Dashboard health checks — verify all wired dashboards are accessible
+                checkDashboardHealth();
+                renderAll();
+            }).catch(function(err) {
+                container.innerHTML = '<div class="error-box">Network error: ' + err.message + '</div>';
+            });
+            countdownVal = 60;
+        }
+
+        function renderAll() {
+            renderKPIs();
+            renderSystemChips();
+            renderTypeFilters();
+            renderFilteredAlerts();
+            renderSuggestedActions();
+        }
+
+        // ── KPIs ──
+        function renderKPIs() {
+            var criticalCount = 0;
+            var warningCount = 0;
+            var systems = {};
+            var types = {};
+
+            for (var i = 0; i < allAlerts.length; i++) {
+                var a = allAlerts[i];
+                if (a.severity === 'critical') criticalCount++;
+                else warningCount++;
+                systems[a.source_system] = true;
+                types[a.alert_type] = true;
+            }
+
+            var count = allAlerts.length;
+            var sysCount = Object.keys(systems).length;
+            var typeCount = Object.keys(types).length;
+
+            document.getElementById('kpi-total').textContent = count;
+            document.getElementById('kpi-total').style.color = count > 0 ? 'var(--red)' : 'var(--green)';
+            document.getElementById('kpi-total-sub').textContent = count === 0 ? 'No active alerts. All clear!' : 'Across all systems';
+            document.getElementById('kpi-critical').textContent = criticalCount;
+            document.getElementById('kpi-warning').textContent = warningCount;
+            document.getElementById('kpi-systems').textContent = sysCount;
+            document.getElementById('kpi-systems-sub').textContent = sysCount > 0 ? 'of ' + Object.keys(SYSTEM_NAMES).length + ' monitored' : 'All healthy';
+            document.getElementById('kpi-types').textContent = typeCount;
+            var typeNames = [];
+            for (var t in types) { typeNames.push(formatAlertType(t)); }
+            document.getElementById('kpi-types-sub').textContent = typeNames.slice(0, 3).join(', ');
+        }
+
+        // ── System Chips ──
+        function renderSystemChips() {
+            var sysCounts = {};
+            var sysCrit = {};
+            for (var i = 0; i < allAlerts.length; i++) {
+                var sys = allAlerts[i].source_system;
+                sysCounts[sys] = (sysCounts[sys] || 0) + 1;
+                if (allAlerts[i].severity === 'critical') sysCrit[sys] = true;
+            }
+
+            var html = '';
+            var allSystems = Object.keys(SYSTEM_NAMES);
+            for (var j = 0; j < allSystems.length; j++) {
+                var s = allSystems[j];
+                var cnt = sysCounts[s] || 0;
+                var cls = cnt === 0 ? 'has-none' : (sysCrit[s] ? 'has-critical' : 'has-warning');
+                var activeCls = (currentSysFilter === s) ? ' active' : '';
+                html += '<div class="sys-chip ' + cls + activeCls + '" onclick="filterSys(\'' + s + '\')">';
+                html += '<div class="sys-name">' + escHtml(SYSTEM_NAMES[s]) + '</div>';
+                html += '<div class="sys-count">' + cnt + '</div>';
+                html += '</div>';
+            }
+            document.getElementById('sys-summary').innerHTML = html;
+        }
+
+        // ── Dynamic Type Filter Buttons ──
+        function renderTypeFilters() {
+            var types = {};
+            for (var i = 0; i < allAlerts.length; i++) {
+                types[allAlerts[i].alert_type] = (types[allAlerts[i].alert_type] || 0) + 1;
+            }
+
+            var bar = document.getElementById('filter-bar');
+            // Remove old type buttons
+            var btns = bar.querySelectorAll('[data-filter-type]');
+            for (var i = btns.length - 1; i >= 0; i--) { btns[i].parentNode.removeChild(btns[i]); }
+
+            // Add "All" + each type
+            var allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn' + (currentTypeFilter === 'all' ? ' active' : '');
+            allBtn.setAttribute('data-filter-type', 'all');
+            allBtn.textContent = 'All Types';
+            allBtn.onclick = function() { filterType('all'); };
+            bar.appendChild(allBtn);
+
+            var sorted = Object.keys(types).sort(function(a, b) { return types[b] - types[a]; });
+            for (var j = 0; j < sorted.length; j++) {
+                var t = sorted[j];
+                var btn = document.createElement('button');
+                btn.className = 'filter-btn' + (currentTypeFilter === t ? ' active' : '');
+                btn.setAttribute('data-filter-type', t);
+                btn.textContent = formatAlertType(t) + ' (' + types[t] + ')';
+                (function(type) {
+                    btn.onclick = function() { filterType(type); };
+                })(t);
+                bar.appendChild(btn);
+            }
+        }
+
+        // ── Filters ──
+        function filterSev(sev) {
+            currentSevFilter = sev;
+            var btns = document.querySelectorAll('.filter-bar .filter-btn:not([data-filter-type])');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+                if ((sev === 'all' && btns[i].textContent === 'All') ||
+                    btns[i].textContent.toLowerCase() === sev) {
+                    btns[i].classList.add('active');
+                }
+            }
+            renderFilteredAlerts();
+        }
+
+        function filterType(type) {
+            currentTypeFilter = type;
+            var btns = document.querySelectorAll('[data-filter-type]');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+                if (btns[i].getAttribute('data-filter-type') === type) btns[i].classList.add('active');
+            }
+            renderFilteredAlerts();
+        }
+
+        function filterSys(sys) {
+            currentSysFilter = (currentSysFilter === sys) ? 'all' : sys;
+            renderSystemChips();
+            renderFilteredAlerts();
+        }
+
+        function getFilteredAlerts() {
+            var out = [];
+            for (var i = 0; i < allAlerts.length; i++) {
+                var a = allAlerts[i];
+                if (currentSevFilter !== 'all' && a.severity !== currentSevFilter) continue;
+                if (currentTypeFilter !== 'all' && a.alert_type !== currentTypeFilter) continue;
+                if (currentSysFilter !== 'all' && a.source_system !== currentSysFilter) continue;
+                out.push(a);
+            }
+            return out;
+        }
+
+        // ── Render Alerts ──
+        function renderFilteredAlerts() {
+            var container = document.getElementById('alerts-container');
+            var filtered = getFilteredAlerts();
+
+            if (allAlerts.length === 0) {
+                container.innerHTML =
+                    '<div class="empty-state">' +
+                        '<div class="icon">&#10004;</div>' +
+                        '<h2>All Clear</h2>' +
+                        '<p>No active alerts. The system monitors for data quality issues, losing streaks, and performance anomalies. All clear!</p>' +
+                    '</div>';
+                document.getElementById('actions-section').style.display = 'none';
+                return;
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="loading" style="padding:2rem">No alerts match the current filters.</div>';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < filtered.length; i++) {
+                html += renderAlertCard(filtered[i]);
+            }
+            container.innerHTML = html;
+        }
+
+        function renderAlertCard(alert) {
+            var sev = alert.severity || 'warning';
+            var sevClass = 'severity-' + sev;
+            var badgeClass = 'badge-' + sev;
+            var btnClass = 'btn-view-' + sev;
+
+            var metricVal = parseFloat(alert.metric_value) || 0;
+            var threshVal = parseFloat(alert.threshold_value) || 0;
+            var metricDisplay = formatMetric(alert.alert_type, metricVal, threshVal);
+
+            // Tickers
+            var tickersHtml = '';
+            if (alert.affected_tickers && alert.affected_tickers.trim() !== '') {
+                var tickers = alert.affected_tickers.split(',');
+                tickersHtml = '<div class="alert-tickers">';
+                for (var t = 0; t < tickers.length && t < 10; t++) {
+                    var tk = tickers[t].trim();
+                    if (tk) tickersHtml += '<span class="ticker-tag">' + escHtml(tk) + '</span>';
+                }
+                if (tickers.length > 10) tickersHtml += '<span class="ticker-tag">+' + (tickers.length - 10) + ' more</span>';
+                tickersHtml += '</div>';
+            }
+
+            // View button
+            var viewBtn = '';
+            var alertUrl = alert.page_url || alert.page_link || '';
+            if (alertUrl && alertUrl.trim() !== '') {
+                viewBtn = '<a href="' + escHtml(alertUrl) + '" class="btn-view ' + btnClass + '">View &rarr;</a>';
+            }
+
+            // Date
+            var dateStr = alert.created_at ? formatDate(alert.created_at) : (alert.alert_date || '');
+
+            return '<div class="alert-card ' + sevClass + '">' +
+                '<div class="alert-top">' +
+                    '<span class="badge ' + badgeClass + '">' + sev.toUpperCase() + '</span>' +
+                    '<span class="alert-title">' + escHtml(alert.title || 'Alert') + '</span>' +
+                    '<span class="badge badge-system">' + escHtml(formatSystemName(alert.source_system)) + '</span>' +
+                    '<span class="badge badge-type">' + escHtml(formatAlertType(alert.alert_type)) + '</span>' +
+                '</div>' +
+                '<div class="alert-desc">' + escHtml(alert.description || '') + '</div>' +
+                metricDisplay +
+                tickersHtml +
+                '<div class="alert-footer">' +
+                    '<span class="alert-date">' + escHtml(dateStr) + '</span>' +
+                    viewBtn +
+                '</div>' +
+            '</div>';
+        }
+
+        function formatMetric(alertType, actual, threshold) {
+            var label = 'Actual';
+            var threshLabel = 'Threshold';
+            var unit = '';
+            var barPct = 0;
+            var barColor = 'var(--red)';
+
+            if (alertType === 'accuracy_drop' || alertType === 'conviction_failing') {
+                unit = '%'; label = 'Win Rate'; threshLabel = 'Min Threshold';
+                barPct = Math.min(100, Math.max(0, actual));
+                barColor = actual < threshold ? 'var(--red)' : 'var(--yellow)';
+            } else if (alertType === 'rapid_decline') {
+                unit = '%'; label = '7d Win Rate'; threshLabel = '30d Win Rate';
+                barPct = Math.min(100, Math.max(0, actual));
+            } else if (alertType === 'losing_streak') {
+                label = 'Consecutive Losses'; threshLabel = 'Max Allowed';
+            } else if (alertType === 'stale_data') {
+                label = 'Days Since Last Pick'; threshLabel = 'Max Days';
+            } else if (alertType === 'zero_picks') {
+                label = 'Picks Generated'; threshLabel = 'Expected Min';
+            } else if (alertType === 'negative_roi') {
+                unit = '%'; label = 'Avg Return'; threshLabel = 'Min Threshold';
+                barPct = Math.min(100, Math.max(0, 50 + actual * 5));
+            } else if (alertType === 'algo_underperform') {
+                unit = '%'; label = 'Algo Win Rate'; threshLabel = 'Min Expected';
+                barPct = Math.min(100, Math.max(0, actual));
+            } else if (alertType === 'bankroll_drawdown') {
+                unit = '%'; label = 'Drawdown'; threshLabel = 'Max Allowed';
+                barPct = Math.min(100, actual);
+            } else if (alertType === 'drawdown') {
+                unit = '%'; label = 'Cumulative Loss'; threshLabel = 'Max Allowed';
+                barPct = Math.min(100, Math.abs(actual));
+            } else if (alertType === 'systemic_failure') {
+                label = 'Systems Failing'; threshLabel = 'Max Allowed';
+            } else if (alertType === 'open_positions_bleeding') {
+                label = 'Positions Down >5%'; threshLabel = 'Max Allowed';
+            }
+
+            var actualFmt = (unit === '%') ? actual.toFixed(1) + unit : Math.round(actual);
+            var threshFmt = (unit === '%') ? threshold.toFixed(1) + unit : Math.round(threshold);
+
+            var barHtml = '';
+            if (barPct > 0) {
+                barHtml = '<span class="metric-bar"><span class="metric-bar-fill" style="width:' + barPct + '%;background:' + barColor + '"></span></span>';
+            }
+
+            return '<div class="alert-metrics">' +
+                '<span class="metric-item"><span class="metric-label">' + label + ': </span><span class="metric-value bad">' + actualFmt + '</span>' + barHtml + '</span>' +
+                '<span class="metric-item"><span class="metric-label">' + threshLabel + ': </span><span class="metric-value thresh">' + threshFmt + '</span></span>' +
+            '</div>';
+        }
+
+        // ── Suggested Actions ──
+        function renderSuggestedActions() {
+            var activeTypes = {};
+            for (var i = 0; i < allAlerts.length; i++) {
+                activeTypes[allAlerts[i].alert_type] = true;
+            }
+
+            var section = document.getElementById('actions-section');
+            var grid = document.getElementById('action-grid');
+            var html = '';
+            var anyActive = false;
+
+            var allTypes = Object.keys(SUGGESTED_ACTIONS);
+            for (var i = 0; i < allTypes.length; i++) {
+                var type = allTypes[i];
+                var info = SUGGESTED_ACTIONS[type];
+                var isActive = !!activeTypes[type];
+                if (isActive) anyActive = true;
+
+                // Only show active types to keep it focused
+                if (!isActive) continue;
+
+                html += '<div class="action-card active">';
+                html += '<h4>' + escHtml(info.title) + ' <span class="badge badge-warning" style="font-size:9px;">ACTIVE</span></h4>';
+                html += '<ul>';
+                for (var j = 0; j < info.items.length; j++) {
+                    html += '<li>' + escHtml(info.items[j]) + '</li>';
+                }
+                html += '</ul></div>';
+            }
+
+            grid.innerHTML = html;
+            section.style.display = anyActive ? '' : 'none';
+        }
+
+        // ── Helpers ──
+        function formatSystemName(sys) {
+            if (!sys || sys === '--') return '--';
+            return SYSTEM_NAMES[sys] || sys.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        }
+
+        function formatAlertType(type) {
+            if (!type) return '';
+            return type.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                var d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                var h = d.getHours();
+                var m = d.getMinutes();
+                var ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12;
+                if (h === 0) h = 12;
+                var mStr = m < 10 ? '0' + m : '' + m;
+                return months[d.getMonth()] + ' ' + d.getDate() + ' at ' + h + ':' + mStr + ' ' + ampm;
+            } catch(e) { return dateStr; }
+        }
+
+        function escHtml(s) {
+            if (!s) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // ── Auto-refresh ──
+        function startAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(function() {
+                countdownVal--;
+                var el = document.getElementById('countdown');
+                if (el) el.textContent = countdownVal;
+                if (countdownVal <= 0) {
+                    loadAlerts();
+                }
+            }, 1000);
+        }
+
+        // ── Init ──
+        loadAlerts();
+        startAutoRefresh();
+    </script>
+<script src="/live-monitor/api/scope_labels.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+{
+  "schema_version": "v1",
+  "engine": "AI-Engine-1",
+  "asset_class": "BOND",
+  "run_id": "run_2026-05-11T19-01-40Z",
+  "synthesis": [
+    {
+      "spec_id": "bond_momentum_longshort_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, and Sharpe=-0.3 indicate no profitability, with n=5 being far too low for reliability. Simplified signal translation adds further uncertainty.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_term_premium_slope_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, and Sharpe=-0.3 show no edge, with n=5 too small for confidence. Simplified signal translation limits interpretability.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_spread_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, and Sharpe=-0.3 reflect no profitability, with n=5 insufficient for a verdict. Simplified signal caveat applies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_regime_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, and Sharpe=-0.3 indicate no edge, with n=5 too low for reliability. Simplified signal translation is a concern.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_credit_spread_term_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets T2 floor, but WR=33.3% is below 50%, and n=9 is far below 100, limiting confidence. Independent P4 correlation is promising, though simplified signal translation is a caveat.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_inflation_rotation_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.99 and WR=45.5% are close to T2 floor, with Sharpe=0.4 showing potential, but n=11 is too low for a strong verdict. Independent P4 correlation is positive, though simplified signal translation applies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_momentum_cross_country_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94 and WR=42.9% fall below T2 floor, with Sharpe=-0.01 indicating no edge, and n=7 is too small. Simplified signal translation adds uncertainty.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_premium_on_off_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets T2 floor, but WR=33.3% is below 50%, and n=9 is insufficient for confidence. Independent P4 correlation is noted, though simplified signal translation is a limitation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_macro_factor_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94 and WR=42.9% are below T2 floor, with Sharpe=-0.01 showing no edge, and n=7 is too low for reliability. Simplified signal translation is a concern.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_regime_switching_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, and Sharpe=-0.3 indicate no profitability, with n=5 too small for a verdict. Simplified signal translation limits interpretability.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_momentum_cross_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94 and WR=42.9% fall below T2 floor, with Sharpe=-0.01 showing no edge, and n=7 is insufficient. Simplified signal translation applies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_term_premium_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, and Sharpe=-0.3 reflect no edge, with n=5 too low for confidence. Simplified signal translation is a caveat.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_premium_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94 and WR=42.9% are below T2 floor, with Sharpe=-0.01 indicating no edge, and n=7 is too small. Simplified signal translation adds uncertainty.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_credit_spread_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets T2 floor, but WR=33.3% is below 50%, and n=9 is far below 100, limiting reliability. Independent P4 correlation is positive, though simplified signal translation applies.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "MIXED",
+  "run_rationale": "While a few candidates like bond_inflation_rotation_v1 (PF=1.99, Sharpe=0.4), bond_credit_spread_term_v1 (PF=1.51), bond_liquidity_premium_on_off_v1 (PF=1.51), and bond_credit_spread_v1 (PF=1.51) show potential with PF meeting or exceeding the T2 floor, all suffer from extremely low trade counts (n<30) and WR below 50%, making them unreliable for a GO verdict. The majority of candidates exhibit no edge with PF<1.0 and negative Sharpe ratios. The simplified signal translation further clouds interpretability, and a faithful-signal translator (v3) is needed. A retry is warranted with longer historical data to increase n and after signal fidelity is improved.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_bond_p5_20260511T192013Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T192049Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 3832,
+    "tokens_out": 1403,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

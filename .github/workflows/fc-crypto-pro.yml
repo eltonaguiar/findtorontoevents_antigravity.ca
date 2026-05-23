@@ -1,0 +1,50 @@
+name: FC-CRYPTO PRO Top Actionable Picks
+
+on:
+  workflow_dispatch:
+  # Run every 2 hours (reduced from 30min to ease queue pressure)
+  schedule:
+    - cron: '0 */2 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  fc-crypto-pro:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10  # 2026-05-06: was 5 — commit step hits the ceiling at ~4-5 min; raising to 10 gives headroom for scanner + commit under load
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Refresh baby strat picks for FC-PRO
+        run: python battleground/export_top_picks.py || echo "Baby picks export skipped (non-fatal)"
+
+      - name: Run FC-CRYPTO PRO scanner
+        env:
+          DISCORD_WEBHOOK_PROPICKS: ${{ secrets.DISCORD_WEBHOOK_PROPICKS }}
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          cd cross_aggregation
+          python fc_crypto_pro.py
+
+      - name: Commit results
+        run: |
+          git config user.name "FC-Crypto PRO Bot"
+          git config user.email "bot@findtorontoevents.ca"
+          git add data/fc_crypto_pro_picks.json battleground/data/active_picks.json battleground/data/closed_picks.json || true
+          git diff --cached --quiet || git commit -m "FC-PRO picks $(date -u +%Y-%m-%d\ %H:%M) UTC [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

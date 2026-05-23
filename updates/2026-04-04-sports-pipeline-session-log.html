@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports pipeline + stale pending fix | Session log 2026-04-04</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; background: #0f1419; color: #e6edf3; line-height: 1.55; }
+        h1 { color: #58a6ff; font-size: 1.35rem; }
+        h2 { color: #7ee787; font-size: 1.1rem; margin-top: 1.5rem; }
+        code { background: #21262d; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        ul { padding-left: 1.25rem; }
+        .file { color: #d2a8ff; }
+        footer { margin-top: 2rem; font-size: 0.85rem; color: #8b949e; }
+    </style>
+</head>
+<body>
+    <h1>Sports live-monitor — session log (2026-04-04)</h1>
+    <p>Cursor agent <code>cursor-sports-live-monitor</code>: DB auth, odds rotation, value analyzer, Redis tooling, stale pending void fix.</p>
+
+    <h2>Bug: picks pending for months</h2>
+    <p><strong>Cause:</strong> Void path in <code>sports_bets.php?action=settle</code> referenced <code>$stalePred</code> without defining it (broken UPDATE). Also predicate used only <code>commence_time</code>; <code>game_date</code> is a safer fallback. Defaults were tight (3d) vs multi-month backlog.</p>
+    <p><strong>Fix:</strong> Define <code>sports_bets_stale_pending_predicate_sql()</code> (commence_time <strong>OR</strong> game_date stale). Settle default <code>stale_days=14</code>, cap <code>730</code>. Dashboard adds <code>pending_stale_14d_count</code>, stake, <code>oldest_stale_pending_commence</code>, hint. Workflow settle uses <code>stale_days=21</code>.</p>
+    <p><strong>Backlog drain (one-time):</strong> <code>…/sports_bets.php?action=settle&amp;key=livetrader2026&amp;stale_days=90</code></p>
+
+    <h2>Files touched (this workstream)</h2>
+    <ul>
+        <li><span class="file">live-monitor/api/db_config.php</span> — sports DB user (deployed earlier; not in this snippet commit necessarily)</li>
+        <li><span class="file">live-monitor/api/sports_db.php</span> — connect error logging</li>
+        <li><span class="file">live-monitor/api/sports_odds.php</span> — <code>budget_safe</code> alternates NBA/NCAAB/NHL vs NFL/MLB/MLS</li>
+        <li><span class="file">live-monitor/api/sports_value_analyze_lib.php</span> — populate <code>lm_sports_value_bets</code>; Betfair/outlier filter; fliff/betanysports deny; min_ev floor 3</li>
+        <li><span class="file">live-monitor/api/sports_picks.php</span> — analyze action; default <code>min_ev=3</code></li>
+        <li><span class="file">live-monitor/api/sports_bets.php</span> — dashboard stale pending metrics; settle void predicate + defaults</li>
+        <li><span class="file">live-monitor/api/sports_metrics_lib.php</span>, <span class="file">sports-betting.html</span> — performance-by-sport / pending columns (earlier in session)</li>
+        <li><span class="file">tools/deploy_to_ftp.py</span> — <code>--live-monitor-only</code></li>
+        <li><span class="file">tools/redis_sports_bus_pulse.py</span> — 15m bus status + broadcast</li>
+        <li><span class="file">.github/workflows/sports-betting-refresh.yml</span> — analyze timeout/min_ev; settle <code>stale_days=21</code></li>
+        <li><span class="file">.github/workflows/torontoevent-deploy-live-monitor.yml</span> — 50webs block (if edited in branch)</li>
+    </ul>
+
+    <h2>Redis bus — next steps for agents</h2>
+    <p>Listen on <code>bus:broadcast:log</code>; status <code>agent:cursor-sports-live-monitor:status</code>. Ask for inbox replies on HF-perf / scoring segmentation threads. Some log entries may be non-UTF8 — use binary-safe Redis client if parsing fails.</p>
+
+    <footer>Internal session note — findtorontoevents.ca live-monitor</footer>
+</body>
+</html>

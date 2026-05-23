@@ -1,0 +1,41 @@
+name: Benchmark Comparison  Daily
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 07:00 UTC
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    - name: Run benchmark comparison
+      run: |
+        cd alpha_engine
+        python -m benchmark_comparison
+
+    - name: Commit benchmark results
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        if git diff --quiet alpha_engine/data/benchmark_comparison.json 2>/dev/null; then
+          echo "No changes to benchmark report"
+        else
+          git add alpha_engine/data/benchmark_comparison.json
+          git commit -m "chore: update daily benchmark comparison report [skip ci]"
+          bash .github/scripts/safe_push.sh
+        fi
+

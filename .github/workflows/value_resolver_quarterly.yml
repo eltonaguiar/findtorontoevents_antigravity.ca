@@ -1,0 +1,160 @@
+# Opt-in sidecar workflow. Runner module is created in a future PR. Safe to run on workflow_dispatch — runner step is no-op if module missing.
+#
+# UEPS Phase 14: Value Resolver Quarterly (Thesis-Break Check)
+#
+# Runs once per quarter on the 1st at 07:00 UTC. Reads all currently-active
+# long_term_value picks and runs thesis_resolver against them, closing positions
+# that have:
+#   - thesis_break: fundamentals deteriorated
+#   - time_stop: 4y+ horizon exceeded
+#   - iv_attained: intrinsic value reached
+#
+# Wiring plan: alpha_engine/value_resolver_runner.py ships in a future PR.
+# Until then the runner step is no-op behind a module-existence guard.
+#
+# Patterns adopted from .github/workflows/audit-dashboard.yml (PR #436):
+#   - fetch-depth: 0
+#   - concurrency split by event type
+#   - `if: always()` on artifact upload
+#
+# CLAUDE.md Wire-Up Rule: opt-in sidecar — does NOT close real positions until
+# the runner module is wired and reviewed.
+
+name: UEPS Value Resolver Quarterly
+
+'on':
+  schedule:
+    # 0 7 1 */3 *  →  07:00 UTC on the 1st of every 3rd month
+    # (Jan 1, Apr 1, Jul 1, Oct 1)
+    - cron: '0 7 1 */3 *'
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner (ubuntu-latest or self-hosted)'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+
+concurrency:
+  group: ueps-value-resolver-${{ github.event_name == 'push' && 'push' || 'cron' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: read
+
+jobs:
+  run-value-resolver:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install UEPS hard deps FIRST — yfinance is the tier-5 fallback
+          # inside alpha_engine/equity_price_failover.py and must be present
+          # even though primary quote sources are stooq/finnhub/etc.
+          pip install pandas pyarrow yfinance
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Check for runner module (opt-in sidecar guard)
+        id: runner_check
+        run: |
+          if python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('alpha_engine.value_resolver_runner') else 1)" 2>/dev/null; then
+            echo "module_exists=true" >> "$GITHUB_OUTPUT"
+            echo "alpha_engine.value_resolver_runner found — running"
+          else
+            echo "module_exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::alpha_engine.value_resolver_runner not found — skipping (opt-in sidecar)"
+          fi
+
+      - name: Run value resolver (thesis-break / time-stop / IV-attained)
+        id: run_resolver
+        if: steps.runner_check.outputs.module_exists == 'true'
+        continue-on-error: true
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.value_resolver_runner
+
+      - name: Locate emitted closures JSON
+        id: locate_closures
+        if: always()
+        run: |
+          for candidate in \
+            alpha_engine/data/value_resolver_closures.json \
+            alpha_engine/data/long_term_value_closures.json \
+            audit_dashboard/data/value_resolver_closures.json; do
+            if [ -f "$candidate" ]; then
+              echo "closures_path=$candidate" >> "$GITHUB_OUTPUT"
+              echo "Closures file: $candidate"
+              break
+            fi
+          done
+
+      - name: Upload value resolver closures artifact
+        # if: always() — upload whatever the resolver produced even on failure
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: value_resolver_closures_${{ github.run_id }}
+          path: |
+            alpha_engine/data/value_resolver_closures.json
+            alpha_engine/data/long_term_value_closures.json
+            audit_dashboard/data/value_resolver_closures.json
+          if-no-files-found: warn
+          retention-days: 365  # Quarterly cadence — keep a full year of closures
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## UEPS Value Resolver Quarterly"
+            echo ""
+            echo "- runner_module_present: ${{ steps.runner_check.outputs.module_exists }}"
+            echo "- resolver_outcome: ${{ steps.run_resolver.outcome || 'skipped' }}"
+            echo "- closures_path: ${{ steps.locate_closures.outputs.closures_path || 'not-found' }}"
+            echo ""
+            if [ "${{ steps.runner_check.outputs.module_exists }}" != "true" ]; then
+              echo "**Note:** alpha_engine.value_resolver_runner is not yet present."
+              echo "This is the expected opt-in sidecar state until the runner is wired."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Closure breakdown summary (if closures JSON parseable)
+        if: always() && steps.locate_closures.outputs.closures_path != ''
+        continue-on-error: true
+        env:
+          CLOSURES_PATH: ${{ steps.locate_closures.outputs.closures_path }}
+        run: |
+          python - <<'PYEOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, collections, os
+          path = os.environ.get('CLOSURES_PATH', '')
+          if not path:
+              raise SystemExit(0)
+          try:
+              with open(path) as fh:
+                  data = json.load(fh)
+              closures = data if isinstance(data, list) else data.get('closures', [])
+              counter = collections.Counter(c.get('close_reason', 'unknown') for c in closures)
+              print(f"\n### Closure breakdown\n- total_closed: {len(closures)}")
+              for reason, n in sorted(counter.items()):
+                  print(f"- close_reason.{reason}: {n}")
+          except Exception as exc:
+              print(f"\n- parse_error: {exc}")
+          PYEOF

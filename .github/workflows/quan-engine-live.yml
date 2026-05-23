@@ -1,0 +1,158 @@
+name: QUAN ENGINE - Live Autonomous Scanner
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'full-cycle'
+        type: choice
+        options:
+          - full-cycle
+          - scan-only
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quan-engine-live
+  cancel-in-progress: false
+
+jobs:
+  quan-engine:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            quan_engine
+            shared
+            baby_strategies
+            ml_battleground
+            alpha_engine
+            data
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install numpy pandas scipy requests yfinance
+
+      - name: Run QuanEngine scanner
+        run: |
+          echo "============================================"
+          echo "  QUAN ENGINE - Live Autonomous Scanner"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python -m quan_engine.scanner
+
+      - name: Push picks to audit trail
+        run: python quan_engine/audit_push.py
+        continue-on-error: true
+
+      - name: Resolve TP/SL outcomes
+        run: |
+          echo "============================================"
+          echo "  RESOLVING TP/SL OUTCOMES"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/outcome_resolver.py
+        continue-on-error: true
+
+      - name: Commit results
+        run: |
+          # Stagger start: hash workflow name to get a unique delay (0-30s) to avoid concurrent push storms
+          STAGGER_DELAY=$(( $(echo -n "quan-engine-live" | cksum | cut -d' ' -f1) % 30 ))
+          echo "Stagger delay: ${STAGGER_DELAY}s (to avoid concurrent push collisions)"
+          sleep "$STAGGER_DELAY"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add quan_engine/data/active_signals.json quan_engine/data/market_analysis.json || true
+          git add quan_engine/data/*.json || true
+          git add quan_engine/data/quan_engine.db || true
+          git add data/audit_trail.db data/audit_trail.db-wal data/audit_trail.db-shm || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            MSG=$(python -c "
+          import json
+          try:
+              signals = json.load(open('quan_engine/data/active_signals.json'))
+              picks = signals.get('active_picks', signals if isinstance(signals, list) else [])
+              analysis = json.load(open('quan_engine/data/market_analysis.json'))
+              nb = len(analysis.get('next_best_buys', []))
+              scanned = analysis.get('market_summary', {}).get('symbols_scanned', 0)
+              bias = analysis.get('market_summary', {}).get('market_bias', '?')
+              print(f'{len(picks)} active, {nb} next-best, {scanned} scanned, bias={bias}')
+          except Exception:
+              print('cycle complete')
+          " || echo "cycle complete")
+
+            # issue #141: block conflict-marker commits
+            bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+            git commit -m "QuanEngine [$(date -u '+%Y-%m-%d %H:%M UTC')] forward tracker - $MSG [skip ci]"
+
+            # safe_push.sh now uses -X theirs for auto-conflict resolution
+            # (replaces the inline 7-retry loop with manual conflict resolution)
+            bash .github/scripts/safe_push.sh
+          fi
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo ""
+          echo "============================================"
+          echo "  QUAN ENGINE - Cycle Summary"
+          echo "============================================"
+          python -c "
+          import json
+          try:
+              data = json.load(open('quan_engine/data/active_signals.json'))
+              picks = data.get('active_picks', data if isinstance(data, list) else [])
+              print(f'  Active signals: {len(picks)}')
+              for s in picks[:10]:
+                  sym = s.get('symbol', '?')
+                  d = s.get('direction', '?')
+                  entry = s.get('entry_price', 0)
+                  conf = s.get('confidence', 0)
+                  mode = s.get('mode', '?')
+                  print(f'    {d:5s} {sym:16s} entry={entry}  conf={conf:.2f}  mode={mode}')
+          except Exception as e:
+              print(f'  Active signals: error - {e}')
+          try:
+              analysis = json.load(open('quan_engine/data/market_analysis.json'))
+              summary = analysis.get('market_summary', {})
+              print(f'  Market: F&G={summary.get(\"fear_greed\",\"?\")}, bias={summary.get(\"market_bias\",\"?\")}, avg_rsi={summary.get(\"avg_rsi_14\",\"?\")}')
+              next_buys = analysis.get('next_best_buys', [])
+              print(f'  Next best buys ({len(next_buys)}):')
+              for p in next_buys[:8]:
+                  print(f'    {p[\"symbol\"]:12s} score={p[\"buy_score\"]:5.1f} RSI={p[\"rsi_14\"]:5.1f} 24h={p[\"pct_24h\"]:+.2f}% verdict={p[\"verdict\"]}')
+              if len(next_buys) > 8:
+                  print(f'    ... and {len(next_buys)-8} more')
+          except Exception as e:
+              print(f'  Analysis: error - {e}')
+          " 2>/dev/null || echo "  Summary unavailable"
+          echo "============================================"
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "QUAN ENGINE - Live Autonomous Scanner" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

@@ -1,0 +1,46 @@
+{
+  "_comment": "Sport-specific auto-place EV gate, per Copilot Cloud's 2026-04-26 review.  Loaded by sports_bets.php?action=auto_place.  Set enabled=false to fall back to the legacy min_ev=3.0 global threshold.",
+  "_authored": "2026-04-26",
+  "_review_after_n_settled": 60,
+  "enabled": false,
+  "feature_flag": "auto_place.policy_v2",
+  "global_baseline": {
+    "min_ev_pct": 2.5,
+    "require_recommendation_in": ["TAKE", "STRONG TAKE"],
+    "comment": "Restores TAKE-only floor; 2.5% leaves headroom above legacy 1.5% without starving volume while samples are small."
+  },
+  "per_sport": {
+    "icehockey_nhl": {
+      "min_ev_pct": 3.0,
+      "require_recommendation_in": ["TAKE"],
+      "require_goalie_overlay_applied": true,
+      "comment": "Goalie overlay is the new edge; require it to fire so we don't auto-place pre-overlay legacy picks. Live: STRONG TAKE -100% n=3, TAKE +33% n=5."
+    },
+    "basketball_nba": {
+      "min_ev_pct": 4.0,
+      "require_recommendation_in": ["TAKE", "STRONG TAKE"],
+      "comment": "STRONG TAKE auto-passes (>=8% EV); TAKE requires EV >= 4%. Live: STRONG TAKE +164% n=3, TAKE +55% n=3."
+    },
+    "basketball_ncaab": {
+      "min_ev_pct": 5.0,
+      "require_recommendation_in": ["STRONG TAKE"],
+      "comment": "Smaller samples + softer books -> higher bar. Live: STRONG TAKE +32% n=5."
+    },
+    "soccer_usa_mls": {
+      "min_ev_pct": 99.0,
+      "require_recommendation_in": ["STRONG TAKE"],
+      "pause": true,
+      "comment": "Every tier negative ROI on settled data (n=1-1-1). Pause auto-place until model is reviewed."
+    }
+  },
+  "fallback": {
+    "comment": "Sports not listed above route here. Manual review only until >= 30 settled bets per (tier, sport) cell.",
+    "manual_review_only": true,
+    "min_ev_pct": 99.0
+  },
+  "samples_to_next_review": 60,
+  "rollback_runbook": [
+    "Set enabled=false in this file and FTP-deploy to host within 30 sec.",
+    "If a specific sport misbehaves, set per_sport.<sport>.pause=true to halt that sport only."
+  ]
+}

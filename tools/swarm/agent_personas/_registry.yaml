@@ -1,0 +1,2035 @@
+# Persona registry — single version-controlled routing index.
+# Schema: tools/swarm/agent_personas/ROUTER_ARCHITECTURE.md §3
+# The persona MD file remains the system-prompt source of truth; this file is the routing index.
+# Both are committed.
+version: "1.0.0"
+personas:
+  - name: race-condition-specialist
+    base: critic
+    file: race_condition_specialist.md
+    trigger_keywords:
+      - stopImmediatePropagation
+      - stopPropagation
+      - mutex
+      - capture-phase
+      - synthetic click
+      - rapid click
+      - isTrusted
+      - re-entrancy
+      - "race condition"
+      - "applyFilters"
+      - "__active__"
+      - "__running__"
+      - swallowed
+    embedding_text: |
+      Concurrency bugs in single-threaded JS that look serial but interleave
+      through the event loop. Capture-phase listeners, mutex absence,
+      synthetic clicks swallowed by stopImmediatePropagation, global flag
+      mutations across multiple async paths, listener registration order.
+    handoff_targets:
+      - datetime-timezone-specialist
+      - react-dom-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    version: 1
+    added: 2026-05-04
+
+  - name: datetime-timezone-specialist
+    base: critic
+    file: datetime_timezone_specialist.md
+    trigger_keywords:
+      - timezone
+      - UTC
+      - getMonth
+      - getUTCMonth
+      - toISOString
+      - toDateString
+      - "year wrap"
+      - "year-wrap"
+      - "month boundary"
+      - "ISO string"
+      - "new Date("
+      - padStart
+      - "today"
+      - "Dec to Jan"
+      - "January boundary"
+      - isoDateStringToYMD
+    embedding_text: |
+      Date/time/timezone bugs hiding in Date object usage. UTC vs local,
+      ISO-string parsing traps, year-wrap heuristics, month off-by-one
+      (0-indexed getMonth), evening-hours "today" drift, multi-day overlap
+      checks, reference-date drift inside loops.
+    handoff_targets:
+      - race-condition-specialist
+      - react-dom-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    version: 1
+    added: 2026-05-04
+
+  - name: react-dom-specialist
+    base: critic
+    file: react_dom_specialist.md
+    trigger_keywords:
+      - MutationObserver
+      - "React reconciliation"
+      - "inline style"
+      - "style.display"
+      - "style.visibility"
+      - requestAnimationFrame
+      - rAF
+      - hydration
+      - "lazy load"
+      - "lazy-load"
+      - previousElementSibling
+      - "sibling guard"
+      - "synthetic event"
+      - "background tab"
+      - reconcil
+      - "_injecting"
+    embedding_text: |
+      Seam between vanilla-JS DOM mutation and React reconciliation.
+      MutationObserver self-loops, inline style overrides reverted on
+      re-render, sibling-positional guards breaking on chip injection,
+      requestAnimationFrame stalls in background tabs, lazy-load batch
+      timing, capture-phase listeners colliding with React synthetic events.
+    handoff_targets:
+      - race-condition-specialist
+      - datetime-timezone-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    version: 1
+    added: 2026-05-04
+
+  - name: coordinator-synthesizer
+    base: coordinator
+    file: coordinator_synthesizer.md
+    trigger_keywords:
+      - synthesize
+      - synthesizer
+      - "merge findings"
+      - "specialist outputs"
+      - "ranked plan"
+      - "deploy-readiness"
+      - "TL;DR table"
+      - "deploy today"
+      - "this week"
+      - "next sprint"
+      - "consolidate"
+      - "multi-specialist"
+    embedding_text: |
+      Coordinator/synthesizer. Merges specialist outputs into one ranked,
+      citable plan. Reconciles overlapping findings, demands file:line
+      cites, buckets fixes by deploy-readiness (Immediate / This Week /
+      Next Sprint). Does not generate new findings.
+    handoff_targets: []
+    confidence_floor_for_match: 0.65
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-specialist
+    base: analyst
+    file: forex_specialist.md
+    trigger_keywords:
+      - forex
+      - FOREX
+      - "EUR/USD"
+      - "USD/JPY"
+      - "GBP/USD"
+      - JPY-cross
+      - JPY
+      - "currency pair"
+      - pip
+      - "carry trade"
+      - G10
+      - MyFXBook
+      - DBV
+      - forex_rsi2_mean_reversion
+      - forex_carry_momentum
+      - cta_fx_multifactor
+    embedding_text: |
+      FOREX-class pick proposals and rescue protocol. JPY-cross routing,
+      carry-to-volatility ratio on G10 pairs, COT commercial positioning,
+      forex_rsi2_mean_reversion mutation candidate, mutate-before-kill
+      enforcement on the most distressed asset class.
+    handoff_targets:
+      - cross-verification-auditor
+      - ml-validation-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: crypto-specialist
+    base: analyst
+    file: crypto_specialist.md
+    trigger_keywords:
+      - crypto
+      - CRYPTO
+      - BTCUSDT
+      - ETHUSDT
+      - SOLUSDT
+      - "funding rate"
+      - perpetual
+      - perp
+      - quan_engine
+      - st_fear_greed_contrarian
+      - atr_percentile_gate
+      - alpha_engine_fast
+      - kimi_signal_tracking
+      - Hyperliquid
+      - HLP
+      - Binance
+    embedding_text: |
+      CRYPTO-class pick proposals, source-system volume concentration
+      audit, mutate/kill recommendations. Sentiment-regime contrarian,
+      ATR-percentile gating, mutated MACD/RSI confluence. quan_engine
+      and unknown-source drag on the elite cohort.
+    handoff_targets:
+      - regime-specialist
+      - risk-of-ruin-assessor
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: equity-specialist
+    base: analyst
+    file: equity_specialist.md
+    trigger_keywords:
+      - equity
+      - EQUITY
+      - "single stock"
+      - "single-stock"
+      - "RS breakout"
+      - "rs-breakout-scout"
+      - "vol-contraction-scout"
+      - "donchian-stock-breakout"
+      - "factor momentum"
+      - "factor-momentum"
+      - MTUM
+      - AMOMX
+      - "Ken French"
+      - SOXX
+      - "single-name"
+    embedding_text: |
+      EQUITY-class US single-name proposals: cross-sectional momentum,
+      relative-strength breakouts, volatility contraction-expansion,
+      factor tilts (quality, low-vol). RS-breakout-scout flagship.
+      Liquid US single names only; reject penny / sub-$50M cap.
+    handoff_targets:
+      - ml-validation-specialist
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: etf-specialist
+    base: analyst
+    file: etf_specialist.md
+    trigger_keywords:
+      - ETF
+      - "sector rotation"
+      - "intermarket flow"
+      - "intermarket-flow-scout"
+      - "quality-minus-junk"
+      - "mtf-align-scout"
+      - XLK
+      - XLE
+      - XLF
+      - IWM
+      - RSP
+      - "thematic ETF"
+    embedding_text: |
+      ETF-class sector/thematic proposals. Cross-sectional sector rotation
+      with vol-parity weighting, intermarket-flow signals, charter-floor
+      escalator (n<100). Class is borderline T2 with strongest 30d window
+      in the system but n still below floor.
+    handoff_targets:
+      - equity-specialist
+      - ml-validation-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: bond-specialist
+    base: analyst
+    file: bond_specialist.md
+    trigger_keywords:
+      - bond
+      - BOND
+      - "treasury futures"
+      - "yield curve"
+      - "yield-curve"
+      - duration
+      - TLT
+      - IEF
+      - SHY
+      - AGG
+      - "term structure"
+      - "thin sample"
+      - "thin_sample"
+    embedding_text: |
+      BOND-class proposals; thin-sample steward. n=18 well below charter
+      floor of 100. Default action: route to ETF. Document DeepSeek vs
+      xAI dissent. No statistically validated edge sources internally.
+    handoff_targets:
+      - etf-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: commodity-specialist
+    base: analyst
+    file: commodity_specialist.md
+    trigger_keywords:
+      - commodity
+      - COMMODITY
+      - futures
+      - "GC=F"
+      - "SI=F"
+      - "HG=F"
+      - "CT=F"
+      - "KC=F"
+      - "ZC=F"
+      - COT
+      - "cftc_cot_commercial_signal"
+      - "term structure"
+      - "roll yield"
+      - backwardation
+      - contango
+      - DBMF
+      - KMLM
+      - "futures_momentum"
+      - "cta_commodity_momentum_term"
+    embedding_text: |
+      COMMODITY (futures only) — COT commercial-hedger gating, term-
+      structure roll yield, mutate-before-kill on futures_momentum.
+      cftc_cot_commercial_signal is the flagship strategy. Gold protection
+      band $800-$12000 already wired.
+    handoff_targets:
+      - cross-verification-auditor
+      - ml-validation-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: ml-validation-specialist
+    base: ml-validator
+    file: ml-validation-specialist.md
+    trigger_keywords:
+      - DSR
+      - PSR
+      - MinTRL
+      - "Bonferroni"
+      - "Holm-Bonferroni"
+      - "Benjamini-Hochberg"
+      - "deflated Sharpe"
+      - "Probabilistic Sharpe"
+      - "False Strategy Theorem"
+      - "purged CV"
+      - "purged-CV"
+      - CPCV
+      - "walk-forward"
+      - "Wilson 95% LB"
+      - "multiple testing"
+      - "multiple-testing"
+      - "PBO"
+      - "selection bias"
+    embedding_text: |
+      Model-gating layer over existing strategies. DSR/PSR/MinTRL/
+      Bonferroni-Holm multiple-testing correction. Rejects Sharpe claims
+      that don't survive selection-bias correction at family-wise alpha
+      0.05. Required before paper-to-live promotion.
+    handoff_targets:
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: cross-verification-auditor
+    base: cross-verifier
+    file: cross-verification-auditor.md
+    trigger_keywords:
+      - "cross verification"
+      - "cross-verification"
+      - "triangulate"
+      - "triangulation"
+      - "orthogonal sources"
+      - "HIGH/MEDIUM/LOW confidence"
+      - "confidence tier"
+      - "conflict zone"
+      - "consensus claim"
+      - "claim audit"
+      - "Phase 4"
+      - "Phase 6"
+    embedding_text: |
+      Triangulator. Classifies claims HIGH/MEDIUM/LOW by orthogonal-source
+      corroboration and surfaces conflict zones with resolution paths.
+      Replicates Kimi Phase 4 cross-verification + Phase 6 insight
+      extraction. Does not produce new claims; classifies existing ones.
+    handoff_targets:
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: regime-specialist
+    base: analyst
+    file: regime-specialist.md
+    trigger_keywords:
+      - regime
+      - HMM
+      - BOCPD
+      - Hurst
+      - GARCH
+      - "MS-GARCH"
+      - Viterbi
+      - "regime conditional"
+      - "regime-conditional"
+      - "range_bound"
+      - "regime gating"
+      - "Markov switching"
+      - "transition matrix"
+    embedding_text: |
+      Regime-conditional strategy gating. HMM + BOCPD + Hurst + GARCH
+      stack. Rejects strategies that confound regime with skill or whose
+      classifier emits same state >95% of bars. Soft-label blending over
+      hard Viterbi. Per-state WR Wilson LB validation.
+    handoff_targets:
+      - ml-validation-specialist
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: risk-of-ruin-assessor
+    base: critic
+    file: risk-of-ruin-assessor.md
+    trigger_keywords:
+      - "risk of ruin"
+      - "risk-of-ruin"
+      - Kelly
+      - "negative Kelly"
+      - "quarter Kelly"
+      - lottery
+      - meme
+      - DOGE
+      - SHIB
+      - PEPE
+      - "penny stock"
+      - "S-Tier"
+      - "100x"
+      - "Pump.fun"
+      - "Monte Carlo"
+      - "drawdown probability"
+    embedding_text: |
+      Capital-preservation gate. Rejects allocations where Kelly is
+      negative or risk-of-ruin > 5%. Lottery/meme/penny/sub-floor
+      classification. High WR + negative avg PnL signature flagging.
+      Quarter-Kelly cap; per-asset-class hard caps.
+    handoff_targets:
+      - rr-band-optimizer
+      - ml-validation-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: rr-band-optimizer
+    base: critic
+    file: rr-band-optimizer.md
+    trigger_keywords:
+      - "R:R"
+      - "risk reward"
+      - "risk-reward"
+      - "TP/SL"
+      - "take profit"
+      - "stop loss"
+      - "trailing stop"
+      - "trailing-stop"
+      - "1.5R"
+      - "2.0R"
+      - "3.0R"
+      - "asymmetric R:R"
+      - "let winners run"
+      - "R:R band"
+    embedding_text: |
+      R:R-band stratifier. Enforces empirically-derived 1.5-2.0R sweet
+      spot (PF 5.81) versus >2.0R catastrophic band (PF 0.35).
+      Recommends 2.0R hard cap until per-strategy validation. Re-derives
+      PF/Kelly inside band; rejects fictional planned R:R.
+    handoff_targets:
+      - risk-of-ruin-assessor
+      - ml-validation-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: score-methodology-auditor
+    base: critic
+    file: score-methodology-auditor.md
+    trigger_keywords:
+      - F-Score
+      - Piotroski
+      - ml_score
+      - elite_score
+      - blended_conf
+      - "Beta Confluence"
+      - confidence
+      - trust_score
+      - "decile monotonicity"
+      - "score weight"
+      - "scoring weight"
+      - "inverted-U"
+      - "Spearman"
+    embedding_text: |
+      Scoring-methodology gate. Audits F-Score / ml_score / confidence /
+      elite_score / blended_conf / Beta Confluence for monotonicity,
+      calibration, and predictive power. Rejects non-monotonic or
+      anti-predictive components. Uses Score Calibration Audit ledger.
+    handoff_targets:
+      - ml-validation-specialist
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: transaction-cost-modeler
+    base: critic
+    file: transaction-cost-modeler.md
+    trigger_keywords:
+      - "transaction cost"
+      - "transaction-cost"
+      - slippage
+      - commission
+      - spread
+      - "market impact"
+      - "round-trip"
+      - "round trip"
+      - "net PF"
+      - "gross PF"
+      - "cost-sunk"
+      - "cost sunk"
+      - "after cost"
+      - "after-cost"
+      - "tick size"
+    embedding_text: |
+      Asset-class-specific transaction-cost modeling. Spread + commission
+      + slippage + market impact. Re-derives net PF after costs. Flags
+      cost-sunk strategies. Renaissance reference 2-3 bps equities;
+      penny / DEX-listed crypto 2-10% drag tier.
+    handoff_targets:
+      - ml-validation-specialist
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    version: 1
+    added: 2026-05-04
+
+  - name: generalist-fallback
+    base: generalist
+    file: generalist_kimi.md
+    trigger_keywords: []
+    embedding_text: |
+      Generalist fallback. Invoked when the router cannot match a
+      specialist with confidence >= 0.60. Best-effort review under a
+      broad system prompt. Logs unmatched queries for periodic review.
+    handoff_targets:
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.0
+    version: 1
+    added: 2026-05-04
+
+  # ── Mission-critical operational personas (added 2026-05-04) ──
+  # type: operational. Map to specific operational bottlenecks rather than
+  # analytical specializations. Priority lanes used by agent-swarm-orchestrator
+  # for conflict resolution: audit-integrity > monitor-uptime > event-freshness.
+
+  - name: event-surface-engineer
+    base: operator
+    file: event_surface_engineer.md
+    trigger_keywords:
+      - findtorontoevents
+      - applyThumbnails
+      - "event grid"
+      - "stale events"
+      - "filter latency"
+      - "events.json"
+      - "next/events.json"
+      - "Tomorrow filter"
+      - "This Month filter"
+      - "Next Month filter"
+      - "ingestion rate"
+    embedding_text: |
+      Front-door site filtering and display. Owns findtorontoevents.ca pipeline
+      freshness, filter latency, cache invalidation, fallback cache-warm.
+    handoff_targets:
+      - audit-resolver-v2
+      - failover-infrastructure-tech
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: event-freshness
+    version: 1
+    added: 2026-05-04
+
+  - name: audit-resolver-v2
+    base: operator
+    file: audit_resolver_v2.md
+    trigger_keywords:
+      - resolver
+      - "PF baseline"
+      - "PF divergence"
+      - "tier 1"
+      - "tier 2"
+      - "tier 3"
+      - "T1/T2/T3"
+      - "audit window"
+      - "backtest reconciliation"
+      - "exchange feed"
+      - "self-heal"
+      - "known-good"
+    embedding_text: |
+      Maintains the post-2026-04-28 resolver. Watches PF baselines (esp. FOREX
+      0.27), schema validation, statistical outlier detection, backtest
+      reconciliation. Self-heals by rolling back to last known-good resolver
+      version on >0.3 PF divergence for 2 consecutive windows.
+    handoff_targets:
+      - cross-asset-quant
+      - tier-gate-keeper
+      - forex-diagnostic-surgeon
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: cross-asset-quant
+    base: operator
+    file: cross_asset_quant.md
+    trigger_keywords:
+      - "cross-sectional"
+      - "Sharpe ratio"
+      - "deflated Sharpe"
+      - "DSR"
+      - "regime cluster"
+      - "regime shift"
+      - "volatility regime"
+      - "correlation breakdown"
+      - "drawdown correlation"
+      - "asset class"
+      - "risk budget"
+    embedding_text: |
+      Cross-sectional analysis bridging best vs worst asset class. Sharpe/DSR
+      calculation, volatility regime clustering, correlation breakdown during
+      drawdowns. Enforces a cross-asset risk budget capping single-class
+      exposure when WR drops below tier floor.
+    handoff_targets:
+      - tier-gate-keeper
+      - audit-resolver-v2
+      - forex-diagnostic-surgeon
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: sports-odds-survivor
+    base: operator
+    file: sports_odds_survivor.md
+    trigger_keywords:
+      - "Odds API"
+      - "sports betting"
+      - "NHL"
+      - "NBA"
+      - "NFL"
+      - "PWHL"
+      - "stale line"
+      - "rate limit"
+      - "bookmaker"
+      - "bankroll allocation"
+      - "arbitrage scanner"
+      - "Pinnacle"
+      - "DraftKings"
+      - "FanDuel"
+    embedding_text: |
+      NHL/NBA/NFL feed survival despite rate limits, stale lines, bookmaker
+      variance. API health polling, line stale detection (>15min), cross-book
+      arbitrage scanning, bankroll allocation per sport. Auto-swaps to mirror
+      feed when primary stalls >15min.
+    handoff_targets:
+      - event-surface-engineer
+      - cross-asset-quant
+      - failover-infrastructure-tech
+    confidence_floor_for_match: 0.65
+    priority_lane: monitor-uptime
+    version: 1
+    added: 2026-05-04
+
+  - name: tier-gate-keeper
+    base: operator
+    file: tier_gate_keeper.md
+    trigger_keywords:
+      - "kill switch"
+      - "kill-switch"
+      - "tier floor"
+      - "reclassify"
+      - "demote"
+      - "promote tier"
+      - "below tier"
+      - "above tier"
+      - "WR floor"
+      - "PF floor"
+      - "MUTATION_THREE_AXIS"
+      - "investigate-before-kill"
+    embedding_text: |
+      Living T1/T2/T3 threshold enforcement. Kill-switch logic for sub-floor
+      assets, reallocation suggestions for T2 candidates. Re-classification
+      review queue surfaces near-boundary assets for manual audit before
+      auto-kill. Enforces mutate-before-kill protocol.
+    handoff_targets:
+      - cross-asset-quant
+      - audit-resolver-v2
+      - forex-diagnostic-surgeon
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: failover-infrastructure-tech
+    base: operator
+    file: failover_infrastructure_tech.md
+    trigger_keywords:
+      - "circuit breaker"
+      - "5xx"
+      - timeout
+      - "ERR_CONNECTION_REFUSED"
+      - "API failover"
+      - "degraded mode"
+      - "stale badge"
+      - "time-to-recovery"
+      - TTR
+      - "failover"
+      - "rate limit"
+    embedding_text: |
+      Universal failover layer for all properties. Circuit breakers, degraded-
+      mode UI (cached events with stale badge), automatic GitHub issue
+      creation on pipeline failure. Logs time-to-recovery per dependency for
+      orchestrator performance scoring.
+    handoff_targets:
+      - event-surface-engineer
+      - sports-odds-survivor
+      - audit-resolver-v2
+    confidence_floor_for_match: 0.65
+    priority_lane: monitor-uptime
+    version: 1
+    added: 2026-05-04
+
+  - name: agent-swarm-orchestrator
+    base: operator
+    file: agent_swarm_orchestrator.md
+    trigger_keywords:
+      - "conflict resolution"
+      - "priority matrix"
+      - "swarm meta"
+      - "contradictory handoff"
+      - "swarm telemetry"
+      - "orchestrator ticket"
+      - "meta-persona"
+    embedding_text: |
+      Meta-persona that monitors the swarm itself. Detects contradictory
+      handoffs, applies the priority matrix (audit-integrity > monitor-uptime
+      > event-freshness), records conflict-resolution tickets to
+      swarm_runs/_orchestrator_tickets/, breaks loops at chain depth >5.
+    handoff_targets:
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: meta
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-diagnostic-surgeon
+    base: operator
+    file: forex_diagnostic_surgeon.md
+    trigger_keywords:
+      - FOREX
+      - forex
+      - "EUR/USD"
+      - "EURUSD"
+      - "USDJPY"
+      - "GBPUSD"
+      - "FX feed"
+      - "FX data"
+      - "PF 0.27"
+      - "investigate-before-kill"
+      - "MUTATION_THREE_AXIS"
+      - "FOREX rescue"
+      - "currency pair"
+      - "pip-vs-spread"
+    embedding_text: |
+      FOREX-specific investigate-before-kill surgeon. Three-phase protocol:
+      root-cause isolation (schema/feed/outliers), resolver-impact test
+      (sandbox re-run), kill-switch decision (terminate via tier-gate-keeper
+      OR refine via audit-resolver-v2 based on PF recovery).
+    handoff_targets:
+      - audit-resolver-v2
+      - tier-gate-keeper
+      - cross-asset-quant
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  # ── Asset-class & cross-class operational personas (added 2026-05-04, batch B) ──
+  # ETF / Bond / Futures per-class roles + emerging-asset + cross-class support.
+  # Companion to subagent A's Crypto/Equity/Forex/Commodity batch.
+
+  - name: etf-data-engineer
+    base: operator
+    file: etf_data_engineer.md
+    trigger_keywords:
+      - "ETF constituents"
+      - "expense ratio"
+      - "tracking error"
+      - NAV
+      - AUM
+      - "corporate action"
+      - "holdings file"
+      - iNAV
+      - "SPY holdings"
+      - "IWM constituents"
+      - "ETF rebalance"
+    embedding_text: |
+      ETF data ingestion: index constituents, expense ratios, tracking-error
+      feeds, corporate actions reconciliation across underlyings, AUM/flow
+      telemetry, point-in-time integrity for issuer holdings files.
+    handoff_targets:
+      - etf-feature-engineer
+      - data-quality-auditor
+      - audit-resolver-v2
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: etf-feature-engineer
+    base: operator
+    file: etf_feature_engineer.md
+    trigger_keywords:
+      - "sector tilt"
+      - "style exposure"
+      - "growth value"
+      - "factor loading"
+      - "ETF liquidity"
+      - "bid-ask spread"
+      - "volume profile"
+      - "flow signal"
+      - "intermarket flow"
+      - "thematic ETF"
+    embedding_text: |
+      ETF features: sector/industry tilts via look-through, Fama-French style
+      exposures, liquidity composite, intermarket-flow regime encoding,
+      feature-leakage tests, regularization for n=87 small-sample regime.
+    handoff_targets:
+      - etf-quant-analyst
+      - etf-risk-manager
+      - cross-asset-analyst
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: etf-quant-analyst
+    base: operator
+    file: etf_quant_analyst.md
+    trigger_keywords:
+      - "ETF model"
+      - "tracking error optimization"
+      - "sector rotation model"
+      - "factor tilt"
+      - "vol parity"
+      - "ETF backtest"
+      - "charter floor"
+      - "n=87"
+    embedding_text: |
+      ETF cross-sectional model: sector rotation with vol-parity, tracking-
+      error budget, charter-floor escalator (n>=100), purged-CV with
+      DSR/PSR/MinTRL gating, lift PF 1.24 toward T2 (>=1.5).
+    handoff_targets:
+      - etf-risk-manager
+      - etf-model-ops-engineer
+      - ml-validation-specialist
+      - performance-debugger
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: etf-risk-manager
+    base: operator
+    file: etf_risk_manager.md
+    trigger_keywords:
+      - "ETF liquidity risk"
+      - "concentration risk"
+      - "thematic ETF"
+      - "AP breakdown"
+      - "premium discount"
+      - "ETF gap"
+      - "flash crash"
+      - "thinly traded"
+    embedding_text: |
+      ETF-specific risk: liquidity tier (ADV-based), premium/discount
+      monitoring, AP-breakdown stress, concentration cap (20% per ETF),
+      thematic-ETF underlying-concentration risk, leveraged/inverse decay.
+    handoff_targets:
+      - etf-quant-analyst
+      - risk-governance-officer
+      - tier-gate-keeper
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: etf-model-ops-engineer
+    base: operator
+    file: etf_model_ops_engineer.md
+    trigger_keywords:
+      - "ETF deployment"
+      - "rebalancing pipeline"
+      - "model registry"
+      - rollback
+      - "drift monitor"
+      - canary
+      - "ETF model version"
+    embedding_text: |
+      ETF model deployment: daily close-of-NYC rebalance, semver+SHA+dataset
+      hash registry, canary slot (5%), drift-triggered rollback at 2x backtest
+      95th-pctl tracking error.
+    handoff_targets:
+      - etf-quant-analyst
+      - mlops-lead
+      - failover-infrastructure-tech
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: bond-data-engineer
+    base: operator
+    file: bond_data_engineer.md
+    trigger_keywords:
+      - "yield curve"
+      - "treasury curve"
+      - "credit spread"
+      - OAS
+      - "day-count convention"
+      - "ACT/360"
+      - "30/360"
+      - "bond price"
+      - TLT
+      - IEF
+      - FOMC
+      - "CPI release"
+    embedding_text: |
+      Bond data ingestion: UST par+zero curves, IG/HY OAS, TIPS breakevens,
+      day-count normalization, FOMC/CPI/NFP timestamping, on/off-the-run
+      auction-cycle awareness.
+    handoff_targets:
+      - bond-feature-engineer
+      - data-quality-auditor
+      - audit-resolver-v2
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: bond-feature-engineer
+    base: operator
+    file: bond_feature_engineer.md
+    trigger_keywords:
+      - duration
+      - convexity
+      - DV01
+      - "key rate duration"
+      - "credit rating"
+      - "FOMC surprise"
+      - "inflation surprise"
+      - "curve slope"
+      - "2s10s"
+      - butterfly
+    embedding_text: |
+      Bond features: duration/DV01/KRD/convexity, curve PCA (level/slope/
+      curvature), credit-rating ordinals + transition probabilities, macro-
+      surprise features, rate-regime categorical.
+    handoff_targets:
+      - bond-quant-analyst
+      - bond-risk-manager
+      - cross-asset-analyst
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: bond-quant-analyst
+    base: operator
+    file: bond_quant_analyst.md
+    trigger_keywords:
+      - "bond model"
+      - "thin sample"
+      - "bootstrap backtest"
+      - "n=18"
+      - "charter floor"
+      - "bond carry"
+      - "duration-timing"
+      - "curve trade"
+    embedding_text: |
+      BOND quant analyst: validate PF 1.72/WR 55.6% on n=18 via bootstrap;
+      universe-expansion plan (UST futures, IG/HY ETFs, TIPS); refuses tier
+      verdict until charter floor n>=100; reconciles DeepSeek/xAI dissent.
+    handoff_targets:
+      - bond-risk-manager
+      - bond-model-ops-engineer
+      - ml-validation-specialist
+      - performance-debugger
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: bond-risk-manager
+    base: operator
+    file: bond_risk_manager.md
+    trigger_keywords:
+      - "duration risk"
+      - "credit risk"
+      - "rate shock"
+      - "curve steepener"
+      - "HY spread"
+      - "credit blowout"
+      - "liquidity dry up"
+      - "bond MDD"
+    embedding_text: |
+      Bond risk: DV01 + KRD caps, HY exposure cap, +50/+100/+200bp parallel
+      and steepener/flattener stress, event-vol blocks pre-FOMC/CPI for
+      high-DV01 trades.
+    handoff_targets:
+      - bond-quant-analyst
+      - risk-governance-officer
+      - tier-gate-keeper
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: bond-model-ops-engineer
+    base: operator
+    file: bond_model_ops_engineer.md
+    trigger_keywords:
+      - "bond pipeline"
+      - "curve fitting"
+      - "Nelson-Siegel"
+      - Svensson
+      - "drift monitor"
+      - "model registry"
+      - "low frequency"
+    embedding_text: |
+      Bond model ops: daily Nelson-Siegel-Svensson fit, low-frequency drift
+      windows (21d/63d), rollback playbook tuned for n=18 regime where
+      unwinding is a meaningful fraction of the live cohort.
+    handoff_targets:
+      - bond-quant-analyst
+      - mlops-lead
+      - failover-infrastructure-tech
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: futures-data-engineer
+    base: operator
+    file: futures_data_engineer.md
+    trigger_keywords:
+      - "futures contract"
+      - rollover
+      - expiry
+      - "continuous contract"
+      - "back-adjusted"
+      - "panama method"
+      - GLOBEX
+      - "CME symbol"
+      - "generic future"
+      - "front month"
+    embedding_text: |
+      Futures data: cross-exchange symbol standardization (CME/ICE/EUREX),
+      OI/volume crossover roll logic, Panama back-adjusted continuous series,
+      expiry/delivery handling, raw + continuous dual storage.
+    handoff_targets:
+      - futures-feature-engineer
+      - data-quality-auditor
+      - audit-resolver-v2
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: futures-feature-engineer
+    base: operator
+    file: futures_feature_engineer.md
+    trigger_keywords:
+      - "roll yield"
+      - basis
+      - "term structure"
+      - contango
+      - backwardation
+      - seasonality
+      - COT
+      - "commercial positioning"
+      - "calendar spread"
+    embedding_text: |
+      Futures features: roll yield, term-structure curvature PCA, seasonality
+      with forward-look guard, CFTC COT positioning with publish-lag metadata,
+      calendar-spread features.
+    handoff_targets:
+      - futures-quant-analyst
+      - futures-risk-manager
+      - cross-asset-analyst
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: futures-quant-analyst
+    base: operator
+    file: futures_quant_analyst.md
+    trigger_keywords:
+      - "futures momentum"
+      - "cta strategy"
+      - "term structure trade"
+      - DBMF
+      - KMLM
+      - "cross-asset futures"
+      - "calendar spread"
+      - "futures backtest"
+    embedding_text: |
+      Cross-asset futures CTA quant: COT + term-structure + momentum across
+      energy/metals/ags/financial families; DBMF/KMLM external benchmarks;
+      mutate-before-kill on underperforming sub-strategies.
+    handoff_targets:
+      - futures-risk-manager
+      - futures-model-ops-engineer
+      - ml-validation-specialist
+      - performance-debugger
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: futures-risk-manager
+    base: operator
+    file: futures_risk_manager.md
+    trigger_keywords:
+      - "SPAN margin"
+      - "initial margin"
+      - "maintenance margin"
+      - "limit up"
+      - "limit down"
+      - "circuit breaker"
+      - notional
+      - vega
+      - "delivery month"
+    embedding_text: |
+      Futures risk: SPAN/initial-margin utilization cap, first-notice-day
+      block on physical-delivery, limit-up/down lock-day stress, exchange
+      margin-hike pre-emptive resize, per-family risk budget.
+    handoff_targets:
+      - futures-quant-analyst
+      - risk-governance-officer
+      - tier-gate-keeper
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: futures-model-ops-engineer
+    base: operator
+    file: futures_model_ops_engineer.md
+    trigger_keywords:
+      - "low latency inference"
+      - "roll day deploy"
+      - "exchange timezone"
+      - "GLOBEX hours"
+      - "futures pipeline"
+      - "futures registry"
+    embedding_text: |
+      Futures model ops: 23/5 GLOBEX schedule, roll-day cutover hygiene
+      (continuous symbol re-points after settlement), per-family latency
+      budget, multi-exchange holiday calendar awareness.
+    handoff_targets:
+      - futures-quant-analyst
+      - mlops-lead
+      - failover-infrastructure-tech
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: asset-discovery-engineer
+    base: researcher
+    file: asset_discovery_engineer.md
+    trigger_keywords:
+      - "new data source"
+      - DeFi
+      - "prediction market"
+      - Polymarket
+      - Hyperliquid
+      - "carbon credit"
+      - "tokenized RWA"
+      - "exotic derivative"
+      - "novel asset"
+      - "prototype pipeline"
+    embedding_text: |
+      Emerging asset discovery: surveys DeFi/prediction-markets/carbon/RWA,
+      MVP ingestion + 10-feature smoke backtest, go/no-go memo with data-
+      quality + liquidity + regulatory + edge scores.
+    handoff_targets:
+      - data-quality-auditor
+      - cross-asset-analyst
+      - tier-gate-keeper
+    confidence_floor_for_match: 0.60
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: cross-asset-analyst
+    base: analyst
+    file: cross_asset_analyst.md
+    trigger_keywords:
+      - "cross asset correlation"
+      - diversification
+      - spillover
+      - "regime contagion"
+      - "risk budget"
+      - "portfolio mix"
+      - "class allocation"
+      - "correlation breakdown"
+    embedding_text: |
+      Cross-class correlation, diversification ratio, spillover/contagion
+      tracing, class-mix recommendations under existing per-class tier
+      verdicts; flags diversifiers that stop diversifying in stress.
+    handoff_targets:
+      - risk-governance-officer
+      - audit-resolver-v2
+      - cross-asset-quant
+      - tier-gate-keeper
+    confidence_floor_for_match: 0.60
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: model-explainability-engineer
+    base: critic
+    file: model_explainability_engineer.md
+    trigger_keywords:
+      - SHAP
+      - LIME
+      - "feature importance"
+      - "partial dependence"
+      - explainability
+      - "feature contribution"
+      - "model debug"
+      - "sign flip"
+    embedding_text: |
+      SHAP/LIME/PDP attribution per class, sign-flip detection across regime
+      boundaries, cross-reference attribution with data quality so high-SHAP
+      leaky features don't masquerade as edge.
+    handoff_targets:
+      - performance-debugger
+      - data-quality-auditor
+      - cross-asset-analyst
+    confidence_floor_for_match: 0.60
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: performance-debugger
+    base: critic
+    file: performance_debugger.md
+    trigger_keywords:
+      - "worst fold"
+      - "WR=0"
+      - "fold collapse"
+      - "walk-forward diagnostic"
+      - "performance debug"
+      - "degraded fold"
+      - "regime fold"
+      - "fold variance"
+    embedding_text: |
+      Walk-forward worst-fold triage across classes; classifies root cause
+      (data outage / regime shift / leakage closure / edge collapse); routes
+      tickets to per-class quant; tracks recurrence patterns.
+    handoff_targets:
+      - model-explainability-engineer
+      - data-quality-auditor
+      - audit-resolver-v2
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: data-quality-auditor
+    base: critic
+    file: data_quality_auditor.md
+    trigger_keywords:
+      - "data quality"
+      - "missing value"
+      - outlier
+      - "schema drift"
+      - "point-in-time"
+      - "integrity check"
+      - "bad tick"
+      - "look-ahead"
+    embedding_text: |
+      Cross-pipeline DQ: schema validation, class-aware outlier thresholds,
+      strict point-in-time leakage tests, blocks downstream feature builds
+      when DQ score <0.95.
+    handoff_targets:
+      - audit-resolver-v2
+      - performance-debugger
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.60
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: mlops-lead
+    base: operator
+    file: mlops_lead.md
+    trigger_keywords:
+      - "model registry"
+      - "CI/CD"
+      - canary
+      - "rollback policy"
+      - "deploy standard"
+      - "cross-class registry"
+      - "model monitoring"
+      - decay
+    embedding_text: |
+      Cross-class MLOps substrate: registry (semver+SHA+dataset hash), deploy
+      standards, cross-class drift/latency monitoring, decay-half-life policy
+      per class, immutability-of-tags enforcement.
+    handoff_targets:
+      - failover-infrastructure-tech
+      - risk-governance-officer
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: risk-governance-officer
+    base: critic
+    file: risk_governance_officer.md
+    trigger_keywords:
+      - "MDD limit"
+      - "tier breach"
+      - governance
+      - "risk policy"
+      - "portfolio cap"
+      - "audit trail"
+      - escalation
+      - "cap waiver"
+    embedding_text: |
+      Tier-MDD enforcement (T1<10% / T2<20% / T3<30%) across all classes;
+      append-only audit trail, waiver SLA, monthly governance review,
+      coordinates with tier-gate-keeper on demote/kill decisions.
+    handoff_targets:
+      - tier-gate-keeper
+      - cross-asset-analyst
+      - agent-swarm-orchestrator
+    confidence_floor_for_match: 0.65
+    priority_lane: meta
+    version: 1
+    added: 2026-05-04
+
+  # ── Asset-class operational personas — batch A (2026-05-04) ──
+  # type: asset-class. Five roles per class (data-engineer / feature-engineer /
+  # quant-analyst / risk-manager / model-ops-engineer) for crypto, equity,
+  # forex, commodity. Batch B (etf / bond / futures + cross-class) lives above.
+
+  - name: crypto-data-engineer
+    base: operator
+    file: crypto_data_engineer.md
+    trigger_keywords:
+      - "feed consolidation"
+      - "gap fill"
+      - "gap-fill"
+      - "dedup"
+      - "timestamp alignment"
+      - "tick sanity"
+      - "stale tick"
+      - "price spike"
+      - "volume out-of-range"
+      - "Binance failover"
+      - "CoinGecko"
+      - "KuCoin"
+      - "CryptoCompare"
+    embedding_text: |
+      Crypto market-data plumbing across Binance/KuCoin/CoinGecko/CryptoCompare
+      with dedup, gap-fill, UTC-ms timestamp alignment, and real-time tick
+      sanity (price-spike outliers, zero-volume drops, stale-tick badging).
+    handoff_targets:
+      - crypto-feature-engineer
+      - failover-infrastructure-tech
+      - audit-resolver-v2
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: crypto-feature-engineer
+    base: operator
+    file: crypto_feature_engineer.md
+    trigger_keywords:
+      - "on-chain"
+      - "active addresses"
+      - "hash-rate"
+      - "gas fee"
+      - "Twitter sentiment"
+      - "Reddit sentiment"
+      - "funding rate skew"
+      - "open interest"
+      - "vol-adjusted feature"
+      - "Sharpe -0.088"
+      - "fear greed"
+    embedding_text: |
+      On-chain (active addresses, hash-rate, gas), sentiment, and volatility-
+      adjusted feature engineering for the crypto stack. Primary KPI is
+      lifting CRYPTO Sharpe from -0.088 toward >0 without leakage.
+    handoff_targets:
+      - crypto-quant-analyst
+      - crypto-risk-manager
+      - regime-specialist
+      - score-methodology-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: crypto-quant-analyst
+    base: operator
+    file: crypto_quant_analyst.md
+    trigger_keywords:
+      - "regime-aware backtest"
+      - "high-vol regime"
+      - "low-vol regime"
+      - "hyperparameter tuning"
+      - "Optuna"
+      - "transformer crypto"
+      - "gradient-boosted"
+      - "LightGBM crypto"
+      - "purged CV crypto"
+      - "embargo crypto"
+      - "walk-forward crypto"
+    embedding_text: |
+      Regime-aware crypto backtests, hyperparameter search, and model-family
+      bake-off (transformer vs gradient-boosted vs hybrid). Diagnoses the
+      quan_engine + unknown source-system drag dragging elite cohort below T2.
+    handoff_targets:
+      - ml-validation-specialist
+      - regime-specialist
+      - crypto-risk-manager
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: crypto-risk-manager
+    base: operator
+    file: crypto_risk_manager.md
+    trigger_keywords:
+      - "worst-fold WR"
+      - "drawdown crypto"
+      - "position size crypto"
+      - "Kelly crypto"
+      - "stop-loss crypto"
+      - "trailing stop crypto"
+      - "ATR stop"
+      - "quan_engine drag"
+      - "volume cap crypto"
+      - "concentration crypto"
+    embedding_text: |
+      Per-fold drawdown surveillance, position sizing, dynamic ATR-based
+      stops, and concentration caps for the crypto book. Targets eliminating
+      worst-fold WR=0% and curbing the quan_engine 18%/PF 0.70 drag.
+    handoff_targets:
+      - risk-of-ruin-assessor
+      - rr-band-optimizer
+      - crypto-model-ops-engineer
+      - tier-gate-keeper
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: crypto-model-ops-engineer
+    base: operator
+    file: crypto_model_ops_engineer.md
+    trigger_keywords:
+      - "inference latency"
+      - "model drift"
+      - "PSI"
+      - "KS test drift"
+      - "retraining schedule"
+      - "model rollback"
+      - "A/B model"
+      - "shadow model"
+      - "crypto inference"
+      - "model registry"
+      - "champion challenger"
+    embedding_text: |
+      Low-latency crypto inference, drift monitoring (PSI/KS), automated
+      retraining roll-out with champion/challenger A/B and rollback playbook.
+    handoff_targets:
+      - crypto-quant-analyst
+      - crypto-risk-manager
+      - failover-infrastructure-tech
+      - audit-resolver-v2
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: equity-data-engineer
+    base: operator
+    file: equity_data_engineer.md
+    trigger_keywords:
+      - "corporate actions"
+      - "split adjustment"
+      - "dividend adjustment"
+      - "fundamentals ingest"
+      - "survivorship bias"
+      - "delisted ticker"
+      - "ticker change"
+      - "yfinance"
+      - "Alpaca"
+      - "Polygon"
+      - "IEX"
+      - "exchange holiday"
+    embedding_text: |
+      Equity market-data plumbing — corporate-action adjustments, point-in-
+      time fundamentals, HF prices, survivorship-bias resolution, and
+      exchange/timezone alignment for the US single-name universe.
+    handoff_targets:
+      - equity-feature-engineer
+      - failover-infrastructure-tech
+      - audit-resolver-v2
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: equity-feature-engineer
+    base: operator
+    file: equity_feature_engineer.md
+    trigger_keywords:
+      - "value factor"
+      - "momentum factor"
+      - "quality factor"
+      - "Piotroski"
+      - "sector exposure"
+      - "sector neutralize"
+      - "feature selection equity"
+      - "RS breakout feature"
+      - "Ken French"
+      - "low-vol factor"
+      - "equity factor zoo"
+    embedding_text: |
+      Value/momentum/quality factor engineering with explicit sector-exposure
+      controls. Preserves WR 57.9% baseline; Sharpe 3.527 flagged for live
+      verification (2/3 swarm engines disputed — treat as upper bound).
+    handoff_targets:
+      - equity-quant-analyst
+      - equity-risk-manager
+      - score-methodology-auditor
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: equity-quant-analyst
+    base: operator
+    file: equity_quant_analyst.md
+    trigger_keywords:
+      - "walk-forward equity"
+      - "n=47"
+      - "decay 0.2"
+      - "ensemble equity"
+      - "stacking"
+      - "blender model"
+      - "consistency 66"
+      - "purged CV equity"
+      - "embargo equity"
+      - "model bake-off equity"
+    embedding_text: |
+      Walk-forward CV (n=47 baseline), decay 0.2 sample weighting, and
+      ensemble (stacking/blending) construction to lift EQUITY consistency
+      above 66% of profitable months while satisfying DSR>=1.0.
+    handoff_targets:
+      - ml-validation-specialist
+      - equity-risk-manager
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: equity-risk-manager
+    base: operator
+    file: equity_risk_manager.md
+    trigger_keywords:
+      - "sector concentration"
+      - "beta exposure"
+      - "equity MDD"
+      - "drawdown equity"
+      - "factor exposure cap"
+      - "single name limit"
+      - "long-only equity"
+      - "gross exposure"
+      - "net exposure"
+      - "position sizing equity"
+    embedding_text: |
+      Equity risk: sector concentration caps (GICS-1 25%, GICS-2 15%),
+      portfolio-beta band [0.7, 1.3], single-name 5% cap, MDD <10% T1 target.
+    handoff_targets:
+      - risk-of-ruin-assessor
+      - rr-band-optimizer
+      - tier-gate-keeper
+      - equity-model-ops-engineer
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: equity-model-ops-engineer
+    base: operator
+    file: equity_model_ops_engineer.md
+    trigger_keywords:
+      - "nightly retrain"
+      - "model versioning"
+      - "A/B equity"
+      - "live traffic equity"
+      - "champion challenger equity"
+      - "model registry equity"
+      - "drift equity"
+      - "PSI equity"
+      - "rollback equity"
+      - "shadow model equity"
+    embedding_text: |
+      Nightly retrain pipeline, model versioning with full reproducibility,
+      and champion/challenger A/B harness on live equity traffic. Earnings-
+      week retrain freeze.
+    handoff_targets:
+      - equity-quant-analyst
+      - equity-risk-manager
+      - audit-resolver-v2
+      - failover-infrastructure-tech
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-data-engineer
+    base: operator
+    file: forex_data_engineer.md
+    trigger_keywords:
+      - "FX spot"
+      - "FX forward"
+      - "pip convention"
+      - "JPY pip"
+      - "FX holiday"
+      - "OANDA"
+      - "MyFXBook feed"
+      - "broker quote"
+      - "interbank rate"
+      - "tick value FX"
+      - "5-decimal vs 3-decimal"
+    embedding_text: |
+      Spot+forward FX aggregation across providers with holiday handling
+      and pip-vs-point convention reconciliation. Cross-broker median
+      consensus on >0.5pip divergence.
+    handoff_targets:
+      - forex-feature-engineer
+      - forex-diagnostic-surgeon
+      - failover-infrastructure-tech
+      - audit-resolver-v2
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-feature-engineer
+    base: operator
+    file: forex_feature_engineer.md
+    trigger_keywords:
+      - "interest rate differential"
+      - "carry trade signal"
+      - "CPI feature"
+      - "PMI feature"
+      - "regime switch FX"
+      - "carry-to-vol"
+      - "COT commercial"
+      - "term structure FX"
+      - "PF 0.27"
+      - "FX macro"
+    embedding_text: |
+      Interest-rate differentials, CPI/PMI macro, carry-to-vol, COT
+      commercial positioning, and regime-switch indicators for the FOREX
+      rescue protocol. Recover PF from 0.27.
+    handoff_targets:
+      - forex-quant-analyst
+      - forex-diagnostic-surgeon
+      - regime-specialist
+      - score-methodology-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-quant-analyst
+    base: operator
+    file: forex_quant_analyst.md
+    trigger_keywords:
+      - "Sharpe -1.406"
+      - "decay 0.1 FX"
+      - "LSTM forex"
+      - "temporal dynamics FX"
+      - "FOREX bug"
+      - "FX walk-forward"
+      - "sub-floor diagnosis"
+      - "kill iterate reclassify"
+      - "G10 model"
+      - "EM carry"
+    embedding_text: |
+      Diagnoses the decay-0.1 / Sharpe -1.406 paradox at the heart of the
+      FOREX bug. Tests LSTM/transformer for temporal dynamics. Mandatory
+      handoff to forex-diagnostic-surgeon for kill/iterate/reclassify.
+    handoff_targets:
+      - forex-diagnostic-surgeon
+      - ml-validation-specialist
+      - regime-specialist
+      - tier-gate-keeper
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-risk-manager
+    base: operator
+    file: forex_risk_manager.md
+    trigger_keywords:
+      - "FX stop loss"
+      - "FX position cap"
+      - "worst-fold FX"
+      - "JPY-cross block"
+      - "FX concentration"
+      - "FX leverage"
+      - "rollover swap"
+      - "FX gap risk"
+      - "weekend gap"
+      - "carry overnight"
+    embedding_text: |
+      Tight ATR-multiple stops, per-pair and per-strategy caps, JPY-cross
+      LONG hard-block (except USDJPY), weekend-gap leverage reserve, and
+      worst-fold WR=0% drill on the most distressed asset class.
+    handoff_targets:
+      - risk-of-ruin-assessor
+      - rr-band-optimizer
+      - forex-diagnostic-surgeon
+      - tier-gate-keeper
+      - forex-model-ops-engineer
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: forex-model-ops-engineer
+    base: operator
+    file: forex_model_ops_engineer.md
+    trigger_keywords:
+      - "FX inference latency"
+      - "FX drift"
+      - "FX retrain"
+      - "FX A/B"
+      - "FX rollback"
+      - "FX model registry"
+      - "FX champion challenger"
+      - "FX shadow model"
+      - "PSI FX"
+      - "10ms latency"
+    embedding_text: |
+      Real-time FX inference at p95 <10ms with continuous drift monitoring
+      and a 5-min rollback playbook. Tier-1 macro-release model freeze
+      window during NFP/CPI/FOMC.
+    handoff_targets:
+      - forex-quant-analyst
+      - forex-risk-manager
+      - forex-diagnostic-surgeon
+      - audit-resolver-v2
+      - failover-infrastructure-tech
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: commodity-data-engineer
+    base: operator
+    file: commodity_data_engineer.md
+    trigger_keywords:
+      - "futures curve"
+      - "front month"
+      - "back month"
+      - "contract roll"
+      - "roll yield"
+      - "EIA inventory"
+      - "USDA WASDE"
+      - "open interest"
+      - "expiry calendar"
+      - "continuous contract"
+      - "panama adjustment"
+      - "ratio adjustment"
+    embedding_text: |
+      Futures-curve aggregation, point-in-time inventory ingestion (EIA /
+      WASDE / COT), roll-yield computation, and deterministic contract-roll
+      logic with method-per-use-case continuous contracts.
+    handoff_targets:
+      - commodity-feature-engineer
+      - failover-infrastructure-tech
+      - audit-resolver-v2
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: commodity-feature-engineer
+    base: operator
+    file: commodity_feature_engineer.md
+    trigger_keywords:
+      - "contango"
+      - "backwardation"
+      - "term structure commodity"
+      - "seasonality commodity"
+      - "BCOM"
+      - "Bloomberg Commodity"
+      - "DBC"
+      - "roll yield feature"
+      - "convenience yield"
+      - "commitments of traders"
+      - "supply demand commodity"
+    embedding_text: |
+      Term-structure (contango/backwardation), seasonality, BCOM macro
+      indices, COT positioning, and inventory-vs-band features for the
+      commodity stack. Lift consistency from 36.2%.
+    handoff_targets:
+      - commodity-quant-analyst
+      - commodity-risk-manager
+      - regime-specialist
+      - score-methodology-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: commodity-quant-analyst
+    base: operator
+    file: commodity_quant_analyst.md
+    trigger_keywords:
+      - "Sharpe -2.412"
+      - "consistency 36.2"
+      - "supply shock"
+      - "demand regime"
+      - "commodity regime"
+      - "futures momentum"
+      - "term structure model"
+      - "roll-aware backtest"
+      - "lumpy PnL"
+      - "fat tail commodity"
+    embedding_text: |
+      Investigates the COMMODITY PF 1.78 / Sharpe -2.412 paradox via
+      regime-aware (supply-shock vs demand) modeling and roll-honoring
+      backtests. Targets lifting consistency from 36.2% toward 60%+.
+    handoff_targets:
+      - ml-validation-specialist
+      - regime-specialist
+      - commodity-risk-manager
+      - cross-verification-auditor
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: commodity-risk-manager
+    base: operator
+    file: commodity_risk_manager.md
+    trigger_keywords:
+      - "roll yield exposure"
+      - "inventory shock"
+      - "VaR commodity"
+      - "fat tail commodity"
+      - "WASDE risk"
+      - "EIA report risk"
+      - "commodity concentration"
+      - "energy weight"
+      - "metals exposure"
+      - "limit move"
+    embedding_text: |
+      Roll-yield exposure caps, inventory-release reserve windows, fat-
+      tailed historical-simulation VaR, and limit-move provisioning for
+      the futures stack.
+    handoff_targets:
+      - risk-of-ruin-assessor
+      - rr-band-optimizer
+      - tier-gate-keeper
+      - commodity-model-ops-engineer
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: commodity-model-ops-engineer
+    base: operator
+    file: commodity_model_ops_engineer.md
+    trigger_keywords:
+      - "auto roll"
+      - "roll automation"
+      - "commodity inference latency"
+      - "EIA release latency"
+      - "WASDE latency"
+      - "commodity drift"
+      - "commodity retrain"
+      - "commodity A/B"
+      - "commodity rollback"
+      - "expiry day cutover"
+    embedding_text: |
+      Automated contract roll-over (OI-crossover for liquid, days-to-expiry
+      for thin), latency monitoring around tier-1 inventory releases, drift
+      and A/B harness, rollback playbook.
+    handoff_targets:
+      - commodity-quant-analyst
+      - commodity-risk-manager
+      - audit-resolver-v2
+      - failover-infrastructure-tech
+      - coordinator-synthesizer
+    confidence_floor_for_match: 0.65
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+
+  - name: playwright-architect
+    base: implementer
+    file: playwright_architect.md
+    trigger_keywords:
+      - playwright
+      - e2e tests
+      - console error hunter
+      - test suite
+      - data freshness
+      - counter oscillation
+    confidence_floor_for_match: 0.65
+    priority_lane: testing
+    version: 1
+    added: 2026-05-04
+    inspired_by: kimi_swarm_2026_05_04
+
+  - name: audit-gap-analyst
+    base: critic
+    file: audit_gap_analyst.md
+    trigger_keywords:
+      - audit gap
+      - kimi gap
+      - requirements vs code
+      - gap analysis table
+      - asset class verdict
+    confidence_floor_for_match: 0.70
+    priority_lane: audit-integrity
+    version: 1
+    added: 2026-05-04
+    inspired_by: kimi_swarm_2026_05_04
+
+  - name: ux-enhancer
+    base: implementer
+    file: ux_enhancer.md
+    trigger_keywords:
+      - settings modal
+      - gear icon
+      - max events per day
+      - data source registry
+      - dedup
+      - calendar export
+      - persistence layer
+    confidence_floor_for_match: 0.65
+    priority_lane: product
+    version: 1
+    added: 2026-05-04
+    inspired_by: kimi_swarm_2026_05_04
+
+  - name: sports-betting-analyst
+    base: critic
+    file: sports_betting_analyst.md
+    trigger_keywords:
+      - sports betting audit
+      - stale picks
+      - clv
+      - closing line value
+      - the odds api
+      - responsible gambling
+      - profit factor
+    confidence_floor_for_match: 0.70
+    priority_lane: betting-integrity
+    version: 1
+    added: 2026-05-04
+    inspired_by: kimi_swarm_2026_05_04
+
+  - name: code-implementer
+    base: implementer
+    file: code_implementer.md
+    trigger_keywords:
+      - code implementer
+      - runnable
+      - integration guide
+      - php backend
+      - vanilla js shim
+      - playwright config
+    confidence_floor_for_match: 0.65
+    priority_lane: shipping
+    version: 1
+    added: 2026-05-04
+    inspired_by: kimi_swarm_2026_05_04

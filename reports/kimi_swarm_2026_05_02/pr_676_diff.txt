@@ -1,0 +1,925 @@
+diff --git a/EVENT_DATA_QUALITY_REPORT.md b/EVENT_DATA_QUALITY_REPORT.md
+index ccc1869d1a9..1b9eb2498b1 100644
+--- a/EVENT_DATA_QUALITY_REPORT.md
++++ b/EVENT_DATA_QUALITY_REPORT.md
+@@ -1,40 +1,22 @@
+ # Event Data Quality Report
+ 
+-**Generated:** 2026-05-02 05:29:14 
++**Generated:** 2026-05-02 13:12:49 
+ 
+-**Total Events Analyzed:** 11016
++**Total Events Analyzed:** 11014
+ 
+ ## Summary
+ 
+ | Severity | Count |
+ |----------|-------|
+ | Critical | 0 |
+-| High     | 2 |
+-| Medium   | 2532 |
++| High     | 0 |
++| Medium   | 2528 |
+ | Low      | 17 |
+-| **Total Issues** | 2551 |
+-
+-## 🟠 High Priority Issues
+-
+-- **Duplicate Event (2 occurrences)**
+-  - ID: `None`
+-  - Details: Summerlicious 2026_2026-07-10T12:00:00Z_Various Restaurants, Toronto
+-  - Occurrences:
+-    - `93b2a3e90f44c47bb550e1805c9a77f0`: Summerlicious 2026
+-    - `032cf2e71e547cf6330be52cdbbe1533`: Summerlicious 2026
+-  - Line: None
+-
+-- **Duplicate Event (2 occurrences)**
+-  - ID: `None`
+-  - Details: Nuit Blanche Toronto 2026_2026-10-03T12:00:00Z_Various Locations, Toronto
+-  - Occurrences:
+-    - `69fa22fb3b35401c45ab2f1bbf4aec25`: Nuit Blanche Toronto 2026
+-    - `c7a59e85b777b78b30b97e3eeef6755b`: Nuit Blanche Toronto 2026
+-  - Line: None
++| **Total Issues** | 2545 |
+ 
+ ## 🟡 Medium Priority Issues
+ 
+-Total: 2532 issues. Showing first 50:
++Total: 2528 issues. Showing first 50:
+ 
+ - **Empty Description**
+   - ID: `08607b990beabca163bf325390df8cf1`
+@@ -287,7 +269,7 @@ Total: 2532 issues. Showing first 50:
+   - Line: 45
+ 
+ 
+-*...and 2482 more medium priority issues*
++*...and 2478 more medium priority issues*
+ 
+ ## 🟢 Low Priority Issues
+ 
+@@ -392,7 +374,7 @@ Total: 17 issues. Showing first 50:
+   - ID: `81720ab6bf693553f11d9d9115dece15`
+   - Title: Toronto Zoo Halloween — Howloween 2026
+   - Coordinates: 43.8176, -79.1847
+-  - Line: 9977
++  - Line: 9976
+ 
+ ## Recommendations
+ 
+diff --git a/events.json b/events.json
+index c519cbe4b3e..d0a227361f6 100644
+--- a/events.json
++++ b/events.json
+@@ -326414,41 +326414,6 @@
+     "lastUpdated": "2026-05-01T12:29:00.940372Z",
+     "durationCategory": "short"
+   },
+-  {
+-    "id": "032cf2e71e547cf6330be52cdbbe1533",
+-    "title": "Summerlicious 2026",
+-    "date": "2026-07-10T12:00:00Z",
+-    "end_date": "2026-07-26T12:00:00Z",
+-    "location": "Various Restaurants, Toronto",
+-    "source": "Major Toronto Festivals",
+-    "host": "Summerlicious",
+-    "url": "https://www.toronto.ca/explore-enjoy/dine-out/summerlicious/",
+-    "price": "$20-55 per meal",
+-    "price_amount": 20.0,
+-    "is_free": false,
+-    "description": "Summer edition of Toronto's prix-fixe dining event — 200+ restaurants with 3-course set menus.",
+-    "categories": [
+-      "Food & Drink"
+-    ],
+-    "tags": [
+-      "Summerlicious",
+-      "Restaurant",
+-      "Dining",
+-      "Prix Fixe"
+-    ],
+-    "status": "UPCOMING",
+-    "is_multi_day": true,
+-    "duration_category": "medium",
+-    "is_recurring": false,
+-    "last_updated": "2026-05-01T12:28:47.640947Z",
+-    "isMultiDay": true,
+-    "endDate": "2026-07-26T12:00:00Z",
+-    "isFree": false,
+-    "isRecurring": false,
+-    "priceAmount": 20.0,
+-    "lastUpdated": "2026-05-01T12:28:47.640947Z",
+-    "durationCategory": "medium"
+-  },
+   {
+     "id": "1627a74071d56b31ce67ddec40d79f19",
+     "title": "Mahjong Social",
+@@ -379665,40 +379630,6 @@
+     "lastUpdated": "2026-04-18T03:03:49.899519Z",
+     "durationCategory": "single"
+   },
+-  {
+-    "id": "c7a59e85b777b78b30b97e3eeef6755b",
+-    "title": "Nuit Blanche Toronto 2026",
+-    "date": "2026-10-03T12:00:00Z",
+-    "location": "Various Locations, Toronto",
+-    "source": "Major Toronto Festivals",
+-    "host": "Nuit Blanche Toronto",
+-    "url": "https://www.nbto.com",
+-    "price": "Free",
+-    "price_amount": 0.0,
+-    "is_free": true,
+-    "description": "All-night contemporary art event — installations, performance art, and interactive projects across the city from sunset to sunrise.",
+-    "categories": [
+-      "Arts",
+-      "Festival"
+-    ],
+-    "tags": [
+-      "Nuit Blanche",
+-      "Art",
+-      "Contemporary",
+-      "Overnight"
+-    ],
+-    "status": "UPCOMING",
+-    "is_multi_day": false,
+-    "duration_category": "single",
+-    "is_recurring": false,
+-    "last_updated": "2026-05-01T12:28:47.640953Z",
+-    "isMultiDay": false,
+-    "isFree": true,
+-    "isRecurring": false,
+-    "priceAmount": 0.0,
+-    "lastUpdated": "2026-05-01T12:28:47.640953Z",
+-    "durationCategory": "single"
+-  },
+   {
+     "id": "6788956d2cd7ba1c96ada972a5cd6c05",
+     "title": "Lego Free Play",
+diff --git a/next/events.json b/next/events.json
+index 49a6ef7c5d9..b2d4e597337 100644
+--- a/next/events.json
++++ b/next/events.json
+@@ -206,7 +206,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='576'%20height='240'%20viewBox='0%200%20576%20240'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Mead+Making+Workshop",
+     "is_recurring": false,
+     "last_updated": "2026-03-21T12:13:53.882350Z",
+     "isMultiDay": false,
+@@ -18037,7 +18037,7 @@
+     "priceAmount": 0.0,
+     "lastUpdated": "2026-02-24T13:04:51.366960Z",
+     "durationCategory": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1000'%20height='628'%20viewBox='0%200%201000%20628'%3E%3C/svg%3E"
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=How+to+Feel-+A+New+C"
+   },
+   {
+     "id": "4ed068e94e9c15f48c71496077465b9c",
+@@ -18071,7 +18071,7 @@
+     "priceAmount": 0.0,
+     "lastUpdated": "2026-02-24T13:04:51.367829Z",
+     "durationCategory": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1500'%20height='1061'%20viewBox='0%200%201500%201061'%3E%3C/svg%3E"
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=THE+NEIGHBOURS%3A+A+Pl"
+   },
+   {
+     "id": "463d0ac4674f1a9044dbdf05bc3bd904",
+@@ -18105,7 +18105,7 @@
+     "priceAmount": 0.0,
+     "lastUpdated": "2026-02-24T13:04:51.368665Z",
+     "durationCategory": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1396'%20height='1080'%20viewBox='0%200%201396%201080'%3E%3C/svg%3E"
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Neighbours"
+   },
+   {
+     "id": "373d905dbb43bcd61e23498d97a4b4ef",
+@@ -18137,7 +18137,7 @@
+     "priceAmount": 0.0,
+     "lastUpdated": "2026-02-24T13:04:51.369521Z",
+     "durationCategory": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='800'%20viewBox='0%200%201200%20800'%3E%3C/svg%3E"
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Surrogate"
+   },
+   {
+     "id": "e96be56c14521b91cacee489d8e3a99e",
+@@ -18169,7 +18169,7 @@
+     "priceAmount": 0.0,
+     "lastUpdated": "2026-02-24T13:04:51.370391Z",
+     "durationCategory": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='367'%20height='232'%20viewBox='0%200%20367%20232'%3E%3C/svg%3E"
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Legend+Of+Blank+"
+   },
+   {
+     "id": "812a9b2044abae344fe2364e04edd8f7",
+@@ -20732,7 +20732,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1179'%20height='573'%20viewBox='0%200%201179%20573'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Journey+To+Black",
+     "is_recurring": false,
+     "last_updated": "2026-02-26T13:07:21.510452Z",
+     "isMultiDay": true,
+@@ -20764,7 +20764,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2560'%20height='1066'%20viewBox='0%200%202560%201066'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Nzinga",
+     "is_recurring": false,
+     "last_updated": "2026-02-26T13:07:21.512880Z",
+     "isMultiDay": false,
+@@ -23280,7 +23280,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='800'%20height='600'%20viewBox='0%200%20800%20600'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Attempts+On+Her+Life",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:27.241413Z",
+     "isMultiDay": false,
+@@ -23312,7 +23312,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2000'%20height='1334'%20viewBox='0%200%202000%201334'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=UPU",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:27.243509Z",
+     "isMultiDay": false,
+@@ -23346,7 +23346,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2200'%20height='1088'%20viewBox='0%200%202200%201088'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Flight+Pattern%2FSuite",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:27.244357Z",
+     "isMultiDay": false,
+@@ -23380,7 +23380,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1279'%20height='533'%20viewBox='0%200%201279%20533'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Little+Willy",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:27.246049Z",
+     "isMultiDay": false,
+@@ -23412,7 +23412,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='800'%20height='600'%20viewBox='0%200%20800%20600'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Assistance",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:27.249392Z",
+     "isMultiDay": false,
+@@ -26751,7 +26751,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='800'%20height='600'%20viewBox='0%200%20800%20600'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Hedda+Gabler",
+     "is_recurring": false,
+     "last_updated": "2026-03-03T12:56:46.768939Z",
+     "isMultiDay": false,
+@@ -26783,7 +26783,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Backroom+Turns+4%21+Wi",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:29.231667Z",
+     "isMultiDay": false,
+@@ -29202,7 +29202,7 @@
+     "priceAmount": 0.0,
+     "lastUpdated": "2026-02-24T13:04:51.360349Z",
+     "durationCategory": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='683'%20height='468'%20viewBox='0%200%20683%20468'%3E%3C/svg%3E"
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Sir+Tyrone+Guthrie+a"
+   },
+   {
+     "id": "2e83d4273ce2ae76a3086e83c8e26f58",
+@@ -30185,7 +30185,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2152'%20height='1500'%20viewBox='0%200%202152%201500'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=I+Carry+with+Me",
+     "is_recurring": false,
+     "last_updated": "2026-03-03T12:56:46.775593Z",
+     "isMultiDay": false,
+@@ -30219,7 +30219,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1603'%20height='1080'%20viewBox='0%200%201603%201080'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Queen+Maeve",
+     "is_recurring": false,
+     "last_updated": "2026-03-03T12:56:46.776430Z",
+     "isMultiDay": false,
+@@ -30253,7 +30253,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1080'%20height='1080'%20viewBox='0%200%201080%201080'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+BigFamJam+live+a",
+     "is_recurring": true,
+     "recurrence_pattern": "weekly",
+     "last_updated": "2026-03-03T12:56:46.778105Z",
+@@ -31500,7 +31500,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='788'%20viewBox='0%200%20940%20788'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Toronto+Sketch+Comed",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.276815Z",
+     "isMultiDay": true,
+@@ -31532,7 +31532,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='556'%20height='232'%20viewBox='0%200%20556%20232'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Herald",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.277698Z",
+     "isMultiDay": false,
+@@ -32847,7 +32847,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='675'%20viewBox='0%200%201200%20675'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=2026+CDTPS+Mainstage",
+     "is_recurring": false,
+     "last_updated": "2026-03-08T12:11:32.774899Z",
+     "isMultiDay": false,
+@@ -32881,7 +32881,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1728'%20height='2083'%20viewBox='0%200%201728%202083'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=%E2%80%98Amish+Famous%3A+The+M",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.279449Z",
+     "isMultiDay": true,
+@@ -35071,7 +35071,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='700'%20height='485'%20viewBox='0%200%20700%20485'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Seussical+The+Musica",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.280297Z",
+     "isMultiDay": false,
+@@ -35105,7 +35105,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='900'%20height='500'%20viewBox='0%200%20900%20500'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Alice+in+Wonderland",
+     "is_recurring": false,
+     "last_updated": "2026-03-08T12:11:32.777434Z",
+     "isMultiDay": false,
+@@ -35137,7 +35137,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1544'%20height='2000'%20viewBox='0%200%201544%202000'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Starship+Pinafore%2C+o",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.281173Z",
+     "isMultiDay": false,
+@@ -35168,7 +35168,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1470'%20height='1530'%20viewBox='0%200%201470%201530'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=These+Shining+Lives+",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.282045Z",
+     "isMultiDay": false,
+@@ -37782,7 +37782,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1080'%20height='1440'%20viewBox='0%200%201080%201440'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Good+News+Toronto+at",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.282915Z",
+     "isMultiDay": true,
+@@ -37814,7 +37814,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1080'%20height='1350'%20viewBox='0%200%201080%201350'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Drowsy+Chaperone",
+     "is_recurring": false,
+     "last_updated": "2026-03-11T12:16:31.935257Z",
+     "isMultiDay": false,
+@@ -37846,7 +37846,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='297'%20height='170'%20viewBox='0%200%20297%20170'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Zone%3A+Dark+City+",
+     "is_recurring": false,
+     "last_updated": "2026-03-09T12:15:57.284655Z",
+     "isMultiDay": false,
+@@ -45757,7 +45757,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Rogier+Bak+live+%40+Ba",
+     "is_recurring": false,
+     "last_updated": "2026-03-13T12:18:21.785541Z",
+     "isMultiDay": false,
+@@ -45789,7 +45789,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2560'%20height='1280'%20viewBox='0%200%202560%201280'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=ZAYO+by+Esie+Mensah+",
+     "is_recurring": false,
+     "last_updated": "2026-03-15T12:13:38.922159Z",
+     "isMultiDay": true,
+@@ -45820,7 +45820,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2160'%20height='1080'%20viewBox='0%200%202160%201080'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=UTSC+Theatre+%26+Perfo",
+     "is_recurring": false,
+     "last_updated": "2026-03-20T12:15:45.928634Z",
+     "isMultiDay": false,
+@@ -48425,7 +48425,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='802'%20viewBox='0%200%201200%20802'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Shared+Horizons%3A+Pet",
+     "is_recurring": false,
+     "last_updated": "2026-02-27T13:00:29.216429Z",
+     "isMultiDay": false,
+@@ -48461,7 +48461,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='960'%20height='540'%20viewBox='0%200%20960%20540'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=M%C4%AAZ%C4%80N+%E2%80%94+The+Sound+of",
+     "is_recurring": false,
+     "last_updated": "2026-03-15T12:13:38.930937Z",
+     "isMultiDay": false,
+@@ -54471,7 +54471,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1385'%20height='693'%20viewBox='0%200%201385%20693'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=April+Singles+Mixer+",
+     "is_recurring": false,
+     "last_updated": "2026-04-20T12:29:11.305469Z",
+     "isMultiDay": false,
+@@ -56021,7 +56021,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Throuple+Night+w%2F+Ma",
+     "is_recurring": false,
+     "last_updated": "2026-03-20T12:15:45.956462Z",
+     "isMultiDay": false,
+@@ -56121,7 +56121,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='342'%20height='177'%20viewBox='0%200%20342%20177'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Secretary",
+     "is_recurring": false,
+     "last_updated": "2026-03-23T12:20:29.556457Z",
+     "isMultiDay": true,
+@@ -56153,7 +56153,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2048'%20height='1152'%20viewBox='0%200%202048%201152'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Tow",
+     "is_recurring": false,
+     "last_updated": "2026-03-22T12:12:58.943999Z",
+     "isMultiDay": false,
+@@ -58859,7 +58859,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Jay+Light+%40+Backroom",
+     "is_recurring": false,
+     "last_updated": "2026-03-21T12:13:53.895500Z",
+     "isMultiDay": false,
+@@ -58891,7 +58891,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='342'%20height='304'%20viewBox='0%200%20342%20304'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Loveless",
+     "is_recurring": false,
+     "last_updated": "2026-03-23T12:20:29.560663Z",
+     "isMultiDay": false,
+@@ -60625,7 +60625,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='890'%20height='1160'%20viewBox='0%200%20890%201160'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Anywhere+by+Michael+",
+     "is_recurring": false,
+     "last_updated": "2026-03-23T12:20:29.563175Z",
+     "isMultiDay": false,
+@@ -65123,7 +65123,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1077'%20height='964'%20viewBox='0%200%201077%20964'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Club+54%3A+Disco+Night",
+     "is_recurring": true,
+     "recurrence_pattern": "monthly",
+     "last_updated": "2026-03-31T12:22:30.755894Z",
+@@ -65295,7 +65295,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='736'%20height='368'%20viewBox='0%200%20736%20368'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Charlotte+Cornfield+",
+     "is_recurring": false,
+     "last_updated": "2026-04-05T12:14:10.629754Z",
+     "isMultiDay": false,
+@@ -67631,7 +67631,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Stephen+Rannazzisi+l",
+     "is_recurring": false,
+     "last_updated": "2026-03-28T12:13:22.579937Z",
+     "isMultiDay": false,
+@@ -67663,7 +67663,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='3040'%20height='1900'%20viewBox='0%200%203040%201900'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Cyclops%3A+A+Satyr+Pla",
+     "is_recurring": false,
+     "last_updated": "2026-03-31T12:22:30.757484Z",
+     "isMultiDay": false,
+@@ -67727,7 +67727,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2048'%20height='1152'%20viewBox='0%200%202048%201152'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Alpha+%28French+w%2F+e.s",
+     "is_recurring": false,
+     "last_updated": "2026-03-28T12:13:22.581552Z",
+     "isMultiDay": false,
+@@ -67759,7 +67759,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2048'%20height='1152'%20viewBox='0%200%202048%201152'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Two+Prosecutors+%28Rus",
+     "is_recurring": false,
+     "last_updated": "2026-03-31T12:22:30.758236Z",
+     "isMultiDay": false,
+@@ -68149,7 +68149,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2160'%20height='1080'%20viewBox='0%200%202160%201080'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=EAST+SIDE+STORY%3A+A+T",
+     "is_recurring": false,
+     "last_updated": "2026-03-31T12:22:34.163389Z",
+     "isMultiDay": false,
+@@ -80049,7 +80049,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Tyler+Horvath+%40+Back",
+     "is_recurring": false,
+     "last_updated": "2026-04-05T12:14:06.010761Z",
+     "isMultiDay": true,
+@@ -83459,7 +83459,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1290'%20height='1167'%20viewBox='0%200%201290%201167'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=MICHELIN-Recognized+",
+     "is_recurring": false,
+     "last_updated": "2026-04-27T12:37:18.543783Z",
+     "isMultiDay": false,
+@@ -88017,7 +88017,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1939'%20height='2508'%20viewBox='0%200%201939%202508'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Canuck+Cantatas",
+     "is_recurring": false,
+     "last_updated": "2026-04-05T12:14:11.832616Z",
+     "isMultiDay": false,
+@@ -88049,7 +88049,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1920'%20height='1080'%20viewBox='0%200%201920%201080'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=InTouch%3A+Immersive+C",
+     "is_recurring": false,
+     "last_updated": "2026-04-05T12:14:11.833739Z",
+     "isMultiDay": false,
+@@ -90983,7 +90983,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1435'%20height='823'%20viewBox='0%200%201435%20823'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Toronto+Comedy+All+S",
+     "is_recurring": false,
+     "last_updated": "2026-04-05T12:14:13.010837Z",
+     "isMultiDay": false,
+@@ -92818,7 +92818,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='325'%20height='300'%20viewBox='0%200%20325%20300'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Drawn+In%3A+The+Night+",
+     "is_recurring": false,
+     "last_updated": "2026-04-05T12:14:14.902620Z",
+     "isMultiDay": false,
+@@ -105177,7 +105177,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='342'%20height='513'%20viewBox='0%200%20342%20513'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Limited+Edition%3A+A+H",
+     "is_recurring": false,
+     "last_updated": "2026-04-20T12:29:11.307663Z",
+     "isMultiDay": false,
+@@ -106520,7 +106520,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='2550'%20height='1700'%20viewBox='0%200%202550%201700'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Division",
+     "is_recurring": false,
+     "last_updated": "2026-04-21T12:26:57.300577Z",
+     "isMultiDay": false,
+@@ -110113,7 +110113,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1066'%20height='600'%20viewBox='0%200%201066%20600'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Toronto+Camera+Club+",
+     "is_recurring": false,
+     "last_updated": "2026-04-26T12:19:35.345114Z",
+     "isMultiDay": true,
+@@ -112271,7 +112271,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1705'%20height='1049'%20viewBox='0%200%201705%201049'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Tragedy+of+Hamle",
+     "is_recurring": false,
+     "last_updated": "2026-04-26T12:19:35.346411Z",
+     "isMultiDay": false,
+@@ -112305,7 +112305,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1280'%20height='719'%20viewBox='0%200%201280%20719'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Black+Zombie",
+     "is_recurring": false,
+     "last_updated": "2026-04-25T12:18:05.947192Z",
+     "isMultiDay": true,
+@@ -116823,7 +116823,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Tatiana+Frank+live+%40",
+     "is_recurring": false,
+     "last_updated": "2026-04-25T12:18:05.959850Z",
+     "isMultiDay": false,
+@@ -116855,7 +116855,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1920'%20height='1080'%20viewBox='0%200%201920%201080'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=RGH+Powerplay+Series",
+     "is_recurring": false,
+     "last_updated": "2026-04-29T12:37:24.549220Z",
+     "isMultiDay": true,
+@@ -121450,7 +121450,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1280'%20height='719'%20viewBox='0%200%201280%20719'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Ballad+Of+Judas+",
+     "is_recurring": false,
+     "last_updated": "2026-04-29T12:37:24.550473Z",
+     "isMultiDay": true,
+@@ -126210,7 +126210,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1280'%20height='719'%20viewBox='0%200%201280%20719'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Kenny+Loggins%3A+Convi",
+     "is_recurring": false,
+     "last_updated": "2026-04-28T12:40:41.610673Z",
+     "isMultiDay": true,
+@@ -144130,7 +144130,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1024'%20height='683'%20viewBox='0%200%201024%20683'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Rogers+Centre+Ballpa",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:54.352663Z",
+     "isMultiDay": false,
+@@ -148404,7 +148404,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1280'%20height='719'%20viewBox='0%200%201280%20719'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Tower+That+Built",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:54.366176Z",
+     "isMultiDay": true,
+@@ -148436,7 +148436,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='325'%20height='481'%20viewBox='0%200%20325%20481'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Restoration%3A+Nowhere",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:54.367570Z",
+     "isMultiDay": false,
+@@ -148468,7 +148468,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1136'%20height='639'%20viewBox='0%200%201136%20639'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Emo+Night+Toronto+at",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:54.370024Z",
+     "isMultiDay": false,
+@@ -150660,7 +150660,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Ariel+Kagan+live+%40+B",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:54.364774Z",
+     "isMultiDay": false,
+@@ -150691,7 +150691,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='900'%20viewBox='0%200%201200%20900'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Cottage+a+comedy",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:54.365329Z",
+     "isMultiDay": false,
+@@ -153956,7 +153956,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": true,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1280'%20height='719'%20viewBox='0%200%201280%20719'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=The+Oldest+Person+in",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:55.536752Z",
+     "isMultiDay": true,
+@@ -153988,7 +153988,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='342'%20height='254'%20viewBox='0%200%20342%20254'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Detour%3A+Collateral",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:24:55.537855Z",
+     "isMultiDay": false,
+@@ -162552,7 +162552,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='953'%20height='1280'%20viewBox='0%200%20953%201280'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Amy+Montgomery%3A+In+G",
+     "is_recurring": false,
+     "last_updated": "2026-04-18T12:35:16.547063Z",
+     "isMultiDay": false,
+@@ -187087,7 +187087,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='940'%20height='470'%20viewBox='0%200%20940%20470'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Adrienne+Fish+live+%40",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:25:03.185137Z",
+     "isMultiDay": false,
+@@ -187119,7 +187119,7 @@
+     "status": "UPCOMING",
+     "is_multi_day": false,
+     "duration_category": "single",
+-    "image": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1540'%20height='692'%20viewBox='0%200%201540%20692'%3E%3C/svg%3E",
++    "image": "https://placehold.co/576x240/e9d5ff/333?text=Armon%C3%ADa%3A+Harmony+in+",
+     "is_recurring": false,
+     "last_updated": "2026-05-01T12:25:03.185677Z",
+     "isMultiDay": false,
+@@ -326414,41 +326414,6 @@
+     "lastUpdated": "2026-05-01T12:29:00.940372Z",
+     "durationCategory": "short"
+   },
+-  {
+-    "id": "032cf2e71e547cf6330be52cdbbe1533",
+-    "title": "Summerlicious 2026",
+-    "date": "2026-07-10T12:00:00Z",
+-    "end_date": "2026-07-26T12:00:00Z",
+-    "location": "Various Restaurants, Toronto",
+-    "source": "Major Toronto Festivals",
+-    "host": "Summerlicious",
+-    "url": "https://www.toronto.ca/explore-enjoy/dine-out/summerlicious/",
+-    "price": "$20-55 per meal",
+-    "price_amount": 20.0,
+-    "is_free": false,
+-    "description": "Summer edition of Toronto's prix-fixe dining event — 200+ restaurants with 3-course set menus.",
+-    "categories": [
+-      "Food & Drink"
+-    ],
+-    "tags": [
+-      "Summerlicious",
+-      "Restaurant",
+-      "Dining",
+-      "Prix Fixe"
+-    ],
+-    "status": "UPCOMING",
+-    "is_multi_day": true,
+-    "duration_category": "medium",
+-    "is_recurring": false,
+-    "last_updated": "2026-05-01T12:28:47.640947Z",
+-    "isMultiDay": true,
+-    "endDate": "2026-07-26T12:00:00Z",
+-    "isFree": false,
+-    "isRecurring": false,
+-    "priceAmount": 20.0,
+-    "lastUpdated": "2026-05-01T12:28:47.640947Z",
+-    "durationCategory": "medium"
+-  },
+   {
+     "id": "1627a74071d56b31ce67ddec40d79f19",
+     "title": "Mahjong Social",
+@@ -379665,40 +379630,6 @@
+     "lastUpdated": "2026-04-18T03:03:49.899519Z",
+     "durationCategory": "single"
+   },
+-  {
+-    "id": "c7a59e85b777b78b30b97e3eeef6755b",
+-    "title": "Nuit Blanche Toronto 2026",
+-    "date": "2026-10-03T12:00:00Z",
+-    "location": "Various Locations, Toronto",
+-    "source": "Major Toronto Festivals",
+-    "host": "Nuit Blanche Toronto",
+-    "url": "https://www.nbto.com",
+-    "price": "Free",
+-    "price_amount": 0.0,
+-    "is_free": true,
+-    "description": "All-night contemporary art event — installations, performance art, and interactive projects across the city from sunset to sunrise.",
+-    "categories": [
+-      "Arts",
+-      "Festival"
+-    ],
+-    "tags": [
+-      "Nuit Blanche",
+-      "Art",
+-      "Contemporary",
+-      "Overnight"
+-    ],
+-    "status": "UPCOMING",
+-    "is_multi_day": false,
+-    "duration_category": "single",
+-    "is_recurring": false,
+-    "last_updated": "2026-05-01T12:28:47.640953Z",
+-    "isMultiDay": false,
+-    "isFree": true,
+-    "isRecurring": false,
+-    "priceAmount": 0.0,
+-    "lastUpdated": "2026-05-01T12:28:47.640953Z",
+-    "durationCategory": "single"
+-  },
+   {
+     "id": "6788956d2cd7ba1c96ada972a5cd6c05",
+     "title": "Lego Free Play",
+@@ -420927,4 +420858,4 @@
+     "lastUpdated": "2026-05-01T12:26:39.703878Z",
+     "durationCategory": "single"
+   }
+-]
+\ No newline at end of file
++]

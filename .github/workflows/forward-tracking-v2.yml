@@ -1,0 +1,176 @@
+name: Forward Trade Tracking v2
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  track-signals:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        pip install pandas numpy requests yfinance
+        
+    - name: Import latest signals
+      run: |
+        # Import DNA genome picks
+        if [ -f genome/active_picks.json ]; then
+          python forward_trade_executor_v2.py \
+            --import-json genome/active_picks.json \
+            --system dna_genome \
+            --db-path forward_tracking.db
+        fi
+
+        # Import DNA Winner Mutation picks
+        if [ -f genome/data/dna_winner_picks.json ]; then
+          python forward_trade_executor_v2.py \
+            --import-json genome/data/dna_winner_picks.json \
+            --system dna_winner_mutations \
+            --db-path forward_tracking.db
+        fi
+        
+        # Import Alpha Engine picks
+        if [ -f alpha_engine/data/active_picks.json ]; then
+          python forward_trade_executor_v2.py \
+            --import-json alpha_engine/data/active_picks.json \
+            --system alpha_engine \
+            --db-path forward_tracking.db
+        fi
+        
+        # Import KIMI picks
+        if [ -f KIMI_RISEOFTHECLAW/data/active_picks.json ]; then
+          python forward_trade_executor_v2.py \
+            --import-json KIMI_RISEOFTHECLAW/data/active_picks.json \
+            --system kimi \
+            --db-path forward_tracking.db
+        fi
+
+        # Import genome mutation pick files (previously untracked)
+        for mutfile in \
+          genome/data/macd_mutation_picks.json \
+          genome/data/pumpwatch_mutation_picks.json \
+          genome/data/signal_engine_mutation_picks.json \
+          genome/data/pumpwatch_v2_picks.json \
+          genome/data/rapid_fire_mutation_picks.json \
+          genome/data/confluence_mutation_picks.json \
+          genome/data/battleground_mutation_picks.json \
+          genome/data/mutation_lab_picks.json \
+          genome/data/momentum_scalp_picks.json; do
+          if [ -f "$mutfile" ]; then
+            python forward_trade_executor_v2.py \
+              --import-json "$mutfile" \
+              --system genome_mutations \
+              --db-path forward_tracking.db || echo "Warning: failed to import $mutfile"
+          fi
+        done
+
+        # Import predictions (social media / analyst picks)
+        if [ -f predictions/data/active_predictions.json ]; then
+          python forward_trade_executor_v2.py \
+            --import-json predictions/data/active_predictions.json \
+            --system predictions \
+            --db-path forward_tracking.db || echo "Warning: failed to import predictions"
+        fi
+        
+    - name: Check signal resolutions
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_SIGNAL_ALERTS }}
+      run: |
+        python forward_trade_executor_v2.py \
+          --discord-webhook "$DISCORD_WEBHOOK" \
+          --db-path forward_tracking.db \
+          --run-once
+          
+    - name: Upload tracking database
+      uses: actions/upload-artifact@v4
+      with:
+        name: forward-tracking-db
+        path: forward_tracking.db
+        retention-days: 30
+        
+    - name: Generate stats report
+      run: |
+        python -c "
+        import sqlite3
+        import json
+        from datetime import datetime
+        
+        conn = sqlite3.connect('forward_tracking.db')
+        cursor = conn.cursor()
+        
+        # Overall stats
+        cursor.execute('''
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+                SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses,
+                SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) as expired,
+                SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open,
+                AVG(CASE WHEN status IN ('tp_hit', 'sl_hit') THEN pnl_pct END) as avg_pnl
+            FROM signals
+        ''')
+        
+        row = cursor.fetchone()
+        total, wins, losses, expired, open_signals, avg_pnl = row
+        
+        stats = {
+            'generated_at': datetime.now().isoformat(),
+            'total_signals': total or 0,
+            'wins': wins or 0,
+            'losses': losses or 0,
+            'expired': expired or 0,
+            'open': open_signals or 0,
+            'win_rate': (wins / (wins + losses) * 100) if (wins + losses) > 0 else 0,
+            'avg_pnl': avg_pnl or 0,
+            'resolution_rate': ((wins + losses) / total * 100) if total > 0 else 0
+        }
+        
+        with open('forward_stats.json', 'w') as f:
+            json.dump(stats, f, indent=2)
+        
+        print('=== FORWARD TRACKING STATS ===')
+        print(f\"Total Signals: {stats['total_signals']}\")
+        print(f\"Resolved: {stats['wins'] + stats['losses']} (W:{stats['wins']} L:{stats['losses']})\")
+        print(f\"Expired: {stats['expired']}\")
+        print(f\"Open: {stats['open']}\")
+        print(f\"Win Rate: {stats['win_rate']:.1f}%\")
+        print(f\"Resolution Rate: {stats['resolution_rate']:.1f}%\")
+        print(f\"Avg P&L: {stats['avg_pnl']:.2f}%\")
+        print('===============================')
+        
+        conn.close()
+        "
+        
+    - name: Commit stats
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add forward_stats.json
+        if git diff --staged --quiet; then
+          echo "No stats changes to commit"
+          exit 0
+        fi
+        git commit -m "Update forward tracking stats [skip ci]"
+        for i in 1 2 3; do
+          bash .github/scripts/safe_push.sh
+          echo "Push attempt $i failed, retrying in 5s..."
+          sleep 5
+        done
+        echo "::warning::Failed to push after 3 attempts"
+

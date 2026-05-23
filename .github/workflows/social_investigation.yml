@@ -1,0 +1,117 @@
+name: Social Media Algo Trader Investigation
+
+on:
+  # Run daily to check for new traders
+  schedule:
+    - cron: '0 12 * * *'
+  
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  investigate-traders:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+        
+    - name: Run Social Media Investigation
+      run: |
+        echo ""
+        echo " SOCIAL MEDIA ALGO TRADER INVESTIGATION "
+        echo ""
+        echo " Platforms: Reddit, Discord, Twitter/X, YouTube "
+        echo " Mission: Find real traders, verify proof, reverse engineer "
+        echo ""
+        echo ""
+        
+        python social_trader_database.py
+        
+    - name: Generate Investigation Report
+      run: |
+        cat > SOCIAL_MEDIA_INVESTIGATION_REPORT.md << 'REPORT'
+        # Social Media Algo Trader Investigation Report
+        
+        ## Investigation Status: $(date -u '+%Y-%m-%d %H:%M UTC')
+        
+        ### Active Investigations
+        
+        | Platform | Status | Agents Deployed |
+        |----------|--------|-----------------|
+        | Reddit | Active | r/algotrading, r/quant, r/daytrading |
+        | Discord | Active | QuantConnect, Alpaca, TradingView |
+        | Twitter/X | Active | #algotrading, #tradingbot |
+        | YouTube | Active | Scalping strategies, live trading |
+        
+        ### Verification Process
+        
+        1. **Find traders** posting results
+        2. **Check evidence** quality (screenshots, videos)
+        3. **Verify authenticity** (detect fakes, Photoshop)
+        4. **Cross-reference** market data
+        5. **Reverse engineer** strategy rules
+        6. **Backtest** with realistic costs
+        7. **Validate** robustness
+        
+        ### Red Flags We Watch For
+        
+        - Only posting wins, never losses
+        - No broker screenshots
+        - Selling courses/signals
+        - Unrealistic returns (>100% monthly)
+        - Vague strategy descriptions
+        - "DM for signals"
+        - Affiliate links only
+        
+        ### Green Flags We Look For
+        
+        - Broker screenshots with timestamps
+        - Video walkthroughs
+        - Third-party verification (Kinfo, TraderSync)
+        - Transparent about losses
+        - Specific entry/exit rules
+        - Risk management explained
+        - 6+ months of history
+        
+        ### Database Status
+        
+        Check social_traders.json for current verified traders.
+        
+        REPORT
+        
+    - name: Commit investigation results
+      run: |
+        git config --local user.email "investigator@social.ai"
+        git config --local user.name " Social Media Investigator"
+        
+        git add social_traders.json || true
+        git add SOCIAL_TRADER_REPORT.md || true
+        git add SOCIAL_MEDIA_INVESTIGATION_REPORT.md || true
+        
+        git commit -m " Social media trader investigation - $(date -u '+%Y-%m-%d %H:%M UTC')
+
+        Investigating algo traders across Reddit, Discord, Twitter, YouTube:
+        - Finding traders with real proof
+        - Verifying trade authenticity
+        - Reverse engineering strategies
+        - Building verified trader database
+
+        Agents actively researching... [skip ci]" || echo "No changes"
+        
+        bash .github/scripts/safe_push.sh
+

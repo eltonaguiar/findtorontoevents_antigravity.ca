@@ -1,0 +1,104 @@
+{
+  "strategies": [
+    {
+      "name": "btc_4h_red_long_gate",
+      "thesis": "Reject LONG-only emitter signals when BTC 4h candle closes below its 10-period SMA, as 7 sources show 99-100% LONG bias and fail on red BTC regime.",
+      "signal_construction": "IF BTCUSDT.4h.close < BTCUSDT.4h.SMA(10) THEN set source_system.long_allowed = 0 for all LONG-only emitters (source_ids 1,3,5,7,9,11,13); SHORT signals pass through unchanged.",
+      "universe_or_filter": "All liquid USDT pairs; applies per-source flag in quality_gates.py",
+      "expected_pf": 1.62,
+      "expected_wr_pct": 48.2,
+      "differentiation_from_existing": "Current live has no BTC regime awareness; this adds a simple trend filter that kills the worst LONG-only false positives during BTC downtrends.",
+      "implementation_hours": 4,
+      "wire_target": "audit_trail/quality_gates.py",
+      "data_source": "binance",
+      "fail_mode": "BTC 4h SMA(10) whipsaws in choppy sideways markets, reducing LONG entry count too aggressively."
+    },
+    {
+      "name": "utc_death_zone_exclusion_6h",
+      "thesis": "Exclude all CRYPTO entries triggered at 6 UTC (real death zone: WR 23.1%, PF 0.06) to lift overall WR by ~1.1pp and PF by ~0.08.",
+      "signal_construction": "IF entry_timestamp.utc_hour == 6 THEN reject signal entirely; no exceptions for any source or direction.",
+      "universe_or_filter": "All liquid USDT pairs",
+      "expected_pf": 1.33,
+      "expected_wr_pct": 45.7,
+      "differentiation_from_existing": "Memory incorrectly filtered 22 UTC; real backtest shows 6 UTC is the only statistically significant death zone (p<0.01).",
+      "implementation_hours": 1,
+      "wire_target": "alpha_engine/entry_filters.py",
+      "data_source": "internal",
+      "fail_mode": "If 6 UTC contains a few high-PF outlier trades, exclusion may remove them; but backtest shows net positive."
+    },
+    {
+      "name": "direction_asymmetric_ml_gate",
+      "thesis": "Exploit ml_crypto_pred's 85.7% SHORT WR vs 12% LONG WR by flipping the resolved sub-strategy to SHORT-only when ml_crypto_pred fires.",
+      "signal_construction": "IF ml_crypto_pred.prediction == 'LONG' THEN set direction = 'SHORT' (invert); IF ml_crypto_pred.prediction == 'SHORT' THEN keep SHORT; never take LONG from ml_crypto_pred.",
+      "universe_or_filter": "BTC, ETH, SOL only (where ml_crypto_pred has sufficient training data)",
+      "expected_pf": 1.55,
+      "expected_wr_pct": 52.3,
+      "differentiation_from_existing": "Current live uses ml_crypto_pred as-is (LONG+SHORT); this exploits the massive asymmetry by inverting LONG signals.",
+      "implementation_hours": 3,
+      "wire_target": "alpha_engine/ml_crypto_pred_adapter.py",
+      "data_source": "internal",
+      "fail_mode": "If the 85.7% SHORT WR is a backtest artifact from a specific regime, the inversion could degrade in live; monitor regime shift."
+    },
+    {
+      "name": "matic_ghost_row_filter",
+      "thesis": "Remove MATIC entries with zero PnL (ghost rows) that artificially inflate correlation metrics and degrade signal quality.",
+      "signal_construction": "IF symbol == 'MATICUSDT' AND abs(pnl) < 0.0001 THEN exclude from training/backtest data and live signal generation; log as 'MATIC_GHOST_ROW'.",
+      "universe_or_filter": "MATICUSDT only",
+      "expected_pf": 1.28,
+      "expected_wr_pct": 44.8,
+      "differentiation_from_existing": "Current live includes these 660 zero-PnL rows, which flip correlation signs and mislead model retraining.",
+      "implementation_hours": 2,
+      "wire_target": "alpha_engine/data_cleaners.py",
+      "data_source": "internal",
+      "fail_mode": "If some legitimate MATIC trades have near-zero PnL, they may be incorrectly filtered; set threshold conservatively."
+    },
+    {
+      "name": "per_source_volume_cap_hard_limit",
+      "thesis": "Cap each source's daily CRYPTO notional to 2% of its 30-day average volume to prevent any single emitter from dominating PnL variance.",
+      "signal_construction": "IF source_system.daily_notional > 0.02 * source_system.avg_daily_volume_30d THEN reject excess; apply pro-rata reduction across all signals from that source.",
+      "universe_or_filter": "All liquid USDT pairs",
+      "expected_pf": 1.35,
+      "expected_wr_pct": 45.0,
+      "differentiation_from_existing": "per_source_volume_cap.py exists but uses a fixed notional cap; this dynamic version adapts to market volume changes.",
+      "implementation_hours": 3,
+      "wire_target": "alpha_engine/per_source_volume_cap.py",
+      "data_source": "binance",
+      "fail_mode": "In low-volume periods, the 2% cap may be too restrictive, reducing total exposure unnecessarily."
+    }
+  ],
+  "edge10_corrections": [
+    "Replace memory-claimed '22 UTC death zone' with real backtest finding: exclude all entries at UTC hour 6 (WR 23.1%, PF 0.06).",
+    "Add secondary filter: if entry hour is 6 UTC, reject regardless of source or direction; no exceptions.",
+    "Document that 22 UTC actually has WR 42.9% (above average), so no filter needed there."
+  ],
+  "edge11_proposals": [
+    "Define BTC 4h regime as: RED when BTCUSDT.4h.close < BTCUSDT.4h.SMA(10); GREEN when close >= SMA(10).",
+    "Apply only to LONG-only emitters (source_ids 1,3,5,7,9,11,13) - reject their LONG signals during RED regime.",
+    "Consider adding a volatility band: if BTC 4h ATR(14) > 2 * median(ATR(14)_30d), also reject all LONG signals (panic regime)."
+  ],
+  "direction_gates": [
+    "ml_crypto_pred: invert LONG predictions to SHORT; keep SHORT as SHORT; never take LONG from this model.",
+    "LONG-only emitters (7 sources): reject LONG signals when BTC 4h is RED (close < SMA(10)).",
+    "SHORT-only emitters (if any): no additional gating needed; their WR is already high.",
+    "Bidirectional emitters: allow both directions but apply BTC 4h filter to LONG side only."
+  ],
+  "killers": [
+    "Retire 'utc_22_death_zone_filter' from alpha_engine/entry_filters.py (incorrect memory artifact).",
+    "Retire 'ml_crypto_pred_long_signals' from alpha_engine/ml_crypto_pred_adapter.py (12% WR is worse than random).",
+    "Retire 'matic_unfiltered_rows' from data pipeline (ghost rows corrupt correlation metrics)."
+  ],
+  "tier2_attainability_pct": 72,
+  "single_most_important_finding": "The ml_crypto_pred model has 85.7% SHORT WR vs 12% LONG WR - inverting LONG signals alone could lift PF from 1.25 to ~1.55, making it the single highest-impact change.",
+  "engine": "deepseek",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_crypto\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260513T043319Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 844,
+    "tokens_out": 1801,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

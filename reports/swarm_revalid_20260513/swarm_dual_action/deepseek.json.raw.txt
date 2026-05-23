@@ -1,0 +1,28 @@
+```json
+{
+  "item_1_vix_yc_wire_up": {
+    "verdict": "PROCEED",
+    "merge_safety": "safe",
+    "function_name_concern": "add_new_function",
+    "default_state": "OFF",
+    "biggest_risk": "Dual yfinance fetches in hot path could cause rate limiting or latency spikes during market open even with 4h TTL",
+    "concrete_changes_recommended": [
+      "vix_regime_gate.py: add _fetch_yc_now() returning (^TNX - ^FVX) spread with 4h TTL cache",
+      "vix_regime_gate.py: add get_cached_yc() mirroring get_cached_vix() pattern",
+      "vix_regime_gate.py: add is_yc_below_threshold() reading YC_REGIME_THRESHOLD env (default 0.0)",
+      "vix_regime_gate.py: add should_reject_pick() as new function that checks VIX+YC combined logic",
+      "vix_regime_gate.py: refactor should_reject_equity_pick() to delegate to should_reject_pick() for backward compat",
+      "vix_regime_gate.py: add YC_REGIME_GATE_ENABLED env var (default 0)",
+      "vix_regime_gate.py: add combined cache TTL config via CACHE_TTL_YC env (default 14400s)"
+    ]
+  },
+  "item_2_ns_a_db_verify": {
+    "recommended_option": "C",
+    "rationale": "Standalone verifier bypasses cron concurrency issues entirely, gives immediate DB truth without touching production workflow, and can be run on-demand for any future suspicious backtest results",
+    "expected_outcome": "verifies edge",
+    "blocking_for_real_money_sizing": "yes"
+  },
+  "priority_order": "item_2_first",
+  "single_most_important_consideration_across_both": "Do not size real money on multi_asset_cot until DB verify confirms PF 21.86 is real, not a fabrication artifact like kimi_signal_tracking"
+}
+```

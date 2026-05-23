@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit picks edge — observability &amp; tooling (Apr 8, 2026) | findtorontoevents</title>
+    <meta name="description" content="What shipped: live dashboard JSON snapshot, active-book analyzers, cross-asset edge docs, Redis bus. Research tooling only — NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-04-08-audit-picks-edge-tooling.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.65; }
+        .container { max-width: 920px; margin: 0 auto; padding: 36px 20px 60px; }
+        header { background: linear-gradient(135deg, #1a2540 0%, #0f1629 100%); padding: 32px; border-radius: 16px; margin-bottom: 28px; border: 1px solid #2a3f5f; }
+        h1 { font-size: 1.75em; color: #a78bfa; margin-bottom: 12px; }
+        .nfa-banner {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #fecaca;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 1.02em;
+        }
+        .nfa-sub { font-weight: 400; font-size: 0.85em; margin-top: 8px; color: #fca5a5; line-height: 1.5; }
+        .section { background: #111827; padding: 24px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #1f2937; }
+        h2 { color: #34d399; font-size: 1.25em; margin-bottom: 12px; border-left: 4px solid #34d399; padding-left: 10px; }
+        p, li { color: #d1d5db; margin-bottom: 10px; }
+        ul { padding-left: 22px; }
+        a { color: #7dd3fc; }
+        code { background: #1f2937; padding: 2px 8px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88em; margin: 12px 0; color: #e5e7eb; }
+        th, td { border: 1px solid #374151; padding: 8px 10px; text-align: left; }
+        th { background: #1f2937; color: #a5b4fc; }
+        footer { text-align: center; color: #6b7280; font-size: 0.85em; margin-top: 28px; }
+        .muted { color: #9ca3af; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="nfa-banner">
+                NOT FINANCIAL ADVICE (NFA)
+                <div class="nfa-sub">This entry documents software and research tooling for the audit pipeline. It is not investment advice or a performance guarantee.</div>
+            </div>
+            <h1>Audit picks edge — observability &amp; tooling shipped</h1>
+            <p class="muted">April 8, 2026 &middot; <a href="/audit/">/audit/</a> &middot; <a href="/updates/">Updates index</a></p>
+            <p class="muted">Reference snapshot in the merged report: dashboard <code>generated_at</code> <strong>2026-04-06T20:11:17Z</strong> (re-run analyzers on a fresh <code>dashboard_data.json</code> for current numbers).</p>
+        </header>
+
+        <div class="section">
+            <h2>What exactly changed</h2>
+            <ul>
+                <li><strong>Live JSON snapshot</strong> &mdash; <code>tools/fetch_audit_dashboard_snapshot.py</code> downloads the same <code>dashboard_data.json</code> the browser loads from production so offline analysis matches the live audit page.</li>
+                <li><strong>Active book analyzer</strong> &mdash; <code>tools/analyze_audit_active_book.py</code>: counts by <code>asset_class</code>, aggregate unrealized PnL (excluding flagged rows), score vs unrealized correlations, Verified Alpha tagging share, strategy joins to <code>recent_closed</code> with 30d/90d closed counts, and <code>payload_systems_unrealized</code> echo from <code>systems[]</code>.</li>
+                <li><strong>Existing analyzers wired to the same file</strong> &mdash; <code>tools/analyze_audit_scores_vs_pnl.py</code> and <code>tools/analyze_asset_class_edge_flaws.py</code> are part of the documented run chain (quintiles, rank IC by slice, flaw flags).</li>
+                <li><strong>Artifacts</strong> &mdash; machine-readable outputs under <code>tools/data/</code> (e.g. <code>audit_active_book_analysis.json</code>, <code>score_pnl_analysis.json</code>, <code>asset_class_edge_flaws_analysis.json</code>); snapshots directory gitignored with <code>.gitkeep</code>.</li>
+                <li><strong>Documentation</strong> &mdash; <code>docs/AUDIT_PICKS_EDGE_ANALYSIS_2026-04-06.md</code> (single merged narrative), <code>docs/AUDIT_PLAN_CROSS_ASSET_REVIEW_2026-04-06.md</code>, <code>docs/ASSET_CLASS_EDGE_SCORING_FLAWS_2026-04-07.md</code>, <code>TRACE_LOG.MD</code> pipeline alignment, <code>docs/REDIS_BUS_CHANGELOG.md</code> rows for fleet sync.</li>
+                <li><strong>Bus posts</strong> &mdash; <code>tools/bus_post_trace_log.py</code> aligned with trace doc; <code>tools/bus_post_audit_picks_edge.py</code> publishes <code>AUDIT_PICKS_EDGE_ANALYSIS</code> (see changelog).</li>
+                <li><strong>Exports caveat</strong> &mdash; CSV/SQL dumps at fixed paths can disagree with the live dashboard on the same symbol if timestamps differ; the JSON snapshot is the reconciliation source of truth for audit alignment.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Benefits by asset class</h2>
+            <p>These are <strong>observability and governance</strong> benefits: faster, repeatable answers from one JSON source. They do not by themselves change execution or fills.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset class</th>
+                        <th>What you can see now</th>
+                        <th>Why it matters</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>CRYPTO</strong></td>
+                        <td>Active-book concentration, VA share, closed-history mean PnL positive at scale in the reference run; <code>smart_score</code> shows stronger rank IC on crypto closed trades than open-book noise.</td>
+                        <td>Separates &ldquo;scoring ranks closes&rdquo; from &ldquo;open MTM is noisy&rdquo;; supports crypto-first promotion and calibration work without guessing from the UI.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>EQUITY</strong></td>
+                        <td>Many actives vs low VA tag rate; closed bucket negative mean/median in reference data; score can rank while the traded pool bleeds.</td>
+                        <td>Makes the <em>toxic universe / gate</em> problem visible in numbers, not only headline cards; equity work shifts toward allowlists and quality filters, not score tweaks alone.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FOREX</strong></td>
+                        <td>Small active n; weak headline discrimination in reviews; closed stats negative mean in the reference slice.</td>
+                        <td>Honest labeling as experimental: tooling prevents over-weighting forex until gates and data depth improve.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>COMMODITY / ETF / FUTURES</strong></td>
+                        <td>Closed counts surfaced with small-n warnings in the analyzers and docs.</td>
+                        <td>Avoids overfitting narratives from thin buckets; keeps reporting proportional to sample size.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SPORTS</strong></td>
+                        <td>Appears on the same active-book and trace surfaces as other classes (sparse in the reference snapshot).</td>
+                        <td>Single pipeline for cross-asset audit; sports volume grows without a separate ad-hoc reporting path.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Where to read more</h2>
+            <ul>
+                <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/AUDIT_PICKS_EDGE_ANALYSIS_2026-04-06.md" target="_blank" rel="noopener"><strong>AUDIT_PICKS_EDGE_ANALYSIS_2026-04-06.md</strong></a> &mdash; full tables, interpretation, re-run commands.</li>
+                <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/REDIS_BUS_CHANGELOG.md" target="_blank" rel="noopener"><strong>REDIS_BUS_CHANGELOG.md</strong></a> &mdash; topic <code>AUDIT_PICKS_EDGE_ANALYSIS</code> and related fleet messages.</li>
+                <li><a href="/updates/2026-04-07-audit-score-improvement-review.html">Prior update</a> &mdash; plan review and P0 truth-layer notes.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>Markdown mirror: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/updates/2026-04-08-audit-picks-edge-tooling.md">updates/2026-04-08-audit-picks-edge-tooling.md</a></p>
+        </footer>
+    </div>
+</body>
+</html>

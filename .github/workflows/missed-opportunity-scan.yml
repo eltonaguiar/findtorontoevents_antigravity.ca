@@ -1,0 +1,51 @@
+name: "Missed Opportunity Analyzer Hourly Self-Improvement"
+
+on:
+  schedule:
+    - cron: '19 * * * *'  # Staggered from :15 (13+ workflows at :15)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: missed-opportunity-scan
+  cancel-in-progress: true
+
+jobs:
+  missed-opportunity-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run missed opportunity analysis
+        run: python alpha_engine/missed_opportunity_analyzer.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/missed_gainers_log.json \
+                  alpha_engine/data/wrong_guesses_log.json \
+                  alpha_engine/data/hourly_improvement_report.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Missed opportunity scan $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

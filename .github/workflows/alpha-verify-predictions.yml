@@ -1,0 +1,50 @@
+name: ALPHA  Verify Predictions
+
+on:
+  schedule:
+    - cron: '26 */2 * * *'  # Staggered from :15 (13+ workflows at :15)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alpha-verify-predictions
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run prediction verifier
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/verify_predictions.py
+
+      - name: Commit updated verification log
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/prediction_verification_log.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto: Prediction verification - $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

@@ -1,0 +1,372 @@
+{
+  "analysis_date": "2026-03-24",
+  "system_version": "1.1",
+  "dataset": {
+    "total_closed_picks": 502,
+    "analyzable_won_lost": 351,
+    "baseline_win_rate": 0.4786
+  },
+  "feature_findings": {
+    "volume_ratio_verdict": {
+      "claim": "Winners enter at LOWER volume (1.12 vs 1.33)",
+      "verdict": "PARTIALLY CONFIRMED",
+      "evidence": {
+        "top_level_winners_mean": 1.1967,
+        "top_level_losers_mean": 1.3168,
+        "top_level_winners_median": 0.665,
+        "top_level_losers_median": 0.748,
+        "ml_winners_mean": 1.3077,
+        "ml_losers_mean": 1.3053,
+        "note": "Top-level volume_ratio confirms: winners 1.20 vs losers 1.32 mean, winners 0.67 vs losers 0.75 median. ML features mixed. Quintile analysis: no clean monotonic pattern but Q1 (lowest) has smallest losses. Effect real but modest, driven by outlier high-volume FOMO losers. Bottom line: prefer calm entries."
+      }
+    },
+    "top_predictors": [
+      {
+        "rank": 1,
+        "feature": "confidence",
+        "finding": "Q4 (>=0.80)=69.6% WR vs Q1 (<0.60)=42.4%"
+      },
+      {
+        "rank": 2,
+        "feature": "ml_score",
+        "finding": "Corr +0.33. Above-median=61.6% WR vs below=42.8%"
+      },
+      {
+        "rank": 3,
+        "feature": "mae",
+        "finding": "Winners -0.87% vs Losers -6.37%. Tight drawdown = strong signal"
+      },
+      {
+        "rank": 4,
+        "feature": "elite_score",
+        "finding": "Monotonic Q1=27.7% -> Q4=44.9% WR"
+      },
+      {
+        "rank": 5,
+        "feature": "hold_days",
+        "finding": "4-7d sweet spot=68.2% WR +15.5% avg PnL"
+      },
+      {
+        "rank": 6,
+        "feature": "risk_reward",
+        "finding": "LOWER is better: winners 1.81 vs losers 1.99"
+      },
+      {
+        "rank": 7,
+        "feature": "gross_edge_bps",
+        "finding": "Corr -0.30: winners 466 bps vs losers 673 bps. Bloated = bad"
+      },
+      {
+        "rank": 8,
+        "feature": "volume_ratio",
+        "finding": "Winners 1.20 vs losers 1.32. Calm > FOMO"
+      }
+    ],
+    "regime_findings": {
+      "BEAR": "60% WR (n=10) -- counter-trend",
+      "unknown": "47.8% WR (n=335) -- baseline",
+      "ACCUMULATION": "13.6% WR (n=22) -- AVOID"
+    },
+    "time_findings": {
+      "best_hold": "4-7 days (68.2% WR, +15.5% avg PnL)",
+      "worst_hold": "0-1 days (42.5% WR) -- noise"
+    },
+    "strategy_findings": {
+      "top": [
+        "ml_enhanced_FETUSDT_1d_B_lightgbm (100% WR, n=15)",
+        "ml_enhanced_BNBUSDT_15m_B_lightgbm (93.8% WR, n=16)",
+        "ml_enhanced_RENDERUSDT_1h_D_ensemble_stack (93.3% WR, n=15)",
+        "copy_hl_NMTD_25M (81.2% WR, n=16)"
+      ],
+      "worst": [
+        "winner_pattern_precursor (20% WR, n=75)",
+        "yahoo_analyst_consensus (0% WR, n=5)"
+      ]
+    }
+  },
+  "backtest_results": {
+    "total_picks": 351,
+    "baseline_wr": 0.4786,
+    "msi_quartiles": [
+      {
+        "quartile": "Q1",
+        "score_range": "10-37",
+        "n": 87,
+        "wins": 32,
+        "win_rate": 0.3678,
+        "avg_pnl": -0.020303,
+        "median_pnl": -0.0093
+      },
+      {
+        "quartile": "Q2",
+        "score_range": "39-54",
+        "n": 87,
+        "wins": 38,
+        "win_rate": 0.4368,
+        "avg_pnl": 0.013194,
+        "median_pnl": -0.000717
+      },
+      {
+        "quartile": "Q3",
+        "score_range": "54-91",
+        "n": 87,
+        "wins": 31,
+        "win_rate": 0.3563,
+        "avg_pnl": -0.006236,
+        "median_pnl": -0.006078
+      },
+      {
+        "quartile": "Q4",
+        "score_range": "92-100",
+        "n": 90,
+        "wins": 67,
+        "win_rate": 0.7444,
+        "avg_pnl": 0.100834,
+        "median_pnl": 0.029485
+      }
+    ],
+    "eqs_quartiles": [
+      {
+        "quartile": "Q1",
+        "score_range": "19-37",
+        "n": 87,
+        "wins": 31,
+        "win_rate": 0.3563,
+        "avg_pnl": -0.015779,
+        "median_pnl": -0.011014
+      },
+      {
+        "quartile": "Q2",
+        "score_range": "37-50",
+        "n": 87,
+        "wins": 30,
+        "win_rate": 0.3448,
+        "avg_pnl": 0.004923,
+        "median_pnl": -0.002506
+      },
+      {
+        "quartile": "Q3",
+        "score_range": "50-74",
+        "n": 87,
+        "wins": 36,
+        "win_rate": 0.4138,
+        "avg_pnl": -0.005514,
+        "median_pnl": -0.0052
+      },
+      {
+        "quartile": "Q4",
+        "score_range": "74-100",
+        "n": 90,
+        "wins": 71,
+        "win_rate": 0.7889,
+        "avg_pnl": 0.103758,
+        "median_pnl": 0.029485
+      }
+    ],
+    "combined_quartiles": [
+      {
+        "quartile": "Q1",
+        "score_range": "16-36",
+        "n": 87,
+        "wins": 31,
+        "win_rate": 0.3563,
+        "avg_pnl": -0.020943,
+        "median_pnl": -0.010014
+      },
+      {
+        "quartile": "Q2",
+        "score_range": "36-51",
+        "n": 87,
+        "wins": 37,
+        "win_rate": 0.4253,
+        "avg_pnl": 0.015548,
+        "median_pnl": -0.000443
+      },
+      {
+        "quartile": "Q3",
+        "score_range": "52-84",
+        "n": 87,
+        "wins": 31,
+        "win_rate": 0.3563,
+        "avg_pnl": -0.009849,
+        "median_pnl": -0.006272
+      },
+      {
+        "quartile": "Q4",
+        "score_range": "84-100",
+        "n": 90,
+        "wins": 69,
+        "win_rate": 0.7667,
+        "avg_pnl": 0.10267,
+        "median_pnl": 0.029485
+      }
+    ],
+    "portfolio_stats": {
+      "ALPHA": {
+        "description": "MSI >= 60 only (momentum-safe)",
+        "n": 133,
+        "wins": 89,
+        "losses": 44,
+        "win_rate": 0.6692,
+        "avg_pnl": 0.071587,
+        "median_pnl": 0.029485,
+        "total_pnl": 9.521101,
+        "std_pnl": 0.136252,
+        "sharpe_approx": 0.5254,
+        "best_pnl": 0.490542,
+        "worst_pnl": -0.066667,
+        "avg_msi": 91.2,
+        "avg_eqs": 82.2
+      },
+      "BETA": {
+        "description": "EQS >= 50 only (quality entry)",
+        "n": 177,
+        "wins": 105,
+        "losses": 72,
+        "win_rate": 0.5932,
+        "avg_pnl": 0.049809,
+        "median_pnl": 0.004325,
+        "total_pnl": 8.816121,
+        "std_pnl": 0.137465,
+        "sharpe_approx": 0.3623,
+        "best_pnl": 0.490542,
+        "worst_pnl": -0.175114,
+        "avg_msi": 79.7,
+        "avg_eqs": 77.6
+      },
+      "GAMMA": {
+        "description": "MSI >= 60 AND EQS >= 50 (combined)",
+        "n": 123,
+        "wins": 84,
+        "losses": 39,
+        "win_rate": 0.6829,
+        "avg_pnl": 0.076132,
+        "median_pnl": 0.029485,
+        "total_pnl": 9.364177,
+        "std_pnl": 0.140259,
+        "sharpe_approx": 0.5428,
+        "best_pnl": 0.490542,
+        "worst_pnl": -0.066667,
+        "avg_msi": 93.0,
+        "avg_eqs": 85.1
+      },
+      "UNFILTERED": {
+        "description": "All picks (baseline)",
+        "n": 351,
+        "wins": 168,
+        "losses": 183,
+        "win_rate": 0.4786,
+        "avg_pnl": 0.022547,
+        "median_pnl": -0.000105,
+        "total_pnl": 7.914013,
+        "std_pnl": 0.120949,
+        "sharpe_approx": 0.1864,
+        "best_pnl": 0.490542,
+        "worst_pnl": -0.378193,
+        "avg_msi": 57.8,
+        "avg_eqs": 57.2
+      },
+      "REJECTED": {
+        "description": "Blocked by RiskFilter",
+        "n": 19,
+        "wins": 5,
+        "losses": 14,
+        "win_rate": 0.2632,
+        "avg_pnl": -0.011345,
+        "median_pnl": -0.015535,
+        "total_pnl": -0.215553,
+        "std_pnl": 0.030411,
+        "sharpe_approx": -0.3731,
+        "best_pnl": 0.059455,
+        "worst_pnl": -0.077153,
+        "avg_msi": 48.9,
+        "avg_eqs": 42.3
+      }
+    },
+    "threshold_sweep_top10": [
+      {
+        "msi_threshold": 80,
+        "eqs_threshold": 65,
+        "n": 91,
+        "win_rate": 0.7692,
+        "avg_pnl": 0.102064
+      },
+      {
+        "msi_threshold": 80,
+        "eqs_threshold": 70,
+        "n": 91,
+        "win_rate": 0.7692,
+        "avg_pnl": 0.102064
+      },
+      {
+        "msi_threshold": 40,
+        "eqs_threshold": 70,
+        "n": 100,
+        "win_rate": 0.76,
+        "avg_pnl": 0.092159
+      },
+      {
+        "msi_threshold": 70,
+        "eqs_threshold": 65,
+        "n": 94,
+        "win_rate": 0.7553,
+        "avg_pnl": 0.098378
+      },
+      {
+        "msi_threshold": 70,
+        "eqs_threshold": 70,
+        "n": 94,
+        "win_rate": 0.7553,
+        "avg_pnl": 0.098378
+      },
+      {
+        "msi_threshold": 75,
+        "eqs_threshold": 65,
+        "n": 94,
+        "win_rate": 0.7553,
+        "avg_pnl": 0.098378
+      },
+      {
+        "msi_threshold": 75,
+        "eqs_threshold": 70,
+        "n": 94,
+        "win_rate": 0.7553,
+        "avg_pnl": 0.098378
+      },
+      {
+        "msi_threshold": 45,
+        "eqs_threshold": 70,
+        "n": 98,
+        "win_rate": 0.7551,
+        "avg_pnl": 0.09404
+      },
+      {
+        "msi_threshold": 50,
+        "eqs_threshold": 70,
+        "n": 98,
+        "win_rate": 0.7551,
+        "avg_pnl": 0.09404
+      },
+      {
+        "msi_threshold": 55,
+        "eqs_threshold": 70,
+        "n": 97,
+        "win_rate": 0.7526,
+        "avg_pnl": 0.095336
+      }
+    ],
+    "score_distribution": {
+      "msi_mean": 57.8,
+      "msi_median": 54.0,
+      "msi_std": 30.1,
+      "msi_p25": 39.5,
+      "msi_p75": 92.0,
+      "eqs_mean": 57.2,
+      "eqs_median": 50.0,
+      "eqs_std": 25.0,
+      "eqs_p25": 37.0,
+      "eqs_p75": 76.0
+    },
+    "blocked_count": 19
+  }
+}

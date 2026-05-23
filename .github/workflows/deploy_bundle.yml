@@ -1,0 +1,93 @@
+name: Deploy Strategy Bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle:
+        description: 'Bundle name to deploy'
+        required: true
+        default: 'williams_connors'
+      mode:
+        description: 'Deployment mode'
+        required: true
+        default: 'paper'
+        type: choice
+        options:
+        - paper
+        - live
+      
+jobs:
+  validate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    name: Validate Strategies
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install deps
+      run: pip install -r requirements.txt
+      
+    - name: Run 8-check validation
+      run: |
+        python -m alpha_engine.survivor_backtest \
+          --bundle ${{ github.event.inputs.bundle }} \
+          --checks all_8 \
+          --symbols 24 \
+          --years 5
+          
+    - name: Check validation results
+      run: |
+        python -c "
+        import json
+        import sys
+        
+        with open('validation_results.json') as f:
+            results = json.load(f)
+        
+        passed = sum(1 for r in results.values() if r.get('passed', False))
+        total = len(results)
+        
+        print(f'Validation: {passed}/{total} strategies passed')
+        
+        if passed < total:
+            print('FAILED STRATEGIES:')
+            for name, data in results.items():
+                if not data.get('passed', False):
+                    print(f'  - {name}')
+            sys.exit(1)
+        "
+        
+  deploy:
+    needs: validate
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    name: Deploy to ${{ github.event.inputs.mode }}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      
+    - name: Deploy bundle
+      env:
+        DEPLOY_MODE: ${{ github.event.inputs.mode }}
+        BUNDLE: ${{ github.event.inputs.bundle }}
+      run: |
+        python deploy_prod_bundle.py --mode $DEPLOY_MODE --bundle $BUNDLE
+        
+    - name: Notify deployment
+      uses: slackapi/slack-github-action@v1
+      if: always()
+      with:
+        payload: |
+          {
+            "text": "Bundle ${{ github.event.inputs.bundle }} deployed to ${{ github.event.inputs.mode }}: ${{ job.status }}"
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+

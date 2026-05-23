@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Correlation Matrix",
+  "description": "Asset correlation matrix with pair-level coefficients and regime labels",
+  "type": "object",
+  "required": ["assets", "pairs", "generated_at"],
+  "properties": {
+    "assets": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 2,
+      "description": "List of asset symbols in the correlation matrix"
+    },
+    "pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_a", "asset_b", "correlation"],
+        "properties": {
+          "asset_a": {"type": "string"},
+          "asset_b": {"type": "string"},
+          "correlation": {
+            "type": "number",
+            "minimum": -1.0,
+            "maximum": 1.0
+          },
+          "window": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "regime": {
+            "type": "string",
+            "enum": [
+              "strong_positive", "strong_negative",
+              "moderate_positive", "moderate_negative",
+              "weak_positive", "weak_negative",
+              "no_correlation"
+            ]
+          }
+        }
+      }
+    },
+    "matrix": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {"type": "number"}
+      },
+      "description": "N×N correlation matrix (optional, derived from pairs)"
+    },
+    "window": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Default sliding window size"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

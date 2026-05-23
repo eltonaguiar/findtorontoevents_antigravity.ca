@@ -1,0 +1,176 @@
+//@version=6
+strategy("Antigravity Superstar v1.0 [Triple-Confirmed]", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.1, initial_capital=10000, pyramiding=0)
+
+// ============================================
+// ANTIGRAVITY SUPERSTAR v1.0
+// Hybrid: Triple EMA Stack + Volume Spike + MACD Confluence
+// Built from backtested superstars:
+//   - Triple_EMA_STEPFUN: PF 1.50 avg, 6/6 symbols profitable
+//   - Volume_Spike_STEPFUN: PF 3.84-6.93 on majors
+//   - MACD_Crossover_STEPFUN: PF 1.60 consistent
+// Requires 2-of-3 confirmations for entry (reduces false signals)
+// ============================================
+
+// --- TRIPLE EMA PARAMETERS ---
+fast_ema_len = input.int(5, "Fast EMA", minval=3, maxval=20, group="Triple EMA")
+mid_ema_len = input.int(10, "Mid EMA", minval=5, maxval=50, group="Triple EMA")
+slow_ema_len = input.int(20, "Slow EMA", minval=10, maxval=100, group="Triple EMA")
+
+// --- VOLUME SPIKE PARAMETERS ---
+vol_period = input.int(20, "Volume MA Period", minval=5, maxval=50, group="Volume Spike")
+vol_multiplier = input.float(2.0, "Volume Spike Multiplier", minval=1.2, maxval=5.0, step=0.1, group="Volume Spike")
+price_move_thresh = input.float(1.0, "Price Move Threshold %", minval=0.1, step=0.1, group="Volume Spike")
+
+// --- MACD PARAMETERS ---
+macd_fast = input.int(12, "MACD Fast", minval=5, maxval=20, group="MACD")
+macd_slow = input.int(26, "MACD Slow", minval=15, maxval=50, group="MACD")
+macd_signal = input.int(9, "MACD Signal", minval=3, maxval=15, group="MACD")
+
+// --- CONFIRMATION MODE ---
+min_confirmations = input.int(2, "Min Confirmations (1-3)", minval=1, maxval=3, group="Entry Rules", tooltip="1=Any signal, 2=Two-of-three, 3=All three must agree")
+use_rsi_filter = input.bool(true, "RSI Momentum Filter", group="Entry Rules")
+rsi_period = input.int(14, "RSI Period", minval=5, maxval=50, group="Entry Rules")
+
+// --- EXIT PARAMETERS ---
+exit_mode = input.string("ATR Trailing", "Exit Mode", options=["ATR Trailing", "Fixed TP/SL", "Opposite Signal"], group="Exit")
+atr_mult_tp = input.float(2.5, "ATR TP Multiplier", minval=1.0, maxval=5.0, step=0.5, group="Exit")
+atr_mult_sl = input.float(1.5, "ATR SL Multiplier", minval=0.5, maxval=3.0, step=0.5, group="Exit")
+fixed_tp = input.float(3.0, "Fixed TP %", minval=0.5, step=0.5, group="Exit")
+fixed_sl = input.float(1.5, "Fixed SL %", minval=0.5, step=0.5, group="Exit")
+
+// ============================================
+// INDICATOR CALCULATIONS
+// ============================================
+
+// --- Triple EMA ---
+ema_fast = ta.ema(close, fast_ema_len)
+ema_mid = ta.ema(close, mid_ema_len)
+ema_slow = ta.ema(close, slow_ema_len)
+
+bullish_stack = ema_fast > ema_mid and ema_mid > ema_slow and close > ema_fast
+bearish_stack = ema_fast < ema_mid and ema_mid < ema_slow and close < ema_fast
+
+// --- Volume Spike ---
+vol_ma = ta.sma(volume, vol_period)
+vol_spike = volume > vol_ma * vol_multiplier
+price_change = (close - close[1]) / close[1] * 100
+sig_move = math.abs(price_change) >= price_move_thresh
+bullish_candle = close > open and close > close[1]
+bearish_candle = close < open and close < close[1]
+
+vol_long = vol_spike and bullish_candle and sig_move
+vol_short = vol_spike and bearish_candle and sig_move
+
+// --- MACD ---
+macd_line = ta.ema(close, macd_fast) - ta.ema(close, macd_slow)
+signal_line = ta.ema(macd_line, macd_signal)
+macd_hist = macd_line - signal_line
+
+macd_bull = ta.crossover(macd_line, signal_line) or (macd_hist > 0 and macd_hist > macd_hist[1])
+macd_bear = ta.crossunder(macd_line, signal_line) or (macd_hist < 0 and macd_hist < macd_hist[1])
+
+// --- RSI Momentum Filter ---
+rsi_val = ta.rsi(close, rsi_period)
+rsi_bull = not use_rsi_filter or rsi_val > 45
+rsi_bear = not use_rsi_filter or rsi_val < 55
+
+// --- ATR ---
+atr_val = ta.atr(14)
+
+// ============================================
+// CONFLUENCE SCORING (0-3)
+// ============================================
+
+long_score = (bullish_stack ? 1 : 0) + (vol_long ? 1 : 0) + (macd_bull ? 1 : 0)
+short_score = (bearish_stack ? 1 : 0) + (vol_short ? 1 : 0) + (macd_bear ? 1 : 0)
+
+// Entry signals with minimum confirmation threshold
+long_signal = long_score >= min_confirmations and rsi_bull
+short_signal = short_score >= min_confirmations and rsi_bear
+
+// ============================================
+// STRATEGY EXECUTION
+// ============================================
+
+if long_signal and strategy.position_size <= 0
+    if strategy.position_size < 0
+        strategy.close("Short", comment="Flip Long")
+    strategy.entry("Long", strategy.long)
+    if exit_mode == "ATR Trailing"
+        strategy.exit("Long TP/SL", "Long", limit=close + atr_val * atr_mult_tp, stop=close - atr_val * atr_mult_sl)
+    else if exit_mode == "Fixed TP/SL"
+        strategy.exit("Long TP/SL", "Long", limit=close * (1 + fixed_tp / 100), stop=close * (1 - fixed_sl / 100))
+
+if short_signal and strategy.position_size >= 0
+    if strategy.position_size > 0
+        strategy.close("Long", comment="Flip Short")
+    strategy.entry("Short", strategy.short)
+    if exit_mode == "ATR Trailing"
+        strategy.exit("Short TP/SL", "Short", limit=close - atr_val * atr_mult_tp, stop=close + atr_val * atr_mult_sl)
+    else if exit_mode == "Fixed TP/SL"
+        strategy.exit("Short TP/SL", "Short", limit=close * (1 - fixed_tp / 100), stop=close * (1 + fixed_sl / 100))
+
+// Opposite signal exit
+if exit_mode == "Opposite Signal"
+    if short_signal and strategy.position_size > 0
+        strategy.close("Long", comment="Opp Signal")
+    if long_signal and strategy.position_size < 0
+        strategy.close("Short", comment="Opp Signal")
+
+// ============================================
+// PLOTTING
+// ============================================
+
+plot(ema_fast, "Fast EMA", color=color.new(color.green, 30), linewidth=1)
+plot(ema_mid, "Mid EMA", color=color.new(color.orange, 30), linewidth=1)
+plot(ema_slow, "Slow EMA", color=color.new(color.red, 30), linewidth=2)
+
+// Signal markers with confluence level
+plotshape(long_signal and long_score == 3, title="Triple Long", location=location.belowbar, color=color.new(color.lime, 0), style=shape.diamond, size=size.normal, text="3x")
+plotshape(long_signal and long_score == 2, title="Double Long", location=location.belowbar, color=color.new(color.green, 0), style=shape.triangleup, size=size.small, text="2x")
+plotshape(short_signal and short_score == 3, title="Triple Short", location=location.abovebar, color=color.new(color.fuchsia, 0), style=shape.diamond, size=size.normal, text="3x")
+plotshape(short_signal and short_score == 2, title="Double Short", location=location.abovebar, color=color.new(color.red, 0), style=shape.triangledown, size=size.small, text="2x")
+
+bgcolor(strategy.position_size > 0 ? color.new(color.green, 92) : strategy.position_size < 0 ? color.new(color.red, 92) : na)
+
+// ============================================
+// DASHBOARD
+// ============================================
+var table dash = table.new(position.top_right, 2, 9, border_width=1)
+
+if barstate.islast
+    table.cell(dash, 0, 0, "Superstar v1.0", bgcolor=color.new(#6C3483, 0), text_color=color.white, text_size=size.small)
+    table.cell(dash, 1, 0, "Value", bgcolor=color.new(#6C3483, 0), text_color=color.white, text_size=size.small)
+
+    table.cell(dash, 0, 1, "EMA Stack", bgcolor=color.new(color.blue, 80), text_size=size.small)
+    table.cell(dash, 1, 1, bullish_stack ? "BULL" : bearish_stack ? "BEAR" : "FLAT", text_color=bullish_stack ? color.lime : bearish_stack ? color.red : color.gray, text_size=size.small)
+
+    table.cell(dash, 0, 2, "Vol Spike", bgcolor=color.new(color.blue, 80), text_size=size.small)
+    table.cell(dash, 1, 2, vol_long ? "BULL" : vol_short ? "BEAR" : "NO", text_color=vol_long ? color.lime : vol_short ? color.red : color.gray, text_size=size.small)
+
+    table.cell(dash, 0, 3, "MACD", bgcolor=color.new(color.blue, 80), text_size=size.small)
+    table.cell(dash, 1, 3, macd_bull ? "BULL" : macd_bear ? "BEAR" : "FLAT", text_color=macd_bull ? color.lime : macd_bear ? color.red : color.gray, text_size=size.small)
+
+    table.cell(dash, 0, 4, "RSI", bgcolor=color.new(color.blue, 80), text_size=size.small)
+    table.cell(dash, 1, 4, str.tostring(rsi_val, "#.#"), text_color=rsi_val > 50 ? color.lime : color.red, text_size=size.small)
+
+    table.cell(dash, 0, 5, "Confluence", bgcolor=color.new(color.purple, 60), text_size=size.small)
+    score = long_score > short_score ? long_score : short_score
+    table.cell(dash, 1, 5, str.tostring(score) + "/3", text_color=score >= 2 ? color.lime : color.orange, text_size=size.small)
+
+    table.cell(dash, 0, 6, "Signal", bgcolor=long_signal ? color.green : short_signal ? color.red : color.gray, text_size=size.small)
+    table.cell(dash, 1, 6, long_signal ? "LONG " + str.tostring(long_score) + "x" : short_signal ? "SHORT " + str.tostring(short_score) + "x" : "WAIT", text_color=color.white, text_size=size.small)
+
+    table.cell(dash, 0, 7, "Position", bgcolor=color.new(color.purple, 80), text_size=size.small)
+    table.cell(dash, 1, 7, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", text_color=color.white, text_size=size.small)
+
+    table.cell(dash, 0, 8, "Equity", bgcolor=color.new(color.green, 80), text_size=size.small)
+    table.cell(dash, 1, 8, str.tostring(strategy.equity, "#.##"), text_color=color.white, text_size=size.small)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(long_signal and long_score == 3, "Triple Confirmed Long", "Superstar: 3x LONG confluence")
+alertcondition(long_signal and long_score == 2, "Double Confirmed Long", "Superstar: 2x LONG confluence")
+alertcondition(short_signal and short_score == 3, "Triple Confirmed Short", "Superstar: 3x SHORT confluence")
+alertcondition(short_signal and short_score == 2, "Double Confirmed Short", "Superstar: 2x SHORT confluence")

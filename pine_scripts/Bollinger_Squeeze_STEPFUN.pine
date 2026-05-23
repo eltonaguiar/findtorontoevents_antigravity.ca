@@ -1,0 +1,198 @@
+//@version=5
+strategy("Bollinger_Squeeze_STEPFUN", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.1, initial_capital=10000, pyramiding=0)
+
+// ============================================
+// BOLLINGER BAND SQUEEZE STRATEGY
+// Captures explosive moves after volatility contraction
+// ============================================
+
+// ——— INPUT PARAMETERS ———
+bb_length = input.int(20, "BB Length", minval=10, maxval=50)
+bb_std = input.float(2.0, "BB Std Dev", minval=1.0, maxval=3.0, step=0.1)
+squeeze_threshold = input.float(0.05, "Squeeze Threshold", minval=0.01, maxval=0.15, step=0.01)
+breakout_confirmation = input.int(1, "Breakout Confirmation Bars", minval=1, maxval=3)
+
+// Volume confirmation
+use_volume_confirm = input.bool(true, "Volume Confirmation")
+volume_multiplier = input.float(1.5, "Volume Multiplier", minval=1.0, maxval=3.0)
+
+// Direction filter (which way to trade breakout)
+trade_direction = input.string("Both", "Trade Direction", options=["Both", "Long Only", "Short Only"])
+
+// Exit parameters
+exit_mode = input.string("TP/SL", "Exit Mode", options=["TP/SL", "Trailing", "Fixed RSI"])
+tp_percent = input.float(3.0, "Take Profit %", minval=0.1, step=0.1)
+sl_percent = input.float(1.5, "Stop Loss %", minval=0.1, step=0.1)
+trail_offset_pct = input.float(1.0, "Trailing Offset %", minval=0.1, step=0.1)
+
+// Position sizing
+position_size_pct = input.float(100.0, "Position Size %", minval=1.0, maxval=100.0)
+
+// ============================================
+// INDICATOR CALCULATIONS
+// ============================================
+
+// Bollinger Bands
+basis = ta.sma(close, bb_length)
+deviation = bb_std * ta.stdev(close, bb_length)
+upper = basis + deviation
+lower = basis - deviation
+bb_width = (upper - lower) / basis
+
+// Squeeze detection
+is_squeeze = bb_width < squeeze_threshold
+
+// Breakout detection
+upper_break = close > upper
+lower_break = close < lower
+
+// Volume confirmation
+volume_ma = ta.sma(volume, 20)
+volume_confirm = volume > volume_ma * volume_multiplier
+
+// RSI for exit (if using fixed RSI mode)
+rsi = ta.rsi(close, 14)
+
+// ============================================
+// SIGNAL GENERATION WITH CONFIRMATION
+// ============================================
+
+// Track breakout state
+var bool squeeze_active = false
+var int squeeze_start_bar = na
+
+// Detect squeeze start
+if is_squeeze and not squeeze_active
+    squeeze_active := true
+    squeeze_start_bar := bar_index
+
+// Detect breakout after squeeze
+breakout_long = false
+breakout_short = false
+
+if squeeze_active and (bar_index - squeeze_start_bar) >= 0
+    // Check for confirmed breakout
+    if upper_break and (not use_volume_confirm or volume_confirm)
+        breakout_long := true
+        squeeze_active := false
+    else if lower_break and (not use_volume_confirm or volume_confirm)
+        breakout_short := true
+        squeeze_active := false
+
+// Apply direction filter
+if trade_direction == "Long Only"
+    breakout_short := false
+else if trade_direction == "Short Only"
+    breakout_long := false
+
+// ============================================
+// EXIT LOGIC
+// ============================================
+
+// Calculate exit levels
+float long_tp = na
+float long_sl = na
+float short_tp = na
+float short_sl = na
+if exit_mode == "TP/SL"
+    long_tp := close * (1 + tp_percent / 100)
+    long_sl := close * (1 - sl_percent / 100)
+    short_tp := close * (1 - tp_percent / 100)
+    short_sl := close * (1 + sl_percent / 100)
+else if exit_mode == "Trailing"
+    long_tp := ta.highest(high, 10) * (1 - trail_offset_pct / 100)
+    long_sl := ta.lowest(low, 5)
+    short_tp := ta.lowest(low, 10) * (1 + trail_offset_pct / 100)
+    short_sl := ta.highest(high, 5)
+
+// RSI exit
+long_rsi_exit = rsi >= 70
+short_rsi_exit = rsi <= 30
+
+// ============================================
+// STRATEGY EXECUTION
+// ============================================
+
+// Enter long
+if breakout_long and strategy.position_size == 0
+    strategy.entry("Long", strategy.long, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Long Exit", "Long", limit=long_tp, stop=long_sl)
+
+// Enter short
+if breakout_short and strategy.position_size == 0
+    strategy.entry("Short", strategy.short, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Short Exit", "Short", limit=short_tp, stop=short_sl)
+
+// Exit conditions
+if strategy.position_size > 0
+    if (exit_mode == "Trailing" and low <= long_sl) or (exit_mode == "Fixed RSI" and long_rsi_exit) or (breakout_short and exit_mode == "Opposite Signal")
+        strategy.close("Long")
+
+if strategy.position_size < 0
+    if (exit_mode == "Trailing" and high >= short_sl) or (exit_mode == "Fixed RSI" and short_rsi_exit) or (breakout_long and exit_mode == "Opposite Signal")
+        strategy.close("Short")
+
+// ============================================
+// PLOTTING
+// ============================================
+
+// Bollinger Bands
+plot(basis, "BB Basis", color=color.orange, linewidth=2)
+p_upper = plot(upper, "BB Upper", color=color.blue, linewidth=1)
+p_lower = plot(lower, "BB Lower", color=color.blue, linewidth=1)
+
+// Fill between bands
+fill(p_upper, p_lower, color.new(color.blue, 90), title="BB Fill")
+
+// Squeeze visualization
+bgcolor(is_squeeze ? color.new(color.yellow, 90) : na)
+
+// Breakout markers
+plotshape(breakout_long, title="BB Long", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, text="BB+")
+
+plotshape(breakout_short, title="BB Short", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, text="BB-")
+
+// Position background
+bgcolor(strategy.position_size > 0 ? color.new(color.green, 90) : na)
+bgcolor(strategy.position_size < 0 ? color.new(color.red, 90) : na)
+
+// ============================================
+// INFO TABLE
+// ============================================
+var table info_table = table.new(position.top_right, 2, 10, border_width=1)
+
+if barstate.islast
+    table.cell(info_table, 0, 0, "BB Squeeze", bgcolor=color.blue, text_color=color.white)
+    table.cell(info_table, 1, 0, "Value", bgcolor=color.blue, text_color=color.white)
+    
+    table.cell(info_table, 0, 1, "BB Width", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 1, str.tostring(bb_width, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 2, "Squeeze", bgcolor=color.new(color.yellow, 80))
+    table.cell(info_table, 1, 2, is_squeeze ? "YES" : "NO", text_color=color.white)
+    
+    table.cell(info_table, 0, 3, "Upper", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 3, str.tostring(upper, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 4, "Lower", bgcolor=color.new(color.red, 80))
+    table.cell(info_table, 1, 4, str.tostring(lower, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 5, "Signal", bgcolor=breakout_long ? color.green : breakout_short ? color.red : color.gray)
+    table.cell(info_table, 1, 5, breakout_long ? "LONG" : breakout_short ? "SHORT" : "WAIT", text_color=color.white)
+    
+    table.cell(info_table, 0, 6, "Exit Mode", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 6, exit_mode, text_color=color.white)
+    
+    table.cell(info_table, 0, 7, "Position", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 7, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", text_color=color.white)
+    
+    table.cell(info_table, 0, 8, "Equity", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 8, str.tostring(strategy.equity, "#.##"), text_color=color.white)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(breakout_long, "BB Squeeze Long", "Bollinger Squeeze Long Breakout")
+alertcondition(breakout_short, "BB Squeeze Short", "Bollinger Squeeze Short Breakout")

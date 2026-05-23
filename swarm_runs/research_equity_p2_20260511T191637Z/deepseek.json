@@ -1,0 +1,140 @@
+{
+  "schema_version": "v1",
+  "engine": "cerebras",
+  "asset_class": "EQUITY",
+  "candidates": [
+    {
+      "spec_id": "equity_ts_momentum_v1",
+      "asset_class": "EQUITY",
+      "entry": "long SPY when 12-month (252d) total return > 0 AND 1-month (21d) return > 0; short SPY when 12-month return < 0 AND 1-month return < 0",
+      "exit": "exit on 12-month momentum sign flip OR 21-day momentum sign flip (whichever occurs first); max hold 252 trading days",
+      "sizing": "fixed 100% of capital per position (long or short); no leverage",
+      "universe": [
+        "SPY"
+      ],
+      "regime_filter": "skip when VIX > 30 (extreme fear) OR when SPY 60-day realized volatility > 40% annualized",
+      "source_refs": [
+        "https://doi.org/10.1016/j.jfineco.2012.06.001"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.6,
+      "expected_wr": 55.0,
+      "expected_mdd_pct": 18.0,
+      "expected_n_per_year": 4,
+      "rationale": "Time-series momentum on SPY is well-documented with Sharpe 0.55-0.70; adding 1-month confirmation and VIX filter should reduce whipsaws and drawdowns, targeting PF>1.5 with moderate trade frequency."
+    },
+    {
+      "spec_id": "equity_vol_targeting_v1",
+      "asset_class": "EQUITY",
+      "entry": "long SPY when 21-day realized volatility < 20% annualized AND 60-day momentum > 0; scale position inversely to volatility",
+      "exit": "exit when 21-day realized volatility > 35% annualized OR 60-day momentum flips negative",
+      "sizing": "target 12% annualized volatility: position_size = min(1.0, 0.12 / (21d_vol/ sqrt(252))) * capital",
+      "universe": [
+        "SPY"
+      ],
+      "regime_filter": "skip when VIX > 35 OR when SPY is below its 200-day moving average (bear market filter)",
+      "source_refs": [
+        "https://doi.org/10.1016/j.jfineco.2017.02.001"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.5,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 15.0,
+      "expected_n_per_year": 6,
+      "rationale": "Volatility-managed portfolios show 0.15 Sharpe improvement; combining with momentum filter and bear-market skip should reduce drawdowns below 20% while maintaining PF>1.5."
+    },
+    {
+      "spec_id": "equity_carry_factor_v1",
+      "asset_class": "EQUITY",
+      "entry": "long SPY when SPY dividend yield > 10-year Treasury yield (equity risk premium positive) AND SPY 60-day momentum > 0; short SPY when dividend yield < Treasury yield - 2% AND momentum negative",
+      "exit": "exit when equity risk premium flips sign OR 60-day momentum flips sign; max hold 126 trading days",
+      "sizing": "fixed 100% of capital per position",
+      "universe": [
+        "SPY"
+      ],
+      "regime_filter": "skip when VIX > 30 OR when 10-year yield is rising faster than 50bp per month (rate shock regime)",
+      "source_refs": [
+        "https://doi.org/10.1016/j.jfineco.2013.04.001"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.5,
+      "expected_wr": 53.0,
+      "expected_mdd_pct": 17.0,
+      "expected_n_per_year": 3,
+      "rationale": "Equity carry (dividend yield vs bonds) is a distinct factor with Sharpe 0.62; adding momentum confirmation and rate-shock skip should improve risk-adjusted returns and limit drawdowns."
+    },
+    {
+      "spec_id": "equity_bab_spread_v1",
+      "asset_class": "EQUITY",
+      "entry": "long IWM (small-cap, higher beta) and short SPY (large-cap, lower beta) when SPY 60-day beta to IWM < 0.8 AND IWM 60-day momentum > SPY 60-day momentum; equal notional long/short",
+      "exit": "exit when beta spread reverts above 1.0 OR when IWM momentum falls below SPY momentum; max hold 63 trading days",
+      "sizing": "dollar-neutral: long $100k IWM, short $100k SPY; no leverage beyond 1:1",
+      "universe": [
+        "SPY",
+        "IWM"
+      ],
+      "regime_filter": "skip when VIX > 30 OR when market is in downtrend (SPY below 200-day MA)",
+      "source_refs": [
+        "https://www.nber.org/papers/w16865"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.5,
+      "expected_wr": 51.0,
+      "expected_mdd_pct": 12.0,
+      "expected_n_per_year": 8,
+      "rationale": "Betting-against-beta strategy yields 0.7-1.0% monthly; using IWM/SPY pair captures beta spread with momentum confirmation, targeting low drawdown due to market-neutral structure."
+    },
+    {
+      "spec_id": "equity_regime_momentum_v1",
+      "asset_class": "EQUITY",
+      "entry": "long QQQ when HMM regime probability > 0.6 for bull regime (trained on 60-day returns and volatility) AND 12-month momentum > 0; short QQQ when HMM regime probability > 0.6 for bear regime AND 12-month momentum < 0",
+      "exit": "exit when HMM regime probability drops below 0.5 for current regime OR 12-month momentum flips sign",
+      "sizing": "fixed 100% of capital per position",
+      "universe": [
+        "QQQ"
+      ],
+      "regime_filter": "skip when HMM regime is indeterminate (both bull/bear probabilities < 0.5) OR when VIX > 35",
+      "source_refs": [
+        "https://doi.org/10.1016/j.jfineco.2020.09.001"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.7,
+      "expected_wr": 56.0,
+      "expected_mdd_pct": 16.0,
+      "expected_n_per_year": 3,
+      "rationale": "Regime-conditional momentum improves Sharpe from 0.55 to 0.73; HMM filter on QQQ should capture tech bull runs while avoiding bear traps, targeting highest PF among candidates."
+    },
+    {
+      "spec_id": "equity_diagnostic_no_edge_v1",
+      "asset_class": "EQUITY",
+      "entry": "long DIA (Dow 30) when 5-day return < -3% (short-term reversal) AND 60-day momentum > 0; short DIA when 5-day return > +3% AND 60-day momentum < 0",
+      "exit": "exit after 5 trading days (fixed holding period) OR when position gains 2% (take profit)",
+      "sizing": "fixed 100% of capital per position",
+      "universe": [
+        "DIA"
+      ],
+      "regime_filter": "skip when VIX > 25 (high volatility distorts reversal patterns)",
+      "source_refs": [
+        "https://www.bis.org/publ/work790.pdf"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.0,
+      "expected_wr": 48.0,
+      "expected_mdd_pct": 25.0,
+      "expected_n_per_year": 20,
+      "rationale": "Short-term reversal strategies have decayed in large-cap ETFs due to HFT and ETF arbitrage; this diagnostic should confirm no edge (PF~1.0) in 2020-2025, validating that simple reversal no longer works in liquid ETFs."
+    }
+  ],
+  "notes_to_p3": "Focus backtesting on 2020-2025 period which includes COVID crash, 2022 bear market, and 2023-2024 recovery. The time-series momentum and regime momentum strategies should perform best due to trend persistence. The vol-targeting strategy may struggle in 2022 when vol spiked and momentum reversed. The BAB spread is most sensitive to beta estimation window - test 60-day vs 90-day. The diagnostic reversal strategy is expected to fail, confirming no retail edge in short-term ETF reversal. Use yfinance adjusted close prices and account for 0.1% slippage per trade. For HMM regime filter, use a simple 2-state Gaussian HMM trained on 60-day rolling returns and volatility with a 252-day training window.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_equity_p2_20260511T191637Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260511T191658Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 2352,
+    "tokens_out": 2064,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

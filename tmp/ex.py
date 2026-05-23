@@ -1,0 +1,11 @@
+import re,sys,io  
+sys.stdout=io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8',errors='replace')  
+c=open(r'TORONTOEVENTS_ANTIGRAVITY\MOVIESHOWS2\app.html',encoding='utf-8').read()  
+print('LEN:',len(c))  
+idx0=c.find('data-index=')  
+idx1=c.find('data-index=',idx0+1)  
+print('POSITIONS:',idx0,idx1)  
+print('FIRST CARD:')  
+print(c[max(0,idx0-100):idx1+100])  
+print('---SECOND CARD---')  
+print(c[idx1-50:idx1+800]) 

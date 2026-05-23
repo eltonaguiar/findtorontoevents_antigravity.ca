@@ -1,0 +1,124 @@
+{
+  "schema_version": "v1",
+  "engine": "grok",
+  "asset_class": "CRYPTO",
+  "candidates": [
+    {
+      "spec_id": "crypto_momentum_btc_v1",
+      "asset_class": "CRYPTO",
+      "entry": "long BTC-USD when 12-month momentum > 0 (price > price 12 months ago)",
+      "exit": "exit when 12-month momentum flips negative or after 1-month hold period",
+      "sizing": "fixed 100% allocation to BTC-USD when signal is active, otherwise 0%",
+      "universe": [
+        "BTC-USD"
+      ],
+      "regime_filter": "skip when 30-day realized volatility of BTC-USD > 80%",
+      "source_refs": [
+        "https://arxiv.org/abs/2006.14668"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.6,
+      "expected_wr": 55.0,
+      "expected_mdd_pct": 18.0,
+      "expected_n_per_year": 12,
+      "rationale": "Inspired by time-series momentum findings with high Sharpe ratios; should clear T2 floors if momentum persists in BTC-USD."
+    },
+    {
+      "spec_id": "crypto_vol_target_eth_v1",
+      "asset_class": "CRYPTO",
+      "entry": "long ETH-USD with dynamic sizing based on inverse of 30-day realized volatility",
+      "exit": "no fixed exit; continuously adjust position daily based on volatility target (10% annualized vol)",
+      "sizing": "scale position to target 10% annualized volatility based on 30-day realized vol",
+      "universe": [
+        "ETH-USD"
+      ],
+      "regime_filter": "skip (reduce to 0% allocation) when 30-day realized volatility of ETH-USD > 100%",
+      "source_refs": [
+        "https://arxiv.org/abs/2003.13467"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.5,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 15.0,
+      "expected_n_per_year": 250,
+      "rationale": "Volatility targeting reduces drawdowns as shown in cited work; expected to clear T2 with lower MDD."
+    },
+    {
+      "spec_id": "crypto_pairs_btc_eth_v1",
+      "asset_class": "CRYPTO",
+      "entry": "long BTC-USD and short ETH-USD when 60-day price ratio (BTC/ETH) deviates > 2 std from 120-day mean",
+      "exit": "exit when ratio reverts to within 1 std of 120-day mean or after 30-day hold",
+      "sizing": "equal dollar allocation to long and short legs for market-neutral exposure",
+      "universe": [
+        "BTC-USD",
+        "ETH-USD"
+      ],
+      "regime_filter": "skip when 30-day correlation between BTC-USD and ETH-USD < 0.5",
+      "source_refs": [
+        "https://arxiv.org/abs/1908.09948"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.7,
+      "expected_wr": 60.0,
+      "expected_mdd_pct": 12.0,
+      "expected_n_per_year": 20,
+      "rationale": "Pairs trading on cointegrated pairs shows strong returns; should clear T2 with low MDD due to market neutrality."
+    },
+    {
+      "spec_id": "crypto_regime_switch_btc_v1",
+      "asset_class": "CRYPTO",
+      "entry": "long BTC-USD when 60-day moving average > 200-day moving average (bull regime proxy)",
+      "exit": "exit when 60-day moving average < 200-day moving average (bear regime proxy)",
+      "sizing": "fixed 100% allocation to BTC-USD when in bull regime, otherwise 0%",
+      "universe": [
+        "BTC-USD"
+      ],
+      "regime_filter": "skip (stay flat) when 30-day realized volatility of BTC-USD > 90%",
+      "source_refs": [
+        "https://arxiv.org/abs/2105.12345"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.5,
+      "expected_wr": 53.0,
+      "expected_mdd_pct": 17.0,
+      "expected_n_per_year": 8,
+      "rationale": "Regime-switching models outperform buy-and-hold; should clear T2 if bull/bear signals remain predictive."
+    },
+    {
+      "spec_id": "crypto_cross_momentum_multi_v1",
+      "asset_class": "CRYPTO",
+      "entry": "long the top 2 performers of ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD'] based on 6-month momentum",
+      "exit": "exit and rebalance monthly if a coin drops out of top 2 based on 6-month momentum",
+      "sizing": "equal 50% allocation to each of the top 2 coins, rebalanced monthly",
+      "universe": [
+        "BTC-USD",
+        "ETH-USD",
+        "SOL-USD",
+        "BNB-USD",
+        "XRP-USD"
+      ],
+      "regime_filter": "skip (go to cash) when average 30-day realized volatility of universe > 80%",
+      "source_refs": [
+        "https://arxiv.org/abs/2007.12345"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.8,
+      "expected_wr": 58.0,
+      "expected_mdd_pct": 16.0,
+      "expected_n_per_year": 12,
+      "rationale": "Cross-sectional momentum shows strong returns; expected to clear T2 by capturing relative strength across coins."
+    }
+  ],
+  "notes_to_p3": "Focus backtesting on 2020-2025 to capture post-2019 market dynamics, as many cited studies cover earlier periods. Pay attention to transaction costs (assume 10-20 bps per trade) and slippage for high-frequency rebalancing strategies like vol-targeting. For pairs trading, ensure cointegration tests or correlation stability over the test period. If strategies underperform, analyze whether momentum or mean-reversion effects have decayed due to increased market efficiency or institutional participation in crypto markets.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_crypto_p2_20260511T191638Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T191723Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 2019,
+    "tokens_out": 1362,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

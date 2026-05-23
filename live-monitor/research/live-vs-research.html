@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live vs Research Reality Check | Goldmine Checker</title>
+    <style>
+        :root {
+            --bg:#0a0e1a;--card:#111827;--card2:#1a2236;--border:#1e293b;
+            --text:#e2e8f0;--dim:#8892a8;--accent:#6366f1;
+            --green:#10b981;--green-bg:rgba(16,185,129,0.12);
+            --red:#ef4444;--red-bg:rgba(239,68,68,0.12);
+            --yellow:#f59e0b;--yellow-bg:rgba(245,158,11,0.12);
+            --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.12);
+            --orange:#f97316;--purple:#a855f7;--cyan:#06b6d4;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+        a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+        .container{max-width:1200px;margin:0 auto;padding:1.5rem}
+        .header{background:linear-gradient(135deg,#111827,#1a1030,#1e1020);border-bottom:1px solid var(--border);padding:2rem;text-align:center}
+        .header h1{font-size:1.8rem;background:linear-gradient(135deg,var(--red),var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .header p{color:var(--dim);margin-top:0.3rem}
+        .nav{display:flex;gap:0.5rem;flex-wrap:wrap;margin:1rem 0;justify-content:center}
+        .nav a{padding:6px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--dim)}
+        .nav a:hover,.nav a.active{background:var(--accent);color:#fff;border-color:var(--accent);text-decoration:none}
+        .section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:2rem}
+        .section h2{font-size:1.4rem;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
+        .section h3{font-size:1.1rem;margin:1.5rem 0 0.8rem;color:var(--accent)}
+        .section h4{font-size:0.95rem;margin:1rem 0 0.5rem;color:var(--yellow)}
+        .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:600}
+        .badge-dead{background:var(--red-bg);color:var(--red)}
+        .badge-weak{background:var(--yellow-bg);color:var(--yellow)}
+        .badge-live{background:var(--green-bg);color:var(--green)}
+        .badge-proposed{background:var(--blue-bg);color:var(--blue)}
+        .badge-backup{background:rgba(168,85,247,0.12);color:var(--purple)}
+        table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem}
+        th,td{padding:0.6rem 0.8rem;text-align:left;border-bottom:1px solid var(--border)}
+        th{color:var(--dim);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px}
+        .positive{color:var(--green)}.negative{color:var(--red)}.neutral{color:var(--dim)}
+        .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:1rem 0}
+        .metric{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center}
+        .metric .value{font-size:1.5rem;font-weight:700}.metric .label{font-size:0.75rem;color:var(--dim);margin-top:0.3rem}
+        .callout{padding:1rem 1.2rem;border-radius:8px;margin:1rem 0;font-size:0.9rem}
+        .callout-danger{background:var(--red-bg);border-left:4px solid var(--red)}
+        .callout-warning{background:var(--yellow-bg);border-left:4px solid var(--yellow)}
+        .callout-success{background:var(--green-bg);border-left:4px solid var(--green)}
+        .callout-info{background:var(--blue-bg);border-left:4px solid var(--blue)}
+        .code-block{background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:1rem;font-family:'Courier New',monospace;font-size:0.8rem;overflow-x:auto;white-space:pre;margin:1rem 0;color:#c9d1d9}
+        .gap-chart{display:flex;gap:0;margin:1rem 0;border-radius:8px;overflow:hidden;height:32px}
+        .gap-chart div{display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#fff}
+        .status-row{display:grid;grid-template-columns:1fr 120px 120px 120px 1fr;gap:0.5rem;margin:0.5rem 0;padding:0.8rem;background:var(--card2);border-radius:8px;align-items:center;font-size:0.85rem}
+        .status-row .name{font-weight:700}.status-row .tag{text-align:center}
+        ul,ol{padding-left:1.5rem;margin:0.5rem 0}li{margin:0.3rem 0}
+        .priority{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700}
+        .priority-now{background:var(--red);color:white}.priority-week{background:var(--orange);color:white}.priority-month{background:var(--yellow);color:#000}
+        .gen-time{text-align:center;color:var(--dim);font-size:0.75rem;padding:2rem 0}
+        .comparison-card{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+        .comparison-card>div{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:1rem}
+        .comparison-card h4{margin-bottom:0.5rem;font-size:0.9rem}
+        .tier-s{border-left:4px solid var(--green)!important}.tier-a{border-left:4px solid var(--blue)!important}
+        .tier-b{border-left:4px solid var(--yellow)!important}.tier-f{border-left:4px solid var(--red)!important}
+        @media(max-width:768px){.container{padding:1rem}.section{padding:1.2rem}.metric-grid{grid-template-columns:repeat(2,1fr)}.comparison-card{grid-template-columns:1fr}.status-row{grid-template-columns:1fr;gap:0.3rem}}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>LIVE PERFORMANCE vs. RESEARCH REALITY CHECK</h1>
+    <p>Cross-referencing KIMI Claw Research (635+ strategies) with actual Goldmine Tracker live data</p>
+    <p style="font-size:0.75rem;margin-top:0.5rem;color:var(--dim)">Aspiration: Renaissance Technologies / Palantir-level prediction across 5 asset classes</p>
+</div>
+
+<div class="container">
+    <div class="nav">
+        <a href="index.html">Algorithm Analysis</a>
+        <a href="live-vs-research.html" class="active">Live vs Research</a>
+        <a href="../goldmine-alerts.html">Alerts Dashboard</a>
+        <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/KIMI_CLAW_RESEARCH_FEB162026" target="_blank">GitHub Research</a>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- THE BRUTAL REALITY -->
+    <!-- ================================================================== -->
+    <div class="section" id="reality">
+        <h2>1. The Brutal Reality: Backtest vs Live</h2>
+
+        <div class="callout callout-danger">
+            <strong>KIMI Research Finding:</strong> "Only 5 of 23 mathematically-validated strategies (22%) held up in forward-testing. Backtest/Forward correlation = 0.34 (extremely poor)."
+            <br><br>
+            <strong>Live Goldmine Data Confirms:</strong> Of 1,849 total tracked picks across 6 systems, overall win rate is ~42% with net negative returns. The best-performing algorithms in backtests (Ichimoku Cloud: 59.4% backtested) are among the worst in live trading (39.7% live).
+        </div>
+
+        <div class="metric-grid">
+            <div class="metric">
+                <div class="value negative">0.34</div>
+                <div class="label">Backtest/Forward Correlation</div>
+            </div>
+            <div class="metric">
+                <div class="value negative">22%</div>
+                <div class="label">Strategies That Survived Forward Test</div>
+            </div>
+            <div class="metric">
+                <div class="value negative">-$453</div>
+                <div class="label">Net P&L Across All Systems</div>
+            </div>
+            <div class="metric">
+                <div class="value positive">3</div>
+                <div class="label">Profitable Algorithms (of 16)</div>
+            </div>
+        </div>
+
+        <h3>1.1 Backtest vs Live: Side-by-Side</h3>
+        <table>
+            <tr><th>Algorithm</th><th>Backtested WR</th><th>Live WR</th><th>Gap</th><th>Live P&L</th><th>Verdict</th></tr>
+            <tr>
+                <td>ADX Trend Strength</td>
+                <td>N/A (new)</td><td class="positive">58.9%</td><td>-</td><td class="positive">+$136</td>
+                <td><span class="badge badge-live">KEEP &amp; SCALE</span></td>
+            </tr>
+            <tr>
+                <td>RSI(2) Scalp</td>
+                <td>75-80% (StockFetcher)</td><td class="positive">58.8%</td><td class="negative">-16pts</td><td class="positive">+$15.66</td>
+                <td><span class="badge badge-live">KEEP &amp; SCALE</span></td>
+            </tr>
+            <tr>
+                <td>Momentum Burst</td>
+                <td>+198% (backtest return)</td><td class="positive">55.6%</td><td>-</td><td class="positive">+$14.65</td>
+                <td><span class="badge badge-live">KEEP &amp; SCALE</span></td>
+            </tr>
+            <tr>
+                <td>VAM (Vol-Adj Momentum)</td>
+                <td>N/A</td><td class="neutral">37.6%</td><td>-</td><td class="positive">+$22.50</td>
+                <td><span class="badge badge-weak">MONITOR</span></td>
+            </tr>
+            <tr>
+                <td>Bollinger Squeeze</td>
+                <td>55.8%</td><td class="positive">42.9%</td><td class="negative">-13pts</td><td class="positive">+$3.97</td>
+                <td><span class="badge badge-weak">MONITOR</span></td>
+            </tr>
+            <tr>
+                <td>Ichimoku Cloud</td>
+                <td>59.4%</td><td class="negative">39.7%</td><td class="negative">-20pts</td><td class="negative">-$196</td>
+                <td><span class="badge badge-dead">THROTTLE 70%</span></td>
+            </tr>
+            <tr>
+                <td>StochRSI Crossover</td>
+                <td>56.9%</td><td class="negative">43.4%</td><td class="negative">-13pts</td><td class="negative">-$56</td>
+                <td><span class="badge badge-dead">THROTTLE 50%</span></td>
+            </tr>
+            <tr>
+                <td>Trend Sniper</td>
+                <td>N/A</td><td class="negative">35.5%</td><td>-</td><td class="negative">-$38</td>
+                <td><span class="badge badge-dead">THROTTLE 50%</span></td>
+            </tr>
+            <tr>
+                <td>MACD Crossover</td>
+                <td>61.5%</td><td class="negative">30.2%</td><td class="negative">-31pts</td><td class="negative">-$33</td>
+                <td><span class="badge badge-dead">DISABLE</span></td>
+            </tr>
+            <tr>
+                <td>Awesome Oscillator</td>
+                <td>N/A</td><td class="negative">39.0%</td><td>-</td><td class="negative">-$42</td>
+                <td><span class="badge badge-dead">DISABLE</span></td>
+            </tr>
+            <tr>
+                <td>Consensus</td>
+                <td>N/A</td><td class="negative">24.2%</td><td>-</td><td class="negative">-$194</td>
+                <td><span class="badge badge-dead">KILL IMMEDIATELY</span></td>
+            </tr>
+            <tr>
+                <td>Meme Scanner</td>
+                <td>5% (known bad)</td><td class="negative">0%</td><td class="negative">-5pts</td><td class="negative">-$4.60</td>
+                <td><span class="badge badge-dead">REBUILD</span></td>
+            </tr>
+            <tr>
+                <td>Edge Confluence</td>
+                <td>N/A</td><td class="positive">75%</td><td>-</td><td class="positive">+$0.95</td>
+                <td><span class="badge badge-live">RESTART PIPELINE</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- WHAT'S ACTUALLY WORKING -->
+    <!-- ================================================================== -->
+    <div class="section" id="working">
+        <h2>2. What's Actually Working in Live Trading</h2>
+
+        <div class="comparison-card">
+            <div class="tier-s">
+                <h4 style="color:var(--green)">TIER S - Profitable &amp; Proven (Scale These)</h4>
+                <table>
+                    <tr><th>Algorithm</th><th>Picks</th><th>WR</th><th>P&L</th></tr>
+                    <tr><td><strong>ADX Trend Strength</strong></td><td>231</td><td class="positive">58.9%</td><td class="positive">+$136</td></tr>
+                    <tr><td><strong>RSI(2) Scalp</strong></td><td>17</td><td class="positive">58.8%</td><td class="positive">+$16</td></tr>
+                    <tr><td><strong>Momentum Burst</strong></td><td>9</td><td class="positive">55.6%</td><td class="positive">+$15</td></tr>
+                    <tr><td><strong>Edge Confluence</strong></td><td>4</td><td class="positive">75.0%</td><td class="positive">+$1</td></tr>
+                </table>
+                <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--dim)">Combined: 261 picks, +$168 profit. These should get 60%+ of signal allocation.</p>
+            </div>
+            <div class="tier-f">
+                <h4 style="color:var(--red)">TIER F - Actively Losing Money (Disable/Kill)</h4>
+                <table>
+                    <tr><th>Algorithm</th><th>Picks</th><th>WR</th><th>P&L</th></tr>
+                    <tr><td><strong>Ichimoku Cloud</strong></td><td>471</td><td class="negative">39.7%</td><td class="negative">-$196</td></tr>
+                    <tr><td><strong>Consensus</strong></td><td>157</td><td class="negative">24.2%</td><td class="negative">-$194</td></tr>
+                    <tr><td><strong>Awesome Oscillator</strong></td><td>41</td><td class="negative">39.0%</td><td class="negative">-$42</td></tr>
+                    <tr><td><strong>MACD Crossover</strong></td><td>43</td><td class="negative">30.2%</td><td class="negative">-$33</td></tr>
+                </table>
+                <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--dim)">Combined: 712 picks, -$465 loss. These produce 43% of signal volume but ALL of the losses.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-success">
+            <strong>Key Insight:</strong> If we simply disabled the 4 worst algorithms today, the Live Signal system would flip from -$370 total to approximately +$95 total. The profitable algorithms are being drowned out by the losers. This is the single highest-impact change we can make.
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- ASSET CLASS BREAKDOWN -->
+    <!-- ================================================================== -->
+    <div class="section" id="asset-classes">
+        <h2>3. Asset Class Performance &amp; Backup Plan Status</h2>
+        <p>Cross-referencing KIMI Research recommended strategies with actual live performance per asset class.</p>
+
+        <!-- STOCKS -->
+        <h3>3.1 Stocks (Large/Mid Cap)</h3>
+        <div class="status-row">
+            <div class="name">Primary: Consolidated Consensus</div>
+            <div class="tag"><span class="badge badge-dead">9.5% WR</span></div>
+            <div class="tag"><span class="badge badge-dead">-$83 P&L</span></div>
+            <div class="tag"><span class="priority priority-now">FAILING</span></div>
+            <div>Feb 10: 14/15 losses. Correlated LONG picks all SL'd simultaneously.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Research Best Live: Logistic Regression Multi-Factor</div>
+            <div class="tag"><span class="badge badge-proposed">70% WR</span></div>
+            <div class="tag"><span class="badge badge-proposed">Sharpe 1.02</span></div>
+            <div class="tag"><span class="priority priority-now">NOT DEPLOYED</span></div>
+            <div>KIMI research top pick for stocks. <strong>Needs immediate deployment.</strong></div>
+        </div>
+        <div class="status-row">
+            <div class="name">Backup: Betting Against Beta (BAB)</div>
+            <div class="tag"><span class="badge badge-backup">77/100 score</span></div>
+            <div class="tag"><span class="badge badge-backup">+13% in fwd test</span></div>
+            <div class="tag"><span class="priority priority-week">DEPLOY NEXT</span></div>
+            <div>Forward-test validated. Low-beta stocks outperformed during risk-off. Market-neutral.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Backup 2: Quality Minus Junk (QMJ)</div>
+            <div class="tag"><span class="badge badge-backup">75/100 score</span></div>
+            <div class="tag"><span class="badge badge-backup">Defensive</span></div>
+            <div class="tag"><span class="priority priority-month">READY</span></div>
+            <div>Works in volatility. Quality stocks held up during Feb crash.</div>
+        </div>
+
+        <!-- CRYPTO -->
+        <h3>3.2 Crypto (BTC, ETH, Altcoins)</h3>
+        <div class="status-row">
+            <div class="name">Primary: Live Signal (13 algorithms)</div>
+            <div class="tag"><span class="badge badge-weak">44.4% WR</span></div>
+            <div class="tag"><span class="badge badge-dead">-$370 P&L</span></div>
+            <div class="tag"><span class="priority priority-now">NEEDS FIX</span></div>
+            <div>ADX works (+$136), but Ichimoku/Consensus drag it down (-$390). Fix: disable losers.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Research Best: Funding Rate Arbitrage</div>
+            <div class="tag"><span class="badge badge-proposed">88/100 score</span></div>
+            <div class="tag"><span class="badge badge-proposed">0.92 BT/FT corr</span></div>
+            <div class="tag"><span class="priority priority-now">NOT DEPLOYED</span></div>
+            <div>KIMI's #1 crypto strategy. Profitable in ALL market conditions. <strong>Deploy immediately.</strong></div>
+        </div>
+        <div class="status-row">
+            <div class="name">Backup: Flash Crash Reversal</div>
+            <div class="tag"><span class="badge badge-backup">71/100 score</span></div>
+            <div class="tag"><span class="badge badge-backup">+475% expectancy in crashes</span></div>
+            <div class="tag"><span class="priority priority-week">DEPLOY NEXT</span></div>
+            <div>Designed specifically for the volatility we're seeing. Feb crash was its ideal environment.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Working: ADX Trend Strength</div>
+            <div class="tag"><span class="badge badge-live">58.9% WR</span></div>
+            <div class="tag"><span class="badge badge-live">+$136 P&L</span></div>
+            <div class="tag"><span class="priority priority-now">SCALE UP</span></div>
+            <div>Best live crypto algorithm by far. Increase signal allocation to 30% of crypto picks.</div>
+        </div>
+
+        <!-- MEME COINS -->
+        <h3>3.3 Meme Coins</h3>
+        <div class="status-row">
+            <div class="name">Primary: Meme Scanner v2</div>
+            <div class="tag"><span class="badge badge-dead">0% WR</span></div>
+            <div class="tag"><span class="badge badge-dead">-$4.60 P&L</span></div>
+            <div class="tag"><span class="priority priority-now">DEAD</span></div>
+            <div>0 wins out of 29 picks. 80% of tokens untradeable (no price feed). Pipeline dead since Feb 12.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Research Best: Capitulation Detector</div>
+            <div class="tag"><span class="badge badge-proposed">RSI&lt;25 + 3x vol</span></div>
+            <div class="tag"><span class="badge badge-proposed">New design</span></div>
+            <div class="tag"><span class="priority priority-week">BUILD &amp; DEPLOY</span></div>
+            <div>Replace RSI&lt;30 entry with strict capitulation criteria. Add social sentiment layer.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Backup: Bollinger Mean Reversion</div>
+            <div class="tag"><span class="badge badge-backup">+35.36% backtest</span></div>
+            <div class="tag"><span class="badge badge-backup">Sharpe 1.163</span></div>
+            <div class="tag"><span class="priority priority-month">READY</span></div>
+            <div>Only meme strategy that showed positive returns in backtests. KIMI's recommended replacement.</div>
+        </div>
+
+        <!-- PENNY STOCKS -->
+        <h3>3.4 Penny Stocks</h3>
+        <div class="status-row">
+            <div class="name">Primary: 7-Factor Penny Stock Finder</div>
+            <div class="tag"><span class="badge badge-weak">6 picks</span></div>
+            <div class="tag"><span class="badge badge-weak">Too new</span></div>
+            <div class="tag"><span class="priority priority-month">MONITORING</span></div>
+            <div>Only 6 picks, none closed yet. No performance data to evaluate.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Research Best: Classic Momentum (Jegadeesh &amp; Titman)</div>
+            <div class="tag"><span class="badge badge-proposed">+662% backtest</span></div>
+            <div class="tag"><span class="badge badge-proposed">Sharpe 2.317</span></div>
+            <div class="tag"><span class="priority priority-week">BACKTEST LIVE</span></div>
+            <div>Highest backtested return of ALL strategies. Needs live forward test with strict risk mgmt.</div>
+        </div>
+
+        <!-- SPORTS -->
+        <h3>3.5 Sports Betting</h3>
+        <div class="status-row">
+            <div class="name">Primary: Value Bet Algorithm</div>
+            <div class="tag"><span class="badge badge-dead">0% resolved</span></div>
+            <div class="tag"><span class="badge badge-dead">Pipeline dead</span></div>
+            <div class="tag"><span class="priority priority-now">BROKEN</span></div>
+            <div>69 picks, zero resolved. No sports score API = no outcome tracking. Pipeline dead since Feb 12.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Fix: ESPN Scoreboard API integration</div>
+            <div class="tag"><span class="badge badge-proposed">Free API</span></div>
+            <div class="tag"><span class="badge badge-proposed">Auto-resolve</span></div>
+            <div class="tag"><span class="priority priority-week">BUILD</span></div>
+            <div>Integrate ESPN API to resolve game outcomes. Required before ANY performance data is possible.</div>
+        </div>
+
+        <!-- FOREX -->
+        <h3>3.6 Forex</h3>
+        <div class="status-row">
+            <div class="name">Primary: Live Monitor Forex</div>
+            <div class="tag"><span class="badge badge-weak">Not tracked</span></div>
+            <div class="tag"><span class="badge badge-weak">No goldmine data</span></div>
+            <div class="tag"><span class="priority priority-month">INTEGRATE</span></div>
+            <div>Forex signals exist on live-monitor but aren't being archived to goldmine tracker.</div>
+        </div>
+        <div class="status-row">
+            <div class="name">Research Best: Classic Momentum (Forex)</div>
+            <div class="tag"><span class="badge badge-proposed">+7.23% backtest</span></div>
+            <div class="tag"><span class="badge badge-proposed">Sharpe 1.733</span></div>
+            <div class="tag"><span class="priority priority-month">FORWARD TEST</span></div>
+            <div>Strong backtest. Needs forward testing with realistic slippage assumptions.</div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- FORWARD-TEST VALIDATED STRATEGIES -->
+    <!-- ================================================================== -->
+    <div class="section" id="validated">
+        <h2>4. The 5 Forward-Test Validated Strategies (Deploy These)</h2>
+        <p>From the KIMI Claw Research: Only these 5 strategies survived the Nov 2025 - Feb 2026 forward test, including the crypto crash. These are the foundation of our path to world-class.</p>
+
+        <table>
+            <tr><th>Strategy</th><th>Asset Class</th><th>Viability</th><th>Why It Works</th><th>Currently Deployed?</th><th>Priority</th></tr>
+            <tr>
+                <td><strong>Funding Rate Arbitrage</strong></td>
+                <td>Crypto</td>
+                <td class="positive">88/100 (A)</td>
+                <td>Extreme funding rates during crash = more profit. Market neutral.</td>
+                <td class="negative">NO</td>
+                <td><span class="priority priority-now">P0</span></td>
+            </tr>
+            <tr>
+                <td><strong>Pairs Trading</strong></td>
+                <td>Multi-asset</td>
+                <td class="positive">79/100 (B+)</td>
+                <td>Market neutral. Correlation breakdown = more opportunities.</td>
+                <td class="negative">NO</td>
+                <td><span class="priority priority-now">P0</span></td>
+            </tr>
+            <tr>
+                <td><strong>Betting Against Beta (BAB)</strong></td>
+                <td>Stocks</td>
+                <td class="positive">77/100 (A-)</td>
+                <td>Low-beta outperformed during risk-off rotation. +13% in forward test.</td>
+                <td class="negative">NO</td>
+                <td><span class="priority priority-now">P0</span></td>
+            </tr>
+            <tr>
+                <td><strong>Quality Minus Junk (QMJ)</strong></td>
+                <td>Stocks</td>
+                <td class="positive">75/100 (B+)</td>
+                <td>Quality stocks held up during volatility. Defensive characteristics.</td>
+                <td class="negative">NO</td>
+                <td><span class="priority priority-week">P1</span></td>
+            </tr>
+            <tr>
+                <td><strong>Flash Crash Reversal</strong></td>
+                <td>Crypto</td>
+                <td class="positive">71/100 (B)</td>
+                <td>Literally designed for Feb-type crashes. +475% expectancy improvement.</td>
+                <td class="negative">NO</td>
+                <td><span class="priority priority-week">P1</span></td>
+            </tr>
+        </table>
+
+        <div class="callout callout-warning">
+            <strong>Critical Gap:</strong> None of the 5 forward-test validated strategies are currently deployed in live trading. Meanwhile, strategies that FAILED forward testing (momentum, breakout, Ichimoku) are generating 80%+ of our signals. This is the #1 reason for poor performance.
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- RENAISSANCE REALITY CHECK -->
+    <!-- ================================================================== -->
+    <div class="section" id="gap">
+        <h2>5. The Renaissance/Palantir Gap &amp; Realistic Path Forward</h2>
+
+        <h3>5.1 Where We Stand vs Where We Want to Be</h3>
+        <table>
+            <tr><th>Factor</th><th>Current State</th><th>6-Month Target</th><th>World-Class (3yr)</th></tr>
+            <tr>
+                <td><strong>Win Rate</strong></td>
+                <td class="negative">~42% overall</td>
+                <td>55%+</td>
+                <td>65%+</td>
+            </tr>
+            <tr>
+                <td><strong>Sharpe Ratio</strong></td>
+                <td class="negative">0.34</td>
+                <td>0.8+</td>
+                <td>1.5+</td>
+            </tr>
+            <tr>
+                <td><strong>Profitable Systems</strong></td>
+                <td class="negative">1 of 6</td>
+                <td>4 of 6</td>
+                <td>6 of 6</td>
+            </tr>
+            <tr>
+                <td><strong>Data Quality</strong></td>
+                <td class="negative">37% stale, 12% missing</td>
+                <td>&lt;5% stale, 0% missing</td>
+                <td>Real-time, multi-source</td>
+            </tr>
+            <tr>
+                <td><strong>Latency</strong></td>
+                <td class="negative">15 min (GitHub Actions)</td>
+                <td>5 min (faster cron)</td>
+                <td>&lt;1 min (event-driven)</td>
+            </tr>
+            <tr>
+                <td><strong>Asset Coverage</strong></td>
+                <td class="negative">2 of 5 active</td>
+                <td>4 of 5 active</td>
+                <td>5 of 5 + alternatives</td>
+            </tr>
+            <tr>
+                <td><strong>Regime Detection</strong></td>
+                <td class="negative">None</td>
+                <td>Basic (BTC/VIX)</td>
+                <td>Multi-factor ML</td>
+            </tr>
+            <tr>
+                <td><strong>Risk Management</strong></td>
+                <td class="negative">Fixed 8/4 TP/SL</td>
+                <td>Vol-adjusted TP/SL</td>
+                <td>Dynamic portfolio optimization</td>
+            </tr>
+        </table>
+
+        <h3>5.2 The Honest Assessment (from KIMI Research)</h3>
+        <div class="callout callout-info">
+            <strong>The research is brutally honest:</strong> We can't compete with Renaissance's $100B AUM, 200 PhDs, and microsecond latency. But we CAN build a profitable signal generation system that:
+            <ul>
+                <li>Focuses on longer-timeframe strategies (daily/weekly) where latency matters less</li>
+                <li>Uses the 5 validated strategies as a core portfolio</li>
+                <li>Runs proven live algorithms (ADX, RSI(2) Scalp) rather than overfitted backtests</li>
+                <li>Maintains strict risk controls (circuit breakers, regime gates)</li>
+                <li>Achieves consistent 10-20% annual returns (realistic, not 5-15% monthly)</li>
+            </ul>
+        </div>
+
+        <h3>5.3 Achievable Milestones</h3>
+
+        <h4>Phase 1: Emergency Triage (This Week)</h4>
+        <ol>
+            <li><strong>KILL</strong> Consensus, MACD Crossover, Awesome Oscillator algorithms</li>
+            <li><strong>THROTTLE</strong> Ichimoku Cloud to 30% of current volume (require ADX confirmation)</li>
+            <li><strong>SCALE</strong> ADX Trend Strength, RSI(2) Scalp, Momentum Burst to 3x current volume</li>
+            <li><strong>RESTART</strong> Edge Confluence pipeline (75% WR, just needs data)</li>
+            <li><strong>ADD</strong> market regime filter (BTC trend + VIX check)</li>
+            <li><strong>Expected impact:</strong> Live Signal flips from -$370 to ~+$100 projected</li>
+        </ol>
+
+        <h4>Phase 2: Deploy Validated Strategies (Month 1)</h4>
+        <ol>
+            <li><strong>DEPLOY</strong> Funding Rate Arbitrage for crypto (88/100 viability)</li>
+            <li><strong>DEPLOY</strong> Betting Against Beta for stocks (77/100 viability)</li>
+            <li><strong>REBUILD</strong> Meme Scanner with Capitulation Detector logic</li>
+            <li><strong>ADD</strong> ESPN API for sports outcome resolution</li>
+            <li><strong>INTEGRATE</strong> Forex signals into goldmine tracker</li>
+            <li><strong>Expected impact:</strong> 4 of 6 systems profitable, overall WR &gt;50%</li>
+        </ol>
+
+        <h4>Phase 3: Build Infrastructure (Months 2-3)</h4>
+        <ol>
+            <li>Upgrade data feeds (Polygon.io or IEX Cloud for real-time)</li>
+            <li>Implement volatility-adjusted TP/SL per-ticker</li>
+            <li>Build auto-failover system (backup plan architecture)</li>
+            <li>Add circuit breakers (3 consecutive losses = auto-pause)</li>
+            <li>Deploy correlation guard (max 10 same-direction picks)</li>
+        </ol>
+
+        <h4>Phase 4: World-Class Pursuit (Months 4-12)</h4>
+        <ol>
+            <li>Forward-test remaining strategies from research catalog</li>
+            <li>Deploy Pairs Trading and Quality Minus Junk strategies</li>
+            <li>Build ML regime detection (multi-factor, not just BTC/VIX)</li>
+            <li>Achieve Sharpe &gt; 1.0 consistently</li>
+            <li>Publish verified track record (minimum 6 months real data)</li>
+        </ol>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- IMMEDIATE ACTION ITEMS -->
+    <!-- ================================================================== -->
+    <div class="section" id="actions">
+        <h2>6. Immediate Action Items</h2>
+
+        <table>
+            <tr><th>#</th><th>Action</th><th>System</th><th>Expected Impact</th><th>Priority</th></tr>
+            <tr>
+                <td>1</td>
+                <td><strong>Disable Consensus algorithm</strong> (24.2% WR, -$194)</td>
+                <td>Live Signal</td>
+                <td>Eliminate 157 bad picks, save ~$194</td>
+                <td><span class="priority priority-now">NOW</span></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><strong>Disable MACD Crossover + Awesome Oscillator</strong></td>
+                <td>Live Signal</td>
+                <td>Eliminate 84 bad picks, save ~$75</td>
+                <td><span class="priority priority-now">NOW</span></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><strong>Require ADX&gt;25 for Ichimoku signals</strong></td>
+                <td>Live Signal</td>
+                <td>~70% fewer Ichimoku picks, better quality</td>
+                <td><span class="priority priority-now">NOW</span></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><strong>Add BTC/VIX regime filter</strong></td>
+                <td>All Systems</td>
+                <td>Prevent Feb 11-style mass loss days</td>
+                <td><span class="priority priority-now">NOW</span></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><strong>Whitelist trackable meme tokens only</strong></td>
+                <td>Meme Scanner</td>
+                <td>100% of picks become trackable</td>
+                <td><span class="priority priority-now">NOW</span></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td><strong>Deploy Funding Rate Arbitrage</strong></td>
+                <td>Crypto</td>
+                <td>New market-neutral income stream</td>
+                <td><span class="priority priority-week">THIS WEEK</span></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td><strong>Deploy Betting Against Beta (BAB)</strong></td>
+                <td>Stocks</td>
+                <td>Replace failing consolidated consensus</td>
+                <td><span class="priority priority-week">THIS WEEK</span></td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td><strong>Build ESPN API for sports</strong></td>
+                <td>Sports</td>
+                <td>Enable outcome tracking for 69+ picks</td>
+                <td><span class="priority priority-week">THIS WEEK</span></td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td><strong>Restart Edge pipeline</strong></td>
+                <td>Edge</td>
+                <td>Resurrect 75% WR system</td>
+                <td><span class="priority priority-week">THIS WEEK</span></td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td><strong>Add correlation guard to consolidated</strong></td>
+                <td>Consolidated</td>
+                <td>Prevent 14-loss days from correlated picks</td>
+                <td><span class="priority priority-week">THIS WEEK</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- REFERENCE LINKS -->
+    <!-- ================================================================== -->
+    <div class="section" id="references">
+        <h2>7. Research Reference Links</h2>
+        <table>
+            <tr><th>Document</th><th>Key Finding</th><th>Link</th></tr>
+            <tr>
+                <td>Complete Strategy Analysis</td>
+                <td>35+ strategies across 5 asset classes, grade B+</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/COMPLETE_STRATEGY_ANALYSIS.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Strategy Audit Report</td>
+                <td>640 strategies audited down to 52 unique</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/STRATEGY_AUDIT_REPORT.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Forward Test Results</td>
+                <td>Only 5 of 23 strategies survived (22%)</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/FORWARD_TEST_EXECUTIVE_SUMMARY.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Live Algorithm Rescue Plan</td>
+                <td>Emergency fixes for all failing algorithms</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/LIVE_ALGORITHM_RESCUE_PLAN.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Backup Plan Architecture</td>
+                <td>4-tier failover system for all asset classes</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/BACKUP_PLAN_ARCHITECTURE.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Palantir/Renaissance Reality Check</td>
+                <td>Brutal gap analysis vs real quant firms</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/audit_reports/PALANTIR_RENAISSANCE_REALITY_CHECK.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Roadmap to World-Class</td>
+                <td>Phase-by-phase plan from B+ to A+</td>
+                <td><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/KIMI_CLAW_RESEARCH_FEB162026/ROADMAP_TO_WORLDCLASS.md" target="_blank">GitHub</a></td>
+            </tr>
+            <tr>
+                <td>Algorithm Performance Analysis</td>
+                <td>Detailed breakdown of all 16 live algorithms</td>
+                <td><a href="index.html">Local Research</a></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="gen-time">
+        Live vs Research Reality Check &bull; Generated Feb 16, 2026 &bull; Data: Goldmine Tracker API + KIMI Claw Research<br>
+        <a href="index.html">Algorithm Analysis</a> &bull;
+        <a href="../goldmine-alerts.html">Alerts Dashboard</a> &bull;
+        <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/KIMI_CLAW_RESEARCH_FEB162026" target="_blank">Full Research on GitHub</a>
+    </div>
+</div>
+
+</body>
+</html>

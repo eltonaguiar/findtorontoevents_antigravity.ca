@@ -1,0 +1,59 @@
+name: QuantumFusion Crypto Engine
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Run hourly at minute 0
+  push:
+    branches:
+      - main
+    paths:
+      - 'quantum_fusion_crypto_engine.py'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  quantum-fusion:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run QuantumFusion Engine
+      run: |
+        python quantum_fusion_crypto_engine.py > quantum_fusion_report.json
+        if [ ! -f quantum_fusion_report.json ]; then
+          echo "Report file not created"
+          exit 1
+        fi
+
+    - name: Send Discord Status Update
+      run: |
+        python discord_ml_status.py
+      # env DISABLED: system underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    - name: Commit and push results
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add quantum_fusion_report.json
+        git commit -m "Update QuantumFusion performance report [skip ci]" || echo "No changes to commit"
+        git pull --rebase origin main || true
+        bash .github/scripts/safe_push.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

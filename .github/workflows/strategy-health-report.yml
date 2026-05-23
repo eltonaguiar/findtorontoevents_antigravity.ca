@@ -1,0 +1,34 @@
+name: Strategy Health Report
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql requests
+
+      - name: Post health report
+        env:
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ejaguiar1_stocks
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ejaguiar1_stocks
+          DISCORD_HEALTH_WEBHOOK: ${{ secrets.DISCORD_HEALTH_WEBHOOK }}
+        run: python -m strategy_health.discord_report
+

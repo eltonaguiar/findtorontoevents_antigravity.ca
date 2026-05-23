@@ -1,0 +1,959 @@
+{
+  "_meta": {
+    "last_run": "2026-04-25T05:27:05.342566+00:00",
+    "total_changes": 17
+  },
+  "failed_strategy_analysis": {
+    "community_ict_fvg_selective": {
+      "failure_rate": "100% (0/3 wins)",
+      "primary_exit_reason": "SL_HIT (all 3 trades)",
+      "issues_identified": [
+        "Stop losses too tight relative to market volatility",
+        "Poor entry timing - entering against strong trends",
+        "FVG signals not reliable in current market regime"
+      ],
+      "recommended_changes": {
+        "widen_stop_loss": "Increase SL from 4% to 6-8%",
+        "add_entry_filters": "Require RSI divergence confirmation + volume spike",
+        "regime_filter": "Disable in high volatility sideways markets",
+        "confidence_threshold": "Increase minimum confidence from 0.6 to 0.75"
+      }
+    },
+    "smart_money_fvg": {
+      "failure_rate": "100% (0/3 wins)",
+      "primary_exit_reason": "TIME_EXPIRY (2/3), SL_HIT (1/3)",
+      "issues_identified": [
+        "Signals not materializing within expected timeframe",
+        "Poor market timing - entering during consolidations",
+        "FVG patterns not respected by smart money in current conditions"
+      ],
+      "recommended_changes": {
+        "extend_timeframe": "Increase max hold time from 3 to 5-7 days",
+        "add_momentum_filter": "Require ADX > 25 for trend confirmation",
+        "volume_confirmation": "Require 50% above average volume on entry",
+        "reduce_position_size": "Lower position size by 30% due to unreliability"
+      }
+    },
+    "altcoin_season_rotation": {
+      "failure_rate": "100% (0/1 wins)",
+      "primary_exit_reason": "SL_HIT",
+      "issues_identified": [
+        "Seasonal patterns not holding in current macro environment",
+        "Poor risk-reward ratio",
+        "Altcoin correlations breaking down"
+      ],
+      "recommended_changes": {
+        "seasonal_strength_filter": "Require 70%+ seasonal strength score",
+        "correlation_check": "Verify BTC correlation < 0.7 before entry",
+        "reduce_allocation": "Limit to 5% of portfolio until proven",
+        "add_exit_accelerator": "Add trailing stop after 2% profit"
+      }
+    },
+    "mvrv_sma_proxy": {
+      "failure_rate": "100% (0/1 wins)",
+      "primary_exit_reason": "SL_HIT",
+      "issues_identified": [
+        "MVRV signals lagging in fast-moving markets",
+        "SMA crossover timing suboptimal",
+        "Market regime not suitable for mean-reversion"
+      ],
+      "recommended_changes": {
+        "add_trend_filter": "Require EMA alignment (20/50/200)",
+        "volatility_adjustment": "Widen SL based on ATR multiplier",
+        "timing_optimization": "Enter on pullback confirmation, not crossover",
+        "regime_detection": "Disable in trending markets (ADX > 30)"
+      }
+    },
+    "support_resistance_bounce": {
+      "failure_rate": "100% (0/1 wins)",
+      "primary_exit_reason": "TIME_EXPIRY",
+      "issues_identified": [
+        "S/R levels not holding as expected",
+        "Insufficient bounce momentum",
+        "Time-based exits too aggressive"
+      ],
+      "recommended_changes": {
+        "level_strength_filter": "Require multi-timeframe S/R confluence",
+        "momentum_confirmation": "Add RSI > 30 for longs, < 70 for shorts",
+        "extend_hold_time": "Increase max hold from 3 to 5 days",
+        "add_partial_exits": "Scale out 50% at 1:1 risk-reward"
+      }
+    }
+  },
+  "successful_strategy_analysis": {
+    "rsi_hidden_divergence": {
+      "success_rate": "100% (1/1 wins)",
+      "strengths": [
+        "Excellent timing on divergence signals",
+        "Proper risk management with trailing stops",
+        "Good profit capture (3.58% avg win)"
+      ],
+      "recommendations": [
+        "Increase allocation weight by 25%",
+        "Consider adding to ensemble voting",
+        "Monitor for consistency across more trades"
+      ]
+    },
+    "multi_sigma_reversal": {
+      "success_rate": "100% (1/1 wins)",
+      "strengths": [
+        "Strong reversal capture (6% win)",
+        "Good MFE/MAE ratio (4.6:1)",
+        "Statistical edge in extreme moves"
+      ],
+      "recommendations": [
+        "Increase position sizing by 20%",
+        "Add to high-confidence signal pool",
+        "Expand to more symbols with similar volatility"
+      ]
+    }
+  },
+  "system_wide_improvements": {
+    "risk_management": {
+      "stop_loss_optimization": "Implement ATR-based dynamic stops (currently too static)",
+      "position_sizing": "Reduce size for strategies with <60% win rate",
+      "portfolio_heat": "Limit total exposure during high market stress"
+    },
+    "entry_filters": {
+      "regime_detection": "Add HMM-based market regime filtering",
+      "volume_confirmation": "Require above-average volume for all entries",
+      "correlation_checks": "Add cross-asset correlation validation"
+    },
+    "exit_strategy": {
+      "trailing_stops": "Implement dynamic trailing stops for winners",
+      "time_exits": "Optimize holding periods based on strategy type",
+      "partial_exits": "Add scaling out at predetermined profit levels"
+    },
+    "forward_testing": {
+      "minimum_trades": "Require 30+ trades before live deployment",
+      "regime_stress_test": "Test across different market conditions",
+      "walk_forward_analysis": "Implement rolling window validation"
+    }
+  },
+  "implementation_priority": {
+    "high_priority": [
+      "Widen stop losses for failing strategies",
+      "Add regime detection filters",
+      "Implement dynamic position sizing"
+    ],
+    "medium_priority": [
+      "Add volume confirmation requirements",
+      "Optimize holding periods",
+      "Add partial exit logic"
+    ],
+    "low_priority": [
+      "Expand successful strategies",
+      "Add correlation checks",
+      "Implement walk-forward testing"
+    ]
+  },
+  "community_ict_fvg_selective": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 517,
+    "last_tweaked": "2026-03-11T03:21:05.729810+00:00"
+  },
+  "smart_money_fvg": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "ETH-USD"
+    ],
+    "tweak_count": 517,
+    "last_tweaked": "2026-03-11T03:21:05.729828+00:00"
+  },
+  "double_top_bottom_detector": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "ETH-USD",
+      "SOL-USD"
+    ],
+    "tweak_count": 25,
+    "last_tweaked": "2026-02-25T03:47:23.343265+00:00"
+  },
+  "variance_ratio_momentum": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 497,
+    "last_tweaked": "2026-03-11T03:21:05.729845+00:00"
+  },
+  "spike_volume_explosion": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "TON-USD"
+    ],
+    "tweak_count": 11,
+    "last_tweaked": "2026-02-25T03:47:23.343280+00:00"
+  },
+  "hurst_regime_adaptive": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 736,
+    "last_tweaked": "2026-03-19T07:17:03.265318+00:00"
+  },
+  "m2_liquidity_lag": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 476,
+    "last_tweaked": "2026-03-11T03:21:05.729853+00:00"
+  },
+  "monthly_seasonality": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 475,
+    "last_tweaked": "2026-03-11T03:21:05.729867+00:00"
+  },
+  "fourier_cycle_detector": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 474,
+    "last_tweaked": "2026-03-11T03:21:05.729913+00:00"
+  },
+  "autocorrelation_exploiter": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.12,
+    "blacklisted_symbols": [],
+    "tweak_count": 473,
+    "last_tweaked": "2026-03-19T07:17:03.265245+00:00"
+  },
+  "volume_profile_value_area": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 472,
+    "last_tweaked": "2026-03-11T03:21:05.729903+00:00"
+  },
+  "price_touch_recurrence": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 470,
+    "last_tweaked": "2026-03-11T03:21:05.729922+00:00"
+  },
+  "halloween_effect": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 468,
+    "last_tweaked": "2026-03-11T03:21:05.729926+00:00"
+  },
+  "price_level_magnetism": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 446,
+    "last_tweaked": "2026-03-11T03:21:05.729877+00:00"
+  },
+  "exchange_netflow_reversal": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 420,
+    "last_tweaked": "2026-03-11T03:21:05.729918+00:00"
+  },
+  "adaptive_vr_confluence": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 482,
+    "last_tweaked": "2026-03-19T07:17:03.265353+00:00"
+  },
+  "multi_sigma_reversal": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 42,
+    "last_tweaked": "2026-03-11T03:21:05.729839+00:00"
+  },
+  "fractal_sr_bounce": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [
+      "BONK-USD"
+    ],
+    "tweak_count": 642,
+    "last_tweaked": "2026-03-19T07:17:03.265287+00:00"
+  },
+  "seasonal_factor_rotation": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "WLD-USD",
+      "FIL-USD"
+    ],
+    "tweak_count": 414,
+    "last_tweaked": "2026-03-19T07:17:03.265332+00:00"
+  },
+  "hurst_mean_reversion": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 25,
+    "last_tweaked": "2026-03-11T03:21:05.729938+00:00"
+  },
+  "order_book_imbalance": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 66,
+    "last_tweaked": "2026-03-19T07:17:03.265336+00:00"
+  },
+  "widened_tp_momentum_carry": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": 0.12,
+    "blacklisted_symbols": [],
+    "tweak_count": 309,
+    "last_tweaked": "2026-03-19T07:17:03.265314+00:00"
+  },
+  "community_london_breakout_v2_forex": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "NZDUSD=X",
+      "GBPUSD=X"
+    ],
+    "tweak_count": 267,
+    "last_tweaked": "2026-03-19T07:17:03.265357+00:00"
+  },
+  "ml_enhanced_BNBUSDT_15m_B_lightgbm": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 268,
+    "last_tweaked": "2026-04-25T05:27:05.342397+00:00"
+  },
+  "ml_enhanced_FETUSDT_1d_B_lightgbm": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.02,
+    "blacklisted_symbols": [],
+    "tweak_count": 280,
+    "last_tweaked": "2026-04-25T05:27:05.342481+00:00"
+  },
+  "ml_enhanced_BTCUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "BTCUSDT"
+    ],
+    "tweak_count": 276,
+    "last_tweaked": "2026-04-25T05:27:05.342501+00:00"
+  },
+  "ml_enhanced_ADAUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "ADAUSDT"
+    ],
+    "tweak_count": 269,
+    "last_tweaked": "2026-04-25T05:27:05.342507+00:00"
+  },
+  "ml_enhanced_RENDERUSDT_1h_D_ensemble_stack": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 280,
+    "last_tweaked": "2026-04-25T05:27:05.342519+00:00"
+  },
+  "ml_enhanced_RENDERUSDT_4h_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 280,
+    "last_tweaked": "2026-04-25T05:27:05.342524+00:00"
+  },
+  "bollinger_keltner_squeeze_breakout": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 2,
+    "last_tweaked": "2026-03-18T02:15:51.304837+00:00"
+  },
+  "proven_propfirm_conservative": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.03,
+    "blacklisted_symbols": [],
+    "tweak_count": 6,
+    "last_tweaked": "2026-03-19T07:17:03.265291+00:00"
+  },
+  "markov_zone_transition": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.03,
+    "blacklisted_symbols": [],
+    "tweak_count": 1,
+    "last_tweaked": "2026-03-19T07:17:03.265275+00:00"
+  },
+  "proven_vwap_mean_reversion": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.9,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 1,
+    "last_tweaked": "2026-03-19T07:17:03.265325+00:00"
+  },
+  "rsi_bounce_backfill": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.03,
+    "blacklisted_symbols": [],
+    "tweak_count": 53,
+    "last_tweaked": "2026-03-24T23:31:03.180863+00:00"
+  },
+  "ema_crossover_backfill": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.52,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 53,
+    "last_tweaked": "2026-03-24T23:31:03.180819+00:00"
+  },
+  "volume_spike_backfill": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "PIXELUSDT"
+    ],
+    "tweak_count": 53,
+    "last_tweaked": "2026-03-24T23:31:03.180847+00:00"
+  },
+  "momentum_catcher": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.18,
+    "blacklisted_symbols": [
+      "DEGOUSDT"
+    ],
+    "tweak_count": 53,
+    "last_tweaked": "2026-03-24T23:31:03.180877+00:00"
+  },
+  "winner_pattern_precursor": {
+    "tp_multiplier_adj": 0.5,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "FETUSDT",
+      "SOLUSDT",
+      "LTCUSDT",
+      "DOGEUSDT",
+      "FDUSDUSDT",
+      "AVAXUSDT",
+      "BCHUSDT",
+      "KITEUSDT",
+      "TONUSDT",
+      "SAHARAUSDT",
+      "RLUSDUSDT",
+      "ETHUSDT",
+      "BTCUSDT",
+      "ZECUSDT",
+      "ADAUSDT"
+    ],
+    "tweak_count": 67,
+    "last_tweaked": "2026-03-26T16:10:17.669724+00:00"
+  },
+  "copy_hl_NMTD_25M": {
+    "tp_multiplier_adj": 2.0,
+    "sl_multiplier_adj": 0.729,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 43,
+    "last_tweaked": "2026-03-25T11:14:49.508754+00:00"
+  },
+  "clone_hl_copy_PensionFund_24M": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.06,
+    "blacklisted_symbols": [],
+    "tweak_count": 2,
+    "last_tweaked": "2026-03-20T00:09:53.808233+00:00"
+  },
+  "binance_smart_money": {
+    "tp_multiplier_adj": 0.5,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.03,
+    "blacklisted_symbols": [],
+    "tweak_count": 55,
+    "last_tweaked": "2026-03-28T00:32:46.345702+00:00"
+  },
+  "hl_funding_fade": {
+    "tp_multiplier_adj": 1.464,
+    "sl_multiplier_adj": 1.52,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "ANIMEUSDT",
+      "TSTUSDT"
+    ],
+    "tweak_count": 34,
+    "last_tweaked": "2026-03-26T16:10:17.669724+00:00"
+  },
+  "hl_momentum_continuation": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 12,
+    "last_tweaked": "2026-03-25T11:14:49.508740+00:00"
+  },
+  "cta_tsmom_blend": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "USDCAD=X"
+    ],
+    "tweak_count": 24,
+    "last_tweaked": "2026-03-26T16:10:17.669724+00:00"
+  },
+  "yahoo_analyst_consensus": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "PG",
+      "MSTR",
+      "ORCL",
+      "AVGO",
+      "AMD",
+      "MA",
+      "HOOD",
+      "V",
+      "BAC",
+      "TMO",
+      "META",
+      "MSFT",
+      "CRM"
+    ],
+    "tweak_count": 24,
+    "last_tweaked": "2026-03-26T16:10:17.669724+00:00"
+  },
+  "futures_ema_stack_momentum": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.03,
+    "blacklisted_symbols": [],
+    "tweak_count": 1,
+    "last_tweaked": "2026-03-24T22:49:07.720511+00:00"
+  },
+  "futures_bb_mean_reversion": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 20,
+    "last_tweaked": "2026-03-26T16:10:17.669724+00:00"
+  },
+  "gainer_momentum_interceptor": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 1,
+    "last_tweaked": "2026-03-24T23:31:03.181145+00:00"
+  },
+  "emergency_gainer_capture": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 17,
+    "last_tweaked": "2026-03-26T16:10:17.669724+00:00"
+  },
+  "macd_crossover": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.656,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [
+      "VIRTUALUSDT",
+      "CUSDT"
+    ],
+    "tweak_count": 158,
+    "last_tweaked": "2026-04-25T05:27:05.342288+00:00"
+  },
+  "quan_engine_scalp": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.729,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "MATICUSDT",
+      "SOLUSDT",
+      "ADAUSDT",
+      "ONDOUSDT",
+      "DOGEUSDT",
+      "ETHUSDT",
+      "ICPUSDT",
+      "AVAXUSDT",
+      "XLMUSDT",
+      "BNBUSDT",
+      "HYPEUSDT",
+      "BTCUSDT",
+      "LTCUSDT",
+      "KASUSDT",
+      "RENDERUSDT",
+      "TAOUSDT",
+      "DOTUSDT",
+      "ETCUSDT"
+    ],
+    "tweak_count": 224,
+    "last_tweaked": "2026-04-25T05:27:05.342373+00:00"
+  },
+  "quan_engine_swing": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.59,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "KASUSDT",
+      "TAOUSDT",
+      "DOTUSDT"
+    ],
+    "tweak_count": 215,
+    "last_tweaked": "2026-04-25T05:27:05.342380+00:00"
+  },
+  "quan_engine_position": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "TAOUSDT"
+    ],
+    "tweak_count": 183,
+    "last_tweaked": "2026-04-25T05:27:05.342386+00:00"
+  },
+  "clone_hl_copy_Auros_66M": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.09,
+    "blacklisted_symbols": [],
+    "tweak_count": 3,
+    "last_tweaked": "2026-03-28T00:32:46.345697+00:00"
+  },
+  "forex_rsi2_mean_reversion": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "USDJPY=X",
+      "AUDUSD=X",
+      "NZDUSD=X",
+      "USDCAD=X",
+      "USDCHF=X",
+      "GBPUSD=X",
+      "EURUSD=X",
+      "AUDJPY=X",
+      "EURGBP=X",
+      "CADJPY=X",
+      "EURJPY=X",
+      "GBPJPY=X"
+    ],
+    "tweak_count": 137,
+    "last_tweaked": "2026-04-23T04:13:22.259655+00:00"
+  },
+  "futures_momentum": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "GC=F",
+      "SI=F",
+      "PL=F",
+      "HG=F",
+      "CT=F",
+      "ZN=F",
+      "KC=F",
+      "ZW=F",
+      "SB=F"
+    ],
+    "tweak_count": 113,
+    "last_tweaked": "2026-04-22T00:01:59.407088+00:00"
+  },
+  "volume_spike_breakout": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "UUSDT",
+      "TAOUSDT"
+    ],
+    "tweak_count": 154,
+    "last_tweaked": "2026-04-25T05:27:05.342320+00:00"
+  },
+  "rsi_bounce": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.09,
+    "blacklisted_symbols": [
+      "ESPUSDT"
+    ],
+    "tweak_count": 114,
+    "last_tweaked": "2026-04-25T05:27:05.342334+00:00"
+  },
+  "ml_enhanced_DOGEUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.729,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342404+00:00"
+  },
+  "ml_enhanced_INJUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "INJUSDT"
+    ],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342409+00:00"
+  },
+  "ml_enhanced_STRKUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.09,
+    "blacklisted_symbols": [
+      "STRKUSDT"
+    ],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342419+00:00"
+  },
+  "ml_enhanced_DYDXUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.14,
+    "blacklisted_symbols": [
+      "DYDXUSDT"
+    ],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342441+00:00"
+  },
+  "ml_enhanced_ADAUSDT_15m_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.729,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342512+00:00"
+  },
+  "ml_enhanced_TRXUSDT_1d_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "TRXUSDT"
+    ],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342541+00:00"
+  },
+  "ml_enhanced_AVAXUSDT_15m_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342545+00:00"
+  },
+  "ml_enhanced_FETUSDT_15m_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.656,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342551+00:00"
+  },
+  "ml_enhanced_ALGOUSDT_15m_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 87,
+    "last_tweaked": "2026-04-25T05:27:05.342555+00:00"
+  },
+  "myfxbook_retail_contrarian": {
+    "tp_multiplier_adj": 1.1,
+    "sl_multiplier_adj": 1.035,
+    "confidence_adj": -0.04,
+    "blacklisted_symbols": [
+      "USDCAD=X"
+    ],
+    "tweak_count": 4,
+    "last_tweaked": "2026-04-20T18:21:29.262906+00:00"
+  },
+  "rsi_overbought": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": 0.0,
+    "blacklisted_symbols": [],
+    "tweak_count": 122,
+    "last_tweaked": "2026-04-25T05:27:05.342341+00:00"
+  },
+  "ml_enhanced_JTOUSDT_1d_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "JTOUSDT"
+    ],
+    "tweak_count": 83,
+    "last_tweaked": "2026-04-25T05:27:05.342487+00:00"
+  },
+  "macd_rsi_confluence": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "TAOUSDT"
+    ],
+    "tweak_count": 118,
+    "last_tweaked": "2026-04-25T05:27:05.342363+00:00"
+  },
+  "ml_enhanced_XRPUSDT_1d_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 82,
+    "last_tweaked": "2026-04-25T05:27:05.342461+00:00"
+  },
+  "ml_enhanced_HBARUSDT_1d_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 82,
+    "last_tweaked": "2026-04-25T05:27:05.342466+00:00"
+  },
+  "ml_enhanced_INJUSDT_1d_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.14,
+    "blacklisted_symbols": [
+      "INJUSDT"
+    ],
+    "tweak_count": 82,
+    "last_tweaked": "2026-04-25T05:27:05.342474+00:00"
+  },
+  "ml_enhanced_APEUSDT_1d_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.15,
+    "blacklisted_symbols": [],
+    "tweak_count": 82,
+    "last_tweaked": "2026-04-25T05:27:05.342529+00:00"
+  },
+  "ml_enhanced_POLUSDT_1d_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [],
+    "tweak_count": 82,
+    "last_tweaked": "2026-04-25T05:27:05.342533+00:00"
+  },
+  "stochrsi_macd_combo": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 2.0,
+    "confidence_adj": -0.2,
+    "blacklisted_symbols": [
+      "UUSDT",
+      "NOMUSDT"
+    ],
+    "tweak_count": 114,
+    "last_tweaked": "2026-04-25T05:27:05.342350+00:00"
+  },
+  "fx_smart_carry_trade_momentum": {
+    "tp_multiplier_adj": 1.21,
+    "sl_multiplier_adj": 0.81,
+    "confidence_adj": 0.01,
+    "blacklisted_symbols": [
+      "USDCHF=X"
+    ],
+    "tweak_count": 4,
+    "last_tweaked": "2026-04-09T03:05:55.148479+00:00"
+  },
+  "ml_enhanced_AVAXUSDT_1d_B_lightgbm": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.04,
+    "blacklisted_symbols": [],
+    "tweak_count": 81,
+    "last_tweaked": "2026-04-25T05:27:05.342492+00:00"
+  },
+  "ml_enhanced_TONUSDT_4h_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": -0.13,
+    "blacklisted_symbols": [],
+    "tweak_count": 75,
+    "last_tweaked": "2026-04-25T05:27:05.342432+00:00"
+  },
+  "prediction_market_consensus": {
+    "tp_multiplier_adj": 1.1,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": 0.02,
+    "blacklisted_symbols": [],
+    "tweak_count": 1,
+    "last_tweaked": "2026-04-17T16:07:18.492177+00:00"
+  },
+  "ml_enhanced_ZKUSDT_4h_D_ensemble_stack": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 0.5,
+    "confidence_adj": 0.02,
+    "blacklisted_symbols": [],
+    "tweak_count": 13,
+    "last_tweaked": "2026-04-25T05:27:05.342454+00:00"
+  },
+  "fx_smart_forex_rsi2_mean_reversion": {
+    "tp_multiplier_adj": 1.21,
+    "sl_multiplier_adj": 0.81,
+    "confidence_adj": 0.04,
+    "blacklisted_symbols": [],
+    "tweak_count": 2,
+    "last_tweaked": "2026-04-21T17:00:19.153754+00:00"
+  },
+  "cot_positioning": {
+    "tp_multiplier_adj": 1.0,
+    "sl_multiplier_adj": 1.0,
+    "confidence_adj": -0.03,
+    "blacklisted_symbols": [
+      "KC=F"
+    ],
+    "tweak_count": 1,
+    "last_tweaked": "2026-04-25T05:27:05.342562+00:00"
+  }
+}

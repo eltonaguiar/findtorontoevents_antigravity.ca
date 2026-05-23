@@ -1,0 +1,42 @@
+# Symbol Blocks — EQUITY universe exclusions
+# Part of PR-2026-0518-5: EQUITY symbol universe manager.
+#
+# Each entry:
+#   symbol:     Ticker
+#   reason:     Why blocked (ADVERSE_SELECTION | LIQUIDITY | POOR_PERFORMANCE | DATA_QUALITY)
+#   evidence:   Source + key metrics that triggered the block
+#   gated_in:   quality_gates.py constant (if mirrored there)
+#   review_at:  ISO date — re-evaluate block when this date passes
+#
+# Usage: config/universe_manager.py reads this at load time and adds all
+# symbol entries to the effective block set alongside WIN_RATE_TRAP_BLACKLIST
+# and BLOCKED_SYMBOLS from quality_gates.py.
+
+blocks:
+
+  - symbol: NIO
+    reason: POOR_PERFORMANCE
+    evidence: "n=11, WR=27%, sum_pnl=-48.9%; not a win-rate trap but consistent loser.
+               Added to WIN_RATE_TRAP_BLACKLIST in quality_gates.py (2026-05-17)."
+    gated_in: WIN_RATE_TRAP_BLACKLIST
+    review_at: "2026-08-01"
+
+  - symbol: AMD
+    reason: POOR_PERFORMANCE
+    evidence: "goldmine consensus picks: WR=8% n=12 (session BC 2026-05-17). Soft-watch
+               gate: block at n>=15, hard-gate at n>=20. Current goldmine_*_consensus
+               picks show avg_pnl=-10 to -17% per session BC analysis."
+    gated_in: null
+    review_at: "2026-07-01"
+    notes: "Hard-block pending n>=20 confirmed closed picks in quality_gates.py.
+            Existing goldmine_*_consensus BLOCKED_ASSET_STRATEGY_PAIRS already
+            prevent the worst strategies; this entry tracks the AMD-specific watch."
+
+  - symbol: MSTR
+    reason: POOR_PERFORMANCE
+    evidence: "High BTC-correlation, extreme vol, poor standalone signal-to-noise.
+               Closed picks show concentration in 3x-levered goldmine signals; data
+               quality concerns (split-adjusted pricing artifacts on yfinance)."
+    gated_in: null
+    review_at: "2026-08-01"
+    notes: "Watch only — do not hard-block until n>=20 clean resolved picks."

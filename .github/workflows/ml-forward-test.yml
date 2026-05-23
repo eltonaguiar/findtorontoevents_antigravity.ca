@@ -1,0 +1,89 @@
+name: ML Forward Test 1745 Models
+
+# Forward-tests the 1,745 trained models in ml_crypto_predictor/enhanced_models/
+# Generates predictions with TP/SL, tracks outcomes, writes to closed_picks.json
+# which feeds the feedback loop for model improvement.
+
+on:
+  schedule:
+    - cron: '30 */4 * * *'  # Every 4 hours at :30 (offset from enhanced-ml-crypto at :00)
+  workflow_dispatch:
+
+jobs:
+  forward-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy scikit-learn xgboost lightgbm \
+                    joblib scipy pyarrow
+
+      - name: Verify models exist
+        run: |
+          MODEL_COUNT=$(ls ml_crypto_predictor/enhanced_models/models/*.joblib 2>/dev/null | wc -l)
+          echo "Found $MODEL_COUNT model files"
+          if [ "$MODEL_COUNT" -lt 10 ]; then
+            echo "::warning::Too few models ($MODEL_COUNT). Skipping forward test."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+        id: check
+
+      - name: Run forward-test prediction cycle
+        if: steps.check.outputs.skip != 'true'
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          cd ${{ github.workspace }}
+          echo "=== ML Forward Test: Loading 1,745 models ==="
+          python -m ml_crypto_predictor.enhanced_models.main live-picks
+
+      - name: Commit forward-test results
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          git config user.name "ML Forward Test Bot"
+          git config user.email "ml-forward-test@findtorontoevents.ca"
+
+          git add ml_crypto_predictor/enhanced_models/live_picks/ || true
+
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          ACTIVE=$(python3 -c "
+          import json, os
+          f = 'ml_crypto_predictor/enhanced_models/live_picks/active_picks.json'
+          print(len(json.load(open(f))) if os.path.exists(f) else 0)
+          " 2>/dev/null || echo "?")
+          CLOSED=$(python3 -c "
+          import json, os
+          f = 'ml_crypto_predictor/enhanced_models/live_picks/closed_picks.json'
+          print(len(json.load(open(f))) if os.path.exists(f) else 0)
+          " 2>/dev/null || echo "?")
+
+          git diff --staged --quiet || \
+            git commit -m "Forward test [${TIMESTAMP}] - ${ACTIVE} active, ${CLOSED} closed (WR tracking) [skip ci]"
+
+          for i in 1 2 3; do
+            git pull --rebase origin main || true
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            sleep 3
+          done
+

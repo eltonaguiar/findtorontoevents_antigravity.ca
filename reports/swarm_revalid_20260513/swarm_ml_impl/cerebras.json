@@ -1,0 +1,26 @@
+{
+  "recommended_option": "A",
+  "rationale": "Hard-rejecting LONG signals eliminates the under-performing side with minimal code change and easy rollback, while preserving the high-WIN-RATE SHORT side.",
+  "expected_pf_lift": 0.14,
+  "rollback_complexity": "one_line",
+  "production_safety": "safe",
+  "additional_safeguards": [
+    "log reject reason with ns_d_ml_crypto_pred_long_reject tag",
+    "track PF and WR per side in shadow mode",
+    "set a temporary cap on LONG volume to 0% for the source",
+    "add alert if any LONG pick passes the score threshold"
+  ],
+  "ship_now_or_shadow_first": "SHADOW_MODE_7D_FIRST",
+  "engine": "cerebras",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_ml_impl\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260513T055852Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 842,
+    "tokens_out": 303,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

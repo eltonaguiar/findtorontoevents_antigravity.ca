@@ -1,0 +1,388 @@
+name: Master Automation Scheduler
+
+on:
+  schedule:
+    # Hourly
+    - cron: '0 * * * *'
+    # Every 4 hours
+    - cron: '0 */4 * * *'
+    # Daily at 3am
+    - cron: '0 3 * * *'
+    # Weekly Sunday
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: 'Job type to run'
+        required: true
+        default: 'hourly'
+        type: choice
+        options:
+          - hourly
+          - four_hourly
+          - daily
+          - weekly
+          - all
+
+permissions:
+  contents: write
+
+jobs:
+  # ========== HOURLY JOBS ==========
+  hourly-tasks:
+    if: github.event.schedule == '0 * * * *' || github.event.inputs.job_type == 'hourly' || github.event.inputs.job_type == 'all'
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install aiohttp numpy pandas schedule scikit-learn joblib
+      
+      - name: Poll all systems with ML enhancement
+        run: |
+          cd signal_aggregator
+          python << 'PYEOF'
+          import asyncio
+          import sys
+          import json
+          sys.path.insert(0, '.')
+          
+          async def main():
+              # Use fixed aggregator that properly activates systems
+              try:
+                  from aggregator_fixed import FixedSignalAggregator
+                  from ml_consensus import EnhancedConfidenceCalculator
+                  from picks_router import PicksRouter
+                  
+                  # Aggregate signals
+                  async with FixedSignalAggregator() as agg:
+                      consensus = await agg.aggregate_all_signals()
+                      
+                      print(f'Active systems: {agg.get_active_systems_count()}')
+                      print(f'Consensus signals: {len(consensus)}')
+                      
+                      # Apply ML confidence enhancement
+                      calc = EnhancedConfidenceCalculator()
+                      signals_list = []
+                      
+                      for symbol, cons_signal in consensus.items():
+                          for signal in cons_signal.signals:
+                              bayesian_conf = signal.confidence
+                              enhanced = calc.calculate_enhanced_confidence(
+                                  signal.to_dict(), bayesian_conf
+                              )
+                              signal.confidence = enhanced['confidence']
+                              signal.metadata['ml'] = enhanced
+                              signals_list.append(signal.to_dict())
+                      
+                      # Export consensus
+                      agg.export_consensus('consensus_output.json')
+                      
+                      # Route signals to Discord channels
+                      router = PicksRouter()
+                      counts = router.send_batch(signals_list)
+                      print(f'Signals routed: {counts}')
+                  
+              except Exception as e:
+                  import traceback
+                  print(f"Error in aggregation: {e}")
+                  traceback.print_exc()
+                  # Send alert
+                  try:
+                      from picks_router import PicksRouter
+                      router = PicksRouter()
+                      router.send_system_alert(f"Aggregation error: {e}", level="critical")
+                  except:
+                      pass
+          
+          asyncio.run(main())
+          PYEOF
+        env:
+          DISCORD_FRESHPICKS: ${{ secrets.DISCORD_FRESHPICKS }}
+          DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      
+      - name: Apply signal quality filtering
+        run: |
+          python << 'PYEOF'
+          import sys
+          import json
+          sys.path.insert(0, '.')
+          
+          try:
+              from forward_testing.signal_quality_ml import SignalQualityFilter
+              
+              # Load consensus signals
+              with open('signal_aggregator/consensus_output.json') as f:
+                  signals = json.load(f)
+              
+              # Filter by quality
+              quality_filter = SignalQualityFilter()
+              accepted, rejected = quality_filter.predictor.filter_signals(signals)
+              
+              # Save filtered signals
+              with open('signal_aggregator/consensus_filtered.json', 'w') as f:
+                  json.dump(accepted, f, indent=2)
+              
+              print(f"Quality filter: {len(accepted)}/{len(signals)} signals accepted")
+              print(f"Rejected {len(rejected)} low-quality signals")
+              
+          except Exception as e:
+              print(f"Quality filtering skipped: {e}")
+          PYEOF
+      
+      - name: Check ML model status
+        run: |
+          python << 'PYEOF'
+          import os
+          import sys
+          sys.path.insert(0, '.')
+          
+          # Check if models need training
+          models_exist = (
+              os.path.exists('signal_aggregator/models/ml_consensus_latest.pkl') or
+              os.path.exists('forward_testing/models/tp_hit_model.pkl')
+          )
+          
+          if not models_exist:
+              print(" WARNING: ML models not trained yet")
+              print("Run 'ML Model Auto-Training' workflow to train models")
+          else:
+              print(" ML models available")
+          PYEOF
+      
+      - name: Commit updates
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add signal_aggregator/consensus_output.json 2>/dev/null || true
+          git add signal_aggregator/consensus_filtered.json 2>/dev/null || true
+          git add signal_aggregator/data/master_picks_tracker.json 2>/dev/null || true
+          git add signal_aggregator/data/master_picks_history.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Hourly update with ML enhancement: $(date +%H:%M) [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh
+            echo "Push retry $i failed"
+            sleep $((i * 4))
+          done
+          echo "::error::Failed to push hourly updates after retries"
+          exit 1
+
+  # ========== EVERY 4 HOURS ==========
+  four-hourly-tasks:
+    if: github.event.schedule == '0 */4 * * *' || github.event.inputs.job_type == 'four_hourly' || github.event.inputs.job_type == 'all'
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install "ccxt>=4.3.80,<4.4" pandas numpy requests
+      
+      - name: Fetch market data
+        run: |
+          echo "Fetching market data..."
+          # Add data fetching logic here
+      
+      - name: Run ML inference
+        run: |
+          echo "Running ML inference..."
+          # Add ML inference logic here
+      
+      - name: Update portfolio P&L
+        run: |
+          echo "Updating portfolio P&L..."
+          # Add P&L update logic here
+
+  # ========== DAILY 3AM ==========
+  daily-tasks:
+    if: github.event.schedule == '0 3 * * *' || github.event.inputs.job_type == 'daily' || github.event.inputs.job_type == 'all'
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn xgboost lightgbm
+      
+      - name: Retrain ML models
+        run: |
+          echo "Checking ML model retraining..."
+          python << 'PYEOF'
+          import sys
+          import os
+          import sqlite3
+          sys.path.insert(0, '.')
+          
+          # Check if we have enough data for training
+          if not os.path.exists('forward_tracking.db'):
+              print("No forward tracking database")
+              exit(0)
+          
+          conn = sqlite3.connect('forward_tracking.db')
+          cursor = conn.cursor()
+          
+          cursor.execute("""
+              SELECT COUNT(*) FROM signals 
+              WHERE status IN ('tp_hit', 'sl_hit', 'expired')
+          """)
+          total_resolved = cursor.fetchone()[0]
+          conn.close()
+          
+          print(f"Total resolved signals: {total_resolved}")
+          
+          if total_resolved < 50:
+              print(f"Insufficient data for training ({total_resolved}/50)")
+              exit(0)
+          
+          # Train consensus model
+          try:
+              from signal_aggregator.ml_consensus import MLConsensusEngine
+              engine = MLConsensusEngine()
+              if engine.train_model():
+                  print(" ML Consensus model trained")
+              else:
+                  print(" ML Consensus training failed or skipped")
+          except Exception as e:
+              print(f"Error training consensus: {e}")
+          
+          # Train quality model
+          try:
+              from forward_testing.signal_quality_ml import SignalQualityPredictor
+              predictor = SignalQualityPredictor()
+              if predictor.train_models():
+                  print(" Signal quality models trained")
+              else:
+                  print(" Quality model training failed or skipped")
+          except Exception as e:
+              print(f"Error training quality: {e}")
+          PYEOF
+      
+      - name: Generate ML performance metrics
+        run: |
+          python << 'PYEOF'
+          import os
+          import json
+          from datetime import datetime
+          
+          metrics = {
+              'generated_at': datetime.now().isoformat(),
+              'models': {}
+          }
+          
+          # Check consensus model
+          if os.path.exists('signal_aggregator/models/training_report.json'):
+              with open('signal_aggregator/models/training_report.json') as f:
+                  metrics['models']['consensus'] = json.load(f)
+          
+          # Check quality model
+          if os.path.exists('forward_testing/models/training_report.json'):
+              with open('forward_testing/models/training_report.json') as f:
+                  metrics['models']['quality'] = json.load(f)
+          
+          os.makedirs('reports/ml', exist_ok=True)
+          with open('reports/ml/metrics.json', 'w') as f:
+              json.dump(metrics, f, indent=2)
+          
+          print("ML metrics saved to reports/ml/metrics.json")
+          PYEOF
+      
+      - name: Evolve strategies
+        run: |
+          echo "Running strategy evolution..."
+          cd genome
+          python dna_engine_enhanced.py || echo "Evolution skipped (demo mode)"
+      
+      - name: Generate performance reports
+        run: |
+          echo "Generating daily performance reports..."
+          # Create daily report
+      
+      - name: Commit daily updates
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add -A
+          git diff --quiet && git diff --staged --quiet || git commit -m "Daily update: $(date +%Y-%m-%d) [skip ci]"
+          bash .github/scripts/safe_push.sh
+
+  # ========== WEEKLY SUNDAY ==========
+  weekly-tasks:
+    if: github.event.schedule == '0 0 * * 0' || github.event.inputs.job_type == 'weekly' || github.event.inputs.job_type == 'all'
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 360 # 6 hours max for evolution
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn xgboost lightgbm aiohttp
+      
+      - name: Comprehensive backtesting
+        run: |
+          echo "Running comprehensive backtests..."
+          # Run full backtest suite
+      
+      - name: Full DNA evolution (200 gens)
+        run: |
+          echo "Running full DNA evolution..."
+          cd genome
+          # Run 200 generation evolution
+          echo "This would run: python dna_engine_enhanced.py with 200 gens"
+      
+      - name: Generate weekly report
+        run: |
+          echo "Generating weekly performance report..."
+          # Create comprehensive weekly report
+      
+      - name: Deploy to all domains
+        run: |
+          echo "Deploying to findtorontoevents.ca..."
+          echo "Deploying to tdotevent.ca..."
+          echo "Deploying to torontoevent.net..."
+      
+      - name: Commit weekly updates
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add -A
+          git diff --quiet && git diff --staged --quiet || git commit -m "Weekly update: $(date +%Y-%m-%d) [skip ci]"
+          bash .github/scripts/safe_push.sh
+

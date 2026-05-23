@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DARWIN ENGINE — DNA Evolution Trading Intelligence | Genetic Strategy Evolution</title>
+<meta name="description" content="DNA Evolution trading strategies. DARWIN ENGINE uses genetic programming, MAP-Elites evolution, ensemble coevolution, and meta-weight DNA evolution to breed winning trading strategies.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a12;--card:#1a1a2e;--card-hover:#22223a;--border:#2a2a3e;
+  --text:#e0e0e0;--text-dim:#888;--text-bright:#fff;
+  --genesis:#00ff88;--atlas:#00aaff;--nexus:#ff6600;--legion:#cc44ff;--phoenix:#ff4444;
+  --positive:#00ff88;--negative:#ff4444;--neutral:#ffaa00;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.6;min-height:100vh}
+a{color:var(--atlas);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.header{text-align:center;padding:2.5rem 1rem 1.5rem;border-bottom:1px solid var(--border)}
+.header h1{font-size:2.8rem;font-weight:800;letter-spacing:.15em;background:linear-gradient(135deg,var(--genesis),var(--atlas),var(--legion));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .subtitle{color:var(--text-dim);font-size:1.05rem;margin-top:.3rem;letter-spacing:.08em}
+.header .refresh-info{font-size:.75rem;color:var(--text-dim);margin-top:.5rem}
+.nav-links{margin-top:.8rem;display:flex;gap:1.2rem;justify-content:center;font-size:.9rem}
+
+/* Layout */
+.container{max-width:1400px;margin:0 auto;padding:1.5rem}
+.section-title{font-size:1.3rem;font-weight:700;color:var(--text-bright);margin:2rem 0 1rem;padding-left:.5rem;border-left:3px solid var(--atlas)}
+
+/* Engine Status Cards */
+.engine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem}
+.engine-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.3rem;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.engine-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.engine-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.engine-card.genesis::before{background:var(--genesis)}
+.engine-card.atlas::before{background:var(--atlas)}
+.engine-card.nexus::before{background:var(--nexus)}
+.engine-card.legion::before{background:var(--legion)}
+.engine-card.phoenix::before{background:var(--phoenix)}
+.engine-name{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.engine-name .dot{width:10px;height:10px;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+.genesis .engine-name .dot{background:var(--genesis);box-shadow:0 0 8px var(--genesis)}
+.atlas .engine-name .dot{background:var(--atlas);box-shadow:0 0 8px var(--atlas)}
+.nexus .engine-name .dot{background:var(--nexus);box-shadow:0 0 8px var(--nexus)}
+.legion .engine-name .dot{background:var(--legion);box-shadow:0 0 8px var(--legion)}
+.phoenix .engine-name .dot{background:var(--phoenix);box-shadow:0 0 8px var(--phoenix)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.engine-label{font-size:.78rem;color:var(--text-dim);margin-top:.15rem;margin-bottom:.8rem}
+.engine-stats{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.stat-box{background:rgba(255,255,255,.03);border-radius:6px;padding:.5rem .7rem}
+.stat-box .stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim)}
+.stat-box .stat-value{font-size:1.1rem;font-weight:700;color:var(--text-bright)}
+.engine-status{margin-top:.7rem;font-size:.78rem;display:flex;align-items:center;gap:.4rem}
+.status-badge{padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600}
+.status-badge.active{background:rgba(0,255,136,.15);color:var(--genesis)}
+.status-badge.idle{background:rgba(255,170,0,.15);color:var(--neutral)}
+.status-badge.error{background:rgba(255,68,68,.15);color:var(--negative)}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:rgba(255,255,255,.04);text-align:left;padding:.7rem .8rem;font-weight:600;color:var(--text-dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:.65rem .8rem;border-top:1px solid var(--border);white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.02)}
+.dir-long{color:var(--positive);font-weight:600}
+.dir-short{color:var(--negative);font-weight:600}
+.confidence-bar{display:inline-block;height:6px;border-radius:3px;margin-left:.4rem;vertical-align:middle}
+.engine-tag{padding:2px 7px;border-radius:8px;font-size:.72rem;font-weight:600}
+.engine-tag.genesis{background:rgba(0,255,136,.12);color:var(--genesis)}
+.engine-tag.atlas{background:rgba(0,170,255,.12);color:var(--atlas)}
+.engine-tag.nexus{background:rgba(255,102,0,.12);color:var(--nexus)}
+.engine-tag.legion{background:rgba(204,68,255,.12);color:var(--legion)}
+.engine-tag.phoenix{background:rgba(255,68,68,.12);color:var(--phoenix)}
+
+/* Consensus Section */
+.consensus-wrap{position:relative;border-radius:12px;padding:2px;margin-bottom:1.5rem;background:linear-gradient(135deg,var(--genesis),var(--atlas),var(--nexus),var(--legion));background-size:300% 300%;animation:gradientShift 6s ease infinite}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.consensus-inner{background:var(--card);border-radius:10px;padding:1.3rem}
+.consensus-inner h3{font-size:1.1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+.consensus-badge{font-size:.7rem;background:rgba(255,255,255,.08);padding:2px 8px;border-radius:8px}
+.consensus-empty{text-align:center;color:var(--text-dim);padding:1.5rem;font-size:.9rem}
+
+/* Evolution Stats */
+.evo-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.evo-stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center}
+.evo-stat-card .big-num{font-size:2rem;font-weight:800;color:var(--text-bright)}
+.evo-stat-card .big-label{font-size:.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
+
+/* How It Works Tabs */
+.tabs{display:flex;gap:0;margin-bottom:0;border-bottom:2px solid var(--border)}
+.tab-btn{padding:.7rem 1.3rem;background:transparent;border:none;color:var(--text-dim);font-size:.9rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+.tab-btn:hover{color:var(--text-bright)}
+.tab-btn.active{color:var(--atlas);border-bottom-color:var(--atlas);font-weight:600}
+.tab-panel{display:none;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:1.5rem}
+.tab-panel.active{display:block}
+.tab-panel h4{color:var(--text-bright);margin:1rem 0 .4rem;font-size:1rem}
+.tab-panel h4:first-child{margin-top:0}
+.tab-panel p,.tab-panel li{font-size:.88rem;color:var(--text);line-height:1.7}
+.tab-panel ul{padding-left:1.3rem;margin:.3rem 0 .8rem}
+.tab-panel code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;font-size:.82rem;color:var(--genesis)}
+.engine-heading{display:flex;align-items:center;gap:.5rem}
+.engine-heading .color-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* Footer */
+.footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75rem;border-top:1px solid var(--border);margin-top:2rem}
+
+/* Loading */
+.loading{text-align:center;padding:2rem;color:var(--text-dim)}
+.loading .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--atlas);border-radius:50%;animation:spin .8s linear infinite;margin-right:.5rem;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Expandable pick rows */
+.pick-row{cursor:pointer;transition:background .15s}
+.pick-row:hover td{background:rgba(255,255,255,.04)}
+.pick-row.active td{background:rgba(0,170,255,.06)}
+.pick-detail-row{display:none}
+.pick-detail-row.open{display:table-row}
+.pick-detail-row td{padding:1rem 1.2rem;background:rgba(0,0,0,.2);border-top:none}
+.pick-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.7rem}
+.pick-detail-item{background:rgba(255,255,255,.03);border-radius:6px;padding:.5rem .7rem}
+.pick-detail-item .dl{font-size:.65rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:.04em}
+.pick-detail-item .dv{font-size:.95rem;font-weight:700;color:var(--text-bright)}
+
+/* Pick status badges */
+.pick-status{padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;text-transform:uppercase}
+.pick-status.active-pick{background:rgba(0,255,136,.12);color:var(--genesis)}
+.pick-status.tp-hit{background:rgba(0,255,136,.2);color:#00ff88;border:1px solid rgba(0,255,136,.3)}
+.pick-status.sl-hit{background:rgba(255,68,68,.2);color:#ff4444;border:1px solid rgba(255,68,68,.3)}
+.pick-status.expired{background:rgba(255,170,0,.12);color:var(--neutral)}
+
+/* Closed Picks Section */
+.closed-section{margin-top:1.5rem}
+.closed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.closed-stats{display:flex;gap:1rem;font-size:.8rem}
+.closed-stats .stat-win{color:var(--positive);font-weight:600}
+.closed-stats .stat-loss{color:var(--negative);font-weight:600}
+.closed-stats .stat-total{color:var(--text-dim)}
+.clear-closed-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:3px 10px;border-radius:6px;font-size:.72rem;cursor:pointer}
+.clear-closed-btn:hover{border-color:var(--phoenix);color:var(--phoenix)}
+
+/* Timestamp in table */
+.ts-cell{font-size:.75rem;color:var(--text-dim)}
+.ts-cell .ts-date{color:var(--text);font-weight:500}
+
+/* Price cells */
+.price-cell{font-family:'SF Mono','Fira Code',monospace;font-size:.82rem}
+.price-cell.no-data{color:var(--text-dim);font-style:italic;font-family:inherit}
+
+/* Responsive */
+@media(max-width:768px){
+  .header h1{font-size:1.8rem}
+  .engine-grid{grid-template-columns:1fr}
+  .evo-stats-grid{grid-template-columns:1fr 1fr}
+  .tabs{flex-wrap:wrap}
+  .tab-btn{font-size:.8rem;padding:.5rem .8rem}
+  .pick-detail-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DARWIN ENGINE</h1>
+  <div class="subtitle">Evolutionary Strategy Factory</div>
+  <div class="refresh-info">Auto-refresh every 60s &middot; <span id="lastUpdate">Loading...</span></div>
+  <div class="nav-links">
+    <a href="paper_portfolios.html">Paper Portfolios</a>
+    <a href="../index.html">Genome Hub</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Engine Status Cards -->
+  <div class="section-title">Engine Status</div>
+  <div class="engine-grid" id="engineGrid">
+    <div class="engine-card genesis">
+      <div class="engine-name"><span class="dot"></span> GENESIS</div>
+      <div class="engine-label">Genetic Programming — Formula Invention Engine</div>
+      <div class="engine-stats">
+        <div class="stat-box"><div class="stat-label">Last Run</div><div class="stat-value" id="genesis-lastrun">—</div></div>
+        <div class="stat-box"><div class="stat-label">Active Picks</div><div class="stat-value" id="genesis-picks">—</div></div>
+        <div class="stat-box"><div class="stat-label">Best Fitness</div><div class="stat-value" id="genesis-fitness">—</div></div>
+        <div class="stat-box"><div class="stat-label">Strategies</div><div class="stat-value" id="genesis-strategies">—</div></div>
+      </div>
+      <div class="engine-status"><span class="status-badge idle" id="genesis-status">IDLE</span> <span id="genesis-statustext" class="stat-label">Awaiting data</span></div>
+    </div>
+    <div class="engine-card atlas">
+      <div class="engine-name"><span class="dot"></span> ATLAS</div>
+      <div class="engine-label">MAP-Elites — Quality-Diversity Explorer</div>
+      <div class="engine-stats">
+        <div class="stat-box"><div class="stat-label">Last Run</div><div class="stat-value" id="atlas-lastrun">—</div></div>
+        <div class="stat-box"><div class="stat-label">Active Picks</div><div class="stat-value" id="atlas-picks">—</div></div>
+        <div class="stat-box"><div class="stat-label">Best Fitness</div><div class="stat-value" id="atlas-fitness">—</div></div>
+        <div class="stat-box"><div class="stat-label">Archive Coverage</div><div class="stat-value" id="atlas-coverage">—</div></div>
+      </div>
+      <div class="engine-status"><span class="status-badge idle" id="atlas-status">IDLE</span> <span id="atlas-statustext" class="stat-label">Awaiting data</span></div>
+    </div>
+    <div class="engine-card nexus">
+      <div class="engine-name"><span class="dot"></span> NEXUS</div>
+      <div class="engine-label">Audit Ensemble — Meta-Weight Optimizer</div>
+      <div class="engine-stats">
+        <div class="stat-box"><div class="stat-label">Last Run</div><div class="stat-value" id="nexus-lastrun">—</div></div>
+        <div class="stat-box"><div class="stat-label">Active Picks</div><div class="stat-value" id="nexus-picks">—</div></div>
+        <div class="stat-box"><div class="stat-label">Best Fitness</div><div class="stat-value" id="nexus-fitness">—</div></div>
+        <div class="stat-box"><div class="stat-label">Strategies</div><div class="stat-value" id="nexus-strategies">—</div></div>
+      </div>
+      <div class="engine-status"><span class="status-badge idle" id="nexus-status">IDLE</span> <span id="nexus-statustext" class="stat-label">Awaiting data</span></div>
+    </div>
+    <div class="engine-card legion">
+      <div class="engine-name"><span class="dot"></span> LEGION</div>
+      <div class="engine-label">Ensemble Coevolution — Team Evolution Engine</div>
+      <div class="engine-stats">
+        <div class="stat-box"><div class="stat-label">Last Run</div><div class="stat-value" id="legion-lastrun">—</div></div>
+        <div class="stat-box"><div class="stat-label">Active Picks</div><div class="stat-value" id="legion-picks">—</div></div>
+        <div class="stat-box"><div class="stat-label">Best Fitness</div><div class="stat-value" id="legion-fitness">—</div></div>
+        <div class="stat-box"><div class="stat-label">Teams</div><div class="stat-value" id="legion-teams">—</div></div>
+      </div>
+      <div class="engine-status"><span class="status-badge idle" id="legion-status">IDLE</span> <span id="legion-statustext" class="stat-label">Awaiting data</span></div>
+    </div>
+    <div class="engine-card phoenix">
+      <div class="engine-name"><span class="dot"></span> PHOENIX</div>
+      <div class="engine-label">Failure-Specific — Rises from Failed Strategies</div>
+      <div class="engine-stats">
+        <div class="stat-box"><div class="stat-label">Last Run</div><div class="stat-value" id="phoenix-lastrun">—</div></div>
+        <div class="stat-box"><div class="stat-label">Active Picks</div><div class="stat-value" id="phoenix-picks">—</div></div>
+        <div class="stat-box"><div class="stat-label">Best Score</div><div class="stat-value" id="phoenix-fitness">—</div></div>
+        <div class="stat-box"><div class="stat-label">Failures Fixed</div><div class="stat-value" id="phoenix-fixes">—</div></div>
+      </div>
+      <div class="engine-status"><span class="status-badge idle" id="phoenix-status">IDLE</span> <span id="phoenix-statustext" class="stat-label">Awaiting data</span></div>
+    </div>
+  </div>
+
+  <!-- Consensus Picks -->
+  <div class="section-title">Consensus Picks <span style="font-size:.75rem;color:var(--text-dim);font-weight:400">— 2+ engines agree</span></div>
+  <div class="consensus-wrap">
+    <div class="consensus-inner" id="consensusSection">
+      <div class="loading"><span class="spinner"></span> Loading consensus data...</div>
+    </div>
+  </div>
+
+  <!-- Live Picks Table -->
+  <div class="section-title">Active Picks — All Engines</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Symbol</th><th>Direction</th><th>Date/Time (EST)</th><th>Entry</th><th>TP</th><th>SL</th><th>Confidence</th><th>Engine</th><th>Status</th></tr></thead>
+      <tbody id="picksBody">
+        <tr><td colspan="9" class="loading"><span class="spinner"></span> Loading picks...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Closed Picks Table -->
+  <div class="closed-section">
+    <div class="section-title">Closed Picks — TP/SL Resolved</div>
+    <div class="closed-header">
+      <div class="closed-stats" id="closedStats"></div>
+      <button class="clear-closed-btn" onclick="clearClosedPicks()">Clear History</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Direction</th><th>Opened (EST)</th><th>Closed (EST)</th><th>Entry</th><th>Exit</th><th>Result</th><th>P/L %</th><th>Engine</th></tr></thead>
+        <tbody id="closedBody">
+          <tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:1.5rem">No closed picks yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Evolution Stats -->
+  <div class="section-title">Evolution Stats</div>
+  <div class="evo-stats-grid" id="evoStatsGrid">
+    <div class="evo-stat-card"><div class="big-num" id="stat-total-strategies">—</div><div class="big-label">Strategies Evolved</div></div>
+    <div class="evo-stat-card"><div class="big-num" id="stat-archive-coverage">—</div><div class="big-label">Archive Coverage (MAPE)</div></div>
+    <div class="evo-stat-card"><div class="big-num" id="stat-best-fitness">—</div><div class="big-label">Best Fitness Overall</div></div>
+    <div class="evo-stat-card"><div class="big-num" id="stat-active-picks">—</div><div class="big-label">Active Picks</div></div>
+    <div class="evo-stat-card"><div class="big-num" id="stat-consensus-count">—</div><div class="big-label">Consensus Picks</div></div>
+    <div class="evo-stat-card"><div class="big-num" id="stat-avg-wr">—</div><div class="big-label">Avg Win Rate</div></div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="section-title">How It Works</div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('technical')">Technical Deep-Dive</button>
+    <button class="tab-btn" onclick="switchTab('executive')">Executive Summary</button>
+    <button class="tab-btn" onclick="switchTab('eli15')">ELI15</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-technical">
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--genesis)"></span> GENESIS — Genetic Programming</h4>
+    <p>GENESIS evolves mathematical formula trees using strongly-typed genetic programming. Each individual is an expression tree where leaf nodes are market indicators (RSI, MACD, ATR, volume ratios, price deltas) and internal nodes are operators (+, -, *, /, max, min, conditional). Trees are initialized via ramped half-and-half (depth 2-6), then evolved through:</p>
+    <ul>
+      <li><strong>Tournament Selection</strong> (k=5) — selects parents by fitness rank within random subsets</li>
+      <li><strong>Subtree Crossover</strong> (90%) — swaps random subtrees between two parents, respecting type constraints</li>
+      <li><strong>Point Mutation</strong> (10%) — replaces a random node with a type-compatible alternative</li>
+      <li><strong>Fitness = Sharpe * sqrt(trades)</strong> — balances risk-adjusted return with statistical significance</li>
+    </ul>
+    <p>Population of 200, 50 generations per run. Elite preservation (top 5%). Bloat control via depth limit of 12 and parsimony pressure.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--atlas)"></span> ATLAS — MAP-Elites Quality-Diversity</h4>
+    <p>ATLAS maintains a discretized archive (behavior map) where each cell holds the highest-fitness strategy discovered for that behavior niche. The behavior space is defined by two axes:</p>
+    <ul>
+      <li><strong>X-axis:</strong> Average holding period (1h to 30d, 10 bins)</li>
+      <li><strong>Y-axis:</strong> Volatility preference (low to high, 10 bins) — measured by ATR of triggered assets</li>
+    </ul>
+    <p>This gives a 10x10 = 100-cell archive. New strategies are generated by mutating archive occupants. If a new strategy's fitness exceeds the current occupant of its behavior cell, it replaces it. Coverage = filled cells / 100. This ensures diversity: ATLAS finds good scalpers AND good swing traders AND everything in between.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--nexus)"></span> NEXUS — Audit Ensemble Optimizer</h4>
+    <p>NEXUS evolves softmax weight vectors over the pool of all validated strategies from every engine. Each individual is a weight vector <code>w[i]</code> where the ensemble signal = <code>sum(softmax(w) * signal[i])</code>. Evolution uses CMA-ES (Covariance Matrix Adaptation) with:</p>
+    <ul>
+      <li>Population: mu=15, lambda=30 (15 parents, 30 offspring)</li>
+      <li>Fitness: portfolio Sharpe ratio of the weighted ensemble on walk-forward validation</li>
+      <li>Constraint: minimum 3 non-zero weights (prevents degenerate single-strategy solutions)</li>
+    </ul>
+    <p>Walk-forward validation: 70% train / 30% test, rolling 6-month windows. Only strategies with positive Sharpe on test set survive the audit.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--legion)"></span> LEGION — Ensemble Coevolution</h4>
+    <p>LEGION coevolves teams of 3-7 strategies simultaneously. Each individual is a team composition (which strategies to include + allocation weights). Two populations evolve in parallel:</p>
+    <ul>
+      <li><strong>Strategy Pool:</strong> individual strategies compete for inclusion in teams</li>
+      <li><strong>Team Pool:</strong> team compositions compete on portfolio-level metrics</li>
+    </ul>
+    <p>Fitness is a multi-objective: maximize Sharpe, minimize max drawdown, maximize win rate. NSGA-II non-dominated sorting selects Pareto-optimal teams. Coevolutionary pressure ensures strategies that work well together are preserved even if individually mediocre.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--phoenix)"></span> PHOENIX — Failure-Specific DNA Evolution</h4>
+    <p>PHOENIX analyzes closed losing picks to diagnose failure modes: stop-hunted (SL hit then price reversed), late-entry (signal lagged the move), overconfident (high confidence but wrong), trend-reversal (fought the trend), and regime-blind (wrong market conditions). For each failure pattern, it evolves corrective variants with targeted mutations — wider stops for stop-hunted, momentum filters for late-entry, confidence caps for overconfident. Variants are backtested and only promoted if they outperform the parent strategy.</p>
+  </div>
+
+  <div class="tab-panel" id="tab-executive">
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--genesis)"></span> GENESIS</h4>
+    <p>GENESIS is our formula invention lab. It starts with random mathematical formulas combining market indicators, then breeds and mutates the best-performing ones over many generations — like natural selection for trading strategies. After 50 generations, only the most profitable formulas survive. It discovers patterns no human would think to look for.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--atlas)"></span> ATLAS</h4>
+    <p>ATLAS is our diversity engine. While other engines optimize for a single "best" strategy, ATLAS finds the best strategy for every type of market behavior — fast trades, slow trades, calm markets, volatile markets. It fills a map of possibilities so we always have the right tool for the current conditions. Think of it as building a complete toolkit, not just the sharpest knife.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--nexus)"></span> NEXUS</h4>
+    <p>NEXUS is our portfolio architect. It takes all the strategies found by GENESIS, ATLAS, and external sources, then figures out the optimal way to combine them. How much weight should each strategy get? NEXUS evolves the answer, ensuring the combined portfolio outperforms any individual strategy while reducing risk through diversification.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--legion)"></span> LEGION</h4>
+    <p>LEGION builds dream teams. It evolves groups of 3-7 strategies that complement each other — when one zigs, another zags. The result is teams with smoother returns, smaller drawdowns, and higher consistency than any single strategy. LEGION finds synergies between strategies that only emerge when they trade together.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--phoenix)"></span> PHOENIX</h4>
+    <p>PHOENIX is our failure analyst. When strategies lose money, PHOENIX doesn't just discard them — it performs a post-mortem to understand why they failed. Was the stop too tight? Was the entry too late? Was the model overconfident? Then it creates improved versions that specifically address each weakness. Think of it as a coach reviewing game tape to fix what went wrong.</p>
+  </div>
+
+  <div class="tab-panel" id="tab-eli15">
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--genesis)"></span> GENESIS — "The Dog Breeder"</h4>
+    <p>Imagine you want to breed the ultimate racing dog. You start with 200 random dogs, race them, and let the fastest ones have puppies. Then you race the puppies, breed the winners again, and repeat 50 times. After all that, you get some seriously fast dogs that nobody could have designed on purpose. GENESIS does exactly this, but with trading formulas instead of dogs. It breeds math equations and keeps the ones that make money.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--atlas)"></span> ATLAS — "The Pokemon Collector"</h4>
+    <p>Instead of finding just one strong Pokemon, ATLAS tries to collect the best one of every type — the best fire-type, the best water-type, the best grass-type. In trading terms, it finds the best strategy for quick trades, the best for slow trades, the best for crazy markets, the best for boring markets. That way, no matter what the market throws at us, we have the right strategy in our collection ready to go.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--nexus)"></span> NEXUS — "The Fantasy Sports Manager"</h4>
+    <p>You know how in fantasy sports, having the best individual players doesn't guarantee the best team? You need balance — a good QB AND good receivers AND a solid defense. NEXUS looks at all our strategies and figures out the best "roster" — how much to rely on each one. It keeps tweaking the lineup until the combined team performs better than any star player alone.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--legion)"></span> LEGION — "The Band Audition"</h4>
+    <p>A great band isn't just 4 amazing soloists — it's musicians who sound great together. LEGION holds auditions: it throws random groups of strategies together, sees which groups harmonize, then mixes and matches until it finds the ultimate supergroup. Sometimes a mediocre strategy becomes amazing when paired with the right partners, and LEGION discovers those hidden synergies.</p>
+
+    <h4 class="engine-heading"><span class="color-dot" style="background:var(--phoenix)"></span> PHOENIX — "The Sports Replay Analyst"</h4>
+    <p>After a football team loses, the coaches watch the game film to figure out exactly what went wrong. Was it a bad play call? Did the defense break down? PHOENIX does the same thing for our trading strategies. When a strategy loses money, PHOENIX watches the replay — was the stop too close? Did we enter too late? Were we too confident? Then it creates a new version of the strategy with those specific problems fixed. It literally rises from the ashes of failure to become stronger.</p>
+  </div>
+
+</div>
+
+<!-- TTS Explanation Button -->
+<div style="text-align:center;padding:1.5rem">
+  <button id="ttsBtn" onclick="toggleExplanation()" style="background:linear-gradient(135deg,var(--genesis),var(--atlas));border:none;color:#000;font-weight:700;font-size:1rem;padding:.8rem 2rem;border-radius:8px;cursor:pointer;letter-spacing:.03em">&#9654; Explain How DNA Evolution Works</button>
+  <span id="ttsStatus" style="color:var(--text-dim);font-size:.85rem;margin-left:1rem"></span>
+</div>
+
+<div class="footer">
+  DARWIN ENGINE &copy; 2026 &middot; Antigravity Trading Systems &middot; Data refreshes every 60 seconds
+</div>
+
+<script>
+// Try relative path first (FTP deploy), then GitHub raw as fallback
+const DATA_BASE_LOCAL = '../data/';
+const DATA_BASE_GH = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/';
+const ENGINES = ['genesis','atlas','nexus','legion','phoenix'];
+const ENGINE_COLORS = {genesis:'#00ff88',atlas:'#00aaff',nexus:'#ff6600',legion:'#cc44ff',phoenix:'#ff4444'};
+const ENGINE_NAMES_MAP = {
+  genetic_programmer:'genesis', gp:'genesis', audit_ensemble:'nexus', audit:'nexus',
+  mape:'atlas', map_elites:'atlas', ensemble:'legion', ensemble_coevolution:'legion',
+  failure_evolver:'phoenix', failure:'phoenix',
+  dna_winner_mutations:'genesis', dna_winner:'genesis',
+  mega_mutation:'atlas', "mega mutation":'atlas',
+  confluence_dna_mutations:'nexus', confluence_mutation:'nexus', confluence:'nexus',
+  battleground_mutation:'legion', battleground:'legion',
+  momentum_scalp:'phoenix', momentum_scalp_mutations:'phoenix'
+};
+const CLOSED_PICKS_KEY = 'darwin_closed_picks';
+const TRACKED_PICKS_KEY = 'darwin_tracked_picks';
+
+let allPicks = [];
+let closedPicks = [];
+let trackedPicks = {};
+
+// Load persisted state from localStorage
+function loadPersistedState() {
+  try {
+    closedPicks = JSON.parse(localStorage.getItem(CLOSED_PICKS_KEY) || '[]');
+    trackedPicks = JSON.parse(localStorage.getItem(TRACKED_PICKS_KEY) || '{}');
+  } catch(e) { closedPicks = []; trackedPicks = {}; }
+}
+
+function savePersistedState() {
+  try {
+    // Keep max 200 closed picks
+    if (closedPicks.length > 200) closedPicks = closedPicks.slice(-200);
+    localStorage.setItem(CLOSED_PICKS_KEY, JSON.stringify(closedPicks));
+    localStorage.setItem(TRACKED_PICKS_KEY, JSON.stringify(trackedPicks));
+  } catch(e) {}
+}
+
+function clearClosedPicks() {
+  if (!confirm('Clear all closed pick history?')) return;
+  closedPicks = [];
+  trackedPicks = {};
+  savePersistedState();
+  renderClosedPicks();
+}
+
+// Generate a unique key for a pick to track it
+function pickKey(p) {
+  return (p.symbol||'') + '_' + (p.engine||p.source_system||'') + '_' + (p.strategy||p.mutation_name||'') + '_' + resolveDirection(p);
+}
+
+function timeAgo(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (isNaN(d)) return ts;
+  const s = Math.floor((Date.now() - d) / 1000);
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+function toEST(ts) {
+  if (!ts) return { date: '—', time: '', full: '—' };
+  const d = new Date(ts);
+  if (isNaN(d)) return { date: ts, time: '', full: ts };
+  const opts = { timeZone: 'America/New_York' };
+  const datePart = d.toLocaleDateString('en-US', { ...opts, month: 'short', day: 'numeric', year: 'numeric' });
+  const timePart = d.toLocaleTimeString('en-US', { ...opts, hour: 'numeric', minute: '2-digit', hour12: true });
+  return { date: datePart, time: timePart, full: datePart + ' ' + timePart + ' EST' };
+}
+
+function fmt(v, dec=2) {
+  if (v === null || v === undefined || v === '') return '—';
+  const n = parseFloat(v);
+  return isNaN(n) ? v : n.toFixed(dec);
+}
+
+function fmtPrice(v, symbol) {
+  if (!v || v === 0) return null;
+  const n = parseFloat(v);
+  if (isNaN(n) || n === 0) return null;
+  // Determine decimal places based on price magnitude
+  if (n >= 1000) return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (n >= 1) return '$' + n.toFixed(4);
+  return '$' + n.toFixed(6);
+}
+
+function pct(v) {
+  if (v === null || v === undefined) return '—';
+  const n = parseFloat(v);
+  return isNaN(n) ? v : (n * (n <= 1 ? 100 : 1)).toFixed(1) + '%';
+}
+
+function resolveEngine(p) {
+  const raw = (p.engine || p.source_system || p.tag || 'unknown').toLowerCase();
+  return ENGINE_NAMES_MAP[raw] || raw;
+}
+
+function resolveDirection(p) {
+  let dir = p.direction || p.signal || p.signal_type || '';
+  dir = dir.toUpperCase();
+  if (dir === 'BUY') return 'LONG';
+  if (dir === 'SELL') return 'SHORT';
+  return dir || '—';
+}
+
+async function fetchJSON(url) {
+  try {
+    const r = await fetch(url + '?t=' + Date.now());
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function fetchData(filename) {
+  let data = await fetchJSON(DATA_BASE_LOCAL + filename);
+  if (!data) data = await fetchJSON(DATA_BASE_GH + filename);
+  return data;
+}
+
+// Fetch live price from Binance for TP/SL checking
+async function fetchLivePrice(symbol) {
+  try {
+    const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=' + symbol);
+    if (r.ok) {
+      const d = await r.json();
+      return parseFloat(d.price);
+    }
+  } catch {}
+  try {
+    const r = await fetch('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + symbol);
+    if (r.ok) {
+      const d = await r.json();
+      return parseFloat(d.price);
+    }
+  } catch {}
+  return null;
+}
+
+// Check if any active picks have hit TP or SL
+async function checkTPSL(picks) {
+  if (!picks || picks.length === 0) return;
+  const symbols = [...new Set(picks.map(p => p.symbol).filter(Boolean))];
+  const prices = {};
+  await Promise.all(symbols.map(async sym => {
+    const price = await fetchLivePrice(sym);
+    if (price) prices[sym] = price;
+  }));
+
+  let changed = false;
+  for (const p of picks) {
+    const key = pickKey(p);
+    const price = prices[p.symbol];
+    if (!price) continue;
+
+    const entry = parseFloat(p.entry_price) || 0;
+    const tp = parseFloat(p.take_profit || p.tp_price) || 0;
+    const sl = parseFloat(p.stop_loss || p.sl_price) || 0;
+    const dir = resolveDirection(p);
+
+    // Calculate TP/SL from percentages if absolute values are 0 but percentages exist
+    let effectiveTP = tp;
+    let effectiveSL = sl;
+    if (entry > 0) {
+      if (tp === 0 && p.tp_pct) {
+        const tpPct = p.tp_pct > 1 ? p.tp_pct / 100 : p.tp_pct; // handle both 5.2 and 0.052
+        effectiveTP = dir === 'LONG' ? entry * (1 + tpPct) : entry * (1 - tpPct);
+      }
+      if (sl === 0 && p.sl_pct) {
+        const slPct = p.sl_pct > 1 ? p.sl_pct / 100 : p.sl_pct;
+        effectiveSL = dir === 'LONG' ? entry * (1 - slPct) : entry * (1 + slPct);
+      }
+    }
+
+    if (effectiveTP === 0 && effectiveSL === 0) continue;
+    if (trackedPicks[key] && trackedPicks[key].closed) continue;
+
+    // Track this pick if not already tracked
+    if (!trackedPicks[key]) {
+      trackedPicks[key] = {
+        symbol: p.symbol,
+        direction: dir,
+        entry_price: entry || price,
+        take_profit: effectiveTP,
+        stop_loss: effectiveSL,
+        engine: resolveEngine(p),
+        strategy: p.strategy || p.mutation_name,
+        opened: p.timestamp || p.opened_at || new Date().toISOString(),
+        closed: false
+      };
+      changed = true;
+    }
+
+    const tracked = trackedPicks[key];
+    const entryP = tracked.entry_price || price;
+    let result = null;
+
+    if (dir === 'LONG') {
+      if (effectiveTP > 0 && price >= effectiveTP) result = 'TP_HIT';
+      else if (effectiveSL > 0 && price <= effectiveSL) result = 'SL_HIT';
+    } else if (dir === 'SHORT') {
+      if (effectiveTP > 0 && price <= effectiveTP) result = 'TP_HIT';
+      else if (effectiveSL > 0 && price >= effectiveSL) result = 'SL_HIT';
+    }
+
+    if (result) {
+      const pnlPct = dir === 'LONG'
+        ? ((price - entryP) / entryP * 100)
+        : ((entryP - price) / entryP * 100);
+      tracked.closed = true;
+      tracked.close_time = new Date().toISOString();
+      tracked.close_price = price;
+      tracked.result = result;
+      tracked.pnl_pct = pnlPct;
+      closedPicks.push({ ...tracked });
+      changed = true;
+    }
+  }
+  if (changed) {
+    savePersistedState();
+    renderClosedPicks();
+  }
+}
+
+function updateEngineCard(engine, data) {
+  const pre = engine;
+  if (!data) {
+    document.getElementById(pre+'-status').className = 'status-badge idle';
+    document.getElementById(pre+'-status').textContent = 'NO DATA';
+    document.getElementById(pre+'-statustext').textContent = 'Data file not found';
+    return;
+  }
+  document.getElementById(pre+'-lastrun').textContent = timeAgo(data.last_run || data.generated_at || data.timestamp);
+  document.getElementById(pre+'-picks').textContent = data.picks_count || data.total_picks || (data.picks ? data.picks.length : 0);
+  document.getElementById(pre+'-fitness').textContent = fmt(data.best_fitness);
+
+  if (engine === 'atlas') {
+    document.getElementById('atlas-coverage').textContent = pct(data.archive_coverage || data.coverage);
+  } else if (engine === 'legion') {
+    document.getElementById('legion-teams').textContent = data.teams_count || data.teams || '—';
+  } else if (engine === 'phoenix') {
+    document.getElementById('phoenix-fixes').textContent = data.corrective_variants || data.failure_analysis ? Object.keys(data.failure_analysis).length : '—';
+  } else {
+    const id = pre + '-strategies';
+    const el = document.getElementById(id);
+    if (el) el.textContent = data.strategies_count || data.strategies || '—';
+  }
+
+  const status = data.status || 'active';
+  const badge = document.getElementById(pre+'-status');
+  const stxt = document.getElementById(pre+'-statustext');
+  if (status === 'active' || status === 'running') {
+    badge.className = 'status-badge active'; badge.textContent = 'ACTIVE';
+    stxt.textContent = 'Engine operational';
+  } else if (status === 'error') {
+    badge.className = 'status-badge error'; badge.textContent = 'ERROR';
+    stxt.textContent = data.error || 'Check logs';
+  } else {
+    badge.className = 'status-badge idle'; badge.textContent = 'IDLE';
+    stxt.textContent = 'Awaiting next run';
+  }
+}
+
+function togglePickDetail(idx) {
+  const row = document.getElementById('pick-detail-' + idx);
+  const mainRow = document.getElementById('pick-row-' + idx);
+  if (!row) return;
+  row.classList.toggle('open');
+  mainRow.classList.toggle('active');
+}
+
+function renderPicks(picks) {
+  const tbody = document.getElementById('picksBody');
+  if (!picks || picks.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:1.5rem">No active picks from any engine</td></tr>';
+    return;
+  }
+  // Filter out picks that have been closed via TP/SL tracking
+  const activePicks = picks.filter(p => {
+    const key = pickKey(p);
+    return !trackedPicks[key] || !trackedPicks[key].closed;
+  });
+
+  activePicks.sort((a,b) => (b.confidence||0) - (a.confidence||0));
+  let html = '';
+  activePicks.forEach((p, idx) => {
+    const eng = resolveEngine(p);
+    const conf = parseFloat(p.confidence||0);
+    const confPct = (conf <= 1 ? conf*100 : conf).toFixed(0);
+    const barW = Math.min(confPct, 100);
+    const barColor = ENGINE_COLORS[eng] || '#888';
+    const dir = resolveDirection(p);
+    const ts = toEST(p.timestamp || p.opened_at);
+
+    // Entry price: use entry_price field, or try to derive
+    const entry = parseFloat(p.entry_price) || 0;
+    const entryStr = fmtPrice(entry, p.symbol);
+
+    // TP/SL: use absolute values or derive from percentages
+    let tp = parseFloat(p.take_profit || p.tp_price) || 0;
+    let sl = parseFloat(p.stop_loss || p.sl_price) || 0;
+    if (entry > 0 && tp === 0 && p.tp_pct) { const r = p.tp_pct > 1 ? p.tp_pct/100 : p.tp_pct; tp = dir === 'LONG' ? entry * (1 + r) : entry * (1 - r); }
+    if (entry > 0 && sl === 0 && p.sl_pct) { const r = p.sl_pct > 1 ? p.sl_pct/100 : p.sl_pct; sl = dir === 'LONG' ? entry * (1 - r) : entry * (1 + r); }
+    const tpStr = fmtPrice(tp, p.symbol);
+    const slStr = fmtPrice(sl, p.symbol);
+
+    html += `<tr class="pick-row" id="pick-row-${idx}" onclick="togglePickDetail(${idx})">
+      <td style="font-weight:600;color:var(--text-bright)">${p.symbol || '—'}</td>
+      <td class="${dir==='LONG'?'dir-long':'dir-short'}">${dir}</td>
+      <td class="ts-cell"><span class="ts-date">${ts.date}</span><br>${ts.time} EST</td>
+      <td class="price-cell${entryStr?'':' no-data'}">${entryStr || 'pending'}</td>
+      <td class="price-cell${tpStr?'':' no-data'}" style="${tpStr?'color:var(--positive)':''}">${tpStr || '—'}</td>
+      <td class="price-cell${slStr?'':' no-data'}" style="${slStr?'color:var(--negative)':''}">${slStr || '—'}</td>
+      <td>${confPct}%<span class="confidence-bar" style="width:${barW}px;background:${barColor}"></span></td>
+      <td><span class="engine-tag ${eng}">${eng.toUpperCase()}</span></td>
+      <td><span class="pick-status active-pick">ACTIVE</span></td>
+    </tr>`;
+
+    // Expandable detail row
+    html += `<tr class="pick-detail-row" id="pick-detail-${idx}">
+      <td colspan="9">
+        <div class="pick-detail-grid">
+          <div class="pick-detail-item"><div class="dl">Strategy</div><div class="dv">${p.strategy || '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">Win Rate</div><div class="dv" style="color:${(parseFloat(p.win_rate)||0)>=0.5?'var(--positive)':'var(--negative)'}">${pct(p.win_rate)}</div></div>
+          <div class="pick-detail-item"><div class="dl">Sharpe Ratio</div><div class="dv">${fmt(p.sharpe_ratio || p.sharpe)}</div></div>
+          <div class="pick-detail-item"><div class="dl">Profit Factor</div><div class="dv">${fmt(p.profit_factor)}</div></div>
+          <div class="pick-detail-item"><div class="dl">Total Trades</div><div class="dv">${p.total_trades || p.trades || '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">Max Drawdown</div><div class="dv" style="color:var(--negative)">${p.max_drawdown_pct ? fmt(p.max_drawdown_pct) + '%' : '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">TP %</div><div class="dv" style="color:var(--positive)">${p.tp_pct ? (p.tp_pct * 100).toFixed(2) + '%' : '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">SL %</div><div class="dv" style="color:var(--negative)">${p.sl_pct ? (p.sl_pct * 100).toFixed(2) + '%' : '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">Generation</div><div class="dv">${p.generation || '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">DNA Hash</div><div class="dv" style="font-size:.75rem;font-family:monospace;color:var(--atlas)">${p.dna_hash || '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">Source System</div><div class="dv">${p.source_system || p.engine || '—'}</div></div>
+          <div class="pick-detail-item"><div class="dl">Signal Age</div><div class="dv">${timeAgo(p.timestamp)}</div></div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  if (!html) html = '<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:1.5rem">No active picks — all have been closed via TP/SL</td></tr>';
+  tbody.innerHTML = html;
+}
+
+function renderClosedPicks() {
+  const tbody = document.getElementById('closedBody');
+  const statsEl = document.getElementById('closedStats');
+  if (!closedPicks || closedPicks.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:1.5rem">No closed picks yet — picks close when live price hits TP or SL</td></tr>';
+    statsEl.innerHTML = '';
+    return;
+  }
+
+  const wins = closedPicks.filter(p => p.result === 'TP_HIT').length;
+  const losses = closedPicks.filter(p => p.result === 'SL_HIT').length;
+  const totalPnl = closedPicks.reduce((s, p) => s + (p.pnl_pct || 0), 0);
+  statsEl.innerHTML = `
+    <span class="stat-win">W: ${wins}</span>
+    <span class="stat-loss">L: ${losses}</span>
+    <span class="stat-total">Total: ${closedPicks.length}</span>
+    <span style="color:${totalPnl>=0?'var(--positive)':'var(--negative)'}">Net P/L: ${totalPnl>=0?'+':''}${totalPnl.toFixed(2)}%</span>
+  `;
+
+  // Sort by close time descending (most recent first)
+  const sorted = [...closedPicks].sort((a,b) => new Date(b.close_time||0) - new Date(a.close_time||0));
+  tbody.innerHTML = sorted.map(p => {
+    const eng = p.engine || 'unknown';
+    const openTs = toEST(p.opened);
+    const closeTs = toEST(p.close_time);
+    const isWin = p.result === 'TP_HIT';
+    const pnl = p.pnl_pct || 0;
+    const entryStr = fmtPrice(p.entry_price, p.symbol) || '—';
+    const exitStr = fmtPrice(p.close_price, p.symbol) || '—';
+    return `<tr>
+      <td style="font-weight:600;color:var(--text-bright)">${p.symbol}</td>
+      <td class="${p.direction==='LONG'?'dir-long':'dir-short'}">${p.direction}</td>
+      <td class="ts-cell"><span class="ts-date">${openTs.date}</span><br>${openTs.time} EST</td>
+      <td class="ts-cell"><span class="ts-date">${closeTs.date}</span><br>${closeTs.time} EST</td>
+      <td class="price-cell">${entryStr}</td>
+      <td class="price-cell">${exitStr}</td>
+      <td><span class="pick-status ${isWin?'tp-hit':'sl-hit'}">${isWin?'TP HIT':'SL HIT'}</span></td>
+      <td style="font-weight:700;color:${pnl>=0?'var(--positive)':'var(--negative)'}">${pnl>=0?'+':''}${pnl.toFixed(2)}%</td>
+      <td><span class="engine-tag ${eng}">${eng.toUpperCase()}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderConsensus(picks) {
+  const section = document.getElementById('consensusSection');
+  const symbolMap = {};
+  (picks||[]).forEach(p => {
+    const sym = (p.symbol||'').toUpperCase();
+    if (!sym) return;
+    if (!symbolMap[sym]) symbolMap[sym] = [];
+    symbolMap[sym].push(p);
+  });
+  const consensus = Object.entries(symbolMap).filter(([,arr]) => arr.length >= 2);
+  document.getElementById('stat-consensus-count').textContent = consensus.length;
+
+  if (consensus.length === 0) {
+    section.innerHTML = '<h3>Consensus Picks <span class="consensus-badge">0 symbols</span></h3><div class="consensus-empty">No consensus picks yet — waiting for 2+ engines to agree on the same symbol</div>';
+    return;
+  }
+  let html = `<h3>Consensus Picks <span class="consensus-badge">${consensus.length} symbol${consensus.length>1?'s':''}</span></h3>`;
+  html += '<table style="width:100%"><thead><tr><th>Symbol</th><th>Engines</th><th>Avg Confidence</th><th>Direction</th><th>Avg Win Rate</th></tr></thead><tbody>';
+  consensus.sort((a,b) => b[1].length - a[1].length);
+  consensus.forEach(([sym, arr]) => {
+    const engineCounts = {};
+    arr.forEach(p => { const e = resolveEngine(p); engineCounts[e] = (engineCounts[e] || 0) + 1; });
+    const engines = Object.entries(engineCounts)
+      .sort((a,b) => b[1] - a[1])
+      .map(([e, c]) => `<span class="engine-tag ${e}">${e.toUpperCase()}${c > 1 ? ' ('+c+')' : ''}</span>`)
+      .join(' ');
+    const avgConf = arr.reduce((s,p) => s + (parseFloat(p.confidence)||0), 0) / arr.length;
+    const avgWR = arr.reduce((s,p) => s + (parseFloat(p.win_rate)||0), 0) / arr.length;
+    const dirs = arr.map(p => resolveDirection(p));
+    const dir = dirs.every(d => d === dirs[0]) ? dirs[0] : 'MIXED';
+    html += `<tr>
+      <td style="font-weight:700;color:var(--text-bright)">${sym}</td>
+      <td>${engines}</td>
+      <td>${pct(avgConf)}</td>
+      <td class="${dir==='LONG'?'dir-long':dir==='SHORT'?'dir-short':''}">${dir}</td>
+      <td>${pct(avgWR)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  section.innerHTML = html;
+}
+
+function updateEvoStats(engineData, picks) {
+  let totalStrats = 0, bestFit = 0, totalPicks = 0, wrSum = 0, wrCount = 0;
+  let coverage = '—';
+  ENGINES.forEach(e => {
+    const d = engineData[e];
+    if (!d) return;
+    totalStrats += parseInt(d.strategies_count || d.strategies || 0);
+    const f = parseFloat(d.best_fitness || 0);
+    if (f > bestFit) bestFit = f;
+    totalPicks += d.picks_count || d.total_picks || (d.picks ? d.picks.length : 0);
+    if (e === 'atlas' && (d.archive_coverage || d.coverage)) coverage = pct(d.archive_coverage || d.coverage);
+  });
+  (picks||[]).forEach(p => {
+    const wr = parseFloat(p.win_rate);
+    if (!isNaN(wr)) { wrSum += (wr <= 1 ? wr : wr/100); wrCount++; }
+  });
+  document.getElementById('stat-total-strategies').textContent = totalStrats || '—';
+  document.getElementById('stat-archive-coverage').textContent = coverage;
+  document.getElementById('stat-best-fitness').textContent = bestFit > 0 ? bestFit.toFixed(3) : '—';
+  document.getElementById('stat-active-picks').textContent = totalPicks || picks.length || '—';
+  document.getElementById('stat-avg-wr').textContent = wrCount > 0 ? ((wrSum/wrCount)*100).toFixed(1)+'%' : '—';
+}
+
+async function loadData() {
+  loadPersistedState();
+  const engineData = {};
+  // Primary: newer actively-updated files from DNA/mutation pipeline
+  // Fallback: original engine files (stale since Mar 9 but may have historical data)
+  const files = {
+    genesis: 'gp_active_picks.json',
+    atlas: 'mape_active_picks.json',
+    nexus: 'ae_active_picks.json',
+    legion: 'ensemble_active_picks.json',
+    phoenix: 'failure_evolved_picks.json'
+  };
+  const liveFiles = {
+    genesis: 'dna_winner_picks.json',
+    atlas: 'mega_mutation_picks.json',
+    nexus: 'confluence_mutation_picks.json',
+    legion: 'battleground_mutation_picks.json',
+    phoenix: 'momentum_scalp_picks.json'
+  };
+
+  // Fetch both old and new files in parallel
+  const [oldResults, liveResults] = await Promise.all([
+    Promise.all(ENGINES.map(e => fetchData(files[e]))),
+    Promise.all(ENGINES.map(e => fetchData(liveFiles[e])))
+  ]);
+  // Prefer live data, fall back to old engine files
+  const results = ENGINES.map((e, i) => {
+    const live = liveResults[i];
+    const old = oldResults[i];
+    // Normalize: some files use open_picks instead of picks
+    if (live && !live.picks && live.open_picks) live.picks = live.open_picks;
+    if (old && !old.picks && old.open_picks) old.picks = old.open_picks;
+    if (live && live.picks && live.picks.length > 0) {
+      // Merge metadata for dashboard cards
+      live.status = 'active';
+      live.last_run = live.metadata?.timestamp || live.generated_at || live.timestamp;
+      live.best_fitness = live.metadata?.total_mutations || live.best_fitness || (live.picks ? live.picks.length : 0);
+      live.picks_count = live.picks ? live.picks.length : 0;
+      live.strategies_count = live.metadata?.total_mutations || live.strategies_count || live.picks_count;
+      return live;
+    }
+    if (old) {
+      if (!old.strategies_count) old.strategies_count = old.metadata?.total_mutations || (old.picks ? old.picks.length : 0);
+    }
+    return old;
+  });
+  // Also fetch universal picks and server-side closed picks
+  const [universalData, serverClosedData] = await Promise.all([
+    fetchData('universal_picks.json'),
+    fetchData('closed_picks.json')
+  ]);
+
+  ENGINES.forEach((e, i) => {
+    engineData[e] = results[i];
+    updateEngineCard(e, results[i]);
+  });
+
+  // Collect all picks from all engines (prefer individual engine files for richer data)
+  allPicks = [];
+  ENGINES.forEach(e => {
+    const d = engineData[e];
+    if (d && d.picks) {
+      d.picks.forEach(p => { p.engine = p.engine || e; allPicks.push(p); });
+    }
+  });
+
+  // If no per-engine picks, fall back to universal
+  if (allPicks.length === 0) {
+    if (universalData) {
+      const uPicks = universalData.picks || universalData.picks_by_engine;
+      if (Array.isArray(uPicks)) {
+        allPicks = uPicks;
+      } else if (uPicks && typeof uPicks === 'object') {
+        Object.entries(uPicks).forEach(([eng, picks]) => {
+          if (Array.isArray(picks)) picks.forEach(p => { p.engine = p.engine || eng; allPicks.push(p); });
+        });
+      }
+    }
+  }
+
+  // Merge server-side closed picks from data files
+  const serverClosed = [];
+  if (Array.isArray(serverClosedData) && serverClosedData.length > 0) {
+    serverClosed.push(...serverClosedData);
+  }
+  ENGINES.forEach(e => {
+    const d = engineData[e];
+    if (d && d.closed_picks && d.closed_picks.length > 0) {
+      d.closed_picks.forEach(p => { p.engine = p.engine || e; serverClosed.push(p); });
+    }
+  });
+  if (serverClosed.length > 0) {
+    const existingKeys = new Set(closedPicks.map(p => pickKey(p)));
+    serverClosed.forEach(p => {
+      const key = pickKey(p);
+      if (!existingKeys.has(key)) {
+        closedPicks.push(p);
+        existingKeys.add(key);
+      }
+    });
+    savePersistedState();
+  }
+
+  // Check TP/SL against live prices
+  await checkTPSL(allPicks);
+
+  renderPicks(allPicks);
+  renderClosedPicks();
+  renderConsensus(allPicks);
+  updateEvoStats(engineData, allPicks);
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-US', {timeZone:'America/New_York'}) + ' EST';
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`).classList.add('active');
+}
+
+loadData();
+setInterval(loadData, 60000);
+
+// TTS Explanation
+let ttsPlaying = false;
+let ttsUtterances = [];
+let ttsIdx = 0;
+
+const TTS_TEXT = [
+  "Welcome to the DARWIN ENGINE, a DNA evolution system that automatically breeds, mutates, and evolves trading strategies using biological evolution principles.",
+  "GENESIS is our formula invention lab. It starts with 60 random mathematical formulas and evolves them over 15 generations. The best formulas breed and mutate. After evolution, only the most profitable survive. It discovers patterns no human would think to look for.",
+  "ATLAS is our diversity engine. Instead of finding one best strategy, it maps 675 behavioral niches across 5 dimensions, keeping the best strategy for each type of market condition. We always have the right tool for current conditions.",
+  "NEXUS evolves how much to trust each of our 40 plus trading systems. It creates a weight vector and optimizes it so the combined portfolio outperforms any single system.",
+  "LEGION evolves teams of 3 to 8 strategies that vote together. A mediocre strategy might be invaluable when paired with the right partners. LEGION discovers these hidden synergies.",
+  "PHOENIX analyzes losing trades to understand why they failed. Was the stop too tight? Did we enter too late? Were we overconfident? Then it evolves corrective variants with targeted fixes. It literally rises from the ashes of failure.",
+  "Each engine has a dedicated 10 thousand dollar paper trading portfolio tracking win rate, Sharpe ratio, max drawdown, and realized P and L. This allows direct comparison between all evolution approaches.",
+  "The system runs hourly on GitHub Actions, automatically evolving new strategies and updating portfolios with live market data from Binance."
+];
+
+function toggleExplanation() {
+  if (ttsPlaying) { stopTTS(); return; }
+  if (!window.speechSynthesis) { document.getElementById('ttsStatus').textContent = 'TTS not supported in this browser'; return; }
+  ttsPlaying = true;
+  ttsIdx = 0;
+  document.getElementById('ttsBtn').innerHTML = '&#9632; Stop Explanation';
+  document.getElementById('ttsStatus').textContent = 'Speaking...';
+  speakNext();
+}
+
+function speakNext() {
+  if (ttsIdx >= TTS_TEXT.length || !ttsPlaying) { stopTTS(); return; }
+  const u = new SpeechSynthesisUtterance(TTS_TEXT[ttsIdx]);
+  u.rate = 1.0;
+  u.onend = () => { ttsIdx++; if (ttsPlaying) speakNext(); };
+  u.onerror = () => { ttsIdx++; if (ttsPlaying) speakNext(); };
+  window.speechSynthesis.speak(u);
+}
+
+function stopTTS() {
+  ttsPlaying = false;
+  window.speechSynthesis.cancel();
+  document.getElementById('ttsBtn').innerHTML = '&#9654; Explain How DNA Evolution Works';
+  document.getElementById('ttsStatus').textContent = '';
+}
+</script>
+</body>
+</html>

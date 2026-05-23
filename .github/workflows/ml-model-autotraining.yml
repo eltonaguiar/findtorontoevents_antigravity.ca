@@ -1,0 +1,449 @@
+name: ML Model Auto-Training
+
+on:
+  schedule:
+    # Run every 6 hours to check if retraining needed
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      force_retrain:
+        description: 'Force retraining even if not needed'
+        required: false
+        default: false
+        type: boolean
+      model_type:
+        description: 'Which models to train'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - consensus
+          - quality
+          - risk
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: 1
+
+jobs:
+  check-and-train:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 0 # Full history for stats
+      
+      # Free ~30GB of disk before installing heavy ML deps. xgboost (131MB) +
+      # nvidia-nccl-cu12 (293MB pulled by xgboost) + scipy/sklearn/lightgbm
+      # routinely caused "No space left on device" failures on GHA hosted
+      # runners (default ~14GB free). Fix per run #24565146388.
+      - name: Free disk space (heavy ML install)
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          sudo docker system prune -af --volumes 2>/dev/null || true
+          df -h /
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # --no-cache-dir prevents pip from keeping ~500MB of wheels around
+          # after install; we don't need them post-install
+          pip install --no-cache-dir pandas numpy scikit-learn xgboost lightgbm joblib requests aiohttp
+      
+      - name: Download existing models
+        run: |
+          # Try to download existing models from artifacts if not in repo
+          echo "Checking for existing models..."
+          ls -la signal_aggregator/models/ 2>/dev/null || echo "No existing models"
+          ls -la forward_testing/models/ 2>/dev/null || echo "No quality models"
+          ls -la risk_management/models/ 2>/dev/null || echo "No risk models"
+      
+      - name: Check training conditions
+        id: check
+        run: |
+          python3 << 'PYEOF'
+          import sqlite3
+          import os
+          import json
+          from datetime import datetime, timedelta
+          
+          # Default: don't train
+          needs_training = False
+          reasons = []
+          total_resolved = 0
+          new_signals = 0
+          
+          # Check forward tracking database
+          if os.path.exists('forward_tracking.db'):
+              conn = sqlite3.connect('forward_tracking.db')
+              cursor = conn.cursor()
+              
+              # Count new resolved signals since last training
+              cursor.execute("""
+                  SELECT COUNT(*) FROM signals 
+                  WHERE status IN ('tp_hit', 'sl_hit', 'expired')
+                  AND (resolved_at > datetime('now', '-6 hours') 
+                       OR resolved_at IS NULL)
+              """)
+              new_signals = cursor.fetchone()[0]
+              
+              # Total resolved signals
+              cursor.execute("""
+                  SELECT COUNT(*) FROM signals 
+                  WHERE status IN ('tp_hit', 'sl_hit', 'expired')
+              """)
+              total_resolved = cursor.fetchone()[0]
+              
+              conn.close()
+              
+              print(f"Total resolved signals: {total_resolved}")
+              print(f"New signals (last 6h): {new_signals}")
+              
+              # Train if we have enough data and new signals
+              if total_resolved >= 50:
+                  if new_signals >= 10:
+                      needs_training = True
+                      reasons.append(f"{new_signals} new signals")
+                  elif total_resolved < 200:
+                      needs_training = True
+                      reasons.append(f"Building initial model ({total_resolved} signals)")
+              else:
+                  print(f"Insufficient data: {total_resolved}/50 signals")
+          else:
+              print("No forward_tracking.db found")
+              reasons.append("No database")
+          
+          # Check if models exist
+          models_exist = (
+              os.path.exists('signal_aggregator/models/ml_consensus_latest.pkl') or
+              os.path.exists('forward_testing/models/tp_hit_model.pkl')
+          )
+          
+          if not models_exist and total_resolved >= 50:
+              needs_training = True
+              reasons.append("No existing models")
+          
+          # Force retrain from workflow input
+          force_retrain = os.environ.get('FORCE_RETRAIN', 'false').lower() == 'true'
+          if force_retrain:
+              needs_training = True
+              reasons.append("Forced retraining")
+          
+          # Output results
+          with open(os.environ.get('GITHUB_OUTPUT'), 'a') as f:
+              f.write(f"needs_training={str(needs_training).lower()}\n")
+              f.write(f"total_resolved={total_resolved}\n")
+              f.write(f"new_signals={new_signals}\n")
+              f.write(f"reasons={json.dumps(reasons)}\n")
+          
+          print(f"\nNeeds training: {needs_training}")
+          print(f"Reasons: {reasons}")
+          PYEOF
+        env:
+          FORCE_RETRAIN: ${{ github.event.inputs.force_retrain }}
+          GITHUB_OUTPUT: $GITHUB_OUTPUT
+      
+      - name: Train ML Consensus Model
+        if: steps.check.outputs.needs_training == 'true' && (github.event.inputs.model_type == 'all' || github.event.inputs.model_type == 'consensus')
+        run: |
+          echo "Training ML Consensus Model..."
+          python3 << 'PYEOF'
+          import sys
+          sys.path.insert(0, '.')
+          
+          try:
+              from signal_aggregator.ml_consensus import MLConsensusEngine
+              
+              engine = MLConsensusEngine(db_path="forward_tracking.db")
+              success = engine.train_model(force=True)
+              
+              if success:
+                  print(" ML Consensus model trained successfully")
+                  print(f"Training stats: {engine.training_stats}")
+                  
+                  # Save training report
+                  import json
+                  with open('signal_aggregator/models/training_report.json', 'w') as f:
+                      json.dump({
+                          'model': 'ml_consensus',
+                          'status': 'success',
+                          'stats': engine.training_stats,
+                          'timestamp': engine.model_version
+                      }, f, indent=2)
+              else:
+                  print(" ML Consensus training failed")
+                  sys.exit(1)
+          except Exception as e:
+              print(f" Error training consensus model: {e}")
+              import traceback
+              traceback.print_exc()
+              sys.exit(1)
+          PYEOF
+      
+      - name: Train Signal Quality Models
+        if: steps.check.outputs.needs_training == 'true' && (github.event.inputs.model_type == 'all' || github.event.inputs.model_type == 'quality')
+        run: |
+          echo "Training Signal Quality Models..."
+          python3 << 'PYEOF'
+          import sys
+          sys.path.insert(0, '.')
+          
+          try:
+              from forward_testing.signal_quality_ml import SignalQualityPredictor
+              
+              predictor = SignalQualityPredictor(db_path="forward_tracking.db")
+              success = predictor.train_models()
+              
+              if success:
+                  print(" Signal quality models trained successfully")
+                  print(f"Model stats: {predictor.model_stats}")
+                  
+                  # Save training report
+                  import json
+                  with open('forward_testing/models/training_report.json', 'w') as f:
+                      json.dump({
+                          'model': 'signal_quality',
+                          'status': 'success',
+                          'stats': predictor.model_stats
+                      }, f, indent=2)
+              else:
+                  print(" Signal quality training skipped (insufficient data)")
+          except Exception as e:
+              print(f" Error training quality models: {e}")
+              import traceback
+              traceback.print_exc()
+          PYEOF
+      
+      - name: Generate ML Performance Report
+        if: steps.check.outputs.needs_training == 'true'
+        run: |
+          echo "Generating ML Performance Report..."
+          python3 << 'PYEOF'
+          import json
+          import os
+          from datetime import datetime
+
+          report = {
+              'generated_at': datetime.now().isoformat(),
+              'total_resolved_signals': int(os.environ.get('TOTAL_RESOLVED', 0)),
+              'new_signals': int(os.environ.get('NEW_SIGNALS', 0)),
+              'training_triggered': True,
+              'models': {}
+          }
+
+          # Check consensus model
+          if os.path.exists('signal_aggregator/models/training_report.json'):
+              with open('signal_aggregator/models/training_report.json') as f:
+                  report['models']['consensus'] = json.load(f)
+
+          # Check quality model
+          if os.path.exists('forward_testing/models/training_report.json'):
+              with open('forward_testing/models/training_report.json') as f:
+                  report['models']['quality'] = json.load(f)
+
+          # Save report
+          os.makedirs('reports', exist_ok=True)
+          with open('reports/ml_training_report.json', 'w') as f:
+              json.dump(report, f, indent=2)
+
+          print("\n=== ML Training Report ===")
+          print(json.dumps(report, indent=2))
+          PYEOF
+        env:
+          TOTAL_RESOLVED: ${{ steps.check.outputs.total_resolved }}
+          NEW_SIGNALS: ${{ steps.check.outputs.new_signals }}
+
+      # A4.1 — Write standardised model metadata JSON so downstream gates
+      # (A3.1 regression check) have a stable, machine-readable metrics record.
+      - name: Write model metadata (A4.1)
+        if: steps.check.outputs.needs_training == 'true'
+        run: |
+          echo "Writing model metadata (A4.1)..."
+          python3 << 'PYEOF'
+          import json, os, sys
+          sys.path.insert(0, '.')
+
+          # Pull win_rate / accuracy from the training reports written above
+          def extract_metrics(report_path):
+              if not os.path.exists(report_path):
+                  return {}
+              with open(report_path) as f:
+                  data = json.load(f)
+              stats = data.get('stats', {})
+              return {
+                  'win_rate': stats.get('win_rate') or stats.get('wr'),
+                  'accuracy': stats.get('accuracy') or stats.get('acc'),
+                  'sharpe':   stats.get('sharpe'),
+              }
+
+          try:
+              from tools.write_model_metadata import write_metadata
+
+              # Consensus model metadata
+              metrics = extract_metrics('signal_aggregator/models/training_report.json')
+              write_metadata(
+                  model_name='ml_consensus',
+                  metrics=metrics,
+                  dataset_path='forward_tracking.db',
+                  output_dir='alpha_engine/data',
+              )
+
+              # Signal quality model metadata
+              metrics_q = extract_metrics('forward_testing/models/training_report.json')
+              write_metadata(
+                  model_name='signal_quality',
+                  metrics=metrics_q,
+                  dataset_path='forward_tracking.db',
+                  output_dir='alpha_engine/data',
+              )
+              print("Model metadata written successfully.")
+          except Exception as e:
+              print(f"Warning: could not write model metadata: {e}")
+              # Non-fatal — metadata write failure does not block the commit
+          PYEOF
+
+      # A8.1 — SHAP summary plot: install lightweight deps, generate the plot,
+      # and upload as a CI artifact.  continue-on-error + || true ensure this
+      # step can NEVER fail the workflow regardless of environment.
+      - name: Install SHAP + matplotlib (A8.1)
+        if: steps.check.outputs.needs_training == 'true'
+        continue-on-error: true
+        run: |
+          pip install --no-cache-dir shap matplotlib || true
+
+      - name: Generate SHAP report (A8.1)
+        if: steps.check.outputs.needs_training == 'true'
+        continue-on-error: true
+        run: |
+          python tools/generate_shap_report.py --model ml_consensus || echo "SHAP generation skipped"
+
+      - name: Upload SHAP artifact (A8.1)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: shap-report-${{ github.run_number }}
+          path: |
+            reports/shap_summary_*.png
+            reports/shap_summary_*.txt
+            reports/shap_summary_*.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      # A3.1 — Regression gate: compare new model metrics against committed
+      # version.  Exits 1 if win_rate or accuracy regressed > 5%.
+      # Uses --allow-missing so the first-ever training run always passes.
+      - name: Model regression gate (A3.1)
+        id: regression_gate
+        if: steps.check.outputs.needs_training == 'true'
+        run: |
+          echo "Running model regression gate (A3.1)..."
+          python3 tools/model_regression_check.py \
+            --model-name ml_consensus \
+            --threshold 0.05 \
+            --metadata-dir alpha_engine/data \
+            --allow-missing && echo "regression_passed=true" >> "$GITHUB_OUTPUT" \
+            || echo "regression_passed=false" >> "$GITHUB_OUTPUT"
+          # Always exit 0 here so the workflow continues to the commit step;
+          # the commit step checks regression_passed itself and skips on failure.
+          exit 0
+
+      - name: Commit trained models
+        # A3.1: skip commit if regression gate detected a regression
+        if: >
+          steps.check.outputs.needs_training == 'true' &&
+          steps.regression_gate.outputs.regression_passed != 'false'
+        run: |
+          git config --local user.email "ml-bot@github.com"
+          git config --local user.name "ML Training Bot"
+
+          # Add all model files, metadata, and reports
+          git add signal_aggregator/models/ 2>/dev/null || true
+          git add forward_testing/models/ 2>/dev/null || true
+          git add risk_management/models/ 2>/dev/null || true
+          git add alpha_engine/data/model_metadata_*.json 2>/dev/null || true
+          git add reports/ 2>/dev/null || true
+
+          # Commit with detailed message
+          TOTAL="${{ steps.check.outputs.total_resolved }}"
+          NEW="${{ steps.check.outputs.new_signals }}"
+
+          git diff --cached --quiet || git commit -m "Auto-retrain ML models
+
+          - Resolved signals: $TOTAL
+          - New signals (6h): $NEW
+          - Models: Consensus, Quality Predictor
+          - Regression gate (A3.1): passed
+          - Triggered by: ${{ steps.check.outputs.reasons }}
+
+          [skip ci]"
+          
+          # Push with retry
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Retry $i..."
+            sleep $((i * 5))
+          done
+      
+      - name: Upload models as artifacts
+        if: steps.check.outputs.needs_training == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-models-${{ github.run_number }}
+          path: |
+            signal_aggregator/models/
+            forward_testing/models/
+            risk_management/models/
+            reports/
+          retention-days: 30
+      
+      - name: Notify Discord
+        if: steps.check.outputs.needs_training == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_ML_ALERTS }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "No Discord webhook configured"
+            exit 0
+          fi
+          
+          TOTAL="${{ steps.check.outputs.total_resolved }}"
+          NEW="${{ steps.check.outputs.new_signals }}"
+          
+          curl -H "Content-Type: application/json" \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \" ML Models Auto-Retrained\",
+                   \"color\": 3447003,
+                   \"fields\": [
+                     {\"name\": \"Total Signals\", \"value\": \"$TOTAL\", \"inline\": true},
+                     {\"name\": \"New (6h)\", \"value\": \"$NEW\", \"inline\": true},
+                     {\"name\": \"Models\", \"value\": \"Consensus, Quality\", \"inline\": true}
+                   ],
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               $DISCORD_WEBHOOK || echo "Discord notification failed"
+      
+      - name: Skip notification
+        if: steps.check.outputs.needs_training != 'true'
+        run: |
+          echo "Training not needed. Skipping."
+          echo "Total resolved: ${{ steps.check.outputs.total_resolved }}"
+          echo "Reasons: ${{ steps.check.outputs.reasons }}"
+

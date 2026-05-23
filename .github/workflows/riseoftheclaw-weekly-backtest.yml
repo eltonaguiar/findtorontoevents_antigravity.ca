@@ -1,0 +1,212 @@
+# Weekly Vectorized Backtest  Rise of the Claw
+# Runs every Sunday 03:00 UTC.  Backtests all 20 strategies over 5 years,
+# writes data/backtest_rankings.json and deploys to both sites.
+name: "[RiseOfTheClaw] Weekly Backtest + Elimination"
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Every Sunday 03:00 UTC
+  workflow_dispatch:       # Allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  backtest:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          echo "Installing Python dependencies..."
+          pip install pandas numpy yfinance
+
+      - name: Run Vectorized Backtest Engine
+        run: |
+          echo "====================================================="
+          echo "  KIMI Rise of the Claw - Weekly Backtest v1"
+          echo "  Period: 5 years | Strategies: 20 | Target: <2 min"
+          echo "====================================================="
+          python KIMI_RISEOFTHECLAW/backtest_engine.py --period 5y
+
+      - name: Show backtest summary
+        run: |
+          echo "--- backtest_rankings.json preview ---"
+          python3 -c "
+          import json
+          with open('KIMI_RISEOFTHECLAW/data/backtest_rankings.json') as f:
+              d = json.load(f)
+          print(f'Period: {d[\"period\"]} | Strategies: {d[\"totalStrategies\"]}')
+          print()
+          print(f'{\"Rank\":4}  {\"Name\":40}  {\"Score\":6}  {\"WR\":6}  {\"Trades\":6}  {\"PnL\":10}  Status')
+          for r in d['rankings']:
+              print(f'{r[\"rank\"]:4}  {r[\"name\"][:40]:40}  {r[\"score\"]:6.1f}  '
+                    f'{r[\"winRate\"]:5.1f}%  {r[\"trades\"]:6}  '
+                    f'{r[\"totalPnl\"]:+10.2f}  {r[\"rank_label\"]}')
+          "
+
+      - name: Prepare deployment files
+        run: |
+          echo "Preparing backtest data for deployment..."
+          mkdir -p deploy_backtest/riseoftheclaw/data
+          cp KIMI_RISEOFTHECLAW/data/backtest_rankings.json deploy_backtest/riseoftheclaw/data/
+          cp KIMI_RISEOFTHECLAW/data/backtest_detail.json   deploy_backtest/riseoftheclaw/data/ || true
+          echo "Done."
+
+      - name: Deploy backtest data to findtorontoevents.ca (50webs)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping findtorontoevents.ca deploy")
+              exit(0)
+
+          SITE_ROOT = "findtorontoevents.ca"
+          src = Path("deploy_backtest")
+
+          print(f"Connecting to {host} (findtorontoevents.ca)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local, remote):
+              parts = remote.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f"  {remote}")
+
+          uploaded = 0
+          data_dir = src / "riseoftheclaw" / "data"
+          for f in data_dir.glob("*.json"):
+              upload(ftp, f, f"{SITE_ROOT}/riseoftheclaw/data/{f.name}")
+              uploaded += 1
+
+          ftp.quit()
+          print(f"Deployed {uploaded} files to findtorontoevents.ca")
+          PYEOF
+
+      - name: Deploy backtest data to torontoevent.net (GoDaddy)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping torontoevent.net deploy")
+              exit(0)
+
+          src = Path("deploy_backtest")
+
+          print(f"Connecting to {host} (torontoevent.net)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local, remote):
+              parts = remote.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f"  {remote}")
+
+          uploaded = 0
+          data_dir = src / "riseoftheclaw" / "data"
+          for f in data_dir.glob("*.json"):
+              upload(ftp, f, f"riseoftheclaw/data/{f.name}")
+              uploaded += 1
+
+          ftp.quit()
+          print(f"Deployed {uploaded} files to torontoevent.net")
+          PYEOF
+
+      - name: Summary
+        run: |
+          echo "## Weekly Backtest Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python3 - >> $GITHUB_STEP_SUMMARY <<'PYEOF'
+          import json
+          with open('KIMI_RISEOFTHECLAW/data/backtest_rankings.json') as f:
+              d = json.load(f)
+          promoted  = [r for r in d['rankings'] if r['rank_label'] == 'promoted']
+          eliminated = [r for r in d['rankings'] if r['rank_label'] == 'eliminated']
+          print(f"**Period:** {d['period']}  |  **Run:** {d['lastUpdated']}")
+          print()
+          print(f"| Outcome | Count |")
+          print(f"|---------|-------|")
+          print(f"| Promoted ({50} trades + {55}% WR) | {len(promoted)} |")
+          print(f"| Eliminated | {len(eliminated)} |")
+          print(f"| Still testing | {d['totalStrategies'] - len(promoted) - len(eliminated)} |")
+          print()
+          print("**Top 5 by Backtest Score:**")
+          print()
+          print("| Rank | Strategy | Score | Win Rate | Trades | PnL |")
+          print("|------|----------|-------|----------|--------|-----|")
+          for r in d['rankings'][:5]:
+              print(f"| #{r['rank']} | {r['name']} | {r['score']} | {r['winRate']}% | {r['trades']} | ${r['totalPnl']:+.2f} |")
+          PYEOF
+

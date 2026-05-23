@@ -1,0 +1,57 @@
+{
+  "name": "adaptive_multi_factor_v1",
+  "version": "1.0",
+  "strategy_type": "hybrid",
+  "entry_logic": {
+    "type": "multi_factor",
+    "factors": [
+      {
+        "name": "compression",
+        "weight": 0.4
+      },
+      {
+        "name": "vwap_deviation",
+        "weight": 0.3
+      },
+      {
+        "name": "momentum",
+        "weight": 0.3
+      }
+    ],
+    "threshold": 0.6,
+    "adaptive_weights": true,
+    "lookback_periods": 50
+  },
+  "exit_logic": {
+    "type": "adaptive",
+    "base_tp": 2.0,
+    "base_sl": 1.5,
+    "adaptation_lookback": 20,
+    "win_rate_adjustment": true,
+    "profit_factor_adjustment": true
+  },
+  "risk_management": {
+    "position_size": 0.1,
+    "adaptive_sizing": true,
+    "kelly_fraction": 0.5,
+    "recent_performance_lookback": 20,
+    "max_size_increase": 1.5,
+    "max_size_decrease": 0.5
+  },
+  "regime_detection": {
+    "enabled": true,
+    "auto_detect": true,
+    "strategy_rotation": true
+  },
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ],
+  "parent_strategies": [
+    "crypto_keltner_compression_expansion_v1",
+    "crypto_vwap_deviation_reversion_volfilter_v1",
+    "crypto_kalman_trend_residual_reversion_v1"
+  ],
+  "created_at": "2026-03-07T20:16:21.051626"
+}

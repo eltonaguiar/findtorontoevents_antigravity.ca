@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANTIGRAVITY Pine Script Toolkit - Quick-Start Guide</title>
+<meta name="description" content="Complete guide to the ANTIGRAVITY TradingView Pine Script toolkit.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a14;--bg2:#12121f;--bg3:#1a1a2e;--accent:#00d4ff;--green:#00e676;--red:#ff1744;--gold:#ffd700;--text:#e0e0e0;--dim:rgba(255,255,255,.4);--glass:rgba(26,26,46,.7);--border:rgba(0,212,255,.15)}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+a{color:var(--accent);text-decoration:none}
+.hero{padding:80px 20px 60px;text-align:center;background:linear-gradient(180deg,rgba(0,212,255,.08),transparent);border-bottom:1px solid var(--border)}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.hero .sub{font-size:1.1rem;color:var(--dim);max-width:700px;margin:0 auto 30px}
+.badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:.75rem;font-weight:600;margin:4px;border:1px solid}
+.badge.green{color:var(--green);border-color:var(--green)}.badge.gold{color:var(--gold);border-color:var(--gold)}.badge.blue{color:var(--accent);border-color:var(--accent)}
+.container{max-width:1100px;margin:0 auto;padding:0 20px}
+section{padding:50px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+h2{font-size:1.8rem;font-weight:800;margin-bottom:24px;color:var(--accent)}
+h3{font-size:1.3rem;font-weight:700;margin:20px 0 12px;color:var(--gold)}
+h4{font-size:1rem;font-weight:600;margin:16px 0 8px;color:var(--green)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin:20px 0}
+.card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:24px;backdrop-filter:blur(10px);transition:transform .2s}
+.card:hover{transform:translateY(-3px)}
+.card .title{font-size:1.1rem;font-weight:700;margin-bottom:8px;color:white}
+.card .stars{color:var(--gold);font-size:.9rem;margin-bottom:6px}
+.card .stat{display:flex;justify-content:space-between;padding:4px 0;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.card .stat .label{color:var(--dim)}.card .stat .val{font-weight:600;font-family:'JetBrains Mono',monospace}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem}
+th{background:var(--bg3);color:var(--gold);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.g{color:var(--green)}.r{color:var(--red)}.y{color:var(--gold)}.b{color:var(--accent)}
+.step-list{counter-reset:step;list-style:none;padding:0}
+.step-list li{position:relative;padding:16px 16px 16px 60px;margin:12px 0;background:var(--glass);border:1px solid var(--border);border-radius:10px;counter-increment:step}
+.step-list li::before{content:counter(step);position:absolute;left:16px;top:16px;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--green));color:var(--bg);font-weight:800;display:flex;align-items:center;justify-content:center}
+code{font-family:'JetBrains Mono',monospace;background:var(--bg3);padding:2px 8px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+.warn{background:rgba(255,109,0,.1);border:1px solid rgba(255,109,0,.3);border-radius:8px;padding:16px;margin:16px 0}
+footer{padding:40px 20px;text-align:center;color:var(--dim);font-size:.8rem;border-top:1px solid var(--border)}
+@media(max-width:600px){.card-grid{grid-template-columns:1fr}table{font-size:.75rem}}
+</style>
+</head>
+<body>
+<div class="hero">
+<h1>ANTIGRAVITY Pine Script Toolkit</h1>
+<p class="sub">Two production-ready TradingView tools: 8 battle-tested strategies, 1-5 signal strength, non-repainting, TP/SL toggles, pump detection, and crypto pair recommendations.</p>
+<span class="badge green">Non-Repainting</span><span class="badge gold">8 Strategies</span><span class="badge blue">Pine Script v6</span><span class="badge green">Crypto Optimized</span>
+</div>
+<div class="container">
+<section id="tools"><h2>1. The Two Tools</h2>
+<div class="card-grid">
+<div class="card"><div class="title">Simpleton v0.01 ANTIGRAVITY</div><div class="stars">Strategy (Backtestable)</div>
+<div class="stat"><span class="label">Type</span><span class="val b">strategy()</span></div>
+<div class="stat"><span class="label">Strategies</span><span class="val g">8 selectable</span></div>
+<div class="stat"><span class="label">TP/SL</span><span class="val g">Toggle ON/OFF</span></div>
+<div class="stat"><span class="label">Repaint</span><span class="val g">Non-repainting default</span></div>
+<div class="stat"><span class="label">Best For</span><span class="val y">Backtesting and validation</span></div>
+</div>
+<div class="card"><div class="title">Signal Engine ANTIGRAVITY</div><div class="stars">Indicator (Live Signals)</div>
+<div class="stat"><span class="label">Type</span><span class="val b">indicator()</span></div>
+<div class="stat"><span class="label">Indicators</span><span class="val g">10 mix and match</span></div>
+<div class="stat"><span class="label">Strength</span><span class="val g">Level 1-5</span></div>
+<div class="stat"><span class="label">P and D Detection</span><span class="val y">Built-in filter</span></div>
+<div class="stat"><span class="label">Best For</span><span class="val y">Live trading signals</span></div>
+</div></div></section>
+
+<section id="quickstart"><h2>2. Quick-Start Guide</h2>
+<ol class="step-list">
+<li><strong>Open TradingView</strong> - Navigate to tradingview.com/chart</li>
+<li><strong>Pine Editor</strong> - Click the Pine Editor tab at the bottom</li>
+<li><strong>Copy the Code</strong> - Open <code>Simpletonv001_ANTIGRAVITY.pine</code> and copy</li>
+<li><strong>Paste and Save</strong> - Paste into Pine Editor, click Save then Add to Chart</li>
+<li><strong>Select Strategy</strong> - Open Settings, pick from 8 strategies</li>
+<li><strong>Backtest</strong> - Click Strategy Tester tab for performance metrics</li>
+<li><strong>Signal Engine</strong> - Repeat with <code>SignalEngine_ANTIGRAVITY.pine</code> for live signals</li>
+</ol></section>
+
+<section id="strategies"><h2>3. Strategy Deep Dive</h2>
+<div class="card-grid">
+<div class="card"><div class="title">1. Connors RSI-2</div><div class="stars">Top-Rated</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val g">75.7% (SPY)</span></div>
+<div class="stat"><span class="label">Sharpe</span><span class="val g">4.84</span></div>
+<div class="stat"><span class="label">Trades</span><span class="val">74 (5yr SPY)</span></div>
+<div class="stat"><span class="label">Best Pairs</span><span class="val y">SPY, QQQ, BTC</span></div>
+</div>
+<div class="card"><div class="title">2. Z-Score Mean Reversion</div><div class="stars">Strong</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val g">62-77%</span></div>
+<div class="stat"><span class="label">Sharpe</span><span class="val g">2.28-2.95</span></div>
+<div class="stat"><span class="label">Best Pairs</span><span class="val y">BTC, ETH (4H)</span></div>
+</div>
+<div class="card"><div class="title">3. EMA + RSI Momentum</div><div class="stars">Consistent</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val y">45-55%</span></div>
+<div class="stat"><span class="label">Best Pairs</span><span class="val y">ETH, BNB, SOL</span></div>
+</div>
+<div class="card"><div class="title">4. Bollinger Band Squeeze</div><div class="stars">Ranging Markets</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val y">53-55%</span></div>
+<div class="stat"><span class="label">Best Pairs</span><span class="val y">SOL, ADA</span></div>
+</div>
+<div class="card"><div class="title">5. MACD + RSI Confluence</div><div class="stars">High Conviction</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val g">61%</span></div>
+<div class="stat"><span class="label">Profit Factor</span><span class="val g">1.8+</span></div>
+</div>
+<div class="card"><div class="title">6. Triple EMA Crossover</div><div class="stars">Trend Following</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val y">55-64%</span></div>
+</div>
+<div class="card"><div class="title">7. VWAP Deviation</div><div class="stars">Intraday King</div>
+<div class="stat"><span class="label">Win Rate</span><span class="val g">62-68%</span></div>
+</div>
+<div class="card"><div class="title">8. Multi-Strategy Consensus</div><div class="stars">Highest Conviction</div>
+<div class="stat"><span class="label">Method</span><span class="val g">3+ of 7 must agree</span></div>
+</div>
+</div></section>
+
+<section id="signals"><h2>4. Signal Strength System (1-5)</h2>
+<table>
+<tr><th>Level</th><th>Meaning</th><th>Agreement</th><th>Action</th></tr>
+<tr><td class="g"><strong>5</strong></td><td>Extreme Conviction</td><td>80%+ agree</td><td>Full position</td></tr>
+<tr><td class="g"><strong>4</strong></td><td>Strong Signal</td><td>60-79% agree</td><td>Standard position</td></tr>
+<tr><td class="y"><strong>3</strong></td><td>Moderate Signal</td><td>40-59% agree</td><td>Half position</td></tr>
+<tr><td class="y"><strong>2</strong></td><td>Weak Signal</td><td>20-39% agree</td><td>Paper trade only</td></tr>
+<tr><td><strong>1</strong></td><td>Marginal</td><td>1 indicator</td><td>Watch only</td></tr>
+</table>
+<div class="warn">Only trade Level 3+ signals. Level 4-5 have the highest historical win rates.</div>
+</section>
+
+<section id="crypto"><h2>5. Crypto Pair Recommendations</h2>
+<table>
+<tr><th>Pair</th><th>Best TF</th><th>Strategy</th><th>Win Rate</th><th>Risk</th></tr>
+<tr><td><strong>BTCUSD</strong></td><td>4H/1D</td><td class="g">RSI-2</td><td class="g">62.5%</td><td class="y">Medium</td></tr>
+<tr><td><strong>ETHUSD</strong></td><td>4H/1H</td><td class="g">EMA+RSI</td><td class="g">64.2%</td><td class="y">Medium</td></tr>
+<tr><td><strong>SOLUSD</strong></td><td>1H/4H</td><td class="g">BB Squeeze</td><td class="y">58.3%</td><td class="r">High</td></tr>
+<tr><td><strong>BNBUSD</strong></td><td>4H</td><td class="g">EMA+RSI</td><td class="g">65.5%</td><td class="y">Medium</td></tr>
+<tr><td><strong>XRPUSD</strong></td><td>4H/1D</td><td class="g">RSI-2</td><td class="y">60.1%</td><td class="y">Medium</td></tr>
+<tr><td><strong>AVAXUSD</strong></td><td>1H</td><td class="g">MACD+RSI</td><td class="y">55.8%</td><td class="r">High</td></tr>
+<tr><td><strong>ADAUSD</strong></td><td>4H/1D</td><td class="g">Z-MR/VWAP</td><td class="y">59.4%</td><td class="y">Medium</td></tr>
+<tr><td><strong>DOGEUSD</strong></td><td>15m/1H</td><td class="g">Consensus</td><td class="r">52.8%</td><td class="r">V.High</td></tr>
+</table></section>
+
+<section id="backtest"><h2>6. Backtest Results</h2>
+<table>
+<tr><th>Strategy</th><th>Asset</th><th>Trades</th><th>Win Rate</th><th>Sharpe</th><th>Return</th></tr>
+<tr><td>Connors RSI-2</td><td>SPY</td><td>74</td><td class="g">75.7%</td><td class="g">4.84</td><td class="g">+34.6%</td></tr>
+<tr><td>Connors RSI-2</td><td>QQQ</td><td>73</td><td class="g">75.3%</td><td class="g">6.55</td><td class="g">+55.8%</td></tr>
+<tr><td>Connors RSI-2</td><td>BTC</td><td>96</td><td class="g">62.5%</td><td class="g">2.35</td><td class="g">+77.3%</td></tr>
+<tr><td>RSI MR 21/30/80</td><td>BTC</td><td>38</td><td class="g">63.2%</td><td class="y">0.73</td><td class="y">+6.3%</td></tr>
+</table>
+<div class="warn"><strong>Honest Disclosure:</strong> Backtested returns often overstate real returns by 2-3x. Always paper trade 3-6 months first.</div>
+</section>
+
+<section id="risk"><h2>7. Risk Management</h2>
+<table>
+<tr><th>Market Type</th><th>TP %</th><th>SL %</th><th>R:R</th></tr>
+<tr><td>BTC/ETH (4H)</td><td>3-5%</td><td>1.5-2%</td><td>2:1</td></tr>
+<tr><td>Altcoins (1H)</td><td>2-3%</td><td>1-1.5%</td><td>2:1</td></tr>
+<tr><td>Meme Coins</td><td>5-10%</td><td>2-3%</td><td>3:1</td></tr>
+<tr><td>SPY/QQQ (1D)</td><td>2-3%</td><td>1-1.5%</td><td>2:1</td></tr>
+</table>
+<h4>Position Sizing Rules</h4>
+<ul style="padding-left:20px;font-size:.9rem">
+<li>Never risk more than <strong>2%</strong> of account per trade</li>
+<li>Level 5: full standard position</li>
+<li>Level 3-4: 50-75% of standard</li>
+<li>Level 1-2: paper trade only</li>
+<li>Reduce all sizes 50% during HIGH VOL regime</li>
+</ul></section>
+
+<section id="pnd"><h2>8. Pump and Dump Detection</h2>
+<table>
+<tr><th>Detection</th><th>Trigger</th><th>Action</th></tr>
+<tr><td class="r">Volume Spike</td><td>Volume > 3x avg</td><td>Flag warning</td></tr>
+<tr><td class="r">Price Spike</td><td>Single bar > 10%</td><td>Suppress buy signals</td></tr>
+<tr><td class="r">Dump Risk</td><td>Vol > 6x + price up 10% over 5 bars</td><td>Full suppression</td></tr>
+</table></section>
+
+<section id="faq"><h2>9. FAQ</h2>
+<h4>Q: Does this repaint?</h4>
+<p>No. Non-Repainting Mode is ON by default. All signals confirm on bar close.</p>
+<h4>Q: Which strategy first?</h4>
+<p><strong>Connors RSI-2</strong> on SPY/QQQ Daily. Strongest backtest data (75.7% WR, 4.84 Sharpe).</p>
+<h4>Q: Can I use both tools?</h4>
+<p>Yes! Simpleton for backtesting, Signal Engine for live signals. They complement each other.</p>
+<h4>Q: Best crypto timeframe?</h4>
+<p>4H is the sweet spot. 1H for active trading, 1D for swing trades.</p>
+<h4>Q: Is this financial advice?</h4>
+<p><strong>No.</strong> Research/education only. Paper trade first. Consult a licensed financial advisor.</p>
+</section>
+</div>
+<footer>
+<p>ANTIGRAVITY Pine Script Toolkit - Built with data from 1000+ backtested trades</p>
+<p style="margin-top:8px">Part of the <a href="https://findtorontoevents.ca">findtorontoevents.ca</a> ecosystem</p>
+<p style="margin-top:8px;font-size:.7rem">Not financial advice. Research/education only. Paper trade 3-6 months minimum.</p>
+</footer>
+</body></html>

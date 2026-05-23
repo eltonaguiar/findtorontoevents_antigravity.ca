@@ -1,0 +1,137 @@
+{
+  "generated_at": "2026-03-15T01:45:00+00:00",
+  "version": "1.0.0",
+  "phase": 2,
+  "round": 3,
+  "curator": "Claude Opus 4.6 — Statistical Predictability Engine",
+  "category": "MOST_PREDICTABLE",
+  "methodology": "Round 3: Data-driven picks from the most statistically predictable assets. Selected by Wilson score lower bound (95% CI) on closed trades across Battleground (300 trades), Alpha Engine (81 trades), and Cross-Aggregation Consensus (121 trades). Regime-aligned with HMM Bear state (98.19% confidence). Kelly Quarter sizing with all 7 guardrails. These picks compete against the 5 AI tournament picks as a 'statistical baseline' category.",
+  "selection_criteria": {
+    "minimum_closed_trades": 27,
+    "minimum_wilson_lower_bound": 0.47,
+    "regime_alignment": "SHORT in Bear regime (98.19% HMM confidence)",
+    "fng_at_entry": 16,
+    "kelly_tier": "quarter",
+    "data_sources": ["battleground_closed_picks", "alpha_engine_closed_picks", "consensus_outcomes", "genome_tournament", "hmm_regime"]
+  },
+  "picks": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "entry_price": 70771.24,
+      "take_profit": 69355.82,
+      "stop_loss": 72186.66,
+      "risk_reward": 1.0,
+      "confidence": 0.92,
+      "strategy": "keltner_compression_regime_short",
+      "status": "ACTIVE",
+      "outcome": "PENDING",
+      "pnl_pct": 0,
+      "round": 3,
+      "phase": 2,
+      "scoring_version": "v1.0_statistical_predictability",
+      "statistical_basis": {
+        "win_rate": 0.703,
+        "closed_trades": 64,
+        "wilson_lower_bound": 0.582,
+        "cumulative_pnl_pct": 27.56,
+        "primary_strategy": "crypto_keltner_compression_expansion_v1 (69.2% WR, 52 trades)",
+        "hmm_regime": "Chop/Neutral (BTC specific) but market Bear 98%",
+        "data_quality": "HIGHEST — largest sample size in tournament"
+      },
+      "kelly_sizing": {
+        "raw_kelly": 0.406,
+        "quarter_kelly": 0.102,
+        "position_size_pct": 10.2,
+        "risk_per_trade_pct": 2.0,
+        "correlation_group": "btc_correlated",
+        "trailing_stop_atr": "1.5x ATR"
+      },
+      "rationale": "BTCUSDT SHORT has 70.3% WR on 64 closed trades — Wilson LB 58.2% means 95% confident true WR > 58%. Keltner compression is the dominant winning strategy (69.2% WR, 52 trades). Conservative 2% TP, 2% SL for R:R 1.0 because the edge comes from win rate, not payoff ratio."
+    },
+    {
+      "rank": 2,
+      "symbol": "SOLUSDT",
+      "direction": "SHORT",
+      "entry_price": 87.36,
+      "take_profit": 85.44,
+      "stop_loss": 89.54,
+      "risk_reward": 0.88,
+      "confidence": 0.85,
+      "strategy": "keltner_compression_regime_short",
+      "status": "ACTIVE",
+      "outcome": "PENDING",
+      "pnl_pct": 0,
+      "round": 3,
+      "phase": 2,
+      "scoring_version": "v1.0_statistical_predictability",
+      "statistical_basis": {
+        "win_rate": 0.632,
+        "closed_trades": 38,
+        "wilson_lower_bound": 0.473,
+        "cumulative_pnl_pct": 14.57,
+        "primary_strategy": "keltner_compression_expansion_sol_v1 (64.1% WR, 39 trades)",
+        "hmm_regime": "CASH signal but market Bear 98%",
+        "data_quality": "HIGH — SOL-specific Keltner variant adds confidence"
+      },
+      "kelly_sizing": {
+        "raw_kelly": 0.265,
+        "quarter_kelly": 0.066,
+        "position_size_pct": 6.6,
+        "risk_per_trade_pct": 2.0,
+        "correlation_group": "btc_correlated",
+        "trailing_stop_atr": "1.5x ATR"
+      },
+      "rationale": "SOLUSDT SHORT has 63.2% WR on 38 trades. SOL-specific Keltner variant adds 64.1% WR on 39 trades. Currently the ONLY profitable pick in the entire Phase 2 tournament (Claude's SOL SHORT at +0.17%). Regime-aligned, momentum confirmed."
+    },
+    {
+      "rank": 3,
+      "symbol": "ETHUSDT",
+      "direction": "SHORT",
+      "entry_price": 2087.20,
+      "take_profit": 2041.26,
+      "stop_loss": 2131.01,
+      "risk_reward": 1.05,
+      "confidence": 0.80,
+      "strategy": "keltner_compression_regime_short",
+      "status": "ACTIVE",
+      "outcome": "PENDING",
+      "pnl_pct": 0,
+      "round": 3,
+      "phase": 2,
+      "scoring_version": "v1.0_statistical_predictability",
+      "statistical_basis": {
+        "win_rate": 0.556,
+        "closed_trades": 36,
+        "wilson_lower_bound": 0.396,
+        "cumulative_pnl_pct": 20.48,
+        "primary_strategy": "multi_period_rsi_confluence_eth (60.5% WR, 38 trades)",
+        "hmm_regime": "Accumulation (72%) — potential contrarian risk",
+        "note": "ETH has edge BOTH directions (55.6% SHORT, 61.8% LONG on 68 trades). HMM shows Accumulation which could flip this. Lower confidence than BTC/SOL.",
+        "data_quality": "MODERATE — dual-directional edge adds uncertainty"
+      },
+      "kelly_sizing": {
+        "raw_kelly": 0.113,
+        "quarter_kelly": 0.028,
+        "position_size_pct": 2.8,
+        "risk_per_trade_pct": 2.0,
+        "correlation_group": "btc_correlated",
+        "trailing_stop_atr": "1.5x ATR"
+      },
+      "rationale": "ETHUSDT SHORT has 55.6% WR on 36 trades but +20.48% cumulative PnL (winners are larger). RSI confluence on ETH specifically adds 60.5% on 38 trades. CAVEAT: HMM shows ETH in Accumulation phase (72%) — this pick carries higher contrarian risk than BTC/SOL. Smallest Kelly sizing reflects this uncertainty."
+    }
+  ],
+  "tournament_context": {
+    "competing_against": ["Claude", "Grok", "Mercury", "KIMI", "Antigravity"],
+    "category_name": "Most Predictable (Statistical Baseline)",
+    "purpose": "Test whether pure statistical edge (high WR on closed trades) outperforms AI-curated picks in live market conditions. This is the 'quant baseline' the AIs must beat.",
+    "evaluation": "Same rules as all AIs: track P/L% until TP/SL hit or manual close. Compare avg P/L% to the 5 AI tournament participants."
+  },
+  "avoided_assets": {
+    "forex": "0% WR across 8+ trades — every forex strategy losing",
+    "WIFUSDT": "22.2% WR on 9 trades — consistent loser",
+    "DOTUSDT": "0% in consensus outcomes",
+    "any_LONG_without_accumulation": "Bear regime 98% — only ETH shows accumulation signal"
+  }
+}

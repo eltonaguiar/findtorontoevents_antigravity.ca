@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-05-13T04:20:41.080695+00:00",
+  "spec": "ETF-A slippage-aware sector rotation (5 friction scenarios)",
+  "universe": [
+    "XLF",
+    "XLE",
+    "XLK",
+    "XLV",
+    "XLI",
+    "XLY",
+    "XLP",
+    "XLU",
+    "XLB",
+    "XLRE",
+    "XLC"
+  ],
+  "config": {
+    "start": "2015-01-01",
+    "end": "2026-05-13",
+    "n_long": 3,
+    "lookback_months": 12,
+    "skip_months": 1,
+    "friction_model": "per-leg (spread+commission+slippage), weighted by leg fraction"
+  },
+  "scenarios": [
+    {
+      "n_periods": 122,
+      "win_rate_pct": 70.49,
+      "profit_factor": 2.0472,
+      "sharpe_annualized": 0.9732,
+      "max_drawdown_pct": 16.1,
+      "total_return_pct": 283.71,
+      "wins": 86,
+      "losses": 36,
+      "friction_drag_total_pct": 0.0,
+      "friction_drag_annual_bps": 0.0,
+      "scenario": "naive_zero_friction",
+      "friction_per_leg_bps": 0
+    },
+    {
+      "n_periods": 122,
+      "win_rate_pct": 70.49,
+      "profit_factor": 2.0419,
+      "sharpe_annualized": 0.9695,
+      "max_drawdown_pct": 16.11,
+      "total_return_pct": 281.56,
+      "wins": 86,
+      "losses": 36,
+      "friction_drag_total_pct": 0.57,
+      "friction_drag_annual_bps": 5.6,
+      "scenario": "low_friction_2bp_total",
+      "friction_per_leg_bps": 1.0
+    },
+    {
+      "n_periods": 122,
+      "win_rate_pct": 70.49,
+      "profit_factor": 2.0339,
+      "sharpe_annualized": 0.9638,
+      "max_drawdown_pct": 16.14,
+      "total_return_pct": 278.34,
+      "wins": 86,
+      "losses": 36,
+      "friction_drag_total_pct": 1.425,
+      "friction_drag_annual_bps": 14.0,
+      "scenario": "realistic_5bp_total",
+      "friction_per_leg_bps": 2.5
+    },
+    {
+      "n_periods": 122,
+      "win_rate_pct": 70.49,
+      "profit_factor": 2.0206,
+      "sharpe_annualized": 0.9543,
+      "max_drawdown_pct": 16.19,
+      "total_return_pct": 273.04,
+      "wins": 86,
+      "losses": 36,
+      "friction_drag_total_pct": 2.85,
+      "friction_drag_annual_bps": 28.0,
+      "scenario": "conservative_10bp_total",
+      "friction_per_leg_bps": 5.0
+    },
+    {
+      "n_periods": 122,
+      "win_rate_pct": 70.49,
+      "profit_factor": 1.9943,
+      "sharpe_annualized": 0.9354,
+      "max_drawdown_pct": 16.28,
+      "total_return_pct": 262.66,
+      "wins": 86,
+      "losses": 36,
+      "friction_drag_total_pct": 5.7,
+      "friction_drag_annual_bps": 56.1,
+      "scenario": "stress_20bp_total",
+      "friction_per_leg_bps": 10.0
+    }
+  ],
+  "baseline_naive_pf": 2.05,
+  "nfa": "Hindsight backtest with friction model. No real-money sizing."
+}

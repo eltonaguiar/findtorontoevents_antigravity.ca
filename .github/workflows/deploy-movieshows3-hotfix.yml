@@ -1,0 +1,97 @@
+name: Deploy MOVIESHOWS3 Hotfix
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Deploy MOVIESHOWS3 files to findtorontoevents.ca (50webs)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+
+          files = [
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/index.html',                'findtorontoevents.ca/MOVIESHOWS3',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/.htaccess',                 'findtorontoevents.ca/MOVIESHOWS3',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/get-movies.php',        'findtorontoevents.ca/MOVIESHOWS3/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/check-session.php',     'findtorontoevents.ca/MOVIESHOWS3/api', 'check-session.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/.htaccess',             'findtorontoevents.ca/MOVIESHOWS3/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/db-config.php',         'findtorontoevents.ca/MOVIESHOWS3/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/test-db.php',           'findtorontoevents.ca/MOVIESHOWS3/api', 'test-db.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/freestyle-search.php',  'findtorontoevents.ca/MOVIESHOWS3/api', 'freestyle-search.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/add-movies-batch.php',  'findtorontoevents.ca/MOVIESHOWS3/api', 'add-movies-batch.php'),
+          ]
+          print(f'Connecting to {host}...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          for local, remote_dir, fname in files:
+              ftp.cwd('/')
+              for part in remote_dir.split('/'):
+                  try: ftp.cwd(part)
+                  except: ftp.mkd(part); ftp.cwd(part)
+              with open(local, 'rb') as f:
+                  ftp.storbinary('STOR ' + fname, f)
+              print(f'Deployed {fname} to findtorontoevents.ca')
+          ftp.quit()
+          "
+
+      - name: Deploy MOVIESHOWS3 files to torontoevent.net (GoDaddy)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing GoDaddy FTP credentials'); sys.exit(1)
+
+          files = [
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/index.html',                'MOVIESHOWS3',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/.htaccess',                 'MOVIESHOWS3',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/get-movies.php',        'MOVIESHOWS3/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/check-session.php',     'MOVIESHOWS3/api', 'check-session.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/.htaccess',             'MOVIESHOWS3/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/db-config.php',         'MOVIESHOWS3/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/test-db.php',           'MOVIESHOWS3/api', 'test-db.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/freestyle-search.php',  'MOVIESHOWS3/api', 'freestyle-search.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/add-movies-batch.php',  'MOVIESHOWS3/api', 'add-movies-batch.php'),
+          ]
+          print(f'Connecting to {host}...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          for local, remote_dir, fname in files:
+              ftp.cwd('/')
+              for part in remote_dir.split('/'):
+                  try: ftp.cwd(part)
+                  except: ftp.mkd(part); ftp.cwd(part)
+              with open(local, 'rb') as f:
+                  ftp.storbinary('STOR ' + fname, f)
+              print(f'Deployed {fname} to torontoevent.net')
+          ftp.quit()
+          "
+
+      - name: Verify both sites respond
+        run: |
+          for URL in "https://findtorontoevents.ca/MOVIESHOWS3/" "https://torontoevent.net/MOVIESHOWS3/"; do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$URL" || echo "000")
+            echo "$URL -> HTTP $STATUS"
+          done
+

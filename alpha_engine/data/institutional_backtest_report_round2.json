@@ -1,0 +1,263 @@
+{
+  "generated_at": "2026-04-02T00:48:58.514125+00:00",
+  "input_files": {
+    "strategy_results": "alpha_engine\\data\\walk_forward_results.json",
+    "pair_results": "backtest_results\\walk_forward_results.json"
+  },
+  "industry_workflow_coverage": {
+    "data_split_check": "in-sample / out-of-sample already present in source report",
+    "walk_forward_check": "fold-based source metrics ingested",
+    "multiple_hypothesis_correction": "BH + Bonferroni applied",
+    "bootstrap_ci": "Monte Carlo bootstrap applied on aggregated trade returns",
+    "pick_risk_metrics": "PoL / SL hit / R-multiple / VaR / CVaR computed",
+    "cross_asset_holdout": "bucketed OOS pass/fail summary generated"
+  },
+  "multiple_testing": {
+    "strategies_evaluated": 5,
+    "fisher_combined_p_value": 4e-06,
+    "significant_after_bh": [
+      "ema_crossover",
+      "bollinger_bounce"
+    ],
+    "significant_after_bonferroni": [
+      "ema_crossover",
+      "bollinger_bounce"
+    ],
+    "rows": [
+      {
+        "strategy": "ema_crossover",
+        "raw_p_value": 1e-06,
+        "bh_q_value": 5e-06,
+        "bonferroni_p": 5e-06,
+        "significant_5pct_bh": true,
+        "significant_5pct_bonf": true
+      },
+      {
+        "strategy": "rsi_reversal",
+        "raw_p_value": 0.630613,
+        "bh_q_value": 0.788266,
+        "bonferroni_p": 1.0,
+        "significant_5pct_bh": false,
+        "significant_5pct_bonf": false
+      },
+      {
+        "strategy": "bollinger_bounce",
+        "raw_p_value": 0.005059,
+        "bh_q_value": 0.012648,
+        "bonferroni_p": 0.025296,
+        "significant_5pct_bh": true,
+        "significant_5pct_bonf": true
+      },
+      {
+        "strategy": "macd_divergence",
+        "raw_p_value": 0.079203,
+        "bh_q_value": 0.132005,
+        "bonferroni_p": 0.396015,
+        "significant_5pct_bh": false,
+        "significant_5pct_bonf": false
+      },
+      {
+        "strategy": "funding_rate_contrarian",
+        "raw_p_value": 0.841481,
+        "bh_q_value": 0.841481,
+        "bonferroni_p": 1.0,
+        "significant_5pct_bh": false,
+        "significant_5pct_bonf": false
+      }
+    ]
+  },
+  "robust_edge_candidates": [],
+  "portfolio_risk": {
+    "portfolio": {
+      "n_trades": 934,
+      "win_rate": 0.3865,
+      "probability_of_loss": 0.6135,
+      "avg_r_multiple": 2.0,
+      "max_drawdown": 0.98456,
+      "sharpe": 1.589,
+      "sortino": 2.0064597093500624e+16,
+      "calmar": 0.7316,
+      "var_95": -0.015,
+      "cvar_95": -0.015
+    },
+    "pairs": {
+      "ALGO/USDT": {
+        "trades": 16,
+        "pnl_sum": -0.06,
+        "probability_of_loss": 0.75,
+        "stop_loss_hit_frequency": 0.75,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "APE/USDT": {
+        "trades": 27,
+        "pnl_sum": -0.135,
+        "probability_of_loss": 0.7778,
+        "stop_loss_hit_frequency": 0.7778,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "ARB/USDT": {
+        "trades": 49,
+        "pnl_sum": -0.555,
+        "probability_of_loss": 0.9184,
+        "stop_loss_hit_frequency": 0.9184,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "BTC/USDT": {
+        "trades": 86,
+        "pnl_sum": -0.525,
+        "probability_of_loss": 0.8023,
+        "stop_loss_hit_frequency": 0.8023,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "DOGE/USDT": {
+        "trades": 58,
+        "pnl_sum": -0.78,
+        "probability_of_loss": 0.9655,
+        "stop_loss_hit_frequency": 0.9655,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "DOT/USDT": {
+        "trades": 12,
+        "pnl_sum": 0.135,
+        "probability_of_loss": 0.4167,
+        "stop_loss_hit_frequency": 0.4167,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "DYDX/USDT": {
+        "trades": 2,
+        "pnl_sum": -0.03,
+        "probability_of_loss": 1.0,
+        "stop_loss_hit_frequency": 1.0,
+        "r_multiple": 0.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "ETH/USDT": {
+        "trades": 107,
+        "pnl_sum": -1.02,
+        "probability_of_loss": 0.8785,
+        "stop_loss_hit_frequency": 0.8785,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "FET/USDT": {
+        "trades": 10,
+        "pnl_sum": 0.075,
+        "probability_of_loss": 0.5,
+        "stop_loss_hit_frequency": 0.5,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "INJ/USDT": {
+        "trades": 2,
+        "pnl_sum": 0.015,
+        "probability_of_loss": 0.5,
+        "stop_loss_hit_frequency": 0.5,
+        "r_multiple": 2.0,
+        "var_95": -0.01275,
+        "cvar_95": -0.015
+      },
+      "SHIB/USDT": {
+        "trades": 44,
+        "pnl_sum": -0.165,
+        "probability_of_loss": 0.75,
+        "stop_loss_hit_frequency": 0.75,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "SOL/USDT": {
+        "trades": 65,
+        "pnl_sum": -0.93,
+        "probability_of_loss": 0.9846,
+        "stop_loss_hit_frequency": 0.9846,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "TRX/USDT": {
+        "trades": 430,
+        "pnl_sum": 6.42,
+        "probability_of_loss": 0.3349,
+        "stop_loss_hit_frequency": 0.3349,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "XRP/USDT": {
+        "trades": 26,
+        "pnl_sum": -0.21,
+        "probability_of_loss": 0.8462,
+        "stop_loss_hit_frequency": 0.8462,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      }
+    }
+  },
+  "bootstrap": {
+    "sharpe": {
+      "mean": 1.8419415607698717,
+      "ci_5": -1.6675918053221075,
+      "ci_95": 5.2225323852532695
+    },
+    "total_return": {
+      "mean": 383.9456971119071,
+      "ci_5": -0.8841773401042021,
+      "ci_95": 702.0519301197451
+    },
+    "block_size": 20,
+    "n_simulations": 10000
+  },
+  "cross_asset_holdout": {
+    "crypto": {
+      "n_strategies": 0,
+      "avg_test_win_rate_pct": 0.0,
+      "pass_55pct_edge": false
+    },
+    "stocks": {
+      "n_strategies": 0,
+      "avg_test_win_rate_pct": 0.0,
+      "pass_55pct_edge": false
+    },
+    "etf": {
+      "n_strategies": 0,
+      "avg_test_win_rate_pct": 0.0,
+      "pass_55pct_edge": false
+    },
+    "forex": {
+      "n_strategies": 0,
+      "avg_test_win_rate_pct": 0.0,
+      "pass_55pct_edge": false
+    },
+    "futures": {
+      "n_strategies": 0,
+      "avg_test_win_rate_pct": 0.0,
+      "pass_55pct_edge": false
+    },
+    "commodities": {
+      "n_strategies": 0,
+      "avg_test_win_rate_pct": 0.0,
+      "pass_55pct_edge": false
+    },
+    "other": {
+      "n_strategies": 5,
+      "avg_test_win_rate_pct": 48.32,
+      "pass_55pct_edge": false
+    }
+  }
+}

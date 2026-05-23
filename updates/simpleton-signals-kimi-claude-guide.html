@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simpleton Signals Kimi_Claude v0.04 — User Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a12; color: #c8c8d8; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.7; padding: 20px; max-width: 1100px; margin: 0 auto; }
+    h1 { color: #00d4ff; font-size: 2rem; margin-bottom: 8px; font-weight: 700; }
+    h2 { color: #8888ff; font-size: 1.4rem; margin-top: 40px; margin-bottom: 12px; border-bottom: 1px solid #333355; padding-bottom: 6px; }
+    h3 { color: #aaaaff; font-size: 1.1rem; margin-top: 24px; margin-bottom: 8px; }
+    p { margin-bottom: 12px; }
+    .subtitle { color: #666688; font-size: 0.95rem; margin-bottom: 24px; }
+    a { color: #00d4ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background: #1a1a2e; color: #00ff88; padding: 2px 6px; border-radius: 3px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.9em; }
+    pre { background: #0d0d1e; border: 1px solid #333355; border-radius: 6px; padding: 16px; overflow-x: auto; margin: 12px 0; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85rem; color: #c8c8d8; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+    .badge-new { background: #0d5e2e; color: #00ff88; }
+    .badge-fix { background: #5c4a1a; color: #ffaa00; }
+    .badge-info { background: #1a3a5c; color: #00d4ff; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9rem; }
+    th { background: #252545; color: #8888aa; padding: 8px 12px; text-align: left; font-weight: 600; }
+    td { padding: 8px 12px; border-bottom: 1px solid #1a1a2e; }
+    tr:hover td { background: #15152a; }
+    .green { color: #00ff88; }
+    .red { color: #ff4444; }
+    .yellow { color: #ffaa00; }
+    .cyan { color: #00d4ff; }
+    .dim { color: #666688; }
+    .card { background: #0d0d1e; border: 1px solid #333355; border-radius: 8px; padding: 20px; margin: 16px 0; }
+    .regime-box { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; margin: 4px; }
+    .regime-trend { background: #3d0d0d; color: #ff4444; }
+    .regime-mixed { background: #3d3d0d; color: #ffaa00; }
+    .regime-range { background: #0d3d0d; color: #00ff88; }
+    .toc { background: #0d0d1e; border: 1px solid #333355; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .toc ul { list-style: none; padding-left: 0; }
+    .toc li { padding: 4px 0; }
+    .toc li::before { content: "→ "; color: #00d4ff; }
+    .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+    .vs-col { background: #0d0d1e; border: 1px solid #333355; border-radius: 8px; padding: 16px; }
+    @media (max-width: 700px) { .vs { grid-template-columns: 1fr; } }
+    .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #333355; color: #555577; font-size: 0.85rem; text-align: center; }
+  </style>
+</head>
+<body>
+
+<h1>Simpleton Signals Kimi_Claude Variant v0.04</h1>
+<p class="subtitle">7-Indicator Regime-Adaptive Signal Engine with Built-In Backtester<br>
+Pine Script v6 &mdash; TradingView Overlay Indicator</p>
+
+<div class="toc">
+  <strong class="cyan">Table of Contents</strong>
+  <ul>
+    <li><a href="#overview">Overview &amp; What's New</a></li>
+    <li><a href="#indicators">The 7 Indicators</a></li>
+    <li><a href="#regime">ADX Regime Engine (The Dynamic Strategy)</a></li>
+    <li><a href="#scoring">Regime-Weighted Scoring System</a></li>
+    <li><a href="#tpsl">Timeframe-Scaled TP/SL</a></li>
+    <li><a href="#backtester">Built-In Backtester</a></li>
+    <li><a href="#methodology">Methodology vs TradingView Strategy Tester</a></li>
+    <li><a href="#table">Reading the Info Table</a></li>
+    <li><a href="#settings">Recommended Settings by Timeframe</a></li>
+    <li><a href="#install">Installation Guide</a></li>
+    <li><a href="#changelog">Changelog</a></li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<h2 id="overview">Overview &amp; What's New in v0.04</h2>
+
+<p>Simpleton Signals Kimi_Claude v0.04 is a <strong>complete rewrite</strong> of the KIMI Signal indicator. It evolves from a simple 4-indicator consensus (v0.02) into a <strong>7-indicator regime-adaptive engine</strong> with a built-in backtester.</p>
+
+<div class="vs">
+  <div class="vs-col">
+    <h3>v0.02 (Previous)</h3>
+    <ul style="list-style:none; padding:0;">
+      <li class="dim">4 indicators: RSI, MACD, SuperTrend, EMA</li>
+      <li class="dim">Equal-weight scoring (0-4)</li>
+      <li class="dim">Fixed TP/SL multipliers</li>
+      <li class="dim">No regime awareness</li>
+      <li class="dim">No backtesting stats</li>
+      <li class="dim">TP/SL lines on L3+ signals</li>
+    </ul>
+  </div>
+  <div class="vs-col">
+    <h3 class="green">v0.04 (New)</h3>
+    <ul style="list-style:none; padding:0;">
+      <li class="green">7 indicators: +WaveTrend, +StochRSI, +ADX Direction</li>
+      <li class="green">Regime-weighted scoring (dynamic 0-9)</li>
+      <li class="green">TF-auto-scaled TP/SL (6 profiles)</li>
+      <li class="green">ADX regime gating (TREND/MIXED/RANGE)</li>
+      <li class="green">Built-in win/loss backtester with PF &amp; expectancy</li>
+      <li class="green">Confidence % display + next-bar-open entry</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h3 class="cyan">The Core Innovation: Dynamic Strategy</h3>
+  <p>v0.04 doesn't use a fixed strategy. It <strong>adapts to market conditions in real-time</strong> using ADX regime detection. In trending markets, trend-following indicators (SuperTrend, EMA, MACD) get <strong>double weight</strong>. In ranging markets, oscillators (RSI, WaveTrend) get double weight. This means the same indicator automatically finds the right strategy for the right conditions — on <strong>any timeframe</strong>.</p>
+</div>
+
+<!-- ========================================== -->
+<h2 id="indicators">The 7 Indicators</h2>
+
+<table>
+  <tr><th>#</th><th>Indicator</th><th>Type</th><th>Signal Logic</th><th>Regime Gate</th></tr>
+  <tr>
+    <td>1</td>
+    <td><strong>RSI(14)</strong></td>
+    <td>Mean Reversion</td>
+    <td>BUY when RSI &lt; oversold (30), SELL when RSI &gt; overbought (70)</td>
+    <td><span class="regime-box regime-trend">GATED in TREND</span></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><strong>MACD(12,26,9)</strong></td>
+    <td>Momentum</td>
+    <td>BUY when MACD &gt; Signal AND histogram &gt; 0</td>
+    <td>Always active</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><strong>SuperTrend(3,10)</strong></td>
+    <td>Trend</td>
+    <td>BUY when direction flips bearish→bullish</td>
+    <td><span class="regime-box regime-range">GATED in RANGE</span></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><strong>EMA Stack(9/21/50)</strong></td>
+    <td>Trend</td>
+    <td>BUY when Fast &gt; Medium &gt; Slow (bullish alignment)</td>
+    <td><span class="regime-box regime-range">GATED in RANGE</span></td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><strong class="cyan">WaveTrend</strong> <span class="badge badge-new">NEW</span></td>
+    <td>Oscillator</td>
+    <td>BUY when WT1 crosses above WT2 from oversold (&lt;-60)</td>
+    <td><span class="regime-box regime-trend">GATED in TREND</span></td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td><strong class="cyan">StochRSI</strong> <span class="badge badge-new">NEW</span></td>
+    <td>Timing</td>
+    <td>BUY when %K crosses above %D from below 20</td>
+    <td>Always active</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td><strong class="cyan">ADX Direction</strong> <span class="badge badge-new">NEW</span></td>
+    <td>Directional</td>
+    <td>BUY when DI+ &gt; DI- (bullish directional movement)</td>
+    <td>Always active</td>
+  </tr>
+</table>
+
+<!-- ========================================== -->
+<h2 id="regime">ADX Regime Engine (The Dynamic Strategy)</h2>
+
+<p>The <strong>ADX (Average Directional Index)</strong> measures trend strength on a 0-100 scale. v0.04 classifies the market into three regimes:</p>
+
+<table>
+  <tr><th>Regime</th><th>ADX Value</th><th>Meaning</th><th>Active Indicators</th><th>Gated</th></tr>
+  <tr>
+    <td><span class="regime-box regime-trend">TREND</span></td>
+    <td>&ge; 25</td>
+    <td>Strong directional movement</td>
+    <td>MACD, SuperTrend, EMA, StochRSI, ADX Dir <strong>(5/7)</strong></td>
+    <td class="red">RSI, WaveTrend</td>
+  </tr>
+  <tr>
+    <td><span class="regime-box regime-mixed">MIXED</span></td>
+    <td>15-24</td>
+    <td>Transitional / unclear</td>
+    <td><strong>All 7</strong> indicators active</td>
+    <td class="dim">None</td>
+  </tr>
+  <tr>
+    <td><span class="regime-box regime-range">RANGE</span></td>
+    <td>&lt; 15</td>
+    <td>Sideways / choppy</td>
+    <td>RSI, MACD, WaveTrend, StochRSI, ADX Dir <strong>(5/7)</strong></td>
+    <td class="red">SuperTrend, EMA</td>
+  </tr>
+</table>
+
+<div class="card">
+  <h3>Why This Works Across All Timeframes</h3>
+  <p>Every timeframe has its own distribution of TREND/MIXED/RANGE periods. A 15m chart might be ranging while the 4H is trending. By adapting <em>which</em> indicators are active based on the <em>current regime on the current chart</em>, the strategy automatically uses the right tools:</p>
+  <ul style="padding-left: 24px; margin-top: 8px;">
+    <li><strong>Scalp (1-5m):</strong> Mostly RANGE → oscillators dominate → mean-reversion signals</li>
+    <li><strong>Intraday (15m-1H):</strong> Mixed regimes → full consensus</li>
+    <li><strong>Swing (4H-Daily):</strong> More trending → trend-following signals dominate</li>
+    <li><strong>Position (Weekly+):</strong> Strong trends → SuperTrend/EMA with 2x weight</li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<h2 id="scoring">Regime-Weighted Scoring System</h2>
+
+<p>Unlike v0.02's flat 1-point-per-indicator system, v0.04 uses <strong>regime-dependent weights</strong>:</p>
+
+<table>
+  <tr><th>Indicator</th><th>TREND Weight</th><th>MIXED Weight</th><th>RANGE Weight</th></tr>
+  <tr><td>RSI</td><td class="red">0 (gated)</td><td>1</td><td class="green">2 (boosted)</td></tr>
+  <tr><td>MACD</td><td class="green">2 (boosted)</td><td>1</td><td>1</td></tr>
+  <tr><td>SuperTrend</td><td class="green">2 (boosted)</td><td>1</td><td class="red">0 (gated)</td></tr>
+  <tr><td>EMA Stack</td><td class="green">2 (boosted)</td><td>1</td><td class="red">0 (gated)</td></tr>
+  <tr><td>WaveTrend</td><td class="red">0 (gated)</td><td>1</td><td class="green">2 (boosted)</td></tr>
+  <tr><td>StochRSI</td><td>1</td><td>1</td><td>1</td></tr>
+  <tr><td>ADX Direction</td><td>1</td><td>1</td><td>1</td></tr>
+  <tr style="background:#1a1a2e; font-weight:bold;"><td>Max Possible</td><td class="cyan">9</td><td class="cyan">7</td><td class="cyan">7</td></tr>
+</table>
+
+<p><strong>Confidence %</strong> = Score / Max Possible &times; 100. A score of 6/9 in TREND = 67% confidence. A score of 5/7 in RANGE = 71%.</p>
+
+<!-- ========================================== -->
+<h2 id="tpsl">Timeframe-Scaled TP/SL</h2>
+
+<p>TP/SL distances are calculated as <code>ATR(14) &times; multiplier</code>. When <strong>Auto-scale</strong> is enabled, the multipliers adjust per timeframe:</p>
+
+<table>
+  <tr><th>Profile</th><th>Timeframe</th><th>TP Mult</th><th>SL Mult</th><th>Max Hold</th><th>R:R Ratio</th></tr>
+  <tr><td>SCALP</td><td>&le; 5m</td><td>1.25x</td><td>0.75x</td><td>8 bars</td><td>1.67:1</td></tr>
+  <tr><td>INTRADAY</td><td>15m</td><td>1.50x</td><td>0.75x</td><td>12 bars</td><td>2.00:1</td></tr>
+  <tr><td>SWING-ID</td><td>1H</td><td>2.00x</td><td>1.00x</td><td>15 bars</td><td>2.00:1</td></tr>
+  <tr><td>SWING</td><td>4H</td><td>2.50x</td><td>1.25x</td><td>20 bars</td><td>2.00:1</td></tr>
+  <tr><td>POSITION</td><td>Daily</td><td>3.50x</td><td>1.75x</td><td>12 bars</td><td>2.00:1</td></tr>
+  <tr><td>MACRO</td><td>Weekly+</td><td>4.50x</td><td>2.00x</td><td>8 bars</td><td>2.25:1</td></tr>
+</table>
+
+<p>The R:R ratio is always &ge; 1.67:1 across all timeframes. This ensures positive expectancy even with sub-50% win rates.</p>
+
+<!-- ========================================== -->
+<h2 id="backtester">Built-In Backtester</h2>
+
+<div class="card">
+  <h3>How It Works</h3>
+  <p>The backtester tracks every BUY signal at or above the configured minimum level. Key methodology:</p>
+  <ul style="padding-left: 24px;">
+    <li><strong>Entry:</strong> Next bar's OPEN price (not signal bar's close) — matches TradingView's strategy tester default for honest fills</li>
+    <li><strong>TP/SL:</strong> Frozen at entry time using ATR &times; multiplier — does NOT drift with changing ATR</li>
+    <li><strong>Same-bar ambiguity:</strong> If both TP and SL are hit on the same candle → counted as <strong>LOSS</strong> (conservative assumption)</li>
+    <li><strong>Timeout:</strong> After max hold bars, checks actual P&L. Dead zone &plusmn;0.1% discarded</li>
+    <li><strong>No commissions/slippage</strong> — gross P&L only</li>
+  </ul>
+</div>
+
+<h3>Metrics Displayed</h3>
+<table>
+  <tr><th>Metric</th><th>Formula</th><th>What It Means</th></tr>
+  <tr><td><strong>Win Rate (WR%)</strong></td><td>Wins / Total &times; 100</td><td>Percentage of trades that hit TP or closed profitably</td></tr>
+  <tr><td><strong>Profit Factor (PF)</strong></td><td>Gross Win / Gross Loss</td><td>PF &gt; 1.0 = net profitable. PF &gt; 2.0 = strong edge</td></tr>
+  <tr><td><strong>Expectancy E[R]</strong></td><td>(WR% &times; AvgWin) - ((1-WR%) &times; AvgLoss)</td><td>Expected return per trade in %. Positive = profitable system</td></tr>
+</table>
+
+<!-- ========================================== -->
+<h2 id="methodology">Methodology vs TradingView Strategy Tester</h2>
+
+<table>
+  <tr><th>Feature</th><th>SSK_Claude v0.04</th><th>TV Strategy Tester</th></tr>
+  <tr><td>Entry price</td><td class="green">Next bar open (honest)</td><td>Next bar open (default)</td></tr>
+  <tr><td>TP/SL check</td><td>Frozen at entry, checked vs high/low</td><td>Broker emulator with OHLC heuristic</td></tr>
+  <tr><td>Same-bar conflict</td><td class="green">Always LOSS (conservative)</td><td class="yellow">OHLC direction heuristic (~50/50)</td></tr>
+  <tr><td>Timeout</td><td>&plusmn;0.1% dead zone</td><td>Closes at market</td></tr>
+  <tr><td>Commissions</td><td class="red">None (gross)</td><td>Configurable (default 0)</td></tr>
+  <tr><td>Slippage</td><td class="red">None</td><td>Configurable (default 0)</td></tr>
+  <tr><td>Multi-strategy</td><td class="green">7 indicators in 1 script</td><td>Requires separate scripts</td></tr>
+  <tr><td>Regime awareness</td><td class="green">Built-in ADX gating</td><td>Must code manually</td></tr>
+</table>
+
+<p><strong>Bottom line:</strong> Our entry methodology matches TV's default (next-bar open). Our same-bar handling is <em>more conservative</em> than TV's heuristic. Results should be directionally similar but our win rates will be slightly lower due to conservative fill — which is a feature, not a bug.</p>
+
+<!-- ========================================== -->
+<h2 id="table">Reading the Info Table</h2>
+
+<p>The top-right table shows real-time status of all 7 indicators plus backtester stats:</p>
+
+<pre>
+┌─────────────────────────────────────┐
+│ SSK_Claude v0.04    │ SWING-ID      │  ← TF profile
+│ Signal              │ BUY           │  ← Current signal
+│ Strength            │ 6/9 (67%)     │  ← Score/max (confidence)
+│ Regime              │ TREND (ADX 28)│  ← Current regime
+│ Active              │ 5/7 indicators│  ← How many not gated
+│ --- Indicators ---                  │
+│ RSI 42.3            │ GATED         │  ← Blocked in TREND
+│ MACD                │ Bullish       │  ← ✓ Counting
+│ SuperTrend          │ Bull          │  ← ✓ Counting (2x)
+│ EMA Stack           │ Bull Stack    │  ← ✓ Counting (2x)
+│ WaveTrend           │ GATED         │  ← Blocked in TREND
+│ StochRSI            │ OS Cross      │  ← ✓ Counting
+│ ADX Dir             │ DI+ > DI-     │  ← ✓ Counting
+│ --- Backtester ---                  │
+│ TP/SL               │ 2x/1x ATR AUTO│  ← Current settings
+│ Stats               │ 12W/5L 70.6% PF:2.14 │ ← Live performance
+└─────────────────────────────────────┘
+</pre>
+
+<!-- ========================================== -->
+<h2 id="settings">Recommended Settings by Timeframe</h2>
+
+<h3>BTCUSD</h3>
+<table>
+  <tr><th>Setting</th><th>15m</th><th>1H</th><th>4H</th><th>Daily</th></tr>
+  <tr><td>Min Signal Level</td><td>3</td><td>3</td><td>3</td><td>2</td></tr>
+  <tr><td>RSI OB/OS</td><td>70/30</td><td>70/30</td><td>70/30</td><td>75/25</td></tr>
+  <tr><td>WT OB/OS</td><td>60/-60</td><td>60/-60</td><td>60/-60</td><td>53/-53</td></tr>
+  <tr><td>StochRSI OB/OS</td><td>80/20</td><td>80/20</td><td>80/20</td><td>85/15</td></tr>
+  <tr><td>ADX Trend/Range</td><td>25/15</td><td>25/15</td><td>25/15</td><td>20/12</td></tr>
+  <tr><td>TP/SL</td><td colspan="4">Use AUTO (enabled by default)</td></tr>
+</table>
+
+<h3>ETHUSD</h3>
+<p>ETH trends harder than BTC. Use the same defaults but consider lowering ADX Trend threshold to 22 and RSI oversold to 25 for more aggressive entries during ETH's characteristic momentum runs.</p>
+
+<!-- ========================================== -->
+<h2 id="install">Installation Guide</h2>
+
+<ol style="padding-left: 24px;">
+  <li>Open <a href="https://www.tradingview.com" target="_blank">TradingView</a> and navigate to any chart</li>
+  <li>Click <strong>Pine Editor</strong> at the bottom of the screen</li>
+  <li>Click <strong>Open</strong> → <strong>New indicator</strong></li>
+  <li>Delete all existing code</li>
+  <li>Copy the entire contents of <code>SimpletonSignals_KIMI_Claude.pine</code></li>
+  <li>Paste into the Pine Editor</li>
+  <li>Click <strong>Add to chart</strong></li>
+  <li>The indicator will appear with EMAs, SuperTrend lines, and the info table</li>
+</ol>
+
+<div class="card">
+  <h3 class="yellow">Pro Tips</h3>
+  <ul style="padding-left: 24px;">
+    <li><strong>Let it accumulate data.</strong> The backtester needs 20+ signals before stats are reliable.</li>
+    <li><strong>Watch the regime.</strong> The best entries come when regime matches signal type — a BUY in TREND with 5+ score is higher conviction than the same score in MIXED.</li>
+    <li><strong>Use confidence %</strong> instead of raw score for cross-timeframe comparison (67% on 4H TREND is comparable to 71% on 15m RANGE).</li>
+    <li><strong>TP/SL auto-scaling</strong> is the default for a reason — manually set values that work on 15m will be too tight for Daily and vice versa.</li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<h2 id="changelog">Changelog</h2>
+
+<h3>v0.04 — Feb 21, 2026 (Kimi_Claude Variant)</h3>
+<ul style="padding-left: 24px;">
+  <li><span class="badge badge-new">NEW</span> WaveTrend Oscillator (LazyBear method) — top TradingView community oscillator</li>
+  <li><span class="badge badge-new">NEW</span> Stochastic RSI — precision timing oscillator for entry confirmation</li>
+  <li><span class="badge badge-new">NEW</span> ADX Direction (DI+/DI-) — directional movement confirmation</li>
+  <li><span class="badge badge-new">NEW</span> ADX regime-adaptive gating — blocks wrong-type indicators per market condition</li>
+  <li><span class="badge badge-new">NEW</span> Regime-weighted scoring (trend indicators 2x in TREND, oscillators 2x in RANGE)</li>
+  <li><span class="badge badge-new">NEW</span> Timeframe auto-scaled TP/SL (6 profiles: SCALP through MACRO)</li>
+  <li><span class="badge badge-new">NEW</span> Built-in backtester with WR%, Profit Factor, Expectancy</li>
+  <li><span class="badge badge-new">NEW</span> Confidence % display (score/max normalized)</li>
+  <li><span class="badge badge-fix">FIX</span> Entry uses next-bar-open (matches TV strategy tester, eliminates close-price optimism)</li>
+  <li><span class="badge badge-fix">FIX</span> Conservative same-bar fill (both TP+SL hit = LOSS)</li>
+  <li><span class="badge badge-fix">FIX</span> Frozen TP/SL at entry (no ATR drift)</li>
+</ul>
+
+<h3>v0.02 — Feb 21, 2026</h3>
+<ul style="padding-left: 24px;">
+  <li>Added TP/SL lines on strong signals (L3+)</li>
+  <li>ATR-based TP/SL calculation</li>
+  <li>Added ATR and TP/SL status to info table</li>
+</ul>
+
+<h3>v0.01 — Feb 21, 2026</h3>
+<ul style="padding-left: 24px;">
+  <li>Initial release: 4 indicators (RSI, MACD, SuperTrend, EMA)</li>
+  <li>Signal strength 1-4 with background coloring</li>
+  <li>Dark theme info table</li>
+</ul>
+
+<div class="footer">
+  <p>Simpleton Signals Kimi_Claude Variant &mdash; Part of the <a href="../updates/">FindTorontoEvents</a> trading tools suite<br>
+  Built with Pine Script v6 | Research-backed strategy optimization</p>
+</div>
+
+</body>
+</html>

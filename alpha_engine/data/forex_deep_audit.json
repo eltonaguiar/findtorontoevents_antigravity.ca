@@ -1,0 +1,265 @@
+{
+  "audit_date": "2026-03-24T03:00:00+00:00",
+  "version": "1.0",
+
+  "part1_forex_performance_audit": {
+    "summary": {
+      "total_forex_closed_picks": 9,
+      "total_system_closed_picks": 567,
+      "forex_share_of_all_picks": "1.6%",
+      "win_rate": "33.3% (3W / 6L)",
+      "total_pnl_pct": -0.07,
+      "avg_pnl_per_trade_pct": -0.0083,
+      "verdict": "CRITICAL: Only 9 forex trades closed in entire history. 33.3% WR is below 40% kill threshold but sample too small to be statistically meaningful. 7 of 9 picks had 0.0% PnL (closed at entry = expired/timed out without hitting TP or SL)."
+    },
+    "by_strategy": {
+      "cta_tsmom_blend": {"trades": 2, "wr": "50%", "avg_pnl": 0.0, "note": "Both expired at 0.0% PnL - signals possibly correct direction but TP never hit"},
+      "ig_contrarian_sentiment": {"trades": 2, "wr": "0%", "avg_pnl": 0.0, "note": "Both expired at 0.0% PnL - contrarian RSI approach inactive"},
+      "proven_triple_ema_pullback": {"trades": 1, "wr": "100%", "avg_pnl": 0.0011, "note": "Only win with actual PnL (AUDUSD)"},
+      "hoffman_irb_reversal": {"trades": 1, "wr": "100%", "avg_pnl": 0.0017, "note": "Only win with actual PnL (USDCAD)"},
+      "cnn_lite_pattern_signal": {"trades": 1, "wr": "0%", "avg_pnl": -0.0772, "note": "Worst loss - REZ-USD misclassified as forex"},
+      "forex_carry_momentum": {"trades": 1, "wr": "0%", "avg_pnl": 0.0, "note": "Expired at 0.0% PnL"},
+      "cta_cross_asset_tsmom": {"trades": 1, "wr": "0%", "avg_pnl": 0.0, "note": "Expired at 0.0% PnL"}
+    },
+    "by_symbol": {
+      "AUDUSD=X": {"trades": 2, "wr": "100%", "note": "Best performing pair"},
+      "USDCAD=X": {"trades": 2, "wr": "50%"},
+      "NZDUSD=X": {"trades": 1, "wr": "0%", "note": "Expired"},
+      "CADJPY=X": {"trades": 1, "wr": "0%", "note": "Expired"},
+      "EURUSD=X": {"trades": 1, "wr": "0%", "note": "Expired"},
+      "EURGBP=X": {"trades": 1, "wr": "0%", "note": "Expired"},
+      "REZ-USD": {"trades": 1, "wr": "0%", "note": "NOT forex - crypto token misclassified"}
+    },
+    "by_direction": {
+      "LONG": {"trades": 6, "wr": "16.7%", "note": "Heavy LONG bias, almost all losses"},
+      "unknown": {"trades": 3, "wr": "66.7%", "note": "Older picks without direction field"}
+    },
+    "key_problems": [
+      "PROBLEM 1: 7/9 picks closed at 0.0% PnL (expired without hitting TP or SL). TP targets too far for hold period.",
+      "PROBLEM 2: Heavy LONG bias (6/9). Strategies generating mostly BUY regardless of trend direction.",
+      "PROBLEM 3: Only 9 forex closed picks out of 567 total (1.6%). Severely underrepresented.",
+      "PROBLEM 4: session_momentum_continuation STILL has tp_mult=2.5 (UNFIXED BUG on lines 610 and 636 of forex_strategies.py). This is the old crypto-scale TP that was supposed to be fixed to 1.2x.",
+      "PROBLEM 5: REZ-USD pick was misclassified as forex (it is a crypto token). Category assignment bug.",
+      "PROBLEM 6: 2 of 12 forex strategies hard-disabled (forex_logistic_direction + community_london_breakout_v2_forex)."
+    ],
+    "tp_sl_audit": {
+      "_atr_tp_sl_forex_helper": "tp_mult=1.2 sl_mult=1.0 caps=0.8%/0.5% - CORRECT",
+      "carry_trade_momentum": "tp_mult=1.2 sl_mult=1.0 - CORRECT",
+      "session_momentum_continuation": "tp_mult=2.5 sl_mult=1.0 on lines 610/636 - BUG (should be 1.2)",
+      "forex_mean_reversion_200d": "Dynamic TP to 200d SMA, SL=min(1.0*ATR, 0.5%) - OK",
+      "forex_rsi2_mean_reversion": "Uses _atr_tp_sl_forex helper - CORRECT",
+      "others": "Most strategies use _atr_tp_sl_forex helper - CORRECT"
+    },
+    "active_forex_picks": {
+      "count": 10,
+      "strategies": ["forex_rsi2_mean_reversion", "forex_carry_momentum", "ig_contrarian_sentiment", "cta_tsmom_blend"],
+      "symbols": ["GBPJPY=X", "USDJPY=X", "AUDJPY=X", "CADJPY=X", "EURGBP=X", "EURUSD=X", "GBPUSD=X", "AUDUSD=X", "USDCAD=X", "NZDUSD=X"]
+    },
+    "tuner_state": {
+      "hard_disabled": ["community_london_breakout_v2_forex (0% WR, Sharpe -71.9)", "forex_logistic_direction (0% WR, 100% SL rate)"],
+      "category_block": "REMOVED - forex category re-enabled after TP/SL fix",
+      "direction_restrictions": "widened_tp_momentum_carry restricted to BUY only"
+    }
+  },
+
+  "part2_forex_copy_trader_sources": {
+    "myfxbook": {
+      "api_url": "https://www.myfxbook.com/api",
+      "api_version": "v1.38 (Oct 2025)",
+      "auth": "Email/password login, session-based, IP-bound, 1-month expiry",
+      "rate_limits": "100 req/day free, 2880/day paid",
+      "data_available": ["Account gain/drawdown/equity", "Open/closed trades", "Daily performance", "Community sentiment by pair"],
+      "limitations": "NO access to top trader leaderboards via API. Only personal data + community sentiment.",
+      "best_signal": "Community outlook (% long/short by pair) for contrarian trading via get-community-outlook endpoint",
+      "effort": "MEDIUM",
+      "top_verified_providers": [
+        {"name": "1000pip Builder", "verified": true, "target": "600-1000 pips/month", "cost": "$97/mo"},
+        {"name": "SureShotFX", "claimed_wr": "90%", "verified_wr": "78.4% (Q1 2024)", "traders": 51000},
+        {"name": "MyDigiTrade", "note": "200+ verified providers, auto-copy platform"},
+        {"name": "PipXpert", "traders": 24000, "signals_per_day": "5-10 forex + gold"}
+      ]
+    },
+    "darwinex": {
+      "api_url": "https://www.darwinex.com/eu/algorithmic-trading/darwin-api",
+      "auth": "API key (requires Darwinex account)",
+      "data_available": ["Real-time DARWIN quotes (tick-level)", "D-Score rating (12 sub-algorithms)", "Risk metrics", "Historical performance"],
+      "key_feature": "DARWINs are risk-normalized strategy tokens. D-Score rates future performance potential.",
+      "monthly_allocation": "EUR 10M/month to top traders (EUR 30K-500K per strategy)",
+      "regulation": "FCA (UK)",
+      "effort": "HIGH (requires account setup)",
+      "signal_value": "VERY HIGH - institutional-grade verified data"
+    },
+    "zulutrade": {
+      "users": "2.4M registered, 90K+ leaders",
+      "auth": "ZuluScripts API on Trading Station",
+      "top_traders": [
+        {"name": "Rydwaves", "method": "Elliott Waves + Fibonacci", "avg_pips": 16.4, "followers_value": "$1M+"},
+        {"name": "GainsPTWS", "method": "Scalping + fractal + multi-timeframe", "wr": "80%"}
+      ],
+      "effort": "MEDIUM",
+      "signal_value": "MEDIUM - large pool but many unverified"
+    },
+    "etoro": {
+      "api": "eToro Public API (launched 2025-2026)",
+      "auth": "API key",
+      "data_available": ["Real-time market data", "Portfolio analytics", "Social features", "CopyTrader data"],
+      "top_traders": [
+        {"name": "Jeppe Kirk Bonde", "copiers": 34000, "aum_copied": "$100M+", "avg_annual_return": "25%", "since": 2013},
+        {"name": "Thomas", "annual_return": "30% (2023-2024)", "risk_score": 4, "since": 2019}
+      ],
+      "effort": "MEDIUM",
+      "signal_value": "MEDIUM-HIGH"
+    },
+    "collective2": {
+      "api_url": "https://collective2.com/api-docs/latest",
+      "regulation": "CFTC-registered, NFA member since 2008",
+      "features": ["C2Star certification", "QuantConnect integration for verified track records", "Multi-asset (stocks, options, futures, forex)"],
+      "effort": "MEDIUM",
+      "signal_value": "HIGH - regulated, verified"
+    },
+    "ctrader": {
+      "api_url": "https://openapi.ctrader.com/",
+      "auth": "OAuth2",
+      "protocol": "Protobuf (high performance)",
+      "features": ["Equity-to-equity copying", "Built-in strategy discovery", "IC Markets + Pepperstone support"],
+      "effort": "HIGH (Protobuf, broker account required)",
+      "signal_value": "MEDIUM"
+    }
+  },
+
+  "part3_polymarket_integration": {
+    "gamma_api": {
+      "url": "https://gamma-api.polymarket.com/",
+      "auth": "NONE REQUIRED for market data",
+      "rate_limits": "1000 calls/hour free tier",
+      "premium": "$99/mo for WebSocket + history > 30 days",
+      "data_format": "REST JSON + WebSocket + GraphQL subgraph"
+    },
+    "available_markets": {
+      "total_crypto": "5,406 active markets",
+      "bitcoin_only": "1,708 active markets",
+      "types": [
+        "BTC price targets (will BTC hit $X by date Y?)",
+        "BTC up-or-down short-term (5m, 15m, 1h intervals)",
+        "Fed rate decisions (how many cuts in 2025/2026?)",
+        "Crypto milestones (SOL, ETH price targets)",
+        "Bitcoin ATH timing predictions"
+      ],
+      "current_examples": {
+        "btc_march_2026": "$72.3M volume, 100% probability BTC > $75K",
+        "btc_ath_timing": "December 2026 at 19%, September 2026 at 12%",
+        "fed_rate_cuts": "Active markets for rate decision outcomes"
+      }
+    },
+    "accuracy": "Polymarket >94% accurate one full month before outcome",
+    "signal_integration_plan": [
+      "BTC price probabilities -> crypto confidence multiplier",
+      "Fed rate decision odds -> forex carry trade macro filter",
+      "BTC up-or-down 15m/1h -> short-term momentum confirmation",
+      "Probability shifts -> regime change detector"
+    ],
+    "effort": "LOW (2-3 hours, free, no auth)",
+    "signal_value": "MEDIUM-HIGH for crypto, MEDIUM for forex"
+  },
+
+  "part4_industry_benchmarks": {
+    "institutional_win_rates": {
+      "trend_following_cta": "45-55% WR, R:R 1.5-3x, Sharpe 0.5-1.5",
+      "mean_reversion": "55-65% WR, R:R 0.8-1.2x, Sharpe 0.5-1.0",
+      "carry_trade": "60-70% WR, Sharpe 0.5-0.8 standalone (0.9-1.2 with momentum filter)",
+      "high_frequency_fx": "55-60% WR, very high trade count"
+    },
+    "sharpe_benchmarks": {
+      "excellent": "> 2.0 (institutional target)",
+      "good": "1.0-2.0 (CFA standard)",
+      "acceptable": "0.75-1.0 (retail target)",
+      "poor": "< 0.5",
+      "top_forex_funds": "Citadel/Winton/Man AHL: 1.0-2.5 Sharpe"
+    },
+    "proven_strategies": [
+      {"name": "Carry Trade", "reference": "Burnside, Eichenbaum, Rebelo (2011)", "sharpe": "0.5-1.2"},
+      {"name": "Time-Series Momentum", "reference": "Moskowitz, Ooi, Pedersen (2012)", "sharpe": "0.8-1.3"},
+      {"name": "Cross-Sectional Momentum", "reference": "Menkhoff, Sarno, Schmeling, Schrimpf (2012)", "sharpe": "0.6-1.0"},
+      {"name": "Value / PPP Mean Reversion", "reference": "Asness, Moskowitz, Pedersen (2013)", "sharpe": "0.3-0.7"},
+      {"name": "Volatility Carry", "reference": "Della Corte, Ramadorai, Sarno (2016)", "sharpe": "0.5-0.9"}
+    ],
+    "our_comparison": {
+      "our_wr": "33.3% (9 trades)",
+      "our_avg_pnl": "-0.0083%",
+      "verdict": "STATISTICALLY MEANINGLESS - 9 trades far too few. Minimum 50-100 needed. However 7/9 expiring at 0.0% PnL suggests TP targets too aggressive for hold period, not necessarily wrong signal direction."
+    }
+  },
+
+  "part5_recommendations": {
+    "top3_signal_sources_to_integrate": [
+      {
+        "rank": 1,
+        "source": "Polymarket Gamma API",
+        "reason": "FREE, no auth, 5400+ crypto markets, Fed rate decisions. Use BTC price target probabilities as confidence multiplier and Fed rate odds as forex carry trade macro filter.",
+        "effort": "LOW (2-3 hours)",
+        "expected_impact": "MEDIUM - improves signal timing for both crypto and forex",
+        "api_endpoint": "https://gamma-api.polymarket.com/events?tag=crypto"
+      },
+      {
+        "rank": 2,
+        "source": "Myfxbook Community Outlook",
+        "reason": "Free tier (100 req/day). Provides % long/short by pair across all Myfxbook users. Perfect contrarian signal: when 75%+ retail is SHORT a pair, go LONG. DailyFX SSI was proven 55-65% accurate.",
+        "effort": "LOW (1-2 hours)",
+        "expected_impact": "HIGH for forex - retail sentiment is a proven contrarian indicator",
+        "api_endpoint": "https://www.myfxbook.com/api (get-community-outlook)"
+      },
+      {
+        "rank": 3,
+        "source": "Darwinex DARWIN API",
+        "reason": "Institutional-grade verified strategies with D-Score rating based on 12 algorithms. Can identify top-performing forex DARWINs and use their aggregate positioning as a signal.",
+        "effort": "MEDIUM (requires Darwinex account setup)",
+        "expected_impact": "HIGH - institutional-quality signal, risk-adjusted, FCA regulated",
+        "api_endpoint": "https://www.darwinex.com/eu/algorithmic-trading/darwin-api"
+      }
+    ],
+    "top3_strategy_improvements": [
+      {
+        "rank": 1,
+        "fix": "FIX session_momentum_continuation tp_mult=2.5 BUG",
+        "file": "alpha_engine/forex_strategies.py",
+        "lines": "610 and 636",
+        "detail": "Still uses crypto-scale TP (2.5x ATR). Must change to 1.2x like all other forex strategies. This is the SAME root cause that gave forex 0% WR originally.",
+        "effort": "5 minutes",
+        "impact": "HIGH"
+      },
+      {
+        "rank": 2,
+        "fix": "Reduce max hold time to 48-72 hours for forex picks",
+        "detail": "7 of 9 closed forex picks expired at 0.0% PnL without hitting TP or SL. Forex moves 0.3-0.8% per day; a 1.2x ATR TP should be reachable in 1-3 days, not the current 2-week default.",
+        "effort": "30 minutes",
+        "impact": "HIGH - will increase trade turnover and prevent capital lockup"
+      },
+      {
+        "rank": 3,
+        "fix": "Add Myfxbook community sentiment as confirmation gate",
+        "detail": "Only take forex signals when Myfxbook community outlook confirms contrarian positioning (65%+ retail on opposite side). This is the cheapest edge available in retail forex.",
+        "effort": "2-3 hours",
+        "impact": "MEDIUM-HIGH"
+      }
+    ],
+    "should_we_trade_forex": {
+      "verdict": "YES, but fix the bugs first",
+      "reasoning": [
+        "The 33% WR is misleading - 7/9 expired at exactly 0.0% PnL (neither TP nor SL hit). Signals may be directionally correct but targets unreachable in hold window.",
+        "CONFIRMED BUG: session_momentum_continuation still has tp_mult=2.5 (should be 1.2). Same root cause as the original 0% WR problem.",
+        "Academic evidence strongly supports carry trade + TSMOM in forex (Sharpe 0.5-1.3 over decades of data).",
+        "Sample size of 9 is statistically meaningless. Need 50+ trades for any valid conclusion.",
+        "The carry_trade_momentum and cta_tsmom_blend strategies have correct TP/SL and strong academic backing.",
+        "Forex provides critical portfolio diversification away from crypto correlation."
+      ],
+      "action_plan": [
+        "IMMEDIATE: Fix tp_mult=2.5 bug in session_momentum_continuation (lines 610, 636)",
+        "IMMEDIATE: Add 48-72 hour max hold for forex picks to increase turnover",
+        "WEEK 1: Integrate Myfxbook community outlook as contrarian confirmation filter",
+        "WEEK 2: Integrate Polymarket Fed rate market as carry trade macro filter",
+        "MONTH 1: Evaluate with 30+ new closed picks under fixed parameters",
+        "MONTH 2: If WR still < 40% after 50+ fixed-parameter picks, reduce forex to carry + TSMOM only"
+      ]
+    }
+  }
+}

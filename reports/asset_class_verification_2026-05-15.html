@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>asset_class_verification_2026-05-15 — findtorontoevents.ca</title><style>body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.65;margin:0}
+.wrap{max-width:960px;margin:0 auto;padding:32px 22px 80px}
+a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+h1{font-size:1.7em;border-bottom:2px solid #34d399;padding-bottom:.3em;margin-top:0}
+h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+h3{font-size:1.08em;color:#cbd5e1}
+code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+pre code{background:none;color:#d1d5db;padding:0}
+table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+th{background:#1f2937;color:#f3f4f6}tr:nth-child(even){background:#0f1623}
+blockquote{border-left:3px solid #34d399;margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+ul,ol{padding-left:24px}hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+.nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}</style></head><body><div class="wrap"><div class="nav"><a href="/updates/">&larr; Updates feed</a> &nbsp;|&nbsp; <a href="/audit">/audit dashboard</a></div><h1>Action-Items Verification Deep-Dive (2026-05-15)</h1>
+<p>Independent verification of <code>reports/asset_class_action_items_2026-05-15.md</code>.
+Every claim was re-checked against <strong>primary sources only</strong> — live code and
+<code>audit_dashboard/data/dashboard_data.json</code> — by three subagents explicitly
+forbidden from citing the plan docs as evidence, plus direct main-thread
+analysis. Method counters the multi-AI convergence trap: the original 4
+analysts partly propagated numbers from the same 90-day plan docs.</p>
+<h2>Methodology (so this is checkable, not trust-me)</h2>
+<ol>
+<li><strong>Adversarial framing.</strong> Each of the 7 asset-class claims + the keystone
+   claim was handed to an independent subagent as <em>guilty until verified</em>.
+   Agents were explicitly <strong>forbidden from citing the 90-day plan docs or
+   autopsy reports</strong> — those are the artifacts under suspicion. Only live code
+   and <code>audit_dashboard/data/dashboard_data.json</code> count as evidence.</li>
+<li><strong>Three parallel verifiers</strong>, non-overlapping claim sets, so no agent could
+   anchor on another's conclusion (counters the convergence trap that produced
+   the original errors — see <code>feedback_multi_ai_convergence_trap</code>).</li>
+<li><strong>Main-thread reproduction.</strong> The keystone "unreproducible" claim was
+   settled by <em>running code</em>, not reading docs — see Evidence below.</li>
+<li><strong>Every row in the scorecard cites a <code>file:line</code> or a JSON path</strong> that a
+   reader can open and check. No claim rests on a plan doc.</li>
+</ol>
+<h2>Evidence — empirical reproducibility proof</h2>
+<p>Script: <code>tools/_verify_n_reproducible.py</code> (committed). It imports the <strong>real</strong>
+filter functions from <code>audit_trail/dashboard_generator.py</code> — <code>is_corrupted_outcome_row</code>,
+<code>_is_valid_resolved_pick</code>, the win/loss tally — and does NOT run <code>main()</code> (no
+HTML written). It runs the resolved-pick count over a fixed snapshot of
+<code>picks.recent_closed</code> (3,500 picks) three times:</p>
+<pre><code>run 1: sha256=2553033cea8c4de7
+run 2: sha256=2553033cea8c4de7
+run 3: sha256=2553033cea8c4de7
+DETERMINISM: PASS — all 3 runs identical
+</code></pre>
+<p>Then it prints the two distinct n-metrics straight from <code>dashboard_data.json</code>:</p>
+<pre><code>class         raw closed   resolved n    health.n
+BOND                  13           11           11
+COMMODITY            513          326          326
+CRYPTO             26375         8108         8108
+EQUITY              1054          423          423
+ETF                  120          108          108
+FOREX               1099          347          347
+FUTURES                4            0            0
+</code></pre>
+<p><code>resolved n == health.n</code> for <strong>every class</strong> — the verdict metric is exact.
+<code>raw closed</code> is a <em>different, larger</em> number (it includes corrupted rows,
+blocked-strategy history, pip/percent-confused rows, and <code>pnl==0</code> rows that
+<code>_is_valid_resolved_pick</code> strips). When a report says "FOREX n drifts
+148/342/1033/1169" it is quoting raw <code>closed</code> from different snapshots/tools —
+not an unstable verdict metric. <strong>Re-run the script any time: identical hash.</strong></p>
+<h2>Verdict on the keystone claim</h2>
+<p><strong>"Every verdict on /audit is currently unreproducible" — REFUTED.</strong></p>
+<p><code>compute_asset_class_health</code> (<code>dashboard_generator.py:5392</code>) computes
+<code>n = wins + losses</code> from <code>ac_breakdown</code>. <code>ac_breakdown</code> is built by a single
+deterministic pass over <code>active + closed</code> (<code>:14002-14041</code>) with fixed,
+pure-function filters: <code>is_corrupted_outcome_row</code>, then <code>_is_valid_resolved_pick</code>
+(<code>:4606</code> — pure, no I/O, no randomness, no time dependence), then
+<code>pnl&gt;0</code>→win / <code>pnl&lt;0</code>→loss. <strong>Given a fixed input ledger, <code>n</code> is fully
+determined.</strong> Same ledger → same verdict.</p>
+<p>What is actually true: <strong>multiple <code>n</code>-metrics coexist</strong> — raw <code>closed</code> count,
+verdict-grade <code>resolved_n</code> (= <code>wins+losses</code> post-filter), and the pre-resolver-fix
+<code>by_asset_class</code> raw counts — and reports/tools cite them interchangeably. That
+is a <strong>citation-discipline</strong> problem, not non-determinism. The "n drifts
+148/342/1033/1169" figure in the FOREX plan is different <em>metrics</em>, not an
+unstable <em>metric</em>.</p>
+<p>Corrected priority #1: not "pin the resolved-pick definition because verdicts
+are unreproducible" — but <strong>"name the canonical metric <code>resolved_n</code> everywhere
+and stop reports citing raw <code>closed</code> as if it were the verdict <code>n</code>."</strong></p>
+<h2>Per-claim verification scorecard</h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Verdict</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>COMMODITY PF 2.37 / WR 60.7 / n=326</td>
+<td>✅ VERIFIED</td>
+<td><code>asset_class_health.COMMODITY</code> exact</td>
+</tr>
+<tr>
+<td>CT=F = 73% COMMODITY PnL mass</td>
+<td>✅ VERIFIED</td>
+<td><code>asset_class_concentration.COMMODITY.top_share_pct=73.71</code></td>
+</tr>
+<tr>
+<td>cot_positioning fires weekly signal ~20×, no dedup</td>
+<td>⚠️ REFUTED (current)</td>
+<td><code>cot_positioning.py:47-93</code> has a per-release dedup ledger (PR #994, 2026-05-14). <strong>But</strong> the over-emission was real pre-patch — n=326 carries inflated history</td>
+</tr>
+<tr>
+<td>ETF PF 1.33 (fell from plan's 1.48)</td>
+<td>✅ VERIFIED</td>
+<td><code>asset_class_health.ETF</code> PF=1.33</td>
+</tr>
+<tr>
+<td>ETF sector emitter is "opt-in"</td>
+<td>❌ REFUTED</td>
+<td><code>etf_sector_emitter.py:98</code> env defaults <code>"1"</code> — <strong>default-ON</strong></td>
+</tr>
+<tr>
+<td>ETF emitter produced 0 picks 2026-05-15</td>
+<td>✅ VERIFIED</td>
+<td><code>etf_sector_picks.json: picks:[]</code></td>
+</tr>
+<tr>
+<td>quan_engine capped to 5% CRYPTO</td>
+<td>⚠️ DESYNCED</td>
+<td>code <code>per_source_volume_cap.py:25</code>=5%; <code>quarantine_manifest.json:29</code>=12%; tests assert 12%. Enforced=5%</td>
+</tr>
+<tr>
+<td>luxalgo_filters uncapped</td>
+<td>✅ VERIFIED</td>
+<td>absent from <code>PER_SOURCE_VOLUME_CAP</code></td>
+</tr>
+<tr>
+<td>luxalgo "PF ~1.0, ~23% volume"</td>
+<td>⚠️ OVERSTATED</td>
+<td>real: PF <strong>1.12</strong>, WR 44.3%, 1421 resolved ≈ <strong>17.5%</strong> of CRYPTO n</td>
+</tr>
+<tr>
+<td>enforce_cap() one caller, scanner bypasses</td>
+<td>✅ VERIFIED</td>
+<td>only <code>smart_picks_engine.py:2139</code>; zero refs in <code>production_scanner.py</code></td>
+</tr>
+<tr>
+<td>BOND PF 0.66 / WR 54.5 / n=11</td>
+<td>✅ VERIFIED</td>
+<td><code>asset_class_health.BOND</code> exact</td>
+</tr>
+<tr>
+<td>FOOLPROOF claims BOND "PF 1.72, meets T2"</td>
+<td>✅ VERIFIED (doc says it)</td>
+<td><code>FOOLPROOF:202</code> — but <code>FOOLPROOF:18</code> says PF 0.66 — <strong>self-contradiction</strong></td>
+</tr>
+<tr>
+<td>BOND n inflated by legacy ZN=F mis-tags</td>
+<td>⚠️ UNVERIFIABLE</td>
+<td>no BOND+<code>=F</code> rows present now; <code>dashboard_generator.py:3338</code> shows ZN=F→FUTURES routing already fixed</td>
+</tr>
+<tr>
+<td>BOND_ELITE_FLOOR default 40</td>
+<td>✅ VERIFIED</td>
+<td><code>bond-agent.yml:53,77</code></td>
+</tr>
+<tr>
+<td>4 futures strategies coded + wired</td>
+<td>✅ VERIFIED</td>
+<td><code>futures_strategies.py:74,169,265,358</code> → <code>non_crypto_agent/main.py:388-391</code></td>
+</tr>
+<tr>
+<td>FOOLPROOF says FUTURES "no strategies"</td>
+<td>✅ VERIFIED (doc says it, doc is wrong)</td>
+<td><code>FOOLPROOF:19</code> — <code>FOOLPROOF:204</code> contradicts with "n=2 Donchian"</td>
+</tr>
+<tr>
+<td>=F routes mostly to COMMODITY, starves FUTURES tile</td>
+<td>✅ VERIFIED</td>
+<td><code>dashboard_generator.py:3168-3350</code> routing rule</td>
+</tr>
+<tr>
+<td>MEMECOIN gate is strategy-pair-only</td>
+<td>✅ VERIFIED</td>
+<td><code>quality_gates.py:1933-1974</code> — all <code>("MEMECOIN",strategy)</code> 2-tuples, exact-match, no wildcard</td>
+</tr>
+<tr>
+<td>PENNY_STOCK class-wide gate</td>
+<td>❌ WORSE</td>
+<td><code>PENNY_STOCK</code> does not appear in <code>quality_gates.py</code> at all — <strong>zero gating</strong></td>
+</tr>
+<tr>
+<td>penny emitters live</td>
+<td>✅ VERIFIED</td>
+<td><code>penny_volume_breakout</code> (<code>equity_strategies.py:160</code>) called <code>non_crypto_agent/main.py:359</code></td>
+</tr>
+<tr>
+<td>kill_gate.py is an orphan</td>
+<td>❌ REFUTED</td>
+<td>3 callers: <code>commodity_kill_switch.py</code>, <code>fx_kill_switch.py</code>, <code>policy_backtest.py</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Corrections to the action-items report</h2>
+<ol>
+<li><strong>Headline downgrade</strong> — verdicts ARE reproducible. Reframe priority #1 as a
+   metric-naming/citation fix, not a reproducibility crisis.</li>
+<li><strong>COMMODITY headline is itself suspect</strong> — PF 2.37 / n=326 carries
+   pre-2026-05-14 COT over-emission (dedup only landed PR #994). The honest
+   read: re-derive COMMODITY PF on post-patch picks before any Tier-1 claim.
+   This is <em>stronger</em> than the original report — the flagship number may not
+   survive clean re-aggregation.</li>
+<li><strong>ETF emitter is a silent failure, not an opt-in</strong> — it is default-ON and
+   produces 0. Action: debug the emitter (why 0 picks), not "enable it."</li>
+<li><strong>quan_engine cap is config-drifted</strong> — 5% (code) vs 12% (manifest + tests).
+   Pin one value; fix the desync. New action item.</li>
+<li><strong>luxalgo_filters numbers corrected</strong> — PF 1.12 (marginally profitable but
+   dilutive vs class PF 1.29), ~17.5% volume share. Still worth a cap, but it
+   is not the "PF ~1.0 / 23%" villain the original framing implied.</li>
+<li><strong>PENNY_STOCK is completely ungated</strong> — worse than "leaky pair-blocks". A
+   class-wide gate must cover <code>PENNY_STOCK</code>, which appears nowhere in
+   <code>quality_gates.py</code>.</li>
+<li><strong><code>FOOLPROOF_ACTION_PLAN.md</code> is internally self-contradictory</strong> (BOND
+   line 18 vs 202; FUTURES line 19 vs 204) — not merely stale. It should be
+   regenerated from live <code>asset_class_health</code> or retired.</li>
+</ol>
+<h2>Confidence-ranked action stack (post-verification)</h2>
+<p><strong>High confidence (verified, deterministic fix):</strong>
+1. Regenerate <code>FOOLPROOF_ACTION_PLAN.md</code> from live <code>asset_class_health</code> — it
+   contradicts itself and the 8 newer plans.
+2. Re-derive COMMODITY PF/WR on post-PR-#994 (dedup) picks before any Tier-1
+   claim — the flagship 2.37 may be over-emission inflated.
+3. Add a class-wide <code>PENNY_STOCK</code> + <code>MEMECOIN</code> gate — <code>PENNY_STOCK</code> is entirely
+   ungated today.
+4. Fix the quan_engine cap desync (code 5% vs manifest/tests 12%).
+5. Standardize on <code>resolved_n</code> as the cited verdict metric; stop reports using
+   raw <code>closed</code>.</p>
+<p><strong>Medium confidence (verified state, fix needs design):</strong>
+6. Debug the ETF sector emitter's 0-pick output (it is on, just silent).
+7. Cap <code>luxalgo_filters</code> + give <code>enforce_cap()</code> a <code>production_scanner.py</code> caller.
+8. Wire the EQUITY VIX-regime gate (branch exists; perf lift claim is from a
+   research doc — backtest-verify before merge).
+9. Fix FUTURES <code>=F</code> classification + <code>conf_floor</code> so the tile accrues honest n.</p>
+<p><strong>Unchanged from original:</strong> FOREX directional gate, BOND elite-floor unblock,
+<code>kill_gate</code> into <code>passes_active_gate</code>, <code>FRED_API_KEY</code>.</p>
+<p><em>Verification method: 3 independent subagents on primary code/JSON + main-thread
+analysis of <code>dashboard_generator.py</code>. Counters the convergence trap in the
+original 4-analyst pass. 2026-05-15.</em></p></div></body></html>

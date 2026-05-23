@@ -1,0 +1,33 @@
+{
+  "title": "Feed health — up to date (1 = healthy)",
+  "type": "stat",
+  "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+  "targets": [
+    {
+      "expr": "crypto_feed_up_to_date",
+      "legendFormat": "{{system}}",
+      "refId": "A"
+    }
+  ],
+  "fieldConfig": {
+    "defaults": {
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          { "color": "red", "value": null },
+          { "color": "orange", "value": 0.5 },
+          { "color": "green", "value": 1 }
+        ]
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": { "text": "Stale / missing / bad row" },
+            "1": { "text": "Healthy" }
+          }
+        }
+      ]
+    }
+  }
+}

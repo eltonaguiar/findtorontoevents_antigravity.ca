@@ -1,0 +1,19 @@
+{
+  "_doc": "Maps TradingView / paper portfolio display names to mandate tier. Tier rules are enforced at placement time (tv-paper-trade / bus), not inside passesHighConvictionPick. Empty portfolios when no qualifying picks = correct behavior.",
+  "version": 1,
+  "tiers": {
+    "real_money": {
+      "description": "Must pass full HC filter as configured (all gates + consensus when independentGroupsMin > 0).",
+      "portfolio_names": ["SCALPER", "THEWINNERS", "AG_PROVENEDGETEST"]
+    },
+    "verified_test": {
+      "description": "Same trust/fwd/elite gates; optionally relax independent consensus (override via config when routing picks to these portfolios).",
+      "portfolio_names": ["TRUSTOURSCORE", "CURSORTEST", "TESTER"],
+      "independent_groups_min_override": 2
+    },
+    "cash_sidelined": {
+      "description": "Do not auto-fill with low-quality signals; remain flat/cash until mandate changes.",
+      "portfolio_names": ["HYROTRADER", "HYROTRADER2", "BROKIE", "XIAOMI MIMO", "zerounderscore"]
+    }
+  }
+}

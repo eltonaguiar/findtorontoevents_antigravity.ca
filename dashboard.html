@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoFusion Predictor Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .positive { color: green; }
+        .negative { color: red; }
+    </style>
+</head>
+<body>
+    <h1>CryptoFusion Predictor Dashboard</h1>
+    <p>Last updated: <span id="timestamp"></span></p>
+    <table id="predictions-table">
+        <thead>
+            <tr>
+                <th>Pair</th>
+                <th>Current Price (USD)</th>
+                <th>Predicted Price (USD)</th>
+                <th>Change (%)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        fetch('crypto_predictions.json')
+            .then(r => r.json())
+            .then(data => {
+                // Time filter: only show if data is <48h old
+                const now = Date.now();
+                const maxAgeMs = 48 * 60 * 60 * 1000; // 48h
+                const dataTime = new Date(data.timestamp).getTime();
+                if (now - dataTime > maxAgeMs) {
+                    console.warn('Stale data – not displaying picks.');
+                    document.getElementById('predictions-table').style.display = 'none';
+                    const msg = document.createElement('p');
+                    msg.textContent = 'No fresh picks available – data is older than 48 h.';
+                    document.body.appendChild(msg);
+                    return;
+                }
+                document.getElementById('timestamp').textContent = new Date(data.timestamp).toLocaleString();
+                const tbody = document.querySelector('#predictions-table tbody');
+                for (const [pair, pred] of Object.entries(data.predictions)) {
+                    const row = tbody.insertRow();
+                    row.insertCell(0).textContent = pair;
+                    row.insertCell(1).textContent = pred.current_price.toFixed(2);
+                    row.insertCell(2).textContent = pred.predicted_price.toFixed(2);
+                    const changeCell = row.insertCell(3);
+                    changeCell.textContent = pred.change_percent.toFixed(2) + '%';
+                    changeCell.className = pred.change_percent > 0 ? 'positive' : 'negative';
+                }
+            })
+            .catch(err => console.error('Error loading predictions:', err));
+
+    </script>
+</body>
+</html>

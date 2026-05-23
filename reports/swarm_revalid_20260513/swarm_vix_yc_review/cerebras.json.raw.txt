@@ -1,0 +1,22 @@
+{
+  "verdict": "APPROVE_WITH_CAVEATS",
+  "merge_decision": "MERGE",
+  "code_quality_score": 8,
+  "default_state_correct": "yes",
+  "stacks_with_vix_only_path": "correctly",
+  "concerns": [
+    "Module‑level caches (`_VIX_CACHE`, `_YC_CACHE`) are not protected against concurrent access; in a multi‑threaded or async deployment this could lead to race conditions or stale data being read.",
+    "The combined gate adds an extra yfinance request (TNX/FVX) on every cache miss, increasing latency and rate‑limit exposure compared to the VIX‑only gate.",
+    "Fail‑open behaviour for YC fetch failures is correct, but the interaction when VIX fetch fails while YC succeeds is not explicitly covered – the combined gate could still reject based on VIX even though the VIX data is missing.",
+    "Environment variable parsing does not appear to validate non‑numeric or negative values for `YC_REGIME_GATE_MIN_SPREAD`; malformed values could raise unexpected exceptions.",
+    "The combined gate logic is applied to all picks before asset‑class filtering; while tests cover equity and ETF, there is a risk of unintended rejections for other asset classes if future changes modify the guard conditions."
+  ],
+  "missing_edge_cases_or_tests": [
+    "Test behaviour when `YC_REGIME_GATE_MIN_SPREAD` is set to a non‑numeric string or a negative number.",
+    "Test the scenario where VIX data fetch fails (e.g., network error) but YC data fetch succeeds, ensuring the combined gate does not reject erroneously.",
+    "Stress test with concurrent requests to verify cache thread‑safety and absence of race conditions.",
+    "Validate that the combined gate does not affect non‑equity asset classes (e.g., crypto, futures) when both flags are enabled.",
+    "Verify that TTL expiration for VIX and YC caches occurring at slightly different times does not cause inconsistent gating decisions."
+  ],
+  "production_safety": "needs_shadow_first"
+}

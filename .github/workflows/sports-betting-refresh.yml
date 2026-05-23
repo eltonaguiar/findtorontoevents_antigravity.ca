@@ -1,0 +1,689 @@
+# Odds refresh + paper auto-place. Policy in sports_bets.php auto_place: deny fliff/betanysports;
+# MLB pause if last 30 directional bets ROI < -12% with n>=10; MLB stake ×0.85 when active.
+# Query params min_ev / max_bets must match product intent (default min_ev=3, max_bets=5).
+name: Sports Betting  Odds Refresh & Auto-Settle
+
+on:
+  schedule:
+    # 5x daily: 10am, 1pm, 4pm, 7pm, 10pm EST (15,18,21,0,3 UTC)
+    - cron: '0 15,18,21,0,3 * * *'
+  workflow_dispatch:
+    inputs:
+      run_extra_sources:
+        description: 'Run optional extra data-source scrapers (NFL/NHL/sportsdataverse/OddsHarvester)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['true', 'false']
+      generate_backtest_artifacts:
+        description: 'Generate backtest .sql/.sh artifacts for the operator to run on the DB host'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['true', 'false']
+
+jobs:
+  odds-refresh:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20  # 2026-05-06: was 10 — Playwright Betway step runs ~2-3 min and pushes total runtime to 10+ min; raised to 20 so post-scraper steps (auto-place/settle) also complete instead of timing out at step boundary
+
+    steps:
+    - name: Check active sports
+      continue-on-error: true
+      run: |
+        echo "=== Checking active sports ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=sports") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                sports = d.get('active_sports', [])
+                print(f'Active sports: {len(sports)}/{d.get(\"all_target\",8)}')
+                for s in sports:
+                    print(f'  {s.get(\"short_name\",\"?\")} - {s.get(\"title\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Sports: $RESULT"
+
+    - name: Fetch odds (budget-safe)
+      continue-on-error: true
+      run: |
+        echo "=== Fetching odds from The Odds API ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=fetch&key=livetrader2026&budget_safe=1") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Sports fetched: {d.get(\"sports_fetched\",0)}')
+                print(f'Events cached: {d.get(\"events_cached\",0)}')
+                print(f'Odds rows: {d.get(\"odds_rows\",0)}')
+                print(f'Credits used (request): {d.get(\"credits_used\",0)}')
+                print(f'Credits remaining: {d.get(\"credits_remaining\",\"?\")}')
+                print(f'Monthly used: {d.get(\"monthly_used\",\"?\")}')
+                for sd in d.get('sport_details', []):
+                    print(f'  {sd.get(\"short_name\",sd.get(\"sport\",\"?\"))}: {sd.get(\"events\",0)} events, {sd.get(\"odds_rows\",0)} odds')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Fetch: $RESULT"
+
+    - name: Analyze value bets (all sports, min EV 4%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing value bets (all sports) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=4") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Value bets found: {d.get(\"value_bets_found\",0)}')
+                print(f'New bets inserted: {d.get(\"new_bets_inserted\",0)}')
+                print(f'Sport filter: {d.get(\"sport_filter\",\"all\")}')
+                for vb in d.get('top_bets', [])[:5]:
+                    print(f'  {vb.get(\"sport\",\"?\")} {vb.get(\"away_team\",\"?\")} @ {vb.get(\"home_team\",\"?\")}  {vb.get(\"bet_type\",\"?\")} EV={vb.get(\"ev_pct\",0)}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Analyze: $RESULT"
+
+    - name: Analyze NBA value bets (playoff mode, min EV 1.5%)
+      continue-on-error: true
+      run: |
+        # NBA playoff markets are highly efficient — lower EV threshold surfaces real value.
+        echo "=== Analyzing NBA value bets (min_ev=1.5) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=1.5&sport=basketball_nba") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'NBA value bets found: {d.get(\"value_bets_found\",0)}')
+                print(f'New bets inserted: {d.get(\"new_bets_inserted\",0)}')
+                for vb in d.get('top_bets', [])[:5]:
+                    print(f'  NBA {vb.get(\"away_team\",\"?\")} @ {vb.get(\"home_team\",\"?\")}  {vb.get(\"bet_type\",\"?\")} EV={vb.get(\"ev_pct\",0)}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "NBA Analyze: $RESULT"
+
+    - name: Analyze NHL value bets (playoff mode, min EV 1.5%)
+      continue-on-error: true
+      run: |
+        # NHL playoff markets are highly efficient — lower EV threshold surfaces real value.
+        echo "=== Analyzing NHL value bets (min_ev=1.5) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=1.5&sport=icehockey_nhl") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'NHL value bets found: {d.get(\"value_bets_found\",0)}')
+                print(f'New bets inserted: {d.get(\"new_bets_inserted\",0)}')
+                for vb in d.get('top_bets', [])[:5]:
+                    print(f'  NHL {vb.get(\"away_team\",\"?\")} @ {vb.get(\"home_team\",\"?\")}  {vb.get(\"bet_type\",\"?\")} EV={vb.get(\"ev_pct\",0)}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "NHL Analyze: $RESULT"
+
+    # Other leagues are efficient too — a 4% floor alone often yields zero +EV in DB.
+    # Re-scan NFL/MLB/MLS with a 2% floor (after NBA/NHL passes) the same way we do for basketball/hockey.
+    - name: Analyze NFL value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing NFL value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=americanfootball_nfl") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'NFL value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "NFL analyze: $RESULT"
+
+    - name: Analyze MLB value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing MLB value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=baseball_mlb") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'MLB value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "MLB analyze: $RESULT"
+
+    - name: Analyze NCAAB value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing NCAAB value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=basketball_ncaab") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'NCAAB value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "NCAAB analyze: $RESULT"
+
+    - name: Analyze NCAAF value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing NCAAF value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=americanfootball_ncaaf") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'NCAAF value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "NCAAF analyze: $RESULT"
+
+    - name: Analyze CFL value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing CFL value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=americanfootball_cfl") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'CFL value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "CFL analyze: $RESULT"
+
+    # PWHL (Women's Hockey) — Betway en-CA covers live PWHL markets (e.g. Vancouver
+    # Goldeneyes, Minnesota Frost). Analyze after Betway scraper injects these rows.
+    - name: Analyze PWHL value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing PWHL value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=icehockey_pwhl") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'PWHL value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error - PWHL sport key may not yet be in PHP allow-list')
+        " || echo "PWHL analyze: $RESULT"
+
+    # IPL Cricket — Betway en-CA covers Chennai Super Kings, KKR, LSG, Gujarat Titans,
+    # Royal Challengers Bengaluru, etc. High-volume market with strong public data.
+    - name: Analyze IPL cricket value bets (min EV 2%)
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing IPL Cricket value bets (min_ev=2) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026&min_ev=2&sport=cricket_india_ipl") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'IPL value bets found: {d.get(\"value_bets_found\",0)}  inserted: {d.get(\"new_bets_inserted\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error - cricket_india_ipl sport key may not yet be in PHP allow-list')
+        " || echo "IPL analyze: $RESULT"
+
+    # action=analyze rejects soccer_usa_mls (high void rate; sports_picks.php highVoidSports). Per-
+    # league rescan is skipped; +EV for MLS can still appear from the all-sports min_ev=4 pass only.
+    - name: MLS per-league analyze (skipped - API blocks MLS)
+      continue-on-error: true
+      run: |
+        echo "=== MLS: no per-league analyze (sports_picks.php excludes soccer_usa_mls; see highVoidSports) ==="
+        echo "Value rows for MLS, if any, come from the first analyze pass (all sports, min_ev=4)."
+
+    - name: NBA/NHL fallback odds (ESPN free source)
+      continue-on-error: true
+      run: |
+        # When The Odds API returns sparse data for NBA/NHL, inject ESPN-sourced
+        # fair-odds estimates so the analyzer has something to work with.
+        echo "=== NBA/NHL Fallback Odds (ESPN) ==="
+        python3 live-monitor/nhl_nba_odds_fallback.py --inject-api --min-ev 2.5 || echo "Fallback skipped or inject endpoint not available"
+
+    - name: Multi-source odds fallback (Odds-API.io + DK + ESPN)
+      continue-on-error: true
+      env:
+        ODDS_API_IO_KEY:  ${{ secrets.ODDS_API_IO_KEY }}
+        ODDS_API_IO_KEY2: ${{ secrets.ODDS_API_IO_KEY2 }}
+      run: |
+        # Universal Tier-2 fallback. Round-robins ODDS_API_IO_KEY (DraftKings,FanDuel)
+        # and ODDS_API_IO_KEY2 (BetMGM,Caesars) to bypass the free-tier 2-bookmaker
+        # cap and give the analyzer 4 independent NA-book columns. Falls through
+        # to ESPN scoreboard + DraftKings unofficial v5 when keys absent.
+        # Skips silently if neither secret is set.
+        echo "=== Multi-source Odds Fallback ==="
+        python3 live-monitor/multi_source_odds_fallback.py \
+          --inject-api \
+          --sports nba,wnba,nhl,nfl,mlb,ncaab,ncaaf,mls,epl,ufc \
+          || echo "Multi-source fallback skipped"
+
+    - name: BALLDONTLIE schedule + odds fallback (Tier-3)
+      continue-on-error: true
+      env:
+        BALLDONTLIE_API_KEY: ${{ secrets.BALLDONTLIE_API_KEY }}
+      run: |
+        # Tier-3 standalone leg: BallDontLie v1 covers NBA/WNBA/NFL/MLB/NHL/MMA.
+        # Free tier emits schedule sanity rows only; paid tier emits real odds.
+        # Skips silently if BALLDONTLIE_API_KEY secret is unset or '-'.
+        echo "=== BALLDONTLIE Tier-3 Fallback ==="
+        python3 live-monitor/balldontlie_odds_fallback.py \
+          --inject-api \
+          --sports nba,wnba,nfl,mlb,nhl,mma \
+          || echo "BALLDONTLIE fallback skipped"
+
+    - name: Highlightly schedule + odds fallback (Tier-3)
+      continue-on-error: true
+      env:
+        HIGHLIGHTLY_DOT_NET: ${{ secrets.HIGHLIGHTLY_DOT_NET }}
+      run: |
+        # Tier-3 standalone leg: highlightly.net (Sports API). Covers soccer,
+        # basketball, baseball, hockey, american-football, rugby, cricket and
+        # handball under <sport>.highlightly.net subdomains. Auth header is
+        # `x-rapidapi-key`. Free tier is 100 req/day, so the adapter HARD-caps
+        # at 80/run to preserve a retry buffer. Sports iterate in priority
+        # order (NBA -> NHL -> NFL -> MLB -> MLS -> EPL -> UFC -> Golf ->
+        # Tennis -> Cricket); the loop stops cleanly when the budget is
+        # exhausted. Skips silently if HIGHLIGHTLY_DOT_NET secret is unset
+        # or '-'.
+        echo "=== Highlightly Tier-3 Fallback ==="
+        python3 live-monitor/highlightly_odds_fallback.py \
+          --inject-api \
+          --sports nba,nhl,nfl,mlb,mls,epl,ufc,golf,tennis,cricket \
+          --max-requests 80 \
+          || echo "Highlightly fallback skipped"
+
+    # Schedule-coverage verification gate. No-key cross-check of pipeline events
+    # against TheSportsDB free schedule API (key=123, hardcoded + public). Acts
+    # as a SANITY GATE — does NOT inject rows. Reports drift to
+    # data/sports_schedule_gate_<UTC>.json. continue-on-error so a TSDB
+    # rate-limit / outage never blocks the auto-place / settle steps.
+    - name: TheSportsDB schedule-coverage gate (verification only)
+      continue-on-error: true
+      run: |
+        echo "=== TheSportsDB Schedule-Coverage Gate ==="
+        python3 live-monitor/thesportsdb_schedule_gate.py \
+          --report-only \
+          --sports nba,nhl,nfl,mlb,mls,epl,ncaab,ncaaf,ufc \
+          || echo "TheSportsDB schedule gate exited non-zero (info-only)"
+
+    # --- Optional extra data-source scrapers ----------------------------------
+    # All steps below are additive, gated on workflow_dispatch input OR the
+    # 03:00 UTC cron slot only (to avoid hammering free APIs 5x/day). Each is
+    # `continue-on-error` and each script exits 0 when its optional dep is
+    # missing. They never touch the hot path.
+    # See: updates/2026-04-24-sports-data-sources-integration.md
+    #
+    # NOTE: github.event.schedule returns the full cron string as declared
+    # ('0 15,18,21,0,3 * * *'), not the individual triggered slot. We gate on
+    # the actual UTC hour instead.
+
+    - name: Decide whether to run extra data sources
+      id: extra_gate
+      run: |
+        HOUR=$(date -u +%H)
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.run_extra_sources }}" = "true" ]; then
+          echo "run=true" >> $GITHUB_OUTPUT
+          echo "Extra sources: enabled via manual dispatch"
+        elif [ "${{ github.event_name }}" = "schedule" ] && [ "$HOUR" = "03" ]; then
+          echo "run=true" >> $GITHUB_OUTPUT
+          echo "Extra sources: enabled (nightly 03:00 UTC slot)"
+        else
+          echo "run=false" >> $GITHUB_OUTPUT
+          echo "Extra sources: skipped (hour=$HOUR, event=${{ github.event_name }})"
+        fi
+
+    - name: Install optional sports data deps
+      if: steps.extra_gate.outputs.run == 'true'
+      continue-on-error: true
+      run: |
+        # Loose lower bounds — we tolerate any working version of each lib and
+        # all consumer scripts degrade gracefully if any import fails.
+        python3 -m pip install --quiet --user -r requirements-sports-extra.txt || echo "Optional deps install partial-failure (non-blocking)"
+
+    # NFL/NHL/CFL fallback scrapers run on EVERY refresh (5x/day) and inject
+    # into lm_sports_odds. They self-tag with `_fallback` suffix in
+    # bookmaker_key (nflreadpy_fallback, nhl_api_fallback, cfl_fallback) so
+    # downstream callers can distinguish from real-book lines. The previous
+    # extra_gate kept these preview-only and starved the funnel of devig
+    # candidates outside The Odds API rotation, which is the main cause of
+    # rare STRONG TAKEs.
+    - name: Install scraper deps for hot-path fallbacks
+      continue-on-error: true
+      run: |
+        python3 -m pip install --quiet --user nflreadpy nhl-api-py || echo "NFL/NHL helper installs partial-failure (non-blocking; scrapers degrade)"
+
+    - name: NFL fallback scraper (nflreadpy + ESPN, inject)
+      continue-on-error: true
+      run: |
+        echo "=== NFL fallback scrape (inject mode) ==="
+        python3 live-monitor/nfl_odds_scraper.py --save-json --inject-api --min-ev 2.5 || echo "NFL scraper skipped"
+
+    - name: NHL enriched scraper (NHL Web API, inject)
+      continue-on-error: true
+      run: |
+        echo "=== NHL enriched scrape (inject mode) ==="
+        python3 live-monitor/nhl_odds_scraper.py --save-json --inject-api --min-ev 2.0 || echo "NHL enriched scraper skipped"
+
+    - name: CFL fallback scraper (ESPN, inject)
+      continue-on-error: true
+      run: |
+        echo "=== CFL fallback scrape (inject mode) ==="
+        echo "CFL season runs June-November. Outside that window, script exits 0 with an info message."
+        python3 live-monitor/cfl_odds_scraper.py --save-json --inject-api --min-ev 3.0 || echo "CFL scraper skipped"
+
+    # --- Playwright-based ON-licensed book scrapers ---------------------------
+    # OLG ProLine+ and Betway are JS-rendered SPAs (Next.js). urllib gets an
+    # empty page shell. We use headless Chromium via Playwright. Both run on
+    # every refresh because they are the de-vig anchors that make STRONG bets
+    # reachable. Each is continue-on-error so a failure never blocks picks.
+
+    - name: Install Playwright + Chromium
+      continue-on-error: true
+      run: |
+        python3 -m pip install --quiet --user playwright || echo "Playwright pip install failed (non-blocking)"
+        python3 -m playwright install --with-deps chromium || echo "Chromium install failed (non-blocking)"
+
+    - name: OLG ProLine+ scraper (Playwright, inject)
+      continue-on-error: true
+      run: |
+        echo "=== OLG ProLine+ scrape (Playwright, inject mode) ==="
+        python3 live-monitor/olg_prolineplus_scraper.py --save-json --inject-api || echo "OLG ProLine+ scraper skipped"
+
+    - name: Betway CA scraper (Playwright, inject, multi-sport)
+      continue-on-error: true
+      run: |
+        echo "=== Betway CA scrape (Playwright, inject mode) ==="
+        # Include pwhl (women's hockey) and cricket (IPL) in addition to core markets.
+        # The scraper now tries betway.ca primary + betway.com/g/en-ca/ global fallback.
+        python3 live-monitor/betway_ca_scraper.py --save-json --inject-api \
+          --sports ice-hockey,basketball,american-football,baseball,soccer,pwhl,cricket || echo "Betway scraper skipped"
+
+    - name: sportsdataverse multi-sport history backfill (save-json only)
+      if: steps.extra_gate.outputs.run == 'true'
+      continue-on-error: true
+      run: |
+        echo "=== sportsdataverse backfill (preview mode, no DB writes) ==="
+        python3 live-monitor/sportsdataverse_backfill.py --save-json || echo "sportsdataverse backfill skipped"
+
+    - name: OddsHarvester CLV backfill (save-json only, preferred books)
+      if: steps.extra_gate.outputs.run == 'true'
+      continue-on-error: true
+      run: |
+        echo "=== OddsHarvester CLV backfill (preview mode, no DB writes) ==="
+        python3 live-monitor/oddsharvester_clv_backfill.py --save-json --preferred-book-only --days-back 7 || echo "OddsHarvester skipped"
+
+    - name: OLG line comparison check (preview, no DB writes)
+      if: steps.extra_gate.outputs.run == 'true'
+      continue-on-error: true
+      run: |
+        echo "=== OLG Proline+ line comparison (audit only, separate from olg_prolineplus_scraper) ==="
+        python3 live-monitor/olg_line_checker.py --save-json || echo "OLG line checker skipped"
+
+    # Polymarket sports-market bridge: writes a compact signal file consumed
+    # by sports_picks.php (action=today) to overlay PM confirmation context on
+    # value bets. No DB writes; the script only emits JSON to:
+    #   alpha_engine/data/sports_prediction_market_signals.json
+    #   live-monitor/backfill/sports_prediction_market_signals.json
+    # Wired here per the 2026-04-24 follow-up note in
+    # updates/2026-04-24-sports-prediction-market-overlay.md and refreshed on
+    # every scheduled run so PM context tracks live odds. continue-on-error so
+    # a Polymarket Gamma API hiccup never blocks picks.
+    - name: Sports prediction-market bridge (Polymarket signals JSON)
+      continue-on-error: true
+      run: |
+        echo "=== Sports PM bridge (Polymarket Gamma -> signals JSON) ==="
+        python3 prediction_market_agents/sports_prediction_market_bridge.py || echo "Sports PM bridge skipped"
+
+    # --- Backtest artifact generator (manual only) -----------------------------
+    # Pure code-generator: reads OddsHarvester closing-odds JSON +
+    # sportsdataverse results JSON, emits a <run_id>.sql + <run_id>.sh + grading
+    # SQL into live-monitor/backfill/backtests/. Does NOT touch the DB. The
+    # operator downloads the artifact and runs the SQL/shell on the DB host.
+    # See: live-monitor/sportsbetting_lib/backtest_runner.py and
+    # live-monitor/sql/historical_backtest.sql (apply once before first run).
+    - name: Generate backtest artifacts
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.generate_backtest_artifacts == 'true'
+      continue-on-error: true
+      run: |
+        echo "=== Backtest artifact generator (no DB writes from CI) ==="
+        mkdir -p live-monitor/backfill/backtests
+        python3 live-monitor/sportsbetting_lib/backtest_runner.py \
+          --odds-json live-monitor/backfill/clv \
+          --results-json live-monitor/backfill \
+          --bankroll 1000 --min-ev 1.5 || echo "Backtest runner skipped (likely no input JSONs yet)"
+
+    - name: Upload backtest artifacts
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.generate_backtest_artifacts == 'true'
+      continue-on-error: true
+      uses: actions/upload-artifact@v4
+      with:
+        name: backtest-artifacts
+        path: live-monitor/backfill/backtests/
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Generate daily picks snapshot
+      continue-on-error: true
+      run: |
+        echo "=== Daily Picks Snapshot ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=daily_picks&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Picks generated: {d.get(\"picks_generated\",0)}')
+                print(f'Generated at: {d.get(\"generated_at\",\"?\")}')
+                print(f'Pick date: {d.get(\"pick_date\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Daily picks: $RESULT"
+
+    - name: Auto-place top value bets
+      continue-on-error: true
+      run: |
+        echo "=== Auto-placing top value bets ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=auto_place&key=livetrader2026&min_ev=4.0&max_bets=5") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Bets placed: {d.get(\"bets_placed\",0)}')
+                print(f'Bets skipped: {d.get(\"bets_skipped\",0)}')
+                print(f'Bankroll: \${d.get(\"bankroll\",1000):.2f}')
+                for det in d.get('details', []):
+                    print(f'  {det.get(\"event\",\"?\")}  {det.get(\"pick\",\"?\")} ({det.get(\"market\",\"?\")})')
+                    print(f'    Odds: {det.get(\"odds\",0)}, EV: {det.get(\"ev_pct\",0)}%, Bet: \${det.get(\"bet_amount\",0):.2f}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Auto-place: $RESULT"
+
+    - name: Auto-settle completed bets
+      continue-on-error: true
+      run: |
+        echo "=== Settling completed bets ==="
+        RESULT=$(curl -s --max-time 45 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=settle&key=livetrader2026&stale_days=21") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Settled: {d.get(\"settled\",0)} bets')
+                print(f'Won: {d.get(\"won\",0)}, Lost: {d.get(\"lost\",0)}, Push: {d.get(\"push\",0)}')
+                print(f'Voided: {d.get(\"voided\",0)}')
+                print(f'Net PnL: \${d.get(\"net_pnl\",0):.2f}')
+                print(f'Bankroll: \${d.get(\"bankroll\",1000):.2f}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Settle: $RESULT"
+
+    - name: Grade pending via Odds API scores
+      continue-on-error: true
+      run: |
+        echo "=== Score-based settlement (settle_by_scores, days_from=3, lookback_days=30) ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=settle_by_scores&key=livetrader2026&days_from=3&lookback_days=30") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Graded: {d.get(\"settled\",0)} (W:{d.get(\"won\",0)} L:{d.get(\"lost\",0)} P:{d.get(\"push\",0)})')
+                print(f'Net PnL batch: \${d.get(\"net_pnl\",0):.2f}  bankroll: \${d.get(\"bankroll\",0):.2f}')
+                print(f'Sports scanned: {d.get(\"sports_scanned\",0)}  credits_used: {d.get(\"credits_used\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "settle_by_scores: $RESULT"
+
+    - name: Settle daily picks
+      continue-on-error: true
+      run: |
+        echo "=== Settling daily picks (lookback_days=30) ==="
+        RESULT=$(curl -s --max-time 90 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=settle_picks&key=livetrader2026&lookback_days=30&days_from=3") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Settled: {d.get(\"settled\",0)} picks')
+                print(f'Won: {d.get(\"won\",0)}, Lost: {d.get(\"lost\",0)}, Push: {d.get(\"push\",0)}')
+                print(f'Voided: {d.get(\"voided\",0)}')
+                for det in d.get('details', [])[:5]:
+                    print(f'  {det.get(\"event\",\"?\")}  {det.get(\"pick\",\"?\")} = {det.get(\"result\",\"?\")} (PnL: \${det.get(\"pnl\",0):.2f})')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Settle picks: $RESULT"
+
+    - name: Dashboard summary
+      continue-on-error: true
+      run: |
+        echo "=== Sports Betting Dashboard ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=dashboard") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Bankroll: \${d.get(\"bankroll\",1000):.2f}')
+                print(f'Total Bets: {d.get(\"total_bets\",0)} (W:{d.get(\"total_wins\",0)} L:{d.get(\"total_losses\",0)} P:{d.get(\"total_pushes\",0)})')
+                print(f'Win Rate: {d.get(\"win_rate\",0)}%')
+                print(f'ROI: {d.get(\"roi_pct\",0)}%')
+                print(f'Total PnL: \${d.get(\"total_pnl\",0):.2f}')
+                print(f'Active Bets: {d.get(\"active_bets\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Dashboard: $RESULT"
+
+    - name: Credit usage check
+      continue-on-error: true
+      run: |
+        echo "=== API Credit Usage ==="
+        RESULT=$(curl -s --max-time 10 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=credit_usage") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Monthly used: {d.get(\"monthly_used\",0)}/{d.get(\"monthly_limit\",500)}')
+                print(f'Remaining: {d.get(\"monthly_remaining\",\"?\")}')
+                print(f'Used: {d.get(\"pct_used\",0)}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Credits: $RESULT"
+
+    - name: Pipeline freshness summary
+      if: always()
+      continue-on-error: true
+      run: |
+        TODAY=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=today" || echo '{}')
+        ODDS_PROBE=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=fetch&key=livetrader2026&budget_safe=1" || echo '{}')
+        echo "$TODAY" > /tmp/today.json
+        echo "$ODDS_PROBE" > /tmp/odds_probe.json
+        python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import json, datetime, os
+        today = json.load(open('/tmp/today.json')) if os.path.getsize('/tmp/today.json') else {}
+        probe = json.load(open('/tmp/odds_probe.json')) if os.path.getsize('/tmp/odds_probe.json') else {}
+        last = today.get('last_updated') or today.get('generated_at') or ''
+        n_picks = today.get('value_bet_count', 0) or 0
+        odds_err = (probe.get('error') or '').lower() if not probe.get('ok', False) else ''
+        odds_unauth = 'unauth' in odds_err or '401' in odds_err
+        age_d = None
+        if last:
+            try:
+                d = datetime.datetime.strptime(last[:10], '%Y-%m-%d')
+                age_d = (datetime.datetime.utcnow() - d).days
+            except Exception: pass
+        print("## Sports pipeline health")
+        print(f"- last_updated: `{last}`  (age={age_d}d)")
+        print(f"- value_bet_count today: **{n_picks}**")
+        print(f"- Odds API probe: `ok={probe.get('ok', False)} error={probe.get('error','')}`")
+        if odds_unauth:
+            print("")
+            print("> ::error:: **THE_ODDS_API_KEY unauthorized.** No upstream odds → no value bets → no daily picks. Owner must rotate the key in `live-monitor/api/db_config.php` on the 50webs FTP server.")
+        if age_d is not None and age_d >= 2:
+            print("")
+            print(f"> ::warning:: Picks have been stale for {age_d} days.")
+        PY
+  custom-sports-update:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        token: ${{ secrets.TOKEN_FOR_PUSH || secrets.GH_PAT || github.token }}
+
+    - name: Update custom sports picks (UFC/Tennis/Golf)
+      id: custom_update
+      continue-on-error: true
+      run: |
+        echo "=== Custom Sports Picks Update ==="
+        python3 tools/update_custom_sports_picks.py
+        echo "Updated custom sports picks at $(date)"
+
+    - name: Surface silent scraper failure
+      if: steps.custom_update.outcome == 'failure'
+      run: |
+        echo "::warning title=custom-sports-update::update_custom_sports_picks.py FAILED — UFC/Tennis/Golf picks did NOT refresh this run. The job is still green only because the scraper step is continue-on-error; treat sports_custom_picks.json as stale until the next successful run."
+        echo "scraper step failed — picks not refreshed"
+
+    - name: Commit updated picks
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "[skip ci] Auto-update custom sports picks"
+        file_pattern: backfill/sports_custom_picks.json
+        token: ${{ secrets.TOKEN_FOR_PUSH || secrets.GH_PAT || github.token }}
+

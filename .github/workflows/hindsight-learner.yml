@@ -1,0 +1,74 @@
+name: Hindsight Learner  Hourly Winner Analysis
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: hindsight-learner
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          # Retry up to 3 times — PyPI SSL errors are transient (e.g. DECRYPTION_FAILED_OR_BAD_RECORD_MAC)
+          ok=false
+          for i in 1 2 3; do
+            if pip install -q requests numpy pandas scikit-learn joblib; then ok=true; break; fi
+            echo "pip install attempt $i failed, retrying in ${i}0s..."
+            sleep $((i * 10))
+          done
+          if [ "$ok" = false ]; then echo "ERROR: All 3 pip install attempts failed"; exit 1; fi
+
+      - name: Run Hindsight Learner
+        run: |
+          echo "=== Hindsight Learner  Finding hourly winners ==="
+          python -c "
+          import sys, json
+          sys.path.insert(0, '.')
+          from alpha_engine.hindsight_learner import run_hourly_check
+          result = run_hourly_check()
+          snap = result.get('snapshot', {})
+          summary = result.get('summary', {})
+          metrics = summary.get('metrics', {})
+          print(f'Snapshot: {snap.get(\"status\", \"unknown\")} | Candidates: {snap.get(\"candidate_count\", 0)} | Universe: {snap.get(\"universe_size\", 0)}')
+          print(f'Evaluations written: {result.get(\"evaluations_written\", 0)}')
+          print(f'Precision: {metrics.get(\"avg_precision_at_k\", 0):.2f} | Recall: {metrics.get(\"avg_recall_at_k\", 0):.2f} | Capture: {metrics.get(\"avg_winner_capture_pct\", 0):.2f}')
+          "
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run Winner Reverse Engineer
+        run: |
+          echo "=== Reverse Engineering Winner Entries ==="
+          python -m alpha_engine.winner_reverse_engineer 2>&1 || echo "Reverse engineer not ready yet"
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f alpha_engine/data/hindsight_log.json alpha_engine/data/winner_analysis.json alpha_engine/data/winner_history.json alpha_engine/data/winner_patterns.json alpha_engine/data/hindsight/ 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Hindsight learner: hourly winner analysis $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

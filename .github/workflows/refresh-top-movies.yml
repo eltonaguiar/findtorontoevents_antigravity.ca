@@ -1,0 +1,72 @@
+name: Refresh Top Movies Data
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  refresh:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --remove-section submodule.tmp/fte_clone 2>/dev/null || true
+            git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Run top movies scraper
+        run: python tools/scrapers/top_movies_scraper.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet TORONTOEVENTS_ANTIGRAVITY/shared/top-movies.json 2>/dev/null; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add TORONTOEVENTS_ANTIGRAVITY/shared/top-movies.json
+          git commit -m "Auto-refresh top movies data ($(date -u '+%Y-%m-%d %H:%M UTC')) [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+
+      - name: Trigger MovieShows deploy
+        if: steps.changes.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          gh workflow run deploy-movieshows-all.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Restore workspace (prevent post-checkout submodule error)
+        if: always()
+        run: |
+          git config -f .gitmodules --remove-section submodule.tmp/fte_clone 2>/dev/null || true
+          git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+

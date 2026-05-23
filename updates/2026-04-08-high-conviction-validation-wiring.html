@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High conviction validation &amp; wiring (Apr 8, 2026) | findtorontoevents</title>
+    <meta name="description" content="Closed-book validation by asset class, Python non-crypto HF tiers, audit dashboard filter tightening, tooling. Research — NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-04-08-high-conviction-validation-wiring.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.65; }
+        .container { max-width: 920px; margin: 0 auto; padding: 36px 20px 60px; }
+        header { background: linear-gradient(135deg, #1a2540 0%, #0f1629 100%); padding: 32px; border-radius: 16px; margin-bottom: 28px; border: 1px solid #2a3f5f; }
+        h1 { font-size: 1.75em; color: #a78bfa; margin-bottom: 12px; }
+        .nfa-banner {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #fecaca;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 1.02em;
+        }
+        .nfa-sub { font-weight: 400; font-size: 0.85em; margin-top: 8px; color: #fca5a5; line-height: 1.5; }
+        .section { background: #111827; padding: 24px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #1f2937; }
+        h2 { color: #34d399; font-size: 1.25em; margin-bottom: 12px; border-left: 4px solid #34d399; padding-left: 10px; }
+        p, li { color: #d1d5db; margin-bottom: 10px; }
+        ul { padding-left: 22px; }
+        a { color: #7dd3fc; }
+        code { background: #1f2937; padding: 2px 8px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+        footer { text-align: center; color: #6b7280; font-size: 0.85em; margin-top: 28px; }
+        .muted { color: #9ca3af; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="nfa-banner">
+                NOT FINANCIAL ADVICE (NFA)
+                <div class="nfa-sub">This entry describes software and research-process changes. It is not investment advice or a performance guarantee.</div>
+            </div>
+            <h1>High conviction: validation, Python wiring &amp; audit filter tweaks</h1>
+            <p class="muted">April 8, 2026 &middot; <a href="/audit/">Audit dashboard</a> &middot; <a href="/updates/">Updates index</a></p>
+        </header>
+
+        <div class="section">
+            <h2>What we validated</h2>
+            <ul>
+                <li><strong>Closed-book slice</strong> &mdash; Running <code>classify_hf_conviction_tier</code> on <code>alpha_engine/data/closed_picks.json</code> showed crypto picks that received HF tiers (mostly tier B in that sample) with materially higher win rate than the crypto baseline; non-crypto rows in the file were too sparse to recalibrate thresholds from outcomes alone.</li>
+                <li><strong>HF quality validator</strong> &mdash; <code>audit_trail/hf_pick_validator.py</code> remains a strict global gate (confidence, R:R, empirical strategy WR, freshness, concentration); it is complementary to tier labels, not a substitute.</li>
+                <li><strong>Repeatable script</strong> &mdash; <code>tools/validate_hf_by_asset_class.py</code> prints tier and baseline win rates by normalized asset class for ongoing checks.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>What we shipped in code</h2>
+            <ul>
+                <li><strong>Non-crypto HF tiers in Python</strong> &mdash; <code>alpha_engine/conviction_stack.py</code> now assigns <code>hf_conviction_tier</code> A/B for PEAD/quality-style strategies using <code>config/hf_conviction_tiers.json</code> (<code>non_crypto_tier_a_strategies</code>, <code>non_crypto_tier_b_strategies</code>, confidence floors). Previously only a patch file described this; it is now wired for real payloads.</li>
+                <li><strong>Audit UI parity</strong> &mdash; <code>passesHighConvictionPick</code> in <code>audit_dashboard/template.html</code> and <code>audit_dashboard/index.html</code>: equity/forex/ETF score-only paths tightened (require trust or forward-history support where appropriate); commodity symbol list typo fixed (<code>GOLD</code>).</li>
+                <li><strong>Tests</strong> &mdash; <code>tests/test_hf_conviction_tier.py</code> covers non-crypto tier A/B examples.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Deploy note</h2>
+            <p class="muted">The live audit page loads <code>/audit/index.html</code>; both template and index are uploaded by <code>tools/deploy_to_ftp.py</code> so the High Conviction button logic stays in sync.</p>
+        </div>
+
+        <footer>
+            <p>findtorontoevents.ca &mdash; Antigravity research tooling</p>
+        </footer>
+    </div>
+</body>
+</html>

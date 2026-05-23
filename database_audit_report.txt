@@ -1,0 +1,1000 @@
+================================================================================
+DATABASE AUDIT REPORT
+Generated: 2026-03-26 13:31:07
+================================================================================
+
+================================================================================
+DATABASE: audit_trail
+PATH: E:/findtorontoevents_antigravity.ca/data/audit_trail.db
+================================================================================
+[OK] File Size: 12,255,232 bytes (11.69 MB)
+
+TOTAL TABLES: 10
+
+------------------------------------------------------------
+TABLE: aggregation_runs
+------------------------------------------------------------
+
+   Schema (9 columns):
+      - run_id: TEXT [PK]
+      - started_at: TEXT NOT NULL
+      - finished_at: TEXT
+      - status: TEXT NOT NULL
+      - systems_loaded: INTEGER
+      - raw_picks_count: INTEGER
+      - consensus_count: INTEGER
+      - regime_data: TEXT
+      - portfolio_drawdown: REAL
+
+   Row Count: 65
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         started_at: 2026-03-04T08:21:21+00:00
+         finished_at: 2026-03-04T08:21:21+00:00
+         status: COMPLETED
+         systems_loaded: 10
+         raw_picks_count: 350
+         consensus_count: 5
+         regime_data: None
+         portfolio_drawdown: 9.0168
+      Row 2:
+         run_id: 67a6562b-2500-4331-ab2d-d2838a8b0197
+         started_at: 2026-03-04T08:25:15+00:00
+         finished_at: None
+         status: RUNNING
+         systems_loaded: 0
+         raw_picks_count: 0
+         consensus_count: 0
+         regime_data: None
+         portfolio_drawdown: 0.0
+
+------------------------------------------------------------
+TABLE: audit_events
+------------------------------------------------------------
+
+   Schema (8 columns):
+      - id: INTEGER [PK]
+      - event_type: TEXT NOT NULL
+      - pick_id: TEXT
+      - aggregation_run_id: TEXT
+      - symbol: TEXT
+      - payload: TEXT
+      - origin: TEXT
+      - timestamp: TEXT NOT NULL
+
+   Row Count: 378
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1
+         event_type: AGGREGATION_START
+         pick_id: None
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         symbol: None
+         payload: {"regime": null, "portfolio_dd": 9.0168}
+         origin: aggregator
+         timestamp: 2026-03-04T08:21:21+00:00
+      Row 2:
+         id: 2
+         event_type: AGGREGATION_START
+         pick_id: None
+         aggregation_run_id: 67a6562b-2500-4331-ab2d-d2838a8b0197
+         symbol: None
+         payload: {"regime": null, "portfolio_dd": 0.0}
+         origin: aggregator
+         timestamp: 2026-03-04T08:25:15+00:00
+
+------------------------------------------------------------
+TABLE: bt_backtest_runs
+------------------------------------------------------------
+
+   Schema (15 columns):
+      - id: TEXT [PK]
+      - source_db: TEXT NOT NULL
+      - source_table: TEXT NOT NULL
+      - strategy: TEXT NOT NULL
+      - symbol: TEXT NOT NULL
+      - asset_class: TEXT NOT NULL
+      - total_trades: INTEGER
+      - wins: INTEGER
+      - losses: INTEGER
+      - win_rate: REAL
+      - profit_factor: REAL
+      - total_return: REAL
+      - sharpe: REAL
+      - max_drawdown: REAL
+      - imported_at: TEXT NOT NULL
+
+   Row Count: 543
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 10e12dd7-eb01-4709-a9f5-434fe06f70ab
+         source_db: local_import
+         source_table: mixed
+         strategy: crypto_kalman_trend_residual_reversion_v1
+         symbol: ALL
+         asset_class: CRYPTO
+         total_trades: 32
+         wins: 18
+         losses: 14
+         win_rate: 0.5625
+         profit_factor: 1.551
+         total_return: 8.4925
+         sharpe: 0.207
+         max_drawdown: 4.2932
+         imported_at: 2026-03-07 00:56:33
+      Row 2:
+         id: 18def9f6-b7d0-4a85-81b6-78d22e3e6ab3
+         source_db: local_import
+         source_table: mixed
+         strategy: crypto_keltner_compression_expansion_v1
+         symbol: ALL
+         asset_class: CRYPTO
+         total_trades: 25
+         wins: 16
+         losses: 9
+         win_rate: 0.64
+         profit_factor: 4.027
+         total_return: 10.481
+         sharpe: 0.483
+         max_drawdown: 2.3782
+         imported_at: 2026-03-07 00:56:33
+
+------------------------------------------------------------
+TABLE: bt_backtest_trades
+------------------------------------------------------------
+
+   Schema (19 columns):
+      - id: INTEGER [PK]
+      - backtest_run_id: TEXT
+      - source_db: TEXT NOT NULL
+      - source_table: TEXT NOT NULL
+      - symbol: TEXT NOT NULL
+      - asset_class: TEXT NOT NULL
+      - direction: TEXT
+      - strategy: TEXT NOT NULL
+      - entry_price: REAL
+      - exit_price: REAL
+      - take_profit: REAL
+      - stop_loss: REAL
+      - entry_time: TEXT
+      - exit_time: TEXT
+      - pnl_pct: REAL
+      - status: TEXT
+      - confidence: REAL
+      - raw_data: TEXT
+      - imported_at: TEXT NOT NULL
+
+   Row Count: 4,145
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1805
+         backtest_run_id: None
+         source_db: battleground/data/closed_picks.json
+         source_table: closed_picks
+         symbol: BTCUSDT
+         asset_class: CRYPTO
+         direction: SHORT
+         strategy: crypto_kalman_trend_residual_reversion_v1
+         entry_price: 64264.3
+         exit_price: 65018.54
+         take_profit: None
+         stop_loss: None
+         entry_time: 2026-02-24T16:00:00+00:00
+         exit_time: 2026-02-25T01:00:00+00:00
+         pnl_pct: -1.1737
+         status: LOSS
+         confidence: None
+         raw_data: None
+         imported_at: 2026-03-07 00:56:33
+      Row 2:
+         id: 1806
+         backtest_run_id: None
+         source_db: battleground/data/closed_picks.json
+         source_table: closed_picks
+         symbol: BTCUSDT
+         asset_class: CRYPTO
+         direction: SHORT
+         strategy: crypto_kalman_trend_residual_reversion_v1
+         entry_price: 64436.7
+         exit_price: 65127.06
+         take_profit: None
+         stop_loss: None
+         entry_time: 2026-02-24T18:00:00+00:00
+         exit_time: 2026-02-25T01:00:00+00:00
+         pnl_pct: -1.0714
+         status: LOSS
+         confidence: None
+         raw_data: None
+         imported_at: 2026-03-07 00:56:33
+
+------------------------------------------------------------
+TABLE: consensus_picks
+------------------------------------------------------------
+
+   Schema (26 columns):
+      - id: TEXT [PK]
+      - aggregation_run_id: TEXT NOT NULL
+      - symbol: TEXT NOT NULL
+      - asset_class: TEXT NOT NULL
+      - direction: TEXT NOT NULL
+      - entry_price: REAL
+      - take_profit: REAL
+      - stop_loss: REAL
+      - risk_reward: REAL
+      - confidence: REAL
+      - agreement_count: INTEGER
+      - source_systems: TEXT
+      - source_strategies: TEXT
+      - system_confidences: TEXT
+      - consensus_tier: TEXT
+      - classification: TEXT
+      - regime_data: TEXT
+      - discord_channel: TEXT
+      - discord_message_id: TEXT
+      - status: TEXT
+      - exit_price: REAL
+      - exit_reason: TEXT
+      - pnl_pct: REAL
+      - slippage_estimate: REAL
+      - generated_at: TEXT NOT NULL
+      - closed_at: TEXT
+
+   Row Count: 73
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 37bdd46d-4b55-4e99-a0f9-c5a8ce42cd06
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         symbol: TLT
+         asset_class: EQUITY
+         direction: LONG
+         entry_price: 89.43
+         take_profit: 90.3398625
+         stop_loss: 88.823425
+         risk_reward: 1.5
+         confidence: 0.81
+         agreement_count: 2
+         source_systems: ["crypto_ml_edge", "kimi"]
+         source_strategies: {"kimi": "Betting Against Beta"}
+         system_confidences: {"kimi": null, "crypto_ml_edge": null}
+         consensus_tier: MODERATE
+         classification: None
+         regime_data: None
+         discord_channel: None
+         discord_message_id: None
+         status: OPEN
+         exit_price: None
+         exit_reason: None
+         pnl_pct: None
+         slippage_estimate: None
+         generated_at: 2026-03-04T08:21:21Z
+         closed_at: None
+      Row 2:
+         id: ce9c4fed-3191-4417-8a81-7dacc497b4a6
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         symbol: SPY
+         asset_class: EQUITY
+         direction: LONG
+         entry_price: 686.38
+         take_profit: 696.6757
+         stop_loss: 676.0843
+         risk_reward: 1.0
+         confidence: 0.88
+         agreement_count: 2
+         source_systems: ["crypto_ml_edge", "kimi"]
+         source_strategies: {"kimi": "Options Flow Fear Contrarian"}
+         system_confidences: {"kimi": null, "crypto_ml_edge": null}
+         consensus_tier: MODERATE
+         classification: None
+         regime_data: None
+         discord_channel: None
+         discord_message_id: None
+         status: OPEN
+         exit_price: None
+         exit_reason: None
+         pnl_pct: None
+         slippage_estimate: None
+         generated_at: 2026-03-04T08:21:21Z
+         closed_at: None
+
+------------------------------------------------------------
+TABLE: filter_log
+------------------------------------------------------------
+
+   Schema (9 columns):
+      - id: INTEGER [PK]
+      - aggregation_run_id: TEXT
+      - raw_pick_id: TEXT
+      - symbol: TEXT
+      - direction: TEXT
+      - source_system: TEXT
+      - filter_reason: TEXT NOT NULL
+      - details: TEXT
+      - timestamp: TEXT NOT NULL
+
+   Row Count: 1,415
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         raw_pick_id: None
+         symbol: 
+         direction: 
+         source_system: mercury2
+         filter_reason: wr_suppressed
+         details: rolling WR 40% < 45%
+         timestamp: 2026-03-04T08:21:21+00:00
+      Row 2:
+         id: 2
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         raw_pick_id: None
+         symbol: BTC-USD
+         direction: LONG
+         source_system: alpha_engine
+         filter_reason: staleness
+         details: 6746min old > 45min
+         timestamp: 2026-03-04T08:21:21+00:00
+
+------------------------------------------------------------
+TABLE: meta
+------------------------------------------------------------
+
+   Schema (2 columns):
+      - key: TEXT [PK]
+      - value: TEXT NOT NULL
+
+   Row Count: 1
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         key: schema_version
+         value: 1.0
+
+------------------------------------------------------------
+TABLE: raw_picks
+------------------------------------------------------------
+
+   Schema (38 columns):
+      - id: TEXT [PK]
+      - aggregation_run_id: TEXT NOT NULL
+      - source_system: TEXT NOT NULL
+      - symbol: TEXT NOT NULL
+      - asset_class: TEXT NOT NULL
+      - direction: TEXT NOT NULL
+      - entry_price: REAL
+      - take_profit: REAL
+      - stop_loss: REAL
+      - risk_reward: REAL
+      - confidence: REAL
+      - strategy: TEXT
+      - raw_payload: TEXT
+      - signal_timestamp: TEXT
+      - recorded_at: TEXT NOT NULL
+      - dedup_hash: TEXT
+      - was_stale: INTEGER
+      - was_banned: INTEGER
+      - was_demoted: INTEGER
+      - was_wr_suppressed: INTEGER
+      - created_by: TEXT
+      - enrichment_grade: TEXT
+      - enrichment_alignment: INTEGER
+      - enrichment_contrary: INTEGER
+      - enrichment_rsi: REAL
+      - enrichment_fear_greed: INTEGER
+      - enrichment_funding_rate: REAL
+      - enrichment_nvt_ratio: REAL
+      - enrichment_nvt_signal: TEXT
+      - enrichment_weekly_mom: TEXT
+      - enrichment_pct_7d: REAL
+      - enrichment_btc_mempool: TEXT
+      - enrichment_btc_fee_sat: INTEGER
+      - enrichment_defi_cex_sig: TEXT
+      - enrichment_defi_spread: REAL
+      - enrichment_dex_liq: TEXT
+      - enrichment_active_addrs: INTEGER
+      - enrichment_data: TEXT
+
+   Row Count: 6,432
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 255c408c-9d18-4fe8-8af5-4d184e06ebd1
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         source_system: kimi
+         symbol: GLD
+         asset_class: EQUITY
+         direction: LONG
+         entry_price: 474.679993
+         take_profit: 491.04284995
+         stop_loss: 463.77142116
+         risk_reward: 1.5
+         confidence: 0.5
+         strategy: Betting Against Beta
+         raw_payload: {"symbol": "GLD", "entryPrice": 474.679993, "currentPrice": 483.73999, "peakPrice": 483.73999, "entr...
+         signal_timestamp: 
+         recorded_at: 2026-03-04T08:21:21+00:00
+         dedup_hash: ba422c6048e7b95c05d9cb75ce366f6c04908e87cef455357a827fc13be7308f
+         was_stale: 0
+         was_banned: 0
+         was_demoted: 0
+         was_wr_suppressed: 0
+         created_by: aggregator
+         enrichment_grade: None
+         enrichment_alignment: None
+         enrichment_contrary: None
+         enrichment_rsi: None
+         enrichment_fear_greed: None
+         enrichment_funding_rate: None
+         enrichment_nvt_ratio: None
+         enrichment_nvt_signal: None
+         enrichment_weekly_mom: None
+         enrichment_pct_7d: None
+         enrichment_btc_mempool: None
+         enrichment_btc_fee_sat: None
+         enrichment_defi_cex_sig: None
+         enrichment_defi_spread: None
+         enrichment_dex_liq: None
+         enrichment_active_addrs: None
+         enrichment_data: None
+      Row 2:
+         id: 3659f046-efdc-48b5-ae69-f5d96a77396b
+         aggregation_run_id: 70d4df93-4c10-4e8d-8485-ffeb615d4e50
+         source_system: kimi
+         symbol: TLT
+         asset_class: EQUITY
+         direction: LONG
+         entry_price: 90.084999
+         take_profit: 90.92499951
+         stop_loss: 89.5249988
+         risk_reward: 1.5
+         confidence: 0.5
+         strategy: Betting Against Beta
+         raw_payload: {"symbol": "TLT", "entryPrice": 90.084999, "currentPrice": 90.779999, "peakPrice": 90.815002, "entry...
+         signal_timestamp: 
+         recorded_at: 2026-03-04T08:21:21+00:00
+         dedup_hash: 472a71eb9a88b28e6e69f757e1f138eb707a2d9775a866f0a1989d11d2daf362
+         was_stale: 0
+         was_banned: 0
+         was_demoted: 0
+         was_wr_suppressed: 0
+         created_by: aggregator
+         enrichment_grade: None
+         enrichment_alignment: None
+         enrichment_contrary: None
+         enrichment_rsi: None
+         enrichment_fear_greed: None
+         enrichment_funding_rate: None
+         enrichment_nvt_ratio: None
+         enrichment_nvt_signal: None
+         enrichment_weekly_mom: None
+         enrichment_pct_7d: None
+         enrichment_btc_mempool: None
+         enrichment_btc_fee_sat: None
+         enrichment_defi_cex_sig: None
+         enrichment_defi_spread: None
+         enrichment_dex_liq: None
+         enrichment_active_addrs: None
+         enrichment_data: None
+
+------------------------------------------------------------
+TABLE: sqlite_sequence
+------------------------------------------------------------
+
+   Schema (2 columns):
+      - name: 
+      - seq: 
+
+   Row Count: 3
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         name: audit_events
+         seq: 378
+      Row 2:
+         name: filter_log
+         seq: 1415
+
+------------------------------------------------------------
+TABLE: strategy_stats
+------------------------------------------------------------
+
+   Schema (13 columns):
+      - strategy: TEXT [PK] NOT NULL
+      - source_system: TEXT [PK] NOT NULL
+      - asset_class: TEXT
+      - total_picks: INTEGER
+      - consensus_picks: INTEGER
+      - wins: INTEGER
+      - losses: INTEGER
+      - win_rate: REAL
+      - avg_pnl_pct: REAL
+      - best_pnl: REAL
+      - worst_pnl: REAL
+      - avg_risk_reward: REAL
+      - last_updated: TEXT
+
+   Row Count: 0
+
+================================================================================
+DATABASE: paper_trading
+PATH: E:/findtorontoevents_antigravity.ca/paper_trading/data/paper.db
+================================================================================
+[OK] File Size: 114,688 bytes (0.11 MB)
+
+TOTAL TABLES: 4
+
+------------------------------------------------------------
+TABLE: equity_snapshots
+------------------------------------------------------------
+
+   Schema (4 columns):
+      - id: INTEGER [PK]
+      - portfolio_name: TEXT NOT NULL
+      - equity: REAL NOT NULL
+      - timestamp: TEXT NOT NULL
+
+   Row Count: 273
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1
+         portfolio_name: technical
+         equity: 10000.0
+         timestamp: 2026-03-04T08:36:24.578532+00:00
+      Row 2:
+         id: 2
+         portfolio_name: sentiment
+         equity: 10000.0
+         timestamp: 2026-03-04T08:36:24.578532+00:00
+
+------------------------------------------------------------
+TABLE: portfolios
+------------------------------------------------------------
+
+   Schema (11 columns):
+      - name: TEXT [PK]
+      - portfolio_type: TEXT NOT NULL
+      - starting_capital: REAL NOT NULL
+      - cash: REAL NOT NULL
+      - equity: REAL NOT NULL
+      - total_trades: INTEGER
+      - wins: INTEGER
+      - losses: INTEGER
+      - peak_equity: REAL
+      - max_drawdown_pct: REAL
+      - created_at: TEXT NOT NULL
+
+   Row Count: 12
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         name: technical
+         portfolio_type: strategy_type
+         starting_capital: 10000.0
+         cash: 3942.73
+         equity: 9985.88
+         total_trades: 11
+         wins: 5
+         losses: 6
+         peak_equity: 10000.0
+         max_drawdown_pct: 1.02
+         created_at: 2026-03-04T08:36:24.577911+00:00
+      Row 2:
+         name: sentiment
+         portfolio_type: strategy_type
+         starting_capital: 10000.0
+         cash: 10000.0
+         equity: 10000.0
+         total_trades: 0
+         wins: 0
+         losses: 0
+         peak_equity: 10000.0
+         max_drawdown_pct: 0.0
+         created_at: 2026-03-04T08:36:24.577911+00:00
+
+------------------------------------------------------------
+TABLE: positions
+------------------------------------------------------------
+
+   Schema (23 columns):
+      - id: TEXT [PK]
+      - symbol: TEXT NOT NULL
+      - direction: TEXT NOT NULL
+      - entry_price: REAL NOT NULL
+      - current_price: REAL NOT NULL
+      - tp: REAL NOT NULL
+      - sl: REAL NOT NULL
+      - strategy: TEXT NOT NULL
+      - strategy_name: TEXT NOT NULL
+      - portfolio_type: TEXT NOT NULL
+      - conviction_tier: TEXT NOT NULL
+      - position_size_usd: REAL NOT NULL
+      - shares: REAL NOT NULL
+      - entry_date: TEXT NOT NULL
+      - status: TEXT NOT NULL
+      - exit_price: REAL
+      - exit_date: TEXT
+      - pnl_pct: REAL
+      - pnl_usd: REAL
+      - mfe: REAL
+      - mae: REAL
+      - confidence: REAL
+      - reason: TEXT
+
+   Row Count: 95
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: pt_funding_rate_carry::MANTRAUSDT::2026-03-05T13:30:16
+         symbol: MANTRAUSDT
+         direction: LONG
+         entry_price: 0.02079
+         current_price: 0.02023
+         tp: 0.021622
+         sl: 0.02027
+         strategy: funding_rate_carry
+         strategy_name: Funding Rate Carry
+         portfolio_type: derivatives
+         conviction_tier: speculative
+         position_size_usd: 1000.0
+         shares: 48100.0481
+         entry_date: 2026-03-05T13:30:16.997403+00:00
+         status: SL_HIT
+         exit_price: 0.02023
+         exit_date: 2026-03-06T04:20:03.857166+00:00
+         pnl_pct: -3.394
+         pnl_usd: -33.94
+         mfe: 3.463
+         mae: -2.694
+         confidence: 0.85
+         reason: Negative funding -0.4478% -> long carry
+      Row 2:
+         id: pt_speculative_funding_rate_carry::MANTRAUSDT::2026-03-05T13:30:16
+         symbol: MANTRAUSDT
+         direction: LONG
+         entry_price: 0.02079
+         current_price: 0.02023
+         tp: 0.021622
+         sl: 0.02027
+         strategy: funding_rate_carry
+         strategy_name: Funding Rate Carry
+         portfolio_type: speculative
+         conviction_tier: speculative
+         position_size_usd: 1000.0
+         shares: 48100.0481
+         entry_date: 2026-03-05T13:30:16.997403+00:00
+         status: SL_HIT
+         exit_price: 0.02023
+         exit_date: 2026-03-06T04:20:03.857166+00:00
+         pnl_pct: -3.394
+         pnl_usd: -33.94
+         mfe: 3.463
+         mae: -2.694
+         confidence: 0.85
+         reason: Negative funding -0.4478% -> long carry
+
+------------------------------------------------------------
+TABLE: sqlite_sequence
+------------------------------------------------------------
+
+   Schema (2 columns):
+      - name: 
+      - seq: 
+
+   Row Count: 1
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         name: equity_snapshots
+         seq: 273
+
+================================================================================
+DATABASE: genetic_programmer
+PATH: E:/findtorontoevents_antigravity.ca/genome/genetic_programmer.db
+================================================================================
+[OK] File Size: 7,237,632 bytes (6.90 MB)
+
+TOTAL TABLES: 3
+
+------------------------------------------------------------
+TABLE: gp_evolution_runs
+------------------------------------------------------------
+
+   Schema (10 columns):
+      - id: INTEGER [PK]
+      - run_timestamp: TEXT
+      - generations: INTEGER
+      - population_size: INTEGER
+      - best_fitness: REAL
+      - best_strategy_id: TEXT
+      - avg_fitness: REAL
+      - symbols: TEXT
+      - total_strategies_tested: INTEGER
+      - hall_of_fame_json: TEXT
+
+   Row Count: 40
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1
+         run_timestamp: 2026-03-09T03:54:48.848357+00:00
+         generations: 15
+         population_size: 60
+         best_fitness: 0.785
+         best_strategy_id: gp_13b024246f61
+         avg_fitness: 0.750115
+         symbols: ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
+         total_strategies_tested: 20
+         hall_of_fame_json: [{"strategy_id": "gpbonus_eecad35cb5b9", "name": "GPBonus_BreakoutVolume", "generation": 0, "buy_tre...
+      Row 2:
+         id: 2
+         run_timestamp: 2026-03-09T04:01:40.101566+00:00
+         generations: 15
+         population_size: 60
+         best_fitness: 0.7339
+         best_strategy_id: gp_9b1a0fcfff58
+         avg_fitness: 0.7054149999999999
+         symbols: ["BTCUSDT", "ETHUSDT", "SOLUSDT", "AVAXUSDT", "DOGEUSDT"]
+         total_strategies_tested: 20
+         hall_of_fame_json: [{"strategy_id": "gp_8f582f891c92", "name": "GP_Gen0_891c92", "generation": 0, "buy_tree": {"type": ...
+
+------------------------------------------------------------
+TABLE: gp_strategies
+------------------------------------------------------------
+
+   Schema (10 columns):
+      - strategy_id: TEXT [PK]
+      - name: TEXT
+      - generation: INTEGER
+      - dna_hash: TEXT
+      - buy_formula: TEXT
+      - sell_formula: TEXT
+      - fitness_json: TEXT
+      - created_at: TEXT
+      - symbol: TEXT
+      - status: TEXT
+
+   Row Count: 800
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         strategy_id: gp_13b024246f61
+         name: GPX_Gen15_246f61
+         generation: 15
+         dna_hash: 0a13b9f3a72fc1b9
+         buy_formula: mul(sub(vwap, ema_50), bb_upper)
+         sell_formula: sub(vol_ratio, rsi_14)
+         fitness_json: {"overall_fitness": 0.785, "per_symbol": {"BTCUSDT": {"win_rate": 0.6667, "avg_win_pct": 2.6239, "av...
+         created_at: 2026-03-09T03:55:12.838817+00:00
+         symbol: None
+         status: WINNER
+      Row 2:
+         strategy_id: gp_964f9afdc52b
+         name: GPX_Gen14_fdc52b
+         generation: 14
+         dna_hash: 8c8af895778cdb07
+         buy_formula: mul(sub(vwap, ema_50), bb_upper)
+         sell_formula: sub(div(gt(vol_ratio, sqrt(gt(pct_1, pct_3))), -0.844), rsi_14)
+         fitness_json: {"overall_fitness": 0.7825, "per_symbol": {"BTCUSDT": {"win_rate": 0.6667, "avg_win_pct": 2.6239, "a...
+         created_at: 2026-03-09T03:55:11.258041+00:00
+         symbol: None
+         status: WINNER
+
+------------------------------------------------------------
+TABLE: sqlite_sequence
+------------------------------------------------------------
+
+   Schema (2 columns):
+      - name: 
+      - seq: 
+
+   Row Count: 1
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         name: gp_evolution_runs
+         seq: 40
+
+================================================================================
+DATABASE: mape_evolver
+PATH: E:/findtorontoevents_antigravity.ca/genome/mape_evolver.db
+================================================================================
+[OK] File Size: 40,960 bytes (0.04 MB)
+
+TOTAL TABLES: 3
+
+------------------------------------------------------------
+TABLE: mape_archive
+------------------------------------------------------------
+
+   Schema (7 columns):
+      - cell_coords: TEXT [PK]
+      - strategy_id: TEXT
+      - strategy_name: TEXT
+      - fitness: REAL
+      - behavior_json: TEXT
+      - created_at: TEXT
+      - generation: INTEGER
+
+   Row Count: 38
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         cell_coords: (0, 1, 0, 0, 1)
+         strategy_id: gp_cf7fe446d6a6
+         strategy_name: GPX_Gen303_46d6a6
+         fitness: 0.154
+         behavior_json: {"trades_per_day": 0.256, "avg_hold_time_bars": 52.875, "max_position_exposure": 0.1117, "long_short...
+         created_at: 2026-03-09T04:28:56.764983+00:00
+         generation: 499
+      Row 2:
+         cell_coords: (0, 1, 2, 0, 1)
+         strategy_id: gp_19896ce8cd18
+         strategy_name: GPM_Gen418_e8cd18
+         fitness: -0.08916666666666666
+         behavior_json: {"trades_per_day": 0.32, "avg_hold_time_bars": 52.9, "max_position_exposure": 0.1177, "long_short_ra...
+         created_at: 2026-03-09T04:28:56.765062+00:00
+         generation: 499
+
+------------------------------------------------------------
+TABLE: mape_runs
+------------------------------------------------------------
+
+   Schema (7 columns):
+      - id: INTEGER [PK]
+      - run_timestamp: TEXT
+      - iterations: INTEGER
+      - final_coverage_pct: REAL
+      - qd_score: REAL
+      - best_fitness: REAL
+      - total_cells: INTEGER
+
+   Row Count: 6
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1
+         run_timestamp: 2026-03-09T04:28:56.763937+00:00
+         iterations: 500
+         final_coverage_pct: 5.185185185185185
+         qd_score: 0.4674
+         best_fitness: 0.7453666666666666
+         total_cells: 35
+      Row 2:
+         id: 2
+         run_timestamp: 2026-03-09T04:35:06.558191+00:00
+         iterations: 500
+         final_coverage_pct: 3.851851851851852
+         qd_score: 1.4077
+         best_fitness: 0.60084
+         total_cells: 26
+
+------------------------------------------------------------
+TABLE: sqlite_sequence
+------------------------------------------------------------
+
+   Schema (2 columns):
+      - name: 
+      - seq: 
+
+   Row Count: 1
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         name: mape_runs
+         seq: 6
+
+================================================================================
+DATABASE: ensemble_evolver
+PATH: E:/findtorontoevents_antigravity.ca/genome/ensemble_evolver.db
+================================================================================
+[OK] File Size: 405,504 bytes (0.39 MB)
+
+TOTAL TABLES: 3
+
+------------------------------------------------------------
+TABLE: ensemble_runs
+------------------------------------------------------------
+
+   Schema (6 columns):
+      - id: INTEGER [PK]
+      - run_timestamp: TEXT
+      - generations: INTEGER
+      - population_size: INTEGER
+      - best_fitness: REAL
+      - avg_fitness: REAL
+
+   Row Count: 6
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         id: 1
+         run_timestamp: 2026-03-09T04:33:58.683837+00:00
+         generations: 8
+         population_size: 20
+         best_fitness: 0.507
+         avg_fitness: 0.46236
+      Row 2:
+         id: 2
+         run_timestamp: 2026-03-09T04:47:57.089524+00:00
+         generations: 10
+         population_size: 40
+         best_fitness: 0.5394
+         avg_fitness: 0.5148499999999999
+
+------------------------------------------------------------
+TABLE: ensembles
+------------------------------------------------------------
+
+   Schema (8 columns):
+      - ensemble_id: TEXT [PK]
+      - name: TEXT
+      - generation: INTEGER
+      - consensus_type: TEXT
+      - member_count: INTEGER
+      - fitness_json: TEXT
+      - created_at: TEXT
+      - status: TEXT
+
+   Row Count: 60
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         ensemble_id: ens_84483ddc43bb
+         name: EnsembleX_G7_dc43bb
+         generation: 7
+         consensus_type: weighted
+         member_count: 4
+         fitness_json: {"overall_fitness": 0.507, "per_symbol": {"BTCUSDT": {"win_rate": 0.56, "profit_factor": 1.0488, "sh...
+         created_at: 2026-03-09T04:33:58.683837+00:00
+         status: WINNER
+      Row 2:
+         ensemble_id: ens_05a2b7da1beb
+         name: EnsembleX_G8_da1beb
+         generation: 8
+         consensus_type: weighted
+         member_count: 4
+         fitness_json: {"overall_fitness": 0.507, "per_symbol": {"BTCUSDT": {"win_rate": 0.56, "profit_factor": 1.0488, "sh...
+         created_at: 2026-03-09T04:33:58.683837+00:00
+         status: WINNER
+
+------------------------------------------------------------
+TABLE: sqlite_sequence
+------------------------------------------------------------
+
+   Schema (2 columns):
+      - name: 
+      - seq: 
+
+   Row Count: 1
+
+   Sample Data (up to 2 rows):
+      Row 1:
+         name: ensemble_runs
+         seq: 6
+
+
+================================================================================
+SUMMARY
+================================================================================
+
+audit_trail:
+   [OK] 10 tables, ~13,055 total rows
+
+paper_trading:
+   [OK] 4 tables, ~381 total rows
+
+genetic_programmer:
+   [OK] 3 tables, ~841 total rows
+
+mape_evolver:
+   [OK] 3 tables, ~45 total rows
+
+ensemble_evolver:
+   [OK] 3 tables, ~67 total rows

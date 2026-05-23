@@ -1,0 +1,38 @@
+name: SPY 20d Return Refresh
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # daily at 06:00 UTC (after US market open data is settled)
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance requests
+
+      - name: Fetch SPY 20-day return
+        run: python tools/fetch_spy_20d_return.py
+
+      - name: Commit if changed
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/spy_20d_return.json
+          git diff --cached --quiet || git commit -m "data: SPY 20d return refresh $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
+          bash .github/scripts/safe_push.sh

@@ -1,0 +1,61 @@
+name: "Check for Git Conflict Markers"
+description: >-
+  Scans staged files (or the full working tree) for unresolved git merge
+  conflict markers. Fails the job if any are found, unstaging the changes
+  so auto-commit workflows cannot accidentally push conflict markers to
+  the default branch. Related: issue #141.
+inputs:
+  scope:
+    description: "Scan scope: 'staged' (default, scans files in the git index) or 'tree' (scans the whole working tree)."
+    required: false
+    default: "staged"
+  unstage-on-failure:
+    description: "If true (default), run 'git reset HEAD' on failure so the caller can abort cleanly."
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - name: Scan for conflict markers
+      shell: bash
+      run: |
+        set -euo pipefail
+        SCOPE="${{ inputs.scope }}"
+        UNSTAGE="${{ inputs.unstage-on-failure }}"
+        PATTERN='^(<<<<<<<|=======$|>>>>>>>)'
+
+        if [ "$SCOPE" = "staged" ]; then
+          FILES=$(git diff --cached --name-only --diff-filter=ACM || true)
+        else
+          FILES=$(git ls-files || true)
+        fi
+
+        if [ -z "$FILES" ]; then
+          echo "No files to scan (scope=$SCOPE)."
+          exit 0
+        fi
+
+        FOUND=""
+        while IFS= read -r f; do
+          [ -z "$f" ] && continue
+          [ -f "$f" ] || continue
+          # Skip binary files
+          if git check-attr binary -- "$f" | grep -q 'binary: set'; then
+            continue
+          fi
+          if grep -lE "$PATTERN" -- "$f" >/dev/null 2>&1; then
+            FOUND="${FOUND}${f}\n"
+          fi
+        done <<< "$FILES"
+
+        if [ -n "$FOUND" ]; then
+          echo "::error::Unresolved git conflict markers detected in the following files:"
+          printf "%b" "$FOUND" | sed 's/^/::error::  /'
+          if [ "$UNSTAGE" = "true" ]; then
+            echo "Unstaging changes (git reset HEAD)..."
+            git reset HEAD -- . || true
+          fi
+          exit 1
+        fi
+
+        echo "Clean: no conflict markers found (scope=$SCOPE)."

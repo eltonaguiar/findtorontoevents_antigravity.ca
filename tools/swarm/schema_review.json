@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PR review worker output",
+  "type": "object",
+  "required": ["pr", "verdict", "confidence", "summary", "concerns", "commentary_text", "fabrication_risk"],
+  "properties": {
+    "pr": {"type": ["integer", "null"]},
+    "engine": {"type": "string"},
+    "verdict": {"enum": ["MERGE", "HOLD", "REQUEST_CHANGES", "COMMENT_ONLY"]},
+    "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+    "summary": {"type": "string", "minLength": 1},
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim", "evidence"],
+        "properties": {
+          "claim": {"type": "string", "minLength": 1},
+          "evidence": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "concerns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "claim", "evidence", "requested_fix"],
+        "properties": {
+          "severity": {"enum": ["blocking", "major", "minor", "question"]},
+          "claim": {"type": "string", "minLength": 1},
+          "evidence": {"type": "string"},
+          "requested_fix": {"type": "string"}
+        },
+        "if": {"properties": {"severity": {"enum": ["blocking", "major"]}}},
+        "then": {"properties": {"evidence": {"minLength": 10}}}
+      }
+    },
+    "commentary_text": {"type": "string", "minLength": 1},
+    "fabrication_risk": {
+      "type": "object",
+      "required": ["level", "notes"],
+      "properties": {
+        "level": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+        "notes": {"type": "string"}
+      }
+    }
+  }
+}

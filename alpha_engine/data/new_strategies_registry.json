@@ -1,0 +1,142 @@
+{
+  "generated_at": "2026-04-04T03:53:18.640258",
+  "title": "New Proven Strategies -- March 2026",
+  "total_tested": 108,
+  "strategies": {
+    "Keltner_Squeeze_Breakout": {
+      "name": "Keltner Squeeze Breakout",
+      "family": "Volatility",
+      "algo_type": "breakout",
+      "description": "Detects Bollinger Band squeeze inside Keltner Channel, enters on expansion with volume surge. 84.7% avg WR across 12 asset combos.",
+      "ideal_timeframe": "1h-1d",
+      "pros": "High win rate (84.7%), very low drawdown (0.3%), works across crypto + equity + futures",
+      "cons": "Low trade frequency (avg 2.2 trades/symbol), needs squeeze setup",
+      "classification": "PROP-FIRM ELITE",
+      "avg_wr": 0.847,
+      "avg_sharpe": 8.47,
+      "avg_dd": 0.003,
+      "total_trades_backtested": 26,
+      "asset_classes": [
+        "crypto",
+        "equity",
+        "futures"
+      ]
+    },
+    "Triple_EMA_Pullback": {
+      "name": "Triple EMA Pullback",
+      "family": "Trend Following",
+      "algo_type": "pullback",
+      "description": "EMA 9/21/50 alignment + price pullback to EMA21 zone + RSI confirmation. Designed for prop firm challenges with tight risk. 65.4% avg WR.",
+      "ideal_timeframe": "1h-4h",
+      "pros": "Consistent across all asset classes, good trade frequency (19/symbol), excellent Sharpe",
+      "cons": "Needs trending market, fails in choppy conditions",
+      "classification": "PROP-FIRM ELITE",
+      "avg_wr": 0.654,
+      "avg_sharpe": 41.05,
+      "avg_dd": 0.005,
+      "total_trades_backtested": 232,
+      "asset_classes": [
+        "crypto",
+        "equity",
+        "futures"
+      ]
+    },
+    "VWAP_Mean_Reversion": {
+      "name": "VWAP Mean Reversion",
+      "family": "Mean Reversion",
+      "algo_type": "mean_reversion",
+      "description": "Fades 2+ std dev extensions from rolling VWAP with RSI extreme + volume exhaustion. 83.1% avg WR. Best performer on futures.",
+      "ideal_timeframe": "15m-1h",
+      "pros": "Highest WR (83.1%), works exceptionally on futures/equities, natural mean reversion target",
+      "cons": "Needs volatile market for setups, fewer signals in quiet markets",
+      "classification": "PROP-FIRM ELITE",
+      "avg_wr": 0.831,
+      "avg_sharpe": 306.99,
+      "avg_dd": 0.01,
+      "total_trades_backtested": 131,
+      "asset_classes": [
+        "crypto",
+        "equity",
+        "futures"
+      ]
+    },
+    "Inverse_FVG_Contrarian": {
+      "name": "Inverse Fair Value Gap",
+      "family": "Contrarian",
+      "algo_type": "contrarian",
+      "description": "Fades Fair Value Gaps instead of trading with them. Based on 0% WR of standard FVG in our forward tests (inverted = 100% WR). 65.0% avg WR in backtest.",
+      "ideal_timeframe": "1h-4h",
+      "pros": "High volume (289 trades), works on all assets, contrarian edge validated by our live data",
+      "cons": "Lower WR than other new strategies, needs volume confirmation",
+      "classification": "PROP-FIRM ELITE",
+      "avg_wr": 0.65,
+      "avg_sharpe": 15.61,
+      "avg_dd": 0.016,
+      "total_trades_backtested": 289,
+      "asset_classes": [
+        "crypto",
+        "equity",
+        "futures"
+      ]
+    },
+    "StochRSI_Divergence": {
+      "name": "StochRSI Divergence",
+      "family": "Momentum",
+      "algo_type": "divergence",
+      "description": "Stochastic RSI crossover from extreme zones + hidden bullish divergence + EMA trend filter. 61.2% avg WR.",
+      "ideal_timeframe": "1h-4h",
+      "pros": "Highest trade count (338), good risk-adjusted returns, catches momentum shifts",
+      "cons": "Slightly lower WR than top strategies, occasional false divergence signals",
+      "classification": "PROP-FIRM ELITE",
+      "avg_wr": 0.612,
+      "avg_sharpe": 9.73,
+      "avg_dd": 0.012,
+      "total_trades_backtested": 338,
+      "asset_classes": [
+        "crypto",
+        "equity",
+        "futures"
+      ]
+    },
+    "PropFirm_Conservative": {
+      "name": "Prop Firm Conservative",
+      "family": "Multi-Factor",
+      "algo_type": "conservative",
+      "description": "Purpose-built for funded trader challenges: EMA trend + RSI confirmation + vol filter + tight risk. Max 2% risk/trade, <5% DD. 62.6% avg WR.",
+      "ideal_timeframe": "1h-4h",
+      "pros": "Specifically designed for prop firms, 0.8% avg DD, strong on futures (CL, GC)",
+      "cons": "Conservative = fewer signals, may underperform in strong trends",
+      "classification": "PROP-FIRM ELITE",
+      "avg_wr": 0.626,
+      "avg_sharpe": 36.1,
+      "avg_dd": 0.008,
+      "total_trades_backtested": 165,
+      "asset_classes": [
+        "crypto",
+        "equity",
+        "futures"
+      ]
+    }
+  },
+  "prop_firm_worthy": [
+    "Keltner_Squeeze_Breakout",
+    "Triple_EMA_Pullback",
+    "VWAP_Mean_Reversion",
+    "Inverse_FVG_Contrarian",
+    "StochRSI_Divergence",
+    "PropFirm_Conservative"
+  ],
+  "general_winners": [],
+  "failed": [
+    {
+      "name": "RSI-2 Regime Mean Reversion",
+      "avg_wr": 0.384,
+      "reason": "38.4% WR across all assets despite regime filter. RSI-2 alone insufficient on crypto/futures."
+    },
+    {
+      "name": "Hurst Adaptive Momentum",
+      "avg_wr": 0.258,
+      "reason": "25.8% WR, too few signals (20 total). Hurst estimation too noisy on daily data."
+    }
+  ]
+}

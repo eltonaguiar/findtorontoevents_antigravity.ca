@@ -1,0 +1,53 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "FUTURES_MOMENTUM",
+      "thesis": "Time-series momentum strategy with 12m signal and inverse-vol weights will outperform the market due to its ability to capture trends and manage risk.",
+      "signal_construction": "Calculate 12-month momentum for each futures contract, then weight by inverse volatility, and rebalance monthly.",
+      "universe": ["CT", "GC", "SI", "HG", "ZC", "ZW", "ZS", "NG", "ES", "NQ", "ZN", "ZB", "6E", "6J"],
+      "expected_pf": 1.71,
+      "expected_sharpe": 0.6564,
+      "expected_mdd_pct": 13.61,
+      "differentiation_from_existing": "This strategy uses a longer momentum period and incorporates inverse-volatility weighting, which is different from the existing live FUTURES emitters that are dead.",
+      "implementation_hours": 20,
+      "wire_target": "alpha_engine/futures_emitter.py",
+      "data_source": "yfinance",
+      "fail_mode": "Overfitting to historical data, failing to adapt to changing market conditions."
+    },
+    {
+      "name": "FUTURES_COT_MOMENTUM",
+      "thesis": "Combining time-series momentum with CFTC COT data will provide a more robust signal by incorporating market sentiment and positioning.",
+      "signal_construction": "Calculate 12-month momentum for each futures contract, then weight by inverse volatility and COT net positioning, and rebalance monthly.",
+      "universe": ["CT", "GC", "SI", "HG", "ZC", "ZW", "ZS", "NG", "ES", "NQ", "ZN", "ZB", "6E", "6J"],
+      "expected_pf": 1.8,
+      "expected_sharpe": 0.7,
+      "expected_mdd_pct": 12,
+      "differentiation_from_existing": "This strategy incorporates COT data, which is not used in the existing live FUTURES emitters.",
+      "implementation_hours": 30,
+      "wire_target": "alpha_engine/futures_emitter.py",
+      "data_source": "yfinance, CFTC COT",
+      "fail_mode": "Failing to account for changes in market sentiment and positioning."
+    },
+    {
+      "name": "FUTURES_LONG_ONLY",
+      "thesis": "A long-only version of the time-series momentum strategy will outperform the market while minimizing drawdowns.",
+      "signal_construction": "Calculate 12-month momentum for each futures contract, then weight by inverse volatility, clip negatives to zero, and rebalance monthly.",
+      "universe": ["CT", "GC", "SI", "HG", "ZC", "ZW", "ZS", "NG", "ES", "NQ", "ZN", "ZB", "6E", "6J"],
+      "expected_pf": 1.6,
+      "expected_sharpe": 0.8551,
+      "expected_mdd_pct": 6.57,
+      "differentiation_from_existing": "This strategy is long-only, which is different from the existing live FUTURES emitters that are long-short.",
+      "implementation_hours": 15,
+      "wire_target": "alpha_engine/futures_emitter.py",
+      "data_source": "yfinance",
+      "fail_mode": "Failing to capture upside potential due to the long-only constraint."
+    }
+  ],
+  "killers": [
+    "Existing live FUTURES strategy that uses a simple moving average crossover, which has been underperforming and should be retired due to its lack of robustness and adaptability."
+  ],
+  "tier1_attainability_pct": 70,
+  "single_most_important_finding": "The academic edge in FUTURES has not materialized in live emitters due to the lack of robust signal construction and risk management, which can be addressed by incorporating time-series momentum and inverse-volatility weighting."
+}
+```

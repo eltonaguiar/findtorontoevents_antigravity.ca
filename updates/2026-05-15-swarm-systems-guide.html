@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Systems Guide — FindTorontoEvents</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --border:#2a2e38; --fg:#d1d5db; --muted:#9ca3af;
+          --accent:#06b6d4; --amber:#f59e0b; --green:#22c55e; --purple:#a78bfa; }
+  * { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+         line-height:1.6; margin:0; padding:0 16px 80px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  header { padding:32px 0 16px; border-bottom:1px solid var(--border); }
+  h1 { color:#fff; font-size:1.7em; margin:0 0 6px; }
+  h2 { color:var(--accent); font-size:1.25em; margin:34px 0 10px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  h3 { color:var(--amber); font-size:1.05em; margin:22px 0 8px; }
+  .subtitle { color:var(--muted); font-size:0.95em; }
+  a { color:var(--accent); }
+  code { background:#11141a; border:1px solid var(--border); border-radius:4px; padding:1px 5px;
+         font-size:0.86em; color:#e5e7eb; }
+  pre { background:#11141a; border:1px solid var(--border); border-radius:8px; padding:14px;
+        overflow-x:auto; font-size:0.84em; }
+  pre code { background:none; border:none; padding:0; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.88em; }
+  th,td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:#171a21; color:#fff; }
+  .card { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent);
+          border-radius:8px; padding:14px 18px; margin:14px 0; }
+  .card.amber { border-left-color:var(--amber); }
+  .card.green { border-left-color:var(--green); }
+  .card.purple { border-left-color:var(--purple); }
+  ul,ol { padding-left:24px; }
+  .back { display:inline-block; margin:14px 0; }
+  .tag { display:inline-block; background:#171a21; border:1px solid var(--border); border-radius:12px;
+         padding:2px 9px; font-size:0.78em; color:var(--muted); margin:2px 4px 2px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>&#x1F41D; Swarm Systems Guide</h1>
+  <div class="subtitle">How to run our three multi-agent swarm systems &mdash; coding, review,
+  research and trading-signal swarms. Last updated 2026-05-15.</div>
+  <a class="back" href="/updates/">&larr; Back to Updates</a>
+</header>
+
+<h2>1. Three systems at a glance</h2>
+<table>
+<tr><th>System</th><th>Slash commands</th><th>Code root</th><th>Purpose</th><th>Writes code?</th></tr>
+<tr><td><code>/swarm</code></td><td><code>/swarm run</code>, <code>followup</code>, <code>pr-review</code>,
+  <code>second-opinion</code>, <code>invent</code></td><td><code>tools/swarm/</code></td>
+  <td>General multi-engine fan-out &mdash; consult N LLM vendors on one prompt, consensus, red-team</td>
+  <td>Analysis by default; only the <code>code_implementer</code> persona writes</td></tr>
+<tr><td><code>/swarm-ruflo</code></td><td><code>audit</code>, <code>github</code>, <code>strategy</code>,
+  <code>bugs</code>, <code>wizard</code></td><td><code>.ruflo/</code></td>
+  <td>Hermes orchestrator &mdash; audit / research / hygiene swarms</td><td>No &mdash; JSON findings only</td></tr>
+<tr><td><code>/swarmv2-*</code></td><td><code>/swarmv2-coding</code>, <code>-pr-review</code>,
+  <code>-actions</code>, <code>-research</code>, <code>-ensemble</code>, <code>-hierarchical</code></td>
+  <td><code>tools/swarm_v2/</code></td><td>Enhanced typed swarms &mdash; coding pipeline, PR review,
+  CI audit, research, ensemble/hierarchical decision</td><td><strong>Yes</strong> &mdash; real LLM source + tests</td></tr>
+</table>
+
+<div class="card">
+<strong>Which to use:</strong>
+<ul>
+<li>Fast second/third opinion on a decision &rarr; <code>/swarm second-opinion</code></li>
+<li>A batch of todos <em>coded, tested, reviewed</em> &rarr; <code>/swarmv2-coding</code></li>
+<li>Audit dashboard / strategies / GitHub hygiene scanned &rarr; <code>/swarm-ruflo audit|bugs|github</code></li>
+<li>A PR reviewed by multiple specialists &rarr; <code>/swarm pr-review</code></li>
+<li>Deep research with cross-verification &rarr; <code>/swarmv2-research</code></li>
+</ul>
+</div>
+
+<h2>2. System 1 &mdash; /swarm (general multi-engine)</h2>
+<p>Code: <code>tools/swarm/</code> &mdash; <code>swarm_run.py</code> (fan-out),
+<code>worker_runner.py</code> (single-engine worker), <code>swarm_followup.py</code> (multi-turn chain),
+<code>api_consult.py</code> (HTTP API caller), <code>safety.py</code> (read-only allowlist).</p>
+
+<h3>Slash commands</h3>
+<table>
+<tr><th>Command</th><th>Usage</th></tr>
+<tr><td><code>/swarm run</code></td><td><code>/swarm run &lt;prompt-file&gt; [engine,engine,&hellip;]</code> &mdash; fan one prompt to N engines. Default <code>deepseek,xai,kilo</code>.</td></tr>
+<tr><td><code>/swarm followup</code></td><td><code>/swarm followup &lt;yaml-config&gt;</code> &mdash; multi-turn chain, one engine.</td></tr>
+<tr><td><code>/swarm second-opinion</code></td><td><code>/swarm second-opinion &lt;question&gt;</code> &mdash; quick 3-engine consensus.</td></tr>
+<tr><td><code>/swarm pr-review</code></td><td><code>/swarm pr-review [PR#|all|open]</code> &mdash; 3 specialists per PR + consensus.</td></tr>
+<tr><td><code>/swarm invent</code></td><td><code>/swarm invent &lt;problem-file&gt;</code> &mdash; bootstrap custom personas.</td></tr>
+<tr><td><code>/swarmwithprework</code></td><td><code>/swarmwithprework &lt;task&gt;</code> &mdash; 4-phase pre-work&rarr;brainstorm&rarr;synthesis&rarr;QA.</td></tr>
+</table>
+
+<h3>Engines</h3>
+<p>API: <code>deepseek</code>, <code>xai</code>, <code>cerebras</code>, <code>inception</code>,
+<code>openrouter</code>, <code>groq</code>, <code>gemini_api</code>, <code>pollinations</code> (keyless),
+<code>nous</code>, <code>ollama_*</code>. CLI: <code>claude</code>, <code>gemini</code>,
+<code>kilo</code>, <code>opencode</code>, <code>copilot</code>, <code>agent</code> (Cursor).
+Presets: <code>consensus-3</code>, <code>fast-cheap</code>, <code>deep-strict</code>, <code>non-opus-4</code>.</p>
+
+<h3>Fan-out YAML template</h3>
+<pre><code>name: my_run_${TS}
+prompt_file: swarm_runs/briefing_my_task.md
+out_dir: swarm_runs/run_${TS}
+max_parallel: 4
+preset: consensus-3        # OR an explicit engines: list
+red_team: true             # adds a claude-opus red-team pass
+cost_cap_usd: 5.0</code></pre>
+
+<h3>Multi-turn followup &mdash; prompts per round</h3>
+<ol>
+<li><strong>priming</strong> &mdash; feed a briefing file as warm-up context.</li>
+<li><strong>analysis</strong> &mdash; "narrow to the problem, cite specific numbers."</li>
+<li><strong>critique</strong> &mdash; "which claim is weakest, what unstated assumption, what would you retract."</li>
+<li><strong>final</strong> &mdash; "emit valid JSON only, per this schema."</li>
+</ol>
+
+<h2>3. System 2 &mdash; /swarm-ruflo (Hermes orchestrator)</h2>
+<p>Code: <code>.ruflo/orchestrator.py</code>, <code>wizard.py</code>, <code>agents/*.yaml</code>.</p>
+<p><code>/swarm-ruflo [audit|github|strategy|bugs|wizard] [--tier free|paid|hybrid]</code></p>
+<table>
+<tr><th>Subcommand</th><th>Agents</th><th>Action</th></tr>
+<tr><td><code>audit</code></td><td>audit-researcher + audit-quant</td><td>Dashboard &mdash; forward-WR, stale strategies, leakage</td></tr>
+<tr><td><code>bugs</code></td><td>bug-hunter</td><td>Hardcoded paths, SQL injection, races, key leaks</td></tr>
+<tr><td><code>github</code></td><td>github-hygiene</td><td>Stale PRs, failing Actions, commits without tests</td></tr>
+<tr><td><code>strategy</code></td><td>strategist</td><td>Propose 3 new trading strategies</td></tr>
+</table>
+<p>Tiers: <code>free</code> (OpenRouter free models via Hermes in WSL), <code>paid</code> (direct API),
+<code>hybrid</code>. New agents: copy <code>.ruflo/agents/TEMPLATE_agent.yaml</code>, fill
+<code>role</code>/<code>model</code>/<code>goal</code>/<code>metadata.dataSources</code>. Ruflo agents
+never write code &mdash; JSON findings only.</p>
+
+<h2>4. System 3 &mdash; /swarmv2-* (enhanced typed swarm) &mdash; NEW</h2>
+<p>Code: <code>tools/swarm_v2/swarms/</code>. Install: <code>cd tools/swarm_v2 &amp;&amp; pip install -e ".[dev]"</code>.
+CLI: <code>python -m swarms.cli.main &lt;command&gt;</code>.</p>
+
+<h3>4.0 What changed today &mdash; and what did NOT</h3>
+<div class="card amber">
+<p style="margin:0 0 8px;">Common confusion: <em>"didn't the swarm always call AI models?"</em> For <strong>swarm_v2, no.</strong></p>
+<ul style="margin:0 0 8px;">
+<li><strong><code>tools/swarm</code> (System 1) &mdash; UNCHANGED.</strong> It always called real models. Nothing changed today.</li>
+<li><strong><code>.ruflo/</code> (System 2) &mdash; UNCHANGED.</strong> Same Hermes audit/research orchestrator. Untouched.</li>
+<li><strong><code>tools/swarm_v2/</code> (System 3) &mdash; NEW directory, then LLM-wired.</strong> Did not exist before today.</li>
+</ul>
+<p style="margin:0 0 8px;">A <strong>"template stub" is not an AI call.</strong> As delivered (the Kimi scaffold), swarm_v2's
+engine literally returned a hardcoded string &mdash; <code>def foo(): pass</code> &mdash; and the workers
+filled deterministic string templates. <strong>Zero LLM calls, zero network.</strong> Running
+<code>/swarmv2-coding</code> on the old code returned placeholder code regardless of the prompt.</p>
+<p style="margin:0;">Today's work added <code>llm_client.py</code> and wired every worker to call a <strong>real LLM</strong>
+(deepseek/groq/cerebras/openrouter). The template is now only the <strong>offline fallback</strong> &mdash;
+used when no API key is present, so tests stay hermetic and the CLI never hard-crashes.</p>
+</div>
+<table>
+<tr><th></th><th>swarm_v2 before today (Kimi scaffold)</th><th>swarm_v2 after today</th></tr>
+<tr><td>Code generation</td><td>hardcoded <code>def foo(): pass</code></td><td>real LLM writes source + tests</td></tr>
+<tr><td>Review / research</td><td>deterministic string templates</td><td>real LLM review / findings</td></tr>
+<tr><td>LLM calls</td><td>none</td><td>deepseek / groq / cerebras / openrouter</td></tr>
+<tr><td>Template</td><td>the <em>only</em> path</td><td><em>fallback</em> only (offline / no key)</td></tr>
+</table>
+
+<h3>4.1 The six swarm types</h3>
+<table>
+<tr><th>Swarm</th><th>CLI</th><th>Parameters</th><th>Pipeline</th></tr>
+<tr><td>Coding</td><td><code>swarm coding &lt;task-file&gt;</code></td><td><code>--agents 3</code>, <code>--strict</code>, <code>--models</code></td><td>decompose &rarr; parallel generate &rarr; write tests &rarr; review &rarr; revise (&le;3) &rarr; verify</td></tr>
+<tr><td>PR Review</td><td><code>swarm pr-review &lt;repo&gt;</code></td><td><code>--pr N</code>, <code>--all-open</code></td><td>fetch &rarr; impact + review + risk &rarr; aggregate</td></tr>
+<tr><td>GitHub Actions</td><td><code>swarm actions &lt;repo&gt;</code></td><td><code>--since 30d</code>, <code>--notify</code></td><td>fetch runs &rarr; failed/flaky/cancelled/stale &rarr; blast radius</td></tr>
+<tr><td>Research</td><td><code>swarm research "&lt;topic&gt;"</code></td><td><code>--depth 3-5</code>, <code>--route A|B|C|D</code></td><td>decompose &rarr; parallel research &rarr; cross-verify &rarr; synthesize</td></tr>
+<tr><td>Ensemble</td><td><code>swarm ensemble "&lt;task&gt;"</code></td><td><code>--agents 5</code>, <code>--confidence-threshold 0.8</code></td><td>register &rarr; predict &rarr; weighted vote &rarr; expand</td></tr>
+<tr><td>Hierarchical</td><td><code>swarm hierarchical "&lt;task&gt;"</code></td><td><code>--strategists 2</code>, <code>--tacticians 3</code></td><td>strategic &rarr; tactical &rarr; execution &rarr; risk veto</td></tr>
+</table>
+<div class="card green">
+<strong>Real LLM providers (wired 2026-05-15):</strong> <code>swarms/core/llm_client.py</code> auto-detects
+a provider from env keys. Validated working: <strong>deepseek, groq, cerebras, openrouter</strong>.
+Every worker degrades to a deterministic template offline &mdash; the swarm never hard-crashes.
+Re-probe with <code>python -m swarms.core.llm_client --validate</code>.
+</div>
+<p><strong>Memory:</strong> outputs are stored in a ChromaDB vector store with hybrid BM25 + vector search.
+<code>swarm memory search "&lt;query&gt;"</code> finds prior results; <code>swarm memory export-skill</code>
+turns a result into a reusable Claude skill.</p>
+
+<h2>5. Quick-start</h2>
+<div class="card amber">
+<strong>Fast multi-vendor opinion:</strong>
+<pre><code>/swarm second-opinion "Should we size up COMMODITY given PF 2.49 / n=322?"</code></pre>
+<strong>Code a batch of todos:</strong>
+<pre><code>cd tools/swarm_v2
+python -m swarms.cli.main coding task.md --agents 3 --strict</code></pre>
+<strong>Audit the trading system:</strong>
+<pre><code>/swarm-ruflo audit --tier hybrid</code></pre>
+</div>
+
+<h2>6. Sample end-to-end flow &mdash; code todos with the coding swarm</h2>
+<ol>
+<li><strong>Write the task file</strong> <code>tools/swarm_v2/task.md</code> &mdash; a task or short spec,
+  stating what to implement and what the tests must cover.</li>
+<li><strong>Run</strong> <code>python -m swarms.cli.main coding task.md --agents 3 --strict</code>.</li>
+<li><strong>Pipeline:</strong> decompose &rarr; 3 generators write code+tests in parallel (each may use a
+  different provider) &rarr; test_writer enriches tests + re-runs pytest &rarr; 2 reviewers score each
+  artifact &rarr; generator revises on flagged issues (&le;3 rounds) &rarr; artifacts with failing tests dropped.</li>
+<li><strong>Collect</strong> surviving artifacts (source + tests + review comments + results).</li>
+<li><strong>Apply</strong> the winning diff yourself or via a <code>cavecrew-builder</code> subagent &mdash;
+  the swarm does <em>not</em> auto-commit.</li>
+</ol>
+
+<h2>7. Bulk-reviewing many files (e.g. 50 files)</h2>
+<div class="card purple">
+<strong>No purpose-built 50-file batch reviewer exists.</strong> <code>/swarm pr-review</code> and
+<code>/swarmv2-pr-review</code> are per-PR; <code>/swarm actions-audit</code> covers workflow YAML only.
+<br><strong>Workaround:</strong> build one briefing file with the 50 files (or excerpts) and fan it:
+<code>/swarm run swarm_runs/briefing_50_files.md deepseek,xai,cerebras</code> (bound spend with
+<code>--cost-cap-usd</code>). A dedicated <code>swarm bulk-review &lt;glob&gt;</code> mode is a noted future addition.
+</div>
+
+<h2>8. Use case per swarm type</h2>
+<p>One concrete, project-specific scenario for every swarm type.</p>
+
+<h3>swarm_v2 (/swarmv2-*)</h3>
+<table>
+<tr><th>Swarm</th><th>Concrete use case in this repo</th><th>Command</th></tr>
+<tr><td>Coding</td><td>Implement a queued backlog of <code>TESTING_PROTOCOL.MD</code> todos &mdash; e.g. wire the <code>kill_gate</code> min-n floor (M-055) into the commodity/fx kill switches. 3 agents draft + test in parallel; reviewers gate; you apply the winner.</td><td><code>swarm coding m055_task.md --agents 3 --strict</code></td></tr>
+<tr><td>PR Review</td><td>Triage the open-PR backlog before merge &mdash; impact score + risk level + breaking-change list per PR, so safe PRs merge fast and risky ones get flagged.</td><td><code>swarm pr-review &lt;repo&gt; --all-open</code></td></tr>
+<tr><td>GitHub Actions</td><td>Find chronically cancelled / flaky jobs in <code>audit-dashboard.yml</code> + <code>sports-smoke-and-e2e.yml</code> with no subsequent successful run &mdash; the recurring CI-drift problem.</td><td><code>swarm actions &lt;repo&gt; --since 30d</code></td></tr>
+<tr><td>Research</td><td>Scope a hard feature before building &mdash; e.g. the L&oacute;pez de Prado PBO/CPCV harness (M-052): decompose, research in parallel, cross-verify, surface disputed claims.</td><td><code>swarm research "PBO/CPCV overfitting harness" --depth 4</code></td></tr>
+<tr><td>Ensemble</td><td>Aggregate a directional call &mdash; BTC 4h LONG vs SHORT from N model votes, weighted by confidence; surfaces dissent instead of one model's guess.</td><td><code>swarm ensemble "BTC 4h direction" --agents 5</code></td></tr>
+<tr><td>Hierarchical</td><td>Mirror the trading desk: macro regime (VIX / BTC-dominance) &rarr; per-asset-class tactician signal &rarr; risk-controller veto on sizing. Produces a structured signal, not a trade.</td><td><code>swarm hierarchical "size COMMODITY exposure" --strategists 2 --tacticians 3</code></td></tr>
+</table>
+
+<h3>/swarm (System 1)</h3>
+<table>
+<tr><th>Mode</th><th>Concrete use case</th></tr>
+<tr><td><code>/swarm run</code></td><td>Fan an asset-class audit briefing to <code>deepseek,xai,cerebras</code> &mdash; cross-vendor consensus on whether COMMODITY clears the Tier-2 bar.</td></tr>
+<tr><td><code>/swarm followup</code></td><td>Single-strategy deep dive &mdash; prime with the FOREX briefing, then analysis &rarr; self-critique &rarr; final JSON verdict, one engine, 4 turns.</td></tr>
+<tr><td><code>/swarm second-opinion</code></td><td>Quick 3-engine gut-check: "kill or mutate the FOREX class given PF 0.27 / n=1249?"</td></tr>
+<tr><td><code>/swarm pr-review</code></td><td>Multi-specialist (architecture / cost-risk / data-flow) review of one PR before merge.</td></tr>
+<tr><td><code>/swarm invent</code></td><td>A new problem domain with no persona &mdash; bootstrap a custom persona split + test blueprint.</td></tr>
+<tr><td><code>/swarmwithprework</code></td><td>A large fuzzy task &mdash; 4-phase pre-work &rarr; brainstorm &rarr; synthesis &rarr; QA.</td></tr>
+</table>
+
+<h3>/swarm-ruflo (System 2)</h3>
+<table>
+<tr><th>Subcommand</th><th>Concrete use case</th></tr>
+<tr><td><code>audit</code></td><td>Scan <code>/audit</code> dashboard data for strategies with <code>forward_wr&lt;0.55</code>, stale strategies, elite-score starvation, anti-predictive leakage.</td></tr>
+<tr><td><code>bugs</code></td><td>Hunt the codebase for hardcoded paths, SQL injection, race conditions, unclosed DB connections, leaked API keys.</td></tr>
+<tr><td><code>github</code></td><td>GitHub hygiene &mdash; stale PRs (&gt;7d), failing Actions, commits without tests, workflow-file mismatches.</td></tr>
+<tr><td><code>strategy</code></td><td>Ideation &mdash; propose 3 new trading strategies (name, asset class, edge, implementation sketch, risk controls).</td></tr>
+</table>
+
+<h2>9. Recommended usage in this project</h2>
+<ul>
+<li><strong>Stock/crypto prediction</strong> &mdash; <code>/swarm run</code> with asset-class specialist
+  personas, or <code>/swarm-ruflo audit</code>. <code>/swarmv2-ensemble</code> does weighted signal
+  voting; <code>/swarmv2-hierarchical</code> mirrors macro&rarr;tactician&rarr;risk-veto. These produce
+  signals/analysis &mdash; they do not place trades.</li>
+<li><strong>Coding a backlog faster</strong> &mdash; <code>/swarmv2-coding</code>: multiple agents attempt
+  each task, tests are mandatory, reviewers gate quality. Divergent attempts surface edge-cases a
+  single pass misses, and the revise loop is enforced rather than optional.</li>
+<li><strong>PR triage</strong> &mdash; <code>/swarm pr-review</code>. <strong>CI health</strong> &mdash;
+  <code>/swarmv2-actions</code> or <code>/swarm-ruflo github</code>.</li>
+</ul>
+
+<p style="color:var(--muted);font-size:0.85em;margin-top:32px;border-top:1px solid var(--border);padding-top:12px;">
+Full markdown reference: <code>docs/SWARM_SYSTEMS_GUIDE.md</code>. Per-system docs:
+<code>tools/swarm/README.md</code>, <code>.ruflo/agents/TEMPLATE_agent.yaml</code>,
+<code>tools/swarm_v2/README.md</code>.</p>
+
+<a class="back" href="/updates/">&larr; Back to Updates</a>
+</div>
+</body>
+</html>

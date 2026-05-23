@@ -1,0 +1,78 @@
+{
+  "strategy_name": "crypto_hs_balanced_a01_v1",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T21:00:00Z",
+  "status": "paper_trading",
+  "strategy_type": "high_sharpe_balanced",
+  "unique_value": "High-Sharpe balanced composite using trend/mean-reversion/breakout with volatility regime gating.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "regime_adaptive",
+  "backtest_metrics": {
+    "sharpe": 4.22,
+    "win_rate": 0.5,
+    "max_drawdown": 0.0582,
+    "total_trades": 36,
+    "profit_factor": 2.06,
+    "total_return": 0.1045,
+    "timestamp": "2026-02-26T23:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "EMA(14/45)",
+    "ZScore(25)",
+    "RangeBreak(21)",
+    "ATR(13)",
+    "VolMA(24)"
+  ],
+  "entry_conditions": [
+    "Composite score exceeds side threshold",
+    "ATR regime expansion > 1.030",
+    "Volume ratio gate > 1.05 on breakout leg"
+  ],
+  "exit_conditions": [
+    "Take profit: 2.25x ATR",
+    "Stop loss: 1.40x ATR"
+  ],
+  "parameters": {
+    "fast_ema": 14,
+    "slow_ema": 45,
+    "z_window": 25,
+    "breakout_window": 21,
+    "vol_window": 24,
+    "atr_period": 13,
+    "vol_gate": 1.05,
+    "atr_gate": 1.03,
+    "trend_weight": 0.295,
+    "meanrev_weight": 0.3525,
+    "breakout_weight": 0.3525,
+    "long_threshold": 0.38,
+    "short_threshold": 0.38,
+    "tp_atr": 2.25,
+    "sl_atr": 1.4
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": "2026-02-24T05:53:08.916001+00:00",
+    "end_date": "2026-03-29T05:53:08.916001+00:00",
+    "days_remaining": 30,
+    "days_elapsed": 0,
+    "trades_count": 0,
+    "current_pnl": 0.0,
+    "progress_pct": 0.0,
+    "daily_pnl": []
+  },
+  "forward_metrics": {
+    "win_rate": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "total_trades": 0
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  }
+}

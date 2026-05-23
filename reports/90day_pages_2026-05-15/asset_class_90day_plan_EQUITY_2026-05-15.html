@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EQUITY — 90-Day Plan — findtorontoevents.ca</title>
+<style>:root{--accent:#22c55e}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>Asset Class 90-Day Plan — EQUITY — 2026-05-15</h1>
+<p><strong>Senior Quant Audit</strong> using <code>money-maker-continual-improve</code> skill (7-step process).<br />
+<strong>Focus</strong>: EQUITY crossed T2 threshold (PF 1.57 / WR 51.9% / n=420) but narrow speculative universe (18 tickers heavy on pennies/memes), limited fundamentals via yfinance wrapper (no primary SEC), strong hidden VIX regime edge in research not wired to prod, backtest/live gaps. Prioritize clean large-cap + regime filter before any sizing expansion. Not system pilot (COMMODITY CT=F leads PF 2.49 / WR 61.5% n=322).<br />
+<strong>Data sources</strong>: <code>audit_dashboard/data/dashboard_data.json</code> (2026-05-15T02:28Z), <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code>, <code>alpha_engine/config.py</code> (EQUITY_SYMBOLS + CATEGORY_RISK), <code>alpha_engine/equity_strategies.py</code>, <code>alpha_engine/equity_factor_model.py</code>, <code>alpha_engine/non_crypto_quality_gate.py</code>, <code>alpha_engine/scanner.py</code>, <code>reports/asset_class_research_EQUITY_2026_05_12_0438Z.md</code>, <code>reports/equity_vix_regime_breakthrough_20260513.md</code> + <code>equity_momentum_vix_regime_backtest.json</code>, <code>reports/equity_yc_regime_breakthrough_20260513.md</code>, <code>reports/equity_vix_yc_combined_super_breakthrough_20260513.md</code>, <code>reports/fix_EQUITY_20260505T005402Z.md</code>, <code>reports/audit_asset_feedback_2026-05-05T0121Z_EQUITY.md</code>, <code>reports/asset_class_research_EQUITY_2026_05_12_0438Z.md</code>, local git branches (<code>feat/equity-vix-regime-gate-sidecar-2026-05-13</code>), <code>audit_dashboard/data/equity_top*.json</code>, <code>audit_dashboard/data/db_health.json</code>, <code>reports/daily_ideas_synthesis_2026-05-15.md</code>.</p>
+<p><strong>Current Charter context</strong> (from CLAUDE.md / master plan / dashboard): EQUITY T2-candidate (May-3 snapshot PF 1.41 / WR 52.7 / n=421; today improved PF 1.57 / WR 51.9 / n=420 resolved, total_pnl +385.5%, sizing_allowed=true, stable). by_asset_class shows closed ~1050. Concentration OK: top_symbol AMD 11.65% PnL mass, top_strategy "Classic Momentum" 10.96%. Master plan flags "NEEDS-EVIDENCE-FIRST" for 2026-05-25 institutional (real T2 but require 30d clean rolling + MATCH on verify_system_pf before sizing; repeats claude_gainer_st pattern). Pending: M-009 (PEAD on top-100), M-025 (overnight_intraday_reversal EQUITY), M-026 (day-of-week Tue/Wed tilt). VIX regime sidecar branch exists but not merged/wired. Penny-stock kimi-EQUITY hallucinated names noted in drop list. Hermes unblocked some zero-evidence equities.</p>
+<hr />
+<h2>Step 1: Establish Brutal Baseline (EQUITY)</h2>
+<p><strong>Live performance</strong> (<code>dashboard_data.json::performance.asset_class_health.EQUITY</code> + <code>by_asset_class.EQUITY</code> + <code>asset_class_concentration.EQUITY</code>):</p>
+<ul>
+<li>Resolved n=420 (resolved_n=420), active 65; closed ~1050 in by_asset (discrepancy suggests noise-filter or different cohorts post-resolver-v2).</li>
+<li>WR: 51.9% (by_asset: 218 wins / 202 losses on closed?); expectancy +0.92.</li>
+<li>PF: 1.57 (by_asset_class), total_pnl_pct +385.5. Meets T2 floor (PF&gt;1.5 / WR&gt;50) with n=420 &gt;100 stable.</li>
+<li>Concentration: OK tier (no warn/block). Top symbol: AMD (11.65% PnL mass, 202.4), top_strategy: "Classic Momentum" (10.96% share, 190.55 PnL mass). honest_label: "EQUITY edge = Classic Momentum on AMD (12% of class PnL)".</li>
+<li>Circuit breaker: cold_start (n=0&lt;30 realized_30d), no breach. sizing_allowed=true.</li>
+<li>Older (May-3 master): PF 1.41 / WR 52.7 / n=421; May-5 audit feedback: PF 1.41/52.8 n=428 "candidate, not proven Tier 2", alpha_engine PF1.23 MDD194% heavy on INJUSDT (misclassified?).</li>
+<li>Research backtests (May-13): baseline 12-1 momentum top-5 on 30 LC universe: n=122 periods, WR 64.75%, PF 2.82, Sharpe 1.34, MDD 24.19%, +1516% (2015-2026). But live on narrow 18-ticker mix much lower.</li>
+</ul>
+<p><strong>Symbol universe coverage and quality (large-cap vs mid vs penny/meme)</strong>:</p>
+<ul>
+<li>Defined in <code>alpha_engine/config.py:587-612</code> (EQUITY_SYMBOLS dict, 18 total):</li>
+<li>Large-cap "stock": AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, COIN, MSTR (10)</li>
+<li>ETFs as stock: SPY, QQQ (2)</li>
+<li>Penny: PLTR, SOFI, RIVN, LCID, NIO, SNDL (6 — high-beta EV/tech/speculative)</li>
+<li>Meme: GME, AMC (2)</li>
+<li><code>scanner.py:877</code>: if s in EQUITY_SYMBOLS or (1&lt;=len&lt;=5 and alpha) → treats as equity.</li>
+<li><code>CATEGORY_RISK</code> in config: "penny" and "meme" have looser stops (e.g. wider SL/TP, shorter hold).</li>
+<li><code>community_strategies.py</code>: COMMUNITY_EQUITY_STRATEGIES adds <code>community_penny_volume_surge</code> (penny_meme only, vol&gt;3x, ADX&gt;20) + ORB.</li>
+<li>Research vs prod mismatch: all <code>equity_*_backtest.json</code> + <code>equity_top*.json</code> (May-13) hardcode 30 clean large-cap (AAPL..TMO incl AVGO, ORCL, JPM, BAC, WFC, GS, MS, BLK, JNJ, PFE, UNH, ABBV, LLY, WMT, HD, COST, KO, MCD, XOM, CVX, PG, PEP, TMO) — <strong>no pennies/memes</strong>. Backtests optimistic.</li>
+<li>Hermes/PRs: blocked 10+ zero-evidence equities; unblocked some in #1024. Kimi hallucinated 7 penny-EQUITY names (drop list).</li>
+<li>Quality verdict: <strong>Poor / narrow + speculative</strong>. Only 18 curated names (no mid-cap breadth, no Russell 1000/ S&amp;P500 point-in-time, heavy idiosyncratic risk from pennies (NIO/LCID/RIVN gaps to zero) + memes (GME/AMC sentiment-driven)). No explicit liquidity/ADV filter in core path (unlike crypto research). <code>equity_price_failover.py</code> + stooq attempt (Stooq now API-key gated) show data fragility. Survives on momentum of mega-tech but dragged by speculative names. Not institutional diversified universe.</li>
+</ul>
+<p><strong>Earnings, SEC filings, or fundamental data usage</strong>:</p>
+<ul>
+<li>Partial via <code>alpha_engine/equity_factor_model.py</code> (imported + wrapped in equity_strategies.py:1254-1256):</li>
+<li>yfinance.Ticker.info: trailingPE/forwardPE (value factor, inverted/normalized), returnOnEquity (quality), 52WeekChange proxy for momentum.</li>
+<li>earnings_dates + quarterly_earnings: surprise_pct → <code>compute_earnings_boost</code>: +0.05 (&gt;5% beat, PEAD), -0.10 (miss&gt;5%, asymmetric per Livnat &amp; Mendenhall 2006).</li>
+<li><code>enhance_equity_confidence</code>: factor composite (0.3 value + 0.35 mom + 0.35 quality) + PEAD → boost  +0.10 / +0.05 / -0.05.</li>
+<li>Cache 6h TTL.</li>
+<li><code>earnings_gap_reversal_scanner</code> (equity_strategies:966): sector ETF (XLK/XLV etc) gap-down &gt;4% on 2x vol as "earnings proxy" (Ball &amp; Brown 1968 ref); mean-reversion on 11 sectors. Not per-stock actual earnings.</li>
+<li>No primary SEC: no EDGAR API, no 10-K/10-Q text analysis, no Form 4 insider (some in vt_baby_strategies.py:231 "EDGAR Form-4"), no 13D (vt_baby:312), no balance sheet/cashflow deep parse, no analyst estimates beyond yf.</li>
+<li><code>equity_data_stooq.py</code>: Stooq EOD quote/OHLCV (intraday snapshot works anon; bulk needs key now); failover exists but yf dominant.</li>
+<li>Verdict: <strong>Limited "Yahoo wrapper" fundamentals + PEAD boost, no real SEC/filings</strong>. M-009 (PEAD top-100, earnings-calendar partial) still pending. Factor model adds marginal lift (0.05-0.10 conf) but noisy yf data (fails, stale, not PIT for rigorous backtests). Academic refs (Fama-French, Jegadeesh-Titman, Asness QMJ, Ball-Brown) in docstrings but implementation thin.</li>
+</ul>
+<p><strong>Outcome tracking / DB reality</strong>:</p>
+<ul>
+<li>Resolved n=420 solid for class (post-resolver-v2 noise filter applied). <code>db_health.json:2026-05-15</code>: ghost_rows total=0 (green, per_class EQUITY ok but pymysql ModuleNotFoundError blocked full checks like pnl_integrity/won_pnl_contradiction).</li>
+<li>Paper trading (tv-paper-trade) active per GHA + recent PRs (#1023). at_signal_outcomes coverage assumed high but limited visibility in this env.</li>
+<li><code>effective_n_report.json</code>: equity not top in autocorr sample (COMMODITY COT dominant); DSR sidecars mentioned elsewhere.</li>
+<li>Resolver gaps noted system-wide in other classes (e.g. crypto 95% excluded in aa1); assume similar risk for equity ML paths if any.</li>
+</ul>
+<p><strong>GitHub Actions / Data flow + recent activity</strong>:</p>
+<ul>
+<li>Flows: production_scanner / scanner.py (EQUITY_STRATEGIES from equity_strategies + community) → score_booster (vix_adj + factor) → quality_gates (passes_active_gate + equity_macro_gate) → dashboard.</li>
+<li>GHA: audit-dashboard.yml etc cover. DB Freshness Guardian (M-002) in progress.</li>
+<li>Recent branches (not all merged): <code>feat/equity-vix-regime-gate-sidecar-2026-05-13</code>, <code>feat/equity-rsi2-overbought-short-2026-05-14</code>, <code>feat/equity-trust-tier-exempt-2026-04-29</code>, <code>edge-analysis-equity-hc-floor-2026-04-30</code>, <code>fix/equity-failover-cache-path-sanitization-2026-04-29</code>.</li>
+<li>Hermes direct commits + PRs touched equity blocks/unblocks. VIX sidecar research (May-13) not yet wired (Wire-Up violation risk if rushed).</li>
+<li>Master plan updates: EQUITY institutional 2026-05-25 NEEDS-EVIDENCE (30d clean + MATCH).</li>
+</ul>
+<p><strong>Summary baseline</strong>: PF 1.57 meets T2 floor on modest n=420, driven by Classic Momentum on AMD + factor/PEAD + SPY200+VIX gates. But universe is narrow speculative (18 tickers, 8 pennies/memes), fundamentals shallow (yf only), research on 30 LC + VIX&lt;20 shows Tier-1 PF 5.37/MDD 7.3% (n=88 periods) vs live reality. Backtest optimism (MDD 24% baseline) not reflected in prod. Better than FOREX (PF 0.81), competitive with ETF (1.48), but far from COMMODITY flagship. Hidden edge in regime filter + clean universe expansion is the lever. Risks: penny gaps, concentration, yf fragility, no costs model yet (M-018 pending).</p>
+<hr />
+<h2>Step 2: Identify the Single Best Pilot Candidate (within EQUITY)</h2>
+<p><strong>Filters</strong>: Live PF&gt;1.5 + WR&gt;50% + n≥100 post-noise; clear explainable edge (academic + regime); feasible infra (no new paid data first); protectable (VIX gate + liquidity).</p>
+<ul>
+<li><strong>Recommended Pilot</strong>: <strong>VIX-regime filtered 12-1 Momentum on clean Large-Cap core</strong> (SPY/QQQ + top 15-20 liquid names from research universe: AAPL/MSFT/NVDA/TSLA/AMZN/GOOGL/META/AMD/AVGO/ORCL/JPM/GS/UNH/LLY/WMT/COST/XOM/PG + 2-3 more by ADV; <strong>quarantine or micro-size pennies/memes separately</strong>).</li>
+<li>Core: momentum_factor_12m + optimized_stock_momentum + quality_value_composite (all wrapped by equity_factor_model) + intermarket_risk_on + connors_rsi2_scanner (proven 75%+ WR on SPY/QQQ per docstring, p&lt;1e-5).</li>
+<li>Regime: wire VIX&lt;22 hard filter (from <code>reports/equity_vix_regime_breakthrough_20260513.md</code> + backtest json) + existing equity_macro_gate (SPY&gt;200SMA) + vix_confidence_adj.</li>
+<li>Factor/PEAD boost + earnings_gap on sectors.</li>
+<li>Liquidity gate + trust_score.</li>
+<li>Justification: Research backtest (30 LC, 2015-2026) with VIX&lt;20: PF 5.37 / WR75% / Sharpe 2.19 / MDD 7.3% (Tier-1 despite n=88) vs baseline PF2.82/MDD24%. Skips high-vol months where momentum dies (COVID, 2022). VIX&lt;22 still Tier-1-ish (PF4.55, MDD16.8%). Academic (Jegadeesh-Titman, Asness, Faber). Matches "size up where edge best worth risk". Live on narrow 18 already 1.57; clean + filter lifts dramatically. External: SPY/QQQ options flow, VIX futures, FRED (pending M-032), Yahoo for replication. Avoids penny/meme noise (high false edge).</li>
+<li>Secondary: If pilot succeeds, test overnight_intraday_reversal (M-025) + DOW tilt (M-026) on core only; expand to 50-100 LC with point-in-time Russell1000 later.</li>
+<li>Not system pilot (COMMODITY remains priority per skill/master). EQUITY for conditional 2026-05-25+ after evidence.</li>
+</ul>
+<p><strong>Gap vs current</strong>: Prod uses 18 mixed (pennies drag), no VIX hard filter (only adj + macro), research 30 LC not prod.</p>
+<hr />
+<h2>Step 3: Gap Analysis (EQUITY)</h2>
+<table>
+<thead>
+<tr>
+<th>Gap Type</th>
+<th>Diagnostic (data-backed)</th>
+<th>Severity</th>
+<th>Typical Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Symbol universe quality (narrow + penny/meme drag)</td>
+<td>18 tickers in config.py (8 pennies/memes: NIO/LCID/RIVN/PLTR/SNDL/GME/AMC heavy beta/gap risk); research uses 30 clean LC (no overlap full); no ADV/liquidity runtime gate; Hermes blocks "zero-evidence"; concentration on AMD 12%; kimi hallucinated names. Live n=420 but from speculative names.</td>
+<td><strong>P0</strong></td>
+<td>Separate LARGE_CAP_EQUITY (20-30 liquid names from research list + ADV&gt;$5M filter) vs PENNY_MEME (quarantine or 0.1% micro only). New list in config.py; gate in scanner.py / equity_strategies.py before emit. Deprecate meme/penny volume from main EQUITY class.</td>
+</tr>
+<tr>
+<td>Fundamentals / earnings / SEC</td>
+<td>yf wrapper only (PE/ROE/surprise in equity_factor_model.py, 6h cache, no PIT guarantee); earnings_gap uses sector ETF proxy not real per-name calendar; no EDGAR/10K/insider/13D in core pipeline (vt_baby only); M-009 PEAD top-100 pending (earnings-calendar partial).</td>
+<td><strong>P1</strong></td>
+<td>Harden yf with failover + validate PIT; add free earnings calendar (e.g. via yf or FMP low-cost); wire real PEAD strategy (M-009) on liquid core only; spike FRED macro (M-032) for value/quality context. No paid SEC APIs first.</td>
+</tr>
+<tr>
+<td>Hidden regime / factor not wired</td>
+<td>VIX&lt;20/22 filter delivers Tier-1 PF 4.5-5.4 / MDD&lt;17% (backtest json + reports/equity_vix_*_20260513.md) on 30 LC; YC weaker; prod only has soft vix_confidence_adj + SPY200 gate in non_crypto_quality_gate.py; regime_filtered_momentum optional in _RAW_EQUITY_STRATEGIES but not default; feat/equity-vix-regime-gate-sidecar-2026-05-13 unmerged.</td>
+<td><strong>P0</strong></td>
+<td>Wire VIX hard filter (opt-in sidecar per Wire-Up) in equity_strategies + scanner / quality_gates.passes_active_gate; backtest on actual 18 + expanded LC; promote to default for momentum strats. Add to equity_macro_gate.</td>
+</tr>
+<tr>
+<td>Backtest vs forward / execution realism</td>
+<td>Research PF 2.8+ / low MDD with filter on clean univ; live 1.57 on narrow+spec; no slippage/position_sizer (M-017/018 scaffolds in PR #1026 not wired for equity); CATEGORY_RISK loose on penny; costs eat edge on volatile names.</td>
+<td><strong>P1</strong></td>
+<td>Wire slippage_validator + vol-target sizer (M-017/018) for EQUITY; add 5-20bp friction to all equity backtests; re-run VIX filter + momentum on prod symbols + costs.</td>
+</tr>
+<tr>
+<td>Strategy bloat / thin n</td>
+<td>~15-20 equity strats (momentum/penny/meme/quality/connors/rsi/gap/turn_of_month + community); "Classic Momentum" dominant live; many low-n or unproven (earnings_gap on sectors only); n=420 modest vs CRYPTO 8k.</td>
+<td><strong>P2</strong></td>
+<td>Prune via quality_gates (delete low-PF on penny sub if any); promote 4-5 core (momentum + connors + quality + intermarket + vix-filtered); focus volume on liquid pilot.</td>
+</tr>
+<tr>
+<td>Data freshness / missing low-cost</td>
+<td>yf rate limits/fails (failover exists); no FRED yet (M-032 pending); Stooq key-gated; DB checks blocked by pymysql in some envs but ghost=0 good.</td>
+<td><strong>P2</strong></td>
+<td>Cache yf/stooq aggressively; add FRED secret + macro filter (DXY/yield for equity value); extend DB Freshness Guardian to equity tables.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why PF 1.57 but not higher / more robust?</strong> Narrow + speculative universe (pennies/memes inflate vol, gaps, correlation to retail sentiment not factors); research optimism on clean 30 LC + VIX regime not in prod; shallow fundamentals (no SEC depth); no costs model; momentum works but fragile without hard VIX gate (crashes kill it, as in baseline MDD 24%). Factor/PEAD marginal. Matches "data quality &gt; model sophistication".</p>
+<hr />
+<h2>Step 4: Decision Framework for Strategies (live &gt;60d)</h2>
+<ul>
+<li><strong>Statistically significant negative alpha (PF&lt;1.0 or WR&lt;40% sustained, n&gt;30 on sub)</strong>: <strong>Delete or hard quarantine</strong> (BLOCKED_SOURCE_SYSTEMS + probation). Examples: any penny/meme-only strats with poor realized (community_penny_volume_surge if low WR); old kimi-EQUITY hallucinations; low-n gap_reversal if failing on liquid.</li>
+<li><strong>Strong negative correlation with main (momentum)</strong>: Consider <strong>inverted version</strong> (e.g. short bias on overbought per feat/equity-rsi2-overbought-short-2026-05-14 branch; test on VIX&gt;30 only).</li>
+<li><strong>Positive but fragile (PF 1.3-1.6, high beta names)</strong>: Tighten + regime filter + costs. "Classic Momentum" / momentum_factor_12m / optimized_stock_momentum — add VIX hard gate + restrict to LC core.</li>
+<li><strong>Only keep if survives walk-forward + live paper with real costs</strong>: Promote momentum_factor_12m (Jegadeesh-Titman), connors_rsi2_scanner (75%+ SPY proof), quality_value_composite, intermarket_risk_on, vix_spike_reversal (exempt), earnings_gap (proxy). + factor wrapper.</li>
+<li><strong>Per master (M-009/025/026)</strong>: Scaffold PEAD + overnight + DOW tilt as opt-in sidecars on pilot core only; require n&gt;50 paper before volume.</li>
+</ul>
+<p><strong>Strategies to delete/invert/promote (file paths)</strong>:
+- Quarantine/delete: speculative penny/meme emitters if PF&lt;1.2 30d; hallucinated kimi names → <code>alpha_engine/strategy_blocklist.py</code>, <code>config.py</code> (move to PENNY_MEME_SYMBOLS separate class), <code>audit_trail/quality_gates.py</code> (new per-class quarantine).
+- Promote/wire: VIX regime filter (from feat/equity-vix-regime-gate-sidecar + backtest tool) → <code>alpha_engine/equity_strategies.py</code> + <code>non_crypto_quality_gate.py</code> (extend equity_macro_gate) + <code>scanner.py</code>; <code>equity_factor_model.py</code> already good.
+- Invert/test: RSI2 overbought short on high-VIX (branch).
+- Reference: <code>equity_strategies.py:1232</code> (_RAW + wrap), <code>non_crypto_quality_gate.py:136</code> (macro + vix_adj), <code>config.py:587</code> (universe).</p>
+<hr />
+<h2>Step 5: Leverage AI Keys Intelligently (High-ROI Prompts)</h2>
+<p>(Per skill: use for feature ideation, deconstruction, data discovery — not production code gen without verify.)</p>
+<p><strong>Feature Ideation (EQUITY)</strong>:</p>
+<pre><code>For EQUITIES (large-cap US), give 8-10 high-signal, low-cost features from peer-reviewed papers 2018-2025 (e.g. momentum, value, quality, PEAD, volatility timing, yield-curve). For each: exact free data source (FRED series, Yahoo, CBOE VIX, earnings calendar), statistical validation test (e.g. t-stat, DSR), and realistic implementation cost (API calls/day).
+</code></pre>
+<p><strong>Strategy Deconstruction</strong>:</p>
+<pre><code>Summarize core mechanics, entry/exit, risk controls, failure modes, and tx cost assumptions (5-20bp) of: (1) 12-1 momentum (Jegadeesh-Titman) on S&amp;P100, (2) Connors RSI-2 on SPY/QQQ, (3) VIX&lt;22 regime overlay on momentum. Include walk-forward decay expectations.
+</code></pre>
+<p><strong>Data Source Discovery</strong>:</p>
+<pre><code>What free/near-free 2026 sources for US equity: real-time earnings calendar + surprise (beyond yf), full SEC EDGAR 10-Q text embeddings (free tier?), point-in-time Russell 1000 constituents, FRED macro (ISM, GDP, rates) for factor overlay? Quant shop scale.
+</code></pre>
+<p><strong>Pruning / Inversion</strong>:</p>
+<pre><code>Given EQUITY strategy &quot;penny_volume_breakout&quot; on NIO/LCID (high beta, n=XX, realized PF 0.9 WR 44% last 60d), should we delete, invert to short, or tighten (liquidity gate + VIX&lt;25 only)? 3 concrete recs with turnover/edge impact.
+</code></pre>
+<hr />
+<h2>Step 6: Low-Cost Data &amp; Validation Stack</h2>
+<ul>
+<li>Cache: yf already 6h in factor_model; extend to all equity OHLCV (equity_price_failover.py).</li>
+<li>Walk-forward / rolling OOS: mandatory on any new VIX filter or PEAD (use existing backtest tools + CPCV per M-052).</li>
+<li>MC / bootstrap: for Sharpe/MDD CI on pilot (as in COT reports).</li>
+<li>Live paper vs backtest: only truth; shadow 0.5-1% on VIX-filtered LC core first (7-14d soak, target PF&gt;1.8 WR&gt;55 n&gt;30).</li>
+<li>Compare: always vs COMMODITY COT pilot benchmark.</li>
+</ul>
+<hr />
+<h2>Step 7: Produce a Focused Output (90-day plan)</h2>
+<p><strong>Pilot Asset Class rec</strong>: VIX-regime + clean Large-Cap Momentum (not broad EQUITY). COMMODITY remains system pilot.</p>
+<p><strong>Top 5 gaps (P0/P1)</strong>:
+1. P0: Narrow/speculative universe (18 mixed tickers) vs research 30 LC — primary drag.
+2. P0: VIX regime Tier-1 edge (PF 5+ / MDD 7%) discovered May-13 not wired (sidecar branch exists).
+3. P1: Shallow fundamentals (yf wrapper, no SEC/earnings calendar primary).
+4. P1: No execution realism (slippage/costs not in equity path; M-017/018 pending).
+5. P2: Strategy bloat on pennies + modest n=420; DSR/effective n visibility low.</p>
+<p><strong>Specific actionable fixes (files)</strong>:
+- Universe split + LC list + ADV gate: <code>alpha_engine/config.py</code> (new LARGE_CAP_EQUITY_SYMBOLS), <code>alpha_engine/equity_strategies.py</code> (filter in each fn), <code>alpha_engine/scanner.py</code>.
+- Wire VIX hard filter sidecar: <code>alpha_engine/equity_strategies.py</code> (new vix_regime_momentum wrapper), <code>non_crypto_quality_gate.py</code> (extend gate), <code>audit_trail/quality_gates.py</code>; merge from <code>feat/equity-vix-regime-gate-sidecar-2026-05-13</code> with Wiring Plan.
+- PEAD real + earnings: <code>alpha_engine/equity_factor_model.py</code> (add calendar source), new <code>alpha_engine/strategies/pead_equity.py</code> (M-009).
+- Costs + sizer: wire PR #1026 scaffolds into equity path.
+- Prune: <code>audit_trail/quality_gates.py</code> (EQUITY-specific quarantine for penny sub-PF).</p>
+<p><strong>Strategies to delete/invert/promote</strong>:
+- Quarantine: penny/meme volume strats if &lt;1.2 PF 30d; old low-n gaps.
+- Promote: momentum + connors_rsi2 + vix-filtered + factor-wrapped core on LC only.
+- Invert: overbought short variants on high-VIX.</p>
+<p><strong>2-3 AI prompt templates</strong>: (see Step 5 above; tailored to VIX timing, PEAD calendar, LC universe expansion).</p>
+<p><strong>30/60/90-day execution (focused, 5-7 M-IDs max, Wire-Up + clean PRs only)</strong>:</p>
+<p><strong>30 Days (P0 — Wire regime + clean universe foundation)</strong>:
+- Create clean <code>LARGE_CAP_EQUITY_SYMBOLS</code> (20-25 from research 30 LC list + ADV filter) + <code>PENNY_MEME_SYMBOLS</code> (separate or research-only) in <code>alpha_engine/config.py</code>. Add <code>is_liquid_equity()</code> gate in <code>scanner.py</code> + equity_strategies.py (all 15+ fns).
+- Wire VIX regime hard filter (VIX&lt;22 skip or 0-conf for non-exempt momentum strats) as opt-in sidecar from existing branch + backtest tool; add to <code>non_crypto_quality_gate.equity_macro_gate</code> + <code>vix_confidence_adj</code>. Backtest on new LC list + costs (5-10bp).
+- Scaffold minimal PEAD (M-009) using yf earnings_dates on LC core only (2d post-earnings window).
+- Enforce in <code>quality_gates.passes_active_gate</code> + <code>score_booster</code> for EQUITY.
+- Shadow paper 0.2-0.5% on LC + VIX filter (target n≥20 clean, PF&gt;1.7).
+- Docs: Update <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code> (Section 21 + M-009/025/026 status, VIX wire); create this <code>reports/asset_class_90day_plan_EQUITY_2026-05-15.md</code>. Small PRs with Wiring Plan.
+- Success: Dashboard EQUITY concentration shifts to LC names (&gt;70% PnL from top 10 liquid); VIX filter telemetry live; no new penny emissions in main class.</p>
+<p><strong>60 Days (P1 — Validate pilot + harden data)</strong>:
+- 30d rolling paper on VIX-filtered LC momentum core: target PF&gt;1.8 / WR&gt;55 / MDD&lt;15 / n≥50 / DSR&gt;0.9 (vs COMMODITY benchmark). Full walk-forward + bootstrap CI.
+- Real earnings calendar integration (free source spike) + full factor_model validation (PIT check vs yf history).
+- Wire M-025 (overnight_intraday_reversal) + M-026 (DOW Tue/Wed bias) as opt-in on LC pilot only; test with VIX gate.
+- Add friction model + slippage_validator to all EQUITY backtests (M-018); re-validate VIX PF lift survives.
+- External replication: compare pilot to SPY/QQQ momentum public (AQR, Alpha Architect) or simple VIX-timed ETFs.
+- GHA + DB freshness for equity tables; effective_n / DSR per equity strat.
+- Success: Paper pilot clean 30d metrics meet T2+; live dashboard shows EQUITY PF lift 0.15-0.3+ with lower vol; M-009/025/026 evidence in master plan.</p>
+<p><strong>90 Days (P2 — Scale decision or quarantine further)</strong>:
+- If pilot meets gates (30d clean rolling PF&gt;1.8 WR&gt;55 n≥100 post real costs/slippage, DSR≥0.95, corr&lt;0.6 with COMMODITY, no MDD&gt;15% breach): promote to 0.5-1% live micro sizing (skin-in-game prep per M-061), expand carefully to 40-50 LC (point-in-time Russell), full FRED macro overlay (M-032). Update master plan EQUITY institutional date.
+- Else (likely safer initial): Keep shrink (pennies/memes research-only or 0 vol), double-down on 15-20 LC + VIX/Connors/factor core; further prune bloat; consider "PENNY_STOCK" as distinct low-conviction class. No broad expansion.
+- Master plan: Close highest-priority (VIX wire, universe split, PEAD) with reproducible paper logs + dashboard delta; add M-0xx only for funding/earnings calendar + ADV gate. Reference Wire-Up Rule, clean branches, docs/MUTATION_THREE_AXIS_PROTOCOL.md (no silent kill).
+- Overall: EQUITY moves from "T2-candidate on shaky narrow speculative base" to "focused Tier-2 / near-Tier-1 on regime-filtered LC core" or "conservative micro-vol only". Contributes to phenomenal performance across classes. Prioritize COMMODITY to real-money Level 4/5 first.</p>
+<p><strong>Risks / Anti-patterns avoided</strong>: No spread across all 18+pennies; no trust research backtest (30 LC) without paper on prod symbols; no new complex models before VIX gate + liquidity split + costs; prune &gt; add (delete/quarantine 5+ speculative strats); no production risk/execution code without verification + swarm. Follows "one asset class done properly".</p>
+<p><strong>Files to touch (Wire-Up compliant, small focused PRs, opt-in/sidecar preferred)</strong>: <code>alpha_engine/config.py</code> (universe split + LC list), <code>alpha_engine/equity_strategies.py</code> (VIX wrapper + filters + factor apply), <code>alpha_engine/non_crypto_quality_gate.py</code> (hard VIX gate), <code>alpha_engine/scanner.py</code> + <code>production_scanner.py</code> (liquidity gate), <code>alpha_engine/equity_factor_model.py</code> (earnings calendar), <code>audit_trail/quality_gates.py</code> (EQUITY quarantine + M-004 analog), <code>alpha_engine/strategies/pead_equity.py</code> (new M-009), <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code> (update only). Reference <code>feat/equity-vix-regime-gate-sidecar-2026-05-13</code> for cherry-pick. All via clean branches + swarm review per AGENTS.md.</p>
+<p><strong>Expected impact</strong>: Universe split + VIX filter: +0.3-0.8 PF / -50% MDD on pilot (research validated), shift 60%+ PnL to liquid LC names, lower gap risk; PEAD + costs: +0.1 PF sustainability; n stable or grow on quality. Path to T2+ / near-T1 on focused EQUITY within 90d. Positions for "phenomenal across ALL asset classes" Goal #1. Avoids FOREX-style sub-floor trap.</p>
+<p><strong>Next</strong>: Spawn deep-dive subagent for specific (e.g. penny autopsy or external replication SPY momentum + VIX timing funds) only if pilot paper fails. Update <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code> highest-priority only (VIX wire + universe). All changes small PRs + evidence.</p>
+<p><strong>References</strong> (absolute paths):
+- Data: <code>/mnt/e/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json</code>, <code>db_health.json</code>, <code>equity_momentum_vix_regime_backtest.json</code>, <code>equity_top*.json</code>
+- Master: <code>/mnt/e/findtorontoevents_antigravity.ca/reports/MASTER_ACTION_PLAN_2026-05-15.md</code>
+- Code: <code>/mnt/e/findtorontoevents_antigravity.ca/alpha_engine/config.py:587</code> (EQUITY_SYMBOLS), <code>equity_strategies.py:1232</code> (_RAW + wrap + earnings_gap), <code>equity_factor_model.py:41</code> (yf + PEAD), <code>non_crypto_quality_gate.py:136</code> (equity_macro_gate + vix_adj), <code>scanner.py</code>
+- Reports: <code>asset_class_research_EQUITY_2026_05_12_0438Z.md</code>, <code>equity_vix_regime_breakthrough_20260513.md</code>, <code>equity_yc_regime_breakthrough_20260513.md</code>, <code>equity_vix_yc_combined_super_breakthrough_20260513.md</code>, <code>fix_EQUITY_20260505T005402Z.md</code>, <code>audit_asset_feedback_2026-05-05T0121Z_EQUITY.md</code>
+- Branches: <code>feat/equity-vix-regime-gate-sidecar-2026-05-13</code> (unmerged research)</p>
+<p>This plan is ruthless, data-driven, focused on compounding real persistent edge (VIX-timed LC momentum + PEAD) while eliminating waste (penny/meme noise, unproven strats). Quality over quantity for EQUITY. One class done right.</p>
+<hr />
+<p><em>Generated 2026-05-15 per money-maker-continual-improve skill invocation on EQUITY audit. Pilot for system remains COMMODITY (COT); this is EQUITY-specific 90d rescue-to-Tier-2 plan. Follows AGENTS.md / CLAUDE.md / SOUL.md / every-session reads of SOUL/USER/memory/2026-05-15.md + skill.</em></p>
+<div class="src">Source: <code>reports/asset_class_90day_plan_EQUITY_2026-05-15.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

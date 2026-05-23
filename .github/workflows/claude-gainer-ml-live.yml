@@ -1,0 +1,133 @@
+name: Claude Gainer ML  Live Scanner
+
+on:
+  schedule:
+    - cron: '15,45 * * * *'  # Every 30 min (was 4h  bottleneck for FC-PRO)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'scan or validate-only'
+        required: false
+        default: 'scan'
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            crypto_gainer_ml
+            claude_gainer_ml
+            shared
+            alpha_engine
+            updates/data
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r claude_gainer_ml/requirements.txt
+
+      - name: Run live scanner
+        run: |
+          cd claude_gainer_ml
+          python live_scanner.py --top 200 --max-picks 10 --no-discord
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+
+      - name: Sync active picks + scorecard + history into dashboard JSON
+        run: |
+          mkdir -p updates/data
+          python3 -c "
+          import json, os
+
+          picks_path = 'claude_gainer_ml/tracker/claude_live_picks.json'
+          perf_src   = 'claude_gainer_ml/tracker/claude_performance.json'
+          perf_path  = 'updates/data/antigravity_ml_performance.json'
+          hist_path  = 'updates/data/antigravity_ml_pick_history.json'
+
+          if not os.path.exists(picks_path) or not os.path.exists(perf_path):
+              print(f'Missing files: picks={os.path.exists(picks_path)} perf={os.path.exists(perf_path)}')
+              exit(0)
+
+          picks_data = json.load(open(picks_path))
+          perf_data  = json.load(open(perf_path))
+
+          # 1) Sync active picks
+          active = [p for p in picks_data.get('picks', []) if p.get('status') == 'ACTIVE']
+          perf_data['active_picks'] = active
+          perf_data['last_run'] = picks_data.get('updated_at', perf_data.get('last_run', ''))
+
+          # 2) Build scorecard from claude_performance.json
+          if os.path.exists(perf_src):
+              cp = json.load(open(perf_src))
+              resolved = [p for p in picks_data.get('picks', []) if p.get('status') == 'RESOLVED']
+              expired = len([p for p in resolved if p.get('exit_reason') == 'TIME_EXIT'])
+              perf_data['scorecard'] = {
+                  'total_picks':    cp.get('total_picks', 0),
+                  'tp_hits':        cp.get('total_wins', 0),
+                  'sl_hits':        cp.get('total_losses', 0),
+                  'expired':        expired,
+                  'win_rate':       cp.get('win_rate', 0),
+                  'total_pnl_pct':  cp.get('total_pnl_pct', 0),
+                  'profit_factor':  cp.get('profit_factor', 0),
+                  'avg_win_pct':    cp.get('avg_win_pct', 0),
+                  'avg_loss_pct':   cp.get('avg_loss_pct', 0),
+                  'sharpe_ratio':   cp.get('sharpe_ratio', 0),
+              }
+              print(f'Scorecard synced: {cp.get(\"total_picks\",0)} picks, {cp.get(\"win_rate\",0)}% WR')
+          else:
+              print(f'No claude_performance.json found at {perf_src}')
+
+          json.dump(perf_data, open(perf_path, 'w'), indent=2)
+          print(f'Synced {len(active)} active picks into {perf_path}')
+
+          # 3) Sync resolved pick history
+          resolved = [p for p in picks_data.get('picks', []) if p.get('status') == 'RESOLVED']
+          history = [{
+              'symbol':      p.get('symbol', ''),
+              'entry_price': p.get('entry_price', 0),
+              'exit_reason': p.get('exit_reason', ''),
+              'pnl_pct':     p.get('pnl_pct', 0),
+              'entry_time':  p.get('entry_time', ''),
+              'confidence':  p.get('confidence', ''),
+          } for p in resolved]
+          json.dump(history, open(hist_path, 'w'), indent=2)
+          print(f'Wrote {len(history)} resolved picks to {hist_path}')
+          "
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add claude_gainer_ml/tracker/ claude_gainer_ml/data/ updates/data/ || true
+          git diff --staged --quiet || git commit -m "Claude Gainer ML scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Claude Gainer ML  Live Scanner" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+
+      - name: Notify ML channel on failure
+        if: failure()
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"\\u274c ML Job FAILED: ${{ github.workflow }}\", \"description\": \"Job: ${{ github.job }}\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nBranch: ${{ github.ref_name }}\", \"color\": 15158332, \"timestamp\": \"$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}]}" \
+            "$DISCORD_ML_CHANNEL" || true
+

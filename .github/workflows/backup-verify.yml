@@ -1,0 +1,208 @@
+name: Backup Restore Verification
+
+# A17.1 — Monthly backup restore verification
+# Runs on the 15th of every month at 06:00 UTC.
+# Supports manual triggering via workflow_dispatch.
+#
+# What it checks:
+#   1. trading_picks table — COUNT(*) via dashboard_data.json proxy
+#   2. at_pick_outcomes table — COUNT(*) via recent_exits.json proxy
+#   3. Existence and non-empty state of critical JSON data files
+#   4. Python syntax of key engine files (py_compile smoke test)
+#
+# On failure: opens a GitHub Issue tagged backup-verify.
+# On success: prints a green summary — no issue created.
+#
+# CONSTRAINTS: never edits audit_dashboard/index.html,
+#              never runs audit_trail/dashboard_generator.py.
+
+on:
+  schedule:
+    - cron: "0 6 15 * *"   # 15th of every month at 06:00 UTC
+  workflow_dispatch:         # allow manual triggering
+
+jobs:
+  backup-verify:
+    name: Backup Restore Verification
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. Checkout
+      # ------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # 2. Set up Python
+      # ------------------------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ------------------------------------------------------------------
+      # 3. Run smoke queries
+      # ------------------------------------------------------------------
+      - name: Run backup smoke queries
+        id: smoke
+        run: |
+          python - <<'PYEOF'
+          import json
+          import sys
+          from pathlib import Path
+
+          REPO = Path(".")
+          failures = []
+          results = {}
+
+          # ── Query 1: trading_picks proxy (dashboard_data.json) ──────────
+          DD = REPO / "audit_dashboard" / "data" / "dashboard_data.json"
+          if not DD.exists():
+              failures.append("dashboard_data.json NOT FOUND")
+              results["trading_picks_count"] = "ERROR"
+          else:
+              try:
+                  data = json.loads(DD.read_text(encoding="utf-8"))
+                  lb = data.get("leaderboard", [])
+                  n = len(lb)
+                  results["trading_picks_count"] = n
+                  if n == 0:
+                      failures.append(f"trading_picks: leaderboard is EMPTY (0 rows)")
+                  else:
+                      print(f"[backup-verify] trading_picks proxy: COUNT = {n}")
+              except Exception as e:
+                  failures.append(f"trading_picks: parse error — {e}")
+                  results["trading_picks_count"] = "ERROR"
+
+          # ── Query 2: at_pick_outcomes proxy (recent_exits.json) ─────────
+          RE = REPO / "alpha_engine" / "data" / "recent_exits.json"
+          if not RE.exists():
+              failures.append("recent_exits.json NOT FOUND")
+              results["at_pick_outcomes_count"] = "ERROR"
+          else:
+              try:
+                  exits = json.loads(RE.read_text(encoding="utf-8"))
+                  if isinstance(exits, list):
+                      n_exits = len(exits)
+                  elif isinstance(exits, dict):
+                      n_exits = len(exits.get("exits", exits.get("picks", exits)))
+                  else:
+                      n_exits = 0
+                  results["at_pick_outcomes_count"] = n_exits
+                  if n_exits == 0:
+                      failures.append("at_pick_outcomes: recent_exits.json is EMPTY")
+                  else:
+                      print(f"[backup-verify] at_pick_outcomes proxy: COUNT = {n_exits}")
+              except Exception as e:
+                  failures.append(f"at_pick_outcomes: parse error — {e}")
+                  results["at_pick_outcomes_count"] = "ERROR"
+
+          # ── Query 3: critical data file existence ────────────────────────
+          critical_files = [
+              "audit_dashboard/data/dashboard_data.json",
+              "alpha_engine/data/recent_exits.json",
+              "alpha_engine/data/ml_health_status.json",
+              "audit_dashboard/data/pcg5_log.json",
+          ]
+          for f in critical_files:
+              p = REPO / f
+              if not p.exists():
+                  failures.append(f"Critical file missing: {f}")
+              elif p.stat().st_size == 0:
+                  failures.append(f"Critical file is empty (0 bytes): {f}")
+              else:
+                  kb = p.stat().st_size / 1024
+                  print(f"[backup-verify] {f}: OK ({kb:.1f} KB)")
+
+          # ── Query 4: Python syntax smoke test ────────────────────────────
+          import py_compile, tempfile, os
+          key_modules = [
+              "audit_trail/quality_gates.py",
+              "alpha_engine/outcome_resolver.py",
+              "alpha_engine/smart_picks_engine.py",
+              "alpha_engine/feature_stability_monitor.py",
+              "alpha_engine/data_ingest/timestamp_aligner.py",
+              "tools/daily_performance_report.py",
+          ]
+          for mod in key_modules:
+              mp = REPO / mod
+              if not mp.exists():
+                  print(f"[backup-verify] SKIP (not found): {mod}")
+                  continue
+              try:
+                  py_compile.compile(str(mp), doraise=True)
+                  print(f"[backup-verify] Syntax OK: {mod}")
+              except py_compile.PyCompileError as e:
+                  failures.append(f"Syntax error in {mod}: {e}")
+
+          # ── Summary ──────────────────────────────────────────────────────
+          if failures:
+              print("\n[backup-verify] FAILURES DETECTED:")
+              for f in failures:
+                  print(f"  - {f}")
+              # Write failure list for next step
+              Path("/tmp/bv_failures.txt").write_text("\n".join(failures))
+              sys.exit(1)
+          else:
+              print("\n[backup-verify] All checks PASSED.")
+              Path("/tmp/bv_failures.txt").write_text("")
+              sys.exit(0)
+          PYEOF
+
+      # ------------------------------------------------------------------
+      # 4. On failure: open a GitHub Issue
+      # ------------------------------------------------------------------
+      - name: Open failure issue
+        if: failure() && steps.smoke.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let failureDetails = '';
+            try {
+              failureDetails = fs.readFileSync('/tmp/bv_failures.txt', 'utf8');
+            } catch (e) {
+              failureDetails = 'Could not read failure details.';
+            }
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              '## Backup Restore Verification FAILED',
+              '',
+              `**Workflow run:** [${context.runId}](${runUrl})`,
+              `**Triggered:** ${new Date().toISOString()}`,
+              '',
+              '### Failed checks',
+              '```',
+              failureDetails || '(no detail captured)',
+              '```',
+              '',
+              '### Next steps',
+              '1. Review the [workflow run logs](' + runUrl + ')',
+              '2. Confirm critical data files exist and are non-empty',
+              '3. Re-run via Actions → Backup Restore Verification → Run workflow',
+              '',
+              '_Auto-opened by `.github/workflows/backup-verify.yml` (A17.1)_',
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[backup-verify] Restore check FAILED — ${new Date().toISOString().slice(0,10)}`,
+              body: body,
+              labels: ['backup-verify', 'automated'],
+            });
+
+      # ------------------------------------------------------------------
+      # 5. Print success summary
+      # ------------------------------------------------------------------
+      - name: Print success summary
+        if: success()
+        run: |
+          echo "=========================================="
+          echo "  Backup Restore Verification: PASSED"
+          echo "  Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "=========================================="

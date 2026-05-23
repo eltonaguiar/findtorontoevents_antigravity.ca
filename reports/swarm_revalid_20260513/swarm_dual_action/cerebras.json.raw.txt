@@ -1,0 +1,28 @@
+```json
+{
+  "item_1_vix_yc_wire_up": {
+    "verdict": "REVISE_DESIGN",
+    "merge_safety": "needs_shadow_first",
+    "function_name_concern": "rename_required",
+    "default_state": "OFF",
+    "biggest_risk": "Stale YC spread cached for 4 h may cause false rejections during intraday inversions.",
+    "concrete_changes_recommended": [
+      "audit_trail/vix_regime_gate.py: add _fetch_yc_now() after existing _fetch_vix_now() (around line 115).",
+      "audit_trail/vix_regime_gate.py: add get_cached_yc() with same TTL logic as get_cached_vix() (around line 130).",
+      "audit_trail/vix_regime_gate.py: modify should_reject_equity_pick() to call is_yc_below_threshold() when YC_REGIME_GATE_ENABLED=1 (around line 80).",
+      "audit_trail/vix_regime_gate.py: add is_yc_below_threshold() helper that reads env YC_REGIME_GATE_THRESHOLD (default 0.0).",
+      "config/env.py (or equivalent): introduce YC_REGIME_GATE_ENABLED and YC_REGIME_GATE_THRESHOLD variables with defaults 0 and 0.0.",
+      "docs/vix_regime_gate.md: update documentation to explain YC overlay, its caching, and operational flags.",
+      "tests/test_vix_regime_gate.py: add unit tests for YC path (mocked YC spread)."
+    ]
+  },
+  "item_2_ns_a_db_verify": {
+    "recommended_option": "C",
+    "rationale": "A dedicated verifier script avoids touching the production cron, sidesteps the concurrency lock, and can be run repeatedly until confidence is achieved.",
+    "expected_outcome": "verifies edge",
+    "blocking_for_real_money_sizing": "yes"
+  },
+  "priority_order": ["item_2_first", "item_1_first"],
+  "single_most_important_consideration_across_both": "Guarantee that any new gating or verification logic is observable and reversible via environment flags before it impacts live trade decisions."
+}
+```

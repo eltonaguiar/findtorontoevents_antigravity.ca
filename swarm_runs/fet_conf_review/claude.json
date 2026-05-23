@@ -1,0 +1,38 @@
+{
+  "engine": "Claude-Sonnet-4-6 (second-opinion pass 2026-05-04)",
+  "finding_1_verdict": "agree with caveats",
+  "finding_1_concerns": [
+    "The dedup-by-exit-date methodology is directionally correct but is actually CONSERVATIVE - the underlying artifact is worse than it appears. All 10 picks on 2026-03-25 share the SAME entry_price (0.1586) across 10 different entry_dates (2026-03-13 through 2026-03-25). In live crypto markets, FET price changes daily; identical entry_price across 10 consecutive calendar dates is effectively impossible, indicating this is one bookkeeping record duplicated 10x, not 10 real positions opened at the same limit price.",
+    "Preferred dedup key: (symbol, entry_price, exit_date) - this is more precise than exit_date alone and would correctly collapse the 10 records to 1 market event. Dedup by exit_date alone may over-collapse strategies that legitimately pyramid into the same symbol across different entry prices on different days, then close all on the same date (valid portfolio behavior). The tighter key avoids that false positive.",
+    "Cross-check: INJUSDT raw n=28 vs distinct exit_dates=18 (ratio 1.56x), DYDXUSDT raw n=31 vs distinct exit_dates=20 (ratio 1.55x). FETUSDT raw n=44 vs distinct exit_dates=20 (ratio 2.2x) - materially worse concentration. The FETUSDT inflation is the outlier, not the methodology.",
+    "Post-dedup PF of 1.79 (n=20) is near the T2 floor of 1.5 but with n=20 it is below the charter n>=100 floor - so elite promotion is doubly invalid regardless of PF."
+  ],
+  "finding_1_recommended_action": "retract_promotion",
+  "finding_2_verdict": "agree",
+  "finding_2_concerns": [
+    "Confirmed at template.html:9239: `else if (_confNorm >= 0.75 && _confNorm < 0.80) { adjustedTotal += 18; breakdown.conf_sweet_spot = 18; }` - the comment on line 9238 still claims '87.4% WR (best bucket)' which is contradicted by the live closed_picks.json data showing WR 38.7%, PF 0.69 (n=93).",
+    "The Python quality_gates.py references to `conf_sweet_spot` (lines 2544 and 3223) use different bonus values (+12 and +8 respectively) and are independent of the JavaScript template. They do NOT read from the JS breakdown object. Editing template.html:9239 will NOT affect quality_gates.py behavior - these are two separate scoring paths.",
+    "The +18 bonus is confirmed to be score-display-only: it modifies `adjustedTotal` which feeds only the returned `score` property. No grep evidence of `breakdown.conf_sweet_spot` being used in any filter, gate, or conditional logic anywhere in the codebase.",
+    "Inversion confirmed: conf [0.75, 0.80) gets +18 while conf [0.80, 0.85) gets +12, yet live data shows the lower band has WR 38.7%/PF 0.69 (losing) vs WR 62.5%/PF 5.83 (strong edge). The bonus ordering is backwards relative to realized performance."
+  ],
+  "finding_2_recommended_action": "remove_+18_bonus",
+  "regression_risks": [
+    "MINIMAL - the +18 bonus feeds only `adjustedTotal` (the displayed score, clamped to [0,100]). No gate, filter, or scaling logic reads `breakdown.conf_sweet_spot` from the JS object.",
+    "Python quality_gates.py:2544 (+12) and :3223 (+8) are independent code paths - they will NOT be affected by removing the JS +18 line.",
+    "Score regression: picks with conf in [0.75, 0.80) will see their displayed scores drop by up to 18 points. This is the intended effect - these are currently over-scored relative to their realized edge.",
+    "Lines to edit: template.html:9238 (delete the stale comment) and template.html:9239 (delete or neutralize the `+18 / breakdown.conf_sweet_spot = 18` clause). No other files require changes for this fix."
+  ],
+  "confidence": 0.88,
+  "notes": "Finding 1 methodology critique: the correct dedup key is (symbol, entry_price, exit_date), not just exit_date. This is strictly tighter and avoids false collapsing of legitimate pyramiding strategies. For FETUSDT the conclusion is unchanged - the 10-record cluster is clearly one market event - but adopting the tighter key future-proofs the methodology. Finding 2 is clean: the evidence is unambiguous, the regression surface is confirmed minimal, and the fix is two-line surgical. The stale comment on line 9238 referencing '87.4% WR' must also be removed or corrected to avoid re-introducing the same miscalibration in a future session.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\fet_conf_review\\claude.json.raw.txt",
+    "engine": "claude",
+    "ts": "20260504T154858Z",
+    "session_id": "0ac0f344-f3ad-4f73-9a70-d09b68605540",
+    "model_fingerprint": "",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

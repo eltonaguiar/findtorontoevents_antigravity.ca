@@ -1,0 +1,67 @@
+name: Deploy Vetted Master-Picks
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every 4 hours at minute 15
+    - cron: '15 */4 * * *'
+
+env:
+  PYTHONUNBUFFERED: 1
+
+jobs:
+  deploy-vetted-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-04-17: bumped 10→18. 2026-05-13: run 25825765147 still cancelled ~18.5m
+    # (generator + commit + safe_push). Allow more headroom on congested runners.
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    
+    steps:
+      # Need full history for tracker persistence
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests scrapling
+      
+      - name: Deploy Vetted Picks
+        env:
+          DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
+        run: |
+          python signal_aggregator/deploy_vetted_picks.py
+      
+      - name: Commit tracker updates
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config --local user.email "picks@github.com"
+          git config --local user.name "Picks Bot"
+          git add signal_aggregator/data/master_picks_tracker.json || true
+          git add signal_aggregator/data/master_picks_history.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update master-picks tracker [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh
+      
+      - name: Log completion
+        if: always()
+        run: |
+          echo "Vetted picks deployment completed at $(date -u +"%Y-%m-%d %H:%M UTC")"
+

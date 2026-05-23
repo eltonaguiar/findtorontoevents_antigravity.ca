@@ -1,0 +1,324 @@
+name: Bond Agent
+
+# 2026-04-17: NEW workflow per non-crypto-supply-pipeline-investigation Step 3.
+# Bonds had ZERO active picks because no scheduled emitter existed despite
+# bond_strategies.py defining 4 strategies. Template = etf-agent.yml.
+
+on:
+  schedule:
+    # Once daily on weekdays at 14:32 UTC (offset from etf-agent's :30 by 2 min
+    # to avoid concurrent runner contention; bonds are slower-moving so daily is plenty).
+    - cron: '32 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable verbose debug output'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: bond-agent
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  bond-scan:
+    name: Bond Scanner
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          update-environment: false
+
+      - name: Install dependencies
+        # fredapi + pandas-datareader: the fast FRED backends. Without them
+        # bond_data_fred.py falls back to the slow rate-limited fredgraph_csv
+        # scraper. The yield-curve wire-in needs only the T10Y2Y series, so
+        # this stays well inside the job time budget.
+        run: pip install yfinance pandas numpy fredapi pandas-datareader
+
+      - name: Run Bond scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+          # 2026-05-15: FRED yield-curve data wired into live bond picks.
+          # bond_data_fred.py was fully coded but bypassed by a hard
+          # SKIP_FRED=1. FRED is now ON by default; set the repo variable
+          # BOND_SKIP_FRED=1 to instantly revert with no code change.
+          # Safe: fetch_fred_series() catches every backend error and
+          # returns [] on failure (identical to the old skip path), and the
+          # keyless fredgraph_csv backend works even without FRED_API_KEY.
+          # See reports/asset_class_data_supplements_2026-05-15.md.
+          SKIP_FRED: ${{ vars.BOND_SKIP_FRED || '0' }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          # 2026-05-15: lowered 40 -> 33. The elite_scorer is crypto-calibrated;
+          # low-vol BOND signals could not reach 40, so the emitter produced
+          # quality=0 and BOND stayed stuck at n=11 (no path to a valid sample).
+          # 33 unblocks shadow emission so n can accrue. BOND sizing is still
+          # gated separately (thin_sample -> sizing_allowed=False) — this does
+          # not put BOND capital at risk, it only lets picks be tracked.
+          # 2026-05-15: lowered 33 -> 25. BOND n=11 still far below the 100-pick
+          # charter floor. TLT/IEF/TLH/LQD signals being generated but blocked —
+          # further floor reduction needed to allow n to accumulate. Capital still
+          # protected via thin_sample gate (sizing_allowed=False until n>=100).
+          # 2026-05-16: lowered 25 -> 15. GitHub repo var BOND_ELITE_FLOOR was
+          # still set to 35 (2026-05-13), which overrode the workflow || '25'
+          # fallback and kept all 9 raw signals at quality=0. At floor=35,
+          # bond signals score max 28 (elite_scorer is crypto-calibrated, no
+          # boosters for low-vol bond ETFs). Floor=15 captures 10/11 current
+          # raw signals. Capital is protected by thin_sample gate
+          # (sizing_allowed=False until n>=100); this is tracking-only.
+          # Stop-loss: if PF < 1.0 after first 30 new picks, raise floor to 35.
+          BOND_ELITE_FLOOR: ${{ vars.BOND_ELITE_FLOOR || '15' }}
+          # Wire the 2026-04-28 strategy bond_credit_spread_mean_reversion
+          # (alpha_engine/bond_strategies.py:462). Previously the strategy
+          # was imported + invoked but its own gate kept returning [] because
+          # this env var was never set. See updates/2026-04-30-equity-position-tf-wireup.md.
+          BOND_ENABLE_CREDIT_SPREAD: '1'
+        run: |
+          python - <<'EOF'
+          import sys, json, os
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+
+          import pandas as pd
+          import yfinance as yf
+
+          from config import BOND_SYMBOLS
+          from bond_strategies import (
+              bond_yield_momentum, bond_duration_rotation,
+              bond_mean_reversion, bond_connors_rsi2,
+              bond_credit_spread_mean_reversion,
+              bond_yield_curve_slope,
+              bond_ust_tsmom,
+          )
+          from elite_scorer import compute_elite_score
+          from bond_data_fred import fetch_fred_series
+          _elite_floor = float(os.getenv("BOND_ELITE_FLOOR", "15") or 15)
+
+          # ── fetch data ────────────────────────────────────────────────────
+          # Bond strategies need ZN=F + ZB=F for yield-curve signals
+          extra_syms = ["ZN=F", "ZB=F", "TLT", "IEF", "^TNX", "^IRX"]
+          print(f"Fetching data for {len(BOND_SYMBOLS)} BOND symbols + {len(extra_syms)} ref tickers...")
+          data = {}
+          for sym in list(BOND_SYMBOLS.keys()) + extra_syms:
+              try:
+                  df = yf.Ticker(sym).history(period="2y")
+                  if not df.empty:
+                      data[sym] = df
+              except Exception as e:
+                  print(f"  WARN fetch failed {sym}: {e}")
+          print(f"  Loaded {len(data)} symbols")
+
+          # ── fetch FRED yield-curve series ─────────────────────────────────
+          # bond_yield_curve_slope needs T10Y2Y as a pd.Series. fetch_fred_series
+          # returns list[{date,value}] (or [] on SKIP_FRED / any backend error),
+          # so fred_data degrades to None and the strategy uses its TLT/SHY
+          # proxy fallback. Only one series is fetched — fast, cache-backed.
+          fred_data = None
+          try:
+              from datetime import date, timedelta
+              _end = date.today()
+              _start = _end - timedelta(days=400)
+              _rows = fetch_fred_series("T10Y2Y", _start.isoformat(), _end.isoformat())
+              if _rows:
+                  _s = pd.Series(
+                      [r["value"] for r in _rows],
+                      index=pd.to_datetime([r["date"] for r in _rows]),
+                  )
+                  fred_data = {"T10Y2Y": _s}
+                  print(f"  FRED T10Y2Y: {len(_s)} obs, latest={_s.iloc[-1]:.2f}pp")
+              else:
+                  print("  FRED T10Y2Y: no data (SKIP_FRED or fetch failed) - proxy fallback")
+          except Exception as e:
+              print(f"  WARN FRED fetch failed: {e} - proxy fallback")
+
+          # ── run strategies ────────────────────────────────────────────────
+          picks = []
+          for fn in [bond_yield_momentum, bond_duration_rotation,
+                     bond_mean_reversion, bond_connors_rsi2,
+                     bond_credit_spread_mean_reversion]:
+              try:
+                  picks += fn(data)
+              except Exception as e:
+                  print(f"  WARN strategy {fn.__name__} failed: {e}")
+          # bond_yield_curve_slope and bond_ust_tsmom take fred_data explicitly.
+          for fn in [bond_yield_curve_slope, bond_ust_tsmom]:
+              try:
+                  picks += fn(data, fred_data=fred_data)
+              except Exception as e:
+                  print(f"  WARN strategy {fn.__name__} failed: {e}")
+
+          # ── score ─────────────────────────────────────────────────────────
+          for p in picks:
+              p.update(compute_elite_score(p))
+
+          # ── curate (bond floor: 0.50 conf, RR>=1.10 — bonds have lower vol so
+          # tighter RR is acceptable) ──────────────────────────────────────────
+          quality = sorted(
+              [p for p in picks if float(p.get("confidence", 0) or 0) >= 0.50
+               and float(p.get("risk_reward", 0) or 0) >= 1.10
+               and float(p.get("elite_score", 0) or 0) >= _elite_floor],
+              key=lambda p: (p.get("elite_score", 0), p.get("confidence", 0)),
+              reverse=True,
+          )
+
+          # Performance note: BOND was completely orphaned — no scheduled emitter
+          # despite bond_strategies.py existing since 2026-04-12. Live BOND closed
+          # picks (n=17, WR 47.1%, PF 1.60, +2.84% PnL) came from futures_momentum
+          # mis-classified on ZN=F. This agent is the proper emitter.
+          perf_note = (
+              "BOND agent v1.2: scheduled emitter for the BOND class. "
+              "Strategies: bond_yield_momentum, bond_duration_rotation, "
+              "bond_mean_reversion, bond_connors_rsi2, "
+              "bond_credit_spread_mean_reversion (opt-in via "
+              "BOND_ENABLE_CREDIT_SPREAD=1), bond_yield_curve_slope, "
+              "bond_ust_tsmom. "
+              "Universe: 14 ETFs (treasury/credit/intl) per config.BOND_SYMBOLS."
+          )
+
+          # ── fail-open guard: distinguish data-fetch failure from real-empty market ──
+          _universe = list(BOND_SYMBOLS.keys()) + extra_syms
+          _loaded = len(data)
+          _requested = max(1, len(_universe))
+          _ratio = _loaded / _requested
+          if _ratio < 0.5:
+              _status = "DATA_FAIL"
+          elif len(picks) == 0:
+              _status = "EMPTY"
+          else:
+              _status = "OK"
+
+          out = {
+              "agent": "bond",
+              "timestamp": pd.Timestamp.now().isoformat(),
+              "total_raw": len(picks),
+              "quality": len(quality),
+              "status": _status,
+              "symbols_tracked": len(BOND_SYMBOLS),
+              "strategies_run": 7,
+              "live_performance_note": perf_note,
+              "picks": quality,
+          }
+          Path("non_crypto_agent/data").mkdir(parents=True, exist_ok=True)
+          Path("non_crypto_agent/data/bond_picks.json").write_text(
+              json.dumps(out, indent=2, default=str)
+          )
+          print(f"Bond agent: {len(quality)} quality picks from {len(picks)} raw")
+          for p in quality[:5]:
+              print(f"  {p['symbol']} {p.get('signal_type','?')} conf={p.get('confidence',0):.2f} rr={p.get('risk_reward',0):.2f} strategy={p.get('strategy','?')}")
+
+          print(f"\n=== BOND AGENT SUMMARY ===")
+          print(f"Symbols tracked : {len(BOND_SYMBOLS)}")
+          print(f"Raw picks       : {len(picks)}")
+          print(f"Quality picks   : {len(quality)}")
+          print(f"Performance note: {perf_note}")
+
+          # ── enforce fail-open guard ───────────────────────────────────────
+          # Runs in the SCAN step, before the later "Merge bond picks" step
+          # (which intentionally SystemExit(0)s on empty picks). Steps are
+          # sequential, so a data-fetch failure goes red here first.
+          if _status == "DATA_FAIL":
+              print(f"::error::DATA FETCH FAILURE — only {_loaded}/{_requested} symbols loaded "
+                    f"(yfinance empty/delisted); refusing to exit green on missing data")
+              sys.exit(1)
+          elif _status == "EMPTY":
+              print(f"::warning::0 raw picks on healthy data ({_loaded}/{_requested} symbols loaded) "
+                    f"— real-empty market, not a data failure")
+          EOF
+
+      # BR-3 from reports/bond_root_cause_2026-05-12.md Layer 3 — merge quality
+      # BOND picks into active_picks.json so the forward validator can see them.
+      # Without this, even quality picks never reach the validator's view.
+      - name: Merge bond picks into active_picks.json
+        run: |
+          python - <<'EOF'
+          import json
+          from pathlib import Path
+
+          bond_path = Path("non_crypto_agent/data/bond_picks.json")
+          active_path = Path("alpha_engine/data/active_picks.json")
+          if not bond_path.exists():
+              print("No bond_picks.json — skipping merge")
+              raise SystemExit(0)
+
+          bond_data = json.loads(bond_path.read_text(encoding="utf-8"))
+          quality = bond_data.get("picks", []) or []
+          if not quality:
+              print("No quality bond picks — nothing to merge")
+              raise SystemExit(0)
+
+          active_path.parent.mkdir(parents=True, exist_ok=True)
+          if active_path.exists():
+              active = json.loads(active_path.read_text(encoding="utf-8")) or []
+          else:
+              active = []
+          if not isinstance(active, list):
+              print(f"active_picks.json is not a list ({type(active).__name__}) — aborting merge")
+              raise SystemExit(0)
+
+          import hashlib, datetime as _dt
+
+          # Dedup by (symbol, strategy, signal_type) — bond agent runs hourly, do
+          # not re-emit the same signal on every run. Use signal_type as dedup key
+          # because direction may not be set yet.
+          existing_keys = {
+              (p.get("symbol"), p.get("strategy"), p.get("signal_type", p.get("direction")))
+              for p in active if isinstance(p, dict)
+          }
+          added = 0
+          for p in quality:
+              if not isinstance(p, dict):
+                  continue
+              # Normalise required fields so the outcome_resolver can process picks:
+              #   - asset_class must be uppercase "BOND" (dashboard + resolver match on this)
+              #   - direction must be LONG/SHORT (resolver uses this for TP/SL calculation)
+              #   - status must be "OPEN" (resolver skips picks without a recognised status)
+              #   - id must be non-null (resolver skips picks with empty id in DB update)
+              #   - source_system must identify the generator
+              p["asset_class"] = "BOND"
+              p.setdefault("source_system", "bond_scanner")
+              sig = str(p.get("signal_type", "")).upper()
+              p["direction"] = "LONG" if sig in ("BUY", "LONG") else "SHORT"
+              p.setdefault("status", "OPEN")
+              if not p.get("id"):
+                  raw = f"{p.get('symbol')}-{p.get('strategy')}-{p.get('direction')}-{p.get('timestamp','')}"
+                  p["id"] = "bond-" + hashlib.md5(raw.encode()).hexdigest()[:12]
+              key = (p.get("symbol"), p.get("strategy"), p.get("signal_type", p.get("direction")))
+              if key in existing_keys:
+                  continue
+              active.append(p)
+              existing_keys.add(key)
+              added += 1
+
+          active_path.write_text(json.dumps(active, indent=2, default=str))
+          print(f"Merged {added} bond picks into active_picks.json (total now {len(active)})")
+          EOF
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add non_crypto_agent/data/bond_picks.json alpha_engine/data/active_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Bond agent: $(date -u '+%Y-%m-%d %H:%M') UTC scan [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh

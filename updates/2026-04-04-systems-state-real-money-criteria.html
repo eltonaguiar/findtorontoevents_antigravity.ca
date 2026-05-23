@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems state &amp; virtual real-money criteria (NFA) | findtorontoevents</title>
+    <meta name="description" content="April 2026 snapshot: how trading stacks relate (Smart Picks, audit, consensus). NOT FINANCIAL ADVICE.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.65; }
+        .container { max-width: 920px; margin: 0 auto; padding: 36px 20px 60px; }
+        header { background: linear-gradient(135deg, #1a1f3a 0%, #0f1629 100%); padding: 32px; border-radius: 16px; margin-bottom: 28px; border: 1px solid #2a3f5f; }
+        h1 { font-size: 1.85em; color: #fbbf24; margin-bottom: 12px; }
+        .nfa-banner {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #fecaca;
+            padding: 16px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+        }
+        .nfa-sub { font-weight: 400; font-size: 0.88em; margin-top: 10px; color: #fca5a5; line-height: 1.5; }
+        .section { background: #111827; padding: 26px; border-radius: 12px; margin-bottom: 18px; border: 1px solid #1f2937; }
+        h2 { color: #34d399; font-size: 1.35em; margin-bottom: 14px; border-left: 4px solid #34d399; padding-left: 12px; }
+        h3 { color: #60a5fa; font-size: 1.1em; margin: 18px 0 10px; }
+        p, li { color: #d1d5db; margin-bottom: 10px; }
+        ul { padding-left: 22px; }
+        li { margin-bottom: 8px; }
+        code { background: #1f2937; padding: 2px 7px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+        a { color: #38bdf8; }
+        table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88em; }
+        th, td { border: 1px solid #374151; padding: 8px 10px; text-align: left; }
+        th { background: #1f2937; color: #93c5fd; }
+        tr:nth-child(even) { background: #0f172a; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 0.78em; font-weight: 600; margin-right: 6px; }
+        .b-watch { background: rgba(234, 179, 8, 0.2); color: #fbbf24; border: 1px solid #ca8a04; }
+        .b-ban { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #b91c1c; }
+        footer { text-align: center; color: #6b7280; font-size: 0.85em; margin-top: 32px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="nfa-banner">
+                NOT FINANCIAL ADVICE (NFA)
+                <div class="nfa-sub">This page describes internal software behaviour, research tooling, and a <strong>virtual</strong> portfolio tracker. It is not investment, legal, or tax advice. Past or backtested statistics do not guarantee future results. If you deploy real capital, you alone bear the risk.</div>
+            </div>
+            <h1>Systems state (April 4, 2026)</h1>
+            <p style="color:#9ca3af;font-size:0.95em;">Coordinated with multi-agent Redis bus work (HF quality roadmap, KOL/news hygiene). For the changelog index see <a href="/updates/">/updates/</a> and <a href="/audit/">Audit Dashboard</a>.</p>
+        </header>
+
+        <div class="section">
+            <h2>What each layer is for</h2>
+            <ul>
+                <li><strong>Production scanner &amp; active picks</strong> — Generates many candidate signals across crypto, forex, equities, and futures. Volume and diversity are high; not every signal is meant to be traded blindly.</li>
+                <li><strong>Smart Picks (<code>smart_picks_engine.py</code>)</strong> — Ranks candidates using <strong>ml_composite</strong> (ML score, confidence, forward win-rate hints), plus filters (e.g. score floor, volume FOMO cap, validated score, non-crypto policy). <strong>Elite score</strong> is a quality input, not the primary ranker.</li>
+                <li><strong>Cross-aggregation monitor</strong> — Combines multiple named systems with <strong>trust tiers</strong>. Raw <code>predictions</code> / legacy social JSON is <span class="badge b-ban">BANNED</span> from consensus. <code>kol_consensus</code> is <span class="badge b-watch">WATCH</span> until forward-validated; news-inferred vs true KOL weighting is scored differently in the execution path.</li>
+                <li><strong>Virtual &ldquo;real money&rdquo; tracker</strong> — <code>real_money_tracker.py</code> simulates a <strong>small, stricter subset</strong> of live picks for measurement only (not your brokerage).</li>
+                <li><strong>Sports betting stack</strong> — Separate pipelines (<code>live-monitor/</code>, sports APIs). Do not mix sports bankroll rules with crypto scanner output.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Stricter criteria used by the virtual real-money tracker</h2>
+            <p>The tracker name means &ldquo;track as if real size,&rdquo; still <strong>paper / simulation</strong>. Selection rules in code (April 2026) include, among others:</p>
+            <ul>
+                <li><strong>Strategy allow-list</strong> — Only picks whose strategy key appears in <code>PROVEN_STRATEGIES</code> (includes high-score style flows such as <code>hs_lb_None</code>, selected copy-trader lanes, fear/greed contrarian, several crypto mean-reversion / regime models). The list is curated from historical closed-trade stats and can change.</li>
+                <li><strong>Score floor</strong> — <code>MIN_SCORE</code> (currently 50): code comments note weaker historical win rate below that band.</li>
+                <li><strong>Risk–reward cap</strong> — <code>MAX_RR</code> aligned with smart-picks RR policy (wide targets are deprioritized).</li>
+                <li><strong>Confidence &ldquo;dead zone&rdquo;</strong> — Avoids a mid confidence band that historically underperformed in the project&rsquo;s closed-pick sample.</li>
+                <li><strong>Safety / conflict checks</strong> — Requires compatible safety tags and no direction conflicts; limits concurrent picks per symbol.</li>
+                <li><strong>Staleness</strong> — Old picks are rejected for this virtual book (freshness matters in forward results).</li>
+                <li><strong>Symbol blacklist</strong> — e.g. symbols with repeated losses in this virtual book are blocked from new entries.</li>
+                <li><strong>Cooldowns</strong> — Weekday filters and consecutive-loss cooldowns reduce overtrading after drawdowns.</li>
+            </ul>
+            <p>Full detail lives in the repo: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/alpha_engine/real_money_tracker.py" target="_blank" rel="noopener">alpha_engine/real_money_tracker.py</a>. <em>NFA — this is engineering documentation, not a recommendation to mirror settings with real cash.</em></p>
+        </div>
+
+        <div class="section">
+            <h2>Hedge-fund-quality policy targets (approved thresholds)</h2>
+            <p>Multi-agent sign-off (April 4, 2026) documents institutional-style <strong>gates</strong> for decay, concentration, display tiers, retirement, and conflicts. Implementation rolls out in scoring and audit tooling; cite the source of truth:</p>
+            <p><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/HEDGE_FUND_QUALITY_NEXT_STEPS.md" target="_blank" rel="noopener">docs/HEDGE_FUND_QUALITY_NEXT_STEPS.md</a></p>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Policy (summary)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>A</td><td>Backtest vs forward decay hard-gate when sample is large enough</td></tr>
+                    <tr><td>B</td><td>Concentration caps (per symbol / direction / duplicate portfolios)</td></tr>
+                    <tr><td>C</td><td>Tier-1 display defaults to multi-system agreement; single-system labeled experimental</td></tr>
+                    <tr><td>D</td><td>Strategy retirement after sustained poor forward win rate with enough closes</td></tr>
+                    <tr><td>E</td><td>Portfolio circuit breaker on deep drawdown (pause new risk)</td></tr>
+                    <tr><td>F</td><td>Stronger penalty when ML composite falls back without a real model score</td></tr>
+                    <tr><td>G</td><td>Hard-reject true consensus conflicts (direction vs recommendation with high delta)</td></tr>
+                </tbody>
+            </table>
+            <p><em>NFA — thresholds describe internal risk research targets, not personal position sizing advice.</em></p>
+        </div>
+
+        <div class="section">
+            <h2>Operational notes</h2>
+            <ul>
+                <li><strong>Redis agent bus</strong> — Used for lock coordination and broadcasts (e.g. HF-P0, audit template, scraper outages).</li>
+                <li><strong>Copy-trader ingestion</strong> — Hyperliquid leaderboard URL drift was flagged; failover to the official API shape is an ops priority (see bus log from dash-integrity).</li>
+                <li><strong>Verified alpha</strong> — Roadmap item: per-pick cohort linkage on the audit UI (not only aggregate counts).</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p><strong>NOT FINANCIAL ADVICE</strong> &mdash; Education and systems documentation only. April 4, 2026.</p>
+            <p><a href="/updates/">&larr; Back to Latest Updates</a></p>
+        </footer>
+    </div>
+</body>
+</html>

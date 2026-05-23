@@ -1,0 +1,126 @@
+name: Audit Drift Telemetry
+
+on:
+  push:
+    paths:
+      - 'audit_dashboard/**'
+      - 'tools/drift/**'
+      - 'config/drift_params.json'
+      - 'config/asset_class_map.json'
+  schedule:
+    - cron: '10 */6 * * *'  # Every 6h (was hourly — saved ~360 min/day compute)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+
+      - name: Ensure directories
+        run: |
+          mkdir -p tmp
+          mkdir -p audit_dashboard/data/drift_snapshots
+
+      - name: Build canonical backtest-forward drift report
+        run: |
+          python tools/drift/build_backtest_forward_drift.py \
+            --input audit_dashboard/data/dashboard_data.json \
+            --output tmp/backtest_forward_drift_analysis.json \
+            --snapshot-dir audit_dashboard/data/drift_snapshots
+
+      - name: Validate backtest integrity
+        shell: pwsh
+        run: |
+          ./tools/drift/validate_backtest_integrity.ps1 `
+            -InputPath tmp/backtest_forward_drift_analysis.json `
+            -OutputPath tmp/backtest_forward_drift_analysis.validated.json `
+            -SnapshotDir audit_dashboard/data/drift_snapshots `
+            -LogPath audit_dashboard/data/backtest_integrity.log `
+            -StrictZeroBtWr `
+            -FailOnError
+
+      - name: Compute dynamic drift score
+        run: |
+          node tools/drift/compute_dynamic_drift_score.js \
+            --input audit_dashboard/data/hourly_asset_class_24h_report.json \
+            --config config/drift_params.json \
+            --output audit_dashboard/data/drift_scores_latest.json
+      - name: Trigger probation actions
+        shell: pwsh
+        run: |
+          ./tools/drift/trigger_probation_actions.ps1 `
+            -DriftScorePath audit_dashboard/data/drift_scores_latest.json `
+            -OutputPath tmp/strategy_probation_state.json `
+            -ConsecutiveHoursThreshold 2 `
+            -LogPath tmp/probation_actions.log
+
+
+      - name: Export drift metrics (Prometheus format)
+        shell: pwsh
+        run: |
+          ./tools/drift/export_drift_metrics.ps1 `
+            -DriftScorePath audit_dashboard/data/drift_scores_latest.json `
+            -IntegrityPath tmp/backtest_forward_drift_analysis.validated.json `
+            -OutputPromPath audit_dashboard/data/drift_metrics.prom
+
+      - name: Pending SPA governance check
+        run: |
+          python tools/pending_spa_scan.py --fail-on-alert --wr-threshold 25
+        continue-on-error: true   # warn-only; flip to false after 7-day shadow period
+
+      - name: Data source health check (C-008)
+        run: |
+          python -c "
+          import urllib.request, sys, time
+          endpoints = [
+              ('binance_primary', 'https://api.binance.com/api/v3/ping'),
+              ('coingecko', 'https://api.coingecko.com/api/v3/ping'),
+          ]
+          failures = []
+          for name, url in endpoints:
+              try:
+                  t0 = time.time()
+                  r = urllib.request.urlopen(url, timeout=10)
+                  ms = int((time.time()-t0)*1000)
+                  print(f'[data-source-health] {name}: OK {ms}ms HTTP {r.status}')
+              except Exception as e:
+                  print(f'[data-source-health] {name}: FAIL {e}')
+                  failures.append(name)
+          if failures:
+              print(f'WARNING: {len(failures)} data source(s) unreachable: {failures}')
+              sys.exit(1)
+          "
+        continue-on-error: true   # warn-only; alert via artifact, do not block pipeline
+
+      - name: Upload telemetry artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-drift-telemetry
+          path: |
+            tmp/backtest_forward_drift_analysis.validated.json
+            audit_dashboard/data/backtest_integrity.log
+            audit_dashboard/data/drift_scores_latest.json
+            audit_dashboard/data/drift_metrics.prom
+            audit_dashboard/data/hourly_asset_class_24h_report.json
+            tmp/strategy_probation_state.json
+            tmp/probation_actions.log
+          if-no-files-found: warn

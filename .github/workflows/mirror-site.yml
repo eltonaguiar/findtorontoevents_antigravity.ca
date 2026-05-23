@@ -1,0 +1,214 @@
+# Mirror findtorontoevents.ca  torontoevent.net via FTP
+# Downloads all files from 50webs source FTP (/findtorontoevents.ca)
+# and uploads to GoDaddy mirror FTP (/ root)
+name: "Mirror: findtorontoevents.ca  torontoevent.net"
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mirror-site
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 90
+
+    steps:
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
+      - name: Download from findtorontoevents.ca (50webs FTP)
+        env:
+          SRC_HOST: ${{ secrets.FTP_HOST }}
+          SRC_USER: ${{ secrets.FTP_USER }}
+          SRC_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          echo " Downloading from findtorontoevents.ca  /tmp/site_mirror ..."
+          mkdir -p /tmp/site_mirror
+
+          # Write lftp script to file (avoids shell quoting issues with credentials)
+          cat > /tmp/lftp_download.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+          set net:reconnect-interval-multiplier 1
+          open -u "$SRC_USER","$SRC_PASS" "$SRC_HOST"
+          mirror \
+            --verbose \
+            --use-cache \
+            --no-perms \
+            --parallel=4 \
+            --exclude-glob=db_config.php \
+            --exclude-glob=db-config.php \
+            --exclude-glob=*.env \
+            --exclude-glob=.htpasswd \
+            /findtorontoevents.ca/ /tmp/site_mirror/
+          quit
+          LFTPEOF
+
+          lftp -f /tmp/lftp_download.script
+          echo " Downloaded $(find /tmp/site_mirror -type f | wc -l) files"
+
+      - name: Upload to torontoevent.net (GoDaddy FTP)
+        env:
+          DST_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          # 2026-04-17 host-guard (inlined 2026-04-18): this step does
+          # `mirror --reverse /tmp/site_mirror/ /` — a full-site upload to FTP
+          # ROOT. If DST_HOST ever resolves to a 50webs multi-site host, this
+          # dumps thousands of files into 50webs FTP root and corrupts every
+          # site on that account. Refuse if so.
+          # NOTE: This workflow has NO `actions/checkout` step, so we cannot
+          # reference `.github/scripts/assert_ftp_host.sh` (the file doesn't
+          # exist in the runner's filesystem). Inlined as case statements.
+          case "$DST_HOST" in
+            *50webs*|*ejaguiar*)
+              echo "ERROR: DST_HOST '$DST_HOST' looks like a 50webs multi-tenant host; refusing root deploy that would corrupt sibling sites."
+              exit 1
+              ;;
+          esac
+
+          echo " Uploading to torontoevent.net ..."
+
+          cat > /tmp/lftp_upload.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+          set net:reconnect-interval-multiplier 1
+          open -u "$DST_USER","$DST_PASS" "$DST_HOST"
+          mirror \
+            --reverse \
+            --verbose \
+            --use-cache \
+            --no-perms \
+            --parallel=4 \
+            --exclude-glob=db_config.php \
+            --exclude-glob=db-config.php \
+            --exclude-glob=*.env \
+            --exclude-glob=.htpasswd \
+            /tmp/site_mirror/ /
+          quit
+          LFTPEOF
+
+          lftp -f /tmp/lftp_upload.script
+          echo " Upload to torontoevent.net complete"
+
+      - name: Upload to tdotevent.ca (50webs FTP, /tdotevent.ca)
+        env:
+          SRC_HOST: ${{ secrets.FTP_HOST }}
+          SRC_USER: ${{ secrets.FTP_USER }}
+          SRC_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          echo " Uploading to tdotevent.ca (/tdotevent.ca) ..."
+
+          # tdotevent.ca is on the same 50webs host as the source  mirror directly FTP-to-FTP
+          cat > /tmp/lftp_tdote.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+          set net:reconnect-interval-multiplier 1
+          open -u "$SRC_USER","$SRC_PASS" "$SRC_HOST"
+          mirror \
+            --reverse \
+            --verbose \
+            --use-cache \
+            --no-perms \
+            --parallel=4 \
+            --exclude-glob=db_config.php \
+            --exclude-glob=db-config.php \
+            --exclude-glob=*.env \
+            --exclude-glob=.htpasswd \
+            /tmp/site_mirror/ /tdotevent.ca/
+          quit
+          LFTPEOF
+
+          lftp -f /tmp/lftp_tdote.script
+          echo " Upload to tdotevent.ca complete"
+
+      - name: Deploy fc/api/.env to GoDaddy (GoDaddy MySQL creds)
+        env:
+          DST_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_PASS: ${{ secrets.FTPGODADDYPASS }}
+          DB_USER: ${{ secrets.TORONTOEVENT_DB_USER }}
+          DB_PASS: ${{ secrets.TORONTOEVENT_DB_PASS }}
+          ENV_EXTRAS: ${{ secrets.FC_API_ENV_EXTRAS }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_SECRET_CLIENTID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_SERCRET_CLOUD }}
+        run: |
+          python3 - <<'PYEOF'
+          import os
+
+          db_user = os.environ.get('DB_USER', '')
+          db_pass = os.environ.get('DB_PASS', '')
+          extras = os.environ.get('ENV_EXTRAS', '')
+          google_id = os.environ.get('GOOGLE_CLIENT_ID', '')
+          google_secret = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+
+          lines = []
+          lines.append('# GoDaddy fc/api .env -- auto-generated by mirror-site workflow')
+          lines.append('MYSQL_HOST=localhost')
+          lines.append('MYSQL_USER=' + db_user)
+          lines.append('MYSQL_PASSWORD="' + db_pass + '"')
+          lines.append('MYSQL_DATABASE=ejaguiar1_favcreators')
+          if google_id:
+              lines.append('GOOGLE_CLIENT_ID=' + google_id)
+          if google_secret:
+              lines.append('GOOGLE_CLIENT_SECRET=' + google_secret)
+          if extras:
+              lines.append('')
+              lines.append(extras)
+
+          with open('/tmp/godaddy_fc_env', 'w') as f:
+              f.write('\n'.join(lines))
+
+          has_google = 'GOOGLE_CLIENT_ID' in '\n'.join(lines)
+          print('OK GoDaddy fc/api .env prepared (MYSQL_USER=' + db_user + ', google=' + str(has_google) + ')')
+          PYEOF
+
+          cat > /tmp/lftp_env_upload.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$DST_USER","$DST_PASS" "$DST_HOST"
+          put /tmp/godaddy_fc_env -o fc/api/.env
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_env_upload.script
+          echo "fc/api/.env deployed to GoDaddy"
+
+      - name: Verify mirrors are live
+        run: |
+          for URL in "https://torontoevent.net/" "https://tdotevent.ca/"; do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$URL" || echo "000")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
+              echo " $URL  HTTP $STATUS"
+            else
+              echo "  $URL  HTTP $STATUS (may need time to propagate)"
+            fi
+          done
+
+      - name: Summary
+        run: |
+          echo "##  Site Mirror Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Source** | findtorontoevents.ca (50webs, /findtorontoevents.ca) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Destination 1** | torontoevent.net (GoDaddy, /) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Destination 2** | tdotevent.ca (50webs, /tdotevent.ca) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Completed** | $(date -u '+%Y-%m-%d %H:%M:%S UTC') |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Runs every 6 hours. Excludes db_config.php, .env, .htpasswd from overwrite." >> $GITHUB_STEP_SUMMARY
+

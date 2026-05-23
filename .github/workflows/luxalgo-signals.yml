@@ -1,0 +1,78 @@
+name: LuxAlgo Signal Generator
+
+on:
+  schedule:
+    - cron: '25 * * * *'  # Run at :25 past every hour
+  workflow_dispatch:
+
+concurrency:
+  group: luxalgo-signals
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate-signals:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run LuxAlgo Signal Generator
+        run: |
+          cd battleground
+          python luxalgo_signal_generator.py
+
+      - name: Commit picks
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add battleground/data/luxalgo_active_picks.json battleground/data/luxalgo_closed_picks.json
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git stash
+          git pull --rebase -X theirs origin main 2>/dev/null || {
+            git rebase --abort 2>/dev/null
+            git checkout --theirs -- alpha_engine/data/ 2>/dev/null
+            git add alpha_engine/data/ 2>/dev/null
+            git pull --no-rebase -X theirs origin main 2>/dev/null || true
+          }
+          git stash pop || {
+            # BUG FIX 2026-04-05 (mirrors 108b99aa85): prefer --ours (locally-stashed
+            # freshly-generated files) over --theirs (origin's stale version).
+            # Pre-fix order silently reverted this workflow's regenerated files.
+            git diff --name-only --diff-filter=U | while read -r f; do
+              git checkout --ours -- "$f" 2>/dev/null || git checkout --theirs -- "$f" 2>/dev/null || true
+              git add "$f" 2>/dev/null || true
+            done
+          }
+          git add battleground/data/luxalgo_active_picks.json battleground/data/luxalgo_closed_picks.json
+          git diff --cached --quiet && echo "No changes after pull" && exit 0
+          # issue #141: block conflict-marker commits after stash-pop recovery
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "LuxAlgo signals: $(date -u +%Y-%m-%dT%H:%M) [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main 2>/dev/null || {
+              git rebase --abort 2>/dev/null
+              git checkout --theirs -- alpha_engine/data/ 2>/dev/null
+              git add alpha_engine/data/ 2>/dev/null
+              git pull --no-rebase -X theirs origin main 2>/dev/null || true
+            }
+            bash .github/scripts/safe_push.sh && break
+            echo "Retry $i..."
+            sleep $((i * 3))
+          done
+

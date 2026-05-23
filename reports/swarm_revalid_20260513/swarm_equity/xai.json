@@ -1,0 +1,79 @@
+{
+  "strategies": [
+    {
+      "name": "EQ_MOM_VIX",
+      "thesis": "Integrate VIX regime filter to avoid high-volatility periods and reduce drawdowns.",
+      "signal_construction": "Select top-5 12-1m momentum stocks only when VIX < 20; otherwise, hold cash.",
+      "universe": [
+        "30 large-cap US stocks, same as backtest"
+      ],
+      "expected_pf": 2.6,
+      "expected_sharpe": 1.5,
+      "expected_mdd_pct": 9.5,
+      "differentiation_from_existing": "Adds VIX-based regime filter to skip trades during high-stress markets unlike live emitters.",
+      "implementation_hours": 8,
+      "wire_target": "tools/backtest_equity_mom_vix.py",
+      "data_source": "yfinance for prices, FRED for VIX",
+      "fail_mode": "VIX threshold too restrictive, reducing trade frequency below viable n."
+    },
+    {
+      "name": "EQ_MOM_YC",
+      "thesis": "Use yield curve slope (10Y-2Y) as a macro filter to avoid momentum trades in recessionary signals.",
+      "signal_construction": "Select top-5 12-1m momentum stocks only when 10Y-2Y spread > 0; otherwise, hold cash.",
+      "universe": [
+        "30 large-cap US stocks, same as backtest"
+      ],
+      "expected_pf": 2.5,
+      "expected_sharpe": 1.4,
+      "expected_mdd_pct": 9.8,
+      "differentiation_from_existing": "Introduces macro regime filter absent in live emitters to avoid bear markets.",
+      "implementation_hours": 10,
+      "wire_target": "tools/backtest_equity_mom_yc.py",
+      "data_source": "yfinance for prices, FRED for yield curve data",
+      "fail_mode": "Yield curve signal lags market downturns, missing early drawdown protection."
+    },
+    {
+      "name": "EQ_MOM_CAP",
+      "thesis": "Cap position size per stock to limit concentration risk and reduce drawdowns.",
+      "signal_construction": "Select top-5 12-1m momentum stocks, but cap each position at 15% of portfolio; rebalance monthly.",
+      "universe": [
+        "30 large-cap US stocks, same as backtest"
+      ],
+      "expected_pf": 2.3,
+      "expected_sharpe": 1.3,
+      "expected_mdd_pct": 8.5,
+      "differentiation_from_existing": "Imposes strict position sizing unlike live emitters to mitigate single-stock blowups.",
+      "implementation_hours": 6,
+      "wire_target": "tools/backtest_equity_mom_cap.py",
+      "data_source": "yfinance",
+      "fail_mode": "Position cap dilutes returns from high-momentum outliers, lowering PF."
+    }
+  ],
+  "mdd_reduction_techniques": [
+    "Volatility targeting: Adjust portfolio exposure inversely to trailing 20-day realized volatility, scaling down to 50% exposure during high-vol periods, friction-aware by minimizing rebalance frequency to monthly.",
+    "Regime filter with VIX: Skip trades when VIX > 20 to avoid high-stress market environments, reducing MDD by avoiding crash periods.",
+    "Hard position caps: Limit any single stock to 15% of portfolio to prevent concentration-driven drawdowns, friction-aware by aligning with monthly rebalance."
+  ],
+  "live_to_offline_gap_diagnoses": [
+    "Live emitters lack regime filters, exposing trades to high-volatility periods that offline backtest partially avoids via timing luck.",
+    "Live execution suffers from higher transaction costs and slippage not fully modeled in backtest, eroding PF.",
+    "Live universe or selection criteria may include less liquid names compared to curated backtest universe, increasing impact costs."
+  ],
+  "killers": [
+    "Retire current live EQUITY emitter with PF 1.58 due to lack of drawdown control and regime awareness, replace with EQ_MOM_VIX or EQ_MOM_CAP."
+  ],
+  "tier1_attainability_pct": 75,
+  "single_most_important_finding": "Integrating regime filters like VIX or yield curve can likely reduce MDD below 10% while maintaining PF above 2.5, bridging live-to-offline gap.",
+  "engine": "xai",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_equity\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260513T043130Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 736,
+    "tokens_out": 928,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

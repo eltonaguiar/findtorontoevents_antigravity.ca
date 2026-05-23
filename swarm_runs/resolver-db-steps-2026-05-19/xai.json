@@ -1,0 +1,25 @@
+{
+  "pr": null,
+  "engine": "xai",
+  "verdict": "COMMENT_ONLY",
+  "confidence": "LOW",
+  "summary": "Worker did not return valid JSON. See raw output.",
+  "strengths": [],
+  "concerns": [],
+  "commentary_text": "**Safest path: Option A (GitHub Actions workflow_dispatch).**  \nManual execution (B) is rejected because it forces direct MySQL access or ad-hoc scripts outside version control and audit.\n\n### Ranked Recommendations\n\n**1. Workflow structure (preferred)**\n- One workflow for steps 5-6 only.\n- Separate workflow for step 7 (`--apply`).\n- Reason: normalization is a data-fix; outcome writing is a state change. Separate runs give an explicit verification gate and independent rollback.\n\n**2. Backup strategy (run first in the 5-6 workflow)**\n```sql\nCREATE TABLE at_raw_picks_backup_YYYYMMDD_HHMMSS\nAS SELECT * FROM at_raw_picks;\n```\n- Also snapshot the minimal slice you will touch:\n  ```sql\n  CREATE TABLE at_raw_picks_backup_YYYYMMDD_slice\n  AS SELECT * FROM at_raw_picks WHERE id IN (...);  -- or symbol pattern\n  ```\n- Store row count + checksum of the backup table in the workflow log.\n\n**3. Dry-run / preflight (always first job step)**\n- Run `SELECT COUNT(*)` with the exact WHERE clause of the UPDATE.\n- Emit the count as a workflow output and require it to match the expected ~2086 rows before proceeding.\n- Add a manual `workflow_dispatch` input (e.g., `confirm_row_count`) that the operator must re-type.\n\n**4. Transaction + verification (inside the same job)**\n- Wrap the UPDATE in a single transaction.\n- After commit, run these verification queries and fail the job if any check fails:\n  - Row count of affected symbols now zero for old patterns.\n  - Sample 5\u201310 rows of each transformed class (FOREX, futures, quarantined).\n  - `CHECKSUM TABLE at_raw_picks` vs. backup to detect accidental wider changes.\n\n**5. Rollback path**\n- Fast: `RENAME TABLE at_raw_picks TO at_raw_picks_bad, at_raw_picks_backup_YYYYMMDD_HHMMSS TO at_raw_picks;`\n- Or targeted restore from the `_slice` backup if only a subset was wrong.\n- Keep the backup tables for at least 7 days (add a cleanup job or manual step).\n\n**6. Step 7 placement**\n- Separate workflow that:\n  1. Accepts a typed confirmation input.\n  2. Runs `active_picks_sync.py --apply`.\n  3. Immediately prints the WON/LOST/EXPIRED counts and a small sample.\n- This keeps the blast radius of each change minimal and auditable.\n\n**Summary order of operations**\n1. Workflow \u201cnormalize-symbols\u201d (backup \u2192 dry-run count \u2192 confirm \u2192 transactional UPDATE \u2192 verify).\n2. Manual review of verification output.\n3. Workflow \u201capply-outcomes\u201d (confirm \u2192 --apply \u2192 result summary).\n\nThis gives version-controlled, logged, reversible changes with explicit human gates while respecting the IP allow-list constraint.",
+  "_parse_status": "non_json_fallback",
+  "fabrication_risk": {
+    "level": "HIGH",
+    "notes": "non-JSON output, schema-invalid"
+  },
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\resolver-db-steps-2026-05-19\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260519T091854Z",
+    "model_fingerprint": "grok-4.3",
+    "tokens_in": 428,
+    "tokens_out": 615,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,86 @@
+{
+    "generated_at": "2026-04-02T23:45:00Z",
+    "description": "Cross-asset strategy mutations: banned crypto strategies proven to work in other asset classes",
+    "variants": [
+        {
+            "name": "connors_rsi2_equity_scanner",
+            "status": "CANDIDATE",
+            "origin": "cross_asset_mutation",
+            "banned_parent": "stoch-rsi-crypto (0% WR in crypto)",
+            "proven_sibling": "connors_rsi2 (75.7% WR on SPY, p=6e-6, Sharpe 4.84)",
+            "asset_class": "equity",
+            "universe": "DEFAULT_UNIVERSE equities (32 symbols)",
+            "parameters": {
+                "rsi_period": 2,
+                "rsi_entry_threshold": 5,
+                "rsi_exit_threshold": 65,
+                "sma_trend_period": 200,
+                "tp_pct": 0.03,
+                "sl_pct": 0.02
+            },
+            "expected_performance": {
+                "win_rate_pct": 75.7,
+                "source": "multi_asset/scanner.py connors_rsi2 backtest on SPY",
+                "sharpe": 4.84,
+                "p_value": 0.000006
+            },
+            "file": "alpha_engine/new_strategies/connors_rsi2_equity_scanner.py",
+            "notes": "Tighter RSI(2)<5 entry vs standard <10; earlier RSI(2)>65 exit"
+        },
+        {
+            "name": "keltner_compression_generic_v1",
+            "status": "CANDIDATE",
+            "origin": "cross_asset_mutation",
+            "banned_parent": "keltner_doge_specific (BANNED - DOGE-only)",
+            "proven_sibling": "crypto_keltner_compression_expansion_v1 (66.7% WR STRONG)",
+            "asset_class": "crypto",
+            "universe": "20 liquid crypto pairs (BTC, ETH, SOL, BNB, XRP, AVAX, NEAR, SUI, ADA, DOT, ATOM, APT, LINK, UNI, AAVE, DOGE, SHIB, PEPE, WIF, BONK)",
+            "parameters": {
+                "ema_period": 20,
+                "atr_period": 14,
+                "channel_mult": 1.5,
+                "comp_window": 80,
+                "tp_atr_mult": 1.0,
+                "sl_atr_mult": 2.0,
+                "max_hold": 24,
+                "hma_period": 21,
+                "vol_gate_extreme": 2.5
+            },
+            "expected_performance": {
+                "win_rate_pct": 66.7,
+                "source": "incubator codex_gpt5 crypto_keltner_compression_expansion_v1 forward test",
+                "notes": "Generic version trades all liquid crypto vs DOGE-only banned variant"
+            },
+            "file": "battleground/incubator/strategies/keltner_compression_generic_v1.py",
+            "registered_in": "battleground/incubator/strategies/__init__.py STRATEGY_REGISTRY"
+        },
+        {
+            "name": "vix_crash_reversal_equity",
+            "status": "CANDIDATE",
+            "origin": "cross_asset_mutation",
+            "banned_parent": "flash-crash-reversal (BANNED in crypto)",
+            "proven_sibling": "vix_spike_reversal_scanner (72% WR on equities)",
+            "asset_class": "equity/etf/futures",
+            "universe": "All stocks, ETFs, futures in multi_asset/scanner.py",
+            "parameters": {
+                "vix_spike_threshold": 0.20,
+                "vix_reversal_threshold": 0.90,
+                "lookback_days": 5,
+                "confidence_base": 0.55,
+                "confidence_spike_mult": 0.5
+            },
+            "expected_performance": {
+                "win_rate_pct": 72.0,
+                "source": "multi_asset/scanner.py vix_reversal backtest",
+                "notes": "Re-enabled in VIX_STRATEGIES dict; was disabled due to crypto 0% WR but equity WR is 72%"
+            },
+            "file": "multi_asset/scanner.py (vix_reversal function, line 785)",
+            "action_taken": "Re-enabled in VIX_STRATEGIES registry (was commented out)"
+        }
+    ],
+    "summary": {
+        "total_variants": 3,
+        "avg_expected_wr": 71.5,
+        "principle": "Strategies banned in one asset class can be profitable in others due to different market microstructure"
+    }
+}

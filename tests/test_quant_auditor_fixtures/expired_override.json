@@ -1,0 +1,34 @@
+{
+  "_fixture_meta": {
+    "name": "expired_override",
+    "rule_under_test": "ci:expired-override",
+    "expected_verdict": "REJECT",
+    "expected_rule_id": "ci:expired-override",
+    "expected_in": "quant-performance-auditor-deep",
+    "expected_in_fast_variant": "REJECT (charter:tier-floor — fast ignores overrides entirely)",
+    "pair_with_override": "tests/test_quant_auditor_fixtures/EXPIRED.yaml",
+    "notes": "FOREX would normally REJECT on charter:tier-floor (PF 0.29 < 1.5). The paired EXPIRED.yaml override claims to authorise this, but expires_at is in the past. The deep variant must refuse the expired override AND emit ci:expired-override blocking. The fast variant ignores overrides entirely so it just sees a normal tier-floor REJECT."
+  },
+  "performance": {
+    "asset_class_health": {
+      "FOREX": {
+        "status": "stressed",
+        "sample_tier": "stable",
+        "sizing_allowed": false,
+        "resolved_n": 1263,
+        "win_rate": 0.457,
+        "total_pnl_pct": -0.18,
+        "profit_factor": 0.29,
+        "max_drawdown": 0.34,
+        "min_display_n": 100
+      }
+    },
+    "systems": {},
+    "by_asset_class": {}
+  },
+  "walk_forward_by_class": {},
+  "performance_alerts": [],
+  "shadow_probation": {"enabled": false, "shadow_picks": [], "candidate_strategies": []},
+  "picks": {"active": []},
+  "recent_closed": []
+}

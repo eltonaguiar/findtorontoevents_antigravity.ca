@@ -1,0 +1,152 @@
+{
+  "engine": "gpt-5-codex",
+  "q1_per_class": {
+    "EQUITY": {
+      "approach": "12-1 relative-strength breakout on liquid stocks with a quality-minus-junk filter and 200d market-regime gate",
+      "edge_mechanism": "slow underreaction to earnings/news plus institutional constraint-driven momentum persistence; the quality filter removes junk names that mean-revert violently",
+      "test": "After-cost Wilson LB(WR) >= 50% and PSR >= 0.95 on trade returns; confirm with SPA on the frozen parameter set",
+      "min_n": 200,
+      "external_benchmark": "AQR Momentum Indices + Quality Minus Junk: https://www.aqr.com/Insights/Datasets/Momentum-Indices-Monthly ; https://www.aqr.com/Insights/Research/Working-Paper/Quality-Minus-Junk",
+      "kill_rule": "Abandon if OOS after-cost PF < 1.3 or Wilson LB < 50% after 200 trades, or if any one strategy/name exceeds 15% of class volume"
+    },
+    "CRYPTO": {
+      "approach": "Crowding-extreme contrarian on top-20 liquid perpetuals, gated by ATR percentile plus funding/open-interest/sentiment extremes",
+      "edge_mechanism": "leveraged crowding and liquidation cascades overshoot fair value; mean reversion works only when positioning and volatility are extreme",
+      "test": "After-cost Wilson LB(WR) >= 50% and SPA rejects a zero-edge null on net_edge_bps; verify only on clean post-promotion cohorts",
+      "min_n": 150,
+      "external_benchmark": "Hyperliquid HLP public vault and protocol docs: https://hyperliquid.gitbook.io/hyperliquid-docs/hypercore/vaults/protocol-vaults",
+      "kill_rule": "Abandon if after-cost PF < 1.3 or Wilson LB < 50% after 150 trades, if the edge only survives in illiquid small caps, or if any strategy breaches 15% of class volume"
+    },
+    "FOREX": {
+      "approach": "G10 carry plus 12m trend composite with central-bank regime filter; no exotics and no retail-sentiment copy signals",
+      "edge_mechanism": "rate-differential carry and slow macro-policy repricing persist; the trend leg avoids classic carry blowups",
+      "test": "After-cost DSR > 0 and PSR >= 0.95 on weekly returns, plus Wilson LB(WR) >= 50% on executed trades",
+      "min_n": 300,
+      "external_benchmark": "AQR Value and Momentum Everywhere currencies + Myfxbook verification standard: https://www.aqr.com/Insights/Datasets/Value-and-Momentum-Everywhere-Factors-Monthly ; https://www.myfxbook.com/help/knowledge-base/verification/",
+      "kill_rule": "Abandon if G10-only OOS PF < 1.1 or DSR <= 0 after 300 trades, or if profitability disappears under conservative spread/slippage assumptions"
+    },
+    "COMMODITY": {
+      "approach": "CFTC commercial-hedger extreme reversal with term-structure confirmation on liquid commodity futures",
+      "edge_mechanism": "commercials have superior physical-market information; hedging-pressure and inventory imbalances create predictable reversals at extremes",
+      "test": "After-cost Wilson LB(WR) >= 50% and SPA rejects a zero-edge null on weekly trade returns",
+      "min_n": 100,
+      "external_benchmark": "CFTC COT reports + KMLM managed-futures peer: https://www.cftc.gov/MarketReports/CommitmentsofTraders/AbouttheCOTReports/index.htm ; https://kraneshares.com/kmlm",
+      "kill_rule": "Abandon if OOS after-cost PF < 1.3 after 100 trades, or if fewer than 3 contracts explain most of the PnL"
+    },
+    "ETF": {
+      "approach": "Dual-momentum rotation across broad and sector ETFs with an absolute-trend cash filter",
+      "edge_mechanism": "cross-asset relative strength persists because macro flows rebalance slowly; the absolute-trend filter cuts left-tail bear exposure",
+      "test": "PSR >= 0.95 on monthly rotation returns and Wilson LB(WR) >= 50% on executed switches",
+      "min_n": 60,
+      "external_benchmark": "Cambria GMOM: https://www.cambriafunds.com/gmom",
+      "kill_rule": "Abandon if OOS PF < 1.2 or PSR < 0.95 after 60 monthly decisions, or if one ETF sleeve exceeds 15% of class volume"
+    },
+    "BOND": {
+      "approach": "Rates-futures time-series momentum with carry/roll-down overlay on liquid sovereign futures only",
+      "edge_mechanism": "term-premium and policy-regime changes reprice slowly; carry/roll pays while the macro trend persists",
+      "test": "After-cost DSR > 0 and PSR >= 0.95 on weekly/monthly futures returns",
+      "min_n": 120,
+      "external_benchmark": "AQR Value and Momentum Everywhere government bonds + DBMF: https://www.aqr.com/Insights/Datasets/Value-and-Momentum-Everywhere-Factors-Monthly ; https://www.imgp.com/us/fund/us53700t8273-imgp-dbi-managed-futures-strategy-etf/",
+      "kill_rule": "If you cannot run liquid rates futures and reach OOS PF > 1.3 on n >= 120, abandon BOND directional trading; the current cash-bond sample is too thin to trust"
+    }
+  },
+  "q2_rescue_plan": {
+    "30d": [
+      {
+        "task": "Build a clean forward cohort ledger: every new pick gets promotion_at, rehab_vs_prod flag, strategy, symbol, asset class, cost model, net_edge_bps, and concentration tags",
+        "acceptance_gate": "100% of new trades have those fields populated; no more approximate forward cohorts for new promotions"
+      },
+      {
+        "task": "Quarantine negative-edge/high-share strategies to rehab only while honoring mutate-before-kill: move `quan_engine`, `unknown`, and all legacy FOREX families out of production allocation",
+        "acceptance_gate": "No production strategy exceeds 15% class volume; `quan_engine` and `unknown` have 0% production share; top-2 CRYPTO share < 30%"
+      },
+      {
+        "task": "Harden price/cost plumbing with resolver-v2 and the required crypto fallback chain Binance(api/api1/api2/api3) -> CoinGecko -> KuCoin -> CryptoCompare",
+        "acceptance_gate": "100% of crypto closes log the source path; no close depends on one endpoint; after-cost recompute matches audit totals within 1%"
+      },
+      {
+        "task": "Run a FOREX rehab matrix: inverse polarity, DNA mutation, symbol rotation, session filter, G10-only restriction",
+        "acceptance_gate": "At least 12 rehab variants launched and at least 3 show positive after-cost net_edge_bps on >= 30 OOS paper trades each"
+      }
+    ],
+    "60d": [
+      {
+        "task": "Rebuild CRYPTO around survivors only, weighted by net_edge_bps times sqrt(n) with hard strategy and symbol caps",
+        "acceptance_gate": "CRYPTO forward cohort n >= 150, after-cost PF >= 1.35, MDD < 15%, no strategy > 15%, no symbol > 10%"
+      },
+      {
+        "task": "Promote at most one FOREX family from rehab if it survives a clean holdout; everything else stays paper-only",
+        "acceptance_gate": "One G10 family reaches n >= 60, after-cost PF >= 1.1, Wilson LB >= 48%, MDD < 10%; otherwise FOREX remains rehab-only"
+      },
+      {
+        "task": "Add an independent holdout review for every promotion using SPA/PSR; no parameter edits after the holdout starts",
+        "acceptance_gate": "Every promoted family passes SPA or PSR >= 0.95 on data not used for mutation/tuning"
+      }
+    ],
+    "90d": [
+      {
+        "task": "Decision gate for CRYPTO broad class",
+        "acceptance_gate": "Clean forward n >= 300, after-cost PF >= 1.5, Wilson LB >= 50%, MDD < 20%, no strategy > 15%; otherwise collapse to a narrow winner-only book"
+      },
+      {
+        "task": "Decision gate for FOREX class",
+        "acceptance_gate": "Clean forward n >= 100, after-cost PF >= 1.2, Wilson LB >= 50%, MDD < 10%, and breadth across >= 6 G10 pairs; otherwise abandon FOREX"
+      },
+      {
+        "task": "Operationalize a standing rehab board and weekly deallocation rule",
+        "acceptance_gate": "No production strategy with negative net_edge_bps survives 2 consecutive weekly reviews"
+      }
+    ],
+    "risk_register": [
+      {
+        "risk": "Forward-cohort contamination from missing promotion logs creates fake edge",
+        "likelihood": "high",
+        "mitigation": "Make promotion timestamps mandatory and invalidate any forward claim without them"
+      },
+      {
+        "risk": "Concentration risk makes one lucky strategy or symbol look like an asset-class edge",
+        "likelihood": "high",
+        "mitigation": "Hard-cap strategy share at 15% and symbol share at 10%, with automatic deallocation on breach"
+      },
+      {
+        "risk": "Fees, spreads, and slippage are understated, especially in FOREX and CRYPTO",
+        "likelihood": "high",
+        "mitigation": "Use conservative round-trip cost haircuts and compare paper vs realized slippage weekly"
+      },
+      {
+        "risk": "Mutation pipeline overfits and manufactures one-off winners",
+        "likelihood": "high",
+        "mitigation": "Preregister each mutation family, cap the mutation budget, and require SPA/PSR on untouched holdouts"
+      },
+      {
+        "risk": "Resolver or market-data failures distort closes and ranking metrics",
+        "likelihood": "med",
+        "mitigation": "Dual-source reconciliation, logged fallback usage, and automatic quarantine on anomalous closes"
+      }
+    ],
+    "do_not_optimize": [
+      "Do not tune TP/SL before the entry signal has positive after-cost edge",
+      "Do not keep the best 5 of 100 random seeds or mutations and call it robustness",
+      "Do not mine strategy-symbol pairs until one passes by chance",
+      "Do not use the same data for mutation, promotion, and evaluation",
+      "Do not trust PF>2 on n<30 or on one dominant symbol",
+      "Do not hide losers by raising score thresholds instead of fixing source selection",
+      "Do not judge progress on gross PnL; use after-cost net_edge_bps",
+      "Do not claim clean forward evidence while promotion logging is missing"
+    ],
+    "exit_ramp": "Abandon FOREX entirely if, after 90 days of clean cohort tracking, no rehabilitated G10-only family reaches n >= 100, after-cost PF >= 1.2, Wilson LB >= 50%, and MDD < 10%, or if the best result depends on 2 or fewer pairs or one session. Continue FOREX rescue only if one family clears those gates with breadth across at least 6 pairs. For CRYPTO, abandon the broad multi-source class and keep only a narrow survivor book if, after removing `quan_engine` and `unknown`, the class still cannot reach n >= 300, PF >= 1.5, MDD < 20%, and <= 15% strategy concentration; continue only with survivor families and keep draggers in rehab."
+  },
+  "confidence": "MEDIUM",
+  "caveats": "Forward-only labels are approximate because `strategy_promotion_log.json` is missing. I relied on the briefing's post-fix `asset_class_health` snapshot and cross-checked the cited forward-edge audit, but I could not recompute DSR/PSR from raw return series here. The current local `dashboard_data.json` appears to have a later generation timestamp than the 2026-05-03 06:00Z snapshot, and I did not independently confirm the stated `net_edge_bps` field usage from the briefing alone.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\_codex_smoke\\brief.json.raw.txt",
+    "engine": "codex",
+    "ts": "20260503T175426Z",
+    "session_id": "019deef5-6fa5-7182-994b-612d4072473b",
+    "model_fingerprint": "",
+    "tokens_in": 911675,
+    "tokens_out": 19215,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}
