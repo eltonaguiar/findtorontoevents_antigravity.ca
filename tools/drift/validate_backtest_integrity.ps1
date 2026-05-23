@@ -85,6 +85,30 @@ New-Item -ItemType Directory -Force -Path (Split-Path -Parent $OutputPath) | Out
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LogPath) | Out-Null
 
 $doc = Load-Json -Path $InputPath
+
+# Handle skip artifact from build_backtest_forward_drift.py
+if ($doc.PSObject.Properties["skipped"] -and $doc.skipped) {
+    Write-Log "INFO input is a skip artifact — reason: $($doc.reason)"
+    $result = [ordered]@{
+        generated_at_utc = (Get-Date).ToUniversalTime().ToString("o")
+        input_path = $InputPath
+        output_path = $OutputPath
+        strict_zero_bt_wr = $false
+        rows_total = 0
+        rows_valid = 0
+        rows_invalid = 0
+        used_fallback = $false
+        fallback_path = ""
+        missing_join_keys = @()
+        skipped = $true
+        skip_reason = $doc.reason
+    }
+    $result["data"] = $doc
+    $result | ConvertTo-Json -Depth 100 | Set-Content -Path $OutputPath -Encoding UTF8
+    Write-Log "INFO wrote validated skip artifact to $OutputPath"
+    exit 0
+}
+
 $rows = Extract-Rows -Doc $doc
 
 if ($rows.Count -eq 0) {
