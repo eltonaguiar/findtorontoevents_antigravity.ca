@@ -1,0 +1,69 @@
+name: Sidecar Status Markdown Update
+
+# Renders docs/SIDECAR_STATUS.md from
+# audit_dashboard/data/dashboard_data.json::sidecar_promotion_status so
+# operators can read promotion-gate readiness from CLI / commit history
+# without loading /audit.
+#
+# Cron is :07 every 4h (off-the-hour) to avoid contention with the hourly
+# dashboard generator + other top-of-hour pushers. Does NOT trigger on push
+# to main — would create a feedback loop with safe_commit_push below.
+
+on:
+  schedule:
+    - cron: '7 */4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Fetch dashboard data (FTP — file is gitignored, regenerated hourly)
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json || echo "::warning::dashboard_data.json fetch failed — downstream step may degrade"
+
+      - name: Render sidecar status markdown
+        run: python tools/render_sidecar_status_md.py
+
+      - name: Commit + push if changed
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          if git diff --quiet -- docs/SIDECAR_STATUS.md; then
+            echo "No changes to docs/SIDECAR_STATUS.md"
+            exit 0
+          fi
+
+          # Script is tracked 100644 — always invoke via bash (do not require +x).
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh \
+              "chore(sidecar): refresh SIDECAR_STATUS.md $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" \
+              docs/SIDECAR_STATUS.md
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git pull --rebase --no-recurse-submodules origin main
+            git add docs/SIDECAR_STATUS.md
+            git commit -m "chore(sidecar): refresh SIDECAR_STATUS.md $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            git push origin HEAD:main
+          fi

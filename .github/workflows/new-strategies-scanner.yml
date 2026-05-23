@@ -1,0 +1,111 @@
+# .github/workflows/new-strategies-scanner.yml
+#
+# Runs the 20 academically-backed equity/commodity strategies emitter daily.
+# Source: alpha_engine/new_equity_commodity_strategies_20.py
+# Emitter: tools/new_strategies_emitter.py
+# Output: alpha_engine/data/scanner_output/new_strategies_picks.json
+#
+# 14-day shadow mode: picks flow through passes_active_gate() but are not
+# promoted to sizing until shadow_validation flag is cleared (2026-05-31).
+# Disable: set NEW_STRATS_RUNNER_ENABLED=0 env var or unset the repo var.
+#
+# Schedule: 10 strategies × EQUITY+COMMODITY tickers, runs after NY open.
+#   14:45 UTC = 10:45 AM ET (Mon-Fri) — OHLCV data fully available.
+
+name: New Strategies Scanner (20 equity/commodity)
+
+on:
+  schedule:
+    - cron: '45 14 * * 1-5'   # 10:45 AM ET Mon-Fri
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (do not write output file)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: new-strategies-scanner
+  cancel-in-progress: true
+
+jobs:
+  new-strategies-scan:
+    name: New Strategies Emitter (20 strategies)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run new strategies emitter
+        # Import paths: emitter sets sys.path.insert(0, ROOT) + sys.path.insert(0, ROOT/alpha_engine).
+        # PYTHONPATH redundantly adds workspace root for robustness. No relative imports used.
+        # SHADOW MODE: picks pass passes_active_gate() but no real-money sizing until 2026-05-31
+        # when 14-day shadow validation period completes. Remove this comment when promoting.
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python tools/new_strategies_emitter.py $ARGS
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          NEW_STRATS_RUNNER_ENABLED: "1"
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+
+      - name: Run shadow performance tracker (M-075)
+        # Resolves prior picks using live OHLC, writes new_strategies_shadow_log.json.
+        # Provides WR/PF data for the 2026-05-31 promotion decision.
+        # Kill-switch: NEW_STRATS_SHADOW_DISABLED=1
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python tools/new_strategies_shadow_tracker.py $ARGS \
+            || echo "::warning::shadow-tracker failed — check logs for details"
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit scanner output
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/scanner_output/new_strategies_picks.json \
+                  alpha_engine/data/scanner_output/new_strategies_shadow_log.json || true
+          if git diff --staged --quiet; then
+            echo "No new strategy pick changes to commit"
+          else
+            git commit -m "chore: new-strategies-scanner picks + shadow log [skip ci]"
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash origin main \
+                && git push origin HEAD:main && break
+              echo "push retry $i failed — re-fetching"
+              sleep 7
+            done
+          fi
+
+      - name: Upload picks artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-strategies-picks-${{ github.run_number }}
+          path: alpha_engine/data/scanner_output/new_strategies_picks.json
+          if-no-files-found: warn

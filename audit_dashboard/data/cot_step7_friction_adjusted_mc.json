@@ -1,0 +1,124 @@
+{
+  "generated_at": "2026-05-22T06:48:57.010009+00:00",
+  "strategy": "cot_positioning",
+  "symbol": "CT=F",
+  "spec": "master-plan Action #3 \u2014 friction-adjusted Step 7 MC + DSR gate",
+  "friction_model": {
+    "per_fill_ticks": 0.5,
+    "fills_per_round_trip": 2,
+    "vol_state": "rolling 20-trade |pnl| stdev quartile",
+    "vol_multiplier_by_quartile": {
+      "0": 0.75,
+      "1": 1.0,
+      "2": 1.25,
+      "3": 1.5
+    },
+    "tick_pct_of_notional": 0.014286,
+    "round_trip_commission_usd": 10.0
+  },
+  "vol_quartile_distribution": {
+    "0": 27,
+    "1": 47,
+    "2": 26,
+    "3": 26
+  },
+  "raw_pnl_summary": {
+    "n": 126,
+    "mean_pct": 0.0315,
+    "stdev_pct": 0.0429,
+    "wins": 100,
+    "losses": 26
+  },
+  "friction_adjusted_pnl_summary": {
+    "n": 126,
+    "mean_pct": 0.0157,
+    "stdev_pct": 0.0442,
+    "wins": 100,
+    "losses": 26,
+    "slippage_drag_pct": 0.0157
+  },
+  "raw_dsr": {
+    "n": 126,
+    "sr": 0.7329,
+    "skew": -0.4016,
+    "kurt": 4.9504,
+    "n_trials": 500,
+    "sr_expected": 3.0525,
+    "z_dsr": -19.198,
+    "dsr": 0.0
+  },
+  "friction_adjusted_dsr": {
+    "n": 126,
+    "sr": 0.3563,
+    "skew": -0.5837,
+    "kurt": 4.5257,
+    "n_trials": 500,
+    "sr_expected": 3.0525,
+    "z_dsr": -26.238,
+    "dsr": 0.0
+  },
+  "ror_mc_friction_adjusted": {
+    "$5000": {
+      "starter": 5000,
+      "sims": 10000,
+      "seq_trades": 50,
+      "margin_call_count": 0,
+      "margin_call_pct": 0.0,
+      "final_equity_mean": 4773.1,
+      "final_equity_p05": 4594.29,
+      "final_equity_p50": 4773.61,
+      "final_equity_p95": 4952.65,
+      "max_drawdown_mean_pct": 5.099,
+      "max_drawdown_p95_pct": 8.372
+    },
+    "$10000": {
+      "starter": 10000,
+      "sims": 10000,
+      "seq_trades": 50,
+      "margin_call_count": 0,
+      "margin_call_pct": 0.0,
+      "final_equity_mean": 9773.1,
+      "final_equity_p05": 9594.29,
+      "final_equity_p50": 9773.62,
+      "final_equity_p95": 9952.66,
+      "max_drawdown_mean_pct": 2.552,
+      "max_drawdown_p95_pct": 4.19
+    },
+    "$25000": {
+      "starter": 25000,
+      "sims": 10000,
+      "seq_trades": 50,
+      "margin_call_count": 0,
+      "margin_call_pct": 0.0,
+      "final_equity_mean": 24773.1,
+      "final_equity_p05": 24594.29,
+      "final_equity_p50": 24773.62,
+      "final_equity_p95": 24952.66,
+      "max_drawdown_mean_pct": 1.022,
+      "max_drawdown_p95_pct": 1.677
+    },
+    "$50000": {
+      "starter": 50000,
+      "sims": 10000,
+      "seq_trades": 50,
+      "margin_call_count": 0,
+      "margin_call_pct": 0.0,
+      "final_equity_mean": 49773.1,
+      "final_equity_p05": 49594.28,
+      "final_equity_p50": 49773.61,
+      "final_equity_p95": 49952.66,
+      "max_drawdown_mean_pct": 0.511,
+      "max_drawdown_p95_pct": 0.839
+    }
+  },
+  "gate": {
+    "metric": "friction_adjusted_dsr",
+    "threshold": 0.85,
+    "n_trials_used": 500,
+    "observed": 0.0,
+    "verdict": "FAIL",
+    "rule": "per master-plan: CT=F NOT LIVE_ELIGIBLE if DSR < 0.85"
+  },
+  "caveat": "v1 vol-state proxy uses rolling-|pnl|-stdev quartile because trading_picks lacks per-trade ATR. v2 should join an ATR snapshot from the price-cache table. Slippage tick estimate (0.5) is industry-typical for CT=F outside US session hours; refine after broker confirms execution venue.",
+  "nfa": "Research surface only."
+}

@@ -1,0 +1,56 @@
+function playMovieFromBrowse(index) {
+            _browseScrolling = true;
+
+            // Stop any currently playing video
+            var current = document.querySelector('.video-card iframe[src*="autoplay=1"]');
+            if (current) {
+                var s = current.src;
+                current.src = '';
+                setTimeout(function() { current.src = s.replace(/autoplay=1/, 'autoplay=0'); }, 50);
+            }
+
+            _removeBrowseOverlay();
+            document.getElementById('browseView').classList.remove('active');
+            document.getElementById('muteOverlay').classList.add('hidden');
+
+            var movie = filteredMovies[index];
+            if (!movie || !movie.trailer_id) {
+                console.error('[playMovieFromBrowse] No movie or trailer_id at index', index);
+                _browseScrolling = false;
+                document.getElementById('browseView').classList.add('active');
+                showToast('Trailer not available for this title', 'warning');
+                return;
+            }
+
+            var container = document.getElementById('container');
+            var targetTop = index * window.innerHeight;
+
+            // Scroll to the video first
+            container.scrollTo({ top: targetTop, behavior: 'instant' });
+
+            // After scroll completes, enable autoplay on the existing iframe
+            setTimeout(function() {
+                var card = document.querySelector('.video-card[data-index="' + index + '"]');
+                var iframe = card ? card.querySelector('iframe') : null;
+                
+                if (iframe) {
+                    var muted = (videoMuteStates[index] === false) ? 0 : 1;
+                    var newSrc = 'https://www.youtube.com/embed/' + movie.trailer_id +
+                        '?autoplay=1&mute=' + muted + '&controls=1&playsinline=1&loop=0&modestbranding=1&rel=0&enablejsapi=1';
+                    iframe.src = newSrc;
+                    console.log('[playMovieFromBrowse] Playing ' + movie.title);
+                    
+                    // Add click-to-unmute if muted
+                    if (muted) {
+                        var unmuteBtn = document.createElement('button');
+                        unmuteBtn.textContent = '🔇 Tap to Unmute';
+                        unmuteBtn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10000;padding:12px 24px;background:rgba(255,68,68,0.95);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;';
+                        unmuteBtn.onclick = function() {
+                            iframe.src = iframe.src.replace(/mute=1/, 'mute=0');
+                            videoMuteStates[index] = false;
+                            unmuteBtn.remove();
+                        };
+                        document.body.appendChild(unmuteBtn);
+                        
+                        // Remove button on scroll
+                        container.addEventListener('scroll', 

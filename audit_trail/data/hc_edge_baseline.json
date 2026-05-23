@@ -1,0 +1,51 @@
+{
+  "date": "2026-04-15",
+  "source": "dashboard_payload.json recent_closed",
+  "total_picks": 3500,
+  "thresholds": {
+    "CRYPTO": {
+      "fwd_wr_min_pct": 45,
+      "score_min": 55,
+      "trust_min": 3,
+      "observed_wr": 56.3,
+      "observed_n": 474,
+      "current_wr": 60.3,
+      "current_n": 562,
+      "ungated_wr": 50.6,
+      "hc_lift_pp": 9.7
+    },
+    "EQUITY": {
+      "fwd_wr_min_pct": 55,
+      "score_min": 50,
+      "trust_min": 3,
+      "observed_wr": 68.8,
+      "observed_n": 80,
+      "current_wr": 68.1,
+      "current_n": 72,
+      "ungated_wr": 39.1,
+      "hc_lift_pp": 29.0
+    },
+    "FOREX": {
+      "fwd_wr_min_pct": 55,
+      "score_min": 40,
+      "trust_min": 0,
+      "observed_wr": 70.6,
+      "observed_n": 34,
+      "current_wr": 65.8,
+      "current_n": 73,
+      "ungated_wr": 48.0,
+      "hc_lift_pp": 17.8,
+      "warning": "small sample at time of threshold setting (N=34); N now 73 and holding at 65.8%"
+    },
+    "COMMODITY": {"status": "rejected", "reason": "weak/inconclusive edge"},
+    "BOND": {"status": "rejected", "reason": "nodata (N=8)"},
+    "ETF": {"status": "rejected", "reason": "dead/too few (N=19)"}
+  },
+  "revalidate_by": "2026-04-29",
+  "revalidate_command": "python3 audit_trail/hc_edge_revalidation.py",
+  "flag_criteria": {
+    "forex_n_lt_50": "FOREX still has small sample",
+    "wr_drift_gt_10pp": "Significant WR drift from baseline",
+    "wr_below_50": "No edge detected"
+  }
+}

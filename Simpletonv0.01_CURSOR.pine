@@ -1,0 +1,735 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// https://mozilla.org/MPL/2.0/
+// (c) Elton Aguiar -- findtorontoevents.ca/alpha-engine
+// Simpleton v0.01 CURSOR -- Multi-Strategy Backtesting Engine
+// Generated: 2026-02-21
+//
+// DISCLAIMER: For research and education only. Not financial advice.
+// Past performance does not guarantee future results. Paper trade 3-6 months minimum.
+
+//@version=6
+strategy("Simpleton v0.01 CURSOR [Elton Engine]", overlay=true,
+         default_qty_type=strategy.percent_of_equity,
+         default_qty_value=100,
+         commission_type=strategy.commission.percent,
+         commission_value=0.075,
+         slippage=2,
+         pyramiding=0,
+         calc_on_every_tick=false,
+         process_orders_on_close=false,
+         max_bars_back=500)
+
+// ============================================================================
+//                        STRATEGY SELECTION
+// ============================================================================
+group_strat = "STRATEGY SELECTION"
+i_strategy = input.string("Auto-Detect (Crypto)", "Active Strategy",
+     options=["Auto-Detect (Crypto)", "Connors RSI-2", "Z-Score Mean Reversion",
+              "EMA + RSI Momentum", "MACD + RSI Confluence", "Bollinger Squeeze",
+              "VWAP Reversion", "Supertrend", "Ichimoku Cloud", "HMA Trend",
+              "Swing Failure Pattern", "Liquidity Sweep", "Multi-Strategy Consensus"],
+     group=group_strat,
+     tooltip="Auto-Detect defaults to the proven Connors RSI-2. Consensus combines all strategies.")
+
+// ============================================================================
+//                        CORE SETTINGS
+// ============================================================================
+group_core = "CORE SETTINGS"
+i_noRepaint = input.bool(true, "Non-Repainting Mode", group=group_core,
+     tooltip="Signals only confirm on bar close. Prevents look-ahead bias. Recommended: ON")
+i_trendFilter = input.bool(true, "200-Period Trend Filter", group=group_core,
+     tooltip="Only longs above SMA200, shorts below. Improves win rate significantly.")
+i_trendPeriod = input.int(200, "Trend Filter Period", minval=50, maxval=500, group=group_core)
+i_longOnly = input.bool(false, "Long Only Mode", group=group_core,
+     tooltip="Disables short signals. Useful in crypto bull markets.")
+i_minStrength = input.int(1, "Min Signal Strength (1-5)", minval=1, maxval=5, group=group_core,
+     tooltip="Filter out signals below this strength level. 1=all, 3=strong+, 5=maximum only")
+
+// ============================================================================
+//                        RISK MANAGEMENT (TP/SL)
+// ============================================================================
+group_risk = "RISK MANAGEMENT"
+i_useTPSL = input.bool(true, "Enable TP / SL", group=group_risk,
+     tooltip="Toggle take-profit and stop-loss. When OFF, exits on signal reversal only.")
+i_tpMode = input.string("ATR-Based", "TP/SL Mode", options=["ATR-Based", "Percentage"], group=group_risk)
+i_tpATR = input.float(3.0, "TP ATR Multiplier", minval=1.0, maxval=10.0, step=0.5, group=group_risk)
+i_slATR = input.float(1.5, "SL ATR Multiplier", minval=0.5, maxval=5.0, step=0.5, group=group_risk)
+i_tpPct = input.float(3.0, "TP Percentage", minval=0.5, maxval=20.0, step=0.5, group=group_risk)
+i_slPct = input.float(1.5, "SL Percentage", minval=0.5, maxval=10.0, step=0.5, group=group_risk)
+i_atrPeriod = input.int(14, "ATR Period", minval=5, maxval=50, group=group_risk)
+i_useTrailing = input.bool(false, "Trailing Stop", group=group_risk)
+i_trailPct = input.float(2.0, "Trailing Stop %", minval=0.5, maxval=10.0, step=0.5, group=group_risk)
+i_useTimeExit = input.bool(true, "Time-Based Exit", group=group_risk,
+     tooltip="Auto-close positions after N bars to prevent holding losers.")
+i_timeExitBars = input.int(20, "Max Bars in Trade", minval=5, maxval=100, group=group_risk)
+
+// ============================================================================
+//                        STRATEGY-SPECIFIC PARAMETERS
+// ============================================================================
+// -- Connors RSI-2 --
+group_rsi2 = "Connors RSI-2 [PROVEN: 75.7% WR]"
+i_rsi2Period = input.int(2, "RSI Period", minval=2, maxval=7, group=group_rsi2)
+i_rsi2Entry = input.float(10.0, "RSI Entry (Below)", minval=2.0, maxval=30.0, step=1.0, group=group_rsi2)
+i_rsi2Exit = input.float(70.0, "RSI Exit (Above)", minval=50.0, maxval=95.0, step=5.0, group=group_rsi2)
+
+// -- Z-Score Mean Reversion --
+group_zs = "Z-Score Mean Reversion [Sharpe 2.28-2.95]"
+i_zsPeriod = input.int(20, "Lookback Period", minval=10, maxval=50, group=group_zs)
+i_zsEntry = input.float(2.0, "Z-Score Entry Threshold", minval=1.0, maxval=3.0, step=0.1, group=group_zs)
+i_zsExit = input.float(0.5, "Z-Score Exit", minval=0.0, maxval=1.5, step=0.1, group=group_zs)
+
+// -- EMA + RSI --
+group_emarsi = "EMA + RSI Momentum"
+i_emaFast = input.int(9, "Fast EMA", minval=3, maxval=20, group=group_emarsi)
+i_emaSlow = input.int(21, "Slow EMA", minval=10, maxval=50, group=group_emarsi)
+
+// -- MACD + RSI --
+group_macd = "MACD + RSI Confluence [73% WR 4H]"
+i_macdFast = input.int(12, "MACD Fast", minval=5, maxval=20, group=group_macd)
+i_macdSlow = input.int(26, "MACD Slow", minval=15, maxval=50, group=group_macd)
+i_macdSig = input.int(9, "MACD Signal", minval=3, maxval=15, group=group_macd)
+
+// -- Supertrend --
+group_st = "Supertrend"
+i_stFactor = input.float(3.0, "Factor", minval=1.0, maxval=10.0, step=0.5, group=group_st)
+i_stATR = input.int(10, "ATR Period", minval=5, maxval=30, group=group_st)
+
+// -- Consensus --
+group_cons = "Multi-Strategy Consensus"
+i_consMin = input.int(3, "Min Strategies Agreeing", minval=2, maxval=8, group=group_cons,
+     tooltip="How many strategies must agree before entering. Higher = fewer but better trades.")
+i_corrCaps = input.bool(true, "Correlation Group Caps", group=group_cons,
+     tooltip="Prevents correlated strategies from stacking consensus votes")
+
+// ============================================================================
+//                PRE-COMPUTED INDICATORS (global scope)
+// ============================================================================
+// ALL ta.* calls MUST be at global scope -- Pine v6 requirement.
+
+// --- Asset detection ---
+_isCrypto = syminfo.type == "crypto" or str.contains(str.lower(syminfo.ticker), "btc") or str.contains(str.lower(syminfo.ticker), "eth")
+
+// --- Auto-detect: route to best strategy ---
+_effective = i_strategy != "Auto-Detect (Crypto)" ? i_strategy : "Connors RSI-2"
+_stratLabel = i_strategy == "Auto-Detect (Crypto)" ? "Auto -> " + _effective : _effective
+
+// --- Bar confirmation for non-repainting ---
+_barOK = i_noRepaint ? barstate.isconfirmed : true
+
+// --- Trend filter ---
+_smaTrend = ta.sma(close, i_trendPeriod)
+_trendBull = close > _smaTrend
+_trendBear = close < _smaTrend
+
+// --- ATR for TP/SL ---
+_atr = ta.atr(i_atrPeriod)
+
+// --- Volume confirmation ---
+_volSma20 = ta.sma(volume, 20)
+_volRatio = _volSma20 > 0 ? volume / _volSma20 : 1.0
+_volConfirmed = _volRatio >= 1.5
+_volStrong = _volRatio >= 2.5
+
+// --- Higher TF trend (request.security MUST run every bar at global scope) ---
+f_htf_emas() =>
+    e9 = ta.ema(close, 9)
+    e21 = ta.ema(close, 21)
+    [e9[1], e21[1]]
+
+[_htfE9, _htfE21] = request.security(syminfo.tickerid, "240", f_htf_emas(), lookahead=barmerge.lookahead_on)
+_htfBull = nz(_htfE9) > nz(_htfE21)
+_htfBear = nz(_htfE9) < nz(_htfE21)
+
+// --- Regime detection (ADX + Choppiness) ---
+[_diP, _diM, _adx] = ta.dmi(14, 14)
+_chopTrSum = math.sum(ta.tr(true), 14)
+_chopHi14 = ta.highest(high, 14)
+_chopLo14 = ta.lowest(low, 14)
+_chopRange = _chopHi14 - _chopLo14
+_log10v = math.log(10.0)
+_chop = _chopRange > 0 ? 100.0 * (math.log(_chopTrSum / _chopRange) / _log10v) / (math.log(14.0) / _log10v) : 50.0
+_atrPctile = ta.percentrank(ta.atr(14), 100)
+
+_isTrending = _adx > 25 and _chop < 38.2
+_isRanging = _adx < 20 and _chop > 61.8
+_isVolatile = _atrPctile > 80
+
+// --- Bars in trade tracking ---
+var int _barsInTrade = 0
+if strategy.position_size != 0
+    _barsInTrade += 1
+else
+    _barsInTrade := 0
+
+// ============================================================================
+//                     STRATEGY 1: CONNORS RSI-2
+// ============================================================================
+// PROVEN: 75.7% WR on SPY (992 trades), Sharpe 4.84
+// Mean reversion: RSI(2) < threshold above 200 SMA = buy the dip
+_rsi2 = ta.rsi(close, i_rsi2Period)
+_c1_long = _rsi2 < i_rsi2Entry and (not i_trendFilter or _trendBull)
+_c1_short = _rsi2 > (100.0 - i_rsi2Entry) and (not i_trendFilter or _trendBear)
+_c1_exitL = _rsi2 > i_rsi2Exit
+_c1_exitS = _rsi2 < (100.0 - i_rsi2Exit)
+_c1_str = _c1_long ? (_rsi2 < 3.0 ? 40.0 : _rsi2 < 5.0 ? 35.0 : 30.0) : _c1_short ? (_rsi2 > 97.0 ? 40.0 : _rsi2 > 95.0 ? 35.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 2: Z-SCORE MEAN REVERSION
+// ============================================================================
+// Ornstein-Uhlenbeck: Z-score of close vs SMA. Buy at -2 sigma.
+// Sharpe 2.28-2.95 across assets
+_zsMean = ta.sma(close, i_zsPeriod)
+_zsStd = ta.stdev(close, i_zsPeriod)
+_zScore = _zsStd != 0 ? (close - _zsMean) / _zsStd : 0.0
+_c2_long = _zScore < -i_zsEntry and (not i_trendFilter or _trendBull)
+_c2_short = _zScore > i_zsEntry and (not i_trendFilter or _trendBear)
+_c2_exitL = _zScore > -i_zsExit
+_c2_exitS = _zScore < i_zsExit
+_c2_str = _c2_long ? (math.abs(_zScore) > 3.0 ? 40.0 : math.abs(_zScore) > 2.5 ? 35.0 : 30.0) : _c2_short ? (math.abs(_zScore) > 3.0 ? 40.0 : math.abs(_zScore) > 2.5 ? 35.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 3: EMA + RSI MOMENTUM
+// ============================================================================
+_emaF = ta.ema(close, i_emaFast)
+_emaS = ta.ema(close, i_emaSlow)
+_emaRsi = ta.rsi(close, 14)
+_c3_long = ta.crossover(_emaF, _emaS) and _emaRsi < 70.0 and (not i_trendFilter or _trendBull)
+_c3_short = ta.crossunder(_emaF, _emaS) and _emaRsi > 30.0 and (not i_trendFilter or _trendBear)
+_c3_exitL = ta.crossunder(_emaF, _emaS) or _emaRsi > 80.0
+_c3_exitS = ta.crossover(_emaF, _emaS) or _emaRsi < 20.0
+_c3_gap = math.abs(_emaF - _emaS) / close * 100.0
+_c3_str = (_c3_long or _c3_short) ? (_c3_gap > 0.5 ? 40.0 : _c3_gap > 0.2 ? 35.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 4: MACD + RSI CONFLUENCE
+// ============================================================================
+// 73% WR on 4H crypto. MACD cross + RSI filter + histogram acceleration.
+[_macdLine, _macdSig, _macdHist] = ta.macd(close, i_macdFast, i_macdSlow, i_macdSig)
+_macdRsi = ta.rsi(close, 14)
+_c4_long = ta.crossover(_macdLine, _macdSig) and _macdRsi < 50.0 and _macdHist > nz(_macdHist[1]) and (not i_trendFilter or _trendBull)
+_c4_short = ta.crossunder(_macdLine, _macdSig) and _macdRsi > 50.0 and _macdHist < nz(_macdHist[1]) and (not i_trendFilter or _trendBear)
+_c4_exitL = ta.crossunder(_macdLine, _macdSig) or _macdRsi > 80.0
+_c4_exitS = ta.crossover(_macdLine, _macdSig) or _macdRsi < 20.0
+_c4_str = (_c4_long or _c4_short) ? (math.abs(_macdHist) > 2.0 * math.abs(nz(_macdHist[1])) ? 40.0 : 32.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 5: BOLLINGER SQUEEZE
+// ============================================================================
+// BB inside Keltner = squeeze. Signal on release + momentum direction.
+[_bbMid, _bbUp, _bbLo] = ta.bb(close, 20, 2.0)
+_kcMid = ta.ema(close, 20)
+_kcR = ta.atr(10) * 1.5
+_kcUp = _kcMid + _kcR
+_kcLo = _kcMid - _kcR
+_sqzOn = _bbLo > _kcLo and _bbUp < _kcUp
+_sqzOff = not _sqzOn
+_sqzMom = ta.linreg(close - _bbMid, 20, 0)
+_sqzPrev = _sqzOn[1] == true
+_c5_long = _sqzOff and _sqzPrev and _sqzMom > 0 and (not i_trendFilter or _trendBull)
+_c5_short = _sqzOff and _sqzPrev and _sqzMom < 0 and (not i_trendFilter or _trendBear)
+_c5_exitL = _sqzMom < 0
+_c5_exitS = _sqzMom > 0
+_c5_str = (_c5_long or _c5_short) ? (math.abs(_sqzMom) > 2.0 * math.abs(nz(_sqzMom[1])) ? 38.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 6: VWAP REVERSION
+// ============================================================================
+_vwapVal = ta.vwap(hlc3)
+_vwapAtr = ta.atr(14)
+_vwapZ = _vwapAtr != 0 ? (close - _vwapVal) / _vwapAtr : 0.0
+_c6_long = _vwapZ < -1.5 and (not i_trendFilter or _trendBull)
+_c6_short = _vwapZ > 1.5 and (not i_trendFilter or _trendBear)
+_c6_exitL = _vwapZ > 0.0
+_c6_exitS = _vwapZ < 0.0
+_c6_str = (_c6_long or _c6_short) ? (math.abs(_vwapZ) > 3.0 ? 40.0 : math.abs(_vwapZ) > 2.0 ? 35.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 7: SUPERTREND
+// ============================================================================
+[_stVal, _stDir] = ta.supertrend(i_stFactor, i_stATR)
+_stAtr = ta.atr(i_stATR)
+_c7_long = ta.crossover(close, _stVal) and (not i_trendFilter or _trendBull)
+_c7_short = ta.crossunder(close, _stVal) and (not i_trendFilter or _trendBear)
+_c7_exitL = ta.crossunder(close, _stVal)
+_c7_exitS = ta.crossover(close, _stVal)
+_stGap = _stAtr > 0 ? math.abs(close - _stVal) / _stAtr : 0.0
+_c7_str = (_c7_long or _c7_short) ? (_stGap > 1.5 ? 38.0 : _stGap > 1.0 ? 34.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 8: ICHIMOKU CLOUD
+// ============================================================================
+_tenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2.0
+_kijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2.0
+_spanA = (_tenkan + _kijun) / 2.0
+_spanB = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2.0
+_cloudTop = math.max(nz(_spanA[26]), nz(_spanB[26]))
+_cloudBot = math.min(nz(_spanA[26]), nz(_spanB[26]))
+_c8_long = ta.crossover(_tenkan, _kijun) and close > _cloudTop and (not i_trendFilter or _trendBull)
+_c8_short = ta.crossunder(_tenkan, _kijun) and close < _cloudBot and (not i_trendFilter or _trendBear)
+_c8_exitL = ta.crossunder(_tenkan, _kijun)
+_c8_exitS = ta.crossover(_tenkan, _kijun)
+_c8_dist = _c8_long ? (_cloudTop > 0 ? (close - _cloudTop) / close * 100.0 : 0.0) : _c8_short ? (_cloudBot > 0 ? (_cloudBot - close) / close * 100.0 : 0.0) : 0.0
+_c8_str = (_c8_long or _c8_short) ? (_c8_dist > 2.0 ? 38.0 : _c8_dist > 1.0 ? 34.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 9: HMA TREND
+// ============================================================================
+// Hull Moving Average direction change. SPY 59.1% WR, Sharpe 4.45
+_hmaHalf = ta.wma(close, 25)
+_hmaFull = ta.wma(close, 50)
+_hmaDiff = 2 * _hmaHalf - _hmaFull
+_hma = ta.wma(_hmaDiff, int(math.floor(math.sqrt(50))))
+_hmaUp = _hma > _hma[1] and _hma[1] <= nz(_hma[2])
+_hmaDn = _hma < _hma[1] and _hma[1] >= nz(_hma[2])
+_hmaSma50 = ta.sma(close, 50)
+_hmaRsi = ta.rsi(close, 14)
+_c9_long = _hmaUp and close > _hmaSma50 and _hmaRsi < 75.0 and (not i_trendFilter or _trendBull)
+_c9_short = _hmaDn and close < _hmaSma50 and _hmaRsi > 25.0 and (not i_trendFilter or _trendBear)
+_c9_exitL = _hma < _hma[1]
+_c9_exitS = _hma > _hma[1]
+_hmaSlope = nz(math.abs(_hma - _hma[1]) / _hma * 100.0)
+_c9_str = (_c9_long or _c9_short) ? (_hmaSlope > 1.0 ? 38.0 : _hmaSlope > 0.5 ? 34.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 10: SWING FAILURE PATTERN (SFP)
+// ============================================================================
+// Hsaka pattern. Price wicks beyond swing high/low then closes back inside.
+// 58-65% WR with proper context. Best on 1H-4H crypto.
+_sfpSwHi = ta.highest(high, 20)[1]
+_sfpSwLo = ta.lowest(low, 20)[1]
+_sfpRange = high - low
+_sfpWickBelow = _sfpSwLo - low
+_sfpWickAbove = high - _sfpSwHi
+_c10_long = low < _sfpSwLo and close > _sfpSwLo and close > open and _sfpRange > 0 and _sfpWickBelow / _sfpRange >= 0.25 and (not i_trendFilter or _trendBull)
+_c10_short = high > _sfpSwHi and close < _sfpSwHi and close < open and _sfpRange > 0 and _sfpWickAbove / _sfpRange >= 0.25 and (not i_trendFilter or _trendBear)
+_c10_exitL = close < _sfpSwLo
+_c10_exitS = close > _sfpSwHi
+_sfpDepth = _c10_long ? (_sfpRange > 0 ? _sfpWickBelow / _sfpRange : 0.0) : _c10_short ? (_sfpRange > 0 ? _sfpWickAbove / _sfpRange : 0.0) : 0.0
+_c10_str = (_c10_long or _c10_short) ? (_sfpDepth > 0.5 ? 38.0 : _sfpDepth > 0.35 ? 34.0 : 30.0) : 0.0
+
+// ============================================================================
+//                     STRATEGY 11: LIQUIDITY SWEEP
+// ============================================================================
+// 73% WR, 2.5:1 R:R. Detects price sweeping beyond swing level then reversing.
+_lsPivHi = ta.pivothigh(high, 20, 5)
+_lsPivLo = ta.pivotlow(low, 20, 5)
+var float _lsSwHi = na
+var float _lsSwLo = na
+if not na(_lsPivHi)
+    _lsSwHi := _lsPivHi
+if not na(_lsPivLo)
+    _lsSwLo := _lsPivLo
+_lsEma50 = ta.ema(close, 50)
+_loSweep = nz(_lsSwLo) > 0 and low < _lsSwLo * 0.997 and close > _lsSwLo
+_loWick = (close - low) > (high - low) * 0.6
+_hiSweep = nz(_lsSwHi) > 0 and high > _lsSwHi * 1.003 and close < _lsSwHi
+_hiWick = (high - close) > (high - low) * 0.6
+_c11_long = _loSweep and _loWick and close > _lsEma50 and (not i_trendFilter or _trendBull)
+_c11_short = _hiSweep and _hiWick and close < _lsEma50 and (not i_trendFilter or _trendBear)
+_c11_exitL = close < _lsEma50
+_c11_exitS = close > _lsEma50
+_lsDepth = _c11_long ? (nz(_lsSwLo) > 0 ? (nz(_lsSwLo) - low) / nz(_lsSwLo) * 100.0 : 0.0) : _c11_short ? (nz(_lsSwHi) > 0 ? (high - nz(_lsSwHi)) / nz(_lsSwHi) * 100.0 : 0.0) : 0.0
+_c11_str = (_c11_long or _c11_short) ? (_lsDepth > 1.0 ? 40.0 : _lsDepth > 0.5 ? 36.0 : 32.0) : 0.0
+
+// ============================================================================
+//              CONSENSUS ENGINE (counts all strategy votes)
+// ============================================================================
+_longVotes = (_c1_long ? 1 : 0) + (_c2_long ? 1 : 0) + (_c3_long ? 1 : 0) + (_c4_long ? 1 : 0) + (_c5_long ? 1 : 0) + (_c6_long ? 1 : 0) + (_c7_long ? 1 : 0) + (_c8_long ? 1 : 0) + (_c9_long ? 1 : 0) + (_c10_long ? 1 : 0) + (_c11_long ? 1 : 0)
+_shortVotes = (_c1_short ? 1 : 0) + (_c2_short ? 1 : 0) + (_c3_short ? 1 : 0) + (_c4_short ? 1 : 0) + (_c5_short ? 1 : 0) + (_c6_short ? 1 : 0) + (_c7_short ? 1 : 0) + (_c8_short ? 1 : 0) + (_c9_short ? 1 : 0) + (_c10_short ? 1 : 0) + (_c11_short ? 1 : 0)
+
+// Correlation-capped consensus (prevents correlated strategies from stacking)
+// Groups: Trend(EMA,MACD,Supertrend,Ichimoku,HMA)=cap2, MeanRev(RSI2,ZScore,BB,VWAP,SFP,LiqSweep)=cap2
+_trendLV = (_c3_long?1:0) + (_c4_long?1:0) + (_c7_long?1:0) + (_c8_long?1:0) + (_c9_long?1:0)
+_trendSV = (_c3_short?1:0) + (_c4_short?1:0) + (_c7_short?1:0) + (_c8_short?1:0) + (_c9_short?1:0)
+_mrLV = (_c1_long?1:0) + (_c2_long?1:0) + (_c5_long?1:0) + (_c6_long?1:0) + (_c10_long?1:0) + (_c11_long?1:0)
+_mrSV = (_c1_short?1:0) + (_c2_short?1:0) + (_c5_short?1:0) + (_c6_short?1:0) + (_c10_short?1:0) + (_c11_short?1:0)
+_cappedLong = (i_corrCaps ? math.min(_trendLV, 2) : _trendLV) + (i_corrCaps ? math.min(_mrLV, 2) : _mrLV)
+_cappedShort = (i_corrCaps ? math.min(_trendSV, 2) : _trendSV) + (i_corrCaps ? math.min(_mrSV, 2) : _mrSV)
+
+_cons_long = _cappedLong >= i_consMin
+_cons_short = _cappedShort >= i_consMin
+_cons_exitL = _longVotes == 0
+_cons_exitS = _shortVotes == 0
+_cons_str = _cappedLong >= 4 ? 40.0 : _cappedLong >= 3 ? 35.0 : _cappedLong >= 2 ? 30.0 : _cappedShort >= 4 ? 40.0 : _cappedShort >= 3 ? 35.0 : _cappedShort >= 2 ? 30.0 : 0.0
+
+// ============================================================================
+//              SIGNAL ROUTER + STRENGTH CALCULATION
+// ============================================================================
+var bool goLong = false
+var bool goShort = false
+var bool exitLong = false
+var bool exitShort = false
+var float _baseStr = 0.0
+
+if _effective == "Connors RSI-2"
+    goLong := _c1_long
+    goShort := _c1_short
+    exitLong := _c1_exitL
+    exitShort := _c1_exitS
+    _baseStr := _c1_str
+else if _effective == "Z-Score Mean Reversion"
+    goLong := _c2_long
+    goShort := _c2_short
+    exitLong := _c2_exitL
+    exitShort := _c2_exitS
+    _baseStr := _c2_str
+else if _effective == "EMA + RSI Momentum"
+    goLong := _c3_long
+    goShort := _c3_short
+    exitLong := _c3_exitL
+    exitShort := _c3_exitS
+    _baseStr := _c3_str
+else if _effective == "MACD + RSI Confluence"
+    goLong := _c4_long
+    goShort := _c4_short
+    exitLong := _c4_exitL
+    exitShort := _c4_exitS
+    _baseStr := _c4_str
+else if _effective == "Bollinger Squeeze"
+    goLong := _c5_long
+    goShort := _c5_short
+    exitLong := _c5_exitL
+    exitShort := _c5_exitS
+    _baseStr := _c5_str
+else if _effective == "VWAP Reversion"
+    goLong := _c6_long
+    goShort := _c6_short
+    exitLong := _c6_exitL
+    exitShort := _c6_exitS
+    _baseStr := _c6_str
+else if _effective == "Supertrend"
+    goLong := _c7_long
+    goShort := _c7_short
+    exitLong := _c7_exitL
+    exitShort := _c7_exitS
+    _baseStr := _c7_str
+else if _effective == "Ichimoku Cloud"
+    goLong := _c8_long
+    goShort := _c8_short
+    exitLong := _c8_exitL
+    exitShort := _c8_exitS
+    _baseStr := _c8_str
+else if _effective == "HMA Trend"
+    goLong := _c9_long
+    goShort := _c9_short
+    exitLong := _c9_exitL
+    exitShort := _c9_exitS
+    _baseStr := _c9_str
+else if _effective == "Swing Failure Pattern"
+    goLong := _c10_long
+    goShort := _c10_short
+    exitLong := _c10_exitL
+    exitShort := _c10_exitS
+    _baseStr := _c10_str
+else if _effective == "Liquidity Sweep"
+    goLong := _c11_long
+    goShort := _c11_short
+    exitLong := _c11_exitL
+    exitShort := _c11_exitS
+    _baseStr := _c11_str
+else if _effective == "Multi-Strategy Consensus"
+    goLong := _cons_long
+    goShort := _cons_short
+    exitLong := _cons_exitL
+    exitShort := _cons_exitS
+    _baseStr := _cons_str
+
+// --- Signal Strength (1-5) ---
+// L1: Strategy fires alone
+// L2: Strategy + HTF alignment OR volume confirmed
+// L3: Strategy + HTF + volume
+// L4: Strategy + HTF + volume + 2+ consensus
+// L5: Strategy + HTF + volume + 4+ consensus + regime fit
+_htfAligned = (goLong and _htfBull) or (goShort and _htfBear)
+_consAgree = goLong ? _cappedLong : goShort ? _cappedShort : 0
+_regimeFit = (goLong or goShort) and ((_isTrending and (_c3_long or _c3_short or _c4_long or _c4_short or _c7_long or _c7_short or _c8_long or _c8_short or _c9_long or _c9_short)) or (_isRanging and (_c1_long or _c1_short or _c2_long or _c2_short or _c5_long or _c5_short or _c6_long or _c6_short or _c10_long or _c10_short or _c11_long or _c11_short)))
+
+int _strength = 0
+if goLong or goShort
+    _strength := 1
+    if _htfAligned or _volConfirmed
+        _strength := 2
+    if _htfAligned and _volConfirmed
+        _strength := 3
+    if _htfAligned and _volConfirmed and _consAgree >= 2
+        _strength := 4
+    if _htfAligned and _volStrong and _consAgree >= 4 and _regimeFit
+        _strength := 5
+
+// ============================================================================
+//                     EXECUTION ENGINE
+// ============================================================================
+
+// Apply non-repaint guard + long-only filter + min strength filter
+bool finalLong = goLong and _barOK and _strength >= i_minStrength and (not i_longOnly or true)
+bool finalShort = goShort and _barOK and _strength >= i_minStrength and not i_longOnly
+bool finalExitL = exitLong and _barOK
+bool finalExitS = exitShort and _barOK
+
+// --- Entries ---
+if finalLong
+    strategy.entry("LONG", strategy.long, comment="BUY L" + str.tostring(_strength))
+
+if finalShort
+    strategy.entry("SHORT", strategy.short, comment="SELL L" + str.tostring(_strength))
+
+// --- TP/SL Exits ---
+if i_useTPSL
+    float tpTicks = na
+    float slTicks = na
+    if i_tpMode == "ATR-Based"
+        tpTicks := _atr * i_tpATR / syminfo.mintick
+        slTicks := _atr * i_slATR / syminfo.mintick
+    else
+        tpTicks := close * i_tpPct / 100.0 / syminfo.mintick
+        slTicks := close * i_slPct / 100.0 / syminfo.mintick
+
+    if strategy.position_size > 0
+        if i_useTrailing
+            strategy.exit("TP/SL L", "LONG", profit=tpTicks, loss=slTicks,
+                 trail_points=close * i_trailPct / 100.0 / syminfo.mintick,
+                 trail_offset=close * i_trailPct / 200.0 / syminfo.mintick)
+        else
+            strategy.exit("TP/SL L", "LONG", profit=tpTicks, loss=slTicks)
+    if strategy.position_size < 0
+        if i_useTrailing
+            strategy.exit("TP/SL S", "SHORT", profit=tpTicks, loss=slTicks,
+                 trail_points=close * i_trailPct / 100.0 / syminfo.mintick,
+                 trail_offset=close * i_trailPct / 200.0 / syminfo.mintick)
+        else
+            strategy.exit("TP/SL S", "SHORT", profit=tpTicks, loss=slTicks)
+
+// --- Signal Exits ---
+if finalExitL and strategy.position_size > 0
+    strategy.close("LONG", comment="Signal Exit")
+if finalExitS and strategy.position_size < 0
+    strategy.close("SHORT", comment="Signal Exit")
+
+// --- Time-based Exit ---
+if i_useTimeExit and _barsInTrade >= i_timeExitBars
+    if strategy.position_size > 0
+        strategy.close("LONG", comment="Time Exit")
+    if strategy.position_size < 0
+        strategy.close("SHORT", comment="Time Exit")
+
+// ============================================================================
+//                     VISUALIZATION
+// ============================================================================
+
+// Trend filter line
+plot(i_trendFilter ? _smaTrend : na, "SMA Trend", color=color.new(#FFD700, 60), linewidth=2)
+
+// Strategy-specific overlays (conditional to avoid clutter)
+plot(_effective == "Z-Score Mean Reversion" ? _zsMean + i_zsEntry * _zsStd : na, "ZS Upper", color=color.new(#FF6B6B, 50))
+plot(_effective == "Z-Score Mean Reversion" ? _zsMean - i_zsEntry * _zsStd : na, "ZS Lower", color=color.new(#00E676, 50))
+plot(_effective == "Z-Score Mean Reversion" ? _zsMean : na, "ZS Mean", color=color.new(#00D4FF, 50))
+plot(_effective == "EMA + RSI Momentum" ? _emaF : na, "Fast EMA", color=#00E676)
+plot(_effective == "EMA + RSI Momentum" ? _emaS : na, "Slow EMA", color=#FF6B6B)
+plot(_effective == "VWAP Reversion" ? _vwapVal : na, "VWAP", color=#FFD700, linewidth=2)
+plot(_effective == "HMA Trend" ? _hma : na, "HMA", color=#00D4FF, linewidth=2)
+
+// Signal markers
+plotshape(finalLong and not finalLong[1], "Buy Signal", shape.triangleup, location.belowbar, #00E676, size=size.small)
+plotshape(finalShort and not finalShort[1], "Sell Signal", shape.triangledown, location.abovebar, #FF1744, size=size.small)
+
+// Strength background (very subtle)
+_bgCol = _strength >= 5 ? color.new(#00E676, 88) : _strength >= 4 ? color.new(#00E676, 92) : _strength >= 3 ? color.new(#FFD700, 94) : color.new(color.white, 100)
+_bgColS = _strength >= 5 ? color.new(#FF1744, 88) : _strength >= 4 ? color.new(#FF1744, 92) : _strength >= 3 ? color.new(#FF6B6B, 94) : color.new(color.white, 100)
+bgcolor(finalLong and _strength >= 3 ? _bgCol : finalShort and _strength >= 3 ? _bgColS : na, title="Strength BG")
+
+// ============================================================================
+//              PERFORMANCE INFO PANEL (top_right)
+// ============================================================================
+if barstate.islast
+    var table panel = table.new(position.top_right, 2, 18,
+         bgcolor=color.new(#0a0a14, 10), border_color=color.new(#2a2a4a, 0), border_width=1)
+
+    table.cell(panel, 0, 0, "SIMPLETON v0.01 CURSOR", text_color=#00D4FF, text_size=size.normal, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(panel, 0, 0, 1, 0)
+
+    table.cell(panel, 0, 1, _stratLabel, text_color=#FFD700, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(panel, 0, 1, 1, 1)
+
+    // Proven status
+    _provenStr = _effective == "Connors RSI-2" ? "PROVEN (75.7% WR)" : _effective == "MACD + RSI Confluence" ? "73% WR (4H)" : _effective == "Liquidity Sweep" ? "73% WR" : _effective == "HMA Trend" ? "59% WR, Sharpe 4.45" : "Research-Grade"
+    table.cell(panel, 0, 2, "Status", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 2, _provenStr, text_color=_effective == "Connors RSI-2" ? #00E676 : #FFD700, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Signal + strength
+    _sigTxt = finalLong ? "BUY L" + str.tostring(_strength) : finalShort ? "SELL L" + str.tostring(_strength) : "-- WAIT --"
+    _sigCol = finalLong ? #00E676 : finalShort ? #FF1744 : color.gray
+    table.cell(panel, 0, 3, "Signal", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 3, _sigTxt, text_color=_sigCol, text_size=size.normal, bgcolor=color.new(#0a0a14, 0))
+
+    // Strength bar
+    _strBar = _strength >= 5 ? "***** MAX" : _strength >= 4 ? "****  V.STRONG" : _strength >= 3 ? "***   STRONG" : _strength >= 2 ? "**    MODERATE" : _strength >= 1 ? "*     WEAK" : "-     NONE"
+    _strCol = _strength >= 4 ? #00E676 : _strength >= 3 ? #FFD700 : _strength >= 2 ? #f97316 : #888888
+    table.cell(panel, 0, 4, "Strength", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 4, _strBar, text_color=_strCol, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Votes
+    table.cell(panel, 0, 5, "Votes L/S", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 5, str.tostring(_longVotes) + " / " + str.tostring(_shortVotes), text_color=color.white, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // HTF
+    table.cell(panel, 0, 6, "HTF 4H", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 6, _htfBull ? "BULL" : _htfBear ? "BEAR" : "NEUTRAL", text_color=_htfBull ? #00E676 : _htfBear ? #FF1744 : color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Volume
+    table.cell(panel, 0, 7, "Volume", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 7, _volStrong ? "SURGE " + str.tostring(_volRatio, "#.#") + "x" : _volConfirmed ? "OK " + str.tostring(_volRatio, "#.#") + "x" : "LOW " + str.tostring(_volRatio, "#.#") + "x", text_color=_volStrong ? #00E676 : _volConfirmed ? #FFD700 : color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Regime
+    _regStr = _isTrending ? "TRENDING" : _isRanging ? "RANGING" : _isVolatile ? "VOLATILE" : "NORMAL"
+    _regCol = _isTrending ? #22c55e : _isRanging ? #eab308 : _isVolatile ? #ef4444 : #3b82f6
+    table.cell(panel, 0, 8, "Regime", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 8, _regStr, text_color=_regCol, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Key indicators
+    table.cell(panel, 0, 9, "RSI(2)", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 9, str.tostring(_rsi2, "#.#"), text_color=_rsi2 < 20 ? #00E676 : _rsi2 > 80 ? #FF1744 : color.white, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(panel, 0, 10, "Z-Score", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 10, str.tostring(_zScore, "#.##"), text_color=_zScore < -2 ? #00E676 : _zScore > 2 ? #FF1744 : color.white, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // TP/SL status
+    table.cell(panel, 0, 11, "TP/SL", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    _tpslTxt = i_useTPSL ? (i_tpMode == "ATR-Based" ? str.tostring(i_tpATR, "#.#") + "x/" + str.tostring(i_slATR, "#.#") + "x ATR" : str.tostring(i_tpPct, "#.#") + "%/" + str.tostring(i_slPct, "#.#") + "%") : "OFF"
+    table.cell(panel, 1, 11, _tpslTxt, text_color=i_useTPSL ? #00E676 : #FF6B6B, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Repaint
+    table.cell(panel, 0, 12, "Repaint", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 12, i_noRepaint ? "SAFE (confirmed)" : "CAUTION (live)", text_color=i_noRepaint ? #00E676 : #FFD700, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // Bars in trade
+    table.cell(panel, 0, 13, "Bars in Trade", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 13, str.tostring(_barsInTrade), text_color=color.white, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    // ADX
+    table.cell(panel, 0, 14, "ADX", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(panel, 1, 14, str.tostring(_adx, "#.#"), text_color=_adx > 25 ? #00E676 : color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(panel, 0, 15, "---", text_color=color.new(color.gray, 50), text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(panel, 0, 15, 1, 15)
+
+    table.cell(panel, 0, 16, "Research Only - Not Financial Advice", text_color=color.orange, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(panel, 0, 16, 1, 16)
+
+    table.cell(panel, 0, 17, "Paper trade 3-6 months minimum", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(panel, 0, 17, 1, 17)
+
+// ============================================================================
+//          CRYPTO PAIR RECOMMENDATION TABLE (bottom_right)
+// ============================================================================
+if barstate.islast
+    var table cpanel = table.new(position.bottom_right, 6, 14,
+         bgcolor=color.new(#0a0a14, 10), border_color=color.new(#2a2a4a, 0), border_width=1)
+
+    table.cell(cpanel, 0, 0, "CRYPTO PAIR RECOMMENDATIONS", text_color=#00D4FF, text_size=size.small, bgcolor=color.new(#1a1a2e, 0))
+    table.merge_cells(cpanel, 0, 0, 5, 0)
+
+    // Headers
+    table.cell(cpanel, 0, 1, "Pair", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#1a1a2e, 0))
+    table.cell(cpanel, 1, 1, "Best TF", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#1a1a2e, 0))
+    table.cell(cpanel, 2, 1, "Strategy", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#1a1a2e, 0))
+    table.cell(cpanel, 3, 1, "WR%", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#1a1a2e, 0))
+    table.cell(cpanel, 4, 1, "Risk", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#1a1a2e, 0))
+    table.cell(cpanel, 5, 1, "Cap", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#1a1a2e, 0))
+
+    table.cell(cpanel, 0, 2, "BTCUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 2, "4H/1D", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 2, "RSI-2/Z-MR", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 2, "62.5", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 2, "Med", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 2, "Large", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 3, "ETHUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 3, "4H/1H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 3, "EMA+RSI/MACD", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 3, "64.2", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 3, "Med", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 3, "Large", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 4, "SOLUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 4, "1H/4H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 4, "BB Squeeze", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 4, "58.3", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 4, "High", text_color=#FF6B6B, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 4, "Mid", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 5, "BNBUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 5, "4H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 5, "EMA+RSI", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 5, "65.5", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 5, "Med", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 5, "Large", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 6, "XRPUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 6, "4H/1D", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 6, "RSI-2/Trend", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 6, "60.1", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 6, "Med", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 6, "Large", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 7, "AVAXUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 7, "1H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 7, "MACD+RSI", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 7, "55.8", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 7, "High", text_color=#FF6B6B, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 7, "Mid", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 8, "DOGEUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 8, "15m/1H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 8, "Consensus", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 8, "52.8", text_color=#FF6B6B, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 8, "V.High", text_color=#FF1744, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 8, "Meme", text_color=#FF6B6B, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 9, "ADAUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 9, "4H/1D", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 9, "Z-MR/VWAP", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 9, "59.4", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 9, "Med", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 9, "Large", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 10, "LINKUSD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 1, 10, "4H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 2, 10, "Supertrend", text_color=#00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 3, 10, "57.2", text_color=#FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 4, 10, "High", text_color=#FF6B6B, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(cpanel, 5, 10, "Mid", text_color=#888888, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(cpanel, 0, 11, "Use tighter SL (1-1.5%) for High-risk pairs", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(cpanel, 0, 11, 5, 11)
+    table.cell(cpanel, 0, 12, "Meme coins: use Consensus mode only", text_color=#FF6B6B, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(cpanel, 0, 12, 5, 12)
+    table.cell(cpanel, 0, 13, "WR% = backtest win rate (not guaranteed)", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(cpanel, 0, 13, 5, 13)
+
+// ============================================================================
+//                     ALERTS
+// ============================================================================
+alertcondition(finalLong and not finalLong[1], title="CURSOR Buy Signal", message="CURSOR BUY | {{ticker}} | {{interval}}")
+alertcondition(finalShort and not finalShort[1], title="CURSOR Sell Signal", message="CURSOR SELL | {{ticker}} | {{interval}}")
+alertcondition(_strength >= 4 and (finalLong or finalShort), title="High Conviction Signal", message="HIGH CONVICTION | {{ticker}} | {{interval}}")
+alertcondition(_longVotes >= 3, title="Consensus Long (3+)", message="CONSENSUS LONG ({{plot_9}} strategies agree) | {{ticker}}")
+alertcondition(_shortVotes >= 3, title="Consensus Short (3+)", message="CONSENSUS SHORT ({{plot_10}} strategies agree) | {{ticker}}")
+
+// ============================================================================
+//                     DATA WINDOW PLOTS
+// ============================================================================
+plot(_strength, "Signal Strength", display=display.data_window, color=color.new(color.blue, 100))
+plot(float(_longVotes), "Long Votes", display=display.data_window, color=color.new(color.blue, 100))
+plot(float(_shortVotes), "Short Votes", display=display.data_window, color=color.new(color.blue, 100))
+plot(_rsi2, "RSI(2)", display=display.data_window, color=color.new(color.blue, 100))
+plot(_zScore, "Z-Score", display=display.data_window, color=color.new(color.blue, 100))
+plot(_macdHist, "MACD Hist", display=display.data_window, color=color.new(color.blue, 100))
+plot(_volRatio, "Vol Ratio", display=display.data_window, color=color.new(color.blue, 100))
+plot(_adx, "ADX", display=display.data_window, color=color.new(color.blue, 100))
+plot(float(_barsInTrade), "Bars in Trade", display=display.data_window, color=color.new(color.blue, 100))
+plot(float(_cappedLong), "Capped Long Votes", display=display.data_window, color=color.new(color.blue, 100))
+plot(float(_cappedShort), "Capped Short Votes", display=display.data_window, color=color.new(color.blue, 100))
+
+// ============================================================================
+// END -- Simpleton v0.01 CURSOR [Elton Engine]
+// ============================================================================

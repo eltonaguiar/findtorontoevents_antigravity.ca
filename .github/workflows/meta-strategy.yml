@@ -1,0 +1,240 @@
+name: Meta-Strategy Permutation Engine
+
+on:
+  schedule:
+    # Run signal validator every 15 min (offset from signal-recorder)
+    - cron: '20 * * * *'
+    # Run full permutation evaluation + ML training every 6 hours
+    - cron: '0 5,11,17,23 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'validate'
+        type: choice
+        options:
+          - validate        # Check open signals + generate new ones
+          - full            # Full permutation evaluation + elimination + ML
+          - ml-train        # Train ML meta-learner only
+          - elimination     # Run elimination/resurrection cycle only
+
+# issue #141: serialize auto-commit workflows so concurrent runs cannot race
+# each other into the main branch and produce conflict markers in data files.
+concurrency:
+  group: auto-commit-main-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  meta-strategy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install requests numpy pandas scikit-learn xgboost joblib
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            # Check if this was triggered by the 6-hourly cron (0 5,11,17,23 * * *)
+            # GitHub Actions can delay jobs 20-40+ min, so we can't rely on wall-clock time.
+            # Instead: use the GITHUB_EVENT cron expression to distinguish the two schedules.
+            CRON="${{ github.event.schedule }}"
+            if [ "$CRON" = "0 5,11,17,23 * * *" ]; then
+              echo "mode=full" >> $GITHUB_OUTPUT
+            else
+              echo "mode=validate" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Run signal validator (always)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python -m meta_strategy.signal_validator
+
+      - name: Run full permutation evaluation
+        if: steps.mode.outputs.mode == 'full' || steps.mode.outputs.mode == 'ml-train'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Running full permutation evaluation..."
+          python -m meta_strategy.permutation_engine
+
+      - name: Train ML meta-learner
+        if: steps.mode.outputs.mode == 'full' || steps.mode.outputs.mode == 'ml-train'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Training ML meta-learner..."
+          python -m meta_strategy.ml_meta_learner
+
+      - name: Train meta-label filter (Lopez de Prado)
+        if: steps.mode.outputs.mode == 'full' || steps.mode.outputs.mode == 'ml-train'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Training meta-label filter..."
+          python -m meta_strategy.meta_label_filter || true
+
+      - name: Run autopoietic health check
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python -m meta_strategy.autopoietic_monitor || true
+
+      - name: Run elimination cycle
+        if: steps.mode.outputs.mode == 'full' || steps.mode.outputs.mode == 'elimination'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python -c "
+          from meta_strategy.permutation_engine import run_elimination_cycle
+          stats = run_elimination_cycle()
+          print(f'Elimination cycle: {stats}')
+          "
+
+      - name: Update forward test matches (real price validation)
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Validating incubator strategies against real price data..."
+          python -m incubator.validation.update_forward_matches || true
+
+      - name: Run unified performance loader (feed all sources to genome)
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Loading performance data from all 8 subsystems..."
+          python -m meta_strategy.unified_performance_loader
+          # Copy catalog to genome/data/ so the genome dashboard can find it
+          mkdir -p genome/data
+          cp meta_strategy/data/unified_strategy_catalog.json genome/data/unified_strategy_catalog.json 2>/dev/null || true
+
+      - name: Run evolutionary genome optimization
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Running evolutionary genome optimization..."
+          python -m meta_strategy.strategy_genome || true
+
+      - name: Run swarm consensus optimization
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Running PSO swarm optimization..."
+          python -m meta_strategy.swarm_consensus || true
+
+      - name: Run nightmare stress tests
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Running nightmare stress tests..."
+          python -m meta_strategy.stress_test --top 20 || true
+
+      - name: Generate combo dashboard data
+        if: steps.mode.outputs.mode == 'full' || steps.mode.outputs.mode == 'validate'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python -m meta_strategy.generate_combo_dashboard || true
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Stage ALL output files (including model artifacts)
+          git add -f meta_strategy/data/ battleground/data/combo_metrics.json genome/data/unified_strategy_catalog.json || true
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          MODE="${{ steps.mode.outputs.mode }}"
+          git diff --staged --quiet && { echo "No changes to commit"; exit 0; }
+          # issue #141: block conflict-marker commits
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "Meta-strategy [$MODE]: ${TIMESTAMP} [skip ci]"
+          # safe_push.sh handles shallow repos via --deepen=150 internally;
+          # workflow-level `git fetch --unshallow` was blowing up disk on
+          # ubuntu-latest runners (.git is 37GB). See PR for chronic-failure
+          # context.
+          # ---------------------------------------------------------------------------
+          # Merge-based push (replaces rebase — matches audit-dashboard pattern)
+          #
+          # Old flow: stash → pull --rebase → stash-pop → re-stage → push
+          #   Problem: rebase on constantly-moving main causes conflicts in
+          #   combo_metrics.json and swarm_weights.json (binary DB). Stash-pop
+          #   recovery + assert_no_conflict_markers catches it, but the whole
+          #   flow wastes 3-5 min per attempt and often fails all 3 retries.
+          #
+          # New flow: commit → pull --no-rebase -X ours → push
+          #   - Merge creates a merge commit combining our data with remote
+          #   - -X ours: on conflict, prefer our freshly generated data files
+          #   - No stash/unstash dance = no conflict-marker risk
+          #   - 5 retries with exponential backoff (was 3 with flat 3s)
+          # ---------------------------------------------------------------------------
+          # Park unstaged tracked changes so `git pull` can run. Mirrors the fix
+          # applied to audit-dashboard.yml after run 24923115839: dirty working-tree
+          # files (e.g. alpha_engine/data/strategy_performance.json, written by
+          # alpha-engine-live.yml) caused all retries to fail identically with
+          # "would be overwritten by merge". Not popped — those files belong to
+          # other workflows' commit steps; the runner is ephemeral.
+          git stash push -m "meta-strategy: park out-of-scope changes before merge" 2>&1 || true
+          push_ok=false
+          for i in 1 2 3 4 5; do
+            delay=$((i * i * 2 + RANDOM % 5))
+            [ $delay -gt 60 ] && delay=$((60 + RANDOM % 5))
+            git pull --no-rebase --no-recurse-submodules -X ours --no-edit origin main || {
+              echo "Merge failed on attempt $i (next delay ${delay}s)"
+              git merge --abort 2>/dev/null || true
+              sleep "$delay"
+              continue
+            }
+            # Safety check: conflict markers in generated files
+            bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+            if bash .github/scripts/safe_push.sh; then
+              echo "Pushed successfully on attempt $i"
+              push_ok=true
+              break
+            fi
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "::warning::Meta-strategy push failed after 5 retries — data self-heals next cycle"
+          fi
+

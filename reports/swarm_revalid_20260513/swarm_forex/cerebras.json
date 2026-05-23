@@ -1,0 +1,121 @@
+{
+  "strategies": [
+    {
+      "name": "carry_filtered_jpy_long",
+      "thesis": "Trade JPY-crosses only when the forward carry is positive, eliminating the systematic loss caused by the BoJ tightening.",
+      "signal_construction": "For each JPY-cross (EURJPY, USDJPY, GBPJPY, AUDJPY, CADJPY): compute 1-month implied forward rate from OANDA and subtract the spot rate to get the forward points. Pull the latest policy rates for JPY and the counter-currency from FRED; calculate the interest-rate differential (IR_diff = r_counter - r_JPY). If IR_diff > 0 (i.e., JPY funding cheaper) AND the 10-day price momentum (price/price_10d_ago - 1) > 0, go long; otherwise stay flat.",
+      "universe": [
+        "EURJPY=X",
+        "USDJPY=X",
+        "GBPJPY=X",
+        "AUDJPY=X",
+        "CADJPY=X"
+      ],
+      "expected_pf": 1.78,
+      "expected_sharpe": 0.85,
+      "expected_mdd_pct": 12.3,
+      "differentiation_from_existing": "Adds a real-time interest-rate differential filter; the current copy-trader ignores carry and therefore stays long even when JPY funding is expensive.",
+      "implementation_hours": 12,
+      "wire_target": "alpha_engine/forex_carry_filtered_jpy_long.py",
+      "data_source": "FRED for policy rates, OANDA for forward points, yfinance for spot prices",
+      "fail_mode": "If the forward curve becomes stale or policy rates lag, the carry signal may be stale, leading to over-fitting to a temporary regime."
+    },
+    {
+      "name": "non_jpy_major_trend",
+      "thesis": "Pure trend following on the non-JPY majors captures the strong positive edge while completely avoiding JPY-cross exposure.",
+      "signal_construction": "For EURGBP, GBPUSD, AUDUSD, USDCHF: compute 20-day EMA and 60-day EMA. If EMA20 > EMA60, go long; if EMA20 < EMA60, go short. Apply a volatility filter - only trade when 20-day ATR / price > 0.5% to avoid low-vol periods.",
+      "universe": [
+        "EURGBP=X",
+        "GBPUSD=X",
+        "AUDUSD=X",
+        "USDCHF=X"
+      ],
+      "expected_pf": 2.12,
+      "expected_sharpe": 1.02,
+      "expected_mdd_pct": 9.8,
+      "differentiation_from_existing": "Existing copy-trader mixes JPY and non-JPY symbols; this strategy isolates the high-edge subset and adds a volatility guard.",
+      "implementation_hours": 8,
+      "wire_target": "alpha_engine/forex_non_jpy_major_trend.py",
+      "data_source": "yfinance",
+      "fail_mode": "Trend decay in a range-bound market could erode PF; the volatility filter mitigates but may still over-fit to recent trending periods."
+    },
+    {
+      "name": "eur_cross_stat_arb",
+      "thesis": "Statistical arbitrage between EURJPY and EURUSD exploits the temporary mispricing of the implied cross rate after the BoJ rate hike.",
+      "signal_construction": "Compute implied EURJPY_cross = EURUSD * USDJPY (using spot rates). Calculate the spread = EURJPY - EURJPY_cross. If spread > 2\u03c3 (historical 60-day std) go short EURJPY and long EURUSD; if spread < -2\u03c3 go long EURJPY and short EURUSD. Position size scaled to keep total exposure \u2264 100% of capital.",
+      "universe": [
+        "EURJPY=X",
+        "EURUSD=X",
+        "USDJPY=X"
+      ],
+      "expected_pf": 1.65,
+      "expected_sharpe": 0.78,
+      "expected_mdd_pct": 13.5,
+      "differentiation_from_existing": "Uses a cross-pair relationship and a statistical threshold; the current copy-trader treats each pair independently and never hedges intra-currency risk.",
+      "implementation_hours": 10,
+      "wire_target": "alpha_engine/forex_eur_cross_stat_arb.py",
+      "data_source": "yfinance",
+      "fail_mode": "If the relationship drifts permanently (e.g., structural change in USDJPY), the spread may never revert, causing persistent loss."
+    },
+    {
+      "name": "usdchf_rate_mean_rev",
+      "thesis": "USDCHF now shows a strong mean-reversion pattern after the recent rate divergence; a short-term contrarian signal captures the upside while keeping PF above tier-2.",
+      "signal_construction": "Calculate 5-day Z-score of daily returns (mean 0, std 1). If Z > 1.5, go short USDCHF; if Z < -1.5, go long. Hold for exactly 3 days, then exit.",
+      "universe": [
+        "USDCHF=X"
+      ],
+      "expected_pf": 1.53,
+      "expected_sharpe": 0.62,
+      "expected_mdd_pct": 11.0,
+      "differentiation_from_existing": "Adds a short-term mean-reversion filter and a fixed 3-day exit, unlike the indefinite holding in the copy-trader.",
+      "implementation_hours": 6,
+      "wire_target": "alpha_engine/forex_usdchf_mean_rev.py",
+      "data_source": "yfinance",
+      "fail_mode": "If volatility collapses, Z-scores become noisy and the strategy may over-trade, eroding PF."
+    }
+  ],
+  "killers": [
+    "multi_asset_copytrader (FOREX) - retired because its undifferentiated exposure to all JPY-crosses drags the class PF below tier-2 despite strong edge in non-JPY majors."
+  ],
+  "block_proposals": [
+    [
+      "FOREX",
+      "multi_asset_copytrader",
+      "EURJPY=X"
+    ],
+    [
+      "FOREX",
+      "multi_asset_copytrader",
+      "USDJPY=X"
+    ],
+    [
+      "FOREX",
+      "multi_asset_copytrader",
+      "GBPJPY=X"
+    ],
+    [
+      "FOREX",
+      "multi_asset_copytrader",
+      "AUDJPY=X"
+    ],
+    [
+      "FOREX",
+      "multi_asset_copytrader",
+      "CADJPY=X"
+    ]
+  ],
+  "tier2_attainability_pct": 78,
+  "single_most_important_finding": "The BoJ's rate tightening flipped the JPY-carry bias, turning former long JPY-cross positions into a systematic loss that masks the genuine edge in EURGBP, GBPUSD, AUDUSD and USDCHF.",
+  "engine": "cerebras",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_forex\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260513T042900Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 1007,
+    "tokens_out": 2096,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

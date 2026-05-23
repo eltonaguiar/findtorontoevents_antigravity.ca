@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieShows - Discover Movies & TV</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; color: #fff; overflow: hidden; height: 100vh; }
+        
+        /* BROWSE PLAY OVERLAY - Fixed styles */
+        #browse-play-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 10000 !important;
+            background: #000 !important;
+        }
+        #browse-play-overlay iframe {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+        }
+        #browse-unmute-btn {
+            position: absolute !important;
+            bottom: 80px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 10001 !important;
+            padding: 12px 24px !important;
+            background: rgba(255,68,68,0.95) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-size: 16px !important;
+            cursor: pointer !important;
+        }
+    </style>
+</head>
+<body>
+<!-- REST OF YOUR HTML -->
+<script>
+// ============================================
+// FIXED playMovieFromBrowse FUNCTION
+// ============================================
+function playMovieFromBrowse(index) {
+    _browseScrolling = true;
+
+    // Stop any currently playing video
+    var current = document.querySelector('.video-card iframe[src*="autoplay=1"]');
+    if (current) {
+        var s = current.src;
+        current.src = '';
+        setTimeout(function() { current.src = s.replace(/autoplay=1/, 'autoplay=0'); }, 50);
+    }
+
+    // Remove existing overlay
+    var existingOverlay = document.getElementById('browse-play-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    // Hide browse view and mute overlay
+    document.getElementById('browseView').classList.remove('active');
+    document.getElementById('muteOverlay').classList.add('hidden');
+
+    // Validate movie exists
+    var movie = filteredMovies[index];
+    if (!movie || !movie.trailer_id) {
+        console.error('[playMovieFromBrowse] No movie or trailer_id at index', index);
+        _browseScrolling = false;
+        return;
+    }
+
+    var container = document.getElementById('container');
+    var targetTop = index * window.innerHeight;
+    var muted = (videoMuteStates[index] === false) ? 0 : 1;
+    
+    var ytSrc = 'https://www.youtube.com/embed/' + movie.trailer_id +
+        '?autoplay=1&mute=' + muted + '&controls=1&playsinline=1&loop=0&modestbranding=1&rel=0&enablejsapi=1';
+
+    // CRITICAL FIX: Create overlay with explicit dimensions
+    // The CSS in <head> handles styling, we just need to create elements
+    var overlay = document.createElement('div');
+    overlay.id = 'browse-play-overlay';
+
+    var iframe = document.createElement('iframe');
+    iframe.id = 'browse-player-frame';
+    iframe.src = ytSrc;
+    iframe.setAttribute('loading', 'eager');
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    
+    overlay.appendChild(iframe);
+    document.body.appendChild(overlay);
+
+    // NOW scroll (after overlay is created)
+    container.scrollTo({ top: targetTop, behavior: 'instant' });
+
+    // Add unmute button
+    if (muted) {
+        var unmBtn = document.createElement('button');
+        unmBtn.id = 'browse-unmute-btn';
+        unmBtn.textContent = '🔇 Tap to Unmute';
+        unmBtn.onclick = function() {
+            iframe.src = iframe.src.replace(/mute=1/, 'mute=0');
+            videoMuteStates[index] = false;
+            unmBtn.remove();
+        };
+        overlay.appendChild(unmBtn);
+    }
+
+    // Set up YouTube player API
+    if (typeof YT !== 'undefined' && YT.Player) {
+        iframe.addEventListener('load', function onLoad() {
+            iframe.removeEventListener('load', onLoad);
+            console.log('[browse] overlay iframe loaded for ' + movie.title);
+            try {
+                new YT.Player('browse-player-frame', {
+                    events: {
+                        onStateChange: function(event) {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                var ov = document.getElementById('browse-play-overlay');
+                                if (ov) ov.remove();
+                                var nextIdx = index + 1;
+                                if (nextIdx < filteredMovies.length) {
+                                    container.scrollTo({ top: nextIdx * window.innerHeight, behavior: 'smooth' });
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch(e) {}
+        });
+    }
+
+    // Remove overlay on scroll
+    container.addEventListener('scroll', function onScroll() {
+        container.removeEventListener('scroll', onScroll);
+        var ov = document.getElementById('browse-play-overlay');
+        if (ov) ov.remove();
+    });
+
+    _currentlyPlaying = String(index);
+    _browseScrolling = false;
+}
+</script>
+</body>
+</html>

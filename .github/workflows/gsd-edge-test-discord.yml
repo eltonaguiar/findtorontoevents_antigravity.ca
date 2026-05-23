@@ -1,0 +1,51 @@
+name: "GSD Edge Engine - Test Discord Notification"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-notification:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send GSD Edge Engine test notification
+        env:
+          # DISABLED: system underperforming  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PYTHONPATH: .
+        run: |
+          python -c "
+          from crypto_ml_edge.discord_notify import send_scan_notification
+          import json
+
+          # Simulate a realistic early-stage scan result
+          test_data = {
+              'generated_at': '2026-02-23T22:00:00Z',
+              'engine_version': '1.0.0',
+              'capital_base': 10000,
+              'picks': [],
+              'closed_picks': [],
+              'performance': {
+                  'total_picks': 0,
+                  'wins': 0,
+                  'losses': 0,
+                  'timeouts': 0,
+                  'win_rate': 0.0,
+                  'total_return_pct': 0.0,
+                  'sharpe_estimate': 0.0
+              }
+          }
+
+          result = send_scan_notification(test_data, n_models=0)
+          print(f'Discord notification sent: {result}')
+          "
+

@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KIMI Top 3 Picks — Performance Dashboard</title>
+<meta http-equiv="refresh" content="60">
+<style>
+:root {
+  --bg: #0a0a12;
+  --card: #1a1a2e;
+  --card-hover: #1f1f3a;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --green: #4caf50;
+  --red: #f44336;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --yellow: #f59e0b;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --kimi: #ff6b9d;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 20px 0 12px;
+  border-bottom: 2px solid var(--kimi);
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, rgba(255,107,157,0.1) 0%, transparent 100%);
+}
+.header h1 { 
+  font-size: 28px; 
+  font-weight: 700; 
+  letter-spacing: 1px; 
+  color: var(--kimi);
+  text-shadow: 0 0 20px rgba(255,107,157,0.3);
+}
+.header .subtitle { 
+  color: var(--text-dim); 
+  font-size: 13px; 
+  margin-top: 4px; 
+}
+.header .methodology-link {
+  margin-top: 8px;
+  font-size: 11px;
+}
+.header .methodology-link a {
+  color: var(--cyan);
+  text-decoration: underline;
+}
+
+/* KIMI Branding */
+.kimi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(255,107,157,0.2), rgba(167,139,250,0.2));
+  border: 1px solid var(--kimi);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--kimi);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.kimi-badge::before {
+  content: '◆';
+  color: var(--kimi);
+}
+
+/* Summary cards */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--kimi);
+}
+.stat-card .label { 
+  font-size: 11px; 
+  color: var(--text-dim); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+}
+.stat-card .value { 
+  font-size: 32px; 
+  font-weight: 700; 
+  margin-top: 6px; 
+  font-variant-numeric: tabular-nums; 
+}
+.stat-card .value.positive { color: var(--green); }
+.stat-card .value.negative { color: var(--red); }
+.stat-card .value.kimi { color: var(--kimi); }
+.stat-card .sub-detail { 
+  font-size: 11px; 
+  color: var(--text-dim); 
+  margin-top: 4px; 
+}
+
+/* Strategy cards */
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.strategy-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.strategy-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--kimi), var(--purple));
+}
+.strategy-card .rank {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--kimi), var(--purple));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+}
+.strategy-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  padding-right: 40px;
+}
+.strategy-card .strategy-id {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Consolas', monospace;
+  margin-bottom: 12px;
+}
+.strategy-card .metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.strategy-card .metric {
+  text-align: center;
+  padding: 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+}
+.strategy-card .metric .label {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.strategy-card .metric .value {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Open Trades Table */
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin: 24px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: var(--kimi);
+  border-radius: 2px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--card);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.data-table th {
+  background: #0f1628;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:hover { background: var(--card-hover); }
+.data-table .num { 
+  text-align: right; 
+  font-variant-numeric: tabular-nums; 
+  font-family: 'Consolas', monospace;
+}
+.data-table .positive { color: var(--green); }
+.data-table .negative { color: var(--red); }
+.data-table .kimi { color: var(--kimi); font-weight: 600; }
+
+/* P/L Bars */
+.pl-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pl-bar-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.pl-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.pl-bar-fill.positive { background: var(--green); }
+.pl-bar-fill.negative { background: var(--red); }
+.pl-bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-long { background: rgba(76,175,80,0.2); color: var(--green); }
+.badge-short { background: rgba(244,67,54,0.2); color: var(--red); }
+.badge-open { background: rgba(96,165,250,0.2); color: var(--blue); }
+.badge-closed { background: rgba(136,136,136,0.2); color: var(--text-dim); }
+
+/* Best 3 Signals Cards */
+.signals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.signal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.signal-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--kimi);
+}
+.signal-card.grade-a { border-left: 4px solid #4caf50; }
+.signal-card.grade-b { border-left: 4px solid #8bc34a; }
+.signal-card.grade-c { border-left: 4px solid #ffc107; }
+.signal-card.grade-d { border-left: 4px solid #ff9800; }
+.signal-card.grade-f { border-left: 4px solid #f44336; }
+
+.signal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.signal-symbol {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+.signal-grade {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+}
+.signal-grade.grade-a-plus, .signal-grade.grade-a { background: rgba(76,175,80,0.3); color: #4caf50; }
+.signal-grade.grade-b-plus, .signal-grade.grade-b { background: rgba(139,195,74,0.3); color: #8bc34a; }
+.signal-grade.grade-c { background: rgba(255,193,7,0.3); color: #ffc107; }
+.signal-grade.grade-d { background: rgba(255,152,0,0.3); color: #ff9800; }
+
+.signal-direction {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+.signal-direction.long { background: rgba(76,175,80,0.2); color: var(--green); }
+.signal-direction.short { background: rgba(244,67,54,0.2); color: var(--red); }
+
+.signal-levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+}
+.signal-level {
+  text-align: center;
+}
+.signal-level .label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.signal-level .value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Consolas', monospace;
+  margin-top: 4px;
+}
+.signal-level.entry .value { color: var(--cyan); }
+.signal-level.tp .value { color: var(--green); }
+.signal-level.sl .value { color: var(--red); }
+
+.signal-metrics {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.signal-metric {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.signal-metric .label { color: var(--text-dim); }
+.signal-metric .value { 
+  font-weight: 600; 
+  color: var(--text);
+  font-family: 'Consolas', monospace;
+}
+
+.signal-analysis {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 8px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Footer */
+.footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.footer .update-time {
+  color: var(--kimi);
+  font-weight: 600;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dim);
+}
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.live-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .strategy-grid { grid-template-columns: 1fr; }
+  .summary-row { grid-template-columns: repeat(2, 1fr); }
+  .data-table { font-size: 11px; }
+  .data-table th, .data-table td { padding: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="kimi-badge">KIMI Top 3 Picks</div>
+  <h1>KIMI Top 3 Picks Dashboard</h1>
+  <div class="subtitle">Automated Performance Tracking • Real-time P/L • Strategy Analytics</div>
+  <div class="methodology-link">
+    <a href="../genome/kimi_top_3_selection.md" target="_blank">📄 View Selection Methodology</a> • 
+    <a href="index.html">← Back to Main Audit Dashboard</a>
+  </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="summary-row">
+  <div class="stat-card">
+    <div class="label">Total Realized P/L</div>
+    <div class="value" id="total-realized">--</div>
+    <div class="sub-detail">30-day cumulative</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Unrealized P/L</div>
+    <div class="value" id="total-unrealized">--</div>
+    <div class="sub-detail">Open positions</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Win Rate</div>
+    <div class="value" id="win-rate">--</div>
+    <div class="sub-detail">Closed trades</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Active Trades</div>
+    <div class="value kimi" id="active-trades">--</div>
+    <div class="sub-detail">Currently open</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Avg Sharpe Ratio</div>
+    <div class="value" id="avg-sharpe">--</div>
+    <div class="sub-detail">Risk-adjusted</div>
+  </div>
+</div>
+
+<!-- Best 3 Picks Signals Section -->
+<div class="section-title">
+  <span style="color: var(--kimi);">◆</span>
+  LIVE SIGNALS — Best 3 Picks (ENTRY / TP / SL)
+</div>
+<div id="best3-signals">
+  <!-- Populated by JavaScript from genome/data/kimi_best_3_current.json -->
+  <div class="empty-state" id="best3-loading">
+    <div class="empty-state-icon">📡</div>
+    Loading Best 3 Picks signals...
+  </div>
+</div>
+
+<!-- Strategy Performance Cards -->
+<div class="section-title">Strategy Performance</div>
+<div class="strategy-grid" id="strategy-cards">
+  <!-- Populated by JavaScript -->
+</div>
+
+<!-- Open Trades Section -->
+<div class="section-title">
+  <span class="live-indicator"></span>
+  Open Positions (Live)
+</div>
+<table class="data-table" id="open-trades-table">
+  <thead>
+    <tr>
+      <th>Strategy</th>
+      <th>Symbol</th>
+      <th>Direction</th>
+      <th>Entry Price</th>
+      <th>Current P/L</th>
+      <th>P/L %</th>
+      <th>Distance to TP</th>
+      <th>Time in Trade</th>
+    </tr>
+  </thead>
+  <tbody id="open-trades-body">
+    <!-- Populated by JavaScript -->
+  </tbody>
+</table>
+
+<!-- Closed Trades Section -->
+<div class="section-title">Recent Closed Trades (Last 30 Days)</div>
+<table class="data-table" id="closed-trades-table">
+  <thead>
+    <tr>
+      <th>Strategy</th>
+      <th>Symbol</th>
+      <th>Direction</th>
+      <th>Entry → Exit</th>
+      <th>Realized P/L</th>
+      <th>P/L %</th>
+      <th>Exit Reason</th>
+      <th>Trade Duration</th>
+    </tr>
+  </thead>
+  <tbody id="closed-trades-body">
+    <!-- Populated by JavaScript -->
+  </tbody>
+</table>
+
+<div class="footer">
+  <span class="update-time">Last Updated: <span id="last-update">--</span></span> • 
+  Data Source: KIMI Top Picks Automation Engine • 
+  Auto-refresh: 60s
+</div>
+
+<script>
+// Load Best 3 Picks signals
+async function loadBest3Signals() {
+  try {
+    const response = await fetch('../genome/data/kimi_best_3_current.json');
+    if (!response.ok) throw new Error('Best 3 data not available');
+    
+    const data = await response.json();
+    updateBest3Display(data);
+  } catch (error) {
+    console.error('Failed to load Best 3 signals:', error);
+    document.getElementById('best3-signals').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        Best 3 Picks data not available<br>
+        <small>Run: python genome/kimi_best_3_selector.py</small>
+      </div>
+    `;
+  }
+}
+
+function updateBest3Display(data) {
+  const container = document.getElementById('best3-signals');
+  const picks = data.top_3 || [];
+  
+  if (picks.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        No valid setups found at this time
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = `<div class="signals-grid">${picks.map((pick, i) => {
+    const gradeClass = pick.entry_grade.charAt(0).toLowerCase();
+    const directionClass = pick.direction.toLowerCase();
+    
+    return `
+      <div class="signal-card grade-${gradeClass}">
+        <div class="signal-header">
+          <div>
+            <span class="signal-symbol">#${i+1} ${pick.symbol}</span>
+            <span class="signal-direction ${directionClass}">${pick.direction}</span>
+          </div>
+          <span class="signal-grade grade-${gradeClass}">${pick.entry_grade}</span>
+        </div>
+        
+        <div class="signal-levels">
+          <div class="signal-level entry">
+            <div class="label">ENTRY</div>
+            <div class="value">$${pick.entry_price}</div>
+          </div>
+          <div class="signal-level tp">
+            <div class="label">TAKE PROFIT</div>
+            <div class="value">$${pick.take_profit}</div>
+          </div>
+          <div class="signal-level sl">
+            <div class="label">STOP LOSS</div>
+            <div class="value">$${pick.stop_loss}</div>
+          </div>
+        </div>
+        
+        <div class="signal-metrics">
+          <div class="signal-metric">
+            <span class="label">R:R:</span>
+            <span class="value">${pick.risk_reward}:1</span>
+          </div>
+          <div class="signal-metric">
+            <span class="label">Conviction:</span>
+            <span class="value">${pick.conviction_score}%</span>
+          </div>
+          <div class="signal-metric">
+            <span class="label">Size:</span>
+            <span class="value">${pick.position_size_suggestion.split('(')[1]?.replace(')', '') || 'Medium'}</span>
+          </div>
+        </div>
+        
+        <div class="signal-analysis">${pick.entry_quality_notes}</div>
+      </div>
+    `;
+  }).join('')}</div>
+  
+  <div style="text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 8px;">
+    Last scan: ${new Date(data.timestamp).toLocaleString()} | Scanned ${data.symbols_scanned} symbols
+  </div>`;
+}
+
+// Load dashboard data
+async function loadDashboardData() {
+  try {
+    // Load both data sources
+    await loadBest3Signals();
+    
+    const response = await fetch('../genome/data/kimi_top_picks_dashboard.json');
+    if (!response.ok) throw new Error('Data not available');
+    
+    const data = await response.json();
+    updateDashboard(data);
+  } catch (error) {
+    console.error('Failed to load dashboard data:', error);
+    showEmptyState();
+  }
+}
+
+function updateDashboard(data) {
+  // Update timestamp
+  document.getElementById('last-update').textContent = new Date(data.timestamp).toLocaleString();
+  
+  // Calculate totals
+  let totalRealized = 0;
+  let totalUnrealized = 0;
+  let totalTrades = 0;
+  let winningTrades = 0;
+  
+  // Update strategy cards
+  const strategyCards = document.getElementById('strategy-cards');
+  strategyCards.innerHTML = '';
+  
+  const strategies = [
+    { id: 'williams_r_reversion', name: 'Williams %R Mean Reversion', rank: 1, weight: '35%' },
+    { id: 'vwap_bollinger_squeeze', name: 'VWAP Bollinger Squeeze', rank: 2, weight: '35%' },
+    { id: 'ema_ribbon_macd', name: 'Regime-Adaptive EMA Ribbon', rank: 3, weight: '30%' }
+  ];
+  
+  strategies.forEach((strat, index) => {
+    const perf = data.performance?.[strat.id] || {};
+    const realized = perf.total_realized_pnl || 0;
+    const winRate = perf.win_rate || 0;
+    const trades = perf.total_trades || 0;
+    
+    totalRealized += realized;
+    totalTrades += trades;
+    winningTrades += perf.winning_trades || 0;
+    
+    const card = document.createElement('div');
+    card.className = 'strategy-card';
+    card.innerHTML = `
+      <div class="rank">${strat.rank}</div>
+      <h3>${strat.name}</h3>
+      <div class="strategy-id">${strat.id} • Weight: ${strat.weight}</div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="label">Realized P/L</div>
+          <div class="value ${realized >= 0 ? 'positive' : 'negative'}">${formatCurrency(realized)}</div>
+        </div>
+        <div class="metric">
+          <div class="label">Win Rate</div>
+          <div class="value">${(winRate * 100).toFixed(1)}%</div>
+        </div>
+        <div class="metric">
+          <div class="label">Trades</div>
+          <div class="value">${trades}</div>
+        </div>
+      </div>
+    `;
+    strategyCards.appendChild(card);
+  });
+  
+  // Update summary stats
+  const openTrades = data.open_trades || [];
+  openTrades.forEach(trade => {
+    totalUnrealized += trade.unrealized_pnl || 0;
+  });
+  
+  document.getElementById('total-realized').textContent = formatCurrency(totalRealized);
+  document.getElementById('total-realized').className = 'value ' + (totalRealized >= 0 ? 'positive' : 'negative');
+  
+  document.getElementById('total-unrealized').textContent = formatCurrency(totalUnrealized);
+  document.getElementById('total-unrealized').className = 'value ' + (totalUnrealized >= 0 ? 'positive' : 'negative');
+  
+  document.getElementById('win-rate').textContent = totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(1) + '%' : '0%';
+  document.getElementById('active-trades').textContent = openTrades.length;
+  
+  const totalPerf = data.performance?.TOTAL || {};
+  const sharpe = totalPerf.sharpe_ratio || 0;
+  document.getElementById('avg-sharpe').textContent = sharpe.toFixed(2);
+  
+  // Update open trades table
+  updateOpenTrades(openTrades);
+  
+  // Update closed trades (would need separate endpoint, showing placeholder)
+  updateClosedTrades([]);
+}
+
+function updateOpenTrades(trades) {
+  const tbody = document.getElementById('open-trades-body');
+  
+  if (!trades || trades.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="empty-state">
+          <div class="empty-state-icon">📊</div>
+          No open positions currently
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  tbody.innerHTML = trades.map(trade => {
+    const pl = trade.unrealized_pnl || 0;
+    const plPct = trade.unrealized_pnl_pct || 0;
+    const entryTime = new Date(trade.entry_time);
+    const hoursInTrade = Math.floor((Date.now() - entryTime.getTime()) / (1000 * 60 * 60));
+    
+    return `
+      <tr>
+        <td class="kimi">${trade.strategy_id}</td>
+        <td><strong>${trade.symbol}</strong></td>
+        <td><span class="badge badge-${trade.direction === 'BUY' ? 'long' : 'short'}">${trade.direction}</span></td>
+        <td class="num">$${trade.entry_price?.toLocaleString()}</td>
+        <td class="num ${pl >= 0 ? 'positive' : 'negative'}">${formatCurrency(pl)}</td>
+        <td class="num ${plPct >= 0 ? 'positive' : 'negative'}">${(plPct * 100).toFixed(2)}%</td>
+        <td class="num">${calculateDistanceToTP(trade)}%</td>
+        <td>${hoursInTrade}h</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateClosedTrades(trades) {
+  const tbody = document.getElementById('closed-trades-body');
+  
+  if (!trades || trades.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="empty-state">
+          <div class="empty-state-icon">📈</div>
+          No closed trades yet - automation just started
+        </td>
+      </tr>
+    `;
+    return;
+  }
+}
+
+function calculateDistanceToTP(trade) {
+  // Simplified calculation
+  if (!trade.take_profit || !trade.entry_price) return '--';
+  const current = trade.entry_price * (1 + (trade.unrealized_pnl_pct || 0));
+  const distance = Math.abs(trade.take_profit - current) / current * 100;
+  return distance.toFixed(1);
+}
+
+function formatCurrency(value) {
+  if (value === undefined || value === null) return '--';
+  const num = Number(value);
+  const sign = num >= 0 ? '+' : '';
+  return `${sign}$${Math.abs(num).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
+
+function showEmptyState() {
+  document.getElementById('open-trades-body').innerHTML = `
+    <tr>
+      <td colspan="8" class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        Dashboard data not available yet<br>
+        <small>Run: python genome/kimi_top_picks_automation.py --cycle</small>
+      </td>
+    </tr>
+  `;
+}
+
+// Load on page load
+loadDashboardData();
+
+// Auto-refresh every 60 seconds
+setInterval(loadDashboardData, 60000);
+</script>
+<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,0.95);border-top:1px solid #2a2a4a;padding:6px 16px;font-size:11px;color:#888;text-align:center;z-index:9999;backdrop-filter:blur(4px);">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
+</body>
+</html>

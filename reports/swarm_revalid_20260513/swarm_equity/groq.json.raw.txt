@@ -1,0 +1,63 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "MOM_VIX",
+      "thesis": "Applying a VIX-based regime filter to the existing momentum strategy can reduce MDD and improve PF.",
+      "signal_construction": "Long top-5 momentum stocks when VIX < 20, otherwise cash",
+      "universe": ["SPY", "AAPL", "MSFT", "AMZN", "GOOGL", "FB", "JPM", "V", "MA", "PG"],
+      "expected_pf": 2.5,
+      "expected_sharpe": 1.5,
+      "expected_mdd_pct": 8,
+      "differentiation_from_existing": "Incorporates VIX regime filter to reduce MDD",
+      "implementation_hours": 40,
+      "wire_target": "tools/backtest_equity_top_momentum_v2.py",
+      "data_source": "yfinance",
+      "fail_mode": "VIX filter fails to reduce MDD"
+    },
+    {
+      "name": "MOM_YC",
+      "thesis": "Using a yield-curve based regime filter can improve the momentum strategy's performance.",
+      "signal_construction": "Long top-5 momentum stocks when 10y-2y yield curve > 0, otherwise cash",
+      "universe": ["SPY", "AAPL", "MSFT", "AMZN", "GOOGL", "FB", "JPM", "V", "MA", "PG"],
+      "expected_pf": 2.8,
+      "expected_sharpe": 1.6,
+      "expected_mdd_pct": 6,
+      "differentiation_from_existing": "Incorporates yield-curve regime filter to improve PF",
+      "implementation_hours": 50,
+      "wire_target": "tools/backtest_equity_top_momentum_v3.py",
+      "data_source": "FRED",
+      "fail_mode": "Yield curve filter fails to improve PF"
+    },
+    {
+      "name": "MOM_VOL",
+      "thesis": "Implementing a volatility-targeting approach can reduce MDD and improve the strategy's overall performance.",
+      "signal_construction": "Long top-5 momentum stocks with volatility < 20%, otherwise cash",
+      "universe": ["SPY", "AAPL", "MSFT", "AMZN", "GOOGL", "FB", "JPM", "V", "MA", "PG"],
+      "expected_pf": 2.2,
+      "expected_sharpe": 1.4,
+      "expected_mdd_pct": 9,
+      "differentiation_from_existing": "Incorporates volatility-targeting to reduce MDD",
+      "implementation_hours": 30,
+      "wire_target": "tools/backtest_equity_top_momentum_v4.py",
+      "data_source": "yfinance",
+      "fail_mode": "Volatility-targeting fails to reduce MDD"
+    }
+  ],
+  "mdd_reduction_techniques": [
+    "Volatility-targeting: cap position size based on stock-specific volatility",
+    "Regime-filtering: use VIX or yield-curve to determine market regime and adjust strategy accordingly",
+    "Friction-aware position sizing: reduce position size to minimize trading costs and slippage"
+  ],
+  "live_to_offline_gap_diagnoses": [
+    "Overfitting to historical data",
+    "Lack of regime-filtering or volatility-targeting in live strategy",
+    "Inadequate handling of trading costs and slippage in live strategy"
+  ],
+  "killers": [
+    "Existing live EQUITY emitter with PF 1.58"
+  ],
+  "tier1_attainability_pct": 80,
+  "single_most_important_finding": "Incorporating regime-filtering and volatility-targeting techniques can significantly improve the momentum strategy's performance and reduce MDD."
+}
+```

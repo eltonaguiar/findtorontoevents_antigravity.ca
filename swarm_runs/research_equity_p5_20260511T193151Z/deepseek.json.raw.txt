@@ -1,0 +1,42 @@
+```json
+{
+  "schema_version": "v1",
+  "engine": "synthesis_swarm",
+  "asset_class": "EQUITY",
+  "run_id": "run_2026-05-11T19-17-46Z",
+  "synthesis": [
+    {
+      "spec_id": "equity_ts_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=55.79 and WR=100% look extreme but n=4 trades is far below the T2 floor of 100; the signal is a simplified SMA crossover, not the intended spec.entry text. Insufficient evidence for any reliable edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_vol_target_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=55.79, WR=100%, n=4 — same n<100 issue as above. The vol-target logic is sound in theory but cannot be validated with 4 trades on a simplified signal. Needs faithful-signal translation and longer history.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_carry_pair_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=5.24, WR=66.7%, MDD=19.3% are reasonable but n=6 trades is far too small for any statistical confidence. The dividend-yield-spread signal is not faithfully parsed from spec.entry text. Cannot recommend wiring.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_hmm_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=100.64, WR=100%, Sharpe=1.16 look exceptional but n=3 trades is negligible. The HMM bull probability and momentum logic are promising but unvalidated at this sample size. Simplified signal caveat applies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_bab_pair_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=5.24, WR=66.7%, MDD=19.3% with n=6 trades. Beta-neutral pair strategy is conceptually interesting but cannot be assessed with 6 trades on a simplified SMA crossover. Needs faithful-signal v3 and longer backtest.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "All five candidates fail the T2 floor of n≥100 trades by a wide margin (n=3 to n=6). While P3/P4 metrics show high PF and WR, these are artifacts of tiny sample sizes on a simplified SMA-crossover proxy rather than the intended spec.entry signals. The cross-test independence is encouraging but irrelevant without sufficient trade count. The run-level verdict is NO_EDGE — retry conditions require: (1) faithful-signal translator (v3) to parse spec.entry text correctly, (2) longer backtest window or higher-frequency data to generate n≥100 trades, and (3) re-evaluation of all candidates with proper signal logic before any wiring decision."
+}
+```

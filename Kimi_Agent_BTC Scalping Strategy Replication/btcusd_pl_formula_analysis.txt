@@ -1,0 +1,110 @@
+
+================================================================================
+           BTCUSD.V PERPETUAL FUTURES - P/L FORMULA REVERSE ENGINEERING
+                          Analysis Date: March 24-26, 2026
+================================================================================
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         EXACT FORMULA DISCOVERED                             ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  CONTRACT TYPE:  Linear Perpetual (USD-Margined)                             ║
+║  LEVERAGE:       Exactly 10x                                                 ║
+║  FEES:           NOT included in P/L calculation (or zero fees)              ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  FORMULA:                                                                    ║
+║                                                                              ║
+║    For LONG positions (Buy):                                                 ║
+║    P/L = (Exit Price - Entry Price) × Quantity × 10                          ║
+║                                                                              ║
+║    For SHORT positions (Sell):                                               ║
+║    P/L = (Entry Price - Exit Price) × Quantity × 10                          ║
+║                                                                              ║
+║  UNIFIED FORMULA:                                                            ║
+║    P/L = Direction × (Exit Price - Entry Price) × Quantity × 10              ║
+║    where Direction = +1 for Buy, -1 for Sell                                 ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+================================================================================
+                         HYPOTHESIS TESTING RESULTS
+================================================================================
+
+1. P/L = (Exit - Entry) × Quantity × Leverage
+   → ✓ MATCHES EXACTLY with Leverage = 10
+
+2. P/L = (Exit - Entry) × Quantity × Leverage / Entry
+   → ✗ Does NOT match
+
+3. P/L = (1/Entry - 1/Exit) × Quantity × Leverage × Multiplier
+   → ✗ Does NOT match (Inverse perpetual formula)
+
+================================================================================
+                      VERIFICATION FOR ALL 12 TRADES
+================================================================================
+
+Trade  Side   Qty    Entry        Exit         P/L Calculation                          Result       Actual       Match
+------------------------------------------------------------------------------------------------------------------------
+1      Sell   0.6    $69,556.95   $69,534.58   ($69,556.95 - $69,534.58) × 0.6 × 10     $134.22      $134.22      ✓
+2      Buy    0.6    $69,486.40   $69,526.74   ($69,526.74 - $69,486.40) × 0.6 × 10     $242.04      $242.04      ✓
+3      Sell   0.5    $69,203.82   $69,120.28   ($69,203.82 - $69,120.28) × 0.5 × 10     $417.70      $417.70      ✓
+4      Buy    0.1    $69,469.77   $71,206.94   ($71,206.94 - $69,469.77) × 0.1 × 10     $1,737.17    $1,737.17    ✓
+5      Sell   0.5    $71,204.31   $71,285.56   ($71,204.31 - $71,285.56) × 0.5 × 10     $-406.25     $-406.25     ✓
+6      Buy    0.5    $71,315.00   $71,348.90   ($71,348.90 - $71,315.00) × 0.5 × 10     $169.50      $169.50      ✓
+7      Buy    0.5    $71,458.62   $71,492.70   ($71,492.70 - $71,458.62) × 0.5 × 10     $170.40      $170.40      ✓
+8      Buy    0.5    $71,477.10   $71,544.73   ($71,544.73 - $71,477.10) × 0.5 × 10     $338.15      $338.15      ✓
+9      Sell   0.5    $71,558.88   $71,547.48   ($71,558.88 - $71,547.48) × 0.5 × 10     $57.00       $57.00       ✓
+10     Sell   0.5    $71,175.14   $71,149.20   ($71,175.14 - $71,149.20) × 0.5 × 10     $129.70      $129.70      ✓
+11     Buy    0.5    $71,287.81   $71,470.59   ($71,470.59 - $71,287.81) × 0.5 × 10     $913.90      $913.90      ✓
+12     Buy    0.5    $71,328.04   $71,519.78   ($71,519.78 - $71,328.04) × 0.5 × 10     $958.70      $958.70      ✓
+------------------------------------------------------------------------------------------------------------------------
+
+✓ ALL 12 TRADES MATCH EXACTLY - ZERO ROUNDING ERROR
+
+================================================================================
+                              KEY FINDINGS
+================================================================================
+
+1. CONTRACT TYPE: Linear Perpetual (USD-Margined)
+   - P/L is calculated in USD directly
+   - Price difference is multiplied by quantity and leverage
+   - This is different from Inverse perpetual where P/L is in BTC
+
+2. LEVERAGE: Exactly 10x
+   - The stated 10x leverage is accurate
+   - No hidden multiplier or adjustment
+
+3. FEES: Not included or zero
+   - The P/L figures match exactly with no fee deduction
+   - Either fees are zero or shown P/L is gross (before fees)
+
+4. FORMULA CONFIDENCE: 100%
+   - All 12 trades match with zero rounding error
+   - Formula is definitively confirmed
+
+================================================================================
+                           PYTHON IMPLEMENTATION
+================================================================================
+
+def calculate_pl(side, entry_price, exit_price, quantity, leverage=10):
+    """
+    Calculate P/L for BTCUSD.V linear perpetual futures
+
+    Args:
+        side: 'Buy' (long) or 'Sell' (short)
+        entry_price: Entry price in USD
+        exit_price: Exit price in USD
+        quantity: Position size in BTC
+        leverage: Leverage multiplier (default 10)
+
+    Returns:
+        P/L in USD
+    """
+    if side == 'Buy':
+        return (exit_price - entry_price) * quantity * leverage
+    else:  # Sell
+        return (entry_price - exit_price) * quantity * leverage
+
+================================================================================

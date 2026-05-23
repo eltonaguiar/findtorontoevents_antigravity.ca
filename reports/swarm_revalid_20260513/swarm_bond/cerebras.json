@@ -1,0 +1,108 @@
+{
+  "strategies": [
+    {
+      "name": "CreditSpreadMomentum",
+      "thesis": "Credit spread widening signals excess risk; a positive spread momentum combined with a modest spread level captures upside while preserving PF.",
+      "signal_construction": "Compute 6-month price momentum of the HYG-LQD spread (price_HYG - price_LQD). Go long the spread (long HYG, short LQD) if spread momentum > 0 AND current spread > 2% of LQD price; otherwise stay flat. Exit if spread exceeds 5% or momentum turns negative.",
+      "universe": [
+        "HYG",
+        "LQD"
+      ],
+      "expected_pf": 1.5,
+      "expected_sharpe": 0.92,
+      "expected_mdd_pct": 18,
+      "differentiation_from_existing": "Adds a spread-level filter to the pure 6-month momentum baseline, reducing tail-risk while keeping the same PF asymmetry.",
+      "implementation_hours": 12,
+      "wire_target": "strategies/credit_spread_momentum.py",
+      "data_source": "yfinance",
+      "fail_mode": "Rapid spread widening (e.g., credit crisis) can trigger large short-LQD losses before the filter exits."
+    },
+    {
+      "name": "DurationRotationTrend",
+      "thesis": "Rising long-term yields favour short-duration bonds; a 12-month Treasury yield trend improves risk-adjusted returns.",
+      "signal_construction": "Fetch 12-month momentum of the 10-year Treasury yield (FRED DGS10). If momentum > 0, allocate 100% to short-duration ETFs (SHY, BIL); if momentum \u2264 0, allocate 100% to long-duration ETFs (TLT, IEF). Rebalance monthly.",
+      "universe": [
+        "SHY",
+        "BIL",
+        "TLT",
+        "IEF"
+      ],
+      "expected_pf": 1.4,
+      "expected_sharpe": 1.07,
+      "expected_mdd_pct": 15,
+      "differentiation_from_existing": "Introduces a macro-duration overlay absent from the HYG/LQD momentum rule, aligning exposure with the yield curve regime.",
+      "implementation_hours": 16,
+      "wire_target": "strategies/duration_rotation_trend.py",
+      "data_source": "FRED, yfinance",
+      "fail_mode": "Yield-trend lag during abrupt policy shifts can cause temporary mis-allocation and drawdowns."
+    },
+    {
+      "name": "DualMomentumCrossAsset",
+      "thesis": "Combining relative and absolute momentum across the full bond spectrum yields a more consistent Sharpe while preserving upside.",
+      "signal_construction": "For each ETF (TLT, IEF, SHY, BIL) compute 6-month total-return momentum and 200-day SMA price filter (price > SMA). Rank ETFs by momentum, select the top 2 that also pass the SMA filter, and allocate equal weight. Rebalance monthly.",
+      "universe": [
+        "TLT",
+        "IEF",
+        "SHY",
+        "BIL"
+      ],
+      "expected_pf": 1.6,
+      "expected_sharpe": 1.12,
+      "expected_mdd_pct": 18,
+      "differentiation_from_existing": "Expands the universe beyond high-yield credit and adds an absolute-momentum screen, reducing reliance on a single spread.",
+      "implementation_hours": 20,
+      "wire_target": "strategies/dual_momentum_bond.py",
+      "data_source": "yfinance",
+      "fail_mode": "Flat-yield environments can flatten momentum differentials, leading to frequent turnover and higher transaction costs."
+    },
+    {
+      "name": "CarryAdjustedMomentum",
+      "thesis": "Adjusting momentum for realized carry (yield-risk-free) improves signal quality, especially when yields diverge across sectors.",
+      "signal_construction": "For each ETF (TLT, IEF, HYG, LQD, TIP) compute 6-month total-return momentum and subtract the 6-month average carry (ETF yield - 10-year Treasury yield from FRED). Rank by carry-adjusted momentum, go long the top 2, and apply a volatility filter (annualized \u03c3 < 15%). Rebalance monthly.",
+      "universe": [
+        "TLT",
+        "IEF",
+        "HYG",
+        "LQD",
+        "TIP"
+      ],
+      "expected_pf": 1.45,
+      "expected_sharpe": 0.98,
+      "expected_mdd_pct": 19,
+      "differentiation_from_existing": "Incorporates a yield-carry adjustment absent from the baseline, targeting higher risk-adjusted returns while keeping PF near the original level.",
+      "implementation_hours": 18,
+      "wire_target": "strategies/carry_adjusted_momentum.py",
+      "data_source": "yfinance, FRED",
+      "fail_mode": "Incorrect yield data or lagged carry estimates can mis-rank assets, leading to under-performance in rapid rate-move periods."
+    }
+  ],
+  "credit_spread_signals": [
+    "HYG-LQD price spread",
+    "BAMLH0A0HYM2 (Baa-AAA corporate spread) from FRED",
+    "TED spread (Baa-AAA vs Fed Funds)",
+    "DGS10-DGS2 (10y-2y Treasury curve) as a proxy for credit risk"
+  ],
+  "duration_overlay_proposals": [
+    "Short vs long duration regime based on 12-month Treasury yield momentum",
+    "Inflation-protected vs nominal duration rotation using TIP vs TLT",
+    "Credit-duration overlay: switch to high-yield (HYG/LQD) when credit spread narrows, otherwise stay in Treasury duration buckets"
+  ],
+  "killers": [
+    "Current live BOND emitter with PF 0.66 (n=11) - retire in favor of the new strategies",
+    "Simple 6-month HYG/LQD momentum rule without spread or macro filters"
+  ],
+  "tier1_attainability_pct": 45,
+  "single_most_important_finding": "Adding macro-duration and credit-spread filters lifts consistency (Sharpe) without eroding the profit factor that makes the bond edge attractive.",
+  "engine": "cerebras",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_bond\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260513T043108Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 826,
+    "tokens_out": 2462,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

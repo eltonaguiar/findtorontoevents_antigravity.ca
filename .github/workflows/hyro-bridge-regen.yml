@@ -1,0 +1,159 @@
+name: Hyro Quan Bridge Regen
+
+# Daily regeneration of audit_dashboard/data/hyro_quan_bridge.json.
+#
+# Background: as of 2026-04-18 the bridge JSON was truncated to a single
+# symbol (BTCUSDT only — the other 14 symbols from
+# hyro_live_strategies.json::symbols dropped). The file's `_repair_note`
+# claims "Next GHA run will regenerate with atomic write", but no scheduled
+# job exists to actually run it. This workflow closes that gap.
+#
+# `tools/hyro_quan_bridge.py` already implements atomic-write (write to
+# .tmp, fsync, then os.replace) at lines 451-463 — see `--save` flow. The
+# CLI also has `--allow-symbol-regression` defaulted OFF so the regen will
+# refuse to write a smaller bridge than before, which is the correct
+# behaviour.
+#
+# PR #4 of 6 from the 2026-05-05 quant-performance-auditor agent run on
+# /audit/hyrotrader. See updates/index.html 2026-05-05 entry.
+
+'on':
+  schedule:
+    - cron: '40 5 * * *'   # 05:40 UTC — runs after the daily price-fetch jobs
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Comma-separated symbol override (default: 15 from hyro_live_strategies.json)'
+        required: false
+        default: ''
+      days:
+        description: 'Lookback days for 1h candles (default 30)'
+        required: false
+        default: '30'
+
+permissions:
+  contents: write   # commit the regenerated bridge JSON
+
+concurrency:
+  group: hyro-bridge-regen
+  cancel-in-progress: false   # don't cancel a partial regen mid-write
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    # 2026-05-09: bumped 15→45 after run 25613214079 cancelled mid-write at
+    # 15:00. The yfinance/Hoffman variations + bridge regen across 30 days
+    # × N symbols actually needs ~20-25 min on free runners. 45 gives margin
+    # without burning runner minutes on a hung process (CI cap is 6h anyway).
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install minimal deps
+        run: |
+          # 2026-05-08: add numpy + pandas + requests; tools/hyro_quan_bridge.py
+          # imports numpy at module load. Workflow had been failing 5+ days with
+          # ModuleNotFoundError; hyro_quan_bridge.json was 20 days stale.
+          python -m pip install --quiet pyyaml numpy pandas requests
+
+      - name: Resolve symbol list
+        id: symbols
+        run: |
+          if [ -n "${{ inputs.symbols }}" ]; then
+            echo "list=${{ inputs.symbols }}" | tr ',' ' ' >> $GITHUB_OUTPUT
+          else
+            # Default to the 15 symbols from hyro_live_strategies.json
+            python - <<'PY' >> $GITHUB_OUTPUT
+          import json
+          d = json.load(open('audit_dashboard/data/hyro_live_strategies.json'))
+          syms = d.get('symbols') or []
+          if not syms:
+              raise SystemExit("hyro_live_strategies.json::symbols is empty — refusing regen")
+          print(f"list={' '.join(syms)}")
+          PY
+          fi
+          echo "Symbols resolved: $(grep '^list=' $GITHUB_OUTPUT | head -1)"
+
+      - name: Verify bridge writer + check pre-state
+        run: |
+          test -f tools/hyro_quan_bridge.py
+          # Show pre-state for the workflow log so we can compare counts later
+          python - <<'PY'
+          import json
+          try:
+              b = json.load(open('audit_dashboard/data/hyro_quan_bridge.json'))
+              print(f"PRE: {len(b.get('symbols', {}))} symbols, generated_at={b.get('generated_at')}")
+              if b.get('_repair_note'):
+                  print(f"PRE: _repair_note present: {b['_repair_note'][:120]}")
+          except FileNotFoundError:
+              print("PRE: bridge file missing — first run")
+          PY
+
+      - name: Regenerate bridge (atomic write via tools/hyro_quan_bridge.py)
+        env:
+          DAYS: ${{ inputs.days || '30' }}
+        run: |
+          # The CLI's --save path uses tmp file + fsync + os.replace (atomic).
+          # --allow-symbol-regression is intentionally NOT passed: the writer
+          # must refuse to shrink the bridge if a symbol fetch transiently fails.
+          # That refusal surfaces as exit 2 here, which we treat as a soft-fail
+          # (no commit, but no red check either — an alert in the next step).
+          set +e
+          python tools/hyro_quan_bridge.py \
+            --symbols ${{ steps.symbols.outputs.list }} \
+            --days "$DAYS" \
+            --save
+          rc=$?
+          set -e
+          echo "writer exit code: $rc"
+          if [ "$rc" -eq 2 ]; then
+            echo "::warning::bridge writer refused to shrink — fewer symbols available than current bridge holds. Investigate the price source before next run."
+          elif [ "$rc" -ne 0 ]; then
+            echo "::error::bridge writer failed with exit $rc"
+            exit "$rc"
+          fi
+
+      - name: Verify post-state + sanity check symbol count
+        run: |
+          python - <<'PY'
+          import json, sys
+          b = json.load(open('audit_dashboard/data/hyro_quan_bridge.json'))
+          n = len(b.get('symbols', {}))
+          print(f"POST: {n} symbols, generated_at={b.get('generated_at')}")
+          if b.get('_repair_note'):
+              print(f"::warning::POST: _repair_note still present: {b['_repair_note'][:120]}")
+          if n < 5:
+              print(f"::error::bridge has only {n} symbols after regen — likely transient API failure. Not committing.")
+              sys.exit(2)
+          PY
+
+      - name: Commit regenerated bridge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Only the bridge file — never sweep up unrelated changes.
+          git add audit_dashboard/data/hyro_quan_bridge.json
+          if git diff --staged --quiet; then
+            echo "no bridge change to commit (regen produced identical output)"
+            exit 0
+          fi
+          STAMP=$(date -u +%Y-%m-%dT%H:%MZ)
+          # [skip ci] keeps this commit out of the audit-dashboard rebuild loop.
+          git commit -m "chore(hyrotrader): regenerate hyro_quan_bridge.json $STAMP [skip ci]"
+          # Pull-rebase to handle concurrent main updates from other workflows
+          # before pushing.
+          git pull --rebase origin main || {
+            echo "::warning::pull-rebase failed; aborting push to avoid divergence"
+            exit 0
+          }
+          git push origin HEAD:main || {
+            echo "::warning::push failed — likely concurrent main update; will retry next run"
+          }

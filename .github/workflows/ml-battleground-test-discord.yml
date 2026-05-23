@@ -1,0 +1,31 @@
+name: "SUPERPOWERS - Test Discord Notifications"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            ml_battleground
+          sparse-checkout-cone-mode: true
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install minimal dependencies
+        run: pip install requests
+
+      - name: Send test Discord notifications
+        run: |
+          cd ml_battleground
+          python -m test_discord
+        # env:
+          # DISABLED: noisy/underperforming  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+

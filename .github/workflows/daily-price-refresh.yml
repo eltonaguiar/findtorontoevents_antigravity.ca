@@ -1,0 +1,47 @@
+# Daily price refresh - keeps daily_prices table current after market close
+# Calls fetch_prices.php repeatedly to update all stock tickers
+name: Daily Price Refresh
+
+on:
+  schedule:
+    - cron: '0 22 * * 1-5'   # Mon-Fri at 22:00 UTC (5 PM EST, after market close)
+    - cron: '0 2 * * 2-6'    # Tue-Sat at 02:00 UTC (catch late Yahoo Finance updates)
+  workflow_dispatch:            # Manual trigger
+
+jobs:
+  refresh-prices:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Refresh all stock tickers via fetch_prices.php
+        run: |
+          ENDPOINT="https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php"
+          MAX_BATCHES=15
+          for i in $(seq 1 $MAX_BATCHES); do
+            echo "=== Batch $i ==="
+            RESULT=$(curl -s --max-time 60 "$ENDPOINT" 2>/dev/null)
+            FETCHED=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('fetched',0))" 2>/dev/null || echo "0")
+            MSG=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); tickers=[t['ticker'] for t in d.get('tickers',[])]; print(','.join(tickers[:5]) if tickers else d.get('message','done'))" 2>/dev/null || echo "error")
+            echo "fetched=$FETCHED | $MSG"
+            if [ "$FETCHED" = "0" ]; then
+              echo "All tickers up to date - done"
+              break
+            fi
+            sleep 5
+          done
+          echo "Price refresh complete"
+
+      - name: Verify latest prices
+        run: |
+          echo "Checking latest price dates in competition.php..."
+          curl -s "https://findtorontoevents.ca/findstocks/kimis_claw/api/competition.php" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          dates = set()
+          for a in d.get('algorithms', []):
+              for p in a.get('picks', []):
+                  if p.get('priceDate'):
+                      dates.add(p['priceDate'])
+          print('Price dates in DB:', sorted(dates, reverse=True)[:5])
+          print('Algorithms tracked:', d.get('dataInfo', {}).get('algorithms', 0))
+          " 2>/dev/null || echo "Verification check skipped"
+

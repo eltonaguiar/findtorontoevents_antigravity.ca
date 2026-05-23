@@ -1,0 +1,103 @@
+name: Quick Guess ML Agent
+
+on:
+  schedule:
+    - cron: '9 * * * *'  # Staggered from :12 to reduce push contention
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quick-guess-ml
+  cancel-in-progress: false  # 2026-04-17: was true, caused 100% cancellation (4C/0S in 12h) per chronic-cancellation triage. Same root cause as PR #239 fix for consensus-outcome-tracker.
+
+jobs:
+  quick-guess:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-04-17 v2: bumped 15→22. The earlier 8→15 bump wasn't enough —
+    # SHA 50da50f5 ran exactly 15 min at 18:30 and got cancelled again.
+    # ML training + resolve_outcomes + predict_all takes ~14 min on 15 symbols
+    # × 6 horizons; add 3-5 min of contested push retry and the job needs
+    # closer to 20 min of headroom. 22 gives comfortable slack.
+    # 2026-04-28 v3: bumped 22→30. Chronic cancellations since ~11:46 UTC —
+    # recent runs hit the 22-min ceiling at 22m16s and 22m50s before the
+    # scheduler killed them. Workload has grown past the prior headroom;
+    # 30 min restores comfortable slack while a separate task investigates
+    # the growth (out of scope here).
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pandas numpy scikit-learn
+
+      - name: Run quick-guess cycle
+        run: |
+          cd parallel_agent
+          python -c "
+          import sys, os
+          sys.path.insert(0, os.getcwd())
+          from quick_guess_agent import QuickGuessAgent
+
+          # Run single cycle: train + predict + resolve outcomes
+          agent = QuickGuessAgent(
+              symbols=['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT',
+                       'DOGEUSDT', 'ADAUSDT', 'AVAXUSDT', 'LINKUSDT', 'NEARUSDT',
+                       'DOTUSDT', 'FETUSDT', 'RENDERUSDT', 'SUIUSDT', 'INJUSDT'],
+              horizons=[5, 15, 60, 240, 4320, 10080]
+          )
+
+          # Train on latest data
+          agent.train()
+
+          # Resolve any matured predictions from previous runs
+          if hasattr(agent, 'resolve_outcomes'):
+              agent.resolve_outcomes()
+
+          # Make new predictions
+          preds = agent.predict_all()
+
+          # Print summary
+          print(f'Predictions: {len(preds)}')
+          for p in preds:
+              d = 'UP' if p.get('prob_up', 0.5) > 0.55 else ('DN' if p.get('prob_up', 0.5) < 0.45 else '--')
+              print(f'  {p[\"symbol\"]:>12} +{p[\"horizon\"]:>5}m  {d} {p.get(\"prob_up\", 0.5):.1%}')
+
+          # Save state
+          agent._save_state()
+          "
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TARGET="parallel_agent/data"
+          git add "$TARGET" -f 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "QuickGuess ML: $(date -u +'%Y-%m-%d %H:%M UTC') predictions [skip ci]" --quiet
+          # safe_push.sh handles shallow repos via --deepen=150 internally;
+          # workflow-level `git fetch --unshallow` was blowing up disk on
+          # ubuntu-latest runners (.git is 37GB). See PR for chronic-failure
+          # context.
+          # 2026-04-19: switched from inline 5-attempt loop to safe_push.sh
+          # (15 attempts, exponential backoff capped at 120s, 180s git timeout).
+          # The 5-attempt loop kept failing under high main-branch contention
+          # (run 24621586501 at 18 min mark — all 5 attempts genuinely failed,
+          # not a workflow timeout).
+          bash .github/scripts/safe_push.sh
+

@@ -1,0 +1,86 @@
+name: "Superpowers  ABC Forward Test + ML Pilots"
+
+on:
+  # DISABLED 2026-03-12: ml_battleground has 1.9% WR across 107 trades = CATASTROPHIC. Kill per Antigravity audit.
+  # schedule:
+  #   - cron: "22,52 * * * *"  # Every 30 min (offset from other scans)
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy scikit-learn
+          pip install hmmlearn statsmodels || echo "Optional deps not available, using fallbacks"
+
+      - name: Run ABC Forward Test
+        working-directory: ml_battleground
+        run: |
+          echo "=== ABC Forward Test Scanner ==="
+          python -m abc_forward_test.scanner || echo "ABC scanner completed with warnings"
+
+      - name: Run ML Pilot 1  HMM Regime Gate
+        working-directory: ml_battleground
+        run: |
+          echo "=== Pilot 1: HMM Regime Gate ==="
+          python -m pilots.hmm_regime_gate || echo "Pilot 1 completed with warnings"
+
+      - name: Run ML Pilot 2  Funding Rate Carry
+        working-directory: ml_battleground
+        run: |
+          echo "=== Pilot 2: Funding Rate Carry ==="
+          python -m pilots.funding_rate_carry || echo "Pilot 2 completed with warnings"
+
+      - name: Run ML Pilot 3  Cross-Asset Momentum
+        working-directory: ml_battleground
+        run: |
+          echo "=== Pilot 3: Cross-Asset Momentum ==="
+          python -m pilots.cross_asset_momentum || echo "Pilot 3 completed with warnings"
+
+      - name: Run ML Pilot 4  OU Pairs Trading
+        working-directory: ml_battleground
+        run: |
+          echo "=== Pilot 4: OU Pairs Trading ==="
+          python -m pilots.ou_pairs_trading || echo "Pilot 4 completed with warnings"
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A ml_battleground/abc_forward_test/data/ ml_battleground/pilots/data/
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          git commit -m " ABC + Pilots scan $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin main || true
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying in ${i}0s..."
+            sleep ${i}0
+            git rebase --abort 2>/dev/null || true
+          done
+
+      - name: Notify ML channel on failure
+        if: failure()
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"\\u274c ML Job FAILED: ${{ github.workflow }}\", \"description\": \"Job: ${{ github.job }}\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nBranch: ${{ github.ref_name }}\", \"color\": 15158332, \"timestamp\": \"$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}]}" \
+            "$DISCORD_ML_CHANNEL" || true
+

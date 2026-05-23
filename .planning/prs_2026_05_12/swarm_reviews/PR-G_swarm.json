@@ -1,0 +1,79 @@
+{
+  "pr_id": "PR-G",
+  "reviews": {
+    "qwen2.5-coder:14b": {
+      "role": "code-specialist (Alibaba)",
+      "elapsed_s": 8.2,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Ensure `capped_vs_raw_pnl_gap` is correctly calculated and validated in the backend before being sent to the frontend."
+        ],
+        "questions": [
+          "What is the expected behavior if `capped_vs_raw_pnl_gap` is negative or zero?"
+        ],
+        "risk_score_0_10": 3,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "deepseek-r1:14b": {
+      "role": "reasoning (DeepSeek)",
+      "elapsed_s": 12.0,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Confirm `max_drawdown` uses capped PnL in all usages beyond just calc"
+        ],
+        "questions": [
+          "Is there any other usage of raw PnL that could affect MDD elsewhere?"
+        ],
+        "risk_score_0_10": 5,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "devstral-small-2": {
+      "role": "code-patches (Mistral)",
+      "elapsed_s": 26.8,
+      "parsed": {
+        "verdict": "needs_changes",
+        "must_fix": [
+          "audit_trail/dashboard_generator.py: Verify MDD uses capped PnL (line X)",
+          "Ensure capped_vs_raw_pnl_gap is added to readiness.by_class payload",
+          "audit_dashboard/template.html: Surface gap field in DB Health panel"
+        ],
+        "should_fix": [
+          "Coordinate with Codex for readiness.by_class changes"
+        ],
+        "questions": [
+          "What is the exact line number for MDD computation in dashboard_generator.py?"
+        ],
+        "risk_score_0_10": 7,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "ernie:latest": {
+      "role": "thinking (Baidu)",
+      "elapsed_s": 12.7,
+      "parsed": null,
+      "raw_tail": ""
+    },
+    "glm-4.7-flash": {
+      "role": "alt-lineage (Zhipu)",
+      "elapsed_s": 30.4,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [],
+        "questions": [],
+        "risk_score_0_10": 3,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    }
+  }
+}

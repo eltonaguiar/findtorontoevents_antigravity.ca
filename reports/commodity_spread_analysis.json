@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-05-17T23:50:00.533804+00:00",
+  "config": {
+    "lookback_days": 90,
+    "min_n_per_symbol": 10
+  },
+  "pairs": [
+    {
+      "pair": "CL_NG_energy_spread",
+      "long_symbol": "CL=F",
+      "short_symbol": "NG=F",
+      "description": "WTI Crude (long) vs Natural Gas (short) \u2014 energy complex divergence",
+      "economic_prior": "Oil/gas substitution; refinery demand shocks affect crude more than gas short-term",
+      "lookback_days": 90,
+      "long": {
+        "n": 47,
+        "wr": 0.1915,
+        "avg_pnl": -0.0147
+      },
+      "short": {
+        "n": 26,
+        "wr": 0.0385,
+        "avg_pnl": -0.0285
+      },
+      "synthetic_spread_pnl": 0.0138,
+      "verdict": "PROMISING",
+      "notes": "Synthetic spread: uses independent picks, not co-timed pairs. For real spread trading, picks must enter/exit simultaneously."
+    },
+    {
+      "pair": "GC_SI_gold_silver_ratio",
+      "long_symbol": "GC=F",
+      "short_symbol": "SI=F",
+      "description": "Gold (long) vs Silver (short) \u2014 precious metals ratio reversion",
+      "economic_prior": "Gold/silver ratio reverts to historical mean ~70x; ratio >85 signals silver undervalued",
+      "lookback_days": 90,
+      "long": {
+        "n": 10,
+        "wr": 0.0,
+        "avg_pnl": -0.0252
+      },
+      "short": {
+        "n": 47,
+        "wr": 0.0213,
+        "avg_pnl": -0.0285
+      },
+      "synthetic_spread_pnl": 0.0033,
+      "verdict": "FLAT",
+      "notes": "Synthetic spread: uses independent picks, not co-timed pairs. For real spread trading, picks must enter/exit simultaneously."
+    },
+    {
+      "pair": "CT_KC_soft_spread",
+      "long_symbol": "CT=F",
+      "short_symbol": "KC=F",
+      "description": "Cotton (long) vs Coffee (short) \u2014 agricultural soft commodities",
+      "economic_prior": "EM currency exposure correlation; both affected by Brazil/India FX but with different lag",
+      "lookback_days": 90,
+      "long": {
+        "n": 290,
+        "wr": 0.6897,
+        "avg_pnl": 0.0244
+      },
+      "short": {
+        "n": 26,
+        "wr": 0.0769,
+        "avg_pnl": -0.0231
+      },
+      "synthetic_spread_pnl": 0.0475,
+      "verdict": "PROMISING",
+      "notes": "Synthetic spread: uses independent picks, not co-timed pairs. For real spread trading, picks must enter/exit simultaneously."
+    }
+  ],
+  "summary": {
+    "promising": [
+      "CL_NG_energy_spread",
+      "CT_KC_soft_spread"
+    ],
+    "negative": [],
+    "flat": [
+      "GC_SI_gold_silver_ratio"
+    ],
+    "insufficient_data": []
+  },
+  "next_steps": "Register promising pairs in reports/hypothesis_registry.json (M-107) before running any formal backtest. Use deflated Sharpe as acceptance criterion."
+}

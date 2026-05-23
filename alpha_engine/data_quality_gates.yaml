@@ -1,0 +1,86 @@
+# Data Quality Gates — solo-quant rescue plan Day 2
+# Generated 2026-05-12 by peer mb2v7tau.
+# Rules per major class. Used by tools/data_quality_audit.py + CI gate workflow.
+# Consumers can hard-fail (--strict) or warn (--lenient).
+
+version: "1.0"
+
+# Universal gates — apply to all classes
+universal:
+  # Zero-PnL bug: closed picks where pnl_pct == 0.0 exactly are suspicious
+  # (typically resolver-stub or unresolved). Threshold per memory project:
+  # ~1700 mislabeled picks before resolver-v2 fix.
+  max_zero_pnl_pct: 5.0  # fail if > 5% of closed picks have exact pnl_pct=0
+
+  # Outcome resolver health: closed_at timestamp should not be older than 7d
+  # for live forward picks (older = resolver dead-cycle).
+  max_closed_at_lag_days: 7
+
+  # Atomic-write sentinel: WON/LOST status must agree with pnl_pct sign.
+  # WON + pnl_pct<=0 OR LOST + pnl_pct>=0 = contradiction.
+  max_won_pnl_contradiction_pct: 1.0
+
+  # Capped vs raw PnL: per-strategy capped PnL must not differ from raw by >5x.
+  # (Outlier-inflation tell — single trade dominating headline numbers.)
+  max_capped_vs_raw_pnl_gap_factor: 5.0
+
+  # Strategy must have a registered family in STRATEGY_FAMILIES.
+  require_strategy_family: true
+
+# Per-class gates
+CRYPTO:
+  min_resolved_n: 500            # require sample size before sizing
+  max_single_source_volume_pct: 12.0  # PR #906 quan_engine cap
+  max_per_strategy_pnl_contribution_pct: 20.0  # no single strat > 20% of class PnL
+  symbol_concentration_warn_pct: 40.0  # warn if 1 symbol > 40% of class trades
+
+EQUITY:
+  min_resolved_n: 200
+  require_capped_mdd: true        # PR-G: MDD must use capped PnL not raw
+  earnings_window_blackout_days: 2  # exclude trades within 2d of earnings
+  max_blacklisted_in_top10: 0     # PR #910: blacklisted strategies demoted
+
+FOREX:
+  min_resolved_n: 100
+  sizing_pf_floor: 0.8            # PR #909 hard-cap
+  max_concentration_per_pair_pct: 30.0
+  require_cot_filter: false       # not yet wired (next PR-L)
+
+COMMODITY:
+  min_resolved_n: 100
+  max_per_symbol_concentration_pct: 30.0  # CT=F / multi_asset_cot caveat
+  require_dsr_check: true         # PR-E forensic verifier outlier-driven detector
+
+ETF:
+  min_resolved_n: 50
+  block_leveraged: true           # Codex: risk-policy
+  max_class_concentration_pct: 25.0
+
+BOND:
+  min_resolved_n: 100            # currently at 11 — class blocked from sizing
+  paper_only_until_n_met: true
+
+FUTURES:
+  min_resolved_n: 50
+  paper_only_until_n_met: true   # silent-dead per memory project_futures_kill_without_replacement
+  blocked_strategies: ["futures_momentum"]  # PR #887
+
+INDEX:
+  min_resolved_n: 50
+  paper_only_until_n_met: true
+
+# Live-monitor surfaces (not class gates — separate scope)
+SPORTS:
+  routed_to: "/live-monitor/sports-betting.html"
+  excluded_from_audit: true       # PR #905
+
+# Action thresholds — used by data_quality_audit.py exit code
+action_thresholds:
+  fail_on:
+    - zero_pnl_above_threshold
+    - won_pnl_contradiction_above_threshold
+    - closed_at_lag_above_threshold
+  warn_on:
+    - capped_vs_raw_pnl_gap_above_threshold
+    - symbol_concentration_above_threshold
+    - source_volume_above_threshold

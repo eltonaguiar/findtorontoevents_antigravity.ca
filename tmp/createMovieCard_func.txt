@@ -1,0 +1,110 @@
+function createMovieCard(movie, index) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.dataset.index = index;
+
+            const isMotivation = movie._isMotivation;
+            const isComingSoon = movie._isComingSoon;
+            const hasTrailer = !!movie.trailer_id;
+
+            // Build meta badges
+            let metaBadges = '';
+            if (isMotivation) {
+                metaBadges += `<span class="motivation-badge">MOTIVATION</span>`;
+                metaBadges += `<span class="motivation-channel-badge">${escapeHtml(movie._channel)}</span>`;
+                if (movie._duration) {
+                    metaBadges += `<span class="meta-badge">${movie._duration}</span>`;
+                }
+                if (movie._isShort) {
+                    metaBadges += `<span class="meta-badge">SHORT</span>`;
+                }
+            } else if (isComingSoon) {
+                metaBadges += `<span class="coming-soon-badge">COMING SOON</span>`;
+                metaBadges += `<span class="coming-soon-date-badge">${movie._releaseDateStr}</span>`;
+                metaBadges += `<span class="coming-soon-venue-badge">${escapeHtml(movie._venue)}</span>`;
+                if (movie.type) metaBadges += `<span class="meta-badge">${movie.type.toUpperCase()}</span>`;
+            } else {
+                if (movie.release_year) metaBadges += `<span class="meta-badge">${movie.release_year}</span>`;
+                if (movie.imdb_rating) metaBadges += `<span class="meta-badge">\u2b50 ${movie.imdb_rating}</span>`;
+                if (movie.type) metaBadges += `<span class="meta-badge">${movie.type.toUpperCase()}</span>`;
+                // Now Playing badge for current-year movies
+                if (movie.type === 'movie') {
+                    const yr = parseInt(movie.release_year);
+                    const currentYr = new Date().getFullYear();
+                    if (yr >= currentYr - 1 && yr <= currentYr) {
+                        metaBadges += `<span class="now-playing-badge">NOW PLAYING</span>`;
+                    }
+                }
+            }
+
+            let videoContent;
+            if (hasTrailer) {
+                // Show YouTube controls on all videos so users can seek/fast-forward/rewind
+                const controlsParam = 1;
+                // Don't loop any videos â allows YouTube ENDED event to fire for auto-scroll
+                const loopParam = 0;
+                const playlistParam = '';
+
+                // Only the FIRST video starts with autoplay=1, all others start with autoplay=0
+                const autoplayValue = index === 0 ? 1 : 0;
+                const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplayValue}&mute=1&controls=${controlsParam}&playsinline=1&loop=${loopParam}${playlistParam}&modestbranding=1&rel=0&enablejsapi=1`;
+
+                videoContent = `
+                    <div class="video-wrapper">
+                        <iframe 
+                            id="player-${index}"
+                            src="${youtubeUrl}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            loading="${index < 3 ? 'eager' : 'lazy'}"
+                        ></iframe>
+                        <button class="unmute-btn" onclick="toggleMute(${index})" title="Unmute">
+                            ð
+                        </button>
+                    </div>`;
+            } else {
+                // No trailer - show poster image with "No Trailer Yet" overlay
+                const posterUrl = movie.thumbnail || `https://placehold.co/1280x720/1a1a2e/e2e8f0?text=${encodeURIComponent(movie.title)}`;
+                videoContent = `
+                    <div class="video-wrapper" style="position: relative; background: #0a0a1a;">
+                        <img src="${posterUrl}" alt="${escapeHtml(movie.title)}"
+                            style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;"
+                            onerror="this.style.display='none'">
+                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                            <div style="font-size: 48px;">ð¬</div>
+                            <div style="font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9);">Trailer Coming Soon</div>
+                            <div style="font-size: 13px; color: rgba(255,255,255,0.5);">${movie._releaseDateStr || ''}</div>
+                        </div>
+                    </div>`;
+            }
+
+            const altDescId = `alt-desc-${index}`;
+            const isDbMovie = !isMotivation && !isComingSoon && movie.id;
+            const altDescLink = isDbMovie
+                ? `<span class="alt-desc-link" id="${altDescId}" onclick="event.stopPropagation(); loadAltDescription(${index})" title="Load alternative description from TMDB">alt desc</span>`
+                : '';
+
+            card.innerHTML = `
+                ${videoContent}
+                <div class="info-overlay">
+                    <div class="movie-title">${escapeHtml(movie.title)}</div>
+                    <div class="movie-meta">
+                        ${metaBadges}
+                    </div>
+                    ${movie.description ? `<div class="movie-description" id="movie-desc-${index}">${escapeHtml(movie.description)}${altDescLink}</div>` : ''}
+                    ${movie.genre ? `
+                        <div class="genre-tags">
+                            ${movie.genre.split(',').map(g => `<span class="genre-tag">${escapeHtml(g.trim())}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        let videoMuteStates = {}; // Track mute state per video
+        let hasUserInteracted = false;
+        let userEnabledSound = false; // Track if user globally enabled sound
+
+        

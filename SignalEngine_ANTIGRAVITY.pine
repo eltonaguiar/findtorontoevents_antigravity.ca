@@ -1,0 +1,372 @@
+//@version=6
+// ============================================================================
+// Signal Engine ANTIGRAVITY — Buy/Sell with Strength Levels 1-5
+// ============================================================================
+// 10 mix-and-match indicators | Non-repainting | TP/SL on chart
+// Pump-and-dump detection | Volatility regime awareness
+// DISCLAIMER: Research/education only. Not financial advice.
+// ============================================================================
+
+indicator("Signal Engine ANTIGRAVITY", overlay=true, max_labels_count=500, max_bars_back=500)
+
+// CORE SETTINGS
+group_core = "CORE SETTINGS"
+use_repaint_guard = input.bool(true, "Non-Repainting Mode", group=group_core)
+show_tp_sl = input.bool(true, "Show TP/SL Levels", group=group_core)
+tp_atr_mult = input.float(2.0, "TP ATR Multiplier", minval=0.5, maxval=5.0, step=0.5, group=group_core)
+sl_atr_mult = input.float(1.0, "SL ATR Multiplier", minval=0.5, maxval=3.0, step=0.5, group=group_core)
+atr_period = input.int(14, "ATR Period", minval=7, maxval=50, group=group_core)
+
+// MIX-AND-MATCH TOGGLES
+group_mix = "MIX AND MATCH INDICATORS"
+use_rsi = input.bool(true, "RSI", group=group_mix, inline="m1")
+use_macd = input.bool(true, "MACD", group=group_mix, inline="m1")
+use_bb = input.bool(true, "Bollinger", group=group_mix, inline="m2")
+use_ema = input.bool(true, "EMA Cross", group=group_mix, inline="m2")
+use_stoch = input.bool(true, "Stochastic", group=group_mix, inline="m3")
+use_adx = input.bool(true, "ADX", group=group_mix, inline="m3")
+use_vwap_sig = input.bool(true, "VWAP", group=group_mix, inline="m4")
+use_ichimoku = input.bool(false, "Ichimoku", group=group_mix, inline="m4")
+use_vol_confirm = input.bool(true, "Volume Confirm", group=group_mix, inline="m5")
+use_momentum = input.bool(true, "Momentum", group=group_mix, inline="m5")
+
+// INDICATOR PARAMETERS
+group_params = "INDICATOR PARAMETERS"
+rsi_period = input.int(14, "RSI Period", minval=2, maxval=50, group=group_params)
+rsi_ob = input.float(70.0, "RSI Overbought", minval=60, maxval=90, group=group_params)
+rsi_os = input.float(30.0, "RSI Oversold", minval=10, maxval=40, group=group_params)
+ema_fast_p = input.int(9, "EMA Fast", minval=3, maxval=20, group=group_params)
+ema_slow_p = input.int(21, "EMA Slow", minval=10, maxval=50, group=group_params)
+bb_period_p = input.int(20, "BB Period", minval=10, maxval=50, group=group_params)
+bb_std_p = input.float(2.0, "BB Std Dev", minval=1.0, maxval=3.0, step=0.1, group=group_params)
+stoch_k = input.int(14, "Stoch K", minval=5, maxval=21, group=group_params)
+stoch_d = input.int(3, "Stoch D", minval=1, maxval=7, group=group_params)
+adx_period_p = input.int(14, "ADX Period", minval=7, maxval=25, group=group_params)
+adx_threshold = input.float(20.0, "ADX Threshold", minval=15, maxval=35, group=group_params)
+mom_period = input.int(10, "Momentum Period", minval=5, maxval=30, group=group_params)
+
+// PUMP-AND-DUMP DETECTION
+group_pnd = "PUMP AND DUMP DETECTION"
+use_pnd_filter = input.bool(true, "Enable P&D Filter", group=group_pnd)
+pnd_vol_spike = input.float(3.0, "Volume Spike Threshold (x avg)", minval=2.0, maxval=10.0, group=group_pnd)
+pnd_price_spike = input.float(10.0, "Price Spike % Threshold", minval=5.0, maxval=50.0, group=group_pnd)
+
+// ============================================================================
+// CALCULATIONS
+// ============================================================================
+atr_val = ta.atr(atr_period)
+bar_ok = use_repaint_guard ? barstate.isconfirmed : true
+
+// RSI
+rsi_val = ta.rsi(close, rsi_period)
+rsi_buy = use_rsi and rsi_val < rsi_os
+rsi_sell = use_rsi and rsi_val > rsi_ob
+
+// MACD
+[macd_l, macd_s, macd_h] = ta.macd(close, 12, 26, 9)
+macd_buy = use_macd and ta.crossover(macd_l, macd_s)
+macd_sell = use_macd and ta.crossunder(macd_l, macd_s)
+
+// Bollinger Bands
+bb_mid = ta.sma(close, bb_period_p)
+bb_dv = bb_std_p * ta.stdev(close, bb_period_p)
+bb_up = bb_mid + bb_dv
+bb_lo = bb_mid - bb_dv
+bb_buy = use_bb and close < bb_lo
+bb_sell = use_bb and close > bb_up
+
+// EMA Cross
+ema_f_val = ta.ema(close, ema_fast_p)
+ema_s_val = ta.ema(close, ema_slow_p)
+ema_buy = use_ema and ta.crossover(ema_f_val, ema_s_val)
+ema_sell = use_ema and ta.crossunder(ema_f_val, ema_s_val)
+
+// Stochastic
+stoch_k_val = ta.stoch(close, high, low, stoch_k)
+stoch_d_val = ta.sma(stoch_k_val, stoch_d)
+stoch_buy = use_stoch and stoch_k_val < 20 and ta.crossover(stoch_k_val, stoch_d_val)
+stoch_sell = use_stoch and stoch_k_val > 80 and ta.crossunder(stoch_k_val, stoch_d_val)
+
+// ADX
+[di_plus, di_minus, adx_val] = ta.dmi(adx_period_p, adx_period_p)
+adx_trending = adx_val > adx_threshold
+adx_buy = use_adx and adx_trending and di_plus > di_minus
+adx_sell = use_adx and adx_trending and di_minus > di_plus
+
+// VWAP
+vwap_v = ta.vwap(hlc3)
+vwap_buy_sig = use_vwap_sig and close < vwap_v * 0.98
+vwap_sell_sig = use_vwap_sig and close > vwap_v * 1.02
+
+// Ichimoku
+tenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+kijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+senkou_a = (tenkan + kijun) / 2
+senkou_b = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+ichi_buy = use_ichimoku and close > senkou_a and close > senkou_b and tenkan > kijun
+ichi_sell = use_ichimoku and close < senkou_a and close < senkou_b and tenkan < kijun
+
+// Volume
+vol_sma = ta.sma(volume, 20)
+vol_confirmed = volume > vol_sma * 1.2
+vol_buy = use_vol_confirm and vol_confirmed
+vol_sell = use_vol_confirm and vol_confirmed
+
+// Momentum
+mom_val = close - close[mom_period]
+mom_buy = use_momentum and mom_val > 0 and mom_val > mom_val[1]
+mom_sell = use_momentum and mom_val < 0 and mom_val < mom_val[1]
+
+// ============================================================================
+// SIGNAL STRENGTH (1-5)
+// ============================================================================
+int buy_count = 0
+if rsi_buy
+    buy_count += 1
+if macd_buy
+    buy_count += 1
+if bb_buy
+    buy_count += 1
+if ema_buy
+    buy_count += 1
+if stoch_buy
+    buy_count += 1
+if adx_buy
+    buy_count += 1
+if vwap_buy_sig
+    buy_count += 1
+if ichi_buy
+    buy_count += 1
+if vol_buy
+    buy_count += 1
+if mom_buy
+    buy_count += 1
+
+int sell_count = 0
+if rsi_sell
+    sell_count += 1
+if macd_sell
+    sell_count += 1
+if bb_sell
+    sell_count += 1
+if ema_sell
+    sell_count += 1
+if stoch_sell
+    sell_count += 1
+if adx_sell
+    sell_count += 1
+if vwap_sell_sig
+    sell_count += 1
+if ichi_sell
+    sell_count += 1
+if vol_sell
+    sell_count += 1
+if mom_sell
+    sell_count += 1
+
+int active_count = 0
+if use_rsi
+    active_count += 1
+if use_macd
+    active_count += 1
+if use_bb
+    active_count += 1
+if use_ema
+    active_count += 1
+if use_stoch
+    active_count += 1
+if use_adx
+    active_count += 1
+if use_vwap_sig
+    active_count += 1
+if use_ichimoku
+    active_count += 1
+if use_vol_confirm
+    active_count += 1
+if use_momentum
+    active_count += 1
+
+buy_pct = active_count > 0 ? buy_count / active_count * 100 : 0
+sell_pct = active_count > 0 ? sell_count / active_count * 100 : 0
+buy_strength = buy_pct >= 80 ? 5 : buy_pct >= 60 ? 4 : buy_pct >= 40 ? 3 : buy_pct >= 20 ? 2 : buy_count >= 1 ? 1 : 0
+sell_strength = sell_pct >= 80 ? 5 : sell_pct >= 60 ? 4 : sell_pct >= 40 ? 3 : sell_pct >= 20 ? 2 : sell_count >= 1 ? 1 : 0
+
+// PUMP-AND-DUMP DETECTION
+price_change_pct = math.abs(close - close[1]) / close[1] * 100
+vol_ratio = volume / vol_sma
+is_pump = use_pnd_filter and price_change_pct > pnd_price_spike and vol_ratio > pnd_vol_spike
+is_dump_risk = use_pnd_filter and vol_ratio > pnd_vol_spike * 2 and close > close[5] * (1 + pnd_price_spike / 100)
+final_buy_strength = is_pump or is_dump_risk ? 0 : buy_strength
+final_sell_strength = sell_strength
+
+// VOLATILITY REGIME
+hist_vol = ta.stdev(math.log(close / close[1]), 20) * math.sqrt(365) * 100
+vol_avg = ta.sma(hist_vol, 40)
+regime_text = hist_vol < vol_avg * 0.7 ? "LOW VOL" : hist_vol > vol_avg * 1.3 ? "HIGH VOL" : "NORMAL"
+regime_color = hist_vol < vol_avg * 0.7 ? #00D4FF : hist_vol > vol_avg * 1.3 ? #FF1744 : #FFD700
+
+// ============================================================================
+// TP/SL LINES
+// ============================================================================
+var float tp_line = na
+var float sl_line = na
+var line tp_ln = na
+var line sl_ln = na
+
+is_new_buy = final_buy_strength >= 2 and final_buy_strength[1] < 2 and bar_ok
+is_new_sell = final_sell_strength >= 2 and final_sell_strength[1] < 2 and bar_ok
+
+if show_tp_sl and is_new_buy
+    tp_line := close + atr_val * tp_atr_mult
+    sl_line := close - atr_val * sl_atr_mult
+    if not na(tp_ln)
+        line.delete(tp_ln)
+    if not na(sl_ln)
+        line.delete(sl_ln)
+    tp_ln := line.new(bar_index, tp_line, bar_index + 20, tp_line, color=#00E676, width=2, style=line.style_dashed)
+    sl_ln := line.new(bar_index, sl_line, bar_index + 20, sl_line, color=#FF1744, width=2, style=line.style_dashed)
+
+if show_tp_sl and is_new_sell
+    tp_line := close - atr_val * tp_atr_mult
+    sl_line := close + atr_val * sl_atr_mult
+    if not na(tp_ln)
+        line.delete(tp_ln)
+    if not na(sl_ln)
+        line.delete(sl_ln)
+    tp_ln := line.new(bar_index, tp_line, bar_index + 20, tp_line, color=#00E676, width=2, style=line.style_dashed)
+    sl_ln := line.new(bar_index, sl_line, bar_index + 20, sl_line, color=#FF1744, width=2, style=line.style_dashed)
+
+// ============================================================================
+// SIGNAL LABELS
+// ============================================================================
+if is_new_buy
+    stars = final_buy_strength == 5 ? "*****" : final_buy_strength == 4 ? "****" : final_buy_strength == 3 ? "***" : "**"
+    lbl_color = final_buy_strength >= 4 ? color.new(#00E676, 0) : final_buy_strength >= 3 ? color.new(#4CAF50, 0) : color.new(#81C784, 0)
+    tp_text = show_tp_sl ? "\nTP: " + str.tostring(tp_line, "#.##") + "\nSL: " + str.tostring(sl_line, "#.##") : ""
+    string buy_txt = "BUY " + str.tostring(final_buy_strength) + "\n" + stars + "\n" + str.tostring(buy_count) + "/" + str.tostring(active_count) + " agree" + tp_text
+    label.new(bar_index, low, buy_txt, color=lbl_color, textcolor=color.white, style=label.style_label_up, size=final_buy_strength >= 4 ? size.normal : size.small, yloc=yloc.belowbar)
+
+if is_new_sell
+    stars = final_sell_strength == 5 ? "*****" : final_sell_strength == 4 ? "****" : final_sell_strength == 3 ? "***" : "**"
+    lbl_color = final_sell_strength >= 4 ? color.new(#FF1744, 0) : final_sell_strength >= 3 ? color.new(#E53935, 0) : color.new(#EF9A9A, 0)
+    tp_text = show_tp_sl ? "\nTP: " + str.tostring(tp_line, "#.##") + "\nSL: " + str.tostring(sl_line, "#.##") : ""
+    string sell_txt = "SELL " + str.tostring(final_sell_strength) + "\n" + stars + "\n" + str.tostring(sell_count) + "/" + str.tostring(active_count) + " agree" + tp_text
+    label.new(bar_index, high, sell_txt, color=lbl_color, textcolor=color.white, style=label.style_label_down, size=final_sell_strength >= 4 ? size.normal : size.small, yloc=yloc.abovebar)
+
+if is_pump and not is_pump[1]
+    label.new(bar_index, high,
+         "P&D WARNING\nVol: " + str.tostring(vol_ratio, "#.#") + "x",
+         color=color.new(#FF6D00, 0), textcolor=color.white,
+         style=label.style_label_down, size=size.normal, yloc=yloc.abovebar)
+
+// ============================================================================
+// VISUAL OVERLAYS
+// ============================================================================
+plot(use_ema ? ema_f_val : na, "Fast EMA", color=color.new(#00E676, 60), linewidth=1)
+plot(use_ema ? ema_s_val : na, "Slow EMA", color=color.new(#FF6B6B, 60), linewidth=1)
+p_bb_up = plot(use_bb ? bb_up : na, "BB Upper", color=color.new(#FF6B6B, 70))
+p_bb_lo = plot(use_bb ? bb_lo : na, "BB Lower", color=color.new(#00E676, 70))
+fill(p_bb_up, p_bb_lo, color=color.new(#00D4FF, 92))
+plot(use_vwap_sig ? vwap_v : na, "VWAP", color=color.new(#FFD700, 50), linewidth=2)
+bgcolor(final_buy_strength >= 4 ? color.new(#00E676, 92) : na, title="Strong Buy BG")
+bgcolor(final_sell_strength >= 4 ? color.new(#FF1744, 92) : na, title="Strong Sell BG")
+bgcolor(is_pump ? color.new(#FF6D00, 88) : na, title="P&D Warning BG")
+
+// ============================================================================
+// DASHBOARD
+// ============================================================================
+if barstate.islast
+    var table dash = table.new(position.top_right, 3, 18,
+         bgcolor=color.new(#0a0a14, 5), border_color=color.new(#2a2a4a, 0), border_width=1)
+
+    table.cell(dash, 0, 0, "SIGNAL ENGINE ANTIGRAVITY", text_color=#00D4FF, text_size=size.normal, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(dash, 0, 0, 2, 0)
+
+    overall_signal = final_buy_strength > final_sell_strength ? "BUY" : final_sell_strength > final_buy_strength ? "SELL" : "NEUTRAL"
+    overall_strength = math.max(final_buy_strength, final_sell_strength)
+    sig_color = final_buy_strength > final_sell_strength ? #00E676 : final_sell_strength > final_buy_strength ? #FF1744 : color.gray
+
+    table.cell(dash, 0, 1, "Signal", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 1, overall_signal, text_color=sig_color, text_size=size.large, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 1, "Level " + str.tostring(overall_strength), text_color=sig_color, text_size=size.normal, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 2, "Agreement", text_color=color.gray, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 2, str.tostring(math.max(buy_count, sell_count)) + "/" + str.tostring(active_count), text_color=color.white, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 2, "", bgcolor=color.new(#0a0a14, 0))
+
+    // Individual indicators
+    table.cell(dash, 0, 3, "-- INDICATORS --", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(dash, 0, 3, 2, 3)
+
+    table.cell(dash, 0, 4, "RSI", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 4, str.tostring(rsi_val, "#.#"), text_color=rsi_buy ? #00E676 : rsi_sell ? #FF1744 : color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 4, rsi_buy ? "BUY" : rsi_sell ? "SELL" : "-", text_color=rsi_buy ? #00E676 : rsi_sell ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 5, "MACD", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 5, str.tostring(macd_h, "#.##"), text_color=macd_h > 0 ? #00E676 : #FF1744, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 5, macd_buy ? "BUY" : macd_sell ? "SELL" : "-", text_color=macd_buy ? #00E676 : macd_sell ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 6, "BB", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 6, close > bb_up ? "Above" : close < bb_lo ? "Below" : "Inside", text_color=close > bb_up ? #FF1744 : close < bb_lo ? #00E676 : color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 6, bb_buy ? "BUY" : bb_sell ? "SELL" : "-", text_color=bb_buy ? #00E676 : bb_sell ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 7, "EMA", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 7, ema_f_val > ema_s_val ? "Bullish" : "Bearish", text_color=ema_f_val > ema_s_val ? #00E676 : #FF1744, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 7, ema_buy ? "BUY" : ema_sell ? "SELL" : "-", text_color=ema_buy ? #00E676 : ema_sell ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 8, "Stoch", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 8, str.tostring(stoch_k_val, "#.#"), text_color=stoch_k_val < 20 ? #00E676 : stoch_k_val > 80 ? #FF1744 : color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 8, stoch_buy ? "BUY" : stoch_sell ? "SELL" : "-", text_color=stoch_buy ? #00E676 : stoch_sell ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 9, "ADX", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 9, str.tostring(adx_val, "#.#"), text_color=adx_trending ? #FFD700 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 9, adx_buy ? "BUY" : adx_sell ? "SELL" : "-", text_color=adx_buy ? #00E676 : adx_sell ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 10, "VWAP", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 10, str.tostring((close - vwap_v) / vwap_v * 100, "#.#") + "%", text_color=(close - vwap_v) > 0 ? #00E676 : #FF1744, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 10, vwap_buy_sig ? "BUY" : vwap_sell_sig ? "SELL" : "-", text_color=vwap_buy_sig ? #00E676 : vwap_sell_sig ? #FF1744 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 11, "Volume", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 11, str.tostring(vol_ratio, "#.#") + "x", text_color=vol_confirmed ? #00E676 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 11, vol_confirmed ? "OK" : "Low", text_color=vol_confirmed ? #00E676 : color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    // Risk section
+    table.cell(dash, 0, 12, "-- RISK --", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(dash, 0, 12, 2, 12)
+
+    table.cell(dash, 0, 13, "Regime", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 13, regime_text, text_color=regime_color, text_size=size.small, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 13, str.tostring(hist_vol, "#.#") + "%", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 14, "ATR", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 14, str.tostring(atr_val, "#.##"), text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 14, str.tostring(atr_val / close * 100, "#.##") + "%", text_color=color.white, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+
+    pnd_status = is_pump ? "DETECTED!" : is_dump_risk ? "RISK!" : "Clear"
+    table.cell(dash, 0, 15, "P&D", text_color=color.gray, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 1, 15, pnd_status, text_color=is_pump or is_dump_risk ? #FF6D00 : #00E676, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.cell(dash, 2, 15, "", bgcolor=color.new(#0a0a14, 0))
+
+    table.cell(dash, 0, 16, use_repaint_guard ? "Non-Repainting" : "Repainting ON",
+         text_color=use_repaint_guard ? #00E676 : #FFD700, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(dash, 0, 16, 2, 16)
+
+    table.cell(dash, 0, 17, "Research Only - Not Financial Advice", text_color=color.orange, text_size=size.tiny, bgcolor=color.new(#0a0a14, 0))
+    table.merge_cells(dash, 0, 17, 2, 17)
+
+// ALERTS
+alertcondition(is_new_buy and final_buy_strength >= 4, title="Strong Buy (4-5)", message="STRONG BUY Level {{plot_0}} | {{ticker}}")
+alertcondition(is_new_buy and final_buy_strength >= 2, title="Buy (2+)", message="BUY Level {{plot_0}} | {{ticker}}")
+alertcondition(is_new_sell and final_sell_strength >= 4, title="Strong Sell (4-5)", message="STRONG SELL | {{ticker}}")
+alertcondition(is_new_sell and final_sell_strength >= 2, title="Sell (2+)", message="SELL | {{ticker}}")
+alertcondition(is_pump, title="Pump Warning", message="PUMP DETECTED | {{ticker}}")
+
+// DATA WINDOW
+plot(buy_strength, "Buy Strength", display=display.data_window)
+plot(sell_strength, "Sell Strength", display=display.data_window)
+plot(buy_count, "Buy Signals", display=display.data_window)
+plot(sell_count, "Sell Signals", display=display.data_window)
+plot(rsi_val, "RSI", display=display.data_window)
+plot(adx_val, "ADX", display=display.data_window)
+plot(vol_ratio, "Vol Ratio", display=display.data_window)
+plot(hist_vol, "Hist Vol %", display=display.data_window)

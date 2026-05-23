@@ -1,0 +1,49 @@
+# Asset-class audit fan-out (Goal #1 — phenomenal /audit performance).
+#
+# Reads the prebuilt briefing at swarm_runs/briefing_asset_class_audit.md and
+# fans it across 7 API/CLI engines. ${TS} is substituted to a UTC stamp at run
+# time so each invocation lands in its own out_dir.
+#
+# Run:
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/asset_class_audit.yaml
+#
+# Add --persist-sessions to record each engine into swarm_runs/_sessions.db
+# for later follow-up turns.
+
+name: asset_class_audit_${TS}
+prompt_file: swarm_runs/briefing_asset_class_audit.md
+out_dir: swarm_runs/run_${TS}
+max_parallel: 4
+json_strict: false
+strictness: strict   # strict | lenient | off — see SPEC.md "Schema strictness levels"
+
+engines:
+  # Per-engine `sampling:` (dict) and `retries:` (int) overrides.
+  # `sampling:` keys: temperature, max_tokens, top_p (auto-mapped to
+  # max_completion_tokens for cerebras / num_predict for ollama_cloud).
+  # See SPEC.md "Per-engine sampling" section. Wired through worker_runner
+  # via tools/swarm/_engine_overrides.py until swarm_run.py adds native
+  # pass-through (Subagent N).
+  - name: deepseek
+    model: deepseek-chat
+    sampling:
+      temperature: 0.1
+      max_tokens: 8000
+    retries: 2
+  - name: xai
+    sampling:
+      temperature: 0.2
+      max_tokens: 6000
+  - name: kilo
+  - name: gemini
+    json_strict: true
+  - name: inception
+  - name: ollama_cloud
+    sampling:
+      temperature: 0.3
+      max_tokens: 6000
+  - name: cerebras
+    sampling:
+      temperature: 0.2
+      max_tokens: 4000           # auto-mapped to max_completion_tokens
+    retries: 1

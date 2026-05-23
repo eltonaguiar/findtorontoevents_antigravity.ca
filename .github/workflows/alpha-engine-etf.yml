@@ -1,0 +1,111 @@
+name: ALPHA ENGINE - ETF Emitter
+
+# Serialize against itself — cron every 6h, but a manual dispatch can overlap
+# and a slow run would otherwise race another on push. cancel-in-progress:false
+# queues rather than drops (data is additive and welcome).
+concurrency:
+  group: alpha-engine-etf-push
+  cancel-in-progress: false
+
+on:
+  schedule:
+    # Run every 6 hours at :05
+    - cron: '5 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  emit-etf-picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy
+
+      - name: Run ETF emitter (spike — backward compat)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python tools/etf_emitter_spike.py
+          # Move draft to final location
+          cp alpha_engine/data/active_picks_etf_draft.json alpha_engine/data/active_picks_etf.json
+
+      - name: Run ETF sector rotation emitter (production — etf_sector_picks.json)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          ETF_SECTOR_EMITTER_ENABLED: "1"
+        run: |
+          python tools/etf_sector_emitter.py || echo "etf_sector_emitter exited non-zero (graceful fallback)"
+
+      - name: Run leveraged ETF decay emitter (production — etf_decay_picks.json)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python alpha_engine/strategies/etf_decay_shorts.py || echo "etf_decay_shorts exited non-zero (graceful fallback)"
+
+      - name: Commit ETF picks
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/active_picks_etf.json
+          git add alpha_engine/data/etf_sector_picks.json || true
+          git add alpha_engine/data/etf_decay_picks.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Add ETF picks from emitter [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${{ github.repository }}.git"
+          # Retry loop vs push-lock contention (40+ workflows push main).
+          # Pattern matches dynamic-alpha-engine.yml (commit fb72ac9f6).
+          # 2026-04-27: widened delay coefficient 3->5 and jitter window 15->30
+          # so the 10 retries spread across a longer window (~12 min vs ~6 min
+          # at full schedule). The previous schedule clustered retries inside a
+          # tight window that frequently coincided with the same push-storm.
+          # See updates/2026-04-27-workflow-health-investigation.md.
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            delay=$((i * i * 5 + RANDOM % 30))
+            [ $delay -gt 120 ] && delay=$((120 + RANDOM % 30))
+            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
+              echo "Rebase failed on attempt $i (next delay ${delay}s)"
+              git rebase --abort 2>/dev/null || true
+              sleep "$delay"
+              continue
+            }
+            # `set -e` (GHA default) exits the step on a failed `$(...)` assignment
+            # BEFORE `push_rc=$?` runs, making the retry loop dead code on push failure.
+            # Same shape fix as audit-dashboard.yml in PR #440.
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed on attempt $i"
+              push_ok=true
+              break
+            fi
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All 10 push attempts failed — data generated, next cycle will self-heal."
+            exit 1
+          fi

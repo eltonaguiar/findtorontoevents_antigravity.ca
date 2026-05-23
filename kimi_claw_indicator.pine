@@ -1,0 +1,206 @@
+//@version=5
+// Elton's Kimi Claw - Volume-Based Signal Generator
+// Optimized for Crypto Perpetuals (BTCUSD.P, ETHUSD.P, etc.)
+
+indicator("Elton's Kimi Claw [Crypto Optimized]", "Kimi Claw", overlay=true, max_labels_count=500, max_lines_count=500)
+
+// ──────────────────────────────────────────
+// INPUT SETTINGS
+// ──────────────────────────────────────────
+groupStrategy = "STRATEGY MODE"
+strategyMode = input.string("Forward-Facing", "Strategy Mode", ["Back-Tested", "Forward-Facing"], group=groupStrategy, tooltip="Back-Tested uses historical optimization. Forward-Facing uses real-time volume analysis.")
+isCryptoPerp = input.bool(true, "Crypto Perpetual Mode", group=groupStrategy, tooltip="Lower volume thresholds for perpetual futures like BTCUSD.P, ETHUSD.P")
+volumeThreshold = input.float(1.2, "Volume Threshold", minval=1.0, maxval=5.0, step=0.1, group=groupStrategy, tooltip="For crypto perps: 1.1-1.3. For spot: 1.5-2.0")
+
+groupSignals = "SIGNAL SETTINGS"
+showSignals = input(true, "Show Buy/Sell Signals", group=groupSignals)
+showTPSL = input(true, "Show TP/SL Levels", group=groupSignals)
+signalSensitivity = input.int(5, "Signal Sensitivity", minval=1, maxval=26, step=1, group=groupSignals)
+atrLength = input.int(10, "ATR Length", minval=1, maxval=50, group=groupSignals)
+
+groupVolume = "VOLUME ANALYSIS"
+showVolumeProfile = input(true, "Show Volume Profile", group=groupVolume)
+volumeLookback = input.int(50, "Volume Lookback", minval=20, maxval=200, group=groupVolume, tooltip="Higher for crypto perps (50-100) to capture more context")
+minVolumeScore = input.int(50, "Min Volume Score", minval=0, maxval=100, group=groupVolume, tooltip="Lower threshold (50) for crypto perps vs spot (60)")
+
+groupTPSL = "TP/SL SETTINGS"
+tp1Multiplier = input.float(1.5, "TP1 Multiplier", minval=0.5, maxval=5.0, step=0.1, group=groupTPSL)
+tp2Multiplier = input.float(2.5, "TP2 Multiplier", minval=0.5, maxval=5.0, step=0.1, group=groupTPSL)
+slMultiplier = input.float(1.0, "SL Multiplier", minval=0.5, maxval=3.0, step=0.1, group=groupTPSL)
+
+// ──────────────────────────────────────────
+// VOLUME ANALYSIS - Crypto Perpetual Optimized
+// ──────────────────────────────────────────
+avgVolume = ta.sma(volume, volumeLookback)
+volumeRatio = volume / avgVolume
+
+// Volume trend detection
+volRising = ta.rising(volume, 3)
+volFalling = volume < volume[1] and volume[1] < volume[2] and volume[2] < volume[3]
+volumeTrend = volRising ? 20 : volFalling ? -10 : 0
+
+// Volume spike score - adjusted for crypto perps
+spikeScore = volumeRatio > volumeThreshold ? 40 : volumeRatio > (volumeThreshold * 0.8) ? 25 : volumeRatio > 1.0 ? 10 : 0
+
+// Relative volume position
+highestVol = ta.highest(volume, volumeLookback)
+lowestVol = ta.lowest(volume, volumeLookback)
+volPosition = highestVol > lowestVol ? (volume - lowestVol) / (highestVol - lowestVol) * 30 : 0
+
+// Additional crypto perp volume metrics
+volSMA50 = ta.sma(volume, 50)
+volSMA200 = ta.sma(volume, 200)
+longTermTrend = volume > volSMA200 ? 10 : -5
+
+// Total volume score (0-100) - adjusted formula for crypto perps
+volumeScore = int(math.min(100, math.max(0, spikeScore + volumeTrend + volPosition + longTermTrend + 10)))
+
+// ──────────────────────────────────────────
+// TREND ANALYSIS
+// ──────────────────────────────────────────
+ema9 = ta.ema(close, 9)
+ema21 = ta.ema(close, 21)
+ema50 = ta.ema(close, 50)
+
+[macdLine, signalLine, macdHist] = ta.macd(close, 12, 26, 9)
+
+rsi = ta.rsi(close, 14)
+atr = ta.atr(atrLength)
+
+// ──────────────────────────────────────────
+// SIGNAL CONDITIONS
+// ──────────────────────────────────────────
+bullishTrend = ema9 > ema21 and macdHist > 0
+bearishTrend = ema9 < ema21 and macdHist < 0
+
+// Volume confirmation - adjusted for crypto perps
+highVolume = isCryptoPerp ? volumeScore >= minVolumeScore : volumeScore >= minVolumeScore and volumeRatio >= volumeThreshold
+
+// Forward-facing signals (strict)
+longConditionFF = bullishTrend and highVolume and ta.crossover(ema9, ema21) and rsi > 30 and rsi < 70
+shortConditionFF = bearishTrend and highVolume and ta.crossunder(ema9, ema21) and rsi > 30 and rsi < 70
+
+// Back-tested signals (lenient)
+longConditionBT = bullishTrend and ta.crossover(ema9, ema21) and rsi < 60
+shortConditionBT = bearishTrend and ta.crossunder(ema9, ema21) and rsi > 40
+
+// Select based on mode
+longCondition = strategyMode == "Forward-Facing" ? longConditionFF : longConditionBT
+shortCondition = strategyMode == "Forward-Facing" ? shortConditionFF : shortConditionBT
+
+// ──────────────────────────────────────────
+// TP/SL CALCULATIONS
+// ──────────────────────────────────────────
+tp1Long = close + (atr * tp1Multiplier)
+tp2Long = close + (atr * tp2Multiplier)
+slLong = close - (atr * slMultiplier)
+
+tp1Short = close - (atr * tp1Multiplier)
+tp2Short = close - (atr * tp2Multiplier)
+slShort = close + (atr * slMultiplier)
+
+// ──────────────────────────────────────────
+// PLOTTING
+// ──────────────────────────────────────────
+plot(ema9, "EMA 9", color=color.new(#00bcd4, 0), linewidth=2)
+plot(ema21, "EMA 21", color=color.new(#ff9800, 0), linewidth=2)
+plot(ema50, "EMA 50", color=color.new(#9c27b0, 0), linewidth=1)
+
+// Volume background
+color volumeColor = na
+if volumeScore >= 80
+    volumeColor := color.new(#00ff00, 90)
+else if volumeScore >= 60
+    volumeColor := color.new(#ffff00, 90)
+else if volumeScore >= 40
+    volumeColor := color.new(#ff9800, 90)
+else
+    volumeColor := color.new(#ff0000, 90)
+bgcolor(showVolumeProfile ? volumeColor : na)
+
+// ──────────────────────────────────────────
+// SIGNALS WITH TP/SL
+// ──────────────────────────────────────────
+if showSignals and longCondition
+    tp1pct = ((tp1Long - close) / close) * 100
+    tp2pct = ((tp2Long - close) / close) * 100
+    slpct = ((close - slLong) / close) * 100
+    
+    labelText = "BUY\nEntry: " + str.tostring(close, format.mintick) + "\nTP1: " + str.tostring(tp1Long, format.mintick) + " (" + str.tostring(tp1pct, "#.#") + "%)\nTP2: " + str.tostring(tp2Long, format.mintick) + " (" + str.tostring(tp2pct, "#.#") + "%)\nSL: " + str.tostring(slLong, format.mintick) + " (" + str.tostring(slpct, "#.#") + "%)\nVol: " + str.tostring(volumeScore) + "/100"
+    
+    label.new(bar_index, low, text=labelText, color=color.new(#00c853, 0), textcolor=color.white, style=label.style_label_up, size=size.normal, yloc=yloc.belowbar)
+    alert("KIMI CLAW BUY: " + syminfo.ticker + " @ " + str.tostring(close), alert.freq_once_per_bar_close)
+
+if showSignals and shortCondition
+    tp1pct = ((close - tp1Short) / close) * 100
+    tp2pct = ((close - tp2Short) / close) * 100
+    slpct = ((slShort - close) / close) * 100
+    
+    labelText = "SELL\nEntry: " + str.tostring(close, format.mintick) + "\nTP1: " + str.tostring(tp1Short, format.mintick) + " (" + str.tostring(tp1pct, "#.#") + "%)\nTP2: " + str.tostring(tp2Short, format.mintick) + " (" + str.tostring(tp2pct, "#.#") + "%)\nSL: " + str.tostring(slShort, format.mintick) + " (" + str.tostring(slpct, "#.#") + "%)\nVol: " + str.tostring(volumeScore) + "/100"
+    
+    label.new(bar_index, high, text=labelText, color=color.new(#ff1744, 0), textcolor=color.white, style=label.style_label_down, size=size.normal, yloc=yloc.abovebar)
+    alert("KIMI CLAW SELL: " + syminfo.ticker + " @ " + str.tostring(close), alert.freq_once_per_bar_close)
+
+// ──────────────────────────────────────────
+// TP/SL LINES
+// ──────────────────────────────────────────
+var float lastEntry = na
+var float lastTP1 = na
+var float lastTP2 = na
+var float lastSL = na
+var int signalBar = na
+
+if longCondition
+    lastEntry := close
+    lastTP1 := tp1Long
+    lastTP2 := tp2Long
+    lastSL := slLong
+    signalBar := bar_index
+
+if shortCondition
+    lastEntry := close
+    lastTP1 := tp1Short
+    lastTP2 := tp2Short
+    lastSL := slShort
+    signalBar := bar_index
+
+if showTPSL and not na(lastEntry) and bar_index <= signalBar + 50
+    line.new(signalBar, lastEntry, bar_index, lastEntry, color=color.new(color.gray, 50), style=line.style_solid, width=1)
+    line.new(signalBar, lastTP1, bar_index, lastTP1, color=color.new(#00c853, 30), style=line.style_dashed, width=2)
+    line.new(signalBar, lastTP2, bar_index, lastTP2, color=color.new(#00c853, 50), style=line.style_dashed, width=1)
+    line.new(signalBar, lastSL, bar_index, lastSL, color=color.new(#ff1744, 30), style=line.style_dashed, width=2)
+
+// ──────────────────────────────────────────
+// INFO PANEL
+// ──────────────────────────────────────────
+var table infoPanel = table.new(position.top_right, 2, 7, bgcolor=color.new(#1e222d, 0), border_color=color.new(#373a46, 0), border_width=1)
+
+if barstate.islast
+    infoPanel.cell(0, 0, "KIMI CLAW", text_color=color.white, text_size=size.normal)
+    infoPanel.cell(1, 0, strategyMode, text_color=strategyMode == "Forward-Facing" ? #00c853 : #ff9800, text_size=size.small)
+    
+    modeText = isCryptoPerp ? "CRYPTO PERP" : "SPOT"
+    modeColor = isCryptoPerp ? #00bcd4 : #ff9800
+    infoPanel.cell(0, 1, "Mode", text_color=color.white, text_size=size.small)
+    infoPanel.cell(1, 1, modeText, text_color=modeColor, text_size=size.small)
+    
+    volColor = volumeScore >= 80 ? #00c853 : volumeScore >= 60 ? #ffeb3b : #ff1744
+    infoPanel.cell(0, 2, "Volume Score", text_color=color.white, text_size=size.small)
+    infoPanel.cell(1, 2, str.tostring(volumeScore) + "/100", text_color=volColor, text_size=size.small)
+    
+    infoPanel.cell(0, 3, "Volume Ratio", text_color=color.white, text_size=size.small)
+    infoPanel.cell(1, 3, str.tostring(volumeRatio, "0.00") + "x", text_color=volumeRatio >= volumeThreshold ? #00c853 : color.gray, text_size=size.small)
+    
+    trendText = bullishTrend ? "BULLISH" : bearishTrend ? "BEARISH" : "NEUTRAL"
+    trendColor = bullishTrend ? #00c853 : bearishTrend ? #ff1744 : color.gray
+    infoPanel.cell(0, 4, "Trend", text_color=color.white, text_size=size.small)
+    infoPanel.cell(1, 4, trendText, text_color=trendColor, text_size=size.small)
+    
+    rsiColor = rsi > 70 ? #ff1744 : rsi < 30 ? #00c853 : #ffeb3b
+    infoPanel.cell(0, 5, "RSI", text_color=color.white, text_size=size.small)
+    infoPanel.cell(1, 5, str.tostring(rsi, "0.0"), text_color=rsiColor, text_size=size.small)
+    
+    signalStatus = highVolume ? "HIGH CONF" : "LOW VOL"
+    signalColor = highVolume ? #00c853 : #ff9800
+    infoPanel.cell(0, 6, "Quality", text_color=color.white, text_size=size.small)
+    infoPanel.cell(1, 6, signalStatus, text_color=signalColor, text_size=size.small)

@@ -1,0 +1,52 @@
+name: Auto-Retire — Daily Bleeder Check
+
+# Runs alpha_engine/auto_retire.py daily at 05:30 ET (09:30 UTC).
+# DRY-RUN by default — flips to apply only when AUTO_RETIRE_APPLY repo
+# variable is "1" (set via repo settings or workflow_dispatch input).
+
+on:
+  schedule:
+    - cron: "30 9 * * *"  # 09:30 UTC = 05:30 ET
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Actually write quarantine_manifest.json (1=yes, 0=dry-run)"
+        required: true
+        default: "0"
+        type: choice
+        options:
+          - "0"
+          - "1"
+
+permissions:
+  contents: write
+
+jobs:
+  retire-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run auto_retire
+        env:
+          AUTO_RETIRE_APPLY: ${{ github.event.inputs.apply || vars.AUTO_RETIRE_APPLY || '0' }}
+        run: |
+          python alpha_engine/auto_retire.py | tee reports/auto_retire_$(date -u +%Y%m%d_%H%M).log
+      - name: Commit quarantine_manifest if changed
+        if: ${{ env.AUTO_RETIRE_APPLY == '1' }}
+        run: |
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh "chore(auto-retire): daily run [skip ci]" alpha_engine/quarantine_manifest.json reports/auto_retire_*.log
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add alpha_engine/quarantine_manifest.json reports/auto_retire_*.log
+            git diff --cached --quiet || git commit -m "chore(auto-retire): daily run [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main || true
+          fi

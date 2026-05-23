@@ -1,0 +1,71 @@
+name: ML Feedback Loop
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  feedback-check:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install numpy pandas
+
+      - name: Run feedback loop check
+        run: python -m ml_battleground.shared.feedback_loop
+
+      - name: Run drift monitors
+        run: |
+          python -c "
+          from ml_battleground.shared.drift_monitor import DriftMonitor
+          import json, os
+
+          # Check each system's drift state
+          systems = ['system_a', 'system_b', 'system_c', 'system_d', 'system_e', 'mercury2']
+          for sys_name in systems:
+              monitor = DriftMonitor(sys_name)
+              status = monitor.get_status()
+              print(f'{sys_name}: {status}')
+          "
+
+      - name: Check for retrain trigger
+        id: check_trigger
+        run: |
+          if [ -f ml_battleground/retrain_trigger.json ]; then
+            echo "trigger=true" >> $GITHUB_OUTPUT
+            cat ml_battleground/retrain_trigger.json
+          else
+            echo "trigger=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger bootstrap retrain
+        if: steps.check_trigger.outputs.trigger == 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: ml-retrain-triggered
+          client-payload: '{"reason": "feedback-loop-degradation"}'
+
+      - name: Commit drift state
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "bot@superpowers.dev"
+          git add ml_battleground/drift_state/ ml_battleground/retrain_trigger.json ml_battleground/baseline_metrics.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "ML feedback loop check [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            sleep $((i * 10))
+          done
+

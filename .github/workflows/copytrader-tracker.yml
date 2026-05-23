@@ -1,0 +1,53 @@
+name: Copy Trader Portfolio Tracker
+
+on:
+  schedule:
+    - cron: '42 */2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: copytrader-tracker
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  track-copytrader:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas
+
+      - name: Run Copy Trader Portfolio Tracker
+        run: python alpha_engine/portfolio_tracker_copytrader.py
+
+      - name: Check for portfolio changes
+        id: changes
+        run: |
+          git diff --quiet alpha_engine/data/portfolio_copytrader.json 2>/dev/null && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit portfolio changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/portfolio_copytrader.json
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "Copy trader portfolio: ${TIMESTAMP} [skip ci]" || true
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

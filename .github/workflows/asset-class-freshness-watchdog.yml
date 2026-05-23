@@ -1,0 +1,50 @@
+name: Asset Class Freshness Watchdog
+
+on:
+  schedule:
+    - cron: '30 13 * * *'
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - 'tools/generate_asset_class_freshness_report.py'
+      - 'audit_dashboard/data/dashboard_data.json'
+      - '.github/workflows/asset-class-freshness-watchdog.yml'
+
+concurrency:
+  group: asset-class-freshness-watchdog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate freshness report (warn-only)
+        run: |
+          python tools/generate_asset_class_freshness_report.py \
+            --stale-days 2 \
+            --warn-only \
+            --json-out /tmp/asset_class_freshness.json \
+            --md-out /tmp/asset_class_freshness.md
+
+      - name: Upload freshness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-class-freshness-report
+          path: |
+            /tmp/asset_class_freshness.json
+            /tmp/asset_class_freshness.md
+          if-no-files-found: warn
+

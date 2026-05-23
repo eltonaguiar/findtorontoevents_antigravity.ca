@@ -1,0 +1,15 @@
+# Deep-strict preset: claude + kilo + deepseek. Highest-fidelity engines
+# with strict JSON framing and the red-team pass enabled. Cost cap raised
+# to $5 to accommodate Sonnet input/output rates over a multi-engine fan-out.
+#
+# Run:
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/preset_deep_strict.yaml
+
+name: deep-strict-audit
+prompt_file: swarm_runs/briefing_asset_class_audit.md
+preset: deep-strict
+out_dir: swarm_runs/deepstrict_${TS}
+json_strict: true
+red_team: true
+cost_cap_usd: 5.0
+post_hook: "python tools/swarm/swarm_inspect.py ${SWARM_OUT_DIR}"

@@ -1,0 +1,126 @@
+{
+  "schema_version": "v1",
+  "engine": "cerebras",
+  "asset_class": "BOND",
+  "candidates": [
+    {
+      "spec_id": "bond_momentum_cross_v1",
+      "asset_class": "BOND",
+      "entry": "long the top 2 ETFs from [IEF, TLT, IEI] based on 60-day price momentum when momentum > 0",
+      "exit": "exit when momentum falls below 0 or after 30-day hold period",
+      "sizing": "equal weight across selected ETFs, targeting 10% annualized volatility",
+      "universe": [
+        "IEF",
+        "TLT",
+        "IEI"
+      ],
+      "regime_filter": "skip when VIX > 20",
+      "source_refs": [
+        "https://www.aqr.com/Insights/Research/Journal-Article/Bond-Momentum"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.7,
+      "expected_wr": 53.0,
+      "expected_mdd_pct": 12.0,
+      "expected_n_per_year": 15,
+      "rationale": "Inspired by cross-sectional bond momentum research, this strategy should capture excess returns from relative strength in intermediate and long-term Treasuries during stable market conditions."
+    },
+    {
+      "spec_id": "bond_term_premium_v1",
+      "asset_class": "BOND",
+      "entry": "long TLT when estimated 10-year term premium (based on yield curve slope 10y-2y) is in top 20% of historical values over past 5 years",
+      "exit": "exit when term premium drops below 50th percentile or after 60-day hold",
+      "sizing": "fixed 100% allocation to TLT, scaled to 8% annualized volatility",
+      "universe": [
+        "TLT"
+      ],
+      "regime_filter": "skip during NBER recession periods",
+      "source_refs": [
+        "https://www.bis.org/publ/work878.pdf",
+        "https://www.nber.org/papers/w18893"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.6,
+      "expected_wr": 51.0,
+      "expected_mdd_pct": 15.0,
+      "expected_n_per_year": 10,
+      "rationale": "Term premium predictability research suggests timing long-duration bonds like TLT during high premium periods can yield consistent excess returns outside recessions."
+    },
+    {
+      "spec_id": "bond_liquidity_premium_v1",
+      "asset_class": "BOND",
+      "entry": "long IEF and short SHY when the yield spread between intermediate and short-term Treasuries widens by more than 1 standard deviation over past 120 days",
+      "exit": "exit when spread narrows to mean or after 45-day hold",
+      "sizing": "dollar-neutral long-short position, targeting 6% annualized volatility",
+      "universe": [
+        "IEF",
+        "SHY"
+      ],
+      "regime_filter": "skip when 3-month Treasury yield > 2%",
+      "source_refs": [
+        "https://www.federalreserve.gov/econres/feds/files/2018057pap.pdf"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.8,
+      "expected_wr": 54.0,
+      "expected_mdd_pct": 10.0,
+      "expected_n_per_year": 18,
+      "rationale": "Liquidity premia in Treasuries, as per cited research, should provide a robust long-short return profile in low-rate environments."
+    },
+    {
+      "spec_id": "bond_regime_duration_v1",
+      "asset_class": "BOND",
+      "entry": "long TLT in low-volatility regime (identified by 20-day realized vol of TLT < 10%) and long SHY in high-volatility regime (> 10%)",
+      "exit": "exit on regime switch or after 90-day hold",
+      "sizing": "full allocation to selected ETF, scaled to 9% annualized volatility",
+      "universe": [
+        "TLT",
+        "SHY"
+      ],
+      "regime_filter": "skip when S&P 500 20-day volatility > 25%",
+      "source_refs": [
+        "https://www.federalreserve.gov/econresdata/feds/2015/files/2015055pap.pdf",
+        "https://www.nber.org/papers/w10823"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.5,
+      "expected_wr": 50.5,
+      "expected_mdd_pct": 13.0,
+      "expected_n_per_year": 8,
+      "rationale": "Regime-switching models for duration exposure, as supported by research, should optimize risk-adjusted returns by adapting to volatility environments."
+    },
+    {
+      "spec_id": "bond_credit_spread_v1",
+      "asset_class": "BOND",
+      "entry": "long LQD when corporate credit spread (LQD yield minus IEF yield) is in top 25% of historical range over past 3 years",
+      "exit": "exit when spread falls below 50th percentile or after 60-day hold",
+      "sizing": "fixed 100% allocation to LQD, targeting 7% annualized volatility",
+      "universe": [
+        "LQD",
+        "IEF"
+      ],
+      "regime_filter": "skip when default risk premium (HYG yield minus LQD yield) > 5%",
+      "source_refs": [
+        "https://www.nber.org/papers/w7355"
+      ],
+      "proposed_by_engine": "cerebras",
+      "expected_pf": 1.6,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 14.5,
+      "expected_n_per_year": 12,
+      "rationale": "Credit spread term structure predictability, per cited research, should enable timing of investment-grade corporate bonds for excess returns in stable credit conditions."
+    }
+  ],
+  "notes_to_p3": "For backtesting, ensure accurate yield curve data for term premium and spread calculations, ideally from yfinance or a reliable proxy like FRED integration. Regime filters involving VIX, NBER recessions, or volatility thresholds may require external data syncing. Transaction costs should be modeled conservatively for ETF trades (assume 2-5 bps per trade) given frequent rebalancing in some specs like momentum and regime-switching strategies. Watch for data gaps in early ETF history pre-2015 for some symbols like LQD or TLT.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_bond_p2_20260511T185804Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T185841Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 1770,
+    "tokens_out": 1386,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

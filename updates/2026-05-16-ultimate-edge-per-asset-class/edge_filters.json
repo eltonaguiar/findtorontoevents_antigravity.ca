@@ -1,0 +1,218 @@
+{
+  "generated_at": "2026-05-16",
+  "data_source": "audit_trail/data/universal_resolved_picks.json",
+  "window_days": 84,
+  "window_weeks": 12,
+  "total_picks": 5000,
+  "filters": {
+    "CRYPTO": [
+      {
+        "name": "CRYPTO_ULTRA",
+        "tier": "ACCEPT_STRONG",
+        "spec": {
+          "source_in": [
+            "aggregated_picks"
+          ],
+          "rr_min": 1.5,
+          "rr_max": 2.0,
+          "conf_min": 0.7,
+          "direction": "LONG"
+        },
+        "expected_picks_per_week": 8.6,
+        "full_n": 103,
+        "full_pf": 40.57,
+        "full_wr": 0.961,
+        "oos_n": 50,
+        "oos_pf": 25.97,
+        "oos_wr": 0.94,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "Highest-confidence crypto picks. ~9/week. Use for core capital."
+      },
+      {
+        "name": "CRYPTO_ENHANCED",
+        "tier": "ACCEPT_STRONG",
+        "spec": {
+          "source_in": [
+            "aggregated_picks",
+            "kimi_signal_tracking"
+          ],
+          "rr_min": 1.5,
+          "rr_max": 2.0
+        },
+        "expected_picks_per_week": 54.8,
+        "full_n": 658,
+        "full_pf": 8.21,
+        "full_wr": 0.812,
+        "oos_n": 220,
+        "oos_pf": 11.8,
+        "oos_wr": 0.86,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "Wide CRYPTO edge with high signal volume. Best risk-adjusted PnL/week."
+      },
+      {
+        "name": "CRYPTO_CORE",
+        "tier": "ACCEPT_STRONG",
+        "spec": {
+          "source_in": [
+            "aggregated_picks",
+            "kimi_signal_tracking"
+          ]
+        },
+        "expected_picks_per_week": 60.0,
+        "full_n": 719,
+        "full_pf": 7.13,
+        "full_wr": 0.771,
+        "oos_n": 148,
+        "oos_pf": 11.96,
+        "oos_wr": 0.87,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "Broad CRYPTO core. The aggregated_picks + kimi_signal_tracking pipelines are the only consistently profitable CRYPTO source classes."
+      },
+      {
+        "name": "CRYPTO_SAFE",
+        "tier": "ACCEPT_STRONG",
+        "spec": {
+          "rr_min": 1.5,
+          "rr_max": 2.0,
+          "direction": "LONG",
+          "source_not_in": [
+            "mutation_lab",
+            "claude_gainer_st"
+          ],
+          "strategy_not_in": [
+            "battleground_ml_relaxed_mut",
+            "gainer_compression_relaxed_mut",
+            "st_multi_day_momentum",
+            "rapid_momentum_filter_mut",
+            "rapid_rsi_filter_mut"
+          ]
+        },
+        "expected_picks_per_week": 161.3,
+        "full_n": 1936,
+        "full_pf": 2.27,
+        "full_wr": 0.574,
+        "oos_n": 576,
+        "oos_pf": 2.48,
+        "oos_wr": 0.59,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "Fallback when premium sources offline. Wide universe, still PF>2."
+      }
+    ],
+    "EQUITY": [
+      {
+        "name": "EQUITY_LONG_RR",
+        "tier": "ACCEPT_WEAK",
+        "spec": {
+          "direction": "LONG",
+          "rr_min": 1.5,
+          "rr_max": 2.0
+        },
+        "expected_picks_per_week": 3.7,
+        "full_n": 44,
+        "full_pf": 13.76,
+        "full_wr": 0.886,
+        "oos_n": 15,
+        "oos_pf": 2.51,
+        "oos_wr": 0.6,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "Best EQUITY filter by every metric, but OOS sample thin. Paper-trade 4 weeks before scaling."
+      },
+      {
+        "name": "EQUITY_US_CLOSE_HOURS",
+        "tier": "ACCEPT",
+        "spec": {
+          "hour_in": [
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "expected_picks_per_week": 3.25,
+        "full_n": 39,
+        "full_pf": 3.55,
+        "full_wr": 0.692,
+        "oos_n": 18,
+        "oos_pf": 2.03,
+        "oos_wr": 0.61,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "US close UTC 16-20 has materially higher PF. Use as time filter on equity picks."
+      }
+    ],
+    "FOREX": [
+      {
+        "name": "FOREX_RR_BAND",
+        "tier": "ACCEPT",
+        "spec": {
+          "rr_min": 1.5,
+          "rr_max": 2.0
+        },
+        "expected_picks_per_week": 3.7,
+        "full_n": 44,
+        "full_pf": 2.79,
+        "full_wr": 0.273,
+        "oos_n": 15,
+        "oos_pf": 3.52,
+        "oos_wr": 0.2,
+        "bootstrap_p_pf_above_1": 0.97,
+        "recommendation": "FOREX wins low-WR-high-RR. The RR 1.5-2.0 band is the durable edge. Skip LONG only (PF<1)."
+      },
+      {
+        "name": "FOREX_MEAN_REVERSION_BB",
+        "tier": "ACCEPT",
+        "spec": {
+          "_strategy_eq": "MeanReversionBB"
+        },
+        "expected_picks_per_week": 4.0,
+        "full_n": 48,
+        "full_pf": 2.48,
+        "full_wr": 0.25,
+        "oos_n": 19,
+        "oos_pf": 3.0,
+        "oos_wr": 0.11,
+        "bootstrap_p_pf_above_1": 0.94,
+        "recommendation": "MeanReversionBB FOREX strategy is the most reliable single strategy in this class."
+      }
+    ],
+    "MEME": [
+      {
+        "name": "MEME_LONG_RR",
+        "tier": "ACCEPT_STRONG",
+        "spec": {
+          "direction": "LONG",
+          "rr_min": 1.5,
+          "rr_max": 2.0
+        },
+        "expected_picks_per_week": 2.6,
+        "full_n": 31,
+        "full_pf": 3.58,
+        "full_wr": 0.645,
+        "oos_n": 12,
+        "oos_pf": 6.09,
+        "oos_wr": 0.67,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "MEME picks: LONG-only with RR 1.5-2.0. Avoid SHORT (PF=0)."
+      },
+      {
+        "name": "MEME_LONG_ONLY",
+        "tier": "ACCEPT_STRONG",
+        "spec": {
+          "direction": "LONG"
+        },
+        "expected_picks_per_week": 4.3,
+        "full_n": 52,
+        "full_pf": 2.76,
+        "full_wr": 0.558,
+        "oos_n": 18,
+        "oos_pf": 2.7,
+        "oos_wr": 0.5,
+        "bootstrap_p_pf_above_1": 1.0,
+        "recommendation": "Wider MEME filter \u2014 just LONG-only direction. Use when LONG_RR pickings too thin."
+      }
+    ],
+    "BOND": [],
+    "ETF": [],
+    "FUTURES": [],
+    "COMMODITY": []
+  }
+}

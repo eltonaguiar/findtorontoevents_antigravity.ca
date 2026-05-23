@@ -1,0 +1,120 @@
+name: Forward Test - Strategy Validation
+
+on:
+  schedule:
+    # Run every 4 hours during market hours
+    - cron: '0 0,4,8,12,16,20 * * *'
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: 'Strategy to test (or "all")'
+        required: true
+        default: 'all'
+      symbols:
+        description: 'Number of symbols to test'
+        required: true
+        default: '24'
+
+permissions:
+  contents: write
+
+jobs:
+  forward-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install yfinance pandas numpy scipy
+
+    - name: Run forward tests
+      env:
+        STRATEGY: ${{ github.event.inputs.strategy || 'all' }}
+        SYMBOLS: ${{ github.event.inputs.symbols || '24' }}
+      run: |
+        mkdir -p results
+        python -m alpha_engine.survivor_backtest \
+          --strategy $STRATEGY \
+          --symbols $SYMBOLS \
+          --mode forward \
+          --output results/forward_test_$(date +%Y%m%d_%H%M%S).json
+        # Also copy the default output if it exists
+        if [ -f alpha_engine/data/survivor_backtest_results.json ]; then
+          cp alpha_engine/data/survivor_backtest_results.json results/forward_test_latest.json
+        fi
+
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: forward-test-results
+        path: |
+          results/forward_test_*.json
+          alpha_engine/data/survivor_backtest_results.json
+        if-no-files-found: warn
+
+    - name: Check circuit breakers
+      run: |
+        python -c "
+        import json, sys, glob
+
+        # Check both possible output locations
+        files = sorted(glob.glob('results/forward_test_*.json'))
+        if not files and os.path.exists('alpha_engine/data/survivor_backtest_results.json'):
+            files = ['alpha_engine/data/survivor_backtest_results.json']
+
+        if not files:
+            print('No forward test results found skipping circuit breakers')
+            sys.exit(0)
+
+        import os
+        with open(files[-1]) as f:
+            results = json.load(f)
+
+        # Check fail conditions
+        failed = []
+        for strategy, data in results.items():
+            if not isinstance(data, dict):
+                continue
+            if data.get('win_rate', 0) < 0.45:
+                failed.append(f'{strategy}: WR {data.get(\"win_rate\", 0):.1%} < 45%')
+            if data.get('profit_factor', 999) < 1.0:
+                failed.append(f'{strategy}: PF {data.get(\"profit_factor\", 0):.2f} < 1.0')
+            if data.get('drawdown', 0) > 0.20:
+                failed.append(f'{strategy}: DD {data.get(\"drawdown\", 0):.1%} > 20%')
+
+        if failed:
+            print('CIRCUIT BREAKERS TRIGGERED:')
+            for f in failed:
+                print(f' - {f}')
+            # Warn but don't fail the workflow circuit breakers are informational
+            print('::warning::Some strategies failed circuit breaker checks')
+        else:
+            print('All circuit breakers passed')
+        "
+
+    - name: Commit results
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add results/ 2>/dev/null || true
+        git add alpha_engine/data/survivor_backtest_results.json 2>/dev/null || true
+        git diff --staged --quiet && echo "No changes to commit" && exit 0
+        git commit -m "Forward test results: $(date) [skip ci]" || exit 0
+        for i in 1 2 3; do
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh && break
+          echo "Push attempt $i failed, retrying in 5s..."
+          sleep 5
+        done
+

@@ -1,0 +1,113 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\c--findtorontoevents-antigravity-ca\21f62fd8-dfb6-4ef3-a869-5125568fc326.jsonl`
+- turns: 64 · chunks: 8 · provider: deepseek
+- deduped action items: 67
+
+## Action items (deduped across chunks)
+
+- [OPEN] Install Greptile (npm install -g greptile)
+- [OPEN] Sign up at app.greptile.com and get API key
+- [OPEN] Get a GitHub PAT with repo scope
+- [OPEN] Index the repository via Greptile API (POST /v2/repositories)
+- [OPEN] Wire up Greptile MCP server config for Claude Code
+- [DONE] Research and compare Greptile vs Sourcegraph Cody
+- [DONE] Run dropchat
+- [OPEN] Build structured session-summary/v1 JSON payload from real deliverables (git log, gh pr list)
+- [OPEN] Send SESSION_SUMMARY broadcast via cursor_claude_adapter.py to all peers
+- [OPEN] Verify send landed using protocol_inspect.py tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter.py
+- [OPEN] Triage peer messages, classify, decide on task.request DMs
+- [OPEN] Optionally revise and re-commit if peer insight changes decisions
+- [OPEN] Optionally send SESSION_CLOSED broadcast
+- [OPEN] Output compact 6-line summary to operator
+- [DONE] Run dropchat protocol (gateway health check, session data gathering, broadcast, drain inbox, send closing envelope, write inbox report)
+- [DONE] Post follow-ups: P2 — Greptile index trigger + MCP wire-up
+- [OPEN] Sign up at app.greptile.com, get API key + GitHub PAT, paste them here
+- [OPEN] Deploy subagents and/or agent swarm(s) as needed
+- [DONE] Check for existing credentials and environment before deploying install agents
+- [DONE] Install npm packages
+- [DONE] Run transcript scan
+- [DONE] Install Greptile MCP server (v3.0.4)
+- [DONE] Wire Greptile into Claude Code config
+- [OPEN] Obtain Greptile API key (blocker)
+- [OPEN] Run dropchat with completed state, deploy swarm to verify full setup and check open items
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter poll
+- [OPEN] Write one-line entries to reports/peer_inbox_<UTC>.md
+- [OPEN] Optionally revise + re-commit if peer insight changes decisions
+- [DONE] Install greptile-mcp-server v3.0.4 globally
+- [DONE] Wire ~/.claude.json with mcpServers.greptile entry + GitHub PAT
+- [DONE] Create tools/greptile_setup.ps1
+- [OPEN] User signs up at app.greptile.com and runs greptile_setup.ps1 (user declined — Greptile is paid)
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (carry-over P0)
+- [OPEN] Do not use elite_score for gating (carry-over P0)
+- [DONE] Clean up Greptile MCP config from ~/.claude.json
+- [DONE] Clean up tools/greptile_setup.ps1
+- [DONE] Install ripgrep (already installed)
+- [DONE] Attempt code-search-mcp install (failed — private auth required)
+- [DONE] Install ast-grep (failed — broken on Node 24/Windows)
+- [DONE] Wire mcp-ripgrep into ~/.claude.json
+- [DONE] Test mcp-ripgrep with real query (pick lifecycle trace)
+- [OPEN] Restart Claude Code to load mcp-ripgrep MCP server
+- [UNCLEAR] Run dropchat to sync setup to peers (offered, not confirmed done)
+- [OPEN] Set goal: "keep proceeding till all action items are done" via goal_state.py
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via goal_state.py
+- [OPEN] Judge own work and record verdict via goal_state.py
+- [OPEN] If not done and budget remains, schedule wakeup with /goal continue
+- [OPEN] User must choose A/B/C for elite_score gate decision before proceeding
+- [DONE] Set up `/goal` skill specification (document written)
+- [DONE] Resume goal loop and check state
+- [DONE] Investigate ETF `elite_score` default=0 bug (37/37 picks missing field)
+- [DONE] Apply Option B fix: skip gate when field absent, enforce only when score present
+- [DONE] Build ast-grep-py search tool (`ast_search.py`)
+- [DONE] Fix test for FUTURES block list (update to match monitor mode decision)
+- [DONE] Commit three fixes together (ETF gate, test fix, ast_search.py)
+- [DONE] Re-create `ast_search.py` after stash loss
+- [DONE] Re-apply test change after stash loss
+- [DONE] Push commits
+- [DONE] Tick goal counter and judge work
+- [DONE] Continue to turn 3 — broader CI health check
+- [OPEN] Investigate pre-existing test failure `test_asset_class_health_class_present[ETF]`
+- [OPEN] Fix dashboard generator to include ETF in `asset_class_health`
+- [OPEN] Add stubs for canonical asset classes (like ETF) not present in `ac_breakdown`
+
+## OPEN (35)
+
+- [OPEN] Install Greptile (npm install -g greptile)
+- [OPEN] Sign up at app.greptile.com and get API key
+- [OPEN] Get a GitHub PAT with repo scope
+- [OPEN] Index the repository via Greptile API (POST /v2/repositories)
+- [OPEN] Wire up Greptile MCP server config for Claude Code
+- [OPEN] Build structured session-summary/v1 JSON payload from real deliverables (git log, gh pr list)
+- [OPEN] Send SESSION_SUMMARY broadcast via cursor_claude_adapter.py to all peers
+- [OPEN] Verify send landed using protocol_inspect.py tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter.py
+- [OPEN] Triage peer messages, classify, decide on task.request DMs
+- [OPEN] Optionally revise and re-commit if peer insight changes decisions
+- [OPEN] Optionally send SESSION_CLOSED broadcast
+- [OPEN] Output compact 6-line summary to operator
+- [OPEN] Sign up at app.greptile.com, get API key + GitHub PAT, paste them here
+- [OPEN] Deploy subagents and/or agent swarm(s) as needed
+- [OPEN] Obtain Greptile API key (blocker)
+- [OPEN] Run dropchat with completed state, deploy swarm to verify full setup and check open items
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter poll
+- [OPEN] Write one-line entries to reports/peer_inbox_<UTC>.md
+- [OPEN] Optionally revise + re-commit if peer insight changes decisions
+- [OPEN] User signs up at app.greptile.com and runs greptile_setup.ps1 (user declined — Greptile is paid)
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (carry-over P0)
+- [OPEN] Do not use elite_score for gating (carry-over P0)
+- [OPEN] Restart Claude Code to load mcp-ripgrep MCP server
+- [OPEN] Set goal: "keep proceeding till all action items are done" via goal_state.py
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via goal_state.py
+- [OPEN] Judge own work and record verdict via goal_state.py
+- [OPEN] If not done and budget remains, schedule wakeup with /goal continue
+- [OPEN] User must choose A/B/C for elite_score gate decision before proceeding
+- [OPEN] Investigate pre-existing test failure `test_asset_class_health_class_present[ETF]`
+- [OPEN] Fix dashboard generator to include ETF in `asset_class_health`
+- [OPEN] Add stubs for canonical asset classes (like ETF) not present in `ac_breakdown`

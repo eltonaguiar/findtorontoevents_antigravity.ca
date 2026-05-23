@@ -1,0 +1,34 @@
+diff --git a/audit_trail/dashboard_generator.py b/audit_trail/dashboard_generator.py
+index 19cbae2679..b2054ffdb1 100644
+--- a/audit_trail/dashboard_generator.py
++++ b/audit_trail/dashboard_generator.py
+@@ -5981,8 +5981,12 @@ def collect_system_stats(active, closed, all_closed=None):
+             sys_strategies[sys_name] = {}
+         s["asset_classes"].add(pick["asset_class"])
+         ts = pick.get("timestamp", "")
+-        if ts and ts > s["last_ts"]:
+-            s["last_ts"] = ts
++        if ts:
++            prev = s["last_ts"]
++            da = _parse_pick_timestamp_utc(ts)
++            db = _parse_pick_timestamp_utc(prev) if prev else None
++            if not prev or db is None or (da is not None and da >= db):
++                s["last_ts"] = ts
+         # Strategy-level tracking
+         strat_name = pick.get("strategy") or pick.get("signal_type") or "default"
+         direction = pick.get("direction", "LONG")
+@@ -6004,8 +6008,12 @@ def collect_system_stats(active, closed, all_closed=None):
+                 "last_ts": "",
+             }
+         strat = sys_strategies[sys_name][strat_name]
+-        if ts and ts > strat["last_ts"]:
+-            strat["last_ts"] = ts
++        if ts:
++            pprev = strat["last_ts"]
++            dsa = _parse_pick_timestamp_utc(ts)
++            dsb = _parse_pick_timestamp_utc(pprev) if pprev else None
++            if not pprev or dsb is None or (dsa is not None and dsa >= dsb):
++                strat["last_ts"] = ts
+         return sys_name, s, strat
+ 
+     for pick in active:

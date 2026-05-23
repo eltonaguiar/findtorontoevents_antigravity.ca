@@ -1,0 +1,52 @@
+name: Conviction Picks Ultra-Selective Discord Alert
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '56 * * * *'
+
+concurrency:
+  group: conviction-picks-discord
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  conviction-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests scipy
+
+      - name: Run Conviction Picks scanner
+        env:
+          DISCORD_WEBHOOK_CONVICTION: ${{ secrets.DISCORD_WEBHOOK_CONVICTION }}
+          DISCORD_WEBHOOK_PROPICKS: ${{ secrets.DISCORD_WEBHOOK_PROPICKS }}
+        run: python -m cross_aggregation.conviction_picks
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Conviction Picks Bot"
+          git config user.email "bot@findtorontoevents.ca"
+          for f in cross_aggregation/data/conviction_picks.json cross_aggregation/data/conviction_sent.json; do
+            if [ -f "$f" ]; then
+              git add "$f"
+            fi
+          done
+          git diff --cached --quiet || git commit -m "Conviction scan $(date -u +%Y-%m-%d\ %H:%M) UTC [skip ci]"
+          bash .github/scripts/safe_push.sh
+

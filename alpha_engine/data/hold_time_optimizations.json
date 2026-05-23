@@ -1,0 +1,116 @@
+{
+  "generated_at": "2026-03-30T22:09:28.524909+00:00",
+  "source": "Hold time analysis on 1,983 closed crypto picks",
+  "overall_insight": {
+    "7-14d": {
+      "wr": 60.9,
+      "trades": 110,
+      "avg_pnl": 0.51,
+      "note": "Best overall hold window"
+    },
+    "2-4d": {
+      "wr": 52.3,
+      "trades": 830,
+      "avg_pnl": -1.97,
+      "note": "Highest volume, marginal edge"
+    },
+    "4-12h": {
+      "wr": 27.3,
+      "trades": 44,
+      "avg_pnl": -0.55,
+      "note": "Worst window - too early to capture move"
+    },
+    "12-24h": {
+      "wr": 34.7,
+      "trades": 150,
+      "avg_pnl": -0.33,
+      "note": "Still too early for most strategies"
+    }
+  },
+  "strategy_hold_overrides": {
+    "st_bb_squeeze_expansion": {
+      "max_hold_hours": 36,
+      "reason": "80% WR under 48h (15 trades), 15% WR over 48h (20 trades). 65pp degradation.",
+      "optimal_window": "12-36h",
+      "wr_improvement": 37.1
+    },
+    "st_fear_greed_contrarian": {
+      "min_hold_hours": 48,
+      "reason": "16.8% WR under 48h (155 trades), 61.6% WR over 48h (292 trades). Contrarian needs time.",
+      "optimal_window": "48-72h",
+      "wr_improvement": 15.6,
+      "detail": "12-18h window is 100% WR (20 trades) but 18-48h is 3% WR (135 trades). The early winners are outliers."
+    },
+    "crypto_mtf_ema_slope_alignment_v1": {
+      "max_hold_hours": 48,
+      "reason": "67% WR under 48h (9 trades), 31% WR over 48h (16 trades). 35pp degradation.",
+      "optimal_window": "12-48h",
+      "wr_improvement": 22.7
+    },
+    "ensemble": {
+      "min_hold_hours": 72,
+      "reason": "21% WR under 48h (33 trades), 38.5% WR over 48h (13 trades). Mercury2 ensemble needs patience.",
+      "optimal_window": "72h+",
+      "wr_improvement": 12.4
+    },
+    "luxalgo_confluence": {
+      "max_hold_hours": 48,
+      "reason": "42% WR 12-48h (38 trades) vs 32% WR 48h+ (85 trades). Cut losers early.",
+      "optimal_window": "12-48h",
+      "wr_improvement": 8.0
+    }
+  },
+  "rr_optimization": {
+    "insight": "R:R 1.0-1.5 has highest expectancy (0.588). R:R 3.0+ has only 25% WR \u2014 TPs too aggressive.",
+    "optimal_rr_range": "1.0-1.5",
+    "avoid_rr_above": 3.0,
+    "recommendation": "Cap TP at 2.0x ATR max for crypto. Tighter TPs win more often.",
+    "data": {
+      "rr_0_to_1": {
+        "wr": 42.1,
+        "expectancy": 0.21
+      },
+      "rr_1_to_1.5": {
+        "wr": 48.3,
+        "expectancy": 0.588
+      },
+      "rr_1.5_to_2": {
+        "wr": 44.7,
+        "expectancy": 0.43
+      },
+      "rr_2_to_3": {
+        "wr": 38.2,
+        "expectancy": 0.31
+      },
+      "rr_3_plus": {
+        "wr": 25.0,
+        "expectancy": -0.12
+      }
+    }
+  },
+  "hold_time_dead_zone": {
+    "insight": "3-7 day holds have 32.7% WR \u2014 the dead zone. Either close at 1-3d or hold 7d+.",
+    "buckets": {
+      "0-1d": {
+        "wr": 34.7,
+        "avg_pnl": -0.33
+      },
+      "1-3d": {
+        "wr": 50.1,
+        "avg_pnl": 0.33,
+        "note": "SWEET SPOT"
+      },
+      "3-7d": {
+        "wr": 32.7,
+        "avg_pnl": -2.24,
+        "note": "DEAD ZONE \u2014 avoid"
+      },
+      "7d+": {
+        "wr": 55.2,
+        "avg_pnl": 0.22,
+        "note": "Patient holds work"
+      }
+    }
+  },
+  "updated_at": "2026-04-02T00:03:46.411219+00:00"
+}

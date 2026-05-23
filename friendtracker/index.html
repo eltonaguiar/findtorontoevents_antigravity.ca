@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriendTracker — Maintain Your Friendships</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-card">
+            <div class="auth-logo">👥</div>
+            <h1 class="auth-title">FriendTracker</h1>
+            <p class="auth-subtitle">Keep your friendships alive</p>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">Create Account</button>
+            </div>
+            <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+                <input type="text" id="loginUsername" placeholder="Username" required autocomplete="username">
+                <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+                <button type="submit" class="auth-submit">Sign In</button>
+            </form>
+            <form class="auth-form hidden" id="registerForm" onsubmit="handleRegister(event)">
+                <input type="text" id="regUsername" placeholder="Choose a username" required autocomplete="username">
+                <input type="password" id="regPassword" placeholder="Choose a password" required autocomplete="new-password">
+                <input type="password" id="regPasswordConfirm" placeholder="Confirm password" required autocomplete="new-password">
+                <button type="submit" class="auth-submit">Create Account</button>
+            </form>
+            <div class="auth-error hidden" id="authError"></div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app hidden" id="app">
+
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <span class="app-logo">👥</span>
+                <h1 class="app-title">FriendTracker</h1>
+            </div>
+            <div class="top-bar-right">
+                <button class="icon-btn" onclick="openAddFriend()" title="Add Friend">➕</button>
+                <button class="icon-btn" onclick="toggleEventsPanel()" title="Events">🎉</button>
+                <button class="icon-btn" onclick="toggleStats()" title="Stats">📊</button>
+                <div class="user-menu">
+                    <button class="user-btn" id="userBtn" onclick="toggleUserMenu()"></button>
+                    <div class="user-dropdown hidden" id="userDropdown">
+                        <div class="user-dropdown-name" id="userDropdownName"></div>
+                        <button class="user-dropdown-item" onclick="exportData()">📥 Export Data</button>
+                        <button class="user-dropdown-item" onclick="importDataPrompt()">📤 Import Data</button>
+                        <button class="user-dropdown-item danger" onclick="handleLogout()">🚪 Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filter/Search Bar -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search friends..." oninput="renderFriends()">
+            </div>
+            <div class="tag-filters" id="tagFilters"></div>
+            <div class="sort-controls">
+                <select id="sortSelect" onchange="renderFriends()">
+                    <option value="name-asc">Name A-Z</option>
+                    <option value="name-desc">Name Z-A</option>
+                    <option value="last-seen">Last Seen</option>
+                    <option value="most-seen">Most Seen</option>
+                    <option value="least-seen">Least Seen</option>
+                    <option value="birthday-upcoming">Birthday Soon</option>
+                    <option value="needs-attention">Needs Attention</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Stats Panel (collapsible) -->
+        <div class="stats-panel hidden" id="statsPanel">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statTotal">0</div>
+                    <div class="stat-label">Total Friends</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statSeenThisMonth">0</div>
+                    <div class="stat-label">Seen This Month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statNeedsAttention">0</div>
+                    <div class="stat-label">Needs Attention</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statBirthdays">0</div>
+                    <div class="stat-label">Birthdays This Month</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Panel (collapsible) -->
+        <div class="events-panel hidden" id="eventsPanel">
+            <div class="events-panel-header">
+                <h3 class="events-panel-title">🎉 Upcoming Events</h3>
+                <button class="btn-primary btn-sm" onclick="openEventModal()">+ New Event</button>
+            </div>
+            <div class="events-empty hidden" id="eventsEmpty">
+                <p>No events yet. Plan your next gathering!</p>
+            </div>
+            <div class="events-list" id="eventsList"></div>
+        </div>
+
+        <!-- Friends List -->
+        <div class="friends-container" id="friendsContainer">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">🤝</div>
+                <h2>No friends added yet</h2>
+                <p>Start tracking your friendships by adding your first friend!</p>
+                <button class="btn-primary" onclick="openAddFriend()">➕ Add Your First Friend</button>
+            </div>
+            <div class="friends-list" id="friendsList"></div>
+        </div>
+
+    </div>
+
+    <!-- Add/Edit Friend Modal -->
+    <div class="modal-overlay hidden" id="friendModal" onclick="handleOverlayClick(event, 'friendModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Friend</h2>
+                <button class="modal-close" onclick="closeFriendModal()">✕</button>
+            </div>
+            <form class="modal-form" id="friendForm" onsubmit="saveFriend(event)">
+                <input type="hidden" id="friendId">
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Basic Info</h3>
+                    <div class="form-group">
+                        <div class="avatar-upload-row">
+                            <div class="avatar-preview" id="avatarPreview">
+                                <span class="avatar-preview-initials" id="avatarPreviewInitials">?</span>
+                                <img class="avatar-preview-img hidden" id="avatarPreviewImg" alt="">
+                            </div>
+                            <div class="avatar-upload-controls">
+                                <label class="btn-secondary btn-sm avatar-upload-btn">
+                                    📷 Upload Photo
+                                    <input type="file" id="friendPhoto" accept="image/*" onchange="handlePhotoUpload(event)" hidden>
+                                </label>
+                                <button type="button" class="btn-secondary btn-sm avatar-remove-btn hidden" id="removePhotoBtn" onclick="removePhoto()">✕ Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name *</label>
+                            <input type="text" id="friendName" required placeholder="Friend's name" oninput="updateAvatarPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Nickname</label>
+                            <input type="text" id="friendNickname" placeholder="Optional nickname">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Birthday</label>
+                            <input type="date" id="friendBirthday">
+                        </div>
+                        <div class="form-group">
+                            <label>How You Met</label>
+                            <input type="text" id="friendHowMet" placeholder="e.g. Work, School, Party...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="friendNotes" rows="2" placeholder="Anything to remember..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Contact & Social Media</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📱 Phone</label>
+                            <input type="tel" id="friendPhone" placeholder="+1 (416) 555-0000">
+                        </div>
+                        <div class="form-group">
+                            <label>📧 Email</label>
+                            <input type="email" id="friendEmail" placeholder="friend@email.com">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📸 Instagram</label>
+                            <input type="text" id="friendInstagram" placeholder="@username">
+                        </div>
+                        <div class="form-group">
+                            <label>🎵 TikTok</label>
+                            <input type="text" id="friendTiktok" placeholder="@username">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🐦 Twitter/X</label>
+                            <input type="text" id="friendTwitter" placeholder="@username">
+                        </div>
+                        <div class="form-group">
+                            <label>💬 Snapchat</label>
+                            <input type="text" id="friendSnapchat" placeholder="@username">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>💼 LinkedIn</label>
+                            <input type="text" id="friendLinkedin" placeholder="Profile URL or name">
+                        </div>
+                        <div class="form-group">
+                            <label>🔗 Other</label>
+                            <input type="text" id="friendOtherSocial" placeholder="Any other link...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Tags & Categories</h3>
+                    <div class="form-group">
+                        <label>Tags</label>
+                        <div class="tag-input-container">
+                            <div class="selected-tags" id="selectedTags"></div>
+                            <input type="text" id="tagInput" placeholder="Type to add tags..." oninput="filterTagSuggestions()" onkeydown="handleTagKeydown(event)">
+                        </div>
+                        <div class="tag-suggestions" id="tagSuggestions"></div>
+                        <div class="preset-tags">
+                            <span class="preset-label">Quick add:</span>
+                            <button type="button" class="preset-tag" onclick="addTag('Close Friend')">Close Friend</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Wingman')">Wingman</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Wingwoman')">Wingwoman</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Work')">Work</button>
+                            <button type="button" class="preset-tag" onclick="addTag('School')">School</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Gym')">Gym</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Phone Calls')">Phone Calls</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Party Crew')">Party Crew</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Travel Buddy')">Travel Buddy</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Mentor')">Mentor</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Childhood')">Childhood</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Family Friend')">Family Friend</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Neighbour')">Neighbour</button>
+                            <button type="button" class="preset-tag" onclick="addTag('Online')">Online</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Cadence Goal</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>See every</label>
+                            <select id="friendCadence">
+                                <option value="">No goal set</option>
+                                <option value="7">Week</option>
+                                <option value="14">2 Weeks</option>
+                                <option value="30">Month</option>
+                                <option value="60">2 Months</option>
+                                <option value="90">Quarter</option>
+                                <option value="180">6 Months</option>
+                                <option value="365">Year</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeFriendModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">Save Friend</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Friend Detail Modal -->
+    <div class="modal-overlay hidden" id="detailModal" onclick="handleOverlayClick(event, 'detailModal')">
+        <div class="modal modal-detail">
+            <div class="modal-header">
+                <h2 id="detailName"></h2>
+                <button class="modal-close" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div class="detail-content" id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- Log Hangout Modal -->
+    <div class="modal-overlay hidden" id="hangoutModal" onclick="handleOverlayClick(event, 'hangoutModal')">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2>Log Hangout</h2>
+                <button class="modal-close" onclick="closeHangoutModal()">✕</button>
+            </div>
+            <form onsubmit="saveHangout(event)">
+                <input type="hidden" id="hangoutFriendId">
+                <div class="form-section">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="hangoutDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>What did you do?</label>
+                        <input type="text" id="hangoutActivity" placeholder="e.g. Dinner, Coffee, Concert...">
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="hangoutNotes" rows="2" placeholder="Any details to remember..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeHangoutModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Log It!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal-overlay hidden" id="eventModal" onclick="handleOverlayClick(event, 'eventModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="eventModalTitle">Plan an Event</h2>
+                <button class="modal-close" onclick="closeEventModal()">✕</button>
+            </div>
+            <form class="modal-form" id="eventForm" onsubmit="saveEvent(event)">
+                <input type="hidden" id="eventId">
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Event Details</h3>
+                    <div class="form-group">
+                        <label>Event Name *</label>
+                        <input type="text" id="eventName" required placeholder="e.g. Sarah's Birthday Dinner">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Event Type</label>
+                            <select id="eventType">
+                                <option value="hangout">🤝 General Hangout</option>
+                                <option value="birthday">🎂 Birthday Party</option>
+                                <option value="dating">💕 Dating Event</option>
+                                <option value="party">🎊 Party</option>
+                                <option value="trip">✈️ Trip / Outing</option>
+                                <option value="dinner">🍽️ Dinner / Brunch</option>
+                                <option value="activity">🎯 Activity / Sport</option>
+                                <option value="other">📌 Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="eventDate" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" id="eventTime">
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="eventLocation" placeholder="Where?">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="eventDescription" rows="2" placeholder="Details, dress code, what to bring..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Invite Friends by Tag</h3>
+                    <p class="form-hint">Select tags to auto-include all friends with those tags</p>
+                    <div class="event-tag-selector" id="eventTagSelector"></div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Manually Invite Friends</h3>
+                    <div class="form-group">
+                        <input type="text" id="eventFriendSearch" placeholder="Search friends to add..." oninput="filterEventFriends()">
+                    </div>
+                    <div class="event-friends-checklist" id="eventFriendsChecklist"></div>
+                    <div class="event-invited-summary" id="eventInvitedSummary"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEventModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveEventBtn">Create Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal-overlay hidden" id="eventDetailModal" onclick="handleOverlayClick(event, 'eventDetailModal')">
+        <div class="modal modal-detail">
+            <div class="modal-header">
+                <h2 id="eventDetailName"></h2>
+                <button class="modal-close" onclick="closeEventDetailModal()">✕</button>
+            </div>
+            <div class="detail-content" id="eventDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal-overlay hidden" id="importModal" onclick="handleOverlayClick(event, 'importModal')">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2>Import Data</h2>
+                <button class="modal-close" onclick="closeImportModal()">✕</button>
+            </div>
+            <div class="form-group" style="padding: 20px;">
+                <label>Paste your exported JSON data:</label>
+                <textarea id="importData" rows="6" placeholder="Paste JSON here..."></textarea>
+            </div>
+            <div class="modal-actions" style="padding: 0 20px 20px;">
+                <button class="btn-secondary" onclick="closeImportModal()">Cancel</button>
+                <button class="btn-primary" onclick="importData()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

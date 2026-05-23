@@ -1,0 +1,388 @@
+{
+  "timestamp": "2026-03-03T00:00:00Z",
+  "winners": [
+    {
+      "rank": 1,
+      "id": "strat_3fd137d6b3b7",
+      "name": "FundingRateCarry",
+      "parents": [],
+      "generation": 0,
+      "genes": {
+        "timeframe": "1h",
+        "primary_indicator": "FundingRate",
+        "entry_logic": "golden_cross",
+        "exit_logic": "death_cross",
+        "risk_profile": "moderate",
+        "risk_per_trade": "0.01"
+      }
+    },
+    {
+      "rank": 2,
+      "id": "strat_43cc80a3722d",
+      "name": "VIXSpikeReversal",
+      "parents": [],
+      "generation": 0,
+      "genes": {
+        "timeframe": "4h",
+        "primary_indicator": "VIX",
+        "entry_logic": "golden_cross",
+        "exit_logic": "death_cross",
+        "risk_profile": "moderate",
+        "risk_per_trade": "0.02"
+      }
+    },
+    {
+      "rank": 3,
+      "id": "strat_510264808bf9",
+      "name": "LevineAdaptive",
+      "parents": [],
+      "generation": 0,
+      "genes": {
+        "timeframe": "4h",
+        "primary_indicator": "EMA",
+        "entry_logic": "golden_cross",
+        "exit_logic": "death_cross",
+        "risk_profile": "moderate",
+        "risk_per_trade": "0.01"
+      }
+    },
+    {
+      "rank": 4,
+      "id": "strat_d20ddbe7f1ca",
+      "name": "ConnorsRSI2",
+      "parents": [],
+      "generation": 0,
+      "genes": {
+        "timeframe": "1h",
+        "primary_indicator": "RSI",
+        "entry_logic": "golden_cross",
+        "exit_logic": "death_cross",
+        "risk_profile": "moderate",
+        "risk_per_trade": "0.02"
+      }
+    },
+    {
+      "rank": 5,
+      "id": "strat_a720ee9b25ec",
+      "name": "FearGreedContrarian",
+      "parents": [],
+      "generation": 0,
+      "genes": {
+        "timeframe": "1d",
+        "primary_indicator": "Sentiment",
+        "entry_logic": "golden_cross",
+        "exit_logic": "death_cross",
+        "risk_profile": "moderate",
+        "risk_per_trade": "0.03"
+      }
+    },
+    {
+      "rank": 6,
+      "id": "strat_27184d8cfcb3",
+      "name": "CarterSqueeze",
+      "parents": [],
+      "generation": 0,
+      "genes": {
+        "timeframe": "1d",
+        "primary_indicator": "BollingerBands",
+        "entry_logic": "golden_cross",
+        "exit_logic": "death_cross",
+        "risk_profile": "moderate",
+        "risk_per_trade": "0.02"
+      }
+    },
+    {
+      "rank": 7,
+      "id": "combo_e778802b2bc2",
+      "name": "Combo_LevineAdaptive+FundingRateCarry",
+      "parents": [
+        "strat_3fd137d6b3b7",
+        "strat_510264808bf9"
+      ],
+      "generation": 1,
+      "genes": {
+        "primary_indicator": "EMA",
+        "timeframe": "4h",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.01",
+        "entry_logic": "golden_cross",
+        "risk_profile": "moderate",
+        "combination_logic": "and",
+        "parent_count": "2"
+      }
+    },
+    {
+      "rank": 8,
+      "id": "combo_eaf29b5ef8a1",
+      "name": "Combo_Mutated_CarterSqueeze+FearGreedContrarian",
+      "parents": [
+        "mut_74617f490dc0",
+        "strat_a720ee9b25ec"
+      ],
+      "generation": 2,
+      "genes": {
+        "primary_indicator": "BollingerBands",
+        "timeframe": "1d",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.017236167374241277",
+        "entry_logic": "funding_flip",
+        "risk_profile": "conservative",
+        "combination_logic": "and",
+        "parent_count": "2"
+      }
+    },
+    {
+      "rank": 9,
+      "id": "mut_faa8bdfa7c87",
+      "name": "Mutated_Mutated_Mutated_Combo_Combo_Combo_Mutated_Combo_Mu",
+      "parents": [
+        "mut_17622e4754d5"
+      ],
+      "generation": 15,
+      "genes": {
+        "primary_indicator": "Stochastic",
+        "timeframe": "1h",
+        "parent_count": "2",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.03",
+        "confirmation_logic": "['golden_cross']",
+        "entry_logic": "golden_cross",
+        "combination_logic": "majority",
+        "risk_profile": "moderate"
+      }
+    },
+    {
+      "rank": 10,
+      "id": "combo_36a20787d770",
+      "name": "Combo_FearGreedContrarian+VIXSpikeReversal",
+      "parents": [
+        "strat_43cc80a3722d",
+        "strat_a720ee9b25ec"
+      ],
+      "generation": 1,
+      "genes": {
+        "primary_indicator": "Sentiment",
+        "timeframe": "1d",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.03",
+        "entry_logic": "golden_cross",
+        "confirmation_logic": "['golden_cross']",
+        "risk_profile": "moderate",
+        "combination_logic": "sequential",
+        "parent_count": "2"
+      }
+    },
+    {
+      "rank": 11,
+      "id": "combo_69c0a447d9e6",
+      "name": "Combo_Mutated_FundingRateCarry+Mutated_Mutated_ConnorsRSI2",
+      "parents": [
+        "mut_41c605740238",
+        "mut_bc231f14cd72"
+      ],
+      "generation": 3,
+      "genes": {
+        "primary_indicator": "FundingRate",
+        "timeframe": "1h",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.01",
+        "entry_logic": "funding_flip",
+        "risk_profile": "moderate",
+        "combination_logic": "weighted",
+        "parent_count": "2"
+      }
+    },
+    {
+      "rank": 12,
+      "id": "combo_799131a4684d",
+      "name": "Combo_Combo_Combo_Mutated_Mutated_Combo_Mutated_Combo_Mutated_Mutated_VIXSpi+Combo_Combo_Mutated_Car",
+      "parents": [
+        "combo_7682b77a2c96",
+        "combo_9ee164ffb976"
+      ],
+      "generation": 15,
+      "genes": {
+        "primary_indicator": "Stochastic",
+        "timeframe": "1m",
+        "parent_count": "2",
+        "exit_logic": "rsi_overbought",
+        "risk_per_trade": "0.024935269472619134",
+        "confirmation_logic": "['golden_cross']",
+        "entry_logic": "resistance_break",
+        "take_profit_mult": "1.9421",
+        "combination_logic": "and",
+        "risk_profile": "conservative"
+      }
+    },
+    {
+      "rank": 13,
+      "id": "combo_8f3c6f3069ab",
+      "name": "Combo_Mutated_CarterSqueeze+FearGreedContrarian",
+      "parents": [
+        "mut_193928c110d1",
+        "strat_a720ee9b25ec"
+      ],
+      "generation": 2,
+      "genes": {
+        "primary_indicator": "BollingerBands",
+        "timeframe": "1d",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.02",
+        "entry_logic": "golden_cross",
+        "risk_profile": "moderate",
+        "combination_logic": "weighted",
+        "parent_count": "2"
+      }
+    },
+    {
+      "rank": 14,
+      "id": "combo_64230c9201eb",
+      "name": "Combo_Mutated_CarterSqueeze+Mutated_FundingRateCarry",
+      "parents": [
+        "mut_193928c110d1",
+        "mut_41c605740238"
+      ],
+      "generation": 2,
+      "genes": {
+        "primary_indicator": "BollingerBands",
+        "timeframe": "1d",
+        "exit_logic": "death_cross",
+        "risk_per_trade": "0.02",
+        "entry_logic": "golden_cross",
+        "risk_profile": "moderate",
+        "combination_logic": "unanimous",
+        "parent_count": "2"
+      }
+    },
+    {
+      "rank": 15,
+      "id": "mut_b34bd2853db8",
+      "name": "Mutated_Combo_Combo_Mutated_Mutated_Combo_Mutated_Combo_Mu",
+      "parents": [
+        "combo_7682b77a2c96"
+      ],
+      "generation": 15,
+      "genes": {
+        "primary_indicator": "Stochastic",
+        "timeframe": "1m",
+        "parent_count": "2",
+        "exit_logic": "rsi_overbought",
+        "risk_per_trade": "0.024935269472619134",
+        "confirmation_logic": "['golden_cross']",
+        "entry_logic": "resistance_break",
+        "combination_logic": "consensus_75",
+        "risk_profile": "conservative"
+      }
+    }
+  ],
+  "history": [
+    {
+      "generation": 0,
+      "best_fitness": 2.5895,
+      "avg_fitness": 1.6821541666666666,
+      "population_size": 8,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 1,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 2,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 3,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 4,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 5,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 6,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 7,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 8,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 9,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 10,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 11,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 12,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 13,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    },
+    {
+      "generation": 14,
+      "best_fitness": 2.5895,
+      "avg_fitness": 0.2817975,
+      "population_size": 40,
+      "best_strategy": "strat_3fd137d6b3b7"
+    }
+  ],
+  "parent_count": 8,
+  "generations": 15,
+  "population_size": 40
+}

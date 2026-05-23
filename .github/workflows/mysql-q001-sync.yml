@@ -1,0 +1,73 @@
+name: MySQL Q-001 — Create picks table + sync from JSON
+
+on:
+  # 2026-05-24 08:00 UTC — EQUITY MySQL unlock date (MySQL purge clears stale
+  # pre-resolver data; post-purge n≥240 EQUITY picks become available).
+  # After that date this schedule is harmless (idempotent upsert).
+  schedule:
+    - cron: "0 8 24 5 *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run only (no writes)"
+        type: boolean
+        default: false
+      max_rows:
+        description: "Max closed_picks rows to sync (default 50000)"
+        type: string
+        default: "50000"
+
+jobs:
+  mysql-sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run Q-001 MySQL picks sync
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+        run: |
+          DRY_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          python tools/mysql_q001_sync.py \
+            $DRY_FLAG \
+            --max-rows ${{ inputs.max_rows || '50000' }}
+
+      - name: Show report
+        run: |
+          REPORT=$(ls reports/mysql_q001_sync_*.json 2>/dev/null | tail -1)
+          if [ -n "$REPORT" ]; then
+            echo "=== Sync report ==="
+            cat "$REPORT"
+          fi
+
+      - name: Commit report
+        if: inputs.dry_run != 'true'
+        run: |
+          git config user.name "MySQL Sync Bot"
+          git config user.email "mysql-sync@findtorontoevents.ca"
+          git add reports/mysql_q001_sync_*.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "chore(mysql): Q-001 picks sync $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git pull --rebase origin main || true
+          git push origin main || echo "Push failed — report is local"

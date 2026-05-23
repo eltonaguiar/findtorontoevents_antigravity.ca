@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyroTrader challenge tracker | Audit</title>
+<meta name="description" content="HyroTrader-style prop challenge: rules, playbook links, pick list from repo JSON.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c10;
+  --card: #14141c;
+  --border: #2a2a38;
+  --text: #ececf4;
+  --dim: #8b8b9e;
+  --cyan: #22d3ee;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "DM Sans", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+a { color: var(--cyan); }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; }
+header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; }
+header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+header p { color: var(--dim); font-size: 0.9rem; margin-top: 8px; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom: 24px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.card h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); margin-bottom: 10px; }
+.rule-row { display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.rule-row:last-child { border-bottom: none; }
+.rule-row span:last-child { font-variant-numeric: tabular-nums; color: var(--cyan); }
+.badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: rgba(34,211,238,0.12); color: var(--cyan); }
+ul.compact { margin: 10px 0 0 18px; font-size: 0.88rem; color: var(--dim); }
+ul.compact li { margin: 6px 0; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--card); color: var(--dim); font-weight: 600; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.06em; }
+tr:last-child td { border-bottom: none; }
+.long { color: var(--green); font-weight: 600; }
+.short { color: var(--red); font-weight: 600; }
+.planned { color: var(--amber); }
+.err { color: var(--red); padding: 16px; }
+.mono { font-family: ui-monospace, monospace; font-size: 0.8rem; }
+.tool-row label { display: block; font-size: 0.75rem; color: var(--dim); margin-top: 8px; }
+.tool-row input, .tool-row select { width: 100%; margin-top: 4px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: #0a0a0e; color: var(--text); font-family: inherit; }
+.calc-btn { margin-top: 12px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--cyan); background: transparent; color: var(--cyan); cursor: pointer; font-family: inherit; }
+.calc-btn:hover { background: rgba(34, 211, 238, 0.1); }
+.bar-track { height: 10px; background: #2a2a38; border-radius: 5px; overflow: hidden; margin: 6px 0 14px; }
+.bar-fill { height: 100%; border-radius: 5px; max-width: 100%; transition: width 0.2s; }
+.bar-fill.cyan { background: var(--cyan); }
+.bar-fill.green { background: var(--green); }
+.bar-fill.red { background: var(--red); }
+.bar-fill.amber { background: var(--amber); }
+.live-yes { color: var(--green); font-weight: 600; }
+.live-no { color: var(--dim); }
+.live-warn { color: var(--amber); font-size: 0.78rem; }
+.live-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--dim); }
+</style>
+<script src="hyro_live_signals.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>HyroTrader challenge tracker</h1>
+    <p>
+      <a href="/audit/">← Unified audit dashboard</a>
+      &nbsp;·&nbsp;
+      Data: <span class="mono">audit_dashboard/data/hyrotrader_picks.json</span>
+      &nbsp;·&nbsp; QuanEngine: <span class="mono">audit_dashboard/data/hyro_quan_bridge.json</span>
+    </p>
+  </header>
+
+  <div class="card" style="margin-bottom:20px;border:1px solid rgba(34,211,238,0.35);background:linear-gradient(135deg,rgba(34,211,238,0.06),transparent)">
+    <h2 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin:0 0 10px 0">Short-term entry radar (unified audit)</h2>
+    <p style="font-size:0.88rem;color:var(--dim);line-height:1.55;margin-bottom:10px">
+      Hyro panels below = <strong>crypto perps</strong> research (1h playbook + QuanEngine). For <strong>cross-asset</strong> candidates that already passed score/trust/fwd gates, open the main audit and use
+      <strong style="color:var(--text)">HIGH CONVICTION</strong> (<code style="font-size:0.8rem">hc_filter.js</code> — same gates as production JSON). Sort by freshness / score; cross-check symbol here before sizing.
+    </p>
+    <p style="font-size:0.88rem"><a href="../index.html">→ Open unified audit dashboard</a> &nbsp;·&nbsp; <span class="mono" style="font-size:0.78rem;color:var(--dim)">Recommended: Asset = All, then HIGH CONVICTION, sort score desc</span></p>
+    <p style="font-size:0.82rem;color:var(--dim);margin-top:10px;line-height:1.5">
+      Copy-trade / PM monitoring (merged HL + Polymarket + trusted registry): run <span class="mono">python tools/build_unified_copytrade_candidates.py</span> → <span class="mono">copy_trader_intel/data/unified_copytrade_candidates.json</span>. See <span class="mono">docs/COPY_TRADE_CANDIDATES.md</span>.
+    </p>
+  </div>
+
+  <div id="load-err" class="err" style="display:none"></div>
+
+  <div class="grid" id="rules-grid" style="display:none">
+    <div class="card">
+      <h2>Challenge parameters</h2>
+      <div id="challenge-rules"></div>
+    </div>
+    <div class="card">
+      <h2>Account snapshot</h2>
+      <div id="account-snap"></div>
+    </div>
+    <div class="card">
+      <h2>Playbook &amp; docs</h2>
+      <p style="font-size:0.88rem;color:var(--dim);margin-bottom:10px">Crypto execution (setups, sizing, commandments):</p>
+      <p><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/HYROTRADER_CHALLENGE_STRATEGY.md">HYROTRADER_CHALLENGE_STRATEGY.md</a></p>
+      <p style="margin-top:8px"><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/HYROTRADER_POSITION_SIZES.md">HYROTRADER_POSITION_SIZES.md</a> (5K 2-step + formula)</p>
+      <p style="margin-top:8px"><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/HYROTRADER_5K_TWO_STEP_RULES.md">HYROTRADER_5K_TWO_STEP_RULES.md</a> (evaluation table + Hyro-specific notes)</p>
+      <p style="margin-top:10px;font-size:0.88rem;color:var(--dim)">Hyro is <strong>crypto futures/perps only</strong> — picks below are USDT-style hints; match symbols in the Hyro terminal.</p>
+      <p style="margin-top:8px;font-size:0.88rem;color:var(--dim)">Optional macro / multi-asset context (not tradable on Hyro):</p>
+      <p><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/PROP_BET_CHALLENGE_PICKS_APRIL2026.md">PROP_BET_CHALLENGE_PICKS_APRIL2026.md</a></p>
+      <div id="playbook-extra" style="margin-top:12px;font-size:0.85rem;color:var(--dim)"></div>
+    </div>
+  </div>
+
+  <div class="card" id="progress-card" style="display:none;margin-bottom:16px">
+    <h2>Progress &amp; limits (from JSON)</h2>
+    <p id="progress-lead" style="font-size:0.82rem;color:var(--dim);margin-bottom:12px"></p>
+    <div id="progress-bars"></div>
+    <p id="consistency-line" style="font-size:0.8rem;color:var(--dim);margin-top:8px;line-height:1.45"></p>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;display:none" id="dd-card">
+    <h2>Drawdown check (manual equity)</h2>
+    <p id="dd-msg" style="font-size:0.88rem;color:var(--dim)"></p>
+  </div>
+
+  <div class="grid" id="tools-grid" style="display:none">
+    <div class="card">
+      <h2>Position size (Hyro cap)</h2>
+      <p class="mono" style="font-size:0.78rem;color:var(--dim);margin-bottom:10px">Linear approx: size (coin) = risk_usdt ÷ (entry × stop_distance_as_fraction). Verify contract multiplier on Hyro.</p>
+      <div class="tool-row">
+        <label for="calc-entry">Entry price</label>
+        <input id="calc-entry" type="number" step="any" placeholder="e.g. 68000">
+      </div>
+      <div class="tool-row">
+        <label for="calc-stop">Stop distance (% of entry)</label>
+        <input id="calc-stop" type="number" step="0.01" placeholder="e.g. 2 for 2%">
+      </div>
+      <div class="tool-row">
+        <label for="calc-risk">Risk budget (USDT)</label>
+        <select id="calc-risk">
+          <option value="150">Hyro max 3% ($150)</option>
+          <option value="37.5">Conservative 0.75% ($37.50)</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div class="tool-row" id="calc-risk-custom-wrap" style="display:none">
+        <label for="calc-risk-custom">Custom risk (USDT)</label>
+        <input id="calc-risk-custom" type="number" step="0.01" placeholder="Max 150 for Hyro 3% rule">
+      </div>
+      <button type="button" class="calc-btn" id="calc-btn">Calculate</button>
+      <p id="calc-out" class="mono" style="margin-top:12px;font-size:0.88rem;line-height:1.5"></p>
+    </div>
+    <div class="card">
+      <h2>Budget snapshot</h2>
+      <p id="budget-msg" style="font-size:0.85rem;color:var(--text);line-height:1.55"></p>
+    </div>
+    <div class="card">
+      <h2>Trade journal</h2>
+      <p id="journal-teaser" style="font-size:0.82rem;color:var(--dim);margin-bottom:10px">Source: <span class="mono">audit_dashboard/data/hyrotrader_journal.json</span></p>
+      <div class="table-wrap" id="journal-wrap" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>Time (ET)</th>
+              <th>Symbol</th>
+              <th>Dir</th>
+              <th>Status</th>
+              <th>PnL USDT</th>
+            </tr>
+          </thead>
+          <tbody id="journal-rows"></tbody>
+        </table>
+      </div>
+      <p id="journal-empty" style="font-size:0.85rem;color:var(--dim)">No journal trades logged yet.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;border:1px solid rgba(168,85,247,0.3);background:linear-gradient(135deg,rgba(168,85,247,0.05),rgba(236,72,153,0.03))" id="quan-engine-card">
+    <h2 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#a855f7;margin:0 0 10px 0">QuanEngine Edge Tracker</h2>
+    <p style="font-size:0.82rem;color:var(--dim);margin-bottom:10px;line-height:1.5">
+      18-strategy consensus voting with auto-computed entry/TP/SL levels. <strong style="color:var(--green)">Strong</strong> = consensus threshold met (tradeable edge). <strong style="color:var(--amber)">Developing</strong> = leading direction but below threshold. Vote breakdown and ATR-based levels always shown.
+    </p>
+    <div id="quan-engine-status" class="mono" style="font-size:0.8rem;color:var(--dim);margin-bottom:8px">Loading...</div>
+    <div class="table-wrap">
+      <table class="data-tbl" style="width:100%">
+        <thead><tr>
+          <th>Symbol</th><th>Regime</th><th>Hurst</th><th>Signal</th>
+          <th>Votes (B/S/Total)</th><th>Consensus</th><th>Confidence</th><th>Mode</th>
+          <th>Entry</th><th>TP</th><th>SL</th><th>R:R</th><th>Edge</th><th>Strategies</th>
+        </tr></thead>
+        <tbody id="quan-engine-rows"></tbody>
+      </table>
+    </div>
+    <div id="quan-vote-detail" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px" id="live-signals-card">
+    <h2 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--dim);margin:0 0 10px 0">Table 2 — Live playbook signals (1h)</h2>
+    <p class="live-warn" style="margin-bottom:10px;line-height:1.5">
+      <strong>What is this?</strong> A <em>real-time</em> strategy scanner. Every time you load this page (or click "Refresh"), it pulls the latest <strong>closed 1-hour candle</strong> from Binance and checks each strategy's entry rules against that bar. If a row shows <span style="color:#4ade80">Valid SHORT</span> or <span style="color:#4ade80">Valid LONG</span>, that strategy's conditions were met on the most recent completed candle.
+    </p>
+    <p class="live-warn" style="margin-bottom:10px;line-height:1.5">
+      <strong>How it differs from Table 1:</strong> Table 1 (QuanEngine) is a daily consensus vote — "do the strategies agree?" This table is a live per-strategy breakdown — "which individual strategy is firing <em>right now</em>?" The <em>QuanEngine</em> column here links the two: it shows whether the QuanEngine also agrees with that strategy's direction.
+    </p>
+    <p class="live-warn" style="margin-bottom:10px;line-height:1.5">
+      This is <strong>not</strong> a trade signal — confirm on chart and in your Hyro terminal before entering. Config: <span class="mono">audit_dashboard/data/hyro_live_strategies.json</span>.
+    </p>
+    <div id="quan-bridge-panel" style="display:none;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:rgba(34,211,238,0.05)">
+      <div class="mono" style="font-size:0.7rem;color:var(--dim);margin-bottom:8px" id="quan-bridge-lead"></div>
+      <div class="table-wrap" id="quan-bridge-table-host"></div>
+    </div>
+    <div class="live-actions">
+      <button type="button" class="calc-btn" id="live-refresh-btn">🔄 Refresh live checks</button>
+      <span id="bridge-staleness-pill" class="mono" style="display:none;font-size:0.75rem;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#0a0a0e"></span>
+      <label style="font-size:0.8rem;cursor:pointer;margin-left:12px">
+        <input type="checkbox" id="filter-no-setup" style="margin-right:4px" checked> Hide "No setup"
+      </label>
+      <span id="live-signals-status" class="mono" style="font-size:0.8rem;color:var(--dim);margin-left:auto">Not loaded yet.</span>
+    </div>
+    <p id="bridge-staleness-note" style="display:none;font-size:0.78rem;color:var(--amber);margin:8px 0 0 0;line-height:1.45">⚠️ <strong>Table 1 (QuanEngine bridge) is generated server-side by GitHub Actions (hourly).</strong> The refresh button re-reads the latest file — it does NOT regenerate the bridge. Table 2 (per-strategy scanner) below DOES pull fresh Binance candles on every click.</p>
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin:14px 0 6px 0">Per-strategy breakdown — which strategies are firing right now?</h3>
+    <p style="font-size:0.8rem;color:var(--dim);margin-bottom:10px;line-height:1.45">Each row = one strategy × one symbol. <span style="color:#4ade80">Valid SHORT/LONG</span> means that strategy's entry rules matched the last closed 1h candle. Rows with "No setup" didn't trigger — use the checkbox above to hide them.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Strategy</th>
+            <th>As of (ET, last closed UTC bar)</th>
+            <th>Setup</th>
+            <th>QuanEngine</th>
+            <th>Levels (hint)</th>
+          </tr>
+        </thead>
+        <tbody id="live-signal-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;border-color:var(--amber);background:rgba(251,191,36,0.06)">
+    <h2 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);margin-bottom:10px">TP / SL — read this</h2>
+    <p style="font-size:0.88rem;color:var(--text);line-height:1.55">
+      <strong>Numeric prices</strong> (<code style="font-size:0.8rem">entry_price</code>, <code style="font-size:0.8rem">stop_loss</code>, <code style="font-size:0.8rem">take_profit</code> in JSON) stay <strong>empty until you paste real levels</strong> from your chart — we do not invent prices.
+      Hyro still requires a <strong>stop on the platform within ~5 min</strong> of entry. The table column <em>SL / TP plan</em> is <strong>how to think about placement</strong>, not dollar quotes. Use the calculator once you know entry and stop %%.
+    </p>
+  </div>
+
+  <div id="picks-section" style="margin:32px 0 12px 0;padding:18px 22px;border:2px solid var(--cyan);border-radius:14px;background:linear-gradient(135deg,rgba(34,211,238,0.14),rgba(52,211,153,0.06));box-shadow:0 0 24px rgba(34,211,238,0.18)">
+    <h2 style="font-size:1.35rem;font-weight:700;letter-spacing:-0.01em;color:var(--text);margin:0 0 6px 0;text-transform:none">🎯 Table 3 — Pick List 🚀 <span style="font-size:0.85rem;font-weight:600;color:var(--cyan);letter-spacing:0.04em">★ THE MAIN EVENT ★</span></h2>
+    <p style="font-size:0.9rem;color:var(--text);line-height:1.55;margin:0">
+      ⭐ <strong>Your curated trade plan.</strong> Specific picks you intend to (or already have) executed on the Hyro platform — <strong>not</strong> auto-generated signals.
+    </p>
+    <p style="font-size:0.82rem;color:var(--dim);line-height:1.5;margin:8px 0 0 0">
+      📊 <strong>vs. Tables 1 &amp; 2:</strong> Tables above = research ("what does the data say?"). This table = action log ("what did I actually trade?"). Update <span class="mono">hyrotrader_picks.json</span> on entry/close.
+    </p>
+  </div>
+  <div class="table-wrap" style="border:2px solid var(--cyan);box-shadow:0 0 16px rgba(34,211,238,0.15)">
+    <table id="picks-table">
+      <thead>
+        <tr style="background:linear-gradient(90deg,rgba(34,211,238,0.18),rgba(52,211,153,0.10))">
+          <th>🏆 #</th>
+          <th>💎 Asset</th>
+          <th>📈 Dir</th>
+          <th>🎯 Conf</th>
+          <th>🔖 Symbol</th>
+          <th>💰 SL / TP + prices</th>
+          <th>⚡ Status</th>
+        </tr>
+      </thead>
+      <tbody id="pick-rows"></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:20px;margin-bottom:16px;border:1px solid rgba(34,211,238,0.35);background:linear-gradient(135deg,rgba(34,211,238,0.04),rgba(52,211,153,0.03))" id="perf-card">
+    <h2 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin:0 0 10px 0">Table 4 — Signal Strength &amp; Pick Performance</h2>
+    <p style="font-size:0.82rem;color:var(--dim);margin-bottom:10px;line-height:1.5">
+      <strong>What is this?</strong> Validates whether past signals actually hit their TP or SL by checking real Binance price action from signal time forward. Each strategy gets a <strong>Strength Score</strong> (0–100) based on win rate, sample size, edge quality (MFE/MAE), and signal decisiveness.
+    </p>
+    <p style="font-size:0.82rem;color:var(--dim);margin-bottom:10px;line-height:1.5">
+      <strong>How to read it:</strong> <span style="color:#22c55e;font-weight:600">A/A+</span> = strong track record, trade with confidence.
+      <span style="color:#fbbf24;font-weight:600">B/C</span> = moderate — use with extra confirmation.
+      <span style="color:#f87171;font-weight:600">D/F</span> = weak or insufficient data — avoid or resize down.
+      Run <span class="mono">python tools/hyro_pick_performance_validator.py --save</span> to refresh.
+    </p>
+    <div id="perf-status" class="mono" style="font-size:0.8rem;color:var(--dim);margin-bottom:8px">Loading performance data...</div>
+
+    <div id="perf-summary" style="display:none;margin-bottom:14px">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Signals Checked</div>
+          <div id="perf-total" style="font-size:1.4rem;font-weight:700;color:var(--cyan)">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Win Rate</div>
+          <div id="perf-wr" style="font-size:1.4rem;font-weight:700;color:var(--green)">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Wins / Losses</div>
+          <div id="perf-wl" style="font-size:1.4rem;font-weight:700">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Best Strategy</div>
+          <div id="perf-best" style="font-size:0.9rem;font-weight:700;color:var(--green)">—</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin:14px 0 6px 0">Strategy scorecard</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Grade</th>
+            <th>Score</th>
+            <th>Win Rate</th>
+            <th>W / L / E</th>
+            <th>Profit Factor</th>
+            <th>Avg MFE</th>
+            <th>Avg MAE</th>
+            <th>Edge Ratio</th>
+            <th>Net PnL %</th>
+          </tr>
+        </thead>
+        <tbody id="perf-strategy-rows"></tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin:18px 0 6px 0">Per-symbol breakdown</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Win Rate</th>
+            <th>W / L / E</th>
+            <th>Net PnL %</th>
+          </tr>
+        </thead>
+        <tbody id="perf-symbol-rows"></tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin:18px 0 6px 0">Individual signal outcomes</h3>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:8px">Each row = one signal that was checked against actual price. <span style="color:#22c55e">WIN</span> = TP hit first. <span style="color:#f87171">LOSS</span> = SL hit first. <span style="color:#fbbf24">EXPIRED</span> = neither within hold window.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Symbol</th>
+            <th>Strategy</th>
+            <th>Dir</th>
+            <th>Entry</th>
+            <th>TP</th>
+            <th>SL</th>
+            <th>Result</th>
+            <th>PnL %</th>
+            <th>MFE / MAE</th>
+            <th>Bars</th>
+          </tr>
+        </thead>
+        <tbody id="perf-signal-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;margin-bottom:16px;border:1px solid rgba(168,85,247,0.35);background:linear-gradient(135deg,rgba(168,85,247,0.04),rgba(34,211,238,0.03))" id="ml-card">
+    <h2 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#a855f7;margin:0 0 10px 0">Table 5 — ML Edge Optimizer</h2>
+    <p style="font-size:0.82rem;color:var(--dim);margin-bottom:10px;line-height:1.5">
+      <strong>Auto-evolving ML model</strong> that learns from validated outcomes. Scores every strategy&times;symbol combo by predicted edge.
+      Uses GradientBoosting/RF trained on backtest stats, regime, technicals, and real TP/SL hit data.
+      <strong>Drift detection</strong> auto-retrains when accuracy drops below 45%.
+    </p>
+    <div id="ml-status" class="mono" style="font-size:0.8rem;color:var(--dim);margin-bottom:8px">Loading ML rankings...</div>
+
+    <div id="ml-summary" style="display:none;margin-bottom:14px">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Model</div>
+          <div id="ml-model-type" style="font-size:0.9rem;font-weight:700;color:#a855f7">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">CV Accuracy</div>
+          <div id="ml-cv-acc" style="font-size:1.4rem;font-weight:700;color:var(--cyan)">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">A-Grade Combos</div>
+          <div id="ml-a-count" style="font-size:1.4rem;font-weight:700;color:var(--green)">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Drift</div>
+          <div id="ml-drift" style="font-size:1rem;font-weight:700">—</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center">
+          <div style="font-size:0.68rem;text-transform:uppercase;color:var(--dim)">Best Combo</div>
+          <div id="ml-best" style="font-size:0.85rem;font-weight:700;color:var(--green)">—</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#a855f7;margin:14px 0 6px 0">Top 10 highest-edge combos</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Strategy</th>
+            <th>Symbol</th>
+            <th>ML Score</th>
+            <th>Grade</th>
+            <th>Method</th>
+          </tr>
+        </thead>
+        <tbody id="ml-top-rows"></tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#a855f7;margin:18px 0 6px 0">Best strategy per symbol</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Best Strategy</th>
+            <th>Score</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody id="ml-per-symbol-rows"></tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#f87171;margin:18px 0 6px 0">Bottom 5 — avoid these combos</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Strategy</th>
+            <th>Symbol</th>
+            <th>Score</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody id="ml-bottom-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Not financial advice. Confirm all HyroTrader rules on their site. Add real <code>entry_price</code> / <code>stop_loss</code> / <code>take_profit</code> in JSON only when you have actual levels — plans in the table are methodology, not quotes.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var errEl = document.getElementById("load-err");
+  function showErr(msg) {
+    errEl.style.display = "block";
+    errEl.textContent = msg;
+  }
+
+  if (location.protocol === "file:") {
+    showErr(
+      "This page was opened as file:// — the browser cannot load ../data/*.json. From the repo root run:\n\n  python tools/serve_local.py\n\nThen open (use 127.0.0.1 if localhost spins forever on Windows):\n\n  http://127.0.0.1:5173/audit/hyrotrader/"
+    );
+    return;
+  }
+
+  function fmtNum(v) {
+    if (v === null || v === undefined || v === "") return "—";
+    return String(v);
+  }
+
+  function escHtml(s) {
+    if (s === null || s === undefined) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatLevelsCell(p) {
+    var bits = [];
+    var ep = p.entry_price;
+    var sl = p.stop_loss;
+    var tp = p.take_profit;
+    var hasAnyNum = ep != null || sl != null || tp != null;
+    if (hasAnyNum) {
+      bits.push(
+        '<div class="mono" style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Entry ' +
+          fmtNum(ep) +
+          " · SL " +
+          fmtNum(sl) +
+          " · TP " +
+          fmtNum(tp) +
+          "</div>"
+      );
+    } else {
+      bits.push(
+        '<div class="mono" style="font-size:0.72rem;color:var(--dim);margin-bottom:8px">No numeric prices in JSON yet — add when you have real levels.</div>'
+      );
+    }
+    if (p.stop_plan) {
+      bits.push(
+        '<div style="font-size:0.76rem;line-height:1.45;margin-top:2px"><span style="color:var(--red);font-weight:600">SL</span> ' +
+          escHtml(p.stop_plan) +
+          "</div>"
+      );
+    }
+    if (p.take_profit_plan) {
+      bits.push(
+        '<div style="font-size:0.76rem;line-height:1.45;margin-top:4px"><span style="color:var(--green);font-weight:600">TP</span> ' +
+          escHtml(p.take_profit_plan) +
+          "</div>"
+      );
+    }
+    return bits.join("");
+  }
+
+  function dataBaseUrl() {
+    var path = location.pathname || "";
+    var idx = path.indexOf("/hyrotrader");
+    if (idx >= 0) {
+      return path.slice(0, idx) + "/data/";
+    }
+    return "/audit/data/";
+  }
+
+  var DEFAULT_LIVE_CONFIG = {
+    interval: "1h",
+    klines_limit: 300,
+    binance_bases: [
+      "https://data-api.binance.vision",
+      "https://api.binance.com",
+      "https://api1.binance.com",
+      "https://api2.binance.com",
+      "https://api3.binance.com",
+    ],
+    symbols: ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"],
+    strategies: [
+      {
+        id: "rsi2_long",
+        label: "RSI(2) + 200 SMA (LONG)",
+        strategy: "rsi2",
+        long_only: true,
+        params: { rsi_period: 2, rsi_long: 12, rsi_short: 88, sma_filter: 200, sma_tp: 20, atr_period: 14 },
+      },
+      {
+        id: "volume_long",
+        label: "Volume breakout (LONG)",
+        strategy: "volume",
+        long_only: true,
+        params: { lookback: 20, vol_mult: 2, atr_period: 14, tp_r: 2, sl_atr_mult: 1.5 },
+      },
+      {
+        id: "bollinger_mr",
+        label: "Bollinger MR",
+        strategy: "bollinger",
+        long_only: false,
+        params: { bb_period: 20, bb_std_mult: 2, rsi_period: 14, rsi_long: 35, rsi_short: 65, atr_period: 14 },
+      },
+      {
+        id: "sr_bounce",
+        label: "S/R bounce",
+        strategy: "sr",
+        long_only: false,
+        params: { pivot_lookback: 5, sr_lookback: 50, atr_period: 14, touch_tolerance_atr: 0.5, tp_r: 2 },
+      },
+    ],
+  };
+
+  function fetchLiveConfigJson(base) {
+    var url = base + "hyro_live_strategies.json";
+    return fetch(url, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("config " + r.status);
+      return r.json();
+    });
+  }
+
+  function fetchQuanBridgeJson(base) {
+    // Cache-busting query param: Netlify/50webs/CDN was observed serving stale JSON
+    // despite cache:'no-store' (likely because the CDN fronts the static host and
+    // ignores request headers). Stamping ?t= on every call forces a unique URL.
+    var url = base + "hyro_quan_bridge.json?t=" + Date.now();
+    return fetch(url, { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function renderQuanBridgePanel(qb) {
+    var panel = document.getElementById("quan-bridge-panel");
+    var lead = document.getElementById("quan-bridge-lead");
+    var host = document.getElementById("quan-bridge-table-host");
+    if (!panel || !lead || !host) return;
+    panel.style.display = "block";
+    if (!qb || typeof qb !== "object" || !qb.symbols) {
+      lead.textContent =
+        "No Quan bridge JSON (404 or invalid). Run: python tools/hyro_quan_bridge.py --save → audit_dashboard/data/hyro_quan_bridge.json";
+      host.innerHTML = "";
+      return;
+    }
+    var meta = [];
+    if (qb.generated_at) {
+      var dt = new Date(qb.generated_at);
+      if (!isNaN(dt.getTime())) {
+        var setTime = dt.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+        meta.push("generated " + setTime + " ET");
+      } else {
+        meta.push("generated " + qb.generated_at);
+      }
+    }
+    if (qb.fear_greed != null) meta.push("Fear & Greed " + qb.fear_greed);
+    if (qb.lookback_days != null) meta.push(String(qb.lookback_days) + "d lookback");
+    lead.textContent = meta.join(" · ");
+    try {
+      var pill = document.getElementById('bridge-staleness-pill');
+      var note = document.getElementById('bridge-staleness-note');
+      if (pill && qb.generated_at) {
+        var genDt = new Date(qb.generated_at);
+        if (!isNaN(genDt.getTime())) {
+          var ageMin = Math.round((Date.now() - genDt.getTime()) / 60000);
+          // Tier-B #6 (2026-05-04): use day-units for >24h so users see
+          // "16 d old" not "23000 min old". Per audit hyperfocus swarm
+          // finding: bridge was 16-day-stale on Apr 18 with no clear UI cue.
+          var ageLabel;
+          if (ageMin < 60) ageLabel = ageMin + ' min';
+          else if (ageMin < 1440) ageLabel = (ageMin/60).toFixed(1) + ' h';
+          else ageLabel = (ageMin/1440).toFixed(1) + ' d';
+          // Tier-B #6: symbol-count check. Bridge with <5 symbols is almost
+          // certainly truncated (full set is 15). Treat as red regardless
+          // of age and surface a separate warning so the user knows the
+          // file is wrong, not just stale.
+          var symCount = qb.symbols ? Object.keys(qb.symbols).length : 0;
+          var truncated = symCount > 0 && symCount < 5;
+          var color, icon;
+          if (truncated) { color = 'var(--red)'; icon = '🔴'; }
+          else if (ageMin < 75) { color = 'var(--green)'; icon = '🟢'; }
+          else if (ageMin < 180) { color = 'var(--amber)'; icon = '🟡'; }
+          else { color = 'var(--red)'; icon = '🔴'; }
+          pill.style.display = 'inline-block';
+          pill.style.color = color;
+          pill.style.borderColor = color;
+          var pillText = icon + ' Bridge data: ' + ageLabel + ' old';
+          if (truncated) pillText += ' · only ' + symCount + ' symbol(s) (expected ~15)';
+          pill.innerHTML = pillText;
+          if (note) note.style.display = (ageMin >= 75 || truncated) ? 'block' : 'none';
+          if (note && truncated) {
+            note.innerHTML = '⚠️ <strong>Bridge is truncated</strong> — only ' + symCount +
+              ' symbol(s) present (expected ~15). Re-run <code>python tools/hyro_quan_bridge.py --symbols BTCUSDT ETHUSDT SOLUSDT AVAXUSDT XRPUSDT BNBUSDT DOGEUSDT LINKUSDT ADAUSDT DOTUSDT NEARUSDT SUIUSDT ARBUSDT APTUSDT PEPEUSDT --save</code>. Writer now refuses partial overwrites unless <code>--allow-symbol-regression</code> is passed.';
+          }
+        }
+      }
+    } catch (e) {}
+    var syms = Object.keys(qb.symbols).sort();
+    var rows = syms.map(function (sym) {
+      var s = qb.symbols[sym];
+      if (s.error) {
+        return (
+          "<tr><td class=\"mono\">" +
+          escHtml(sym) +
+          "</td><td colspan=\"5\" class=\"live-warn\">" +
+          escHtml(String(s.error)) +
+          "</td></tr>"
+        );
+      }
+      var ens = s.ensemble;
+      var dir = ens && ens.direction ? ens.direction : "—";
+      var pct =
+        ens && ens.consensus_pct != null ? Math.round(Number(ens.consensus_pct) * 100) + "%" : "—";
+      var ts = s.trade_setup || {};
+      var mode = ts.mode || "—";
+      var rg = s.risk_gate || {};
+      var appr = rg.approved === true ? "yes" : rg.approved === false ? "no" : "—";
+      var blocked = s.blocked ? String(s.blocked) : "";
+      return (
+        "<tr><td class=\"mono\">" +
+        escHtml(sym) +
+        "</td><td>" +
+        escHtml(s.regime || "—") +
+        "</td><td class=\"mono\">" +
+        (s.hurst != null ? Number(s.hurst).toFixed(4) : "—") +
+        "</td><td>" +
+        escHtml(dir) +
+        " " +
+        pct +
+        "</td><td class=\"mono\">" +
+        escHtml(mode) +
+        "</td><td>" +
+        (blocked ? '<span class="live-warn">' + escHtml(blocked) + "</span> · " : "") +
+        "approved " +
+        appr +
+        (rg.position_size != null ? " · size " + escHtml(String(rg.position_size)) : "") +
+        (rg.health ? " · " + escHtml(String(rg.health)) : "") +
+        "</td></tr>"
+      );
+    });
+    host.innerHTML =
+      '<table class="live-checks"><thead><tr><th>Symbol</th><th>Regime</th><th>H</th><th>Ensemble</th><th>Mode</th><th>Risk</th></tr></thead><tbody>' +
+      rows.join("") +
+      "</tbody></table>";
+  }
+
+  function fmtEt(raw) {
+    if (!raw) return "—";
+    var dt = new Date(raw);
+    if (isNaN(dt.getTime())) return raw;
+    return dt.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) + ' ET';
+  }
+
+  function quanCellHtml(sym, qb) {
+    if (!qb || !qb.symbols) return '<span class="live-no">—</span>';
+    var s = qb.symbols[sym];
+    if (!s) return '<span class="live-no">—</span>';
+    if (s.error) return '<span class="live-warn" style="font-size:0.74rem">' + escHtml(String(s.error)) + "</span>";
+    if (s.blocked)
+      return '<span class="live-warn" style="font-size:0.74rem">' + escHtml(String(s.blocked)) + "</span>";
+    var line1 =
+      '<span class="mono">' +
+      escHtml(s.regime || "?") +
+      " H=" +
+      (s.hurst != null ? Number(s.hurst).toFixed(3) : "?") +
+      "</span>";
+    var line2 = "—";
+    if (s.ensemble && s.ensemble.direction) {
+      var pct =
+        s.ensemble.consensus_pct != null ? Math.round(Number(s.ensemble.consensus_pct) * 100) : "?";
+      line2 = escHtml(s.ensemble.direction) + " " + pct + "%";
+    }
+    var line3 = "";
+    if (s.trade_setup && s.trade_setup.mode) line3 = '<span class="mono">' + escHtml(String(s.trade_setup.mode)) + "</span>";
+    var rg = s.risk_gate;
+    var rgTag = "";
+    if (rg) {
+      var cls = rg.approved === true ? "live-yes" : rg.approved === false ? "live-warn" : "live-no";
+      rgTag = ' <span class="' + cls + '">' + (rg.approved ? "RG✓" : "RG✗") + "</span>";
+    }
+    return (
+      '<div style="line-height:1.35;font-size:0.76rem">' +
+      line1 +
+      "<br>" +
+      line2 +
+      (line3 ? "<br>" + line3 + rgTag : rgTag ? "<br>" + rgTag.slice(1) : rgTag) +
+      "</div>"
+    );
+  }
+
+  function fetchKlinesOne(base, symbol, interval, limit) {
+    var q =
+      "/api/v3/klines?symbol=" +
+      encodeURIComponent(symbol) +
+      "&interval=" +
+      encodeURIComponent(interval) +
+      "&limit=" +
+      String(limit);
+    return fetch(base + q, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json();
+    });
+  }
+
+  function fetchKlinesWithFailover(cfg, symbol) {
+    var bases = cfg.binance_bases && cfg.binance_bases.length ? cfg.binance_bases : DEFAULT_LIVE_CONFIG.binance_bases;
+    var interval = cfg.interval || "1h";
+    var limit = cfg.klines_limit || 300;
+    var i = 0;
+    function tryNext() {
+      if (i >= bases.length) return Promise.reject(new Error("All Binance mirrors failed"));
+      var b = bases[i++];
+      return fetchKlinesOne(b, symbol, interval, limit).catch(tryNext);
+    }
+    return tryNext();
+  }
+
+  function klinesToClosedCandles(rows) {
+    if (!rows || !rows.length) return [];
+    var now = Date.now();
+    var closed = rows.filter(function (k) {
+      return Number(k[6]) <= now;
+    });
+    if (closed.length < 2) return [];
+    closed = closed.slice(0, closed.length - 1);
+    return closed.map(function (k) {
+      return {
+        open_time: k[0],
+        open: parseFloat(k[1]),
+        high: parseFloat(k[2]),
+        low: parseFloat(k[3]),
+        close: parseFloat(k[4]),
+        volume: parseFloat(k[5]),
+        close_time: k[6],
+      };
+    });
+  }
+
+  function fetchPerfJson(base) {
+    var url = base + "hyro_pick_performance.json";
+    return fetch(url, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) return null; return r.json(); })
+      .catch(function () { return null; });
+  }
+
+  function fetchMlJson(base) {
+    var url = base + "hyro_ml_pick_rankings.json";
+    return fetch(url, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) return null; return r.json(); })
+      .catch(function () { return null; });
+  }
+
+  function mlBadge(stratId, symbol, mlData) {
+    if (!mlData || !mlData.all_rankings) return '';
+    var sid = (stratId || '').toLowerCase().replace(/\s+/g, '_');
+    var sym = (symbol || '').toUpperCase();
+    var match = null;
+    for (var i = 0; i < mlData.all_rankings.length; i++) {
+      var r = mlData.all_rankings[i];
+      if (r.strategy === sid && r.symbol === sym) { match = r; break; }
+    }
+    if (!match && sym) {
+      // Fallback: best strategy for this symbol
+      var bps = mlData.best_per_symbol || {};
+      if (bps[sym]) match = { score: bps[sym].score, grade: bps[sym].grade };
+    }
+    if (!match) return '';
+    var grade = match.grade || '?';
+    var score = match.score || 0;
+    var g = grade.replace('+','');
+    var color = g === 'A' ? '#a855f7' : g === 'B' ? '#8b5cf6' : g === 'C' ? '#fbbf24' : g === 'D' ? '#fb923c' : '#f87171';
+    return '<span style="display:inline-block;font-size:0.6rem;font-weight:700;padding:1px 4px;border-radius:4px;background:' + color + '18;color:' + color + ';margin-left:3px;border:1px solid ' + color + '44" title="ML Edge: ' + score + '/100 (' + (mlData.scoring_method || 'heuristic') + ')">' + grade + ' ML</span>';
+  }
+
+  function strengthBadge(stratId, perfData) {
+    if (!perfData || !perfData.strategy_scores) return '';
+    // Try exact match, then check if stratId starts with a known key
+    var sc = perfData.strategy_scores[stratId];
+    if (!sc) {
+      // Also try matching strategy names stripped of direction suffix
+      var base = stratId.replace(/_long$|_short$/i, '');
+      var keys = Object.keys(perfData.strategy_scores);
+      for (var k = 0; k < keys.length; k++) {
+        if (base === keys[k] || keys[k].indexOf(base) >= 0) {
+          sc = perfData.strategy_scores[keys[k]];
+          break;
+        }
+      }
+    }
+    if (!sc) return '';
+    var grade = sc.grade || '?';
+    var score = sc.strength_score || 0;
+    var g = grade.replace('+','');
+    var color = g === 'A' ? '#22c55e' : g === 'B' ? '#4ade80' : g === 'C' ? '#fbbf24' : g === 'D' ? '#fb923c' : '#f87171';
+    return '<span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 5px;border-radius:4px;background:' + color + '22;color:' + color + ';margin-left:4px" title="Signal Strength: ' + score + '/100 — ' + sc.wins + 'W/' + sc.losses + 'L WR=' + (sc.win_rate*100).toFixed(0) + '%">' + grade + '</span>';
+  }
+
+  function runLiveSignalsScan() {
+    var statusEl = document.getElementById("live-signals-status");
+    var tbody = document.getElementById("live-signal-rows");
+    var HLS = window.HyroLiveSignals;
+    if (!HLS || typeof HLS.evaluateLastBar !== "function") {
+      statusEl.textContent = "hyro_live_signals.js not loaded.";
+      return;
+    }
+    statusEl.textContent = "Loading config + Quan bridge + performance + klines...";
+    tbody.innerHTML = "";
+    var base = dataBaseUrl();
+    Promise.all([
+      fetchLiveConfigJson(base).catch(function () {
+        return DEFAULT_LIVE_CONFIG;
+      }),
+      fetchQuanBridgeJson(base),
+      fetchPerfJson(base),
+      fetchMlJson(base),
+    ])
+      .then(function (quad) {
+        var cfg = quad[0];
+        var qb = quad[1];
+        var perf = quad[2];
+        var ml = quad[3];
+        window._hyroQuanBridge = qb;
+        window._hyroPerfData = perf;
+        window._hyroMlData = ml;
+        renderQuanBridgePanel(qb);
+        var symbols = cfg.symbols && cfg.symbols.length ? cfg.symbols : DEFAULT_LIVE_CONFIG.symbols;
+        var strategies = cfg.strategies && cfg.strategies.length ? cfg.strategies : DEFAULT_LIVE_CONFIG.strategies;
+        var fetchSyms = symbols.slice();
+        strategies.forEach(function (st) {
+          if (st.symbols && st.symbols.length) {
+            st.symbols.forEach(function (s) {
+              if (fetchSyms.indexOf(s) < 0) fetchSyms.push(s);
+            });
+          }
+        });
+        var cache = {};
+        fetchSyms.forEach(function (sym) {
+          cache[sym] = fetchKlinesWithFailover(cfg, sym).then(klinesToClosedCandles);
+        });
+        return Promise.all(
+          strategies.map(function (st) {
+            var useSyms = st.symbols && st.symbols.length ? st.symbols : symbols;
+            return Promise.all(
+              useSyms.map(function (sym) {
+                return cache[sym]
+                  .then(function (candles) {
+                    var sig = HLS.evaluateLastBar(candles, st.strategy, st.params || {});
+                    if (st.long_only && sig && sig.direction !== "LONG") sig = null;
+                    var lastBar = candles.length ? candles[candles.length - 1] : null;
+                    var tUtc = lastBar
+                      ? new Date(lastBar.open_time).toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) + " ET"
+                      : "—";
+                    return { st: st, sym: sym, candles: candles, sig: sig, tUtc: tUtc, err: null };
+                  })
+                  .catch(function (e) {
+                    return {
+                      st: st,
+                      sym: sym,
+                      candles: [],
+                      sig: null,
+                      tUtc: "—",
+                      err: e && e.message ? e.message : String(e),
+                    };
+                  });
+              })
+            );
+          })
+        ).then(function (nested) {
+          var flat = [];
+          nested.forEach(function (row) {
+            row.forEach(function (x) {
+              flat.push(x);
+            });
+          });
+          statusEl.textContent =
+            "Updated " + new Date().toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) + " ET · bars exclude in-progress 1h candle.";
+          tbody.innerHTML = flat
+            .map(function (x) {
+              if (x.err) {
+                return (
+                  "<tr><td class=\"mono\">" +
+                  escHtml(x.sym) +
+                  "</td><td>" +
+                  escHtml(x.st.label || x.st.id) +
+                  "</td><td>—</td><td><span class=\"live-warn\">Klines error</span></td><td class=\"live-no\">—</td><td class=\"mono\" style=\"font-size:0.76rem\">" +
+                  escHtml(x.err) +
+                  "</td></tr>"
+                );
+              }
+              var valid = x.sig && x.sig.direction;
+              var setup = valid
+                ? '<span class="live-yes">Valid ' + escHtml(x.sig.direction) + "</span>"
+                : '<span class="live-no">No setup</span>';
+              var rowClass = valid ? "" : " class='no-setup-row'";
+              var lvls = "—";
+              if (valid) {
+                lvls =
+                  "E " +
+                  x.sig.entry +
+                  " · SL " +
+                  x.sig.sl +
+                  " · TP " +
+                  x.sig.tp +
+                  " · R:R " +
+                  (x.sig.rr != null ? x.sig.rr : "—");
+              } else if (!x.candles || x.candles.length < 50) {
+                lvls = "Not enough closed bars.";
+              } else {
+                lvls = "Rules not met on last closed bar.";
+              }
+              return (
+                "<tr" + rowClass + "><td class=\"mono\">" + escHtml(x.sym) +
+                "</td><td>" +
+                escHtml(x.st.label || x.st.id) +
+                strengthBadge(x.st.strategy || x.st.id, perf) +
+                mlBadge(x.st.strategy || x.st.id, x.sym, ml) +
+                "</td><td class=\"mono\">" +
+                escHtml(x.tUtc) +
+                "</td><td>" +
+                setup +
+                "</td><td style=\"vertical-align:top\">" +
+                quanCellHtml(x.sym, qb) +
+                "</td><td class=\"mono\" style=\"font-size:0.76rem\">" +
+                escHtml(lvls) +
+                "</td></tr>"
+              );
+            })
+            .join("");
+        });
+      })
+      .catch(function (e) {
+        statusEl.textContent = "Live scan failed: " + (e && e.message ? e.message : String(e));
+      })
+      .finally(function () {
+        // Re-apply hide-no-setup filter after rows are injected
+        var cb = document.getElementById('filter-no-setup');
+        if (cb && cb.checked) {
+          document.querySelectorAll('.no-setup-row').forEach(function(r) {
+            r.style.display = 'none';
+          });
+        }
+      });
+  }
+
+  function fetchPicks() {
+    var url = dataBaseUrl() + "hyrotrader_picks.json";
+    return fetch(url, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("picks HTTP " + r.status + " (" + url + ")");
+      return r.json();
+    });
+  }
+
+  function fetchJournal() {
+    var url = dataBaseUrl() + "hyrotrader_journal.json";
+    return fetch(url, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) return null;
+      return r.json();
+    });
+  }
+
+  function dailyLimitUsdt(ch) {
+    if (ch.max_daily_loss_usdt != null) return Number(ch.max_daily_loss_usdt);
+    if (ch.daily_drawdown_usdt != null) return Number(ch.daily_drawdown_usdt);
+    return NaN;
+  }
+
+  function overallLimitUsdt(ch) {
+    if (ch.max_overall_loss_usdt != null) return Number(ch.max_overall_loss_usdt);
+    if (ch.max_loss_usdt != null) return Number(ch.max_loss_usdt);
+    return NaN;
+  }
+
+  Promise.all([fetchPicks(), fetchJournal(), fetchPerfJson(dataBaseUrl())])
+    .then(function (triple) {
+      var data = triple[0];
+      var journal = triple[1];
+      var perfData = triple[2];
+      window._hyroPerfData = perfData;
+      document.getElementById("rules-grid").style.display = "grid";
+      document.getElementById("tools-grid").style.display = "grid";
+      var ch = data.challenge || {};
+      var dailyCap = dailyLimitUsdt(ch);
+      var overallCap = overallLimitUsdt(ch);
+      var dailyPct = ch.max_daily_loss_pct != null ? ch.max_daily_loss_pct : ch.daily_drawdown_pct;
+      var overallPct = ch.max_overall_loss_pct != null ? ch.max_overall_loss_pct : ch.max_loss_pct;
+
+      var rulesHtml = "";
+      if (ch.name) {
+        rulesHtml += '<p style="font-size:0.82rem;color:var(--dim);margin-bottom:10px">' + String(ch.name) + "</p>";
+      }
+      rulesHtml += '<div class="rule-row"><span>Program</span><span>' + (ch.program ? String(ch.program).replace(/_/g, " ") : "—") + "</span></div>";
+      rulesHtml += '<div class="rule-row"><span>Drawdown</span><span>' + (ch.drawdown_type ? String(ch.drawdown_type) : "—") + "</span></div>";
+      rulesHtml += '<div class="rule-row"><span>Account</span><span>' + fmtNum(ch.account_size_usdt) + " USDT</span></div>";
+      if (ch.profit_target_pct != null && ch.phase1_profit_target_pct == null) {
+        rulesHtml += '<div class="rule-row"><span>Profit target (single)</span><span>+' + fmtNum(ch.profit_target_pct) + "% (" + fmtNum(ch.profit_target_usdt) + " USDT)</span></div>";
+      }
+      if (ch.phase1_profit_target_pct != null) {
+        rulesHtml +=
+          '<div class="rule-row"><span>Phase 1</span><span>+' +
+          fmtNum(ch.phase1_profit_target_pct) +
+          "% (" +
+          fmtNum(ch.phase1_profit_target_usdt) +
+          " USDT) · min " +
+          fmtNum(ch.phase1_min_trading_days != null ? ch.phase1_min_trading_days : ch.min_trading_days) +
+          " days</span></div>";
+      }
+      if (ch.phase2_profit_target_pct != null) {
+        rulesHtml +=
+          '<div class="rule-row"><span>Phase 2</span><span>+' +
+          fmtNum(ch.phase2_profit_target_pct) +
+          "% (" +
+          fmtNum(ch.phase2_profit_target_usdt) +
+          " USDT) · min " +
+          fmtNum(ch.phase2_min_trading_days != null ? ch.phase2_min_trading_days : ch.min_trading_days) +
+          " days</span></div>";
+      }
+      if (ch.instrument) {
+        rulesHtml += '<div class="rule-row"><span>Instrument</span><span>' + String(ch.instrument) + "</span></div>";
+      }
+      rulesHtml +=
+        '<div class="rule-row"><span>Max daily loss</span><span>-' +
+        fmtNum(dailyPct) +
+        "% (" +
+        fmtNum(ch.max_daily_loss_usdt != null ? ch.max_daily_loss_usdt : ch.daily_drawdown_usdt) +
+        " USDT)</span></div>";
+      rulesHtml +=
+        '<div class="rule-row"><span>Max overall loss</span><span>-' +
+        fmtNum(overallPct) +
+        "% (" +
+        fmtNum(ch.max_overall_loss_usdt != null ? ch.max_overall_loss_usdt : ch.max_loss_usdt) +
+        " USDT)</span></div>";
+      if (ch.hyro_max_risk_per_trade_pct != null) {
+        rulesHtml +=
+          '<div class="rule-row"><span>Hyro max risk / trade</span><span>' +
+          fmtNum(ch.hyro_max_risk_per_trade_pct) +
+          "% (" +
+          fmtNum(ch.hyro_max_risk_per_trade_usdt) +
+          " USDT)</span></div>";
+      }
+      if (ch.recommended_conservative_risk_usdt != null) {
+        rulesHtml +=
+          '<div class="rule-row"><span>Conservative risk</span><span>' +
+          fmtNum(ch.recommended_conservative_risk_pct) +
+          "% (" +
+          fmtNum(ch.recommended_conservative_risk_usdt) +
+          " USDT)</span></div>";
+      }
+      if (ch.risk_per_trade_pct != null && ch.hyro_max_risk_per_trade_pct == null) {
+        rulesHtml += '<div class="rule-row"><span>Risk / trade</span><span>' + fmtNum(ch.risk_per_trade_pct) + "% (" + fmtNum(ch.risk_per_trade_usdt) + " USDT)</span></div>";
+      }
+      if (ch.daily_soft_stop_pct != null) {
+        rulesHtml +=
+          '<div class="rule-row"><span>Daily soft stop (discretionary)</span><span>-' +
+          fmtNum(ch.daily_soft_stop_pct) +
+          "% (" +
+          fmtNum(ch.daily_soft_stop_usdt) +
+          " USDT)</span></div>";
+      }
+      if (ch.stop_loss_within_minutes != null) {
+        rulesHtml += '<div class="rule-row"><span>SL timing (Hyro)</span><span>Within ~' + fmtNum(ch.stop_loss_within_minutes) + " min of entry</span></div>";
+      }
+      if (ch.consistency_rule_pct_of_eval_profit != null) {
+        rulesHtml +=
+          '<div class="rule-row"><span>Consistency (guide)</span><span>No day &gt; ' +
+          fmtNum(ch.consistency_rule_pct_of_eval_profit) +
+          "% of eval profit — ~" +
+          fmtNum(ch.consistency_max_profit_day_phase1_usdt) +
+          " / " +
+          fmtNum(ch.consistency_max_profit_day_phase2_usdt) +
+          " USDT/day (P1/P2)</span></div>";
+      }
+      if (ch.time_limit) {
+        rulesHtml += '<div class="rule-row"><span>Time limit</span><span>' + String(ch.time_limit) + "</span></div>";
+      }
+      if (ch.funded_profit_split_note) {
+        rulesHtml += '<div class="rule-row"><span>Funded split</span><span>' + String(ch.funded_profit_split_note) + "</span></div>";
+      }
+      rulesHtml += '<div class="rule-row"><span>Stop loss required</span><span>' + (ch.stop_loss_obligatory ? "Yes" : "—") + "</span></div>";
+      if (ch.free_trial_ui_note) {
+        rulesHtml += '<p style="margin-top:10px;font-size:0.78rem;color:var(--amber)">' + String(ch.free_trial_ui_note) + "</p>";
+      }
+      if (ch.reference_url) {
+        rulesHtml += '<p style="margin-top:12px;font-size:0.85rem"><a href="' + ch.reference_url + '" rel="noopener">Hyro dashboard / rules</a></p>';
+      }
+      document.getElementById("challenge-rules").innerHTML = rulesHtml;
+
+      var snap = data.account_snapshot || {};
+      var snapLines = "";
+      if (snap.hyro_phase_label) {
+        snapLines += "<div class=\"rule-row\"><span>Hyro phase</span><span>" + escHtml(snap.hyro_phase_label) + "</span></div>";
+      }
+      if (snap.eval_phase != null) {
+        snapLines += "<div class=\"rule-row\"><span>Eval phase #</span><span>" + fmtNum(snap.eval_phase) + "</span></div>";
+      }
+      snapLines += "<div class=\"rule-row\"><span>Challenge start eq.</span><span>" + fmtNum(snap.challenge_start_equity_usdt != null ? snap.challenge_start_equity_usdt : ch.account_size_usdt) + "</span></div>";
+      snapLines += "<div class=\"rule-row\"><span>Equity (now)</span><span>" + fmtNum(snap.equity_usdt) + "</span></div>";
+      snapLines += "<div class=\"rule-row\"><span>Day start equity</span><span>" + fmtNum(snap.day_start_equity_usdt) + "</span></div>";
+      snapLines += "<div class=\"rule-row\"><span>High-water (peak)</span><span>" + fmtNum(snap.high_water_equity_usdt) + "</span></div>";
+      // Tier-B #5 (2026-05-04): derive trading_days_logged from
+      // hyrotrader_journal.json::trades (count distinct UTC dates) instead
+      // of trusting the static snap.trading_days_logged. Surface a warning
+      // when the snapshot value disagrees with the derived count.
+      // Spec: reports/audit_unified_implementation_queue_2026_05_04.md
+      var derivedTradingDays = 0;
+      if (journal && Array.isArray(journal.trades) && journal.trades.length) {
+        var dateSet = {};
+        for (var iJ = 0; iJ < journal.trades.length; iJ++) {
+          var t = journal.trades[iJ];
+          var ts = t && (t.entry_time_utc || t.entry_time || t.timestamp_utc || t.timestamp);
+          if (ts) {
+            var dStr = String(ts).slice(0, 10); // YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) dateSet[dStr] = 1;
+          }
+        }
+        derivedTradingDays = Object.keys(dateSet).length;
+      }
+      var snapTradingDays = (snap.trading_days_logged != null) ? snap.trading_days_logged : 0;
+      var tradingDaysCell = fmtNum(derivedTradingDays);
+      var tradingDaysHint = "";
+      if (derivedTradingDays !== snapTradingDays) {
+        // Snapshot/journal mismatch — call it out instead of silently picking one.
+        tradingDaysHint = " <span style=\"color:#fbbf24;font-size:0.78rem\" title=\"Snapshot reports " +
+          fmtNum(snapTradingDays) + " trading day(s) but the journal records " +
+          fmtNum(derivedTradingDays) + " distinct entry-date(s). Update hyrotrader_picks.json::account_snapshot.trading_days_logged or log trades into hyrotrader_journal.json.\">&#9888;</span>";
+      }
+      // If the snapshot reports realized PnL but the journal is empty, that
+      // is the canonical 'trading_days_logged=0 with -70.66 USDT PnL' bug.
+      if (derivedTradingDays === 0 && Math.abs(Number(snap.cumulative_pnl_usdt) || 0) > 0.01) {
+        tradingDaysHint += " <span style=\"color:#ef4444;font-size:0.72rem\">(journal empty but snap PnL is non-zero — log trades to reconcile)</span>";
+      }
+      snapLines += "<div class=\"rule-row\"><span>Trading days logged <span style=\"color:var(--dim);font-size:0.72rem\">(from journal)</span></span><span>" + tradingDaysCell + tradingDaysHint + "</span></div>";
+      snapLines += "<div class=\"rule-row\"><span>Cum. PnL USDT</span><span>" + fmtNum(snap.cumulative_pnl_usdt) + "</span></div>";
+      document.getElementById("account-snap").innerHTML = snapLines;
+
+      function clampPct(n) {
+        if (isNaN(n) || n < 0) return 0;
+        if (n > 100) return 100;
+        return n;
+      }
+      function barRow(label, sub, pct, klass) {
+        pct = clampPct(pct);
+        return (
+          '<div style="margin-bottom:2px;font-size:0.85rem"><strong>' +
+          label +
+          '</strong> <span style="color:var(--dim);font-size:0.78rem">' +
+          sub +
+          '</span></div><div class="bar-track"><div class="bar-fill ' +
+          klass +
+          '" style="width:' +
+          pct +
+          '%"></div></div>'
+        );
+      }
+      var startEqN = snap.challenge_start_equity_usdt != null ? Number(snap.challenge_start_equity_usdt) : Number(ch.account_size_usdt);
+      var eqN = snap.equity_usdt != null ? Number(snap.equity_usdt) : NaN;
+      var day0N = snap.day_start_equity_usdt != null ? Number(snap.day_start_equity_usdt) : NaN;
+      var evalPh = snap.eval_phase != null ? Number(snap.eval_phase) : 1;
+      var pTarget = evalPh === 2 ? Number(ch.phase2_profit_target_usdt) || 250 : Number(ch.phase1_profit_target_usdt) || 500;
+      var profitSoFar = !isNaN(eqN) && !isNaN(startEqN) ? eqN - startEqN : NaN;
+      var phaseBarPct = !isNaN(profitSoFar) && pTarget > 0 && profitSoFar > 0 ? clampPct((profitSoFar / pTarget) * 100) : 0;
+      var dailyUsedAmt = !isNaN(eqN) && !isNaN(day0N) ? Math.max(0, day0N - eqN) : 0;
+      var dailyBarPct = !isNaN(dailyCap) && dailyCap > 0 ? clampPct((dailyUsedAmt / dailyCap) * 100) : 0;
+      var peakN = snap.high_water_equity_usdt != null ? Number(snap.high_water_equity_usdt) : NaN;
+      if (isNaN(peakN) && !isNaN(eqN)) peakN = eqN;
+      var ddFromPeak = !isNaN(peakN) && !isNaN(eqN) ? Math.max(0, peakN - eqN) : 0;
+      var overallBarPct = !isNaN(overallCap) && overallCap > 0 ? clampPct((ddFromPeak / overallCap) * 100) : 0;
+      var progCard = document.getElementById("progress-card");
+      var progBars = document.getElementById("progress-bars");
+      var progLead = document.getElementById("progress-lead");
+      if (!isNaN(eqN)) {
+        progCard.style.display = "block";
+        progLead.textContent =
+          "Phase " +
+          evalPh +
+          (snap.hyro_phase_label ? " — " + snap.hyro_phase_label : "") +
+          ". Bars use your JSON snapshot; confirm all limits on Hyro.";
+        var pbHtml = "";
+        pbHtml += barRow(
+          "Profit toward phase target",
+          (!isNaN(profitSoFar) ? profitSoFar.toFixed(2) : "—") + " / " + pTarget + " USDT (from challenge start eq.)",
+          phaseBarPct,
+          "cyan"
+        );
+        pbHtml += barRow(
+          "Daily loss used vs day-start",
+          dailyUsedAmt.toFixed(2) + " / " + (!isNaN(dailyCap) ? dailyCap : "—") + " USDT",
+          dailyBarPct,
+          "red"
+        );
+        pbHtml += barRow(
+          "Overall DD used vs high-water",
+          ddFromPeak.toFixed(2) + " / " + (!isNaN(overallCap) ? overallCap : "—") + " USDT",
+          overallBarPct,
+          "amber"
+        );
+        progBars.innerHTML = pbHtml;
+      }
+      var consEl = document.getElementById("consistency-line");
+      var consCapU = evalPh === 2 ? ch.consistency_max_profit_day_phase2_usdt : ch.consistency_max_profit_day_phase1_usdt;
+      var bestDayU = snap.largest_single_day_profit_usdt;
+      if (consEl) {
+        if (bestDayU != null && consCapU != null) {
+          var okC = Number(bestDayU) <= Number(consCapU);
+          consEl.innerHTML =
+            "Best single green day (you log): <strong>" +
+            escHtml(String(bestDayU)) +
+            "</strong> USDT vs guide cap <strong>" +
+            escHtml(String(consCapU)) +
+            "</strong> — " +
+            (okC ? "under guide." : "over guide — verify Hyro.");
+        } else {
+          consEl.textContent =
+            "Consistency: set largest_single_day_profit_usdt in account_snapshot when you know your best eval day; guide ~" +
+            fmtNum(ch.consistency_max_profit_day_phase1_usdt) +
+            " / " +
+            fmtNum(ch.consistency_max_profit_day_phase2_usdt) +
+            " USDT (P1/P2).";
+        }
+      }
+
+      var pb = data.playbook || {};
+      var extra = "";
+      if (pb.multi_asset_note) {
+        extra += "<p style=\"margin-top:8px;font-size:0.82rem\">" + String(pb.multi_asset_note) + "</p>";
+      }
+      if (pb.risk_per_trade_pct_account != null) {
+        extra += "<p><span class=\"badge\">~" + pb.risk_per_trade_pct_account + "% risk / trade</span> (see strategy doc)</p>";
+      }
+      if (pb.tick_by_tick_trailing_dd_note) {
+        extra += "<p style=\"margin-top:8px\">" + pb.tick_by_tick_trailing_dd_note + "</p>";
+      }
+      if (pb.primary_crypto_setups && pb.primary_crypto_setups.length) {
+        extra += "<ul class=\"compact\">";
+        pb.primary_crypto_setups.forEach(function (s) {
+          extra += "<li>" + s + "</li>";
+        });
+        extra += "</ul>";
+      }
+      if (pb.commandments_summary) {
+        extra += "<p style=\"margin-top:10px;font-size:0.82rem\">" + pb.commandments_summary + "</p>";
+      }
+      document.getElementById("playbook-extra").innerHTML = extra;
+
+      var eq = snap.equity_usdt;
+      var day0 = snap.day_start_equity_usdt;
+      var ddCard = document.getElementById("dd-card");
+      var ddMsg = document.getElementById("dd-msg");
+      var dailyLossPctRef =
+        ch.max_daily_loss_pct != null ? Number(ch.max_daily_loss_pct) : ch.daily_drawdown_pct != null ? Number(ch.daily_drawdown_pct) : 5;
+      if (eq != null && day0 != null && Number(day0) > 0) {
+        ddCard.style.display = "block";
+        var sessionPct = ((Number(eq) - Number(day0)) / Number(day0)) * 100;
+        ddMsg.textContent =
+          "Session P&L vs day start: " +
+          sessionPct.toFixed(2) +
+          "%. Max daily loss from JSON: -" +
+          dailyLossPctRef +
+          "% — halt new risk if you approach it. Tick-by-tick trailing can tighten faster than this day-start snapshot.";
+      } else {
+        ddMsg.textContent = snap.instruction || "Set equity_usdt and day_start_equity_usdt in JSON to enable a simple daily P&L readout.";
+        ddCard.style.display = "block";
+      }
+
+      var budgetEl = document.getElementById("budget-msg");
+      budgetEl.style.whiteSpace = "pre-line";
+      var budgetLines = [];
+      if (eq != null && day0 != null && Number(day0) > 0) {
+        var sessPnl = Number(eq) - Number(day0);
+        budgetLines.push("Session P&L vs day start: " + sessPnl.toFixed(2) + " USDT.");
+        if (!isNaN(dailyCap)) {
+          var dailyRoom = dailyCap + sessPnl;
+          budgetLines.push(
+            "Rough day-start daily loss room left: ~" +
+              dailyRoom.toFixed(2) +
+              " USDT (of " +
+              dailyCap +
+              " from day open). Hyro trailing / intraday high-water may reduce this — confirm in terminal."
+          );
+        }
+      } else {
+        budgetLines.push("Set equity_usdt and day_start_equity_usdt in hyrotrader_picks.json for session math.");
+      }
+      var peak = snap.high_water_equity_usdt;
+      if (!isNaN(overallCap)) {
+        if (eq != null && peak != null && Number(peak) > 0) {
+          var ddFromPeak = Number(peak) - Number(eq);
+          var overallRoom = overallCap - ddFromPeak;
+          budgetLines.push(
+            "High-water (manual): " +
+              peak +
+              " · Drawdown from peak: " +
+              ddFromPeak.toFixed(2) +
+              " USDT · Rough overall loss room: ~" +
+              overallRoom.toFixed(2) +
+              " USDT (of " +
+              overallCap +
+              " per JSON)."
+          );
+        } else {
+          budgetLines.push(
+            "Optional: set high_water_equity_usdt in account_snapshot to estimate overall trailing room (" +
+              overallCap +
+              " USDT max overall loss in JSON)."
+          );
+        }
+      }
+      budgetEl.textContent = budgetLines.join("\n\n");
+
+      var jEmpty = document.getElementById("journal-empty");
+      var jWrap = document.getElementById("journal-wrap");
+      var jRows = document.getElementById("journal-rows");
+      if (journal && journal.trades && journal.trades.length) {
+        jEmpty.style.display = "none";
+        jWrap.style.display = "block";
+        var totalTrades = journal.trades.length;
+        var openTrades = journal.trades.filter(function (t) {
+          return String(t.status || "").toLowerCase() === "open";
+        }).length;
+        var closedTrades = journal.trades.filter(function (t) {
+          return String(t.status || "").toLowerCase() === "closed";
+        }).length;
+        document.getElementById("journal-teaser").textContent =
+          "Source: audit_dashboard/data/hyrotrader_journal.json · " +
+          totalTrades + " total · " + openTrades + " open · " + closedTrades + " closed";
+        var trades = journal.trades.slice().reverse().slice(0, 25);
+        jRows.innerHTML = trades
+          .map(function (t) {
+            var d = t.closed_at || t.entry_time || t.date || "—";
+            var sym = t.symbol || t.symbol_hint || "—";
+            var dir = (t.direction || "").toUpperCase();
+            var dc = dir === "SHORT" ? "short" : "long";
+            var status = String(t.status || "open").toUpperCase();
+            var pnl = t.pnl_usdt != null ? t.pnl_usdt : t.pnl;
+            return (
+              "<tr><td class=\"mono\">" +
+              fmtEt(d) +
+              "</td><td class=\"mono\">" +
+              sym +
+              '</td><td class="' +
+              dc +
+              '">' +
+              dir +
+              "</td><td class=\"mono\">" +
+              status +
+              "</td><td class=\"mono\">" +
+              (pnl != null ? fmtNum(pnl) : "—") +
+              "</td></tr>"
+            );
+          })
+          .join("");
+      }
+
+      var riskSel = document.getElementById("calc-risk");
+      var riskCustomWrap = document.getElementById("calc-risk-custom-wrap");
+      riskSel.addEventListener("change", function () {
+        riskCustomWrap.style.display = riskSel.value === "custom" ? "block" : "none";
+      });
+      document.getElementById("calc-btn").addEventListener("click", function () {
+        var entry = parseFloat(document.getElementById("calc-entry").value);
+        var stopPct = parseFloat(document.getElementById("calc-stop").value);
+        var risk =
+          riskSel.value === "custom" ? parseFloat(document.getElementById("calc-risk-custom").value) : parseFloat(riskSel.value);
+        var out = document.getElementById("calc-out");
+        if (!(entry > 0) || !(stopPct > 0) || !(risk > 0)) {
+          out.textContent = "Enter positive entry, stop %, and risk.";
+          return;
+        }
+        var hyroMax = ch.hyro_max_risk_per_trade_usdt != null ? Number(ch.hyro_max_risk_per_trade_usdt) : null;
+        if (hyroMax != null && risk > hyroMax) {
+          risk = hyroMax;
+          out.textContent = "Capped at Hyro max " + hyroMax + " USDT risk for sizing.\n\n";
+        } else {
+          out.textContent = "";
+        }
+        var stopFrac = stopPct / 100;
+        var perUnit = entry * stopFrac;
+        var size = risk / perUnit;
+        out.textContent +=
+          "Size ≈ " +
+          size.toFixed(6) +
+          " coin · Notional ≈ " +
+          (size * entry).toFixed(2) +
+          " USDT at entry · Risk to stop ~" +
+          risk.toFixed(2) +
+          " USDT. Verify contract multiplier / min size on Hyro.";
+      });
+
+      var picks = data.picks || [];
+      var tbody = document.getElementById("pick-rows");
+      if (!picks.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="7" style="color:var(--amber);padding:16px">No <span class="mono">picks</span> array in JSON (or empty). Expected 10 rows from <span class="mono">' +
+          dataBaseUrl() +
+          'hyrotrader_picks.json</span> — check Network tab for 404.</td></tr>';
+      } else {
+        tbody.innerHTML = picks
+          .map(function (p) {
+            var dir = (p.direction || "").toUpperCase();
+            var dirClass = dir === "SHORT" ? "short" : "long";
+            var levelsHtml = formatLevelsCell(p);
+            var st = (p.status || "planned").toLowerCase();
+            var perfBadge = window._hyroPerfData ? strengthBadge(p.strategy || '', window._hyroPerfData) : '';
+            var mlB = window._hyroMlData ? mlBadge(p.strategy || '', p.symbol_hint || p.symbol || '', window._hyroMlData) : '';
+            var rk = Number(p.rank);
+            var medal = rk === 1 ? "🥇 " : rk === 2 ? "🥈 " : rk === 3 ? "🥉 " : "";
+            return (
+              "<tr>" +
+              "<td><span style=\"font-size:1.05rem;font-weight:700\">" + medal + fmtNum(p.rank) + "</span></td>" +
+              "<td><strong>" +
+              (p.label || "") +
+              "</strong>" + perfBadge + mlB + "<br><span class=\"mono\" style=\"color:var(--dim);font-size:0.75rem\">" +
+              (p.asset_class || "") +
+              "</span></td>" +
+              '<td class="' +
+              dirClass +
+              '">' +
+              dir +
+              "</td>" +
+              "<td>" +
+              fmtNum(p.confidence_pct) +
+              "%</td>" +
+              "<td class=\"mono\">" +
+              (p.symbol_hint || "") +
+              "</td>" +
+              "<td style=\"max-width:340px\">" +
+              levelsHtml +
+              "</td>" +
+              '<td class="' +
+              (st === "planned" ? "planned" : "") +
+              '">' +
+              st +
+              (p.sl_confirmed ? " · SL✓" : "") +
+              "</td>" +
+              "</tr>"
+            );
+          })
+          .join("");
+      }
+
+      runLiveSignalsScan();
+      var liveBtn = document.getElementById("live-refresh-btn");
+      if (liveBtn) liveBtn.addEventListener("click", runLiveSignalsScan);
+      
+      // Filter toggle for "no setup" rows
+      var filterNoSetup = document.getElementById('filter-no-setup');
+      if (filterNoSetup) {
+        filterNoSetup.addEventListener('change', function(e) {
+          var rows = document.querySelectorAll('.no-setup-row');
+          rows.forEach(function(r) {
+            r.style.display = e.target.checked ? 'none' : '';
+          });
+        });
+        // Apply default checked state on load
+        if (filterNoSetup.checked) {
+          document.querySelectorAll('.no-setup-row').forEach(function(r) {
+            r.style.display = 'none';
+          });
+        }
+      }
+    })
+    .catch(function (e) {
+      showErr(
+        "Could not load Hyro data. Open via /audit/hyrotrader/ on the site or local serve. " + (e && e.message ? e.message : "")
+      );
+    });
+})();
+
+// ── QuanEngine Regime Analysis loader ──
+(function() {
+  var statusEl = document.getElementById('quan-engine-status');
+  var tbody = document.getElementById('quan-engine-rows');
+  if (!statusEl || !tbody) return;
+
+  var _qePath = (location.pathname || '').indexOf('/hyrotrader');
+  var _qeBase = _qePath >= 0 ? (location.pathname || '').slice(0, _qePath) + '/data/' : '/audit/data/';
+  // Cache-busting query param so CDN can't serve stale bridge JSON on reload.
+  var url = _qeBase + 'hyro_quan_bridge.json?t=' + Date.now();
+  fetch(url, { cache: 'no-store' }).then(function(r) { return r.json(); }).then(function(data) {
+    var symbols = data.symbols || {};
+    var keys = Object.keys(symbols);
+    if (keys.length === 0) {
+      statusEl.textContent = 'No QuanEngine data. Run: python tools/hyro_quan_bridge.py --save';
+      return;
+    }
+    var ts = data.generated_at || '';
+    var fng = data.fear_greed || '?';
+    var setTs = 'unknown';
+    if (ts) {
+      var dt = new Date(ts);
+      setTs = !isNaN(dt.getTime()) ? dt.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) + ' ET' : ts;
+    }
+    statusEl.innerHTML = 'Generated: <strong>' + setTs + '</strong> | Fear&amp;Greed: <strong>' + fng + '</strong> | ' + keys.length + ' symbols scanned';
+
+    var regimeColors = {TRENDING:'#22c55e', MEAN_REVERSION:'#3b82f6', RANDOM:'#6b7280'};
+    var html = '';
+    var voteDetailHtml = '';
+    keys.forEach(function(sym) {
+      var s = symbols[sym];
+      var regime = s.regime || 'RANDOM';
+      var hurst = (s.hurst || 0).toFixed(3);
+      var ens = s.ensemble || {};
+      var setup = s.trade_setup;
+      var regColor = regimeColors[regime] || '#6b7280';
+      var consMet = s.consensus_met;
+      var bVotes = s.buy_votes || 0;
+      var sVotes = s.sell_votes || 0;
+      var totalAct = s.active_votes || 0;
+      var totalAll = s.total_votes || 0;
+
+      var dir = ens.direction || '—';
+      var dirColor = dir === 'BUY' ? '#22c55e' : dir === 'SELL' ? '#ef4444' : 'var(--dim)';
+      var cons = ((ens.consensus_pct||0)*100).toFixed(0) + '%';
+      var conf = ((ens.avg_confidence||0)*100).toFixed(1) + '%';
+      var mode = setup ? setup.mode : '—';
+      var entry = setup ? setup.entry_price.toFixed(2) : '—';
+      var tp = setup ? setup.take_profit.toFixed(2) : '—';
+      var sl = setup ? setup.stop_loss.toFixed(2) : '—';
+      var rr = setup ? setup.rr_ratio.toFixed(1) : '—';
+      var strats = (ens.strategies_agreed || []).join(', ');
+      var rowOpacity = consMet ? '1' : '0.65';
+      var rowBg = consMet ? 'rgba(168,85,247,0.06)' : 'transparent';
+
+      // Edge badge: Strong (consensus met), Developing (votes but no consensus), None
+      var edgeBadge;
+      if (consMet) {
+        edgeBadge = '<span style="background:#166534;color:#4ade80;padding:1px 6px;border-radius:3px;font-size:0.72rem;font-weight:700">Strong</span>';
+      } else if (totalAct > 0) {
+        edgeBadge = '<span style="background:#78350f;color:#fbbf24;padding:1px 6px;border-radius:3px;font-size:0.72rem;font-weight:700">Developing</span>';
+      } else {
+        edgeBadge = '<span style="color:var(--dim);font-size:0.72rem">None</span>';
+      }
+
+      // Votes column: B/S/Total
+      var votesStr = '<span style="color:#22c55e">' + bVotes + '</span>/<span style="color:#ef4444">' + sVotes + '</span>/<span style="color:var(--dim)">' + totalAll + '</span>';
+
+      html += '<tr style="opacity:' + rowOpacity + ';background:' + rowBg + '">'
+        + '<td><strong>' + sym + '</strong></td>'
+        + '<td><span style="color:' + regColor + ';font-weight:700">' + regime + '</span></td>'
+        + '<td>' + hurst + '</td>'
+        + '<td><span style="color:' + dirColor + ';font-weight:800;font-size:0.95rem">' + dir + '</span></td>'
+        + '<td class="mono">' + votesStr + '</td>'
+        + '<td>' + cons + '</td>'
+        + '<td>' + conf + '</td>'
+        + '<td><span style="background:#1e1b4b;color:#a78bfa;padding:1px 6px;border-radius:3px;font-size:0.75rem">' + mode + '</span></td>'
+        + '<td class="mono">' + entry + '</td>'
+        + '<td class="mono" style="color:#22c55e">' + tp + '</td>'
+        + '<td class="mono" style="color:#ef4444">' + sl + '</td>'
+        + '<td>' + rr + '</td>'
+        + '<td>' + edgeBadge + '</td>'
+        + '<td style="font-size:0.72rem;color:var(--dim);max-width:200px;overflow:hidden;text-overflow:ellipsis">' + strats + '</td>'
+        + '</tr>';
+
+      // Vote detail expandable section
+      if (s.vote_detail && s.vote_detail.length > 0) {
+        voteDetailHtml += '<div style="margin-bottom:6px"><strong style="color:#a855f7;font-size:0.8rem">' + sym + '</strong>: ';
+        s.vote_detail.forEach(function(v) {
+          var vColor = v.direction === 'BUY' ? '#22c55e' : '#ef4444';
+          voteDetailHtml += '<span style="color:' + vColor + ';font-size:0.72rem;margin-right:8px">' + v.strategy + ' (' + v.direction + ' ' + (v.confidence*100).toFixed(0) + '%)</span>';
+        });
+        voteDetailHtml += '</div>';
+      }
+    });
+    tbody.innerHTML = html;
+    var voteDetailEl = document.getElementById('quan-vote-detail');
+    if (voteDetailEl && voteDetailHtml) {
+      voteDetailEl.innerHTML = '<details style="margin-top:8px"><summary style="cursor:pointer;color:#a855f7;font-size:0.8rem;font-weight:700">Vote Breakdown by Symbol</summary><div style="margin-top:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px">' + voteDetailHtml + '</div></details>';
+    }
+  }).catch(function(e) {
+    statusEl.textContent = 'QuanEngine data not available. Run: python tools/hyro_quan_bridge.py --save';
+  });
+})();
+
+// ── Signal Strength & Pick Performance loader ──
+(function() {
+  var statusEl = document.getElementById('perf-status');
+  var summaryEl = document.getElementById('perf-summary');
+  var stratRows = document.getElementById('perf-strategy-rows');
+  var symRows = document.getElementById('perf-symbol-rows');
+  var sigRows = document.getElementById('perf-signal-rows');
+  if (!statusEl || !stratRows || !symRows || !sigRows) return;
+
+  var _ppPath = (location.pathname || '').indexOf('/hyrotrader');
+  var _ppBase = _ppPath >= 0 ? (location.pathname || '').slice(0, _ppPath) + '/data/' : '/audit/data/';
+  var url = _ppBase + 'hyro_pick_performance.json';
+
+  function gradeColor(grade) {
+    if (!grade) return 'var(--dim)';
+    var g = grade.replace('+','');
+    if (g === 'A') return '#22c55e';
+    if (g === 'B') return '#4ade80';
+    if (g === 'C') return '#fbbf24';
+    if (g === 'D') return '#fb923c';
+    return '#f87171';
+  }
+
+  function resultColor(r) {
+    if (r === 'WIN') return '#22c55e';
+    if (r === 'LOSS') return '#f87171';
+    if (r === 'EXPIRED') return '#fbbf24';
+    return 'var(--dim)';
+  }
+
+  function scoreBar(score) {
+    var pct = Math.max(0, Math.min(100, score));
+    var color = pct >= 75 ? '#22c55e' : pct >= 60 ? '#4ade80' : pct >= 45 ? '#fbbf24' : pct >= 30 ? '#fb923c' : '#f87171';
+    return '<div style="display:flex;align-items:center;gap:6px">'
+      + '<div style="width:60px;height:6px;background:#2a2a38;border-radius:3px;overflow:hidden">'
+      + '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:3px"></div></div>'
+      + '<span class="mono" style="font-size:0.78rem;color:' + color + '">' + score + '</span></div>';
+  }
+
+  function fmtEtShort(raw) {
+    if (!raw) return '—';
+    var dt = new Date(raw);
+    if (isNaN(dt.getTime())) return raw;
+    return dt.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+  }
+
+  fetch(url, { cache: 'no-store' }).then(function(r) { return r.json(); }).then(function(data) {
+    if (!data || !data.strategy_scores) {
+      statusEl.textContent = 'No performance data. Run: python tools/hyro_pick_performance_validator.py --save';
+      return;
+    }
+
+    var ts = data.generated_at || '';
+    var genTs = 'unknown';
+    if (ts) {
+      var dt = new Date(ts);
+      genTs = !isNaN(dt.getTime()) ? dt.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) + ' ET' : ts;
+    }
+    statusEl.innerHTML = 'Generated: <strong>' + genTs + '</strong> | '
+      + data.total_signals + ' signals validated | '
+      + data.lookback_days + 'd lookback';
+
+    // Summary cards
+    var sum = data.summary || {};
+    summaryEl.style.display = 'block';
+    document.getElementById('perf-total').textContent = data.total_signals || 0;
+    var wrPct = sum.overall_win_rate != null ? (sum.overall_win_rate * 100).toFixed(0) + '%' : '—';
+    document.getElementById('perf-wr').textContent = wrPct;
+    document.getElementById('perf-wr').style.color = (sum.overall_win_rate||0) >= 0.5 ? '#22c55e' : '#f87171';
+    document.getElementById('perf-wl').innerHTML = '<span style="color:#22c55e">' + (sum.wins||0) + 'W</span> / <span style="color:#f87171">' + (sum.losses||0) + 'L</span>';
+    if (sum.best_strategy && sum.best_strategy !== 'none') {
+      document.getElementById('perf-best').textContent = sum.best_strategy.replace(/_/g,' ') + ' (' + sum.best_strategy_score + ')';
+    }
+
+    // Strategy scorecard
+    var strats = data.strategy_scores || {};
+    var stratKeys = Object.keys(strats).sort(function(a,b) {
+      return (strats[b].strength_score||0) - (strats[a].strength_score||0);
+    });
+
+    stratRows.innerHTML = stratKeys.map(function(name) {
+      var s = strats[name];
+      var gc = gradeColor(s.grade);
+      return '<tr>'
+        + '<td style="font-weight:600">' + name.replace(/_/g,' ') + '</td>'
+        + '<td><span style="color:' + gc + ';font-weight:800;font-size:1rem">' + s.grade + '</span></td>'
+        + '<td>' + scoreBar(s.strength_score) + '</td>'
+        + '<td class="mono">' + (s.win_rate*100).toFixed(0) + '%</td>'
+        + '<td class="mono"><span style="color:#22c55e">' + s.wins + '</span> / <span style="color:#f87171">' + s.losses + '</span> / <span style="color:#fbbf24">' + s.expired + '</span></td>'
+        + '<td class="mono">' + s.profit_factor + '</td>'
+        + '<td class="mono" style="color:#22c55e">' + s.avg_mfe_pct.toFixed(2) + '%</td>'
+        + '<td class="mono" style="color:#f87171">' + s.avg_mae_pct.toFixed(2) + '%</td>'
+        + '<td class="mono">' + s.edge_ratio + '</td>'
+        + '<td class="mono" style="color:' + (s.total_pnl_pct >= 0 ? '#22c55e' : '#f87171') + '">' + (s.total_pnl_pct >= 0 ? '+' : '') + s.total_pnl_pct.toFixed(2) + '%</td>'
+        + '</tr>';
+    }).join('');
+
+    // Symbol breakdown
+    var syms = data.symbol_scores || {};
+    var symKeys = Object.keys(syms).sort();
+
+    symRows.innerHTML = symKeys.map(function(sym) {
+      var s = syms[sym];
+      var decided = s.wins + s.losses;
+      var wr = decided > 0 ? (s.wins / decided * 100).toFixed(0) + '%' : '—';
+      return '<tr>'
+        + '<td class="mono" style="font-weight:600">' + sym + '</td>'
+        + '<td class="mono">' + wr + '</td>'
+        + '<td class="mono"><span style="color:#22c55e">' + s.wins + '</span> / <span style="color:#f87171">' + s.losses + '</span> / <span style="color:#fbbf24">' + s.expired + '</span></td>'
+        + '<td class="mono" style="color:' + (s.total_pnl_pct >= 0 ? '#22c55e' : '#f87171') + '">' + (s.total_pnl_pct >= 0 ? '+' : '') + s.total_pnl_pct.toFixed(2) + '%</td>'
+        + '</tr>';
+    }).join('');
+
+    // Individual signal outcomes
+    var signals = data.validated_signals || [];
+    // Sort by time descending
+    signals.sort(function(a,b) { return (b.signal_time||'').localeCompare(a.signal_time||''); });
+
+    sigRows.innerHTML = signals.map(function(s) {
+      var o = s.outcome || {};
+      var rc = resultColor(o.result);
+      var dirClass = (s.direction||'').toUpperCase() === 'SHORT' || (s.direction||'').toUpperCase() === 'SELL' ? 'short' : 'long';
+      var pnl = '—';
+      if (o.result === 'WIN' || o.result === 'LOSS') {
+        pnl = (o.pnl_pct >= 0 ? '+' : '') + o.pnl_pct.toFixed(2) + '%';
+      } else if (o.unrealized_pnl_pct != null) {
+        pnl = (o.unrealized_pnl_pct >= 0 ? '+' : '') + o.unrealized_pnl_pct.toFixed(2) + '% (unreal)';
+      }
+      var bars = o.bars_to_result != null ? o.bars_to_result + 'h' : (o.bars_checked != null ? o.bars_checked + 'h (exp)' : '—');
+      var mfeMae = (o.mfe_pct != null ? '<span style="color:#22c55e">↑' + o.mfe_pct.toFixed(2) + '%</span> / <span style="color:#f87171">↓' + o.mae_pct.toFixed(2) + '%</span>' : '—');
+      return '<tr>'
+        + '<td class="mono" style="font-size:0.76rem">' + fmtEtShort(s.signal_time) + '</td>'
+        + '<td class="mono">' + (s.symbol||'') + '</td>'
+        + '<td style="font-size:0.78rem">' + (s.strategy||'').replace(/_/g,' ') + '</td>'
+        + '<td class="' + dirClass + '">' + (s.direction||'').toUpperCase() + '</td>'
+        + '<td class="mono">' + s.entry + '</td>'
+        + '<td class="mono" style="color:#22c55e">' + s.tp + '</td>'
+        + '<td class="mono" style="color:#f87171">' + s.sl + '</td>'
+        + '<td style="font-weight:700;color:' + rc + '">' + (o.result||'—') + '</td>'
+        + '<td class="mono" style="color:' + (o.pnl_pct >= 0 ? '#22c55e' : o.pnl_pct < 0 ? '#f87171' : 'var(--dim)') + '">' + pnl + '</td>'
+        + '<td style="font-size:0.76rem">' + mfeMae + '</td>'
+        + '<td class="mono">' + bars + '</td>'
+        + '</tr>';
+    }).join('');
+
+  }).catch(function(e) {
+    statusEl.textContent = 'Performance data not available. Run: python tools/hyro_pick_performance_validator.py --save';
+  });
+})();
+
+// ── ML Edge Optimizer loader ──
+(function() {
+  var statusEl = document.getElementById('ml-status');
+  var summaryEl = document.getElementById('ml-summary');
+  var topRows = document.getElementById('ml-top-rows');
+  var perSymRows = document.getElementById('ml-per-symbol-rows');
+  var bottomRows = document.getElementById('ml-bottom-rows');
+  if (!statusEl || !topRows) return;
+
+  var _mlPath = (location.pathname || '').indexOf('/hyrotrader');
+  var _mlBase = _mlPath >= 0 ? (location.pathname || '').slice(0, _mlPath) + '/data/' : '/audit/data/';
+  var url = _mlBase + 'hyro_ml_pick_rankings.json';
+
+  function mlGradeColor(grade) {
+    if (!grade) return 'var(--dim)';
+    var g = grade.replace('+','');
+    if (g === 'A') return '#22c55e';
+    if (g === 'B') return '#4ade80';
+    if (g === 'C') return '#fbbf24';
+    if (g === 'D') return '#fb923c';
+    return '#f87171';
+  }
+
+  function mlScoreBar(score) {
+    var pct = Math.max(0, Math.min(100, score));
+    var color = pct >= 75 ? '#a855f7' : pct >= 60 ? '#8b5cf6' : pct >= 45 ? '#fbbf24' : pct >= 30 ? '#fb923c' : '#f87171';
+    return '<div style="display:flex;align-items:center;gap:6px">'
+      + '<div style="width:60px;height:6px;background:#2a2a38;border-radius:3px;overflow:hidden">'
+      + '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:3px"></div></div>'
+      + '<span class="mono" style="font-size:0.78rem;color:' + color + '">' + score + '</span></div>';
+  }
+
+  fetch(url, { cache: 'no-store' }).then(function(r) { return r.json(); }).then(function(data) {
+    if (!data || !data.top_10) {
+      statusEl.textContent = 'No ML rankings. Run: python tools/hyro_ml_pick_optimizer.py --save';
+      return;
+    }
+
+    var ts = data.generated_at || '';
+    var genTs = 'unknown';
+    if (ts) {
+      var dt = new Date(ts);
+      genTs = !isNaN(dt.getTime()) ? dt.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) + ' ET' : ts;
+    }
+    var mi = data.model_info || {};
+    statusEl.innerHTML = 'Generated: <strong>' + genTs + '</strong> | '
+      + 'Model: <strong>' + (mi.type || 'heuristic') + '</strong> | '
+      + (mi.training_samples || 0) + ' training samples | '
+      + (mi.labels_available || 0) + ' labels';
+
+    summaryEl.style.display = 'block';
+    document.getElementById('ml-model-type').textContent = mi.type || 'heuristic';
+    var cvAcc = mi.cv_accuracy != null ? (mi.cv_accuracy * 100).toFixed(1) + '%' : '—';
+    document.getElementById('ml-cv-acc').textContent = cvAcc;
+    if (mi.cv_accuracy != null) {
+      document.getElementById('ml-cv-acc').style.color = mi.cv_accuracy >= 0.55 ? '#22c55e' : mi.cv_accuracy >= 0.45 ? '#fbbf24' : '#f87171';
+    }
+    var sum = data.summary || {};
+    document.getElementById('ml-a-count').textContent = sum.a_grade_combos || 0;
+    var driftEl = document.getElementById('ml-drift');
+    if (mi.drift_detected) {
+      driftEl.textContent = 'YES';
+      driftEl.style.color = '#f87171';
+    } else {
+      driftEl.textContent = 'NO';
+      driftEl.style.color = '#22c55e';
+    }
+    document.getElementById('ml-best').textContent = sum.best_combo ? sum.best_combo.replace(/×/g,' × ') : '—';
+
+    // Top 10
+    topRows.innerHTML = (data.top_10 || []).map(function(s) {
+      var gc = mlGradeColor(s.grade);
+      return '<tr style="background:rgba(168,85,247,0.06)">'
+        + '<td class="mono">' + s.rank + '</td>'
+        + '<td style="font-weight:600">' + (s.strategy || '').replace(/_/g,' ') + '</td>'
+        + '<td class="mono">' + (s.symbol || '') + '</td>'
+        + '<td>' + mlScoreBar(s.score) + '</td>'
+        + '<td><span style="color:' + gc + ';font-weight:800;font-size:1rem">' + s.grade + '</span></td>'
+        + '<td style="font-size:0.76rem;color:var(--dim)">' + (s.method || '') + '</td>'
+        + '</tr>';
+    }).join('');
+
+    // Best per symbol
+    var bps = data.best_per_symbol || {};
+    var symKeys = Object.keys(bps).sort();
+    perSymRows.innerHTML = symKeys.map(function(sym) {
+      var s = bps[sym];
+      var gc = mlGradeColor(s.grade);
+      return '<tr>'
+        + '<td class="mono" style="font-weight:600">' + sym + '</td>'
+        + '<td>' + (s.strategy || '').replace(/_/g,' ') + '</td>'
+        + '<td>' + mlScoreBar(s.score) + '</td>'
+        + '<td><span style="color:' + gc + ';font-weight:800">' + s.grade + '</span></td>'
+        + '</tr>';
+    }).join('');
+
+    // Bottom 5
+    bottomRows.innerHTML = (data.bottom_5 || []).map(function(s) {
+      var gc = mlGradeColor(s.grade);
+      return '<tr style="opacity:0.7">'
+        + '<td class="mono">' + s.rank + '</td>'
+        + '<td>' + (s.strategy || '').replace(/_/g,' ') + '</td>'
+        + '<td class="mono">' + (s.symbol || '') + '</td>'
+        + '<td>' + mlScoreBar(s.score) + '</td>'
+        + '<td><span style="color:' + gc + ';font-weight:800">' + s.grade + '</span></td>'
+        + '</tr>';
+    }).join('');
+
+  }).catch(function(e) {
+    statusEl.textContent = 'ML rankings not available. Run: python tools/hyro_ml_pick_optimizer.py --save';
+  });
+})();
+</script>
+</body>
+</html>

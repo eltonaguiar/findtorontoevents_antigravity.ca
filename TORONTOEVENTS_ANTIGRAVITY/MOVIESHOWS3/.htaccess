@@ -1,0 +1,14 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Make URLs case-insensitive
+# Redirect /movieshows3 to /MOVIESHOWS3
+RewriteCond %{REQUEST_URI} ^/movieshows3(/.*)?$ [NC]
+RewriteCond %{REQUEST_URI} !^/MOVIESHOWS3(/.*)?$
+RewriteRule ^(.*)$ /MOVIESHOWS3/$1 [R=301,L]
+
+# Default document
+DirectoryIndex index.html
+
+# DO NOT set CORS here — CORS is handled in PHP (api/*.php)
+# Setting it here AND in PHP causes duplicate Access-Control-Allow-Origin: *, *

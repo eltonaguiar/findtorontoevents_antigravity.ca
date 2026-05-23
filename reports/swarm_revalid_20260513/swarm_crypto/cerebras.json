@@ -1,0 +1,96 @@
+{
+  "strategies": [
+    {
+      "name": "LONG_SRC_GATE",
+      "thesis": "Only accept LONG signals from sources that have demonstrated >80% LONG win-rate on the resolved sub-strategy.",
+      "signal_construction": "If source_id \u2208 {list of sources with LONG_WR \u2265 80%} then pass LONG signal; otherwise drop LONG side while preserving SHORT side unchanged.",
+      "universe_or_filter": "All liquid USDT pairs (BTC, ETH, SOL, BNB, XRP, DOGE, LINK, AVAX, ADA, MATIC).",
+      "expected_pf": 1.58,
+      "expected_wr_pct": 45.2,
+      "differentiation_from_existing": "Current live gates treat all sources uniformly; this adds a source-level LONG bias filter derived from the ml_crypto_pred autopsy.",
+      "implementation_hours": 2,
+      "wire_target": "alpha_engine/crypto_quality_gates.py",
+      "data_source": "binance",
+      "fail_mode": "Over-filtering may shrink exposure and increase volatility of the remaining pool."
+    },
+    {
+      "name": "SHORT_SRC_GATE",
+      "thesis": "Only accept SHORT signals from sources that have demonstrated >70% SHORT win-rate on the resolved sub-strategy.",
+      "signal_construction": "If source_id \u2208 {list of sources with SHORT_WR \u2265 70%} then pass SHORT signal; otherwise drop SHORT side while preserving LONG side unchanged.",
+      "universe_or_filter": "All liquid USDT pairs (BTC, ETH, SOL, BNB, XRP, DOGE, LINK, AVAX, ADA, MATIC).",
+      "expected_pf": 1.53,
+      "expected_wr_pct": 38.7,
+      "differentiation_from_existing": "Adds a complementary SHORT-only gate; current system has no direction-aware source caps.",
+      "implementation_hours": 2,
+      "wire_target": "alpha_engine/crypto_quality_gates.py",
+      "data_source": "binance",
+      "fail_mode": "Insufficient SHORT capacity may cause under-utilisation of bearish opportunities."
+    },
+    {
+      "name": "UTC6_DEATHZONE_FILTER",
+      "thesis": "Remove any trade entry that occurs during the empirically-identified 06:00-07:00\u202fUTC hour, which historically drags PF by ~0.2 points.",
+      "signal_construction": "If entry_timestamp_UTC hour == 6 then set signal_weight = 0 (drop trade).",
+      "universe_or_filter": "All liquid USDT pairs (BTC, ETH, SOL, BNB, XRP, DOGE, LINK, AVAX, ADA, MATIC).",
+      "expected_pf": 1.62,
+      "expected_wr_pct": 44.1,
+      "differentiation_from_existing": "Current live filter mistakenly excludes 22\u202fUTC; this corrects the hour to the true death zone (06\u202fUTC).",
+      "implementation_hours": 1,
+      "wire_target": "audit_trail/quality_gates.py",
+      "data_source": "binance",
+      "fail_mode": "If market regime shifts, the 06\u202fUTC window could become neutral or positive, causing unnecessary trade loss."
+    },
+    {
+      "name": "BTC4H_REGIME_GATE",
+      "thesis": "Reject LONG-only signals when BTC 4-hour candles are red and price is below the 20-period EMA, indicating a bearish macro regime.",
+      "signal_construction": "If BTC_4h_close < BTC_4h_open AND BTC_4h_close < EMA20_4h AND BTC_4h_volume > 1.5\u00d7median_4h_volume then set LONG_signal_weight = 0 for that timestamp.",
+      "universe_or_filter": "All liquid USDT pairs (BTC, ETH, SOL, BNB, XRP, DOGE, LINK, AVAX, ADA, MATIC).",
+      "expected_pf": 1.55,
+      "expected_wr_pct": 42.3,
+      "differentiation_from_existing": "No BTC-regime gating exists today; this adds a macro filter that aligns with Edge\u202f#11 expectations.",
+      "implementation_hours": 2,
+      "wire_target": "alpha_engine/crypto_quality_gates.py",
+      "data_source": "binance",
+      "fail_mode": "Regime detection lag may filter out profitable LONGs during short-term recoveries."
+    },
+    {
+      "name": "MATIC_GHOST_CLEANUP",
+      "thesis": "Eliminate the 660 zero-PnL rows that corrupt correlation calculations and inflate WR for MATIC.",
+      "signal_construction": "During data ingestion, drop any row where symbol == 'MATICUSDT' AND pnl == 0 AND timestamp \u2208 known_ghost_range (2024-11-01 to 2025-01-15). Re-compute rho after cleanup.",
+      "universe_or_filter": "MATICUSDT only (cleaned dataset).",
+      "expected_pf": 1.51,
+      "expected_wr_pct": 40.0,
+      "differentiation_from_existing": "Current pipeline does not filter these ghost rows; this adds a targeted data-quality step.",
+      "implementation_hours": 1,
+      "wire_target": "alpha_engine/data_cleaning.py",
+      "data_source": "binance",
+      "fail_mode": "Incorrect range selection could remove legitimate zero-PnL trades, slightly biasing statistics."
+    }
+  ],
+  "edge10_corrections": [
+    "Exclude all entries whose entry_timestamp_UTC hour == 6 (06:00-07:00\u202fUTC). This aligns the filter with the empirically observed death zone (WR 23.1%, PF 0.06) rather than the erroneous 22\u202fUTC claim."
+  ],
+  "edge11_proposals": [
+    "Define BTC 4h regime as RED when BTC_4h_close < BTC_4h_open AND BTC_4h_close < EMA20_4h AND BTC_4h_volume > 1.5\u00d7median_4h_volume; reject LONG-only emitter signals during such periods."
+  ],
+  "direction_gates": [
+    "LONG-only gating: keep LONG signals only from sources with LONG win-rate \u2265 80% (derived from ml_crypto_pred autopsy).",
+    "SHORT-only gating: keep SHORT signals only from sources with SHORT win-rate \u2265 70%."
+  ],
+  "killers": [
+    "Retire the existing 22\u202fUTC hour filter (currently wired in quality_gates.py) as it is based on falsified memory and harms PF."
+  ],
+  "tier2_attainability_pct": 78,
+  "single_most_important_finding": "The mis-identified 22\u202fUTC death-zone filter is the primary drag on CRYPTO PF; correcting it to the true 06\u202fUTC window alone is projected to lift PF above the Tier-2 floor.",
+  "engine": "cerebras",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_crypto\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260513T043303Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 864,
+    "tokens_out": 1944,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forward-Test Dashboard — Top Pick Outcomes</title>
+<style>
+:root {
+  --bg: #0a0a12; --card: #12121e; --card2: #0f0f1a; --border: #2a2a3e;
+  --text: #e2e8f0; --dim: #6b7280;
+  --green: #22c55e; --red: #ef4444; --yellow: #eab308; --orange: #f97316;
+  --cyan: #06b6d4; --purple: #a78bfa; --blue: #3b82f6; --gold: #ffd700;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; line-height: 1.5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px 16px; }
+h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+h1 span { color: var(--gold); }
+.subtitle { color: var(--dim); font-size: 11px; margin-bottom: 20px; }
+.subtitle a { color: var(--cyan); text-decoration: none; }
+.nav { display: flex; gap: 14px; font-size: 11px; margin-bottom: 20px; }
+.nav a { color: var(--cyan); text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+
+/* Stats cards */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 10px; text-align: center; }
+.stat-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.green { color: var(--green); } .red { color: var(--red); } .gold { color: var(--gold); }
+.cyan { color: var(--cyan); } .purple { color: var(--purple); } .dim { color: var(--dim); }
+
+/* WR breakdown */
+.wr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 24px; }
+.wr-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.wr-title { font-size: 10px; color: var(--cyan); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 10px; }
+.wr-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(42,42,62,0.6); font-size: 12px; }
+.wr-row:last-child { border-bottom: none; }
+.wr-label { color: var(--dim); }
+.wr-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Table */
+.section-title { font-size: 12px; font-weight: 700; color: var(--purple); text-transform: uppercase;
+  letter-spacing: 0.5px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.table-wrap { overflow-x: auto; margin-bottom: 24px; }
+table { width: 100%; border-collapse: collapse; }
+th { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--dim);
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 8px 10px; border-bottom: 1px solid rgba(42,42,62,0.4); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr:hover td { background: rgba(167,139,250,0.04); }
+tr.status-open td:first-child { border-left: 2px solid var(--cyan); }
+tr.status-won td:first-child { border-left: 2px solid var(--green); }
+tr.status-lost td:first-child { border-left: 2px solid var(--red); }
+tr.status-expired td:first-child { border-left: 2px solid var(--dim); }
+
+/* Badges */
+.badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-open { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge-won { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-lost { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge-expired { background: rgba(107,114,128,0.15); color: var(--dim); }
+.badge-long { background: rgba(34,197,94,0.1); color: var(--green); }
+.badge-short { background: rgba(239,68,68,0.1); color: var(--red); }
+.badge-fresh { background: rgba(34,197,94,0.1); color: var(--green); }
+.badge-stale { background: rgba(239,68,68,0.1); color: var(--red); }
+.badge-mid { background: rgba(107,114,128,0.1); color: var(--dim); }
+.badge-super { background: rgba(255,215,0,0.15); color: var(--gold); }
+.badge-strong { background: rgba(59,130,246,0.15); color: var(--blue); }
+.badge-moderate { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+/* Filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+.filter-btn { padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); background: var(--card2);
+  color: var(--dim); font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.filter-btn.active { background: rgba(167,139,250,0.2); border-color: var(--purple); color: var(--purple); }
+.filter-label { font-size: 10px; color: var(--dim); margin-right: 4px; }
+
+/* Footer */
+.footer { font-size: 10px; color: var(--dim); margin-top: 24px; border-top: 1px solid var(--border); padding-top: 12px; }
+.refresh-indicator { display: inline-flex; align-items: center; gap: 6px; }
+.refresh-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.loading { color: var(--dim); padding: 40px; text-align: center; }
+.error-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px 16px; color: var(--red); font-size: 12px; margin-bottom: 16px; }
+.empty-state { text-align: center; color: var(--dim); padding: 40px 20px; font-size: 13px; }
+.empty-state p { margin-top: 8px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><span>Forward-Test</span> Dashboard</h1>
+  <p class="subtitle">
+    Tracks how high-score picks (score &ge; 75) play out over time &mdash;
+    captures at moment of appearance, monitors TP/SL hits.
+    Fresh = age &le; 2h at capture &nbsp;|&nbsp; Stale = age &ge; 4h at capture &nbsp;|&nbsp; Expires after 48h.
+    <br>JSON: <a href="data/forward_test_results.json" target="_blank">forward_test_results.json</a>
+  </p>
+  <div class="nav">
+    <a href="../monitor/">Monitor</a>
+    <a href="consensus_dashboard.html">Consensus Dashboard</a>
+    <a href="index.html">Cross-Aggregation</a>
+  </div>
+
+  <div id="main-content">
+    <div class="loading">Loading forward-test data...</div>
+  </div>
+
+  <div class="footer">
+    <span class="refresh-indicator"><span class="refresh-dot"></span> Auto-refreshes every 5 min</span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    Last updated: <span id="last-updated">—</span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    Tracking since: <span id="tracking-since">—</span>
+  </div>
+</div>
+
+<script>
+const DATA_URL = 'data/forward_test_results.json';
+const REFRESH_MS = 5 * 60 * 1000;
+
+let allPicks = [];
+let currentFilter = 'all';
+
+function fmt(n, decimals = 1) {
+  if (n == null || n === undefined) return '—';
+  return Number(n).toFixed(decimals);
+}
+
+function fmtPnl(pnl) {
+  if (pnl == null) return '—';
+  const v = Number(pnl);
+  const cls = v > 0 ? 'green' : v < 0 ? 'red' : 'dim';
+  return `<span class="${cls}">${v > 0 ? '+' : ''}${v.toFixed(2)}%</span>`;
+}
+
+function fmtWr(wr, n) {
+  if (wr == null) return `<span class="dim">— (n=${n != null ? n : 0})</span>`;
+  const cls = wr >= 60 ? 'green' : wr >= 50 ? 'gold' : 'red';
+  return `<span class="${cls}">${wr}%</span> <span class="dim">(n=${n != null ? n : '?'})</span>`;
+}
+
+function fmtAge(hours) {
+  if (hours == null) return '—';
+  const h = Number(hours);
+  if (h < 1) return `${Math.round(h * 60)}m`;
+  return `${h.toFixed(1)}h`;
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  } catch (e) { return iso.substring(0, 16).replace('T', ' '); }
+}
+
+function statusBadge(status) {
+  const s = (status || 'OPEN').toUpperCase();
+  const cls = s === 'WON' ? 'won' : s === 'LOST' ? 'lost' : s === 'EXPIRED' ? 'expired' : 'open';
+  return `<span class="badge badge-${cls}">${s}</span>`;
+}
+
+function dirBadge(dir) {
+  const d = (dir || '').toUpperCase();
+  return `<span class="badge badge-${d === 'SHORT' ? 'short' : 'long'}">${d}</span>`;
+}
+
+function freshBadge(f) {
+  const lbl = (f || 'mid').toLowerCase();
+  return `<span class="badge badge-${lbl}">${lbl}</span>`;
+}
+
+function tierBadge(tier) {
+  const t = (tier || '').toLowerCase();
+  return `<span class="badge badge-${t}">${tier || ''}</span>`;
+}
+
+function scoreBadge(score) {
+  if (score == null) return '—';
+  const v = Number(score);
+  const cls = v >= 90 ? 'gold' : v >= 85 ? 'green' : v >= 80 ? 'cyan' : 'dim';
+  return `<span class="${cls}" style="font-weight:700">${v.toFixed(1)}</span>`;
+}
+
+function renderStats(stats) {
+  const s = stats || {};
+  const wr = s.wr_overall;
+  const wrCls = wr == null ? 'dim' : wr >= 60 ? 'green' : wr >= 50 ? 'gold' : 'red';
+
+  const cards = [
+    { label: 'Total Tracked', value: s.total ?? 0, cls: 'cyan' },
+    { label: 'Active / Open', value: s.active ?? 0, cls: 'cyan' },
+    { label: 'Won', value: s.won ?? 0, cls: 'green' },
+    { label: 'Lost', value: s.lost ?? 0, cls: 'red' },
+    { label: 'Expired', value: s.expired ?? 0, cls: 'dim' },
+    { label: 'Overall WR', value: wr != null ? wr + '%' : '—', cls: wrCls },
+    { label: 'Avg PnL', value: s.avg_pnl_overall != null ? (s.avg_pnl_overall > 0 ? '+' : '') + s.avg_pnl_overall + '%' : '—',
+      cls: s.avg_pnl_overall > 0 ? 'green' : s.avg_pnl_overall < 0 ? 'red' : 'dim' },
+  ];
+
+  let html = '<div class="stats-grid">';
+  for (const c of cards) {
+    html += `<div class="stat-card"><div class="stat-label">${c.label}</div><div class="stat-value ${c.cls}">${c.value}</div></div>`;
+  }
+  html += '</div>';
+
+  // WR breakdown section
+  html += '<div class="wr-grid">';
+
+  // Freshness WR
+  html += `<div class="wr-card"><div class="wr-title">WR by Freshness</div>`;
+  html += `<div class="wr-row"><span class="wr-label">Fresh (&le;2h at entry)</span><span class="wr-val">${fmtWr(s.wr_fresh, s.count_fresh)}</span></div>`;
+  html += `<div class="wr-row"><span class="wr-label">Mid (2-4h)</span><span class="wr-val">${fmtWr(null, s.count_mid)}</span></div>`;
+  html += `<div class="wr-row"><span class="wr-label">Stale (&ge;4h at entry)</span><span class="wr-val">${fmtWr(s.wr_stale, s.count_stale)}</span></div>`;
+  html += `<div class="wr-row" style="margin-top:6px"><span class="wr-label">Avg PnL (fresh)</span><span class="wr-val">${s.avg_pnl_fresh != null ? (s.avg_pnl_fresh > 0 ? '+' : '') + s.avg_pnl_fresh + '%' : '—'}</span></div>`;
+  html += `<div class="wr-row"><span class="wr-label">Avg PnL (stale)</span><span class="wr-val">${s.avg_pnl_stale != null ? (s.avg_pnl_stale > 0 ? '+' : '') + s.avg_pnl_stale + '%' : '—'}</span></div>`;
+  html += '</div>';
+
+  // Score bucket WR
+  const byScore = s.wr_by_score || {};
+  const countByScore = s.count_by_score || {};
+  html += `<div class="wr-card"><div class="wr-title">WR by Score Range</div>`;
+  for (const bucket of ['75-80', '80-85', '85-90', '90+']) {
+    html += `<div class="wr-row"><span class="wr-label">${bucket}</span><span class="wr-val">${fmtWr(byScore[bucket], countByScore[bucket] ?? 0)}</span></div>`;
+  }
+  html += '</div>';
+
+  html += '</div>'; // end wr-grid
+
+  return html;
+}
+
+function renderFilters() {
+  const filters = [
+    { key: 'all', label: 'All' },
+    { key: 'OPEN', label: 'Open' },
+    { key: 'WON', label: 'Won' },
+    { key: 'LOST', label: 'Lost' },
+    { key: 'EXPIRED', label: 'Expired' },
+    { key: 'fresh', label: 'Fresh Only' },
+    { key: 'stale', label: 'Stale Only' },
+  ];
+  let html = '<div class="filters"><span class="filter-label">Filter:</span>';
+  for (const f of filters) {
+    const active = currentFilter === f.key ? ' active' : '';
+    html += `<button class="filter-btn${active}" onclick="setFilter('${f.key}')">${f.label}</button>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function setFilter(key) {
+  currentFilter = key;
+  renderTable();
+}
+
+function renderTable() {
+  let picks = allPicks.slice();
+
+  // Apply filter
+  if (currentFilter === 'fresh') {
+    picks = picks.filter(p => p.freshness === 'fresh');
+  } else if (currentFilter === 'stale') {
+    picks = picks.filter(p => p.freshness === 'stale');
+  } else if (['OPEN', 'WON', 'LOST', 'EXPIRED'].includes(currentFilter)) {
+    picks = picks.filter(p => (p.status || 'OPEN').toUpperCase() === currentFilter);
+  }
+
+  // Sort: OPEN first by score desc, then closed by resolved_at desc
+  picks.sort((a, b) => {
+    const aOpen = (a.status || 'OPEN') === 'OPEN';
+    const bOpen = (b.status || 'OPEN') === 'OPEN';
+    if (aOpen !== bOpen) return aOpen ? -1 : 1;
+    if (aOpen && bOpen) return (b.score || 0) - (a.score || 0);
+    const aTime = a.resolved_at || a.captured_at || '';
+    const bTime = b.resolved_at || b.captured_at || '';
+    return bTime.localeCompare(aTime);
+  });
+
+  const tableArea = document.getElementById('table-area');
+  if (!tableArea) return;
+
+  if (picks.length === 0) {
+    tableArea.innerHTML = '<div class="empty-state">No picks match current filter.<p>Top picks (score &ge; 75) will appear here as they are captured.</p></div>';
+    // Update filter buttons active state
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.toLowerCase().replace(' only', '') === currentFilter.toLowerCase() ||
+        (currentFilter === 'all' && btn.textContent === 'All'));
+    });
+    return;
+  }
+
+  let html = `
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>Symbol</th>
+  <th>Dir</th>
+  <th>Score</th>
+  <th>Freshness</th>
+  <th>Age@Capture</th>
+  <th>Tier</th>
+  <th>Entry</th>
+  <th>TP</th>
+  <th>SL</th>
+  <th>Capture Price</th>
+  <th>Last Price</th>
+  <th>Unreal PnL</th>
+  <th>Final PnL</th>
+  <th>Status</th>
+  <th>Systems</th>
+  <th>Captured At</th>
+  <th>Resolved At</th>
+</tr>
+</thead>
+<tbody>`;
+
+  for (const p of picks) {
+    const status = (p.status || 'OPEN').toUpperCase();
+    const statusCls = status === 'WON' ? 'won' : status === 'LOST' ? 'lost' : status === 'EXPIRED' ? 'expired' : 'open';
+    const systems = Array.isArray(p.source_systems) ? p.source_systems.join(', ') : (p.source_systems || '—');
+
+    html += `<tr class="status-${statusCls}">`;
+    html += `<td style="font-weight:700">${p.symbol || '—'}</td>`;
+    html += `<td>${dirBadge(p.direction)}</td>`;
+    html += `<td>${scoreBadge(p.score)}</td>`;
+    html += `<td>${freshBadge(p.freshness)}</td>`;
+    html += `<td>${fmtAge(p.age_at_capture_hours)}</td>`;
+    html += `<td>${tierBadge(p.consensus_tier)}</td>`;
+    html += `<td>${p.entry_price != null ? Number(p.entry_price).toPrecision(6) : '—'}</td>`;
+    html += `<td>${p.tp_price != null ? Number(p.tp_price).toPrecision(6) : '—'}</td>`;
+    html += `<td>${p.sl_price != null ? Number(p.sl_price).toPrecision(6) : '—'}</td>`;
+    html += `<td>${p.price_at_capture != null ? Number(p.price_at_capture).toPrecision(6) : '—'}</td>`;
+    html += `<td>${p.last_price != null ? Number(p.last_price).toPrecision(6) : '—'}</td>`;
+    html += `<td>${fmtPnl(p.unrealized_pnl_pct)}</td>`;
+    html += `<td>${status !== 'OPEN' && status !== 'EXPIRED' ? fmtPnl(p.pnl_pct) : '—'}</td>`;
+    html += `<td>${statusBadge(status)}</td>`;
+    html += `<td style="font-size:10px;color:var(--dim);max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${systems}">${systems.substring(0, 40)}${systems.length > 40 ? '…' : ''}</td>`;
+    html += `<td style="font-size:11px">${fmtTime(p.captured_at)}</td>`;
+    html += `<td style="font-size:11px">${fmtTime(p.resolved_at)}</td>`;
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+
+  tableArea.innerHTML = html;
+
+  // Update filter buttons active state
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    const key = btn.getAttribute('onclick').match(/setFilter\('([^']+)'\)/)[1];
+    btn.classList.toggle('active', key === currentFilter);
+  });
+}
+
+function render(data) {
+  const stats = data.stats || {};
+  const picks = data.tracked_picks || [];
+  allPicks = picks;
+
+  const lu = data.last_updated;
+  const ts = stats.tracking_since;
+  document.getElementById('last-updated').textContent = lu ? fmtTime(lu) : '—';
+  document.getElementById('tracking-since').textContent = ts ? fmtTime(ts) : '—';
+
+  const main = document.getElementById('main-content');
+  main.innerHTML = renderStats(stats) +
+    `<div class="section-title">Tracked Picks (${picks.length} total, ${stats.active ?? 0} open)</div>` +
+    renderFilters() +
+    `<div id="table-area"></div>`;
+
+  renderTable();
+}
+
+function showError(msg) {
+  const main = document.getElementById('main-content');
+  main.innerHTML = `<div class="error-box">${msg}</div>
+    <div class="empty-state">
+      No forward-test data yet.<p>The tracker captures picks with score &ge; 75 every 10 minutes via the cross-aggregator workflow.</p>
+      <p style="margin-top:8px"><a href="data/forward_test_results.json" style="color:var(--cyan)">Check JSON directly</a></p>
+    </div>`;
+}
+
+async function loadData() {
+  try {
+    const resp = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    render(data);
+  } catch (e) {
+    showError(`Failed to load data: ${e.message}`);
+  }
+}
+
+// Initial load + auto-refresh
+loadData();
+setInterval(loadData, REFRESH_MS);
+</script>
+</body>
+</html>

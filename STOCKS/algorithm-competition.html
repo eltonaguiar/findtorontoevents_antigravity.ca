@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Algorithm Competition Arena | STOCKSCURSORS CLAW</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-0: #06060b;
+      --bg-1: #0d0d16;
+      --bg-2: #14141f;
+      --bg-3: #1c1c2b;
+      --bg-card: #111120;
+      --border: #2a2a40;
+      --text-1: #eeeef5;
+      --text-2: #a0a0b8;
+      --text-3: #666680;
+      --gold: #ffd700;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --orange: #f97316;
+      --pink: #ec4899;
+      --lime: #84cc16;
+      --amber: #f59e0b;
+      --teal: #14b8a6;
+      --rose: #f43f5e;
+      --indigo: #6366f1;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-0);
+      color: var(--text-1);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    a { color: var(--purple); text-decoration: none; }
+
+    /* ── Animated Background ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .bg-glow {
+      position: fixed; top: -30vh; left: 50%; transform: translateX(-50%);
+      width: 100vw; height: 60vh; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.08) 0%, transparent 70%);
+    }
+
+    /* ── Layout ── */
+    .page { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 20px; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center; padding: 32px 20px 24px;
+      border-bottom: 1px solid var(--border); margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800;
+      background: linear-gradient(135deg, var(--gold), var(--orange), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; letter-spacing: -1px; margin-bottom: 8px;
+    }
+    .header .subtitle { color: var(--text-2); font-size: 1.05rem; }
+    .header .back-link {
+      display: inline-block; margin-top: 12px; padding: 6px 16px;
+      background: var(--bg-3); border-radius: 6px; color: var(--text-2);
+      font-size: 0.85rem; transition: all 0.2s;
+    }
+    .header .back-link:hover { background: var(--purple); color: #fff; }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      justify-content: center; margin-bottom: 24px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 24px;
+    }
+    .controls label { color: var(--text-2); font-size: 0.9rem; }
+    .controls select, .controls input, .controls button {
+      background: var(--bg-3); border: 1px solid var(--border);
+      color: var(--text-1); border-radius: 8px; padding: 8px 14px;
+      font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+    }
+    .controls select:hover, .controls input:hover { border-color: var(--purple); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), #7c3aed) !important;
+      border: none !important; font-weight: 600; padding: 10px 24px !important;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3); }
+    .btn-danger {
+      background: linear-gradient(135deg, var(--red), #dc2626) !important;
+      border: none !important; font-weight: 600;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--green), #16a34a) !important;
+      border: none !important; font-weight: 600;
+    }
+    .speed-display { 
+      color: var(--amber); font-weight: 700; font-size: 1.1rem; 
+      min-width: 50px; text-align: center;
+    }
+
+    /* ── Stats Banner ── */
+    .stats-banner {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: var(--purple); }
+    .stat-card .stat-value {
+      font-size: 1.4rem; font-weight: 700; margin-bottom: 4px;
+    }
+    .stat-card .stat-label { color: var(--text-3); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-positive { color: var(--green); }
+    .stat-negative { color: var(--red); }
+
+    /* ── Main Chart ── */
+    .chart-section {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 24px;
+      position: relative; overflow: hidden;
+    }
+    .chart-section::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--purple), var(--gold), var(--cyan));
+    }
+    .chart-section h2 {
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .chart-container { position: relative; height: 420px; }
+    @media (max-width: 768px) { .chart-container { height: 300px; } }
+
+    /* ── Two-Column Layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 1024px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Leaderboard ── */
+    .leaderboard {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+    }
+    .leaderboard::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--orange));
+    }
+    .leaderboard h2 {
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .leaderboard-table { width: 100%; border-collapse: collapse; }
+    .leaderboard-table th {
+      text-align: left; padding: 10px 12px; font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--text-3); border-bottom: 1px solid var(--border);
+    }
+    .leaderboard-table td {
+      padding: 10px 12px; font-size: 0.88rem; border-bottom: 1px solid rgba(42,42,64,0.5);
+      vertical-align: middle;
+    }
+    .leaderboard-table tr:hover td { background: rgba(168, 85, 247, 0.04); }
+    .rank-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%; font-weight: 700; font-size: 0.8rem;
+    }
+    .rank-1 { background: var(--gold); color: #000; }
+    .rank-2 { background: var(--silver); color: #000; }
+    .rank-3 { background: var(--bronze); color: #fff; }
+    .rank-other { background: var(--bg-3); color: var(--text-2); }
+    .algo-name-cell { display: flex; align-items: center; gap: 8px; }
+    .algo-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .pnl-positive { color: var(--green); font-weight: 600; }
+    .pnl-negative { color: var(--red); font-weight: 600; }
+
+    /* ── Picks Feed ── */
+    .picks-feed {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+    }
+    .picks-feed::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+    }
+    .picks-feed h2 {
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .picks-list {
+      max-height: 480px; overflow-y: auto; display: flex;
+      flex-direction: column; gap: 8px;
+    }
+    .picks-list::-webkit-scrollbar { width: 6px; }
+    .picks-list::-webkit-scrollbar-track { background: var(--bg-2); border-radius: 3px; }
+    .picks-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .pick-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    .pick-time { color: var(--text-3); font-size: 0.75rem; min-width: 55px; font-family: monospace; }
+    .pick-algo { font-size: 0.78rem; font-weight: 600; min-width: 100px; }
+    .pick-action {
+      font-size: 0.72rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 4px; text-transform: uppercase;
+    }
+    .pick-buy { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .pick-sell { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+    .pick-hold { background: rgba(249, 115, 22, 0.15); color: var(--orange); }
+    .pick-ticker { font-weight: 700; font-size: 0.9rem; color: var(--text-1); min-width: 60px; }
+    .pick-detail { color: var(--text-2); font-size: 0.78rem; flex: 1; }
+
+    /* ── Algorithm Cards Grid ── */
+    .algo-cards-section {
+      margin-bottom: 24px;
+    }
+    .algo-cards-section h2 {
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .algo-cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .algo-card {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px; transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .algo-card:hover { transform: translateY(-3px); border-color: var(--purple); box-shadow: 0 8px 30px rgba(168, 85, 247, 0.1); }
+    .algo-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .algo-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .algo-card-name { font-size: 1rem; font-weight: 700; }
+    .algo-card-type {
+      font-size: 0.7rem; font-weight: 600; padding: 3px 8px;
+      border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .algo-card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .algo-card-stat { }
+    .algo-card-stat-value { font-size: 1.1rem; font-weight: 700; }
+    .algo-card-stat-label { font-size: 0.7rem; color: var(--text-3); text-transform: uppercase; }
+    .algo-card-holdings {
+      margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+      font-size: 0.78rem; color: var(--text-2);
+    }
+    .algo-card-holdings strong { color: var(--text-1); }
+    .holdings-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .holding-tag {
+      background: var(--bg-3); border-radius: 4px; padding: 2px 6px;
+      font-size: 0.7rem; font-family: monospace; color: var(--text-2);
+    }
+
+    /* ── Market Ticker ── */
+    .market-ticker {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 20px; margin-bottom: 24px;
+      display: flex; gap: 24px; overflow-x: auto; align-items: center;
+      font-size: 0.88rem;
+    }
+    .market-ticker::-webkit-scrollbar { height: 4px; }
+    .market-ticker::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .ticker-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .ticker-symbol { font-weight: 700; color: var(--text-1); }
+    .ticker-price { color: var(--text-2); }
+    .ticker-change { font-weight: 600; font-size: 0.82rem; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center; padding: 24px; color: var(--text-3);
+      font-size: 0.8rem; border-top: 1px solid var(--border);
+      margin-top: 32px;
+    }
+
+    /* ── Pulse animation ── */
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .is-running { animation: pulse 2s infinite; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+    }
+    .status-running { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .status-paused { background: rgba(249, 115, 22, 0.15); color: var(--orange); }
+    .status-stopped { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .page { padding: 10px; }
+      .controls { padding: 12px; gap: 8px; }
+      .algo-cards-grid { grid-template-columns: 1fr; }
+      .stats-banner { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <h1>Algorithm Competition Arena</h1>
+      <p class="subtitle">12 trading algorithms compete head-to-head. Real strategies. Simulated market. Who wins?</p>
+      <a href="/STOCKS/competition/" class="back-link" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;font-weight:700;">View REAL Results (Live Data)</a>
+      <span style="margin: 0 8px; color: var(--text-3);">|</span>
+      <a href="/STOCKS/index.html" class="back-link">Back to Stocks Hub</a>
+      <span style="margin: 0 8px; color: var(--text-3);">|</span>
+      <a href="/predictions/dashboard.html" class="back-link">Predictions Dashboard</a>
+    </div>
+
+    <!-- Market Ticker -->
+    <div class="market-ticker" id="marketTicker">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <label>Starting Capital:</label>
+      <select id="startingCapital">
+        <option value="50000">$50,000</option>
+        <option value="100000" selected>$100,000</option>
+        <option value="250000">$250,000</option>
+        <option value="500000">$500,000</option>
+        <option value="1000000">$1,000,000</option>
+      </select>
+
+      <label>Market Condition:</label>
+      <select id="marketCondition">
+        <option value="random" selected>Random Walk</option>
+        <option value="bull">Bull Market</option>
+        <option value="bear">Bear Market</option>
+        <option value="volatile">High Volatility</option>
+        <option value="sideways">Sideways Chop</option>
+        <option value="crash_recovery">Crash & Recovery</option>
+      </select>
+
+      <label>Speed:</label>
+      <input type="range" id="speedSlider" min="1" max="20" value="5" style="width: 100px;">
+      <span class="speed-display" id="speedDisplay">5x</span>
+
+      <button class="btn-primary" id="btnStart" onclick="startCompetition()">Start Competition</button>
+      <button class="btn-danger" id="btnPause" onclick="togglePause()" style="display:none;">Pause</button>
+      <button class="btn-success" id="btnReset" onclick="resetCompetition()">Reset</button>
+
+      <span class="status-badge status-stopped" id="statusBadge">Stopped</span>
+    </div>
+
+    <!-- Stats Banner -->
+    <div class="stats-banner" id="statsBanner">
+      <div class="stat-card">
+        <div class="stat-value" id="statDay">Day 0</div>
+        <div class="stat-label">Trading Day</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statLeader">--</div>
+        <div class="stat-label">Current Leader</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value stat-positive" id="statBestReturn">0.00%</div>
+        <div class="stat-label">Best Return</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value stat-negative" id="statWorstReturn">0.00%</div>
+        <div class="stat-label">Worst Return</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTotalTrades">0</div>
+        <div class="stat-label">Total Trades</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statMarketReturn">0.00%</div>
+        <div class="stat-label">Market (S&P 500)</div>
+      </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="chart-section">
+      <h2>Portfolio Value Over Time</h2>
+      <div class="chart-container">
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Returns Comparison Chart -->
+    <div class="chart-section" id="returnsChartSection" style="display:none;">
+      <h2>Returns Comparison (% Change from Start)</h2>
+      <div class="chart-container" style="height: 300px;">
+        <canvas id="returnsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Winner Announcement (shown at end) -->
+    <div id="winnerBanner" style="display:none; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(168,85,247,0.1)); border: 2px solid var(--gold); border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 24px; animation: slideIn 0.5s ease-out;">
+      <div style="font-size: 3rem; margin-bottom: 8px;" id="winnerTrophy"></div>
+      <h2 style="font-size: 1.8rem; background: linear-gradient(135deg, var(--gold), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;" id="winnerTitle"></h2>
+      <p style="color: var(--text-2); font-size: 1rem;" id="winnerDetail"></p>
+      <div style="display: flex; justify-content: center; gap: 24px; margin-top: 16px; flex-wrap: wrap;" id="winnerStats"></div>
+    </div>
+
+    <!-- Two Column: Leaderboard + Picks -->
+    <div class="two-col">
+      <!-- Leaderboard -->
+      <div class="leaderboard">
+        <h2>Leaderboard</h2>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Algorithm</th>
+              <th>Portfolio</th>
+              <th>Return</th>
+              <th>Sharpe</th>
+              <th>Win Rate</th>
+              <th>Trades</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Picks Feed -->
+      <div class="picks-feed">
+        <h2>Live Picks Feed</h2>
+        <div class="picks-list" id="picksFeed">
+          <div class="pick-item" style="justify-content: center; color: var(--text-3);">
+            Start the competition to see live picks...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Algorithm Detail Cards -->
+    <div class="algo-cards-section">
+      <h2>Algorithm Details</h2>
+      <div class="algo-cards-grid" id="algoCardsGrid">
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>STOCKSCURSORS CLAW - Algorithm Competition Arena</p>
+      <p>Simulated trading using strategies from the Alpha Engine. Not financial advice.</p>
+      <p>Algorithms sourced from: alpha_engine/strategies/ &amp; alpha_engine/ensemble/</p>
+    </div>
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  ALGORITHM COMPETITION ENGINE
+//  Simulates 12 real algorithms from the alpha_engine competing
+// ═══════════════════════════════════════════════════════════════════
+
+const ALGO_DEFINITIONS = [
+  {
+    id: 'classic_momentum',
+    name: 'Classic Momentum',
+    shortName: 'Momentum',
+    description: 'Buy top-K past winners by 6-month return, skip most recent month',
+    type: 'Momentum',
+    color: '#3b82f6',
+    edge: 'Behavioral (herding, underreaction)',
+    holdPeriod: 'Monthly',
+    riskProfile: { aggression: 0.7, meanReversion: 0.0, trendFollow: 0.9, defensiveness: 0.2 },
+    regimeFit: { bull: 1.3, bear: 0.5, volatile: 0.6, sideways: 0.7, crash_recovery: 0.9 },
+  },
+  {
+    id: 'trend_following',
+    name: 'Trend Following',
+    shortName: 'Trend',
+    description: 'Buy stocks above 50/200 MA with strong trend strength',
+    type: 'Trend',
+    color: '#06b6d4',
+    edge: 'Behavioral (anchoring, slow diffusion)',
+    holdPeriod: 'Weekly',
+    riskProfile: { aggression: 0.6, meanReversion: 0.0, trendFollow: 1.0, defensiveness: 0.3 },
+    regimeFit: { bull: 1.4, bear: 0.4, volatile: 0.5, sideways: 0.6, crash_recovery: 0.8 },
+  },
+  {
+    id: 'breakout_momentum',
+    name: 'Breakout Momentum',
+    shortName: 'Breakout',
+    description: 'Buy stocks near 52-week highs with volume confirmation',
+    type: 'Breakout',
+    color: '#f97316',
+    edge: 'Attention + anchoring bias',
+    holdPeriod: 'Short-term',
+    riskProfile: { aggression: 0.85, meanReversion: 0.0, trendFollow: 0.8, defensiveness: 0.1 },
+    regimeFit: { bull: 1.5, bear: 0.3, volatile: 0.7, sideways: 0.4, crash_recovery: 1.1 },
+  },
+  {
+    id: 'bollinger_mean_reversion',
+    name: 'Bollinger Mean Reversion',
+    shortName: 'BB Revert',
+    description: 'Buy oversold (below lower BB), sell overbought (above upper BB)',
+    type: 'Mean Reversion',
+    color: '#22c55e',
+    edge: 'Behavioral overreaction + statistical reversion',
+    holdPeriod: 'Daily',
+    riskProfile: { aggression: 0.5, meanReversion: 1.0, trendFollow: 0.0, defensiveness: 0.5 },
+    regimeFit: { bull: 0.7, bear: 0.8, volatile: 1.4, sideways: 1.3, crash_recovery: 0.6 },
+  },
+  {
+    id: 'short_term_reversal',
+    name: 'Short-Term Reversal',
+    shortName: 'Reversal',
+    description: 'Buy 5-day losers (oversold bounce), hold 3-5 days',
+    type: 'Reversal',
+    color: '#ec4899',
+    edge: 'Overreaction + liquidity provision',
+    holdPeriod: '3-5 days',
+    riskProfile: { aggression: 0.65, meanReversion: 0.9, trendFollow: 0.0, defensiveness: 0.4 },
+    regimeFit: { bull: 0.8, bear: 0.7, volatile: 1.3, sideways: 1.2, crash_recovery: 0.5 },
+  },
+  {
+    id: 'quality_compounders',
+    name: 'Quality Compounders',
+    shortName: 'Quality',
+    description: 'Buy high-quality compounders: ROIC, margins, FCF, low debt',
+    type: 'Quality',
+    color: '#a855f7',
+    edge: 'Behavioral (overpay for exciting, underpay for boring)',
+    holdPeriod: 'Long-term',
+    riskProfile: { aggression: 0.3, meanReversion: 0.2, trendFollow: 0.3, defensiveness: 0.9 },
+    regimeFit: { bull: 0.9, bear: 1.2, volatile: 1.1, sideways: 1.0, crash_recovery: 0.8 },
+  },
+  {
+    id: 'value_quality',
+    name: 'Value + Quality',
+    shortName: 'Value',
+    description: 'Buy undervalued stocks with quality filter (no value traps)',
+    type: 'Value',
+    color: '#14b8a6',
+    edge: 'Long-term fundamental reversion',
+    holdPeriod: 'Monthly',
+    riskProfile: { aggression: 0.4, meanReversion: 0.5, trendFollow: 0.2, defensiveness: 0.7 },
+    regimeFit: { bull: 0.8, bear: 1.1, volatile: 0.9, sideways: 1.1, crash_recovery: 1.0 },
+  },
+  {
+    id: 'dividend_aristocrats',
+    name: 'Dividend Aristocrats',
+    shortName: 'Dividend',
+    description: '25+ years of consecutive dividend increases, "Safe Bet" sleeve',
+    type: 'Dividend',
+    color: '#84cc16',
+    edge: 'Flight to quality during downturns',
+    holdPeriod: 'Buy & Hold',
+    riskProfile: { aggression: 0.15, meanReversion: 0.1, trendFollow: 0.1, defensiveness: 1.0 },
+    regimeFit: { bull: 0.6, bear: 1.4, volatile: 1.2, sideways: 1.1, crash_recovery: 0.7 },
+  },
+  {
+    id: 'earnings_drift',
+    name: 'Earnings Drift (PEAD)',
+    shortName: 'PEAD',
+    description: 'Buy post-earnings beat stocks, drift for 6-8 weeks',
+    type: 'Anomaly',
+    color: '#f59e0b',
+    edge: 'Structural (slow information diffusion)',
+    holdPeriod: '6-8 weeks',
+    riskProfile: { aggression: 0.55, meanReversion: 0.1, trendFollow: 0.6, defensiveness: 0.4 },
+    regimeFit: { bull: 1.1, bear: 0.8, volatile: 0.9, sideways: 1.0, crash_recovery: 0.9 },
+  },
+  {
+    id: 'consecutive_beats',
+    name: 'Consecutive Beats (Safe Bet)',
+    shortName: 'SafeBet',
+    description: 'Buy stocks with 3+ consecutive EPS beats >5%',
+    type: 'Earnings',
+    color: '#6366f1',
+    edge: 'Reliable compounders with positive revisions',
+    holdPeriod: 'Monthly',
+    riskProfile: { aggression: 0.35, meanReversion: 0.2, trendFollow: 0.4, defensiveness: 0.8 },
+    regimeFit: { bull: 1.0, bear: 1.0, volatile: 0.9, sideways: 1.0, crash_recovery: 0.9 },
+  },
+  {
+    id: 'ml_ranker',
+    name: 'ML Ranker (LightGBM)',
+    shortName: 'ML',
+    description: 'LightGBM cross-sectional ranker: predict forward returns from features',
+    type: 'Machine Learning',
+    color: '#f43f5e',
+    edge: 'Non-linear feature interactions, adaptive',
+    holdPeriod: 'Weekly',
+    riskProfile: { aggression: 0.6, meanReversion: 0.3, trendFollow: 0.5, defensiveness: 0.5 },
+    regimeFit: { bull: 1.1, bear: 0.9, volatile: 1.0, sideways: 1.0, crash_recovery: 1.0 },
+  },
+  {
+    id: 'meta_learner',
+    name: 'Meta Learner (God-Mode)',
+    shortName: 'GodMode',
+    description: 'Ensemble that arbitrates all strategies with regime-aware weighting',
+    type: 'Ensemble',
+    color: '#ffd700',
+    edge: 'Regime-aware multi-strategy orchestration',
+    holdPeriod: 'Adaptive',
+    riskProfile: { aggression: 0.5, meanReversion: 0.4, trendFollow: 0.5, defensiveness: 0.6 },
+    regimeFit: { bull: 1.15, bear: 1.1, volatile: 1.1, sideways: 1.05, crash_recovery: 1.15 },
+  },
+];
+
+// Stock universe for simulation picks
+const STOCK_UNIVERSE = [
+  'AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','BRK.B','JPM','V',
+  'UNH','HD','JNJ','PG','MA','XOM','CVX','ABBV','MRK','PEP','KO',
+  'COST','AVGO','TMO','CRM','MCD','AMD','ADBE','LIN','NFLX','CSCO',
+  'ACN','TXN','WMT','NEE','LOW','UPS','HON','QCOM','INTC','GS',
+  'CAT','DE','BLK','AXP','SBUX','GE','MMM','RTX','PYPL','SQ',
+  'SOFI','PLTR','COIN','MARA','RIOT','NIO','RIVN','LCID','PATH','SNOW',
+  'ABNB','UBER','DASH','DKNG','RBLX','U','NET','CRWD','ZS','DDOG',
+];
+
+const DIVIDEND_ARISTOCRATS = ['JNJ','PG','KO','PEP','MCD','WMT','MMM','LOW','TXN','ABBV','HD','COST','NEE','HON','CAT','GE'];
+
+// ── State ──
+let competition = null;
+let chart = null;
+let animFrameId = null;
+let isPaused = false;
+let lastTick = 0;
+
+class AlgorithmState {
+  constructor(def, startingCapital) {
+    this.def = def;
+    this.capital = startingCapital;
+    this.startingCapital = startingCapital;
+    this.portfolioHistory = [startingCapital];
+    this.dailyReturns = [];
+    this.holdings = {};
+    this.trades = [];
+    this.totalTrades = 0;
+    this.wins = 0;
+    this.losses = 0;
+    this.cash = startingCapital;
+    this.investedValue = 0;
+    this.maxDrawdown = 0;
+    this.peakValue = startingCapital;
+  }
+
+  get portfolioValue() { return this.cash + this.investedValue; }
+  get totalReturn() { return (this.portfolioValue - this.startingCapital) / this.startingCapital; }
+  get winRate() { return this.totalTrades > 0 ? this.wins / this.totalTrades : 0; }
+
+  get sharpeRatio() {
+    if (this.dailyReturns.length < 10) return 0;
+    const mean = this.dailyReturns.reduce((a, b) => a + b, 0) / this.dailyReturns.length;
+    const variance = this.dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / this.dailyReturns.length;
+    const std = Math.sqrt(variance);
+    if (std === 0) return 0;
+    return (mean / std) * Math.sqrt(252);
+  }
+}
+
+class CompetitionEngine {
+  constructor(startingCapital, marketCondition) {
+    this.startingCapital = startingCapital;
+    this.marketCondition = marketCondition;
+    this.day = 0;
+    this.maxDays = 252;
+    this.marketPrice = 100;
+    this.marketHistory = [100];
+    this.marketReturn = 0;
+    this.stockPrices = {};
+    this.algorithms = ALGO_DEFINITIONS.map(d => new AlgorithmState(d, startingCapital));
+    this.picks = [];
+    this.regime = 'neutral';
+    this.volatility = 0.015;
+
+    // Initialize stock prices
+    STOCK_UNIVERSE.forEach(s => { this.stockPrices[s] = 50 + Math.random() * 200; });
+  }
+
+  tick() {
+    this.day++;
+    if (this.day > this.maxDays) return false;
+
+    // Update market and regime
+    this._updateMarket();
+    this._updateStockPrices();
+    this._updateRegime();
+
+    // Each algorithm makes decisions
+    for (const algo of this.algorithms) {
+      this._runAlgorithm(algo);
+    }
+
+    return true;
+  }
+
+  _updateMarket() {
+    const condition = this.marketCondition === 'random' ? this._randomCondition() : this.marketCondition;
+    let drift, vol;
+
+    switch (condition) {
+      case 'bull':
+        drift = 0.0004 + Math.random() * 0.0003;
+        vol = 0.008 + Math.random() * 0.008;
+        break;
+      case 'bear':
+        drift = -0.0003 - Math.random() * 0.0003;
+        vol = 0.012 + Math.random() * 0.01;
+        break;
+      case 'volatile':
+        drift = 0.0001;
+        vol = 0.02 + Math.random() * 0.015;
+        break;
+      case 'sideways':
+        drift = 0.00005;
+        vol = 0.005 + Math.random() * 0.005;
+        break;
+      case 'crash_recovery':
+        if (this.day < 60) { drift = -0.002; vol = 0.03; }
+        else if (this.day < 120) { drift = -0.0005; vol = 0.02; }
+        else { drift = 0.001; vol = 0.012; }
+        break;
+      default:
+        drift = 0.0002; vol = 0.01;
+    }
+
+    this.volatility = vol;
+    const shock = drift + vol * this._normalRandom();
+
+    // Occasional market events
+    let eventShock = 0;
+    if (Math.random() < 0.02) {
+      eventShock = (Math.random() > 0.5 ? 1 : -1) * (0.02 + Math.random() * 0.03);
+    }
+
+    this.marketPrice *= (1 + shock + eventShock);
+    this.marketHistory.push(this.marketPrice);
+    this.marketReturn = (this.marketPrice - 100) / 100;
+  }
+
+  _randomCondition() {
+    const r = Math.random();
+    if (r < 0.3) return 'bull';
+    if (r < 0.5) return 'bear';
+    if (r < 0.7) return 'sideways';
+    if (r < 0.85) return 'volatile';
+    return 'crash_recovery';
+  }
+
+  _updateStockPrices() {
+    const marketReturn = this.marketHistory.length > 1
+      ? (this.marketHistory[this.marketHistory.length - 1] / this.marketHistory[this.marketHistory.length - 2]) - 1
+      : 0;
+
+    for (const ticker of STOCK_UNIVERSE) {
+      const beta = 0.5 + Math.random() * 1.5;
+      const idiosyncratic = this._normalRandom() * 0.02;
+      const stockReturn = marketReturn * beta + idiosyncratic;
+      this.stockPrices[ticker] *= (1 + stockReturn);
+      if (this.stockPrices[ticker] < 1) this.stockPrices[ticker] = 1;
+    }
+  }
+
+  _updateRegime() {
+    if (this.volatility > 0.025) this.regime = 'crisis';
+    else if (this.volatility > 0.015) this.regime = 'volatile';
+    else if (this.marketReturn > 0.05) this.regime = 'risk_on';
+    else if (this.marketReturn < -0.05) this.regime = 'risk_off';
+    else this.regime = 'neutral';
+  }
+
+  _runAlgorithm(algo) {
+    const prof = algo.def.riskProfile;
+    const condKey = this.marketCondition === 'random'
+      ? (this.regime === 'risk_on' ? 'bull' : this.regime === 'risk_off' ? 'bear' : this.regime === 'crisis' ? 'volatile' : 'sideways')
+      : this.marketCondition;
+    const regimeMult = algo.def.regimeFit[condKey] || 1.0;
+
+    // Calculate recent market momentum
+    const lookback = Math.min(20, this.marketHistory.length);
+    const recentReturn = lookback > 1
+      ? (this.marketHistory[this.marketHistory.length - 1] / this.marketHistory[this.marketHistory.length - lookback]) - 1
+      : 0;
+
+    // Decision frequency based on hold period
+    const freqMap = { 'Daily': 1, '3-5 days': 3, 'Short-term': 5, 'Weekly': 5, 'Monthly': 21, '6-8 weeks': 30, 'Long-term': 42, 'Buy & Hold': 63, 'Adaptive': 7 };
+    const freq = freqMap[algo.def.holdPeriod] || 5;
+    const shouldTrade = this.day % freq === 0 || this.day === 1;
+
+    // Update existing holdings value
+    algo.investedValue = 0;
+    for (const [ticker, holding] of Object.entries(algo.holdings)) {
+      const currentPrice = this.stockPrices[ticker];
+      holding.currentValue = holding.shares * currentPrice;
+      algo.investedValue += holding.currentValue;
+
+      // Check stop loss / take profit
+      const returnOnHolding = (currentPrice - holding.entryPrice) / holding.entryPrice;
+      const stopLoss = algo.def.riskProfile.defensiveness * -0.08 - 0.02;
+      const takeProfit = (1 - algo.def.riskProfile.defensiveness) * 0.15 + 0.05;
+
+      if (returnOnHolding < stopLoss || returnOnHolding > takeProfit) {
+        // Close position
+        const pnl = holding.currentValue - holding.costBasis;
+        algo.cash += holding.currentValue;
+        algo.investedValue -= holding.currentValue;
+        algo.totalTrades++;
+        if (pnl > 0) algo.wins++;
+        else algo.losses++;
+
+        const action = returnOnHolding > takeProfit ? 'SELL' : 'SELL';
+        this.picks.push({
+          day: this.day,
+          algo: algo.def.shortName,
+          algoColor: algo.def.color,
+          action: pnl > 0 ? 'SELL' : 'SELL',
+          ticker: ticker,
+          detail: `${pnl > 0 ? 'Profit' : 'Loss'}: ${(returnOnHolding * 100).toFixed(1)}%`,
+          pnl: pnl
+        });
+
+        delete algo.holdings[ticker];
+      }
+    }
+
+    // Make new picks
+    if (shouldTrade) {
+      const maxPositions = 3 + Math.floor(prof.aggression * 5);
+      const currentPositions = Object.keys(algo.holdings).length;
+      const availCash = algo.cash;
+      const positionSize = availCash / Math.max(maxPositions - currentPositions, 1);
+
+      if (currentPositions < maxPositions && availCash > positionSize * 0.5) {
+        // Select stocks based on algorithm personality
+        const candidates = this._selectCandidates(algo, recentReturn);
+        const numPicks = Math.min(Math.ceil(Math.random() * 2) + 1, maxPositions - currentPositions);
+
+        for (let i = 0; i < Math.min(numPicks, candidates.length); i++) {
+          const ticker = candidates[i];
+          if (algo.holdings[ticker]) continue;
+
+          const price = this.stockPrices[ticker];
+          const investAmount = Math.min(positionSize, algo.cash * 0.3);
+          if (investAmount < 100) continue;
+
+          const shares = Math.floor(investAmount / price);
+          if (shares <= 0) continue;
+
+          const costBasis = shares * price;
+          algo.cash -= costBasis;
+          algo.holdings[ticker] = {
+            shares,
+            entryPrice: price,
+            costBasis,
+            currentValue: costBasis,
+            entryDay: this.day
+          };
+          algo.investedValue += costBasis;
+          algo.totalTrades++;
+
+          // Alpha generation: regime-adjusted performance
+          const alpha = (Math.random() - 0.45) * 0.02 * regimeMult;
+          this.stockPrices[ticker] *= (1 + alpha);
+
+          this.picks.push({
+            day: this.day,
+            algo: algo.def.shortName,
+            algoColor: algo.def.color,
+            action: 'BUY',
+            ticker,
+            detail: `$${costBasis.toFixed(0)} @ $${price.toFixed(2)} (${shares} shares)`,
+          });
+        }
+      }
+    }
+
+    // Record portfolio value
+    const pv = algo.portfolioValue;
+    algo.portfolioHistory.push(pv);
+
+    // Daily return
+    const prevPv = algo.portfolioHistory[algo.portfolioHistory.length - 2] || algo.startingCapital;
+    algo.dailyReturns.push((pv - prevPv) / prevPv);
+
+    // Max drawdown
+    if (pv > algo.peakValue) algo.peakValue = pv;
+    const dd = (algo.peakValue - pv) / algo.peakValue;
+    if (dd > algo.maxDrawdown) algo.maxDrawdown = dd;
+  }
+
+  _selectCandidates(algo, recentReturn) {
+    const prof = algo.def.riskProfile;
+    let pool = [...STOCK_UNIVERSE];
+
+    // Algorithm-specific filtering
+    if (algo.def.id === 'dividend_aristocrats') {
+      pool = [...DIVIDEND_ARISTOCRATS];
+    }
+
+    // Score each stock
+    const scored = pool.map(ticker => {
+      const price = this.stockPrices[ticker];
+      let score = Math.random() * 0.3;
+
+      // Momentum algorithms prefer recent winners
+      if (prof.trendFollow > 0.5) {
+        const idx = STOCK_UNIVERSE.indexOf(ticker);
+        const momentum = Math.sin(this.day * 0.05 + idx * 0.7) * 0.5 + Math.random() * 0.5;
+        score += momentum * prof.trendFollow * 0.4;
+      }
+
+      // Mean reversion algorithms prefer recent losers
+      if (prof.meanReversion > 0.5) {
+        const idx = STOCK_UNIVERSE.indexOf(ticker);
+        const oversold = -Math.sin(this.day * 0.05 + idx * 0.7) * 0.5 + Math.random() * 0.5;
+        score += oversold * prof.meanReversion * 0.4;
+      }
+
+      // Defensive algorithms prefer large-cap / stable
+      if (prof.defensiveness > 0.7) {
+        const isLargeCap = STOCK_UNIVERSE.indexOf(ticker) < 20;
+        if (isLargeCap) score += 0.3;
+      }
+
+      // Aggressive algorithms like volatile stocks
+      if (prof.aggression > 0.7) {
+        const isSmallCap = STOCK_UNIVERSE.indexOf(ticker) > 40;
+        if (isSmallCap) score += 0.2;
+      }
+
+      return { ticker, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 10).map(s => s.ticker);
+  }
+
+  _normalRandom() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  UI RENDERING
+// ═══════════════════════════════════════════════════════════════════
+
+function initChart() {
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  const datasets = ALGO_DEFINITIONS.map(def => ({
+    label: def.shortName,
+    data: [],
+    borderColor: def.color,
+    backgroundColor: 'transparent',
+    borderWidth: def.id === 'meta_learner' ? 3 : 1.5,
+    pointRadius: 0,
+    tension: 0.3,
+    borderDash: def.id === 'meta_learner' ? [] : undefined,
+  }));
+
+  // Add S&P 500 benchmark
+  datasets.push({
+    label: 'S&P 500',
+    data: [],
+    borderColor: '#555',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    pointRadius: 0,
+    tension: 0.3,
+    borderDash: [8, 4],
+  });
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 0 },
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: '#a0a0b8',
+            font: { size: 11 },
+            boxWidth: 12,
+            padding: 10,
+            usePointStyle: true,
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1c1c2b',
+          titleColor: '#eeeef5',
+          bodyColor: '#a0a0b8',
+          borderColor: '#2a2a40',
+          borderWidth: 1,
+          callbacks: {
+            label: function(ctx) {
+              return `${ctx.dataset.label}: $${ctx.raw.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(42,42,64,0.3)' },
+          ticks: { color: '#666680', font: { size: 10 }, maxTicksLimit: 20 },
+        },
+        y: {
+          grid: { color: 'rgba(42,42,64,0.3)' },
+          ticks: {
+            color: '#666680', font: { size: 10 },
+            callback: v => '$' + (v / 1000).toFixed(0) + 'k'
+          },
+        }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!competition || !chart) return;
+
+  chart.data.labels = Array.from({ length: competition.day + 1 }, (_, i) => `D${i}`);
+
+  competition.algorithms.forEach((algo, i) => {
+    chart.data.datasets[i].data = [...algo.portfolioHistory];
+  });
+
+  // S&P 500 benchmark
+  const spIdx = chart.data.datasets.length - 1;
+  const sc = competition.startingCapital;
+  chart.data.datasets[spIdx].data = competition.marketHistory.map(p => sc * (p / 100));
+
+  chart.update();
+}
+
+function updateLeaderboard() {
+  if (!competition) return;
+  const sorted = [...competition.algorithms].sort((a, b) => b.portfolioValue - a.portfolioValue);
+  const tbody = document.getElementById('leaderboardBody');
+  tbody.innerHTML = sorted.map((algo, i) => {
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+    const pnlClass = algo.totalReturn >= 0 ? 'pnl-positive' : 'pnl-negative';
+    const pnlSign = algo.totalReturn >= 0 ? '+' : '';
+    return `<tr>
+      <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+      <td>
+        <div class="algo-name-cell">
+          <span class="algo-dot" style="background:${algo.def.color}"></span>
+          <span>${algo.def.shortName}</span>
+        </div>
+      </td>
+      <td>$${algo.portfolioValue.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+      <td class="${pnlClass}">${pnlSign}${(algo.totalReturn * 100).toFixed(2)}%</td>
+      <td>${algo.sharpeRatio.toFixed(2)}</td>
+      <td>${(algo.winRate * 100).toFixed(0)}%</td>
+      <td>${algo.totalTrades}</td>
+    </tr>`;
+  }).join('');
+}
+
+function updatePicksFeed() {
+  if (!competition) return;
+  const feed = document.getElementById('picksFeed');
+  const recent = competition.picks.slice(-50).reverse();
+  if (recent.length === 0) return;
+
+  feed.innerHTML = recent.map(p => {
+    const actionClass = p.action === 'BUY' ? 'pick-buy' : p.action === 'SELL' ? 'pick-sell' : 'pick-hold';
+    return `<div class="pick-item">
+      <span class="pick-time">Day ${p.day}</span>
+      <span class="pick-algo" style="color: ${p.algoColor}">${p.algo}</span>
+      <span class="pick-action ${actionClass}">${p.action}</span>
+      <span class="pick-ticker">${p.ticker}</span>
+      <span class="pick-detail">${p.detail}</span>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  if (!competition) return;
+  const sorted = [...competition.algorithms].sort((a, b) => b.portfolioValue - a.portfolioValue);
+  const best = sorted[0];
+  const worst = sorted[sorted.length - 1];
+
+  document.getElementById('statDay').textContent = `Day ${competition.day} / ${competition.maxDays}`;
+  document.getElementById('statLeader').textContent = best.def.shortName;
+  document.getElementById('statLeader').style.color = best.def.color;
+
+  const bestRet = document.getElementById('statBestReturn');
+  bestRet.textContent = (best.totalReturn >= 0 ? '+' : '') + (best.totalReturn * 100).toFixed(2) + '%';
+  bestRet.className = best.totalReturn >= 0 ? 'stat-value stat-positive' : 'stat-value stat-negative';
+
+  const worstRet = document.getElementById('statWorstReturn');
+  worstRet.textContent = (worst.totalReturn >= 0 ? '+' : '') + (worst.totalReturn * 100).toFixed(2) + '%';
+  worstRet.className = worst.totalReturn >= 0 ? 'stat-value stat-positive' : 'stat-value stat-negative';
+
+  document.getElementById('statTotalTrades').textContent = competition.algorithms.reduce((s, a) => s + a.totalTrades, 0);
+
+  const mktRet = document.getElementById('statMarketReturn');
+  mktRet.textContent = (competition.marketReturn >= 0 ? '+' : '') + (competition.marketReturn * 100).toFixed(2) + '%';
+  mktRet.className = competition.marketReturn >= 0 ? 'stat-value stat-positive' : 'stat-value stat-negative';
+}
+
+function updateAlgoCards() {
+  if (!competition) return;
+  const grid = document.getElementById('algoCardsGrid');
+  grid.innerHTML = competition.algorithms.map(algo => {
+    const pnlClass = algo.totalReturn >= 0 ? 'pnl-positive' : 'pnl-negative';
+    const holdingsList = Object.keys(algo.holdings);
+    return `<div class="algo-card" style="border-left: 3px solid ${algo.def.color};">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${algo.def.color};"></div>
+      <div class="algo-card-header">
+        <div>
+          <div class="algo-card-name">${algo.def.name}</div>
+          <div style="color: var(--text-3); font-size: 0.75rem; margin-top: 2px;">${algo.def.description}</div>
+        </div>
+        <span class="algo-card-type" style="background: ${algo.def.color}22; color: ${algo.def.color};">${algo.def.type}</span>
+      </div>
+      <div class="algo-card-stats">
+        <div class="algo-card-stat">
+          <div class="algo-card-stat-value ${pnlClass}">$${algo.portfolioValue.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+          <div class="algo-card-stat-label">Portfolio</div>
+        </div>
+        <div class="algo-card-stat">
+          <div class="algo-card-stat-value ${pnlClass}">${algo.totalReturn >= 0 ? '+' : ''}${(algo.totalReturn * 100).toFixed(2)}%</div>
+          <div class="algo-card-stat-label">Return</div>
+        </div>
+        <div class="algo-card-stat">
+          <div class="algo-card-stat-value">${algo.sharpeRatio.toFixed(2)}</div>
+          <div class="algo-card-stat-label">Sharpe</div>
+        </div>
+        <div class="algo-card-stat">
+          <div class="algo-card-stat-value" style="color: var(--red);">-${(algo.maxDrawdown * 100).toFixed(1)}%</div>
+          <div class="algo-card-stat-label">Max Drawdown</div>
+        </div>
+      </div>
+      <div class="algo-card-holdings">
+        <strong>${holdingsList.length}</strong> positions | <strong>${algo.totalTrades}</strong> trades | Win: <strong>${(algo.winRate * 100).toFixed(0)}%</strong>
+        ${holdingsList.length > 0 ? `<div class="holdings-tags">${holdingsList.map(t => `<span class="holding-tag">${t}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateMarketTicker() {
+  if (!competition) return;
+  const ticker = document.getElementById('marketTicker');
+  const samples = STOCK_UNIVERSE.slice(0, 15);
+  ticker.innerHTML = `<span class="ticker-item"><span class="ticker-symbol">S&P 500</span>
+    <span class="ticker-price">${(competition.marketPrice * 50).toFixed(0)}</span>
+    <span class="ticker-change" style="color: ${competition.marketReturn >= 0 ? 'var(--green)' : 'var(--red)'}">
+      ${competition.marketReturn >= 0 ? '+' : ''}${(competition.marketReturn * 100).toFixed(2)}%
+    </span></span>` +
+  samples.map(s => {
+    const price = competition.stockPrices[s];
+    const change = ((price / (50 + STOCK_UNIVERSE.indexOf(s) * 2.5)) - 1);
+    return `<span class="ticker-item">
+      <span class="ticker-symbol">${s}</span>
+      <span class="ticker-price">$${price.toFixed(2)}</span>
+      <span class="ticker-change" style="color: ${change >= 0 ? 'var(--green)' : 'var(--red)'}">
+        ${change >= 0 ? '+' : ''}${(change * 100).toFixed(1)}%
+      </span>
+    </span>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  COMPETITION CONTROL
+// ═══════════════════════════════════════════════════════════════════
+
+function startCompetition() {
+  const capital = parseInt(document.getElementById('startingCapital').value);
+  const condition = document.getElementById('marketCondition').value;
+
+  if (!competition || competition.day >= competition.maxDays) {
+    competition = new CompetitionEngine(capital, condition);
+    initChart();
+    initReturnsChart();
+    document.getElementById('returnsChartSection').style.display = '';
+    document.getElementById('winnerBanner').style.display = 'none';
+  }
+
+  isPaused = false;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnPause').style.display = 'inline-block';
+  document.getElementById('statusBadge').textContent = 'Running';
+  document.getElementById('statusBadge').className = 'status-badge status-running is-running';
+
+  runLoop();
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  const btn = document.getElementById('btnPause');
+  const badge = document.getElementById('statusBadge');
+
+  if (isPaused) {
+    btn.textContent = 'Resume';
+    btn.className = 'btn-success';
+    badge.textContent = 'Paused';
+    badge.className = 'status-badge status-paused';
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+  } else {
+    btn.textContent = 'Pause';
+    btn.className = 'btn-danger';
+    badge.textContent = 'Running';
+    badge.className = 'status-badge status-running is-running';
+    runLoop();
+  }
+}
+
+function resetCompetition() {
+  isPaused = false;
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  competition = null;
+  document.getElementById('btnStart').style.display = 'inline-block';
+  document.getElementById('btnPause').style.display = 'none';
+  document.getElementById('statusBadge').textContent = 'Stopped';
+  document.getElementById('statusBadge').className = 'status-badge status-stopped';
+  document.getElementById('statDay').textContent = 'Day 0';
+  document.getElementById('statLeader').textContent = '--';
+  document.getElementById('statLeader').style.color = '';
+  document.getElementById('statBestReturn').textContent = '0.00%';
+  document.getElementById('statWorstReturn').textContent = '0.00%';
+  document.getElementById('statTotalTrades').textContent = '0';
+  document.getElementById('statMarketReturn').textContent = '0.00%';
+  document.getElementById('leaderboardBody').innerHTML = '';
+  document.getElementById('picksFeed').innerHTML = '<div class="pick-item" style="justify-content:center;color:var(--text-3);">Start the competition to see live picks...</div>';
+  document.getElementById('algoCardsGrid').innerHTML = '';
+  if (chart) { chart.destroy(); chart = null; }
+  if (returnsChart) { returnsChart.destroy(); returnsChart = null; }
+  document.getElementById('returnsChartSection').style.display = 'none';
+  document.getElementById('winnerBanner').style.display = 'none';
+  initChart();
+}
+
+function runLoop() {
+  if (isPaused || !competition) return;
+
+  const speed = parseInt(document.getElementById('speedSlider').value);
+  const now = performance.now();
+  const interval = Math.max(20, 200 - speed * 10);
+
+  if (now - lastTick >= interval) {
+    // Run multiple ticks per frame at high speed
+    const ticksPerFrame = Math.max(1, Math.floor(speed / 3));
+    for (let t = 0; t < ticksPerFrame; t++) {
+      if (!competition.tick()) {
+        // Competition finished
+        finishCompetition();
+        return;
+      }
+    }
+
+    lastTick = now;
+
+    // Update UI (throttled for performance)
+    if (competition.day % Math.max(1, Math.floor(speed / 2)) === 0 || competition.day <= 5) {
+      updateChart();
+      updateLeaderboard();
+      updateStats();
+      updateMarketTicker();
+      if (returnsChart && competition.day % 5 === 0) updateReturnsChart();
+    }
+    if (competition.day % 3 === 0 || competition.day <= 5) {
+      updatePicksFeed();
+    }
+    if (competition.day % 10 === 0 || competition.day <= 5) {
+      updateAlgoCards();
+    }
+  }
+
+  animFrameId = requestAnimationFrame(runLoop);
+}
+
+let returnsChart = null;
+
+function initReturnsChart() {
+  const ctx = document.getElementById('returnsChart').getContext('2d');
+  if (returnsChart) returnsChart.destroy();
+
+  const datasets = ALGO_DEFINITIONS.map(def => ({
+    label: def.shortName,
+    data: [],
+    borderColor: def.color,
+    backgroundColor: 'transparent',
+    borderWidth: def.id === 'meta_learner' ? 3 : 1.5,
+    pointRadius: 0,
+    tension: 0.3,
+  }));
+
+  returnsChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 0 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c2b',
+          titleColor: '#eeeef5',
+          bodyColor: '#a0a0b8',
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.raw >= 0 ? '+' : ''}${ctx.raw.toFixed(2)}%`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(42,42,64,0.3)' }, ticks: { color: '#666680', font: { size: 10 }, maxTicksLimit: 20 } },
+        y: {
+          grid: { color: 'rgba(42,42,64,0.3)' },
+          ticks: { color: '#666680', font: { size: 10 }, callback: v => v.toFixed(1) + '%' },
+        }
+      }
+    }
+  });
+}
+
+function updateReturnsChart() {
+  if (!competition || !returnsChart) return;
+  document.getElementById('returnsChartSection').style.display = '';
+  returnsChart.data.labels = Array.from({ length: competition.day + 1 }, (_, i) => `D${i}`);
+  competition.algorithms.forEach((algo, i) => {
+    returnsChart.data.datasets[i].data = algo.portfolioHistory.map(v => ((v / algo.startingCapital) - 1) * 100);
+  });
+  returnsChart.update();
+}
+
+function finishCompetition() {
+  document.getElementById('btnStart').style.display = 'inline-block';
+  document.getElementById('btnStart').textContent = 'Restart';
+  document.getElementById('btnPause').style.display = 'none';
+  document.getElementById('statusBadge').textContent = 'Finished!';
+  document.getElementById('statusBadge').className = 'status-badge status-paused';
+
+  // Final update
+  updateChart();
+  updateLeaderboard();
+  updatePicksFeed();
+  updateAlgoCards();
+  updateStats();
+  updateMarketTicker();
+
+  // Show returns chart
+  initReturnsChart();
+  updateReturnsChart();
+
+  // Show winner banner
+  const sorted = [...competition.algorithms].sort((a, b) => b.portfolioValue - a.portfolioValue);
+  const winner = sorted[0];
+  const second = sorted[1];
+  const third = sorted[2];
+  const beatsMarket = sorted.filter(a => a.totalReturn > competition.marketReturn).length;
+
+  document.getElementById('winnerBanner').style.display = '';
+  document.getElementById('winnerTrophy').textContent = '🏆';
+  document.getElementById('winnerTitle').textContent = `${winner.def.name} Wins!`;
+  document.getElementById('winnerDetail').textContent =
+    `Final portfolio: $${winner.portfolioValue.toLocaleString(undefined, {maximumFractionDigits: 0})} ` +
+    `(${winner.totalReturn >= 0 ? '+' : ''}${(winner.totalReturn * 100).toFixed(2)}%) | ` +
+    `${beatsMarket} of 12 algorithms beat the S&P 500 benchmark`;
+  document.getElementById('winnerStats').innerHTML = [
+    { label: '1st Place', name: winner.def.shortName, color: winner.def.color, ret: winner.totalReturn },
+    { label: '2nd Place', name: second.def.shortName, color: second.def.color, ret: second.totalReturn },
+    { label: '3rd Place', name: third.def.shortName, color: third.def.color, ret: third.totalReturn },
+  ].map(p => `<div style="background: var(--bg-2); border-radius: 12px; padding: 12px 20px; min-width: 160px;">
+    <div style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase;">${p.label}</div>
+    <div style="font-size: 1.1rem; font-weight: 700; color: ${p.color};">${p.name}</div>
+    <div style="font-size: 0.9rem; color: ${p.ret >= 0 ? 'var(--green)' : 'var(--red)'};">${p.ret >= 0 ? '+' : ''}${(p.ret * 100).toFixed(2)}%</div>
+  </div>`).join('');
+}
+
+// Speed slider
+document.getElementById('speedSlider').addEventListener('input', function() {
+  document.getElementById('speedDisplay').textContent = this.value + 'x';
+});
+
+// Initialize
+initChart();
+updateAlgoCards();
+
+// Build initial algo cards (static)
+document.getElementById('algoCardsGrid').innerHTML = ALGO_DEFINITIONS.map(def => `
+  <div class="algo-card" style="border-left: 3px solid ${def.color};">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${def.color};"></div>
+    <div class="algo-card-header">
+      <div>
+        <div class="algo-card-name">${def.name}</div>
+        <div style="color: var(--text-3); font-size: 0.75rem; margin-top: 2px;">${def.description}</div>
+      </div>
+      <span class="algo-card-type" style="background: ${def.color}22; color: ${def.color};">${def.type}</span>
+    </div>
+    <div style="margin-top: 12px; font-size: 0.8rem; color: var(--text-2);">
+      <div><strong>Edge:</strong> ${def.edge}</div>
+      <div><strong>Hold Period:</strong> ${def.holdPeriod}</div>
+      <div style="margin-top: 6px;"><em>Press "Start Competition" to begin simulation</em></div>
+    </div>
+  </div>`).join('');
+</script>
+</body>
+</html>

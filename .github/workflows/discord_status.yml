@@ -1,0 +1,27 @@
+name: ANTIGRAVITY ML  Hourly Discord Status + Picks
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour at minute 0
+  workflow_dispatch:
+
+jobs:
+  post-status:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Generate and post Discord status with picks
+      # env:
+        # DISABLED: noisy/underperforming  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: python ml_crypto_predictor/enhanced_models/discord_status.py
+

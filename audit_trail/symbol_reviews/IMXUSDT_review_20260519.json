@@ -1,0 +1,44 @@
+{
+  "symbol": "IMXUSDT",
+  "review_date": "2026-05-19",
+  "reviewer": "claude-code-autonomous (CX2 continuation)",
+  "data_source": "ejaguiar1_stocks.trading_picks (MySQL post-dedup: 41,360 rows)",
+  "scheduled_review_date": "2026-06-06",
+  "asset_class": "CRYPTO",
+  "stage_before_review": "PENDING_UNBLOCK_REVIEW (SHADOW)",
+  "block_date": "unknown",
+  "block_reason": "Prior session note: Q-001 sync issue 2026-05-24. Last known stats (pre-dedup): n=29, WR=62.1%, PF=2.54.",
+
+  "thresholds": {
+    "SHADOW": {"n_min": 10, "wr_min_pct": 50, "pf_min": 1.3},
+    "PROBATION": {"n_min": 20, "wr_min_pct": 52, "pf_min": 1.3},
+    "FULL": {"n_min": 30, "wr_min_pct": 52, "pf_min": 1.5}
+  },
+
+  "mysql_post_dedup_stats": {
+    "query_date": "2026-05-19",
+    "db": "ejaguiar1_stocks.trading_picks (post-dedup: 41,360 rows)",
+    "resolved_statuses": ["WIN","WON","TP_HIT","CLOSED_TP","LOSS","LOST","SL_HIT","CLOSED_SL","CLOSED","TIME_EXIT","EXPIRED"],
+    "n_resolved": 0,
+    "n_open": 1,
+    "note": "The previously reported n=29 WR=62.1% PF=2.54 were pre-dedup duplicate rows. After removing 32,195 duplicates, IMXUSDT has 0 resolved picks and 1 OPEN pick. The prior stats are invalidated."
+  },
+
+  "pre_dedup_claim": {
+    "n": 29,
+    "wr_pct": 62.1,
+    "pf": 2.54,
+    "verdict": "INVALIDATED — these were duplicate rows, not real resolved picks"
+  },
+
+  "thresholds_met": {
+    "SHADOW": {"n_met": false, "wr_met": false, "pf_met": false, "overall": false},
+    "PROBATION": {"n_met": false, "wr_met": false, "pf_met": false, "overall": false}
+  },
+
+  "verdict": "KEEP_PENDING_UNBLOCK_REVIEW",
+  "verdict_reason": "MySQL post-dedup reveals the 29 previously reported picks were duplicates. 0 resolved picks remain post-dedup. Cannot assess performance. Must wait for organic data accumulation. The scheduled 2026-06-06 review date should stand — do NOT promote early.",
+  "early_promotion_recommendation": "NO — the n=29 WR=62.1% PF=2.54 data was invalidated by dedup. Early promotion would be based on phantom data. Wait for 2026-06-06.",
+  "recommended_action": "Keep in PENDING_UNBLOCK_REVIEW with date 2026-06-06. Monitor OPEN pick (currently active) and allow organic resolved data to accumulate. At 2026-06-06: if n>=10 AND WR>=50% AND PF>=1.3 → promote to SHADOW; if n>=20 AND WR>=52% AND PF>=1.3 → promote directly to PROBATION.",
+  "next_review_date": "2026-06-06"
+}

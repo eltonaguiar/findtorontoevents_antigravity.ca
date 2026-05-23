@@ -1,0 +1,73 @@
+{
+  "pr_id": "PR-C",
+  "reviews": {
+    "qwen2.5-coder:14b": {
+      "role": "code-specialist (Alibaba)",
+      "elapsed_s": 8.2,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Consider adding a comment explaining the rationale behind blocking these specific strategies in `audit_trail/quality_gates.py`"
+        ],
+        "questions": [
+          "What is the expected impact on the overall performance of the trading dashboard after quarantining these strategies?"
+        ],
+        "risk_score_0_10": 3,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "deepseek-r1:14b": {
+      "role": "reasoning (DeepSeek)",
+      "elapsed_s": 11.2,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [],
+        "questions": [
+          "Are there any edge cases where these strategies might still be needed temporarily?"
+        ],
+        "risk_score_0_10": 5,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "devstral-small-2": {
+      "role": "code-patches (Mistral)",
+      "elapsed_s": 19.8,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Verify test coverage in test_blocklist_enforcement.py for edge cases (e.g., asset_class/strategy pair reordering)"
+        ],
+        "questions": [
+          "Is there a rollback plan if the dragger picks resume emitting?"
+        ],
+        "risk_score_0_10": 4,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "ernie:latest": {
+      "role": "thinking (Baidu)",
+      "elapsed_s": 103.0,
+      "parsed": null,
+      "raw_tail": "is the standard formula, but why?\n\nStep 3: Derivation using integration. Explain that to find the volume, we can think of the sphere as stacked circular slices. Each slice is a very thin circle (a disk) with radius r that varies depending on how far it is from the center. The total volume is the sum (integral) of the areas of all these slices.\n\nStep 4: Calculate the area of each slice. For a given height h from the center, the radius r of the slice is sqrt(R\u00b2 - h\u00b2). So the area A(h) = \u03c0r\u00b2 = \u03c0(R\u00b2 - h\u00b2).\n\nStep 5: Integrate the area over the entire sphere. Since the sphere extends from h = -R to h = R (from center to edge), the volume V is the integral of A(h) dh from -R to R, which equals 2\u03c0\u222b0^R (R\u00b2 - h\u00b2) dh. Solving this integral gives (4/3)\u03c0R\u00b3.\n\nStep 6: Confirm with an example. For R=1, V=(4/3)\u03c0(1)^3 = (4/3)\u03c0 \u2248 4.188. For R=2, V=(4/3)\u03c0(8) = 32\u03c0/3 \u2248 33.51.\n\nStep 7: Note that the formula is derived from calculus, but it's a standard result. If calculus isn't covered, there are other methods like comparing to other shapes or using the formula directly with memorization.\n\nI should also mention that the formula is similar to the area of a circle (\u03c0R\u00b2), but extended to 3D by cubing the radius and multiplying by \u03c0 and the constant 4/3.\n\nWait, another way to think about it: the volume of a sphere is 2/3 \u03c0R\u00b3 times 2, but no, that's not right. Wait, maybe not. Let me check the derivation again to make sure.\n\nYes, the integral approach is correct. So putting it all together, the step-by"
+    },
+    "glm-4.7-flash": {
+      "role": "alt-lineage (Zhipu)",
+      "elapsed_s": 41.5,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [],
+        "questions": [],
+        "risk_score_0_10": 3,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    }
+  }
+}

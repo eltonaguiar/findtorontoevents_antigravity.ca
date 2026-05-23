@@ -1,0 +1,65 @@
+name: ALPHA ENGINE - Universe Expander
+
+on:
+  schedule:
+    - cron: '52 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no file write)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+concurrency:
+  group: universe-expander
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  expand-universe:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run Universe Expander
+        id: expand
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          if [ "$DRY_RUN" = "true" ]; then
+            python alpha_engine/gainer_universe_expander.py
+          else
+            python alpha_engine/gainer_universe_expander.py --write
+          fi
+
+      - name: Commit expansion data
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/universe_expansion.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+            NEW_COUNT=$(python -c "import json; d=json.load(open('alpha_engine/data/universe_expansion.json')); print(len(d.get('new_symbols',[])))" 2>/dev/null || echo "?")
+            git commit -m "data: universe expansion scan - ${NEW_COUNT} new symbols found (${TIMESTAMP}) [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

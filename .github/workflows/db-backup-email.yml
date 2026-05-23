@@ -1,0 +1,252 @@
+# Daily database backup for all findtorontoevents.ca databases
+# 1. Deploys db_export_runner.php to source server via FTP
+# 2. Calls it via HTTP to export all 8 databases
+# 3. Saves gzipped SQL dumps as GitHub Artifacts (90-day retention)
+# 4. Emails the dumps to backup recipients via SMTP
+name: "FINDTORONTOEVENTS.CA Database Backups"
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # Daily at 4:00 AM UTC (moved from 8 AM to avoid pile-up with sync workflows)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BACKUP_SCRIPT_PATH: "_db_bkp_runner_tmp.php"   # Remote path on server (avoid "backup" in URL  triggers ModSecurity)
+  DATABASES: "ejaguiar1_deals ejaguiar1_events ejaguiar1_favcreators ejaguiar1_memecoin ejaguiar1_news ejaguiar1_sportsbet ejaguiar1_stocks ejaguiar1_tvmoviestrailers"
+
+jobs:
+  backup-source-site:
+    name: "Backup findtorontoevents.ca databases"
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: sudo apt-get install -y lftp
+
+      - name: Deploy backup runner PHP to findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          DB_CREDENTIALS_JSON: ${{ secrets.FINDTORONTOEVENTS_DB_CREDENTIALS }}
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          echo " Injecting credentials into backup script..."
+          python3 - <<'PYEOF'
+          import os, json
+
+          db_creds_json = os.environ.get('DB_CREDENTIALS_JSON', '{}')
+          token         = os.environ.get('DB_SCRIPT_TOKEN', '')
+
+          # Parse credentials JSON  format: {"dbname": ["user", "pass"], ...}
+          try:
+              creds = json.loads(db_creds_json)
+          except Exception:
+              creds = {}
+
+          # Build PHP 5.2 array literal for per-DB credential map
+          cred_map_parts = []
+          for dbname, dbcreds in creds.items():
+              u = dbcreds[0].replace("'", "\\'")
+              p = dbcreds[1].replace("'", "\\'")
+              cred_map_parts.append(f"'{dbname}' => array('{u}', '{p}')")
+          cred_map_php = 'array(' + ', '.join(cred_map_parts) + ')' if cred_map_parts else 'array()'
+
+          with open('scripts/db_export_runner.php', 'r') as f:
+              content = f.read()
+
+          content = content.replace('EXPORT_TOKEN_PLACEHOLDER', token)
+          content = content.replace('array(); // EXPORT_DB_CRED_MAP', cred_map_php + '; // EXPORT_DB_CRED_MAP')
+
+          with open('/tmp/backup_runner_injected.php', 'w') as f:
+              f.write(content)
+          print(" Script prepared with per-DB credentials")
+          PYEOF
+
+          echo " Uploading backup runner to findtorontoevents.ca..."
+          cat > /tmp/lftp_deploy.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd /findtorontoevents.ca
+          put /tmp/backup_runner_injected.php -o $BACKUP_SCRIPT_PATH
+          quit
+          LFTPEOF
+
+          lftp -f /tmp/lftp_deploy.script
+          echo " Backup runner deployed"
+
+      - name: Run export and download dumps
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          echo " Triggering DB export on findtorontoevents.ca..."
+          mkdir -p /tmp/db_backups
+
+          # Use curl (matches working db-sync-to-mirror pattern)
+          RESP_FILE=$(mktemp)
+          BASE_URL="https://findtorontoevents.ca/${BACKUP_SCRIPT_PATH}"
+
+          # Step 1: Ping check  verify script is accessible and authorized
+          echo "  Pinging export script..."
+          PING_CODE=$(curl -s -o "$RESP_FILE" -w "%{http_code}" \
+            -H "User-Agent: Mozilla/5.0 (compatible; FindTorontoEvents-Backup/1.0)" \
+            --max-time 30 "${BASE_URL}?token=${DB_SCRIPT_TOKEN}&db=__ping__")
+          echo "  Ping: HTTP $PING_CODE"
+          head -c 200 "$RESP_FILE" || true
+          echo ""
+          if [ "$PING_CODE" != "200" ]; then
+            echo " Ping failed (HTTP $PING_CODE)  script not reachable or auth failed"
+            exit 1
+          fi
+
+          # Step 2: Export all databases one-by-one (avoids timeout on ALL at once)
+          python3 - <<'PYEOF'
+          import urllib.request, json, base64, os, time
+
+          token = os.environ.get('DB_SCRIPT_TOKEN', '')
+          dbs_str = os.environ.get('DATABASES', '')
+          base = os.environ.get('BACKUP_SCRIPT_PATH', '')
+          UA = "Mozilla/5.0 (compatible; FindTorontoEvents-Backup/1.0)"
+
+          databases = dbs_str.split()
+          total = 0
+
+          for dbname in databases:
+              url = f"https://findtorontoevents.ca/{base}?token={token}&db={dbname}"
+              print(f"  Exporting {dbname}...")
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(url)
+                      req.add_header('User-Agent', UA)
+                      with urllib.request.urlopen(req, timeout=300) as resp:
+                          raw = resp.read()
+                      if not raw:
+                          print(f"    Empty response, retrying...")
+                          time.sleep(5)
+                          continue
+                      data = json.loads(raw)
+                      break
+                  except Exception as e:
+                      print(f"    Attempt {attempt+1} failed: {e}")
+                      if attempt == 2:
+                          print(f"   Skipping {dbname} after 3 failures")
+                          data = None
+                      time.sleep(5)
+
+              if not data:
+                  continue
+
+              if data.get('errors'):
+                  print(f"    Errors: {data['errors']}")
+
+              dumps = data.get('dumps', {})
+              if isinstance(dumps, dict):
+                  for db, b64_gz in dumps.items():
+                      out_path = f"/tmp/db_backups/{db}.sql.gz"
+                      raw_bytes = base64.b64decode(b64_gz)
+                      with open(out_path, 'wb') as f:
+                          f.write(raw_bytes)
+                      size_kb = len(raw_bytes) / 1024
+                      print(f"     {db}.sql.gz ({size_kb:.1f} KB)")
+                      total += 1
+
+          if total == 0:
+              raise RuntimeError("No databases exported successfully")
+          print(f"\n {total} databases exported")
+          PYEOF
+
+          echo " Backup files:"
+          ls -lh /tmp/db_backups/
+
+      - name: Create combined archive
+        run: |
+          DATE=$(date -u '+%Y-%m-%d')
+          cd /tmp/db_backups
+          tar -czf /tmp/findtorontoevents_db_backup_${DATE}.tar.gz *.sql.gz
+          echo "BACKUP_FILE=/tmp/findtorontoevents_db_backup_${DATE}.tar.gz" >> $GITHUB_ENV
+          echo "BACKUP_DATE=${DATE}" >> $GITHUB_ENV
+          echo "BACKUP_SIZE=$(du -sh /tmp/findtorontoevents_db_backup_${DATE}.tar.gz | cut -f1)" >> $GITHUB_ENV
+          echo " Combined archive: $(du -sh /tmp/findtorontoevents_db_backup_${DATE}.tar.gz)"
+
+      - name: Upload as GitHub Artifact (90-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "db-backup-${{ env.BACKUP_DATE }}"
+          path: /tmp/db_backups/*.sql.gz
+          retention-days: 90
+
+      - name: Send backup email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: mail.50webs.com
+          server_port: 465
+          secure: true
+          username: support@findtorontoevents.ca
+          password: ${{ secrets.EMAIL_SMTP_PASS }}
+          subject: "FINDTORONTOEVENTS.CA Database backups  ${{ env.BACKUP_DATE }}"
+          to: "zerounderscore@gmail.com,eaguiar2015@yahoo.ca"
+          from: "FindTorontoEvents Backup <support@findtorontoevents.ca>"
+          html_body: |
+            <h2>FindTorontoEvents.ca  Daily Database Backup</h2>
+            <p><strong>Date:</strong> ${{ env.BACKUP_DATE }}</p>
+            <p><strong>Archive size:</strong> ${{ env.BACKUP_SIZE }}</p>
+            <h3>Databases backed up:</h3>
+            <ul>
+              <li>ejaguiar1_deals</li>
+              <li>ejaguiar1_events</li>
+              <li>ejaguiar1_favcreators</li>
+              <li>ejaguiar1_memecoin</li>
+              <li>ejaguiar1_news</li>
+              <li>ejaguiar1_sportsbet</li>
+              <li>ejaguiar1_stocks</li>
+              <li>ejaguiar1_tvmoviestrailers</li>
+            </ul>
+            <p>Individual .sql.gz files are also attached for direct restore.</p>
+            <p>Backups are also stored as <a href="https://github.com/zerounderscore/findtorontoevents_antigravity.ca/actions">GitHub Artifacts</a> for 90 days.</p>
+            <hr>
+            <small>Automated by GitHub Actions  FINDTORONTOEVENTS.CA Database Backups workflow</small>
+          attachments: /tmp/db_backups/*.sql.gz
+
+      - name: Remove backup runner from server
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          echo " Removing temporary backup script from server..."
+          # Overwrite with a harmless stub (FTP doesn't have delete easily via lftp on some hosts)
+          echo "<?php http_response_code(404); exit;" > /tmp/stub.php
+          cat > /tmp/lftp_cleanup.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd /findtorontoevents.ca
+          put /tmp/stub.php -o $BACKUP_SCRIPT_PATH
+          rm $BACKUP_SCRIPT_PATH
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_cleanup.script 2>/dev/null || echo " Cleanup attempted"
+          echo " Done"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "##  Database Backup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Date** | ${{ env.BACKUP_DATE }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Size** | ${{ env.BACKUP_SIZE }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Recipients** | zerounderscore@gmail.com, eaguiar2015@yahoo.ca |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Databases: ejaguiar1_{deals,events,favcreators,memecoin,news,sportsbet,stocks,tvmoviestrailers}" >> $GITHUB_STEP_SUMMARY
+

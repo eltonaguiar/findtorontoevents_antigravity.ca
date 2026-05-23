@@ -1,0 +1,81 @@
+{
+  "schema_version": "v1",
+  "engine": "ChatGPT-4o",
+  "asset_class": "COMMODITY",
+  "run_id": "run_2026-05-11T19-18-00Z",
+  "synthesis": [
+    {
+      "spec_id": "commodity_ts_momentum_gold_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 but only 4 trades (n<30); insufficient sample size to trust edge, and signal is simplified.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_cross_sectional_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 with n=4 trades; trade count far below Tier-2 floor, making the backtest unreliable.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_carry_value_gold_silver_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 but only 4 trades; n too low for robust inference despite attractive metrics.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_energy_momentum_carry_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=2.25, WR=58.3% but only 12 trades; n<100 violates Tier-2 floor, so edge is not credible.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_agri_momentum_value_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=2.66, WR=64.7% yet only 17 trades; insufficient history to validate performance.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_ts_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 with n=4 trades; trade count far below required threshold, making the result speculative.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_carry_gold_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 but only 4 trades; n too low for reliable edge assessment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_value_agriculture_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=2.66, WR=64.7% yet only 17 trades; fails the n\u2265100 requirement.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_momentum_cross_sectional_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 with n=4 trades; insufficient sample size despite strong backtest numbers.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_carry_momentum_combined_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 but only 4 trades; n below Tier-2 floor, so edge cannot be confirmed.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "All candidate strategies exhibit attractive backtest metrics but each suffers from an extremely low number of trades (n\u202f<\u202f30, far below the Tier-2 floor of 100). The limited trade count, combined with the simplified signal translation, prevents reliable validation of any edge. Longer historical data or higher-frequency signals are required before any strategy can be considered for production.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_commodity_p5_20260511T193155Z\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260511T193157Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 2893,
+    "tokens_out": 1468,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

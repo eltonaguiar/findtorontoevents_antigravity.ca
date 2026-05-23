@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AsterDEX Paper Trader — Live Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 100%);border-bottom:1px solid #2a2a4a;padding:20px 30px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:1.5rem;background:linear-gradient(90deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800}
+.header .subtitle{color:#888;font-size:.85rem}
+.header .mode-badge{padding:4px 12px;border-radius:12px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.mode-paper{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b55}
+.mode-live{background:#ef444422;color:#ef4444;border:1px solid #ef444455}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#12121e;border:1px solid #2a2a4a;border-radius:12px;padding:16px 20px}
+.stat-label{font-size:.75rem;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-value{font-size:1.6rem;font-weight:700}
+.stat-sub{font-size:.8rem;color:#888;margin-top:2px}
+.green{color:#22c55e}.red{color:#ef4444}.amber{color:#f59e0b}.blue{color:#3b82f6}
+.section{margin-bottom:24px}
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #2a2a4a;display:flex;align-items:center;gap:8px}
+.section-title .count{background:#2a2a4a;color:#ccc;padding:2px 8px;border-radius:8px;font-size:.75rem}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;font-size:.75rem;color:#888;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #2a2a4a;position:sticky;top:0;background:#12121e}
+td{padding:10px 12px;border-bottom:1px solid #1a1a2e;font-size:.85rem}
+tr:hover td{background:#1a1a2e}
+.badge{padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:600;text-transform:uppercase}
+.badge-buy{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+.badge-sell{background:#ef444422;color:#ef4444;border:1px solid #ef444444}
+.badge-kimi{background:#a855f722;color:#a855f7;border:1px solid #a855f744}
+.badge-alpha{background:#3b82f622;color:#3b82f6;border:1px solid #3b82f644}
+.badge-tp{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+.badge-sl{background:#ef444422;color:#ef4444;border:1px solid #ef444444}
+.pnl-bar{width:80px;height:6px;background:#2a2a4a;border-radius:3px;display:inline-block;vertical-align:middle;margin-left:6px}
+.pnl-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.progress-ring{display:inline-flex;align-items:center;gap:6px}
+.footer{text-align:center;padding:20px;color:#555;font-size:.75rem;border-top:1px solid #1a1a2e;margin-top:40px}
+.empty{text-align:center;padding:40px;color:#555}
+@media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.header{flex-direction:column;gap:8px;text-align:center}table{font-size:.75rem}th,td{padding:6px 8px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>AsterDEX Paper Trader</h1>
+    <div class="subtitle">Alpha Engine + KIMI Rise of the Claw → Perpetual Futures</div>
+  </div>
+  <div>
+    <span id="mode-badge" class="mode-badge mode-paper">PAPER</span>
+    <div class="subtitle" id="last-update" style="margin-top:4px">Loading...</div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Portfolio Stats -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Capital</div>
+      <div class="stat-value" id="s-capital">$10,000</div>
+      <div class="stat-sub" id="s-available">Available: $10,000</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total P&L</div>
+      <div class="stat-value" id="s-pnl">$0.00</div>
+      <div class="stat-sub" id="s-pnl-pct">0.00%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value" id="s-winrate">0%</div>
+      <div class="stat-sub" id="s-wl">0W / 0L</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Open Positions</div>
+      <div class="stat-value" id="s-open">0</div>
+      <div class="stat-sub" id="s-deployed">Deployed: $0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best Trade</div>
+      <div class="stat-value green" id="s-best">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Worst Trade</div>
+      <div class="stat-value red" id="s-worst">—</div>
+    </div>
+  </div>
+
+  <!-- Open Positions -->
+  <div class="section">
+    <div class="section-title">Open Positions <span class="count" id="open-count">0</span></div>
+    <div style="overflow-x:auto;background:#12121e;border-radius:12px;border:1px solid #2a2a4a">
+      <table id="open-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>Source</th>
+            <th>Strategy</th>
+            <th>Entry</th>
+            <th>Current</th>
+            <th>TP</th>
+            <th>SL</th>
+            <th>Lev</th>
+            <th>P&L</th>
+            <th>Opened</th>
+          </tr>
+        </thead>
+        <tbody id="open-body">
+          <tr><td colspan="11" class="empty">No open positions yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Closed -->
+  <div class="section">
+    <div class="section-title">Recent Closed Trades <span class="count" id="closed-count">0</span></div>
+    <div style="overflow-x:auto;background:#12121e;border-radius:12px;border:1px solid #2a2a4a">
+      <table id="closed-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>Source</th>
+            <th>Strategy</th>
+            <th>Entry</th>
+            <th>Result</th>
+            <th>P&L</th>
+            <th>P&L $</th>
+            <th>Closed</th>
+          </tr>
+        </thead>
+        <tbody id="closed-body">
+          <tr><td colspan="9" class="empty">No closed trades yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  AsterDEX Paper Trader v1.0 — Powered by 100+ Alpha Engine & KIMI strategies<br>
+  Data refreshes every scan cycle (GitHub Actions)
+</div>
+
+<script>
+const DATA_URL = 'data/dashboard.json';
+const GH_RAW = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/asterdex_paper/data/dashboard.json';
+
+function fmt(n, d=2) { return n == null ? '—' : Number(n).toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function fmtPct(n) { return n == null ? '—' : (n >= 0 ? '+' : '') + (n*100).toFixed(2) + '%'; }
+function fmtUSD(n) { return n == null ? '—' : (n >= 0 ? '+$' : '-$') + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function timeAgo(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+async function loadDashboard() {
+  let data;
+  try {
+    // Try local first, then GitHub raw
+    let resp = await fetch(DATA_URL);
+    if (!resp.ok) resp = await fetch(GH_RAW);
+    data = await resp.json();
+  } catch (e) {
+    console.error('Dashboard load failed:', e);
+    return;
+  }
+
+  const p = data.portfolio || {};
+  const mode = data.mode || 'paper';
+
+  // Mode badge
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = mode.toUpperCase();
+  badge.className = 'mode-badge mode-' + mode;
+
+  // Last update
+  document.getElementById('last-update').textContent = 'Updated: ' + timeAgo(data.generated_at);
+
+  // Stats
+  document.getElementById('s-capital').textContent = '$' + fmt(p.current_capital);
+  document.getElementById('s-available').textContent = 'Available: $' + fmt(p.available);
+
+  const pnlEl = document.getElementById('s-pnl');
+  pnlEl.textContent = fmtUSD(p.total_pnl);
+  pnlEl.className = 'stat-value ' + (p.total_pnl >= 0 ? 'green' : 'red');
+
+  const pnlPctEl = document.getElementById('s-pnl-pct');
+  pnlPctEl.textContent = (p.total_pnl_pct >= 0 ? '+' : '') + fmt(p.total_pnl_pct) + '%';
+  pnlPctEl.className = 'stat-sub ' + (p.total_pnl_pct >= 0 ? 'green' : 'red');
+
+  document.getElementById('s-winrate').textContent = fmt(p.win_rate, 1) + '%';
+  document.getElementById('s-wl').textContent = p.winning_trades + 'W / ' + p.losing_trades + 'L';
+  document.getElementById('s-open').textContent = (data.open_positions || []).length;
+  document.getElementById('s-deployed').textContent = 'Deployed: $' + fmt(p.deployed);
+
+  const bestEl = document.getElementById('s-best');
+  bestEl.textContent = p.best_trade ? fmtPct(p.best_trade) : '—';
+  const worstEl = document.getElementById('s-worst');
+  worstEl.textContent = p.worst_trade ? fmtPct(p.worst_trade) : '—';
+
+  // Open positions table
+  const openBody = document.getElementById('open-body');
+  const openPositions = data.open_positions || [];
+  document.getElementById('open-count').textContent = openPositions.length;
+
+  if (openPositions.length === 0) {
+    openBody.innerHTML = '<tr><td colspan="11" class="empty">No open positions — waiting for signals</td></tr>';
+  } else {
+    openBody.innerHTML = openPositions.map(t => {
+      const pnlClass = t.pnl_pct >= 0 ? 'green' : 'red';
+      const sideClass = t.side === 'BUY' ? 'badge-buy' : 'badge-sell';
+      const srcClass = t.source === 'KIMI' ? 'badge-kimi' : 'badge-alpha';
+      return `<tr>
+        <td><strong>${t.asterdex_symbol || t.symbol}</strong></td>
+        <td><span class="badge ${sideClass}">${t.side}</span></td>
+        <td><span class="badge ${srcClass}">${t.source}</span></td>
+        <td>${t.strategy}</td>
+        <td>$${fmt(t.entry_price)}</td>
+        <td>$${fmt(t.current_price)}</td>
+        <td class="green">$${fmt(t.take_profit)}</td>
+        <td class="red">$${fmt(t.stop_loss)}</td>
+        <td>${t.leverage}x</td>
+        <td class="${pnlClass}"><strong>${fmtPct(t.pnl_pct)}</strong><br><span style="font-size:.75rem">${fmtUSD(t.pnl_usd)}</span></td>
+        <td>${timeAgo(t.opened_at)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Closed trades table
+  const closedBody = document.getElementById('closed-body');
+  const closedTrades = data.recent_closed || [];
+  document.getElementById('closed-count').textContent = closedTrades.length;
+
+  if (closedTrades.length === 0) {
+    closedBody.innerHTML = '<tr><td colspan="9" class="empty">No closed trades yet</td></tr>';
+  } else {
+    closedBody.innerHTML = closedTrades.map(t => {
+      const pnlClass = t.pnl_pct >= 0 ? 'green' : 'red';
+      const sideClass = t.side === 'BUY' ? 'badge-buy' : 'badge-sell';
+      const srcClass = t.source === 'KIMI' ? 'badge-kimi' : 'badge-alpha';
+      const resultClass = t.close_reason === 'TAKE_PROFIT' ? 'badge-tp' : 'badge-sl';
+      return `<tr>
+        <td><strong>${t.symbol}</strong></td>
+        <td><span class="badge ${sideClass}">${t.side}</span></td>
+        <td><span class="badge ${srcClass}">${t.source}</span></td>
+        <td>${t.strategy}</td>
+        <td>$${fmt(t.entry_price)}</td>
+        <td><span class="badge ${resultClass}">${t.close_reason}</span></td>
+        <td class="${pnlClass}"><strong>${fmtPct(t.pnl_pct)}</strong></td>
+        <td class="${pnlClass}">${fmtUSD(t.pnl_usd)}</td>
+        <td>${timeAgo(t.closed_at)}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// Initial load + auto-refresh every 5 min
+loadDashboard();
+setInterval(loadDashboard, 300000);
+</script>
+</body>
+</html>

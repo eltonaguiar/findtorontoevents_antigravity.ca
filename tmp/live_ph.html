@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Challenge — Full Audit Trail</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a12;--card:#12121e;--card-hover:#181830;--border:#2a2a3e;
+  --text:#e2e8f0;--text-dim:#8892a8;--text-muted:#5a6478;
+  --green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#3b82f6;
+  --purple:#a855f7;--cyan:#06b6d4;--orange:#f97316;--pink:#ec4899;
+}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.page-header{padding:2rem 1.5rem 1rem;max-width:1400px;margin:0 auto}
+.page-header h1{font-size:1.8rem;font-weight:700;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-header .subtitle{color:var(--text-dim);margin-top:0.25rem;font-size:0.9rem}
+.timestamp{color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem}
+
+/* Summary Banner */
+.summary-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;padding:1.5rem;max-width:1400px;margin:0 auto}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;text-align:center}
+.stat-card .label{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.3rem}
+.stat-card .value{font-size:1.6rem;font-weight:700}
+.stat-card .value.green{color:var(--green)}.stat-card .value.red{color:var(--red)}.stat-card .value.blue{color:var(--blue)}.stat-card .value.yellow{color:var(--yellow)}
+
+/* Controls */
+.controls{padding:0.5rem 1.5rem;max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center}
+.controls label{color:var(--text-dim);font-size:0.8rem;margin-right:0.25rem}
+.controls select,.controls input{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.6rem;font-size:0.85rem}
+.tab-bar{display:flex;flex-wrap:wrap;gap:0.4rem;padding:0.5rem 1.5rem;max-width:1400px;margin:0 auto}
+.tab-btn{background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.9rem;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+.tab-btn:hover{border-color:var(--blue);color:var(--text)}
+.tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* Portfolio Grid */
+.portfolio-grid{padding:1rem 1.5rem;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+
+/* Portfolio Card */
+.port-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.2s}
+.port-card:hover{border-color:#3a3a5e}
+.port-card-header{padding:1rem 1.2rem;cursor:pointer;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;user-select:none}
+.port-card-header:hover{background:var(--card-hover)}
+.port-name{font-weight:600;font-size:1.05rem}
+.badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.badge-active{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.badge-passed{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.badge-blown{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+.badge-method{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25)}
+.badge-deep{background:rgba(234,179,8,0.12);color:var(--yellow);border:1px solid rgba(234,179,8,0.25)}
+.badge-prop{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.25)}
+.badge-reset{background:rgba(239,68,68,0.2);color:var(--red);border:1px solid rgba(239,68,68,0.4);font-weight:700}
+.badge-no-reset{background:rgba(34,197,94,0.08);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.badge-htf{background:rgba(6,182,212,0.12);color:var(--cyan);border:1px solid rgba(6,182,212,0.25)}
+.badge-noncrypto{background:rgba(236,72,153,0.12);color:var(--pink);border:1px solid rgba(236,72,153,0.25)}
+.header-stats{margin-left:auto;display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap}
+.header-stat{text-align:right}
+.header-stat .hs-label{font-size:0.65rem;color:var(--text-muted);text-transform:uppercase}
+.header-stat .hs-val{font-size:1rem;font-weight:600}
+.chevron{color:var(--text-muted);font-size:1.2rem;transition:transform 0.2s;margin-left:0.5rem}
+.port-card.open .chevron{transform:rotate(180deg)}
+
+/* Card Body */
+.port-card-body{display:none;padding:0 1.2rem 1.2rem;border-top:1px solid var(--border)}
+.port-card.open .port-card-body{display:block}
+
+/* Sections */
+.section-title{font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-dim);margin:1.2rem 0 0.6rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.6rem}
+.mini-stat{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem}
+.mini-stat .ms-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase}
+.mini-stat .ms-val{font-size:1.1rem;font-weight:600;margin-top:0.15rem}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;margin-top:0.5rem}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th{background:rgba(255,255,255,0.03);color:var(--text-dim);font-weight:600;text-transform:uppercase;font-size:0.7rem;letter-spacing:0.04em;padding:0.5rem 0.6rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:0.45rem 0.6rem;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.pos{color:var(--green)}.neg{color:var(--red)}.neut{color:var(--text-dim)}
+
+/* Equity Chart */
+.equity-chart{margin-top:0.5rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:0.75rem}
+.equity-chart svg{width:100%;height:120px}
+
+/* Description */
+.port-desc{color:var(--text-dim);font-size:0.8rem;font-style:italic;margin-bottom:0.5rem}
+
+/* Prop Firm Limits */
+.prop-limits{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem}
+.prop-limit{background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:6px;padding:0.4rem 0.7rem;font-size:0.8rem}
+.prop-limit span{color:var(--orange);font-weight:600}
+
+/* Empty State */
+.empty-state{color:var(--text-muted);font-size:0.85rem;padding:1rem;text-align:center;font-style:italic}
+
+/* Loading */
+.loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:1rem}
+.loading .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);padding:1rem;border-radius:8px;max-width:600px;margin:2rem auto;text-align:center}
+
+/* Price Status Bar */
+.price-status-bar{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 1.5rem;max-width:1400px;margin:0 auto;flex-wrap:wrap;font-size:0.8rem}
+.price-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:0.3rem}
+.price-status-dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
+.price-status-dot.stale{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.price-status-dot.offline{background:var(--red);box-shadow:0 0 6px var(--red)}
+.price-status-text{color:var(--text-dim)}
+.price-source-badge{display:inline-block;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.7rem;font-weight:600;background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.price-refresh-btn{background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.78rem;transition:all 0.2s;margin-left:auto}
+.price-refresh-btn:hover{border-color:var(--blue);color:var(--text)}
+.price-refresh-btn:disabled{opacity:0.5;cursor:not-allowed}
+.price-refresh-btn .spin-icon{display:inline-block;transition:transform 0.3s}
+.price-refresh-btn.refreshing .spin-icon{animation:spin 0.8s linear infinite}
+.price-countdown{color:var(--text-muted);font-size:0.72rem;min-width:80px;text-align:right}
+
+/* Responsive */
+@media(max-width:768px){
+  .summary-banner{grid-template-columns:repeat(2,1fr)}
+  .header-stats{margin-left:0;margin-top:0.5rem;width:100%}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .page-header h1{font-size:1.4rem}
+}
+@media(max-width:480px){
+  .summary-banner{grid-template-columns:1fr}
+  .controls{flex-direction:column;align-items:stretch}
+}
+</style>
+<!-- cache-version: 1773141270 -->
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Portfolio Challenge — Full Audit Trail</h1>
+  <div class="subtitle">26 Simulated Portfolios (12 Signal + 4 Deep-Value + 3 HTF/Hoffman + 3 Prop + 4 Non-Crypto) | Real-Time Performance Tracking</div>
+  <div style="margin-top:0.5rem;font-size:0.85rem">
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/audit_dashboard/BLUEPRINT.md" style="color:var(--cyan);margin-right:1rem">System Blueprint</a>
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/audit_dashboard/LEARNINGS.md" style="color:var(--orange);margin-right:1rem">Key Learnings &amp; Mistakes</a>
+    <a href="claudes_test.html" style="color:var(--purple);margin-right:1rem">Live Dashboard</a>
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/audit_dashboard" style="color:var(--text-dim)">Source Code</a>
+  </div>
+  <div class="timestamp" id="genTime"></div>
+</div>
+
+<div class="summary-banner" id="summaryBanner"></div>
+
+<div class="controls">
+  <div>
+    <label for="sortBy">Sort by:</label>
+    <select id="sortBy">
+      <option value="pnl_desc">P&L % (High to Low)</option>
+      <option value="pnl_asc">P&L % (Low to High)</option>
+      <option value="wr_desc">Win Rate (High to Low)</option>
+      <option value="sharpe_desc">Sharpe (High to Low)</option>
+      <option value="trades_desc">Trades (Most)</option>
+      <option value="resets_desc">Resets (Most)</option>
+      <option value="name_asc">Name (A-Z)</option>
+    </select>
+  </div>
+  <div>
+    <label for="searchBox">Search:</label>
+    <input type="text" id="searchBox" placeholder="Filter portfolios...">
+  </div>
+</div>
+
+<div class="price-status-bar" id="priceStatusBar">
+  <span class="price-status-dot offline" id="priceStatusDot"></span>
+  <span class="price-status-text" id="priceStatusText">Prices: loading...</span>
+  <span class="price-source-badge" id="priceSourceBadge" style="display:none"></span>
+  <span class="price-countdown" id="priceCountdown"></span>
+  <button class="price-refresh-btn" id="priceRefreshBtn" onclick="manualRefreshPrices()" title="Refresh live prices">
+    <span class="spin-icon">&#8635;</span> Refresh Prices
+  </button>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="all">All (26)</button>
+  <button class="tab-btn" data-tab="crypto" style="background:#1a1a2e;border-color:#a78bfa;color:#a78bfa">Crypto Only (22)</button>
+  <button class="tab-btn" data-tab="signal">Signal-Based (12)</button>
+  <button class="tab-btn" data-tab="deep">Deep-Value (4)</button>
+  <button class="tab-btn" data-tab="htf">HTF/Hoffman (3)</button>
+  <button class="tab-btn" data-tab="prop">Prop Firm (3)</button>
+  <button class="tab-btn" data-tab="noncrypto">Non-Crypto (4)</button>
+</div>
+
+<div class="portfolio-grid" id="portfolioGrid"></div>
+
+<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:0.75rem">
+  Portfolio Challenge Audit Trail | Data refreshes every 30 min
+</div>
+
+<script>
+const CATEGORY_MAP = {
+  signal: ['score_leaders','proven_only','momentum_riders','contrarian','regime_aligned','high_conviction','rr_kings','consensus_plays','fresh_signals','sector_rotation','anti_meme','claude_best'],
+  deep: ['deep_drawdown_dca','rsi_capitulation','fear_greed_contrarian','relative_strength_recovery'],
+  htf: ['hoffman_elite','htf_trend_follow','htf_weekly_momentum'],
+  prop: ['prop_conservative','prop_aggressive','prop_swing'],
+  noncrypto: ['stocks_best','stocks_short_term','forex_carry','multi_asset_diversified']
+};
+const DEEP_VALUE_IDS = new Set(CATEGORY_MAP.deep);
+const METHOD_LABELS = {
+  score:'Score',proven:'Proven',momentum:'Momentum',contrarian:'Contrarian',
+  regime:'Regime',conviction:'Conviction',rr:'R:R',consensus:'Consensus',
+  fresh:'Fresh',sector:'Sector',anti_meme:'Anti-Meme',best:'Best',
+  prop_conservative:'Conservative',prop_aggressive:'Aggressive',prop_swing:'Swing',
+  drawdown_dca:'DCA',rsi_capitulation:'RSI Cap',fear_greed:'F&G',rel_strength:'Rel Str',
+  hoffman:'Hoffman',htf:'HTF',htf_trend:'Trend Follow',htf_weekly:'Weekly Mom',
+  stocks:'Stocks',forex:'Forex',multi:'Multi-Asset',noncrypto_best:'Stocks Best',
+  noncrypto_reversal:'Short-Term',noncrypto_diversified:'Diversified'
+};
+
+let allPortfolios = [];
+let currentTab = 'all';
+
+function fmt(n, d=2) { return n != null ? Number(n).toFixed(d) : '--'; }
+function fmtPrice(n) {
+  if (n == null) return '--';
+  n = Number(n);
+  if (n === 0) return '--';
+  if (n >= 1000) return n.toFixed(2);
+  if (n >= 1) return n.toFixed(4);
+  if (n >= 0.001) return n.toFixed(6);
+  return n.toFixed(8);
+}
+function fmtUsd(n) { return n != null ? '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '--'; }
+function pnlClass(n) { return n > 0.005 ? 'pos' : n < -0.005 ? 'neg' : 'neut'; }
+function pnlSign(n) { return n > 0 ? '+' : ''; }
+
+// Known approximate price ranges for sanity check
+const PRICE_SANITY = {
+  DOGEUSDT: [0.05, 1.0], SHIBUSDT: [0.000001, 0.001], PEPEUSDT: [0.000001, 0.01],
+  BTCUSDT: [30000, 200000], ETHUSDT: [1000, 10000], SOLUSDT: [20, 500],
+  XRPUSDT: [0.3, 10], AVAXUSDT: [5, 100], TRXUSDT: [0.05, 0.50],
+  ADAUSDT: [0.2, 5], DOTUSDT: [2, 50], LINKUSDT: [5, 100],
+  BNBUSDT: [200, 1500], MATICUSDT: [0.2, 5],
+};
+function priceWarning(sym, price) {
+  const range = PRICE_SANITY[sym];
+  if (!range || !price) return '';
+  if (price < range[0] * 0.1 || price > range[1] * 10) {
+    return ' <span style="color:var(--red)" title="Price outside expected range">!!!</span>';
+  }
+  return '';
+}
+
+function fmtEST(iso) {
+  if (!iso) return '--';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('en-US', {timeZone:'America/New_York', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true}) + ' EST';
+  } catch(e) { return iso.slice(0,16).replace('T',' '); }
+}
+function statusBadge(s) {
+  if (!s) s = 'ACTIVE';
+  const cls = s === 'ACTIVE' ? 'badge-active' : s === 'PASSED' ? 'badge-passed' : 'badge-blown';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+function hoursAgo(iso) {
+  if (!iso) return '--';
+  const ms = Date.now() - new Date(iso).getTime();
+  return Math.max(0, (ms / 3600000)).toFixed(1);
+}
+function timeSince(iso) {
+  if (!iso) return '--';
+  const h = (Date.now() - new Date(iso).getTime()) / 3600000;
+  if (h < 1) return Math.round(h * 60) + 'm';
+  if (h < 48) return h.toFixed(1) + 'h';
+  return (h / 24).toFixed(1) + 'd';
+}
+function tradeDuration(openedIso, closedIso) {
+  if (!openedIso || !closedIso) return '--';
+  const h = (new Date(closedIso).getTime() - new Date(openedIso).getTime()) / 3600000;
+  if (h < 0) return '--';
+  if (h < 1) return Math.round(h * 60) + 'm';
+  if (h < 48) return h.toFixed(1) + 'h';
+  return (h / 24).toFixed(1) + 'd';
+}
+
+function calcSharpe(equityHistory) {
+  if (!equityHistory || equityHistory.length < 3) return null;
+  const returns = [];
+  for (let i = 1; i < equityHistory.length; i++) {
+    const r = (equityHistory[i].equity - equityHistory[i-1].equity) / equityHistory[i-1].equity;
+    returns.push(r);
+  }
+  if (returns.length < 2) return null;
+  const mean = returns.reduce((a,b) => a+b, 0) / returns.length;
+  const variance = returns.reduce((a,r) => a + (r - mean) ** 2, 0) / (returns.length - 1);
+  const std = Math.sqrt(variance);
+  if (std === 0) return mean > 0 ? 99 : 0;
+  return (mean / std) * Math.sqrt(returns.length);
+}
+
+function calcProfitFactor(closed) {
+  if (!closed || closed.length === 0) return null;
+  let gross_profit = 0, gross_loss = 0;
+  closed.forEach(t => {
+    const pnl = t.pnl_usd || 0;
+    if (pnl > 0) gross_profit += pnl;
+    else gross_loss += Math.abs(pnl);
+  });
+  if (gross_loss === 0) return gross_profit > 0 ? 99 : null;
+  return gross_profit / gross_loss;
+}
+
+function getCategory(id) {
+  for (const [cat, ids] of Object.entries(CATEGORY_MAP)) {
+    if (ids.includes(id)) return cat;
+  }
+  return 'signal'; // default
+}
+
+function buildSummary(portfolios) {
+  const total = portfolios.length;
+  const running = portfolios.filter(p => p.resets === 0).length;
+  const totalResets = portfolios.reduce((a,p) => a + (p.resets || 0), 0);
+  const combinedPnl = portfolios.reduce((a,p) => a + (p.equity - p.initial_capital), 0);
+  const combinedPnlPct = portfolios.reduce((a,p) => a + ((p.equity - p.initial_capital) / p.initial_capital * 100), 0) / total;
+  const oldestCreated = portfolios.reduce((oldest, p) => {
+    const t = new Date(p.created_at).getTime();
+    return t < oldest ? t : oldest;
+  }, Date.now());
+  const hoursActive = ((Date.now() - oldestCreated) / 3600000).toFixed(1);
+
+  // Build P&L breakdown tooltip: top contributors
+  const pnlByPort = portfolios.map(p => ({
+    name: p.name, pnl: p.equity - p.initial_capital,
+    pct: ((p.equity - p.initial_capital) / p.initial_capital * 100)
+  })).sort((a,b) => b.pnl - a.pnl);
+  const top5 = pnlByPort.filter(p => p.pnl !== 0).slice(0, 5);
+  const bottom3 = pnlByPort.filter(p => p.pnl < 0).slice(-3).reverse();
+  let breakdownHtml = '<div style="font-size:0.78em; color:#94a3b8; margin-top:4px; line-height:1.5">';
+  if (top5.length > 0) {
+    breakdownHtml += '<div style="color:#a78bfa; font-weight:600; margin-bottom:2px">Top contributors:</div>';
+    top5.forEach(p => {
+      const cls = p.pnl >= 0 ? 'green' : 'red';
+      breakdownHtml += `<div><span style="color:${p.pnl>=0?'#22c55e':'#ef4444'}">${pnlSign(p.pnl)}${fmtUsd(p.pnl)}</span> ${p.name} (${pnlSign(p.pct)}${fmt(p.pct)}%)</div>`;
+    });
+  }
+  if (bottom3.length > 0) {
+    breakdownHtml += '<div style="color:#ef4444; font-weight:600; margin-top:4px">Biggest losers:</div>';
+    bottom3.forEach(p => {
+      breakdownHtml += `<div><span style="color:#ef4444">${fmtUsd(p.pnl)}</span> ${p.name} (${fmt(p.pct)}%)</div>`;
+    });
+  }
+  const zeroCount = pnlByPort.filter(p => p.pnl === 0).length;
+  if (zeroCount > 0) breakdownHtml += `<div style="color:#6b7280">${zeroCount} portfolios at $0 (waiting/new)</div>`;
+  breakdownHtml += '</div>';
+
+  const totalOpen = portfolios.reduce((a,p) => a + (p.positions||[]).length, 0);
+  const totalClosed = portfolios.reduce((a,p) => a + ((p.wins||0)+(p.losses||0)), 0);
+
+  document.getElementById('summaryBanner').innerHTML = `
+    <div class="stat-card"><div class="label">Total Portfolios</div><div class="value blue">${total}</div></div>
+    <div class="stat-card"><div class="label">Running Strong</div><div class="value green">${running}</div></div>
+    <div class="stat-card"><div class="label">Total Resets</div><div class="value ${totalResets > 0 ? 'red' : 'green'}">${totalResets}</div></div>
+    <div class="stat-card">
+      <div class="label">Combined P&L</div>
+      <div class="value ${combinedPnl >= 0 ? 'green' : 'red'}">${pnlSign(combinedPnl)}${fmtUsd(combinedPnl)}</div>
+      ${breakdownHtml}
+    </div>
+    <div class="stat-card"><div class="label">Avg P&L %</div><div class="value ${combinedPnlPct >= 0 ? 'green' : 'red'}">${pnlSign(combinedPnlPct)}${fmt(combinedPnlPct)}%</div></div>
+    <div class="stat-card"><div class="label">Positions</div><div class="value yellow">${totalOpen} open / ${totalClosed} closed</div></div>
+    <div class="stat-card"><div class="label">Hours Active</div><div class="value yellow">${hoursActive}h</div></div>
+  `;
+}
+
+function buildEquityChart(equityHistory, containerId) {
+  if (!equityHistory || equityHistory.length < 2) {
+    document.getElementById(containerId).innerHTML = '<div class="empty-state">Insufficient data for chart</div>';
+    return;
+  }
+  const values = equityHistory.map(e => e.equity);
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const range = maxV - minV || 1;
+  const w = 600, h = 100, padX = 0, padY = 5;
+  const stepX = w / (values.length - 1);
+
+  let pathD = '';
+  values.forEach((v, i) => {
+    const x = padX + i * stepX;
+    const y = padY + (1 - (v - minV) / range) * (h - padY * 2);
+    pathD += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+  });
+
+  const lastV = values[values.length - 1];
+  const firstV = values[0];
+  const color = lastV >= firstV ? '#22c55e' : '#ef4444';
+
+  const areaD = pathD + ` L${(padX + (values.length-1)*stepX).toFixed(1)},${h} L${padX},${h} Z`;
+
+  document.getElementById(containerId).innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="grad_${containerId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaD}" fill="url(#grad_${containerId})" />
+      <path d="${pathD}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      <text x="2" y="12" fill="#5a6478" font-size="10">${fmtUsd(maxV)}</text>
+      <text x="2" y="${h-3}" fill="#5a6478" font-size="10">${fmtUsd(minV)}</text>
+    </svg>
+  `;
+}
+
+function buildHoldingsTable(positions) {
+  if (!positions || positions.length === 0) return '<div class="empty-state">No active holdings</div>';
+  let html = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Symbol</th><th>Dir</th><th>Size</th><th>Entry</th><th>TP</th><th>SL</th><th>Current</th><th>PnL%</th><th>PnL$</th><th>Strategy</th><th>Opened (EST)</th></tr></thead><tbody>`;
+  positions.forEach(p => {
+    const livePrice = livePrices[p.symbol] || p.current_price || p.entry_price;
+    let pnl_pct = p.pnl_pct || 0;
+    let pnl_usd = p.pnl_usd || 0;
+    // Recalculate PnL with live or backend-stored current price
+    if ((livePrices[p.symbol] || p.current_price) && p.entry_price > 0 && livePrice !== p.entry_price) {
+      if (p.direction === 'LONG') {
+        pnl_pct = ((livePrice - p.entry_price) / p.entry_price) * 100;
+      } else {
+        pnl_pct = ((p.entry_price - livePrice) / p.entry_price) * 100;
+      }
+      pnl_usd = (pnl_pct / 100) * (p.size_usd || 0);
+    }
+    const cls = pnlClass(pnl_pct);
+    const warn = priceWarning(p.symbol, p.entry_price);
+    html += `<tr>
+      <td><strong>${p.symbol}</strong>${warn}</td>
+      <td>${p.direction === 'LONG' ? '<span class="pos">LONG</span>' : '<span class="neg">SHORT</span>'}</td>
+      <td>${fmtUsd(p.size_usd)}</td>
+      <td>${fmtPrice(p.entry_price)}</td>
+      <td>${fmtPrice(p.take_profit)}</td>
+      <td>${fmtPrice(p.stop_loss)}</td>
+      <td>${fmtPrice(livePrice)}</td>
+      <td class="${cls}">${pnlSign(pnl_pct)}${fmt(pnl_pct)}%</td>
+      <td class="${cls}">${pnlSign(pnl_usd)}${fmtUsd(pnl_usd)}</td>
+      <td style="font-size:0.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis">${p.strategy || '--'}</td>
+      <td style="font-size:0.72rem">${fmtEST(p.opened_at)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildClosedTable(closed) {
+  if (!closed || closed.length === 0) return '<div class="empty-state">No closed trades yet</div>';
+  let html = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Symbol</th><th>Dir</th><th>Entry</th><th>Exit</th><th>PnL%</th><th>PnL$</th><th>Reason</th><th>Strategy</th><th>Opened (EST)</th><th>Closed (EST)</th><th>Duration</th></tr></thead><tbody>`;
+  closed.forEach(t => {
+    const cls = pnlClass(t.pnl_pct);
+    const dur = t.opened_at && t.closed_at ? tradeDuration(t.opened_at, t.closed_at) : '--';
+    const pnlUsd = t.net_pnl_usd != null ? t.net_pnl_usd : (t.pnl_usd || 0);
+    const warn = priceWarning(t.symbol, t.entry_price);
+    html += `<tr>
+      <td><strong>${t.symbol}</strong>${warn}</td>
+      <td>${t.direction === 'LONG' ? '<span class="pos">LONG</span>' : '<span class="neg">SHORT</span>'}</td>
+      <td>${fmtPrice(t.entry_price)}</td>
+      <td>${fmtPrice(t.exit_price)}</td>
+      <td class="${cls}">${pnlSign(t.pnl_pct)}${fmt(t.pnl_pct)}%</td>
+      <td class="${cls}">${pnlSign(pnlUsd)}${fmtUsd(pnlUsd)}</td>
+      <td>${t.exit_reason || t.close_reason || t.reason || '--'}</td>
+      <td style="font-size:0.72rem">${t.strategy || '--'}</td>
+      <td style="font-size:0.72rem">${fmtEST(t.opened_at)}</td>
+      <td style="font-size:0.72rem">${fmtEST(t.closed_at)}</td>
+      <td>${dur}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildResetHistory(resetHistory) {
+  if (!resetHistory || resetHistory.length === 0) return '';
+  let html = `<div class="section-title">Reset History</div><div class="tbl-wrap"><table>
+    <thead><tr><th>Cycle</th><th>Final Equity</th><th>P&L%</th><th>Wins</th><th>Losses</th><th>Max DD</th><th>Reason</th><th>Date</th></tr></thead><tbody>`;
+  resetHistory.forEach((r, i) => {
+    const pnlPct = r.pnl_pct || ((r.final_equity - (r.initial_capital||10000)) / (r.initial_capital||10000) * 100);
+    const cls = pnlClass(pnlPct);
+    html += `<tr>
+      <td>#${i+1}</td>
+      <td>${fmtUsd(r.final_equity || r.equity)}</td>
+      <td class="${cls}">${pnlSign(pnlPct)}${fmt(pnlPct)}%</td>
+      <td class="pos">${r.wins || 0}</td>
+      <td class="neg">${r.losses || 0}</td>
+      <td class="neg">${fmt(r.max_drawdown_pct || r.max_dd || 0)}%</td>
+      <td>${r.reason || '--'}</td>
+      <td>${r.reset_at ? new Date(r.reset_at).toLocaleDateString() : '--'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildLifetimeStats(p) {
+  if (!p.resets || p.resets === 0) return '';
+  const totalWins = (p.lifetime_wins || p.wins || 0);
+  const totalLosses = (p.lifetime_losses || p.losses || 0);
+  const totalPnl = (p.lifetime_pnl || (p.equity - p.initial_capital));
+  const totalComm = p.total_commission || 0;
+  const bestEq = p.lifetime_best_equity || p.high_water_mark || p.equity;
+  const worstDD = p.lifetime_worst_dd || p.max_drawdown_pct || 0;
+  return `
+    <div class="section-title">Lifetime Stats (All Cycles)</div>
+    <div class="stats-grid">
+      <div class="mini-stat"><div class="ms-label">Total Wins</div><div class="ms-val pos">${totalWins}</div></div>
+      <div class="mini-stat"><div class="ms-label">Total Losses</div><div class="ms-val neg">${totalLosses}</div></div>
+      <div class="mini-stat"><div class="ms-label">Lifetime P&L</div><div class="ms-val ${pnlClass(totalPnl)}">${pnlSign(totalPnl)}${fmtUsd(totalPnl)}</div></div>
+      <div class="mini-stat"><div class="ms-label">Total Commission</div><div class="ms-val">${fmtUsd(totalComm)}</div></div>
+      <div class="mini-stat"><div class="ms-label">Best Equity</div><div class="ms-val">${fmtUsd(bestEq)}</div></div>
+      <div class="mini-stat"><div class="ms-label">Worst Drawdown</div><div class="ms-val neg">${fmt(worstDD)}%</div></div>
+    </div>
+  `;
+}
+
+function buildPortfolioCard(p, idx) {
+  const pnlPct = (p.equity - p.initial_capital) / p.initial_capital * 100;
+  const unrealizedPnl = p.positions.reduce((a, pos) => a + (pos.pnl_usd || 0), 0);
+  const realizedPnl = p.closed ? p.closed.reduce((a, t) => a + (t.pnl_usd || 0), 0) : 0;
+  const holdingsValue = p.positions.reduce((a, pos) => a + (pos.size_usd || 0), 0);
+  const closedCount = (p.wins || 0) + (p.losses || 0);
+  const openCount = (p.positions || []).length;
+  const totalTrades = closedCount + openCount;
+  const wr = closedCount > 0 ? (p.wins / closedCount * 100) : (openCount > 0 ? '--' : '--');
+  const sharpe = calcSharpe(p.equity_history);
+  const pf = calcProfitFactor(p.closed);
+  const cat = getCategory(p.id);
+  const isDeep = DEEP_VALUE_IDS.has(p.id);
+  const chartId = `chart_${p.id}`;
+
+  let methodLabel = METHOD_LABELS[p.methodology] || p.methodology;
+
+  let badges = statusBadge(p.status);
+  badges += ` <span class="badge badge-method">${methodLabel}</span>`;
+  if (isDeep) badges += ' <span class="badge badge-deep">Deep-Value</span>';
+  if (cat === 'htf') badges += ' <span class="badge badge-htf">HTF</span>';
+  if (cat === 'noncrypto') badges += ' <span class="badge badge-noncrypto">Non-Crypto</span>';
+  if (p.prop_firm) badges += ' <span class="badge badge-prop">Prop Firm</span>';
+  if (p.resets > 0) {
+    badges += ` <span class="badge badge-reset">${p.resets} Reset${p.resets > 1 ? 's' : ''}</span>`;
+  } else {
+    badges += ' <span class="badge badge-no-reset">0 Resets</span>';
+  }
+
+  let propLimits = '';
+  if (p.prop_firm) {
+    propLimits = `<div class="prop-limits">
+      <div class="prop-limit">Daily Loss Limit: <span>${fmt(p.daily_loss_limit_pct)}%</span></div>
+      <div class="prop-limit">Max Drawdown: <span>${fmt(p.max_drawdown_limit_pct)}%</span></div>
+      <div class="prop-limit">Profit Target: <span>${fmt(p.profit_target_pct)}%</span></div>
+      <div class="prop-limit">Capital: <span>${fmtUsd(p.initial_capital)}</span></div>
+    </div>`;
+  }
+
+  return `
+    <div class="port-card" data-id="${p.id}" data-cat="${cat}" data-pnl="${pnlPct}" data-wr="${typeof wr === 'number' ? wr : -1}" data-sharpe="${sharpe || 0}" data-trades="${totalTrades}" data-resets="${p.resets}" data-name="${p.name}">
+      <div class="port-card-header" onclick="toggleCard('${p.id}')">
+        <span class="port-name">${p.name}</span>
+        ${badges}
+        <div class="header-stats">
+          <div class="header-stat">
+            <div class="hs-label">Equity</div>
+            <div class="hs-val">${fmtUsd(p.equity)}</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label">P&L</div>
+            <div class="hs-val ${pnlClass(pnlPct)}">${pnlSign(pnlPct)}${fmt(pnlPct)}%</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label">Max DD</div>
+            <div class="hs-val neg">${fmt(p.max_drawdown_pct || 0)}%</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label">Avg PnL</div>
+            <div class="hs-val ${pnlClass(closedCount > 0 ? (p.closed || []).reduce((a,t) => a + (t.pnl_pct || 0), 0) / closedCount : 0)}">${closedCount > 0 ? (pnlSign((p.closed || []).reduce((a,t) => a + (t.pnl_pct || 0), 0) / closedCount) + fmt(Math.abs((p.closed || []).reduce((a,t) => a + (t.pnl_pct || 0), 0) / closedCount)) + '%') : '--'}</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label">Trades</div>
+            <div class="hs-val" title="${openCount} open, ${closedCount} closed">${totalTrades}</div>
+          </div>
+        </div>
+        <span class="chevron">&#9660;</span>
+      </div>
+      <div class="port-card-body">
+        <div class="port-desc">${p.description || ''}</div>
+        ${propLimits}
+
+        <div class="section-title">Current Cycle Stats</div>
+        <div class="stats-grid">
+          <div class="mini-stat"><div class="ms-label">Equity</div><div class="ms-val">${fmtUsd(p.equity)}</div></div>
+          <div class="mini-stat"><div class="ms-label">P&L %</div><div class="ms-val ${pnlClass(pnlPct)}">${pnlSign(pnlPct)}${fmt(pnlPct)}%</div></div>
+          <div class="mini-stat"><div class="ms-label">Win Rate</div><div class="ms-val">${typeof wr === 'number' ? fmt(wr) + '%' : wr}</div></div>
+          <div class="mini-stat"><div class="ms-label">Open</div><div class="ms-val">${openCount}</div></div>
+          <div class="mini-stat"><div class="ms-label">Closed</div><div class="ms-val">${closedCount}</div></div>
+          <div class="mini-stat"><div class="ms-label">Sharpe</div><div class="ms-val">${sharpe != null ? fmt(sharpe) : '--'}</div></div>
+          <div class="mini-stat"><div class="ms-label">Max Drawdown</div><div class="ms-val neg">${fmt(p.max_drawdown_pct)}%</div></div>
+          <div class="mini-stat"><div class="ms-label">Profit Factor</div><div class="ms-val">${pf != null ? fmt(pf) : '--'}</div></div>
+          <div class="mini-stat"><div class="ms-label">HWM</div><div class="ms-val">${fmtUsd(p.high_water_mark)}</div></div>
+        </div>
+
+        <div class="section-title">P&L Breakdown</div>
+        <div class="stats-grid">
+          <div class="mini-stat"><div class="ms-label">Unrealized P&L</div><div class="ms-val ${pnlClass(unrealizedPnl)}">${pnlSign(unrealizedPnl)}${fmtUsd(unrealizedPnl)}</div></div>
+          <div class="mini-stat"><div class="ms-label">Realized P&L</div><div class="ms-val ${pnlClass(realizedPnl)}">${pnlSign(realizedPnl)}${fmtUsd(realizedPnl)}</div></div>
+          <div class="mini-stat"><div class="ms-label">Holdings Value</div><div class="ms-val">${fmtUsd(holdingsValue)}</div></div>
+          <div class="mini-stat"><div class="ms-label">Cash</div><div class="ms-val">${fmtUsd(p.cash)}</div></div>
+          <div class="mini-stat"><div class="ms-label">Commission</div><div class="ms-val neg">${fmtUsd(p.total_commission)}</div></div>
+          <div class="mini-stat"><div class="ms-label">Slippage</div><div class="ms-val neg">${fmtUsd(p.total_slippage)}</div></div>
+        </div>
+
+        <div class="section-title">Active Holdings (${p.positions.length})</div>
+        ${buildHoldingsTable(p.positions)}
+
+        <div class="section-title">Closed Trades (${p.closed ? p.closed.length : 0})</div>
+        ${buildClosedTable(p.closed)}
+
+        ${buildResetHistory(p.reset_history)}
+        ${buildLifetimeStats(p)}
+
+        <div class="section-title">Equity Curve</div>
+        <div class="equity-chart" id="${chartId}"></div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleCard(id) {
+  const card = document.querySelector(`.port-card[data-id="${id}"]`);
+  const wasOpen = card.classList.contains('open');
+  card.classList.toggle('open');
+  if (!wasOpen) {
+    const p = allPortfolios.find(x => x.id === id);
+    if (p) buildEquityChart(p.equity_history, `chart_${id}`);
+  }
+}
+
+function renderPortfolios() {
+  const grid = document.getElementById('portfolioGrid');
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const sortBy = document.getElementById('sortBy').value;
+
+  let filtered = allPortfolios.filter(p => {
+    const cat = getCategory(p.id);
+    if (currentTab === 'crypto') {
+      if (cat === 'noncrypto') return false;  // exclude non-crypto
+    } else if (currentTab !== 'all' && cat !== currentTab) return false;
+    if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search) && !(p.description||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const aPnl = (a.equity - a.initial_capital) / a.initial_capital * 100;
+    const bPnl = (b.equity - b.initial_capital) / b.initial_capital * 100;
+    const aTrades = (a.wins||0) + (a.losses||0);
+    const bTrades = (b.wins||0) + (b.losses||0);
+    switch(sortBy) {
+      case 'pnl_desc': return bPnl - aPnl;
+      case 'pnl_asc': return aPnl - bPnl;
+      case 'wr_desc': {
+        const aWr = aTrades > 0 ? a.wins/aTrades : -1;
+        const bWr = bTrades > 0 ? b.wins/bTrades : -1;
+        return bWr - aWr;
+      }
+      case 'sharpe_desc': return (calcSharpe(b.equity_history)||0) - (calcSharpe(a.equity_history)||0);
+      case 'trades_desc': return bTrades - aTrades;
+      case 'resets_desc': return (b.resets||0) - (a.resets||0);
+      case 'name_asc': return a.name.localeCompare(b.name);
+      default: return bPnl - aPnl;
+    }
+  });
+
+  grid.innerHTML = filtered.map((p, i) => buildPortfolioCard(p, i)).join('');
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  renderPortfolios();
+}
+
+// ── Live Price Engine: Multi-Source Failover ──
+let livePrices = {};
+let priceSource = null;
+let lastPriceFetch = null;
+let priceFetchCount = 0;
+let priceRefreshTimer = null;
+let countdownTimer = null;
+const PRICE_REFRESH_INTERVAL = 60; // seconds
+
+// CoinGecko ID mapping for common symbols
+const COINGECKO_IDS = {
+  BTC:'bitcoin', ETH:'ethereum', SOL:'solana', XRP:'ripple', ADA:'cardano',
+  DOGE:'dogecoin', SHIB:'shiba-inu', PEPE:'pepe', AVAX:'avalanche-2',
+  DOT:'polkadot', LINK:'chainlink', BNB:'binancecoin', MATIC:'matic-network',
+  TRX:'tron', LTC:'litecoin', UNI:'uniswap', NEAR:'near', ATOM:'cosmos',
+  ARB:'arbitrum', OP:'optimism', FTM:'fantom', ALGO:'algorand',
+  APT:'aptos', SUI:'sui', SEI:'sei-network', INJ:'injective-protocol',
+  TIA:'celestia', RENDER:'render-token', FET:'fetch-ai', WIF:'dogwifcoin',
+  BONK:'bonk', FLOKI:'floki', NOT:'notcoin', TON:'the-open-network',
+  HBAR:'hedera-hashgraph', VET:'vechain', FIL:'filecoin', ICP:'internet-computer',
+  IMX:'immutable-x', AAVE:'aave', MKR:'maker', CRV:'curve-dao-token',
+  RUNE:'thorchain', STX:'blockstack', GRT:'the-graph',
+};
+
+// Stock/forex symbols (for Yahoo Finance fallback)
+const STOCK_SYMBOLS = new Set([
+  'AAPL','COIN','SPY','MSFT','GOOGL','AMZN','TSLA','META','NVDA','QQQ',
+  'IWM','DIA','GLD','SLV','TLT','XLF','XLE','XLK','MSTR','RIOT','MARA',
+  'BITF','CLSK','HUT','MA','JNJ','PG','BA','V','JPM',
+  'EURUSD=X','GBPUSD=X','USDJPY=X','AUDUSD=X',
+]);
+const FOREX_SYMBOLS = new Set(['EURUSD=X','GBPUSD=X','USDJPY=X','AUDUSD=X','EURUSDT']);
+
+function isCryptoSymbol(sym) {
+  if (STOCK_SYMBOLS.has(sym) || FOREX_SYMBOLS.has(sym)) return false;
+  // Match: BTCUSDT, BTC-USD, BTC-USDT, FET_USDT, ETHBUSD, etc.
+  return sym.endsWith('USDT') || sym.endsWith('USD') || sym.endsWith('BUSD')
+    || /-USD$/i.test(sym) || /-USDT$/i.test(sym) || /_USDT$/i.test(sym);
+}
+
+function extractBase(sym) {
+  return sym.replace(/[-_]/g,'').replace(/USDT$|USD$|BUSD$|=X$/,'');
+}
+
+function validatePrice(sym, price) {
+  if (!price || price <= 0 || !isFinite(price)) return false;
+  const range = PRICE_SANITY[sym];
+  if (range) {
+    if (price < range[0] * 0.1 || price > range[1] * 10) {
+      console.warn('[Price] Sanity FAIL: ' + sym + ' = ' + price + ' (expected ' + range[0] + '-' + range[1] + ')');
+      return false;
+    }
+  }
+  return true;
+}
+
+function setLivePrice(sym, price) {
+  if (!validatePrice(sym, price)) return false;
+  livePrices[sym] = price;
+  const base = extractBase(sym);
+  if (base && !livePrices[base + '-USD']) livePrices[base + '-USD'] = price;
+  if (base && !livePrices[base + 'USDT'] && sym !== base + 'USDT') livePrices[base + 'USDT'] = price;
+  return true;
+}
+
+// Source 1: Binance REST API (normalize hyphens: SUI-USDT → SUIUSDT)
+async function fetchBinance(cryptoSyms) {
+  var symMap = {};
+  cryptoSyms.forEach(function(s) {
+    var norm = s.replace(/[-_]/g, '');
+    if (norm.endsWith('USDT')) symMap[norm] = s;
+    else {
+      var base = extractBase(s);
+      if (base) symMap[base + 'USDT'] = s;
+    }
+  });
+  var binanceSyms = Object.keys(symMap);
+  if (binanceSyms.length === 0) return { filled: 0, total: 0 };
+  var url = 'https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(binanceSyms));
+  var resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  if (!resp.ok) throw new Error('Binance HTTP ' + resp.status);
+  var data = await resp.json();
+  var filled = 0;
+  data.forEach(function(t) {
+    var origSym = symMap[t.symbol] || t.symbol;
+    if (setLivePrice(origSym, parseFloat(t.price))) filled++;
+  });
+  return { filled: filled, total: binanceSyms.length };
+}
+
+// Source 2: Bybit v5 public API (normalize hyphens: SUI-USDT → SUIUSDT)
+async function fetchBybit(cryptoSyms) {
+  var missing = cryptoSyms.filter(function(s) { return !livePrices[s]; });
+  if (missing.length === 0) return { filled: 0, total: 0 };
+  var filled = 0;
+  var toFetch = missing.slice(0, 25);
+  var promises = toFetch.map(async function(sym) {
+    try {
+      var bySym = sym.replace(/[-_]/g, '');
+      if (!bySym.endsWith('USDT')) bySym = extractBase(sym) + 'USDT';
+      var url = 'https://api.bybit.com/v5/market/tickers?category=spot&symbol=' + bySym;
+      var resp = await fetch(url, { signal: AbortSignal.timeout(4000) });
+      if (!resp.ok) return;
+      var data = await resp.json();
+      if (data.result && data.result.list && data.result.list.length > 0) {
+        var price = parseFloat(data.result.list[0].lastPrice);
+        if (setLivePrice(sym, price)) filled++;
+      }
+    } catch(e) { /* skip */ }
+  });
+  await Promise.allSettled(promises);
+  return { filled: filled, total: toFetch.length };
+}
+
+// Source 3: CoinGecko
+async function fetchCoinGecko(cryptoSyms) {
+  var missing = cryptoSyms.filter(function(s) { return !livePrices[s]; });
+  if (missing.length === 0) return { filled: 0, total: 0 };
+  var idMap = {};
+  missing.forEach(function(sym) {
+    var base = extractBase(sym);
+    var cgId = COINGECKO_IDS[base];
+    if (cgId) idMap[cgId] = sym;
+  });
+  var ids = Object.keys(idMap);
+  if (ids.length === 0) return { filled: 0, total: 0 };
+  var url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd';
+  var resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+  if (!resp.ok) throw new Error('CoinGecko HTTP ' + resp.status);
+  var data = await resp.json();
+  var filled = 0;
+  for (var cgId in idMap) {
+    if (data[cgId] && data[cgId].usd) {
+      if (setLivePrice(idMap[cgId], data[cgId].usd)) filled++;
+    }
+  }
+  return { filled: filled, total: ids.length };
+}
+
+// Source 4: CryptoCompare
+async function fetchCryptoCompare(cryptoSyms) {
+  var missing = cryptoSyms.filter(function(s) { return !livePrices[s]; });
+  if (missing.length === 0) return { filled: 0, total: 0 };
+  var baseSet = {};
+  missing.forEach(function(s) { var b = extractBase(s); if (b) baseSet[b] = true; });
+  var bases = Object.keys(baseSet);
+  if (bases.length === 0) return { filled: 0, total: 0 };
+  var url = 'https://min-api.cryptocompare.com/data/pricemulti?fsyms=' + bases.join(',') + '&tsyms=USD';
+  var resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  if (!resp.ok) throw new Error('CryptoCompare HTTP ' + resp.status);
+  var data = await resp.json();
+  var filled = 0;
+  missing.forEach(function(sym) {
+    var base = extractBase(sym);
+    if (data[base] && data[base].USD) {
+      if (setLivePrice(sym, data[base].USD)) filled++;
+    }
+  });
+  return { filled: filled, total: bases.length };
+}
+
+// Stock prices via Yahoo Finance (with CORS proxy failover)
+async function fetchStockPrices(stockSyms) {
+  if (stockSyms.length === 0) return { filled: 0, total: 0 };
+  var filled = 0;
+  var symsStr = stockSyms.join(',');
+  var yUrl = 'https://query1.finance.yahoo.com/v8/finance/spark?symbols=' + symsStr + '&range=1d&interval=1d';
+
+  function parseYahooData(data) {
+    var count = 0;
+    stockSyms.forEach(function(sym) {
+      try {
+        if (livePrices[sym]) return;
+        var spark = (data.spark && data.spark.result) ? data.spark.result.find(function(r) { return r.symbol === sym; }) : null;
+        var close = spark && spark.response && spark.response[0] && spark.response[0].meta ? spark.response[0].meta.regularMarketPrice : null;
+        if (close && close > 0) { livePrices[sym] = close; count++; }
+      } catch(e) {}
+    });
+    return count;
+  }
+
+  // Try Yahoo direct first
+  try {
+    var resp = await fetch(yUrl, { signal: AbortSignal.timeout(5000) });
+    if (resp.ok) {
+      filled += parseYahooData(await resp.json());
+      if (filled >= stockSyms.length) return { filled: filled, total: stockSyms.length };
+    }
+  } catch(e) { console.warn('[Price] Yahoo direct failed:', e.message); }
+
+  // CORS proxy chain for remaining symbols
+  var proxies = [
+    'https://corsproxy.io/?' + encodeURIComponent(yUrl),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(yUrl),
+  ];
+  for (var i = 0; i < proxies.length; i++) {
+    if (stockSyms.every(function(s) { return !!livePrices[s]; })) break;
+    try {
+      var resp2 = await fetch(proxies[i], { signal: AbortSignal.timeout(6000) });
+      if (resp2.ok) {
+        filled += parseYahooData(await resp2.json());
+        if (filled > 0) break;
+      }
+    } catch(e) { console.warn('[Price] Yahoo proxy ' + (i+1) + ' failed:', e.message); }
+  }
+
+  // Last resort: try individual CryptoCompare for any stock that might also be a token
+  var remaining = stockSyms.filter(function(s) { return !livePrices[s]; });
+  for (var j = 0; j < remaining.length; j++) {
+    try {
+      var sym = remaining[j];
+      var ccUrl = 'https://min-api.cryptocompare.com/data/price?fsym=' + sym + '&tsyms=USD';
+      var resp3 = await fetch(ccUrl, { signal: AbortSignal.timeout(3000) });
+      if (resp3.ok) {
+        var d = await resp3.json();
+        if (d.USD && d.USD > 0) { livePrices[sym] = d.USD; filled++; }
+      }
+    } catch(e) {}
+  }
+
+  return { filled: filled, total: stockSyms.length };
+}
+
+// ── Main failover orchestrator ──
+async function fetchLivePrices(symbols) {
+  var allSyms = [...new Set(symbols)];
+  var cryptoSyms = allSyms.filter(isCryptoSymbol);
+  var stockSyms = allSyms.filter(function(s) { return STOCK_SYMBOLS.has(s) || FOREX_SYMBOLS.has(s); });
+  var sources = [];
+  var totalFilled = 0;
+  var totalNeeded = allSyms.length;
+
+  updatePriceStatus('loading', 'Fetching prices...', null);
+
+  // Try each crypto source in failover order
+  var cryptoSources = [
+    { name: 'Binance', fn: function() { return fetchBinance(cryptoSyms); } },
+    { name: 'Bybit', fn: function() { return fetchBybit(cryptoSyms); } },
+    { name: 'CoinGecko', fn: function() { return fetchCoinGecko(cryptoSyms); } },
+    { name: 'CryptoCompare', fn: function() { return fetchCryptoCompare(cryptoSyms); } },
+  ];
+
+  for (var i = 0; i < cryptoSources.length; i++) {
+    var src = cryptoSources[i];
+    var missingCount = cryptoSyms.filter(function(s) { return !livePrices[s]; }).length;
+    if (missingCount === 0) break;
+    try {
+      var result = await src.fn();
+      if (result.filled > 0) {
+        sources.push(src.name);
+        totalFilled += result.filled;
+        console.log('[Price] ' + src.name + ': ' + result.filled + '/' + result.total + ' filled');
+      }
+    } catch(e) {
+      console.warn('[Price] ' + src.name + ' failed:', e.message);
+    }
+  }
+
+  // Fetch stock prices
+  if (stockSyms.length > 0) {
+    try {
+      var stockResult = await fetchStockPrices(stockSyms);
+      if (stockResult.filled > 0) {
+        sources.push('Yahoo');
+        totalFilled += stockResult.filled;
+      }
+    } catch(e) { console.warn('[Price] Yahoo failed:', e.message); }
+  }
+
+  // Update status
+  lastPriceFetch = new Date();
+  priceFetchCount++;
+  priceSource = sources.length > 0 ? sources.join(' + ') : null;
+
+  var missingFinal = allSyms.filter(function(s) { return !livePrices[s]; });
+  if (totalFilled === 0) {
+    updatePriceStatus('offline', 'All price sources failed \u2014 using backend prices', null);
+  } else if (missingFinal.length > 0) {
+    var missingStr = missingFinal.slice(0, 5).join(', ') + (missingFinal.length > 5 ? '...' : '');
+    updatePriceStatus('stale', totalFilled + '/' + totalNeeded + ' live (missing: ' + missingStr + ') \u2014 using backend prices for rest', sources.join(' + '));
+    console.log('[Price] Missing symbols:', missingFinal.join(', '));
+  } else {
+    updatePriceStatus('live', totalFilled + ' prices live', sources.join(' + '));
+  }
+
+  startCountdown();
+}
+
+function updatePriceStatus(status, text, source) {
+  var dot = document.getElementById('priceStatusDot');
+  var txt = document.getElementById('priceStatusText');
+  var badge = document.getElementById('priceSourceBadge');
+  if (!dot) return;
+  dot.className = 'price-status-dot ' + status;
+  txt.textContent = text;
+  if (source) {
+    badge.textContent = source;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function startCountdown() {
+  if (countdownTimer) clearInterval(countdownTimer);
+  var el = document.getElementById('priceCountdown');
+  if (!el) return;
+  var remaining = PRICE_REFRESH_INTERVAL;
+  el.textContent = 'next: ' + remaining + 's';
+  countdownTimer = setInterval(function() {
+    remaining--;
+    if (remaining <= 0) {
+      el.textContent = 'refreshing...';
+      clearInterval(countdownTimer);
+    } else {
+      el.textContent = 'next: ' + remaining + 's';
+    }
+  }, 1000);
+}
+
+async function manualRefreshPrices() {
+  var btn = document.getElementById('priceRefreshBtn');
+  btn.disabled = true;
+  btn.classList.add('refreshing');
+  var allSymbols = new Set();
+  allPortfolios.forEach(function(p) {
+    (p.positions || []).forEach(function(pos) { allSymbols.add(pos.symbol); });
+  });
+  livePrices = {};
+  await fetchLivePrices([...allSymbols]);
+  renderPortfolios();
+  btn.disabled = false;
+  btn.classList.remove('refreshing');
+  // Reset auto-refresh timer
+  if (priceRefreshTimer) clearInterval(priceRefreshTimer);
+  priceRefreshTimer = setInterval(autoRefreshPrices, PRICE_REFRESH_INTERVAL * 1000);
+}
+
+async function autoRefreshPrices() {
+  var allSymbols = new Set();
+  allPortfolios.forEach(function(p) {
+    (p.positions || []).forEach(function(pos) { allSymbols.add(pos.symbol); });
+  });
+  if (allSymbols.size === 0) return;
+  livePrices = {};
+  await fetchLivePrices([...allSymbols]);
+  renderPortfolios();
+}
+
+async function init() {
+  const grid = document.getElementById('portfolioGrid');
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading portfolio data...</div></div>';
+
+  try {
+    const resp = await fetch('data/claudes_test_state.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + resp.statusText);
+    const data = await resp.json();
+
+    // Parse: JSON is flat (portfolio_id -> portfolio_data)
+    allPortfolios = Object.entries(data).map(([id, p]) => {
+      const closed = p.closed || p.recent_closed || [];
+      const wins = closed.filter(t => (t.pnl_pct || 0) > 0).length;
+      const losses = closed.filter(t => (t.pnl_pct || 0) <= 0).length;
+      let status = p.status || 'ACTIVE';
+      if (p.max_drawdown_pct && Math.abs(p.max_drawdown_pct) > (p.max_drawdown_limit_pct || 99)) status = 'BLOWN';
+      return {
+        ...p,
+        id: p.id || id,
+        closed: closed,
+        wins: p.wins || wins,
+        losses: p.losses || losses,
+        resets: p.resets || (p.reset_history || []).length || 0,
+        status: status,
+        positions: p.positions || [],
+        equity: p.equity || p.initial_capital || 10000,
+        initial_capital: p.initial_capital || 10000,
+        cash: p.cash || 0,
+        equity_history: p.equity_history || [],
+        total_commission: p.total_commission || 0,
+        total_slippage: p.total_slippage || 0,
+        max_drawdown_pct: p.max_drawdown_pct || 0,
+        high_water_mark: p.high_water_mark || p.equity || 10000,
+      };
+    });
+
+    // Collect all symbols for live price fetch
+    const allSymbols = new Set();
+    allPortfolios.forEach(p => {
+      (p.positions || []).forEach(pos => allSymbols.add(pos.symbol));
+    });
+    await fetchLivePrices([...allSymbols]);
+
+    // Start auto-refresh every 60 seconds
+    priceRefreshTimer = setInterval(autoRefreshPrices, PRICE_REFRESH_INTERVAL * 1000);
+
+    // Set timestamp
+    let latestTs = 0;
+    allPortfolios.forEach(p => {
+      (p.positions || []).forEach(pos => {
+        const t = new Date(pos.opened_at || 0).getTime();
+        if (t > latestTs) latestTs = t;
+      });
+    });
+    const lastStr = latestTs > 0 ? new Date(latestTs).toLocaleString('en-US', {timeZone:'America/New_York'}) + ' EST' : 'N/A';
+    document.getElementById('genTime').textContent = 'Data as of: ' + lastStr + ' | Viewed: ' + new Date().toLocaleString('en-US', {timeZone:'America/New_York'}) + ' EST';
+
+    // Update tab counts
+    const counts = {};
+    allPortfolios.forEach(p => { const c = getCategory(p.id); counts[c] = (counts[c]||0) + 1; });
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      const tab = b.dataset.tab;
+      if (tab === 'all') b.textContent = 'All (' + allPortfolios.length + ')';
+      else if (counts[tab] != null) b.textContent = b.textContent.replace(/\(\d+\)/, '(' + counts[tab] + ')');
+    });
+
+    buildSummary(allPortfolios);
+    renderPortfolios();
+
+  } catch (err) {
+    grid.innerHTML = '<div class="error-msg">Failed to load portfolio data: ' + err.message + '<br><br>Make sure <code>data/claudes_test_state.json</code> is accessible.</div>';
+  }
+}
+
+// Event listeners
+document.getElementById('sortBy').addEventListener('change', renderPortfolios);
+document.getElementById('searchBox').addEventListener('input', renderPortfolios);
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+init();
+</script>
+</body>
+</html>

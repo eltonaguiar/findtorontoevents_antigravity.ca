@@ -1,0 +1,72 @@
+# Mercury 2 / quant hygiene: closed-book HF tier validation + JSON artifact
+name: Validate HF by asset class
+
+'on':
+  pull_request:
+    paths:
+      - 'tools/validate_hf_by_asset_class.py'
+      - 'tools/validate_dashboard_parity.py'
+      - 'tools/tier_significance.py'
+      - 'tools/dashboard_hc_rules.py'
+      - 'tools/hf_validation_stats.py'
+      - 'tools/hf_pick_contracts.py'
+      - 'alpha_engine/conviction_stack.py'
+      - 'config/hf_conviction_tiers.json'
+      - 'tests/test_hf_validation_stats.py'
+      - 'tests/test_hf_pick_contracts.py'
+      - 'tests/test_dashboard_hc_rules.py'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/validate_hf_by_asset_class.py'
+      - 'tools/validate_dashboard_parity.py'
+      - 'tools/tier_significance.py'
+      - 'tools/dashboard_hc_rules.py'
+      - 'tools/hf_validation_stats.py'
+      - 'alpha_engine/conviction_stack.py'
+      - 'config/hf_conviction_tiers.json'
+  schedule:
+    - cron: '35 6 * * *'  # daily 06:35 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install validation extras
+        run: |
+          pip install -r tools/requirements-hf-validation.txt
+          pip install scipy numpy pytest
+
+      - name: Unit tests (stats + contracts + dashboard mirror)
+        run: python -m pytest tests/test_hf_validation_stats.py tests/test_hf_pick_contracts.py tests/test_dashboard_hc_rules.py -q
+
+      - name: Run closed-book reports (JSON artifacts)
+        run: |
+          python tools/validate_hf_by_asset_class.py --json-out audit_trail/data/hf_asset_class_report.json
+          python tools/validate_dashboard_parity.py --json-out audit_trail/data/dashboard_hc_parity.json
+          python tools/tier_significance.py --json-out audit_trail/data/tier_significance.json
+
+      - name: Upload validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hf-validation-reports
+          path: |
+            audit_trail/data/hf_asset_class_report.json
+            audit_trail/data/dashboard_hc_parity.json
+            audit_trail/data/tier_significance.json
+          if-no-files-found: warn

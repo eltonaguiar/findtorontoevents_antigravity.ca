@@ -1,0 +1,36 @@
+1: give your feedback on this and create a .MD and commit to main .
+2: Blocker 2 — The gate-passing picks look like placeholder stats, not edge
+3: I applied the full HC gate to alpha_engine/data/active_picks.json (126 rows). audit_dashboard/hc_filter.js:23-50 defines scoreCompoundFloor:50 + forwardWRMinPct:55 (the exact "SCOREABOVE50"/"HIGHFWWRABV55" label semantics), plus per-class floors.
+4: 
+5: Result by asset class:
+6: 
+7: Class	n	Longs	Shorts	Median score	Naive gate pass
+8: CRYPTO	75	53	21	71.0	50
+9: FOREX	24	9	15	52.0	0
+10: EQUITY	12	12	0	52.0	0
+11: COMMODITY	9	5	4	51.0	0
+12: STOCKS	3	3	0	56.0	0
+13: FUTURES	3	3	0	56.0	0
+14: But every single one of the 50 crypto passes is a clone_hl_copy_* row with a suspicious identical-triple pattern:
+15: 
+16: clone_hl_copy_PensionFund_24M + clone_hl_copy_lb_None: score=100, n=100, fwd_wr=100.0% across BTC, BNB, AVAX, LINK, NEAR, SUI, RENDER, HYPE, ONDO
+17: clone_hl_copy_whale_433roi: score=85, n=85, fwd_wr=85.7%
+18: clone_hl_copy_lb_None shorts: score=80, n=80, fwd_wr=80.0% across BTC, ETH, ADA, XRP, SOL, DOGE, AVAX, LINK…
+19: Every row has trust_tier="" and trust_score=null. score==n≈fwd_wr across unrelated symbols is not a computed statistic — it's a placeholder. Corroborating evidence:
+20: 
+21: updates/2026-04-17-edge-deepscan-5-filter-catalog.md:179-196 §6 already flagged HIGHFWWRABV55_SCOREABOVE50_V3 — 8/8 red picks and noted the historical edge collapsed to n=1.
+22: edge_report.md: 1 / 31 active picks pass the real HC gate (3.2%), not 50.
+23: Memory: system-wide WR 31.1% / PF 0.72 on 3,500 trades; LONG Source Bias flags copy-trader sources as 99–100% LONG-only in placeholder data.
+24: Memory: Confidence ≠ Edge, Gate At Execution Not Generation.
+25: What I'd suggest
+26: You share the working TV CDP launch command (or I patch docs/TRADINGVIEW_MCP_GUIDE.md and mcp__tv_launch once you confirm it).
+27: You pick one:
+28: (a) Place the single real HC-gate pass (the one from edge_report.md) — I'd need its id from you or a fresh run of hc_filter.js against dashboard_data.json.
+29: (b) Drop the "fwd_wr≥55 label" requirement and route non-clone sources (luxalgo/dna_winner SHORTs per your LONG-bias memo) onto this account — but then the account label no longer matches what goes in.
+30: (c) Accept the clone_hl_copy picks anyway (explicit override — I'd want that on the record given the placeholder pattern).
+31: (d) Fix the placeholder-stat pipeline first, then trade. This is the one I'd bet on.
+32: Candidate list saved to /tmp/hf55_s50_candidates.json (50 rows) — available once you unblock the launch.
+33: 
+34: 
+35: 
+36: 

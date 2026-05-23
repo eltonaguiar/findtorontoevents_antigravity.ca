@@ -1,0 +1,15 @@
+function onPlayerStateChange(event, index) {
+            // YT.PlayerState.ENDED = 0
+            if (event.data === 0) {
+                console.log(`ðº Video ${index} ended`);
+                // Record watch history
+                if (filteredMovies[index]) {
+                    const movie = filteredMovies[index];
+                    recordWatch(movie.id, movie.trailer_id, true);
+                }
+                triggerAutoScroll();
+            }
+        }
+
+        // Initialize YouTube player for a specific iframe
+        

@@ -1,0 +1,96 @@
+```json
+{
+  "schema_version": "v1",
+  "engine": "synthesis_engine",
+  "asset_class": "BOND",
+  "run_id": "run_2026-05-11T19-01-40Z",
+  "synthesis": [
+    {
+      "spec_id": "bond_momentum_longshort_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 — far below T2 floor (n≥100, PF≥1.5). Signal is simplified SMA crossover, not faithful spec.entry. Insufficient data for any edge assessment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_term_premium_slope_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 — zero positive trades, tiny sample. Simplified signal translation invalidates results. Needs faithful parser and longer history.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_spread_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 — no edge detected. Simplified signal and tiny sample preclude any reliable conclusion.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_regime_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 — zero positive trades. Simplified signal translation makes results meaningless for real-world assessment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_credit_spread_term_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets T2 floor, but WR=33.3% (below 50%), n=9 (far below 100). Cross-test independent. Simplified signal caveat means real performance may differ. Too few trades to confirm edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_inflation_rotation_v1",
+      "verdict": "MIXED",
+      "rationale": "Best candidate: PF=1.99, WR=45.5%, MDD=5.5%, but n=11 (far below 100). Cross-test independent. Simplified signal undermines reliability. Promising but needs faithful translation and longer sample.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_momentum_cross_country_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 — below T2 floor on all metrics. Simplified signal and tiny sample. No edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_premium_on_off_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets T2 floor, but WR=33.3%, n=9. Cross-test independent. Simplified signal caveat critical — real liquidity premium strategy may differ significantly.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_macro_factor_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 — below all T2 thresholds. Simplified signal and tiny sample. No edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_regime_switching_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 — zero positive trades. Simplified signal invalidates Markov-switching intent. Needs faithful parser.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_momentum_cross_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 — below T2 floor. Simplified signal and tiny sample. No edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_term_premium_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 — zero positive trades. Simplified signal translation makes results unusable.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_premium_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 — below T2 floor. Simplified signal and tiny sample. No edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_credit_spread_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets T2 floor, but WR=33.3%, n=9. Cross-test independent. Simplified signal caveat applies — real credit spread strategy may differ.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "No candidate meets the T2 floor (PF≥1.5, WR≥50%, n≥100). The best performers (bond_inflation_rotation_v1: PF=1.99, WR=45.5%; bond_credit_spread_term_v1: PF=1.51) have only n=9-11 trades — far below the 100-trade minimum for reliable inference. All results are further compromised by the simplified SMA-crossover signal translation, which does not faithfully represent the spec.entry logic described in each strategy. The cross-test independence is encouraging but insufficient given the tiny sample sizes. Retry conditions: (1) deploy faithful-signal translator (v3), (2) extend backtest window to generate ≥100 trades per candidate, (3) re-run with proper signal implementation before any GO verdict can be issued."
+}
+```

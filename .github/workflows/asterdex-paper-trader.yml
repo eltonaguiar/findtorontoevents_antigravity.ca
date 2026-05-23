@@ -1,0 +1,87 @@
+name: AsterDEX Paper Trader (DISABLED)
+
+on:
+  # DISABLED 2026-02-28: Redundant with signal_tracker + forward_test_tracker.
+  # Deployed capital math was broken ($301K on $10K), 0 trades ever closed.
+  # schedule:
+  #   - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Trading mode'
+        required: false
+        default: 'paper'
+        type: choice
+        options:
+          - paper
+          - dashboard
+
+permissions:
+  contents: write
+
+jobs:
+  paper-trade:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            echo "mode=paper" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Paper Trader
+        env:
+          ASTERDEX_API_KEY: ${{ secrets.ASTERDEX_API_KEY }}
+          ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
+          ASTERDEX_BASE_URL: https://fapi.asterdex.com
+          ASTERDEX_PAPER_MODE: "true"
+        run: |
+          echo "=== AsterDEX Paper Trader v1.0 ==="
+          echo "Mode: ${{ steps.mode.outputs.mode }}"
+          echo "Time: $(date -u)"
+          echo ""
+
+          if [ "${{ steps.mode.outputs.mode }}" = "dashboard" ]; then
+            python asterdex_paper/paper_trader.py --dashboard
+          else
+            python asterdex_paper/paper_trader.py --mode paper
+          fi
+
+      - name: Commit dashboard data
+        run: |
+          git config user.name "AsterDEX Paper Trader"
+          git config user.email "bot@findtorontoevents.ca"
+          git add asterdex_paper/data/dashboard.json || true
+          git add asterdex_paper/data/portfolio_state.json || true
+
+          if git diff --cached --quiet; then
+            echo "No dashboard changes to commit"
+          else
+            git commit -m "Paper trader scan: $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

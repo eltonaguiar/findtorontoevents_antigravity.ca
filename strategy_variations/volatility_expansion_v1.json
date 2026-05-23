@@ -1,0 +1,38 @@
+{
+  "name": "volatility_expansion_v1",
+  "version": "1.0",
+  "strategy_type": "compression_expansion",
+  "entry_logic": {
+    "type": "volatility_breakout",
+    "compression_period": 4,
+    "breakout_threshold": 1.5,
+    "atr_period": 14,
+    "min_volatility_increase": 1.5
+  },
+  "exit_logic": {
+    "tp_type": "atr_based",
+    "tp_atr_mult": 3.0,
+    "sl_type": "atr_based",
+    "sl_atr_mult": 1.0,
+    "time_exit_hours": 6,
+    "volatility_contraction_exit": true
+  },
+  "risk_management": {
+    "position_size": 0.06,
+    "volatility_adjusted_sizing": true,
+    "reduce_size_high_vol": true
+  },
+  "regime_detection": {
+    "enabled": true,
+    "required_regime": "volatile",
+    "atr_percentile_threshold": 80
+  },
+  "symbols": [
+    "BTCUSDT",
+    "SOLUSDT"
+  ],
+  "parent_strategies": [
+    "crypto_keltner_compression_expansion_v1"
+  ],
+  "created_at": "2026-03-07T20:16:21.051604"
+}

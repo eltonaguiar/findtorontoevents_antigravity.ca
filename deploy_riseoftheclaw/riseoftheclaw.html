@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMI_CLAW_CHATBOT_2026-02-17 - Algorithm Battle Royale</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link rel="stylesheet" href="/riseoftheclaw/css/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🐾</div>
+                    <div class="logo-text">
+                        <h1>KIMI_CLAW_CHATBOT_2026-02-17</h1>
+                        <p>Algorithm Battle Royale <span style="background: #22c55e; color: #0a0a12; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: 600;">📊 SIMULATED DATA</span></p>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <div class="last-updated">
+                        <span class="pulse-dot"></span>
+                        <span id="lastUpdated">Updating...</span>
+                    </div>
+                    <div class="refresh-toggle">
+                        <label>Auto-refresh:</label>
+                        <select id="refreshInterval" onchange="setRefreshInterval()">
+                            <option value="30" selected>30s</option>
+                            <option value="60">1m</option>
+                            <option value="300">5m</option>
+                            <option value="0">Off</option>
+                        </select>
+                    </div>
+                    <button class="btn-refresh" onclick="manualRefresh()" title="Refresh Now">
+                        🔄
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Category Filter -->
+        <nav class="category-nav">
+            <button class="cat-btn active" data-category="all" onclick="filterCategory('all')">
+                <span class="cat-icon">🏆</span>
+                <span>All Algorithms</span>
+            </button>
+            <button class="cat-btn" data-category="stock" onclick="filterCategory('stock')">
+                <span class="cat-icon">📈</span>
+                <span>Stocks</span>
+            </button>
+            <button class="cat-btn" data-category="penny" onclick="filterCategory('penny')">
+                <span class="cat-icon">💎</span>
+                <span>Penny Stocks</span>
+            </button>
+            <button class="cat-btn" data-category="crypto" onclick="filterCategory('crypto')">
+                <span class="cat-icon">₿</span>
+                <span>Crypto</span>
+            </button>
+            <button class="cat-btn" data-category="meme" onclick="filterCategory('meme')">
+                <span class="cat-icon">🚀</span>
+                <span>Meme Coins</span>
+            </button>
+            <button class="cat-btn" data-category="forex" onclick="filterCategory('forex')">
+                <span class="cat-icon">💱</span>
+                <span>Forex</span>
+            </button>
+        </nav>
+
+        <!-- Performance Cards -->
+        <section class="performance-cards">
+            <div class="perf-card gold">
+                <div class="perf-label">Top Performer</div>
+                <div class="perf-value" id="topPerformer">--</div>
+                <div class="perf-sub" id="topPerformerReturn">--</div>
+            </div>
+            <div class="perf-card cyan">
+                <div class="perf-label">Best Win Rate</div>
+                <div class="perf-value" id="bestWinRate">--</div>
+                <div class="perf-sub" id="bestWinRateAlgo">--</div>
+            </div>
+            <div class="perf-card purple">
+                <div class="perf-label">Most Active</div>
+                <div class="perf-value" id="mostActive">--</div>
+                <div class="perf-sub" id="mostActiveCount">-- picks</div>
+            </div>
+            <div class="perf-card green">
+                <div class="perf-label">Best Sharpe</div>
+                <div class="perf-value" id="bestSharpe">--</div>
+                <div class="perf-sub" id="bestSharpeAlgo">--</div>
+            </div>
+            <div class="perf-card blue">
+                <div class="perf-label">Lowest Drawdown</div>
+                <div class="perf-value" id="lowestDrawdown">--</div>
+                <div class="perf-sub" id="lowestDrawdownAlgo">--</div>
+            </div>
+        </section>
+
+        <!-- Main Chart Section -->
+        <section class="chart-section">
+            <div class="section-header">
+                <h2>Portfolio Growth Competition</h2>
+                <div class="chart-legend" id="chartLegend"></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            <div class="chart-controls">
+                <button class="time-btn active" onclick="setTimeRange('7d')">7D</button>
+                <button class="time-btn" onclick="setTimeRange('30d')">30D</button>
+                <button class="time-btn" onclick="setTimeRange('90d')">90D</button>
+                <button class="time-btn" onclick="setTimeRange('all')">ALL</button>
+            </div>
+        </section>
+
+        <!-- Leaderboard -->
+        <section class="leaderboard-section">
+            <div class="section-header">
+                <h2>🏆 Algorithm Leaderboard</h2>
+                <div class="sort-controls">
+                    <label>Sort by:</label>
+                    <select id="sortBy" onchange="sortLeaderboard()">
+                        <option value="return">Total Return</option>
+                        <option value="winRate">Win Rate</option>
+                        <option value="sharpe">Sharpe Ratio</option>
+                        <option value="value">Portfolio Value</option>
+                    </select>
+                </div>
+            </div>
+            <div class="leaderboard-table-wrapper">
+                <table class="leaderboard-table" id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Algorithm</th>
+                            <th>Category</th>
+                            <th>Portfolio Value</th>
+                            <th>Total Return</th>
+                            <th>Win Rate</th>
+                            <th>Active Picks</th>
+                            <th>Sharpe</th>
+                            <th>Max DD</th>
+                            <th>7-Day Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <tr><td colspan="10" class="loading-cell">Loading algorithms...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Active Picks -->
+        <section class="picks-section">
+            <div class="section-header">
+                <h2>📊 Active Picks</h2>
+                <div class="picks-filters">
+                    <input type="text" id="pickSearch" placeholder="Search symbol..." onkeyup="filterPicks()">
+                    <select id="pickCategoryFilter" onchange="filterPicks()">
+                        <option value="all">All Categories</option>
+                        <option value="stock">Stocks</option>
+                        <option value="penny">Penny Stocks</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="meme">Meme Coins</option>
+                        <option value="forex">Forex</option>
+                    </select>
+                </div>
+            </div>
+            <div class="picks-table-wrapper">
+                <table class="picks-table" id="picksTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Category</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>P&L %</th>
+                            <th>Days Held</th>
+                            <th>Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="picksBody">
+                        <tr><td colspan="8" class="loading-cell">Loading picks...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Category Breakdown -->
+        <section class="breakdown-section">
+            <div class="section-header">
+                <h2>📈 Category Performance</h2>
+            </div>
+            <div class="breakdown-grid" id="breakdownGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>RISE OF THE CLAW - Algorithm Competition Dashboard</p>
+                <div class="footer-links">
+                    <a href="/findstocks/portfolio2/">Stock Portfolio</a>
+                    <a href="/findcryptopairs/">Crypto Scanner</a>
+                    <a href="/findforex2/">Forex</a>
+                    <button onclick="exportData()">📥 Export Data</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Algorithm Detail Modal -->
+    <div class="modal" id="algoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalAlgoName">Algorithm Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/riseoftheclaw/js/charts.js"></script>
+    <script src="/riseoftheclaw/js/data-loader.js"></script>
+    <script src="/riseoftheclaw/js/dashboard.js"></script>
+</body>
+</html>

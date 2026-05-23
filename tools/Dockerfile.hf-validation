@@ -1,0 +1,14 @@
+# Reproducible HF closed-book validation (Mercury 2 hygiene)
+# Build: docker build -f tools/Dockerfile.hf-validation -t hf-validation .
+# Run:   docker run --rm -v "%cd%":/work -w /work hf-validation python tools/validate_hf_by_asset_class.py
+
+FROM python:3.11-slim-bookworm
+
+WORKDIR /work
+
+COPY tools/requirements-hf-validation.txt /tmp/req.txt
+RUN pip install --no-cache-dir -r /tmp/req.txt
+
+# Repo is mounted at /work in run example; image only provides Python + pydantic
+ENV PYTHONDONTWRITEBYTECODE=1
+CMD ["python", "tools/validate_hf_by_asset_class.py", "--help"]

@@ -1,0 +1,195 @@
+{
+  "version": "1.0.0",
+  "description": "MINIMAL CORE CONFIGURATION - Strip to 1-2 proven sleeves only",
+  "based_on": "ChatGPT/Perplexity feedback: Freeze innovation. Stabilize one sleeve.",
+  "effective_date": "2026-03-03",
+  "mode": "CONSERVATIVE",
+  
+  "philosophy": {
+    "principle": "Consistency comes from subtraction, not addition",
+    "goal": "Trade only the highest-confidence, statistically-proven edges",
+    "frequency_target": "1-2 trades per day maximum",
+    "expected_improvement": "40-60% increase in consistency"
+  },
+  
+  "active_sleeves": {
+    "primary": {
+      "id": "funding_carry_elite",
+      "name": "Funding Rate Carry ELITE",
+      "allocation_percent": 70,
+      "rationale": "Highest win rate (95%), positive expectancy, works in all regimes",
+      "min_rr": 1.5,
+      "max_trades_per_day": 2,
+      "position_size_max": 0.03,
+      "status": "ACTIVE"
+    },
+    "secondary": {
+      "id": "short_side_alpha",
+      "name": "Alpha Engine - Short Only",
+      "allocation_percent": 30,
+      "rationale": "Only short side works (65% WR). Long side is toxic.",
+      "min_rr": 1.8,
+      "max_trades_per_day": 1,
+      "position_size_max": 0.02,
+      "constraints": {
+        "direction": "short_only",
+        "regime_filter": true,
+        "only_in_regimes": ["trending", "high_volatility"]
+      },
+      "status": "ACTIVE"
+    }
+  },
+  
+  "disabled_sleeves": {
+    "all_other_strategies": {
+      "status": "FROZEN",
+      "rationale": "Remove until core is stable for 30+ days",
+      "exceptions": [
+        "Strategies with 90+ days of positive expectancy may apply for re-entry"
+      ]
+    },
+    "specifically_disabled": [
+      "hurst_regime_adaptive_long",
+      "autocorrelation_exploiter_long",
+      "alpha_engine_long",
+      "ema_crossover",
+      "bollinger_squeeze",
+      "smart_money_fvg",
+      "m2_liquidity_lag"
+    ]
+  },
+  
+  "gates": {
+    "risk_reward": {
+      "min_rr": 2.0,
+      "description": "Higher threshold during stabilization period"
+    },
+    "consensus": {
+      "min_systems": 2,
+      "description": "Must have 2+ systems agree"
+    },
+    "freshness": {
+      "max_age_minutes": 10,
+      "description": "Tighter than normal (was 15)"
+    },
+    "regime": {
+      "enforce": true,
+      "description": "Only trade in confirmed suitable regimes"
+    },
+    "cost_model": {
+      "enforce": true,
+      "min_net_expectancy": 0.5,
+      "description": "Must survive transaction cost model"
+    }
+  },
+  
+  "risk_controls": {
+    "portfolio": {
+      "max_drawdown_percent": 6,
+      "circuit_breaker": true,
+      "cooldown_minutes": 60
+    },
+    "per_trade": {
+      "max_position_size": 0.03,
+      "max_sleeve_exposure": 0.10
+    },
+    "sizing": {
+      "base_risk_per_trade": 0.01,
+      "kelly_fraction": 0.15,
+      "reduce_in_drawdown": true,
+      "drawdown_reduction_threshold": 0.03
+    }
+  },
+  
+  "consistency_requirements": {
+    "min_trades_for_judgment": 30,
+    "min_sharpe_ratio": 1.0,
+    "max_cv_expectancy": 0.4,
+    "min_win_rate": 0.55,
+    "evaluation_window_days": 30
+  },
+  
+  "experiment_parameters": {
+    "name": "Starve the System",
+    "duration_days": 21,
+    "description": "Intentionally make system extremely picky",
+    "targets": {
+      "max_signals_per_day": 2,
+      "min_confidence_score": 0.85,
+      "expected_expectancy_per_trade": 1.5,
+      "target_sharpe": 1.5
+    },
+    "success_criteria": [
+      "Rolling 30-day Sharpe > 1.0",
+      "Max DD < 10%",
+      "Positive expectancy in 80% of weeks",
+      "No circuit breaker triggers"
+    ]
+  },
+  
+  "promotion_criteria": {
+    "description": "How frozen strategies can return to core",
+    "requirements": {
+      "paper_trading_days": 30,
+      "min_trades": 50,
+      "min_win_rate": 0.55,
+      "min_expectancy": 0.5,
+      "sharpe_ratio": 1.0,
+      "max_drawdown": 8
+    },
+    "process": [
+      "1. Run in incubator/paper mode for 30 days",
+      "2. Pass walk-forward validation",
+      "3. Survive transaction cost audit",
+      "4. Show positive expectancy in 2+ regimes",
+      "5. Manual PM review and approval"
+    ]
+  },
+  
+  "monitoring": {
+    "daily_checks": [
+      "Rolling 30-day Sharpe ratio",
+      "Expectancy stability (CV < 0.4)",
+      "Slippage drift vs model",
+      "Regime match rate",
+      "Rejection reason breakdown"
+    ],
+    "weekly_review": [
+      "Component performance attribution",
+      "Portfolio-level drawdown analysis",
+      "Correlation between sleeves",
+      "Signal-to-pick conversion rate",
+      "WTF dashboard issues"
+    ],
+    "auto_actions": {
+      "sharpe_below_0.5": "Reduce size by 50%",
+      "sharpe_below_0": "Pause for 14 days",
+      "drawdown_above_5%": "Enter warning mode",
+      "cv_above_0.5": "Flag for review",
+      "slippage_drift_above_0.2%": "Recalibrate TCM"
+    }
+  },
+  
+  "escalation": {
+    "immediate_halt_conditions": [
+      "Portfolio DD > 8%",
+      "2+ circuit breaker triggers in 7 days",
+      "Rolling Sharpe < 0 for 14 days",
+      "Data quality issues affecting >20% of signals"
+    ],
+    "manual_review_required": [
+      "Any strategy wanting to exit incubator",
+      "Parameter changes to active sleeves",
+      "New exchange or asset class addition",
+      "Changes to risk limits"
+    ]
+  },
+  
+  "notes": [
+    "This configuration is intentionally restrictive",
+    "Goal is stability, not maximum returns",
+    "After 30 days of stability, can gradually relax constraints",
+    "Document every exception and deviation",
+    "When in doubt, exclude - consistency comes from subtraction"
+  ]
+}

@@ -1,0 +1,20 @@
+name: Statistical Edge Deep Dive
+engine: deepseek
+model: deepseek-chat
+out_dir: swarm_runs/edge_deep_dive_${TS}
+turns:
+  - name: priming
+    prompt_file: prompts/statistical_edge_validation.md
+  - name: analysis
+    prompt: |
+      Analyze the 10 action items with a focus on statistical significance and out-of-sample robustness.
+      Identify the most promising opportunities for edge validation.
+  - name: critique
+    prompt: |
+      Critique your own analysis. What are the weakest claims or assumptions?
+      Identify potential overfitting risks and data quality issues.
+  - name: final
+    prompt: |
+      Provide a final prioritized action plan for statistical edge validation
+      with clear metrics and implementation roadmaps.
+    capture_to: final_plan.json

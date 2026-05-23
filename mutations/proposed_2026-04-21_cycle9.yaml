@@ -1,0 +1,137 @@
+# Cycle-9 perf-review mutation proposals
+# Per docs/MUTATION_THREE_AXIS_PROTOCOL.md
+# Generated: 2026-04-21 12:13 UTC
+# Source: audit_trail/data/dashboard_payload.json (3,500 closed, 30 active)
+# DELTA FROM CYCLE 8: active book shrank 50->30, 2 new drains escalated
+#
+# DO NOT auto-apply. Engineer review required.
+
+cycle: 9
+generated_at_utc: "2026-04-21T12:13:00Z"
+active_book_delta_vs_cycle_8: -40%
+hc_flags_delta_vs_cycle_8: -50%
+
+candidates:
+
+  # ========== UNCHANGED ZOMBIES (priority #1 to plug) ==========
+  - strategy: copy_hl_lb_None
+    status: zombie_retired_UNCHANGED
+    note: |
+      Cycle 8 + Cycle 9 both n=278, WR 32.0%, cum -806.39%.
+      EXACTLY IDENTICAL — the retirement gate blocks new emission but closed picks
+      continue to drain at pre-gate rates. Likely a backfill/forward-validator path
+      that tags picks with strategy='copy_hl_lb_None' regardless of origin.
+      ACTION: trace every writer to recent_closed with that strategy label.
+    metrics: {n: 278, wr_pct: 32.0, pf: 0.56, mean_pnl_pct: -2.901, cum_pnl_pct: -806.39}
+
+  - strategy: st_fear_greed_contrarian
+    status: zombie_retired
+    note: "Still emitting (n=627 vs 621 in cycle 8, +6 picks). Cum -358.82% (was -364.51)."
+    metrics: {n: 627, wr_pct: 24.6, pf: 0.37, mean_pnl_pct: -0.572, cum_pnl_pct: -358.82}
+
+  - strategy: st_obv_support_divergence
+    status: zombie_retired_moved_above_threshold
+    note: |
+      Now WR 39.4% (was 28.9%) — fell out of mutation-candidate threshold.
+      Still emitting (n=90 -> 104). Not a mutation candidate this cycle but
+      the retirement leak is unchanged; monitor cycle 10.
+    metrics: {n: 104, wr_pct: 39.4, pf: 0.50, mean_pnl_pct: -0.469, cum_pnl_pct: -48.78}
+
+  # ========== BROKEN (investigate resolver) ==========
+  - strategy: non_crypto_consensus
+    status: broken_flat_close
+    escalation: "Cycle 8 n=87 -> Cycle 9 n=88 (all at pnl=0)"
+    note: |
+      All closed picks at pnl_pct=0.0. Resolver bug — picks close flat, no TP/SL trigger.
+      EMERGENCY: 1 of 14 active HC picks is on this strategy (SI=F @ conf 0.80).
+      Hard-reject at emission gate until resolver fixed.
+    metrics: {n: 88, wr_pct: 0.0, pf: 0.0, mean_pnl_pct: 0.0, cum_pnl_pct: 0.01}
+
+  # ========== NEW MUTATION CANDIDATES (first appearance in cycle 9) ==========
+  - strategy: macd_rsi_confluence
+    status: new_mutation_candidate
+    note: "Not in cycle 8 mutation-candidate list. 44 closed picks, all recent."
+    metrics: {n: 44, wr_pct: 27.3, pf: 0.36, mean_pnl_pct: -1.158, cum_pnl_pct: -50.97}
+    axes:
+      sweep:
+        - "MACD fast/slow: 12/26 -> {5/13, 20/40}"
+        - "signal len: 9 -> {5, 14}"
+        - "RSI len: 14 -> {7, 21, 28}"
+        - "confluence threshold: tighten 25%"
+      regime:
+        - "BTC 4h trend filter (long only when BTC EMA50>EMA200)"
+        - "kill-window filter (drop 8-11 UTC, 16-21 UTC per PR #294)"
+      inverse: "flip direction signals; backtest as standalone variant"
+
+  # ========== ESCALATING DRAINS (worsened 8h->9) ==========
+  - strategy: kimi_signal_tracking
+    status: escalating_drain
+    escalation: "cycle 8 n=29 cum -63.52% -> cycle 9 n=36 cum -106.96% (+44pp drag in 8h)"
+    note: |
+      7 new closed picks in 8 hours, all negative (mean pnl on the delta = -6.2%).
+      Cron rate inspection recommended — may be emitting more frequently now that
+      other strategies are gated out.
+    metrics: {n: 36, wr_pct: 30.6, pf: 0.44, mean_pnl_pct: -2.971, cum_pnl_pct: -106.96}
+    axes:
+      sweep:
+        - "min sub-signal threshold: current -> {+1, +2}"
+        - "weighting: equal -> by_historical_wr"
+        - "expiry horizon: same_bar -> {1h, 4h}"
+      regime:
+        - "asset_class scoping (only emit on classes with positive cohort WR)"
+        - "time-of-day filter (drop 8-11 UTC, 16-21 UTC)"
+      inverse: "flip direction signals"
+
+  # ========== CONTINUING MUTATION CANDIDATES (unchanged) ==========
+  - strategy: cta_commodity_momentum_term
+    status: mutate
+    metrics: {n: 45, wr_pct: 8.9, pf: 0.01, mean_pnl_pct: -0.095, cum_pnl_pct: -4.29}
+    axes_ref: "see cycle-8 YAML"
+
+  - strategy: atr_regime_rsi
+    status: mutate
+    metrics: {n: 29, wr_pct: 17.2, pf: 0.26, mean_pnl_pct: -0.358, cum_pnl_pct: -10.38}
+    axes_ref: "see cycle-8 YAML"
+
+  - strategy: ensemble
+    status: investigate_first
+    note: "Cycle 8 n=24 WR 16.7% -> Cycle 9 n=23 WR 13.0% (WORSE). Still needs dispatcher investigation."
+    metrics: {n: 23, wr_pct: 13.0, pf: 0.46, mean_pnl_pct: -0.597, cum_pnl_pct: -13.74}
+
+  # ========== TP:SL-SKEWED POSITIVES (DO NOT MUTATE) ==========
+  - strategy: cta_cross_asset_tsmom
+    status: skip_positive_cum
+    metrics: {n: 57, wr_pct: 12.3, pf: 1.23, cum_pnl_pct: 1.07}
+
+  - strategy: futures_momentum
+    status: skip_positive_cum
+    metrics: {n: 441, wr_pct: 24.3, pf: 1.38, cum_pnl_pct: 21.14}
+
+  - strategy: forex_rsi2_mean_reversion
+    status: skip_positive_cum
+    metrics: {n: 523, wr_pct: 28.3, pf: 3.71, cum_pnl_pct: 34.56}
+
+  - strategy: unknown
+    status: skip_positive_cum_but_investigate_label
+    note: "Strategy literally named 'unknown'. n=43, cum +7.53%, PF 1.26. Figure out what it's a rollup of."
+    metrics: {n: 43, wr_pct: 32.6, pf: 1.26, cum_pnl_pct: 7.53}
+
+# ========== SYMBOL BLOCK CANDIDATES ==========
+# Same 7 crypto altcoins as cycle 8; combined cum drag -467%.
+symbol_block_candidates_crypto:
+  - {symbol: OPUSDT,   n: 59, wr_pct: 16.9, cum_pnl_pct: -121.43}  # escalated from -128.82 (n=64)
+  - {symbol: SUIUSDT,  n: 79, wr_pct: 20.3, cum_pnl_pct: -88.24}
+  - {symbol: APTUSDT,  n: 66, wr_pct: 22.7, cum_pnl_pct: -82.58}
+  - {symbol: AVAXUSDT, n: 70, wr_pct: 17.1, cum_pnl_pct: -51.21}
+  - {symbol: DOGEUSDT, n: 68, wr_pct: 22.1, cum_pnl_pct: -51.03}
+  - {symbol: LINKUSDT, n: 53, wr_pct: 18.9, cum_pnl_pct: -35.03}
+  - {symbol: ADAUSDT,  n: 62, wr_pct: 22.6, cum_pnl_pct: -38.15}
+
+# ========== HC PICKS FLAGGED (emergency reject) ==========
+hc_flagged_active:
+  - symbol: "SI=F"
+    strategy: non_crypto_consensus
+    elite_score: 35
+    confidence: 0.80
+    flag: "double-flag: strategy WR=0% (n=88, broken) AND symbol WR=21.9% (n=178)"
+    proposed_action: "hard-reject (emergency block) until resolver flat-close bug is fixed"

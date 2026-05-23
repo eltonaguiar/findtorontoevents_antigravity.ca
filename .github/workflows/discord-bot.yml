@@ -1,0 +1,57 @@
+name: Discord Bot  Persistent
+# Keeps the Discord bot alive so !fc-pro and other commands work on-demand.
+# GitHub Actions max is 6h per job. We run 5h 50m then dispatch a restart.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Restart every 6 hours as safety net (in case self-restart fails)
+    - cron: '5 */6 * * *'
+
+concurrency:
+  group: discord-bot
+  cancel-in-progress: false  # was true — bot runs 6h but kept getting killed by the next cron trigger
+
+jobs:
+  run-bot:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 355  # 5h 55m (under GitHub's 6h limit)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install discord.py requests numpy pandas pymysql
+
+      - name: Pull latest data before starting
+        run: git pull origin main || true
+
+      - name: Run Discord bot (5h 50m max)
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_ML_CHANNEL_ID: '1469431505439948920'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          cd claude_gainer_ml
+          timeout 21000 python discord_bot.py || true
+          # 21000s = 5h 50m  bot exits gracefully, then we restart
+
+      - name: Self-restart  dispatch new run
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Bot session ended. Dispatching restart..."
+          gh workflow run discord-bot.yml --repo ${{ github.repository }} || true
+

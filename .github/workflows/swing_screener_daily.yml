@@ -1,0 +1,152 @@
+# Opt-in sidecar workflow. Runner module is created in a future PR. Safe to run on workflow_dispatch — runner step is no-op if module missing.
+#
+# UEPS Phase 14: Swing Screener Daily
+#
+# Runs the swing screener every weekday at 14:00 UTC (10:00 EDT, mid-morning,
+# after market open + first hour settles). Emits short-horizon swing picks
+# via alpha_engine.swing_screener_runner.
+#
+# Wiring plan: alpha_engine/swing_screener_runner.py ships in a future PR.
+# Until then the runner step is wrapped with `continue-on-error: true` and a
+# module-existence guard so the workflow remains green.
+#
+# Patterns adopted from .github/workflows/audit-dashboard.yml (PR #436):
+#   - fetch-depth: 0
+#   - concurrency split by event type
+#   - `if: always()` on artifact upload + step summary
+#
+# CLAUDE.md Wire-Up Rule: opt-in sidecar.
+
+name: UEPS Swing Screener Daily
+
+'on':
+  schedule:
+    - cron: '0 14 * * 1-5'  # Mon-Fri 14:00 UTC = 10:00 EDT
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner (ubuntu-latest or self-hosted)'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+
+concurrency:
+  group: ueps-swing-screener-${{ github.event_name == 'push' && 'push' || 'cron' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: read
+
+jobs:
+  run-swing-screener:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install UEPS hard deps FIRST — yfinance is the tier-5 fallback
+          # inside alpha_engine/equity_price_failover.py and must be present
+          # even though primary quote sources are stooq/finnhub/etc.
+          pip install pandas pyarrow yfinance
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Check for runner module (opt-in sidecar guard)
+        id: runner_check
+        run: |
+          if python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('alpha_engine.swing_screener_runner') else 1)" 2>/dev/null; then
+            echo "module_exists=true" >> "$GITHUB_OUTPUT"
+            echo "alpha_engine.swing_screener_runner found — running"
+          else
+            echo "module_exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::alpha_engine.swing_screener_runner not found — skipping (opt-in sidecar)"
+          fi
+
+      - name: Run swing screener
+        id: run_screener
+        if: steps.runner_check.outputs.module_exists == 'true'
+        continue-on-error: true
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.swing_screener_runner
+
+      - name: Locate emitted picks JSON
+        id: locate_picks
+        if: always()
+        run: |
+          for candidate in \
+            alpha_engine/data/swing_screener_picks.json \
+            alpha_engine/data/swing_picks.json \
+            audit_dashboard/data/swing_screener_picks.json; do
+            if [ -f "$candidate" ]; then
+              echo "picks_path=$candidate" >> "$GITHUB_OUTPUT"
+              echo "Picks file: $candidate"
+              break
+            fi
+          done
+
+      - name: Upload swing screener picks artifact
+        # if: always() — upload whatever the screener produced even on failure
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: swing_screener_picks_${{ github.run_id }}
+          path: |
+            alpha_engine/data/swing_screener_picks.json
+            alpha_engine/data/swing_picks.json
+            audit_dashboard/data/swing_screener_picks.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## UEPS Swing Screener Daily"
+            echo ""
+            echo "- runner_module_present: ${{ steps.runner_check.outputs.module_exists }}"
+            echo "- screener_outcome: ${{ steps.run_screener.outcome || 'skipped' }}"
+            echo "- picks_path: ${{ steps.locate_picks.outputs.picks_path || 'not-found' }}"
+            echo ""
+            if [ "${{ steps.runner_check.outputs.module_exists }}" != "true" ]; then
+              echo "**Note:** alpha_engine.swing_screener_runner is not yet present."
+              echo "This is the expected opt-in sidecar state until the runner is wired."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Pick count summary (if picks JSON parseable)
+        if: always() && steps.locate_picks.outputs.picks_path != ''
+        continue-on-error: true
+        run: |
+          python - <<'PYEOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          path = os.environ.get('PICKS_PATH', '')
+          if not path:
+              raise SystemExit(0)
+          try:
+              with open(path) as fh:
+                  data = json.load(fh)
+              picks = data if isinstance(data, list) else data.get('picks', [])
+              print(f"\n### Pick summary\n- pick_count: {len(picks)}")
+          except Exception as exc:
+              print(f"\n- parse_error: {exc}")
+          PYEOF
+        env:
+          PICKS_PATH: ${{ steps.locate_picks.outputs.picks_path }}

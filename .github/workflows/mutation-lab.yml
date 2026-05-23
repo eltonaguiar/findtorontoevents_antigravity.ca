@@ -1,0 +1,264 @@
+name: "Mutation Lab  Strategy Evolution Pipeline"
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'   # every 3 hours
+  workflow_dispatch:          # manual trigger
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mutation-lab
+  cancel-in-progress: false
+
+env:
+  PYTHONPATH: ${{ github.workspace }}
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  # 
+  # Stage 1: SCOUT  Identify top winners & worst losers
+  # 
+  scout:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            genome
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests pandas numpy mysql-connector-python
+
+      - name: Run Scout
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: python -m genome.mutation_lab.scout --output mutation_targets.json
+
+      - name: Upload targets
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-targets
+          path: mutation_targets.json
+          retention-days: 1
+
+  # 
+  # Stage 2A: Winner Amplification (20% budget)
+  # 
+  mutate-amplify:
+    needs: scout
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        symbol: [BTCUSDT, ETHUSDT, SOLUSDT]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            genome
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests pandas numpy
+
+      - name: Download targets
+        uses: actions/download-artifact@v4
+        with:
+          name: mutation-targets
+
+      - name: Run Winner Amplification
+        run: |
+          python -m genome.mutation_lab.mutator_amplify \
+            --targets mutation_targets.json \
+            --output mutation_results_a_${{ matrix.symbol }}.json \
+            --symbol ${{ matrix.symbol }}
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-a-${{ matrix.symbol }}
+          path: mutation_results_a_${{ matrix.symbol }}.json
+          retention-days: 1
+
+  # 
+  # Stage 2B: Loser Inversion + Pure Flip (30% budget)
+  # 
+  mutate-invert:
+    needs: scout
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        symbol: [BTCUSDT, ETHUSDT, SOLUSDT]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            genome
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests pandas numpy
+
+      - name: Download targets
+        uses: actions/download-artifact@v4
+        with:
+          name: mutation-targets
+
+      - name: Run Loser Inversion
+        run: |
+          python -m genome.mutation_lab.mutator_invert \
+            --targets mutation_targets.json \
+            --output mutation_results_b_${{ matrix.symbol }}.json \
+            --symbol ${{ matrix.symbol }}
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-b-${{ matrix.symbol }}
+          path: mutation_results_b_${{ matrix.symbol }}.json
+          retention-days: 1
+
+  # 
+  # Stage 2C: Loser Fix + Crossbreed (40% budget)
+  # 
+  mutate-hybrid:
+    needs: scout
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        symbol: [BTCUSDT, ETHUSDT, SOLUSDT]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            genome
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests pandas numpy
+
+      - name: Download targets
+        uses: actions/download-artifact@v4
+        with:
+          name: mutation-targets
+
+      - name: Run Hybrid Mutations
+        run: |
+          python -m genome.mutation_lab.mutator_hybrid \
+            --targets mutation_targets.json \
+            --output mutation_results_c_${{ matrix.symbol }}.json \
+            --symbol ${{ matrix.symbol }}
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-c-${{ matrix.symbol }}
+          path: mutation_results_c_${{ matrix.symbol }}.json
+          retention-days: 1
+
+  # 
+  # Stage 3: PROMOTE  Quality gates + live picks
+  # 
+  promote:
+    needs: [mutate-amplify, mutate-invert, mutate-hybrid]
+    if: ${{ !cancelled() }}
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            genome
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests pandas numpy
+
+      - name: Download all results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: results-*
+          merge-multiple: true
+          path: mutation_results/
+
+      - name: List results
+        run: ls -la mutation_results/
+
+      - name: Run Promoter (quality gates + live picks analysis)
+        run: |
+          python -m genome.mutation_lab.promoter \
+            --results-dir mutation_results \
+            --output genome/data/mutation_lab_picks.json
+
+      - name: Show summary
+        run: |
+          echo "=== MUTATION LAB SUMMARY ==="
+          cat genome/data/mutation_lab_summary.json 2>/dev/null || echo "No summary"
+          echo ""
+          echo "=== PICKS ==="
+          python -c "
+          import json
+          data = json.load(open('genome/data/mutation_lab_picks.json'))
+          stats = data['mutation_stats']
+          print(f'Mutations tested: {stats[\"total_mutations_tested\"]}')
+          print(f'Passed gates:     {stats[\"passed_quality_gates\"]}')
+          print(f'Live picks:       {stats[\"live_signals_generated\"]}')
+          print(f'Types: {stats[\"mutation_type_breakdown\"]}')
+          for p in data['picks'][:5]:
+              print(f'  {p[\"symbol\"]} {p[\"direction\"]} @ {p[\"entry_price\"]} conf={p[\"confidence\"]:.2f} ({p[\"strategy\"]})')
+          "
+
+      - name: Commit picks
+        run: |
+          bash .github/scripts/safe_commit_push.sh \
+            "Mutation Lab: evolution $(date -u +'%Y-%m-%d %H:%M') UTC [skip ci]" \
+            genome/data/mutation_lab_picks.json \
+            genome/data/mutation_lab_summary.json
+

@@ -1,0 +1,42 @@
+```json
+{
+  "schema_version": "v1",
+  "engine": "P5_SYNTHESIS",
+  "asset_class": "FOREX",
+  "run_id": "run_2026-05-11T19-14-54Z",
+  "synthesis": [
+    {
+      "spec_id": "forex_momentum_uup_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.61, WR=56.7%, MDD=11.3% meet T2 floor, but n=30 is far below the 100-trade minimum for reliable inference. Cross-test shows independence, but the simplified SMA-crossover proxy means the real signal may differ materially. Needs longer history and faithful-signal translation before GO.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_value_momentum_combo_fxA_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.7, WR=41.7%, Sharpe=-0.19, n=12 — all metrics fail T2 floor. Negative Sharpe indicates consistent losses. Insufficient data and poor performance preclude any edge.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_regime_conditional_hybrid_fxA_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.7, WR=41.7%, Sharpe=-0.19, n=12 — identical poor metrics to combo_fxA_v1. Regime conditioning did not rescue performance. n too small for reliable verdict.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_dollar_carry_uup_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.61, WR=56.7%, MDD=11.3% meet T2 floor, but n=30 is insufficient. Cross-test independence is promising, but simplified signal proxy means the carry spread logic was not actually tested. Needs longer history and faithful-signal translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "forex_risk_parity_multi_etf_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.61, WR=56.7%, MDD=11.3% meet T2 floor, but n=30 is far below threshold. Cross-test shows independence. The risk-parity approach is conceptually sound, but the simplified SMA-crossover proxy does not represent the intended multi-asset signal. Needs longer history and faithful translation.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "MIXED",
+  "run_rationale": "No candidate achieved n≥100 trades, making all backtest results unreliable for production wiring. Two UUP-based candidates (momentum_uup_v1, dollar_carry_uup_v1) show promising PF/WR/MDD metrics and cross-test independence, but with only 30 trades each and a simplified SMA-crossover proxy that does not faithfully represent the spec.entry text, a GO verdict would be premature. The three FXA-based candidates all failed T2 floor with negative Sharpe ratios. The run-level verdict is MIXED: there is a signal worth investigating further, but it is blocked on (1) longer historical data to achieve n≥100, and (2) the v3 faithful-signal translator to ensure the tested logic matches the intended strategy. Retry conditions: re-run with 10+ years of data and the faithful-signal parser; if n≥100 and PF≥1.5 persist, upgrade to GO."
+}
+```

@@ -1,0 +1,72 @@
+name: Live Picks Tracker
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'alpha_engine/live_dashboard.html'
+      - '.github/workflows/live_tracker.yml'
+  schedule:
+    - cron: '25 * * * *'  # Every hour at :25
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update-dashboard:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: pip install pandas numpy
+      
+    - name: Sync live picks
+      run: python live_picks_tracker.py
+      
+    - name: Update dashboard
+      run: |
+        python dashboard/generate_dashboard.py
+        # Override with the comprehensive live_dashboard.html
+        if [ -f alpha_engine/live_dashboard.html ]; then
+          cp alpha_engine/live_dashboard.html dashboard/index.html
+          echo " Deployed comprehensive Alpha Engine dashboard"
+        fi
+        
+    - name: Commit dashboard
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+        git add dashboard/
+        git add data/live_picks.db
+        git diff --staged --quiet && echo "No changes to commit" && exit 0
+        git commit -m "Live picks update: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+        for i in 1 2 3; do
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh && break
+          echo "Push attempt $i failed, retrying in 5s..."
+          sleep 5
+        done
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dashboard
+

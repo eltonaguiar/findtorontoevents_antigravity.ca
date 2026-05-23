@@ -1,0 +1,158 @@
+{
+  "title": "Antigravity AI - Crypto Gainer ML Predictions",
+  "agent": "Antigravity",
+  "last_run": "2026-05-22T21:12:07.628733+00:00",
+  "model_version": "v3.1-production",
+  "forward_scorecard": {
+    "forward_total_picks": 2,
+    "forward_tp_hits": 1,
+    "forward_sl_hits": 1,
+    "forward_win_rate": 50.0,
+    "forward_total_pnl_pct": -2.29,
+    "status": "calibrating"
+  },
+  "backtest_summary": {
+    "ALGO/USDT": {
+      "backtest_win_rate": 0.0,
+      "backtest_profit_factor": 0.0,
+      "backtest_sharpe": -44.718,
+      "backtest_total_pnl": -6.37,
+      "backtest_n_trades": 5,
+      "backtest_max_dd": 4.87
+    },
+    "ARB/USDT": {
+      "backtest_win_rate": 0.0,
+      "backtest_profit_factor": 0.0,
+      "backtest_sharpe": 0,
+      "backtest_total_pnl": -1.5,
+      "backtest_n_trades": 1,
+      "backtest_max_dd": 0.0
+    },
+    "BTC/USDT": {
+      "backtest_win_rate": 0.5464,
+      "backtest_profit_factor": 1.663,
+      "backtest_sharpe": 3.48,
+      "backtest_total_pnl": 36.91,
+      "backtest_n_trades": 97,
+      "backtest_max_dd": 27.17
+    },
+    "DOGE/USDT": {
+      "backtest_win_rate": 0.0385,
+      "backtest_profit_factor": 0.08,
+      "backtest_sharpe": -24.341,
+      "backtest_total_pnl": -34.5,
+      "backtest_n_trades": 26,
+      "backtest_max_dd": 33.0
+    },
+    "DOT/USDT": {
+      "backtest_win_rate": 0.3846,
+      "backtest_profit_factor": 1.25,
+      "backtest_sharpe": 1.673,
+      "backtest_total_pnl": 3.0,
+      "backtest_n_trades": 13,
+      "backtest_max_dd": 9.0
+    },
+    "DYDX/USDT": {
+      "backtest_win_rate": 0.0,
+      "backtest_profit_factor": 0.0,
+      "backtest_sharpe": 0,
+      "backtest_total_pnl": -6.0,
+      "backtest_n_trades": 4,
+      "backtest_max_dd": 4.5
+    },
+    "ETH/USDT": {
+      "backtest_win_rate": 0.6667,
+      "backtest_profit_factor": 3.053,
+      "backtest_sharpe": 7.952,
+      "backtest_total_pnl": 12.32,
+      "backtest_n_trades": 12,
+      "backtest_max_dd": 3.0
+    },
+    "FET/USDT": {
+      "backtest_win_rate": 1.0,
+      "backtest_profit_factor": 0.09,
+      "backtest_sharpe": 0,
+      "backtest_total_pnl": 9.0,
+      "backtest_n_trades": 3,
+      "backtest_max_dd": 0.0
+    },
+    "INJ/USDT": {
+      "backtest_win_rate": 1.0,
+      "backtest_profit_factor": 0.03,
+      "backtest_sharpe": 0,
+      "backtest_total_pnl": 3.0,
+      "backtest_n_trades": 1,
+      "backtest_max_dd": 0.0
+    },
+    "SHIB/USDT": {
+      "backtest_win_rate": 0.3684,
+      "backtest_profit_factor": 1.167,
+      "backtest_sharpe": 1.155,
+      "backtest_total_pnl": 3.0,
+      "backtest_n_trades": 19,
+      "backtest_max_dd": 9.0
+    },
+    "SOL/USDT": {
+      "backtest_win_rate": 0.125,
+      "backtest_profit_factor": 0.286,
+      "backtest_sharpe": -10.0,
+      "backtest_total_pnl": -15.0,
+      "backtest_n_trades": 16,
+      "backtest_max_dd": 21.0
+    },
+    "TRX/USDT": {
+      "backtest_win_rate": 0.6315,
+      "backtest_profit_factor": 2.614,
+      "backtest_sharpe": 6.364,
+      "backtest_total_pnl": 527.98,
+      "backtest_n_trades": 852,
+      "backtest_max_dd": 106.33
+    },
+    "XRP/USDT": {
+      "backtest_win_rate": 0.3721,
+      "backtest_profit_factor": 1.185,
+      "backtest_sharpe": 1.273,
+      "backtest_total_pnl": 7.5,
+      "backtest_n_trades": 43,
+      "backtest_max_dd": 28.5
+    }
+  },
+  "active_picks": [],
+  "strategy_summary": {
+    "approach": "Ensemble (RF+GBT+XGBoost) with calibration + purged walk-forward + regime detection",
+    "features": "80+ production features (OHLCV + regime + HTF + F&G + on-chain, corr filtered)",
+    "v3_enhancements": [
+      "4-state regime detection (BULL/BEAR/SIDEWAYS/HIGH_VOL)",
+      "Adaptive ATR-based TP/SL per regime",
+      "Multi-timeframe features (1h/4h/daily alignment)",
+      "Fear & Greed Index integration",
+      "Purged walk-forward (48-bar gap)",
+      "Correlation guard (max 1 pos/asset, 72h cooldown)",
+      "90-day training window (was 30)",
+      "XGBoost added to ensemble (RF 25% + GBT 35% + XGB 40%)",
+      "Probability calibration (Platt + Isotonic)",
+      "SHAP feature importance (top 20)",
+      "Feature correlation cleanup (r>0.9 dropped)",
+      "On-chain data (CoinGecko: BTC dom, mcap, per-coin)",
+      "Per-pair forward evaluation + auto-suspension"
+    ],
+    "risk_reward": "2:1 to 3:1 (regime-adaptive ATR)",
+    "holding_period": "24-48 hours",
+    "backtest_method": "Purged walk-forward (no look-ahead bias)",
+    "backtest_profitable_pairs": 6,
+    "backtest_total_pairs": 13
+  },
+  "strategy_per_pair": {},
+  "scorecard": {
+    "total_picks": 171,
+    "tp_hits": 64,
+    "sl_hits": 107,
+    "expired": 85,
+    "win_rate": 37.43,
+    "total_pnl_pct": -139.47,
+    "profit_factor": 0.78,
+    "avg_win_pct": 7.78,
+    "avg_loss_pct": -5.96,
+    "sharpe_ratio": -1.09
+  }
+}

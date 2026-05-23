@@ -1,0 +1,65 @@
+name: HC Evaluator Parity Test
+
+# Weekly HC gate parity check: Node (audit_dashboard/hc_filter.js) vs
+# Python (tools/hc_gates_python.py). Validation-only — NO auto-commit.
+#
+# Schedule: Monday 15:00 UTC. Chosen to avoid the dense push-storm windows
+# (top-of-hour, :05/:10/:15/:30/:35 half-hours, and 22:00 UTC workday close).
+
+on:
+  schedule:
+    - cron: '0 15 * * 1'
+  workflow_dispatch: {}
+  pull_request:
+    # v1.1 governance reviewer: also run on PRs that touch either evaluator
+    # or its Python mirror, so parity drift is caught at PR-review time
+    # (not just on the weekly cron).
+    paths:
+      - 'audit_dashboard/hc_filter.js'
+      - 'tools/hc_gates_python.py'
+      - 'audit_trail/feed_membership.py'
+      - 'tools/hc_parity_test.js'
+      - 'tools/hc_parity_test.py'
+
+# Serialize to avoid two concurrent parity runs racing on the artifact name.
+concurrency:
+  group: hc-parity
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  hc-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          # hc_gates_python.py uses only stdlib; nothing to install.
+          # Left explicit so future deps are an obvious diff.
+
+      - name: Run HC parity test
+        run: python tools/hc_parity_test.py
+
+      - name: Upload parity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hc-parity-report
+          path: tools/data/hc_parity_baseline.json
+          if-no-files-found: warn

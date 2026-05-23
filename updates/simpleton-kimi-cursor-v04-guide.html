@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpleton v0.04 Kimi_Cursor - User Guide | Find Toronto Events</title>
+    <meta name="description" content="User guide for Simpleton v0.04 Kimi_Cursor — 9-indicator dynamic engine with ADX regime gating, hybrid TP/SL, and soft-weighted voting for BTCUSD.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%); color: #c8c8d8; line-height: 1.6; min-height: 100vh; }
+        a { color: #06b6d4; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 40px 20px 30px; }
+        .header h1 { font-size: 2.2em; color: #ffffff; margin-bottom: 8px; }
+        .header .subtitle { color: #888; font-size: 1.1em; }
+        .badge { display: inline-block; background: linear-gradient(135deg, #06b6d4, #0891b2); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 12px; }
+        .back-link { margin-bottom: 20px; font-size: 0.9em; }
+        .section { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .section h2 { color: #06b6d4; font-size: 1.4em; margin-bottom: 16px; border-bottom: 1px solid rgba(6,182,212,0.2); padding-bottom: 8px; }
+        .section h3 { color: #f59e0b; font-size: 1.1em; margin: 16px 0 8px; }
+        .section h4 { color: #ddd; margin: 12px 0 6px; }
+        ul, ol { margin-left: 20px; margin-bottom: 12px; }
+        li { margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9em; }
+        th { text-align: left; padding: 8px; border-bottom: 2px solid #333; color: #f59e0b; }
+        td { padding: 8px; border-bottom: 1px solid #222; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        code { background: rgba(6,182,212,0.1); color: #06b6d4; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        pre { background: #0d0d1a; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; border: 1px solid #222; }
+        pre code { background: none; padding: 0; }
+        .tip { background: rgba(6,182,212,0.08); border-left: 4px solid #06b6d4; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+        .warn { background: rgba(255,68,68,0.08); border-left: 4px solid #FF4444; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+        .success { background: rgba(0,230,118,0.08); border-left: 4px solid #00E676; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+        .green { color: #00E676; }
+        .gold { color: #f59e0b; }
+        .red { color: #FF1744; }
+        .cyan { color: #06b6d4; }
+        .footer { text-align: center; padding: 30px 20px; color: #666; font-size: 0.85em; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 40px; }
+        .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 16px 0; }
+        .mode-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 16px; }
+        .mode-card h4 { margin-top: 0; }
+        .regime-bar { display: flex; gap: 0; margin: 12px 0; border-radius: 8px; overflow: hidden; height: 32px; font-size: 0.8em; font-weight: bold; }
+        .regime-bar > div { display: flex; align-items: center; justify-content: center; }
+        .regime-range { background: rgba(0,230,118,0.25); color: #00E676; flex: 15; }
+        .regime-mixed { background: rgba(255,165,0,0.25); color: #ffa500; flex: 10; }
+        .regime-trend { background: rgba(255,68,68,0.25); color: #ff4444; flex: 75; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <p class="back-link"><a href="/updates/">&larr; Back to Updates</a> &middot; <a href="/updates/simpleton-performance.html">Performance Report</a> &middot; <a href="/">Main Site</a></p>
+
+    <div class="header">
+        <span class="badge">v0.04 Kimi_Cursor</span>
+        <h1>Simpleton v0.04 Kimi_Cursor</h1>
+        <p class="subtitle">9-Indicator Dynamic Engine &mdash; User Guide</p>
+    </div>
+
+    <!-- ===== OVERVIEW ===== -->
+    <div class="section">
+        <h2>What Is This?</h2>
+        <p><strong>Kimi_Cursor v0.04</strong> is a TradingView Pine Script strategy that fuses the best of two engines: <strong>KIMI</strong> (5-indicator voting) and <strong>CURSOR</strong> (12 strategy backtester). It adds ADX regime detection, timeframe-adaptive TP/SL, and a Dynamic mode with soft-weighted voting.</p>
+        <p>It is the first <em>cross-engine</em> Simpleton variant &mdash; designed to beat all timeframes by adapting its behavior to market conditions.</p>
+
+        <h3>Files</h3>
+        <table>
+            <tr><th>File</th><th>Type</th><th>Purpose</th></tr>
+            <tr><td><code>Simpletonv0.04_Kimi_Cursor.pine</code></td><td>Pine Script v5 Strategy</td><td>Load into TradingView to trade or backtest</td></tr>
+            <tr><td><code>backtest_kimi_cursor_v04.py</code></td><td>Python Validator</td><td>Run backtests locally, compare to KIMI baseline</td></tr>
+            <tr><td><code>simpleton-kimi-cursor-v04-guide.html</code></td><td>HTML</td><td>This guide</td></tr>
+        </table>
+    </div>
+
+    <!-- ===== QUICK START ===== -->
+    <div class="section">
+        <h2>Quick Start (TradingView)</h2>
+        <ol>
+            <li>Open <a href="https://www.tradingview.com/chart/" target="_blank">TradingView</a> and navigate to <strong>BTCUSD</strong> (any exchange)</li>
+            <li>Click <strong>Pine Editor</strong> at the bottom of the chart</li>
+            <li>Copy the entire contents of <code>Simpletonv0.04_Kimi_Cursor.pine</code> and paste into the editor</li>
+            <li>Click <strong>Add to Chart</strong></li>
+            <li>The strategy will appear with default settings: <strong>Dynamic mode</strong>, <strong>Hybrid TP/SL</strong></li>
+            <li>Open the <strong>Strategy Tester</strong> tab to see backtest results</li>
+        </ol>
+
+        <div class="tip">
+            <strong>Recommended first test:</strong> BTCUSD on the <strong>1H</strong> or <strong>45m</strong> timeframe. These showed the strongest v0.04 improvement over KIMI v0.01 (PF 1.099 vs 0.975).
+        </div>
+    </div>
+
+    <!-- ===== STRATEGY MODES ===== -->
+    <div class="section">
+        <h2>Strategy Modes</h2>
+        <p>Select a mode from the <strong>Strategy Mode</strong> dropdown in Settings &rarr; Inputs.</p>
+
+        <div class="mode-grid">
+            <div class="mode-card" style="border-color: rgba(6,182,212,0.3);">
+                <h4 class="cyan">Dynamic <span class="gold">(Recommended)</span></h4>
+                <p>Regime-adaptive soft-weighted voting. Boosts trend-following indicators in trends, mean-reversion in ranges. The "beat all timeframes" mode.</p>
+                <p><small>Threshold: 4 (TREND/RANGE), 3 (MIXED)</small></p>
+            </div>
+            <div class="mode-card">
+                <h4>Multi-Indicator</h4>
+                <p>All 9 indicators vote equally. Min 3 confirmations needed (33% agreement). Like KIMI&rsquo;s Multi mode but with 4 extra indicators.</p>
+            </div>
+            <div class="mode-card">
+                <h4>Individual Strategies</h4>
+                <p>Run any of the 9 indicators solo: RSI-2, SuperTrend, MACD, Triple EMA, BB, Ichimoku, HMA, SFP, or Z-Score.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== THE 9 INDICATORS ===== -->
+    <div class="section">
+        <h2>The 9 Indicators</h2>
+
+        <h3>From KIMI (Original 5)</h3>
+        <table>
+            <tr><th>Indicator</th><th>Type</th><th>Buy Signal</th><th>Sell Signal</th><th>Regime</th></tr>
+            <tr><td><strong>RSI-2</strong></td><td>Mean Reversion</td><td>RSI(2) &lt; 30 + 200 EMA filter</td><td>RSI(2) &gt; 70 + 200 EMA filter</td><td class="green">RANGE 2&times;</td></tr>
+            <tr><td><strong>SuperTrend</strong></td><td>Trend Following</td><td>Direction flip to support</td><td>Direction flip to resistance</td><td class="red">TREND 2&times;</td></tr>
+            <tr><td><strong>MACD</strong></td><td>Trend Following</td><td>MACD crosses above signal</td><td>MACD crosses below signal</td><td class="red">TREND 2&times;</td></tr>
+            <tr><td><strong>Triple EMA</strong></td><td>Trend Following</td><td>Fast &gt; Med &gt; Slow alignment</td><td>Fast &lt; Med &lt; Slow alignment</td><td class="red">TREND 2&times;</td></tr>
+            <tr><td><strong>Bollinger Bands</strong></td><td>Mean Reversion</td><td>Close below lower band</td><td>Close above upper band</td><td class="green">RANGE 2&times;</td></tr>
+        </table>
+
+        <h3>From CURSOR (New 4)</h3>
+        <table>
+            <tr><th>Indicator</th><th>Type</th><th>Buy Signal</th><th>Sell Signal</th><th>Regime</th></tr>
+            <tr><td><strong>Ichimoku Cloud</strong></td><td>Trend Following</td><td>TK cross up + above cloud + bullish cloud</td><td>TK cross down + below cloud + bearish cloud</td><td class="red">TREND 2&times;</td></tr>
+            <tr><td><strong>HMA Trend</strong></td><td>Trend Following</td><td>HMA turns up + close &gt; SMA50 + RSI &lt; 75</td><td>HMA turns down + close &lt; SMA50 + RSI &gt; 25</td><td class="red">TREND 2&times;</td></tr>
+            <tr><td><strong>Swing Failure (SFP)</strong></td><td>Universal</td><td>Sweeps low, closes above + wick &ge; 25%</td><td>Sweeps high, closes below + wick &ge; 25%</td><td>Always 1&times;</td></tr>
+            <tr><td><strong>Z-Score MR</strong></td><td>Mean Reversion</td><td>Z-Score &lt; &minus;2.0 (2 std devs cheap)</td><td>Z-Score &gt; 2.0 (2 std devs expensive)</td><td class="green">RANGE 2&times;</td></tr>
+        </table>
+    </div>
+
+    <!-- ===== REGIME DETECTION ===== -->
+    <div class="section">
+        <h2>ADX Regime Detection</h2>
+        <p>The engine classifies every bar into one of three regimes using the <strong>Average Directional Index (ADX)</strong>:</p>
+
+        <div class="regime-bar">
+            <div class="regime-range">RANGE<br>ADX &lt; 15</div>
+            <div class="regime-mixed">MIXED<br>15&ndash;25</div>
+            <div class="regime-trend">TREND<br>ADX &gt; 25</div>
+        </div>
+
+        <h3>How It Affects Voting (Dynamic Mode)</h3>
+        <table>
+            <tr><th>Regime</th><th>Trend-Following (5)</th><th>Mean-Reversion (3)</th><th>SFP</th><th>Max Votes</th><th>Threshold</th></tr>
+            <tr><td class="red"><strong>TREND</strong></td><td>2&times; weight</td><td>1&times; weight</td><td>1&times;</td><td>14</td><td>4</td></tr>
+            <tr><td class="green"><strong>RANGE</strong></td><td>1&times; weight</td><td>2&times; weight</td><td>1&times;</td><td>12</td><td>4</td></tr>
+            <tr><td class="gold"><strong>MIXED</strong></td><td>1&times; weight</td><td>1&times; weight</td><td>1&times;</td><td>9</td><td>3</td></tr>
+        </table>
+
+        <div class="tip">
+            <strong>Soft weighting, not hard blocking.</strong> Unlike hard regime gating (which mutes indicators completely), v0.04 uses soft weighting. Mean-reversion indicators still contribute 1&times; in TREND &mdash; they catch dip-buy opportunities. Only their priority is reduced.
+        </div>
+    </div>
+
+    <!-- ===== TP/SL SYSTEM ===== -->
+    <div class="section">
+        <h2>Hybrid TP/SL System</h2>
+        <p>Three modes available under <strong>Settings &rarr; Inputs &rarr; Risk Management &rarr; TP/SL Mode</strong>:</p>
+
+        <table>
+            <tr><th>Mode</th><th>Behavior</th><th>Best For</th></tr>
+            <tr><td><strong class="cyan">Hybrid</strong> (default)</td><td>Fixed 3%/2% on &le;1H charts, ATR-based on 4H+ charts</td><td>All timeframes &mdash; adapts automatically</td></tr>
+            <tr><td><strong>ATR Auto-Scale</strong></td><td>ATR multiples everywhere, scaled by timeframe</td><td>Volatility-first approach, longer TFs</td></tr>
+            <tr><td><strong>Fixed Percentage</strong></td><td>Fixed TP/SL % everywhere (KIMI v0.01 style)</td><td>Simplicity, known behavior</td></tr>
+        </table>
+
+        <h3>Timeframe Profiles (ATR Auto-Scale)</h3>
+        <table>
+            <tr><th>Timeframe</th><th>Profile</th><th>TP (ATR &times;)</th><th>SL (ATR &times;)</th><th>Max Hold</th></tr>
+            <tr><td>&le;5m</td><td>SCALP</td><td>1.25&times;</td><td>0.75&times;</td><td>8 bars</td></tr>
+            <tr><td>15m</td><td>INTRADAY</td><td>1.5&times;</td><td>0.75&times;</td><td>12 bars</td></tr>
+            <tr><td>30m&ndash;1H</td><td>SWING-ID</td><td>2.0&times;</td><td>1.0&times;</td><td>15 bars</td></tr>
+            <tr><td>4H</td><td>SWING</td><td>2.5&times;</td><td>1.25&times;</td><td>20 bars</td></tr>
+            <tr><td>Daily</td><td>POSITION</td><td>3.5&times;</td><td>1.75&times;</td><td>12 bars</td></tr>
+            <tr><td>Weekly+</td><td>MACRO</td><td>4.5&times;</td><td>2.0&times;</td><td>8 bars</td></tr>
+        </table>
+
+        <div class="tip">
+            <strong>Max Hold Timeout</strong> is only active in ATR mode. It force-closes positions that have been open longer than the max hold period for the current timeframe. This prevents capital from being tied up in stale, directionless trades.
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="section">
+        <h2>Dashboard</h2>
+        <p>The top-right table on your chart shows real-time information:</p>
+        <table>
+            <tr><th>Row</th><th>Shows</th></tr>
+            <tr><td>Mode</td><td>Current strategy mode (Dynamic, Multi-Indicator, etc.)</td></tr>
+            <tr><td>Regime</td><td>TREND / MIXED / RANGE + ADX value</td></tr>
+            <tr><td>TF Profile</td><td>SCALP / INTRADAY / SWING-ID / SWING / POSITION / MACRO</td></tr>
+            <tr><td>Long Votes</td><td>Current bullish vote count out of max possible</td></tr>
+            <tr><td>Short Votes</td><td>Current bearish vote count out of max possible</td></tr>
+            <tr><td>TP/SL</td><td>Active TP/SL levels (ATR multiples or fixed %)</td></tr>
+            <tr><td>ATR(14)</td><td>Current 14-period ATR value</td></tr>
+            <tr><td>Max Hold</td><td>Max bars before timeout (ATR mode only)</td></tr>
+            <tr><td>RSI(2)</td><td>Current RSI-2 value (green if oversold, red if overbought)</td></tr>
+            <tr><td>Z-Score</td><td>Current Z-Score (green if &lt; &minus;2, red if &gt; 2)</td></tr>
+            <tr><td>Bars Held</td><td>How many bars the current position has been open</td></tr>
+        </table>
+    </div>
+
+    <!-- ===== PYTHON VALIDATOR ===== -->
+    <div class="section">
+        <h2>Python Validator</h2>
+        <p>The Python backtester mirrors the Pine Script logic and compares v0.04 against KIMI v0.01 baseline.</p>
+
+        <h3>Requirements</h3>
+        <pre><code>pip install pandas numpy yfinance</code></pre>
+
+        <h3>Usage</h3>
+        <pre><code># Run all timeframes (15m, 30m, 45m, 1H, 4H, 1D)
+python backtest_kimi_cursor_v04.py
+
+# Single timeframe
+python backtest_kimi_cursor_v04.py --timeframe 4h
+
+# Show individual strategy results
+python backtest_kimi_cursor_v04.py --verbose
+
+# Save results to JSON
+python backtest_kimi_cursor_v04.py --save</code></pre>
+
+        <h3>Output</h3>
+        <p>Produces a comparison table for each timeframe showing KIMI v0.01 (fixed 3%/2%), v0.04 Hybrid (9-indicator + hybrid TP/SL), and v0.04 Dynamic (regime-weighted + hybrid TP/SL). Metrics: trades, win rate, profit factor, return %, max drawdown, Sharpe ratio.</p>
+
+        <div class="warn">
+            <strong>Data limitation:</strong> yfinance provides max ~730 days of 1H data and ~59 days of 15m data. TradingView has 9+ years. The Python results are directionally accurate but TradingView is the authoritative backtest source.
+        </div>
+    </div>
+
+    <!-- ===== BACKTEST RESULTS ===== -->
+    <div class="section">
+        <h2>Key Backtest Results</h2>
+        <p>Python validator on BTCUSD, comparing v0.04 Dynamic vs KIMI v0.01:</p>
+
+        <table>
+            <tr><th>Timeframe</th><th colspan="2">KIMI v0.01</th><th colspan="2">v0.04 Dynamic</th><th>Winner</th></tr>
+            <tr><th></th><th>PF</th><th>Return%</th><th>PF</th><th>Return%</th><th></th></tr>
+            <tr><td>15m</td><td>0.785</td><td class="red">&minus;9.65%</td><td>0.718</td><td class="red">&minus;11.10%</td><td>KIMI</td></tr>
+            <tr><td>30m</td><td class="green">1.212</td><td class="green">+4.36%</td><td>0.897</td><td class="red">&minus;2.60%</td><td>KIMI</td></tr>
+            <tr style="background:rgba(6,182,212,0.08)"><td><strong>45m</strong></td><td>0.975</td><td class="red">&minus;5.20%</td><td class="green"><strong>1.099</strong></td><td class="green"><strong>+21.48%</strong></td><td class="cyan"><strong>v0.04</strong></td></tr>
+            <tr style="background:rgba(6,182,212,0.08)"><td><strong>1H</strong></td><td>0.975</td><td class="red">&minus;5.20%</td><td class="green"><strong>1.099</strong></td><td class="green"><strong>+21.48%</strong></td><td class="cyan"><strong>v0.04</strong></td></tr>
+            <tr><td>4H</td><td class="green">1.073</td><td class="green">+5.31%</td><td>0.681</td><td class="red">&minus;18.78%</td><td>KIMI</td></tr>
+            <tr><td>1D</td><td>0.903</td><td class="red">&minus;2.49%</td><td>0.274</td><td class="red">&minus;23.16%</td><td>KIMI</td></tr>
+        </table>
+
+        <div class="success">
+            <strong>v0.04 Dynamic beats KIMI on 45m and 1H</strong> &mdash; turning a &minus;5.20% loss into a +21.48% gain (PF 1.099 vs 0.975). Load into TradingView for full 9-year validation on 4H and Daily.
+        </div>
+    </div>
+
+    <!-- ===== SETTINGS GUIDE ===== -->
+    <div class="section">
+        <h2>Recommended Settings</h2>
+
+        <h3>Conservative (Default)</h3>
+        <table>
+            <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+            <tr><td>Strategy Mode</td><td><strong>Dynamic</strong></td><td>Adapts to regime automatically</td></tr>
+            <tr><td>TP/SL Mode</td><td><strong>Hybrid</strong></td><td>Fixed on short TFs, ATR on long TFs</td></tr>
+            <tr><td>Min Confirmations</td><td><strong>3</strong></td><td>33% agreement &mdash; filters noise with 9 indicators</td></tr>
+            <tr><td>ADX Trend Threshold</td><td><strong>25</strong></td><td>Standard ADX trend threshold</td></tr>
+            <tr><td>ADX Range Threshold</td><td><strong>15</strong></td><td>Standard ADX range threshold</td></tr>
+        </table>
+
+        <h3>Aggressive</h3>
+        <table>
+            <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+            <tr><td>Strategy Mode</td><td><strong>Multi-Indicator</strong></td><td>More signals, higher trade count</td></tr>
+            <tr><td>Min Confirmations</td><td><strong>2</strong></td><td>Lower bar = more trades, more risk</td></tr>
+            <tr><td>TP/SL Mode</td><td><strong>ATR Auto-Scale</strong></td><td>Volatility-adaptive everywhere</td></tr>
+        </table>
+
+        <h3>KIMI-Compatible</h3>
+        <p>To replicate KIMI v0.01 behavior exactly:</p>
+        <table>
+            <tr><th>Setting</th><th>Value</th></tr>
+            <tr><td>Strategy Mode</td><td>Multi-Indicator</td></tr>
+            <tr><td>Min Confirmations</td><td>2</td></tr>
+            <tr><td>TP/SL Mode</td><td>Fixed Percentage</td></tr>
+            <tr><td>Fixed TP %</td><td>3.0</td></tr>
+            <tr><td>Fixed SL %</td><td>2.0</td></tr>
+        </table>
+        <p><small>This uses only 5 of the 9 indicators for voting (the original KIMI set) because the extra indicators will rarely fire simultaneously with the KIMI ones to reach min 2 on their own. The additional indicators are passive in this config.</small></p>
+    </div>
+
+    <!-- ===== WHAT'S NEW ===== -->
+    <div class="section">
+        <h2>What&rsquo;s New vs KIMI v0.01</h2>
+        <table>
+            <tr><th>Feature</th><th>KIMI v0.01</th><th>Kimi_Cursor v0.04</th></tr>
+            <tr><td>Indicators</td><td>5</td><td class="green"><strong>9</strong> (+Ichimoku, HMA, SFP, Z-Score)</td></tr>
+            <tr><td>TP/SL</td><td>Fixed 3%/2%</td><td class="green"><strong>Hybrid</strong> (fixed + ATR + auto-scale)</td></tr>
+            <tr><td>Regime awareness</td><td>None</td><td class="green"><strong>ADX TREND/MIXED/RANGE</strong></td></tr>
+            <tr><td>Voting</td><td>Static (all equal)</td><td class="green"><strong>Soft-weighted</strong> (regime-adaptive)</td></tr>
+            <tr><td>Timeframe profiles</td><td>None</td><td class="green"><strong>6 profiles</strong> (SCALP&ndash;MACRO)</td></tr>
+            <tr><td>Max hold timeout</td><td>None</td><td class="green"><strong>TF-scaled</strong> (8&ndash;20 bars)</td></tr>
+            <tr><td>Python validator</td><td>simpleton_backtest.py</td><td class="green"><strong>backtest_kimi_cursor_v04.py</strong></td></tr>
+        </table>
+    </div>
+
+    <!-- ===== ALERTS ===== -->
+    <div class="section">
+        <h2>Setting Up Alerts</h2>
+        <p>Two alert conditions are built in:</p>
+        <ol>
+            <li><strong>KC04 Buy</strong> &mdash; fires when the active mode generates a long signal</li>
+            <li><strong>KC04 Sell</strong> &mdash; fires when the active mode generates a short signal</li>
+        </ol>
+        <p>To create an alert: right-click the strategy on your chart &rarr; <strong>Add Alert</strong> &rarr; select the condition.</p>
+    </div>
+
+    <!-- ===== LINKS ===== -->
+    <div class="section">
+        <h2>Related Links</h2>
+        <ul>
+            <li><a href="/updates/simpleton-performance.html">Full Performance Report</a> &mdash; 185 backtests across 7 engines</li>
+            <li><a href="/updates/simpleton-cursor-quickstart.html">CURSOR v0.01 Quick Start</a> &mdash; the 12-strategy engine this builds on</li>
+            <li><a href="/updates/">Updates Page</a> &mdash; all recent changes</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Simpleton v0.04 Kimi_Cursor &mdash; Feb 2026 &mdash; <a href="/">findtorontoevents.ca</a></p>
+        <p style="margin-top:4px;color:#555">Reference: Perry Kaufman (adaptive systems), Ed Seykota (trend-following), Larry Connors (mean reversion)</p>
+    </div>
+</div>
+</body>
+</html>

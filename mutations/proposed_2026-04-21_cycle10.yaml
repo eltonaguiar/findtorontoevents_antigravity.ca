@@ -1,0 +1,91 @@
+# Cycle-10 perf-review mutation proposals
+# Generated: 2026-04-21 ~20:15 UTC
+# Source: audit_trail/data/dashboard_payload.json (3,500 closed, 60 active)
+# Refined gate vs cycle 8/9: requires PF < 1.0 to avoid TP-skewed positives
+#
+# CRITICAL CONTEXT: This cycle's 48h window shows +115% (bounce-day biased).
+# 14-day window shows -1169% — the system is NEGATIVE EV at 14d horizon.
+# All mutation proposals are REGIME-AWARE candidates, not blanket changes.
+
+cycle: 10
+generated_at_utc: "2026-04-21T20:13:00Z"
+window_truth:
+  warning: "48h is regime-biased. ALL mutations should validate at 14d before deploy."
+  48h_cum: +111.91
+  7d_cum:  -1232.69
+  14d_cum: -1169.12
+  full_cum: -1134.17
+
+# ========== PERSISTENT ZOMBIES (cycles 3-10 unresolved) ==========
+- strategy: copy_hl_lb_None
+  status: zombie_retired_unchanged_since_cycle3
+  metrics: {n: 278, wr_pct: 32.0, pf: 0.56, cum_pnl_pct: -806.39}
+  axes: do_not_mutate_plug_emitter
+
+- strategy: st_fear_greed_contrarian
+  status: zombie_retired_unchanged
+  metrics: {n: 627, wr_pct: 24.6, pf: 0.37, cum_pnl_pct: -358.82}
+  axes: do_not_mutate_plug_emitter
+  note: |
+    NOTE: This strategy showed WR 51% and +35 cum on the 48h window.
+    That is REGIME-CONDITIONAL bounce performance. Over 14d, still -358.
+    Don't unretire based on 48h numbers (cf. PR #310 Ollama warning).
+
+# ========== TRUE MUTATION CANDIDATES ==========
+- strategy: macd_rsi_confluence
+  status: mutate
+  metrics: {n: 48, wr_pct: 29.2, pf: 0.42, cum_pnl_pct: -50.49}
+  escalation: "cycle 9: n=44 cum -51 -> cycle 10: n=48 cum -50 (steady drag)"
+  axes:
+    sweep:
+      - "MACD fast/slow: 12/26 -> {5/13, 20/40}"
+      - "RSI len: 14 -> {7, 21, 28}"
+      - "confluence threshold: tighten 25%"
+    regime:
+      - "BTC 4h trend filter (long only when EMA50>EMA200)"
+      - "drop kill window 16-21 UTC + 22 UTC (per cycle 8/9 TOD pattern)"
+    inverse: "flip direction signals"
+
+- strategy: kimi_signal_tracking
+  status: escalating_drain
+  metrics: {n: 36, wr_pct: 27.8, pf: 0.45, cum_pnl_pct: -97.81}
+  escalation: "cycle 8: n=29 cum -64 -> cycle 9: n=36 cum -107 -> cycle 10: n=36 cum -98"
+  axes:
+    sweep: ["min sub-signal threshold +1, +2", "weighting equal -> by_historical_wr"]
+    regime: ["asset-class scoping", "ToD filter"]
+    inverse: "flip direction"
+
+- strategy: ensemble
+  status: investigate_first
+  note: "Strategy literally named 'ensemble' — likely dispatcher mislabel. Identify component strategies before mutating."
+  metrics: {n: 24, wr_pct: 16.7, pf: 0.64, cum_pnl_pct: -9.02}
+
+- strategy: unknown
+  status: investigate_first
+  note: "Strategy literally named 'unknown' — n=49 cum -16. Find the dispatch path that produces this label."
+  metrics: {n: 49, wr_pct: 30.6, pf: 0.72, cum_pnl_pct: -15.6}
+
+# ========== HC EMERGENCY-BLOCK CANDIDATES (3 active picks) ==========
+hc_emergency_block_now:
+  - {symbol: OPUSDT,   strategy: "super signal (super) via claude_gainer_st", elite_score: 48, confidence: 0.99, sym_wr: 19.4}
+  - {symbol: LINKUSDT, strategy: "super signal (super) via kimi", elite_score: 34, confidence: 0.99, sym_wr: 17.5}
+  - {symbol: DOGEUSDT, strategy: "super signal (super) via kimi", elite_score: 48, confidence: 0.99, sym_wr: 23.1}
+  proposed_gate: |
+    if asset_class == "CRYPTO" and confidence >= 0.95 and elite_score < 70 \
+       and symbol_historical_wr(symbol, n_min=30) < 0.30:
+        return None
+
+# ========== SYMBOL BLOCK CANDIDATES — REGIME-CONDITIONAL ONLY ==========
+# DO NOT hard-block per PR #305 lesson. Use PR #309 regime-conditional gate instead.
+symbol_block_candidates_regime_conditional:
+  - {symbol: OPUSDT,   class: CRYPTO, n: 62, wr_14d: 19.4, cum_14d: -118}
+  - {symbol: SUIUSDT,  class: CRYPTO, n: 79, wr_14d: 20.3, cum_14d: -88}
+  - {symbol: APTUSDT,  class: CRYPTO, n: 66, wr_14d: 22.7, cum_14d: -83}
+  - {symbol: AVAXUSDT, class: CRYPTO, n: 67, wr_14d: 16.4, cum_14d: -50}
+  - {symbol: LINKUSDT, class: CRYPTO, n: 57, wr_14d: 17.5, cum_14d: -42}
+  - {symbol: DOGEUSDT, class: CRYPTO, n: 65, wr_14d: 23.1, cum_14d: -47}
+  - {symbol: ADAUSDT,  class: CRYPTO, n: 62, wr_14d: 22.6, cum_14d: -38}
+  proposed_gate: |
+    Per PR #309: only reject these symbols when BTC regime != MEAN_REVERTING.
+    This preserves the bounce-day upside (WR 86.8% on 2026-04-20 verified)
+    while avoiding the trending-down bleed (-467% cum across cycles 3-9).

@@ -1,0 +1,132 @@
+name: ML Strategy Reviver Bridge & Standalone
+
+# Bridges ml_crypto_predictor picks into alpha_engine + generates
+# standalone signals for proven strategies when the ML engine is stale.
+# Also generates INVERSE signals for confirmed 0% WR strategies.
+
+on:
+  schedule:
+    - cron: '23 */2 * * *'   # Staggered from :15 (13+ workflows at :15)
+  workflow_dispatch:
+
+concurrency:
+  group: ml-strategy-reviver
+  # PR #239 / commit 3a9d8d1d30 pattern: do NOT cancel in-progress runs.
+  # Run 24565717535 died mid "Set up Python" after a 2m35s slow checkout
+  # (GHA infra blip). With cancel-in-progress: true, any subsequent cron
+  # firing while a slow run is still inside checkout/setup will kill it
+  # before reviver work + push retry loop ever start. Queue instead.
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  revive:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run ML Strategy Reviver
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "============================================"
+          echo "  ML Strategy Reviver"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/ml_strategy_reviver.py
+
+      - name: Merge reviver picks into active_picks.json
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python3 - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          DATA_DIR = Path("data")
+          REVIVER_PATH = DATA_DIR / "ml_reviver_picks.json"
+          ACTIVE_PATH = DATA_DIR / "active_picks.json"
+
+          if not REVIVER_PATH.exists():
+              print("No reviver picks to merge.")
+              exit(0)
+
+          with open(REVIVER_PATH) as f:
+              reviver_picks = json.load(f)
+
+          if not reviver_picks:
+              print("Reviver returned empty picks.")
+              exit(0)
+
+          # Load existing active picks
+          existing = []
+          if ACTIVE_PATH.exists():
+              with open(ACTIVE_PATH) as f:
+                  existing = json.load(f)
+
+          # Build keys for dedup
+          existing_keys = set()
+          for p in existing:
+              k = (p.get("strategy", ""), p.get("symbol", ""))
+              existing_keys.add(k)
+
+          added = 0
+          for p in reviver_picks:
+              k = (p.get("strategy", ""), p.get("symbol", ""))
+              if k not in existing_keys:
+                  existing.append(p)
+                  existing_keys.add(k)
+                  added += 1
+
+          if added:
+              with open(ACTIVE_PATH, "w") as f:
+                  json.dump(existing, f, indent=2, default=str)
+              print(f"Merged {added} reviver picks into active_picks.json (total: {len(existing)})")
+          else:
+              print("All reviver picks already in active_picks.json")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "ML Reviver Bot"
+          git config user.email "ml-reviver@findtorontoevents.ca"
+          git add alpha_engine/data/ml_reviver_picks.json \
+                  alpha_engine/data/active_picks.json || true
+
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          PICKS=$(python3 -c "
+          import json, os
+          f = 'alpha_engine/data/ml_reviver_picks.json'
+          print(len(json.load(open(f))) if os.path.exists(f) else 0)
+          " 2>/dev/null || echo "?")
+
+          git diff --staged --quiet || \
+            git commit -m "ML Reviver [${TIMESTAMP}]: ${PICKS} picks (bridge + standalone + inverse) [skip ci]"
+
+          for i in 1 2 3; do
+            git pull --rebase origin main || true
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            sleep 3
+          done
+

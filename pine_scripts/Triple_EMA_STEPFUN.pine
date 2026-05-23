@@ -1,0 +1,158 @@
+//@version=5
+strategy("Triple_EMA_STEPFUN", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.1, initial_capital=10000, pyramiding=0)
+
+// ============================================
+// TRIPLE EMA STACK STRATEGY
+// Trend following with EMA alignment
+// ============================================
+
+// ——— INPUT PARAMETERS ———
+fast_ema = input.int(5, "Fast EMA", minval=3, maxval=20)
+mid_ema = input.int(10, "Middle EMA", minval=5, maxval=50)
+slow_ema = input.int(20, "Slow EMA", minval=10, maxval=100)
+
+// Confirmation requirements
+require_alignment = input.bool(true, "Require Full Alignment")
+use_momentum_confirm = input.bool(true, "Momentum Confirmation")
+momentum_period = input.int(14, "Momentum Period", minval=5, maxval=50)
+
+// Exit parameters
+exit_mode = input.string("Opposite Signal", "Exit Mode", options=["Opposite Signal", "TP/SL", "Trailing"])
+tp_percent = input.float(2.5, "Take Profit %", minval=0.1, step=0.1)
+sl_percent = input.float(1.0, "Stop Loss %", minval=0.1, step=0.1)
+trail_offset_pct = input.float(0.5, "Trailing Offset %", minval=0.1, step=0.1)
+
+// Position sizing
+position_size_pct = input.float(100.0, "Position Size %", minval=1.0, maxval=100.0)
+
+// ============================================
+// INDICATOR CALCULATIONS
+// ============================================
+
+// EMAs
+ema1 = ta.ema(close, fast_ema)
+ema2 = ta.ema(close, mid_ema)
+ema3 = ta.ema(close, slow_ema)
+
+// EMA Stack conditions
+bullish_stack = ema1 > ema2 and ema2 > ema3
+bearish_stack = ema1 < ema2 and ema2 < ema3
+
+// Momentum confirmation (RSI)
+rsi = ta.rsi(close, momentum_period)
+momentum_bullish = rsi > 50
+momentum_bearish = rsi < 50
+
+// Price relative to EMAs
+price_above_ema1 = close > ema1
+price_below_ema1 = close < ema1
+
+// ============================================
+// SIGNAL GENERATION
+// ============================================
+
+// Long: All EMAs stacked bullish + price above fastest EMA + momentum confirmation
+long_condition = bullish_stack and price_above_ema1 and (not use_momentum_confirm or momentum_bullish)
+
+// Short: All EMAs stacked bearish + price below fastest EMA + momentum confirmation
+short_condition = bearish_stack and price_below_ema1 and (not use_momentum_confirm or momentum_bearish)
+
+// If not requiring full alignment, allow partial stacks
+if not require_alignment
+    long_condition := ema1 > ema2 and price_above_ema1
+    short_condition := ema1 < ema2 and price_below_ema1
+
+// ============================================
+// EXIT LOGIC
+// ============================================
+
+// Calculate exit levels
+float long_tp = na
+float long_sl = na
+float short_tp = na
+float short_sl = na
+if exit_mode == "TP/SL"
+    long_tp := close * (1 + tp_percent / 100)
+    long_sl := close * (1 - sl_percent / 100)
+    short_tp := close * (1 - tp_percent / 100)
+    short_sl := close * (1 + sl_percent / 100)
+
+// ============================================
+// STRATEGY EXECUTION
+// ============================================
+
+// Enter long
+if long_condition and strategy.position_size == 0
+    strategy.entry("Long", strategy.long, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Long Exit", "Long", limit=long_tp, stop=long_sl)
+
+// Enter short
+if short_condition and strategy.position_size == 0
+    strategy.entry("Short", strategy.short, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Short Exit", "Short", limit=short_tp, stop=short_sl)
+
+// Exit on opposite signal
+if exit_mode == "Opposite Signal"
+    if short_condition and strategy.position_size > 0
+        strategy.close("Long")
+    if long_condition and strategy.position_size < 0
+        strategy.close("Short")
+
+// ============================================
+// PLOTTING
+// ============================================
+
+// Plot EMAs
+plot(ema1, "Fast EMA", color=color.new(color.green, 0), linewidth=2)
+plot(ema2, "Mid EMA", color=color.new(color.orange, 0), linewidth=2)
+plot(ema3, "Slow EMA", color=color.new(color.red, 0), linewidth=2)
+
+// Entry markers
+plotshape(long_condition, title="EMA Long", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, text="EMA+")
+
+plotshape(short_condition, title="EMA Short", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, text="EMA-")
+
+// Background
+bgcolor(strategy.position_size > 0 ? color.new(color.green, 90) : na)
+bgcolor(strategy.position_size < 0 ? color.new(color.red, 90) : na)
+
+// ============================================
+// INFO TABLE
+// ============================================
+var table info_table = table.new(position.top_right, 2, 10, border_width=1)
+
+if barstate.islast
+    table.cell(info_table, 0, 0, "Triple EMA", bgcolor=color.blue, text_color=color.white)
+    table.cell(info_table, 1, 0, "Value", bgcolor=color.blue, text_color=color.white)
+    
+    table.cell(info_table, 0, 1, "Fast EMA", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 1, str.tostring(ema1, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 2, "Mid EMA", bgcolor=color.new(color.orange, 80))
+    table.cell(info_table, 1, 2, str.tostring(ema2, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 3, "Slow EMA", bgcolor=color.new(color.red, 80))
+    table.cell(info_table, 1, 3, str.tostring(ema3, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 4, "Stack", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 4, bullish_stack ? "Bullish" : bearish_stack ? "Bearish" : "Mixed", text_color=color.white)
+    
+    table.cell(info_table, 0, 5, "Signal", bgcolor=long_condition ? color.green : short_condition ? color.red : color.gray)
+    table.cell(info_table, 1, 5, long_condition ? "LONG" : short_condition ? "SHORT" : "WAIT", text_color=color.white)
+    
+    table.cell(info_table, 0, 6, "Exit Mode", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 6, exit_mode, text_color=color.white)
+    
+    table.cell(info_table, 0, 7, "Position", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 7, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", text_color=color.white)
+    
+    table.cell(info_table, 0, 8, "Equity", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 8, str.tostring(strategy.equity, "#.##"), text_color=color.white)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(long_condition, "Triple EMA Long", "Triple EMA Stack Long")
+alertcondition(short_condition, "Triple EMA Short", "Triple EMA Stack Short")

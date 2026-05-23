@@ -1,0 +1,25 @@
+{
+  "pr": null,
+  "engine": "claude",
+  "verdict": "COMMENT_ONLY",
+  "confidence": "LOW",
+  "summary": "Worker did not return valid JSON. See raw output.",
+  "strengths": [],
+  "concerns": [],
+  "commentary_text": "**Recommendation: Option A. Steps 5-6 in one workflow, step 7 in a separate workflow.**\n\nRationale: desktop can't connect anyway, so \"manual\" still means GHA. Encoding the safety steps in a workflow gives you audit logs, reproducibility, and the typed-input gate for free.\n\n---\n\n## Workflow design\n\n### Workflow 1 \u2014 `resolver-step5-6.yml` (steps 5 + 6)\n\n```yaml\non:\n  workflow_dispatch:\n    inputs:\n      confirm:\n        description: 'Type APPLY to execute. Anything else = dry-run.'\n        required: true\n        default: 'dry-run'\n```\n\n**Sequence inside the job:**\n\n```\n1. BACKUP\n   CREATE TABLE at_raw_picks_bak_20260519_prestep5\n     AS SELECT * FROM at_raw_picks;\n   -- verify: row count must match SELECT COUNT(*) FROM at_raw_picks\n\n2. PREFLIGHT (always runs, even in dry-run)\n   SELECT COUNT(*), symbol FROM at_raw_picks\n   WHERE <step-5 normalization predicates>   -- bare FOREX / bare =F / junk\n   GROUP BY symbol ORDER BY COUNT(*) DESC;\n   -- print to log; operator reviews before re-triggering with confirm=APPLY\n\n3. IF confirm == 'APPLY':\n   START TRANSACTION;\n   -- step 5 UPDATEs here (suffix normalization + quarantine flag)\n   SELECT ROW_COUNT() INTO @updated;\n   -- assert @updated BETWEEN 1900 AND 2300  (bounds on ~2086)\n   SELECT COUNT(*) FROM at_raw_picks WHERE <bad-symbol predicates>;\n   -- assert == 0 (all fixed)\n   COMMIT;\n\n4. STEP 6 re-resolve (only if step 5 committed)\n   python alpha_engine/outcome_resolver.py --symbols-from-step5\n   -- or full re-resolve pass; capture stdout/exit code\n\n5. POST-WRITE VERIFICATION\n   SELECT asset_class, COUNT(*), SUM(result='WON'), SUM(result='LOST')\n   FROM at_raw_picks\n   WHERE updated_at >= NOW() - INTERVAL 10 MINUTE\n   GROUP BY asset_class;\n   -- print to log for operator sign-off before running workflow 2\n```\n\n### Workflow 2 \u2014 `resolver-step7-apply.yml`\n\nSeparate `workflow_dispatch`, same typed-input gate. Runs `active_picks_sync.py --apply` only. Reason: Step 6 re-resolve may surface unexpected outcome distributions \u2014 you want a human checkpoint before flipping WON/LOST/EXPIRED.\n\n---\n\n## Backup strategy\n\n| What | Name |\n|---|---|\n| Full table snapshot | `at_raw_picks_bak_YYYYMMDD_prestep5` |\n| Row count assertion | logged to GHA output |\n| Never drop backup | leave it until you've verified step 6 + step 7 outputs clean |\n\n---\n\n## Rollback path\n\n```sql\n-- If something goes wrong post-COMMIT:\nRENAME TABLE at_raw_picks TO at_raw_picks_broken_20260519;\nRENAME TABLE at_raw_picks_bak_20260519_prestep5 TO at_raw_picks;\n```\n\nOne-liner, no data loss as long as backup table exists.\n\n---\n\n## Summary ranking\n\n| | Option A (GHA) | Option B (manual) |\n|---|---|---|\n| Can connect to MySQL | \u2705 | Depends on whitelisted machine |\n| Audit trail | \u2705 full logs | \u274c none |\n| Typed-input confirmation gate | \u2705 | \u274c |\n| Dry-run / preflight built-in | \u2705 | Manual discipline required |\n| Rollback path | \u2705 in workflow | \u274c ad-hoc |\n\n**Option A wins on every axis.** Keep steps 5-6 together (they're one atomic normalization + re-resolve unit), step 7 separate (gives you a deliberate pause to inspect outcome distribution before writing final verdicts).",
+  "_parse_status": "non_json_fallback",
+  "fabrication_risk": {
+    "level": "HIGH",
+    "notes": "non-JSON output, schema-invalid"
+  },
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\resolver-db-steps-2026-05-19\\claude.json.raw.txt",
+    "engine": "claude",
+    "ts": "20260519T091946Z",
+    "model_fingerprint": "",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "description": "Day-of-week trading adjustments based on 1,911 trade analysis",
+  "scientific_basis": [
+    "French (1980) - Monday Effect",
+    "Grebe & Schiereck (2024) - Meta-analysis",
+    "Cross (1973) - Original day-of-week anomaly",
+    "Aggarwal & Gupta (2004) - Wednesday Effect"
+  ],
+  "data_summary": {
+    "total_trades": 1911,
+    "best_day": "Monday",
+    "worst_day": "Wednesday",
+    "spread_pct": 2.97
+  },
+  
+  "day_direction_bias": {
+    "Monday": {
+      "LONG_multiplier": 1.4,
+      "SHORT_multiplier": 0.6,
+      "rationale": "Best LONG day: +1.63% avg, 68.5% WR",
+      "action": "MAXIMUM_LONG_EXPOSURE"
+    },
+    "Tuesday": {
+      "LONG_multiplier": 1.2,
+      "SHORT_multiplier": 0.8,
+      "rationale": "Good LONG day: +0.60% avg, 62.9% WR",
+      "action": "MODERATE_LONG_BIAS"
+    },
+    "Wednesday": {
+      "LONG_multiplier": 0.3,
+      "SHORT_multiplier": 1.7,
+      "rationale": "Wednesday Curse: LONG -2.32%, SHORT +0.87%",
+      "action": "BLOCK_LONG_ENTRIES"
+    },
+    "Thursday": {
+      "LONG_multiplier": 0.4,
+      "SHORT_multiplier": 1.6,
+      "rationale": "SHORT day: +0.73% avg, 78.6% WR",
+      "action": "HEAVY_SHORT_BIAS"
+    },
+    "Friday": {
+      "LONG_multiplier": 0.3,
+      "SHORT_multiplier": 1.7,
+      "rationale": "Friday SHORT: +1.40% avg, 86.5% WR",
+      "action": "HEAVY_SHORT_BIAS"
+    },
+    "Saturday": {
+      "LONG_multiplier": 0.5,
+      "SHORT_multiplier": 1.5,
+      "rationale": "Weekend crypto: SHORT +0.93%, 70.6% WR",
+      "action": "SHORT_BIAS"
+    },
+    "Sunday": {
+      "LONG_multiplier": 0.8,
+      "SHORT_multiplier": 1.2,
+      "rationale": "Neutral: +0.14% avg",
+      "action": "SLIGHT_SHORT_BIAS"
+    }
+  },
+  
+  "position_size_multipliers": {
+    "Monday": 1.5,
+    "Tuesday": 1.2,
+    "Wednesday": 0.5,
+    "Thursday": 0.7,
+    "Friday": 0.8,
+    "Saturday": 1.0,
+    "Sunday": 0.9
+  },
+  
+  "scoring_adjustments": {
+    "Monday": 1.20,
+    "Tuesday": 1.10,
+    "Wednesday": 0.70,
+    "Thursday": 0.85,
+    "Friday": 0.90,
+    "Saturday": 1.05,
+    "Sunday": 1.00
+  },
+  
+  "hard_rules": [
+    {
+      "rule": "NO_LONG_WEDNESDAY",
+      "condition": "day == 'Wednesday' AND direction == 'LONG'",
+      "action": "REJECT",
+      "rationale": "Wednesday LONG shows -2.32% avg, 28.7% WR"
+    },
+    {
+      "rule": "MIN_SIZE_WEDNESDAY",
+      "condition": "day == 'Wednesday'",
+      "action": "position_size *= 0.5",
+      "rationale": "Wednesday is chop day - reduce exposure"
+    },
+    {
+      "rule": "MAX_SIZE_MONDAY",
+      "condition": "day == 'Monday' AND direction == 'LONG'",
+      "action": "position_size *= 1.5",
+      "rationale": "Monday LONG shows +1.63% avg, 68.5% WR"
+    }
+  ],
+  
+  "expected_improvements": {
+    "overall_win_rate": "48% → 62%",
+    "avg_daily_pnl": "+0.06% → +0.45%",
+    "wednesday_performance": "-1.60% → -0.50%",
+    "risk_adjusted_return": "1.2 → 1.8"
+  },
+  
+  "monitoring": {
+    "validate_weekly": true,
+    "track_by_day": true,
+    "alert_if_pattern_breaks": true,
+    "reevaluate_date": "2026-04-13T00:00:00Z"
+  },
+  
+  "risks": [
+    "Regime change may invalidate patterns",
+    "Limited Saturday data (39 trades)",
+    "Crypto markets may differ from traditional markets",
+    "Overfitting to historical data"
+  ],
+  
+  "rollback_criteria": [
+    "Monday WR drops below 55% for 2 consecutive weeks",
+    "Wednesday LONG WR improves above 40%",
+    "Overall win rate decreases after implementation"
+  ],
+  
+  "implementation": {
+    "phase": "immediate",
+    "weight": 1.0,
+    "combine_with_existing_filters": true
+  }
+}

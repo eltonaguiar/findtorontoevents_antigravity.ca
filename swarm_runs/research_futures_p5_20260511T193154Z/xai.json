@@ -1,0 +1,81 @@
+{
+  "schema_version": "v1",
+  "engine": "AI_Engine_1",
+  "asset_class": "FUTURES",
+  "run_id": "run_2026-05-11T19-17-56Z",
+  "synthesis": [
+    {
+      "spec_id": "futures_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Despite PF=3.5 and Sharpe=0.44, n=10 is far below the T2 floor of 100 trades, rendering results unreliable. Cross-test shows independence, but simplified-signal caveat limits confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_carry_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 and Sharpe=0.44 are promising, but n=10 is insufficient for T2 floor (n\u2265100). Cross-test independence is noted, yet simplified-signal translation undermines reliability.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_regime_switch_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 and Sharpe=0.44 are strong, but n=10 falls well short of T2 floor. Independent cross-test is positive, but simplified-signal caveat restricts actionable confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_vol_target_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 and Sharpe=0.44 show potential, but n=10 is below T2 threshold of 100 trades. Cross-test independence is favorable, though simplified-signal limits trust.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_pair_trend_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 and Sharpe=0.44 are encouraging, but n=10 is insufficient for T2 floor. Cross-test independence is noted, yet simplified-signal caveat reduces reliability.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_carry_vol_dbc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 and Sharpe=0.44 are solid, but n=10 is far below T2 floor of 100 trades. Cross-test shows independence, but simplified-signal translation impacts confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_momentum_pdbc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=1.89 and Sharpe=0.4 are decent, but n=15 is below T2 floor, and WR=46.7% misses 50% target. Cross-test independence noted, but simplified-signal caveat applies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_regime_dba_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=2.66, WR=64.7%, and Sharpe=0.6 are strong with MDD=15.9% under T2 cap, but n=17 is well below 100 trades required. Cross-test independence is positive, yet simplified-signal limits trust.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_vol_target_uso_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=1.67 is above T2 floor, but WR=14.3% and MDD=54.8% fail thresholds, and n=7 is critically low. Cross-test independence noted, but simplified-signal caveat applies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_diagnostic_noedge_gsg_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=2.22 and WR=66.7% are strong, but n=15 is far below T2 floor of 100 trades, and MDD=37.4% exceeds 20%. Cross-test independence noted, yet simplified-signal reduces confidence.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "This run shows no actionable edge across all candidates due to critically low trade counts (n<30 for all, far below T2 floor of 100), rendering backtest results statistically unreliable despite some promising PF and Sharpe metrics. The simplified-signal translation caveat further erodes confidence in the current outputs. A retry is recommended with a longer historical window to achieve higher trade counts and after implementing the faithful-signal translator queued for v3 to ensure accurate strategy representation.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_futures_p5_20260511T193154Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T193223Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 2997,
+    "tokens_out": 1023,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

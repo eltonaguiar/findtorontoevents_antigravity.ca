@@ -1,0 +1,16 @@
+---
+description: Before declaring Toronto events / nav / index work done, run event-loading verification (chunk syntax + optional Playwright).
+globs: index.html, next/_next/static/chunks/a2ac3a6616d60872.js, tools/patch_nav_js.py
+alwaysApply: false
+---
+
+# Verify events loading before done
+
+When you change **index.html**, the nav chunk (**next/_next/static/chunks/a2ac3a6616d60872.js**), **tools/patch_nav_js.py**, or menu/nav logic for the Toronto events site:
+
+## Do not say you are done until:
+
+1. **Syntax check (required – no exceptions):** Run `python tools/verify_events_loading.py`. It must **exit 0** (acorn parses the nav chunk). **If it fails, you have not passed.** Fix the chunk (see fix-toronto-events skill §3 Fix 1b and nav closing sequence) and re-run until the script exits 0. Never report "done", "patch successful", or "complete" if the chunk has any syntax error (e.g. **Unexpected token '}'** or **Unexpected token '('** at line 27).
+2. **Events load (recommended):** Start `python tools/serve_local.py`, then run `npx playwright test events-loading.spec.ts`. All four tests should pass.
+
+Only after the syntax check passes (and preferably events tests too) should you tell the user the task is complete.

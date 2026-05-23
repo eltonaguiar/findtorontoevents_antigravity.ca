@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpleton v0.01 CURSOR - Quick Start Guide | Find Toronto Events</title>
+    <meta name="description" content="Quick-start guide for Simpleton v0.01 CURSOR — multi-strategy backtesting engine for crypto with 12 strategies, signal strength levels, and Python backtesting.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%); color: #c8c8d8; line-height: 1.6; min-height: 100vh; }
+        a { color: #00D4FF; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 40px 20px 30px; }
+        .header h1 { font-size: 2.2em; color: #ffffff; margin-bottom: 8px; }
+        .header .subtitle { color: #888; font-size: 1.1em; }
+        .badge { display: inline-block; background: linear-gradient(135deg, #00D4FF, #0099cc); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 12px; }
+        .back-link { margin-bottom: 20px; font-size: 0.9em; }
+        .section { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .section h2 { color: #00D4FF; font-size: 1.4em; margin-bottom: 16px; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 8px; }
+        .section h3 { color: #FFD700; font-size: 1.1em; margin: 16px 0 8px; }
+        .section h4 { color: #ddd; margin: 12px 0 6px; }
+        ul { margin-left: 20px; margin-bottom: 12px; }
+        li { margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9em; }
+        th { text-align: left; padding: 8px; border-bottom: 2px solid #333; color: #FFD700; }
+        td { padding: 8px; border-bottom: 1px solid #222; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        code { background: rgba(0,212,255,0.1); color: #00D4FF; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        pre { background: #0d0d1a; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; border: 1px solid #222; }
+        pre code { background: none; padding: 0; }
+        .tip { background: rgba(0,212,255,0.08); border-left: 4px solid #00D4FF; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+        .warn { background: rgba(255,68,68,0.08); border-left: 4px solid #FF4444; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+        .green { color: #00E676; }
+        .gold { color: #FFD700; }
+        .red { color: #FF1744; }
+        .footer { text-align: center; padding: 30px 20px; color: #666; font-size: 0.85em; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <p class="back-link"><a href="/updates/">&larr; Back to Updates</a> &middot; <a href="/">Main Site</a></p>
+
+    <div class="header">
+        <span class="badge">v0.01 CURSOR</span>
+        <h1>Simpleton v0.01 CURSOR</h1>
+        <p class="subtitle">Multi-Strategy Backtesting Engine for Crypto</p>
+    </div>
+
+    <div class="section">
+        <h2>Overview</h2>
+        <p><strong>Simpleton v0.01 CURSOR</strong> is a TradingView <code>strategy()</code> script with 12 strategies (11 individual + 1 consensus mode). It generates <strong>Buy/Sell signals with strength levels 1&ndash;5</strong>, has toggleable TP/SL, and is non-repainting by default.</p>
+        <h3>Files Included</h3>
+        <table>
+            <tr><th>File</th><th>Type</th><th>Purpose</th></tr>
+            <tr><td><code>Simpletonv0.01_CURSOR.pine</code></td><td>Pine Script v6 Strategy</td><td>Main TradingView tool &mdash; add to chart to backtest</td></tr>
+            <tr><td><code>backtest_cursor.py</code></td><td>Python Script</td><td>Batch backtesting across symbols + timeframes</td></tr>
+            <tr><td><code>simpleton-cursor-quickstart.html</code></td><td>HTML Documentation</td><td>This guide</td></tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Quick Start (5 Steps)</h2>
+        <ol style="margin-left:20px;">
+            <li><strong>Open TradingView</strong> &mdash; go to any crypto chart (BTCUSDT recommended)</li>
+            <li><strong>Open Pine Editor</strong> &mdash; click the Pine Editor tab at the bottom</li>
+            <li><strong>Paste the script</strong> &mdash; copy entire contents of <code>Simpletonv0.01_CURSOR.pine</code> into the editor</li>
+            <li><strong>Click "Add to Chart"</strong> &mdash; the strategy loads with default settings (Connors RSI-2)</li>
+            <li><strong>Open Strategy Tester</strong> &mdash; click the "Strategy Tester" tab to see backtest results immediately</li>
+        </ol>
+        <div class="tip">To test different strategies, open Settings &rarr; Inputs &rarr; change "Active Strategy" dropdown. Each strategy runs independently so you can compare win rates directly.</div>
+    </div>
+
+    <div class="section">
+        <h2>Signal Strength Guide (1&ndash;5)</h2>
+        <table>
+            <tr><th>Level</th><th>Name</th><th>Conditions</th><th>Position Sizing</th></tr>
+            <tr><td class="gold">L1</td><td>Weak</td><td>Strategy fires alone &mdash; no confirmations</td><td>Paper trade only</td></tr>
+            <tr><td class="gold">L2</td><td>Moderate</td><td>+ HTF 4H alignment <strong>OR</strong> volume &gt; 1.5x avg</td><td>Small position (25%)</td></tr>
+            <tr><td class="green">L3</td><td>Strong</td><td>+ HTF aligned <strong>AND</strong> volume confirmed</td><td>Standard position (50%)</td></tr>
+            <tr><td class="green">L4</td><td>Very Strong</td><td>+ 2 or more consensus votes</td><td>Increased position (75%)</td></tr>
+            <tr><td class="green">L5</td><td>Maximum</td><td>+ 4 consensus + volume surge + regime fit</td><td>Full conviction (100%)</td></tr>
+        </table>
+        <div class="warn">L1&ndash;L2 signals have lower reliability. Use the "Min Signal Strength" setting to filter them out (set to 3 for production trading).</div>
+    </div>
+
+    <div class="section">
+        <h2>Strategy Reference</h2>
+        <table>
+            <tr><th>#</th><th>Strategy</th><th>Type</th><th>Best For</th><th>WR%</th><th>Status</th></tr>
+            <tr><td>1</td><td>Connors RSI-2</td><td>Mean Rev</td><td>SPY, BTC</td><td class="green">75.7%</td><td class="green">PROVEN</td></tr>
+            <tr><td>2</td><td>Z-Score MR</td><td>Mean Rev</td><td>BTC, ETH</td><td>62&ndash;77%</td><td class="gold">Research</td></tr>
+            <tr><td>3</td><td>EMA + RSI</td><td>Trend</td><td>ETH, BNB</td><td>~60%</td><td class="gold">Research</td></tr>
+            <tr><td>4</td><td>MACD + RSI</td><td>Trend</td><td>4H Crypto</td><td class="green">73%</td><td class="gold">Research</td></tr>
+            <tr><td>5</td><td>Bollinger Squeeze</td><td>Volatility</td><td>SOL, Ranging</td><td>55&ndash;60%</td><td class="gold">Research</td></tr>
+            <tr><td>6</td><td>VWAP Reversion</td><td>Mean Rev</td><td>Intraday</td><td>62&ndash;68%</td><td class="gold">Research</td></tr>
+            <tr><td>7</td><td>Supertrend</td><td>Trend</td><td>LINK, Trending</td><td>55&ndash;60%</td><td class="gold">Research</td></tr>
+            <tr><td>8</td><td>Ichimoku Cloud</td><td>Trend</td><td>Forex, 4H+</td><td>~62%</td><td class="gold">Research</td></tr>
+            <tr><td>9</td><td>HMA Trend</td><td>Trend</td><td>SPY, QQQ</td><td>59.1%</td><td class="gold">Research</td></tr>
+            <tr><td>10</td><td>Swing Failure (SFP)</td><td>Reversal</td><td>1H-4H Crypto</td><td>58&ndash;65%</td><td class="gold">Research</td></tr>
+            <tr><td>11</td><td>Liquidity Sweep</td><td>Reversal</td><td>1H-4H Crypto</td><td class="green">73%</td><td class="gold">Research</td></tr>
+            <tr><td>12</td><td>Consensus</td><td>Multi</td><td>All pairs</td><td>Varies</td><td style="color:#00D4FF;">Composite</td></tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Crypto Pair Recommendations</h2>
+        <table>
+            <tr><th>Pair</th><th>Best TF</th><th>Strategy</th><th>WR%</th><th>Risk</th><th>Cap Tier</th></tr>
+            <tr><td>BTCUSD</td><td>4H / 1D</td><td>RSI-2 / Z-MR</td><td class="green">62.5%</td><td class="gold">Med</td><td>Large</td></tr>
+            <tr><td>ETHUSD</td><td>4H / 1H</td><td>EMA+RSI / MACD</td><td class="green">64.2%</td><td class="gold">Med</td><td>Large</td></tr>
+            <tr><td>SOLUSD</td><td>1H / 4H</td><td>BB Squeeze</td><td class="gold">58.3%</td><td class="red">High</td><td>Mid</td></tr>
+            <tr><td>BNBUSD</td><td>4H</td><td>EMA+RSI</td><td class="green">65.5%</td><td class="gold">Med</td><td>Large</td></tr>
+            <tr><td>XRPUSD</td><td>4H / 1D</td><td>RSI-2 / Trend</td><td class="gold">60.1%</td><td class="gold">Med</td><td>Large</td></tr>
+            <tr><td>AVAXUSD</td><td>1H</td><td>MACD+RSI</td><td class="gold">55.8%</td><td class="red">High</td><td>Mid</td></tr>
+            <tr><td>DOGEUSD</td><td>15m / 1H</td><td>Consensus</td><td class="red">52.8%</td><td class="red">V.High</td><td>Meme</td></tr>
+            <tr><td>ADAUSD</td><td>4H / 1D</td><td>Z-MR / VWAP</td><td class="gold">59.4%</td><td class="gold">Med</td><td>Large</td></tr>
+            <tr><td>LINKUSD</td><td>4H</td><td>Supertrend</td><td class="gold">57.2%</td><td class="red">High</td><td>Mid</td></tr>
+            <tr><td>MATICUSD</td><td>1H / 4H</td><td>Ichimoku</td><td class="gold">56.5%</td><td class="red">High</td><td>Mid</td></tr>
+        </table>
+        <h3>Risk Management by Cap Tier</h3>
+        <ul>
+            <li><strong>Large Cap</strong> (BTC, ETH, BNB, XRP, ADA): TP 3%, SL 1.5% or ATR 3x/1.5x</li>
+            <li><strong>Mid Cap</strong> (SOL, AVAX, LINK, MATIC): TP 2%, SL 1% &mdash; tighter stops needed</li>
+            <li><strong>Meme</strong> (DOGE, SHIB): TP 1.5%, SL 1% &mdash; Consensus mode only, never single-strategy</li>
+        </ul>
+        <div class="warn">Meme coins and low-cap tokens have extreme volatility. Use the Consensus mode (3+ strategies agreeing) and strict stop losses. Check market cap and token legitimacy before trading.</div>
+    </div>
+
+    <div class="section">
+        <h2>Risk Management Settings</h2>
+        <h3>TP/SL Modes</h3>
+        <ul>
+            <li><strong>ATR-Based</strong> (default): TP = ATR(14) &times; 3.0, SL = ATR(14) &times; 1.5. Adapts to volatility automatically.</li>
+            <li><strong>Percentage</strong>: Fixed TP% and SL%. Better for consistent position sizing.</li>
+        </ul>
+        <h3>Non-Repainting</h3>
+        <p>When <strong>Non-Repainting Mode = ON</strong> (default), signals only appear after the bar closes. This means:</p>
+        <ul>
+            <li>No look-ahead bias in backtests</li>
+            <li>Signals won't disappear or change after appearing</li>
+            <li>Slight delay (1 bar) vs live execution</li>
+        </ul>
+        <div class="tip">Keep non-repainting ON for honest backtesting. You can turn it OFF for live scalping, but be aware signals may flip intra-bar.</div>
+    </div>
+
+    <div class="section">
+        <h2>Python Backtesting Tool</h2>
+        <p>Use <code>backtest_cursor.py</code> to test all strategies against crypto pairs programmatically:</p>
+        <pre><code># Test all strategies on all pairs
+python backtest_cursor.py
+
+# Single pair
+python backtest_cursor.py --symbol BTCUSDT
+
+# Single strategy
+python backtest_cursor.py --strategy rsi2
+
+# Single timeframe
+python backtest_cursor.py --timeframe 4h
+
+# Save best strategy per symbol
+python backtest_cursor.py --save-best
+
+# Download data if not cached
+python backtest_cursor.py --fetch</code></pre>
+        <p>Results are saved to <code>backtest_results/cursor_results.json</code> and <code>cursor_best.json</code>.</p>
+    </div>
+
+    <div class="section">
+        <h2>FAQ</h2>
+        <h4>Which strategy should I start with?</h4>
+        <p><strong>Connors RSI-2</strong> &mdash; it's the only strategy with statistically significant backtest proof (75.7% WR on SPY, p=6e-06, 992 trades). Auto-Detect defaults to this.</p>
+
+        <h4>Is this tool profitable?</h4>
+        <p>Past backtest results do not guarantee future performance. Market conditions change. <strong>Paper trade for 3&ndash;6 months</strong> before risking real capital.</p>
+
+        <h4>Can I use this for stocks/forex?</h4>
+        <p>Yes, but the crypto pair recommendations table is crypto-focused. Strategies like Connors RSI-2, EMA+RSI, and MACD work across asset classes.</p>
+
+        <h4>What does non-repainting mean?</h4>
+        <p>Signals only appear after the bar closes (<code>barstate.isconfirmed</code>). They will never disappear or change retroactively. This gives honest backtest results.</p>
+
+        <h4>How do I mix strategies (consensus mode)?</h4>
+        <p>Select "Multi-Strategy Consensus" from the dropdown. Set "Min Strategies Agreeing" (default 3). The engine counts how many of the 11 strategies agree on direction, with correlation caps to prevent redundant signals.</p>
+    </div>
+
+    <div class="section">
+        <h2>Understanding Strong Consensus Across Timeframes</h2>
+        <p>Based on the Pine Script code for Kimi Claw Pro v6.5, the phrase "strong bullish consensus across timeframes" (or "strong bearish") is a specific tooltip message that appears on the chart when certain conditions are met. It's not a standalone strategy but a summary insight from the <strong>Multi-Timeframe (MTF) Consensus Engine</strong>. Here's exactly what it means, how it's calculated, and what drives it:</p>
+
+        <h3>What It Means</h3>
+        <ul>
+            <li><strong>Strong Bullish Consensus</strong>: The indicator detects strong agreement on a bullish (upward) trend across multiple timeframes. It shows the message if the agreement score is very high (>80% bullish).</li>
+            <li><strong>Strong Bearish Consensus</strong>: Same but for a downward trend (score <-80% bearish).</li>
+            <li>This is <strong>not</strong> a buy/sell signal—it's like a note saying "trends are lining up strongly" to help you decide. It's triggered in the code's "EXPERT COMMENTARY" section and displayed as a blue label on the last bar.</li>
+        </ul>
+
+        <h3>Which Timeframes?</h3>
+        <ul>
+            <li><strong>Three timeframes</strong> are always checked (user-configurable in inputs):</li>
+            <li><strong>Primary</strong>: Your current chart timeframe (e.g., 1H in the screenshot).</li>
+            <li><strong>Intermediate</strong>: Shorter higher timeframe (default: 60 min; yours is set to 60).</li>
+            <li><strong>Higher</strong>: Longer timeframe (default: 240 min; yours is set to 240).</li>
+            <li>Data from higher timeframes is fetched using <code>request.security</code> (non-repainting, meaning it uses confirmed/closed bars to avoid false signals).</li>
+        </ul>
+
+        <h3>Which Statistical/Strategy Models Are Used?</h3>
+        <ul>
+            <li>The consensus is a <strong>weighted average</strong> of trend scores from each timeframe. Each timeframe's score (-1 to +1) comes from 3 simple models:</li>
+            <li>1. <strong>EMA Crossover</strong> (Exponential Moving Average, periods 9 and 21): Checks if a short-term average is above/below a medium-term one. +1 if short > medium (bullish), -1 if short < medium (bearish), 0 if neutral. (Weight in score: 1/3).</li>
+            <li>2. <strong>MACD</strong> (Moving Average Convergence Divergence, periods 12/26/9): Measures momentum. +1 if MACD line > signal line (bullish), -1 if below (bearish), 0 if neutral. (Weight: 1/3).</li>
+            <li>3. <strong>Price vs EMA</strong>: Checks if current price is above/below the short EMA (9). +1 if above (bullish), -1 if below (bearish), 0 if equal. (Weight: 1/3).</li>
+            <li><strong>Overall Consensus Score</strong> (<code>consensus_score</code>): 
+                <pre><code>consensus_score = (0.5 * higher_trend) + (0.3 * intermediate_trend) + (0.2 * primary_trend)</code></pre>
+                Higher timeframes have more weight (50%) because they're considered more reliable for the "big picture."
+                If >0.8 (+80%), it's "strong bullish." If <-0.8 (-80%), "strong bearish."
+            </li>
+            <li><strong>Agreement Check</strong>: Separately, if the absolute score >0.6 (60%), it's considered "agreement" (shown as MTF Agree=1 in data window). But "strong" requires >0.8 specifically for the message.</li>
+        </ul>
+        <p>This system is inspired by ensemble methods (combining multiple models for better accuracy) and statistical agreement (like in machine learning voting classifiers).</p>
+    </div>
+
+    <div class="section">
+        <h2>Simple Explanations of the Current Strategy (Kimi Claw Pro v6.5)</h2>
+        <p>The overall strategy is a "multi-tool" trading indicator that combines many ideas to spot buy/sell opportunities. It looks at trends, momentum, volume, risk, and more to give scores and signals. I'll explain each major part like I'm talking to a high-school student—think of it as tools in a toolbox, each doing one job, and the indicator uses them together to decide "buy now" or "sell now."</p>
+
+        <h3>1. Adaptive Moving Averages (KAMA and HMA)</h3>
+        <p><strong>What it does</strong>: These are like "smart lines" on the chart that follow price but smooth out noise. KAMA adjusts based on how wild the market is (fast in trends, slow in choppy times). HMA is quick to spot turns.</p>
+        <p><strong>How it works in the strategy</strong>: If price is above these lines, it's bullish (buy signal boost). Below = bearish. It's like checking if a river is flowing uphill or downhill.</p>
+        <p><strong>Why simple?</strong> Imagine averaging your test scores but weighting recent ones more—helps see if you're improving.</p>
+
+        <h3>2. Regime Detection (Hurst, Volatility, ADX)</h3>
+        <p><strong>What it does</strong>: Figures out if the market is "trending" (steady up/down), "ranging" (bouncing around), or "normal" (mixed).</p>
+        <p><strong>How it works in the strategy</strong>: Uses math like Hurst (checks if prices are random or patterned) and ADX (measures trend strength). Adjusts other tools—e.g., in trends, it favors following the flow; in ranges, it looks for bounces.</p>
+        <p><strong>Why simple?</strong> Like weather: Sunny (trending) = go outside and run with it; rainy (ranging) = stay inside and wait for breaks.</p>
+
+        <h3>3. Quantitative Enhancements (RSI-2, RVOL-T, Choppiness, SFP)</h3>
+        <p><strong>RSI-2</strong>: Measures if something is "overbought" (too expensive, sell) or "oversold" (cheap, buy) over just 2 periods. Quick for short-term flips.</p>
+        <p><strong>RVOL-T</strong>: Checks if trading volume is unusually high for the time of day (like a sudden crowd at school—something's happening).</p>
+        <p><strong>Choppiness</strong>: Scores how "jumpy" prices are (high = messy, low = smooth trend).</p>
+        <p><strong>SFP (Swing Failure Pattern)</strong>: Spots when price pokes beyond a recent high/low but snaps back (like a fake-out in sports).</p>
+        <p><strong>How they work in the strategy</strong>: Add points to buy/sell scores. E.g., extreme RSI-2 + low choppiness = strong mean-reversion buy.</p>
+        <p><strong>Why simple?</strong> RSI-2 is like checking if a toy is too popular (sell) or ignored (buy). SFP is spotting a trick play that fails.</p>
+
+        <h3>4. Elton's Strategies (Ichimoku, Supertrend, Liquidation Cascade, etc.)</h3>
+        <p><strong>Ichimoku Cloud</strong>: A "cloud" on the chart—price above = buy, below = sell. Like a weather cloud forecasting rain or sun.</p>
+        <p><strong>Supertrend</strong>: A line that flips colors for buy/sell. Combines trends with volatility.</p>
+        <p><strong>Liquidation/Flash Crash/Sweep</strong>: Detects big price drops with volume spikes (buy the dip) or fake-outs.</p>
+        <p><strong>How they work in the strategy</strong>: Each "votes" on buy/sell. Combined into "Elton Net" score (e.g., +20 = bullish bias).</p>
+        <p><strong>Why simple?</strong> Think of a team vote: If most players say "pass the ball," you do it. Each strategy is one player.</p>
+
+        <h3>5. Scalping Module (Z-Score MR, Absorption, CVD, TTM Squeeze, Cointegration, Kyle's Lambda)</h3>
+        <p><strong>Z-Score MR</strong>: Checks if price is too far from average (buy low, sell high).</p>
+        <p><strong>Absorption/Climax</strong>: Spots when big trades are "absorbed" without moving price much (hidden buying/selling).</p>
+        <p><strong>CVD (Volume Delta)</strong>: Estimates if buyers or sellers are stronger by looking at candle shapes.</p>
+        <p><strong>TTM Squeeze</strong>: Detects "squeezed" low volatility before big moves (like a spring uncoiling).</p>
+        <p><strong>Cointegration</strong>: For BTC/ETH, checks if their prices are out of sync (buy the cheap one).</p>
+        <p><strong>Kyle's Lambda</strong>: Measures how easily price moves (high = low liquidity, risky).</p>
+        <p><strong>How they work in the strategy</strong>: Short-term signals for quick trades. Combined into "Scalp Net" score.</p>
+        <p><strong>Why simple?</strong> Z-Score is like grading on a curve—if your score is way below average, it's a comeback opportunity. Squeeze is like pressure building in a balloon before it pops.</p>
+
+        <h3>6. MTF Consensus Engine (The "Consensus" Part)</h3>
+        <p><strong>What it does</strong>: Checks trend agreement across 3 timeframes (short, medium, long).</p>
+        <p><strong>How it works in the strategy</strong>: Averages EMA, MACD, and price signals per timeframe, then weights them (longer TFs count more). Score >80% bullish = "strong consensus" message.</p>
+        <p><strong>Why simple?</strong> Like asking friends in different grades if a movie is good—if most say yes, it's probably worth watching.</p>
+
+        <h3>7. Volume Analysis</h3>
+        <p><strong>What it does</strong>: Scores volume strength (spikes, trends) to confirm signals.</p>
+        <p><strong>How it works in the strategy</strong>: High volume boosts buy/sell scores. Required for signals if enabled.</p>
+        <p><strong>Why simple?</strong> Volume is like crowd noise at a game—loud means excitement, quiet means boring.</p>
+
+        <h3>8. Momentum & Statistical Indicators (RSI, MACD, Z-Score, Bollinger %B)</h3>
+        <p><strong>What it does</strong>: Measures speed and extremes (e.g., RSI >70 = overbought).</p>
+        <p><strong>How it works in the strategy</strong>: Adds to confluence scores. E.g., bullish MACD = +10 points.</p>
+        <p><strong>Why simple?</strong> Momentum is like a ball's speed—if rolling fast uphill, it might keep going.</p>
+
+        <h3>9. Fear & Greed Proxy</h3>
+        <p><strong>What it does</strong>: Combines RSI, volatility, momentum, and volume into a "mood" score (0=extreme fear, 100=greed).</p>
+        <p><strong>How it works in the strategy</strong>: Extreme fear boosts buy scores (contrarian).</p>
+        <p><strong>Why simple?</strong> Like gauging if people are panicking (buy cheap) or too excited (sell high).</p>
+
+        <h3>10. Doomsday Factor (Risk Score)</h3>
+        <p><strong>What it does</strong>: Calculates overall danger (0-100) from volatility, liquidity, size, etc.</p>
+        <p><strong>How it works in the strategy</strong>: High score tightens TP/SL to reduce risk.</p>
+        <p><strong>Why simple?</strong> Like a "danger meter" in a video game—high danger means play safer.</p>
+
+        <h3>11. Signal Generation & Risk Management</h3>
+        <p><strong>What it does</strong>: Combines all above into buy/sell signals if scores > threshold (e.g., 75).</p>
+        <p><strong>How it works in the strategy</strong>: Checks trend/momentum/volume/MTF, adds bonuses (e.g., from Elton/Scalp). Uses Kelly for sizing, ATR for stops.</p>
+        <p><strong>Why simple?</strong> Like a recipe: Mix ingredients (scores), bake if hot enough (threshold), serve with safety (stops).</p>
+
+        <h3>12. Double Ignite & ALT-ELT</h3>
+        <p><strong>What it does</strong>: Spots when multiple groups "ignite" (agree) for high-confidence alerts. ALT-ELT gives a final "buy/sell/wait" recommendation.</p>
+        <p><strong>How it works in the strategy</strong>: Counts agreeing groups (e.g., trend + momentum = ignite). Boosts scores.</p>
+        <p><strong>Why simple?</strong> Ignite is like multiple friends shouting "go!" at once. ALT-ELT is the final vote.</p>
+
+        <h3>Overall How the Strategy Works</h3>
+        <p>It's like a voting committee of 9+ tools. Each tool votes buy/sell based on its specialty (trends, bounces, volume). In "Dynamic" mode (recommended), votes are weighted by market type (trend vs range). If enough agree (e.g., 4+ votes) and filters pass (volume, trend bias), it signals. Risk tools (stops, sizing) keep you safe.</p>
+        <p><strong>For High-School Analogy</strong>: Imagine planning a party. Tools check weather (regime), crowd excitement (volume/momentum), budget (risk), and friend opinions (votes). If most say "yes" and it's sunny, party on—but with a backup plan (stops) if it rains.</p>
+    </div>
+
+    <div class="footer">
+        <p>Research and education only &mdash; not financial advice. Past performance does not guarantee future results.</p>
+        <p style="margin-top:8px;"><a href="/updates/">&larr; Back to Updates</a> &middot; <a href="/">Main Site</a></p>
+        <p style="margin-top:8px;">&copy; Elton Aguiar &mdash; findtorontoevents.ca &middot; Built by Cursor Agent &middot; Feb 21, 2026</p>
+    </div>
+</div>
+</body>
+</html>

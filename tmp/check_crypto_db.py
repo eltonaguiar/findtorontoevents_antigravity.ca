@@ -1,0 +1,10 @@
+import sqlite3
+conn = sqlite3.connect('crypto_data.db')
+cursor = conn.cursor()
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+print('Tables:', [t[0] for t in cursor.fetchall()])
+cursor.execute('SELECT DISTINCT symbol FROM price_data LIMIT 10')
+print('Sample symbols:', [s[0] for s in cursor.fetchall()])
+cursor.execute('SELECT COUNT(*) FROM price_data')
+print('Total rows:', cursor.fetchone()[0])
+conn.close()

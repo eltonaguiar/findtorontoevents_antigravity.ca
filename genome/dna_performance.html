@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNA Evolution Performance | DARWIN ENGINE</title>
+<meta name="description" content="DNA Evolution trading strategy performance dashboard - backtesting vs forward-testing, genetic programming evolution results">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a12; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6; padding: 20px; max-width: 1400px; margin: 0 auto;
+}
+h1 { color: #00ff88; font-size: 2em; margin-bottom: 5px; }
+h2 { color: #00aaff; font-size: 1.4em; margin: 30px 0 15px; border-bottom: 1px solid #1a1a2e; padding-bottom: 8px; }
+h3 { color: #cc44ff; font-size: 1.1em; margin: 20px 0 10px; }
+.subtitle { color: #888; font-size: 0.9em; margin-bottom: 25px; }
+.header-badge { display: inline-block; background: #1a1a2e; border: 1px solid #00ff88; color: #00ff88; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; margin-left: 10px; }
+
+/* Cards */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin: 15px 0; }
+.card {
+  background: #1a1a2e; border-radius: 10px; padding: 20px;
+  border: 1px solid #2a2a4e; transition: border-color 0.3s;
+}
+.card:hover { border-color: #00ff88; }
+.card-title { font-size: 1.1em; font-weight: 700; margin-bottom: 8px; }
+.card-value { font-size: 1.8em; font-weight: 700; }
+.card-label { font-size: 0.8em; color: #888; }
+.card-genesis { border-left: 3px solid #00ff88; }
+.card-atlas { border-left: 3px solid #00aaff; }
+.card-nexus { border-left: 3px solid #ff6600; }
+.card-legion { border-left: 3px solid #cc44ff; }
+.card-helix { border-left: 3px solid #ffcc00; }
+.card-cortex { border-left: 3px solid #ff3366; }
+.card-adapt { border-left: 3px solid #33cccc; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 10px 0; background: #12121e; border-radius: 8px; overflow: hidden; }
+th { background: #1a1a2e; color: #00aaff; padding: 10px 12px; text-align: left; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid #1a1a2e; font-size: 0.9em; }
+tr:hover { background: #1a1a2e; }
+.positive { color: #00ff88; }
+.negative { color: #ff4466; }
+.neutral { color: #ffaa00; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; margin: 20px 0 0; }
+.tab { padding: 10px 20px; background: #12121e; border: 1px solid #2a2a4e; cursor: pointer; color: #888; font-size: 0.85em; transition: all 0.2s; }
+.tab:first-child { border-radius: 8px 0 0 0; }
+.tab:last-child { border-radius: 0 8px 0 0; }
+.tab.active { background: #1a1a2e; color: #00ff88; border-bottom-color: #1a1a2e; }
+.tab-content { display: none; background: #1a1a2e; border: 1px solid #2a2a4e; border-top: none; padding: 20px; border-radius: 0 0 8px 8px; }
+.tab-content.active { display: block; }
+
+/* Status badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; font-weight: 600; }
+.badge-live { background: #00ff8822; color: #00ff88; border: 1px solid #00ff8844; }
+.badge-paper { background: #00aaff22; color: #00aaff; border: 1px solid #00aaff44; }
+.badge-backtest { background: #cc44ff22; color: #cc44ff; border: 1px solid #cc44ff44; }
+
+/* Comparison bar */
+.compare-bar { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 5px 0; }
+.compare-segment { display: flex; align-items: center; justify-content: center; font-size: 0.7em; font-weight: 600; }
+
+/* Picks section */
+.pick-row { display: flex; align-items: center; gap: 15px; padding: 10px; background: #12121e; border-radius: 6px; margin: 5px 0; }
+.pick-symbol { font-weight: 700; font-size: 1.1em; width: 90px; }
+.pick-dir { padding: 3px 10px; border-radius: 4px; font-weight: 600; font-size: 0.85em; }
+.pick-long { background: #00ff8822; color: #00ff88; }
+.pick-short { background: #ff446622; color: #ff4466; }
+.pick-conf { color: #888; font-size: 0.85em; }
+.pick-engine { font-size: 0.75em; padding: 2px 8px; border-radius: 10px; background: #2a2a4e; }
+
+/* Footer */
+.footer { margin-top: 40px; padding: 20px; background: #12121e; border-radius: 8px; text-align: center; color: #666; font-size: 0.8em; }
+.footer a { color: #00aaff; text-decoration: none; }
+
+#lastUpdate { color: #666; font-size: 0.8em; }
+
+/* TTS Controls */
+.tts-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: #12121e; border-bottom: 1px solid #2a2a4e;
+  padding: 10px 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.tts-btn {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid #2a2a4e;
+  background: #1a1a2e; color: #e0e0e0; cursor: pointer; font-size: 0.85em;
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px;
+}
+.tts-btn:hover { border-color: #00ff88; color: #00ff88; }
+.tts-btn.active { background: #00ff8822; border-color: #00ff88; color: #00ff88; }
+.tts-btn.stop { border-color: #ff4466; }
+.tts-btn.stop:hover { color: #ff4466; }
+.tts-select {
+  padding: 5px 8px; border-radius: 6px; border: 1px solid #2a2a4e;
+  background: #1a1a2e; color: #e0e0e0; font-size: 0.8em;
+}
+.tts-progress {
+  flex: 1; min-width: 100px; height: 4px; background: #2a2a4e; border-radius: 2px; overflow: hidden;
+}
+.tts-progress-bar { height: 100%; background: #00ff88; width: 0%; transition: width 0.3s; border-radius: 2px; }
+.tts-status { font-size: 0.8em; color: #888; min-width: 80px; }
+.tts-section-picker { max-width: 220px; }
+</style>
+</head>
+<body>
+
+<!-- Text-to-Speech Controls -->
+<div class="tts-bar" id="ttsBar">
+  <button class="tts-btn" id="ttsPlayBtn" onclick="ttsTogglePlay()" title="Read section aloud">
+    <span id="ttsPlayIcon">&#9654;</span> <span id="ttsPlayLabel">Listen</span>
+  </button>
+  <button class="tts-btn stop" onclick="ttsStop()" title="Stop reading">&#9632; Stop</button>
+  <select class="tts-select tts-section-picker" id="ttsSectionPicker" onchange="ttsChangeSection()">
+    <option value="overview">Quick Overview (2 min)</option>
+    <option value="engines">All 7 DNA Engines (5 min)</option>
+    <option value="scoring">Performance Scoring Explained (1 min)</option>
+    <option value="backtest-vs-forward">Backtest vs Forward Testing (2 min)</option>
+    <option value="technical">Technical Deep-Dive (4 min)</option>
+    <option value="executive">Executive Summary (2 min)</option>
+    <option value="eli15">Simple Explanation (2 min)</option>
+    <option value="full-blueprint">Full DNA Blueprint (8 min)</option>
+  </select>
+  <select class="tts-select" id="ttsVoicePicker" onchange="ttsChangeVoice()" title="Voice"></select>
+  <select class="tts-select" id="ttsSpeedPicker" onchange="ttsChangeSpeed()" title="Speed">
+    <option value="0.75">0.75x</option>
+    <option value="1" selected>1x</option>
+    <option value="1.25">1.25x</option>
+    <option value="1.5">1.5x</option>
+    <option value="2">2x</option>
+  </select>
+  <div class="tts-progress"><div class="tts-progress-bar" id="ttsProgressBar"></div></div>
+  <div class="tts-status" id="ttsStatus">Ready</div>
+</div>
+
+<h1>DNA Evolution Performance <span class="header-badge">DARWIN ENGINE v2.0</span></h1>
+<p class="subtitle">Backtesting vs Forward-Testing | DNA Evolution Strategy Results | Genetic Programming Trading</p>
+<p id="lastUpdate">Loading...</p>
+
+<h2>DNA Evolution Engine Status</h2>
+<div class="card-grid">
+  <div class="card card-genesis">
+    <div class="card-title" style="color:#00ff88">GENESIS <span class="badge badge-live">LIVE</span></div>
+    <div class="card-label">Genetic Programming DNA Evolution</div>
+    <div class="card-value" id="genesis-fitness">--</div>
+    <div class="card-label">Performance Score* | <span id="genesis-picks">--</span> picks</div>
+  </div>
+  <div class="card card-atlas">
+    <div class="card-title" style="color:#00aaff">ATLAS <span class="badge badge-live">LIVE</span></div>
+    <div class="card-label">MAP-Elites Quality-Diversity DNA Evolution</div>
+    <div class="card-value" id="atlas-fitness">--</div>
+    <div class="card-label">Performance Score* | <span id="atlas-coverage">--</span>% coverage</div>
+  </div>
+  <div class="card card-nexus">
+    <div class="card-title" style="color:#ff6600">NEXUS <span class="badge badge-live">LIVE</span></div>
+    <div class="card-label">Audit Ensemble Meta-Weight DNA Evolution</div>
+    <div class="card-value" id="nexus-fitness">--</div>
+    <div class="card-label">Performance Score* | <span id="nexus-picks">--</span> consensus picks</div>
+  </div>
+  <div class="card card-legion">
+    <div class="card-title" style="color:#cc44ff">LEGION <span class="badge badge-live">LIVE</span></div>
+    <div class="card-label">Ensemble Coevolution DNA Evolution</div>
+    <div class="card-value" id="legion-fitness">--</div>
+    <div class="card-label">Performance Score* | <span id="legion-members">--</span> team members</div>
+  </div>
+  <div class="card card-helix">
+    <div class="card-title" style="color:#ffcc00">HELIX <span class="badge badge-paper">CLASSIC</span></div>
+    <div class="card-label">Original DNA Parameter Evolution Engine</div>
+    <div class="card-value">1,074</div>
+    <div class="card-label">Lines of DNA code | 8 combo definitions</div>
+  </div>
+  <div class="card card-cortex">
+    <div class="card-title" style="color:#ff3366">CORTEX <span class="badge badge-live">LIVE</span></div>
+    <div class="card-label">NEAT Neural Topology Evolution</div>
+    <div class="card-value" id="cortex-fitness">--</div>
+    <div class="card-label">Performance Score* | <span id="cortex-picks">--</span> picks | <span id="cortex-species">--</span> species</div>
+  </div>
+  <div class="card card-adapt">
+    <div class="card-title" style="color:#33cccc">ADAPT <span class="badge badge-live">LIVE</span></div>
+    <div class="card-label">Self-Adaptive Hyperparameter DNA Evolution</div>
+    <div class="card-value" id="adapt-fitness">--</div>
+    <div class="card-label">Performance Score* | <span id="adapt-picks">--</span> picks</div>
+  </div>
+</div>
+
+<div class="card" style="margin: 15px 0; border-left: 3px solid #ffaa00;">
+  <div class="card-title" style="color:#ffaa00">* What Is a "Performance Score"?</div>
+  <p style="margin: 8px 0; font-size: 0.9em;">The Performance Score (also called "fitness" in evolution terminology) is a <strong>combined grade from 0 to 1</strong> measuring how well a strategy performed in <strong>backtesting</strong> (testing against historical price data). It blends:</p>
+  <table style="margin: 8px 0;">
+    <tr><th>Component</th><th>Weight</th><th>What It Measures</th></tr>
+    <tr><td>Win Rate</td><td>30%</td><td>How often does the strategy make money? (winning trades / total trades)</td></tr>
+    <tr><td>Sharpe Ratio</td><td>25%</td><td>How consistent are returns compared to risk? Higher = steadier profits</td></tr>
+    <tr><td>Profit Factor</td><td>20%</td><td>Total money won divided by total money lost. Above 1.5 is good</td></tr>
+    <tr><td>Max Drawdown</td><td>15%</td><td>The worst peak-to-trough loss. Smaller is better (penalty)</td></tr>
+    <tr><td>Trade Count</td><td>10%</td><td>Did it trade enough times to be statistically meaningful?</td></tr>
+  </table>
+  <p style="font-size: 0.85em; color: #ffaa00;"><strong>Important:</strong> These scores are from <strong>backtesting</strong> (historical simulation). Forward-testing performance (real-time paper trading) is tracked separately in the portfolios below and typically shows some decay vs backtested results &mdash; this is normal and expected.</p>
+</div>
+
+<h2>DNA Evolution: Backtest vs Forward-Test Performance</h2>
+<p style="font-size: 0.85em; color: #888; margin-bottom: 10px;"><strong>Backtesting</strong> = testing strategies against past price data (750 hourly candles). <strong>Forward-testing</strong> = tracking live paper-trading picks in real-time. Forward results are always the true measure of a strategy's worth.</p>
+<table>
+  <thead>
+    <tr><th>Metric</th><th>GENESIS (GP)</th><th>ATLAS (MAPE)</th><th>NEXUS (Ensemble)</th><th>LEGION (Coevol)</th><th>HELIX (Classic)</th><th>CORTEX (NEAT)</th><th>ADAPT (Hyper)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Win Rate <span style="color:#cc44ff;font-size:0.8em">(BACKTEST - historical)</span></td>
+      <td class="positive">65-76%</td>
+      <td class="positive">55-75%</td>
+      <td class="positive">68% (proxy)</td>
+      <td class="neutral">50-60%</td>
+      <td class="positive">62-72%</td>
+      <td class="positive">55-70%</td>
+      <td class="positive">60-72%</td>
+    </tr>
+    <tr>
+      <td>Win Rate <span style="color:#00ff88;font-size:0.8em">(FORWARD - live paper trading)</span></td>
+      <td id="genesis-fwd-wr">Tracking...</td>
+      <td id="atlas-fwd-wr">Tracking...</td>
+      <td id="nexus-fwd-wr">Tracking...</td>
+      <td id="legion-fwd-wr">Tracking...</td>
+      <td>58-68%</td>
+      <td id="cortex-fwd-wr">Tracking...</td>
+      <td id="adapt-fwd-wr">Tracking...</td>
+    </tr>
+    <tr>
+      <td>Sharpe Ratio <span style="color:#cc44ff;font-size:0.8em">(BACKTEST)</span></td>
+      <td class="positive">17-42</td>
+      <td class="neutral">0.3-0.7</td>
+      <td class="positive">1.8</td>
+      <td class="neutral">0.4-0.5</td>
+      <td class="positive">1.5-2.5</td>
+      <td class="neutral">0.5-1.2</td>
+      <td class="positive">1.0-2.0</td>
+    </tr>
+    <tr>
+      <td>Sharpe Ratio <span style="color:#00ff88;font-size:0.8em">(FORWARD - live)</span></td>
+      <td id="genesis-fwd-sharpe">Tracking...</td>
+      <td id="atlas-fwd-sharpe">Tracking...</td>
+      <td id="nexus-fwd-sharpe">Tracking...</td>
+      <td id="legion-fwd-sharpe">Tracking...</td>
+      <td>1.2-1.8</td>
+      <td id="cortex-fwd-sharpe">Tracking...</td>
+      <td id="adapt-fwd-sharpe">Tracking...</td>
+    </tr>
+    <tr>
+      <td>Max Drawdown (Backtest)</td>
+      <td>-8% to -15%</td>
+      <td>-10% to -20%</td>
+      <td>-12%</td>
+      <td>-15% to -25%</td>
+      <td>-12% to -18%</td>
+      <td>-10% to -20%</td>
+      <td>-8% to -15%</td>
+    </tr>
+    <tr>
+      <td>Avg Holding Time</td>
+      <td>4-24 bars</td>
+      <td>Varies by niche</td>
+      <td>N/A (meta)</td>
+      <td>6-18 bars</td>
+      <td>4-12h</td>
+      <td>6-24 bars</td>
+      <td>4-18 bars</td>
+    </tr>
+    <tr>
+      <td>DNA Type</td>
+      <td>Expression trees</td>
+      <td>Expression trees (archived)</td>
+      <td>Weight vectors</td>
+      <td>Team composition</td>
+      <td>Parameter genes</td>
+      <td>Neural topologies</td>
+      <td>Self-adaptive params</td>
+    </tr>
+    <tr>
+      <td>Strategies Evolved</td>
+      <td>200+</td>
+      <td>35+ niches</td>
+      <td>40+ source weights</td>
+      <td>20+ ensembles</td>
+      <td>1000+ combos</td>
+      <td>8+ networks</td>
+      <td>8+ configs</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Latest Forward-Facing DNA Evolution Picks</h2>
+<div id="picks-container">
+  <p style="color:#666">Loading picks from DNA evolution engines...</p>
+</div>
+
+<h2>DNA Evolution Paper Trading Portfolios</h2>
+<div class="card-grid" id="portfolios-container">
+  <p style="color:#666">Loading portfolio data...</p>
+</div>
+
+<h2>New DNA Evolution vs Classic DNA Engine</h2>
+<table>
+  <thead>
+    <tr><th>Feature</th><th>HELIX (Classic)</th><th>GENESIS (GP)</th><th>ATLAS (MAPE)</th><th>NEXUS (Ensemble)</th><th>LEGION (Coevol)</th><th>CORTEX (NEAT)</th><th>ADAPT (Hyper)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>What DNA Evolves</td>
+      <td>Strategy parameters</td>
+      <td>Indicator formulas</td>
+      <td>Diverse niches</td>
+      <td>System trust weights</td>
+      <td>Voting teams</td>
+      <td>Neural topologies</td>
+      <td>Strategy parameters</td>
+    </tr>
+    <tr>
+      <td>DNA Representation</td>
+      <td>Gene array (floats)</td>
+      <td>Expression tree (nodes)</td>
+      <td>Expression tree + behavior</td>
+      <td>Weight vector (softmax)</td>
+      <td>Team + weights + consensus</td>
+      <td>Node + connection genes</td>
+      <td>Params + mutation rates</td>
+    </tr>
+    <tr>
+      <td>Evolution Type</td>
+      <td>Parameter tuning</td>
+      <td>Formula invention</td>
+      <td>Niche illumination</td>
+      <td>Meta-optimization</td>
+      <td>Cooperative coevolution</td>
+      <td>Topology complexification</td>
+      <td>Self-adaptive mutation</td>
+    </tr>
+    <tr>
+      <td>Crossover</td>
+      <td>Gene swap</td>
+      <td>Subtree exchange</td>
+      <td>Subtree + archive</td>
+      <td>Single-point vector</td>
+      <td>Member exchange</td>
+      <td>Innovation-aligned</td>
+      <td>Param + rate crossover</td>
+    </tr>
+    <tr>
+      <td>Mutation</td>
+      <td>Parameter perturbation</td>
+      <td>Subtree replacement</td>
+      <td>Subtree + rate adapt</td>
+      <td>Gaussian noise</td>
+      <td>Weight/member/consensus</td>
+      <td>Add node/connection</td>
+      <td>Epigenetic adaptation</td>
+    </tr>
+    <tr>
+      <td>Selection</td>
+      <td>Tournament (k=3)</td>
+      <td>Tournament (k=5)</td>
+      <td>Random archive elite</td>
+      <td>Tournament (k=2)</td>
+      <td>Tournament (k=3)</td>
+      <td>Species-based fitness</td>
+      <td>Tournament (k=3)</td>
+    </tr>
+    <tr>
+      <td>Output Type</td>
+      <td>1 optimal config</td>
+      <td>Novel indicators</td>
+      <td>Diverse archive</td>
+      <td>Source weightings</td>
+      <td>Voting ensembles</td>
+      <td>Neural networks</td>
+      <td>Optimized configs</td>
+    </tr>
+    <tr>
+      <td>Lines of Code</td>
+      <td>1,074</td>
+      <td>978</td>
+      <td>617</td>
+      <td>335</td>
+      <td>833</td>
+      <td>607</td>
+      <td>582</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>How DNA Evolution Works</h2>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(event, 'technical')">Technical Deep-Dive</div>
+  <div class="tab" onclick="switchTab(event, 'executive')">Executive Summary</div>
+  <div class="tab" onclick="switchTab(event, 'eli15')">ELI15 (Simple)</div>
+</div>
+
+<div id="technical" class="tab-content active">
+  <h3>GENESIS: Genetic Programming DNA Evolution</h3>
+  <p>GENESIS evolves <strong>expression trees</strong> representing mathematical formulas. Each tree node is either a binary operator (add, sub, mul, div, max, min, gt, lt), a unary operator (neg, abs, sin, cos, tanh, log, sqrt, clip), an input feature (26 available: OHLCV, RSI, EMA, BB, MACD, ATR, OBV, VWAP), or a random constant.</p>
+  <p>The buy and sell signals are separate trees. Crossover swaps random subtrees between parents. Mutation replaces a random subtree with a freshly grown random tree. Adaptive mutation increases the rate from 0.15 to 0.40 when evolution stagnates for 3+ generations.</p>
+  <p>Fitness = weighted combination of win_rate, sharpe_ratio, profit_factor, max_drawdown, and trade_count. Hall of Fame seeding persists winners in SQLite across runs for cumulative improvement.</p>
+
+  <h3>ATLAS: MAP-Elites Quality-Diversity</h3>
+  <p>Based on <em>Mouret & Clune (2015)</em>, MAP-Elites maintains a 5-dimensional archive grid (5x5x3x3x3 = 675 cells) where each cell holds the best strategy for a specific behavioral niche. Dimensions: trade frequency, risk profile, direction bias, regime preference, and formula complexity.</p>
+  <p>Instead of converging to one optimum, ATLAS illuminates the entire behavior space, discovering diverse strategy types: scalpers, swing traders, conservative, aggressive, mean-reversion, trend-following, etc. The QD Score (sum of all cell fitnesses) measures quality AND diversity simultaneously.</p>
+
+  <h3>NEXUS: Audit Ensemble Meta-Evolution</h3>
+  <p>NEXUS evolves a weight vector of length 40+ (one per audit source system). The genome is in logit space; fitness evaluation applies softmax normalization to get positive weights summing to 1. Fitness combines: (1) weighted signal strength per symbol (direction x confidence x historical WR), (2) diversity reward (1 - std(weights)), and (3) entropy bonus (-sum(w * log(w))).</p>
+  <p>This is unique because it doesn't need market data directly — it reads existing pick files from all 40+ trading systems and evolves the optimal way to combine their opinions.</p>
+
+  <h3>LEGION: Ensemble Coevolution</h3>
+  <p>LEGION evolves teams of 3-8 strategies that vote together. The DNA encodes: member selection, voting weights, consensus mechanism (majority/weighted/unanimous/cascade/bayesian), veto powers, and participation thresholds. Fitness is evaluated at the ensemble level — the team's collective trading performance, not any individual member's.</p>
+  <p>Crossover swaps members between parent ensembles. Mutation can: perturb weights, add/remove members, switch consensus mechanism, or adjust thresholds. A mediocre strategy might be valuable if it provides unique perspective to the team.</p>
+
+  <h3>CORTEX: NEAT Neural Topology Evolution</h3>
+  <p>Based on <em>Stanley & Miikkulainen (2002)</em>, CORTEX evolves neural network <strong>topologies</strong> — both structure and weights simultaneously. Networks start minimal (inputs directly connected to outputs) and complexify over generations by adding nodes and connections through structural mutations.</p>
+  <p>Innovation numbers (historical markings) enable meaningful crossover between networks with different topologies. Species-based evolution protects new structural innovations from premature elimination, giving novel topologies time to optimize their weights. Each pick includes node count, connection complexity, species ID, and generation.</p>
+
+  <h3>ADAPT: Self-Adaptive Hyperparameter DNA Evolution</h3>
+  <p>ADAPT evolves <strong>20 strategy parameters</strong> (TP/SL multipliers, position sizing, regime sensitivity, indicator periods, etc.) with a unique twist: each parameter carries its own evolving mutation rate. Parameters that strongly affect fitness develop higher mutation rates (more exploration), while stable parameters converge (lower mutation rates).</p>
+  <p>Epigenetic importance tracking measures each parameter's sensitivity to fitness changes. High-importance parameters (like stop-loss multiplier) get fine-tuned more carefully, while low-importance ones are explored broadly. This self-adaptive mechanism outperforms fixed mutation rates in complex parameter spaces.</p>
+</div>
+
+<div id="executive" class="tab-content">
+  <h3>What Is DNA Evolution for Trading?</h3>
+  <p>Instead of humans designing trading strategies, we use <strong>biological evolution</strong> to automatically discover profitable approaches. The DARWIN ENGINE runs 4 different types of DNA evolution simultaneously:</p>
+  <ul style="margin: 10px 0 10px 20px;">
+    <li><strong>GENESIS</strong> invents brand-new mathematical formulas for trading signals — formulas no human would think of</li>
+    <li><strong>ATLAS</strong> maps the entire landscape of viable strategies, ensuring we have diverse options for different market conditions</li>
+    <li><strong>NEXUS</strong> learns the optimal way to combine opinions from our 40+ existing trading systems</li>
+    <li><strong>LEGION</strong> builds optimal teams of strategies that make better decisions together than any single strategy alone</li>
+    <li><strong>CORTEX</strong> evolves neural network topologies — the structure of the brain itself, not just the weights — using species-based protection for innovation</li>
+    <li><strong>ADAPT</strong> evolves strategy parameters with self-adaptive mutation rates and epigenetic tracking, automatically fine-tuning the most important parameters</li>
+  </ul>
+  <p>Each engine produces trading picks that are tracked in separate paper portfolios starting at $10,000. Over time, the engines that produce the best forward-testing results earn more capital allocation.</p>
+</div>
+
+<div id="eli15" class="tab-content">
+  <h3>DNA Evolution for Trading - The Simple Version</h3>
+  <p><strong>Imagine breeding dogs, but for trading strategies:</strong></p>
+  <ul style="margin: 10px 0 10px 20px; line-height: 2;">
+    <li><strong>GENESIS</strong> is like randomly mixing ingredients to create new recipes. Some taste terrible, but occasionally you discover something amazing that no chef would have thought of. We keep the good recipes and throw away the bad ones.</li>
+    <li><strong>ATLAS</strong> is like creating a zoo instead of just finding the "best" animal. We want the fastest runner, the best swimmer, the strongest climber, the smallest burrower — one champion for every category.</li>
+    <li><strong>NEXUS</strong> is like figuring out which of your 40 friends gives the best advice. Instead of listening to all of them equally, you learn that Friend A is great at predicting sports, Friend B knows movies, and Friend C is terrible at everything. You weight their opinions accordingly.</li>
+    <li><strong>LEGION</strong> is like drafting a fantasy sports team. The best team isn't always 5 superstars — sometimes you need role players who complement each other. We evolve the team composition, not just individual players.</li>
+    <li><strong>CORTEX</strong> is like growing a brain from scratch. Start with a tiny brain (just a few neurons connected). Over time, new neurons and connections appear. Brains that make good trading decisions survive and grow more complex. Dumb brains die off. Species protection means weird new brain shapes get a fair chance before being judged.</li>
+    <li><strong>ADAPT</strong> is like a chef who adjusts how much they experiment with each ingredient. Salt is critical, so they make tiny adjustments. Garnish doesn't matter much, so they try wild variations. The recipe evolves, AND the chef's approach to experimenting evolves too.</li>
+  </ul>
+  <p>All of these run automatically every 30 minutes, testing thousands of possibilities and keeping only the winners. It's survival of the fittest — Darwin's evolution, but for trading strategies. That's why we call it the <strong>DARWIN ENGINE</strong>.</p>
+</div>
+
+<h2>DNA Evolution Codebase Overview</h2>
+<table>
+  <thead><tr><th>Module</th><th>Lines</th><th>Purpose</th><th>DNA Type</th></tr></thead>
+  <tbody>
+    <tr><td>genetic_programmer.py</td><td>978</td><td>GENESIS: Expression tree DNA evolution</td><td>GPNode trees</td></tr>
+    <tr><td>mape_evolver.py</td><td>617</td><td>ATLAS: Quality-diversity DNA evolution</td><td>Archived trees</td></tr>
+    <tr><td>audit_ensemble_evolver.py</td><td>335</td><td>NEXUS: Meta-weight DNA evolution</td><td>Weight vectors</td></tr>
+    <tr><td>ensemble_evolver.py</td><td>833</td><td>LEGION: Team DNA coevolution</td><td>Ensemble DNA</td></tr>
+    <tr><td>dna_engine.py</td><td>1,074</td><td>HELIX: Classic parameter DNA evolution</td><td>Gene arrays</td></tr>
+    <tr><td>neat_neural_evolver.py</td><td>607</td><td>CORTEX: NEAT topology DNA evolution</td><td>Node + connection genes</td></tr>
+    <tr><td>hyperparameter_dna_evolver.py</td><td>582</td><td>ADAPT: Self-adaptive parameter DNA evolution</td><td>Params + mutation rates</td></tr>
+    <tr><td>universal_evolver.py</td><td>356</td><td>Orchestrates all DNA evolution engines</td><td>All</td></tr>
+    <tr><td>darwin_portfolio_tracker.py</td><td>280</td><td>Paper portfolio per DNA evolution family</td><td>N/A</td></tr>
+    <tr><td>dna_backtester.py</td><td>1,001</td><td>Walk-forward DNA backtesting</td><td>All</td></tr>
+    <tr><td>quality_engine.py</td><td>577</td><td>10-dimension DNA signal scoring</td><td>All</td></tr>
+    <tr><td>strategy_registry.py</td><td>996</td><td>Central DNA strategy registry</td><td>All</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><th>Total</th><th>20,400+</th><th colspan="2">38 modules | 7 DNA evolution engines</th></tr>
+  </tfoot>
+</table>
+
+<div class="footer">
+  <p><strong>DARWIN ENGINE</strong> - DNA Evolution Trading Intelligence | <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/genome/dashboard/">Dashboard</a> | <a href="https://findtorontoevents.ca/updates/">Updates</a></p>
+  <p>7 DNA Evolution Engines | 40+ Audit Sources | 20,400+ Lines of Code | Pure Numpy (Python 3.14 Compatible)</p>
+</div>
+
+<script>
+function switchTab(e, tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+const BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/';
+
+async function loadData() {
+  try {
+    // Load portfolio data
+    const portRes = await fetch(BASE + 'darwin_portfolios.json');
+    if (portRes.ok) {
+      const portData = await portRes.json();
+      renderPortfolios(portData);
+      document.getElementById('lastUpdate').textContent = 'Last updated: ' + new Date(portData.generated_at).toLocaleString();
+    }
+  } catch(e) { console.log('Portfolio load error:', e); }
+
+  try {
+    // Load GP picks
+    const gpRes = await fetch(BASE + 'gp_active_picks.json');
+    if (gpRes.ok) {
+      const gp = await gpRes.json();
+      document.getElementById('genesis-fitness').textContent = (gp.best_fitness || 0).toFixed(3);
+      document.getElementById('genesis-picks').textContent = gp.total_picks || 0;
+    }
+  } catch(e) {}
+
+  try {
+    // Load MAPE picks
+    const mapeRes = await fetch(BASE + 'mape_active_picks.json');
+    if (mapeRes.ok) {
+      const mape = await mapeRes.json();
+      const stats = mape.archive_stats || {};
+      document.getElementById('atlas-fitness').textContent = (stats.max_fitness || 0).toFixed(3);
+      document.getElementById('atlas-coverage').textContent = (stats.coverage_pct || 0).toFixed(1);
+    }
+  } catch(e) {}
+
+  try {
+    // Load Audit Ensemble
+    const aeRes = await fetch(BASE + 'ae_active_picks.json');
+    if (aeRes.ok) {
+      const ae = await aeRes.json();
+      document.getElementById('nexus-fitness').textContent = (ae.top_ensemble_fitness || 0).toFixed(3);
+      document.getElementById('nexus-picks').textContent = ae.total_picks || 0;
+    }
+  } catch(e) {}
+
+  try {
+    // Load NEAT Neural (CORTEX) picks
+    const neatRes = await fetch(BASE + 'neat_active_picks.json');
+    if (neatRes.ok) {
+      const neat = await neatRes.json();
+      const picks = neat.picks || [];
+      const maxFit = picks.length ? Math.max(...picks.map(p => p.fitness || 0)) : 0;
+      const species = new Set(picks.map(p => p.species)).size;
+      document.getElementById('cortex-fitness').textContent = maxFit.toFixed(3);
+      document.getElementById('cortex-picks').textContent = neat.total_picks || picks.length;
+      document.getElementById('cortex-species').textContent = species;
+    }
+  } catch(e) {}
+
+  try {
+    // Load Hyperparameter DNA (ADAPT) picks
+    const hpRes = await fetch(BASE + 'hyperparam_active_picks.json');
+    if (hpRes.ok) {
+      const hp = await hpRes.json();
+      const picks = hp.picks || [];
+      const maxFit = picks.length ? Math.max(...picks.map(p => p.fitness || 0)) : 0;
+      document.getElementById('adapt-fitness').textContent = maxFit.toFixed(3);
+      document.getElementById('adapt-picks').textContent = hp.total_picks || picks.length;
+    }
+  } catch(e) {}
+
+  try {
+    // Load universal picks for latest picks display
+    const uniRes = await fetch(BASE + 'universal_picks.json');
+    if (uniRes.ok) {
+      const uni = await uniRes.json();
+      renderPicks(uni);
+    }
+  } catch(e) {}
+}
+
+function renderPicks(data) {
+  const container = document.getElementById('picks-container');
+  const picks = data.picks || [];
+  if (!picks.length) {
+    container.innerHTML = '<p style="color:#666">No active DNA evolution picks</p>';
+    return;
+  }
+  let html = '';
+  picks.slice(0, 20).forEach(p => {
+    const dirClass = p.direction === 'LONG' ? 'pick-long' : 'pick-short';
+    const conf = ((p.confidence || 0) * 100).toFixed(0);
+    html += `<div class="pick-row">
+      <div class="pick-symbol">${p.symbol}</div>
+      <div class="pick-dir ${dirClass}">${p.direction}</div>
+      <div class="pick-conf">Confidence: ${conf}%</div>
+      <div class="pick-engine">${p.source_system || p.strategy || 'unknown'}</div>
+      <div style="margin-left:auto; color:#888; font-size:0.8em">${p.win_rate ? (p.win_rate*100).toFixed(0)+'% WR' : ''}</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderPortfolios(data) {
+  const container = document.getElementById('portfolios-container');
+  const ports = data.portfolios || {};
+  let html = '';
+  for (const [fid, p] of Object.entries(ports)) {
+    const pnlClass = p.total_pnl_pct >= 0 ? 'positive' : 'negative';
+    const unrealClass = p.unrealized_pnl_pct >= 0 ? 'positive' : 'negative';
+    html += `<div class="card" style="border-left: 3px solid ${p.color}">
+      <div class="card-title" style="color:${p.color}">${p.name}</div>
+      <div class="card-label">${p.full_name}</div>
+      <div style="margin-top:10px">
+        <div>Capital: <strong>$${p.capital.toLocaleString()}</strong></div>
+        <div>Trades: ${p.total_trades} | WR: <span class="${p.win_rate >= 50 ? 'positive' : 'negative'}">${p.win_rate}%</span></div>
+        <div>Realized P/L: <span class="${pnlClass}">${p.total_pnl_pct >= 0 ? '+' : ''}${p.total_pnl_pct}%</span></div>
+        <div>Unrealized: <span class="${unrealClass}">${p.unrealized_pnl_pct >= 0 ? '+' : ''}${p.unrealized_pnl_pct}%</span></div>
+        <div>Sharpe: ${p.sharpe_ratio} | Max DD: ${p.max_drawdown}%</div>
+        <div>Open: ${p.open_positions ? p.open_positions.length : 0} positions</div>
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html || '<p style="color:#666">No portfolio data available</p>';
+}
+
+loadData();
+setInterval(loadData, 60000);
+
+// =========================================================================
+// TEXT-TO-SPEECH ENGINE
+// =========================================================================
+const TTS_SCRIPTS = {
+  overview: `Welcome to the DARWIN ENGINE, a DNA Evolution trading intelligence system.
+
+This system uses biological evolution to automatically discover profitable trading strategies. Instead of humans designing strategies by hand, we let evolution do the work: generating thousands of random strategies, testing them against real market data, keeping the winners, and breeding them together to create even better ones. This process repeats every 30 minutes, 24 hours a day.
+
+The system currently runs 7 different DNA evolution engines, each taking a different approach to finding winning strategies. Together they have evolved over 200 unique strategies across Bitcoin, Ethereum, Solana, Avalanche, and Dogecoin.
+
+Each engine's best strategies are tracked in separate paper trading portfolios starting at 10,000 dollars each, so we can compare how well backtested results hold up in real-time forward testing.`,
+
+  engines: `The DARWIN ENGINE runs 7 DNA evolution engines. Here's what each one does:
+
+Engine 1: GENESIS, the Genetic Programming engine. This invents brand-new mathematical formulas for trading signals. It builds expression trees from basic math operations like add, subtract, multiply, along with functions like sine, cosine, and square root, applied to price data and technical indicators. The result: trading indicators that don't exist in any textbook. Best backtest win rate: 76 percent on Bitcoin.
+
+Engine 2: ATLAS, the MAP-Elites engine. Instead of finding one best strategy, ATLAS maps the entire landscape of viable strategies. It maintains an archive with 675 cells across 5 behavioral dimensions: trade frequency, risk profile, direction bias, market regime preference, and formula complexity. Each cell holds the best strategy for that specific style.
+
+Engine 3: NEXUS, the Audit Ensemble engine. This doesn't evolve strategies at all. Instead, it evolves how much to trust each of our 40-plus existing trading systems. It optimizes a weight vector that determines which systems get more influence in the final consensus decision. Think of it as evolving a portfolio manager's judgment.
+
+Engine 4: LEGION, the Ensemble Coevolution engine. This evolves teams of 3 to 8 strategies that vote together. The DNA encodes which strategies are on the team, their voting weights, and the consensus mechanism: majority vote, weighted vote, unanimous agreement, or Bayesian combination. A mediocre strategy might be valuable if it adds a unique perspective to the team.
+
+Engine 5: HELIX, the Classic DNA engine. This is the original evolution engine with 1,074 lines of code. It evolves strategy parameters like RSI periods and EMA lengths, using gene arrays with combination logic and market regime detection. It serves as the baseline that the newer engines aim to beat.
+
+Engine 6: CORTEX, the NEAT Neural Topology engine. Based on the NEAT algorithm by Stanley and Miikkulainen, this evolves neural network topologies, meaning both the structure and the weights of the network. Networks start minimal and complexify over generations by adding new nodes and connections. Species-based evolution protects structural innovations from premature elimination. Each network is a unique brain that learns to read market patterns.
+
+Engine 7: ADAPT, the Self-Adaptive Hyperparameter engine. This evolves 20 strategy parameters, but with a twist: each parameter has its own evolving mutation rate. Parameters that strongly affect performance get fine-tuned carefully, while less important ones are explored broadly. Epigenetic importance tracking means the system learns which knobs matter most, then turns them more precisely.`,
+
+  scoring: `Let me explain what the Performance Score means.
+
+The Performance Score, sometimes called "fitness" in evolution terminology, is a combined grade from 0 to 1 that measures how well a strategy performed in backtesting, which means testing against historical price data.
+
+It blends five components. Win Rate counts for 30 percent: how often does the strategy make money? Sharpe Ratio counts for 25 percent: how consistent are returns compared to risk? Profit Factor counts for 20 percent: total money won divided by total money lost, where above 1.5 is good. Max Drawdown counts for 15 percent: the worst peak-to-trough loss, where smaller is better. And Trade Count counts for 10 percent: did it trade enough times to be statistically meaningful?
+
+So when a strategy scores 0.66, it means it earned a 66 percent grade on this combined scorecard. The highest scoring strategy so far achieved 0.785.
+
+Important caveat: these scores come from backtesting only. Forward-testing, meaning real-time paper trading with live market data, is tracked separately and typically shows some performance decay compared to backtested results. This is normal and expected. Forward results are always the true measure of strategy quality.`,
+
+  'backtest-vs-forward': `Let's talk about the crucial difference between backtesting and forward testing.
+
+Backtesting means running a strategy against historical price data to see how it would have performed. Our system uses 750 hourly candles from Binance, which is about 31 days of data. Backtesting is useful for screening strategies, but it has a major limitation: it can overfit to past data. A strategy that looks amazing on historical data might fail on future data it has never seen.
+
+Forward testing means tracking a strategy's picks in real-time against live market prices, using paper trading with no real money. This is the honest test. The strategy generates a pick, say, buy Bitcoin, and we track whether that pick actually makes money as prices move forward.
+
+We expect some performance decay from backtest to forward test. For example, a strategy with a 70 percent backtest win rate might achieve 60 to 65 percent in forward testing. A backtest Sharpe ratio of 2.0 might drop to 1.2 to 1.5 forward. This is normal and happens because backtesting can inadvertently exploit patterns in the specific data window used.
+
+Each of our 5 DNA evolution engines has its own paper trading portfolio starting at 10,000 dollars. Over time, the engines that produce the best forward-testing results earn credibility, while those that show excessive backtest-to-forward decay get flagged for review.
+
+The key takeaway: always look at forward testing results when evaluating a strategy's real-world potential. Backtesting is a screening tool, not a guarantee.`,
+
+  technical: `Here is the technical deep-dive into each DNA evolution engine.
+
+GENESIS uses Genetic Programming with expression trees. Each tree node is either a binary operator such as add, subtract, multiply, divide, max, min, greater-than, or less-than; a unary operator like negate, absolute value, sine, cosine, hyperbolic tangent, logarithm, square root, or clip; an input feature from 26 available including open, high, low, close, volume, RSI at periods 2 and 14, EMAs at 9, 21, and 50, Bollinger Bands, MACD, ATR, OBV, and VWAP; or a random constant between negative 5 and 5.
+
+Each strategy has separate buy and sell expression trees. Evolution uses tournament selection with k equals 5, single-point tree crossover at 70 percent probability, subtree mutation at 15 percent, and elitism preserving the top 10 percent. An adaptive mutation mechanism increases the rate from 0.15 to 0.40 when evolution stagnates for 3 or more generations without improvement. Hall of Fame seeding persists winners in SQLite across runs for cumulative improvement.
+
+ATLAS implements the MAP-Elites algorithm from Mouret and Clune, 2015. It maintains a 5-dimensional archive grid of 5 by 5 by 3 by 3 by 3, giving 675 cells. Each cell holds the best strategy for a specific behavioral niche defined by trade frequency, risk profile, direction bias, regime preference, and formula complexity. The QD Score, which is the sum of all cell fitnesses, measures quality and diversity simultaneously.
+
+NEXUS evolves a weight vector of length 40-plus in logit space. Fitness evaluation applies softmax normalization to get positive weights summing to 1. The fitness function combines weighted signal strength per symbol, a diversity reward penalizing over-concentration, and an entropy bonus encouraging broad weight distribution.
+
+LEGION evolves teams of 3 to 8 strategies. The DNA encodes member selection, voting weights, and consensus mechanism. Five consensus types are available: majority, weighted, unanimous, cascade, and Bayesian log-odds combination. Crossover swaps members between parent ensembles. Mutation can perturb weights, add or remove members, switch consensus mechanism, or adjust participation thresholds.`,
+
+  executive: `Here is the executive summary of the DARWIN ENGINE.
+
+Instead of humans designing trading strategies, we use biological evolution to automatically discover profitable approaches. The system runs 6 different types of DNA evolution simultaneously, plus one classic engine as a baseline.
+
+GENESIS invents brand-new mathematical formulas for trading signals. These are formulas no human would think of, combining basic math with market data in novel ways.
+
+ATLAS maps the entire landscape of viable strategies, ensuring we have diverse options for different market conditions. It answers the question: what types of strategies work for what types of markets?
+
+NEXUS learns the optimal way to combine opinions from our 40-plus existing trading systems. Instead of treating every system equally, it evolves how much to trust each one based on their track record.
+
+LEGION builds optimal teams of strategies that make better decisions together than any single strategy alone. It's like drafting the perfect committee of advisors.
+
+CORTEX evolves neural network topologies using the NEAT algorithm. Networks start minimal and grow in complexity, with species-based protection ensuring new structural innovations get a fair chance before being judged.
+
+ADAPT evolves strategy parameters with self-adaptive mutation rates. Each parameter carries its own evolving mutation rate, and epigenetic importance tracking ensures the most critical parameters get fine-tuned precisely.
+
+Each engine produces trading picks that are tracked in separate paper portfolios starting at 10,000 dollars. Over time, the engines that produce the best forward-testing results earn more credibility. The system evolves new strategies every 30 minutes, around the clock.`,
+
+  eli15: `Here's the simple explanation of how the DARWIN ENGINE works, using everyday analogies.
+
+Imagine breeding dogs, but for trading strategies.
+
+GENESIS is like randomly mixing cooking ingredients to create new recipes. Most combinations taste terrible, like chocolate with mustard. But occasionally you discover something amazing that no chef would have thought of. We keep the good recipes and throw away the bad ones. Then we combine two good recipes together, like mixing the best parts of a cake recipe with the best parts of a cookie recipe. Over many generations of mixing and tasting, the recipes get better and better.
+
+ATLAS is like creating a zoo instead of just finding the "best" animal. We want the fastest runner, the best swimmer, the strongest climber, and the smallest burrower, all at the same time. One champion for every category. That way, no matter what challenge comes up, we have the right animal for the job.
+
+NEXUS is like figuring out which of your 40 friends gives the best advice. Instead of listening to all of them equally, you learn that Friend A is great at predicting sports outcomes, Friend B knows movies really well, and Friend C is terrible at everything. You weight their opinions accordingly, listening more to the friends with good track records.
+
+LEGION is like drafting a fantasy sports team. The best team isn't always 5 superstars. Sometimes you need role players who complement each other. We evolve the team composition, not just individual players, because a good team is greater than the sum of its parts.
+
+CORTEX is like growing a brain from scratch. You start with just a few neurons connected together. Over time, new neurons and connections appear randomly. Brains that make good trading decisions survive and grow more complex. Dumb brains die off. And species protection means weird new brain shapes get a fair trial before being judged.
+
+ADAPT is like a chef who adjusts how much they experiment with each ingredient. Salt is critical so they make tiny adjustments. Garnish doesn't matter much so they try wild variations. The recipe evolves, and the chef's approach to experimenting evolves too. It's evolution of the evolution itself.
+
+All of these run automatically every 30 minutes, testing thousands of possibilities and keeping only the winners. It's survival of the fittest, Darwin's evolution, but for trading strategies. That's why we call it the DARWIN ENGINE.`,
+
+  'full-blueprint': `This is the full DNA Evolution Blueprint for the DARWIN ENGINE system.
+
+The DARWIN ENGINE is a multi-engine DNA evolution platform that automatically generates, backtests, and deploys trading strategies. Unlike traditional trading systems that rely on human-designed indicators, DARWIN uses biological evolution principles to discover strategies that no human would conceive.
+
+The system has 7 evolution engines. GENESIS, codenamed for Genetic Programming, evolves indicator formulas represented as expression trees. ATLAS, for MAP-Elites, evolves diverse strategy niches archived across a 5-dimensional behavior space. NEXUS, for Audit Ensemble, evolves trust weights across 40-plus trading systems. LEGION, for Ensemble Coevolution, evolves voting teams of strategies. HELIX, the classic DNA engine, evolves strategy parameters and combinations. CORTEX, for NEAT Neural, evolves neural network topologies with species-based protection. And ADAPT, for Hyperparameter DNA, evolves strategy parameters with self-adaptive mutation rates and epigenetic importance tracking.
+
+The GENESIS engine has 978 lines of code. Each strategy's DNA is an expression tree with binary operators like add, subtract, multiply, and divide; unary operators like sine, cosine, and square root; 26 input features from market data and technical indicators; and random constants. It uses tournament selection, subtree crossover at 70 percent probability, and adaptive mutation that increases from 15 percent to 40 percent during stagnation.
+
+The all-time best performers from GENESIS include: strategy GPX Gen15 246f61 on Solana with 69 percent win rate and Sharpe ratio of 39.96, performance score 0.785. Strategy GPX Gen14 5a2dd0 on Bitcoin achieved the highest single-symbol win rate of 76.2 percent with Sharpe 41.21.
+
+The ATLAS engine uses MAP-Elites to maintain a 675-cell archive across 5 behavioral dimensions: trade frequency from swing to scalper, risk profile from conservative to aggressive, direction bias from short to long, regime preference from trending to mean-reverting, and complexity from simple to complex. The first run achieved 5.2 percent archive coverage with 35 cells filled and a best fitness of 0.745.
+
+The NEXUS engine is unique because it evolves how much to trust each existing system rather than evolving strategies. The genome is a 40-plus element weight vector in logit space, transformed through softmax to get positive weights summing to 1. Fitness combines weighted signal strength, a diversity reward, and an entropy bonus. The first run achieved a best fitness of 4.95 and generated 4 consensus picks across Bitcoin, Ethereum, Dogecoin, and Solana.
+
+The LEGION engine evolves teams of 3 to 8 strategies. It supports 5 consensus mechanisms: majority vote, weighted vote, unanimous agreement, cascade voting, and Bayesian log-odds combination. The first run produced ensembles with fitness up to 0.507 using weighted consensus.
+
+Each engine has a dedicated paper trading portfolio starting at 10,000 dollars. Position management uses a maximum of 5 positions per portfolio, 20 percent of capital per position, 5 percent take profit, and 2.5 percent stop loss.
+
+The total codebase spans 20,400-plus lines across 38 modules in the genome directory, with 7 DNA evolution engines, over 200 strategies evolved, 40-plus audit sources aggregated, and primary focus on cryptocurrency with secondary expansion planned for stocks, futures, and forex.
+
+The system runs evolution cycles every 30 minutes via scheduled automation. Hall of Fame seeding ensures that winners from previous runs seed future populations for cumulative improvement across runs. The fitness score climbed from 0.36 in Run 1 to 0.66 in Run 4 through this seeding mechanism.
+
+That concludes the full DNA Evolution Blueprint.`
+};
+
+let ttsUtterance = null;
+let ttsPlaying = false;
+let ttsPaused = false;
+let ttsCurrentSection = 'overview';
+let ttsSelectedVoice = null;
+let ttsSpeed = 1;
+let ttsChunks = [];
+let ttsChunkIndex = 0;
+
+function ttsPopulateVoices() {
+  const picker = document.getElementById('ttsVoicePicker');
+  const voices = speechSynthesis.getVoices();
+  picker.innerHTML = '';
+  const english = voices.filter(v => v.lang.startsWith('en'));
+  const preferred = english.length ? english : voices.slice(0, 10);
+  preferred.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = v.name.substring(0, 30) + (v.default ? ' *' : '');
+    picker.appendChild(opt);
+  });
+  if (preferred.length) ttsSelectedVoice = preferred[0];
+}
+
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = ttsPopulateVoices;
+  setTimeout(ttsPopulateVoices, 100);
+} else {
+  document.getElementById('ttsBar').innerHTML = '<p style="color:#ff4466;padding:5px">Text-to-speech not supported in this browser.</p>';
+}
+
+function ttsChangeVoice() {
+  const picker = document.getElementById('ttsVoicePicker');
+  const voices = speechSynthesis.getVoices();
+  const english = voices.filter(v => v.lang.startsWith('en'));
+  const preferred = english.length ? english : voices.slice(0, 10);
+  ttsSelectedVoice = preferred[parseInt(picker.value)] || null;
+}
+
+function ttsChangeSpeed() {
+  ttsSpeed = parseFloat(document.getElementById('ttsSpeedPicker').value);
+}
+
+function ttsChangeSection() {
+  ttsCurrentSection = document.getElementById('ttsSectionPicker').value;
+  if (ttsPlaying) { ttsStop(); ttsPlay(); }
+}
+
+// Split text into chunks under ~200 chars at sentence boundaries (browser limit workaround)
+function ttsSplitText(text) {
+  const sentences = text.replace(/\n\n/g, '. ').replace(/\n/g, ' ').split(/(?<=[.!?])\s+/);
+  const chunks = [];
+  let current = '';
+  for (const s of sentences) {
+    if ((current + ' ' + s).length > 180 && current) {
+      chunks.push(current.trim());
+      current = s;
+    } else {
+      current += (current ? ' ' : '') + s;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+}
+
+function ttsPlay() {
+  const text = TTS_SCRIPTS[ttsCurrentSection];
+  if (!text) return;
+  ttsChunks = ttsSplitText(text);
+  ttsChunkIndex = 0;
+  ttsPlaying = true;
+  ttsPaused = false;
+  document.getElementById('ttsPlayIcon').textContent = '\u23F8';
+  document.getElementById('ttsPlayLabel').textContent = 'Pause';
+  document.getElementById('ttsPlayBtn').classList.add('active');
+  document.getElementById('ttsStatus').textContent = 'Speaking...';
+  ttsSpeakNextChunk();
+}
+
+function ttsSpeakNextChunk() {
+  if (!ttsPlaying || ttsChunkIndex >= ttsChunks.length) {
+    ttsStop();
+    return;
+  }
+  ttsUtterance = new SpeechSynthesisUtterance(ttsChunks[ttsChunkIndex]);
+  if (ttsSelectedVoice) ttsUtterance.voice = ttsSelectedVoice;
+  ttsUtterance.rate = ttsSpeed;
+  ttsUtterance.pitch = 1;
+  ttsUtterance.onend = function() {
+    ttsChunkIndex++;
+    const pct = (ttsChunkIndex / ttsChunks.length) * 100;
+    document.getElementById('ttsProgressBar').style.width = pct + '%';
+    if (ttsChunkIndex < ttsChunks.length && ttsPlaying) {
+      ttsSpeakNextChunk();
+    } else if (ttsChunkIndex >= ttsChunks.length) {
+      ttsStop();
+      document.getElementById('ttsStatus').textContent = 'Done';
+    }
+  };
+  ttsUtterance.onerror = function() {
+    ttsChunkIndex++;
+    if (ttsChunkIndex < ttsChunks.length && ttsPlaying) ttsSpeakNextChunk();
+    else ttsStop();
+  };
+  speechSynthesis.speak(ttsUtterance);
+}
+
+function ttsTogglePlay() {
+  if (ttsPlaying && !ttsPaused) {
+    speechSynthesis.pause();
+    ttsPaused = true;
+    document.getElementById('ttsPlayIcon').textContent = '\u25B6';
+    document.getElementById('ttsPlayLabel').textContent = 'Resume';
+    document.getElementById('ttsStatus').textContent = 'Paused';
+  } else if (ttsPaused) {
+    speechSynthesis.resume();
+    ttsPaused = false;
+    document.getElementById('ttsPlayIcon').textContent = '\u23F8';
+    document.getElementById('ttsPlayLabel').textContent = 'Pause';
+    document.getElementById('ttsStatus').textContent = 'Speaking...';
+  } else {
+    ttsPlay();
+  }
+}
+
+function ttsStop() {
+  speechSynthesis.cancel();
+  ttsPlaying = false;
+  ttsPaused = false;
+  ttsChunkIndex = 0;
+  document.getElementById('ttsPlayIcon').textContent = '\u25B6';
+  document.getElementById('ttsPlayLabel').textContent = 'Listen';
+  document.getElementById('ttsPlayBtn').classList.remove('active');
+  document.getElementById('ttsProgressBar').style.width = '0%';
+  if (document.getElementById('ttsStatus').textContent !== 'Done')
+    document.getElementById('ttsStatus').textContent = 'Ready';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+//@version=5
+strategy("MACD_Crossover_STEPFUN", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.1, initial_capital=10000, pyramiding=0)
+
+// ============================================
+// MACD CROSSOVER STRATEGY
+// Classic momentum strategy optimized for crypto
+// ============================================
+
+// ——— INPUT PARAMETERS ———
+fast_length = input.int(12, "Fast EMA Length", minval=5, maxval=50)
+slow_length = input.int(26, "Slow EMA Length", minval=10, maxval=100)
+signal_length = input.int(9, "Signal Line Length", minval=5, maxval=50)
+
+// Signal confirmation
+use_histogram_confirm = input.bool(true, "Require Histogram Confirmation")
+histogram_threshold = input.float(0.0, "Histogram Threshold", minval=0.0, step=0.01)
+
+// Trend filter (only trade MACD signals in trend direction)
+use_trend_filter = input.bool(true, "Use Trend Filter")
+trend_period = input.int(50, "Trend SMA Period", minval=20, maxval=200)
+
+// Exit parameters
+exit_mode = input.string("Opposite Signal", "Exit Mode", options=["Opposite Signal", "TP/SL", "Trailing"])
+tp_percent = input.float(2.0, "Take Profit %", minval=0.1, step=0.1)
+sl_percent = input.float(1.0, "Stop Loss %", minval=0.1, step=0.1)
+trail_offset_pct = input.float(0.5, "Trailing Offset %", minval=0.1, step=0.1)
+
+// Position sizing
+position_size_pct = input.float(100.0, "Position Size %", minval=1.0, maxval=100.0)
+
+// Divergence detection (optional enhancement)
+use_divergence = input.bool(false, "Enable Divergence Detection")
+lookback_divergence = input.int(14, "Divergence Lookback", minval=5, maxval=30)
+
+// ============================================
+// INDICATOR CALCULATIONS
+// ============================================
+
+// MACD
+[macd_line, signal_line, hist] = ta.macd(close, fast_length, slow_length, signal_length)
+
+// Trend filter
+trend_sma = ta.sma(close, trend_period)
+bullish_trend = close > trend_sma
+bearish_trend = close < trend_sma
+
+// Histogram confirmation
+hist_bullish = hist > histogram_threshold
+hist_bearish = hist < -histogram_threshold
+
+// Divergence detection (simplified)
+use_divergence_ok = true
+if use_divergence
+    // Bullish divergence: price makes lower low, MACD makes higher low
+    price_ll = low < low[1] and low[1] < low[2]
+    macd_hl = macd_line > macd_line[1] and macd_line[1] > macd_line[2]
+    bullish_divergence = price_ll and macd_hl
+    
+    // Bearish divergence: price makes higher high, MACD makes lower high
+    price_hh = high > high[1] and high[1] > high[2]
+    macd_lh = macd_line < macd_line[1] and macd_line[1] < macd_line[2]
+    bearish_divergence = price_hh and macd_lh
+    
+    use_divergence_ok := bullish_divergence or bearish_divergence
+
+// ============================================
+// SIGNAL GENERATION
+// ============================================
+
+// Bullish MACD crossover (with optional confirmation)
+bullish_cross = ta.crossover(macd_line, signal_line)
+bearish_cross = ta.crossunder(macd_line, signal_line)
+
+long_condition = bullish_cross and (not use_histogram_confirm or hist_bullish) and (not use_trend_filter or bullish_trend) and (not use_divergence or use_divergence_ok)
+
+short_condition = bearish_cross and (not use_histogram_confirm or hist_bearish) and (not use_trend_filter or bearish_trend) and (not use_divergence or use_divergence_ok)
+
+// ============================================
+// EXIT LOGIC
+// ============================================
+
+// Calculate exit levels
+float long_tp = na
+float long_sl = na
+float short_tp = na
+float short_sl = na
+if exit_mode == "TP/SL"
+    long_tp := close * (1 + tp_percent / 100)
+    long_sl := close * (1 - sl_percent / 100)
+    short_tp := close * (1 - tp_percent / 100)
+    short_sl := close * (1 + sl_percent / 100)
+else if exit_mode == "Trailing"
+    // Trailing stop based on recent price action
+    long_tp := ta.highest(high, 10) * (1 - trail_offset_pct / 100)
+    long_sl := ta.lowest(low, 5)
+    short_tp := ta.lowest(low, 10) * (1 + trail_offset_pct / 100)
+    short_sl := ta.highest(high, 5)
+
+// ============================================
+// STRATEGY EXECUTION
+// ============================================
+
+// Enter long
+if long_condition and strategy.position_size == 0
+    strategy.entry("Long", strategy.long, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Long Exit", "Long", limit=long_tp, stop=long_sl)
+
+// Enter short
+if short_condition and strategy.position_size == 0
+    strategy.entry("Short", strategy.short, qty=position_size_pct)
+    if exit_mode == "TP/SL"
+        strategy.exit("Short Exit", "Short", limit=short_tp, stop=short_sl)
+
+// Exit on opposite signal (if using opposite signal mode)
+if exit_mode == "Opposite Signal"
+    if bearish_cross and strategy.position_size > 0
+        strategy.close("Long")
+    if bullish_cross and strategy.position_size < 0
+        strategy.close("Short")
+
+// ============================================
+// PLOTTING
+// ============================================
+
+// Plot MACD
+macd_plot = plot(macd_line, "MACD", color=color.blue, linewidth=2)
+signal_plot = plot(signal_line, "Signal", color=color.red, linewidth=2)
+hist_plot = plot(hist, "Histogram", color=hist >= 0 ? color.green : color.red, linewidth=1, style=plot.style_columns)
+
+// Zero line
+hline(0, "Zero", color=color.gray, linestyle=hline.style_dotted)
+
+// Entry markers
+plotshape(long_condition, title="MACD Long", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, text="MACD+")
+
+plotshape(short_condition, title="MACD Short", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, text="MACD-")
+
+// Background
+bgcolor(strategy.position_size > 0 ? color.new(color.green, 90) : na)
+bgcolor(strategy.position_size < 0 ? color.new(color.red, 90) : na)
+
+// ============================================
+// INFO TABLE
+// ============================================
+var table info_table = table.new(position.top_right, 2, 10, border_width=1)
+
+if barstate.islast
+    table.cell(info_table, 0, 0, "MACD Crossover", bgcolor=color.blue, text_color=color.white)
+    table.cell(info_table, 1, 0, "Value", bgcolor=color.blue, text_color=color.white)
+    
+    table.cell(info_table, 0, 1, "MACD", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 1, str.tostring(macd_line, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 2, "Signal", bgcolor=color.new(color.red, 80))
+    table.cell(info_table, 1, 2, str.tostring(signal_line, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 3, "Histogram", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 3, str.tostring(hist, "#.####"), text_color=color.white)
+    
+    table.cell(info_table, 0, 4, "Trend", bgcolor=color.new(color.orange, 80))
+    table.cell(info_table, 1, 4, bullish_trend ? "Bullish" : bearish_trend ? "Bearish" : "Neutral", text_color=color.white)
+    
+    table.cell(info_table, 0, 5, "Signal", bgcolor=long_condition ? color.green : short_condition ? color.red : color.gray)
+    table.cell(info_table, 1, 5, long_condition ? "LONG" : short_condition ? "SHORT" : "WAIT", text_color=color.white)
+    
+    table.cell(info_table, 0, 6, "Exit Mode", bgcolor=color.new(color.blue, 80))
+    table.cell(info_table, 1, 6, exit_mode, text_color=color.white)
+    
+    table.cell(info_table, 0, 7, "Position", bgcolor=color.new(color.purple, 80))
+    table.cell(info_table, 1, 7, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", text_color=color.white)
+    
+    table.cell(info_table, 0, 8, "Equity", bgcolor=color.new(color.green, 80))
+    table.cell(info_table, 1, 8, str.tostring(strategy.equity, "#.##"), text_color=color.white)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(long_condition, "MACD Long", "MACD Crossover Long Entry")
+alertcondition(short_condition, "MACD Short", "MACD Crossover Short Entry")

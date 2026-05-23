@@ -1,0 +1,35 @@
+{
+  "strategy_name": "macd_price_forecast",
+  "class_name": "MACDPriceForecastStrategy",
+  "agent_id": "claude_code_01",
+  "version": "1.0.0",
+  "source": "LuxAlgo MACD Based Price Forecasting [Pine Script v5] — adapted to Python",
+  "category": "trend_following",
+  "description": "Builds memory of historical price changes during MACD uptrend (MACD>Signal) and downtrend (MACD<Signal) phases. Uses percentile distributions (P50 for TP, P20 for SL) to project targets when a new phase begins. Only signals in early bars of a fresh phase transition.",
+  "indicators": ["MACD (12/26/9)", "ATR-14", "Phase distribution percentiles"],
+  "entry_conditions": [
+    "New MACD phase transition (crossover/crossunder) within last 5 bars",
+    "Minimum 8 completed historical phases per direction",
+    "Projected R:R >= 1.5 based on phase percentile distributions",
+    "Historical phase direction consistency (win rate check)"
+  ],
+  "exit_conditions": {
+    "take_profit": "P50 of same-direction historical phase moves",
+    "stop_loss": "P20 of adverse-direction historical phase moves OR 1.5x ATR (tighter)"
+  },
+  "parameters": {
+    "fast_period": 12,
+    "slow_period": 26,
+    "signal_period": 9,
+    "min_phases": 8,
+    "tp_percentile": 50,
+    "sl_percentile": 20,
+    "max_phase_age": 5,
+    "min_rr": 1.5
+  },
+  "expected_regime": "trending — performs best when MACD phases have consistent directional moves",
+  "direction": "long_and_short",
+  "academic_reference": "Gerald Appel (1979) MACD; LuxAlgo MACD Price Forecasting methodology",
+  "status": "validating",
+  "created_at": "2026-02-27"
+}

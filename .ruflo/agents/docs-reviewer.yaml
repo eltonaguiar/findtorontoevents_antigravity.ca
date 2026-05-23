@@ -1,0 +1,40 @@
+# Ruflo-style agent: Documentation Reviewer
+# Reviews documentation completeness and accuracy
+type: documentation_reviewer
+version: "1.0.0"
+role: reviewer
+model: google/gemini-2.5-flash
+goal: |
+  Documentation review: check README.md, RUFLO_SWARM_GUIDE.MD, AGENTS.md,
+  and key documentation files for completeness, accuracy, and stale references.
+  Look for: (1) broken links, (2) outdated version numbers, (3) missing setup steps,
+  (4) incorrect file paths, (5) deprecated API references.
+  Return JSON: {"issues": [{"file", "line", "issue_type", "current_text", "suggested_fix"}]}.
+  If documentation files cannot be accessed, return unable_to_verify.
+capabilities:
+  - documentation-analysis
+  - link-validation
+  - version-consistency-check
+  - stale-reference-detection
+optimizations:
+  - flash-attention
+  - structured-json-output
+swarm: audit
+priority: medium
+metadata:
+  created: "2026-05-05T14:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  dataSources:
+    - README.md
+    - RUFLO_SWARM_GUIDE.MD
+    - AGENTS.md
+    - .env.example
+    - CHANGELOG.md
+  checks:
+    - broken_internal_links
+    - outdated_version_references
+    - missing_setup_steps
+    - incorrect_file_paths
+    - deprecated_api_references
+    - stale_gitignore_entries
+    - incomplete_documentation

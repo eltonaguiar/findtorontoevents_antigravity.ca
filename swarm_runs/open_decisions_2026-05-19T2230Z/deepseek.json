@@ -1,0 +1,27 @@
+{
+  "engine": "quant-risk-reviewer",
+  "decision_1_whitelist_enforce": {
+    "choice": "D",
+    "rationale": "No admissible hypothesis exists (0/18 pass canonical harness). Flipping now or on 2026-05-26 accepts post-selection bias from same-sample re-aggregation (3-AI swarm flagged MAJOR_REVISION). Forward 200-close verification is necessary but insufficient without any admissible hypothesis. The canonical ledger shows CRYPTO PF 0.64 (n=1116) - ensemble block added to BLOCKED_ASSET_STRATEGY_PAIRS with \u221256.3pp PnL, indicating toxic volume already identified. Whitelist enforcement without causal validation risks blocking legitimate signals while bias remains unaddressed.",
+    "risk_if_wrong": "Flipping prematurely locks in post-selection bias, potentially blocking profitable strategies while false positives from non-admissible hypotheses continue. Delaying until hypothesis admissibility ensures causal validity before operational enforcement.",
+    "evidence_cited": "0/18 hypotheses admissible (EFF_MIN=0.30, MIN_WINDOW_N=80, MIN_STABLE_WINDOWS=3, same-sign required); CRYPTO PF 0.64 n=1116; ensemble block \u221256.3pp PnL added to BLOCKED_ASSET_STRATEGY_PAIRS (commit 9834307); 3-AI swarm MAJOR_REVISION on same-sample re-aggregation; H-037 VIX-carry REJECTED on densification (118/130 windows, sign-unstable)."
+  },
+  "decision_2_fdr_gate": {
+    "choice": "A",
+    "rationale": "BH-FDR at q=0.10 is the minimum viable correction for the 18-hypothesis batch. Romano-Wolf is premature given 0 admissible hypotheses - compute cost unjustified. BH-FDR wires directly into tools/edge_stability_harness.py is_admissible() to adjust p-values before the 'proven' call. This addresses the 3-AI swarm's concern about multiple testing without over-engineering. Deferral (D) ignores the known multiple-testing problem - 18 hypotheses tested simultaneously inflates false discovery risk even with zero current admissibles.",
+    "risk_if_wrong": "BH-FDR at q=0.10 may be too lenient if dependency structure is strong (e.g., correlated hypotheses from same asset class). However, with 0 admissibles, the immediate risk is low; tightening to q=0.05 or switching to Romano-Wolf can follow if false positives emerge after hypotheses become admissible.",
+    "wire_target": "tools/edge_stability_harness.py: is_admissible() - insert BH-FDR adjustment on p-values from the 18-hypothesis batch before the EFF_MIN/MIN_WINDOW_N/MIN_STABLE_WINDOWS gate. Use statsmodels.stats.multitest.multipletests(method='fdr_bh')."
+  },
+  "consensus_hint": "Both decisions hinge on the same root cause: zero admissible hypotheses under canonical harness. Until at least one hypothesis survives the full stability + sign-consistency + FDR-adjusted test, any operational flip (whitelist enforcement) or advanced correction (Romano-Wolf) is premature. BH-FDR is the minimal prerequisite to make future admissibility calls statistically valid.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\open_decisions_2026-05-19T2230Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260519T223712Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 1060,
+    "tokens_out": 735,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

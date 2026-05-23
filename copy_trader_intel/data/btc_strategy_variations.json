@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-03-21T15:12:18.985296+00:00",
+  "variations": [
+    {
+      "id": "btc_short_only",
+      "name": "BTC Short-Only Reverser",
+      "description": "SHORT-only BTC (64% WR from OKX data vs 39% long). Enters short when RSI14>55, price<EMA50, MACD histogram negative.",
+      "direction": "SHORT",
+      "tp_pct": 2.5,
+      "sl_pct": 1.5,
+      "hold_bars": 18,
+      "source_insight": "AD2B6E949E5E91EC shorts 62% WR, 849CAD818B573125 shorts 80% WR",
+      "backtest": {
+        "trades": 431,
+        "wins": 206,
+        "win_rate": 47.8,
+        "total_pnl_pct": 33.12,
+        "avg_pnl_pct": 0.077,
+        "max_drawdown_pct": 26.57,
+        "profit_factor": 1.14,
+        "sharpe": 0.85
+      }
+    },
+    {
+      "id": "btc_session_filtered",
+      "name": "BTC US Session Momentum",
+      "description": "Session-filtered: only trades 14-20 UTC (US session, ~80% WR from trader data at 17 UTC). Follows 1h momentum direction when ADX>20.",
+      "direction": "BOTH",
+      "tp_pct": 2.0,
+      "sl_pct": 1.2,
+      "hold_bars": 8,
+      "source_insight": "17 UTC = NY afternoon peak performance across all traders",
+      "backtest": {
+        "trades": 652,
+        "wins": 305,
+        "win_rate": 46.8,
+        "total_pnl_pct": 27.63,
+        "avg_pnl_pct": 0.042,
+        "max_drawdown_pct": 20.4,
+        "profit_factor": 1.1,
+        "sharpe": 0.6
+      }
+    },
+    {
+      "id": "btc_rsi_extremes",
+      "name": "BTC RSI Extreme Reversal",
+      "description": "Mean-reversion: long when RSI14<30, short when RSI14>70. Classic oversold/overbought reversal.",
+      "direction": "BOTH",
+      "tp_pct": 3.0,
+      "sl_pct": 2.0,
+      "hold_bars": 24,
+      "source_insight": "RSI extremes historically profitable for BTC reversals",
+      "backtest": {
+        "trades": 371,
+        "wins": 175,
+        "win_rate": 47.2,
+        "total_pnl_pct": -35.28,
+        "avg_pnl_pct": -0.095,
+        "max_drawdown_pct": 62.48,
+        "profit_factor": 0.89,
+        "sharpe": -0.8
+      }
+    },
+    {
+      "id": "btc_trend_follow",
+      "name": "BTC Trend Follower",
+      "description": "Trend-following: only trade in direction of 4h EMA50 slope when ADX>25. Avoids choppy markets.",
+      "direction": "BOTH",
+      "tp_pct": 3.5,
+      "sl_pct": 1.8,
+      "hold_bars": 24,
+      "source_insight": "1173EC858F15E04F trades 74% WR on BTC with trend alignment",
+      "backtest": {
+        "trades": 664,
+        "wins": 304,
+        "win_rate": 45.8,
+        "total_pnl_pct": 63.01,
+        "avg_pnl_pct": 0.095,
+        "max_drawdown_pct": 30.11,
+        "profit_factor": 1.12,
+        "sharpe": 0.78
+      }
+    },
+    {
+      "id": "btc_ml_combined",
+      "name": "BTC ML Combined Filter",
+      "description": "Combined top ML features: ADX>25 + volume ratio>1.2 + RSI extremes + EMA50 position. Most selective filter.",
+      "direction": "BOTH",
+      "tp_pct": 4.0,
+      "sl_pct": 2.0,
+      "hold_bars": 24,
+      "source_insight": "Top 3 features from ML analysis combined into single entry filter",
+      "backtest": {
+        "trades": 544,
+        "wins": 248,
+        "win_rate": 45.6,
+        "total_pnl_pct": 48.02,
+        "avg_pnl_pct": 0.088,
+        "max_drawdown_pct": 30.19,
+        "profit_factor": 1.11,
+        "sharpe": 0.69
+      }
+    }
+  ]
+}

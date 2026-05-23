@@ -1,0 +1,35 @@
+{
+  "_fixture_meta": {
+    "name": "forex_stressed",
+    "rule_under_test": "charter:tier-floor (PF) + hard:active-circuit-breaker",
+    "expected_verdict": "REJECT",
+    "expected_rule_ids": ["charter:tier-floor", "hard:active-circuit-breaker"],
+    "notes": "FOREX PF 0.29 / WR 45.7 / n=1263. PF below T2 floor 1.5 by 1.21. Status 'stressed' means a circuit breaker is active. Both rules should fire blocking."
+  },
+  "performance": {
+    "asset_class_health": {
+      "FOREX": {
+        "status": "stressed",
+        "sample_tier": "stable",
+        "sizing_allowed": false,
+        "resolved_n": 1263,
+        "win_rate": 0.457,
+        "total_pnl_pct": -0.18,
+        "profit_factor": 0.29,
+        "max_drawdown": 0.34,
+        "min_display_n": 100
+      }
+    },
+    "systems": {},
+    "by_asset_class": {}
+  },
+  "walk_forward_by_class": {
+    "FOREX": {"folds": 31, "oos_consistency": 0.484, "oos_sharpe_p50": -0.493}
+  },
+  "performance_alerts": [
+    {"severity": "HIGH", "type": "STRATEGY_DEGRADATION", "message": "forex_rsi2_mean_reversion rolling WR 12% vs baseline 48%", "details": {"strategy": "forex_rsi2_mean_reversion", "rolling_wr": 0.12, "baseline_wr": 0.48, "n_recent": 80}, "action": "shadow_probation"}
+  ],
+  "shadow_probation": {"enabled": false, "shadow_picks": [], "candidate_strategies": []},
+  "picks": {"active": []},
+  "recent_closed": []
+}

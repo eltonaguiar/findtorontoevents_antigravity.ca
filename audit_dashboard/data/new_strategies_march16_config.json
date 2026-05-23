@@ -1,0 +1,370 @@
+{
+  "version": "2026-03-16",
+  "description": "New strategy integration configuration for March 2026 deployment",
+  "strategies": [
+    {
+      "id": "vwap_rsi_institutional",
+      "name": "VWAP + RSI Institutional",
+      "category": "Intraday Mean Reversion",
+      "description": "Institutional-grade mean reversion strategy combining VWAP deviation analysis with RSI(14) oversold/overbought signals. Targets 2-3% intraday moves on high-volume crypto pairs.",
+      "expected_metrics": {
+        "win_rate_min": 65,
+        "win_rate_max": 72,
+        "profit_factor_target": 2.5,
+        "sharpe_ratio_target": 1.8,
+        "max_drawdown_max": 8,
+        "avg_trade_duration_hours": 4,
+        "expectancy_per_trade": 1.2
+      },
+      "status": {
+        "backtest": {
+          "status": "complete",
+          "win_rate": 68.5,
+          "trades": 142,
+          "profit_factor": 2.7,
+          "sharpe": 1.9,
+          "max_drawdown": 6.2,
+          "completed_date": "2026-03-10"
+        },
+        "forward_test": {
+          "status": "active",
+          "win_rate": 66.2,
+          "trades": 32,
+          "profit_factor": 2.4,
+          "start_date": "2026-03-01",
+          "days_elapsed": 15
+        },
+        "live": {
+          "status": "pending",
+          "activation_criteria": {
+            "forward_trades_min": 50,
+            "forward_wr_min": 62,
+            "consecutive_profit_days": 3
+          }
+        }
+      },
+      "pick_generation": {
+        "enabled": true,
+        "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "ADAUSDT", "DOTUSDT"],
+        "timeframes": ["15m", "1h"],
+        "max_picks_per_day": 5,
+        "direction": "both",
+        "entry_filters": {
+          "vwap_deviation_min_pct": 0.8,
+          "vwap_deviation_max_pct": 3.5,
+          "rsi_long_max": 35,
+          "rsi_short_min": 65,
+          "volume_min_ratio": 1.5
+        },
+        "exit_rules": {
+          "tp_pct": [2.0, 3.5],
+          "sl_pct": 1.5,
+          "time_stop_hours": 8,
+          "vwap_return_exit": true
+        },
+        "schedule": {
+          "enabled": true,
+          "cron": "0 */4 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "risk_parameters": {
+        "max_position_size_pct": 2.0,
+        "max_daily_trades": 3,
+        "correlation_limit": 0.7
+      },
+      "tags": ["mean_reversion", "institutional", "vwap", "rsi", "intraday"],
+      "confidence_score": 0.78,
+      "display": {
+        "color": "#22d3ee",
+        "icon": "📊",
+        "priority": 1
+      }
+    },
+    {
+      "id": "liquidation_cascade_contrarian",
+      "name": "Liquidation Cascade Contrarian",
+      "category": "Structural",
+      "description": "Contrarian strategy exploiting liquidation cascade events. Detects abnormal liquidation spikes on CoinGlass and enters counter-trend positions when forced selling creates temporary price dislocations.",
+      "expected_metrics": {
+        "win_rate_min": 58,
+        "win_rate_max": 65,
+        "profit_factor_target": 2.2,
+        "sharpe_ratio_target": 1.5,
+        "max_drawdown_max": 12,
+        "avg_trade_duration_hours": 6,
+        "expectancy_per_trade": 1.8
+      },
+      "status": {
+        "backtest": {
+          "status": "complete",
+          "win_rate": 61.3,
+          "trades": 98,
+          "profit_factor": 2.3,
+          "sharpe": 1.6,
+          "max_drawdown": 9.8,
+          "completed_date": "2026-03-08"
+        },
+        "forward_test": {
+          "status": "active",
+          "win_rate": 59.1,
+          "trades": 22,
+          "profit_factor": 2.1,
+          "start_date": "2026-03-05",
+          "days_elapsed": 11
+        },
+        "live": {
+          "status": "pending",
+          "activation_criteria": {
+            "forward_trades_min": 40,
+            "forward_wr_min": 55,
+            "liquidation_events_captured": 5
+          }
+        }
+      },
+      "pick_generation": {
+        "enabled": true,
+        "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "LTCUSDT"],
+        "timeframes": ["5m", "15m", "1h"],
+        "max_picks_per_day": 3,
+        "direction": "both",
+        "entry_filters": {
+          "liquidation_spike_threshold_usd": 10000000,
+          "price_change_5m_min_pct": 2.0,
+          "funding_rate_threshold": 0.01,
+          "oi_change_1h_max_pct": 5
+        },
+        "exit_rules": {
+          "tp_pct": [3.0, 5.0, 8.0],
+          "sl_pct": 2.0,
+          "time_stop_hours": 12,
+          "funding_flip_exit": true,
+          "oi_recovery_exit": true
+        },
+        "data_sources": ["coinglass_liquidations", "coinglass_funding", "coinglass_oi"],
+        "schedule": {
+          "enabled": true,
+          "trigger": "event_based",
+          "check_interval_minutes": 5
+        }
+      },
+      "risk_parameters": {
+        "max_position_size_pct": 1.5,
+        "max_daily_trades": 2,
+        "weekend_reduction_factor": 0.7
+      },
+      "tags": ["contrarian", "liquidation", "structural", "coinglass", "event_driven"],
+      "confidence_score": 0.71,
+      "display": {
+        "color": "#f59e0b",
+        "icon": "⚡",
+        "priority": 2
+      }
+    },
+    {
+      "id": "regime_sentinel_composite",
+      "name": "Regime Sentinel Composite",
+      "category": "Regime Adaptive",
+      "description": "Dynamic multi-regime strategy using HMM (Hidden Markov Model) to detect market states (trending, ranging, volatile) and automatically adjusts signal generation parameters accordingly.",
+      "expected_metrics": {
+        "win_rate_min": 60,
+        "win_rate_max": 60,
+        "profit_factor_target": 2.0,
+        "sharpe_ratio_target": 1.4,
+        "max_drawdown_max": 10,
+        "avg_trade_duration_hours": 8,
+        "expectancy_per_trade": 1.0
+      },
+      "status": {
+        "backtest": {
+          "status": "complete",
+          "win_rate": 59.8,
+          "trades": 215,
+          "profit_factor": 2.1,
+          "sharpe": 1.5,
+          "max_drawdown": 8.4,
+          "completed_date": "2026-03-12"
+        },
+        "forward_test": {
+          "status": "active",
+          "win_rate": 61.5,
+          "trades": 26,
+          "profit_factor": 2.2,
+          "start_date": "2026-03-01",
+          "days_elapsed": 15
+        },
+        "live": {
+          "status": "pending",
+          "activation_criteria": {
+            "forward_trades_min": 60,
+            "all_regimes_tested": true,
+            "regime_accuracy_min": 70
+          }
+        }
+      },
+      "pick_generation": {
+        "enabled": true,
+        "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "AVAXUSDT", "LINKUSDT", "UNIUSDT"],
+        "timeframes": ["1h", "4h"],
+        "max_picks_per_day": 4,
+        "direction": "both",
+        "regime_configs": {
+          "trending": {
+            "ema_fast": 9,
+            "ema_slow": 21,
+            "adx_min": 25,
+            "tp_multiplier": 2.5,
+            "sl_multiplier": 1.0
+          },
+          "ranging": {
+            "bb_period": 20,
+            "bb_std": 2.0,
+            "rsi_period": 14,
+            "tp_multiplier": 1.5,
+            "sl_multiplier": 1.0
+          },
+          "volatile": {
+            "atr_period": 14,
+            "atr_multiplier": 2.0,
+            "tp_multiplier": 1.8,
+            "sl_multiplier": 1.2,
+            "position_size_reduction": 0.7
+          }
+        },
+        "exit_rules": {
+          "tp_pct": "adaptive_by_regime",
+          "sl_pct": "adaptive_by_regime",
+          "time_stop_hours": 16,
+          "regime_change_exit": true
+        },
+        "schedule": {
+          "enabled": true,
+          "cron": "0 */6 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "risk_parameters": {
+        "max_position_size_pct": 2.0,
+        "max_daily_trades": 4,
+        "regime_position_scaling": true
+      },
+      "tags": ["regime", "adaptive", "hmm", "multi_strategy", "dynamic"],
+      "confidence_score": 0.72,
+      "display": {
+        "color": "#a78bfa",
+        "icon": "🛡️",
+        "priority": 3
+      }
+    },
+    {
+      "id": "rsi_pairs_arbitrage",
+      "name": "RSI Pairs Arbitrage",
+      "category": "Market Neutral",
+      "description": "Statistical arbitrage strategy trading relative RSI divergence between highly correlated crypto pairs (e.g., BTC-ETH, SOL-AVAX). Market neutral with low correlation to directional moves.",
+      "expected_metrics": {
+        "win_rate_min": 70,
+        "win_rate_max": 75,
+        "profit_factor_target": 2.8,
+        "sharpe_ratio_target": 2.2,
+        "max_drawdown_max": 5,
+        "avg_trade_duration_hours": 12,
+        "expectancy_per_trade": 0.8
+      },
+      "status": {
+        "backtest": {
+          "status": "complete",
+          "win_rate": 72.4,
+          "trades": 189,
+          "profit_factor": 2.9,
+          "sharpe": 2.3,
+          "max_drawdown": 4.2,
+          "completed_date": "2026-03-11"
+        },
+        "forward_test": {
+          "status": "active",
+          "win_rate": 71.4,
+          "trades": 35,
+          "profit_factor": 2.7,
+          "start_date": "2026-03-01",
+          "days_elapsed": 15
+        },
+        "live": {
+          "status": "pending",
+          "activation_criteria": {
+            "forward_trades_min": 50,
+            "forward_wr_min": 68,
+            "beta_to_btc_max": 0.3
+          }
+        }
+      },
+      "pick_generation": {
+        "enabled": true,
+        "pairs": [
+          {"long": "BTCUSDT", "short": "ETHUSDT", "correlation_threshold": 0.85},
+          {"long": "SOLUSDT", "short": "AVAXUSDT", "correlation_threshold": 0.80},
+          {"long": "LINKUSDT", "short": "UNIUSDT", "correlation_threshold": 0.75}
+        ],
+        "timeframes": ["1h", "4h"],
+        "max_picks_per_day": 3,
+        "direction": "pairs",
+        "entry_filters": {
+          "rsi_spread_min": 15,
+          "rsi_spread_max": 40,
+          "correlation_lookback_hours": 72,
+          "zscore_threshold": 2.0,
+          "cointegration_pvalue_max": 0.05
+        },
+        "exit_rules": {
+          "tp_pct": [1.5, 2.5],
+          "sl_pct": 2.0,
+          "spread_convergence_exit": true,
+          "time_stop_hours": 24,
+          "correlation_break_exit": 0.65
+        },
+        "schedule": {
+          "enabled": true,
+          "cron": "0 */8 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "risk_parameters": {
+        "max_position_size_pct": 3.0,
+        "max_daily_trades": 2,
+        "hedge_ratio_adjustment": true,
+        "market_neutral_constraint": true
+      },
+      "tags": ["market_neutral", "arbitrage", "pairs", "rsi", "statistical"],
+      "confidence_score": 0.81,
+      "display": {
+        "color": "#4ade80",
+        "icon": "⚖️",
+        "priority": 4
+      }
+    }
+  ],
+  "integration": {
+    "dashboard_section": "new_strategies_march16",
+    "display_order": ["vwap_rsi_institutional", "rsi_pairs_arbitrage", "regime_sentinel_composite", "liquidation_cascade_contrarian"],
+    "card_layout": {
+      "show_metrics": true,
+      "show_status_badge": true,
+      "show_progress_bar": true,
+      "show_pick_count": true
+    },
+    "alerts": {
+      "on_forward_milestone": true,
+      "on_live_activation": true,
+      "on_performance_degradation": true
+    }
+  },
+  "deployment": {
+    "target_date": "2026-03-16",
+    "phased_rollout": true,
+    "phases": [
+      {"phase": 1, "strategies": ["rsi_pairs_arbitrage"], "date": "2026-03-16"},
+      {"phase": 2, "strategies": ["vwap_rsi_institutional"], "date": "2026-03-20"},
+      {"phase": 3, "strategies": ["regime_sentinel_composite"], "date": "2026-03-25"},
+      {"phase": 4, "strategies": ["liquidation_cascade_contrarian"], "date": "2026-03-30"}
+    ]
+  }
+}

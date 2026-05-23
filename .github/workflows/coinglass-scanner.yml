@@ -1,0 +1,89 @@
+name: Coinglass DNA Scanner
+
+on:
+  schedule:
+    - cron: '3 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - scan-only
+          - portfolio-only
+          - summary-only
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Coinglass DNA Scanner
+        env:
+          DISCORD_WEBHOOK_PAPERTRADE: ${{ secrets.DISCORD_WEBHOOK_PAPERTRADE }}
+        run: |
+          MODE="${{ github.event.inputs.mode || 'full' }}"
+          echo "Mode: $MODE"
+
+          if [ "$MODE" = "scan-only" ]; then
+            python -m coinglass_strategies --scan
+          elif [ "$MODE" = "portfolio-only" ]; then
+            python -m coinglass_strategies --portfolio
+          elif [ "$MODE" = "summary-only" ]; then
+            python -m coinglass_strategies --summary
+          else
+            python -m coinglass_strategies --scan --portfolio
+          fi
+
+      - name: Portfolio summary (every 2h)
+        env:
+          DISCORD_WEBHOOK_PAPERTRADE: ${{ secrets.DISCORD_WEBHOOK_PAPERTRADE }}
+        run: |
+          HOUR=$(date -u +%-H)
+          MINUTE=$(date -u +%-M)
+          if [ "$MINUTE" -lt "15" ] && [ $((HOUR % 2)) -eq 0 ]; then
+            echo "Sending 2-hour portfolio summary"
+            python -m coinglass_strategies --summary
+          fi
+
+      - name: Push picks to audit trail
+        run: python -m coinglass_strategies.audit_push
+        continue-on-error: true
+
+      - name: Commit data changes
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add coinglass_strategies/data/active_picks.json 2>/dev/null || true
+          git add coinglass_strategies/data/reconciled_ids.json 2>/dev/null || true
+          git add -f coinglass_strategies/data/coinglass.db 2>/dev/null || true
+          git add data/audit_trail.db data/audit_trail.db-wal data/audit_trail.db-shm 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "Coinglass scan $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+          # safe_push.sh already has 5-attempt exponential backoff retry logic
+          bash .github/scripts/safe_push.sh
+

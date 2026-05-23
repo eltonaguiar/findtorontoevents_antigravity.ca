@@ -1,0 +1,87 @@
+name: Copy Trader Forward Test
+
+on:
+  schedule:
+    - cron: '17 * * * *'  # Staggered far from :00-:10 push contention zone
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: copy-trader-forward-test
+  cancel-in-progress: false  # 2026-04-19: was true, caused 100% cancellation of runs that were mid-push
+
+jobs:
+  forward-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-04-17 v2: bumped 25→35. First fix (15→25) got 2/3 runs green but
+    # 20:31 run cancelled again, steps 1-8 passed, step 9 (Commit and push)
+    # consumed the remaining ~11 min budget. safe_push.sh does up to 15
+    # attempts with 120s-capped exponential backoff → worst case ~30 min of
+    # push retry. With ~14 min of useful work before push, 35 min covers the
+    # tail of heavy contention cycles. If this still isn't enough, either
+    # reduce safe_push.sh retry count or introduce a merge-with-X-ours
+    # strategy like audit-dashboard.yml uses.
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas
+
+      - name: Run copy trader bridge (merge picks)
+        run: |
+          python -c "
+          try:
+              from alpha_engine.copy_trader_bridge import get_copy_trader_picks
+              picks = get_copy_trader_picks()
+              print(f'Bridge: {len(picks)} picks')
+          except Exception as e:
+              print(f'Bridge not available: {e}')
+          "
+
+      - name: Resolve Copy Trader Outcomes
+        run: python copy_trader_intel/outcome_resolver.py
+
+      - name: Run copy trader portfolio tracker
+        run: python alpha_engine/portfolio_tracker_copytrader.py
+
+      - name: Run copy trader raw portfolio tracker
+        run: python alpha_engine/portfolio_tracker_copytrader_raw.py
+
+      - name: Commit and push changes
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TARGET_FILES="alpha_engine/data/portfolio_copytrader.json alpha_engine/data/portfolio_copytrader_raw.json copy_trader_intel/data battleground/data"
+          git add $TARGET_FILES 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "copy-trader forward-test: $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]" --quiet
+          # safe_push.sh handles shallow repos via --deepen=150 internally;
+          # workflow-level `git fetch --unshallow` was blowing up disk on
+          # ubuntu-latest runners (.git is 37GB). See PR for chronic-failure
+          # context.
+          # 2026-04-17: replaced 5-attempt inline loop with safe_push.sh.
+          # Inline loop was 4C/0S in 12h with 7-min push duration before cancel
+          # under heavy main-branch contention. safe_push.sh has 15-attempt
+          # exponential backoff with 120s sleep cap + 180s git net timeout
+          # which prevents one hanging call from burning the job timeout.
+          bash .github/scripts/safe_push.sh
+

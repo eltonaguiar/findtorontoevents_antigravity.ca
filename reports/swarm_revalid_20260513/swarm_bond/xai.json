@@ -1,0 +1,101 @@
+{
+  "strategies": [
+    {
+      "name": "HYG_LQD_CreditSpread_6m",
+      "thesis": "Enhance Sharpe by overlaying credit spread signals on momentum to filter out high-risk periods.",
+      "signal_construction": "Select top-1 between HYG and LQD based on 6-month momentum (skip-1), but only enter if BAMLH0A0HYM2 (High Yield Option-Adjusted Spread) is below its 12-month moving average; otherwise, hold cash (BIL).",
+      "universe": [
+        "HYG",
+        "LQD",
+        "BIL"
+      ],
+      "expected_pf": 1.75,
+      "expected_sharpe": 0.85,
+      "expected_mdd_pct": 18.0,
+      "differentiation_from_existing": "Adds credit spread filter (BAMLH0A0HYM2) to avoid high-risk periods compared to pure momentum baseline.",
+      "implementation_hours": 12,
+      "wire_target": "tools/backtest_bond_hyg_lqd_creditspread.py",
+      "data_source": "yfinance / FRED",
+      "fail_mode": "Credit spread signal lags behind actual risk events, leading to late exits."
+    },
+    {
+      "name": "TLT_IEF_Duration_Momentum_9m",
+      "thesis": "Improve Sharpe by focusing on duration rotation with momentum in Treasuries during favorable yield curve regimes.",
+      "signal_construction": "Select top-1 between TLT and IEF based on 9-month momentum (skip-1), but only trade if 10Y-2Y yield spread (DGS10-DGS2) is positive; otherwise, hold SHY.",
+      "universe": [
+        "TLT",
+        "IEF",
+        "SHY"
+      ],
+      "expected_pf": 1.65,
+      "expected_sharpe": 0.9,
+      "expected_mdd_pct": 15.0,
+      "differentiation_from_existing": "Focuses on Treasury duration rotation with yield curve regime filter, unlike HYG/LQD credit focus.",
+      "implementation_hours": 10,
+      "wire_target": "tools/backtest_bond_tlt_ief_duration.py",
+      "data_source": "yfinance / FRED",
+      "fail_mode": "Yield curve inversion signal fails to predict drawdowns in steepening environments."
+    },
+    {
+      "name": "HYG_LQD_TIP_InflationHedge_6m",
+      "thesis": "Boost Sharpe by adding inflation protection via TIP during high inflation expectation periods.",
+      "signal_construction": "Select top-1 between HYG and LQD based on 6-month momentum (skip-1), but if 10Y Breakeven Inflation Rate (T10YIE) is above its 12-month average, allocate 50% to TIP and 50% to momentum pick.",
+      "universe": [
+        "HYG",
+        "LQD",
+        "TIP"
+      ],
+      "expected_pf": 1.7,
+      "expected_sharpe": 0.88,
+      "expected_mdd_pct": 17.0,
+      "differentiation_from_existing": "Introduces inflation hedge via TIP allocation during high breakeven inflation periods, unlike pure credit momentum.",
+      "implementation_hours": 14,
+      "wire_target": "tools/backtest_bond_hyg_lqd_tip_inflation.py",
+      "data_source": "yfinance / FRED",
+      "fail_mode": "Inflation expectations misalign with actual bond price movements, diluting returns."
+    },
+    {
+      "name": "EMB_HYG_GlobalCredit_6m",
+      "thesis": "Increase Sharpe by diversifying credit exposure with emerging market bonds during low-stress periods.",
+      "signal_construction": "Select top-1 between HYG and EMB based on 6-month momentum (skip-1), but only trade if VIX is below its 6-month moving average; otherwise, hold BIL.",
+      "universe": [
+        "HYG",
+        "EMB",
+        "BIL"
+      ],
+      "expected_pf": 1.8,
+      "expected_sharpe": 0.95,
+      "expected_mdd_pct": 19.0,
+      "differentiation_from_existing": "Incorporates global credit exposure via EMB and uses VIX as a risk-off filter, unlike pure HYG/LQD focus.",
+      "implementation_hours": 16,
+      "wire_target": "tools/backtest_bond_hyg_emb_globalcredit.py",
+      "data_source": "yfinance / FRED",
+      "fail_mode": "EMB liquidity issues or geopolitical shocks cause outsized drawdowns."
+    }
+  ],
+  "credit_spread_signals": [
+    "HYG-LQD price spread",
+    "BAMLH0A0HYM2 (High Yield Option-Adjusted Spread)",
+    "AAA-BAA corporate spread"
+  ],
+  "duration_overlay_proposals": [
+    "Rotate between long-duration (TLT) and short-duration (SHY) based on 10Y-2Y yield spread (DGS10-DGS2); favor TLT when spread > 0, SHY when inverted."
+  ],
+  "killers": [
+    "Current live BOND emitter with PF 0.66 due to consistent underperformance and thin sample size."
+  ],
+  "tier1_attainability_pct": 40,
+  "single_most_important_finding": "Credit spread and duration regime filters can potentially lift Sharpe above 0.8 while preserving PF asymmetry.",
+  "engine": "xai",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_bond\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260513T043134Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 749,
+    "tokens_out": 1144,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

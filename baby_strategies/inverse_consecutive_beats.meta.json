@@ -1,0 +1,35 @@
+{
+  "name": "inverse_consecutive_beats",
+  "description": "Inverse of 'Consecutive Beats' equity strategy. Parent has 25.6% WR, 74% SL hit rate on n=39. Wins on AMD/AMZN but loses on NIO/MARA/PATH. Inverse SHORTs the losing symbols instead of going LONG.",
+  "parent_strategy": "Consecutive Beats",
+  "mutation_type": "inverse",
+  "asset_class": "EQUITY",
+  "wired_in_scanner": false,
+  "status": "awaiting_forward_test",
+  "created": "2026-04-14T07:41:00-04:00",
+  "evidence": {
+    "parent_wr": 25.6,
+    "parent_pf": 0.54,
+    "parent_n": 39,
+    "parent_sl_hit_pct": 74,
+    "inverse_theoretical_wr": 74.4,
+    "winning_symbols": ["AMD", "AMZN"],
+    "losing_symbols": ["NIO", "MARA", "PATH"]
+  },
+  "config": {
+    "source_strategy_substring": "Consecutive Beats",
+    "flip_direction": true,
+    "symbol_filter": {
+      "inverse_only_on": ["NIO", "MARA", "PATH", "PLTR", "OPEN"],
+      "keep_original_on": ["AMD", "AMZN", "NVDA"]
+    },
+    "tp_sl_from_parent": true
+  },
+  "validation_checklist": {
+    "layer_1_backtest": false,
+    "layer_2_oos": false,
+    "layer_2_5_quality_gates": false,
+    "layer_6_forward_test_n20": false,
+    "layer_6_forward_test_pf_1_5": false
+  }
+}

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panic Attack & Hyperventilation Relief - Mental Health Resources</title>
+  <style>
+    :root {
+      --pk-500: #ec4899;
+      --pk-700: #be185d;
+      --pk-900: #500724;
+      --surface-0: #0f0f0f;
+      --surface-1: #1a1a1a;
+      --surface-2: #262626;
+      --surface-3: #3a3a3a;
+      --text-1: #ffffff;
+      --text-2: #a3a3a3;
+      --text-3: #737373;
+      --calm-blue: #3b82f6;
+      --safe-green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--surface-0) 0%, #0a0f1a 100%);
+      color: var(--text-1);
+      min-height: 100vh;
+    }
+    .crisis-banner {
+      background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 4px solid #7f1d1d;
+    }
+    .crisis-banner h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .crisis-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+    .crisis-links a {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 0.5rem;
+      color: white;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .crisis-links a:hover { background: rgba(255,255,255,0.3); }
+    header {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, var(--pk-900) 0%, transparent 100%);
+    }
+    header h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    header p { color: var(--text-2); max-width: 600px; margin: 0 auto; }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    .panic-container {
+      background: var(--surface-1);
+      border-radius: 1rem;
+      padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .reassurance-box {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+      border: 2px solid var(--safe-green);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .reassurance-box h2 {
+      color: var(--safe-green);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .reassurance-box p {
+      color: var(--text-2);
+      font-size: 1.125rem;
+    }
+    .breathing-exercise {
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      margin: 2rem 0;
+    }
+    .breathing-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--calm-blue) 0%, var(--safe-green) 100%);
+      margin: 1.5rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 4s ease-in-out, box-shadow 4s ease-in-out;
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+    }
+    .breathing-circle.inhale {
+      transform: scale(1.3);
+      box-shadow: 0 0 80px rgba(59, 130, 246, 0.5);
+    }
+    .breathing-circle.hold {
+      transform: scale(1.3);
+      box-shadow: 0 0 60px rgba(34, 197, 94, 0.5);
+    }
+    .breathing-circle.exhale {
+      transform: scale(1);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+    }
+    .breath-text {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: white;
+      text-transform: uppercase;
+    }
+    .breath-instruction {
+      font-size: 1.25rem;
+      color: var(--text-1);
+      margin: 1rem 0;
+      min-height: 2rem;
+    }
+    .breath-timer {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--calm-blue);
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-calm { background: var(--calm-blue); color: white; }
+    .btn-calm:hover { background: #2563eb; }
+    .btn-secondary {
+      background: var(--surface-3);
+      color: var(--text-1);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-secondary:hover { background: var(--surface-2); }
+    .technique-section {
+      margin: 2rem 0;
+    }
+    .technique-section h2 {
+      color: var(--pk-500);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .technique-card {
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-left: 4px solid var(--calm-blue);
+    }
+    .technique-card.emergency {
+      border-left-color: var(--safe-green);
+      background: linear-gradient(90deg, rgba(34, 197, 94, 0.1) 0%, var(--surface-2) 100%);
+    }
+    .technique-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .technique-card p {
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+    .technique-steps {
+      background: var(--surface-3);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .technique-steps ol, .technique-steps ul {
+      padding-left: 1.5rem;
+      color: var(--text-2);
+    }
+    .technique-steps li {
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+    .science-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid var(--calm-blue);
+      border-radius: 1rem;
+      font-size: 0.7rem;
+      color: var(--calm-blue);
+    }
+    .hyperventilation-section {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid #ef4444;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .hyperventilation-section h3 {
+      color: #ef4444;
+      margin-bottom: 1rem;
+    }
+    .symptom-checklist {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .symptom-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: var(--surface-2);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-2);
+    }
+    .grounding-visual {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .ground-item {
+      background: var(--surface-2);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .ground-item:hover { border-color: var(--calm-blue); }
+    .ground-item.active {
+      background: var(--calm-blue);
+      border-color: var(--calm-blue);
+    }
+    .ground-number { font-size: 1.5rem; font-weight: bold; }
+    .ground-sense { font-size: 0.7rem; color: var(--text-3); text-transform: uppercase; }
+    .ground-emoji { font-size: 1.5rem; margin-top: 0.25rem; }
+    .paper-bag-warning {
+      background: rgba(234, 179, 8, 0.2);
+      border: 1px solid #eab308;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .paper-bag-warning h4 {
+      color: #eab308;
+      margin-bottom: 0.5rem;
+    }
+    .paper-bag-warning p {
+      color: var(--text-2);
+      font-size: 0.875rem;
+    }
+    .science-section {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+    }
+    .science-section h3 { color: var(--pk-500); margin-bottom: 1rem; }
+    .science-section p { color: var(--text-2); line-height: 1.6; margin-bottom: 0.75rem; }
+    .science-section ul { padding-left: 1.5rem; color: var(--text-2); }
+    .science-section li { margin-bottom: 0.5rem; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      color: var(--text-2);
+      text-decoration: none;
+      margin-top: 2rem;
+      transition: all 0.3s;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.1); color: white; }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-3);
+      font-size: 0.75rem;
+    }
+    @media (max-width: 600px) {
+      .grounding-visual { grid-template-columns: repeat(3, 1fr); }
+    }
+  
+    .info-banner {
+      background: linear-gradient(90deg, #1e40af 0%, #3730a3 100%);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #1e3a8a;
+    }
+    .info-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .info-icon { font-size: 1.25rem; }
+    .info-text { font-size: 0.875rem; line-height: 1.4; }
+    .info-text strong { color: #fbbf24; }
+
+    .recommended-resources {
+      background: var(--surface-2);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .recommended-resources h3 {
+      color: var(--pk-500);
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .resource-category h4 {
+      color: var(--text-1);
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    .resource-category ul {
+      list-style: none;
+      padding: 0;
+    }
+    .resource-category li {
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .resource-category a {
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .resource-category a:hover {
+      color: var(--pk-500);
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+  <section class="crisis-banner">
+    <h2>🚨 In Crisis? Get Help Now</h2>
+    <div class="crisis-links">
+      <a href="tel:18334564566">☎️ Call 1-833-456-4566</a>
+      <a href="sms:741741&body=HOME">💬 Text HOME to 741741</a>
+      <a href="tel:911">🆘 Emergency: 911</a>
+    </div>
+  </section>
+
+  <section class="info-banner">
+    <div class="info-content">
+      <span class="info-icon">ℹ️</span>
+      <div class="info-text">
+        <strong>Note:</strong> Save features use your browser's local storage and are for personal reflection only. 
+        Data is stored on your device and not on our servers. These tools are designed for self-reflection and are not a substitute for professional help.
+      </div>
+    </div>
+  </section>
+
+
+  <header>
+    <h1>🫁 Panic Attack & Hyperventilation Relief</h1>
+    <p>Clinically-proven techniques to manage panic attacks and hyperventilation. These methods are recommended by anxiety specialists and emergency medicine.</p>
+  </header>
+
+  <div class="container">
+    <div class="panic-container">
+      <div class="reassurance-box">
+        <h2>✓ You Are Safe</h2>
+        <p>Panic attacks feel terrifying but are <strong>not dangerous</strong>. They peak within 10 minutes and always pass. Your body is protecting you - it just got the signal wrong.</p>
+      </div>
+
+      <div class="breathing-exercise">
+        <h3>🫁 Box Breathing (Navy SEAL Technique)</h3>
+        <p style="color: var(--text-2); margin-bottom: 1rem;">Used by military and first responders to stay calm under extreme stress</p>
+        
+        <div class="breathing-circle" id="breathCircle">
+          <span class="breath-text" id="breathText">Ready</span>
+        </div>
+        
+        <div class="breath-instruction" id="breathInstruction">Press Start when ready</div>
+        <div class="breath-timer" id="breathTimer">4</div>
+        
+        <div class="controls">
+          <button class="btn btn-calm" id="breathBtn" onclick="toggleBreathing()">Start Box Breathing</button>
+          <button class="btn btn-secondary" onclick="resetBreathing()">Reset</button>
+        </div>
+      </div>
+
+      <div class="hyperventilation-section">
+        <h3>⚠️ Are You Hyperventilating?</h3>
+        <p style="color: var(--text-2); margin-bottom: 1rem;">Hyperventilation occurs when you breathe too fast, expelling too much CO2. This causes many panic symptoms.</p>
+        
+        <div class="symptom-checklist">
+          <div class="symptom-item">😵 Dizziness/lightheadedness</div>
+          <div class="symptom-item">🫁 Shortness of breath</div>
+          <div class="symptom-item">🖐️ Tingling in hands/feet</div>
+          <div class="symptom-item">💓 Racing heart</div>
+          <div class="symptom-item">😰 Chest tightness</div>
+          <div class="symptom-item">🥶 Feeling faint</div>
+        </div>
+
+        <div class="paper-bag-warning">
+          <h4>⚠️ Paper Bag Myth</h4>
+          <p><strong>Do NOT use a paper bag.</strong> This outdated technique can be dangerous if you have asthma, heart problems, or if your symptoms are from a medical emergency. Use controlled breathing instead.</p>
+        </div>
+      </div>
+
+      <div class="technique-section">
+        <h2>🆘 Immediate Relief Techniques</h2>
+
+        <div class="technique-card emergency">
+          <h3>🧊 Cold Water/Ice (Dive Reflex) <span class="science-badge">🔬 ER-Recommended</span></h3>
+          <p>The mammalian dive reflex triggers an immediate parasympathetic response, slowing heart rate by up to 25%.</p>
+          <div class="technique-steps">
+            <ol>
+              <li><strong>Fill a bowl with cold water</strong> (or use ice cubes)</li>
+              <li><strong>Hold your breath</strong> and submerge your face for 15-30 seconds</li>
+              <li><strong>Alternatively:</strong> Hold ice cubes to your cheeks and temples</li>
+              <li><strong>Or:</strong> Splash very cold water on your face repeatedly</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="technique-card emergency">
+          <h3>🫁 Slow Exhale Technique <span class="science-badge">🔬 Clinical</span></h3>
+          <p>For hyperventilation, the key is to <strong>slow down and extend your exhale</strong>. This restores CO2 balance.</p>
+          <div class="technique-steps">
+            <ol>
+              <li><strong>Breathe in through your nose</strong> for 4 counts (not deep - normal breath)</li>
+              <li><strong>Pause briefly</strong> for 1-2 counts</li>
+              <li><strong>Exhale SLOWLY through pursed lips</strong> for 8 counts (like blowing through a straw)</li>
+              <li><strong>Continue for 2-3 minutes</strong> until symptoms decrease</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <h3>🌱 5-4-3-2-1 Grounding <span class="science-badge">🔬 Trauma-Informed</span></h3>
+          <p>Engages your senses to bring you back to the present moment and interrupt the panic cycle.</p>
+          
+          <div class="grounding-visual">
+            <div class="ground-item" onclick="toggleGround(this)">
+              <div class="ground-number">5</div>
+              <div class="ground-sense">See</div>
+              <div class="ground-emoji">👁️</div>
+            </div>
+            <div class="ground-item" onclick="toggleGround(this)">
+              <div class="ground-number">4</div>
+              <div class="ground-sense">Touch</div>
+              <div class="ground-emoji">✋</div>
+            </div>
+            <div class="ground-item" onclick="toggleGround(this)">
+              <div class="ground-number">3</div>
+              <div class="ground-sense">Hear</div>
+              <div class="ground-emoji">👂</div>
+            </div>
+            <div class="ground-item" onclick="toggleGround(this)">
+              <div class="ground-number">2</div>
+              <div class="ground-sense">Smell</div>
+              <div class="ground-emoji">👃</div>
+            </div>
+            <div class="ground-item" onclick="toggleGround(this)">
+              <div class="ground-number">1</div>
+              <div class="ground-sense">Taste</div>
+              <div class="ground-emoji">👅</div>
+            </div>
+          </div>
+          
+          <div class="technique-steps">
+            <ul>
+              <li>Name <strong>5 things you can SEE</strong> around you</li>
+              <li>Name <strong>4 things you can TOUCH</strong> or feel</li>
+              <li>Name <strong>3 things you can HEAR</strong></li>
+              <li>Name <strong>2 things you can SMELL</strong></li>
+              <li>Name <strong>1 thing you can TASTE</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <h3>💪 Muscle Tension Release <span class="science-badge">🔬 PMR</span></h3>
+          <p>Physical tension maintains panic. Releasing it sends safety signals to your brain.</p>
+          <div class="technique-steps">
+            <ol>
+              <li><strong>Make tight fists</strong> - squeeze for 5 seconds, then release completely</li>
+              <li><strong>Push palms together</strong> hard for 5 seconds, then let arms drop</li>
+              <li><strong>Scrunch your face</strong> tight for 5 seconds, then relax completely</li>
+              <li><strong>Notice the contrast</strong> between tension and relaxation</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <h3>🗣️ Verbal Anchoring <span class="science-badge">🔬 CBT</span></h3>
+          <p>Repeat these phrases aloud (or in your mind) to engage your rational brain:</p>
+          <div class="technique-steps">
+            <ul>
+              <li>"This is a panic attack. It will pass."</li>
+              <li>"I am not dying. I am not going crazy."</li>
+              <li>"My body is trying to protect me."</li>
+              <li>"I have survived every panic attack before."</li>
+              <li>"This feeling will peak and then decrease."</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="technique-section">
+        <h2>📊 What's Happening In Your Body</h2>
+        <div class="technique-card">
+          <p><strong>During panic/hyperventilation, your body enters "fight or flight" mode:</strong></p>
+          <div class="technique-steps">
+            <ul>
+              <li><strong>Adrenaline surge</strong> → Racing heart, trembling, sweating</li>
+              <li><strong>Rapid breathing</strong> → Low CO2 → Tingling, dizziness, chest tightness</li>
+              <li><strong>Blood flow shifts</strong> → Cold hands/feet, feeling faint</li>
+              <li><strong>Muscle tension</strong> → Chest pain, difficulty swallowing</li>
+            </ul>
+            <p style="margin-top: 1rem; color: var(--safe-green);"><strong>These symptoms are HARMLESS.</strong> Your body is responding to a false alarm. The techniques above help reset your nervous system.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="science-section">
+        <h3>The Science Behind These Techniques</h3>
+        <p><strong>Box Breathing:</strong> Used by Navy SEALs under combat stress. The equal timing activates the vagus nerve and balances the autonomic nervous system (Ma et al., 2017).</p>
+        <p><strong>Cold Water/Dive Reflex:</strong> Triggers the trigeminal-cardiac reflex, causing immediate heart rate reduction of 10-25% (Gooden, 1994). Recommended in emergency medicine for SVT.</p>
+        <p><strong>Extended Exhale:</strong> Longer exhales than inhales activate the parasympathetic nervous system, reversing hyperventilation symptoms (Jerath et al., 2015).</p>
+        <p><strong>Key Research:</strong></p>
+        <ul>
+          <li>Meuret et al. (2010) - Capnometry-assisted breathing for panic disorder</li>
+          <li>Clark (1986) - Cognitive model of panic attacks</li>
+          <li>Barlow (2002) - Panic Control Treatment protocol</li>
+          <li>NICE Guidelines - Panic disorder treatment recommendations</li>
+        </ul>
+      </div>
+    </div>
+
+    
+    <div class="recommended-resources">
+      <h3>📚 Recommended Resources</h3>
+      <div class="resources-grid">
+        <div class="resource-category">
+          <h4>📖 Books</h4>
+          <ul>
+            <li><a href="https://www.amazon.com/Feeling-Good-New-Mood-Therapy/dp/0380810336" target="_blank" rel="noopener noreferrer">"Feeling Good" by David D. Burns</a> - CBT classic</li>
+            <li><a href="https://www.amazon.com/Body-Keeps-Score-Healing-Trauma/dp/0143127748" target="_blank" rel="noopener noreferrer">"The Body Keeps the Score" by Bessel van der Kolk</a> - Trauma & healing</li>
+            <li><a href="https://www.amazon.com/Atomic-Habits-Proven-Build-Break/dp/0735211299" target="_blank" rel="noopener noreferrer">"Atomic Habits" by James Clear</a> - Building better habits</li>
+            <li><a href="https://www.amazon.com/Mans-Search-Meaning-Viktor-Frankl/dp/0807014273" target="_blank" rel="noopener noreferrer">"Man's Search for Meaning" by Viktor Frankl</a> - Finding purpose</li>
+          </ul>
+        </div>
+        <div class="resource-category">
+          <h4>🎬 Videos & Channels</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/@hubaboratoryermanlab" target="_blank" rel="noopener noreferrer">Huberman Lab</a> - Neuroscience-based mental health</li>
+            <li><a href="https://www.youtube.com/@HealthyGamerGG" target="_blank" rel="noopener noreferrer">HealthyGamer GG</a> - Mental health for modern life</li>
+            <li><a href="https://www.youtube.com/@TherapyinaNutshell" target="_blank" rel="noopener noreferrer">Therapy in a Nutshell</a> - CBT & DBT techniques</li>
+            <li><a href="https://www.ted.com/topics/mental+health" target="_blank" rel="noopener noreferrer">TED Talks: Mental Health</a> - Expert insights</li>
+          </ul>
+        </div>
+        <div class="resource-category">
+          <h4>🎧 Apps & Podcasts</h4>
+          <ul>
+            <li><a href="https://www.headspace.com" target="_blank" rel="noopener noreferrer">Headspace</a> - Guided meditation</li>
+            <li><a href="https://www.calm.com" target="_blank" rel="noopener noreferrer">Calm</a> - Sleep & relaxation</li>
+            <li><a href="https://www.wysa.io" target="_blank" rel="noopener noreferrer">Wysa</a> - AI mental health companion</li>
+            <li><a href="https://podcasts.apple.com/us/podcast/the-happiness-lab-with-dr-laurie-santos/id1474245040" target="_blank" rel="noopener noreferrer">The Happiness Lab Podcast</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <div style="text-align: center;">
+      <a href="/MENTALHEALTHRESOURCES/" class="back-link">← Back to Mental Health Resources</a>
+    </div>
+  </div>
+
+    <section class="disclaimer-section" style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+      <div style="background:var(--surface-1,#1a1a1a);border:1px solid rgba(255,255,255,0.1);border-radius:0.75rem;padding:2rem;margin-top:2rem;">
+        <h3 style="color:var(--pk-500,#ec4899);font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+          <span style="font-size:1.25rem;">&#9878;</span> Medical &amp; Mental Health Disclaimer
+        </h3>
+        <div style="color:var(--text-2,#a3a3a3);font-size:0.85rem;line-height:1.7;">
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Not a Substitute for Professional Medical Advice.</strong>
+            The information provided on this website is for general informational and educational purposes only. It is not intended to be, and should not be interpreted as, medical advice, mental health counseling, diagnosis, or treatment. The content on this site does not replace the relationship between you and your doctor, psychiatrist, psychologist, or other qualified healthcare provider.
+          </p>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">No Doctor-Patient or Therapist-Client Relationship.</strong>
+            Your use of this website does not create a doctor-patient, therapist-client, or any other professional healthcare relationship between you and the operators of this website. We are not a medical provider, mental health clinic, or healthcare facility.
+          </p>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Always Seek Professional Advice.</strong>
+            If you have or suspect you may have a medical or mental health condition, or if you are experiencing psychological distress, always seek the advice of a qualified healthcare provider. Never disregard professional medical advice or delay seeking it because of information you have read on this website.
+          </p>
+          <div style="background:linear-gradient(90deg,#dc2626 0%,#991b1b 100%);color:white;padding:1rem;border-radius:0.5rem;margin:1rem 0;">
+            <p style="margin:0;font-weight:bold;font-size:0.9rem;">
+              &#128680; If you are experiencing a medical or mental health emergency, or if you are having thoughts of suicide or self-harm, seek immediate help:
+            </p>
+            <ul style="margin:0.75rem 0 0 1.5rem;font-size:0.85rem;">
+              <li><strong>Call 911</strong> for immediate emergency assistance</li>
+              <li><strong>Call or text 9-8-8</strong> &mdash; Canada Suicide Crisis Helpline (24/7)</li>
+              <li><strong>Kids Help Phone:</strong> 1-800-668-6868 or text CONNECT to 686868 (ages 5&ndash;29, 24/7)</li>
+              <li><strong>Hope for Wellness Help Line</strong> (Indigenous peoples): 1-855-242-3310 (24/7)</li>
+              <li><strong>Crisis Text Line:</strong> Text HOME to 741741 (24/7)</li>
+            </ul>
+          </div>
+          <p style="margin-bottom:0.75rem;">
+            <strong style="color:var(--text-1,#ffffff);">Limitation of Liability.</strong>
+            While we strive to provide accurate and up-to-date information, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, or suitability of the information contained on this website. Any reliance you place on such information is strictly at your own risk. In no event will we be liable for any loss or damage arising from the use of this website or the information provided herein.
+          </p>
+          <p style="margin:0;font-size:0.8rem;color:var(--text-3,#737373);font-style:italic;">
+            Last updated: February 2026
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+
+  <footer>
+    <p>Mental health resources curated for global access. If you're in crisis, please reach out to local emergency services.</p>
+  </footer>
+
+  <script>
+    // Box Breathing
+    let breathRunning = false;
+    let breathPhase = 'ready';
+    let breathTimer = 4;
+    let breathInterval = null;
+    let cycleCount = 0;
+
+    const breathPhases = [
+      { name: 'inhale', duration: 4, text: 'Breathe In', instruction: 'Slowly breathe in through your nose...' },
+      { name: 'hold', duration: 4, text: 'Hold', instruction: 'Hold your breath gently...' },
+      { name: 'exhale', duration: 4, text: 'Breathe Out', instruction: 'Slowly exhale through your mouth...' },
+      { name: 'hold', duration: 4, text: 'Hold', instruction: 'Hold empty...' }
+    ];
+    let phaseIndex = 0;
+
+    function toggleBreathing() {
+      if (breathRunning) {
+        pauseBreathing();
+      } else {
+        startBreathing();
+      }
+    }
+
+    function startBreathing() {
+      breathRunning = true;
+      document.getElementById('breathBtn').textContent = 'Pause';
+      if (breathPhase === 'ready') {
+        phaseIndex = 0;
+      }
+      runBreathPhase();
+    }
+
+    function pauseBreathing() {
+      breathRunning = false;
+      document.getElementById('breathBtn').textContent = 'Resume';
+      if (breathInterval) clearInterval(breathInterval);
+    }
+
+    function resetBreathing() {
+      breathRunning = false;
+      if (breathInterval) clearInterval(breathInterval);
+      breathPhase = 'ready';
+      phaseIndex = 0;
+      breathTimer = 4;
+      cycleCount = 0;
+      
+      document.getElementById('breathBtn').textContent = 'Start Box Breathing';
+      document.getElementById('breathCircle').className = 'breathing-circle';
+      document.getElementById('breathText').textContent = 'Ready';
+      document.getElementById('breathInstruction').textContent = 'Press Start when ready';
+      document.getElementById('breathTimer').textContent = '4';
+    }
+
+    function runBreathPhase() {
+      if (!breathRunning) return;
+      
+      const phase = breathPhases[phaseIndex];
+      breathTimer = phase.duration;
+      
+      const circle = document.getElementById('breathCircle');
+      circle.className = 'breathing-circle ' + phase.name;
+      
+      document.getElementById('breathText').textContent = phase.text;
+      document.getElementById('breathInstruction').textContent = phase.instruction;
+      document.getElementById('breathTimer').textContent = breathTimer;
+
+      if (breathInterval) clearInterval(breathInterval);
+      
+      breathInterval = setInterval(() => {
+        breathTimer--;
+        document.getElementById('breathTimer').textContent = breathTimer;
+        
+        if (breathTimer <= 0) {
+          clearInterval(breathInterval);
+          phaseIndex = (phaseIndex + 1) % breathPhases.length;
+          
+          if (phaseIndex === 0) {
+            cycleCount++;
+            if (cycleCount >= 4) {
+              document.getElementById('breathInstruction').textContent = 'Great job! You completed 4 cycles. Feel the calm.';
+              document.getElementById('breathBtn').textContent = 'Start Again';
+              breathRunning = false;
+              breathPhase = 'ready';
+              cycleCount = 0;
+              return;
+            }
+          }
+          
+          if (breathRunning) {
+            setTimeout(runBreathPhase, 300);
+          }
+        }
+      }, 1000);
+    }
+
+    // Grounding visual
+    function toggleGround(element) {
+      element.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

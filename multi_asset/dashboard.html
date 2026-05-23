@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Asset Prediction Tournament | Leaderboard</title>
+<style>
+:root {
+  --bg: #0a0a12; --card: #12121e; --card-hover: #1a1a2e; --border: #2a2a3e;
+  --text: #e2e8f0; --dim: #6b7280; --green: #22c55e; --red: #ef4444;
+  --gold: #f59e0b; --blue: #3b82f6; --purple: #8b5cf6; --cyan: #06b6d4;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 { font-size: 28px; background: linear-gradient(135deg, var(--gold), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header p { color: var(--dim); margin-top: 8px; }
+.stats-bar { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+.stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 24px; text-align: center; min-width: 140px; }
+.stat-box .value { font-size: 24px; font-weight: 700; }
+.stat-box .label { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.filters { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+.filter-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.filter-btn:hover { background: var(--card-hover); }
+.filter-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+.section { margin: 30px 0; }
+.section h2 { font-size: 20px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.section h2::after { content: ' ▾'; font-size: 14px; color: var(--dim); }
+.section.collapsed h2::after { content: ' ▸'; }
+.section.collapsed > *:not(h2) { display: none !important; }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 24px; margin-bottom: 20px; }
+.toc a { color: var(--blue); text-decoration: none; font-size: 14px; display: block; padding: 4px 0; }
+.toc a:hover { color: var(--cyan); text-decoration: underline; }
+table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; }
+th { background: #1a1a2e; padding: 12px 10px; text-align: left; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; }
+th:hover { color: var(--text); }
+td { padding: 10px; border-top: 1px solid var(--border); font-size: 13px; }
+tr:hover { background: var(--card-hover); }
+.wr-cell { font-weight: 700; }
+.wr-good { color: var(--green); }
+.wr-mid { color: var(--gold); }
+.wr-bad { color: var(--red); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-futures { background: #1e3a5f; color: var(--cyan); }
+.badge-equity { background: #1e3a1e; color: var(--green); }
+.badge-forex { background: #3a2a1e; color: var(--gold); }
+.badge-etf { background: #2a1e3a; color: var(--purple); }
+.badge-penny { background: #3a1e1e; color: var(--red); }
+.badge-crypto { background: #1e2a3a; color: #60a5fa; }
+.pick-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.pick-card:hover { background: var(--card-hover); }
+.pick-symbol { font-size: 16px; font-weight: 700; }
+.pick-dir { font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.pick-dir.long { background: #1a3a1a; color: var(--green); }
+.pick-dir.short { background: #3a1a1a; color: var(--red); }
+.pick-meta { font-size: 12px; color: var(--dim); }
+.pick-pnl { font-size: 16px; font-weight: 700; }
+.progress-log { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; max-height: 400px; overflow-y: auto; }
+.log-entry { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.log-entry:last-child { border-bottom: none; }
+.log-time { color: var(--dim); font-size: 11px; }
+.refresh-btn { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.refresh-btn:hover { background: #2563eb; }
+@media (max-width: 768px) { .stats-bar { flex-direction: column; align-items: center; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Multi-Asset Prediction Tournament</h1>
+  <p>Real-time leaderboard — Backtest vs Forward-Test Performance by Asset Class</p>
+  <p style="margin-top:4px;font-size:12px;color:var(--dim);" id="lastUpdate"></p>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All Classes</button>
+  <button class="filter-btn" data-filter="FUTURES" onclick="setFilter('FUTURES')">Futures</button>
+  <button class="filter-btn" data-filter="EQUITY" onclick="setFilter('EQUITY')">Stocks</button>
+  <button class="filter-btn" data-filter="FOREX" onclick="setFilter('FOREX')">Forex</button>
+  <button class="filter-btn" data-filter="ETF" onclick="setFilter('ETF')">ETFs</button>
+  <button class="filter-btn" data-filter="PENNY_STOCK" onclick="setFilter('PENNY_STOCK')">Penny</button>
+</div>
+
+<!-- Table of Contents -->
+<div class="toc" id="toc">
+  <strong style="font-size:15px;">Table of Contents</strong>
+  <a href="#sec-active">1. Active Picks (Forward Testing)</a>
+  <a href="#sec-closed">2. Closed Picks (Realized P&L)</a>
+  <a href="#sec-hyperopt">3. Hyperparameter Optimization Results</a>
+  <a href="#sec-bt">4. Backtest Leaderboard (Strategy :: Symbol)</a>
+  <a href="#sec-summary">5. Asset Class Summary</a>
+  <a href="#sec-analytics">6. Strategy Performance Analytics</a>
+  <a href="#sec-risk">7. Asset Class Risk / Predictability Matrix</a>
+  <a href="#sec-log">8. Session Progress Log</a>
+</div>
+
+<div class="section" id="sec-active">
+  <h2 onclick="toggleSection('sec-active')">1. Active Picks (Forward Testing)</h2>
+  <div class="filters" style="margin-bottom:12px;">
+    <button class="filter-btn fp-filter active" onclick="setFPSort('default')">Default</button>
+    <button class="filter-btn fp-filter" onclick="setFPSort('pnl_desc')">PnL ↓</button>
+    <button class="filter-btn fp-filter" onclick="setFPSort('pnl_asc')">PnL ↑</button>
+    <button class="filter-btn fp-filter" onclick="setFPSort('confidence')">Confidence ↓</button>
+  </div>
+  <div id="activePicks"></div>
+</div>
+
+<div class="section" id="sec-closed">
+  <h2 onclick="toggleSection('sec-closed')">2. Closed Picks (Realized P&L)</h2>
+  <div id="closedPicks"></div>
+</div>
+
+<div class="section" id="sec-hyperopt">
+  <h2 onclick="toggleSection('sec-hyperopt')">3. Hyperparameter Optimization Results</h2>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:16px;">Exhaustive parameter sweep across 4 strategies × 5 asset classes. Shows optimal TP/SL and indicator settings per symbol.</p>
+  <div id="hyperoptResults"></div>
+</div>
+
+<div class="section" id="sec-bt">
+  <h2 onclick="toggleSection('sec-bt')">4. Backtest Leaderboard (Strategy :: Symbol)</h2>
+  <table id="btTable">
+    <thead>
+      <tr>
+        <th onclick="sortBT('key')">Strategy :: Symbol</th>
+        <th onclick="sortBT('asset_class')">Class</th>
+        <th onclick="sortBT('trades')">Trades</th>
+        <th onclick="sortBT('win_rate')">Win Rate</th>
+        <th onclick="sortBT('sharpe')">Sharpe</th>
+        <th onclick="sortBT('sortino')">Sortino</th>
+        <th onclick="sortBT('profit_factor')">Profit Factor</th>
+        <th onclick="sortBT('total_return')">Return</th>
+        <th onclick="sortBT('max_dd')">Max DD</th>
+        <th onclick="sortBT('expectancy')">Expectancy</th>
+      </tr>
+    </thead>
+    <tbody id="btBody"></tbody>
+  </table>
+</div>
+
+<div class="section" id="sec-summary">
+  <h2 onclick="toggleSection('sec-summary')">5. Asset Class Summary</h2>
+  <table id="summaryTable">
+    <thead><tr><th>Asset Class</th><th>Active</th><th>Closed</th><th>BT Avg WR</th><th>BT Avg Sharpe</th><th>BT Avg Sortino</th><th>Avg PF</th><th>FT Win Rate</th><th>Status</th></tr></thead>
+    <tbody id="summaryBody"></tbody>
+  </table>
+</div>
+
+<div class="section" id="sec-analytics">
+  <h2 onclick="toggleSection('sec-analytics')">6. Strategy Performance Analytics</h2>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:16px;">Top strategies ranked by composite score. Filter by asset class to see predictability per market.</p>
+  <div class="filters" style="margin-bottom:12px;">
+    <button class="filter-btn sa-filter active" data-safilter="all" onclick="setSAFilter('all')">All Classes</button>
+    <button class="filter-btn sa-filter" data-safilter="FUTURES" onclick="setSAFilter('FUTURES')">Futures</button>
+    <button class="filter-btn sa-filter" data-safilter="EQUITY" onclick="setSAFilter('EQUITY')">Stocks</button>
+    <button class="filter-btn sa-filter" data-safilter="FOREX" onclick="setSAFilter('FOREX')">Forex</button>
+    <button class="filter-btn sa-filter" data-safilter="ETF" onclick="setSAFilter('ETF')">ETFs</button>
+    <button class="filter-btn sa-filter" data-safilter="PENNY_STOCK" onclick="setSAFilter('PENNY_STOCK')">Penny</button>
+    <button class="filter-btn sa-filter" data-safilter="MEMECOIN" onclick="setSAFilter('MEMECOIN')">Meme Coins</button>
+    <button class="filter-btn sa-filter" data-safilter="CRYPTO" onclick="setSAFilter('CRYPTO')">Crypto</button>
+  </div>
+
+  <!-- Predictability Score Card -->
+  <div id="predictabilityCard" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;"></div>
+
+  <!-- Top Strategy / Top 3 / Top 5 -->
+  <div id="topStrategies" style="margin-bottom:20px;"></div>
+
+  <!-- Strategy-Level Aggregate Table -->
+  <table id="saTable">
+    <thead>
+      <tr>
+        <th onclick="sortSA('strategy')">Strategy</th>
+        <th onclick="sortSA('symbols')">Symbols Tested</th>
+        <th onclick="sortSA('total_trades')">Total Trades</th>
+        <th onclick="sortSA('avg_wr')">Avg Win Rate</th>
+        <th onclick="sortSA('avg_sharpe')">Avg Sharpe</th>
+        <th onclick="sortSA('avg_sortino')">Avg Sortino</th>
+        <th onclick="sortSA('avg_pf')">Avg PF</th>
+        <th onclick="sortSA('best_wr')">Best WR</th>
+        <th onclick="sortSA('composite')">Composite Score</th>
+        <th>Certainty</th>
+      </tr>
+    </thead>
+    <tbody id="saBody"></tbody>
+  </table>
+</div>
+
+<div class="section" id="sec-risk">
+  <h2 onclick="toggleSection('sec-risk')">7. Asset Class Risk / Predictability Matrix</h2>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:16px;">How predictable is each asset class based on our backtests? Uses # of trades, win rate consistency, Sortino, and drawdown to score.</p>
+  <div id="riskMatrix"></div>
+</div>
+
+<div class="section" id="sec-log">
+  <h2 onclick="toggleSection('sec-log')">8. Session Progress Log</h2>
+  <div class="progress-log" id="progressLog">
+    <div class="log-entry"><span class="log-time">Loading...</span></div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:30px 0;">
+  <button class="refresh-btn" onclick="loadAll()">Refresh Data</button>
+  <p style="margin-top:10px;font-size:12px;color:var(--dim);">
+    <strong>Metrics:</strong> Sharpe (risk-adj return) | Sortino (downside-only risk) | PF (gross wins/losses, >1.5 strong) | Expectancy (avg per-trade edge)<br>
+    Data: <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/multi_asset/data/backtest_results.json" style="color:var(--blue);">backtest</a> |
+    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/multi_asset/data/multi_asset_picks.json" style="color:var(--blue);">active picks</a> |
+    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/multi_asset/data/multi_asset_closed.json" style="color:var(--blue);">closed picks</a> |
+    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/multi_asset/data/hyperopt_results.json" style="color:var(--cyan);">hyperopt results</a> |
+    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/multi_asset/data/optimal_params.json" style="color:var(--cyan);">optimal params</a><br>
+    Related: <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" style="color:var(--purple);">Audit Dashboard</a> |
+    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/monitor/" style="color:var(--green);">Cross-System Monitor</a>
+  </p>
+</div>
+
+<script>
+const BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/multi_asset/data/';
+let btData = {}, activePicks = [], closedPicks = [], hyperoptData = null, currentFilter = 'all';
+let btSortKey = 'win_rate', btSortAsc = false;
+let fpSortMode = 'default';
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function setFPSort(mode) {
+  fpSortMode = mode;
+  document.querySelectorAll('.fp-filter').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderPicks(activePicks, 'activePicks', false);
+}
+
+const CLASS_BADGE = {
+  FUTURES: 'badge-futures', EQUITY: 'badge-equity', FOREX: 'badge-forex',
+  ETF: 'badge-etf', PENNY_STOCK: 'badge-penny', CRYPTO: 'badge-crypto', MEMECOIN: 'badge-crypto'
+};
+
+const CAT_MAP = {
+  futures: 'FUTURES', stock: 'EQUITY', forex: 'FOREX',
+  etf: 'ETF', penny: 'PENNY_STOCK', crypto: 'CRYPTO', meme: 'MEMECOIN'
+};
+
+function inferClass(key, pick) {
+  if (pick && pick.asset_class) return pick.asset_class;
+  if (pick && pick.category) return CAT_MAP[pick.category] || 'EQUITY';
+  const sym = key.split('::')[1] || '';
+  if (sym.endsWith('=F')) return 'FUTURES';
+  if (['SPY','QQQ','XLK','XLF','XLE','GLD','TLT','IWM','SLV','HYG'].includes(sym)) return 'ETF';
+  if (['EURUSD=X','USDJPY=X','GBPUSD=X','AUDUSD=X','NZDUSD=X'].includes(sym)) return 'FOREX';
+  if (['SOFI','NIO','PLTR','MARA','RIOT','IONQ'].includes(sym)) return 'PENNY_STOCK';
+  return 'EQUITY';
+}
+
+function wrClass(wr) { return wr >= 0.6 ? 'wr-good' : wr >= 0.45 ? 'wr-mid' : 'wr-bad'; }
+function pnlColor(pnl) { return pnl > 0 ? 'color:var(--green)' : pnl < 0 ? 'color:var(--red)' : ''; }
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  renderAll();
+}
+
+function sortBT(key) {
+  if (btSortKey === key) btSortAsc = !btSortAsc;
+  else { btSortKey = key; btSortAsc = false; }
+  renderBT();
+}
+
+function renderStats() {
+  const total = activePicks.length;
+  const closedCount = closedPicks.length;
+  const wins = closedPicks.filter(p => (p.pnl_pct || 0) > 0).length;
+  const wr = closedCount > 0 ? (wins / closedCount * 100).toFixed(1) : '—';
+  const classes = new Set(activePicks.map(p => p.asset_class || 'UNKNOWN'));
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-box"><div class="value">${total}</div><div class="label">Active Picks</div></div>
+    <div class="stat-box"><div class="value">${closedCount}</div><div class="label">Closed Picks</div></div>
+    <div class="stat-box"><div class="value">${wr}%</div><div class="label">Forward WR</div></div>
+    <div class="stat-box"><div class="value">${Object.keys(btData).length}</div><div class="label">Backtested Pairs</div></div>
+    <div class="stat-box"><div class="value">${classes.size}</div><div class="label">Asset Classes</div></div>
+  `;
+}
+
+function renderBT() {
+  let entries = Object.entries(btData).map(([key, v]) => ({
+    key, ...v, asset_class: inferClass(key, null)
+  }));
+
+  if (currentFilter !== 'all') entries = entries.filter(e => e.asset_class === currentFilter);
+
+  entries.sort((a, b) => {
+    let va = a[btSortKey], vb = b[btSortKey];
+    if (typeof va === 'string') return btSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return btSortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('btBody');
+  tbody.innerHTML = entries.map(e => {
+    const sortino = e.sortino || 0;
+    const pf = e.profit_factor || 0;
+    const exp = e.expectancy || 0;
+    return `
+    <tr>
+      <td><strong>${e.key}</strong></td>
+      <td><span class="badge ${CLASS_BADGE[e.asset_class] || ''}">${e.asset_class}</span></td>
+      <td>${e.trades}</td>
+      <td class="wr-cell ${wrClass(e.win_rate)}">${(e.win_rate * 100).toFixed(1)}%</td>
+      <td style="${pnlColor(e.sharpe)}">${e.sharpe.toFixed(2)}</td>
+      <td style="${pnlColor(sortino)}">${sortino.toFixed(2)}</td>
+      <td style="${pnlColor(pf - 1)}">${pf.toFixed(2)}</td>
+      <td style="${pnlColor(e.total_return)}">${(e.total_return * 100).toFixed(1)}%</td>
+      <td style="color:var(--red)">${(e.max_dd * 100).toFixed(1)}%</td>
+      <td style="${pnlColor(exp)}">${(exp * 100).toFixed(2)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPicks(picks, containerId, showPnl) {
+  let filtered = [...picks];
+  if (currentFilter !== 'all') filtered = filtered.filter(p => (p.asset_class || CAT_MAP[p.category] || 'EQUITY') === currentFilter);
+
+  // Sort active picks
+  if (containerId === 'activePicks' && fpSortMode !== 'default') {
+    filtered.sort((a, b) => {
+      const aPnl = a.unrealized_pnl_pct || a.pnl_pct || 0;
+      const bPnl = b.unrealized_pnl_pct || b.pnl_pct || 0;
+      if (fpSortMode === 'pnl_desc') return bPnl - aPnl;
+      if (fpSortMode === 'pnl_asc') return aPnl - bPnl;
+      if (fpSortMode === 'confidence') return (b.confidence || 0) - (a.confidence || 0);
+      return 0;
+    });
+  }
+
+  const container = document.getElementById(containerId);
+  if (!filtered.length) { container.innerHTML = '<p style="color:var(--dim);padding:20px;">No picks in this category yet.</p>'; return; }
+
+  container.innerHTML = filtered.map(p => {
+    const ac = p.asset_class || CAT_MAP[p.category] || 'EQUITY';
+    const pnl = p.unrealized_pnl_pct || p.pnl_pct || 0;
+    const pnlStr = (pnl * 100).toFixed(2) + '%';
+    const dir = (p.direction || 'LONG').toUpperCase();
+    return `
+      <div class="pick-card">
+        <div>
+          <span class="pick-symbol">${p.symbol}</span>
+          <span class="pick-dir ${dir.toLowerCase()}">${dir}</span>
+          <span class="badge ${CLASS_BADGE[ac] || ''}" style="margin-left:6px;">${ac}</span>
+        </div>
+        <div class="pick-meta">
+          ${p.strategy || '—'} | Entry: $${(p.entry_price||0).toFixed(2)} | TP: $${(p.take_profit||0).toFixed(2)} | SL: $${(p.stop_loss||0).toFixed(2)}
+          ${p.exit_reason ? ' | Exit: ' + p.exit_reason : ''}
+        </div>
+        <div class="pick-pnl" style="${pnlColor(pnl)}">${pnl >= 0 ? '+' : ''}${pnlStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSummary() {
+  const classes = ['FUTURES', 'EQUITY', 'FOREX', 'ETF', 'PENNY_STOCK'];
+  const tbody = document.getElementById('summaryBody');
+
+  tbody.innerHTML = classes.map(ac => {
+    const active = activePicks.filter(p => (p.asset_class || CAT_MAP[p.category]) === ac);
+    const closed = closedPicks.filter(p => (p.asset_class || CAT_MAP[p.category]) === ac);
+    const btEntries = Object.entries(btData).filter(([k]) => inferClass(k, null) === ac);
+    const avgWR = btEntries.length ? (btEntries.reduce((s, [, v]) => s + v.win_rate, 0) / btEntries.length) : 0;
+    const avgSharpe = btEntries.length ? (btEntries.reduce((s, [, v]) => s + v.sharpe, 0) / btEntries.length) : 0;
+    const avgSortino = btEntries.length ? (btEntries.reduce((s, [, v]) => s + (v.sortino || 0), 0) / btEntries.length) : 0;
+    const avgPF = btEntries.length ? (btEntries.reduce((s, [, v]) => s + (v.profit_factor || 0), 0) / btEntries.length) : 0;
+    const ftWins = closed.filter(p => (p.pnl_pct || 0) > 0).length;
+    const ftWR = closed.length > 0 ? ftWins / closed.length : null;
+    const status = active.length > 0 ? 'ACTIVE' : 'PENDING';
+
+    return `
+      <tr>
+        <td><span class="badge ${CLASS_BADGE[ac]}">${ac}</span></td>
+        <td>${active.length}</td>
+        <td>${closed.length}</td>
+        <td class="wr-cell ${wrClass(avgWR)}">${(avgWR * 100).toFixed(1)}%</td>
+        <td style="${pnlColor(avgSharpe)}">${avgSharpe.toFixed(2)}</td>
+        <td style="${pnlColor(avgSortino)}">${avgSortino.toFixed(2)}</td>
+        <td style="${pnlColor(avgPF - 1)}">${avgPF.toFixed(2)}</td>
+        <td class="wr-cell ${ftWR !== null ? wrClass(ftWR) : ''}">${ftWR !== null ? (ftWR * 100).toFixed(1) + '%' : '—'}</td>
+        <td style="color:${status === 'ACTIVE' ? 'var(--green)' : 'var(--gold)'}">${status}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderProgressLog() {
+  const log = document.getElementById('progressLog');
+  const now = new Date().toLocaleString('en-US', {timeZone: 'America/New_York'});
+  const entries = [
+    { time: now, msg: `Dashboard loaded. ${activePicks.length} active picks across ${new Set(activePicks.map(p=>p.asset_class)).size} asset classes.` },
+    { time: now, msg: `Backtest data: ${Object.keys(btData).length} strategy::symbol pairs evaluated.` },
+  ];
+
+  // Add per-class summaries
+  ['FUTURES', 'EQUITY', 'FOREX', 'ETF', 'PENNY_STOCK'].forEach(ac => {
+    const count = activePicks.filter(p => p.asset_class === ac).length;
+    const btCount = Object.entries(btData).filter(([k]) => inferClass(k, null) === ac).length;
+    if (count > 0 || btCount > 0)
+      entries.push({ time: now, msg: `${ac}: ${count} active picks, ${btCount} backtested pairs` });
+  });
+
+  if (closedPicks.length > 0) {
+    closedPicks.forEach(p => {
+      entries.push({ time: p.closed_at || now, msg: `CLOSED: ${p.symbol} ${p.direction} — ${p.exit_reason} (PnL: ${((p.pnl_pct||0)*100).toFixed(2)}%)` });
+    });
+  }
+
+  log.innerHTML = entries.map(e => `
+    <div class="log-entry">
+      <span class="log-time">${e.time}</span> — ${e.msg}
+    </div>
+  `).join('');
+}
+
+let saFilter = 'all', saSortKey = 'composite', saSortAsc = false;
+
+function setSAFilter(f) {
+  saFilter = f;
+  document.querySelectorAll('.sa-filter').forEach(b => b.classList.toggle('active', b.dataset.safilter === f));
+  renderStrategyAnalytics();
+}
+
+function sortSA(key) {
+  if (saSortKey === key) saSortAsc = !saSortAsc;
+  else { saSortKey = key; saSortAsc = false; }
+  renderStrategyAnalytics();
+}
+
+function computeStrategyAggregates() {
+  // Group backtest results by strategy name, filtered by selected asset class
+  const byStrat = {};
+  Object.entries(btData).forEach(([key, v]) => {
+    const parts = key.split('::');
+    const strat = parts[0] || key;
+    const ac = inferClass(key, null);
+    if (saFilter !== 'all' && ac !== saFilter) return;
+
+    if (!byStrat[strat]) byStrat[strat] = { entries: [], symbols: new Set() };
+    byStrat[strat].entries.push({ ...v, asset_class: ac, symbol: parts[1] || '' });
+    byStrat[strat].symbols.add(parts[1] || '');
+  });
+
+  return Object.entries(byStrat).map(([strat, data]) => {
+    const e = data.entries;
+    const totalTrades = e.reduce((s, x) => s + x.trades, 0);
+    const avgWR = e.reduce((s, x) => s + x.win_rate, 0) / e.length;
+    const avgSharpe = e.reduce((s, x) => s + x.sharpe, 0) / e.length;
+    const avgSortino = e.reduce((s, x) => s + (x.sortino || 0), 0) / e.length;
+    const avgPF = e.reduce((s, x) => s + (x.profit_factor || 0), 0) / e.length;
+    const bestWR = Math.max(...e.map(x => x.win_rate));
+    const avgDD = e.reduce((s, x) => s + x.max_dd, 0) / e.length;
+    // Composite score: WR*35 + Sortino*20 + Sharpe*15 + PF*15 + (1-DD)*15
+    const composite = (avgWR * 35) + (Math.min(avgSortino, 5)/5 * 20) + (Math.min(avgSharpe, 5)/5 * 15) +
+                      (Math.min(avgPF, 3)/3 * 15) + ((1 - Math.min(avgDD, 1)) * 15);
+
+    // Certainty: based on # trades and consistency (std of win rates)
+    const wrStd = e.length > 1 ? Math.sqrt(e.reduce((s, x) => s + Math.pow(x.win_rate - avgWR, 2), 0) / e.length) : 0.5;
+    const tradeFactor = Math.min(totalTrades / 50, 1); // more trades = more certain
+    const consistFactor = Math.max(0, 1 - wrStd * 3); // lower std = more certain
+    const certainty = tradeFactor * 0.6 + consistFactor * 0.4;
+
+    return {
+      strategy: strat, symbols: data.symbols.size, total_trades: totalTrades,
+      avg_wr: avgWR, avg_sharpe: avgSharpe, avg_sortino: avgSortino, avg_pf: avgPF,
+      best_wr: bestWR, avg_dd: avgDD, composite, certainty
+    };
+  });
+}
+
+function certaintyLabel(c) {
+  if (c >= 0.8) return '<span style="color:var(--green);font-weight:700">HIGH</span>';
+  if (c >= 0.5) return '<span style="color:var(--gold);font-weight:700">MEDIUM</span>';
+  return '<span style="color:var(--red);font-weight:700">LOW</span>';
+}
+
+function renderPredictabilityCard(aggs) {
+  const card = document.getElementById('predictabilityCard');
+  if (!aggs.length) { card.innerHTML = '<p style="color:var(--dim)">No data for this asset class.</p>'; return; }
+
+  const sorted = [...aggs].sort((a, b) => b.composite - a.composite);
+  const top1 = sorted[0];
+  const top3 = sorted.slice(0, 3);
+  const totalTrades = aggs.reduce((s, x) => s + x.total_trades, 0);
+  const overallWR = aggs.reduce((s, x) => s + x.avg_wr * x.total_trades, 0) / (totalTrades || 1);
+  const overallSortino = aggs.reduce((s, x) => s + x.avg_sortino, 0) / aggs.length;
+  const overallCertainty = aggs.reduce((s, x) => s + x.certainty, 0) / aggs.length;
+
+  const label = saFilter === 'all' ? 'All Asset Classes' : saFilter;
+  card.innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <div style="font-size:14px;color:var(--dim);">Predictability Score — ${label}</div>
+        <div style="font-size:36px;font-weight:800;color:${overallWR>=0.6?'var(--green)':overallWR>=0.45?'var(--gold)':'var(--red)'}">${(overallWR*100).toFixed(1)}%</div>
+        <div style="font-size:12px;color:var(--dim);">weighted avg win rate</div>
+      </div>
+      <div>
+        <div style="font-size:14px;color:var(--dim);">Avg Sortino</div>
+        <div style="font-size:28px;font-weight:700;color:${overallSortino>=1?'var(--green)':'var(--gold)'}">${overallSortino.toFixed(2)}</div>
+      </div>
+      <div>
+        <div style="font-size:14px;color:var(--dim);">Total Trades</div>
+        <div style="font-size:28px;font-weight:700;">${totalTrades}</div>
+      </div>
+      <div>
+        <div style="font-size:14px;color:var(--dim);">Strategies Tested</div>
+        <div style="font-size:28px;font-weight:700;">${aggs.length}</div>
+      </div>
+      <div>
+        <div style="font-size:14px;color:var(--dim);">Certainty</div>
+        <div style="font-size:28px;font-weight:700;">${certaintyLabel(overallCertainty)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTopStrategies(aggs) {
+  const container = document.getElementById('topStrategies');
+  if (!aggs.length) { container.innerHTML = ''; return; }
+
+  const sorted = [...aggs].sort((a, b) => b.composite - a.composite);
+  const medals = ['🥇', '🥈', '🥉', '4th', '5th'];
+
+  container.innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      ${sorted.slice(0, 5).map((s, i) => `
+        <div style="background:var(--card);border:1px solid ${i===0?'var(--gold)':i<3?'var(--border)':'var(--border)'};border-radius:10px;padding:14px;flex:1;min-width:180px;">
+          <div style="font-size:20px;margin-bottom:4px;">${medals[i]}</div>
+          <div style="font-size:14px;font-weight:700;">${s.strategy}</div>
+          <div style="font-size:12px;color:var(--dim);margin:4px 0;">${s.symbols} symbols · ${s.total_trades} trades</div>
+          <div style="font-size:18px;font-weight:700;" class="wr-cell ${wrClass(s.avg_wr)}">${(s.avg_wr*100).toFixed(1)}% WR</div>
+          <div style="font-size:11px;color:var(--dim);">Sharpe ${s.avg_sharpe.toFixed(2)} · Sortino ${s.avg_sortino.toFixed(2)} · PF ${s.avg_pf.toFixed(2)}</div>
+          <div style="font-size:11px;margin-top:4px;">Certainty: ${certaintyLabel(s.certainty)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderStrategyAnalytics() {
+  const aggs = computeStrategyAggregates();
+  renderPredictabilityCard(aggs);
+  renderTopStrategies(aggs);
+
+  let sorted = [...aggs];
+  sorted.sort((a, b) => {
+    let va = a[saSortKey], vb = b[saSortKey];
+    if (typeof va === 'string') return saSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return saSortAsc ? va - vb : vb - va;
+  });
+
+  document.getElementById('saBody').innerHTML = sorted.map(s => `
+    <tr>
+      <td><strong>${s.strategy}</strong></td>
+      <td>${s.symbols}</td>
+      <td>${s.total_trades}</td>
+      <td class="wr-cell ${wrClass(s.avg_wr)}">${(s.avg_wr*100).toFixed(1)}%</td>
+      <td style="${pnlColor(s.avg_sharpe)}">${s.avg_sharpe.toFixed(2)}</td>
+      <td style="${pnlColor(s.avg_sortino)}">${s.avg_sortino.toFixed(2)}</td>
+      <td style="${pnlColor(s.avg_pf-1)}">${s.avg_pf.toFixed(2)}</td>
+      <td class="wr-cell ${wrClass(s.best_wr)}">${(s.best_wr*100).toFixed(1)}%</td>
+      <td style="font-weight:700;${pnlColor(s.composite-50)}">${s.composite.toFixed(1)}</td>
+      <td>${certaintyLabel(s.certainty)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderRiskMatrix() {
+  const classes = ['FUTURES', 'EQUITY', 'FOREX', 'ETF', 'PENNY_STOCK', 'MEMECOIN', 'CRYPTO'];
+  const matrix = document.getElementById('riskMatrix');
+
+  const rows = classes.map(ac => {
+    const entries = Object.entries(btData).filter(([k]) => inferClass(k, null) === ac);
+    if (!entries.length) return { ac, totalTrades: 0, avgWR: 0, avgSortino: 0, avgDD: 0, predictability: 'NO DATA', score: 0, color: 'var(--dim)' };
+
+    const totalTrades = entries.reduce((s, [, v]) => s + v.trades, 0);
+    const avgWR = entries.reduce((s, [, v]) => s + v.win_rate, 0) / entries.length;
+    const avgSortino = entries.reduce((s, [, v]) => s + (v.sortino || 0), 0) / entries.length;
+    const avgDD = entries.reduce((s, [, v]) => s + v.max_dd, 0) / entries.length;
+    const avgPF = entries.reduce((s, [, v]) => s + (v.profit_factor || 0), 0) / entries.length;
+
+    // Score 0-100: WR(30) + trades(20) + sortino(20) + low DD(15) + PF(15)
+    const score = (avgWR * 30) + (Math.min(totalTrades / 100, 1) * 20) +
+                  (Math.min(avgSortino, 5)/5 * 20) + ((1 - Math.min(avgDD, 1)) * 15) +
+                  (Math.min(avgPF, 3)/3 * 15);
+
+    let predictability, color;
+    if (score >= 60) { predictability = 'HIGH'; color = 'var(--green)'; }
+    else if (score >= 40) { predictability = 'MEDIUM-HIGH'; color = '#86efac'; }
+    else if (score >= 25) { predictability = 'MEDIUM'; color = 'var(--gold)'; }
+    else if (score >= 15) { predictability = 'LOW-MEDIUM'; color = '#fb923c'; }
+    else { predictability = 'LOW'; color = 'var(--red)'; }
+
+    const activeCt = activePicks.filter(p => (p.asset_class || CAT_MAP[p.category]) === ac).length;
+    const closedCt = closedPicks.filter(p => (p.asset_class || CAT_MAP[p.category]) === ac).length;
+
+    return { ac, totalTrades, avgWR, avgSortino, avgDD, avgPF, predictability, score, color, entries: entries.length, activeCt, closedCt };
+  });
+
+  rows.sort((a, b) => b.score - a.score);
+
+  matrix.innerHTML = `<table><thead><tr>
+    <th>Asset Class</th><th>BT Pairs</th><th>Total Trades</th><th>Avg WR</th><th>Avg Sortino</th><th>Avg Max DD</th>
+    <th>Active</th><th>Closed</th><th>Predictability</th><th>Score</th>
+  </tr></thead><tbody>${rows.map(r => `
+    <tr>
+      <td><span class="badge ${CLASS_BADGE[r.ac] || ''}">${r.ac}</span></td>
+      <td>${r.entries || 0}</td>
+      <td>${r.totalTrades}</td>
+      <td class="wr-cell ${wrClass(r.avgWR)}">${r.totalTrades ? (r.avgWR*100).toFixed(1)+'%' : '—'}</td>
+      <td style="${pnlColor(r.avgSortino)}">${r.totalTrades ? r.avgSortino.toFixed(2) : '—'}</td>
+      <td style="color:var(--red)">${r.totalTrades ? (r.avgDD*100).toFixed(1)+'%' : '—'}</td>
+      <td>${r.activeCt || 0}</td>
+      <td>${r.closedCt || 0}</td>
+      <td style="color:${r.color};font-weight:700">${r.predictability}</td>
+      <td style="font-weight:700">${r.score.toFixed(1)}</td>
+    </tr>
+  `).join('')}</tbody></table>`;
+}
+
+function renderHyperopt() {
+  const container = document.getElementById('hyperoptResults');
+  if (!hyperoptData || !hyperoptData.patterns) {
+    container.innerHTML = '<p style="color:var(--dim)">Loading hyperopt data...</p>';
+    return;
+  }
+
+  const patterns = hyperoptData.patterns;
+  const entries = Object.entries(patterns).sort((a, b) => (b[1].best?.fitness || 0) - (a[1].best?.fitness || 0));
+
+  // Filter by current asset class
+  let filtered = entries;
+  if (currentFilter !== 'all') {
+    filtered = entries.filter(([key]) => key.toUpperCase().includes(currentFilter.toLowerCase()));
+  }
+
+  let html = `<div style="margin-bottom:12px;font-size:13px;color:var(--dim)">
+    ${hyperoptData.total_configs_tested} viable configs tested | Mode: ${hyperoptData.mode} | Period: ${hyperoptData.period}
+  </div>`;
+
+  html += `<table><thead><tr>
+    <th>Strategy :: Class</th><th>Best Symbol</th><th>Win Rate</th><th>Trades</th>
+    <th>Sharpe</th><th>Sortino</th><th>PF</th><th>Fitness</th>
+    <th>Optimal SL</th><th>Optimal TP</th><th>Configs Tested</th>
+  </tr></thead><tbody>`;
+
+  filtered.forEach(([key, p]) => {
+    const b = p.best || {};
+    const wrCls = (b.win_rate || 0) >= 0.6 ? 'wr-good' : (b.win_rate || 0) >= 0.45 ? 'wr-mid' : 'wr-bad';
+    const slRange = (p.optimal_sl_range || [0, 0]).map(v => (v * 100).toFixed(1) + '%').join(' to ');
+    const tpRange = (p.optimal_tp_range || [0, 0]).map(v => (v * 100).toFixed(1) + '%').join(' to ');
+
+    html += `<tr>
+      <td><strong>${key}</strong></td>
+      <td>${b.symbol || '—'}</td>
+      <td class="wr-cell ${wrCls}">${b.win_rate ? (b.win_rate * 100).toFixed(1) + '%' : '—'}</td>
+      <td>${b.trades || 0}</td>
+      <td style="${pnlColor(b.sharpe || 0)}">${(b.sharpe || 0).toFixed(2)}</td>
+      <td style="${pnlColor(b.sortino || 0)}">${(b.sortino || 0).toFixed(2)}</td>
+      <td style="${pnlColor((b.profit_factor || 0) - 1)}">${(b.profit_factor || 0).toFixed(2)}</td>
+      <td style="font-weight:700">${(b.fitness || 0).toFixed(1)}</td>
+      <td style="color:var(--red)">${slRange}</td>
+      <td style="color:var(--green)">${tpRange}</td>
+      <td>${p.total_configs_tested || 0}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+
+  // Add parameter insights for top 3
+  const top3 = filtered.slice(0, 3);
+  if (top3.length > 0) {
+    html += `<div style="margin-top:16px"><h3 style="font-size:16px;color:var(--cyan);margin-bottom:8px">Parameter Insights (Top 3)</h3>`;
+    top3.forEach(([key, p]) => {
+      if (!p.param_insights || Object.keys(p.param_insights).length === 0) return;
+      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">`;
+      html += `<div style="font-weight:700;margin-bottom:6px">${key} — Best: ${p.best?.symbol} (${(p.best?.win_rate*100||0).toFixed(1)}% WR)</div>`;
+      html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;font-size:12px;color:var(--dim)">`;
+      Object.entries(p.param_insights).forEach(([param, data]) => {
+        html += `<div>${param}: <strong style="color:var(--green)">top avg ${data.top_avg?.toFixed?.(1) || data.top_avg}</strong> vs <span style="color:var(--red)">bottom ${data.bottom_avg?.toFixed?.(1) || data.bottom_avg}</span></div>`;
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function renderAll() {
+  renderStats();
+  renderBT();
+  renderPicks(activePicks, 'activePicks', false);
+  renderPicks(closedPicks, 'closedPicks', true);
+  renderHyperopt();
+  renderSummary();
+  renderStrategyAnalytics();
+  renderRiskMatrix();
+  renderProgressLog();
+}
+
+async function loadAll() {
+  try {
+    const [btRes, activeRes, closedRes, hoRes] = await Promise.all([
+      fetch(BASE + 'backtest_results.json?' + Date.now()),
+      fetch(BASE + 'multi_asset_picks.json?' + Date.now()),
+      fetch(BASE + 'multi_asset_closed.json?' + Date.now()),
+      fetch(BASE + 'hyperopt_results.json?' + Date.now()),
+    ]);
+    if (btRes.ok) btData = await btRes.json();
+    if (activeRes.ok) activePicks = await activeRes.json();
+    if (closedRes.ok) closedPicks = await closedRes.json();
+    if (hoRes.ok) hyperoptData = await hoRes.json();
+  } catch(e) {
+    console.error('Failed to load data:', e);
+    try {
+      const [btRes, activeRes, closedRes, hoRes] = await Promise.all([
+        fetch('data/backtest_results.json?' + Date.now()),
+        fetch('data/multi_asset_picks.json?' + Date.now()),
+        fetch('data/multi_asset_closed.json?' + Date.now()),
+        fetch('data/hyperopt_results.json?' + Date.now()),
+      ]);
+      if (btRes.ok) btData = await btRes.json();
+      if (activeRes.ok) activePicks = await activeRes.json();
+      if (closedRes.ok) closedPicks = await closedRes.json();
+      if (hoRes.ok) hyperoptData = await hoRes.json();
+    } catch(e2) { console.error('Local fallback also failed:', e2); }
+  }
+
+  document.getElementById('lastUpdate').textContent = 'Last updated: ' + new Date().toLocaleString('en-US', {timeZone: 'America/New_York'});
+  renderAll();
+}
+
+loadAll();
+// Auto-refresh every 5 minutes
+setInterval(loadAll, 300000);
+</script>
+</body>
+</html>

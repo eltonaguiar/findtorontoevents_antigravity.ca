@@ -1,0 +1,111 @@
+name: Monthly DNA Tournament
+
+on:
+  schedule:
+    # Run on 1st of every month at 06:00 UTC
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      mutations:
+        description: "Number of mutations to test (default 1000)"
+        required: false
+        default: "1000"
+        type: string
+      symbols:
+        description: "Number of symbols (default 33)"
+        required: false
+        default: "33"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monthly-tournament
+  cancel-in-progress: false
+
+jobs:
+  tournament:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy requests pandas
+
+      - name: Run Mega Mutation Tournament
+        run: |
+          MUTATIONS="${{ github.event.inputs.mutations || '1000' }}"
+          echo "Running tournament with $MUTATIONS mutations..."
+          python genome/mega_mutation_tournament.py --mutations "$MUTATIONS" || {
+            echo "Tournament script failed, trying fallback..."
+            python genome/mega_mutation_tournament.py
+          }
+
+      - name: Build summary
+        run: |
+          echo "##  Monthly DNA Tournament Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          python - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+
+          results = Path("genome/data/tournament_results.json")
+          predict = Path("genome/data/symbol_predictability.json")
+
+          if results.exists():
+              data = json.loads(results.read_text())
+              total = data.get("total_backtests", 0)
+              symbols = data.get("symbols_tested", 0)
+              mutations = data.get("mutations_tested", 0)
+              with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a") as f:
+                  f.write(f"- **Backtests:** {total:,}\n")
+                  f.write(f"- **Symbols:** {symbols}\n")
+                  f.write(f"- **Mutations:** {mutations}\n\n")
+
+          if predict.exists():
+              pdata = json.loads(predict.read_text())
+              rankings = pdata.get("rankings", [])[:5]
+              with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a") as f:
+                  f.write("### Top 5 Predictable Symbols\n\n")
+                  f.write("| Rank | Symbol | Fitness | Robust Count |\n")
+                  f.write("|------|--------|---------|-------------|\n")
+                  for i, r in enumerate(rankings, 1):
+                      f.write(f"| {i} | {r.get('symbol','')} | {r.get('fitness',0):.3f} | {r.get('robust_count',0)} |\n")
+          PYEOF
+
+      - name: Auto-commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            genome/data/tournament_results.json \
+            genome/data/symbol_predictability.json \
+            genome/data/tournament_summary.md || true
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          # issue #141: block conflict-marker commits
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "chore: monthly DNA tournament results $(date +%Y-%m) [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked 2>/dev/null || true
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            git stash pop 2>/dev/null || true
+            sleep ${i}0
+          done
+

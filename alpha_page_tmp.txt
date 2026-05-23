@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Engine — Live Challenge Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #0a0a12;
+    --bg2: #0f0f1a;
+    --card: #1a1a2e;
+    --card2: #16213e;
+    --border: #2a2a4a;
+    --purple: #7c3aed;
+    --purple-light: #a855f7;
+    --purple-glow: rgba(124, 58, 237, 0.3);
+    --green: #22c55e;
+    --green-dim: rgba(34, 197, 94, 0.15);
+    --red: #ef4444;
+    --red-dim: rgba(239, 68, 68, 0.15);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59, 130, 246, 0.15);
+    --orange: #f97316;
+    --orange-dim: rgba(249, 115, 22, 0.15);
+    --yellow: #eab308;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #4a5568;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124, 58, 237, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 58, 237, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 40px 20px 32px;
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--purple-light);
+    margin-bottom: 12px;
+    opacity: 0.9;
+  }
+
+  .hero-title {
+    font-size: clamp(28px, 5vw, 56px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 30%, #06b6d4 70%, #22c55e 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite alternate;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 36px;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-stat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--purple-light));
+  }
+
+  .hero-stat.green::before { background: linear-gradient(90deg, var(--green), #4ade80); }
+  .hero-stat.red::before { background: linear-gradient(90deg, var(--red), #f87171); }
+  .hero-stat.blue::before { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-family: var(--mono);
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-value.positive { color: var(--green); }
+  .stat-value.negative { color: var(--red); }
+  .stat-value.purple { color: var(--purple-light); }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  /* Win rate circular progress */
+  .win-rate-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .win-circle {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+  }
+
+  .win-circle-track {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 4;
+  }
+
+  .win-circle-fill {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 138;
+    stroke-dashoffset: 138;
+    transform: rotate(-90deg);
+    transform-origin: 28px 28px;
+    transition: stroke-dashoffset 1.5s ease;
+  }
+
+  .win-circle-fill.low { stroke: var(--red); }
+  .win-circle-fill.mid { stroke: var(--yellow); }
+
+  .win-circle-text {
+    fill: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  /* ── REFRESH BAR ── */
+  .refresh-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  .refresh-left { color: var(--text-dim); display: flex; align-items: center; gap: 8px; }
+  .refresh-right { color: var(--text-muted); }
+
+  .live-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  }
+
+  .refresh-progress {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .refresh-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--purple-light));
+    border-radius: 1px;
+    transition: width 1s linear;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  .section-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--purple-glow);
+    border: 1px solid var(--purple);
+    color: var(--purple-light);
+  }
+
+  /* ── CHART ── */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  .chart-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .chart-wrap {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  svg.pnl-chart {
+    display: block;
+    width: 100%;
+    min-width: 280px;
+  }
+
+  .chart-axis-label {
+    fill: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 10px;
+  }
+
+  .chart-grid-line {
+    stroke: var(--border);
+    stroke-width: 0.5;
+    stroke-dasharray: 4 4;
+  }
+
+  .chart-zero-line {
+    stroke: rgba(148, 163, 184, 0.3);
+    stroke-width: 1;
+  }
+
+  /* ── LEADERBOARD ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 560px;
+  }
+
+  thead tr {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  th.right { text-align: right; }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(124, 58, 237, 0.06); }
+
+  tbody tr.row-positive { background: rgba(34, 197, 94, 0.04); }
+  tbody tr.row-negative { background: rgba(239, 68, 68, 0.04); }
+  tbody tr.row-positive:hover { background: rgba(34, 197, 94, 0.09); }
+  tbody tr.row-negative:hover { background: rgba(239, 68, 68, 0.09); }
+
+  td {
+    padding: 10px 14px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  td.right { text-align: right; font-family: var(--mono); }
+  td.mono { font-family: var(--mono); }
+
+  .rank-medal { font-size: 16px; }
+  .rank-num {
+    display: inline-block;
+    width: 24px; height: 24px;
+    background: var(--border);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .strategy-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .pnl-positive { color: var(--green); font-weight: 600; }
+  .pnl-negative { color: var(--red); font-weight: 600; }
+  .pnl-neutral { color: var(--text-dim); }
+
+  .mini-bar {
+    display: inline-block;
+    height: 4px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-left: 6px;
+    background: var(--green);
+  }
+
+  .mini-bar.negative { background: var(--red); }
+
+  /* ── PICKS GRID ── */
+  .picks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .pick-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+
+  .pick-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(124, 58, 237, 0.4);
+  }
+
+  .pick-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .pick-card.crypto::before { background: linear-gradient(90deg, var(--purple), var(--purple-light)); }
+  .pick-card.forex::before { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+  .pick-card.equity::before { background: linear-gradient(90deg, var(--green), #4ade80); }
+  .pick-card.meme::before { background: linear-gradient(90deg, var(--orange), #fb923c); }
+
+  .pick-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .pick-symbol {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .pick-strategy {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 3px;
+  }
+
+  .pick-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+  }
+
+  .badge-buy { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34, 197, 94, 0.3); }
+  .badge-sell { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); }
+  .badge-crypto { background: var(--purple-glow); color: var(--purple-light); border: 1px solid rgba(124, 58, 237, 0.3); }
+  .badge-forex { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+  .badge-equity { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34, 197, 94, 0.3); }
+  .badge-meme { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249, 115, 22, 0.3); }
+
+  .pick-prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .price-item { text-align: center; }
+
+  .price-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-bottom: 2px;
+  }
+
+  .price-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .price-value.tp { color: var(--green); }
+  .price-value.sl { color: var(--red); }
+
+  .pick-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .confidence-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-right: 8px;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--purple-light));
+  }
+
+  .confidence-val {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .rr-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--purple-light);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    margin-left: 6px;
+  }
+
+  .pick-pnl {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pick-pnl.pos { color: var(--green); }
+  .pick-pnl.neg { color: var(--red); }
+
+  /* ── STATUS MESSAGES ── */
+  .status-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .status-box.error {
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--red);
+    background: rgba(239, 68, 68, 0.05);
+  }
+
+  .status-box.loading { animation: blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 48px;
+    padding: 24px 0 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-muted);
+  }
+
+  .footer a {
+    color: var(--purple-light);
+    text-decoration: none;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+
+  .footer-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alloc-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--purple-glow);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    color: var(--purple-light);
+  }
+
+  /* ── DATA LINKS ── */
+  .data-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .data-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .data-link:hover {
+    border-color: var(--purple-light);
+    color: var(--purple-light);
+  }
+
+  /* ── CHALLENGE TIMER ── */
+  .challenge-timer {
+    font-family: var(--mono);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .challenge-timer.expired { color: var(--red); }
+  .challenge-timer.ending { color: var(--yellow); }
+
+  /* ── ACTIVE PICKS HEADER ── */
+  .picks-section-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .meta-pill {
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+    .picks-grid { grid-template-columns: 1fr; }
+    .footer { flex-direction: column; align-items: flex-start; }
+  }
+
+  @media (max-width: 400px) {
+    .hero-stats { grid-template-columns: 1fr; }
+  }
+
+  /* ── TOOLTIP ── */
+  [title] { cursor: help; }
+
+  /* ── ANIMATIONS ── */
+  .fade-in { animation: fadeIn 0.4s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.10s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.20s; }
+  .stagger-5 { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HERO -->
+  <header class="hero fade-in">
+    <div class="hero-eyebrow">Quant Trading System · Real-Time Monitor</div>
+    <h1 class="hero-title">ALPHA ENGINE</h1>
+    <div class="hero-subtitle">LIVE 2-HOUR CHALLENGE &mdash; AUTONOMOUS MULTI-STRATEGY</div>
+
+    <div class="hero-stats">
+      <!-- Challenge Timer -->
+      <div class="hero-stat fade-in stagger-1" id="stat-timer">
+        <div class="stat-label">Time Remaining</div>
+        <div class="challenge-timer" id="challenge-countdown">--:--:--</div>
+        <div class="stat-sub" id="challenge-status">Loading...</div>
+      </div>
+
+      <!-- P&L -->
+      <div class="hero-stat green fade-in stagger-2" id="stat-pnl">
+        <div class="stat-label">Total P&amp;L</div>
+        <div class="stat-value positive" id="total-pnl-value">$0.00</div>
+        <div class="stat-sub" id="pnl-sub">-- picks · $2k/pick</div>
+      </div>
+
+      <!-- Win Rate -->
+      <div class="hero-stat fade-in stagger-3" id="stat-winrate">
+        <div class="stat-label">Win Rate</div>
+        <div class="win-rate-wrap">
+          <svg class="win-circle" viewBox="0 0 56 56" id="win-svg">
+            <circle class="win-circle-track" cx="28" cy="28" r="22"/>
+            <circle class="win-circle-fill" cx="28" cy="28" r="22" id="win-arc"/>
+            <text class="win-circle-text" x="28" y="29" id="win-text">0%</text>
+          </svg>
+          <div>
+            <div class="stat-value" id="win-rate-value">0%</div>
+            <div class="stat-sub" id="win-rate-sub">last check</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strategy Count -->
+      <div class="hero-stat blue fade-in stagger-4" id="stat-strategies">
+        <div class="stat-label">Active Picks</div>
+        <div class="stat-value purple" id="picks-count">0</div>
+        <div class="stat-sub" id="strategies-count">-- strategies</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- REFRESH BAR -->
+  <div class="refresh-bar fade-in">
+    <div class="refresh-left">
+      <span class="live-dot"></span>
+      <span>AUTO-REFRESH IN <span id="refresh-countdown">60</span>s</span>
+      <span style="color:var(--text-muted)">|</span>
+      <span id="last-updated">Not yet loaded</span>
+    </div>
+    <div class="refresh-right">
+      <button onclick="loadAllData()" style="background:none;border:none;color:var(--purple-light);cursor:pointer;font-family:var(--mono);font-size:11px;padding:0;">
+        ↻ Refresh Now
+      </button>
+    </div>
+  </div>
+  <div class="refresh-progress">
+    <div class="refresh-progress-fill" id="refresh-bar-fill" style="width:100%"></div>
+  </div>
+
+  <!-- P&L CHART -->
+  <div class="section-header">
+    <div class="section-title">P&amp;L Timeline</div>
+    <div class="section-line"></div>
+    <div class="section-badge" id="chart-checks-badge">0 checks</div>
+  </div>
+
+  <div class="chart-card fade-in">
+    <div class="chart-title">Cumulative P&amp;L ($) per strategy check · $2,000 per pick allocation</div>
+    <div class="chart-wrap" id="chart-container">
+      <div class="status-box loading">Loading chart data...</div>
+    </div>
+  </div>
+
+  <!-- STRATEGY LEADERBOARD -->
+  <div class="section-header" style="margin-top:32px;">
+    <div class="section-title">Strategy Leaderboard</div>
+    <div class="section-line"></div>
+    <div class="section-badge" id="leaderboard-badge">Latest check</div>
+  </div>
+
+  <div id="leaderboard-container">
+    <div class="status-box loading">Loading leaderboard...</div>
+  </div>
+
+  <!-- ACTIVE PICKS -->
+  <div class="section-header" style="margin-top:32px;">
+    <div class="section-title">Active Picks</div>
+    <div class="section-line"></div>
+    <div class="section-badge" id="active-picks-badge">0 open</div>
+  </div>
+
+  <div class="picks-section-meta" id="picks-meta"></div>
+
+  <div id="picks-container" class="picks-grid">
+    <div class="status-box loading">Loading picks...</div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div>
+      <div class="footer-note">
+        <span>Last updated: <span id="footer-updated">—</span></span>
+        &nbsp;|&nbsp;
+        <span class="alloc-badge">Each pick = $2,000 allocation</span>
+      </div>
+      <div class="data-links" style="margin-top:8px;">
+        <a class="data-link" href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/live_2hr_challenge.json" target="_blank">live_2hr_challenge.json</a>
+        <a class="data-link" href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json" target="_blank">active_picks.json</a>
+        <a class="data-link" href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/closed_picks.json" target="_blank">closed_picks.json</a>
+        <a class="data-link" href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/strategy_performance.json" target="_blank">strategy_performance.json</a>
+      </div>
+    </div>
+    <div style="text-align:right;color:var(--text-muted)">
+      <div>Alpha Engine · Autonomous Quant</div>
+      <div style="margin-top:2px;font-size:10px;opacity:0.6;">Beating institutional quant firms since 2025</div>
+    </div>
+  </footer>
+
+</div><!-- /container -->
+
+<script>
+'use strict';
+
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const BASE_RAW = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/';
+const URLS = {
+  challenge:  BASE_RAW + 'live_2hr_challenge.json',
+  active:     BASE_RAW + 'active_picks.json',
+  closed:     BASE_RAW + 'closed_picks.json',
+  strategy:   BASE_RAW + 'strategy_performance.json'
+};
+const ALLOC_PER_PICK = 2000;
+const REFRESH_INTERVAL = 60; // seconds
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let challengeData = null;
+let activePicks   = [];
+let closedPicks   = [];
+let strategyPerf  = {};
+let refreshTimer  = REFRESH_INTERVAL;
+let challengeEndTime = null;
+let countdownInterval = null;
+
+// ── FETCH HELPERS ────────────────────────────────────────────────────────────
+async function fetchJSON(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+  const text = await res.text();
+  // Fix NaN values — JSON spec doesn't support NaN
+  const cleaned = text.replace(/:\s*NaN/g, ': null');
+  return JSON.parse(cleaned);
+}
+
+async function loadAllData() {
+  setLastUpdated('Refreshing...');
+  try {
+    const [ch, ac, cl, sp] = await Promise.allSettled([
+      fetchJSON(URLS.challenge),
+      fetchJSON(URLS.active),
+      fetchJSON(URLS.closed),
+      fetchJSON(URLS.strategy)
+    ]);
+
+    if (ch.status === 'fulfilled') challengeData = ch.value;
+    activePicks = (ac.status === 'fulfilled' && Array.isArray(ac.value)) ? ac.value : [];
+    closedPicks = (cl.status === 'fulfilled' && Array.isArray(cl.value)) ? cl.value : [];
+    strategyPerf = (sp.status === 'fulfilled' && sp.value && typeof sp.value === 'object') ? sp.value : {};
+
+    const now = new Date().toLocaleTimeString('en-US', { hour12: false });
+    setLastUpdated(now);
+    document.getElementById('footer-updated').textContent = new Date().toLocaleString();
+
+    renderAll();
+    resetRefreshTimer();
+
+  } catch(e) {
+    setLastUpdated('Error: ' + e.message);
+    showErrorState(e.message);
+  }
+}
+
+function setLastUpdated(msg) {
+  document.getElementById('last-updated').textContent = msg;
+}
+
+function showErrorState(msg) {
+  const errHtml = `<div class="status-box error">CORS / Network Error: ${escHtml(msg)}<br><br>
+    This page fetches live data from GitHub. When opened from localhost or file://,
+    GitHub's CORS headers block the request. Deploy to a web server, or use
+    <a href="${URLS.challenge}" target="_blank" style="color:var(--red)">view JSON directly</a>.</div>`;
+  document.getElementById('chart-container').innerHTML = errHtml;
+  document.getElementById('leaderboard-container').innerHTML = errHtml;
+  document.getElementById('picks-container').innerHTML = errHtml;
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderHero();
+  renderChart();
+  renderLeaderboard();
+  renderPicks();
+}
+
+// ── HERO STATS ────────────────────────────────────────────────────────────────
+function renderHero() {
+  if (!challengeData) return;
+
+  const { picks = [], checks = [], start_time, end_time, total_picks, strategies_count } = challengeData;
+  const lastCheck = checks.length ? checks[checks.length - 1] : null;
+
+  // Challenge timer
+  challengeEndTime = end_time ? new Date(end_time) : null;
+  updateChallengeTimer();
+  if (!countdownInterval) {
+    countdownInterval = setInterval(updateChallengeTimer, 1000);
+  }
+
+  // P&L
+  let totalPnl = 0;
+  if (lastCheck) {
+    const scores = lastCheck.strategy_scores || [];
+    totalPnl = scores.reduce((s, x) => s + (isFinite(x.total_pnl_dollar) ? x.total_pnl_dollar : 0), 0);
+  }
+
+  const pnlEl = document.getElementById('total-pnl-value');
+  pnlEl.textContent = formatPnl(totalPnl);
+  pnlEl.className = 'stat-value ' + (totalPnl >= 0 ? 'positive' : 'negative');
+
+  const pnlCard = document.getElementById('stat-pnl');
+  pnlCard.className = 'hero-stat fade-in stagger-2 ' + (totalPnl >= 0 ? 'green' : 'red');
+
+  const picksNum = picks.length || total_picks || 0;
+  document.getElementById('pnl-sub').textContent = `${picksNum} picks · $${(ALLOC_PER_PICK/1000).toFixed(0)}k/pick`;
+
+  // Win rate
+  const wr = lastCheck ? (lastCheck.win_rate || 0) : 0;
+  document.getElementById('win-rate-value').textContent = wr.toFixed(1) + '%';
+  document.getElementById('win-rate-sub').textContent = lastCheck ? `at ${formatElapsed(lastCheck.elapsed_minutes)}` : 'no data';
+  document.getElementById('win-text').textContent = wr.toFixed(0) + '%';
+
+  // Arc — circumference for r=22 is 2π*22 ≈ 138.23
+  const circ = 2 * Math.PI * 22;
+  const fill = circ * (1 - wr / 100);
+  const arc = document.getElementById('win-arc');
+  arc.style.strokeDashoffset = fill;
+  arc.className = 'win-circle-fill' + (wr < 40 ? ' low' : wr < 60 ? ' mid' : '');
+
+  // Picks count
+  const openPicks = activePicks.length || picks.length || 0;
+  document.getElementById('picks-count').textContent = openPicks;
+  document.getElementById('strategies-count').textContent =
+    (strategies_count || [...new Set(picks.map(p => p.strategy))].length || 0) + ' strategies';
+}
+
+function updateChallengeTimer() {
+  const el = document.getElementById('challenge-countdown');
+  const sub = document.getElementById('challenge-status');
+  if (!challengeEndTime) {
+    el.textContent = '--:--:--';
+    sub.textContent = 'No end time';
+    return;
+  }
+  const now = new Date();
+  const diff = challengeEndTime - now;
+  if (diff <= 0) {
+    el.textContent = 'EXPIRED';
+    el.className = 'challenge-timer expired';
+    sub.textContent = 'Challenge ended';
+    return;
+  }
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+  el.className = 'challenge-timer' + (diff < 600000 ? ' ending' : '');
+  sub.textContent = 'Until challenge ends';
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+// ── CHART ─────────────────────────────────────────────────────────────────────
+function renderChart() {
+  const container = document.getElementById('chart-container');
+  const badge = document.getElementById('chart-checks-badge');
+
+  if (!challengeData || !challengeData.checks || challengeData.checks.length < 2) {
+    container.innerHTML = '<div class="status-box">Not enough check data to draw chart (need ≥ 2 checks)</div>';
+    badge.textContent = (challengeData?.checks?.length || 0) + ' checks';
+    return;
+  }
+
+  const checks = challengeData.checks;
+  badge.textContent = checks.length + ' checks';
+
+  // Build series: sum of valid pnl per check
+  const points = checks.map(c => {
+    const scores = c.strategy_scores || [];
+    const pnl = scores.reduce((s, x) => s + (isFinite(x.total_pnl_dollar) ? x.total_pnl_dollar : 0), 0);
+    return { x: c.elapsed_minutes, pnl, wr: c.win_rate || 0, time: c.check_time };
+  });
+
+  const W = 700, H = 200;
+  const padL = 58, padR = 20, padT = 16, padB = 36;
+  const cW = W - padL - padR;
+  const cH = H - padT - padB;
+
+  const xs = points.map(p => p.x);
+  const ys = points.map(p => p.pnl);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(0, Math.min(...ys));
+  const maxY = Math.max(0, Math.max(...ys));
+  const rangeX = maxX - minX || 1;
+  const rangeY = maxY - minY || 1;
+
+  function sx(x) { return padL + ((x - minX) / rangeX) * cW; }
+  function sy(y) { return padT + cH - ((y - minY) / rangeY) * cH; }
+
+  // Y axis grid lines
+  const yTicks = 4;
+  let gridLines = '';
+  let yLabels = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const yVal = minY + (rangeY * i / yTicks);
+    const yPx = sy(yVal);
+    const cls = Math.abs(yVal) < 0.01 ? 'chart-zero-line' : 'chart-grid-line';
+    gridLines += `<line x1="${padL}" x2="${W - padR}" y1="${yPx}" y2="${yPx}" class="${cls}"/>`;
+    yLabels += `<text x="${padL - 6}" y="${yPx + 4}" class="chart-axis-label" text-anchor="end">${formatPnlShort(yVal)}</text>`;
+  }
+
+  // X axis labels
+  let xLabels = '';
+  points.forEach((p, i) => {
+    if (i === 0 || i === points.length - 1 || points.length <= 6) {
+      const xPx = sx(p.x);
+      xLabels += `<text x="${xPx}" y="${H - 4}" class="chart-axis-label" text-anchor="middle">${formatElapsed(p.x)}</text>`;
+    }
+  });
+
+  // Line path
+  const positive = ys[ys.length - 1] >= 0;
+  const lineColor = positive ? 'var(--green)' : 'var(--red)';
+  const fillColor = positive ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+
+  let pathD = '';
+  let areaD = `M ${sx(points[0].x)} ${sy(0)} `;
+  points.forEach((p, i) => {
+    const px = sx(p.x), py = sy(p.pnl);
+    if (i === 0) {
+      pathD += `M ${px} ${py}`;
+      areaD += `L ${px} ${py} `;
+    } else {
+      // Smooth curve
+      const prev = points[i-1];
+      const mx = (sx(prev.x) + px) / 2;
+      pathD += ` C ${mx} ${sy(prev.pnl)}, ${mx} ${py}, ${px} ${py}`;
+      areaD += `L ${px} ${py} `;
+    }
+  });
+  areaD += `L ${sx(points[points.length-1].x)} ${sy(0)} Z`;
+
+  // Dots with tooltips
+  let dots = '';
+  points.forEach(p => {
+    const px = sx(p.x), py = sy(p.pnl);
+    const tip = `${formatElapsed(p.x)}: ${formatPnl(p.pnl)} | WR: ${p.wr.toFixed(1)}%`;
+    dots += `<circle cx="${px}" cy="${py}" r="4" fill="${lineColor}" stroke="var(--bg)" stroke-width="2" opacity="0.9"><title>${escHtml(tip)}</title></circle>`;
+  });
+
+  // Zero line
+  const zeroY = sy(0);
+  const zeroLine = `<line x1="${padL}" x2="${W - padR}" y1="${zeroY}" y2="${zeroY}" stroke="rgba(148,163,184,0.3)" stroke-width="1" stroke-dasharray="4 4"/>`;
+
+  const svg = `<svg class="pnl-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="lineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="${lineColor}" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="${lineColor}" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    ${zeroLine}
+    ${yLabels}
+    ${xLabels}
+    <path d="${areaD}" fill="url(#lineGrad)"/>
+    <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+
+  container.innerHTML = svg;
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────────
+function renderLeaderboard() {
+  const container = document.getElementById('leaderboard-container');
+  const badge = document.getElementById('leaderboard-badge');
+
+  if (!challengeData || !challengeData.checks || challengeData.checks.length === 0) {
+    container.innerHTML = '<div class="status-box">No check data available</div>';
+    return;
+  }
+
+  const checks = challengeData.checks;
+  const lastCheck = checks[checks.length - 1];
+  badge.textContent = `Check at ${formatElapsed(lastCheck.elapsed_minutes)}`;
+
+  const scores = (lastCheck.strategy_scores || [])
+    .filter(s => isFinite(s.total_pnl_dollar))
+    .sort((a, b) => b.total_pnl_dollar - a.total_pnl_dollar);
+
+  const noDataScores = (lastCheck.strategy_scores || []).filter(s => !isFinite(s.total_pnl_dollar));
+
+  if (scores.length === 0 && noDataScores.length === 0) {
+    container.innerHTML = '<div class="status-box">No strategy data in latest check</div>';
+    return;
+  }
+
+  const allScores = [...scores, ...noDataScores];
+  const maxAbsPnl = Math.max(...scores.map(s => Math.abs(s.total_pnl_dollar)), 1);
+
+  const medals = ['🥇', '🥈', '🥉'];
+
+  let rows = '';
+  allScores.forEach((s, i) => {
+    const rank = i + 1;
+    const isPositive = isFinite(s.total_pnl_dollar) && s.total_pnl_dollar > 0;
+    const isNegative = isFinite(s.total_pnl_dollar) && s.total_pnl_dollar < 0;
+    const rowClass = isPositive ? 'row-positive' : (isNegative ? 'row-negative' : '');
+
+    const rankCell = rank <= 3 && isFinite(s.total_pnl_dollar)
+      ? `<span class="rank-medal">${medals[rank-1]}</span>`
+      : `<span class="rank-num">${rank}</span>`;
+
+    const pnlClass = isPositive ? 'pnl-positive right' : (isNegative ? 'pnl-negative right' : 'pnl-neutral right');
+    const pnlText = isFinite(s.total_pnl_dollar) ? formatPnl(s.total_pnl_dollar) : 'N/A';
+    const pnlPct = isFinite(s.avg_pnl_pct) ? ((s.avg_pnl_pct * 100).toFixed(2) + '%') : 'N/A';
+
+    const barW = isFinite(s.total_pnl_dollar) ? Math.max(2, Math.round(Math.abs(s.total_pnl_dollar) / maxAbsPnl * 48)) : 0;
+    const barClass = isNegative ? 'negative' : '';
+
+    rows += `<tr class="${rowClass}">
+      <td>${rankCell}</td>
+      <td><span class="strategy-name">${escHtml(s.strategy)}</span></td>
+      <td class="right mono">${s.picks}</td>
+      <td class="right mono" style="color:var(--green)">${s.winning}</td>
+      <td class="right mono" style="color:var(--red)">${s.losing}</td>
+      <td class="right mono" style="color:var(--blue)">${s.tp_hits}</td>
+      <td class="right mono" style="color:var(--orange)">${s.sl_hits}</td>
+      <td class="right mono">${pnlPct}</td>
+      <td class="right ${pnlClass}">${pnlText}<span class="mini-bar ${barClass}" style="width:${barW}px"></span></td>
+    </tr>`;
+  });
+
+  container.innerHTML = `<div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Strategy</th>
+          <th class="right">Picks</th>
+          <th class="right">W</th>
+          <th class="right">L</th>
+          <th class="right">TP</th>
+          <th class="right">SL</th>
+          <th class="right">Avg PnL%</th>
+          <th class="right">P&amp;L $</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ── PICKS ─────────────────────────────────────────────────────────────────────
+function renderPicks() {
+  const container = document.getElementById('picks-container');
+  const badge = document.getElementById('active-picks-badge');
+  const meta = document.getElementById('picks-meta');
+
+  // Prefer active_picks.json; fallback to challenge picks
+  const picks = activePicks.length > 0 ? activePicks : (challengeData?.picks || []);
+
+  badge.textContent = picks.length + ' open';
+
+  if (picks.length === 0) {
+    container.innerHTML = '<div class="status-box">No active picks</div>';
+    meta.innerHTML = '';
+    return;
+  }
+
+  // Category counts
+  const cats = picks.reduce((acc, p) => { acc[p.category] = (acc[p.category] || 0) + 1; return acc; }, {});
+  meta.innerHTML = Object.entries(cats)
+    .map(([cat, n]) => `<span class="meta-pill badge-${cat}">${cat}: ${n}</span>`)
+    .join('');
+
+  let cards = '';
+  picks.forEach(p => {
+    const cat = p.category || 'equity';
+    const signalClass = p.signal_type === 'BUY' ? 'badge-buy' : 'badge-sell';
+    const catClass = `badge-${cat}`;
+
+    const entry = formatPrice(p.entry_price || p.verified_entry_price);
+    const tp    = formatPrice(p.take_profit);
+    const sl    = formatPrice(p.stop_loss);
+    const conf  = ((p.confidence || p.ml_score || 0) * 100).toFixed(0);
+    const rr    = p.risk_reward ? p.risk_reward.toFixed(2) : null;
+
+    // Unrealized PnL from active_picks
+    let pnlBadge = '';
+    if (typeof p.unrealized_pnl_pct === 'number') {
+      const pct = (p.unrealized_pnl_pct * 100).toFixed(3);
+      const cls = p.unrealized_pnl_pct >= 0 ? 'pos' : 'neg';
+      const sign = p.unrealized_pnl_pct >= 0 ? '+' : '';
+      pnlBadge = `<span class="pick-pnl ${cls}">${sign}${pct}%</span>`;
+    }
+
+    cards += `<div class="pick-card ${cat} fade-in">
+      <div class="pick-header">
+        <div>
+          <div class="pick-symbol">${escHtml(p.symbol)}</div>
+          <div class="pick-strategy">${escHtml(p.strategy)}</div>
+        </div>
+        <div class="pick-badges">
+          <span class="badge ${signalClass}">${p.signal_type}</span>
+          <span class="badge ${catClass}">${cat}</span>
+        </div>
+      </div>
+      <div class="pick-prices">
+        <div class="price-item">
+          <div class="price-label">Entry</div>
+          <div class="price-value">${entry}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-label">TP</div>
+          <div class="price-value tp">${tp}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-label">SL</div>
+          <div class="price-value sl">${sl}</div>
+        </div>
+      </div>
+      <div class="pick-footer">
+        <div class="confidence-bar">
+          <div class="confidence-fill" style="width:${conf}%"></div>
+        </div>
+        <span class="confidence-val" title="Confidence">Conf ${conf}%</span>
+        ${rr ? `<span class="rr-badge" title="Risk/Reward">R:R ${rr}</span>` : ''}
+        ${pnlBadge}
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = cards;
+}
+
+// ── FORMATTERS ────────────────────────────────────────────────────────────────
+function formatPnl(v) {
+  if (!isFinite(v)) return 'N/A';
+  const sign = v >= 0 ? '+' : '';
+  return sign + '$' + Math.abs(v).toFixed(2);
+}
+
+function formatPnlShort(v) {
+  if (!isFinite(v)) return '';
+  if (Math.abs(v) >= 100) return (v >= 0 ? '+' : '') + '$' + v.toFixed(0);
+  return (v >= 0 ? '+' : '') + '$' + v.toFixed(1);
+}
+
+function formatPrice(v) {
+  if (v === null || v === undefined || !isFinite(v)) return 'N/A';
+  if (v < 0.0001) return v.toExponential(4);
+  if (v < 0.01) return v.toFixed(6);
+  if (v < 1) return v.toFixed(5);
+  if (v < 10) return v.toFixed(4);
+  if (v < 100) return v.toFixed(3);
+  if (v < 10000) return v.toFixed(2);
+  return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+function formatElapsed(min) {
+  if (!isFinite(min)) return '?';
+  if (min < 1) return '<1m';
+  if (min < 60) return Math.round(min) + 'm';
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  return m > 0 ? `${h}h${m}m` : `${h}h`;
+}
+
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── REFRESH TIMER ─────────────────────────────────────────────────────────────
+function resetRefreshTimer() {
+  refreshTimer = REFRESH_INTERVAL;
+}
+
+function tickRefresh() {
+  refreshTimer--;
+  if (refreshTimer <= 0) {
+    loadAllData();
+    return;
+  }
+  document.getElementById('refresh-countdown').textContent = refreshTimer;
+  const pct = (refreshTimer / REFRESH_INTERVAL) * 100;
+  document.getElementById('refresh-bar-fill').style.width = pct + '%';
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+(function init() {
+  loadAllData();
+  setInterval(tickRefresh, 1000);
+})();
+</script>
+
+</body>
+</html>

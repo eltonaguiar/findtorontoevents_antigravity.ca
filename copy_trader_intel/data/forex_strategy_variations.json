@@ -1,0 +1,435 @@
+{
+  "generated_at": "2026-03-21T15:12:35.392071+00:00",
+  "source_system": "ml_forex_reverser",
+  "note": "CRITICAL: Forex TP < 1.5%, SL < 1.0%. Old system used crypto-scale targets.",
+  "old_system_diagnosis": {
+    "close_rate": "0.0%",
+    "avg_tp_pct": 0.935,
+    "tp_diagnosis": "LIKELY_OK",
+    "key_issues": [
+      "Mean-reversion requires 5-20 day hold for forex (200d SMA pull)",
+      "No session timing awareness in picks",
+      "1 carry trades on low/negative-yield pairs",
+      "Close rate: 0.0% (0/19)"
+    ]
+  },
+  "variations": [
+    {
+      "name": "v1_tight_scalp",
+      "description": "Tight scalp: TP 0.3%, SL 0.2%, hold max 4 bars, London session pairs only",
+      "tp_pct": 0.3,
+      "sl_pct": 0.2,
+      "max_hold_bars": 4,
+      "target_pairs": "London session (EURUSD, GBPUSD, USDCHF, EURJPY, GBPJPY)",
+      "backtest": {
+        "total_trades": 179,
+        "win_rate": 64.2,
+        "avg_pnl_pct": 0.1212,
+        "total_pnl_pct": 21.7,
+        "sharpe": 8.03,
+        "max_drawdown_pct": 0.8,
+        "avg_hold_bars": 1.0,
+        "exit_reasons": {
+          "tp_hit": 115,
+          "sl_hit": 64,
+          "time_expiry": 0
+        },
+        "by_pair": {
+          "GBPJPY=X": {
+            "trades": 34,
+            "win_rate": 70.6,
+            "avg_pnl": 0.1529,
+            "total_pnl": 5.2,
+            "tp_hit": 24,
+            "sl_hit": 10,
+            "expired": 0
+          },
+          "EURJPY=X": {
+            "trades": 38,
+            "win_rate": 65.8,
+            "avg_pnl": 0.1289,
+            "total_pnl": 4.9,
+            "tp_hit": 25,
+            "sl_hit": 13,
+            "expired": 0
+          },
+          "USDCHF=X": {
+            "trades": 31,
+            "win_rate": 67.7,
+            "avg_pnl": 0.1387,
+            "total_pnl": 4.3,
+            "tp_hit": 21,
+            "sl_hit": 10,
+            "expired": 0
+          },
+          "GBPUSD=X": {
+            "trades": 33,
+            "win_rate": 63.6,
+            "avg_pnl": 0.1182,
+            "total_pnl": 3.9,
+            "tp_hit": 21,
+            "sl_hit": 12,
+            "expired": 0
+          },
+          "EURUSD=X": {
+            "trades": 43,
+            "win_rate": 55.8,
+            "avg_pnl": 0.0791,
+            "total_pnl": 3.4,
+            "tp_hit": 24,
+            "sl_hit": 19,
+            "expired": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "v2_carry_session",
+      "description": "Carry + session: long high-yield pairs with momentum, TP 0.8%, SL 0.5%",
+      "tp_pct": 0.8,
+      "sl_pct": 0.5,
+      "max_hold_bars": 20,
+      "target_pairs": "Carry pairs (USDJPY, USDCHF, EURJPY, GBPJPY, AUDJPY)",
+      "backtest": {
+        "total_trades": 386,
+        "win_rate": 41.2,
+        "avg_pnl_pct": 0.0319,
+        "total_pnl_pct": 12.31,
+        "sharpe": 0.79,
+        "max_drawdown_pct": 22.9,
+        "avg_hold_bars": 2.4,
+        "exit_reasons": {
+          "tp_hit": 157,
+          "sl_hit": 227,
+          "time_expiry": 2
+        },
+        "by_pair": {
+          "GBPJPY=X": {
+            "trades": 73,
+            "win_rate": 39.7,
+            "avg_pnl": 0.0083,
+            "total_pnl": 0.6033,
+            "tp_hit": 28,
+            "sl_hit": 44,
+            "expired": 1
+          },
+          "USDJPY=X": {
+            "trades": 81,
+            "win_rate": 42.0,
+            "avg_pnl": 0.0457,
+            "total_pnl": 3.7,
+            "tp_hit": 34,
+            "sl_hit": 47,
+            "expired": 0
+          },
+          "AUDJPY=X": {
+            "trades": 97,
+            "win_rate": 56.7,
+            "avg_pnl": 0.229,
+            "total_pnl": 22.2116,
+            "tp_hit": 54,
+            "sl_hit": 42,
+            "expired": 1
+          },
+          "EURJPY=X": {
+            "trades": 78,
+            "win_rate": 37.2,
+            "avg_pnl": -0.0167,
+            "total_pnl": -1.3,
+            "tp_hit": 29,
+            "sl_hit": 49,
+            "expired": 0
+          },
+          "USDCHF=X": {
+            "trades": 57,
+            "win_rate": 21.1,
+            "avg_pnl": -0.2263,
+            "total_pnl": -12.9,
+            "tp_hit": 12,
+            "sl_hit": 45,
+            "expired": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "v3_mean_reversion",
+      "description": "Mean reversion: z-score >2 from 200d SMA, TP = return to SMA (capped 1.2%), SL 0.6%",
+      "tp_pct": 1.2,
+      "sl_pct": 0.6,
+      "max_hold_bars": 20,
+      "target_pairs": "All 10 forex pairs",
+      "backtest": {
+        "total_trades": 214,
+        "win_rate": 38.8,
+        "avg_pnl_pct": 0.092,
+        "total_pnl_pct": 19.69,
+        "sharpe": 1.68,
+        "max_drawdown_pct": 25.2,
+        "avg_hold_bars": 3.2,
+        "exit_reasons": {
+          "tp_hit": 81,
+          "sl_hit": 130,
+          "time_expiry": 3
+        },
+        "by_pair": {
+          "USDCAD=X": {
+            "trades": 2,
+            "win_rate": 100.0,
+            "avg_pnl": 1.1431,
+            "total_pnl": 2.2862,
+            "tp_hit": 2,
+            "sl_hit": 0,
+            "expired": 0
+          },
+          "GBPJPY=X": {
+            "trades": 38,
+            "win_rate": 23.7,
+            "avg_pnl": -0.1737,
+            "total_pnl": -6.6,
+            "tp_hit": 9,
+            "sl_hit": 29,
+            "expired": 0
+          },
+          "AUDUSD=X": {
+            "trades": 43,
+            "win_rate": 41.9,
+            "avg_pnl": 0.1444,
+            "total_pnl": 6.2098,
+            "tp_hit": 17,
+            "sl_hit": 25,
+            "expired": 1
+          },
+          "USDJPY=X": {
+            "trades": 20,
+            "win_rate": 50.0,
+            "avg_pnl": 0.3,
+            "total_pnl": 6.0,
+            "tp_hit": 10,
+            "sl_hit": 10,
+            "expired": 0
+          },
+          "AUDJPY=X": {
+            "trades": 81,
+            "win_rate": 28.4,
+            "avg_pnl": -0.0984,
+            "total_pnl": -7.9699,
+            "tp_hit": 22,
+            "sl_hit": 58,
+            "expired": 1
+          },
+          "EURJPY=X": {
+            "trades": 5,
+            "win_rate": 40.0,
+            "avg_pnl": 0.1427,
+            "total_pnl": 0.7135,
+            "tp_hit": 2,
+            "sl_hit": 2,
+            "expired": 1
+          },
+          "USDCHF=X": {
+            "trades": 18,
+            "win_rate": 66.7,
+            "avg_pnl": 0.6,
+            "total_pnl": 10.8,
+            "tp_hit": 12,
+            "sl_hit": 6,
+            "expired": 0
+          },
+          "GBPUSD=X": {
+            "trades": 3,
+            "win_rate": 100.0,
+            "avg_pnl": 1.2,
+            "total_pnl": 3.6,
+            "tp_hit": 3,
+            "sl_hit": 0,
+            "expired": 0
+          },
+          "EURUSD=X": {
+            "trades": 4,
+            "win_rate": 100.0,
+            "avg_pnl": 1.1618,
+            "total_pnl": 4.6474,
+            "tp_hit": 4,
+            "sl_hit": 0,
+            "expired": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "v4_jpy_riskoff",
+      "description": "JPY risk-off: SHORT JPY crosses when vol expanding, TP 0.6%, SL 0.4%",
+      "tp_pct": 0.6,
+      "sl_pct": 0.4,
+      "max_hold_bars": 10,
+      "target_pairs": "JPY crosses (USDJPY, EURJPY, GBPJPY, AUDJPY)",
+      "backtest": {
+        "total_trades": 27,
+        "win_rate": 29.6,
+        "avg_pnl_pct": -0.1037,
+        "total_pnl_pct": -2.8,
+        "sharpe": -3.61,
+        "max_drawdown_pct": 3.4,
+        "avg_hold_bars": 1.3,
+        "exit_reasons": {
+          "tp_hit": 8,
+          "sl_hit": 19,
+          "time_expiry": 0
+        },
+        "by_pair": {
+          "USDJPY=X": {
+            "trades": 6,
+            "win_rate": 16.7,
+            "avg_pnl": -0.2333,
+            "total_pnl": -1.4,
+            "tp_hit": 1,
+            "sl_hit": 5,
+            "expired": 0
+          },
+          "AUDJPY=X": {
+            "trades": 6,
+            "win_rate": 0.0,
+            "avg_pnl": -0.4,
+            "total_pnl": -2.4,
+            "tp_hit": 0,
+            "sl_hit": 6,
+            "expired": 0
+          },
+          "GBPJPY=X": {
+            "trades": 10,
+            "win_rate": 50.0,
+            "avg_pnl": 0.1,
+            "total_pnl": 1.0,
+            "tp_hit": 5,
+            "sl_hit": 5,
+            "expired": 0
+          },
+          "EURJPY=X": {
+            "trades": 5,
+            "win_rate": 40.0,
+            "avg_pnl": -0.0,
+            "total_pnl": -0.0,
+            "tp_hit": 2,
+            "sl_hit": 3,
+            "expired": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "v5_rsi2_connors",
+      "description": "RSI(2) daily: buy RSI<5 / sell RSI>95, Connors adapted, TP 0.5%, SL 0.3%",
+      "tp_pct": 0.5,
+      "sl_pct": 0.3,
+      "max_hold_bars": 5,
+      "target_pairs": "All 10 forex pairs",
+      "backtest": {
+        "total_trades": 189,
+        "win_rate": 52.4,
+        "avg_pnl_pct": 0.1132,
+        "total_pnl_pct": 21.39,
+        "sharpe": 4.56,
+        "max_drawdown_pct": 2.6,
+        "avg_hold_bars": 1.5,
+        "exit_reasons": {
+          "tp_hit": 95,
+          "sl_hit": 88,
+          "time_expiry": 6
+        },
+        "by_pair": {
+          "USDCAD=X": {
+            "trades": 26,
+            "win_rate": 42.3,
+            "avg_pnl": 0.0051,
+            "total_pnl": 0.1334,
+            "tp_hit": 8,
+            "sl_hit": 14,
+            "expired": 4
+          },
+          "GBPJPY=X": {
+            "trades": 15,
+            "win_rate": 66.7,
+            "avg_pnl": 0.2038,
+            "total_pnl": 3.0569,
+            "tp_hit": 9,
+            "sl_hit": 5,
+            "expired": 1
+          },
+          "AUDUSD=X": {
+            "trades": 23,
+            "win_rate": 39.1,
+            "avg_pnl": 0.013,
+            "total_pnl": 0.3,
+            "tp_hit": 9,
+            "sl_hit": 14,
+            "expired": 0
+          },
+          "USDJPY=X": {
+            "trades": 18,
+            "win_rate": 61.1,
+            "avg_pnl": 0.1889,
+            "total_pnl": 3.4,
+            "tp_hit": 11,
+            "sl_hit": 7,
+            "expired": 0
+          },
+          "AUDJPY=X": {
+            "trades": 22,
+            "win_rate": 59.1,
+            "avg_pnl": 0.1727,
+            "total_pnl": 3.8,
+            "tp_hit": 13,
+            "sl_hit": 9,
+            "expired": 0
+          },
+          "EURJPY=X": {
+            "trades": 17,
+            "win_rate": 64.7,
+            "avg_pnl": 0.2176,
+            "total_pnl": 3.7,
+            "tp_hit": 11,
+            "sl_hit": 6,
+            "expired": 0
+          },
+          "NZDUSD=X": {
+            "trades": 23,
+            "win_rate": 47.8,
+            "avg_pnl": 0.0826,
+            "total_pnl": 1.9,
+            "tp_hit": 11,
+            "sl_hit": 12,
+            "expired": 0
+          },
+          "USDCHF=X": {
+            "trades": 12,
+            "win_rate": 75.0,
+            "avg_pnl": 0.3168,
+            "total_pnl": 3.8019,
+            "tp_hit": 9,
+            "sl_hit": 2,
+            "expired": 1
+          },
+          "GBPUSD=X": {
+            "trades": 15,
+            "win_rate": 40.0,
+            "avg_pnl": 0.02,
+            "total_pnl": 0.3,
+            "tp_hit": 6,
+            "sl_hit": 9,
+            "expired": 0
+          },
+          "EURUSD=X": {
+            "trades": 18,
+            "win_rate": 44.4,
+            "avg_pnl": 0.0556,
+            "total_pnl": 1.0,
+            "tp_hit": 8,
+            "sl_hit": 10,
+            "expired": 0
+          }
+        }
+      }
+    }
+  ]
+}

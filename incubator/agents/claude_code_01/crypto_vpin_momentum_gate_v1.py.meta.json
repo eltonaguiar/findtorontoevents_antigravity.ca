@@ -1,0 +1,22 @@
+{
+  "strategy_name": "vpin_momentum_gate",
+  "class_name": "VPINMomentumGateStrategy",
+  "agent_id": "claude_code_01",
+  "version": "1.0.0",
+  "source": "Easley, Lopez de Prado, O'Hara (2012) + ScienceDirect 2025",
+  "category": "microstructure",
+  "description": "Computes VPIN (Volume-Synchronized Probability of Informed Trading) from bulk volume classification. Only triggers momentum signals when informed order flow is high. Filters false breakouts by requiring smart money confirmation.",
+  "indicators": ["VPIN (bulk volume classification)", "Momentum (ATR-normalized)", "Volume surge"],
+  "entry_conditions": [
+    "VPIN > 0.55 (informed flow detected)",
+    "Momentum exceeds 1.5x ATR over 20 bars",
+    "Volume surge > 1.5x 20-bar average"
+  ],
+  "exit_conditions": {
+    "take_profit": "entry +/- 2.5x ATR",
+    "stop_loss": "entry -/+ 1.2x ATR"
+  },
+  "academic_reference": "Easley, Lopez de Prado, O'Hara (2012) 'Flow Toxicity and Liquidity'; ScienceDirect 2025 'VPIN and price jumps'",
+  "status": "validating",
+  "created_at": "2026-02-28"
+}

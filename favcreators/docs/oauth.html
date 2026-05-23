@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signing in...</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0f0f23;color:#fff}
+.box{text-align:center;max-width:400px;padding:2.5rem;background:rgba(30,30,60,.95);border-radius:1.5rem;border:1px solid rgba(99,102,241,.3)}
+h2{color:#a5b4fc;margin:0 0 1rem}p{color:#94a3b8;line-height:1.6}
+.spinner{width:40px;height:40px;border:4px solid rgba(99,102,241,.2);border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;margin:1rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{color:#f87171;margin-top:1rem;display:none}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spinner" id="spinner"></div>
+  <h2>Signing you in...</h2>
+  <p>Completing Google authentication.</p>
+  <p class="err" id="err"></p>
+</div>
+<script>
+// OAuth Landing Page — lives on 50webs as static HTML.
+// Google redirects here with code + scope + state in the URL.
+// mod_security rule 340162 blocks PHP files that receive URL-containing params
+// (like scope=https://www.googleapis.com/...) but static HTML is not inspected.
+// We extract ONLY code + state, then POST them to the PHP callback.
+// The POST to google_callback.php contains NO URL params → no WAF block.
+(function(){
+  var ALLOWED = {
+    'findtorontoevents.ca': 1,
+    'torontoevent.net': 1,
+    'tdotevent.ca': 1
+  };
+
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code');
+  var stateRaw = params.get('state') || '';
+
+  if (!code) {
+    document.getElementById('err').textContent = 'No authorization code received from Google.';
+    document.getElementById('err').style.display = 'block';
+    document.getElementById('spinner').style.display = 'none';
+    return;
+  }
+
+  // State format from google_auth.php: "domain:/path" e.g. "findtorontoevents.ca:/fc/"
+  var domain = 'findtorontoevents.ca';
+  var returnTo = '/fc/';
+  var colonIdx = stateRaw.indexOf(':');
+  if (colonIdx > 0) {
+    var d = stateRaw.substring(0, colonIdx);
+    var p = stateRaw.substring(colonIdx + 1);
+    if (ALLOWED[d]) {
+      domain = d;
+      returnTo = p || '/fc/';
+    }
+  }
+
+  // Sanitize returnTo (letters, numbers, slashes, dashes, dots only)
+  returnTo = returnTo.replace(/[^a-zA-Z0-9\/\-_.]/g, '');
+  if (!returnTo || returnTo[0] !== '/') returnTo = '/fc/';
+
+  // POST only code + state to the callback PHP.
+  // CRITICAL: Do NOT include scope, authuser, prompt, or any other Google params.
+  // Those contain URLs (https://www.googleapis.com/...) that trigger mod_security rule 340162.
+  var callbackUrl = 'https://' + domain + '/fc/api/google_callback.php';
+
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = callbackUrl;
+
+  var inp1 = document.createElement('input');
+  inp1.type = 'hidden'; inp1.name = 'code'; inp1.value = code;
+  form.appendChild(inp1);
+
+  var inp2 = document.createElement('input');
+  inp2.type = 'hidden'; inp2.name = 'state'; inp2.value = returnTo;
+  form.appendChild(inp2);
+
+  document.body.appendChild(form);
+  form.submit();
+})();
+</script>
+</body>
+</html>

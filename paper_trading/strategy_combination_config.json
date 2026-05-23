@@ -1,0 +1,295 @@
+{
+  "description": "Paper trading portfolios to test which strategies (alone or together) can be trusted for profit",
+  "version": "1.0.0",
+  "created_at": "2026-03-08",
+  "starting_capital_per_portfolio": 10000,
+  "risk_per_trade": 0.02,
+  "max_positions_per_portfolio": 10,
+  "max_hold_days": 7,
+  "strategies": {
+    "categories": {
+      "trend_following": {
+        "name": "Trend Following",
+        "strategies": [
+          "ema_stack",
+          "macd_crossover",
+          "hma_trend",
+          "triple_confirmation",
+          "kama_adaptive",
+          "verified_ema_stack"
+        ],
+        "characteristics": ["high_win_rate", "momentum_based"]
+      },
+      "mean_reversion": {
+        "name": "Mean Reversion",
+        "strategies": [
+          "rsi_bounce",
+          "stochrsi_macd_combo",
+          "williams_r_reversion",
+          "keltner_channel_reversion",
+          "vwap_reversion",
+          "z_score_extreme",
+          "stochastic_rsi_divergence",
+          "williams_percent_r_extreme"
+        ],
+        "characteristics": ["oscillator_based", "counter_trend"]
+      },
+      "breakout": {
+        "name": "Breakout",
+        "strategies": [
+          "volume_spike_breakout",
+          "bollinger_squeeze",
+          "generic_volatility_breakout",
+          "inside_bar_breakout",
+          "donchian_breakout",
+          "keltner_squeeze_breakout"
+        ],
+        "characteristics": ["volatility_expansion", "momentum_burst"]
+      },
+      "ml_based": {
+        "name": "ML-Based",
+        "strategies": [
+          "enhanced_ml_A_xgboost",
+          "enhanced_ml_B_lstm",
+          "enhanced_ml_C_transformer",
+          "kimi_lgbm_features",
+          "claude_gainer_ml",
+          "kimi_vpin_reversion"
+        ],
+        "characteristics": ["data_driven", "feature_based"]
+      },
+      "sentiment_onchain": {
+        "name": "Sentiment & On-Chain",
+        "strategies": [
+          "extreme_fear",
+          "fear_greed_contrarian",
+          "whale_accumulation",
+          "exchange_netflow",
+          "funding_rate_contrarian",
+          "stablecoin_supply"
+        ],
+        "characteristics": ["sentiment_driven", "fundamental"]
+      },
+      "correlation": {
+        "name": "Correlation-Based",
+        "strategies": [
+          "corr_hma_trend",
+          "corr_vwap_reversion",
+          "corr_kama_adaptive",
+          "corr_elton_net_consensus",
+          "corr_zscore_extreme",
+          "corr_rsi_momentum",
+          "corr_hma_elton_confluence",
+          "corr_vwap_zscore",
+          "corr_kama_rsi",
+          "corr_triple_crown"
+        ],
+        "characteristics": ["multi_asset", "statistical"]
+      },
+      "prop_firm": {
+        "name": "Prop Firm Classics",
+        "strategies": [
+          "irb_hoffman",
+          "ema9_close_crossover",
+          "vwap_mean_reversion",
+          "opening_range_breakout",
+          "session_momentum",
+          "rsi_multitimeframe_bias",
+          "justin_double_tweeter",
+          "bravo_triple_ma",
+          "gogo_juice",
+          "bravo_9count_exhaustion"
+        ],
+        "characteristics": ["battle_tested", "institutional"]
+      },
+      "hoffman_variations": {
+        "name": "Hoffman Variations",
+        "strategies": [
+          "hoffman_elite_combo",
+          "hoffman_rsi2_ribbon",
+          "hoffman_volume_htf",
+          "hoffman_volume_power",
+          "hoffman_macd_regime",
+          "hoffman_irb_1h",
+          "hoffman_irb_2h",
+          "hoffman_irb_4h"
+        ],
+        "characteristics": ["higher_timeframe", "regime_aware"]
+      },
+      "championship": {
+        "name": "Championship Winners",
+        "strategies": [
+          "smart_money_reversal",
+          "adaptive_regime_router",
+          "mtf_confluence_swing",
+          "volatility_compression_breakout",
+          "liquidation_cascade_recovery"
+        ],
+        "characteristics": ["competition_winners", "proven"]
+      },
+      "kimi_academic": {
+        "name": "KIMI + Academic",
+        "strategies": [
+          "kimi_vpin_reversion",
+          "kimi_ema600_momentum",
+          "kimi_lgbm_feature_proxy",
+          "kimi_vol_momentum_blend",
+          "academic_tsmom",
+          "risk_managed_momentum",
+          "kimi_vpin_lgbm_ensemble"
+        ],
+        "characteristics": ["peer_reviewed", "research_backed"]
+      }
+    },
+    "performance_tiers": {
+      "tier1_proven": {
+        "name": "Tier 1 - Proven (>70% WR or PF > 2.0)",
+        "strategies": [
+          {"name": "triple_rsi_confluence", "wr": 91.0, "pf": 5.0},
+          {"name": "williams_r_reversion", "wr": 81.0, "pf": 3.2},
+          {"name": "hoffman_elite_combo", "wr": 78.9, "pf": 5.61},
+          {"name": "hoffman_rsi2_ribbon", "wr": 75.0, "pf": 5.70},
+          {"name": "claude_gainer_ml_perf", "wr": 70.0, "pf": 2.5},
+          {"name": "generic_volatility_breakout", "wr": 75.0, "pf": 2.5}
+        ]
+      },
+      "tier2_strong": {
+        "name": "Tier 2 - Strong (55-70% WR or PF 1.5-2.0)",
+        "strategies": [
+          {"name": "battleground", "wr": 60.2, "pf": 1.8},
+          {"name": "kimi_signal_tracking", "wr": 64.0, "pf": 1.9},
+          {"name": "vwap_mean_reversion", "wr": 52.5, "pf": 2.0},
+          {"name": "exhaustion_reversal", "wr": 60.6, "pf": 1.8},
+          {"name": "opening_range_breakout", "wr": 55.0, "pf": 1.6},
+          {"name": "inside_bar_breakout", "wr": 60.0, "pf": 1.7}
+        ]
+      },
+      "tier3_moderate": {
+        "name": "Tier 3 - Moderate (45-55% WR or PF 1.0-1.5)",
+        "strategies": [
+          {"name": "alpha_engine", "wr": 39.6, "pf": 0.9},
+          {"name": "crypto_winners", "wr": 40.8, "pf": 1.1},
+          {"name": "smart_money_reversal", "wr": 48.6, "pf": 1.3},
+          {"name": "adaptive_regime_router", "wr": 44.4, "pf": 1.2}
+        ]
+      },
+      "tier4_incubator": {
+        "name": "Tier 4 - Incubator (<45% WR or unproven)",
+        "strategies": [
+          {"name": "keltner_squeeze_breakout", "wr": 0, "pf": 0},
+          {"name": "adx_breakout_momentum", "wr": 0, "pf": 0},
+          {"name": "macd_histogram_divergence", "wr": 0, "pf": 0}
+        ]
+      }
+    }
+  },
+  "portfolios": {
+    "solo_strategies": {
+      "description": "Individual strategy performance - baseline",
+      "portfolios": [
+        {"id": "solo_ema_stack", "name": "Solo: EMA Stack", "strategies": ["ema_stack"], "min_strategies": 1},
+        {"id": "solo_macd", "name": "Solo: MACD Crossover", "strategies": ["macd_crossover"], "min_strategies": 1},
+        {"id": "solo_stochrsi", "name": "Solo: StochRSI MACD Combo", "strategies": ["stochrsi_macd_combo"], "min_strategies": 1},
+        {"id": "solo_volume_breakout", "name": "Solo: Volume Spike Breakout", "strategies": ["volume_spike_breakout"], "min_strategies": 1},
+        {"id": "solo_bollinger", "name": "Solo: Bollinger Squeeze", "strategies": ["bollinger_squeeze"], "min_strategies": 1},
+        {"id": "solo_irb", "name": "Solo: IRB Hoffman", "strategies": ["irb_hoffman"], "min_strategies": 1},
+        {"id": "solo_vwap_mr", "name": "Solo: VWAP Mean Reversion", "strategies": ["vwap_mean_reversion"], "min_strategies": 1},
+        {"id": "solo_williams_r", "name": "Solo: Williams R Reversion", "strategies": ["williams_r_reversion"], "min_strategies": 1},
+        {"id": "solo_triple_rsi", "name": "Solo: Triple RSI Confluence", "strategies": ["triple_rsi_confluence"], "min_strategies": 1}
+      ]
+    },
+    "category_combinations": {
+      "description": "Combine strategies from different categories",
+      "portfolios": [
+        {"id": "cat_trend_plus_mr", "name": "Cat: Trend + Mean Reversion", "strategies": ["ema_stack", "macd_crossover", "rsi_bounce", "williams_r_reversion"], "min_strategies": 1, "category_mix": ["trend_following", "mean_reversion"]},
+        {"id": "cat_trend_plus_breakout", "name": "Cat: Trend + Breakout", "strategies": ["ema_stack", "volume_spike_breakout", "bollinger_squeeze"], "min_strategies": 1, "category_mix": ["trend_following", "breakout"]},
+        {"id": "cat_ml_plus_tech", "name": "Cat: ML + Technical", "strategies": ["enhanced_ml_A_xgboost", "ema_stack", "macd_crossover"], "min_strategies": 1, "category_mix": ["ml_based", "trend_following"]},
+        {"id": "cat_prop_plus_corr", "name": "Cat: Prop Firm + Correlation", "strategies": ["irb_hoffman", "vwap_mean_reversion", "corr_hma_trend", "corr_vwap_reversion"], "min_strategies": 1, "category_mix": ["prop_firm", "correlation"]},
+        {"id": "cat_all_categories", "name": "Cat: All Category Mix", "strategies": ["ema_stack", "rsi_bounce", "volume_spike_breakout", "enhanced_ml_A_xgboost", "irb_hoffman"], "min_strategies": 1, "category_mix": ["trend_following", "mean_reversion", "breakout", "ml_based", "prop_firm"]}
+      ]
+    },
+    "tier_combinations": {
+      "description": "Combine strategies by performance tier",
+      "portfolios": [
+        {"id": "tier1_only", "name": "Tier 1: Proven Only", "strategies": ["triple_rsi_confluence", "williams_r_reversion", "hoffman_elite_combo", "claude_gainer_ml_perf"], "min_strategies": 1, "tier_filter": "tier1_proven"},
+        {"id": "tier1_plus_tier2", "name": "Tier 1 + Tier 2", "strategies": ["triple_rsi_confluence", "williams_r_reversion", "battleground", "kimi_signal_tracking", "vwap_mean_reversion"], "min_strategies": 1, "tier_filter": "tier1_plus_tier2"},
+        {"id": "tier2_only", "name": "Tier 2: Strong Only", "strategies": ["battleground", "kimi_signal_tracking", "vwap_mean_reversion", "exhaustion_reversal"], "min_strategies": 1, "tier_filter": "tier2_strong"},
+        {"id": "tier1_plus_tier3", "name": "Tier 1 + Tier 3 (High + Moderate)", "strategies": ["triple_rsi_confluence", "williams_r_reversion", "alpha_engine", "crypto_winners"], "min_strategies": 1, "tier_filter": "tier1_plus_tier3"}
+      ]
+    },
+    "confluence_portfolios": {
+      "description": "Require multiple strategies to agree on same symbol/direction",
+      "portfolios": [
+        {"id": "conf_2strat_trend", "name": "Conf: 2 Trend Strategies", "strategies": ["ema_stack", "macd_crossover", "hma_trend"], "min_strategies": 2, "require_same_direction": true},
+        {"id": "conf_2strat_mr", "name": "Conf: 2 Mean Reversion", "strategies": ["rsi_bounce", "williams_r_reversion", "stochrsi_macd_combo"], "min_strategies": 2, "require_same_direction": true},
+        {"id": "conf_2strat_breakout", "name": "Conf: 2 Breakout", "strategies": ["volume_spike_breakout", "bollinger_squeeze", "generic_volatility_breakout"], "min_strategies": 2, "require_same_direction": true},
+        {"id": "conf_3strat_any", "name": "Conf: Any 3 Strategies", "strategies": ["ema_stack", "macd_crossover", "rsi_bounce", "volume_spike_breakout", "irb_hoffman"], "min_strategies": 3, "require_same_direction": true},
+        {"id": "conf_trend_plus_mr", "name": "Conf: 1 Trend + 1 MR", "strategies": ["ema_stack", "macd_crossover", "rsi_bounce", "williams_r_reversion"], "min_strategies": 2, "require_different_categories": ["trend_following", "mean_reversion"], "require_same_direction": true}
+      ]
+    },
+    "champion_focused": {
+      "description": "Championship-winning and proven strategies only",
+      "portfolios": [
+        {"id": "champ_solo", "name": "Champ: Solo Championship", "strategies": ["smart_money_reversal", "adaptive_regime_router", "mtf_confluence_swing"], "min_strategies": 1},
+        {"id": "champ_plus_proven", "name": "Champ + Proven", "strategies": ["smart_money_reversal", "hoffman_elite_combo", "williams_r_reversion"], "min_strategies": 1},
+        {"id": "champ_confluence_2", "name": "Champ: 2 Must Agree", "strategies": ["smart_money_reversal", "adaptive_regime_router", "mtf_confluence_swing", "volatility_compression_breakout"], "min_strategies": 2, "require_same_direction": true}
+      ]
+    },
+    "hoffman_family": {
+      "description": "Hoffman IRB variations and winning combinations",
+      "portfolios": [
+        {"id": "hoff_solo_elite", "name": "Hoff: Elite Combo Solo", "strategies": ["hoffman_elite_combo"], "min_strategies": 1},
+        {"id": "hoff_solo_ribbon", "name": "Hoff: RSI2 Ribbon Solo", "strategies": ["hoffman_rsi2_ribbon"], "min_strategies": 1},
+        {"id": "hoff_all_winners", "name": "Hoff: All Winning Combos", "strategies": ["hoffman_elite_combo", "hoffman_rsi2_ribbon", "hoffman_volume_htf", "hoffman_volume_power", "hoffman_macd_regime"], "min_strategies": 1},
+        {"id": "hoff_confluence_2", "name": "Hoff: 2 Hoffman Agree", "strategies": ["hoffman_elite_combo", "hoffman_rsi2_ribbon", "hoffman_volume_htf", "hoffman_volume_power", "hoffman_macd_regime"], "min_strategies": 2, "require_same_direction": true},
+        {"id": "hoff_irb_time", "name": "Hoff: IRB by Hold Time", "strategies": ["hoffman_irb_1h", "hoffman_irb_2h", "hoffman_irb_4h"], "min_strategies": 1}
+      ]
+    },
+    "prop_firm_focused": {
+      "description": "Prop firm battle-tested strategies",
+      "portfolios": [
+        {"id": "prop_vwap_solo", "name": "Prop: VWAP Solo", "strategies": ["vwap_mean_reversion"], "min_strategies": 1},
+        {"id": "prop_justin_methods", "name": "Prop: Justin's Methods", "strategies": ["ema9_close_crossover", "rsi_multitimeframe_bias", "justin_double_tweeter"], "min_strategies": 1},
+        {"id": "prop_bravo_methods", "name": "Prop: Bravo Methods", "strategies": ["bravo_triple_ma", "gogo_juice", "bravo_9count_exhaustion"], "min_strategies": 1},
+        {"id": "prop_all_classics", "name": "Prop: All Classics", "strategies": ["opening_range_breakout", "session_momentum", "inside_bar_breakout", "vwap_mean_reversion"], "min_strategies": 1},
+        {"id": "prop_confluence_2", "name": "Prop: 2 Must Agree", "strategies": ["vwap_mean_reversion", "ema9_close_crossover", "session_momentum", "inside_bar_breakout"], "min_strategies": 2, "require_same_direction": true}
+      ]
+    },
+    "kimi_ml_focused": {
+      "description": "KIMI ML and academic strategies",
+      "portfolios": [
+        {"id": "kimi_vpin_solo", "name": "KIMI: VPIN Solo", "strategies": ["kimi_vpin_reversion"], "min_strategies": 1},
+        {"id": "kimi_lgbm_solo", "name": "KIMI: LGBM Solo", "strategies": ["kimi_lgbm_features"], "min_strategies": 1},
+        {"id": "kimi_all_ml", "name": "KIMI: All ML Strategies", "strategies": ["kimi_vpin_reversion", "kimi_ema600_momentum", "kimi_lgbm_feature_proxy", "kimi_vol_momentum_blend", "kimi_vpin_lgbm_ensemble"], "min_strategies": 1},
+        {"id": "kimi_confluence_2", "name": "KIMI: 2 ML Agree", "strategies": ["kimi_vpin_reversion", "kimi_lgbm_features", "kimi_vpin_lgbm_ensemble"], "min_strategies": 2, "require_same_direction": true}
+      ]
+    },
+    "anti_correlation": {
+      "description": "Strategies that should hedge each other",
+      "portfolios": [
+        {"id": "anti_trend_vs_mr", "name": "Anti: Trend vs Mean Rev", "strategies": ["ema_stack", "macd_crossover", "rsi_bounce", "williams_r_reversion"], "min_strategies": 1, "allow_opposing_directions": true},
+        {"id": "anti_breakout_vs_fade", "name": "Anti: Breakout vs Fade", "strategies": ["volume_spike_breakout", "bollinger_squeeze", "vwap_reversion", "z_score_extreme"], "min_strategies": 1, "allow_opposing_directions": true}
+      ]
+    }
+  },
+  "rules": {
+    "entry_rules": {
+      "require_same_direction": true,
+      "min_confidence": 0.5,
+      "max_age_hours": 24,
+      "allow_mixed_directions": false
+    },
+    "exit_rules": {
+      "use_tp_sl": true,
+      "time_stop_days": 7,
+      "trailing_stop": false
+    },
+    "risk_management": {
+      "position_sizing": "kelly_fractional",
+      "base_risk_pct": 2.0,
+      "max_risk_pct": 4.0,
+      "kelly_fraction": 0.25,
+      "max_correlated_positions": 3
+    }
+  }
+}

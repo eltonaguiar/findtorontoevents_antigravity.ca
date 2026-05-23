@@ -1,0 +1,25 @@
+{
+  "pr": null,
+  "engine": "deepseek",
+  "verdict": "COMMENT_ONLY",
+  "confidence": "LOW",
+  "summary": "Worker did not return valid JSON. See raw output.",
+  "strengths": [],
+  "concerns": [],
+  "commentary_text": "**Recommendation: Option A (GitHub Actions workflow_dispatch) \u2014 ranked #1**\n\n**Why:** The constraint is absolute (no desktop MySQL access), and manual execution via CI is the only viable path. Option B is not feasible without direct MySQL access.\n\n---\n\n## Concrete Implementation Plan\n\n### 1. Backup Strategy (pre-step)\n- **Snapshot table:** `at_raw_picks` \u2192 `at_raw_picks_bkp_YYYYMMDD_HHMM`\n- **Also snapshot:** `alpha_engine_picks` (if re-resolve writes to it) \u2192 same naming convention\n- **Command:** `CREATE TABLE at_raw_picks_bkp_20250320_1430 AS SELECT * FROM at_raw_picks`\n- **Verify:** `SELECT COUNT(*) FROM at_raw_picks_bkp_20250320_1430` matches `SELECT COUNT(*) FROM at_raw_picks`\n\n### 2. Dry-Run / Row-Count Preflight (in workflow)\n- **Step 5 preflight:** `SELECT COUNT(*) FROM at_raw_picks WHERE symbol LIKE '%=X' OR symbol LIKE '%=F' OR symbol REGEXP '^[^A-Z]'` \u2192 report count (should be ~2086)\n- **Step 6 preflight:** `SELECT COUNT(*) FROM at_raw_picks WHERE symbol_clean IS NULL` (or whatever re-resolve condition)\n- **Step 7 preflight:** `SELECT COUNT(*) FROM alpha_engine_picks WHERE outcome IS NULL` (pending picks)\n\n### 3. Transaction + Post-Write Verification\n- **Steps 5-6 in one transaction** (if MySQL supports DDL/DML in transactions):\n  ```sql\n  START TRANSACTION;\n  -- Step 5 UPDATE\n  UPDATE at_raw_picks SET symbol = ... WHERE ...;\n  -- Step 6 re-resolve (UPDATE/INSERT)\n  ...\n  COMMIT;\n  ```\n- **Post-verify:** `SELECT COUNT(*) FROM at_raw_picks WHERE symbol LIKE '%=X'` \u2192 should be 0\n- **Step 7 separate** (no transaction needed \u2014 it's a script flag)\n\n### 4. Rollback Path\n- **If steps 5-6 fail:** `RENAME TABLE at_raw_picks TO at_raw_picks_failed, at_raw_picks_bkp_* TO at_raw_picks;`\n- **If step 7 fails:** No rollback needed (outcomes are idempotent); re-run with `--apply` again\n\n### 5. Workflow Separation\n**Steps 5-6 in ONE workflow** (atomic, gated by typed confirmation):\n```yaml\non:\n  workflow_dispatch:\n    inputs:\n      confirm:\n        description: 'Type \"EXECUTE-NORMALIZE\" to proceed'\n        required: true\n```\n\n**Step 7 in SEPARATE workflow** (lower risk, can be re-run independently):\n```yaml\non:\n  workflow_dispatch:\n    inputs:\n      confirm:\n        description: 'Type \"APPLY-OUTCOMES\" to proceed'\n        required: true\n```\n\n**Why separate:** If step 7 fails mid-way, you don't want to re-trigger steps 5-6. Also allows independent verification of normalization before applying outcomes.\n\n---\n\n## Ranked Recommendations\n\n| Rank | Option | Rationale |\n|------|--------|-----------|\n| **1** | **Option A (two separate workflows)** | Safest: backup + atomic normalization in one, outcomes in another. Full rollback capability. |\n| 2 | Option A (single workflow) | Acceptable if steps 5-6 are idempotent, but riskier \u2014 a failure in step 7 forces re-running normalization. |\n| 3 | Option B | **Not feasible** \u2014 no MySQL access from desktop. |\n\n**Final verdict:** Build two `workflow_dispatch` workflows with typed confirmation gates, backup tables, preflight row-counts, and explicit rollback SQL in the workflow logs.",
+  "_parse_status": "non_json_fallback",
+  "fabrication_risk": {
+    "level": "HIGH",
+    "notes": "non-JSON output, schema-invalid"
+  },
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\resolver-db-steps-2026-05-19\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260519T091851Z",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 314,
+    "tokens_out": 838,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

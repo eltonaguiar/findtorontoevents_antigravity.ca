@@ -1,0 +1,162 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-05-16T02:00:00Z",
+  "owner": "solo-quant",
+  "purpose": "Single source of truth for all quarantined strategies/sources/pairs. Consolidates blocks scattered across config.py + quality_gates.py.",
+  "size_caps_pct": {
+    "CRYPTO": 10,
+    "FOREX": 0,
+    "BOND": 5,
+    "ETF": 8,
+    "EQUITY": 10,
+    "COMMODITY": 10,
+    "FUTURES": 0
+  },
+  "quarantined_strategies": [
+    {
+      "name": "kimi_signal_tracking",
+      "reason": "PF 0.26, -954% PnL",
+      "since": "2026-05-11",
+      "verified_blocked_at_exec": true,
+      "ref": "alpha_engine/config.py:216"
+    },
+    {
+      "name": "claude_gainer_st",
+      "reason": "26.5% WR, -355% PnL on 778 PROVEN picks",
+      "since": "2026-05-01",
+      "verified_blocked_at_exec": true,
+      "ref": "alpha_engine/config.py:216"
+    },
+    {
+      "name": "binance_smart_money",
+      "reason": "legacy block",
+      "since": "pre-2026-05",
+      "verified_blocked_at_exec": true,
+      "ref": "alpha_engine/config.py:216"
+    },
+    {
+      "name": "hl_funding_fade",
+      "reason": "legacy block",
+      "since": "pre-2026-05",
+      "verified_blocked_at_exec": true,
+      "ref": "alpha_engine/config.py:216"
+    },
+    {
+      "name": "quan_engine_scalp",
+      "reason": "legacy block",
+      "since": "pre-2026-05",
+      "verified_blocked_at_exec": true,
+      "ref": "alpha_engine/config.py:216"
+    },
+    {
+      "name": "forex_rsi2_mean_reversion",
+      "reason": "43.3% WR, PF 0.37, n=593 large-n bleeder",
+      "since": "2026-05-06",
+      "verified_blocked_at_exec": true,
+      "ref": "audit_trail/quality_gates.py:874"
+    }
+  ],
+  "quarantined_asset_strategy_pairs": [
+    {
+      "asset_class": "CRYPTO",
+      "strategy": "crypto_soc_proxy_decoupling",
+      "reason": "-32.2% PnL, 66% BT WR vs 32% live",
+      "since": "2026-05-12",
+      "ref": "audit_trail/quality_gates.py:1611 (PR #908)"
+    },
+    {
+      "asset_class": "CRYPTO",
+      "strategy": "crypto_soc_delta_divergence",
+      "reason": "-21.6% PnL, overfit fwd_vs_bt",
+      "since": "2026-05-12",
+      "ref": "audit_trail/quality_gates.py:1611 (PR #908)"
+    },
+    {
+      "asset_class": "CRYPTO",
+      "strategy": "crypto_soc_orderflow_absorption",
+      "reason": "-14.8% PnL",
+      "since": "2026-05-12",
+      "ref": "audit_trail/quality_gates.py:1611 (PR #908)"
+    }
+  ],
+  "per_source_volume_caps": {
+    "quan_engine": {
+      "CRYPTO": 0.05,
+      "reason": "Kimi finding: low-PF CRYPTO drag; synced to enforced code value 0.05",
+      "since": "2026-05-12",
+      "ref": "alpha_engine/per_source_volume_cap.py"
+    },
+    "luxalgo_filters": {
+      "CRYPTO": 0.1,
+      "reason": "PF 1.12, ~17.5% of CRYPTO n — dilutive vs class PF 1.29",
+      "since": "2026-05-15",
+      "ref": "reports/asset_class_verification_2026-05-15.md"
+    },
+    "battleground": {
+      "CRYPTO": 0.02,
+      "reason": "2026-05-16 autopsy: PF 0.65 — sub-floor drag, severe dilution of CRYPTO class WR",
+      "since": "2026-05-16",
+      "ref": "alpha_engine/per_source_volume_cap.py"
+    },
+    "copy_trader_highscore": {
+      "CRYPTO": 0.02,
+      "reason": "2026-05-16 autopsy: PF 0.80 WR 30.3% n=99 — dilutive drag",
+      "since": "2026-05-16",
+      "ref": "alpha_engine/per_source_volume_cap.py"
+    },
+    "regime_terminal": {
+      "CRYPTO": 0.02,
+      "reason": "2026-05-16 autopsy: PF 0.95 WR 32.3% n=65 — sub-floor, reduces class WR",
+      "since": "2026-05-16",
+      "ref": "alpha_engine/per_source_volume_cap.py"
+    },
+    "rapid_fire": {
+      "CRYPTO": 0.05,
+      "FOREX": 0.05,
+      "reason": "2026-05-16 autopsy: PF 0.81 WR 37.1% n=570 across CRYPTO+FOREX � already score-filtered (>=10) but still sub-floor; intake cap reduces dilution",
+      "since": "2026-05-16",
+      "ref": "alpha_engine/per_source_volume_cap.py"
+    },
+    "super_signals": {
+      "CRYPTO": 0.05,
+      "reason": "2026-05-16 autopsy: PF 0.86 WR 36.8% n=161 � bypasses smart_picks_engine (quality_gates.py:3795); intake cap needed",
+      "since": "2026-05-16",
+      "ref": "alpha_engine/per_source_volume_cap.py"
+    }
+  },
+  "forex_sizing_pf_floor": {
+    "floor": 0.8,
+    "current_state": "BLOCKED until PF >= 0.8",
+    "current_pf": 0.29,
+    "since": "2026-05-12",
+    "ref": "alpha_engine/risk_policy_check.py (PR #909)",
+    "protocol": "mutate-before-kill per docs/MUTATION_THREE_AXIS_PROTOCOL.md"
+  },
+  "leaderboard_demote": {
+    "rule": "Strategies in BLACKLISTED_STRATEGIES are marked is_blacklisted=True + pushed to bottom of leaderboard sort (preserve row, demote rank)",
+    "since": "2026-05-12",
+    "ref": "audit_trail/dashboard_generator.py:11473 (PR #910)"
+  },
+  "anti_overfit_validator": {
+    "wired": true,
+    "default_on": false,
+    "env_flag": "ANTI_OVERFIT_VALIDATOR_ENABLED",
+    "thresholds": {
+      "dsr_min": 0.95,
+      "pbo_max": 0.5
+    },
+    "since": "2026-05-12",
+    "ref": "audit_trail/quality_gates.py:79 (PR #912)"
+  },
+  "sports_excluded_from_audit": {
+    "classes_excluded": [
+      "SPORTS",
+      "BETTING",
+      "SPORT",
+      "BET"
+    ],
+    "reason": "Different KPIs (CLV, vig, sport-tier matrices). Routed to /live-monitor/sports-betting.html",
+    "since": "2026-05-12",
+    "ref": "audit_trail/dashboard_generator.py:5344 (PR #905)"
+  }
+}

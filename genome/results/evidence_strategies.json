@@ -1,0 +1,377 @@
+{
+  "timestamp": "2026-03-03T03:13:08.232618Z",
+  "count": 10,
+  "strategies": [
+    {
+      "strategy_id": "evidence_vol_scaled_trend",
+      "name": "Vol-Scaled Trend Following",
+      "category": "trend_following",
+      "description": "Position size inversely proportional to realized volatility. Long when price > 200d MA, short when below. Man Group AHL documented Sharpe 1.62 with -15.5% max DD.",
+      "source_paper": "Man Group AHL 'In Crypto We Trend'; XBTO 2024",
+      "documented_sharpe": 1.62,
+      "documented_win_rate": 0.55,
+      "genes": {
+        "primary_indicator": "SMA",
+        "sma_period": 200,
+        "entry_logic": "price_above_sma",
+        "exit_logic": "price_below_sma",
+        "position_sizing": "inverse_volatility",
+        "vol_lookback": 30,
+        "vol_target": 0.15,
+        "max_position_pct": 0.1,
+        "regime_filter": "trend"
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "LINKUSDT",
+        "DOGEUSDT",
+        "ADAUSDT",
+        "DOTUSDT",
+        "BNBUSDT",
+        "MATICUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "risk_per_trade": 0.01,
+      "requires_data": [
+        "price_ohlcv",
+        "realized_volatility"
+      ]
+    },
+    {
+      "strategy_id": "evidence_donchian_ensemble",
+      "name": "Donchian Channel Ensemble",
+      "category": "trend_following",
+      "description": "Ensemble of Donchian channels across multiple lookback periods. Zarattini et al. achieved Sharpe >1.5, 10.8% alpha over BTC.",
+      "source_paper": "Zarattini et al. (SSRN 2025) - Catching Crypto Trends",
+      "documented_sharpe": 1.5,
+      "documented_win_rate": 0.52,
+      "genes": {
+        "primary_indicator": "DonchianChannel",
+        "donchian_periods": [
+          20,
+          40,
+          60
+        ],
+        "entry_logic": "donchian_breakout_ensemble",
+        "exit_logic": "donchian_midline_cross",
+        "position_sizing": "inverse_volatility",
+        "vol_lookback": 20,
+        "confirmation_required": 2
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "LINKUSDT",
+        "DOGEUSDT",
+        "ADAUSDT",
+        "DOTUSDT",
+        "BNBUSDT",
+        "XRPUSDT",
+        "ATOMUSDT",
+        "NEARUSDT",
+        "APTUSDT",
+        "ARBUSDT",
+        "OPUSDT"
+      ],
+      "timeframes": [
+        "4h",
+        "1d"
+      ],
+      "risk_per_trade": 0.01,
+      "requires_data": [
+        "price_ohlcv"
+      ]
+    },
+    {
+      "strategy_id": "evidence_20d_high_momentum",
+      "name": "20-Day High Momentum",
+      "category": "trend_following",
+      "description": "Buy when BTC hits 20-day high. Survived 2022 crash, profitable across 2015-2024. Simple, robust.",
+      "source_paper": "Beluska & Vojtko (QuantPedia 2024)",
+      "documented_sharpe": 1.3,
+      "documented_win_rate": 0.53,
+      "genes": {
+        "primary_indicator": "DonchianHigh",
+        "lookback_period": 20,
+        "entry_logic": "new_high_breakout",
+        "exit_logic": "trailing_stop_atr",
+        "trailing_atr_mult": 3.0,
+        "position_sizing": "inverse_volatility"
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "risk_per_trade": 0.015,
+      "requires_data": [
+        "price_ohlcv"
+      ]
+    },
+    {
+      "strategy_id": "evidence_funding_carry",
+      "name": "Funding Rate Carry (Spot Long + Perp Short)",
+      "category": "carry",
+      "description": "Market-neutral: long spot + short perp when funding > threshold. Documented 18-31% annual, Sharpe 1.4-2.3. ML-enhanced version: 31% annual, Sharpe 2.3.",
+      "source_paper": "ScienceDirect 2025; Gate.com Research 2025",
+      "documented_sharpe": 2.3,
+      "documented_win_rate": 0.6,
+      "genes": {
+        "primary_indicator": "FundingRate",
+        "funding_entry_threshold": 0.0003,
+        "funding_exit_threshold": 0.0001,
+        "entry_logic": "funding_above_threshold",
+        "exit_logic": "funding_below_exit",
+        "max_hold_hours": 48,
+        "position_sizing": "fixed_fractional",
+        "hedge_ratio": 1.0
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "DOGEUSDT",
+        "AVAXUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "risk_per_trade": 0.01,
+      "requires_data": [
+        "funding_rates",
+        "spot_price",
+        "perp_price"
+      ]
+    },
+    {
+      "strategy_id": "evidence_pairs_cointegration",
+      "name": "Cointegrated Pairs (BTC/ETH)",
+      "category": "pairs",
+      "description": "Statistical arbitrage on cointegrated pairs. Tadi 2023: Sharpe 3.97, Information Ratio 2.18. Trade the spread, not direction.",
+      "source_paper": "Tadi (arXiv 2023) - Copula-Based Trading of Cointegrated Crypto Pairs",
+      "documented_sharpe": 3.97,
+      "documented_win_rate": 0.62,
+      "genes": {
+        "primary_indicator": "Spread",
+        "pair_a": "BTCUSDT",
+        "pair_b": "ETHUSDT",
+        "spread_lookback": 60,
+        "entry_zscore": 2.0,
+        "exit_zscore": 0.5,
+        "entry_logic": "zscore_extreme",
+        "exit_logic": "zscore_mean_revert",
+        "position_sizing": "fixed_fractional",
+        "hedge_ratio": "dynamic_ols"
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "risk_per_trade": 0.01,
+      "requires_data": [
+        "price_ohlcv"
+      ]
+    },
+    {
+      "strategy_id": "evidence_bb_squeeze_breakout",
+      "name": "Bollinger Squeeze Breakout",
+      "category": "trend_following",
+      "description": "Bollinger Bands width compression followed by expansion. Arda 2025: outperformed mean reversion in bear and accumulation phases.",
+      "source_paper": "Arda (SSRN 2025) - Bollinger Bands Under Varying Market Regimes",
+      "documented_sharpe": 1.2,
+      "documented_win_rate": 0.55,
+      "genes": {
+        "primary_indicator": "BollingerBands",
+        "bb_period": 20,
+        "bb_std": 2.0,
+        "squeeze_threshold": 0.04,
+        "squeeze_min_bars": 10,
+        "entry_logic": "bb_expansion_breakout",
+        "exit_logic": "bb_midline_retouch",
+        "position_sizing": "inverse_volatility",
+        "regime_filter": "accumulation_or_bear"
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "LINKUSDT"
+      ],
+      "timeframes": [
+        "4h",
+        "1d"
+      ],
+      "risk_per_trade": 0.015,
+      "requires_data": [
+        "price_ohlcv"
+      ]
+    },
+    {
+      "strategy_id": "evidence_fng_contrarian",
+      "name": "Fear & Greed Extreme Contrarian",
+      "category": "sentiment",
+      "description": "Buy 1% capital at F&G <= 20, sell 1% at F&G >= 80. Backtested 1145% ROI vs 1046% buy-and-hold. Combined with 200d MA filter for regime awareness.",
+      "source_paper": "Bitcoin Magazine 2024; Nasdaq Backtest (14.6% annual)",
+      "documented_sharpe": 1.1,
+      "documented_win_rate": 0.6,
+      "genes": {
+        "primary_indicator": "FearGreedIndex",
+        "fear_threshold": 20,
+        "greed_threshold": 80,
+        "entry_logic": "fng_extreme_fear",
+        "exit_logic": "fng_extreme_greed",
+        "dca_pct": 0.01,
+        "regime_filter": "sma_200",
+        "position_sizing": "dca_fixed"
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "risk_per_trade": 0.01,
+      "requires_data": [
+        "fear_greed_index",
+        "price_ohlcv"
+      ]
+    },
+    {
+      "strategy_id": "evidence_regime_adaptive",
+      "name": "Volatility-Regime Adaptive",
+      "category": "trend_following",
+      "description": "Switches between trend following and mean reversion based on realized vol regime. High vol = trend follow, low vol = mean revert. Based on Man Group + QuantConnect combined carry+trend research.",
+      "source_paper": "QuantConnect 2023 (Combined Carry+Trend, Sharpe 0.749); Man Group",
+      "documented_sharpe": 1.0,
+      "documented_win_rate": 0.52,
+      "genes": {
+        "primary_indicator": "RealizedVol",
+        "vol_lookback": 30,
+        "high_vol_threshold": 0.6,
+        "low_vol_threshold": 0.4,
+        "trend_mode_indicator": "DonchianChannel",
+        "trend_donchian_period": 20,
+        "mr_mode_indicator": "RSI",
+        "mr_rsi_period": 5,
+        "mr_rsi_oversold": 25,
+        "mr_rsi_overbought": 75,
+        "entry_logic": "regime_adaptive",
+        "exit_logic": "regime_adaptive_exit",
+        "position_sizing": "inverse_volatility"
+      },
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT"
+      ],
+      "timeframes": [
+        "4h",
+        "1d"
+      ],
+      "risk_per_trade": 0.01,
+      "requires_data": [
+        "price_ohlcv",
+        "realized_volatility"
+      ]
+    },
+    {
+      "strategy_id": "evidence_hash_ribbon",
+      "name": "Hash Ribbon Miner Capitulation",
+      "category": "on_chain",
+      "description": "Buy when 30d hashrate MA crosses above 60d hashrate MA after a death cross. Edwards 2019: 78% historical WR.",
+      "source_paper": "Charles Edwards (Capriole 2019) - Hash Ribbons",
+      "documented_sharpe": 1.5,
+      "documented_win_rate": 0.78,
+      "genes": {
+        "primary_indicator": "HashRate",
+        "fast_ma": 30,
+        "slow_ma": 60,
+        "entry_logic": "hash_ribbon_buy",
+        "exit_logic": "trailing_stop_pct",
+        "trailing_stop_pct": 0.15,
+        "position_sizing": "fixed_fractional"
+      },
+      "symbols": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "risk_per_trade": 0.02,
+      "requires_data": [
+        "btc_hashrate",
+        "price_ohlcv"
+      ]
+    },
+    {
+      "strategy_id": "evidence_etf_onchain_composite",
+      "name": "ETF Flow + On-Chain Composite",
+      "category": "on_chain",
+      "description": "Composite signal: ETF inflow + MVRV < 1.5 + active addresses rising. 21Shares: 84.3% predictive accuracy since ETF launch.",
+      "source_paper": "21Shares Research 2024 - Two Eras of Bitcoin Valuation",
+      "documented_sharpe": 1.4,
+      "documented_win_rate": 0.65,
+      "genes": {
+        "primary_indicator": "Composite",
+        "components": [
+          "etf_flow",
+          "mvrv_ratio",
+          "active_addresses"
+        ],
+        "mvrv_oversold": 1.0,
+        "mvrv_overbought": 3.5,
+        "address_growth_threshold": 0.05,
+        "entry_logic": "composite_bullish",
+        "exit_logic": "composite_bearish",
+        "position_sizing": "inverse_volatility"
+      },
+      "symbols": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "risk_per_trade": 0.02,
+      "requires_data": [
+        "etf_flows",
+        "mvrv_ratio",
+        "active_addresses",
+        "price_ohlcv"
+      ]
+    }
+  ],
+  "tier_summary": {
+    "tier_1_strong": [
+      "Vol-Scaled Trend Following",
+      "Donchian Channel Ensemble",
+      "Funding Rate Carry (Spot Long + Perp Short)",
+      "Cointegrated Pairs (BTC/ETH)",
+      "Hash Ribbon Miner Capitulation"
+    ],
+    "tier_2_moderate": [
+      "20-Day High Momentum",
+      "Bollinger Squeeze Breakout",
+      "Fear & Greed Extreme Contrarian",
+      "Volatility-Regime Adaptive",
+      "ETF Flow + On-Chain Composite"
+    ]
+  }
+}

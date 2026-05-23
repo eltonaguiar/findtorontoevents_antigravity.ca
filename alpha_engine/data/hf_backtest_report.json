@@ -1,0 +1,811 @@
+{
+  "meta": {
+    "generated_at": "2026-03-24T23:41:08.570900+00:00",
+    "pipeline_version": "1.0.0",
+    "description": "Hedge-Fund-Grade Walk-Forward Backtesting Pipeline",
+    "n_picks_loaded": 493,
+    "date_range": "2026-01-01 to 2026-03-24"
+  },
+  "portfolio_summary": {
+    "total_trades": 493,
+    "wins": 173,
+    "losses": 320,
+    "win_rate": 0.3509,
+    "total_pnl_pct": 5.9279,
+    "mean_pnl_pct": 0.012,
+    "median_pnl_pct": 0.0,
+    "std_pnl_pct": 0.105,
+    "max_drawdown_pct": 1.9393,
+    "gross_profit_pct": 16.8076,
+    "gross_loss_pct": 10.8797,
+    "profit_factor": 1.5449,
+    "sharpe_ratio": 1.8178,
+    "best_trade_pct": 0.4905,
+    "worst_trade_pct": -0.3782
+  },
+  "walk_forward_results": {
+    "n_windows": 3,
+    "avg_win_rate": 0.8605,
+    "avg_profit_factor": 1.3153,
+    "avg_sharpe": 0.681,
+    "wr_std": 0.0809,
+    "windows": [
+      {
+        "win_rate": 0.7755,
+        "profit_factor": 1.1627,
+        "sharpe_ratio": 0.6387,
+        "precision": 0.6571,
+        "n_trades": 98,
+        "n_wins": 33,
+        "mean_pnl_pct": 0.0017,
+        "total_pnl_pct": 0.1703,
+        "window": 1,
+        "train_range": "picks 0-197",
+        "test_range": "picks 197-295",
+        "train_wr": 0.4822,
+        "feature_importance": {
+          "confidence": 0.1138,
+          "elite_score": 0.1244,
+          "risk_reward": 0.4601,
+          "volume_ratio": 0.053,
+          "direction": 0.3642,
+          "strategy_wr": 2.5383,
+          "category": 0.118,
+          "hold_days": 0.1034,
+          "hour_utc": 0.1255
+        }
+      },
+      {
+        "win_rate": 0.8367,
+        "profit_factor": 1.0625,
+        "sharpe_ratio": 0.239,
+        "precision": 0.9545,
+        "n_trades": 98,
+        "n_wins": 36,
+        "mean_pnl_pct": 0.0009,
+        "total_pnl_pct": 0.0873,
+        "window": 2,
+        "train_range": "picks 98-295",
+        "test_range": "picks 295-393",
+        "train_wr": 0.4365,
+        "feature_importance": {
+          "confidence": 0.1945,
+          "elite_score": 0.2461,
+          "risk_reward": 0.0233,
+          "volume_ratio": 0.0471,
+          "direction": 0.4552,
+          "strategy_wr": 2.1603,
+          "category": 0.085,
+          "hold_days": 0.0852,
+          "hour_utc": 0.0771
+        }
+      },
+      {
+        "win_rate": 0.9694,
+        "profit_factor": 1.7207,
+        "sharpe_ratio": 1.1652,
+        "precision": 0.875,
+        "n_trades": 98,
+        "n_wins": 9,
+        "mean_pnl_pct": 0.0052,
+        "total_pnl_pct": 0.5049,
+        "window": 3,
+        "train_range": "picks 196-393",
+        "test_range": "picks 393-491",
+        "train_wr": 0.3503,
+        "feature_importance": {
+          "confidence": 0.1938,
+          "elite_score": 0.0845,
+          "risk_reward": 0.0481,
+          "volume_ratio": 0.0008,
+          "direction": 0.2071,
+          "strategy_wr": 1.8181,
+          "category": 0.0894,
+          "hold_days": 0.0248,
+          "hour_utc": 0.0908
+        }
+      }
+    ]
+  },
+  "monte_carlo_stress_test": {
+    "n_simulations": 1000,
+    "n_trades": 493,
+    "max_drawdown": {
+      "p5": 0.7419,
+      "p25": 0.9159,
+      "p50": 1.1103,
+      "p75": 1.3361,
+      "p95": 1.7636,
+      "mean": 1.1604,
+      "std": 0.3294
+    },
+    "final_pnl": {
+      "p5": 5.9279,
+      "p25": 5.9279,
+      "p50": 5.9279,
+      "p75": 5.9279,
+      "p95": 5.9279,
+      "mean": 5.9279,
+      "std": 0.0
+    },
+    "sharpe_ratio": {
+      "p5": 1.8178,
+      "p25": 1.8178,
+      "p50": 1.8178,
+      "p75": 1.8178,
+      "p95": 1.8178,
+      "mean": 1.8178,
+      "std": 0.0
+    },
+    "max_consecutive_losses": {
+      "p5": 6.0,
+      "p25": 7.0,
+      "p50": 8.0,
+      "p75": 9.0,
+      "p95": 11.0,
+      "mean": 7.784,
+      "std": 1.6314
+    },
+    "actual_vs_random": {
+      "actual_max_drawdown": 1.9393,
+      "actual_final_pnl": 5.9279,
+      "actual_sharpe": 1.8178,
+      "drawdown_percentile_rank": 0.968,
+      "pnl_percentile_rank": 0.986,
+      "sharpe_percentile_rank": 1.0,
+      "luck_assessment": "STRONG_SKILL \u2014 trade ordering significantly better than random"
+    }
+  },
+  "parameter_sensitivity": {
+    "n_combos_tested": 43,
+    "matrix": [
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "0.5-1.5",
+        "direction": "BOTH",
+        "n_trades": 243,
+        "win_rate": 0.3704,
+        "profit_factor": 0.9881,
+        "sharpe_ratio": -0.0575,
+        "mean_pnl_pct": -0.0002,
+        "total_pnl_pct": -0.0564
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "0.5-1.5",
+        "direction": "LONG",
+        "n_trades": 216,
+        "win_rate": 0.4167,
+        "profit_factor": 1.7213,
+        "sharpe_ratio": 2.4433,
+        "mean_pnl_pct": 0.0091,
+        "total_pnl_pct": 1.9661
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "0.5-1.5",
+        "direction": "SHORT",
+        "n_trades": 27,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_ratio": -23.3189,
+        "mean_pnl_pct": -0.0749,
+        "total_pnl_pct": -2.0224
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "1.0-2.0",
+        "direction": "BOTH",
+        "n_trades": 368,
+        "win_rate": 0.3533,
+        "profit_factor": 2.1364,
+        "sharpe_ratio": 2.8885,
+        "mean_pnl_pct": 0.0187,
+        "total_pnl_pct": 6.896
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "1.0-2.0",
+        "direction": "LONG",
+        "n_trades": 333,
+        "win_rate": 0.3904,
+        "profit_factor": 3.2042,
+        "sharpe_ratio": 4.1051,
+        "mean_pnl_pct": 0.0268,
+        "total_pnl_pct": 8.9184
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "1.0-2.0",
+        "direction": "SHORT",
+        "n_trades": 35,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_ratio": -16.7608,
+        "mean_pnl_pct": -0.0578,
+        "total_pnl_pct": -2.0224
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "1.5-2.5",
+        "direction": "BOTH",
+        "n_trades": 148,
+        "win_rate": 0.3716,
+        "profit_factor": 5.872,
+        "sharpe_ratio": 6.1084,
+        "mean_pnl_pct": 0.0538,
+        "total_pnl_pct": 7.9584
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "1.5-2.5",
+        "direction": "LONG",
+        "n_trades": 140,
+        "win_rate": 0.3929,
+        "profit_factor": 5.872,
+        "sharpe_ratio": 6.3073,
+        "mean_pnl_pct": 0.0568,
+        "total_pnl_pct": 7.9584
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "2.0-3.0",
+        "direction": "BOTH",
+        "n_trades": 67,
+        "win_rate": 0.3881,
+        "profit_factor": 2.3299,
+        "sharpe_ratio": 3.8333,
+        "mean_pnl_pct": 0.0238,
+        "total_pnl_pct": 1.5961
+      },
+      {
+        "confidence_threshold": 0.6,
+        "rr_range": "2.0-3.0",
+        "direction": "LONG",
+        "n_trades": 65,
+        "win_rate": 0.4,
+        "profit_factor": 2.3299,
+        "sharpe_ratio": 3.8953,
+        "mean_pnl_pct": 0.0246,
+        "total_pnl_pct": 1.5961
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "0.5-1.5",
+        "direction": "BOTH",
+        "n_trades": 217,
+        "win_rate": 0.4009,
+        "profit_factor": 1.7291,
+        "sharpe_ratio": 2.4321,
+        "mean_pnl_pct": 0.009,
+        "total_pnl_pct": 1.9576
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "0.5-1.5",
+        "direction": "LONG",
+        "n_trades": 210,
+        "win_rate": 0.4143,
+        "profit_factor": 1.7291,
+        "sharpe_ratio": 2.4733,
+        "mean_pnl_pct": 0.0093,
+        "total_pnl_pct": 1.9576
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "1.0-2.0",
+        "direction": "BOTH",
+        "n_trades": 313,
+        "win_rate": 0.3514,
+        "profit_factor": 3.177,
+        "sharpe_ratio": 3.8404,
+        "mean_pnl_pct": 0.0244,
+        "total_pnl_pct": 7.6303
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "1.0-2.0",
+        "direction": "LONG",
+        "n_trades": 298,
+        "win_rate": 0.3691,
+        "profit_factor": 3.177,
+        "sharpe_ratio": 3.9417,
+        "mean_pnl_pct": 0.0256,
+        "total_pnl_pct": 7.6303
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "1.0-2.0",
+        "direction": "SHORT",
+        "n_trades": 15,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_ratio": 0.0,
+        "mean_pnl_pct": 0.0,
+        "total_pnl_pct": 0.0
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "1.5-2.5",
+        "direction": "BOTH",
+        "n_trades": 101,
+        "win_rate": 0.2574,
+        "profit_factor": 7.3262,
+        "sharpe_ratio": 5.86,
+        "mean_pnl_pct": 0.0555,
+        "total_pnl_pct": 5.6105
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "1.5-2.5",
+        "direction": "LONG",
+        "n_trades": 93,
+        "win_rate": 0.2796,
+        "profit_factor": 7.3262,
+        "sharpe_ratio": 6.143,
+        "mean_pnl_pct": 0.0603,
+        "total_pnl_pct": 5.6105
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "2.0-3.0",
+        "direction": "BOTH",
+        "n_trades": 33,
+        "win_rate": 0.2121,
+        "profit_factor": 1.2068,
+        "sharpe_ratio": 0.6879,
+        "mean_pnl_pct": 0.0029,
+        "total_pnl_pct": 0.0953
+      },
+      {
+        "confidence_threshold": 0.65,
+        "rr_range": "2.0-3.0",
+        "direction": "LONG",
+        "n_trades": 31,
+        "win_rate": 0.2258,
+        "profit_factor": 1.2068,
+        "sharpe_ratio": 0.7098,
+        "mean_pnl_pct": 0.0031,
+        "total_pnl_pct": 0.0953
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "0.5-1.5",
+        "direction": "BOTH",
+        "n_trades": 114,
+        "win_rate": 0.5526,
+        "profit_factor": 3.411,
+        "sharpe_ratio": 5.6174,
+        "mean_pnl_pct": 0.0246,
+        "total_pnl_pct": 2.7992
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "0.5-1.5",
+        "direction": "LONG",
+        "n_trades": 112,
+        "win_rate": 0.5625,
+        "profit_factor": 3.411,
+        "sharpe_ratio": 5.6737,
+        "mean_pnl_pct": 0.025,
+        "total_pnl_pct": 2.7992
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "1.0-2.0",
+        "direction": "BOTH",
+        "n_trades": 182,
+        "win_rate": 0.456,
+        "profit_factor": 5.7157,
+        "sharpe_ratio": 6.0064,
+        "mean_pnl_pct": 0.0469,
+        "total_pnl_pct": 8.5377
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "1.0-2.0",
+        "direction": "LONG",
+        "n_trades": 177,
+        "win_rate": 0.4689,
+        "profit_factor": 5.7157,
+        "sharpe_ratio": 6.103,
+        "mean_pnl_pct": 0.0482,
+        "total_pnl_pct": 8.5377
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "1.5-2.5",
+        "direction": "BOTH",
+        "n_trades": 71,
+        "win_rate": 0.3099,
+        "profit_factor": 8.9247,
+        "sharpe_ratio": 7.3236,
+        "mean_pnl_pct": 0.0799,
+        "total_pnl_pct": 5.6751
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "1.5-2.5",
+        "direction": "LONG",
+        "n_trades": 68,
+        "win_rate": 0.3235,
+        "profit_factor": 8.9247,
+        "sharpe_ratio": 7.5188,
+        "mean_pnl_pct": 0.0835,
+        "total_pnl_pct": 5.6751
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "2.0-3.0",
+        "direction": "BOTH",
+        "n_trades": 21,
+        "win_rate": 0.2857,
+        "profit_factor": 1.2045,
+        "sharpe_ratio": 0.8532,
+        "mean_pnl_pct": 0.0045,
+        "total_pnl_pct": 0.0942
+      },
+      {
+        "confidence_threshold": 0.7,
+        "rr_range": "2.0-3.0",
+        "direction": "LONG",
+        "n_trades": 21,
+        "win_rate": 0.2857,
+        "profit_factor": 1.2045,
+        "sharpe_ratio": 0.8532,
+        "mean_pnl_pct": 0.0045,
+        "total_pnl_pct": 0.0942
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "0.5-1.5",
+        "direction": "BOTH",
+        "n_trades": 101,
+        "win_rate": 0.5743,
+        "profit_factor": 3.7253,
+        "sharpe_ratio": 5.8716,
+        "mean_pnl_pct": 0.0267,
+        "total_pnl_pct": 2.6958
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "0.5-1.5",
+        "direction": "LONG",
+        "n_trades": 99,
+        "win_rate": 0.5859,
+        "profit_factor": 3.7253,
+        "sharpe_ratio": 5.9388,
+        "mean_pnl_pct": 0.0272,
+        "total_pnl_pct": 2.6958
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "1.0-2.0",
+        "direction": "BOTH",
+        "n_trades": 153,
+        "win_rate": 0.5098,
+        "profit_factor": 6.2785,
+        "sharpe_ratio": 6.6032,
+        "mean_pnl_pct": 0.0553,
+        "total_pnl_pct": 8.4685
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "1.0-2.0",
+        "direction": "LONG",
+        "n_trades": 148,
+        "win_rate": 0.527,
+        "profit_factor": 6.2785,
+        "sharpe_ratio": 6.7336,
+        "mean_pnl_pct": 0.0572,
+        "total_pnl_pct": 8.4685
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "1.5-2.5",
+        "direction": "BOTH",
+        "n_trades": 55,
+        "win_rate": 0.4,
+        "profit_factor": 9.3733,
+        "sharpe_ratio": 8.6597,
+        "mean_pnl_pct": 0.1038,
+        "total_pnl_pct": 5.7094
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "1.5-2.5",
+        "direction": "LONG",
+        "n_trades": 52,
+        "win_rate": 0.4231,
+        "profit_factor": 9.3733,
+        "sharpe_ratio": 8.9835,
+        "mean_pnl_pct": 0.1098,
+        "total_pnl_pct": 5.7094
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "2.0-3.0",
+        "direction": "BOTH",
+        "n_trades": 17,
+        "win_rate": 0.3529,
+        "profit_factor": 1.3173,
+        "sharpe_ratio": 1.3508,
+        "mean_pnl_pct": 0.0079,
+        "total_pnl_pct": 0.1336
+      },
+      {
+        "confidence_threshold": 0.75,
+        "rr_range": "2.0-3.0",
+        "direction": "LONG",
+        "n_trades": 17,
+        "win_rate": 0.3529,
+        "profit_factor": 1.3173,
+        "sharpe_ratio": 1.3508,
+        "mean_pnl_pct": 0.0079,
+        "total_pnl_pct": 0.1336
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "0.5-1.5",
+        "direction": "BOTH",
+        "n_trades": 87,
+        "win_rate": 0.5862,
+        "profit_factor": 3.8758,
+        "sharpe_ratio": 5.9863,
+        "mean_pnl_pct": 0.0288,
+        "total_pnl_pct": 2.5034
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "0.5-1.5",
+        "direction": "LONG",
+        "n_trades": 87,
+        "win_rate": 0.5862,
+        "profit_factor": 3.8758,
+        "sharpe_ratio": 5.9863,
+        "mean_pnl_pct": 0.0288,
+        "total_pnl_pct": 2.5034
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "1.0-2.0",
+        "direction": "BOTH",
+        "n_trades": 123,
+        "win_rate": 0.5691,
+        "profit_factor": 7.5215,
+        "sharpe_ratio": 7.5202,
+        "mean_pnl_pct": 0.0685,
+        "total_pnl_pct": 8.4212
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "1.0-2.0",
+        "direction": "LONG",
+        "n_trades": 123,
+        "win_rate": 0.5691,
+        "profit_factor": 7.5215,
+        "sharpe_ratio": 7.5202,
+        "mean_pnl_pct": 0.0685,
+        "total_pnl_pct": 8.4212
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "1.5-2.5",
+        "direction": "BOTH",
+        "n_trades": 39,
+        "win_rate": 0.5385,
+        "profit_factor": 13.0105,
+        "sharpe_ratio": 11.4383,
+        "mean_pnl_pct": 0.1501,
+        "total_pnl_pct": 5.8543
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "1.5-2.5",
+        "direction": "LONG",
+        "n_trades": 39,
+        "win_rate": 0.5385,
+        "profit_factor": 13.0105,
+        "sharpe_ratio": 11.4383,
+        "mean_pnl_pct": 0.1501,
+        "total_pnl_pct": 5.8543
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "2.0-3.0",
+        "direction": "BOTH",
+        "n_trades": 14,
+        "win_rate": 0.4286,
+        "profit_factor": 1.8883,
+        "sharpe_ratio": 3.0351,
+        "mean_pnl_pct": 0.0186,
+        "total_pnl_pct": 0.261
+      },
+      {
+        "confidence_threshold": 0.8,
+        "rr_range": "2.0-3.0",
+        "direction": "LONG",
+        "n_trades": 14,
+        "win_rate": 0.4286,
+        "profit_factor": 1.8883,
+        "sharpe_ratio": 3.0351,
+        "mean_pnl_pct": 0.0186,
+        "total_pnl_pct": 0.261
+      }
+    ],
+    "best_combo": {
+      "confidence_threshold": 0.75,
+      "rr_range": "0.5-1.5",
+      "direction": "LONG",
+      "n_trades": 99,
+      "win_rate": 0.5859,
+      "profit_factor": 3.7253,
+      "sharpe_ratio": 5.9388,
+      "mean_pnl_pct": 0.0272,
+      "total_pnl_pct": 2.6958,
+      "composite_score": 0.8738
+    },
+    "robustness": {
+      "assessment": "ROBUST \u2014 profitable across multiple parameter settings",
+      "profitable_combos": 12,
+      "total_combos": 43,
+      "profitable_pct": 27.9,
+      "n_profitable_conf_levels": 3,
+      "n_profitable_rr_ranges": 3,
+      "confidence_interval": "0.7-0.8",
+      "rr_interval": "0.5-1.5 to 1.5-2.5"
+    }
+  },
+  "strategy_leaderboard": [
+    {
+      "strategy": "ml_enhanced_FETUSDT_1d_B_lightgbm",
+      "trades": 16,
+      "win_rate": 0.9375,
+      "total_pnl_pct": 6.075,
+      "mean_pnl_pct": 0.3797
+    },
+    {
+      "strategy": "ml_enhanced_RENDERUSDT_1h_D_ensemble_stack",
+      "trades": 16,
+      "win_rate": 0.875,
+      "total_pnl_pct": 1.7054,
+      "mean_pnl_pct": 0.1066
+    },
+    {
+      "strategy": "ml_enhanced_BNBUSDT_15m_B_lightgbm",
+      "trades": 17,
+      "win_rate": 0.8824,
+      "total_pnl_pct": 1.0287,
+      "mean_pnl_pct": 0.0605
+    },
+    {
+      "strategy": "ml_enhanced_RENDERUSDT_4h_D_ensemble_stack",
+      "trades": 7,
+      "win_rate": 0.8571,
+      "total_pnl_pct": 0.8471,
+      "mean_pnl_pct": 0.121
+    },
+    {
+      "strategy": "copy_hl_NMTD_25M",
+      "trades": 16,
+      "win_rate": 0.8125,
+      "total_pnl_pct": 0.3204,
+      "mean_pnl_pct": 0.02
+    },
+    {
+      "strategy": "binance_smart_money",
+      "trades": 20,
+      "win_rate": 0.55,
+      "total_pnl_pct": 0.3003,
+      "mean_pnl_pct": 0.015
+    },
+    {
+      "strategy": "emergency_gainer_capture",
+      "trades": 4,
+      "win_rate": 1.0,
+      "total_pnl_pct": 0.1545,
+      "mean_pnl_pct": 0.0386
+    },
+    {
+      "strategy": "copy_hl_whale_123M_87roi",
+      "trades": 4,
+      "win_rate": 1.0,
+      "total_pnl_pct": 0.1179,
+      "mean_pnl_pct": 0.0295
+    },
+    {
+      "strategy": "futures_momentum",
+      "trades": 4,
+      "win_rate": 0.0,
+      "total_pnl_pct": 0.0,
+      "mean_pnl_pct": 0.0
+    },
+    {
+      "strategy": "forex_carry_momentum",
+      "trades": 4,
+      "win_rate": 0.0,
+      "total_pnl_pct": 0.0,
+      "mean_pnl_pct": 0.0
+    },
+    {
+      "strategy": "ig_contrarian_sentiment",
+      "trades": 3,
+      "win_rate": 0.6667,
+      "total_pnl_pct": 0.0,
+      "mean_pnl_pct": 0.0
+    },
+    {
+      "strategy": "stocks_rsi2_pullback",
+      "trades": 3,
+      "win_rate": 0.0,
+      "total_pnl_pct": 0.0,
+      "mean_pnl_pct": 0.0
+    },
+    {
+      "strategy": "cta_commodity_momentum_term",
+      "trades": 4,
+      "win_rate": 0.25,
+      "total_pnl_pct": -0.0155,
+      "mean_pnl_pct": -0.0039
+    },
+    {
+      "strategy": "futures_bb_mean_reversion",
+      "trades": 5,
+      "win_rate": 0.2,
+      "total_pnl_pct": -0.0155,
+      "mean_pnl_pct": -0.0031
+    },
+    {
+      "strategy": "momentum_catcher",
+      "trades": 3,
+      "win_rate": 0.0,
+      "total_pnl_pct": -0.0224,
+      "mean_pnl_pct": -0.0075
+    },
+    {
+      "strategy": "futures_ema_stack_momentum",
+      "trades": 4,
+      "win_rate": 0.0,
+      "total_pnl_pct": -0.031,
+      "mean_pnl_pct": -0.0077
+    },
+    {
+      "strategy": "cta_tsmom_blend",
+      "trades": 18,
+      "win_rate": 0.1667,
+      "total_pnl_pct": -0.031,
+      "mean_pnl_pct": -0.0017
+    },
+    {
+      "strategy": "hl_momentum_continuation",
+      "trades": 5,
+      "win_rate": 0.2,
+      "total_pnl_pct": -0.1053,
+      "mean_pnl_pct": -0.0211
+    },
+    {
+      "strategy": "yahoo_analyst_consensus",
+      "trades": 42,
+      "win_rate": 0.0,
+      "total_pnl_pct": -0.1239,
+      "mean_pnl_pct": -0.0029
+    },
+    {
+      "strategy": "hl_funding_fade",
+      "trades": 16,
+      "win_rate": 0.25,
+      "total_pnl_pct": -0.2857,
+      "mean_pnl_pct": -0.0179
+    }
+  ],
+  "recommended_optimal_parameters": {
+    "confidence_threshold": 0.75,
+    "rr_range": "0.5-1.5",
+    "direction": "LONG",
+    "expected_wr": 0.5859,
+    "expected_pf": 3.7253,
+    "robustness": "ROBUST \u2014 profitable across multiple parameter settings",
+    "confidence_interval_conf": "0.7-0.8",
+    "confidence_interval_rr": "0.5-1.5 to 1.5-2.5"
+  }
+}

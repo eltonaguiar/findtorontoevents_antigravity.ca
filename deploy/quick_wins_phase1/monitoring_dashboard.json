@@ -1,0 +1,65 @@
+{
+  "dashboard_name": "Quick Wins Monitoring",
+  "refresh_interval_seconds": 300,
+  "panels": [
+    {
+      "name": "Win Rate by Strategy",
+      "type": "line_chart",
+      "metric": "win_rate_20d",
+      "thresholds": {
+        "warning": 0.7,
+        "critical": 0.65
+      }
+    },
+    {
+      "name": "Enhancement Firing Rate",
+      "type": "bar_chart",
+      "metrics": [
+        "volume_filter_skipped",
+        "partial_tp_1_hit",
+        "partial_tp_2_hit",
+        "cooldown_active",
+        "volatility_skip"
+      ]
+    },
+    {
+      "name": "Portfolio Heat",
+      "type": "gauge",
+      "metric": "open_risk_pct",
+      "max": 0.2,
+      "thresholds": {
+        "warning": 0.15,
+        "critical": 0.18
+      }
+    },
+    {
+      "name": "Drawdown",
+      "type": "area_chart",
+      "metric": "current_drawdown",
+      "thresholds": {
+        "warning": -0.1,
+        "critical": -0.15
+      }
+    }
+  ],
+  "alerts": [
+    {
+      "name": "Win Rate Degradation",
+      "condition": "win_rate_7d < 0.65",
+      "severity": "warning",
+      "action": "Review strategy parameters"
+    },
+    {
+      "name": "Excessive Drawdown",
+      "condition": "drawdown < -0.15",
+      "severity": "critical",
+      "action": "Reduce position sizes by 50%"
+    },
+    {
+      "name": "Enhancement Not Firing",
+      "condition": "enhancement_rate < 0.05",
+      "severity": "warning",
+      "action": "Check enhancement logic"
+    }
+  ]
+}

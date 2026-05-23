@@ -1,0 +1,166 @@
+//@version=5
+strategy("Simpletonv0.01_GROK", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+
+// Inputs for strategy selection
+enable_multi_strategy = input.bool(true, "Enable MULTI_STRATEGY")
+enable_rsi5_momentum = input.bool(true, "Enable RSI5_MOMENTUM")
+enable_bollinger_squeeze = input.bool(true, "Enable BOLLINGER_SQUEEZE")
+enable_cusum_triple_barrier = input.bool(true, "Enable CUSUM_TRIPLE_BARRIER")
+enable_triple_ema = input.bool(true, "Enable TRIPLE_EMA")
+enable_ichimoku_cloud = input.bool(true, "Enable ICHIMOKU_CLOUD")
+enable_mean_reversion = input.bool(true, "Enable MEAN_REVERSION")
+
+// TP/SL inputs
+tp_percent = input.float(2.0, "Take Profit %", minval=0.1, step=0.1)
+sl_percent = input.float(1.0, "Stop Loss %", minval=0.1, step=0.1)
+
+// Strength levels (1-4)
+strength_threshold = input.int(2, "Minimum Strength", minval=1, maxval=4)
+
+// ATR for risk management
+atr_length = input.int(14, "ATR Length")
+atr_multiplier = input.float(1.5, "ATR Multiplier")
+
+// Calculate ATR
+atr = ta.atr(atr_length)
+
+// Function to calculate strength
+get_strength(signal) => 
+    if signal == 1
+        1
+    else if signal == 2
+        2
+    else if signal == 3
+        3
+    else
+        4
+
+// MULTI_STRATEGY - Placeholder
+multi_buy = close > ta.sma(close, 20)
+multi_sell = close < ta.sma(close, 20)
+multi_strength = get_strength(2)
+
+// RSI5_MOMENTUM
+rsi5 = ta.rsi(close, 5)
+rsi_buy = rsi5 < 30
+rsi_sell = rsi5 > 70
+rsi_strength = get_strength(3)
+
+// BOLLINGER_SQUEEZE
+bb_length = 20
+bb_mult = 2.0
+bb_basis = ta.sma(close, bb_length)
+bb_dev = ta.stdev(close, bb_length)
+bb_upper = bb_basis + bb_dev * bb_mult
+bb_lower = bb_basis - bb_dev * bb_mult
+bb_squeeze = (bb_upper - bb_lower) / bb_basis < 0.05
+bb_buy = close < bb_lower and bb_squeeze
+bb_sell = close > bb_upper and bb_squeeze
+bb_strength = get_strength(2)
+
+// CUSUM_TRIPLE_BARRIER - Simplified
+cusum_buy = close > high[1]
+cusum_sell = close < low[1]
+cusum_strength = get_strength(1)
+
+// TRIPLE_EMA
+ema1 = ta.ema(close, 5)
+ema2 = ta.ema(close, 10)
+ema3 = ta.ema(close, 20)
+triple_buy = ema1 > ema2 and ema2 > ema3
+triple_sell = ema1 < ema2 and ema2 < ema3
+triple_strength = get_strength(3)
+
+// ICHIMOKU_CLOUD
+tenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+kijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+ichimoku_buy = close > tenkan and close > kijun
+ichimoku_sell = close < tenkan and close < kijun
+ichimoku_strength = get_strength(2)
+
+// MEAN_REVERSION
+mr_sma = ta.sma(close, 20)
+mr_buy = close < mr_sma * 0.98
+mr_sell = close > mr_sma * 1.02
+mr_strength = get_strength(1)
+
+// Dynamic selection - count enabled strategies agreeing
+buy_votes = 0
+sell_votes = 0
+total_strength = 0
+
+if enable_multi_strategy
+    if multi_buy
+        buy_votes += 1
+        total_strength += multi_strength
+    if multi_sell
+        sell_votes += 1
+
+if enable_rsi5_momentum
+    if rsi_buy
+        buy_votes += 1
+        total_strength += rsi_strength
+    if rsi_sell
+        sell_votes += 1
+
+if enable_bollinger_squeeze
+    if bb_buy
+        buy_votes += 1
+        total_strength += bb_strength
+    if bb_sell
+        sell_votes += 1
+
+if enable_cusum_triple_barrier
+    if cusum_buy
+        buy_votes += 1
+        total_strength += cusum_strength
+    if cusum_sell
+        sell_votes += 1
+
+if enable_triple_ema
+    if triple_buy
+        buy_votes += 1
+        total_strength += triple_strength
+    if triple_sell
+        sell_votes += 1
+
+if enable_ichimoku_cloud
+    if ichimoku_buy
+        buy_votes += 1
+        total_strength += ichimoku_strength
+    if ichimoku_sell
+        sell_votes += 1
+
+if enable_mean_reversion
+    if mr_buy
+        buy_votes += 1
+        total_strength += mr_strength
+    if mr_sell
+        sell_votes += 1
+
+// Average strength
+avg_strength = total_strength / math.max(buy_votes + sell_votes, 1)
+
+// Buy/Sell conditions
+buy_signal = buy_votes > sell_votes and avg_strength >= strength_threshold
+sell_signal = sell_votes > buy_votes and avg_strength >= strength_threshold
+
+// TP/SL levels
+if buy_signal
+    strategy.entry("Buy", strategy.long)
+    tp_level = close * (1 + tp_percent / 100)
+    sl_level = close * (1 - sl_percent / 100)
+    strategy.exit("Exit Buy", "Buy", limit=tp_level, stop=sl_level)
+
+if sell_signal
+    strategy.entry("Sell", strategy.short)
+    tp_level = close * (1 - tp_percent / 100)
+    sl_level = close * (1 + sl_percent / 100)
+    strategy.exit("Exit Sell", "Sell", limit=tp_level, stop=sl_level)
+
+// Plot signals
+plotshape(buy_signal, style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small, title="Buy Signal")
+plotshape(sell_signal, style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small, title="Sell Signal")
+
+// Plot strength
+plot(avg_strength, color=color.blue, title="Average Strength")

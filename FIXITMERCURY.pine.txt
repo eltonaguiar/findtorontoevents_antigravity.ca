@@ -1,0 +1,144 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Simpleton v0.01 KIMI – Enhanced (BTCUSDT)
+// ─────────────────────────────────────────────────────────────────────────────
+// Goal: Raise profit‑factor on 5‑/15‑min charts while preserving the 45‑min / 1‑h / 4‑h edge.
+// ─────────────────────────────────────────────────────────────────────────────
+// @version=6
+// @name=Simpleton v0.01 KIMI – Enhanced
+// @description=Multi‑strategy back‑tester with tighter RSI, volume filter, ADX & HTF trend,
+//              ATR‑scaled sizing, ATR‑TP/SL, trailing stop, cooldown after exits.
+// @author=KIMI
+// @version=0.01
+
+strategy(
+     "Simpleton v0.01 KIMI – Enhanced",
+     shorttitle="SIMP_KIMI_E",
+     overlay=true,
+     initial_capital=10000,
+     default_qty_type=strategy.percent_of_equity,
+     default_qty_value=10,
+     commission_type=strategy.commission.percent,
+     commission_value=0.05)   // Binance Spot typical fee
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INPUTS
+// ─────────────────────────────────────────────────────────────────────────────
+strategyMode   = input.string("Multi-Indicator", "Strategy Mode",
+     options=["RSI-2 Mean Reversion","SuperTrend","MACD Crossover",
+              "Triple EMA","Bollinger Bands","Multi-Indicator"],
+     group="⚙️ Strategy Settings")
+
+// ── Risk Management ────────────────────────────────────────────────────────
+useTPSL          = input.bool(true,   "Use Take‑Profit / Stop‑Loss", group="💰 Risk Management")
+
+tpPercent        = input.float(3.0,   "Take‑Profit % (fallback if ATR‑TP off)", minval=0.1, maxval=50, step=0.1, group="💰 Risk Management")
+slPercent        = input.float(2.0,   "Stop‑Loss % (fallback if ATR‑SL off)",   minval=0.1, maxval=50, step=0.1, group="💰 Risk Management")
+positionSizePct  = input.float(10.0,  "Position Size (% of Equity)", minval=1, maxval=100, step=1, group="💰 Risk Management")
+useATRSize       = input.bool(true,  "Scale size with ATR", group="💰 Risk Management")
+useTrailing      = input.bool(true,  "Use trailing stop (ATR‑based)", group="💰 Risk Management")
+trailATRMultiplier = input.float(0.5, "Trailing‑stop ATR multiplier", minval=0.1, maxval=5, step=0.1, group="💰 Risk Management")
+
+// ── Higher‑time‑frame trend filter ─────────────────────────────────────────────
+useHTF           = input.bool(true,  "Enable HTF trend filter (EMA‑200)", group="💰 Risk Management")
+higherTF         = input.timeframe("D", "HTF for EMA‑200", group="💰 Risk Management")
+
+// ── ADX filter (using ta.dmi) ───────────────────────────────────────────────
+adxLength        = input.int(14, "ADX Length", minval=5, maxval=30, group="📊 ADX Settings")
+adxThresh        = input.float(20.0, "ADX minimum for trend", minval=5, maxval=50, step=0.5, group="📊 ADX Settings")
+
+// ── ATR‑based TP/SL (optional) ───────────────────────────────────────────────
+useATRTP         = input.bool(true,  "Use ATR‑based TP/SL", group="💰 Risk Management")
+atrTPMultiplier  = input.float(1.5, "ATR TP multiplier", minval=0.5, maxval=5, step=0.1, group="💰 Risk Management")
+atrSLMultiplier  = input.bool(1.0, "ATR SL multiplier", minval=0.5, maxval=5, step=0.1, group="💰 Risk Management")
+
+// ── Cool‑down after an exit ─────────────────────────────────────────────────
+coolDownBars     = input.int(5, "Bars to wait after TP/SL before new entry", minval=0, maxval=30, group="💰 Risk Management")
+var int lastExitBar = na
+
+// ── Repainting control ───────────────────────────────────────────────────────
+repaintMode      = input.bool(false, "Allow repainting (NOT RECOMMENDED)", group="🔒 Signal Integrity")
+
+// ── RSI‑2 settings (tight vs classic) ───────────────────────────────────────
+rsiMode          = input.string("Tight", "RSI‑2 Mode", options=["Classic","Tight"], group="📊 RSI‑2 Settings")
+rsiLength        = input.int(2,   "RSI Length", minval=2, maxval=14, group="📊 RSI‑2 Settings")
+rsiOversoldCls   = input.int(30,  "RSI Oversold (Classic)", minval=10, maxval=40, group="📊 RSI‑2 Settings")
+rsiOverboughtCls = input.int(70,  "RSI Overbought (Classic)", minval=60, maxval=90, group="📊 RSI‑2 Settings")
+rsiOversoldTight = input.int(10,  "RSI Oversold (Tight)", minval=5, maxval=20, group="📊 RSI‑2 Settings")
+rsiOverboughtTight = input.int(90,"RSI Overbought (Tight)", minval=80, maxval=95, group="📊 RSI‑2 Settings")
+useTrendFilter   = input.bool(true, "Use 200‑EMA trend filter (RSI‑2)", group="📊 RSI‑2 Settings")
+
+// ── SuperTrend ─────────────────────────────────────────────────────────────
+stFactor = input.float(3.0, "SuperTrend Factor", minval=1, maxval=10, step=0.1, group="📈 SuperTrend Settings")
+stPeriod = input.int(10,   "SuperTrend ATR Period", minval=5, maxval=50, group="📈 SuperTrend Settings")
+
+// ── MACD ───────────────────────────────────────────────────────────────
+macdFast   = input.int(12, "MACD Fast",   minval=5, maxval=50, group="📉 MACD Settings")
+macdSlow   = input.int(26, "MACD Slow",   minval=10, maxval=100, group="📉 MACD Settings")
+macdSignal = input.int(9,  "MACD Signal", minval=5, maxval=50, group="📉 MACD Settings")
+
+// ── Triple EMA ───────────────────────────────────────────────────────────
+emaFast   = input.int(9,  "Fast EMA",   minval=5, maxval=50, group="📊 Triple EMA Settings")
+emaMedium = input.int(21, "Medium EMA", minval=10, maxval=100, group="📊 Triple EMA Settings")
+emaSlow   = input.int(50, "Slow EMA",   minval=20, maxval=200, group="📊 Triple EMA Settings")
+
+// ── Bollinger Bands ───────────────────────────────────────────────────────
+bbLength = input.int(20, "BB Length", minval=10, maxval=50, group="📊 Bollinger Bands Settings")
+bbMult   = input.float(2.0,"BB Multiplier",minval=1, maxval=4, step=0.1, group="📊 Bollinger Bands Settings")
+
+// ── Multi‑indicator voting ─────────────────────────────────────────────────
+minConfirmations = input.int(2, "Base min confirmations", minval=1, maxval=5, group="🎯 Multi‑Indicator Settings")
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CALCULATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+price = repaintMode ? close : close[1]
+
+// ATR (used for sizing, TP/SL, trailing stop)
+atr = ta.atr(14)
+
+// Higher‑time‑frame EMA‑200 (macro trend)
+higherEMA200 = request.security(syminfo.tickerid, higherTF, ta.ema(close, 200))
+
+// ADX (trend strength) – Pine v6 does NOT have ta.adx(); use ta.dmi()
+[dmiPlus, dmiMinus, adx] = ta.dmi(adxLength)
+
+// RSI‑2 (choose thresholds based on mode)
+rsi = ta.rsi(close, rsiLength)
+rsiOversold   = rsiMode == "Classic" ? rsiOversoldCls   : rsiOversoldTight
+rsiOverbought = rsiMode == "Classic" ? rsiOverboughtCls : rsiOverboughtTight
+
+// 200‑EMA on current TF (optional trend filter)
+ema200 = ta.ema(close, 200)
+trendUp   = close > ema200
+trendDown = close < ema200
+
+// SuperTrend
+[stValue, stDirection] = ta.supertrend(stFactor, stPeriod)
+
+// MACD
+[macdLine, signalLine, macdHist] = ta.macd(close, macdFast, macdSlow, macdSignal)
+
+// Triple EMA
+fastEMA   = ta.ema(close, emaFast)
+mediumEMA = ta.ema(close, emaMedium)
+slowEMA   = ta.ema(close, emaSlow)
+
+// Bollinger Bands
+bbMiddle = ta.sma(close, bbLength)
+bbUpper  = bbMiddle + bbMult * ta.stdev(close, bbLength)
+bbLower  = bbMiddle - bbMult * ta.stdev(close, bbLength)
+
+// Volume filter (20 % above 20‑bar avg)
+avgVolume     = ta.sma(volume, 20)
+volumeConfirm = volume > avgVolume * 1.2
+
+// ── Dynamic confirmations (more on low TF) ───────────────────────────────
+tfMinutes = timeframe.multiplier * (timeframe.isminutes ? 1 : timeframe.isseconds ? 1/60 : 0)
+minConfirmations := tfMinutes <= 15 ? 3 : minConfirmations   // 3 votes needed on ≤15 min
+
+// ── SIGNALS (original + new filters) ───────────────────────────────────────
+rsiBuy  = rsi < rsiOversold   and rsi[1] <= rsiOversold   and (not useTrendFilter or trendUp)
+rsiSell = rsi > rsiOverbought and rsi[1] >= rsiOverbought and (not useTrendFilter or trendDown)
+
+stBuy   = stDirection < 0 and stDirection[1] > 0
+stSell  = stDirection >

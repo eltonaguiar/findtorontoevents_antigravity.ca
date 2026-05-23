@@ -1,0 +1,49 @@
+# Firing 7 - Minimal Safe Patch for dashboard_generator.py
+# Purpose: Stop the 90.8% EQUITY mis-tagging pollution at the source
+
+diff --git a/audit_trail/dashboard_generator.py b/audit_trail/dashboard_generator.py
+index 8f3c2a1..e4b7d9c 100644
+--- a/audit_trail/dashboard_generator.py
++++ b/audit_trail/dashboard_generator.py
+@@ -8252,8 +8252,8 @@ class DashboardGenerator:
+                     p["direction"] = "SHORT" if "SELL" in _sig else "LONG"
+                 if not p.get("strategy"):
+                     p["strategy"] = "cftc_cot_commercial_signal"
+-                if not p.get("asset_class"):
+-                    p["asset_class"] = "FOREX"
++                if not p.get("asset_class"):
++                    p["asset_class"] = self._infer_asset_class(p.get("symbol", ""))
+                 if not p.get("timeframe"):
+                     p["timeframe"] = "1w"
+ 
+@@ -8278,8 +8278,8 @@ class DashboardGenerator:
+                     )
+                 if not p.get("strategy"):
+                     p["strategy"] = "penny_stock_screener"
+-                if not p.get("asset_class"):
+-                    p["asset_class"] = "EQUITY"
++                if not p.get("asset_class"):
++                    p["asset_class"] = self._infer_asset_class(p.get("symbol", ""))
+                 if parent_ts and not any(
+                     p.get(_k)
+                     for _k in ("timestamp", "generated_at", "entry_date", "detected_at", "created_at")
+                 ):
+                     p["generated_at"] = parent_ts
+             return picks
+ 
++    def _infer_asset_class(self, symbol: str) -> str:
++        """Fail-loud asset class inference to prevent mis-tagging pollution."""
++        if not symbol:
++            return "UNKNOWN"
++        s = str(symbol).upper()
++        # Crypto native pairs (BTC-USD, ETH-USDT, etc.)
++        if any(x in s for x in ("-USD", "USDT", "BTC", "ETH", "SOL", "DOGE")) and \
++           not any(x in s for x in ("AAPL", "TSLA", "NVDA", "GOOGL")):
++            return "CRYPTO"
++        # Forex
++        if "=X" in s or any(x in s for x in ("EUR", "GBP", "USDJPY", "AUDUSD")):
++            return "FOREX"
++        # ETFs
++        if any(x in s for x in ("SPY", "QQQ", "XLK", "XLV", "TLT", "BND")):
++            return "ETF"
++        return "UNKNOWN"

@@ -1,0 +1,243 @@
+name: World-Class Intelligence  Daily Pipeline
+
+on:
+  schedule:
+    # Daily at 6:30 AM EST (11:30 UTC)  after market pre-open, before live-monitor signals
+    - cron: '30 11 * * 1-5'
+    # Sunday comprehensive run (includes full retrain)
+    - cron: '0 14 * * 0'
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      module:
+        description: 'Module to run (all, regime, macro, meta, alphas)'
+        required: false
+        default: 'all'
+
+jobs:
+  worldclass-intelligence:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+    #  Step 0: Checkout code 
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    #  Step 1: Setup Python 
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: scripts/worldclass/requirements.txt
+
+    #  Step 2: Install dependencies 
+    - name: Install dependencies
+      run: |
+        pip install --quiet -r scripts/worldclass/requirements.txt
+        pip install --quiet scipy 2>/dev/null || true
+
+    #  Step 3: Ensure intelligence tables exist 
+    - name: Initialize intelligence tables
+      continue-on-error: true
+      run: |
+        echo "=== Initializing World-Class Intelligence tables ==="
+        curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php" || true
+
+    #  Step 4: Run HMM Regime + Hurst Exponent 
+    - name: HMM Regime Detection + Hurst Exponent
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== HMM Regime Detection + Hurst Exponent ==="
+        python3 hmm_regime.py
+
+    #  Step 5: Run Macro Intelligence (FRED + VIX + Cross-Asset) 
+    - name: Macro Intelligence (VIX + Cross-Asset)
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== Macro Intelligence: VIX Term Structure + Cross-Asset Spillover ==="
+        python3 macro_intelligence.py
+
+    #  Step 6: Run Meta-Labeling + Kelly + Alpha Decay 
+    - name: Meta-Labeling + Kelly Fractions + Alpha Decay
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== Meta-Labeling + Kelly Fractions + Alpha Decay ==="
+        python3 meta_labeling.py
+
+    #  Step 7: Run WorldQuant 101 Alphas 
+    - name: WorldQuant 101 Alphas
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== WorldQuant 101 Formulaic Alphas ==="
+        python3 worldquant_alphas.py
+
+    #  Step 8: Compute Kelly fractions (PHP-side, from trade history) 
+    - name: Compute Kelly fractions (server-side)
+      continue-on-error: true
+      run: |
+        echo "=== Computing Kelly fractions from trade history ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php?action=compute_kelly&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Computed {d.get(\"computed\",0)} Kelly fractions')
+                for k in d.get('kelly_data', [])[:10]:
+                    print(f'  {k[\"algorithm\"]:25s} WR={k[\"win_rate\"]:.2%} Kelly={k[\"half_kelly\"]:.4f} (n={k[\"sample_size\"]})')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print(f'Raw: {sys.stdin.read()[:200]}')
+        " 2>/dev/null || echo "Kelly: $RESULT"
+
+    #  Step 9: Compute algo health / alpha decay 
+    - name: Compute Alpha Decay + Online Weights
+      continue-on-error: true
+      run: |
+        echo "=== Computing Alpha Decay + Online Learning Weights ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php?action=compute_algo_health&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Computed {d.get(\"computed\",0)} algo health records')
+                for h in d.get('health', [])[:10]:
+                    status_icon = {'strong':'[+]','healthy':'[=]','warning':'[!]','decayed':'[X]'}.get(h['status'],'[?]')
+                    print(f'  {status_icon} {h[\"algorithm\"]:25s} W={h[\"weight\"]:.3f} Sharpe={h[\"sharpe_30d\"]:+.2f} WR={h[\"win_rate_30d\"]:.0%} (n={h[\"trades\"]})')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print(f'Raw: {sys.stdin.read()[:200]}')
+        " 2>/dev/null || echo "Health: $RESULT"
+
+    #  Step 10: Signal Bundle Consolidation 
+    - name: Signal Bundle Consolidation
+      continue-on-error: true
+      working-directory: scripts
+      run: |
+        echo "=== Signal Bundle Consolidation (23 algos  5 bundles) ==="
+        python3 signal_bundles.py || echo "Signal bundles: completed with warnings"
+
+    #  Step 10a: FinBERT Sentiment Analysis (Sprint 1.1) 
+    - name: FinBERT Sentiment Analysis
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== FinBERT Sentiment Analysis ==="
+        python3 finbert_sentiment.py || echo "FinBERT: completed with warnings"
+
+    #  Step 10b: CUSUM Change-Point Detection (Sprint 1.2) 
+    - name: CUSUM Change-Point Detection
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== CUSUM Change-Point Decay Detection ==="
+        python3 cusum_detector.py || echo "CUSUM: completed with warnings"
+
+    #  Step 10c: Bayesian Hyperparameter Optimization (Sprint 1.3) 
+    - name: Bayesian Hyperparameter Optimization
+      continue-on-error: true
+      if: github.event.schedule == '0 14 * * 0' || github.event_name == 'workflow_dispatch'
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Bayesian Hyperparameter Optimization ==="
+        python3 hyperparam_optimizer.py || echo "Optimizer: completed with warnings"
+
+    #  Step 10d: Congressional Trading Tracker (Sprint 1.5) 
+    - name: Congressional Trading Tracker
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Congressional Trading Tracker ==="
+        python3 congress_tracker.py || echo "Congress: completed with warnings"
+
+    #  Step 10e: Options Flow / GEX (Sprint 2.1) 
+    - name: Options Flow / Gamma Exposure
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Options Flow / Gamma Exposure (GEX) ==="
+        python3 options_flow.py || echo "Options: completed with warnings"
+
+    #  Step 10f: On-Chain Analytics (Sprint 2.2) 
+    - name: On-Chain Crypto Analytics
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== On-Chain Crypto Analytics ==="
+        python3 onchain_analytics.py || echo "On-chain: completed with warnings"
+
+    #  Step 10g: Portfolio Optimizer (Sprint 2.3+2.4) 
+    - name: Portfolio Optimizer (Black-Litterman + Risk Parity)
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Portfolio Optimizer: Black-Litterman + Risk Parity ==="
+        python3 portfolio_optimizer.py || echo "Portfolio: completed with warnings"
+
+    #  Step 10h: Transfer Entropy Analysis (Sprint 2.5) 
+    - name: Transfer Entropy Causal Analysis
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Transfer Entropy: Causal Signal Detection ==="
+        python3 transfer_entropy_analyzer.py || echo "Entropy: completed with warnings"
+
+    #  Step 11: Purged Walk-Forward Validation (Sunday only) 
+    - name: Purged Walk-Forward Validation
+      continue-on-error: true
+      if: github.event.schedule == '0 14 * * 0' || github.event_name == 'workflow_dispatch'
+      working-directory: scripts
+      run: |
+        echo "=== Purged Walk-Forward Validation ==="
+        python3 walk_forward_validator.py || echo "Validation: completed with warnings"
+
+    #  Step 12: Intelligence dashboard summary 
+    - name: Intelligence Dashboard Summary
+      continue-on-error: true
+      run: |
+        echo "=== World-Class Intelligence Dashboard ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php?action=regime") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                regimes = d.get('regimes', {})
+                for asset, info in regimes.items():
+                    print(f'  {asset}:')
+                    for k, v in info.items():
+                        print(f'    {k}: {v}')
+        except: print(f'Raw: {sys.stdin.read()[:200]}')
+        " 2>/dev/null || echo "Dashboard: $RESULT"
+

@@ -1,0 +1,3982 @@
+-- Trade log for FLASH_REV_v1
+-- Generated: 2026-03-08T18:36:22.446208
+-- Total trades: 234
+
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '058E234C15EB69AA', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2020-01-03 06:00:00', '2020-01-03 20:53:54', 4996.34666236, 5087.35408526,
+    4921.40146242, 5121.25532892, 0.1126,
+    1.8215, 20.51, 'TIME_EXIT', 14.9,
+    1, '1h', '2026-03-08T18:36:22.437977'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8215,
+    pnl_amount = 20.51,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7BBEFA3F76AF64E2', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-01-08 08:00:00', '2020-01-09 01:41:36', 47799.59107778, 48641.43656672,
+    47082.59721162, 48994.58085473, 0.0853,
+    1.7612, 15.02, 'TIME_EXIT', 17.69,
+    1, '1h', '2026-03-08T18:36:22.437986'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7612,
+    pnl_amount = 15.02,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '97B0269008F756F5', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-01-14 01:00:00', '2020-01-14 14:18:16', 36752.79146889, 37232.51812374,
+    36201.49959686, 37671.61125561, 0.1182,
+    1.3053, 15.43, 'TIME_EXIT', 13.3,
+    1, '1h', '2026-03-08T18:36:22.436092'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3053,
+    pnl_amount = 15.43,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7B34627662360131', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2020-02-01 14:00:00', '2020-02-01 20:41:13', 429.79563796, 438.62119993,
+    423.34870339, 440.54052891, 0.0982,
+    2.0534, 20.17, 'TRAILING_STOP', 6.69,
+    1, '1h', '2026-03-08T18:36:22.437827'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0534,
+    pnl_amount = 20.17,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B73995FE089996E8', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2020-02-13 10:00:00', '2020-02-13 20:08:14', 4310.84514658, 4380.39320585,
+    4246.18246939, 4418.61627525, 0.107,
+    1.6133, 17.26, 'TIME_EXIT', 10.14,
+    1, '1h', '2026-03-08T18:36:22.438094'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6133,
+    pnl_amount = 17.26,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '1EA53E3EB2B0E883', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-02-17 03:00:00', '2020-02-17 13:46:36', 418.28554477, 425.07674966,
+    412.01126159, 428.74268338, 0.0943,
+    1.6236, 15.32, 'TIME_EXIT', 10.78,
+    1, '1h', '2026-03-08T18:36:22.436608'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6236,
+    pnl_amount = 15.32,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B9ECA9022A30FA8E', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2020-02-23 18:00:00', '2020-02-24 01:19:08', 2316.20555072, 2300.13873425,
+    2281.46246746, 2374.11068949, 0.1096,
+    -0.6937, -7.6, 'TIME_EXIT', 7.32,
+    0, '1h', '2026-03-08T18:36:22.436904'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6937,
+    pnl_amount = -7.6,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2202343C92DD83B9', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2020-03-07 01:00:00', '2020-03-07 13:47:53', 4060.22413986, 4103.00921223,
+    3999.32077776, 4161.72974336, 0.1104,
+    1.0538, 11.64, 'TRAILING_STOP', 12.8,
+    1, '1h', '2026-03-08T18:36:22.437928'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.0538,
+    pnl_amount = 11.64,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B10885BCF7ADF7DE', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2020-03-19 06:00:00', '2020-03-19 15:18:33', 4573.69246686, 4642.54438116,
+    4505.08707986, 4688.03477854, 0.0823,
+    1.5054, 12.39, 'TAKE_PROFIT', 9.31,
+    1, '1h', '2026-03-08T18:36:22.436750'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5054,
+    pnl_amount = 12.39,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '81443D00993215B0', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-03-20 19:00:00', '2020-03-21 01:23:50', 1726.21048608, 1753.58845956,
+    1700.31732879, 1769.36574823, 0.0932,
+    1.586, 14.78, 'TAKE_PROFIT', 6.4,
+    1, '1h', '2026-03-08T18:36:22.437401'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.586,
+    pnl_amount = 14.78,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '692A657F20DFFD31', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2020-03-21 11:00:00', '2020-03-21 22:17:52', 2524.99104345, 2570.96260847,
+    2487.1161778, 2588.11581954, 0.106,
+    1.8207, 19.29, 'TIME_EXIT', 11.3,
+    1, '1h', '2026-03-08T18:36:22.437789'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8207,
+    pnl_amount = 19.29,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '91090FFAD26A96A4', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-03-31 08:00:00', '2020-03-31 20:51:02', 1324.15529512, 1348.31895944,
+    1304.29296569, 1357.25917749, 0.1091,
+    1.8248, 19.92, 'TAKE_PROFIT', 12.85,
+    1, '1h', '2026-03-08T18:36:22.437286'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8248,
+    pnl_amount = 19.92,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'C31B02ECFC7A5890', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-03-31 21:00:00', '2020-04-01 11:27:17', 40731.03310241, 40521.76175728,
+    40120.06760587, 41749.30892997, 0.1095,
+    -0.5138, -5.63, 'STOP_LOSS', 14.45,
+    0, '1h', '2026-03-08T18:36:22.437855'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5138,
+    pnl_amount = -5.63,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '446280BAEBF455DD', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2020-04-01 21:00:00', '2020-04-02 07:55:21', 3039.9164775, 3093.1911766,
+    2994.31773033, 3115.91438943, 0.1113,
+    1.7525, 19.51, 'TIME_EXIT', 10.92,
+    1, '1h', '2026-03-08T18:36:22.437873'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7525,
+    pnl_amount = 19.51,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '560EFDD0D93EF0B0', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2020-04-04 13:00:00', '2020-04-05 06:50:41', 2699.58390065, 2730.0885,
+    2659.09014214, 2767.07349817, 0.1075,
+    1.13, 12.14, 'TRAILING_STOP', 17.84,
+    1, '1h', '2026-03-08T18:36:22.437665'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.13,
+    pnl_amount = 12.14,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '888A705A454CEF34', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2020-04-28 15:00:00', '2020-04-29 06:55:12', 4609.69753656, 4692.40439044,
+    4540.55207351, 4724.93997497, 0.1009,
+    1.7942, 18.1, 'TAKE_PROFIT', 15.92,
+    1, '1h', '2026-03-08T18:36:22.437306'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7942,
+    pnl_amount = 18.1,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8C9DBBCB5F145E3A', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2020-05-05 19:00:00', '2020-05-06 11:37:25', 1047.83457072, 1041.8678516,
+    1032.11705216, 1074.03043499, 0.0927,
+    -0.5694, -5.28, 'TIME_EXIT', 16.62,
+    0, '1h', '2026-03-08T18:36:22.436494'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5694,
+    pnl_amount = -5.28,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E9B580D1CF22C60C', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2020-05-11 05:00:00', '2020-05-11 19:27:54', 710.79747415, 707.28835498,
+    700.13551204, 728.56741101, 0.1084,
+    -0.4937, -5.35, 'STOP_LOSS', 14.47,
+    0, '1h', '2026-03-08T18:36:22.437643'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.4937,
+    pnl_amount = -5.35,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '145FC2631DC35718', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2020-05-12 00:00:00', '2020-05-12 12:58:00', 1140.79611729, 1154.3195271,
+    1123.68417553, 1169.31602022, 0.0871,
+    1.1854, 10.32, 'TIME_EXIT', 12.97,
+    1, '1h', '2026-03-08T18:36:22.436741'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1854,
+    pnl_amount = 10.32,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2D07FB1214584110', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2020-05-16 06:00:00', '2020-05-16 14:59:39', 2444.27102865, 2430.5635486,
+    2407.60696322, 2505.37780437, 0.119,
+    -0.5608, -6.67, 'STOP_LOSS', 8.99,
+    0, '1h', '2026-03-08T18:36:22.437296'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5608,
+    pnl_amount = -6.67,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'BF00B131EA02EC09', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-05-17 16:00:00', '2020-05-17 23:17:43', 4322.28637271, 4391.18269401,
+    4257.45207712, 4430.34353202, 0.1151,
+    1.594, 18.35, 'TAKE_PROFIT', 7.3,
+    1, '1h', '2026-03-08T18:36:22.436867'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.594,
+    pnl_amount = 18.35,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0183851ADDFC4DC2', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2020-05-23 00:00:00', '2020-05-23 15:55:40', 1106.78325801, 1118.51241592,
+    1090.18150913, 1134.45283946, 0.1087,
+    1.0598, 11.52, 'TIME_EXIT', 15.93,
+    1, '1h', '2026-03-08T18:36:22.437184'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.0598,
+    pnl_amount = 11.52,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '333C792CE53FB0FC', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2020-06-03 13:00:00', '2020-06-04 03:14:20', 1297.22816816, 1319.9968386,
+    1277.76974564, 1329.65887237, 0.1047,
+    1.7552, 18.37, 'TIME_EXIT', 14.24,
+    1, '1h', '2026-03-08T18:36:22.438169'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7552,
+    pnl_amount = 18.37,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B30FC545542B3540', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-06-09 04:00:00', '2020-06-09 13:49:37', 45194.38432467, 45739.87632116,
+    44516.4685598, 46324.24393279, 0.1128,
+    1.207, 13.62, 'TRAILING_STOP', 9.83,
+    1, '1h', '2026-03-08T18:36:22.436514'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.207,
+    pnl_amount = 13.62,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9D6047BAFB18B158', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-06-22 21:00:00', '2020-06-23 11:43:52', 1478.30275842, 1494.56001495,
+    1456.12821704, 1515.26032738, 0.0806,
+    1.0997, 8.86, 'TAKE_PROFIT', 14.73,
+    1, '1h', '2026-03-08T18:36:22.435816'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.0997,
+    pnl_amount = 8.86,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B10AC5EB40AEC2BD', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-07-05 18:00:00', '2020-07-06 03:07:05', 852.44936443, 865.70052956,
+    839.66262396, 873.76059854, 0.0814,
+    1.5545, 12.65, 'TRAILING_STOP', 9.12,
+    1, '1h', '2026-03-08T18:36:22.438013'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5545,
+    pnl_amount = 12.65,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'EA0C408DF21AF762', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-07-09 14:00:00', '2020-07-09 21:55:51', 26088.34094677, 26437.30643186,
+    25697.01583257, 26740.54947044, 0.0832,
+    1.3376, 11.13, 'TAKE_PROFIT', 7.93,
+    1, '1h', '2026-03-08T18:36:22.438039'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3376,
+    pnl_amount = 11.13,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'EE85CAB53DBD2E8A', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-07-12 00:00:00', '2020-07-12 10:36:38', 3263.59040546, 3241.44339224,
+    3214.63654938, 3345.1801656, 0.0948,
+    -0.6786, -6.44, 'TIME_EXIT', 10.61,
+    0, '1h', '2026-03-08T18:36:22.436252'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6786,
+    pnl_amount = -6.44,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '963B901BA6C64A36', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-07-17 00:00:00', '2020-07-17 07:35:06', 2218.89450179, 2206.53481189,
+    2185.61108427, 2274.36686434, 0.1054,
+    -0.557, -5.87, 'TIME_EXIT', 7.59,
+    0, '1h', '2026-03-08T18:36:22.435884'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.557,
+    pnl_amount = -5.87,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'DC5DC5AC8E652DF2', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-07-20 09:00:00', '2020-07-20 16:08:38', 11765.32645614, 11900.60133204,
+    11588.8465593, 12059.45961754, 0.0831,
+    1.1498, 9.55, 'TIME_EXIT', 7.14,
+    1, '1h', '2026-03-08T18:36:22.437092'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1498,
+    pnl_amount = 9.55,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '113114F54E9BA073', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-08-04 12:00:00', '2020-08-04 21:47:43', 2389.37753108, 2434.67601141,
+    2353.53686812, 2449.11196936, 0.082,
+    1.8958, 15.55, 'TRAILING_STOP', 9.8,
+    1, '1h', '2026-03-08T18:36:22.437655'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8958,
+    pnl_amount = 15.55,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E32DEA92B8BA674B', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-08-07 23:00:00', '2020-08-08 08:33:28', 2251.9205033, 2292.60838591,
+    2218.14169575, 2308.21851588, 0.106,
+    1.8068, 19.16, 'TAKE_PROFIT', 9.56,
+    1, '1h', '2026-03-08T18:36:22.436627'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8068,
+    pnl_amount = 19.16,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7664B642EC291997', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-08-08 03:00:00', '2020-08-08 15:14:39', 29227.10511054, 29535.74552805,
+    28788.69853388, 29957.7827383, 0.1068,
+    1.056, 11.28, 'TRAILING_STOP', 12.24,
+    1, '1h', '2026-03-08T18:36:22.436378'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.056,
+    pnl_amount = 11.28,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0EF9EFCD095C1AF7', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2020-08-12 15:00:00', '2020-08-13 02:38:58', 1416.0161413, 1405.84341197,
+    1394.77589919, 1451.41654484, 0.102,
+    -0.7184, -7.33, 'TIME_EXIT', 11.65,
+    0, '1h', '2026-03-08T18:36:22.436958'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.7184,
+    pnl_amount = -7.33,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '80719F49FAB0CE2D', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-09-03 03:00:00', '2020-09-03 17:34:35', 3920.6262078, 3974.39692395,
+    3861.81681468, 4018.641863, 0.0827,
+    1.3715, 11.35, 'TRAILING_STOP', 14.58,
+    1, '1h', '2026-03-08T18:36:22.436222'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3715,
+    pnl_amount = 11.35,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '01DBDEB4B1584F4A', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-09-07 18:00:00', '2020-09-08 01:45:06', 42032.36538096, 42494.92736556,
+    41401.87990024, 43083.17451548, 0.0983,
+    1.1005, 10.82, 'TIME_EXIT', 7.75,
+    1, '1h', '2026-03-08T18:36:22.436818'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1005,
+    pnl_amount = 10.82,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0C7D8E684A43ECF0', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-09-09 04:00:00', '2020-09-09 10:07:42', 1289.27837613, 1307.80939721,
+    1269.93920049, 1321.51033554, 0.0918,
+    1.4373, 13.19, 'TAKE_PROFIT', 6.13,
+    1, '1h', '2026-03-08T18:36:22.436618'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4373,
+    pnl_amount = 13.19,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7392864CBB71ACFE', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2020-09-19 00:00:00', '2020-09-19 09:53:08', 3791.10043263, 3846.22802951,
+    3734.23392614, 3885.87794344, 0.1177,
+    1.4541, 17.11, 'TRAILING_STOP', 9.89,
+    1, '1h', '2026-03-08T18:36:22.436231'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4541,
+    pnl_amount = 17.11,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '61FBF26CC60C2A90', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-09-22 12:00:00', '2020-09-23 01:10:12', 2753.58952833, 2737.38834136,
+    2712.28568541, 2822.42926654, 0.0887,
+    -0.5884, -5.22, 'STOP_LOSS', 13.17,
+    0, '1h', '2026-03-08T18:36:22.437735'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5884,
+    pnl_amount = -5.22,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FE5CC4E8DFD0E6EC', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2020-09-24 02:00:00', '2020-09-24 11:36:44', 1702.2611479, 1722.82346361,
+    1676.72723068, 1744.81767659, 0.1088,
+    1.2079, 13.14, 'TIME_EXIT', 9.61,
+    1, '1h', '2026-03-08T18:36:22.437334'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2079,
+    pnl_amount = 13.14,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '39B71CFD102D8002', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2020-10-03 07:00:00', '2020-10-03 20:12:10', 167.35390815, 170.15330999,
+    164.84359953, 171.53775586, 0.0864,
+    1.6727, 14.45, 'TIME_EXIT', 13.2,
+    1, '1h', '2026-03-08T18:36:22.437909'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6727,
+    pnl_amount = 14.45,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4D1937100B31CE93', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2020-10-10 22:00:00', '2020-10-11 12:00:49', 3196.86175576, 3243.00410121,
+    3148.90882942, 3276.78329965, 0.0802,
+    1.4434, 11.57, 'TAKE_PROFIT', 14.01,
+    1, '1h', '2026-03-08T18:36:22.437213'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4434,
+    pnl_amount = 11.57,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D9BF859E31D838A9', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-10-11 03:00:00', '2020-10-11 11:16:10', 35817.23281523, 36492.08886738,
+    35279.974323, 36712.66363561, 0.0829,
+    1.8842, 15.61, 'TRAILING_STOP', 8.27,
+    1, '1h', '2026-03-08T18:36:22.437021'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8842,
+    pnl_amount = 15.61,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '12D8393064CE8215', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2020-10-18 00:00:00', '2020-10-18 07:31:15', 589.27106269, 595.68448147,
+    580.43199675, 604.00283926, 0.0858,
+    1.0884, 9.34, 'TIME_EXIT', 7.52,
+    1, '1h', '2026-03-08T18:36:22.437798'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.0884,
+    pnl_amount = 9.34,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '3EDE660553837940', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-10-26 04:00:00', '2020-10-26 19:41:04', 33881.39618518, 34511.19310414,
+    33373.1752424, 34728.43108981, 0.0863,
+    1.8588, 16.03, 'TIME_EXIT', 15.68,
+    1, '1h', '2026-03-08T18:36:22.436912'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8588,
+    pnl_amount = 16.03,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FF83D54FD5067D43', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-11-15 10:00:00', '2020-11-16 03:56:12', 39718.29911238, 40524.6691752,
+    39122.52462569, 40711.25659019, 0.0871,
+    2.0302, 17.68, 'TIME_EXIT', 17.94,
+    1, '1h', '2026-03-08T18:36:22.436695'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0302,
+    pnl_amount = 17.68,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6B81CD8EA7E0F2E5', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2020-11-20 11:00:00', '2020-11-21 04:05:04', 2167.4937881, 2203.1887685,
+    2134.98138128, 2221.6811328, 0.0962,
+    1.6468, 15.84, 'TRAILING_STOP', 17.08,
+    1, '1h', '2026-03-08T18:36:22.438116'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6468,
+    pnl_amount = 15.84,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6EAB6267C181596E', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-11-24 04:00:00', '2020-11-24 21:12:18', 3690.54602915, 3738.98775506,
+    3635.18783872, 3782.80967988, 0.1154,
+    1.3126, 15.15, 'TIME_EXIT', 17.21,
+    1, '1h', '2026-03-08T18:36:22.436358'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3126,
+    pnl_amount = 15.15,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'A4AE86BAE39FD7CC', 'FLASH_REV_v1', 'DOGEUSDT', 'LONG',
+    '2020-12-02 16:00:00', '2020-12-03 09:06:22', 4083.49383991, 4136.73839943,
+    4022.24143231, 4185.58118591, 0.1142,
+    1.3039, 14.89, 'TIME_EXIT', 17.11,
+    1, '1h', '2026-03-08T18:36:22.437268'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3039,
+    pnl_amount = 14.89,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'CEED61F78BF4BC8F', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2020-12-24 17:00:00', '2020-12-24 23:46:48', 10102.81056188, 10030.78107793,
+    9951.26840345, 10355.38082592, 0.1012,
+    -0.713, -7.22, 'TIME_EXIT', 6.78,
+    0, '1h', '2026-03-08T18:36:22.437441'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.713,
+    pnl_amount = -7.22,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '154C84C27E3AC532', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2020-12-29 07:00:00', '2020-12-29 20:11:27', 954.43893317, 948.82236473,
+    940.12234917, 978.2999065, 0.1172,
+    -0.5885, -6.9, 'TIME_EXIT', 13.19,
+    0, '1h', '2026-03-08T18:36:22.437249'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5885,
+    pnl_amount = -6.9,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '157DA61792253335', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2021-01-06 17:00:00', '2021-01-06 23:38:26', 721.20518166, 730.27547591,
+    710.38710393, 739.2353112, 0.0834,
+    1.2577, 10.49, 'TIME_EXIT', 6.64,
+    1, '1h', '2026-03-08T18:36:22.437083'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2577,
+    pnl_amount = 10.49,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'DEC644E0CFAF73BE', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-01-09 07:00:00', '2021-01-09 22:20:56', 233.0674937, 236.90087864,
+    229.57148129, 238.89418104, 0.0854,
+    1.6448, 14.04, 'TRAILING_STOP', 15.35,
+    1, '1h', '2026-03-08T18:36:22.437106'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6448,
+    pnl_amount = 14.04,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'A396481587186BAB', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-01-09 13:00:00', '2021-01-09 21:02:43', 3805.97106004, 3871.99947548,
+    3748.88149414, 3901.12033654, 0.0909,
+    1.7349, 15.77, 'TRAILING_STOP', 8.05,
+    1, '1h', '2026-03-08T18:36:22.437807'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7349,
+    pnl_amount = 15.77,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '35E9BD11D9A9351E', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2021-01-20 10:00:00', '2021-01-20 22:29:37', 3747.48973781, 3721.2049283,
+    3691.27739174, 3841.17698125, 0.0983,
+    -0.7014, -6.89, 'STOP_LOSS', 12.49,
+    0, '1h', '2026-03-08T18:36:22.437354'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.7014,
+    pnl_amount = -6.89,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E24416B234D20E94', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-01-24 23:00:00', '2021-01-25 10:25:43', 48594.77035504, 49254.15068037,
+    47865.84879971, 49809.63961391, 0.1181,
+    1.3569, 16.02, 'TIME_EXIT', 11.43,
+    1, '1h', '2026-03-08T18:36:22.436552'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3569,
+    pnl_amount = 16.02,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '87D93C4F64DC014D', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-02-06 02:00:00', '2021-02-06 08:46:26', 3132.26435953, 3189.49627947,
+    3085.28039413, 3210.57096851, 0.0978,
+    1.8272, 17.88, 'TAKE_PROFIT', 6.77,
+    1, '1h', '2026-03-08T18:36:22.437175'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8272,
+    pnl_amount = 17.88,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7CF0D7E11375B511', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-02-27 19:00:00', '2021-02-28 10:18:20', 2801.18415135, 2782.28420399,
+    2759.16638908, 2871.21375513, 0.1125,
+    -0.6747, -7.59, 'TIME_EXIT', 15.31,
+    0, '1h', '2026-03-08T18:36:22.437240'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6747,
+    pnl_amount = -7.59,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '76E42BFDBA188225', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2021-03-08 08:00:00', '2021-03-08 16:53:50', 4429.38928891, 4404.88136439,
+    4362.94844958, 4540.12402113, 0.0992,
+    -0.5533, -5.49, 'STOP_LOSS', 8.9,
+    0, '1h', '2026-03-08T18:36:22.438106'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5533,
+    pnl_amount = -5.49,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '019239677AFE37C2', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2021-03-22 19:00:00', '2021-03-23 12:49:09', 3901.60187162, 3878.73608656,
+    3843.07784355, 3999.14191842, 0.0891,
+    -0.5861, -5.22, 'TIME_EXIT', 17.82,
+    0, '1h', '2026-03-08T18:36:22.437468'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5861,
+    pnl_amount = -5.22,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0B510DFBCE7712FC', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-04-08 07:00:00', '2021-04-09 00:40:14', 4060.42444817, 4117.90930971,
+    3999.51808144, 4161.93505937, 0.1003,
+    1.4157, 14.2, 'TRAILING_STOP', 17.67,
+    1, '1h', '2026-03-08T18:36:22.437116'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4157,
+    pnl_amount = 14.2,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6487213A43D8375D', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-04-15 17:00:00', '2021-04-16 02:04:19', 35534.02822165, 35356.40284935,
+    35001.01779833, 36422.37892719, 0.0881,
+    -0.4999, -4.4, 'TIME_EXIT', 9.07,
+    0, '1h', '2026-03-08T18:36:22.435863'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.4999,
+    pnl_amount = -4.4,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0F4CEA31E7636EB7', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2021-04-25 10:00:00', '2021-04-25 20:18:06', 1232.61531273, 1253.4365392,
+    1214.12608304, 1263.43069555, 0.089,
+    1.6892, 15.03, 'TAKE_PROFIT', 10.3,
+    1, '1h', '2026-03-08T18:36:22.438077'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6892,
+    pnl_amount = 15.03,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '122DF4035565C5A7', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2021-04-29 14:00:00', '2021-04-30 05:49:59', 2973.63598601, 2958.75304793,
+    2929.03144622, 3047.97688566, 0.1165,
+    -0.5005, -5.83, 'TIME_EXIT', 15.83,
+    0, '1h', '2026-03-08T18:36:22.437135'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5005,
+    pnl_amount = -5.83,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0E1BA193302BB547', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-05-07 23:00:00', '2021-05-08 12:08:17', 3612.29190174, 3674.90096209,
+    3558.10752321, 3702.59919928, 0.1146,
+    1.7332, 19.86, 'TRAILING_STOP', 13.14,
+    1, '1h', '2026-03-08T18:36:22.437684'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7332,
+    pnl_amount = 19.86,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'C1DF134D7D714171', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2021-05-09 16:00:00', '2021-05-10 09:50:49', 2489.92516169, 2476.91342977,
+    2452.57628427, 2552.17329074, 0.0906,
+    -0.5226, -4.74, 'STOP_LOSS', 17.85,
+    0, '1h', '2026-03-08T18:36:22.436428'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5226,
+    pnl_amount = -4.74,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'BCF692E85C4A18B0', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2021-06-01 07:00:00', '2021-06-01 20:26:02', 3277.1288724, 3331.85854485,
+    3227.97193931, 3359.05709421, 0.0807,
+    1.67, 13.47, 'TIME_EXIT', 13.43,
+    1, '1h', '2026-03-08T18:36:22.437845'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.67,
+    pnl_amount = 13.47,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '312D90CBA6DC2A81', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-06-03 04:00:00', '2021-06-03 21:31:19', 11577.73431846, 11724.03696078,
+    11404.06830369, 11867.17767642, 0.1103,
+    1.2637, 13.93, 'TIME_EXIT', 17.52,
+    1, '1h', '2026-03-08T18:36:22.437593'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2637,
+    pnl_amount = 13.93,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'C9A5653219E5C82F', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-06-13 08:00:00', '2021-06-13 22:15:41', 2479.71143514, 2515.09725002,
+    2442.51576361, 2541.70422102, 0.0909,
+    1.427, 12.97, 'TRAILING_STOP', 14.26,
+    1, '1h', '2026-03-08T18:36:22.437763'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.427,
+    pnl_amount = 12.97,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B0CBCFFC731B9F34', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2021-06-16 04:00:00', '2021-06-16 15:58:14', 335.57921123, 339.85489442,
+    330.54552306, 343.96869151, 0.0822,
+    1.2741, 10.48, 'TAKE_PROFIT', 11.97,
+    1, '1h', '2026-03-08T18:36:22.435840'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2741,
+    pnl_amount = 10.48,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '331282F868743689', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2021-06-20 10:00:00', '2021-06-20 21:49:54', 2922.84925714, 2964.27982178,
+    2879.00651828, 2995.92048857, 0.1133,
+    1.4175, 16.05, 'TAKE_PROFIT', 11.83,
+    1, '1h', '2026-03-08T18:36:22.437781'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4175,
+    pnl_amount = 16.05,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '26C5C73BFC084160', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2021-07-04 03:00:00', '2021-07-04 15:32:13', 807.56773445, 819.62847711,
+    795.45421843, 827.75692781, 0.0819,
+    1.4935, 12.24, 'TRAILING_STOP', 12.54,
+    1, '1h', '2026-03-08T18:36:22.436580'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4935,
+    pnl_amount = 12.24,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9E54F533A7F34A34', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2021-07-26 07:00:00', '2021-07-26 21:41:00', 3813.05933519, 3877.21374533,
+    3755.86344516, 3908.38581857, 0.1084,
+    1.6825, 18.24, 'TIME_EXIT', 14.68,
+    1, '1h', '2026-03-08T18:36:22.436317'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6825,
+    pnl_amount = 18.24,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '10AA5C4F193E908D', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2021-07-29 10:00:00', '2021-07-30 02:17:01', 3677.75217359, 3739.17671252,
+    3622.58589099, 3769.69597793, 0.0873,
+    1.6702, 14.57, 'TIME_EXIT', 16.28,
+    1, '1h', '2026-03-08T18:36:22.436173'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6702,
+    pnl_amount = 14.57,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'EE1D74BED5C915C4', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2021-07-29 16:00:00', '2021-07-30 01:09:41', 2911.58317197, 2944.78376018,
+    2867.90942439, 2984.37275127, 0.0838,
+    1.1403, 9.56, 'TAKE_PROFIT', 9.16,
+    1, '1h', '2026-03-08T18:36:22.436339'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1403,
+    pnl_amount = 9.56,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0CA4AE0724AFA7F5', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-07-31 08:00:00', '2021-08-01 01:45:39', 1571.59406762, 1600.11812485,
+    1548.02015661, 1610.88391932, 0.1198,
+    1.815, 21.75, 'TAKE_PROFIT', 17.76,
+    1, '1h', '2026-03-08T18:36:22.437968'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.815,
+    pnl_amount = 21.75,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'EA502910C3962D77', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-08-03 23:00:00', '2021-08-04 12:24:56', 3337.22219541, 3386.7663451,
+    3287.16386248, 3420.6527503, 0.0863,
+    1.4846, 12.81, 'TIME_EXIT', 13.42,
+    1, '1h', '2026-03-08T18:36:22.437696'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4846,
+    pnl_amount = 12.81,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '42A503B6FB502049', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2021-08-29 11:00:00', '2021-08-29 23:29:54', 3264.77143112, 3301.3800736,
+    3215.79985966, 3346.3907169, 0.0881,
+    1.1213, 9.87, 'TRAILING_STOP', 12.5,
+    1, '1h', '2026-03-08T18:36:22.436112'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1213,
+    pnl_amount = 9.87,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7520727AF61FE4C0', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-09-01 08:00:00', '2021-09-01 23:45:48', 41765.7744934, 42415.34811698,
+    41139.287876, 42809.91885573, 0.0976,
+    1.5553, 15.18, 'TRAILING_STOP', 15.76,
+    1, '1h', '2026-03-08T18:36:22.436471'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5553,
+    pnl_amount = 15.18,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '95B97A34F094BCF3', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-09-01 23:00:00', '2021-09-02 07:27:43', 10007.75553934, 10144.71185938,
+    9857.63920625, 10257.94942782, 0.0975,
+    1.3685, 13.34, 'TIME_EXIT', 8.46,
+    1, '1h', '2026-03-08T18:36:22.436290'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3685,
+    pnl_amount = 13.34,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '28592E241ECC12B1', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2021-09-06 05:00:00', '2021-09-06 16:39:03', 287.89250214, 286.15117743,
+    283.57411461, 295.0898147, 0.0896,
+    -0.6049, -5.42, 'STOP_LOSS', 11.65,
+    0, '1h', '2026-03-08T18:36:22.435896'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6049,
+    pnl_amount = -5.42,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4598D765D3A20BDF', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2021-09-18 14:00:00', '2021-09-18 23:29:27', 2928.37520652, 2969.45750179,
+    2884.44957842, 3001.58458668, 0.0941,
+    1.4029, 13.2, 'TAKE_PROFIT', 9.49,
+    1, '1h', '2026-03-08T18:36:22.436261'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4029,
+    pnl_amount = 13.2,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FE8512D142EC4B97', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-09-28 19:00:00', '2021-09-29 08:05:50', 2444.88609479, 2490.11415145,
+    2408.21280337, 2506.00824716, 0.1193,
+    1.8499, 22.07, 'TIME_EXIT', 13.1,
+    1, '1h', '2026-03-08T18:36:22.438207'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8499,
+    pnl_amount = 22.07,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '3CE4805DC933009D', 'FLASH_REV_v1', 'DOGEUSDT', 'LONG',
+    '2021-10-10 00:00:00', '2021-10-10 16:50:55', 1342.38373049, 1358.03299412,
+    1322.24797453, 1375.94332375, 0.084,
+    1.1658, 9.79, 'TAKE_PROFIT', 16.85,
+    1, '1h', '2026-03-08T18:36:22.435829'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1658,
+    pnl_amount = 9.79,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '5B060108E4449EA4', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2021-10-14 09:00:00', '2021-10-15 02:28:33', 980.11343332, 994.24811765,
+    965.41173182, 1004.61626915, 0.0905,
+    1.4421, 13.05, 'TAKE_PROFIT', 17.48,
+    1, '1h', '2026-03-08T18:36:22.438067'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4421,
+    pnl_amount = 13.05,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8E78C13E704CB969', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2021-11-18 15:00:00', '2021-11-19 02:10:14', 13490.45754383, 13408.54450075,
+    13288.10068067, 13827.71898243, 0.1051,
+    -0.6072, -6.38, 'TIME_EXIT', 11.17,
+    0, '1h', '2026-03-08T18:36:22.437325'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6072,
+    pnl_amount = -6.38,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'AD77757A4485B99F', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2021-12-01 12:00:00', '2021-12-01 20:20:10', 1881.85496547, 1915.98738574,
+    1853.62714098, 1928.9013396, 0.1067,
+    1.8138, 19.35, 'TAKE_PROFIT', 8.34,
+    1, '1h', '2026-03-08T18:36:22.435804'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8138,
+    pnl_amount = 19.35,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0071C9BED336B758', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2021-12-10 19:00:00', '2021-12-11 06:48:25', 2103.95525426, 2091.96871446,
+    2072.39592545, 2156.55413562, 0.0901,
+    -0.5697, -5.14, 'STOP_LOSS', 11.81,
+    0, '1h', '2026-03-08T18:36:22.436439'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5697,
+    pnl_amount = -5.14,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6920980372840070', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2021-12-19 20:00:00', '2021-12-20 07:11:02', 1234.68719233, 1256.22027905,
+    1216.16688445, 1265.55437214, 0.1046,
+    1.744, 18.24, 'TRAILING_STOP', 11.18,
+    1, '1h', '2026-03-08T18:36:22.436894'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.744,
+    pnl_amount = 18.24,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D4F61538AA12BDF3', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2022-01-02 16:00:00', '2022-01-03 07:44:02', 641.48879028, 654.67128731,
+    631.86645843, 657.52601004, 0.0871,
+    2.055, 17.89, 'TRAILING_STOP', 15.73,
+    1, '1h', '2026-03-08T18:36:22.436542'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.055,
+    pnl_amount = 17.89,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '30E6E02B386E60C2', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-01-11 21:00:00', '2022-01-12 05:48:07', 4320.13526574, 4380.74030175,
+    4255.33323675, 4428.13864738, 0.1023,
+    1.4029, 14.35, 'TIME_EXIT', 8.8,
+    1, '1h', '2026-03-08T18:36:22.437345'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4029,
+    pnl_amount = 14.35,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E62F46A2AE6B2B67', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2022-03-05 12:00:00', '2022-03-05 21:33:44', 1654.81467542, 1685.25243349,
+    1629.99245529, 1696.18504231, 0.0958,
+    1.8393, 17.62, 'TAKE_PROFIT', 9.56,
+    1, '1h', '2026-03-08T18:36:22.436590'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8393,
+    pnl_amount = 17.62,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '70E3A2440D78E722', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2022-03-12 01:00:00', '2022-03-12 07:57:10', 762.54388644, 774.47028559,
+    751.10572814, 781.6074836, 0.0841,
+    1.564, 13.15, 'TRAILING_STOP', 6.95,
+    1, '1h', '2026-03-08T18:36:22.437422'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.564,
+    pnl_amount = 13.15,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '5677D63AFE286C27', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-03-14 07:00:00', '2022-03-14 21:59:01', 20839.96381765, 20699.55448352,
+    20527.36436038, 21360.96291309, 0.0993,
+    -0.6738, -6.69, 'STOP_LOSS', 14.98,
+    0, '1h', '2026-03-08T18:36:22.435852'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6738,
+    pnl_amount = -6.69,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8A3B35445D9ADF17', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2022-03-16 08:00:00', '2022-03-16 22:08:56', 3844.49976831, 3923.37691442,
+    3786.83227178, 3940.61226252, 0.1005,
+    2.0517, 20.61, 'TAKE_PROFIT', 14.15,
+    1, '1h', '2026-03-08T18:36:22.437726'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0517,
+    pnl_amount = 20.61,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0DE3EC978BBB4D8C', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-04-06 08:00:00', '2022-04-06 18:50:58', 4534.22274714, 4593.66702897,
+    4466.20940594, 4647.57831582, 0.0836,
+    1.311, 10.96, 'TAKE_PROFIT', 10.85,
+    1, '1h', '2026-03-08T18:36:22.436637'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.311,
+    pnl_amount = 10.96,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '075C037A0FCA2E86', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2022-04-07 20:00:00', '2022-04-08 10:52:27', 587.25802074, 595.91985058,
+    578.44915043, 601.93947126, 0.1138,
+    1.475, 16.78, 'TAKE_PROFIT', 14.87,
+    1, '1h', '2026-03-08T18:36:22.436885'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.475,
+    pnl_amount = 16.78,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '244AFA9F706BDBD1', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-04-11 05:00:00', '2022-04-11 11:12:33', 4862.20427248, 4831.88204973,
+    4789.2712084, 4983.7593793, 0.0852,
+    -0.6236, -5.31, 'STOP_LOSS', 6.21,
+    0, '1h', '2026-03-08T18:36:22.437363'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6236,
+    pnl_amount = -5.31,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '597143A53B7D3CAF', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2022-04-25 23:00:00', '2022-04-26 05:13:50', 1354.45519003, 1373.31595064,
+    1334.13836218, 1388.31656978, 0.1102,
+    1.3925, 15.35, 'TAKE_PROFIT', 6.23,
+    1, '1h', '2026-03-08T18:36:22.436193'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3925,
+    pnl_amount = 15.35,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '867BEF21240A7016', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-05-04 13:00:00', '2022-05-05 01:05:21', 4175.64210857, 4259.16143187,
+    4113.00747694, 4280.03316128, 0.1187,
+    2.0002, 23.75, 'TIME_EXIT', 12.09,
+    1, '1h', '2026-03-08T18:36:22.438124'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0002,
+    pnl_amount = 23.75,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D4B61CCD2209CDA9', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-05-05 05:00:00', '2022-05-05 18:04:02', 2645.62907513, 2695.929405,
+    2605.944639, 2711.76980201, 0.103,
+    1.9013, 19.58, 'TAKE_PROFIT', 13.07,
+    1, '1h', '2026-03-08T18:36:22.437393'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9013,
+    pnl_amount = 19.58,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B35897CEAEDEC3B7', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-05-15 02:00:00', '2022-05-15 14:01:43', 24729.08142797, 25119.46910703,
+    24358.14520655, 25347.30846367, 0.096,
+    1.5787, 15.15, 'TAKE_PROFIT', 12.03,
+    1, '1h', '2026-03-08T18:36:22.436967'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5787,
+    pnl_amount = 15.15,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '1A20B5A710E00126', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2022-05-17 16:00:00', '2022-05-18 07:38:53', 3322.82876578, 3364.76002592,
+    3272.98633429, 3405.89948492, 0.1115,
+    1.2619, 14.08, 'TAKE_PROFIT', 15.65,
+    1, '1h', '2026-03-08T18:36:22.437383'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2619,
+    pnl_amount = 14.08,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'A68CE434BBD18753', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-05-26 04:00:00', '2022-05-26 11:15:03', 29442.02457203, 29867.82910951,
+    29000.39420345, 30178.07518633, 0.0939,
+    1.4462, 13.57, 'TRAILING_STOP', 7.25,
+    1, '1h', '2026-03-08T18:36:22.437277'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4462,
+    pnl_amount = 13.57,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FACAB3F98664A1F7', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2022-05-30 15:00:00', '2022-05-31 08:42:43', 1746.48041267, 1772.65666683,
+    1720.28320648, 1790.14242299, 0.1193,
+    1.4988, 17.89, 'TRAILING_STOP', 17.71,
+    1, '1h', '2026-03-08T18:36:22.437584'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4988,
+    pnl_amount = 17.89,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'EA1B770948CD2F0F', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-06-15 11:00:00', '2022-06-15 19:25:14', 278.42575313, 281.5471525,
+    274.24936683, 285.38639696, 0.1191,
+    1.1211, 13.35, 'TIME_EXIT', 8.42,
+    1, '1h', '2026-03-08T18:36:22.437602'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1211,
+    pnl_amount = 13.35,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E644DA5C2872E77E', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2022-06-17 10:00:00', '2022-06-18 02:28:49', 450.37317186, 448.00321162,
+    443.61757428, 461.63250116, 0.1151,
+    -0.5262, -6.06, 'TIME_EXIT', 16.48,
+    0, '1h', '2026-03-08T18:36:22.437717'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5262,
+    pnl_amount = -6.06,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '118C7D7DFEA9EA1F', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-06-20 20:00:00', '2022-06-21 08:57:20', 1094.94739693, 1113.48471852,
+    1078.52318598, 1122.32108186, 0.0954,
+    1.693, 16.15, 'TIME_EXIT', 12.96,
+    1, '1h', '2026-03-08T18:36:22.437958'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.693,
+    pnl_amount = 16.15,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2018A7A21F388889', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2022-07-08 20:00:00', '2022-07-09 04:25:07', 275.92980581, 274.16147931,
+    271.79085872, 282.82805095, 0.095,
+    -0.6409, -6.09, 'STOP_LOSS', 8.42,
+    0, '1h', '2026-03-08T18:36:22.436280'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6409,
+    pnl_amount = -6.09,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '76B2648281F004D3', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-07-19 20:00:00', '2022-07-20 10:22:47', 2002.08401507, 1989.00337325,
+    1972.05275485, 2052.13611545, 0.0899,
+    -0.6534, -5.87, 'STOP_LOSS', 14.38,
+    0, '1h', '2026-03-08T18:36:22.436461'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6534,
+    pnl_amount = -5.87,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '5B85E79F936BE2EF', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-08-10 04:00:00', '2022-08-10 14:49:59', 39207.00582758, 39834.12771413,
+    38618.90074016, 40187.18097326, 0.0864,
+    1.5995, 13.82, 'TIME_EXIT', 10.83,
+    1, '1h', '2026-03-08T18:36:22.436183'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5995,
+    pnl_amount = 13.82,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '32E776FF6BA95260', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-08-12 12:00:00', '2022-08-12 20:28:13', 4648.6902824, 4728.42258898,
+    4578.95992816, 4764.90753946, 0.0934,
+    1.7152, 16.02, 'TRAILING_STOP', 8.47,
+    1, '1h', '2026-03-08T18:36:22.436994'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7152,
+    pnl_amount = 16.02,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9E8D4D741D499C82', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-08-23 18:00:00', '2022-08-24 01:56:18', 3208.48813554, 3244.77369899,
+    3160.3608135, 3288.70033893, 0.1083,
+    1.1309, 12.24, 'TAKE_PROFIT', 7.94,
+    1, '1h', '2026-03-08T18:36:22.436329'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1309,
+    pnl_amount = 12.24,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'AB0024BA50B0D6D8', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2022-09-02 12:00:00', '2022-09-02 21:49:17', 4815.88987256, 4874.09840904,
+    4743.65152448, 4936.28711938, 0.1061,
+    1.2087, 12.83, 'TIME_EXIT', 9.82,
+    1, '1h', '2026-03-08T18:36:22.436922'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2087,
+    pnl_amount = 12.83,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '925574A24117E86E', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-09-07 15:00:00', '2022-09-08 06:00:30', 3432.19951013, 3475.28067544,
+    3380.71651747, 3518.00449788, 0.0911,
+    1.2552, 11.44, 'TRAILING_STOP', 15.01,
+    1, '1h', '2026-03-08T18:36:22.438133'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2552,
+    pnl_amount = 11.44,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B588363826A70EF5', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-09-13 19:00:00', '2022-09-14 09:54:48', 35626.68914268, 36228.81380344,
+    35092.28880554, 36517.35637125, 0.0854,
+    1.6901, 14.43, 'TRAILING_STOP', 14.91,
+    1, '1h', '2026-03-08T18:36:22.437882'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6901,
+    pnl_amount = 14.43,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'AEA019DC50433C88', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-09-15 02:00:00', '2022-09-15 08:58:17', 280.50551957, 278.83025922,
+    276.29793678, 287.51815756, 0.089,
+    -0.5972, -5.32, 'STOP_LOSS', 6.97,
+    0, '1h', '2026-03-08T18:36:22.437222'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5972,
+    pnl_amount = -5.32,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '44DE5C045EB21CD1', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-09-17 04:00:00', '2022-09-17 18:13:08', 2260.63814098, 2246.45995315,
+    2226.72856887, 2317.1540945, 0.1087,
+    -0.6272, -6.82, 'STOP_LOSS', 14.22,
+    0, '1h', '2026-03-08T18:36:22.436042'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6272,
+    pnl_amount = -6.82,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8280ACA8764D4E32', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-09-19 03:00:00', '2022-09-19 20:42:06', 16414.14677551, 16686.14139153,
+    16167.93457388, 16824.5004449, 0.0816,
+    1.6571, 13.52, 'TRAILING_STOP', 17.7,
+    1, '1h', '2026-03-08T18:36:22.437411'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6571,
+    pnl_amount = 13.52,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '3726B423BA230585', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-09-27 14:00:00', '2022-09-27 23:43:01', 1639.25411861, 1673.54643587,
+    1614.66530683, 1680.23547158, 0.1068,
+    2.0919, 22.35, 'TIME_EXIT', 9.72,
+    1, '1h', '2026-03-08T18:36:22.437155'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0919,
+    pnl_amount = 22.35,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '30C4DA99E72C4DEA', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2022-10-01 01:00:00', '2022-10-01 08:39:46', 3976.87853657, 4047.26461779,
+    3917.22535852, 4076.30049998, 0.0982,
+    1.7699, 17.38, 'TAKE_PROFIT', 7.66,
+    1, '1h', '2026-03-08T18:36:22.436809'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7699,
+    pnl_amount = 17.38,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '1822717562EF1A7E', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2022-10-02 03:00:00', '2022-10-02 11:51:02', 1514.07010752, 1535.10188771,
+    1491.35905591, 1551.92186021, 0.1021,
+    1.3891, 14.18, 'TAKE_PROFIT', 8.85,
+    1, '1h', '2026-03-08T18:36:22.437204'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3891,
+    pnl_amount = 14.18,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B8D5BC4263D7E6EE', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-10-07 09:00:00', '2022-10-07 15:21:53', 1988.48862877, 2017.19685362,
+    1958.66129934, 2038.20084449, 0.1069,
+    1.4437, 15.43, 'TRAILING_STOP', 6.36,
+    1, '1h', '2026-03-08T18:36:22.437816'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4437,
+    pnl_amount = 15.43,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'C2E5B8B01510DD0B', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2022-10-11 10:00:00', '2022-10-11 16:32:43', 100.01985595, 101.80774508,
+    98.51955811, 102.52035235, 0.0815,
+    1.7875, 14.56, 'TIME_EXIT', 6.55,
+    1, '1h', '2026-03-08T18:36:22.436450'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7875,
+    pnl_amount = 14.56,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '5780BAEF83B32530', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2022-10-21 04:00:00', '2022-10-21 19:40:10', 3160.55346974, 3140.13279922,
+    3113.14516769, 3239.56730648, 0.1084,
+    -0.6461, -7.0, 'TIME_EXIT', 15.67,
+    0, '1h', '2026-03-08T18:36:22.437744'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6461,
+    pnl_amount = -7.0,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '69F36B5A093BAB5D', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-11-10 07:00:00', '2022-11-10 19:05:10', 4107.18107577, 4157.69933998,
+    4045.57335964, 4209.86060267, 0.1094,
+    1.23, 13.46, 'TRAILING_STOP', 12.09,
+    1, '1h', '2026-03-08T18:36:22.437258'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.23,
+    pnl_amount = 13.46,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B71B5C18922260D8', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2022-11-21 15:00:00', '2022-11-22 04:24:39', 4858.31180622, 4957.34793841,
+    4785.43712912, 4979.76960137, 0.0879,
+    2.0385, 17.91, 'TAKE_PROFIT', 13.41,
+    1, '1h', '2026-03-08T18:36:22.438085'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0385,
+    pnl_amount = 17.91,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E34D2886AD27B43E', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2022-11-28 04:00:00', '2022-11-28 19:52:34', 48688.90740073, 49552.8665606,
+    47958.57378972, 49906.13008575, 0.0955,
+    1.7744, 16.95, 'TAKE_PROFIT', 15.88,
+    1, '1h', '2026-03-08T18:36:22.436849'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7744,
+    pnl_amount = 16.95,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7BA979CBFACF93DF', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2022-12-01 06:00:00', '2022-12-01 17:47:56', 116.9313968, 116.09828478,
+    115.17742585, 119.85468172, 0.094,
+    -0.7125, -6.7, 'TIME_EXIT', 11.8,
+    0, '1h', '2026-03-08T18:36:22.437125'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.7125,
+    pnl_amount = -6.7,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7AB7D3626EB8EDD9', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2022-12-03 15:00:00', '2022-12-03 22:53:23', 2223.08090293, 2210.91834878,
+    2189.73468939, 2278.65792551, 0.1177,
+    -0.5471, -6.44, 'STOP_LOSS', 7.89,
+    0, '1h', '2026-03-08T18:36:22.438233'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5471,
+    pnl_amount = -6.44,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'DF76C1C19B6EE2B5', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-12-08 17:00:00', '2022-12-09 04:44:08', 2584.25609188, 2620.73845525,
+    2545.4922505, 2648.86249418, 0.0956,
+    1.4117, 13.5, 'TAKE_PROFIT', 11.74,
+    1, '1h', '2026-03-08T18:36:22.437919'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4117,
+    pnl_amount = 13.5,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E27EFE3327E72B0E', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2022-12-27 19:00:00', '2022-12-28 04:41:38', 4447.0821284, 4417.45389837,
+    4380.37589648, 4558.25918161, 0.0971,
+    -0.6662, -6.47, 'TIME_EXIT', 9.69,
+    0, '1h', '2026-03-08T18:36:22.436308'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6662,
+    pnl_amount = -6.47,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '3742B303C52198D3', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2023-01-01 19:00:00', '2023-01-02 07:00:59', 3723.75730344, 3781.65920594,
+    3667.90094389, 3816.85123603, 0.1059,
+    1.5549, 16.47, 'TRAILING_STOP', 12.02,
+    1, '1h', '2026-03-08T18:36:22.437047'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5549,
+    pnl_amount = 16.47,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'A84803025E8864E0', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2023-01-07 22:00:00', '2023-01-08 12:30:17', 3007.9055843, 3049.62741592,
+    2962.78700054, 3083.10322391, 0.0962,
+    1.3871, 13.34, 'TRAILING_STOP', 14.5,
+    1, '1h', '2026-03-08T18:36:22.438198'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3871,
+    pnl_amount = 13.34,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FB4B2A1D8B528A14', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2023-01-11 22:00:00', '2023-01-12 08:15:53', 1948.50010681, 1938.43377966,
+    1919.27260521, 1997.21260948, 0.1177,
+    -0.5166, -6.08, 'TIME_EXIT', 10.26,
+    0, '1h', '2026-03-08T18:36:22.436391'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5166,
+    pnl_amount = -6.08,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '1C3949B168ACD270', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-01-14 15:00:00', '2023-01-14 21:40:38', 1463.45941699, 1455.91751709,
+    1441.50752574, 1500.04590242, 0.0879,
+    -0.5153, -4.53, 'TIME_EXIT', 6.68,
+    0, '1h', '2026-03-08T18:36:22.436666'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5153,
+    pnl_amount = -4.53,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '38D9F14C73BF7F4F', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-01-25 17:00:00', '2023-01-26 09:38:59', 35413.79228023, 35977.05545631,
+    34882.58539603, 36299.13708724, 0.1166,
+    1.5905, 18.54, 'TRAILING_STOP', 16.65,
+    1, '1h', '2026-03-08T18:36:22.436270'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5905,
+    pnl_amount = 18.54,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9F0257291DEF0B08', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-02-03 14:00:00', '2023-02-03 22:36:58', 1032.83882703, 1045.84758833,
+    1017.34624462, 1058.6597977, 0.1196,
+    1.2595, 15.07, 'TIME_EXIT', 8.62,
+    1, '1h', '2026-03-08T18:36:22.436722'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2595,
+    pnl_amount = 15.07,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9060354C06A62C49', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2023-02-09 12:00:00', '2023-02-09 22:43:08', 3497.26065191, 3480.23721781,
+    3444.80174213, 3584.69216821, 0.0917,
+    -0.4868, -4.47, 'TIME_EXIT', 10.72,
+    0, '1h', '2026-03-08T18:36:22.438225'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.4868,
+    pnl_amount = -4.47,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D6A8F3B8AB21613A', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2023-02-10 17:00:00', '2023-02-11 06:54:08', 588.79357121, 585.68347932,
+    579.96166764, 603.51341049, 0.0813,
+    -0.5282, -4.3, 'STOP_LOSS', 13.9,
+    0, '1h', '2026-03-08T18:36:22.438004'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5282,
+    pnl_amount = -4.3,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '50ED2EB4EC8EAFB3', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-02-15 08:00:00', '2023-02-15 18:58:18', 30733.64468379, 31368.28933663,
+    30272.64001353, 31501.98580088, 0.11,
+    2.065, 22.72, 'TIME_EXIT', 10.97,
+    1, '1h', '2026-03-08T18:36:22.436685'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.065,
+    pnl_amount = 22.72,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FF8C9E605B675127', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-03-07 05:00:00', '2023-03-07 11:35:37', 380.88922105, 386.71565755,
+    375.17588274, 390.41145158, 0.0983,
+    1.5297, 15.04, 'TAKE_PROFIT', 6.59,
+    1, '1h', '2026-03-08T18:36:22.437231'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5297,
+    pnl_amount = 15.04,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'C155EACE9E9A640C', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2023-03-13 14:00:00', '2023-03-13 21:57:59', 3655.54509869, 3722.11787022,
+    3600.71192221, 3746.93372615, 0.1091,
+    1.8211, 19.87, 'TAKE_PROFIT', 7.97,
+    1, '1h', '2026-03-08T18:36:22.436761'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8211,
+    pnl_amount = 19.87,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4784EB74FD248ECF', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2023-03-14 22:00:00', '2023-03-15 11:39:26', 2438.93530998, 2489.79856415,
+    2402.35128033, 2499.90869273, 0.088,
+    2.0855, 18.35, 'TRAILING_STOP', 13.66,
+    1, '1h', '2026-03-08T18:36:22.436367'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0855,
+    pnl_amount = 18.35,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4E00B62414B0CB94', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2023-03-23 09:00:00', '2023-03-23 19:46:18', 2645.01865078, 2687.13280775,
+    2605.34337102, 2711.14411705, 0.1097,
+    1.5922, 17.46, 'TRAILING_STOP', 10.77,
+    1, '1h', '2026-03-08T18:36:22.436781'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5922,
+    pnl_amount = 17.46,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8128C2F5D0E58929', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2023-04-25 17:00:00', '2023-04-26 07:38:22', 858.5581841, 870.66300505,
+    845.67981134, 880.0221387, 0.1003,
+    1.4099, 14.14, 'TAKE_PROFIT', 14.64,
+    1, '1h', '2026-03-08T18:36:22.436212'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4099,
+    pnl_amount = 14.14,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7E88E0D3979B8146', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2023-04-29 15:00:00', '2023-04-30 02:01:55', 619.17921035, 629.47510424,
+    609.8915222, 634.65869061, 0.103,
+    1.6628, 17.14, 'TAKE_PROFIT', 11.03,
+    1, '1h', '2026-03-08T18:36:22.437995'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6628,
+    pnl_amount = 17.14,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '449816B0AA0E703C', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2023-05-03 11:00:00', '2023-05-04 02:31:15', 1147.41363419, 1169.47780255,
+    1130.20242967, 1176.09897504, 0.0874,
+    1.9229, 16.8, 'TIME_EXIT', 15.52,
+    1, '1h', '2026-03-08T18:36:22.437837'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9229,
+    pnl_amount = 16.8,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7AF3FC15FA0316C0', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2023-05-16 11:00:00', '2023-05-16 21:03:50', 3152.42150148, 3212.46815321,
+    3105.13517896, 3231.23203902, 0.0862,
+    1.9048, 16.41, 'TRAILING_STOP', 10.06,
+    1, '1h', '2026-03-08T18:36:22.436409'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9048,
+    pnl_amount = 16.41,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'A14A2BD0D5BCDCC5', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-05-17 12:00:00', '2023-05-18 04:49:50', 47900.16394098, 48672.14725687,
+    47181.66148186, 49097.6680395, 0.1179,
+    1.6117, 19.0, 'TRAILING_STOP', 16.83,
+    1, '1h', '2026-03-08T18:36:22.436931'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6117,
+    pnl_amount = 19.0,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '3E4FF7DF34BF69B5', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-05-24 07:00:00', '2023-05-24 21:56:59', 4135.58810707, 4204.2405,
+    4073.55428546, 4238.97780974, 0.0952,
+    1.66, 15.81, 'TIME_EXIT', 14.95,
+    1, '1h', '2026-03-08T18:36:22.436704'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.66,
+    pnl_amount = 15.81,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FC8F37A0DDBBDBC5', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-05-24 09:00:00', '2023-05-24 23:51:47', 2329.32810745, 2370.12656229,
+    2294.38818584, 2387.56131013, 0.1069,
+    1.7515, 18.72, 'TRAILING_STOP', 14.86,
+    1, '1h', '2026-03-08T18:36:22.437074'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7515,
+    pnl_amount = 18.72,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '1EF9BCC13BDD1C1B', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-05-30 18:00:00', '2023-05-31 06:34:31', 2054.95816552, 2044.61719603,
+    2024.13379303, 2106.33211965, 0.1164,
+    -0.5032, -5.86, 'STOP_LOSS', 12.58,
+    0, '1h', '2026-03-08T18:36:22.436299'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5032,
+    pnl_amount = -5.86,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F498CFC3073F618E', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2023-06-07 11:00:00', '2023-06-07 21:17:07', 89.8172573, 91.41591709,
+    88.46999844, 92.06268873, 0.1195,
+    1.7799, 21.27, 'TRAILING_STOP', 10.29,
+    1, '1h', '2026-03-08T18:36:22.436648'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7799,
+    pnl_amount = 21.27,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F34BF1DE80ADE80A', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-06-13 00:00:00', '2023-06-13 17:09:39', 35119.11992019, 35817.57555718,
+    34592.33312139, 35997.0979182, 0.1189,
+    1.9888, 23.66, 'TIME_EXIT', 17.16,
+    1, '1h', '2026-03-08T18:36:22.436242'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9888,
+    pnl_amount = 23.66,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4C66B3909992D4D1', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2023-06-21 06:00:00', '2023-06-21 15:42:02', 3348.40457311, 3399.53782882,
+    3298.17850451, 3432.11468743, 0.1093,
+    1.5271, 16.7, 'TRAILING_STOP', 9.7,
+    1, '1h', '2026-03-08T18:36:22.437315'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5271,
+    pnl_amount = 16.7,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F4743F1019F54CA4', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-06-23 16:00:00', '2023-06-24 05:51:28', 8667.59897573, 8845.18961591,
+    8537.58499109, 8884.28895012, 0.1035,
+    2.0489, 21.2, 'TAKE_PROFIT', 13.86,
+    1, '1h', '2026-03-08T18:36:22.436122'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0489,
+    pnl_amount = 21.2,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '224042F24FFEB7FA', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2023-07-02 11:00:00', '2023-07-02 18:07:55', 4956.28152666, 4922.05128587,
+    4881.93730376, 5080.18856483, 0.0932,
+    -0.6906, -6.44, 'TIME_EXIT', 7.13,
+    0, '1h', '2026-03-08T18:36:22.436133'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6906,
+    pnl_amount = -6.44,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '786FA11A72769051', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2023-07-02 16:00:00', '2023-07-03 05:10:19', 861.25497565, 879.31225503,
+    848.33615101, 882.78635004, 0.094,
+    2.0966, 19.71, 'TIME_EXIT', 13.17,
+    1, '1h', '2026-03-08T18:36:22.436163'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0966,
+    pnl_amount = 19.71,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '3641BF40CD0B97D0', 'FLASH_REV_v1', 'BNBUSDT', 'LONG',
+    '2023-07-05 23:00:00', '2023-07-06 11:37:03', 3666.65590998, 3643.57211779,
+    3611.65607133, 3758.32230773, 0.1188,
+    -0.6296, -7.48, 'TIME_EXIT', 12.62,
+    0, '1h', '2026-03-08T18:36:22.437938'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6296,
+    pnl_amount = -7.48,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7BC85A7CCE16C28A', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2023-07-20 11:00:00', '2023-07-20 23:56:47', 758.72478803, 771.52455981,
+    747.34391621, 777.69290773, 0.1194,
+    1.687, 20.14, 'TRAILING_STOP', 12.95,
+    1, '1h', '2026-03-08T18:36:22.437479'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.687,
+    pnl_amount = 20.14,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6F08242003910D85', 'FLASH_REV_v1', 'DOGEUSDT', 'LONG',
+    '2023-07-21 17:00:00', '2023-07-21 23:33:50', 3434.13465579, 3409.98157803,
+    3382.62263595, 3519.98802218, 0.0839,
+    -0.7033, -5.9, 'TIME_EXIT', 6.56,
+    0, '1h', '2026-03-08T18:36:22.437029'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.7033,
+    pnl_amount = -5.9,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0E1B0A3C49CAD147', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2023-08-01 04:00:00', '2023-08-01 18:43:51', 113.34336479, 115.27343169,
+    111.64321431, 116.17694891, 0.102,
+    1.7028, 17.38, 'TAKE_PROFIT', 14.73,
+    1, '1h', '2026-03-08T18:36:22.436799'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7028,
+    pnl_amount = 17.38,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '870687C8E4B6DFA3', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-08-06 10:00:00', '2023-08-06 17:32:46', 34078.93317206, 34506.49196573,
+    33567.74917448, 34930.90650136, 0.1194,
+    1.2546, 14.98, 'TAKE_PROFIT', 7.55,
+    1, '1h', '2026-03-08T18:36:22.436840'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2546,
+    pnl_amount = 14.98,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8E240B2768367C16', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2023-08-19 23:00:00', '2023-08-20 10:29:32', 3718.76896633, 3788.40549159,
+    3662.98743183, 3811.73819049, 0.1112,
+    1.8726, 20.83, 'TAKE_PROFIT', 11.49,
+    1, '1h', '2026-03-08T18:36:22.437772'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8726,
+    pnl_amount = 20.83,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '155178AC19BDF9A8', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-08-25 22:00:00', '2023-08-26 12:43:40', 2036.90840076, 2061.32616684,
+    2006.35477475, 2087.83111078, 0.0937,
+    1.1988, 11.23, 'TRAILING_STOP', 14.73,
+    1, '1h', '2026-03-08T18:36:22.438151'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1988,
+    pnl_amount = 11.23,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '16FD681AB40A7512', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2023-08-28 05:00:00', '2023-08-28 12:59:10', 2849.09387463, 2908.58588976,
+    2806.35746651, 2920.3212215, 0.1125,
+    2.0881, 23.5, 'TAKE_PROFIT', 7.99,
+    1, '1h', '2026-03-08T18:36:22.436561'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0881,
+    pnl_amount = 23.5,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '787678B4E147DB9F', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-08-30 02:00:00', '2023-08-30 16:45:11', 34704.4137463, 35241.30841215,
+    34183.8475401, 35572.02408996, 0.1164,
+    1.5471, 18.01, 'TAKE_PROFIT', 14.75,
+    1, '1h', '2026-03-08T18:36:22.436102'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5471,
+    pnl_amount = 18.01,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7B8E9A1CCCE7EFB1', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-09-06 23:00:00', '2023-09-07 13:40:26', 25886.22866687, 26194.82082326,
+    25497.93523687, 26533.38438354, 0.1122,
+    1.1921, 13.37, 'TRAILING_STOP', 14.67,
+    1, '1h', '2026-03-08T18:36:22.438022'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1921,
+    pnl_amount = 13.37,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '70D3BB42D28120E0', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2023-09-10 06:00:00', '2023-09-10 21:57:22', 4123.25886229, 4181.44997844,
+    4061.40997935, 4226.34033384, 0.0834,
+    1.4113, 11.77, 'TRAILING_STOP', 15.96,
+    1, '1h', '2026-03-08T18:36:22.437012'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4113,
+    pnl_amount = 11.77,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D4C74C467DB62AD1', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2023-09-16 08:00:00', '2023-09-16 15:45:28', 1801.02854613, 1790.71276937,
+    1774.01311794, 1846.05425978, 0.1141,
+    -0.5728, -6.54, 'STOP_LOSS', 7.76,
+    0, '1h', '2026-03-08T18:36:22.438160'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5728,
+    pnl_amount = -6.54,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'ABE3814957B67617', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2023-09-23 07:00:00', '2023-09-23 13:19:34', 4532.99775986, 4626.31476097,
+    4465.00279346, 4646.32270386, 0.101,
+    2.0586, 20.79, 'TIME_EXIT', 6.33,
+    1, '1h', '2026-03-08T18:36:22.436713'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0586,
+    pnl_amount = 20.79,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '95A1BC6DA55357F6', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-10-03 21:00:00', '2023-10-04 10:36:59', 28472.14337059, 28849.87246872,
+    28045.06122003, 29183.94695486, 0.1125,
+    1.3267, 14.92, 'TRAILING_STOP', 13.62,
+    1, '1h', '2026-03-08T18:36:22.436976'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3267,
+    pnl_amount = 14.92,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'BD106FB39F8FF950', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2023-10-07 05:00:00', '2023-10-07 12:38:09', 15766.1129222, 15942.65655937,
+    15529.62122837, 16160.26574526, 0.0935,
+    1.1198, 10.47, 'TAKE_PROFIT', 7.64,
+    1, '1h', '2026-03-08T18:36:22.436829'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1198,
+    pnl_amount = 10.47,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'BBFB6CFFD845E9A6', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2023-10-08 14:00:00', '2023-10-09 07:54:15', 1183.22217894, 1201.63178093,
+    1165.47384625, 1212.80273341, 0.0835,
+    1.5559, 12.98, 'TRAILING_STOP', 17.9,
+    1, '1h', '2026-03-08T18:36:22.436052'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5559,
+    pnl_amount = 12.98,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '50193EF576C62DAB', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-10-08 16:00:00', '2023-10-08 23:22:16', 2923.67141178, 2907.58545869,
+    2879.81634061, 2996.76319708, 0.0976,
+    -0.5502, -5.37, 'TIME_EXIT', 7.37,
+    0, '1h', '2026-03-08T18:36:22.437611'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5502,
+    pnl_amount = -5.37,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6087923E1C770A09', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2023-10-24 10:00:00', '2023-10-25 01:39:59', 1665.50850143, 1697.93955643,
+    1640.52587391, 1707.14621396, 0.1123,
+    1.9472, 21.87, 'TAKE_PROFIT', 15.67,
+    1, '1h', '2026-03-08T18:36:22.436657'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9472,
+    pnl_amount = 21.87,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D3BE2CB1D0AE8C9F', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2023-10-25 04:00:00', '2023-10-25 17:47:43', 3464.91404354, 3513.58605984,
+    3412.94033289, 3551.53689463, 0.1021,
+    1.4047, 14.34, 'TAKE_PROFIT', 13.8,
+    1, '1h', '2026-03-08T18:36:22.437947'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4047,
+    pnl_amount = 14.34,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '15773C20F078DECE', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2023-11-07 05:00:00', '2023-11-07 20:36:17', 1531.26301654, 1556.29763283,
+    1508.29407129, 1569.54459196, 0.0999,
+    1.6349, 16.34, 'TIME_EXIT', 15.6,
+    1, '1h', '2026-03-08T18:36:22.436349'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6349,
+    pnl_amount = 16.34,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '286B2FF5A89ED77F', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2023-12-27 18:00:00', '2023-12-28 08:48:39', 871.94199906, 866.94776175,
+    858.86286907, 893.74054904, 0.1064,
+    -0.5728, -6.09, 'STOP_LOSS', 14.81,
+    0, '1h', '2026-03-08T18:36:22.438216'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5728,
+    pnl_amount = -6.09,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '89BC418DFA1BF526', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2024-01-05 18:00:00', '2024-01-06 07:00:08', 4668.20028089, 4636.23211264,
+    4598.17727668, 4784.90528792, 0.0866,
+    -0.6848, -5.93, 'TIME_EXIT', 13.0,
+    0, '1h', '2026-03-08T18:36:22.436144'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6848,
+    pnl_amount = -5.93,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '644A551CA7B84744', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-01-13 02:00:00', '2024-01-13 17:51:35', 4688.25347076, 4661.15194278,
+    4617.9296687, 4805.45980753, 0.1003,
+    -0.5781, -5.8, 'STOP_LOSS', 15.86,
+    0, '1h', '2026-03-08T18:36:22.437195'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5781,
+    pnl_amount = -5.8,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'EC0B27D010D1D0BF', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2024-01-21 19:00:00', '2024-01-22 02:31:24', 2760.23939675, 2804.35241302,
+    2718.8358058, 2829.24538167, 0.108,
+    1.5982, 17.25, 'TAKE_PROFIT', 7.52,
+    1, '1h', '2026-03-08T18:36:22.436419'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5982,
+    pnl_amount = 17.25,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '69E6A4D55036BBDF', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2024-02-13 15:00:00', '2024-02-13 21:56:57', 2282.49537999, 2266.39526415,
+    2248.2579493, 2339.55776449, 0.1118,
+    -0.7054, -7.89, 'STOP_LOSS', 6.95,
+    0, '1h', '2026-03-08T18:36:22.437450'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.7054,
+    pnl_amount = -7.89,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'FC3405DA5CD5EB73', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2024-02-20 06:00:00', '2024-02-20 12:35:16', 8852.28393689, 8984.57462739,
+    8719.49967783, 9073.59103531, 0.0992,
+    1.4944, 14.82, 'TAKE_PROFIT', 6.59,
+    1, '1h', '2026-03-08T18:36:22.438190'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4944,
+    pnl_amount = 14.82,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F893EF3453B0846C', 'FLASH_REV_v1', 'DOGEUSDT', 'LONG',
+    '2024-02-21 09:00:00', '2024-02-21 16:10:56', 1247.96913792, 1270.01292678,
+    1229.24960085, 1279.16836636, 0.0829,
+    1.7664, 14.65, 'TRAILING_STOP', 7.18,
+    1, '1h', '2026-03-08T18:36:22.437038'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7664,
+    pnl_amount = 14.65,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2C13A60939C201D1', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-03-10 14:00:00', '2024-03-11 02:10:59', 3556.44012397, 3610.48023151,
+    3503.09352211, 3645.35112707, 0.1009,
+    1.5195, 15.33, 'TRAILING_STOP', 12.18,
+    1, '1h', '2026-03-08T18:36:22.436481'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5195,
+    pnl_amount = 15.33,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '995D43D36FAAAC31', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2024-03-10 22:00:00', '2024-03-11 15:47:48', 34641.13741507, 35216.45962162,
+    34121.52035384, 35507.16585045, 0.1113,
+    1.6608, 18.48, 'TRAILING_STOP', 17.8,
+    1, '1h', '2026-03-08T18:36:22.437572'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6608,
+    pnl_amount = 18.48,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '47995BF12A3050A4', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-03-12 14:00:00', '2024-03-13 02:08:57', 3084.16275711, 3067.9099856,
+    3037.90031575, 3161.26682603, 0.0936,
+    -0.527, -4.93, 'STOP_LOSS', 12.15,
+    0, '1h', '2026-03-08T18:36:22.436772'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.527,
+    pnl_amount = -4.93,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2D41C1C132263892', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2024-03-19 01:00:00', '2024-03-19 16:58:04', 130.78928724, 130.11786237,
+    128.82744793, 134.05901942, 0.1018,
+    -0.5134, -5.23, 'TIME_EXIT', 15.97,
+    0, '1h', '2026-03-08T18:36:22.436985'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5134,
+    pnl_amount = -5.23,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'DECE6BA66262688B', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2024-03-23 22:00:00', '2024-03-24 04:25:24', 4308.91143298, 4388.53142258,
+    4244.27776149, 4416.6342188, 0.1016,
+    1.8478, 18.76, 'TAKE_PROFIT', 6.42,
+    1, '1h', '2026-03-08T18:36:22.437900'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8478,
+    pnl_amount = 18.76,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2A91A8C4860D74E4', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2024-03-30 20:00:00', '2024-03-31 08:12:28', 227.2771297, 225.84487121,
+    223.86797276, 232.95905794, 0.09,
+    -0.6302, -5.67, 'TIME_EXIT', 12.21,
+    0, '1h', '2026-03-08T18:36:22.437003'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6302,
+    pnl_amount = -5.67,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '6D5A9D1B3C51A9F9', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2024-03-31 00:00:00', '2024-03-31 08:44:15', 2415.61906056, 2465.63113445,
+    2379.38477466, 2476.00953708, 0.0814,
+    2.0704, 16.85, 'TIME_EXIT', 8.74,
+    1, '1h', '2026-03-08T18:36:22.436858'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0704,
+    pnl_amount = 16.85,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E5565AF1BFBC96F6', 'FLASH_REV_v1', 'DOGEUSDT', 'LONG',
+    '2024-04-02 06:00:00', '2024-04-02 14:32:29', 4963.94481805, 4930.45758148,
+    4889.48564578, 5088.0434385, 0.1196,
+    -0.6746, -8.07, 'STOP_LOSS', 8.54,
+    0, '1h', '2026-03-08T18:36:22.436082'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6746,
+    pnl_amount = -8.07,
+    exit_reason = 'STOP_LOSS';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F1B0D9A8FAEA9653', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2024-04-03 16:00:00', '2024-04-04 05:12:04', 1276.78987288, 1301.67853796,
+    1257.63802478, 1308.7096197, 0.098,
+    1.9493, 19.1, 'TIME_EXIT', 13.2,
+    1, '1h', '2026-03-08T18:36:22.437056'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9493,
+    pnl_amount = 19.1,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4C799B3E162DBBEF', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2024-04-10 23:00:00', '2024-04-11 09:18:16', 2252.09311672, 2288.50813503,
+    2218.31171997, 2308.39544464, 0.0818,
+    1.6169, 13.22, 'TIME_EXIT', 10.3,
+    1, '1h', '2026-03-08T18:36:22.435786'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6169,
+    pnl_amount = 13.22,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'E890193A4CE86A4A', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2024-04-14 03:00:00', '2024-04-14 11:40:01', 216.40192421, 218.71021487,
+    213.15589534, 221.81197231, 0.0888,
+    1.0667, 9.48, 'TAKE_PROFIT', 8.67,
+    1, '1h', '2026-03-08T18:36:22.436533'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.0667,
+    pnl_amount = 9.48,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '03BE6413D9734D8A', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2024-04-15 10:00:00', '2024-04-15 22:25:35', 3058.46244964, 3042.73104836,
+    3012.5855129, 3134.92401088, 0.0981,
+    -0.5144, -5.05, 'TIME_EXIT', 12.43,
+    0, '1h', '2026-03-08T18:36:22.437891'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5144,
+    pnl_amount = -5.05,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'A50CCC6684FB2708', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2024-04-20 11:00:00', '2024-04-20 21:31:57', 185.16125097, 184.02280923,
+    182.3838322, 189.79028224, 0.0815,
+    -0.6148, -5.01, 'TIME_EXIT', 10.53,
+    0, '1h', '2026-03-08T18:36:22.436731'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6148,
+    pnl_amount = -5.01,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '007809FF76ABE488', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-04-28 10:00:00', '2024-04-28 16:02:52', 4795.40456784, 4859.26714965,
+    4723.47349932, 4915.28968203, 0.1182,
+    1.3317, 15.75, 'TAKE_PROFIT', 6.05,
+    1, '1h', '2026-03-08T18:36:22.435918'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3317,
+    pnl_amount = 15.75,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '817771DAA0F9DB6D', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2024-05-05 23:00:00', '2024-05-06 15:21:20', 4541.70018209, 4596.81349987,
+    4473.57467936, 4655.24268664, 0.1011,
+    1.2135, 12.27, 'TIME_EXIT', 16.36,
+    1, '1h', '2026-03-08T18:36:22.437674'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2135,
+    pnl_amount = 12.27,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7C84EE326916F06D', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2024-05-07 05:00:00', '2024-05-07 19:34:50', 3242.48917184, 3278.51551785,
+    3193.85183426, 3323.55140114, 0.1193,
+    1.1111, 13.26, 'TAKE_PROFIT', 14.58,
+    1, '1h', '2026-03-08T18:36:22.437065'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1111,
+    pnl_amount = 13.26,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F68C97EB08A231B2', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-05-12 05:00:00', '2024-05-12 11:56:20', 2468.92750149, 2505.11961645,
+    2431.89358897, 2530.65068903, 0.0832,
+    1.4659, 12.2, 'TAKE_PROFIT', 6.94,
+    1, '1h', '2026-03-08T18:36:22.437864'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4659,
+    pnl_amount = 12.2,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'D923C0412A710291', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2024-06-21 06:00:00', '2024-06-21 13:09:29', 336.02065105, 342.97326766,
+    330.98034129, 344.42116733, 0.0909,
+    2.0691, 18.82, 'TAKE_PROFIT', 7.16,
+    1, '1h', '2026-03-08T18:36:22.436400'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0691,
+    pnl_amount = 18.82,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9464F9BA6F9DD04D', 'FLASH_REV_v1', 'ADAUSDT', 'LONG',
+    '2024-07-05 15:00:00', '2024-07-06 05:52:51', 2252.90668484, 2238.99622291,
+    2219.11308457, 2309.22935197, 0.1114,
+    -0.6174, -6.88, 'TIME_EXIT', 14.88,
+    0, '1h', '2026-03-08T18:36:22.438242'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.6174,
+    pnl_amount = -6.88,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '072144116D4C47F3', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-07-07 17:00:00', '2024-07-08 10:19:49', 3628.04823356, 3672.96488459,
+    3573.62751006, 3718.7494394, 0.1144,
+    1.238, 14.17, 'TIME_EXIT', 17.33,
+    1, '1h', '2026-03-08T18:36:22.437432'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.238,
+    pnl_amount = 14.17,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'B5B6E7FA53C1910A', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-07-08 13:00:00', '2024-07-08 21:26:35', 537.31289061, 544.95606826,
+    529.25319725, 550.74571287, 0.0889,
+    1.4225, 12.64, 'TRAILING_STOP', 8.44,
+    1, '1h', '2026-03-08T18:36:22.435907'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4225,
+    pnl_amount = 12.64,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7587F052ED40DD11', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2024-07-13 21:00:00', '2024-07-14 09:27:06', 2107.31726787, 2142.60193327,
+    2075.70750885, 2160.00019957, 0.1102,
+    1.6744, 18.46, 'TIME_EXIT', 12.45,
+    1, '1h', '2026-03-08T18:36:22.436202'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6744,
+    pnl_amount = 18.46,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '291692ABE5060797', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2024-07-19 09:00:00', '2024-07-19 18:01:45', 2723.14793709, 2766.32581871,
+    2682.30071804, 2791.22663552, 0.0976,
+    1.5856, 15.47, 'TAKE_PROFIT', 9.03,
+    1, '1h', '2026-03-08T18:36:22.437459'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5856,
+    pnl_amount = 15.47,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'BD372528B7CA03E7', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-07-23 14:00:00', '2024-07-23 22:29:10', 589.39230527, 597.71898014,
+    580.55142069, 604.1271129, 0.1156,
+    1.4128, 16.33, 'TRAILING_STOP', 8.49,
+    1, '1h', '2026-03-08T18:36:22.435931'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4128,
+    pnl_amount = 16.33,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '94C66DEE4E1205A6', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-07-27 03:00:00', '2024-07-27 14:28:29', 3953.14897454, 4023.62384991,
+    3893.85173992, 4051.9776989, 0.105,
+    1.7828, 18.72, 'TIME_EXIT', 11.47,
+    1, '1h', '2026-03-08T18:36:22.436063'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7828,
+    pnl_amount = 18.72,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '94A8EB4B276549E5', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-09-06 18:00:00', '2024-09-07 11:52:19', 755.46341596, 769.25526838,
+    744.13146472, 774.35000136, 0.0939,
+    1.8256, 17.14, 'TRAILING_STOP', 17.87,
+    1, '1h', '2026-03-08T18:36:22.435873'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.8256,
+    pnl_amount = 17.14,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F721E378400138F7', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-09-16 00:00:00', '2024-09-16 17:45:33', 1863.22828484, 1899.22461345,
+    1835.27986056, 1909.80899196, 0.1166,
+    1.9319, 22.53, 'TAKE_PROFIT', 17.76,
+    1, '1h', '2026-03-08T18:36:22.436599'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9319,
+    pnl_amount = 22.53,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'BC03D429D93DE5D4', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-09-19 00:00:00', '2024-09-19 07:35:19', 3521.49197339, 3588.75197957,
+    3468.66959379, 3609.52927272, 0.0879,
+    1.91, 16.78, 'TIME_EXIT', 7.59,
+    1, '1h', '2026-03-08T18:36:22.436072'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.91,
+    pnl_amount = 16.78,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '92EC3D7E19097C37', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2024-09-27 22:00:00', '2024-09-28 13:56:53', 1295.78540506, 1288.09026384,
+    1276.34862398, 1328.18004018, 0.0877,
+    -0.5939, -5.21, 'TIME_EXIT', 15.95,
+    0, '1h', '2026-03-08T18:36:22.436524'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5939,
+    pnl_amount = -5.21,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '66DC27A826DD5ABE', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2024-10-15 19:00:00', '2024-10-16 05:35:48', 2862.16889809, 2909.65170982,
+    2819.23636462, 2933.72312054, 0.0974,
+    1.659, 16.16, 'TAKE_PROFIT', 10.6,
+    1, '1h', '2026-03-08T18:36:22.437707'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.659,
+    pnl_amount = 16.16,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '87E83E4F38D6A2BA', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-10-16 23:00:00', '2024-10-17 09:59:21', 571.50525693, 580.76813053,
+    562.93267808, 585.79288835, 0.1065,
+    1.6208, 17.27, 'TAKE_PROFIT', 10.99,
+    1, '1h', '2026-03-08T18:36:22.436676'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6208,
+    pnl_amount = 17.27,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '9DB4D1E01ABBE0CC', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-11-02 16:00:00', '2024-11-03 08:05:10', 957.31448489, 970.60868177,
+    942.95476762, 981.24734702, 0.0887,
+    1.3887, 12.32, 'TIME_EXIT', 16.09,
+    1, '1h', '2026-03-08T18:36:22.437166'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.3887,
+    pnl_amount = 12.32,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '734470A1E6EBD274', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-11-27 04:00:00', '2024-11-27 19:14:00', 181.45210341, 184.71512426,
+    178.73032186, 185.98840599, 0.0922,
+    1.7983, 16.59, 'TAKE_PROFIT', 15.23,
+    1, '1h', '2026-03-08T18:36:22.436504'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.7983,
+    pnl_amount = 16.59,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '4952D8912F94EB62', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2024-12-14 04:00:00', '2024-12-14 15:40:13', 10914.56719417, 11124.453939,
+    10750.84868626, 11187.43137403, 0.091,
+    1.923, 17.5, 'TIME_EXIT', 11.67,
+    1, '1h', '2026-03-08T18:36:22.438048'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.923,
+    pnl_amount = 17.5,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '680790DA3ECFA37B', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2024-12-14 07:00:00', '2024-12-14 17:59:38', 1705.62773748, 1725.26239468,
+    1680.04332142, 1748.26843091, 0.1168,
+    1.1512, 13.45, 'TRAILING_STOP', 10.99,
+    1, '1h', '2026-03-08T18:36:22.437374'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1512,
+    pnl_amount = 13.45,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '68DACA26C5983592', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2024-12-17 13:00:00', '2024-12-18 00:05:10', 36824.3523534, 37398.82093364,
+    36271.9870681, 37744.96116224, 0.1078,
+    1.56, 16.81, 'TAKE_PROFIT', 11.09,
+    1, '1h', '2026-03-08T18:36:22.438057'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.56,
+    pnl_amount = 16.81,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '475FC2C56C422456', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-12-20 20:00:00', '2024-12-21 13:52:00', 2325.60803341, 2362.12176507,
+    2290.72391291, 2383.74823425, 0.0993,
+    1.5701, 15.59, 'TAKE_PROFIT', 17.87,
+    1, '1h', '2026-03-08T18:36:22.436876'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5701,
+    pnl_amount = 15.59,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F4A91AADDF9CCDE7', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2024-12-27 18:00:00', '2024-12-28 10:06:04', 3929.32894342, 3987.68968806,
+    3870.38900927, 4027.56216701, 0.1007,
+    1.4853, 14.96, 'TRAILING_STOP', 16.1,
+    1, '1h', '2026-03-08T18:36:22.436570'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4853,
+    pnl_amount = 14.96,
+    exit_reason = 'TRAILING_STOP';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '0949F575FD1CF8B2', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2024-12-29 04:00:00', '2024-12-29 15:42:56', 1854.6580018, 1890.36837234,
+    1826.83813178, 1901.02445185, 0.0957,
+    1.9254, 18.42, 'TIME_EXIT', 11.72,
+    1, '1h', '2026-03-08T18:36:22.438180'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.9254,
+    pnl_amount = 18.42,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '34F346511752A2C7', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2025-01-05 21:00:00', '2025-01-06 09:40:40', 2853.03631564, 2894.0434732,
+    2810.24077091, 2924.36222353, 0.0942,
+    1.4373, 13.53, 'TIME_EXIT', 12.68,
+    1, '1h', '2026-03-08T18:36:22.437144'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.4373,
+    pnl_amount = 13.53,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '7C694B86A478E203', 'FLASH_REV_v1', 'DOTUSDT', 'LONG',
+    '2025-01-06 21:00:00', '2025-01-07 08:31:37', 2340.77244726, 2327.64686341,
+    2305.66086055, 2399.29175844, 0.0885,
+    -0.5607, -4.96, 'TIME_EXIT', 11.53,
+    0, '1h', '2026-03-08T18:36:22.438251'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.5607,
+    pnl_amount = -4.96,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '2BE2026C4C75751B', 'FLASH_REV_v1', 'LINKUSDT', 'LONG',
+    '2025-01-12 06:00:00', '2025-01-12 23:19:09', 940.20579753, 951.38943708,
+    926.10271057, 963.71094247, 0.0989,
+    1.1895, 11.76, 'TAKE_PROFIT', 17.32,
+    1, '1h', '2026-03-08T18:36:22.436154'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.1895,
+    pnl_amount = 11.76,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '366C3BADA0336770', 'FLASH_REV_v1', 'XRPUSDT', 'LONG',
+    '2025-01-14 12:00:00', '2025-01-15 02:30:36', 3145.46673759, 3129.91180253,
+    3098.28473652, 3224.10340603, 0.094,
+    -0.4945, -4.65, 'TIME_EXIT', 14.51,
+    0, '1h', '2026-03-08T18:36:22.436940'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.4945,
+    pnl_amount = -4.65,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '11C83856231E5411', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2025-01-22 00:00:00', '2025-01-22 13:38:22', 3274.19770515, 3325.09288113,
+    3225.08473957, 3356.05264778, 0.1103,
+    1.5544, 17.14, 'TIME_EXIT', 13.64,
+    1, '1h', '2026-03-08T18:36:22.436949'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.5544,
+    pnl_amount = 17.14,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '61C6B8AAD9A7C67A', 'FLASH_REV_v1', 'ETHUSDT', 'LONG',
+    '2025-01-26 22:00:00', '2025-01-27 11:54:04', 3207.99078042, 3273.21798946,
+    3159.87091871, 3288.19054993, 0.1005,
+    2.0333, 20.44, 'TAKE_PROFIT', 13.9,
+    1, '1h', '2026-03-08T18:36:22.436790'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 2.0333,
+    pnl_amount = 20.44,
+    exit_reason = 'TAKE_PROFIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '83B959052C52A1ED', 'FLASH_REV_v1', 'BTCUSDT', 'LONG',
+    '2025-02-03 09:00:00', '2025-02-03 21:12:34', 18707.61250952, 18939.62099303,
+    18426.99832188, 19175.30282226, 0.0932,
+    1.2402, 11.56, 'TIME_EXIT', 12.21,
+    1, '1h', '2026-03-08T18:36:22.437753'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.2402,
+    pnl_amount = 11.56,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    '8E1721F28F951C5D', 'FLASH_REV_v1', 'SOLUSDT', 'LONG',
+    '2025-02-18 01:00:00', '2025-02-18 09:56:19', 995.78790968, 1012.21901244,
+    980.85109104, 1020.68260742, 0.1082,
+    1.6501, 17.85, 'TIME_EXIT', 8.94,
+    1, '1h', '2026-03-08T18:36:22.438030'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = 1.6501,
+    pnl_amount = 17.85,
+    exit_reason = 'TIME_EXIT';
+
+INSERT INTO at_signal_outcomes (
+    trade_id, strategy_name, symbol, direction,
+    entry_time, exit_time, entry_price, exit_price,
+    stop_loss, take_profit, position_size_pct,
+    pnl_pct, pnl_amount, exit_reason, hold_time_hours,
+    is_win, timeframe, created_at
+) VALUES (
+    'F5D61AC4E36C57B6', 'FLASH_REV_v1', 'AVAXUSDT', 'LONG',
+    '2025-02-24 01:00:00', '2025-02-24 12:11:47', 3091.036257, 3069.35945804,
+    3044.67071315, 3168.31216343, 0.1182,
+    -0.7013, -8.29, 'TIME_EXIT', 11.2,
+    0, '1h', '2026-03-08T18:36:22.438142'
+) ON DUPLICATE KEY UPDATE
+    pnl_pct = -0.7013,
+    pnl_amount = -8.29,
+    exit_reason = 'TIME_EXIT';

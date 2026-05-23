@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HF Enhancements Implementation Plan - 2026-04-09</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #0b1020;
+      color: #e8ecff;
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 36px;
+    }
+    h1, h2 {
+      margin: 0 0 14px;
+      line-height: 1.25;
+    }
+    h1 { font-size: 1.9rem; }
+    h2 { font-size: 1.2rem; margin-top: 26px; }
+    p, li { color: #cfd7ff; }
+    .card {
+      background: #151c38;
+      border: 1px solid #2a376f;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    a {
+      color: #8ec5ff;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    code {
+      background: #101734;
+      border: 1px solid #2a376f;
+      border-radius: 6px;
+      padding: 2px 6px;
+      color: #a8d8ff;
+    }
+    ul { margin-top: 8px; }
+    .small { font-size: 0.95rem; color: #aeb8e6; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Hedge-Fund Enhancements Implementation Plan</h1>
+    <p class="small">Date: 2026-04-09</p>
+
+    <div class="card">
+      <p>
+        This update records completion of the remaining HF enhancement execution items
+        (breadth recovery, active pass guardrails, score-tier validation, strategy integrity checks,
+        CHOPPY handling, concentration controls, and governance bus loop).
+      </p>
+      <p>
+        Full per-file technical explanation is documented in:
+        <a href="./2026-04-09-hf-enhancements-file-explainer.md">
+          <code>updates/2026-04-09-hf-enhancements-file-explainer.md</code>
+        </a>.
+      </p>
+    </div>
+
+    <h2>Implementation Coverage</h2>
+    <div class="card">
+      <ul>
+        <li>Engine/scoring hardening in <code>alpha_engine</code> modules.</li>
+        <li>Non-crypto sleeve caps, forex bypass protections, and equity concentration controls.</li>
+        <li>CHOPPY sub-regime handling and resilient market-data fallback logic.</li>
+        <li>Expanded weekly governance analytics and remediation task generation.</li>
+        <li>Redis governance payload enrichment and peer-validation directives.</li>
+      </ul>
+    </div>
+
+    <h2>Primary Outcomes</h2>
+    <div class="card">
+      <ul>
+        <li>Higher confidence/score consistency and reduced synthetic-conviction risk.</li>
+        <li>Improved sleeve governance with explicit concentration and breadth controls.</li>
+        <li>More robust gate operation when Binance endpoints are blocked or degraded.</li>
+        <li>Stronger operational cadence via machine-readable remediation outputs.</li>
+      </ul>
+    </div>
+
+    <h2>Verification Snapshot</h2>
+    <div class="card">
+      <ul>
+        <li><code>py_compile</code> on modified Python modules: pass.</li>
+        <li>Weekly verify runner executed with latest CSV exports; policy failures surfaced expected current issues and wrote remediation task file.</li>
+        <li>HF governance cycle successfully published to Redis bus.</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,2385 @@
+{
+  "metadata": {
+    "source": "Reddit Trading Communities Research",
+    "subreddits": ["r/algotrading", "r/quant", "r/forex", "r/wallstreetbets", "r/investing", "r/cryptocurrency"],
+    "date_collected": "2026-02-16",
+    "total_strategies": 108,
+    "categories": ["Mean Reversion", "Momentum", "Trend Following", "Volatility", "Breakout", "Pairs Trading", "Grid Trading", "Options", "Machine Learning"]
+  },
+  "strategies": [
+    {
+      "id": 1,
+      "name": "ML-Powered Personalized Strategy System",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1qhpies/built_a_systematic_trading_system_looking_for/",
+      "source_subreddit": "r/algotrading",
+      "category": "Machine Learning",
+      "asset_class": "Multi-Asset (Crypto, Stocks)",
+      "timeframe": "Daily, 5min",
+      "entry_rules": [
+        "Uses technical indicators (momentum, mean-reversion, trend-following depending on ticker)",
+        "Volume confirmation filters",
+        "Can combine multiple signals with different logic (require all, require majority)"
+      ],
+      "exit_rules": [
+        "ATR-based stop loss (adapts to ticker volatility)",
+        "Trailing stop with profit activation (kicks in after hitting profit threshold)",
+        "Max drawdown exit - Hard circuit breaker",
+        "Minimum hold period to prevent whipsawing"
+      ],
+      "indicators": ["ATR", "Volume", "Momentum indicators", "Mean-reversion indicators", "Trend-following indicators"],
+      "risk_management": {
+        "stop_loss": "2x-3.9x ATR (asset dependent)",
+        "trailing_stop": "2.3x-2.8x ATR (activates at 15-35% profit)",
+        "min_hold": "6-8 bars",
+        "max_drawdown_exit": "-10% to -50%"
+      },
+      "backtest_results": {
+        "btc_daily": {"cagr": "39.7%", "max_drawdown": "-52%", "win_rate": "47.8%"},
+        "eth_5min": {"cagr": "44.0%", "max_drawdown": "-42%", "win_rate": "23.3%"},
+        "nvda_5min": {"cagr": "73.6%", "max_drawdown": "-60%", "win_rate": "12.9%"},
+        "portfolio_24_strategies": {"cagr": "28-49%", "max_drawdown": "-15% to -22%", "sharpe": "1.5-2.3"}
+      },
+      "validation_methods": ["Out-of-sample testing", "Forward period testing", "Walk-forward analysis", "Perturbation testing"]
+    },
+    {
+      "id": 2,
+      "name": "Walkforward Trend-Following Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1j187b3/my_walkforward_optimization_backtesting_system/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Stocks",
+      "timeframe": "Multiple",
+      "entry_rules": [
+        "Mix of technical indicators for trend identification",
+        "Slippage factored in for realistic simulation"
+      ],
+      "exit_rules": [
+        "Dynamic trailing stop based on highest price since entry",
+        "Helps lock in profits during strong trends"
+      ],
+      "indicators": ["EMA", "ATR", "ADX"],
+      "risk_management": {
+        "trailing_stop": "Dynamic based on highest price since entry",
+        "slippage": "Factored into all trades"
+      },
+      "backtest_period": "2019-2024",
+      "validation_methods": ["Walkforward optimization", "In-sample/out-of-sample segments", "Rolling parameter optimization"]
+    },
+    {
+      "id": 3,
+      "name": "Simple Reversal Strategy (Lower Low/Lower High)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1f8v70e/backtest_results_for_a_simple_reversal_strategy/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Indices (S&P 500)",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Step 1: After market close, check if today's candle had lower low AND lower high than yesterday",
+        "Step 2: Place BUY order at the high waiting for reversal",
+        "Step 3: If next day triggers buy order, hold until end of day"
+      ],
+      "exit_rules": [
+        "Exit at (or as close as possible to) the day's close"
+      ],
+      "indicators": ["Price action", "Candlestick patterns"],
+      "risk_management": {
+        "time_exit": "End of day"
+      },
+      "backtest_results": {
+        "period": "2000-2020 (20 years)",
+        "annualized_return": "More than double buy and hold",
+        "time_in_market": "15%",
+        "drawdown": "Much lower than buy and hold",
+        "win_rate": "Better than buy and hold",
+        "risk_reward": "Better than buy and hold"
+      },
+      "variations": [
+        {
+          "name": "Down Reversal",
+          "rules": "Same as base BUT candle must be red",
+          "time_in_market": "9%",
+          "notes": "Lowest drawdown, highest quality signals"
+        },
+        {
+          "name": "Momentum",
+          "rules": "Higher low and higher high instead, enter at break of high",
+          "notes": "Momentum breakout variation"
+        }
+      ],
+      "out_of_sample": {
+        "period": "2020-present",
+        "performance": "Held up well, minimal drawdown despite market shocks"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Larry Connors Double 7 Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1g2rzw7/backtest_results_for_larry_connors_double_7/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Indices (S&P 500)",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Price closes above 200 day moving average",
+        "Price closes at a 7 day low",
+        "Enter at open of next day (modified from original close entry)"
+      ],
+      "exit_rules": [
+        "Original: Exit when price closes at a 7 day high",
+        "Modified: Exit when price closes above 5 day MA (better performance)"
+      ],
+      "indicators": ["200 MA", "5 MA", "7-period price low/high"],
+      "risk_management": {
+        "stop_loss": "None in original (performed poorly when added)"
+      },
+      "backtest_results": {
+        "period": "1990-2024 (34 years)",
+        "win_rate": "74%",
+        "risk_reward": "0.66",
+        "time_in_market": "~18%",
+        "drawdown": "Pretty good",
+        "notes": "Doesn't beat buy and hold on annual return alone"
+      },
+      "variations_tested": [
+        "Add stop loss below 200 MA - performed poorly",
+        "Exit at end of same day - performed poorly",
+        "Close above 5 day MA - performed well, consistent across lookback periods",
+        "Trailing stop - performed similarly to 5 MA exit"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Connors RSI2 Mean Reversion",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1fm5lfj/backtest_results_for_connors_rsi2_strategy/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Indices (S&P 500)",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Price must close above 200 day MA",
+        "RSI(2) must close below 5",
+        "Enter at open of next day"
+      ],
+      "exit_rules": [
+        "Exit when price closes above 5 day MA"
+      ],
+      "indicators": ["200 MA", "5 MA", "RSI(2)"],
+      "risk_management": {
+        "stop_loss": "None (adding stop below 200 MA performed poorly)"
+      },
+      "backtest_results": {
+        "period": "1990-2024 (34 years)",
+        "win_rate": "Very impressive",
+        "risk_reward": "Decent",
+        "drawdown": "Much better than buy and hold",
+        "time_in_market": "Low",
+        "notes": "High quality trades, suitable as part of strategy basket"
+      },
+      "variations": [
+        {
+          "name": "Time-based hold",
+          "results": "0-day hold (buy open, sell close same day) worked best"
+        },
+        {
+          "name": "Short only",
+          "results": "0.67% annual return, 1.92% time in market - shows robustness"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Bollinger Bands Mean Reversion (EUR/GBP)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1iq21bf/optimizing_parameters_with_mean_reversion_strategy/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Forex (EUR/GBP)",
+      "timeframe": "1 minute",
+      "entry_rules": [
+        "Price touches lower Bollinger Band (mean reversion entry)",
+        "Seasonality filter: Trade during most volatile hours (5-17 and 21-23 UTC)"
+      ],
+      "exit_rules": [
+        "Price returns to middle band or upper band"
+      ],
+      "indicators": ["Bollinger Bands (60-180 min lookback, 4-5 std dev)"],
+      "risk_management": {
+        "position_sizing": "Fixed size per trade"
+      },
+      "backtest_results": {
+        "data_split": "60% training, 40% testing",
+        "fees": "Overestimated to simulate realistic slippage/spread",
+        "notes": "Extremely profitable from 2023 due to mean-reverting behavior"
+      },
+      "optimization": {
+        "method": "Grid search on GPU",
+        "optimal_lookback": "60-180 minutes",
+        "optimal_std_dev": "4-5 standard deviations"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Bollinger Band Breakout (BTC/USD)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1lka4qh/simple_bollinger_band_breakout_strategy_75_year/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "Crypto (BTC/USD)",
+      "timeframe": "1 Hour",
+      "entry_rules": [
+        "Go Long: Close price >= Upper Bollinger Band",
+        "Go Short: Close price <= Lower Bollinger Band",
+        "Up to 3 trades open at once"
+      ],
+      "exit_rules": [
+        "Take Profit: 3%",
+        "Stop Loss: 1.5%",
+        "Time Exit: After 1075 minutes (~17.9 hours)"
+      ],
+      "indicators": ["Bollinger Bands (Length: 42, Std Dev: 2.5)"],
+      "risk_management": {
+        "take_profit": "3%",
+        "stop_loss": "1.5%",
+        "time_exit": "1075 minutes",
+        "max_concurrent_trades": 3
+      },
+      "backtest_results": {
+        "period": "Jan 1, 2018 - Jun 25, 2025 (7.5 years)",
+        "total_return": "285.76%",
+        "total_trades": 11069,
+        "win_rate": "41.36%",
+        "max_drawdown": "-39.79%",
+        "commission": "0.025% per trade"
+      },
+      "notes": "2:1 risk/reward keeps it profitable despite low win rate"
+    },
+    {
+      "id": 8,
+      "name": "BB + VWAP Breakout Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1lmrjl6/updated_bollinger_band_vwap_breakout_strategy/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "Crypto (BTC/USD)",
+      "timeframe": "1 Hour",
+      "entry_rules": [
+        "Go Long If: Close >= Upper BB OR (Close > VWAP for 6 candles AND RSI > 55 AND ADX > 45)",
+        "Go Short If: Close <= Lower BB OR (Close < VWAP for 6 candles AND RSI < 45 AND ADX > 45)"
+      ],
+      "exit_rules": [
+        "Take Profit: 3%",
+        "Stop Loss: 1.5%",
+        "Time Exit: After 1075 minutes",
+        "Mean Reversion Exit: For longs - previous candle above upper BB, current closes below; For shorts - reverse"
+      ],
+      "indicators": ["Bollinger Bands (42, 2.5)", "VWAP", "ADX(5)", "RSI(5)"],
+      "risk_management": {
+        "take_profit": "3%",
+        "stop_loss": "1.5%",
+        "time_exit": "1075 minutes",
+        "max_concurrent_trades": 3
+      },
+      "backtest_results": {
+        "period": "Jan 1, 2018 - Jun 25, 2025",
+        "total_return": "289.46%",
+        "max_drawdown": "-29.79% (improved from -39.79%)",
+        "total_trades": 6284,
+        "win_rate": "48.39%"
+      },
+      "notes": "VWAP filters reduced drawdown and improved win rate"
+    },
+    {
+      "id": 9,
+      "name": "RSI + Bollinger Bands Combo",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/m8ausi/has_anyone_backtested_bollinger_bands_rsi/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Buy when oversold (RSI condition) AND following candle is green"
+      ],
+      "exit_rules": [
+        "Sell when within 1% of middle Bollinger Band line"
+      ],
+      "indicators": ["RSI", "Bollinger Bands"],
+      "risk_management": {},
+      "notes": "Simple combo strategy for mean reversion"
+    },
+    {
+      "id": 10,
+      "name": "BTC Momentum Strategy (RSI5)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1gdjxdg/best_backtested_bitcoin_strategy_i_found/",
+      "source_subreddit": "r/algotrading",
+      "category": "Momentum",
+      "asset_class": "Crypto (BTC)",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Buy: RSI(5) > 70"
+      ],
+      "exit_rules": [
+        "Close: RSI(5) < 70"
+      ],
+      "indicators": ["RSI(5)"],
+      "risk_management": {},
+      "backtest_results": {
+        "notes": "Outperforms Bitcoin Buy and Hold",
+        "broker": "Coinbase"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Gaussian Filter + KAMA Trend Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1b2wa3y/seeking_insights_on_my_trendfocused_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Indices, ETFs (SPY, NASDAQ, MGK)",
+      "timeframe": "1 Hour",
+      "entry_rules": [
+        "Custom script with Gaussian Filter and KAMA for smoothing",
+        "Buy signals from trend direction and continuity analysis",
+        "Only consider entries when price above 200 EMA"
+      ],
+      "exit_rules": [
+        "ATR-based stops",
+        "Fixed limit for larger ATR multiples targeting 5-6 R:R"
+      ],
+      "indicators": ["Gaussian Filter", "KAMA", "200 EMA", "ATR"],
+      "risk_management": {
+        "stop_loss": "ATR-based",
+        "risk_reward": "5-6 R:R for larger ATR multiples"
+      },
+      "backtest_results": {
+        "period": "Since 2020",
+        "trades": "400+",
+        "profit_factor": 1.6,
+        "win_rate": "40-44%"
+      },
+      "notes": "Tailored for trending markets, bullish/long only"
+    },
+    {
+      "id": 12,
+      "name": "Opening Range Breakout (ORB)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1hezqql/opening_range_breakout_for_stocks_in_play_code/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "US Equities",
+      "timeframe": "Intraday",
+      "entry_rules": [
+        "Trade volume-backed momentum on opening range breakout",
+        "Never hold overnight"
+      ],
+      "exit_rules": [
+        "End of day exit",
+        "Trailing stop (suggested improvement)"
+      ],
+      "indicators": ["Volume", "Opening range"],
+      "risk_management": {
+        "overnight_hold": "Never"
+      },
+      "backtest_results": {
+        "sharpe": "~1.4",
+        "max_drawdown": "8.1%",
+        "beta": "0.03",
+        "psr": "100%",
+        "net_return": "176% (underperforms SPY in bull markets)"
+      },
+      "notes": "Based on SSRN paper 'A Profitable Day Trading Strategy For The U.S. Equity Market'"
+    },
+    {
+      "id": 13,
+      "name": "Multi-Strategy Ensemble (64 Rules)",
+      "source_url": "https://www.reddit.com/r/quant/comments/19e5xe5/lets_think_outside_the_box_for_trading_strategy/",
+      "source_subreddit": "r/quant",
+      "category": "Machine Learning",
+      "asset_class": "Crypto, Stocks (BTC, ETH, NVDA, TQQQ)",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Example NVDA rule: Price <= 30-day SMA - 0.5*30-day SD",
+        "Price <= 7-day SMA - 0.5*7-day SD",
+        "RSI < 35",
+        "(Price - 30-day SMA)/30-day SD < 0",
+        "10-day EMA > 100-day EMA",
+        "10-day SMA > 100-day SMA"
+      ],
+      "exit_rules": [
+        "Multi-objective genetic optimization for exit rules"
+      ],
+      "indicators": ["SMA", "EMA", "RSI", "Standard Deviation"],
+      "risk_management": {
+        "optimization_objectives": ["Percent change", "Maximum drawdown"]
+      },
+      "optimization": {
+        "method": "Multi-objective genetic optimization",
+        "strategies": 64
+      },
+      "notes": "Portfolio of 64 different strategies with optimized rules"
+    },
+    {
+      "id": 14,
+      "name": "Crypto ML Minute-Frequency Strategy",
+      "source_url": "https://www.reddit.com/r/quant/comments/1afm195/introduce_my_strategy_and_seek_advice/",
+      "source_subreddit": "r/quant",
+      "category": "Machine Learning",
+      "asset_class": "Crypto (Binance Futures)",
+      "timeframe": "1 minute",
+      "entry_rules": [
+        "Train ML model using minute-frequency historical data",
+        "Predict short-term price movements",
+        "Select 10-20 most effective indicators based on IC and information gain"
+      ],
+      "exit_rules": [
+        "Average holding time: 4 hours"
+      ],
+      "indicators": ["400+ technical indicators via pandas_ta", "Selected 10-20 based on IC"],
+      "risk_management": {
+        "trade_frequency": "60-100 per day"
+      },
+      "backtest_results": {
+        "data": "4 years of 15-min data (~1.3M points)",
+        "validation": "Time Series Cross Validation",
+        "notes": "Contrarian strategy - profits in ranging markets, loses in trends"
+      },
+      "findings": [
+        "More extreme price movement = higher model accuracy",
+        "20-minute predictions more accurate than 1-minute",
+        "Most technical indicators have strong intercorrelation"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Z-Score BTC Mean Reversion",
+      "source_url": "https://www.reddit.com/r/quant/comments/1kyy98f/signal_or_noise_roast_me_a_quant_dissection_of/",
+      "source_subreddit": "r/quant",
+      "category": "Mean Reversion",
+      "asset_class": "Crypto (BTC)",
+      "timeframe": "1 Hour",
+      "entry_rules": [
+        "Entry: Z-score > 0"
+      ],
+      "exit_rules": [
+        "Exit: Z-score <= -1.5",
+        "Stop Loss: 5%",
+        "Trailing Stop: 1%"
+      ],
+      "indicators": ["Z-score (120-period)", "Rolling mean", "Rolling standard deviation"],
+      "risk_management": {
+        "stop_loss": "5%",
+        "trailing_stop": "1%"
+      },
+      "backtest_results": {
+        "period": "Aug 5, 2024 - May 14, 2025 (283 days)",
+        "total_return": "196.94%",
+        "cagr": "308.97%",
+        "sharpe": 3.47,
+        "calmar": 16.94,
+        "sortino": 4.05,
+        "max_drawdown": "-18.24%",
+        "time_in_market": "77.1%",
+        "total_trades": 391,
+        "win_rate": "43.73%",
+        "profit_factor": 1.46,
+        "avg_return_per_trade": "0.27%",
+        "avg_holding": "13.3 hours"
+      },
+      "risk_flags": [
+        "75% of trades are losing or near-zero",
+        "Profits come from rare outliers (long right-tail)",
+        "Median return: -0.24%"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Overnight Mean Reversion",
+      "source_url": "https://www.reddit.com/r/quant/comments/1nx7bbk/can_you_really_trade_overnight_mean_reversion/",
+      "source_subreddit": "r/quant",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Split returns into close→open vs open→close",
+        "Trade mean reversion on overnight session"
+      ],
+      "exit_rules": [
+        "Exit at next open"
+      ],
+      "indicators": ["Close-to-open returns", "Open-to-close returns"],
+      "risk_management": {
+        "execution": "Handle slippage at open"
+      },
+      "backtest_results": {
+        "sharpe": "Very high",
+        "statistical_significance": "High"
+      },
+      "notes": "Published on QuantReturns.com"
+    },
+    {
+      "id": 17,
+      "name": "Short-Term Basis Reversal (Futures)",
+      "source_url": "https://www.reddit.com/r/quant/comments/1m93feh/we_tested_a_new_paper_that_finds_predictable/",
+      "source_subreddit": "r/quant",
+      "category": "Mean Reversion",
+      "asset_class": "Futures",
+      "timeframe": "Weekly",
+      "entry_rules": [
+        "When spread between near two futures contracts becomes unusually large (either direction)",
+        "Enter expecting mean reversion"
+      ],
+      "exit_rules": [
+        "Exit when spread normalizes"
+      ],
+      "indicators": ["Futures spread", "Z-score of spread"],
+      "risk_management": {},
+      "backtest_results": {
+        "sharpe": "Decent",
+        "drawdown": "Minimal",
+        "notes": "Monotonic return pattern with strong t-stats"
+      },
+      "notes": "Based on paper by Rossi, Zhang, and Zhu (2025)"
+    },
+    {
+      "id": 18,
+      "name": "Pairs Trading (Cointegration)",
+      "source_url": "https://www.reddit.com/r/quant/comments/13w2lm8/statarbpairs_trading/",
+      "source_subreddit": "r/quant",
+      "category": "Pairs Trading",
+      "asset_class": "Stocks",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Find pairs with cointegration",
+        "Check for spread stationarity",
+        "Calculate Hurst coefficient",
+        "Enter when spread deviates from mean"
+      ],
+      "exit_rules": [
+        "Exit when spread reverts to mean"
+      ],
+      "indicators": ["Cointegration test", "Hurst coefficient", "Spread Z-score"],
+      "risk_management": {},
+      "notes": "Requires shorting capability for full implementation"
+    },
+    {
+      "id": 19,
+      "name": "Distance Approach Pairs Trading",
+      "source_url": "https://www.reddit.com/r/quant/comments/1l6i3p7/in_pairs_trading_after_finding_good_pairs_how/",
+      "source_subreddit": "r/quant",
+      "category": "Pairs Trading",
+      "asset_class": "Stocks",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Normalize formation period data",
+        "Select top pairs based on sum of squared differences",
+        "Use standard deviation from formation period for signals"
+      ],
+      "exit_rules": [
+        "Exit based on spread normalization"
+      ],
+      "indicators": ["Euclidean distance", "Rolling standard deviation"],
+      "risk_management": {},
+      "methodology": {
+        "formation_period": "12 months",
+        "trading_period": "6 months"
+      }
+    },
+    {
+      "id": 20,
+      "name": "Long-Short Dollar-Neutral Strategy",
+      "source_url": "https://www.reddit.com/r/quant/comments/1ihky8v/longshort_dollarneutral_strategy/",
+      "source_subreddit": "r/quant",
+      "category": "Pairs Trading",
+      "asset_class": "Stocks",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Go long one security, short another",
+        "Preferably same industry with similar liquidity",
+        "Equal amounts of capital"
+      ],
+      "exit_rules": [
+        "Exit when spread normalizes or stop hit"
+      ],
+      "indicators": ["Beta matching", "Industry classification"],
+      "risk_management": {
+        "dollar_neutral": true
+      },
+      "notes": "Mitigates losses in market downturns but may limit gains"
+    },
+    {
+      "id": 21,
+      "name": "200 EMA Wick Bounce Strategy",
+      "source_url": "https://www.reddit.com/r/Forex/comments/jltd59/the_importance_of_backtesting_and_sticking_to_a/",
+      "source_subreddit": "r/forex",
+      "category": "Mean Reversion",
+      "asset_class": "Forex (GBP/USD, NZD/USD, EUR/USD, EUR/GBP)",
+      "timeframe": "1 Hour",
+      "entry_rules": [
+        "2 wicks IN A ROW that TOUCH the 200 EMA",
+        "Candle bodies both close above (for long) or below (for short) the 200 EMA",
+        "Stay extremely strict with rules"
+      ],
+      "exit_rules": [
+        "Exit not specified in detail"
+      ],
+      "indicators": ["200 EMA"],
+      "risk_management": {},
+      "backtest_results": {
+        "period": "6 months",
+        "total_trades": 93,
+        "overall_win_rate": "73%",
+        "gbp_usd": "18/27 (67%)",
+        "nzd_usd": "15/27 (71%)",
+        "eur_usd": "15/20 (75%)",
+        "eur_gbp": "20/25 (80%)"
+      }
+    },
+    {
+      "id": 22,
+      "name": "SMA Crossover with Stochastic and RSI",
+      "source_url": "https://www.reddit.com/r/Forex/comments/mbf7ji/how_do_you_create_a_mechanical_trading_strategy/",
+      "source_subreddit": "r/forex",
+      "category": "Trend Following",
+      "asset_class": "Forex",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "LONG: 5 SMA crosses above 10 SMA AND both Stochastic lines heading up (not in overbought) AND RSI > 50",
+        "SHORT: 5 SMA crosses below 10 SMA AND both Stochastic lines heading down (not in oversold) AND RSI < 50"
+      ],
+      "exit_rules": [
+        "Exit when 5 SMA crosses 10 SMA in opposite direction OR RSI crosses back to 50",
+        "Stop loss of 100 pips"
+      ],
+      "indicators": ["5 SMA", "10 SMA", "Stochastic (14,3,3)", "RSI(9)"],
+      "risk_management": {
+        "stop_loss": "100 pips"
+      }
+    },
+    {
+      "id": 23,
+      "name": "QQQ Options Swing Strategy",
+      "source_url": "https://www.reddit.com/r/wallstreetbets/comments/1az06ag/simple_qqq_options_swing/",
+      "source_subreddit": "r/wallstreetbets",
+      "category": "Options",
+      "asset_class": "Options (QQQ)",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "1st Entry: Any single red day with loss > 1 ATR vs previous close. Entry at EOD",
+        "2nd Entry: 3 significant red days in a row (price closes lower by noticeable amount). Entry at EOD",
+        "3rd Entry: Uptrend pullbacks that touch 20 EMA. Entry at 20 EMA",
+        "4th Entry: Trend following - pullback to 20 EMA then break of previous high. Entry at EOD"
+      ],
+      "exit_rules": [
+        "7 days: If large movement in direction, sell half or 3/4",
+        "14 days: Sell most remaining if green",
+        "21 days: Flatten position regardless",
+        "General rule: If in profit enough that you'd be upset to lose it, lock it in"
+      ],
+      "indicators": ["ATR", "20 EMA"],
+      "risk_management": {
+        "option_requirements": "Calls dated no less than 31 days out",
+        "strike": "10-20 dollars OTM"
+      },
+      "backtest_results": {
+        "period": "10 years",
+        "tested_crashes": ["Dot.com bubble", "2008 crash", "COVID crash"]
+      }
+    },
+    {
+      "id": 24,
+      "name": "SPY/VIX Hedged Strategy",
+      "source_url": "https://www.reddit.com/r/wallstreetbets/comments/hamch7/developing_a_new_strategy_can_i_please_get_some/",
+      "source_subreddit": "r/wallstreetbets",
+      "category": "Volatility",
+      "asset_class": "CFDs (S&P, VIX)",
+      "timeframe": "4 Hour",
+      "entry_rules": [
+        "Entry 1 Rules: VIX > 28, S&P retracing, S&P in uptrend (HHHL on 4h), MACD convergence between indicator and price",
+        "Entry 2+: Same rules + current position profit > 5% of base value (increasing 2% per extra entry)"
+      ],
+      "exit_rules": [
+        "Upon entry 2: Set take profit stop of entry 1 and stop loss of entry 2 slightly above breakeven",
+        "Profit off VIX in event of major crash",
+        "If VIX spike > 50: May short VIX at equal level to long open",
+        "If max leverage reached: Close profitable positions to increase cash balance"
+      ],
+      "indicators": ["VIX", "MACD", "4h trend structure"],
+      "risk_management": {
+        "entry_1_sizing": "Long S&P at 1X account value, Long VIX at 1/4 S&P value",
+        "max_leverage": "20X",
+        "pyramiding": "Add 1X per subsequent entry"
+      }
+    },
+    {
+      "id": 25,
+      "name": "Earnings Call Options Strategy",
+      "source_url": "https://www.reddit.com/r/wallstreetbets/comments/1bg1bmq/my_route_to_200k/",
+      "source_subreddit": "r/wallstreetbets",
+      "category": "Options",
+      "asset_class": "Options (Earnings plays)",
+      "timeframe": "2-3 weeks out",
+      "entry_rules": [
+        "Play call options around earnings reports",
+        "Target companies 2-3 weeks out from earnings",
+        "Monitor VIX, put-call ratio, A/D line for market mood",
+        "Use 200-day MA as trend compass",
+        "Compare stock vs analyst price targets"
+      ],
+      "exit_rules": [
+        "Exit just before earnings announced (avoid 'sell the news')",
+        "Target: +50% gain"
+      ],
+      "indicators": ["VIX", "Put-Call Ratio", "A/D Line", "200 MA", "Analyst Price Targets"],
+      "risk_management": {
+        "risk_per_trade": "5%",
+        "risk_reward": "1.5",
+        "max_trades_per_month": 12
+      }
+    },
+    {
+      "id": 26,
+      "name": "SPY 0DTE Momentum Scalp",
+      "source_url": "https://www.reddit.com/r/wallstreetbets/comments/ggzrq7/how_i_escape_the_ptd_rule_with_a_small_account/",
+      "source_subreddit": "r/wallstreetbets",
+      "category": "Momentum",
+      "asset_class": "Options (SPY)",
+      "timeframe": "Intraday",
+      "entry_rules": [
+        "Look for OTM options about 1 hour after market open",
+        "Detect trend direction",
+        "Buy option $2-3 OTM in that direction"
+      ],
+      "exit_rules": [
+        "Sell when momentum slows down",
+        "Take profit at 25%",
+        "Cut loss at 10%"
+      ],
+      "indicators": ["Trend detection", "Price momentum"],
+      "risk_management": {
+        "take_profit": "25%",
+        "stop_loss": "10%",
+        "max_hold_time": "1 hour"
+      }
+    },
+    {
+      "id": 27,
+      "name": "200-Day MA Momentum Strategy",
+      "source_url": "https://www.reddit.com/r/investing/comments/8xf080/simple_momentum_investing_via_the_longterm_moving/",
+      "source_subreddit": "r/investing",
+      "category": "Momentum",
+      "asset_class": "ETFs (VT, SPY)",
+      "timeframe": "Monthly",
+      "entry_rules": [
+        "Once per month check if price > moving average",
+        "If yes, invest in index fund"
+      ],
+      "exit_rules": [
+        "If price < moving average, move funds to government bonds"
+      ],
+      "indicators": ["200-day MA", "100-day MA", "150-day MA", "300-day MA", "350-day MA"],
+      "risk_management": {},
+      "backtest_results": {
+        "sweet_spot": "200-day MA",
+        "trades_per_year": "~2",
+        "tax_consideration": "Short-term capital gains tax applies"
+      },
+      "variations": {
+        "100_day_ma": {"trades_per_year": 2.7, "notes": "More whipsaw"},
+        "200_day_ma": {"trades_per_year": 2, "notes": "Sweet spot"},
+        "300_day_ma": {"trades_per_year": 1.2, "notes": "Less trades, lower volatility"}
+      }
+    },
+    {
+      "id": 28,
+      "name": "ETF Momentum Rotation Strategy",
+      "source_url": "https://www.reddit.com/r/investing/comments/7ot0ju/etf_momentum_strategy_on_region_sector_and_size/",
+      "source_subreddit": "r/investing",
+      "category": "Momentum",
+      "asset_class": "ETFs (Region, Sector, Size)",
+      "timeframe": "Monthly",
+      "entry_rules": [
+        "Sort asset universe by momentum score (average of 3, 6, 12-month returns)",
+        "Calculate correlation and beta of each asset vs current portfolio",
+        "Tradeoff between momentum (want high) and beta-to-portfolio (want low)"
+      ],
+      "exit_rules": [
+        "Swap positions when better risk-adjusted momentum found"
+      ],
+      "indicators": ["3-month returns", "6-month returns", "12-month returns", "Correlation", "Beta"],
+      "risk_management": {
+        "cash_trigger": "Go to cash when everything is red"
+      },
+      "universe": [
+        "Region ETFs: EM, Europe ex-Eurozone, Eurozone, Pacific, USA, World",
+        "Sector ETFs: MSCI World sectors, NASDAQ, Robotics",
+        "Size ETFs: Mid cap, Small cap"
+      ]
+    },
+    {
+      "id": 29,
+      "name": "MACD Trend Trading Strategy",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/xp5ldr/a_more_profitable_and_less_nervewracking_strategy/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Trend Following",
+      "asset_class": "Crypto (BTC, ETH, XMR)",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Buy when green MACD line moving up and about to cross above signal line"
+      ],
+      "exit_rules": [
+        "Sell when green MACD line moving down and about to cross below signal line",
+        "Wait if histogram bars are low (market uncertain)"
+      ],
+      "indicators": ["MACD (12, 26, 9)", "Histogram"],
+      "risk_management": {},
+      "backtest_results": {
+        "period": "March 1 - Present (7 months)",
+        "xmr": {"hodl": "$457.60", "macd": "$996.80", "improvement": "218%"},
+        "eth": {"hodl": "$307.20", "macd": "$1,012.80", "improvement": "330%"},
+        "btc": {"hodl": "$259.45", "macd": "$658.61", "improvement": "254%"}
+      },
+      "notes": "Higher timeframe = more accurate direction signals"
+    },
+    {
+      "id": 30,
+      "name": "8/21 EMA Crossover",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/x0jdbm/been_learning_about_trading_signals/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Trend Following",
+      "asset_class": "Crypto (BTC, ETH, Altcoins)",
+      "timeframe": "Hourly, Daily, Weekly",
+      "entry_rules": [
+        "Bullish: 8 EMA crosses over 21 EMA (and stays there)"
+      ],
+      "exit_rules": [
+        "Bearish: 21 EMA crosses over 8 EMA (and stays above)"
+      ],
+      "indicators": ["8 EMA", "21 EMA"],
+      "risk_management": {},
+      "notes": "Lagging indicator - won't time tops/bottoms perfectly but catches meat of move"
+    },
+    {
+      "id": 31,
+      "name": "Market Cipher Trading Strategy",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/qkeccx/market_cipher_indicators_trading_strategy/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Multi-Indicator",
+      "asset_class": "Crypto",
+      "timeframe": "5-minute (for VWAP), 4-hour",
+      "entry_rules": [
+        "Blue Momentum Waves: Look for 3 waves total - Wave 1 and 2 on same side of Zero line, Gap between on other side",
+        "Waves below Zero = Long, Waves above Zero = Short",
+        "Entry: White crosses blue on wave (green dot for long, red dot for short)",
+        "VWAP: Only long when money flow green, VWAP confirmed above zero (2 candles), EMA ribbon blue/white"
+      ],
+      "exit_rules": [
+        "Exit at next wave cross",
+        "Stop: 2.5% or prior support",
+        "Take profit: 5%"
+      ],
+      "indicators": [
+        "Cipher A (8 EMA ribbons, diamonds, circles, triangles)",
+        "Cipher B (Blue momentum waves, VWAP, Money Flow, Stoch RSI)",
+        "Cipher DBSI (Dual band Strength Index)"
+      ],
+      "risk_management": {
+        "stop_loss": "2.5% or prior support",
+        "take_profit": "5%"
+      },
+      "backtest_results": {
+        "vwap_test": "14 trades, 12 successful (1% TP/SL), 2 stopped out"
+      }
+    },
+    {
+      "id": 32,
+      "name": "Moving Grid Trading Bot",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/wwrnet/this_is_it_a_moving_grid_trading_bot_that_follows/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Grid Trading",
+      "asset_class": "Crypto",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Regular grid bot within price range",
+        "Move price range with Moving Average (5% threshold)"
+      ],
+      "exit_rules": [
+        "Grid bot standard exits"
+      ],
+      "indicators": ["Moving Average"],
+      "risk_management": {},
+      "backtest_results": {
+        "bullish_case": "Captures more profits as price goes up",
+        "bearish_case": "Loses slightly less than regular grid",
+        "sideways": "Same as regular grid"
+      },
+      "notes": "Best used in bullish markets to follow trend"
+    },
+    {
+      "id": 33,
+      "name": "DCA Exit Strategy (Bull Run)",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/16kvyu0/i_made_an_exit_strategy_so_you_dont_have_too/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Risk Management",
+      "asset_class": "Crypto",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Start selling 1 month after previous ATH break"
+      ],
+      "exit_rules": [
+        "Average bull run length: 283 days from ATH break",
+        "Sell 0.38% per day (100% / 262 days after initial month)",
+        "Accumulate daily percentage, sell on green days (+10-20% moves)",
+        "Reset count after each sale"
+      ],
+      "indicators": ["ATH timing", "Portfolio tracking"],
+      "risk_management": {
+        "method": "DCA out",
+        "final_phase": "Last 100 days - sell on red days too if needed"
+      },
+      "historical_data": {
+        "2013_bull_run": "272 days from ATH to top",
+        "2017_bull_run": "230 days",
+        "2021_bull_run": "348 days",
+        "average": "283 days"
+      }
+    },
+    {
+      "id": 34,
+      "name": "Buy The Dip Strategy",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/1ilevbj/i_made_an_open_source_tool_to_help_you_backtest/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Mean Reversion",
+      "asset_class": "Crypto (BTC)",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Buy when price drops > 5% from previous candle close"
+      ],
+      "exit_rules": [
+        "Sell at take profit level"
+      ],
+      "indicators": ["Price change %"],
+      "risk_management": {
+        "stop_loss": "Configurable",
+        "take_profit": "Configurable"
+      },
+      "backtest_results": {
+        "win_rate": "90%",
+        "notes": "High win rate with 5% TP setting"
+      }
+    },
+    {
+      "id": 35,
+      "name": "Volatility Regime Filter Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1e490dv/what_have_been_your_breakthroughaha_moments_in/",
+      "source_subreddit": "r/algotrading",
+      "category": "Volatility",
+      "asset_class": "Futures (ES, Gold)",
+      "timeframe": "Intraday",
+      "entry_rules": [
+        "Apply market and volatility regime filters",
+        "Segment market into: extreme bull, neutral, bear, high vol, medium vol, low vol"
+      ],
+      "exit_rules": [
+        "Exit when regime changes"
+      ],
+      "indicators": ["ATR-based oscillators", "Regime classification"],
+      "risk_management": {},
+      "backtest_results": {
+        "finding": "Strategy performs poorly in high volatility",
+        "improvement": "Removing high volatility trading improves net profit and drawdown"
+      },
+      "notes": "Create matrix for each permutation (bull & low vol, bull & high vol, etc.)"
+    },
+    {
+      "id": 36,
+      "name": "WARMACHINE Momentum Scoring",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1mq7y51/how_im_letting_gpt_bots_tear_through_my_backtest/",
+      "source_subreddit": "r/algotrading",
+      "category": "Multi-Factor",
+      "asset_class": "Stocks (AMC, GME)",
+      "timeframe": "5-minute",
+      "entry_rules": [
+        "Tier 1 (Score >= 9): Volume Surge + OBV Uptrend + ADX > 25 + Breakout Confirmed + Above VAH/VWAP",
+        "Tier 2 (Score >= 6.5): Lower confidence but still profitable"
+      ],
+      "exit_rules": [
+        "Avoid: Supertrend Bearish Flip, VWAP Rejection, High-Vol Rejection, TTM Squeeze"
+      ],
+      "indicators": [
+        "Volume Surge",
+        "OBV Uptrend",
+        "ADX (5m > 25, multi-timeframe)",
+        "Breakout Confirmed",
+        "Above VAH",
+        "Above VWAP",
+        "Bollinger Riding",
+        "MACD Histogram Flip",
+        "Supertrend"
+      ],
+      "risk_management": {
+        "session_preference": "RTH (Regular Trading Hours)",
+        "tier_1_win_rate": "52-54.9%",
+        "tier_2_win_rate": "51.9-53.6%"
+      },
+      "backtest_results": {
+        "amc_tier_1": {"trades": 414, "pnl": "$12.88k", "win_rate": "52%"},
+        "amc_tier_2": {"trades": 315, "pnl": "$6.80k", "win_rate": "53.6%"},
+        "gme_tier_1": {"trades": 273, "pnl": "$12.90k", "win_rate": "54.9%"},
+        "gme_tier_2": {"trades": 183, "pnl": "$7.48k", "win_rate": "51.9%"}
+      }
+    },
+    {
+      "id": 37,
+      "name": "John Ehlers Forward/Reversed EMA",
+      "source_url": "https://www.reddit.com/r/wallstreetbets/comments/6l2w9t/another_tos_script_john_ehlers_forward_and/",
+      "source_subreddit": "r/wallstreetbets",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Use support and resistance areas to guide buys",
+        "Buy at -0.5 or -1.0 std dev"
+      ],
+      "exit_rules": [
+        "Stop losses at support/resistance levels"
+      ],
+      "indicators": ["Forward/Reversed EMA (Ehlers)", "Standard Deviation"],
+      "risk_management": {},
+      "code_variables": {
+        "AA": "0.1 (tweakable variable)"
+      }
+    },
+    {
+      "id": 38,
+      "name": "Breakout with Volume Confirmation",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1ldiiwq/results_of_a_breakout_strategy_im_developing/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "Crypto",
+      "timeframe": "Weekly",
+      "entry_rules": [
+        "Trade only select days of the week",
+        "Filter universe of 50+ coins by metrics",
+        "Choose top coins and trade for the week"
+      ],
+      "exit_rules": [
+        "Weekly rotation"
+      ],
+      "indicators": ["Volume", "Custom metrics"],
+      "risk_management": {},
+      "backtest_results": {
+        "notes": "Sub-strategy deployed with existing strategies"
+      }
+    },
+    {
+      "id": 39,
+      "name": "Kelly Criterion Position Sizing",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/10z14c3/strategies_and_systems_is_all_set_now_the/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Futures",
+      "timeframe": "Intraday",
+      "entry_rules": [
+        "Apply Kelly Criterion to position sizing"
+      ],
+      "exit_rules": [
+        "Standard strategy exits"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "method": "Kelly Criterion adapted for trading",
+        "formula": "f = (bp-q) / b",
+        "example": {
+          "b": 4.44,
+          "p": 0.24,
+          "q": 0.76,
+          "full_kelly": "7.29%",
+          "half_kelly": "3.64%",
+          "quarter_kelly": "1.82%"
+        }
+      }
+    },
+    {
+      "id": 40,
+      "name": "Max Consecutive Losers Sizing",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/10z14c3/strategies_and_systems_is_all_set_now_the/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Futures",
+      "timeframe": "Intraday",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {
+        "method": "Max consecutive losers based",
+        "calculation": "Max consecutive losers (x1.5 or x2.0) x average losing trade",
+        "example": "30 consecutive losers x $200 = $6000",
+        "with_factor": "$9000-$12000",
+        "account_sizing": "If max drawdown 20%, trade on $45k account"
+      }
+    },
+    {
+      "id": 41,
+      "name": "Composite Optimization Metric",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1d6v0oz/best_optimization_metrics/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {
+        "optimization_metric": "(NetProfit * ProfitFactor) * (100 - Drawdown%)",
+        "benefits": ["Less fitted results", "Balances important metrics"]
+      }
+    },
+    {
+      "id": 42,
+      "name": "Dynamic Position Sizing",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/oqqa7k/dynamic_position_sizing_increase_or_decrease/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": ["Predictive power metric"],
+      "risk_management": {
+        "method": "Dynamic adjustment based on confidence",
+        "approach": "Start fixed small, increase/decrease as trade progresses"
+      }
+    },
+    {
+      "id": 43,
+      "name": "Risk Management Only Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/16ym16z/risk_management_as_the_only_strategy/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "No specific entry - focus on exit management"
+      ],
+      "exit_rules": [
+        "TP at 20-30 pips, SL at -10 to -15 pips",
+        "Probability of hitting TP/PL is stochastic"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "tp": "20-30 pips",
+        "sl": "10-15 pips",
+        "leverage": "10:1",
+        "pwin_distribution": "Stochastic uniform 0.4-0.65"
+      },
+      "backtest_results": {
+        "ensemble_trades": 800,
+        "samples_per_trade": 2000,
+        "finding": "Even with stochastic probability, minimum end balance still profitable"
+      }
+    },
+    {
+      "id": 44,
+      "name": "Value & Momentum Combination",
+      "source_url": "https://www.reddit.com/r/investing/comments/5j7k2p/quant_literature_review_value_momentum_everywhere/",
+      "source_subreddit": "r/investing",
+      "category": "Multi-Factor",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Monthly",
+      "entry_rules": [
+        "Combine value (mean reversion) and momentum (continuation) strategies",
+        "Value: Buy undervalued assets expecting reversion",
+        "Momentum: Buy assets with strong past performance expecting continuation"
+      ],
+      "exit_rules": [
+        "Rebalance between value and momentum based on correlation"
+      ],
+      "indicators": ["Value metrics", "Momentum metrics"],
+      "risk_management": {
+        "diversification": "Negative correlation between value and momentum provides natural hedge"
+      },
+      "notes": "Based on AQR paper 'Value & Momentum Everywhere' by Cliff Asness"
+    },
+    {
+      "id": 45,
+      "name": "PyBroker ML Walkforward",
+      "source_url": "https://www.reddit.com/r/quant/comments/13qugdn/pybroker_a_free_and_open_algotrading_framework/",
+      "source_subreddit": "r/quant",
+      "category": "Machine Learning",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Train ML models on historical data",
+        "Execute based on model predictions"
+      ],
+      "exit_rules": [
+        "Model-based exits"
+      ],
+      "indicators": ["User-defined features"],
+      "risk_management": {
+        "validation": "Walkforward Analysis"
+      },
+      "features": [
+        "NumPy/Numba backtesting engine",
+        "Alpaca/Yahoo Finance data",
+        "Randomized bootstrapping for metrics",
+        "Parallelized computations"
+      ]
+    },
+    {
+      "id": 46,
+      "name": "HftBacktest Tick-by-Tick",
+      "source_url": "https://www.reddit.com/r/quant/comments/1dhz9m9/opensourcing_highfrequency_trading_and/",
+      "source_subreddit": "r/quant",
+      "category": "High Frequency",
+      "asset_class": "Crypto, Futures",
+      "timeframe": "Tick",
+      "entry_rules": [
+        "Tick-by-tick simulation",
+        "Full order book reconstruction"
+      ],
+      "exit_rules": [
+        "Latency-aware fills"
+      ],
+      "indicators": ["L2 Market-By-Price", "Order queue position"],
+      "risk_management": {
+        "latency_modeling": "Feed and order latency",
+        "fill_simulation": "Queue position based"
+      },
+      "features": [
+        "Rust implementation available",
+        "Multi-asset backtesting",
+        "Live bot using same algo code"
+      ]
+    },
+    {
+      "id": 47,
+      "name": "Crypto Trend Bot with L2 Data",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/wv639t/results_after_100_crypto_trades_using_a/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Crypto",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Trend-following with Level 2 data integration"
+      ],
+      "exit_rules": [
+        "Volatility-based stops"
+      ],
+      "indicators": ["Level 2 data", "Trend indicators"],
+      "risk_management": {
+        "stops": "Volatility-based",
+        "sizing": "Risk parity sizing"
+      },
+      "backtest_results": {
+        "trades": "100+"
+      }
+    },
+    {
+      "id": 48,
+      "name": "Social Sentiment Bot (Twitter)",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/mnjbbq/heres_what_i_learned_after_building_and_testing/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Sentiment",
+      "asset_class": "Crypto (BTC, DOGE)",
+      "timeframe": "Event-driven",
+      "entry_rules": [
+        "Monitor specific Twitter handles (e.g., Elon Musk)",
+        "Buy when tweet about crypto is detected"
+      ],
+      "exit_rules": [
+        "Time-based or profit-based exit"
+      ],
+      "indicators": ["Twitter sentiment", "Tweet volume"],
+      "risk_management": {},
+      "notes": "Higher success rate than pure technical indicators"
+    },
+    {
+      "id": 49,
+      "name": "News Aggregator Sentiment",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/mnjbbq/heres_what_i_learned_after_building_and_testing/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Sentiment",
+      "asset_class": "Crypto",
+      "timeframe": "Event-driven",
+      "entry_rules": [
+        "Scrape web for articles related to specific coins",
+        "Analyze sentiment of headlines"
+      ],
+      "exit_rules": [
+        "Sentiment reversal or time-based"
+      ],
+      "indicators": ["News sentiment", "Headline analysis"],
+      "risk_management": {},
+      "notes": "Key is accurate sentiment analysis"
+    },
+    {
+      "id": 50,
+      "name": "Technical Indicator Bot (RSI/MFI)",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/mnjbbq/heres_what_i_learned_after_building_and_testing/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Mean Reversion",
+      "asset_class": "Crypto",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "RSI > 70 then back under = Sell",
+        "RSI < 30 then back over = Buy"
+      ],
+      "exit_rules": [
+        "Opposite signal"
+      ],
+      "indicators": ["RSI", "MFI", "Awesome Oscillator"],
+      "risk_management": {},
+      "backtest_results": {
+        "ml_bot": "50% accuracy (coin toss)",
+        "technical_bot": "Higher than ML but false positives present"
+      }
+    },
+    {
+      "id": 51,
+      "name": "Trend Bot (Price Momentum)",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/mnjbbq/heres_what_i_learned_after_building_and_testing/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Momentum",
+      "asset_class": "Crypto",
+      "timeframe": "10 minutes",
+      "entry_rules": [
+        "Compare current price with 10 minutes ago",
+        "If gained > 5% = strong bullish sign, enter long"
+      ],
+      "exit_rules": [
+        "Trailing stop loss (not fixed take profit)"
+      ],
+      "indicators": ["Price change %", "Time comparison"],
+      "risk_management": {
+        "exit": "Trailing stop loss"
+      },
+      "backtest_results": {
+        "notes": "Outperformed technical and ML bots, turned profit on XLM"
+      }
+    },
+    {
+      "id": 52,
+      "name": "LSTM Price Prediction",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/mnjbbq/heres_what_i_learned_after_building_and_testing/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Machine Learning",
+      "asset_class": "Crypto (Top 10 coins)",
+      "timeframe": "4 hours",
+      "entry_rules": [
+        "LSTM model ingests historical data",
+        "Predict price 4 hours in future"
+      ],
+      "exit_rules": [
+        "Prediction-based exits"
+      ],
+      "indicators": ["LSTM neural network"],
+      "risk_management": {},
+      "backtest_results": {
+        "accuracy": "50% (coin toss equivalent)",
+        "issue": "Cannot account for external factors (news, regulations)"
+      }
+    },
+    {
+      "id": 53,
+      "name": "Smart Money Concepts (SMC)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Price Action",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Liquidity sweeps",
+        "Fair Value Gaps (FVGs)",
+        "Order blocks"
+      ],
+      "exit_rules": [
+        "Opposite SMC signal"
+      ],
+      "indicators": ["Price structure", "Volume profile"],
+      "risk_management": {}
+    },
+    {
+      "id": 54,
+      "name": "ICT (Inner Circle Trader) Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1q5op3l/backtested_16000_retail_trading_strategies_how_do/",
+      "source_subreddit": "r/algotrading",
+      "category": "Price Action",
+      "asset_class": "Stocks",
+      "timeframe": "5m, 15m, 1h, 4h",
+      "entry_rules": [
+        "Various ICT concepts translated to code"
+      ],
+      "exit_rules": [
+        "ICT-based exits"
+      ],
+      "indicators": ["ICT concepts"],
+      "risk_management": {},
+      "backtest_results": {
+        "total_backtests": "~16,000",
+        "stocks": "50 top mentioned",
+        "strategies": "80 variants",
+        "timeframes": "4",
+        "scoring": "Sharpe, alpha return, win rate, turnover penalty, max drawdown"
+      }
+    },
+    {
+      "id": 55,
+      "name": "Fibonacci Retracement",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1q5op3l/backtested_16000_retail_trading_strategies_how_do/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Enter at key Fibonacci levels (38.2%, 50%, 61.8%)"
+      ],
+      "exit_rules": [
+        "Target next Fibonacci level or trailing stop"
+      ],
+      "indicators": ["Fibonacci retracement"],
+      "risk_management": {}
+    },
+    {
+      "id": 56,
+      "name": "Open Range Breakout (ORB)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Trade breakout of opening range"
+      ],
+      "exit_rules": [
+        "Time-based or target-based"
+      ],
+      "indicators": ["Opening range"],
+      "risk_management": {}
+    },
+    {
+      "id": 57,
+      "name": "Horizontal Compression Breakout",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Identify horizontal consolidation",
+        "Enter on breakout from compression"
+      ],
+      "exit_rules": [
+        "Trailing stop or target"
+      ],
+      "indicators": ["Support/Resistance", "Bollinger Bands"],
+      "risk_management": {}
+    },
+    {
+      "id": 58,
+      "name": "Wedge Compression Breakout",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Breakout",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Identify wedge pattern",
+        "Enter on breakout from wedge"
+      ],
+      "exit_rules": [
+        "Measured move or trailing stop"
+      ],
+      "indicators": ["Trend lines", "Pattern recognition"],
+      "risk_management": {}
+    },
+    {
+      "id": 59,
+      "name": "Covered Calls",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Options",
+      "asset_class": "Options (Stocks)",
+      "timeframe": "Monthly",
+      "entry_rules": [
+        "Own underlying stock",
+        "Sell call options against position"
+      ],
+      "exit_rules": [
+        "Expiration or buyback"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "downside": "Limited by stock ownership"
+      }
+    },
+    {
+      "id": 60,
+      "name": "The Wheel Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Options",
+      "asset_class": "Options (Large Caps)",
+      "timeframe": "Weekly/Monthly",
+      "entry_rules": [
+        "Sell cash-secured puts until assigned",
+        "Then sell covered calls until called away",
+        "Repeat"
+      ],
+      "exit_rules": [
+        "Assignment or expiration"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "requirement": "Cash secured or stock ownership"
+      }
+    },
+    {
+      "id": 61,
+      "name": "Short Iron Condor on SPY 0DTE",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Options",
+      "asset_class": "Options (SPY)",
+      "timeframe": "0DTE",
+      "entry_rules": [
+        "Sell iron condor on SPY same-day expiration"
+      ],
+      "exit_rules": [
+        "Profit target or expiration"
+      ],
+      "indicators": ["Expected range", "IV"],
+      "risk_management": {
+        "max_loss": "Defined risk"
+      }
+    },
+    {
+      "id": 62,
+      "name": "Long Straddle/Strangle on Earnings",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Options",
+      "asset_class": "Options (Earnings plays)",
+      "timeframe": "Earnings dates",
+      "entry_rules": [
+        "Buy straddle or strangle before earnings"
+      ],
+      "exit_rules": [
+        "After earnings announcement (volatility crush)"
+      ],
+      "indicators": ["Implied volatility", "Expected move"],
+      "risk_management": {
+        "max_loss": "Premium paid"
+      }
+    },
+    {
+      "id": 63,
+      "name": "Martingale Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Double position size after each loss"
+      ],
+      "exit_rules": [
+        "Take profit resets to base size"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "warning": "Very risky - can lead to ruin"
+      },
+      "notes": "Classic strategy but dangerous"
+    },
+    {
+      "id": 64,
+      "name": "Grid Trading",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Grid Trading",
+      "asset_class": "Crypto, Forex",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Place buy orders at regular intervals below price",
+        "Place sell orders at regular intervals above price"
+      ],
+      "exit_rules": [
+        "Grid levels hit"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "range": "Must define upper and lower bounds"
+      }
+    },
+    {
+      "id": 65,
+      "name": "Arbitrage Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Arbitrage",
+      "asset_class": "Multi-Asset",
+      "timeframe": "High frequency",
+      "entry_rules": [
+        "Identify price discrepancies between exchanges or instruments"
+      ],
+      "exit_rules": [
+        "Close when prices converge"
+      ],
+      "indicators": ["Price differential"],
+      "risk_management": {
+        "latency": "Critical factor"
+      }
+    },
+    {
+      "id": 66,
+      "name": "Index Fund Rebalancing",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Arbitrage",
+      "asset_class": "ETFs, Index Funds",
+      "timeframe": "Daily/Monthly",
+      "entry_rules": [
+        "Anticipate index rebalancing trades"
+      ],
+      "exit_rules": [
+        "After rebalancing completes"
+      ],
+      "indicators": ["Index composition changes"],
+      "risk_management": {}
+    },
+    {
+      "id": 67,
+      "name": "Scalping Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Scalping",
+      "asset_class": "Multi-Asset",
+      "timeframe": "1-5 minutes",
+      "entry_rules": [
+        "Quick entries on small price movements"
+      ],
+      "exit_rules": [
+        "Small profit targets",
+        "Tight stops"
+      ],
+      "indicators": ["Price action", "Order flow"],
+      "risk_management": {
+        "execution": "Low latency required"
+      }
+    },
+    {
+      "id": 68,
+      "name": "Price Pattern/Candlestick",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Price Action",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Identify specific candlestick patterns (engulfing, doji, etc.)"
+      ],
+      "exit_rules": [
+        "Pattern completion or stop"
+      ],
+      "indicators": ["Candlestick patterns"],
+      "risk_management": {}
+    },
+    {
+      "id": 69,
+      "name": "Neural Network Price Forecasting",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Machine Learning",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Neural network predicts price direction"
+      ],
+      "exit_rules": [
+        "Prediction reversal or target"
+      ],
+      "indicators": ["Neural network output"],
+      "risk_management": {}
+    },
+    {
+      "id": 70,
+      "name": "News-Based Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Sentiment",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Event-driven",
+      "entry_rules": [
+        "Trade on news releases"
+      ],
+      "exit_rules": [
+        "Post-news price stabilization"
+      ],
+      "indicators": ["News feed", "NLP sentiment"],
+      "risk_management": {}
+    },
+    {
+      "id": 71,
+      "name": "Market Sentiment Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Sentiment",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Trade based on overall market sentiment indicators"
+      ],
+      "exit_rules": [
+        "Sentiment reversal"
+      ],
+      "indicators": ["VIX", "Put/Call ratio", "Fear/Greed index"],
+      "risk_management": {}
+    },
+    {
+      "id": 72,
+      "name": "Trend Line Break",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Draw trend lines on chart",
+        "Enter on break of trend line"
+      ],
+      "exit_rules": [
+        "New trend line formed or stop"
+      ],
+      "indicators": ["Trend lines"],
+      "risk_management": {}
+    },
+    {
+      "id": 73,
+      "name": "Trend Line Bounce",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Price touches trend line and bounces"
+      ],
+      "exit_rules": [
+        "Next resistance/support or stop"
+      ],
+      "indicators": ["Trend lines"],
+      "risk_management": {}
+    },
+    {
+      "id": 74,
+      "name": "SMA Break (20D, 50D, 100D, 150D, 200D)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Enter on break above/below specified SMA"
+      ],
+      "exit_rules": [
+        "Break in opposite direction"
+      ],
+      "indicators": ["SMA (20, 50, 100, 150, 200)"],
+      "risk_management": {}
+    },
+    {
+      "id": 75,
+      "name": "SMA Bounce",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Price touches SMA and bounces"
+      ],
+      "exit_rules": [
+        "Next support/resistance"
+      ],
+      "indicators": ["SMA (various periods)"],
+      "risk_management": {}
+    },
+    {
+      "id": 76,
+      "name": "Seasonal Strategy (Sell in May)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Seasonal",
+      "asset_class": "Stocks",
+      "timeframe": "Monthly",
+      "entry_rules": [
+        "Sell in May and stay away"
+      ],
+      "exit_rules": [
+        "Buy back in November"
+      ],
+      "indicators": ["Calendar"],
+      "risk_management": {}
+    },
+    {
+      "id": 77,
+      "name": "Mean Reversion To Trend",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Price deviates from trend (moving average)",
+        "Enter expecting return to trend"
+      ],
+      "exit_rules": [
+        "Return to trend line"
+      ],
+      "indicators": ["Moving average", "Deviation metrics"],
+      "risk_management": {}
+    },
+    {
+      "id": 78,
+      "name": "Mean Reversion in Range",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Identify trading range",
+        "Buy at support, sell at resistance"
+      ],
+      "exit_rules": [
+        "Opposite boundary or stop"
+      ],
+      "indicators": ["Support/Resistance", "Bollinger Bands"],
+      "risk_management": {}
+    },
+    {
+      "id": 79,
+      "name": "Reverting Market Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Identify mean-reverting market conditions"
+      ],
+      "exit_rules": [
+        "Mean reversion complete"
+      ],
+      "indicators": ["Hurst exponent", "ADF test"],
+      "risk_management": {}
+    },
+    {
+      "id": 80,
+      "name": "Momentum Rotation (Tactical Allocation)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Momentum",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Monthly",
+      "entry_rules": [
+        "Rotate into assets with strongest momentum"
+      ],
+      "exit_rules": [
+        "Momentum shifts to other assets"
+      ],
+      "indicators": ["Relative momentum", "Rate of change"],
+      "risk_management": {},
+      "references": ["Gary Antonacci GEM", "Ned Davis", "Meb Faber 3-Way Model", "Andreas Clenow"]
+    },
+    {
+      "id": 81,
+      "name": "Offset Trades / Trading Pairs",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Pairs Trading",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Long one asset, short correlated asset"
+      ],
+      "exit_rules": [
+        "Correlation returns to normal"
+      ],
+      "indicators": ["Correlation", "Cointegration"],
+      "risk_management": {}
+    },
+    {
+      "id": 82,
+      "name": "Market Timing Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Market Timing",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Use indicators to time market entries/exits"
+      ],
+      "exit_rules": [
+        "Indicator signals exit"
+      ],
+      "indicators": ["Various timing indicators"],
+      "risk_management": {}
+    },
+    {
+      "id": 83,
+      "name": "New High/Low Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Momentum",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Daily",
+      "entry_rules": [
+        "Buy on new highs",
+        "Short on new lows"
+      ],
+      "exit_rules": [
+        "Trailing stop or reversal"
+      ],
+      "indicators": ["New highs/lows"],
+      "risk_management": {}
+    },
+    {
+      "id": 84,
+      "name": "ATR Breakout",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Volatility",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Enter when price moves beyond ATR threshold"
+      ],
+      "exit_rules": [
+        "ATR-based trailing stop"
+      ],
+      "indicators": ["ATR"],
+      "risk_management": {}
+    },
+    {
+      "id": 85,
+      "name": "VWAP Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Intraday",
+      "entry_rules": [
+        "Long when price below VWAP",
+        "Short when price above VWAP"
+      ],
+      "exit_rules": [
+        "Return to VWAP"
+      ],
+      "indicators": ["VWAP"],
+      "risk_management": {}
+    },
+    {
+      "id": 86,
+      "name": "RSI Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Buy when RSI < 30",
+        "Sell when RSI > 70"
+      ],
+      "exit_rules": [
+        "RSI returns to 50"
+      ],
+      "indicators": ["RSI"],
+      "risk_management": {}
+    },
+    {
+      "id": 87,
+      "name": "LRSI (Laguerre RSI)",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Mean Reversion",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Use LRSI for faster signals than standard RSI"
+      ],
+      "exit_rules": [
+        "LRSI reversal"
+      ],
+      "indicators": ["Laguerre RSI"],
+      "risk_management": {}
+    },
+    {
+      "id": 88,
+      "name": "MACD Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Buy on MACD line crossing above signal",
+        "Sell on MACD line crossing below signal"
+      ],
+      "exit_rules": [
+        "Opposite crossover"
+      ],
+      "indicators": ["MACD", "Signal line", "Histogram"],
+      "risk_management": {}
+    },
+    {
+      "id": 89,
+      "name": "EMA Cross Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Fast EMA crosses above slow EMA = Buy",
+        "Fast EMA crosses below slow EMA = Sell"
+      ],
+      "exit_rules": [
+        "Opposite cross"
+      ],
+      "indicators": ["EMA (fast)", "EMA (slow)"],
+      "risk_management": {}
+    },
+    {
+      "id": 90,
+      "name": "MA Cross Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Trend Following",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Fast MA crosses above slow MA = Buy",
+        "Fast MA crosses below slow MA = Sell"
+      ],
+      "exit_rules": [
+        "Opposite cross"
+      ],
+      "indicators": ["MA (fast)", "MA (slow)"],
+      "risk_management": {}
+    },
+    {
+      "id": 91,
+      "name": "31/58 EMA Crossover (CTO Larsson Style)",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/x0jdbm/been_learning_about_trading_signals/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Trend Following",
+      "asset_class": "Crypto (BTC)",
+      "timeframe": "Weekly",
+      "entry_rules": [
+        "31 EMA crosses above 58 EMA = Gold/Buy signal"
+      ],
+      "exit_rules": [
+        "31 EMA crosses below 58 EMA = Blue/Sell signal"
+      ],
+      "indicators": ["31 EMA", "58 EMA"],
+      "risk_management": {},
+      "notes": "Similar to CTO Larsson's Larsson Line - fewer whipsaws than 8/21"
+    },
+    {
+      "id": 92,
+      "name": "Statistical Arbitrage (ES/NQ/YM)",
+      "source_url": "https://www.reddit.com/r/quant/comments/13qirbc/whats_is_the_catch_with_simple_statistical/",
+      "source_subreddit": "r/quant",
+      "category": "Pairs Trading",
+      "asset_class": "Futures (ES, NQ, YM)",
+      "timeframe": "1 minute",
+      "entry_rules": [
+        "Plot correlated markets",
+        "Enter when pricing diverges"
+      ],
+      "exit_rules": [
+        "Exit when prices converge"
+      ],
+      "indicators": ["Price differential", "Correlation"],
+      "risk_management": {},
+      "notes": "Looks easy but has catches - latency, transaction costs, regime changes"
+    },
+    {
+      "id": 93,
+      "name": "Kalman Filter Pairs Trading",
+      "source_url": "https://www.reddit.com/r/quant/comments/16h2se7/what_are_some_methods_to_working_out_how_much_you/",
+      "source_subreddit": "r/quant",
+      "category": "Pairs Trading",
+      "asset_class": "Stocks",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Use Kalman filter to estimate hedge ratio dynamically"
+      ],
+      "exit_rules": [
+        "Filter signals exit"
+      ],
+      "indicators": ["Kalman filter", "Hedge ratio"],
+      "risk_management": {
+        "position_sizing": "Dynamic based on Kalman output"
+      }
+    },
+    {
+      "id": 94,
+      "name": "Gaussian Process Regression",
+      "source_url": "https://www.reddit.com/r/quant/comments/1b2vt8j/seeking_advice_enhancing_trading_strategies_with/",
+      "source_subreddit": "r/quant",
+      "category": "Machine Learning",
+      "asset_class": "Futures (Brazilian index, dollar)",
+      "timeframe": "1 minute",
+      "entry_rules": [
+        "Use ML beyond simple indicator optimization"
+      ],
+      "exit_rules": [
+        "Model-based exits"
+      ],
+      "indicators": ["Custom ML features"],
+      "risk_management": {},
+      "notes": "5 years of 1-minute OHLC data used"
+    },
+    {
+      "id": 95,
+      "name": "Walkforward Analysis Strategy",
+      "source_url": "https://www.reddit.com/r/quant/comments/13qugdn/pybroker_a_free_and_open_algotrading_framework/",
+      "source_subreddit": "r/quant",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Train on in-sample data"
+      ],
+      "exit_rules": [
+        "Test on out-of-sample data"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "validation": "Walkforward Analysis"
+      },
+      "notes": "Simulates how strategy would perform during actual trading"
+    },
+    {
+      "id": 96,
+      "name": "Randomized Bootstrapping Metrics",
+      "source_url": "https://www.reddit.com/r/quant/comments/13qugdn/pybroker_a_free_and_open_algotrading_framework/",
+      "source_subreddit": "r/quant",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {
+        "metrics": "Randomized bootstrapping for more accurate results"
+      }
+    },
+    {
+      "id": 97,
+      "name": "Deflated Sharpe Ratio",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1q5op3l/backtested_16000_retail_trading_strategies_how_do/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {
+        "metric": "Deflated Sharpe Ratio",
+        "purpose": "Account for multiple testing bias",
+        "reference": "Lopez de Prado"
+      }
+    },
+    {
+      "id": 98,
+      "name": "Multi-Timeframe Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1naoem2/list_of_the_most_basic_algorithmic_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Multi-Timeframe",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Multiple",
+      "entry_rules": [
+        "Apply strategy on multiple timeframes simultaneously"
+      ],
+      "exit_rules": [
+        "Confluence of timeframe signals"
+      ],
+      "indicators": ["Same indicators on multiple timeframes"],
+      "risk_management": {}
+    },
+    {
+      "id": 99,
+      "name": "Composite Score Strategy",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1i30cej/i_am_currently_live_testing_my_altcoins_trading/",
+      "source_subreddit": "r/algotrading",
+      "category": "Multi-Factor",
+      "asset_class": "Crypto (Altcoins)",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Synergy bonus when conditions align (e.g., bullish MACD + oversold RSI)"
+      ],
+      "exit_rules": [
+        "Score-based exits"
+      ],
+      "indicators": ["MACD", "RSI", "Custom scoring"],
+      "risk_management": {}
+    },
+    {
+      "id": 100,
+      "name": "Trailing Stop with Profit Activation",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1qhpies/built_a_systematic_trading_system_looking_for/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [
+        "Trailing stop only activates after hitting profit threshold",
+        "Then trails dynamically"
+      ],
+      "indicators": ["ATR"],
+      "risk_management": {
+        "activation_threshold": "15-35% profit",
+        "trailing_distance": "2.3x-2.8x ATR"
+      }
+    },
+    {
+      "id": 101,
+      "name": "Minimum Hold Period Filter",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1qhpies/built_a_systematic_trading_system_looking_for/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [
+        "Prevent whipsawing out of positions too early"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "min_hold": "6-8 bars"
+      }
+    },
+    {
+      "id": 102,
+      "name": "Max Drawdown Circuit Breaker",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1qhpies/built_a_systematic_trading_system_looking_for/",
+      "source_subreddit": "r/algotrading",
+      "category": "Risk Management",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [
+        "Hard exit if strategy drawdown exceeds threshold"
+      ],
+      "indicators": [],
+      "risk_management": {
+        "max_drawdown_exit": "-10% to -50% depending on asset"
+      }
+    },
+    {
+      "id": 103,
+      "name": "Perturbation Testing Validation",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1qhpies/built_a_systematic_trading_system_looking_for/",
+      "source_subreddit": "r/algotrading",
+      "category": "Validation",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {},
+      "validation": {
+        "method": "Perturbation testing",
+        "purpose": "Slightly randomize parameters to ensure strategy isn't fragile"
+      }
+    },
+    {
+      "id": 104,
+      "name": "Must Beat Buy & Hold Filter",
+      "source_url": "https://www.reddit.com/r/algotrading/comments/1qhpies/built_a_systematic_trading_system_looking_for/",
+      "source_subreddit": "r/algotrading",
+      "category": "Validation",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Variable",
+      "entry_rules": [],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {},
+      "validation": {
+        "rule": "Strategy rejected if it doesn't outperform buy & hold"
+      }
+    },
+    {
+      "id": 105,
+      "name": "Freqtrade Crypto Strategy",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/144vmvz/free_backtesting_service_for_your_trading/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Multi-Indicator",
+      "asset_class": "Crypto",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Custom entry logic based on technical indicators"
+      ],
+      "exit_rules": [
+        "Custom exit logic"
+      ],
+      "indicators": ["User-defined"],
+      "risk_management": {},
+      "platform": "Freqtrade open-source framework"
+    },
+    {
+      "id": 106,
+      "name": "Python Backtesting Bot",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/1ilevbj/i_made_an_open_source_tool_to_help_you_backtest/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Backtesting Tool",
+      "asset_class": "Crypto",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Modular strategy implementation"
+      ],
+      "exit_rules": [
+        "Modular exit implementation"
+      ],
+      "indicators": ["User-defined"],
+      "risk_management": {},
+      "metrics": ["Buy and Hold Return %", "Return %", "Win Rate", "Profit Factor"]
+    },
+    {
+      "id": 107,
+      "name": "TradingView Replay Backtest",
+      "source_url": "https://www.reddit.com/r/CryptoCurrency/comments/11ajpdc/a_neat_trick_to_backtest_your_trading_strategy/",
+      "source_subreddit": "r/cryptocurrency",
+      "category": "Backtesting Method",
+      "asset_class": "Multi-Asset",
+      "timeframe": "Any",
+      "entry_rules": [
+        "Use rectangle tool with 100% opacity to hide future candles",
+        "Move rectangle to reveal candle by candle"
+      ],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {},
+      "notes": "Free alternative to TradingView premium replay"
+    },
+    {
+      "id": 108,
+      "name": "Manual Backtesting Method",
+      "source_url": "https://www.reddit.com/r/Forex/comments/14ia25z/how_do_i_properly_backtest_my_trading_strategy/",
+      "source_subreddit": "r/forex",
+      "category": "Backtesting Method",
+      "asset_class": "Forex",
+      "timeframe": "Variable",
+      "entry_rules": [
+        "Back chart to random date",
+        "Playback candles one at a time",
+        "Enter when setup appears",
+        "Record results"
+      ],
+      "exit_rules": [],
+      "indicators": [],
+      "risk_management": {},
+      "notes": "Manual backtesting approach for strategy validation"
+    }
+  ]
+}

@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antigravity Top Picks — Live Tracker</title>
+<meta name="description" content="Antigravity AI's top 3 crypto picks with live P/L tracking, historical performance, and real-time Binance price feeds.">
+<style>
+:root {
+  --bg: #0a0a12;
+  --card: #1a1a2e;
+  --card-hover: #1f1f3a;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --green: #4caf50;
+  --red: #f44336;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --yellow: #f59e0b;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --gold: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 16px;
+}
+a { color: var(--purple); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .subtitle { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--purple);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* Portfolio Summary */
+.portfolio-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.ps-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+.ps-card:hover { border-color: var(--purple); }
+.ps-card .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.ps-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.ps-card .value.pos { color: var(--green); }
+.ps-card .value.neg { color: var(--red); }
+.ps-card .value.neutral { color: var(--text-dim); }
+.ps-card .sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+/* Pick Cards */
+.picks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.pick-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.3s;
+}
+.pick-card:hover { transform: translateY(-2px); border-color: var(--purple); }
+.pick-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.pick-card.rank-1::before { background: linear-gradient(90deg, var(--gold), var(--orange)); }
+.pick-card.rank-2::before { background: linear-gradient(90deg, #c0c0c0, var(--text-dim)); }
+.pick-card.rank-3::before { background: linear-gradient(90deg, #cd7f32, var(--orange)); }
+
+.pick-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.pick-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 16px;
+}
+.rank-1 .pick-rank { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+.rank-2 .pick-rank { background: linear-gradient(135deg, #c0c0c0, #9ca3af); color: #000; }
+.rank-3 .pick-rank { background: linear-gradient(135deg, #cd7f32, #b87333); color: #fff; }
+.pick-symbol {
+  font-size: 22px;
+  font-weight: 700;
+  margin-left: 10px;
+}
+.pick-signal-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.signal-cascade { background: rgba(251,191,36,0.2); color: var(--gold); }
+.signal-rsi { background: rgba(96,165,250,0.2); color: var(--blue); }
+.signal-ema { background: rgba(34,211,238,0.2); color: var(--cyan); }
+
+.pick-price-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.price-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+.price-box .pb-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; }
+.price-box .pb-value { font-size: 16px; font-weight: 700; margin-top: 2px; font-family: 'Consolas', monospace; }
+.price-box .pb-pct { font-size: 10px; margin-top: 1px; }
+.price-box.entry-box .pb-value { color: var(--text); }
+.price-box.tp-box { border-color: rgba(76,175,80,0.3); }
+.price-box.tp-box .pb-value { color: var(--green); }
+.price-box.sl-box { border-color: rgba(244,67,54,0.3); }
+.price-box.sl-box .pb-value { color: var(--red); }
+
+/* Live Price + PnL */
+.live-section {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.live-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+.live-label { font-size: 11px; color: var(--text-dim); }
+.live-value { font-size: 15px; font-weight: 700; font-family: 'Consolas', monospace; }
+.live-value.pnl-pos { color: var(--green); }
+.live-value.pnl-neg { color: var(--red); }
+.live-value.pnl-flat { color: var(--text-dim); }
+
+/* Progress gauge */
+.progress-gauge {
+  position: relative;
+  height: 10px;
+  background: linear-gradient(90deg, var(--red) 0%, var(--yellow) 40%, var(--green) 100%);
+  border-radius: 5px;
+  margin: 8px 0;
+  overflow: visible;
+}
+.progress-marker {
+  position: absolute;
+  top: -3px;
+  width: 4px;
+  height: 16px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255,255,255,0.8);
+  transition: left 0.5s ease;
+}
+.progress-entry {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 14px;
+  background: var(--cyan);
+  opacity: 0.7;
+}
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Rationale */
+.pick-rationale {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  border-left: 3px solid var(--purple);
+  padding-left: 10px;
+  margin: 10px 0;
+}
+.pick-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+.pick-meta span { display: inline-flex; align-items: center; gap: 3px; }
+
+/* Outcome badge */
+.outcome-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.outcome-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+.outcome-win { background: rgba(76,175,80,0.2); color: var(--green); }
+.outcome-loss { background: rgba(244,67,54,0.2); color: var(--red); }
+
+/* History Section */
+.history-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.history-section h2 {
+  font-size: 18px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.history-table th {
+  background: var(--bg);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 8px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.history-table td {
+  padding: 6px;
+  border-bottom: 1px solid #1a1a30;
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+}
+.history-table tr:hover { background: var(--card-hover); }
+
+/* Equity curve */
+.equity-chart {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  min-height: 160px;
+}
+.equity-svg { width: 100%; height: 150px; }
+
+/* Status bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.status-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 2s ease-in-out infinite;
+}
+.status-dot.live { background: var(--green); }
+.status-dot.stale { background: var(--yellow); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .picks-grid { grid-template-columns: 1fr; }
+  .portfolio-summary { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<a href="./" class="back-link">← Back to Audit Dashboard</a>
+
+<div class="header">
+  <h1>🚀 Antigravity Top Picks</h1>
+  <div class="subtitle">AI-selected best 3 trades from 557 Binance pairs — Live P/L tracking with Binance price feed</div>
+</div>
+
+<div class="status-bar" id="status-bar">
+  <div><span class="status-dot live" id="status-dot"></span> <span id="status-text">Connecting to Binance...</span></div>
+  <div>Entry: <strong id="entry-time">—</strong> | Expires: <strong id="expiry-time">—</strong> | <span id="time-remaining">—</span></div>
+</div>
+
+<div class="portfolio-summary" id="portfolio-summary">
+  <div class="ps-card"><div class="label">Total Unrealized P/L</div><div class="value neutral" id="ps-total-pnl">—</div><div class="sub" id="ps-total-pnl-dollar">loading...</div></div>
+  <div class="ps-card"><div class="label">Avg Confidence</div><div class="value" id="ps-avg-conf" style="color:var(--purple)">—</div><div class="sub">across 3 picks</div></div>
+  <div class="ps-card"><div class="label">Avg R:R</div><div class="value" id="ps-avg-rr" style="color:var(--cyan)">—</div><div class="sub">risk/reward ratio</div></div>
+  <div class="ps-card"><div class="label">Wins / Losses</div><div class="value neutral" id="ps-wl">0 / 0</div><div class="sub" id="ps-pending">3 pending</div></div>
+  <div class="ps-card"><div class="label">Best Pick</div><div class="value" id="ps-best" style="color:var(--green)">—</div><div class="sub" id="ps-best-sym">—</div></div>
+  <div class="ps-card"><div class="label">Worst Pick</div><div class="value" id="ps-worst" style="color:var(--red)">—</div><div class="sub" id="ps-worst-sym">—</div></div>
+</div>
+
+<div class="picks-grid" id="picks-grid">
+  <div class="pick-card" style="text-align:center;padding:40px"><span style="color:var(--text-dim)">Loading picks data...</span></div>
+</div>
+
+<div class="history-section">
+  <h2>📈 P/L History (snapshots every 5 min)</h2>
+  <div class="equity-chart" id="equity-chart">
+    <svg class="equity-svg" id="equity-svg"></svg>
+  </div>
+  <div style="max-height:400px;overflow-y:auto" id="history-table-wrap">
+    <table class="history-table" id="history-table">
+      <thead>
+        <tr>
+          <th>Time (EST)</th>
+          <th>TAO Price</th><th>TAO P/L</th>
+          <th>ADA Price</th><th>ADA P/L</th>
+          <th>RENDER Price</th><th>RENDER P/L</th>
+          <th>Portfolio P/L</th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button id="btn-export" style="background:var(--card);color:var(--cyan);border:1px solid var(--cyan);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer">Export CSV</button>
+    <button id="btn-clear-history" style="background:var(--card);color:var(--red);border:1px solid var(--red);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer">Clear History</button>
+    <span style="font-size:11px;color:var(--text-dim);align-self:center;margin-left:auto" id="snapshot-count">0 snapshots</span>
+  </div>
+</div>
+
+<div class="history-section">
+  <h2>📋 Selection Rationale — Why These 3?</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;line-height:1.6">
+    <div>
+      <h3 style="color:var(--green);font-size:14px;margin-bottom:6px">✅ Why Selected</h3>
+      <ul style="padding-left:18px;color:var(--text-dim)">
+        <li><strong>Signal Diversity:</strong> Three different signal types (Cascade, RSI Bounce, EMA Stack) — not putting all eggs in one basket</li>
+        <li><strong>Not Chasing Pumps:</strong> Avoided TRUMP (+40%) and DEGO (+19%) — these already made their move</li>
+        <li><strong>AI Narrative:</strong> TAO + RENDER ride the strongest crypto narrative (AI/ML)</li>
+        <li><strong>Mean Reversion:</strong> ADA provides a conservative oversold-bounce play on a top-10 coin</li>
+        <li><strong>Liquidity:</strong> All 3 have >$28M 24h volume — can actually enter/exit</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color:var(--red);font-size:14px;margin-bottom:6px">❌ Why NOT Others</h3>
+      <ul style="padding-left:18px;color:var(--text-dim)">
+        <li><strong>TRUMPUSDT (+40%):</strong> Classic buy-the-top. SL is -6.9% wide. Smart money already took profits</li>
+        <li><strong>DEGOUSDT (+19%):</strong> SL is -10.1%. Disaster if it dumps. Too extended</li>
+        <li><strong>PHAUSDT (+16%):</strong> Lower liquidity ($7M), already ran significantly</li>
+        <li><strong>MUBARAKUSDT:</strong> Meme coin, unpredictable, low confidence</li>
+        <li><strong>Low-confidence picks (&lt;70%):</strong> Not worth the risk for a concentrated 3-pick portfolio</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Config ───
+const PICKS_DATA_URL = 'antigravity_picks_data.json';
+const BINANCE_HOSTS = [
+  'https://api.binance.com',
+  'https://api1.binance.com',
+  'https://api2.binance.com',
+  'https://data-api.binance.vision',
+];
+async function binanceFetch(path) {
+  for (const host of BINANCE_HOSTS) {
+    try {
+      const r = await fetch(`${host}${path}`);
+      if (r.ok) return r;
+    } catch (_) {}
+  }
+  throw new Error('All Binance mirrors failed');
+}
+const SNAPSHOT_INTERVAL = 5 * 60 * 1000; // 5 min
+const PRICE_REFRESH = 10 * 1000; // 10 sec
+const LS_KEY = 'ag_picks_history_v1';
+
+let picksData = null;
+let livePrices = {};
+let snapshotTimer = null;
+let priceTimer = null;
+
+// ─── Utilities ───
+function fmt(v, decimals=4) {
+  if (v === null || v === undefined) return '—';
+  if (typeof v === 'number') {
+    if (Math.abs(v) >= 100) return v.toFixed(2);
+    if (Math.abs(v) >= 1) return v.toFixed(4);
+    return v.toFixed(decimals);
+  }
+  return String(v);
+}
+
+function pnlClass(v) {
+  if (v > 0.01) return 'pnl-pos';
+  if (v < -0.01) return 'pnl-neg';
+  return 'pnl-flat';
+}
+
+function toEST(d) {
+  return new Date(d.getTime() - 4*60*60*1000).toISOString().replace('T',' ').substring(0,19) + ' EST';
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveHistory(h) {
+  // Keep max 1000 snapshots
+  if (h.length > 1000) h = h.slice(-1000);
+  localStorage.setItem(LS_KEY, JSON.stringify(h));
+}
+
+// ─── Load Picks Data ───
+async function loadPicks() {
+  try {
+    const resp = await fetch(PICKS_DATA_URL + '?t=' + Date.now());
+    picksData = await resp.json();
+    renderPicks();
+    renderSummaryTimes();
+    startPriceLoop();
+    startSnapshotLoop();
+  } catch(e) {
+    document.getElementById('picks-grid').innerHTML =
+      `<div class="pick-card" style="text-align:center;padding:40px"><span style="color:var(--red)">Error loading picks: ${e.message}</span></div>`;
+  }
+}
+
+// ─── Render Pick Cards ───
+function renderPicks() {
+  const grid = document.getElementById('picks-grid');
+  if (!picksData || !picksData.top_picks) return;
+
+  const signalClasses = {
+    'MOMENTUM_CASCADE': 'signal-cascade',
+    'RSI_BOUNCE': 'signal-rsi',
+    'EMA_STACK': 'signal-ema'
+  };
+
+  grid.innerHTML = picksData.top_picks.map(p => {
+    const sigClass = signalClasses[p.signal_type] || 'signal-cascade';
+    return `
+    <div class="pick-card rank-${p.rank}" id="pick-${p.symbol}">
+      <div class="pick-header">
+        <div style="display:flex;align-items:center">
+          <span class="pick-rank">${p.rank}</span>
+          <span class="pick-symbol">${p.base}</span>
+          <span class="pick-signal-badge ${sigClass}" style="margin-left:8px">${p.signal_type.replace('_',' ')}</span>
+        </div>
+        <span class="outcome-badge outcome-pending" id="outcome-${p.symbol}">⏳ PENDING</span>
+      </div>
+
+      <div class="pick-price-row">
+        <div class="price-box entry-box">
+          <div class="pb-label">Entry</div>
+          <div class="pb-value">$${fmt(p.entry_price)}</div>
+          <div class="pb-pct" style="color:var(--text-dim)">24h: ${p.change_24h > 0 ? '+' : ''}${p.change_24h}%</div>
+        </div>
+        <div class="price-box tp-box">
+          <div class="pb-label">Take Profit</div>
+          <div class="pb-value">$${fmt(p.take_profit)}</div>
+          <div class="pb-pct" style="color:var(--green)">+${p.tp_pct}%</div>
+        </div>
+        <div class="price-box sl-box">
+          <div class="pb-label">Stop Loss</div>
+          <div class="pb-value">$${fmt(p.stop_loss)}</div>
+          <div class="pb-pct" style="color:var(--red)">${p.sl_pct}%</div>
+        </div>
+      </div>
+
+      <div class="live-section" id="live-${p.symbol}">
+        <div class="live-row">
+          <span class="live-label">📡 Live Price</span>
+          <span class="live-value pnl-flat" id="price-${p.symbol}">loading...</span>
+        </div>
+        <div class="live-row">
+          <span class="live-label">Unrealized P/L</span>
+          <span class="live-value pnl-flat" id="pnl-${p.symbol}">—</span>
+        </div>
+        <div class="progress-gauge">
+          <div class="progress-entry" id="gauge-entry-${p.symbol}" style="left:50%"></div>
+          <div class="progress-marker" id="gauge-marker-${p.symbol}" style="left:50%"></div>
+        </div>
+        <div class="progress-labels">
+          <span>SL: $${fmt(p.stop_loss)}</span>
+          <span>TP: $${fmt(p.take_profit)}</span>
+        </div>
+      </div>
+
+      <div class="pick-rationale">${p.rationale}</div>
+
+      <div class="pick-meta">
+        <span>🎯 Conf: <strong>${p.confidence}%</strong></span>
+        <span>⚖️ RR: <strong>${p.risk_reward}x</strong></span>
+        <span>💰 Vol: <strong>$${(p.quote_volume_24h/1e6).toFixed(1)}M</strong></span>
+        <span>🔍 Via: <strong>${p.discovered_via}</strong></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Render Times ───
+function renderSummaryTimes() {
+  if (!picksData) return;
+  document.getElementById('entry-time').textContent = picksData.generated_at_est;
+  const entryDate = new Date(picksData.generated_at_utc);
+  const expiryDate = new Date(entryDate.getTime() + 24*60*60*1000);
+  document.getElementById('expiry-time').textContent = toEST(expiryDate);
+
+  // Summary cards
+  const ps = picksData.portfolio_summary;
+  document.getElementById('ps-avg-conf').textContent = ps.avg_confidence.toFixed(1) + '%';
+  document.getElementById('ps-avg-rr').textContent = ps.avg_rr.toFixed(2) + 'x';
+}
+
+// ─── Fetch Live Prices ───
+async function fetchPrices() {
+  if (!picksData) return;
+  const symbols = picksData.top_picks.map(p => p.symbol);
+
+  try {
+    const promises = symbols.map(sym =>
+      binanceFetch(`/api/v3/ticker/price?symbol=${sym}`).then(r => r.json())
+    );
+    const results = await Promise.all(promises);
+    results.forEach(r => {
+      if (r && r.symbol && r.price) {
+        livePrices[r.symbol] = parseFloat(r.price);
+      }
+    });
+    updateLiveDisplay();
+    document.getElementById('status-dot').className = 'status-dot live';
+    document.getElementById('status-text').textContent = `Live — updated ${new Date().toLocaleTimeString()}`;
+  } catch(e) {
+    document.getElementById('status-dot').className = 'status-dot stale';
+    document.getElementById('status-text').textContent = `Error: ${e.message}`;
+  }
+}
+
+// ─── Update Live Display ───
+function updateLiveDisplay() {
+  if (!picksData) return;
+
+  let totalPnl = 0;
+  let bestPnl = -Infinity, worstPnl = Infinity;
+  let bestSym = '', worstSym = '';
+  let wins = 0, losses = 0, pending = 0;
+
+  picksData.top_picks.forEach(p => {
+    const price = livePrices[p.symbol];
+    if (!price) return;
+
+    const pnlPct = ((price - p.entry_price) / p.entry_price) * 100;
+    totalPnl += pnlPct;
+
+    // Update live price
+    const priceEl = document.getElementById(`price-${p.symbol}`);
+    if (priceEl) {
+      priceEl.textContent = `$${fmt(price)}`;
+      priceEl.className = `live-value ${pnlClass(pnlPct)}`;
+    }
+
+    // Update PnL
+    const pnlEl = document.getElementById(`pnl-${p.symbol}`);
+    if (pnlEl) {
+      pnlEl.textContent = `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`;
+      pnlEl.className = `live-value ${pnlClass(pnlPct)}`;
+    }
+
+    // Update gauge
+    const range = p.take_profit - p.stop_loss;
+    const pos = Math.max(0, Math.min(100, ((price - p.stop_loss) / range) * 100));
+    const entryPos = ((p.entry_price - p.stop_loss) / range) * 100;
+    const marker = document.getElementById(`gauge-marker-${p.symbol}`);
+    const entryMark = document.getElementById(`gauge-entry-${p.symbol}`);
+    if (marker) marker.style.left = pos + '%';
+    if (entryMark) entryMark.style.left = entryPos + '%';
+
+    // Update outcome
+    const outcomeEl = document.getElementById(`outcome-${p.symbol}`);
+    if (outcomeEl) {
+      if (price >= p.take_profit) {
+        outcomeEl.textContent = '✅ WIN';
+        outcomeEl.className = 'outcome-badge outcome-win';
+        wins++;
+      } else if (price <= p.stop_loss) {
+        outcomeEl.textContent = '❌ LOSS';
+        outcomeEl.className = 'outcome-badge outcome-loss';
+        losses++;
+      } else {
+        outcomeEl.textContent = `⏳ ${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%`;
+        outcomeEl.className = `outcome-badge outcome-pending`;
+        pending++;
+      }
+    }
+
+    if (pnlPct > bestPnl) { bestPnl = pnlPct; bestSym = p.base; }
+    if (pnlPct < worstPnl) { worstPnl = pnlPct; worstSym = p.base; }
+  });
+
+  // Update portfolio summary
+  const avgPnl = totalPnl / 3;
+  const totalEl = document.getElementById('ps-total-pnl');
+  totalEl.textContent = `${avgPnl >= 0 ? '+' : ''}${avgPnl.toFixed(2)}%`;
+  totalEl.className = `value ${avgPnl > 0.01 ? 'pos' : avgPnl < -0.01 ? 'neg' : 'neutral'}`;
+  document.getElementById('ps-total-pnl-dollar').textContent = `avg across 3 picks`;
+
+  document.getElementById('ps-wl').textContent = `${wins} / ${losses}`;
+  document.getElementById('ps-pending').textContent = `${pending} pending`;
+
+  if (bestSym) {
+    document.getElementById('ps-best').textContent = `+${bestPnl.toFixed(2)}%`;
+    document.getElementById('ps-best-sym').textContent = bestSym;
+  }
+  if (worstSym) {
+    document.getElementById('ps-worst').textContent = `${worstPnl.toFixed(2)}%`;
+    document.getElementById('ps-worst-sym').textContent = worstSym;
+  }
+
+  // Update time remaining
+  if (picksData) {
+    const entryDate = new Date(picksData.generated_at_utc);
+    const expiryDate = new Date(entryDate.getTime() + 24*60*60*1000);
+    const now = new Date();
+    const remaining = expiryDate - now;
+    if (remaining > 0) {
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      document.getElementById('time-remaining').textContent = `${h}h ${m}m remaining`;
+    } else {
+      document.getElementById('time-remaining').textContent = 'EXPIRED';
+    }
+  }
+}
+
+// ─── Snapshot History ───
+function takeSnapshot() {
+  if (!picksData || Object.keys(livePrices).length === 0) return;
+
+  const now = new Date();
+  const snapshot = {
+    time: now.toISOString(),
+    time_est: toEST(now),
+    prices: {},
+    pnls: {},
+    portfolio_pnl: 0
+  };
+
+  let total = 0;
+  picksData.top_picks.forEach(p => {
+    const price = livePrices[p.symbol];
+    if (!price) return;
+    const pnl = ((price - p.entry_price) / p.entry_price) * 100;
+    snapshot.prices[p.base] = price;
+    snapshot.pnls[p.base] = Math.round(pnl * 100) / 100;
+    total += pnl;
+  });
+  snapshot.portfolio_pnl = Math.round((total / 3) * 100) / 100;
+
+  const history = getHistory();
+  history.push(snapshot);
+  saveHistory(history);
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const tbody = document.getElementById('history-tbody');
+  document.getElementById('snapshot-count').textContent = `${history.length} snapshots`;
+
+  // Table (newest first)
+  const recent = history.slice(-50).reverse();
+  tbody.innerHTML = recent.map(s => {
+    const pClass = s.portfolio_pnl > 0 ? 'pnl-pos' : s.portfolio_pnl < 0 ? 'pnl-neg' : 'pnl-flat';
+    return `<tr>
+      <td>${s.time_est}</td>
+      <td>$${fmt(s.prices.TAO || 0)}</td>
+      <td class="${pnlClass(s.pnls.TAO || 0)}">${(s.pnls.TAO||0)>=0?'+':''}${(s.pnls.TAO||0).toFixed(2)}%</td>
+      <td>$${fmt(s.prices.ADA || 0, 4)}</td>
+      <td class="${pnlClass(s.pnls.ADA || 0)}">${(s.pnls.ADA||0)>=0?'+':''}${(s.pnls.ADA||0).toFixed(2)}%</td>
+      <td>$${fmt(s.prices.RENDER || 0)}</td>
+      <td class="${pnlClass(s.pnls.RENDER || 0)}">${(s.pnls.RENDER||0)>=0?'+':''}${(s.pnls.RENDER||0).toFixed(2)}%</td>
+      <td class="${pClass}" style="font-weight:700">${s.portfolio_pnl>=0?'+':''}${s.portfolio_pnl.toFixed(2)}%</td>
+    </tr>`;
+  }).join('');
+
+  // Equity curve SVG
+  renderEquityCurve(history);
+}
+
+function renderEquityCurve(history) {
+  if (history.length < 2) {
+    document.getElementById('equity-chart').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-dim);font-size:13px">Equity curve will appear after 2+ snapshots</div>';
+    return;
+  }
+
+  const svg = document.getElementById('equity-svg');
+  if (!svg) {
+    document.getElementById('equity-chart').innerHTML = '<svg class="equity-svg" id="equity-svg"></svg>';
+  }
+
+  const svgEl = document.getElementById('equity-svg');
+  const W = svgEl.clientWidth || 800;
+  const H = 150;
+  const pnls = history.map(s => s.portfolio_pnl);
+  const minP = Math.min(...pnls, 0);
+  const maxP = Math.max(...pnls, 0.1);
+  const range = maxP - minP || 1;
+  const pad = 10;
+
+  const points = pnls.map((p, i) => {
+    const x = pad + (i / (pnls.length - 1)) * (W - 2*pad);
+    const y = H - pad - ((p - minP) / range) * (H - 2*pad);
+    return `${x},${y}`;
+  });
+
+  // Zero line
+  const zeroY = H - pad - ((0 - minP) / range) * (H - 2*pad);
+
+  // Gradient area
+  const areaPoints = points.join(' ') + ` ${pad + ((pnls.length-1)/(pnls.length-1))*(W-2*pad)},${zeroY} ${pad},${zeroY}`;
+
+  const lastPnl = pnls[pnls.length - 1];
+  const color = lastPnl >= 0 ? 'rgba(76,175,80' : 'rgba(244,67,54';
+
+  svgEl.innerHTML = `
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color},0.3)" />
+        <stop offset="100%" stop-color="${color},0.02)" />
+      </linearGradient>
+    </defs>
+    <line x1="${pad}" y1="${zeroY}" x2="${W-pad}" y2="${zeroY}" stroke="#333" stroke-width="1" stroke-dasharray="4,4" />
+    <text x="${W-pad-2}" y="${zeroY-4}" fill="#555" font-size="9" text-anchor="end">0%</text>
+    <polygon points="${areaPoints}" fill="url(#areaGrad)" />
+    <polyline points="${points.join(' ')}" fill="none" stroke="${color},1)" stroke-width="2" />
+    <circle cx="${points[points.length-1].split(',')[0]}" cy="${points[points.length-1].split(',')[1]}" r="4" fill="${color},1)" />
+    <text x="${points[points.length-1].split(',')[0]}" y="${parseFloat(points[points.length-1].split(',')[1])-8}" fill="${color},1)" font-size="11" font-weight="700" text-anchor="middle">${lastPnl>=0?'+':''}${lastPnl.toFixed(2)}%</text>
+  `;
+}
+
+// ─── Export CSV ───
+document.getElementById('btn-export').addEventListener('click', () => {
+  const history = getHistory();
+  if (!history.length) return alert('No history to export');
+  const headers = 'Time EST,TAO Price,TAO PnL%,ADA Price,ADA PnL%,RENDER Price,RENDER PnL%,Portfolio PnL%';
+  const rows = history.map(s =>
+    `${s.time_est},${s.prices.TAO||''},${s.pnls.TAO||''},${s.prices.ADA||''},${s.pnls.ADA||''},${s.prices.RENDER||''},${s.pnls.RENDER||''},${s.portfolio_pnl}`
+  );
+  const csv = [headers, ...rows].join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `antigravity_picks_history_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+});
+
+document.getElementById('btn-clear-history').addEventListener('click', () => {
+  if (confirm('Clear all P/L history snapshots?')) {
+    localStorage.removeItem(LS_KEY);
+    renderHistory();
+  }
+});
+
+// ─── Start Loops ───
+function startPriceLoop() {
+  fetchPrices();
+  priceTimer = setInterval(fetchPrices, PRICE_REFRESH);
+}
+
+function startSnapshotLoop() {
+  // Take first snapshot after 30 sec
+  setTimeout(() => {
+    takeSnapshot();
+    snapshotTimer = setInterval(takeSnapshot, SNAPSHOT_INTERVAL);
+  }, 30000);
+}
+
+// ─── Init ───
+loadPicks();
+renderHistory();
+</script>
+<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,0.95);border-top:1px solid #2a2a4a;padding:6px 16px;font-size:11px;color:#888;text-align:center;z-index:9999;backdrop-filter:blur(4px);">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
+</body>
+</html>

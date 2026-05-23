@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tools/audit/schema_review_v1_2.json",
+  "title": "Quant performance auditor output (v1.2)",
+  "description": "Schema for output of quant-performance-auditor + variants (-fast, -deep). Versioned successor to tools/swarm/schema_review.json — adds schema_version, warnings array, structured log array, override metadata.",
+  "type": "object",
+  "required": ["schema_version", "verdict", "summary", "claims", "warnings"],
+  "properties": {
+    "schema_version": {"const": "v1.2"},
+    "agent": {"enum": ["quant-performance-auditor", "quant-performance-auditor-fast", "quant-performance-auditor-deep"]},
+    "model_fingerprint": {"type": "string"},
+    "run_at_utc": {"type": "string", "format": "date-time"},
+    "duration_s": {"type": "number", "minimum": 0},
+    "verdict": {
+      "enum": ["APPROVE", "REJECT", "WARN", "INSUFFICIENT_DATA"],
+      "description": "WARN is the soft tier — borderline cases the reviewer must adjudicate."
+    },
+    "summary": {"type": "string", "minLength": 1, "maxLength": 1500},
+    "claims": {
+      "type": "array",
+      "description": "Every quantitative claim being audited gets one entry here. Verdict per claim, not just overall.",
+      "items": {
+        "type": "object",
+        "required": ["claim", "verdict", "evidence", "rule_id"],
+        "properties": {
+          "claim": {"type": "string", "minLength": 1},
+          "verdict": {"enum": ["pass", "fail", "warn", "insufficient_data"]},
+          "evidence": {
+            "type": "object",
+            "required": ["file", "anchor"],
+            "properties": {
+              "file": {"type": "string"},
+              "anchor": {"type": "string", "description": "line:col, json-path, or field=value"},
+              "value_observed": {},
+              "value_required": {},
+              "unit": {"enum": ["decimal", "percent", "absolute", "count"]}
+            }
+          },
+          "rule_id": {"type": "string", "pattern": "^(charter|risk|stops|dd|costs|vol|mc|hard|range|ci):[a-z0-9_-]+$"},
+          "severity": {"enum": ["blocking", "major", "minor", "info"]},
+          "requested_fix": {"type": "string"},
+          "override": {
+            "type": "object",
+            "required": ["ticket_id", "expires_at"],
+            "properties": {
+              "ticket_id": {"type": "string"},
+              "expires_at": {"type": "string", "format": "date"},
+              "approver": {"type": "string"},
+              "reason": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "description": "Soft tier — borderline cases that the reviewer must decide. Examples: WR 0.495 against 0.50 floor, or n=98 against n>=100 floor.",
+      "items": {
+        "type": "object",
+        "required": ["rule_id", "message"],
+        "properties": {
+          "rule_id": {"type": "string"},
+          "message": {"type": "string"},
+          "delta_to_threshold": {"type": "number", "description": "How far the value missed by, normalised to decimal."}
+        }
+      }
+    },
+    "log": {
+      "type": "array",
+      "description": "Structured audit trail. Every rule evaluation appears here, including passes, so dashboards can compute pass rates over time.",
+      "items": {
+        "type": "object",
+        "required": ["ts", "rule_id", "outcome"],
+        "properties": {
+          "ts": {"type": "string", "format": "date-time"},
+          "rule_id": {"type": "string"},
+          "outcome": {"enum": ["pass", "fail", "warn", "skip", "override"]},
+          "message": {"type": "string"},
+          "source_path": {"type": "string", "description": "file:line or json-path that supplied the value"}
+        }
+      }
+    },
+    "monte_carlo": {
+      "type": "object",
+      "description": "Present only on `-deep` runs and on `-fast` runs that ran the 500-sim path.",
+      "properties": {
+        "bootstraps": {"type": "integer", "minimum": 1},
+        "seed": {"type": "integer"},
+        "ran_in_s": {"type": "number"},
+        "sharpe": {"$ref": "#/definitions/distribution"},
+        "max_drawdown": {"$ref": "#/definitions/distribution"},
+        "p_profitable": {"type": "number", "minimum": 0, "maximum": 1},
+        "worst_losing_streak": {"$ref": "#/definitions/distribution"}
+      }
+    },
+    "input_validation": {
+      "type": "object",
+      "description": "JSON-Schema validation of dashboard_data.json and friends — surfaced so reviewers can tell 'no data' apart from 'data ok, claims wrong'.",
+      "properties": {
+        "dashboard_data_ok": {"type": "boolean"},
+        "missing_keys": {"type": "array", "items": {"type": "string"}},
+        "type_mismatches": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "fabrication_check": {
+      "type": "object",
+      "description": "Output sanity gate. Regex-extracts file:line claims from the report; verifies files exist. Recommended after CLAUDES_DIAGNOSIS.MD update 3 caught 7/7 hallucinated paths in RUFLO bug_hunter.",
+      "properties": {
+        "claims_with_paths": {"type": "integer"},
+        "paths_verified_exist": {"type": "integer"},
+        "verdict": {"enum": ["clean", "low_signal", "hallucination_suspected"]}
+      }
+    }
+  },
+  "definitions": {
+    "distribution": {
+      "type": "object",
+      "properties": {
+        "p05": {"type": "number"},
+        "p25": {"type": "number"},
+        "p50": {"type": "number"},
+        "p75": {"type": "number"},
+        "p95": {"type": "number"},
+        "mean": {"type": "number"},
+        "std": {"type": "number"}
+      }
+    }
+  }
+}

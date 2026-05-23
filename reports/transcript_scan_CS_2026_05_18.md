@@ -1,0 +1,3504 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\c--findtorontoevents-antigravity-ca\9482c30c-e215-40cf-a28d-4d6e97650430.jsonl`
+- turns: 2882 · chunks: 285 · provider: deepseek
+- deduped action items: 2839
+
+## Action items (deduped across chunks)
+
+- [DONE] Review open PRs using swarm_v2 and make modifications
+- [DONE] Drop a .MD review report
+- [DONE] Refer to the .MD in a comment response on each PR
+- [DONE] Fix `.gitattributes` wildcard
+- [DONE] Add CRYPTO quarantine module-level cache in quality_gates.py
+- [DONE] Update CRYPTO quarantine hot-path to use the cache
+- [DONE] Syntax-check modified files
+- [DONE] Post comments on closed PRs (1083, 1085, 1086) referencing review MD
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh sources (Step 1)
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to `192.168.2.32:8788` (Step 2)
+- [OPEN] Verify send landed via `protocol_inspect tail` (Step 2)
+- [OPEN] Drain inbox (DMs + broadcasts) via `freebuff_adapter.py` (Step 3)
+- [OPEN] Triage peer messages and write `reports/peer_inbox_<UTC>.md` (Step 4)
+- [OPEN] Optionally revise + re-commit if peer insight changes decisions (Step 5)
+- [OPEN] Optionally send SESSION_CLOSED broadcast (Step 6)
+- [OPEN] Output compact 6-line summary to operator (Step 6)
+- [DONE] Log failure to CHATBIBLE_FAILURE.MD (gateway unreachable)
+- [DONE] Write session summary to fallback JSONL (logs/cross_pc_protocol/events.jsonl)
+- [DONE] Commit and push fixes + failure log
+- [DONE] Apply CRYPTO quarantine hot-path fix (quality_gates.py caching)
+- [DONE] Narrow .gitattributes wildcard (replace broad merge=ours with two specific paths)
+- [DONE] Drop review report (reports/swarm_pr_review_2026-05-16.md) and post PR comments on #1083, #1085, #1086
+- [OPEN] Restart cross-PC gateway (python tools/protocol_gateway.py ...)
+- [OPEN] Proceed with remaining ranked action items from swarm review (P1 fixes)
+- [OPEN] Fix 144 workflows using safe_push.sh without TOKEN_FOR_PUSH
+- [OPEN] Bulk TOKEN_FOR_PUSH across 144 safe_push.sh workflows (23 remaining)
+- [OPEN] Hoist per_class_trainer import to module level
+- [OPEN] Document portfolio_gates.evaluate_pick live-enforcement status
+- [OPEN] Rotate MySQL password (requires operator action, will flag)
+- [OPEN] Implement required fix for PR #1089 and merge it
+- [DONE] Add workflow stub and logging.warning fix (PR #1089 merged)
+- [DONE] Merge PR #1089
+- [DONE] Get back to main and do final push
+- [DONE] All PRs closed/merged
+- [OPEN] Rotate `stocks123` MySQL password (operator action required)
+- [DONE] CRYPTO quarantine hot-path cache
+- [DONE] `.gitattributes` wildcard narrowed
+- [DONE] TOKEN_FOR_PUSH for 23 workflows
+- [DONE] `per_class_trainer` import hoisted
+- [DONE] `portfolio_gates.evaluate_pick` documented
+- [DONE] Bulk TOKEN_FOR_PUSH (121 PAT-checkout workflows) — not needed
+- [OPEN] Ensure progress every 30 minutes on remaining action items (user requested /loop)
+- [DONE] Parse input into interval `30m` and prompt "ensure progress on remaining action items if any, if unclear use an agent swarm to assist."
+- [DONE] Check cloud-offer condition (interval < 60 min, no daily phrasing — skip)
+- [DONE] Convert interval to cron expression `*/30 * * * *`
+- [DONE] Call CronCreate with cron expression, prompt, recurring: true
+- [DONE] Confirm schedule with job ID `e3fad9ed`, 7-day expiry, cancel instructions, and session-only disclaimer
+- [DONE] Execute parsed prompt immediately (checking action items, CI, test failures)
+- [OPEN] Ensure progress on remaining action items (loop continues; not shown completed)
+- [DONE] Fix time-bomb test failures (3 tests fixed, 76 pass)
+- [DONE] Fix CONCENTRATION_CAP default-ON regression
+- [DONE] Fix FOREX_DIRECTIONAL_GATE blocking ETF scoping test
+- [DONE] Rerun FTP BrokenPipe workflow
+- [DONE] Merge PR #1092 (multi-model vote primitive)
+- [OPEN] Update MYSQL_PASSWORD GitHub Secret to match current DB password (operator action)
+- [DONE] Final GHA health check — no stale failures, CI clean
+- [DONE] Parse input into interval and prompt (no interval found → dynamic mode)
+- [OPEN] Run the parsed prompt now (checking current state)
+- [UNCLEAR] Decide next iteration trigger (event or time-based)
+- [UNCLEAR] Arm Monitor if event-gated and none running
+- [UNCLEAR] Confirm self-pacing plan (monitor status, fallback delay)
+- [UNCLEAR] Call ScheduleWakeup with delay, reason, and `/loop`-prefixed prompt
+- [OPEN] Continue looping through action items until all implemented
+- [UNCLEAR] Use agent swarms if stuck for assistance/insight/implementation/testing
+- [DONE] Review all open PRs using swarm_v2 (3 specialists), make modifications, drop a .MD report, and post comments on PRs referencing the report
+- [DONE] Broadcast session summary to cross-PC peer agents via gateway at 192.168.2.32:8788
+- [OPEN] Continue working through remaining action items from the swarm review
+- [OPEN] Self-pacing autonomous loop to continue implementing all remaining action items until complete, using agent swarms when stuck
+- [OPEN] Execute parallel subagents where tasks are independent
+- [OPEN] Review all open PRs with swarm review, then merge or merge a modified version and close original
+- [DONE] Fix 116 test suite failures (test pollution: arch/pyarrow missing, ANTI_OVERFIT gate leaking)
+- [DONE] Fix dashboard asset_class_health to exclude COMMODITY_BLACKLIST/ETF_BLACKLIST symbols
+- [DONE] Wire PEAD equity strategy as shadow sidecar in production_scanner
+- [DONE] Merge PR #1093 (AI leaderboard research proposers)
+- [DONE] Update MYSQL_PASSWORD GitHub Secret to `stocks123`
+- [OPEN] Rotate `stocks123` and `backtests123` passwords on 50webs MySQL control panel
+- [OPEN] Update MYSQL_PASSWORD secret with new rotated password
+- [OPEN] Audit DB_PASS and DB_PASSWORD secrets (last updated Feb 2026)
+- [DONE] Trigger Hoffman IRB Tracker workflow
+- [DONE] Fix Overnight Mutations workflow (missing TOKEN_FOR_PUSH)
+- [DONE] Fix Refresh Creator Updates workflow (500 response handling)
+- [OPEN] Rerun Cross-DB Consistency workflow (ran before secret fix)
+- [OPEN] Rerun Overnight Mutations workflow (post-fix validation)
+- [OPEN] Rerun Refresh Creator Updates workflow (post-fix validation)
+- [OPEN] Vet, prioritize, and integrate legitimate tools from coinman2 Polymarket article stack
+- [DONE] Continue looping through action items until all implemented, using agent swarms when stuck
+- [DONE] Review latest .MD files from last 48 hours for action items and run them through tools/swarm_v2
+- [DONE] Proceed on next steps from reports and open PRs
+- [DONE] Fix MySQL database passwords (ejaguiar1_stocks/stocks123, ejaguiar1_backtests/backtests123) in GitHub Actions workflows
+- [DONE] Ensure progress on remaining action items, using agent swarms if unclear
+- [DONE] Investigate coinman2 Polymarket wallet for potential copy-trading integration
+- [DONE] Create subagents to vet and integrate free data sources/GitHub libraries from Polymarket article
+- [DONE] Add os.environ.setdefault gates in tests/conftest.py for ANTI_OVERFIT_VALIDATOR_ENABLED, FOREX_DIRECTIONAL_GATE_ENABLED, FOREX_SYMBOL_GATE_ENABLED
+- [DONE] Add skip markers for arch/pyarrow-dependent test modules in conftest
+- [DONE] Add COMMODITY_BLACKLIST and ETF_BLACKLIST filter in dashboard_generator.py ac_breakdown loop
+- [DONE] Wire PEAD equity strategy as shadow-only in production_scanner.py (Block 3b-PEAD)
+- [DONE] Add TOKEN_FOR_PUSH env var to overnight-mutations.yml commit step
+- [DONE] Broaden 5xx error handling in refresh-creator-updates.yml to catch all shared-host server errors
+- [DONE] Fix _cache_read() in fred_data_fetcher.py to check .pkl fallback when .parquet missing
+- [DONE] Add pytest skip marker for parquet-unavailable in test_live_ingest.py
+- [DONE] Merge PR #1093 (ai_leaderboard research proposers + renderResearch panel)
+- [DONE] Re-run Cross-DB Consistency Guardian workflow after MYSQL_PASSWORD secret update
+- [DONE] Add wallet `0x751a2b86cab503496efd325c8344e10159349ea1` to audit queue (added to `polymarket_strategy_audit.py`)
+- [DONE] Create gengar-inspired DRY_RUN Polymarket BTC agent (`prediction_market_agents/polymarket_btc_updown_agent.py`)
+- [DONE] Create FRED macro sidecar (`tools/fred_macro_sidecar.py`)
+- [DONE] Create TradingAgents signal sidecar (`tools/trading_agents_signal_sidecar.py`)
+- [DONE] Commit 7 staged files (commit `c5684caf7b`)
+- [DONE] Fix COMMODITY dashboard edge table status (downgraded from SUPREME EDGE)
+- [DONE] Wire `btc_hour_filter.py` via `score_booster.run_score_booster`
+- [OPEN] Run ETF strategy swarm (spawned in background, not shown completed)
+- [OPEN] Run 5 parallel agents (ETF filters, insider tracker, whale scanner, trade tracker vetting, Kelly sizer) — spawned, not shown completed
+- [OPEN] Update MONEY READY button tooltip and banner
+- [OPEN] Address Kelly paper with concrete strategy implementation (agent building `kelly_f`/`kelly_size_usdc` — not shown committed)
+- [DONE] Vet & integrate polymarket-insider-tracker confidence scoring (agent completed, code added, compile OK)
+- [DONE] Verify whale scanner (401 handled gracefully, results clean)
+- [DONE] Fix UEPS bypass flag in `ueps-pick-runner.yml` (committed in `2a15745ac4`)
+- [DONE] Batch-commit all completed work (pushed commit `2a15745ac4`)
+- [OPEN] Wait for remaining 3 agents (ETF filters, trade tracker vetting, Kelly sizer) to finish
+- [OPEN] Commit results of ETF filter agent when it lands
+- [OPEN] Commit results of Kelly sizer agent when it lands
+- [DONE] Fix pre-existing test failure (SLV added to ETF_BLACKLIST, test not updated) — all 19 tests pass after fix
+- [DONE] Create SPY sidecar data file (`alpha_engine/data/spy_20d_return.json`) with stub value 0.0%
+- [DONE] Commit ETF work and SPY sidecar in one batch
+- [DONE] Final batch commit
+- [DONE] Clean up stranded branch from MIMO session
+- [DONE] Recover MIMO action plan and execute its items
+- [DONE] Execute 7 MIMO PRs in parallel using subagents
+- [DONE] Handle MIMO plan file and PR2+3 (DB indexes + outcomes table) manually
+- [DONE] Add composite indexes right after table creation
+- [DONE] Continue implementing remaining action items from prior sessions
+- [DONE] Use subagents to complete tasks in parallel where applicable
+- [DONE] Investigate new Polymarket wallets from viral articles (Jane Street quant, 99.2% WR claims) and assess for copy-trading potential
+- [DONE] Build DRY_RUN Polymarket BTC 5-min trading agent based on gengar_polymarket_bot architecture
+- [DONE] Integrate 8 Polymarket analytics tools from @zostaff thread (vet for safety first)
+- [DONE] Implement Kelly Criterion position sizer based on Kelly (1956) Bell Labs paper
+- [DONE] Review MIMO (OpenClaude) session notes and execute 7 PRs from MIMO_ACTIONPLAN_MAY162026.MD
+- [DONE] Confirm execution of all 7 MIMO PRs
+- [DONE] Merge composite indexes branch into main
+- [DONE] Commit composite indexes to main
+- [DONE] Implement PR3 (at_pick_outcomes table DDL)
+- [DONE] Wire table creation into mysql_trading_sync.py
+- [DONE] Commit all uncommitted MIMO work together
+- [DONE] Commit MIMO_ACTIONPLAN_MAY162026.MD file
+- [DONE] Push all commits upstream
+- [DONE] Update todo list to reflect completion
+- [DONE] Verify push landed correctly
+- [OPEN] Rotate ejaguiar1_stocks password from stocks123
+- [OPEN] Rotate ejaguiar1_backtests password from backtests123
+- [OPEN] Update MYSQL_PASSWORD/DB_PASS_STOCKS/DB_PASS_BACKTESTS GitHub Secrets
+- [OPEN] Parse input into `[interval] <prompt>` using the three rules
+- [OPEN] Check cloud-first conditions (interval ≥60m or daily phrasing) and ask user if applicable
+- [OPEN] If cloud schedule chosen: invoke `schedule` skill with original input verbatim, then stop
+- [OPEN] If "This session only" with ≥60m interval: continue to fixed-interval mode
+- [OPEN] If "This session only" with daily phrasing only: explain limitation and stop
+- [OPEN] If neither trigger: continue to fixed-interval or dynamic mode
+- [OPEN] In fixed-interval mode: convert interval to cron expression, handle non-clean intervals with rounding
+- [OPEN] Call CronCreate with cron expression, prompt, recurring: true
+- [OPEN] Confirm schedule details with user (including 7-day expiry, job ID, and optional italic line)
+- [OPEN] Execute parsed prompt immediately after scheduling
+- [OPEN] In dynamic mode: run parsed prompt now
+- [OPEN] If next run gated on event and no Monitor running: arm Monitor with persistent: true
+- [OPEN] Confirm self-pacing plan (monitor, fallback delay) before calling ScheduleWakeup
+- [OPEN] Call ScheduleWakeup with delaySeconds, reason, and `/loop <original input>` as prompt
+- [OPEN] If woken by `<task-notification>`: handle event, then call ScheduleWakeup again with same prompt and delay
+- [OPEN] To stop loop: omit ScheduleWakeup and TaskStop any Monitor
+- [OPEN] Continue looping through action items until all implemented, using agent swarms if stuck
+- [DONE] Fix Kelly CI failure (implement missing `compute_position_size` and `vol_adjusted_size` functions)
+- [DONE] Commit and push Kelly CI fix (commit `bc4091aee3`)
+- [DONE] Fix Cross-DB CI failure (add old secret names as fallbacks)
+- [DONE] Add pytest-cov to CI workflow
+- [DONE] Commit and push workflow fixes
+- [OPEN] Regenerate "statistical edge" prompt for user
+- [UNCLEAR] Investigate remaining MIMO platform action items via parallel agents
+- [DONE] Implement structured logging module (Category 13 observability)
+- [DONE] SPY 20d return fetcher (ETF RS filter)
+- [DONE] Outcome resolver → at_pick_outcomes MySQL wire-up
+- [OPEN] Rotate DB passwords (stocks123/backtests123) — operator action only
+- [UNCLEAR] Generate "statistical edge" prompt — user did not confirm which flavor
+- [OPEN] Strategy emission monitor (daily dormancy report)
+- [OPEN] Feature distribution KS-test monitoring
+- [OPEN] Wire PR #1030 money_ready_filter.js
+- [DONE] Loop through action items until all implemented (7 MIMO PRs completed)
+- [DONE] Harden mysql-sync (composite indexes added)
+- [DONE] Add trading_picks composite indexes
+- [DONE] Add at_pick_outcomes DDL
+- [DONE] Standardize secret names (fallback pattern added)
+- [DONE] Add coverage reporting to CI (pytest-cov configured)
+- [DONE] Deprecate per_asset_thresholds
+- [DONE] Fix FOREX gate fix
+- [DONE] Fix 6 consecutive CI test failures
+- [DONE] Fix Cross-DB audit workflow failures (secret fallbacks added)
+- [DONE] Implement structured logging
+- [DONE] Implement SPY fetcher
+- [DONE] Implement outcome resolver MySQL wire-up
+- [OPEN] Regenerate "statistical edge" evaluation prompt
+- [OPEN] Set the active goal via `/goal <text>` with the provided goal text and session ID
+- [OPEN] Output a numbered task plan before writing any code
+- [OPEN] Execute the plan end-to-end: work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via `goal_state.py tick`
+- [OPEN] Judge own work via `goal_state.py judge` with a strict verdict
+- [OPEN] If not done and budget remains, schedule a wakeup for auto-continuation
+- [OPEN] If done, report goal achieved with evidence
+- [OPEN] Verify all success criteria are met before stopping
+- [DONE] Read live `dashboard_data.json` (step 1)
+- [DONE] Read active gate logic (step 2)
+- [DONE] Audit per-class Tier 1/2 and sub-floor classes (step 3)
+- [DONE] Design concrete filter upgrades for sub-floor classes (step 4)
+- [DONE] Implement highest-impact changes (gate tightening, strategy blocklist, confidence floors) (step 5)
+- [DONE] Write `reports/statistical_edge_analysis_2026-05-16.md` (step 6)
+- [DONE] Commit to main (step 7)
+- [DONE] Fix filter script to use `active_picks.json` with correct field mapping
+- [DONE] Push commit
+- [OPEN] Launch `/money-maker-readyv2` (user requested, assistant invoked it but excerpt ends before completion shown)
+- [DONE] Freshness preflight — verified dashboard_data.json is <2h old
+- [DONE] Per-class baseline — pulled n/WR/PF/Tier from asset_class_health
+- [DONE] Top strategy per class — identified proven filters (strategy, direction, confidence bucket)
+- [DONE] Kelly sizing — computed position size for each proven filter
+- [DONE] Identify sub-floor drag causes and quantify what removing them does
+- [DONE] Write `reports/weekly_filter_<UTC>.md`
+- [DONE] Commit + push weekly filter report
+- [DONE] Integrate Hermes's `edge_filters.py` findings into weekly filter script
+- [DONE] Continue from where you left off (user said "PROCEEDED", assistant resumed work)
+- [DONE] Update edge filters and commit final turn (assistant pushed commits)
+- [DONE] Commit final updates and judge (assistant pushed and judged)
+- [DONE] Schedule next continuation loop (assistant scheduled wakeup)
+- [OPEN] Rotate `ejaguiar1_stocks` password away from `stocks123` (explicitly called out as remaining operator action)
+- [DONE] Environment check: verified Python and pip versions
+- [DONE] Installed dependencies: yfinance, pandas, numpy, requests, beautifulsoup4, scipy
+- [OPEN] Create requirements.txt file
+- [OPEN] Create engine/data_fetcher.py file
+- [OPEN] Build strategy engine with 7 quant strategies
+- [OPEN] Build backtester with walk-forward, transaction costs, slippage
+- [OPEN] Build signal generator with weekly signal pipeline and confidence scoring
+- [OPEN] Build risk manager with Kelly criterion, ATR-based stops, portfolio allocation
+- [OPEN] Build performance analytics (Sharpe, Sortino, profit factor, etc.)
+- [OPEN] Build production-grade HTML dashboard with all metrics and live signals
+- [OPEN] Run backtests to prove edge on historical data per asset class
+- [OPEN] Write full documentation (README, decisions log, limitations)
+- [OPEN] Critique self using tools/swarm_v2 and check if evidence/criteria would have made money
+- [OPEN] Check if the edge was saturated
+- [OPEN] Check if it was a consistency edge
+- [UNCLEAR] Run swarm critique in parallel with backtest of own filters
+- [DONE] Continue looping through action items until all implemented, using agent swarms if stuck
+- [DONE] Critique yourself using tools/swarm_v2 and check if evidence/criteria would have made money, and if it was saturated/consistency edge
+- [DONE] Integrate Ernie and Kimi peer agent notes (English only)
+- [DONE] Build yfinance-based full backtesting engine per Xiao Mi MIMO's architecture
+- [DONE] Create reports/statistical_edge_analysis_2026-05-16.md
+- [DONE] Create tools/weekly_filter_picks.py
+- [DONE] Create reports/weekly_filter_2026-05-16T0507Z.md
+- [DONE] Create audit_trail/edge_filters.py (by Hermes agent)
+- [DONE] Create tools/tests/test_edge_filter_engine.py (by Kimi agent)
+- [DONE] Fix git push blocked by unstaged changes (used git stash/pull/rebase/pop pattern)
+- [OPEN] Fix EQUITY asset_class mislabeling (all crypto symbols) in universal_resolved_picks.json
+- [OPEN] Fix 4 ghost systems with n=0 in weekly_filter_picks.py (multi_asset_cot, multi_asset_copytrader, claude_gainer, mega_mutation)
+- [OPEN] Address IS/OOS split being only 9-day OOS window (pre-register split boundary before looking at performance)
+- [DONE] Fix three critical data integrity issues (ghost systems, COMMODITY blocking, CI-lower scaling) in `weekly_filter_picks.py`
+- [DONE] Implement bootstrap validation module (`audit_trail/edge_filter_bootstrap.py`)
+- [DONE] Run bootstrap validation on all systems
+- [DONE] Update edge analysis report with corrected numbers
+- [DONE] Commit all OOS validation work to branch
+- [DONE] Restore files lost after rebase
+- [DONE] Push all commits to remote branch
+- [DONE] Write and commit money-maker-readyv2 session report (`reports/money_maker_ready_20260516T060000Z.md`)
+- [DONE] Write and commit OOS validation report (`reports/oos_validation_2026-05-16.md`)
+- [DONE] Commit Kimi's modifications (`tools/edge_filter_engine_v3.py`, `tools/forex_unblock_tracker.py`)
+- [DONE] Push everything to main
+- [OPEN] Investigate why `aggregated_picks` and `kimi_signal_tracking` are absent from `active_picks.json` (elite emission pipeline)
+- [DONE] Set active goal: produce proven statistical edge per asset class with Tier 2+ filter recommendations backed by live data
+- [DONE] Commit MiniMax vetting report to main
+- [DONE] Pull Kimi's session transcript into main (commit 595d02ace5)
+- [DONE] Commit `reports/statistical_edge_analysis_2026-05-16.md` to main
+- [DONE] Commit `audit_trail/edge_filter_bootstrap.py` (5000-iter bootstrap CI, pre-registered Apr 1 split)
+- [DONE] Commit `reports/oos_validation_2026-05-16.md` (full per-system OOS table with CI and AC1)
+- [DONE] Commit `tools/weekly_filter_picks.py` (OOS-validated elite systems, CI-lower scaling)
+- [DONE] Judge goal as achieved with evidence of all deliverables committed
+- [DONE] Check GitHub Actions health for stale failures, chronic cancellations, recurring failures
+- [DONE] Fix `analyze_picks([])` returning dict without `"overall"` key
+- [DONE] Fix `main()` print to use `.get()` defensively
+- [OPEN] Review chat transcript and recent changes for remaining action items
+- [OPEN] Investigate open PRs and evaluate with agent swarm
+- [OPEN] Analyze large set of .md/todos, add to graphify, cross-reference against codebase for unimplemented items
+- [OPEN] Review `C:\findtorontoevents_antigravity.ca\reports\MASTER_ACTION_PLAN_2026-05-15.md` and create amended version
+- [OPEN] Create entry under `findtorontoevents.ca/updates/index.html` summarizing completed action items (last 24h), next steps per asset class
+- [OPEN] Compile findings from `/money-maker-readyv2`, consult all AI models/agents, produce large set of todos/action items and items to backtest/review with agent swarms and/or `tools\swarm_v2`
+- [UNCLEAR] Investigate CI coverage issue (mentioned but not shown completed)
+- [DONE] Fix GitHub Actions using `/fix-gh-actions` skill — find and fix stale failures, chronic cancellations, recurring failures
+- [DONE] Review open PRs with agent swarm
+- [DONE] Analyze .MD todos across the codebase, graphify priorities, find unimplemented items vs codebase, reference `reports/MASTER_ACTION_PLAN_2026-05-15.md`
+- [DONE] Create amended MASTER_ACTION_PLAN and add an entry under `findtorontoevents.ca/updates/index.html` summarizing last 24h completions and next steps per asset class
+- [DONE] Compile money-maker-readyv2 findings — consult AI models/agents, generate large set of todos/action items, backtest items, swarm_v2 tasks
+- [OPEN] Fix COMMODITY pipeline check (follow-up from statistical_edge_analysis)
+- [OPEN] Investigate stocks_competition AC1 (follow-up from statistical_edge_analysis)
+- [DONE] Create DAILY_IDEAS.md
+- [DONE] Amend MASTER_ACTION_PLAN
+- [DONE] Commit GH fixes
+- [DONE] Launch debate swarm
+- [DONE] Verify MiniMax claims against actual data
+- [DONE] Write vetted version of MiniMax section
+- [DONE] Add hyperlink to DAILY_IDEAS.md
+- [DONE] Commit and push everything
+- [DONE] Review code on GitHub to find exact filters used in UI to filter to the "edge" per asset class
+- [DONE] Read key Python files (live_scanner.py, ml_signal_ranker.py, elimination_engine.py, crypto_acceleration_engine.py, signal_tracker.py, etc.)
+- [DONE] Cross-reference code filters with proven edges found in audit data
+- [DONE] Create comprehensive document mapping exact filters from code to UI parameters (EXACT_FILTERS_FOR_UI.md)
+- [DONE] Update existing comprehensive edge document (ULTIMATE_PROVEN_STATISTICAL_EDGE_2026_05_16.md)
+- [DONE] Read both MiniMax files to verify against actual codebase
+- [DONE] Verify code references in EXACT_FILTERS_FOR_UI.md against actual repo
+- [DONE] Copy both files into repo and commit
+- [DONE] Push to GitHub
+- [OPEN] Re-run GitHub agent (task 18c2e443-88d9-4baf-b818-9f6429430d6d)
+- [DONE] Look into what feature/filter is best to filter high-credibility stats
+- [DONE] Vet high-credibility stats using an agent swarm to double-check
+- [DONE] Double-check incorrect or partially invalid parts of the filters
+- [DONE] Commit the verified corrected MiniMax doc
+- [OPEN] Produce the HC filter backtest report (background agent still running)
+- [OPEN] Produce the dashboard claim verification (background agent still running)
+- [DONE] Wire HC filter as Python gate + verify MiniMax partial claims (task completed, full report produced)
+- [OPEN] Backfill `trust_score` and `trust_tier` fields into `active_picks.json` (critical gap identified, not shown done)
+- [UNCLEAR] Implement the 4-gate proxy HC filter on active_picks.json (code provided but not shown deployed/run)
+- [DONE] Fix what_worked.py KeyError (empty picks dict + defensive .get())
+- [DONE] Fix CI coverage failure (add tools/tests/ to pytest discovery)
+- [DONE] Commit debate swarm prompt to DAILY_IDEAS.MD
+- [DONE] Create and commit minimax_ultimate_edge VETTED report
+- [DONE] Create and commit EXACT_FILTERS_FOR_UI doc with vetting notes
+- [DONE] Create and commit minimax_corrected_VERIFIED report
+- [OPEN] Hyperlink MiniMax files from DAILY_IDEAS.MD
+- [OPEN] Run debate swarm across 5 personas on theoretical→real-money edge
+- [OPEN] Determine HC filter feature/combos producing highest-credibility stats
+- [OPEN] Check if HC button and Guide feature can surface those combos
+- [OPEN] Automate filtering of active_picks using HC findings
+- [OPEN] Document all findings under findtorontoevents.ca/updates/index.html
+- [OPEN] Create HTML user guide tying together Kimi and MiniMax findings
+- [OPEN] Review Kimi attachments and specific files listed
+- [OPEN] Fact-check concepts in supreme plan and 90-day plan docs
+- [OPEN] Create HTML page after verifying which concepts are useful/implemented
+- [DONE] Create full guide page (updates/2026-05-16-ultimate-edge-per-asset-class/index.html)
+- [DONE] Add entry to updates/index.html linking to the guide
+- [DONE] Copy Kimi's useful code files into the repo (backtest.py, signal_generator.py, HONEST_INTEGRATION_GUIDE.md)
+- [DONE] Commit everything
+- [OPEN] Check in with Claude peers via /dropchat-multipc
+- [OPEN] Build structured session-summary/v1 JSON payload from real sources (git log, gh pr list)
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter poll
+- [OPEN] Triage peer messages, classify, decide on task.request DMs
+- [OPEN] Write one-line entries to reports/peer_inbox_<UTC>.md
+- [OPEN] Optionally revise + re-commit if peer insight changes decisions
+- [OPEN] Optionally send SESSION_CLOSED broadcast
+- [OPEN] Output 6-line summary to operator
+- [DONE] Run dropchat protocol (health check, session payload, broadcast, peer inbox report)
+- [DONE] Create todos and implement action items (HC Gate 8 confidence fix, ELITE_STRATEGIES + CRYPTO SHORT block, trust_score P0 fix, Kimi backtest runner)
+- [DONE] Fix HC Gate 8 confidenceMax from 0.90 to 0.80 in hc_filter.js and hc_gate_params.json
+- [DONE] Add ELITE_STRATEGIES and CRYPTO SHORT blocking to weekly_filter_picks.py
+- [DONE] Wire is_elite_strategy flag into allocation size (elite full alloc, others 0.7x)
+- [DONE] Update return dict to expose strategy-level info
+- [DONE] Verify weekly_filter_picks.py compiles cleanly
+- [DONE] Implement trust_score P0 fix in production_scanner.py (enrich_picks_with_trust_score before save_active_picks)
+- [DONE] Wire Kimi backtest runner (tools/run_kimi_backtest.py) to OOS data
+- [DONE] Commit all changes
+- [DONE] Vet MiniMax's latest reversal and write final vetting report (reports/peer_notes/minimax_final_doc_DEBUNKED_2026-05-16.md)
+- [DONE] Read Grok PR feedback file
+- [DONE] Add dedup-by-(entry,tp,sl) guard to weekly_filter_picks.py
+- [OPEN] Move CRYPTO_ULTRA correction to top of weekly filter report (P1 readability)
+- [OPEN] Rotate ejaguiar1_stocks + ejaguiar1_backtests MySQL passwords (P0 operator action)
+- [DONE] Create HTML user guide at `updates/2026-05-16-ultimate-edge-per-asset-class/index.html`
+- [DONE] Add update entry to `updates/index.html`
+- [DONE] Fix HC filter Gate 8 (lower confidenceMax from 0.90 to 0.80)
+- [DONE] Add ELITE_STRATEGIES to `tools/weekly_filter_picks.py`
+- [DONE] Block CRYPTO SHORT in `tools/weekly_filter_picks.py`
+- [DONE] Fix trust_score P0 in `alpha_engine/production_scanner.py`
+- [DONE] Wire Kimi backtest (`tools/run_kimi_backtest.py`)
+- [DONE] Copy Kimi backtest.py to `tools/kimi_edge_engine/backtest.py`
+- [DONE] Copy Kimi signal_generator.py to `tools/kimi_edge_engine/signal_generator.py`
+- [DONE] Copy Kimi integration guide to `tools/kimi_edge_engine/HONEST_INTEGRATION_GUIDE.md`
+- [DONE] Create `reports/kimi_backtest_validation_2026-05-16.json`
+- [DONE] Create `reports/peer_notes/minimax_final_doc_DEBUNKED_2026-05-16.md`
+- [OPEN] Continue working through action items using agent swarms until all implemented
+- [OPEN] Check in with Claude peers via dropchat-multipc cross-PC protocol
+- [OPEN] Process Kimi/MiniMax commentary and vet it using subagents/swarms
+- [OPEN] Read Grok PR feedback from `updates/2026-05-16-latest-commits-prs-review-feedback.md`
+- [DONE] Dedup audit on CRYPTO_ENHANCED + CRYPTO_CORE
+- [DONE] Update `edge_filters.py` with corrected OOS numbers
+- [DONE] Add dedup guard to `weekly_filter_picks.py::run_filter()`
+- [DONE] Commit and push changes
+- [OPEN] Rotate `ejaguiar1_stocks` password (stocks123 exposed in PR #1086 git history)
+- [OPEN] FTP upload `audit_dashboard/v2/index.html` to `ftps2.50webs.com/findtorontoevents.ca/audit/v2/index.html`
+- [DONE] Check dashboard generator safety changes (git diff attempted, command failed due to `head` not found on Windows)
+- [DONE] Check penny/meme gate code (git diff shown)
+- [DONE] Find new Python files added (git log shown)
+- [DONE] Syntax check quality_gates.py (no output = success)
+- [DONE] Syntax check score_booster.py (no output = success)
+- [DONE] Syntax check config.py (no output = success)
+- [DONE] Syntax check pcg5_gates.py (no output = success)
+- [DONE] Syntax check safety_status.py (no output = success)
+- [UNCLEAR] Check non_crypto_agent PCG-5 changes (tool call failed with JSON parse error)
+- [UNCLEAR] Check ETF emitter commits (tool call failed with JSON parse error)
+- [DONE] Pull peer's commit and verify fixes
+- [DONE] Push fixes
+- [DONE] Read OpenCode session export for additional action items
+- [DONE] HC Gate G8: change confidenceMax from 0.90 to 0.80
+- [DONE] Add trust_score enrichment in production_scanner.py
+- [DONE] Add CRYPTO SHORT block in weekly_filter_picks.py
+- [DONE] Dedup audit CRYPTO_ENHANCED/CORE — correct OOS, add dedup guard
+- [DONE] Fix ETF emitter source_system mislabeling
+- [DONE] Wire dead is_gap_risk_equity() into score_booster
+- [DONE] Add PEAD empty-data warning
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 exposed in PR #1086 git history)
+- [OPEN] FTP upload audit_dashboard/v2/index.html to production (ftps2.50webs.com)
+- [UNCLEAR] Fix duplicate commit pairs via git push --force (requires user go-ahead)
+- [DONE] Proceed on next steps (user granted permission)
+- [DONE] Run impact analysis via swarm agent in parallel with dashboard fix
+- [DONE] Fix dashboard payload contract bug (add wr_pct/pf/pnl_pct aliases to generator)
+- [DONE] Remove xfail decorator from test_dashboard_payload_contract.py
+- [DONE] Patch local dashboard_data.json with aliases for all 6 classes
+- [DONE] Make test skip when source field is None (COMMODITY profit_factor case)
+- [DONE] Commit and push dashboard fixes
+- [DONE] Run CRYPTO_ULTRA null-model validation (peer #2 P3) — not shown but swarm ran
+- [DONE] Check duplicate commits via swarm — resolved, no force-push needed
+- [OPEN] Double-check which models are alive (user requested at end)
+- [DONE] Test cerebras, xai, inception providers (initial health check)
+- [DONE] Update cerebras key to Windows environment variable (user requested)
+- [DONE] Verify cerebras key from Windows registry
+- [DONE] Fix xAI/Grok 3 provider (made live)
+- [DONE] Update INCEPTION_API_KEY (user requested)
+- [DONE] Probe inception endpoint to find correct model name
+- [DONE] Fix inception model name from `mercury` to `mercury-2`
+- [DONE] Test all three updated providers (cerebras, xai, inception)
+- [DONE] Save provider status to memory
+- [DONE] Commit llm_client fixes
+- [OPEN] Restart Claude Code so new env vars (`X_AI_KEY`, `INCEPTION_API_KEY`, `CEREBRAS_API_KEY_PAID`) are picked up (assistant noted this is needed)
+- [OPEN] Use VPN or contact Cerebras support to whitelist IP (to fix Cloudflare block)
+- [OPEN] Check and update free-tier models for: GEMINI_FREE_KEY, GROQ_KEY, HUGGINGFACE_API, KILO_API, NOUS_API_KEY, OLLAMA_CLOUD_KEY, OPENCODE_FREE_TIER, OPENROUTER_FREE_KEY (user requested)
+- [OPEN] Ensure free-tier models are checked and updated (user requested, note Ollama Cloud has paid key)
+- [DONE] Continue loop on action items from prior sessions, using agent swarms as needed
+- [DONE] Process peer AI notes (OpenCode/Qwen3, Grok, MiniMax) and take on automatable action items
+- [DONE] Dedup audit on CRYPTO_ENHANCED + CRYPTO_CORE (same pick-duplication risk as CRYPTO_ULTRA)
+- [DONE] Fix dashboard payload contract bug (`wr_pct`/`pf`/`pnl_pct` aliases missing from `asset_class_health`)
+- [DONE] Check which models are available in `tools/swarm_v2`
+- [DONE] Validate that newly-updated API keys (cerebras, xAI, inception) are live
+- [DONE] Add new providers/keys to swarm_v2: Gemini, HuggingFace, Kilo, Nous, Ollama Cloud, OpenCode, OpenRouter free
+- [DONE] Update inception default model from "mercury" to "mercury-2"
+- [DONE] Add CEREBRAS_API_KEY_PAID to cerebras key lookup (before FREE)
+- [DONE] Backfill `wr_pct`/`pf`/`pnl_pct` aliases into all 7 classes in dashboard data
+- [DONE] Remove `@pytest.mark.xfail` from test and make test smarter for COMMODITY pf=None
+- [DONE] Handle git push rejection with stash/pull/rebase/pop
+- [DONE] Add Gemini provider to llm_client.py
+- [DONE] Probe Nous Research, Kilo, Ollama Cloud, Together AI endpoints
+- [DONE] Add Kilo, Ollama Cloud, Together AI providers to llm_client.py
+- [DONE] Fix openrouter-free model slug in llm_client.py
+- [DONE] Commit provider additions (feat(swarm_v2))
+- [DONE] Append 10 prediction improvement prompts to DAILY_IDEAS_PROMPTS.MD
+- [DONE] Commit DAILY_IDEAS_PROMPTS.MD (docs(daily-ideas))
+- [DONE] Move CRYPTO_ULTRA correction banner to top of report
+- [DONE] Commit report fix (fix(report))
+- [OPEN] Restart session so TOGETHER_API_KEY is detected by detect_providers()
+- [OPEN] Resolve HuggingFace, Nous, OpenCode endpoints
+- [OPEN] Run swarm to research HuggingFace, Nous, OpenCode endpoints
+- [OPEN] Run swarm_inspect.py --latest after swarm run
+- [OPEN] Run PR review swarm for PR #1103
+- [DONE] Review all open PRs via `/swarm pr-review open`
+- [DONE] Merge all 4 PRs (1103, 1102, 1101, 1100)
+- [OPEN] Fix `asset_class` casing bug in the resolver write path (separate PR)
+- [OPEN] Run mutation protocol on `ml_crypto_pred` before any blocking decision
+- [DONE] Add new LLM providers to `llm_client.py` (Gemini, HuggingFace, Kilo, Nous, Ollama, Together, OpenRouter-free, OpenCode)
+- [DONE] Save provider prompt series A–J to `DAILY_IDEAS_PROMPTS.MD` and commit to GitHub main
+- [UNCLEAR] Review all open PRs and merge or create modified versions as needed
+- [UNCLEAR] Research and resolve correct API endpoints for HuggingFace, Nous, and OpenCode using swarm tools
+- [UNCLEAR] Process peer agent notes (OpenCode, Kimi, GitHub Copilot) and take on automatable action items
+- [OPEN] Fix the `asset_class` casing bug in PR #1103 (crypto vs CRYPTO split)
+- [DONE] Add dedup by (symbol, entry_price, take_profit, stop_loss) triplet to `tools/weekly_filter_picks.py`
+- [UNCLEAR] Continue the /loop on action items until all are implemented, using agent swarms as needed
+- [DONE] Commit untracked agent files (session transcripts, tools, etc.)
+- [DONE] Fix asset_class casing bug in universal_pick_resolver.py (uppercase at write time)
+- [DONE] Backfill 3376 lowercase "crypto" entries in universal_resolved_picks.json
+- [DONE] Commit asset_class casing fix
+- [DONE] Promote CT=F to PROBATION (remove from COMMODITY_BLACKLIST, update PENDING_UNBLOCK_REVIEW, write rehab doc)
+- [DONE] Add CRYPTO source volume cap (update config.py with actual 5% cap value and note)
+- [DONE] Cherry-pick EQUITY confidence inversion fix from fix/equity-confidence-inversion branch to main
+- [DONE] Push all commits to main
+- [OPEN] Build structured JSON payload from session deliverables (Step 1)
+- [OPEN] Run `git log` and `gh pr list` to gather real session data (Step 1)
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter (Step 2)
+- [OPEN] Drain inbox (DMs + broadcasts) via `freebuff_adapter` (Step 3)
+- [OPEN] Output 6-line summary to operator (Output section)
+- [DONE] Perform health check and gather session data (dropchat-multipc handoff)
+- [DONE] Build and send session payload
+- [DONE] Drain inbox and write peer inbox report
+- [DONE] Send SESSION_CLOSED broadcast
+- [DONE] Check for remaining modified files to commit
+- [DONE] Note Grok/Hermes holographic memory file path and status
+- [DONE] Create skill for holographic memory interaction
+- [DONE] Write current session's key findings into holographic memory
+- [DONE] Commit skill file and update skill registration
+- [OPEN] Proceed on next steps (user said "proceed on next steps")
+- [DONE] Implement CRYPTO UTC-hour gate (already implemented, verified wiring)
+- [DONE] Fix `continuous_improvement_monitor.py` lowercase "crypto" comparison bug
+- [OPEN] Fix `pick_monitor.py` lowercase comparisons (started but not shown complete)
+- [DONE] Commit untracked agent files from Kimi/OpenCode sessions
+- [DONE] Fix asset_class casing bug (lowercase "crypto" → uppercase "CRYPTO")
+- [DONE] Promote CT=F to PROBATION (write rehab doc, remove from COMMODITY_BLACKLIST)
+- [DONE] Document/implement quan_engine CRYPTO source volume cap
+- [DONE] Fix EQUITY confidence inversion (-15 penalty for high-confidence EQUITY)
+- [DONE] Broadcast session summary to cross-PC peers via /dropchat-multipc
+- [DONE] Make note of Hermes/Grok holographic memory and add skill for it
+- [OPEN] Investigate CRYPTO UTC-hour filter (Hermes task)
+- [OPEN] Check in with peers
+- [OPEN] Fix any broken lowercase asset_class consumers discovered by casing bug fix
+- [DONE] Fix asset_class casing in 5 consumers + universal_pick_resolver.py
+- [DONE] Add NS-C CRYPTO hour filter tests (6 tests)
+- [DONE] Document NS-C CRYPTO env var in config.py
+- [DONE] Promote CT=F to PROBATION in quality_gates + write rehab doc
+- [DONE] Implement EQUITY confidence inversion penalty
+- [DONE] Evaluate IMXUSDT unblock eligibility (stays PROBATION)
+- [DONE] Log CRYPTO source audit findings to holographic memory
+- [DONE] Log dedup violation findings to holographic memory
+- [DONE] Commit and push holographic memory updates
+- [OPEN] Install agentmemory npm package + iii-sdk pip package
+- [OPEN] Create .claude/skills/agentmemory/SKILL.md and personal memory reference file
+- [OPEN] Run ETF + CRYPTO deep research (swarm_v2, per-source breakdown, report)
+- [OPEN] Run MUTATION_THREE_AXIS_PROTOCOL on ml_crypto_pred
+- [OPEN] Investigate 0-second gap dedup violations in hs_lb_None
+- [DONE] Install agentmemory and create Claude Code skills for it (task completed, files created, server verified)
+- [DONE] Verify skill file and test server (server started, healthy at port 3111)
+- [DONE] Store key findings from session in memory systems (research stored in both memory systems)
+- [DONE] Commit created files (pushed)
+- [DONE] Blacklist IWM + SLV in quality_gates (already in ETF_BLACKLIST)
+- [DONE] Cap ONDOUSDT at 10% in per_source_volume_cap.py (enforce_symbol_cap added, wired into callers, tested)
+- [DONE] Run mutation protocol on luxalgo_filters before any source block (mutation agent spawned and analyzing)
+- [DONE] Investigate 0-second dedup violations (hs_lb_None already blocked, violations are historical)
+- [DONE] Fix regime_terminal duplicate key (consolidated into one entry)
+- [DONE] Add pytest coverage for enforce_symbol_cap (5 new tests, 13/13 pass)
+- [DONE] Commit and push volume-cap changes (pushed)
+- [DONE] Analyze mutation for luxalgo_filters (completed by agent, report written)
+- [DONE] Update matrix_symbol_gates.json with BLOCK for SOLUSDT, SUIUSDT, XRPUSDT and ALLOW for JUPUSDT, ARBUSDT, WIFUSDT
+- [DONE] Verify matrix gate module loads new entries correctly
+- [DONE] Log mutation verdict to memory systems
+- [DONE] Define skill "Check GitHub Actions Health" with base directory `c:\findtorontoevents_antigravity.ca\.claude\skills\check-gh-actions`
+- [UNCLEAR] Check four test failures (two pre-existing, `crypto_high_conf_guard` possibly related to confidence threshold change)
+- [UNCLEAR] Diagnose 6 failures (look at specifics)
+- [DONE] Fix lowercase `asset_class` comparisons in 4 files
+- [DONE] Document `CRYPTO_UTC_HOUR_FILTER` and `EQUITY_CONFIDENCE_INVERSION_PENALTY` in `alpha_engine/config.py`
+- [DONE] Add 6 NS-C CRYPTO UTC-hour filter tests to `tests/test_quality_gates.py`
+- [DONE] Install `agentmemory` and create skills for it
+- [DONE] Run deep research using swarm_v2 on asset class, log findings to holographic memory
+- [DONE] Check IMXUSDT full unblock eligibility
+- [DONE] Run CRYPTO dedup + source audit
+- [DONE] Fix `regime_terminal` duplicate key
+- [DONE] Add ONDOUSDT 10% per-symbol concentration cap wired into both emitters
+- [DONE] Run luxalgo_filters mutation protocol
+- [OPEN] Run `/check-gh-actions` to verify CI health after all changes
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history PR #1086)
+- [DONE] Fix `test_crypto_high_conf_guard.py` — change `confidence=0.90` to `0.91`
+- [DONE] Fix `test_blacklist_exec_gate_enforcement.py` — switch exec-gate tests from `kimi_signal_tracking` to `crypto_winners`
+- [DONE] Fix `test_etf_sector_emitter.py` — change expected `source_system` from `etf_sector_rotation` to `etf_all_strategies`
+- [DONE] Fix `test_vix_yc_combined_gate.py` — explicitly set `YC_REGIME_GATE_ENABLED=0`
+- [DONE] Fix `test_zombie_kill_2026_04_28.py` — remove `kimi_signal_tracking` from `must_keep` set
+- [DONE] Fix `test_quality_gates_swarm_batch1_2026-05-09.py` — change `battleground` score assertion from `15` to `5`
+- [DONE] Fix `.github/workflows/ci-tests.yml` — lower `--cov-fail-under` from `40` to `10`
+- [DONE] Run all 6 tests locally to verify they pass
+- [DONE] Run broader test suite to check for regressions
+- [DONE] Commit and push all fixes
+- [DONE] Verify CI passes (run 25966309944 — green)
+- [OPEN] Save to memory key (user requested "save to memory key in" — no evidence it was executed)
+- [DONE] Write three new memories (MEMORY.md updated, agentmemory saved)
+- [DONE] Run gate spot-check on active picks across all asset classes
+- [DONE] Diagnose rejection reasons for picks failing gates
+- [DONE] Trace actual gate path to find root cause
+- [DONE] Get full breakdown of gate results
+- [DONE] Fix 6 CI test failures (test_crypto_high_conf_rejected, test_kimi_in_exec_blocked_source_systems + 2 related kimi tests, test_etf_sector_picks_file_schema, test_combined_default_off_does_not_reject)
+- [DONE] Fix additional failures: test_blocklist_did_not_shrink, test_battleground_upsized_to_15
+- [DONE] Save key insights to memory (file-based memory system and agentmemory)
+- [OPEN] Spot-check picks on each asset class failing smart gate/safety gate and verify guard configuration (was IN PROGRESS at summary time)
+- [DONE] Investigate why April 25 CRYPTO/STOCKS picks are still in active_picks.json 21 days later
+- [DONE] Write a pruner script for expired picks
+- [DONE] Verify pruner in dry-run mode
+- [DONE] Run live prune (98 expired picks removed)
+- [DONE] Wire pruner into outcome-resolver workflow for hourly automatic cleanup
+- [DONE] Add expired_picks_archive.json to workflow commit step
+- [DONE] Commit and push all changes
+- [DONE] Check EQUITY YM=F concentration issue
+- [DONE] Re-run gate spot-check on pruned data
+- [OPEN] Review /money-maker-readyv2 and all DAILY_IDEAS files
+- [DONE] Run freshness preflight (fail-fast) — freshness gate executed.
+- [DONE] Read per-class baseline from asset_class_health — dashboard data read.
+- [DONE] Identify proven filter per class — analysis performed.
+- [DONE] Compute Kelly sizing — compute_position_size() called.
+- [DONE] Write weekly filter report — reports/weekly_filter_<UTC>.md written.
+- [DONE] Verify picks hit the filter — OPEN picks checked against filters.
+- [DONE] Commit report — git add + commit executed.
+- [DONE] Seed agentmemory with key findings — 14 memories stored (21→36).
+- [OPEN] Install agentmemory plugin via `/plugin marketplace add` — noted as Claude Code CLI command, not executed in transcript.
+- [UNCLEAR] Fix agentmemory REST API 404 (dimension mismatch) — investigated but fix not shown completed.
+- [DONE] Install agentmemory plugin via `/plugin marketplace add rohitg00/agentmemory` and `/plugin install agentmemory`
+- [DONE] Run `/reload-plugins` to apply plugin registration
+- [DONE] Test MCP recall against seeded memories
+- [DONE] Seed agentmemory with corrected facts from swarm investigation
+- [DONE] Kill old iii.exe process
+- [DONE] Create start-agentmemory.bat batch file
+- [DONE] Start agentmemory server via batch file
+- [DONE] Seed 11 session memories into agentmemory
+- [OPEN] Verify agentmemory is properly configured and responding
+- [DONE] Gate spot-check across all 137 active picks — verify guards properly configured
+- [DONE] Fix 98 expired picks inflating concentration cap (prune_active_picks.py created, wired into outcome-resolver.yml)
+- [DONE] money-maker-readyv2 workflow — freshness check, per-class baseline, proven filters, Kelly sizing, write weekly filter report
+- [DONE] Review all DAILY_IDEAS files (12 files) with subagents and check against current state for action items
+- [DONE] Update agent memory — seed agentmemory with session findings, update file-based memory
+- [DONE] Install agentmemory plugin (rohitg00/agentmemory via /plugin install)
+- [DONE] Seed 14+ memories via REST
+- [OPEN] Investigate agentmemory embedding issue — memories store successfully but search returns 0 results because embeddings are NOT being generated
+- [OPEN] Use multi-PC protocol and consult other AIs (CEREBRAS_API_KEY_PAID, OPENCODE_FREE_TIER, NOUS_API_KEY) for embedding fix
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history PR #1086) — P0 OPERATOR
+- [UNCLEAR] Investigate agentmemory embedding root cause (async failure, xenova model loading silently failing, CONSOLIDATION_ENABLED=false)
+- [DONE] Check agentmemory health and version (v0.9.17)
+- [DONE] Reproduce search issue (BM25 scores ~0.016, no embeddings)
+- [DONE] Check `.env` for embedding config (EMBEDDING_PROVIDER=local, CONSOLIDATION_ENABLED and GRAPH_EXTRACTION_ENABLED not set)
+- [DONE] Check if `@xenova/transformers` is installed (v2.17.2 found)
+- [DONE] Check cross-PC messages for claude-desktop (no new DMs)
+- [DONE] Broadcast session findings to peers
+- [DONE] Investigate agentmemory embedding code path (read source, run swarm)
+- [DONE] Check live log for silent embed failures (xenova model works, vector index cleared at startup)
+- [DONE] Restart agentmemory server after crash (OOM from 90MB xenova model)
+- [DONE] Run swarm investigation for root cause (confirmed: OOM on Node.js worker)
+- [DONE] Check for OPENROUTER_API_KEY (available)
+- [DONE] Update `.env` to use OpenRouter embeddings
+- [DONE] Restart agentmemory with OpenRouter key
+- [DONE] Kill old processes and force-restart with new `.env`
+- [DONE] Set OpenRouter key directly in `.env` file
+- [DONE] Restart agentmemory via PowerShell
+- [DONE] Set embedding config as permanent Windows user env vars
+- [DONE] Check startup logs to confirm OpenRouter embeddings active
+- [DONE] Check full stderr log (OpenRouter API works)
+- [OPEN] Trigger full re-embed via consolidate pipeline
+- [DONE] Fix agentmemory vector embedding generation (switched to OpenRouter, updated .env and start script)
+- [DONE] Prune stale picks from active_picks.json (script created and wired hourly)
+- [DONE] Create money-maker-readyv2 workflow (EQUITY T2 $621/pick, CRYPTO_ENHANCED $730/pick)
+- [DONE] Synthesize DAILY_IDEAS 12 files
+- [DONE] Check cross-PC protocol messages on gateway (192.168.2.32:8788)
+- [DONE] Correct identity to claude-eltonslaptop
+- [DONE] Use correct gateway IP 192.168.2.32:8788
+- [DONE] Check cross-PC protocol for messages (repeated)
+- [DONE] Write Node.js diagnostic to test `createEmbeddingProvider()` in runtime environment
+- [DONE] Restart server with correct env vars (EMBEDDING_PROVIDER=openrouter) explicitly set
+- [DONE] Test if embeddings are working after restart
+- [DONE] Verify semantic search is working
+- [DONE] Update bat file to ensure env vars are correctly passed on startup
+- [DONE] Update preferences.json to suppress console install prompt
+- [DONE] Update agentmemory reference memory with root cause and fix
+- [DONE] Dispatch `ab_analysis.yml` for `multi_asset_cot` COMMODITY verification (run 25973859830)
+- [DONE] Check `confidence` → `trust_score` swap in HIGH_CONVICTION gate
+- [DONE] Check BTC UTC-hour filter opportunity
+- [DONE] Check FOREX emissions (hard-disable is default-ON, not overridden in GHA — properly blocked)
+- [DONE] Store key session findings to agentmemory
+- [OPEN] Fix 5 CI test failures (AAPL un-ban update, ETF floor 40→35 snapshot, revert kimi_riseoftheclaw EQUITY exemption)
+- [OPEN] Fix ETF score floor snapshot test (expects 40, should be 35)
+- [DONE] Fix agentmemory vector embedding generation (OpenRouter embeddings working, triple-stream search active)
+- [DONE] Set AGENTMEMORY_VERBOSE=1 in start-agentmemory.bat
+- [DONE] Change skipConsoleInstall to true in preferences.json
+- [DONE] Add root-cause documentation to reference_agentmemory.md
+- [DONE] Modify test_hedge_fund_quality_gate.py (AAPL un-ban, reject band, alias, batch count tests)
+- [OPEN] Change test_quality_gates.py line 1259: "ETF": 40 → "ETF": 35
+- [OPEN] Fix test_kimi_promotion_unblock.py (via quality_gates.py changes to _NC_SCORE_EQUITY_EXEMPT)
+- [OPEN] Continue DAILY_IDEAS action items: ab_analysis.yml dispatch for COMMODITY multi_asset_cot PF=7.71 verification, BTC UTC-hour filter, FOREX hard-disable enforcement check
+- [DONE] Fix quality_gates.py: remove `_NC_SCORE_EQUITY_EXEMPT` block and revert `_source_is_nc_exempt` logic
+- [DONE] Fix tests/test_hedge_fund_quality_gate.py: rename test, add equity reject test, update alias/batch tests
+- [DONE] Fix tests/test_quality_gates.py: update M-044 ETF floor snapshot from 40 to 35
+- [DONE] Commit and push the two quality gate fixes
+- [DONE] Verify CI picked up the commits (CI run 25974174176 in progress)
+- [OPEN] Read all 16 files listed by user
+- [OPEN] Append analysis of current state and pros/cons of remaining action items to each file
+- [OPEN] Commit each revised file to GitHub main
+- [DONE] Revert `_NC_SCORE_EQUITY_EXEMPT = {"kimi_riseoftheclaw"}` from `audit_trail/quality_gates.py::passes_active_gate`
+- [DONE] Fix `tests/test_quality_gates.py` line 1259: `"ETF": 40` → `"ETF": 35`
+- [OPEN] Commit and push to trigger CI
+- [DONE] Read all 16 DAILY_IDEAS files
+- [DONE] Append Claude Code analysis to 14 DAILY_IDEAS files
+- [OPEN] Commit all revised DAILY_IDEAS files to GitHub main
+- [UNCLEAR] Read and update `DAILY_IDEAS.MD` (root, 1558 lines) — interrupted by summary request
+- [DONE] Commit 14 DAILY_IDEAS files with Claude Code analysis blocks to main
+- [DONE] Ship quick wins: mysql-sync silent-fail, weekly-filter cron, quarter-Kelly sizing (commit `404de27b6f`)
+- [DONE] Ship schema drift watchdog: `db_schema_snapshot.py` + nightly GHA, 6 tests (commit `e51ea72f17`)
+- [DONE] Wire `phase5_dashboard_integration.load_hourly_picks()` + `CopytraderManager` (commit `dac47430e7`)
+- [DONE] Write MySQL anomaly scanner (commit `6e569649dc`)
+- [DONE] Wire PCG-5 portfolio gates shadow-mode (commit `adb0a9f3a7`)
+- [DONE] Write FOREX carry-factor scaffold (commit `072ec51e98`)
+- [DONE] Write DBMF replication module `tools/research/dbmf_replication.py` (commit `a1f669697c`)
+- [DONE] Write swarm research reports (ETF rotation, COMMODITY SHORT, DBMF design) (commit `5bcbdc5f95`)
+- [DONE] Set `DB_PASS_BACKTESTS` GitHub secret
+- [OPEN] Rotate `ejaguiar1_stocks` MySQL password (P0 security — `stocks123` in git history)
+- [OPEN] CVX PROBATION review on 2026-05-30
+- [OPEN] CT=F PROBATION review on 2026-06-06
+- [OPEN] Enable `CRYPTO_CONF_INVERSION_GATE=1` after 2026-06-15
+- [DONE] Save session memories to agentmemory
+- [DONE] Sync project to GitHub (commit `7b273b9cd0` pushed)
+- [OPEN] Rotate OpenRouter API key (`sk-or-v1-c054...`) at openrouter.ai and update Windows env var
+- [DONE] Save and integrate `edge_concentrator.py` (file written, commit `67d0242a30`)
+- [DONE] Review crypto prediction system from Downloads (report written, commit `67d0242a30`)
+- [DONE] Save Ernie + Xiao Mi Mimo analysis as MDs and create action plan (report written, commit `67d0242a30`)
+- [OPEN] Convert action plan into todos and deploy agents for P0 items (launched but not shown completed)
+- [DONE] Run the parsed prompt now (launched agents for remaining todos)
+- [DONE] Arm Monitor for event-based wake (agents already armed notifications)
+- [DONE] Confirm self-pacing plan (5 agents, notifications as primary wake, 270s fallback)
+- [DONE] Call ScheduleWakeup with 270s delay and `/loop proceed on next steps until all todos are fulfilled`
+- [DONE] P0: CRYPTO confidence cap 0.90 + BUY→LONG enforcement + ml_score floor 0.65 (commit f55c3be540, 19/19 tests)
+- [DONE] P2: OI momentum features + Garman-Klass volatility from coinglass.db (commit c134ee864e, 15/15 tests)
+- [OPEN] P1: ETF score≥60 + CRYPTO vote threshold
+- [OPEN] P1: NUPL regime filter + P2: exchange spread divergence
+- [OPEN] P2: OBI/OFI order flow (shadow mode)
+- [DONE] Create `obiflow.py` module with OBI/OFI logic and cold-start guard
+- [DONE] Write 9 tests in `test_obiflow.py`
+- [DONE] Insert M-040 quality gate block in `quality_gates.py`
+- [DONE] Create empty `obi_shadow_log.json` seed file
+- [DONE] Run tests (9/9 passed)
+- [DONE] Commit and push to `origin/main` (SHA `7f6c2bd61d`)
+- [DONE] Commit 14 DAILY_IDEAS files with analysis blocks
+- [DONE] Extract action items from DAILY_IDEAS and create todos
+- [DONE] Save session findings to agentmemory
+- [DONE] Sync project to GitHub (commit all untracked/modified local files)
+- [DONE] Integrate edge_concentrator.py code
+- [DONE] Review crypto prediction system files for improvements
+- [DONE] Synthesize Ernie + Xiao Mi Mimo expert feedback into action plan
+- [DONE] Proceed on next steps via /loop + /goal until all todos fulfilled
+- [OPEN] Commit nupl_regime.py (agent a0c7e4fd7 — pending commit)
+- [DONE] Agent `a0c7e4fd7b0c6d825` (NUPL + exchange spread) — commit `d17b0fa8ab`, 10/10 tests passing
+- [DONE] Agent `af4196eec0307990f` (ETF tight gate + CRYPTO vote threshold) — completed, merged, 11 tests passing
+- [DONE] Add `OFOX_AI_KEY` to swarm (ENGINE_KEY_ENVS.py, worker_runner.py)
+- [DONE] Create `consult_ofox` skill (SKILL.md)
+- [DONE] Test OFOX accessibility (429 rate-limited, endpoint valid)
+- [DONE] Commit OFOX changes (commit `4714811daa`)
+- [DONE] Save OFOX provider to memory
+- [OPEN] Parse input into `[interval] <prompt>` per rules (no interval found → dynamic mode, prompt "okay proceed on next steps until all all todos are fulfilled.")
+- [OPEN] Check cloud offer conditions (interval <60m, no daily phrasing → neither trigger met, skip cloud question)
+- [OPEN] Run parsed prompt now (dynamic mode step 1)
+- [OPEN] Decide if next run is gated on an event; if so, arm a Monitor with `persistent: true` (step 2)
+- [OPEN] Confirm self-pacing plan in text (step 3)
+- [OPEN] Call ScheduleWakeup with delay, reason, and prompt `/loop okay proceed on next steps until all todos are fulfilled.` (step 4)
+- [DONE] Rotate OpenRouter API key (scrub from git history) — confirmed not in remote history, no action needed
+- [OPEN] Rotate `ejaguiar1_stocks` MySQL password (`stocks123` in git history) — P0 security, not shown done
+- [OPEN] Rotate OpenRouter API key at openrouter.ai — precautionary, not shown done
+- [OPEN] CT=F PROBATION review: 2026-06-06
+- [OPEN] CVX PROBATION review: 2026-05-30
+- [OPEN] Enable M-034 CRYPTO conf inversion gate (`CRYPTO_CONF_INVERSION_GATE=1`) after 2026-06-15
+- [DONE] COMMODITY SHORT verification — PF=2.10 / WR=58.06% confirmed
+- [DONE] DBMF backtest — fixed bugs, produces 7 LONG signals
+- [DONE] DB_PASS_BACKTESTS secret — already set in GitHub secrets
+- [OPEN] Single-persona swarm-pick tier-gate (M-041) — agent spawned, not shown complete
+- [OPEN] ETF sector rotation (macro veto + RS overlay) — agent spawned, not shown complete
+- [OPEN] Bond scanner expansion (TLT/HYG → 14 symbols) — agent spawned, not shown complete
+- [OPEN] Confidence calibration table (`at_confidence_calibration`) — agent spawned, not shown complete
+- [OPEN] MySQL ghost-row purge (655k stale rows) — blocked, needs PA console access
+- [OPEN] UEPS_ENABLE_PEAD=1 check in prod `.env` — blocked, needs PA console access
+- [OPEN] Backtest DB split (`ejaguiar1_backtests`) — secret already set, but actual split not shown done
+- [OPEN] Outcome resolution table (`at_pick_outcomes`) — blocked, needs MySQL access
+- [OPEN] MySQL index audit on `trading_picks` — blocked, needs MySQL access
+- [OPEN] Feed chat transcript into agent swarm for review — requested via /goal command, not shown done
+- [DONE] Set cron job to check every 10 minutes (cron `42a54f6a`)
+- [DONE] Implement ETF_TIGHT_GATE default flip (0→1) — committed in b9ec038707
+- [DONE] Implement M-042 COMMODITY_SHORT_ONLY gate — committed in b9ec038707
+- [DONE] Implement M-043 BOND_MIN_N_GATE — committed in b9ec038707
+- [DONE] Add ofox to ALL_ENGINES + all-free-api preset — committed in b9ec038707
+- [DONE] Implement M-041 (swarm tier gate)
+- [DONE] Implement CRYPTO trade age gate
+- [DONE] Sync everything to GitHub
+- [DONE] Set active goal: "keep working on next steps till all todos /action items are completed, then feed our chat transcript into our agent swarm and have them review for any further action items needed, if needed break it down into chunks for review."
+- [DONE] Pull latest commit `3d017e00e1` from another agent and assess state.
+- [DONE] Run a second focused swarm review on updated state to catch remaining items.
+- [DONE] Address P2/S gaps: COMMODITY LONG re-enablement criteria + DBMF LONG-only documentation.
+- [DONE] Document DBMF as intentionally LONG-only and add monitoring reminders.
+- [DONE] Commit and sync changes.
+- [OPEN] MySQL ghost-row purge — blocked on PythonAnywhere console access.
+- [OPEN] UEPS_ENABLE_PEAD=1 — blocked on checking prod `.env` via PA console.
+- [OPEN] NUPL_GATE_ENFORCE=1 — intentional 30-day hold to confirm Coin Metrics API reliability.
+- [DONE] Complete all pending todos from `reports/daily_ideas_synthesis_2026-05-16.md` (swarm tier-gate, ETF rotation, bond scanner, confidence calibration, COMMODITY SHORT gate, BOND min-n gate, DBMF validation)
+- [DONE] Add OFOX AI (free tier `z-ai/glm-4.7-flash:free`) to swarm as a new engine
+- [DONE] Create `/consult-ofox` skill
+- [DONE] Scrub OpenRouter key from git history (verified already clean — no action needed)
+- [DONE] Run swarm review of full session transcript to find remaining action items
+- [DONE] Check in every 10 minutes via cron until all todos done
+- [DONE] Sync project to GitHub after each batch of changes
+- [DONE] Skip key rotation tasks (user explicitly said "forget the key rotation, focus on rest of topics")
+- [DONE] Fix `TestArchiveDedupGuard` CI test failure (emitter dedup collapsing test picks)
+- [DONE] Verify fix locally (all 8 tests pass)
+- [DONE] Commit and push the fix
+- [DONE] Check VIX+YC bonus wiring (verified wired)
+- [DONE] Check FOREX_HARD_DISABLE (verified in)
+- [DONE] Check `EQUITY_KELLY_FRACTION = 0.25` (verified exists)
+- [DONE] Check PCG-5 portfolio gates orphan (verified wired)
+- [DONE] Check remaining orphans (verified wired)
+- [DONE] Write swarm review prompt
+- [OPEN] Run swarm session review of current state
+- [OPEN] Feed chat transcript into agent swarm for further action items review
+- [OPEN] Break down review into chunks if needed
+- [OPEN] MySQL ghost-row purge (infra-blocked, requires user action)
+- [OPEN] UEPS_ENABLE_PEAD=1 verify (infra-blocked, requires user action)
+- [OPEN] NUPL_GATE_ENFORCE=1 enable after 2026-06-16 (infra-blocked, requires user action)
+- [DONE] Implement EQUITY_VIX_FILTER gate (M-045)
+- [DONE] Add bond futures to bond_scanner (already had all 14 symbols)
+- [DONE] Add tests for M-045 (5 tests written and passing)
+- [DONE] Commit M-045 (commit 8816afc290)
+- [DONE] Resolve merge conflict and push M-045
+- [DONE] Create quan_engine investigation document (docs/STRATEGY_INVESTIGATION_quan_engine_2026_05_17.md)
+- [DONE] Create FOREX carry-factor scaffold (forex_carry.py already existed with full implementation)
+- [DONE] Commit quan_engine investigation doc (commit dcab11b52d)
+- [DONE] Push and verify CI (green)
+- [DONE] Judge goal as achieved
+- [OPEN] MySQL ghost-row purge (655k stale rows) — PA console: `mysql -u ejaguiar1 ejaguiar1_stocks`
+- [OPEN] UEPS_ENABLE_PEAD=1 — check PA `.env` file
+- [OPEN] quan_engine block decision — scheduled for 2026-05-24 autopsy
+- [OPEN] Feed chat transcript into agent swarm for review (requested in /goal command)
+- [DONE] Read raw dashboard data to understand current state
+- [DONE] Produce weekly filter report (required deliverable from `/money-maker-readyv2`)
+- [DONE] Verify COMMODITY numbers
+- [DONE] Write weekly filter report
+- [DONE] Run swarm review on session transcript to find remaining action items
+- [DONE] Implement tiered EQUITY position sizing (equity_conviction_multiplier())
+- [DONE] Add helper function in kelly_position_sizer.py
+- [DONE] Tick, judge, and close goal
+- [OPEN] Set `EQUITY_VIX_FILTER=1` in prod `.env`
+- [OPEN] Set `EQUITY_CONVICTION_TIERS=1` in prod `.env` after 2-week shadow validation
+- [OPEN] PA console: check `UEPS_ENABLE_PEAD=1` and MySQL ghost-row purge
+- [OPEN] 2026-05-24: run `python tools/mutation_analysis.py` on quan_engine picks
+- [OPEN] 2026-06-06: CT=F PROBATION review
+- [OPEN] Set or replace the active goal via `/goal <text>` with the user's stated objective (keep working on next steps till all todos/action items are completed, then feed transcript into agent swarm for review).
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits).
+- [OPEN] Tick the counter via `goal_state.py tick --session <SID>`.
+- [OPEN] Judge own work against the goal text and record verdict via `goal_state.py judge`.
+- [OPEN] If goal not done and budget remains, schedule continuation via `ScheduleWakeup` with prompt `/goal continue`.
+- [OPEN] Once goal is achieved, feed the chat transcript into the agent swarm for review of further action items.
+- [OPEN] If swarm returns action items, break them down into chunks for review.
+- [DONE] Complete all code-actionable items from `reports/daily_ideas_synthesis_2026-05-16.md`
+- [DONE] Run swarm reviews after each batch, continue until nothing actionable remains
+- [DONE] Add M-045 EQUITY VIX filter gate in `audit_trail/quality_gates.py`
+- [DONE] Add `TestM045EquityVixFilter` tests in `tests/test_quality_gates.py`
+- [DONE] Create `docs/STRATEGY_INVESTIGATION_quan_engine_2026_05_17.md`
+- [DONE] Generate `reports/weekly_filter_2026-05-17T0521Z.md`
+- [DONE] Add tiered conviction sizing constants in `alpha_engine/config.py`
+- [DONE] Add `equity_conviction_multiplier()` function in `alpha_engine/kelly_position_sizer.py`
+- [OPEN] Complete three-axis autopsy for quan_engine (deadline 2026-05-24)
+- [OPEN] Review autopsy results (deadline 2026-05-31)
+- [OPEN] User approval for hard block if no slice salvageable (deadline 2026-06-07)
+- [DONE] Wire VIX+YC bonus (line 3842)
+- [DONE] Wire orphan modules
+- [DONE] Confirm COMMODITY SHORT-only filter and edge_filter_engine_v3
+- [DONE] Address COMMODITY concentration warning (cftc_cot_commercial_signal at 51.6%)
+- [DONE] Add M-046 (COMMODITY concentration cap)
+- [DONE] Add M-047 (EQUITY shadow floor at 50)
+- [DONE] Add M-045 VIX shadow monitoring log
+- [DONE] Write CRYPTO T1 certification report
+- [DONE] Run tests to confirm M-046/M-047 don't break test suite
+- [DONE] Commit and push
+- [DONE] Update goal state and todo list
+- [DONE] Final review of accomplishments
+- [DONE] Verify weekly_filter_2026-05-17.md is FTP-deployed (manual user action)
+- [DONE] Verify weekly filter is linked from updates/index.html
+- [DONE] Add new update entry in updates/index.html
+- [DONE] Run dropchat to broadcast session to peer agents
+- [DONE] Log dropchat failure to CHATBIBLE_FAILURE.MD
+- [OPEN] MySQL ghost-row purge (655k stale rows in ejaguiar1_stocks) — blocked, requires PA console
+- [OPEN] UEPS_ENABLE_PEAD=1 verification in prod .env — blocked, requires PA console
+- [OPEN] Restart gateway to restore peer sync (192.168.2.32:8788 unreachable)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user requested via /goal)
+- [DONE] Set goal: "keep working on next steps till all todos/action items are completed, then feed our chat transcript into our agent swarm and have them review for any further action items needed, if needed break it down into chunks for review"
+- [DONE] Check for test conflicts with earlier archive-dedup fix
+- [DONE] Check for new items from recent remote commits
+- [DONE] Review three open PRs
+- [DONE] Investigate FOREX recovery and CRYPTO block candidate patterns from PR #1126
+- [DONE] Verify FOREX last-30 rolling condition
+- [DONE] Document FOREX recovery and create targeted bypass gate (FOREX_COPYTRADER_ENABLE)
+- [DONE] Add FOREX_COPYTRADER_ENABLE gate skeleton to quality_gates (default OFF, shadow)
+- [DONE] Check new files from other agents while CI finishes
+- [DONE] Do final swarm review of session's work
+- [DONE] Handle two code-actionable items from swarm review: FOREX_COPYTRADER_ENABLE test + cta_replicator warning
+- [DONE] Add cta_replicator warning log to quality_gates
+- [DONE] Commit (94 tests passing)
+- [DONE] Check new updates/2026-05-17-mysql-ghost-row-fix-blocker-1.md from remote
+- [DONE] Do final goal judgment
+- [DONE] Push 6 commits to main (94/94 quality_gates tests pass, CI green)
+- [DONE] Implement FOREX_COPYTRADER_ENABLE bypass gate (multi_asset_copytrader WR=64.7%/PF=1.87 bypasses FOREX_HARD_DISABLE when enabled)
+- [DONE] Write FOREX recovery report (reports/forex_copytrader_recovery_2026_05_17.md)
+- [DONE] Write 3 unit tests for FOREX bypass (TestForexCopytradeBypas)
+- [DONE] Confirm CI tests green (Python 3.11 + 3.12)
+- [DONE] Fix MySQL write path (PR #1127 from another agent)
+- [OPEN] Delete 655k stale MySQL rows in ejaguiar1_stocks (needs PA console DELETE FROM trading_picks WHERE ...)
+- [OPEN] Set UEPS_ENABLE_PEAD=1 in prod .env (needs PA console)
+- [OPEN] Merge PR #1127 (human review required)
+- [DONE] Review new PRs #1130, #1131, #1132
+- [DONE] Verify C4 (m004 autopsy correction) is already done
+- [DONE] Commit C5 fix
+- [DONE] Run swarm review for this session
+- [DONE] Create investigation doc for mercury2_fast (PF=0.07, n=32) per CLAUDE.md protocol
+- [OPEN] Defer C6 (mercury2_fast investigation)
+- [DONE] Add M-045 VIX shadow log (JSONL append per pick evaluation)
+- [DONE] Add M-046 COMMODITY source concentration cap (env-gated, fail-open)
+- [DONE] Add M-047 EQUITY shadow floor at elite>=50 (env-gated, logging only)
+- [DONE] Add FOREX_COPYTRADER_ENABLE bypass for multi_asset_copytrader
+- [DONE] Add 3 tests for FOREX copytrade bypass in `tests/test_quality_gates.py`
+- [DONE] Fix C5: add timestamp fields (`signal_time`, `entry_time`, `closed_at`, `opened_at`, `resolved_at`) to `_SCORING_FIELDS` in `universal_pick_resolver.py`
+- [DONE] Create `reports/crypto_t1_proven_filter_2026_05_17.md` (CRYPTO T1 certification)
+- [DONE] Create `reports/forex_copytrader_recovery_2026_05_17.md` (FOREX recovery documentation)
+- [OPEN] Continue autonomous loop: complete all code-actionable items from `reports/daily_ideas_synthesis_2026-05-16.md` and `reports/crypto_edge_artifact_audit_2026_05_17.md`
+- [OPEN] Run swarm review after each batch of completed items
+- [OPEN] Fix A3 (blocked sources still counted) from crypto edge artifact audit
+- [OPEN] Fix A4 (zero fee model) from crypto edge artifact audit
+- [OPEN] Fix B2 (fixed-TP ghost rows) from crypto edge artifact audit
+- [OPEN] Schedule quan_engine Stage 1 (Reduce Risk) autopsy for 2026-05-24
+- [DONE] Run matrix rules generator to produce updated gates
+- [DONE] Update allow/block lists for matrix gates
+- [DONE] Write investigation document for direction-flip finding (ig_contrarian_sentiment LONG)
+- [DONE] Run all 9 gate tests (all pass)
+- [DONE] Commit changes and run quality gates tests
+- [DONE] Write swarm review prompt for round 8 and run it
+- [DONE] Check existing BLOCKED_DIRECTION_TRIPLES for ig_contrarian_sentiment LONG coverage
+- [DONE] Check PR #1125 conflicts (doc-only fix)
+- [DONE] Conclude mutation analysis validates prior decisions; no new blocking actions needed
+- [DONE] Shipped `alpha_engine/data/matrix_symbol_gates.json` (29 symbol blocks across 5 systems)
+- [DONE] Shipped `reports/mutation_investigation_2026_05_17.md` (three-axis investigation)
+- [DONE] Reviewed and confirmed Swarm round 8
+- [OPEN] PRs #1130/#1132 (C1/D2 CRYPTO ledger fixes) — awaiting eltonaguiar review
+- [OPEN] PR #1125 (COMMODITY COT report correction) — author needs to rebase
+- [OPEN] MySQL 655k stale row DELETE — PA console
+- [OPEN] `UEPS_ENABLE_PEAD=1` — PA console
+- [DONE] Enabled META_LABEL_GATE shadow logging by default
+- [DONE] Updated call site comment and enforce-mode wire-up for META_LABEL_GATE_ENFORCE
+- [DONE] Updated meta_label_gate docstring to mention enforce-mode
+- [DONE] Added tests for meta-label enforce mode (97/97 pass)
+- [DONE] Committed and pushed changes
+- [OPEN] Feed chat transcript into agent swarm for review of further action items
+- [OPEN] Break down into chunks for review if needed
+- [DONE] A7 COT overlay: determined INCONCLUSIVE-NO-DATA, no wiring needed
+- [DONE] Push and run swarm review on A7 COT overlay
+- [DONE] Post clarifying comment on PR #1132 about test assertion
+- [OPEN] PR #1132: author needs to update test assertion to expect 51500 (gap-aware fill price)
+- [OPEN] PR #1125: conflicts — author rebase needed
+- [OPEN] PR #1133: gitleaks scan pending
+- [OPEN] META_LABEL_GATE_ENFORCE=1: enable after 30d shadow data validates pwin calibration
+- [OPEN] MySQL 655k stale row DELETE + UEPS_ENABLE_PEAD=1: PA console access needed
+- [OPEN] Keep working on next steps till all TODOs/action items are completed
+- [OPEN] Break down swarm review into chunks if needed
+- [DONE] Update `matrix_symbol_gates.json` with three-axis mutation data (29 block rules across 5 systems)
+- [DONE] Change `META_LABEL_GATE` default from `"0"` to `"1"` (shadow ON by default)
+- [DONE] Wire enforce mode in `passes_active_gate()` call site
+- [DONE] Update docstring for `meta_label_gate()`
+- [DONE] Add 3 new `TestMetaLabelGate` tests (97/97 pass)
+- [DONE] Create `reports/mutation_investigation_2026_05_17.md`
+- [DONE] Create `tools/swarm/prompts/session_review_2026_05_17h.md` (Round 8 swarm prompt)
+- [DONE] Create `tools/swarm/prompts/session_review_2026_05_17i.md` (Round 9 swarm prompt)
+- [DONE] Create `tools/cot_crypto_overlay.py` (A7 research deliverable)
+- [DONE] Create `reports/cot_crypto_overlay_2026-05-17.md` (A7 backtest report)
+- [OPEN] Continue working on next steps until all TODOs/action items are completed
+- [DONE] Write round 10 final swarm prompt
+- [DONE] Verify `forex_rsi2_mean_reversion` and `cta_cross_asset_tsmom LONG` are already blocked
+- [OPEN] Keep working on next steps until all TODOs/action items are completed
+- [DONE] Fix test assertion in PR #1132 (update expected value from 51000.0 to 51500.0)
+- [DONE] Update test comment to reflect new semantics
+- [DONE] Run tests (29/29 pass)
+- [UNCLEAR] Run full quality gates suite (mentioned but not shown completed)
+- [UNCLEAR] Force push fix to PR branch (mentioned but not shown completed)
+- [DONE] Switch back to main, check CI on PR, see what else is open
+- [DONE] Implement Fix 1: preamble-before-fence JSON recovery + remove 2000-char cap
+- [DONE] Verify existing swarm tests pass
+- [DONE] Commit and push preamble fix
+- [DONE] Check PR #1137 (yfinance declaration) and PR #1136 CI status
+- [DONE] Check PR #1136 content to see if safe to merge
+- [DONE] Check what else is in MASTER_ACTION_PLAN and new reports, then run swarm round
+- [DONE] Check PR #1125 state and run M-053 in parallel
+- [DONE] Cherry-pick PR #1125's 3 report correction commits
+- [DONE] Close PR #1125 with explanation
+- [DONE] Check PR #1137 CI and run M-053 4-AI stat validation
+- [DONE] Add swarm prompts to git
+- [DONE] Check PR #1137 CI status while waiting
+- [DONE] Check what new additions in reports say while waiting
+- [DONE] Check swarm background task status
+- [DONE] Verify if dashboard generator excludes blocked picks from health calculation
+- [DONE] Check if cta_replicator NG=F/CL=F picks appear in closed_picks.json
+- [DONE] Run round 11 swarm
+- [DONE] Tackle #1 (realized_n_30d bug): fix `WON`/`LOST` status check
+- [DONE] Commit and push realized_n_30d bug fix
+- [DONE] Check PR #1137 CI and merge
+- [DONE] Tick and judge
+- [DONE] Add COMMODITY survivorship warning to template.html
+- [DONE] Commit and push template.html
+- [DONE] Run live kilo/groq smoke test on preamble-before-fence fix
+- [DONE] Run final swarm round and judge
+- [DONE] Feed chat transcript into agent swarm for review of further action items
+- [DONE] Investigate PR #1132 scan: FAILURE (identified root cause: safe_push.sh fails on PR branches)
+- [DONE] Fix safe_push.sh to skip commit+push when not on main branch
+- [DONE] Rebase PR #1132 branch onto main and re-trigger CI
+- [OPEN] Check CI results on PR #1132 after re-trigger
+- [UNCLEAR] Check what else is in MASTER_ACTION_PLAN or outstanding issues (mentioned but not shown completed)
+- [UNCLEAR] Check data pipeline issues and issue #698 (pnl_pct mixed units) (mentioned but not shown completed)
+- [UNCLEAR] Check remaining open issues quickly (mentioned but not shown completed)
+- [DONE] Fix test_crypto_unaffected_by_v2.py assertion (exit_price 51000.0 → 51500.0)
+- [DONE] Fix charter_drift_circuit_breaker.py WIN/LOSS → WON/LOST bug
+- [DONE] Add COMMODITY survivorship bias warning to template.html
+- [DONE] Add FOREX WR/PF paradox note to template.html
+- [DONE] Fix _strip_code_fences() secondary regex pass for preamble-before-fence patterns
+- [DONE] Remove raw[:2000] cap in parse-fail fallback; add _parse_status field
+- [OPEN] Continue autonomous loop: keep working on next steps till all todos/action items are completed
+- [DONE] Wait for CI to finish (PR #1137)
+- [DONE] Check direction-asymmetry candidates in PR #1139
+- [DONE] Write final swarm review prompt for session l
+- [DONE] Run swarm on session l review prompt
+- [DONE] Fix `WIN`/`LOSS` vs `WON`/`LOST` bug in `enrich_health_with_recent_window`
+- [DONE] Add test for WON/LOST case in `enrich_health_with_recent_window`
+- [DONE] Commit fix for `enrich_health_with_recent_window`
+- [DONE] Fix `None` exit_date crash in `check_circuit_breaker` (line 120)
+- [DONE] Add test for None exit_date case in `check_circuit_breaker`
+- [DONE] Commit fix for `check_circuit_breaker`
+- [DONE] Close issues #638 and #652
+- [DONE] Close PR #1139
+- [DONE] Wait for PR #1132 CI (Gitleaks, walkforward-gate)
+- [OPEN] Feed chat transcript into agent swarm for review
+- [OPEN] Break transcript into chunks for review if needed
+- [DONE] Rerun stuck Gitleaks and walkforward-gate CI jobs
+- [DONE] Search codebase for WON/LOST vs WIN/LOSS mismatch
+- [DONE] Fix WON/LOST mismatch in quality_gates.py
+- [DONE] Check PR #1132 CI status
+- [DONE] Implement generate_hourly_update.py workflow (issue #167)
+- [DONE] Create audit-hourly-update.yml workflow
+- [DONE] Merge PR #1132
+- [DONE] Close issues #638, #652, #167, #331
+- [DONE] Perform swarm review (deepseek: DONE / claude: MOSTLY_DONE)
+- [DONE] Set up `/goal` skill specification (file written: `c:\findtorontoevents_antigravity.ca\.claude\skills\goal\README.md`)
+- [DONE] Create `goal_state.py` helper script
+- [DONE] Run transcript scanner to find missed action items
+- [OPEN] Break down any found action items into chunks for review
+- [DONE] Fix `enrich_health_with_recent_window` to accept WON/LOST status (commit `c24c658a2e`)
+- [DONE] Add test `test_won_lost_status_accepted` for 60d window enrichment
+- [DONE] Fix `check_circuit_breaker` None exit_date bug (commit `8605b53f90`, issue #638)
+- [DONE] Add test `test_none_exit_date_does_not_crash` for risk controls
+- [DONE] Add `if: github.ref == 'refs/heads/main'` guard to GSD scanner CI push step (commit `7d57e5956b`)
+- [DONE] Create `.github/workflows/audit-hourly-update.yml` wiring `generate_hourly_update.py` to cron schedule (issue #167 closed)
+- [DONE] Create mercury2_fast investigation doc (`reports/mercury2_fast_investigation_2026-05-17.md`)
+- [DONE] Backfill trust_score on all 89 active_picks.json entries
+- [DONE] Verify COMMODITY SHORT strategy (WR=68.6%, PF=3.23, n=309)
+- [DONE] Block COMMODITY cta_cross_asset_tsmom LONG and SHORT directions in BLOCKED_DIRECTION_TRIPLES
+- [DONE] Schedule quan_engine autopsy (2026-05-24 calendar note in quality_gates.py)
+- [DONE] Commit session action scan (`reports/session_action_scan_2026-05-17.md`)
+- [OPEN] Delete 655k stale MySQL rows (requires PA console)
+- [OPEN] Set `UEPS_ENABLE_PEAD=1` (requires PA console)
+- [OPEN] Rotate DB secret + FRED_API_KEY (manual GitHub secrets)
+- [OPEN] Review CVX, DYDXUSDT, TRXUSDT, XOM (due 2026-05-30)
+- [OPEN] Review CT=F (due 2026-06-06)
+- [OPEN] Review META_LABEL_GATE_ENFORCE=1 (due ~2026-06-16)
+- [DONE] Build strategy emission monitor
+- [DONE] Add session summary entry to `updates/index.html`
+- [DONE] Run swarm review on session's work
+- [DONE] Run 388 tests (COMMODITY direction block clean)
+- [OPEN] Set COMMODITY confidence floor to 0.50 (swarm recommendation)
+- [DONE] Swarm review (deepseek + claude, 2/2 OK) — deepseek flagged COMMODITY SHORT block requiring binomial test; test run (p=0.000012), comment updated
+- [DONE] 388 regression tests pass — confirms quality_gates.py changes are clean
+- [DONE] Strategy emission monitor shipped (tools/strategy_emission_monitor.py) — 153 DORMANT / 55 ACTIVE of 209 strategies
+- [DONE] updates/index.html entry added covering all session deliverables
+- [DONE] Block comment hardened with binomial test evidence (p=0.000012 vs H0=WR≥50%)
+- [OPEN] MySQL 655k DELETE → PA console (externally blocked)
+- [OPEN] UEPS_ENABLE_PEAD=1 → PA console (externally blocked)
+- [OPEN] FRED_API_KEY, DB password rotation → manual GitHub secrets (externally blocked)
+- [OPEN] quan_engine full autopsy → 2026-05-24 after purge (externally blocked)
+- [DONE] Continue working through all code-actionable TODOs from session transcript scan (1125 deduped action items)
+- [DONE] Run swarm review after each batch of completed action items
+- [DONE] Create `reports/mercury2_fast_investigation_2026-05-17.md` (investigation doc per protocol)
+- [DONE] Backfill trust_score on active_picks.json via `enrich_picks_with_trust_score()`
+- [DONE] Block COMMODITY cta_cross_asset_tsmom LONG direction in quality_gates.py
+- [DONE] Block COMMODITY cta_cross_asset_tsmom SHORT direction in quality_gates.py
+- [DONE] Add quan_engine_scalp to BLOCKED_SOURCE_SYSTEMS with autopsy scheduling note
+- [DONE] Validate py_compile on quality_gates.py
+- [DONE] Run 388 regression tests (quality_gate/commodity/direction)
+- [DONE] Create `reports/session_action_scan_2026-05-17.md` (1474 lines, 1125 deduped action items)
+- [DONE] Create `tools/strategy_emission_monitor.py`
+- [DONE] Create `reports/strategy_dormancy_2026-05-17.md`
+- [DONE] Update `updates/index.html` with May 17 session wrap entry
+- [DONE] Create swarm prompt `session_review_2026_05_17n.md` (not committed)
+- [DONE] Create swarm prompt `session_review_2026_05_17o.md` (not committed)
+- [DONE] Run swarm review (deepseek+claude 2/2 OK; COMMODITY block validated; 388 tests pass)
+- [OPEN] Schedule quan_engine family autopsy for 2026-05-24 (after MySQL ghost-row purge completes)
+- [OPEN] Purge 655k stale MySQL ghost rows (PA console action pending)
+- [OPEN] Feed chat transcript into agent swarm for further action item review
+- [UNCLEAR] Continue iterating until all TODOs completed or externally blocked
+- [DONE] Add COMMODITY confidence floor parameter and wire gate logic (commit `e2e5a4504a`)
+- [DONE] Correct confidence floor from 0.60 to 0.55 (commit `e26a0fcad5`)
+- [DONE] Write investigation doc for ml_enhanced_* retirement (commit `a22df62537`)
+- [DONE] Push both commits
+- [DONE] Run final swarm review for session O
+- [DONE] Verify COT strategies emit below 0.60 confidence floor
+- [DONE] Fix floor to 0.55 after verification
+- [DONE] Tick and judge the goal
+- [OPEN] Break review into chunks if needed
+- [DONE] Set fresh goal for new session and find actionable items
+- [DONE] Check PR #1149 Gitleaks status
+- [DONE] Investigate P1 action item: `cta_replicator` NG=F kill threshold
+- [DONE] Check `tweaks_to_apply.json` system and consumer
+- [DONE] Check status of PRs 1132 and 1139
+- [DONE] Check PR #1149 merge readiness
+- [DONE] Merge PR #1149
+- [DONE] Check newly pulled action plan reports for pending items
+- [DONE] Investigate M-063: block `multi_asset_copytrader` FOREX drag
+- [DONE] Run mutation analysis on FOREX picks
+- [DONE] Add FOREX LONG block for `multi_asset_copytrader`
+- [DONE] Write investigation doc and commit
+- [DONE] Run swarm review for session Q
+- [DONE] Check M-062 (COT look-ahead bias fix)
+- [DONE] Verify PR #1140 scope for M-062
+- [DONE] Check M-065 (White's Reality Check) for existing code
+- [DONE] Block `multi_asset_copytrader` FOREX LONG (JPY-cross bleed, M-063) — committed `99a92d8d`
+- [DONE] Correct hc_filter COMMODITY confidence floor 0.60→0.55 — committed `e26a0fcad5`
+- [DONE] Verify M-062 (COT publication-time gate) implementation — confirmed already implemented
+- [OPEN] PA console: MySQL purge, `UEPS_ENABLE_PEAD=1`
+- [OPEN] Research M-061 (DSR/PBO wiring)
+- [DONE] Build `tools/whites_reality_check.py` (M-065) — tool built and tested
+- [DONE] Save White's Reality Check report and commit — committed
+- [OPEN] Wire DSR/PBO into `money_ready_verdict()` (M-061)
+- [OPEN] Monitor EQUITY scouts (`price-accel-scout`, `macd-hidden-div-scout`) until n≥10
+- [OPEN] Probation reviews (2026-05-30, 2026-06-06)
+- [OPEN] Gate enforcements (2026-06-15/16)
+- [DONE] Push changes (pushed)
+- [DONE] Run session R swarm review and judge (swarm ran)
+- [DONE] Audit `tools/reconcile_pf_registry.py` (audited)
+- [DONE] Check TRXUSDT -67.72%/pick data quality issue (checked)
+- [DONE] Add winsorization to tool (added)
+- [DONE] Add `--winsorize` CLI flag (added)
+- [DONE] Run both raw + winsorized in report (ran)
+- [DONE] Update saved report with winsorized sensitivity and commit (updated and committed)
+- [DONE] Continue working on next steps until all todos/action items completed
+- [DONE] Break transcript into chunks for review if needed
+- [DONE] Add `commodityConfidenceMin: 0.55` to `HC_GATE_PARAMS_EMBEDDED` in hc_filter.js
+- [DONE] Wire Gate 7c into pick filter logic in hc_filter.js
+- [DONE] Add ("FOREX", "multi_asset_copytrader", "LONG") to BLOCKED_DIRECTION_TRIPLES in quality_gates.py
+- [DONE] Create tools/whites_reality_check.py (White's Reality Check / Hansen's SPA test)
+- [DONE] Create reports/ml_enhanced_retirement_investigation_2026-05-17.md
+- [DONE] Create reports/multi_asset_copytrader_forex_investigation_2026-05-17.md
+- [DONE] Create reports/whites_reality_check_2026-05-17.md
+- [DONE] Create reports/whites_reality_check_winsorized_2026-05-17.md
+- [OPEN] Commit winsorize enhancement to tools/whites_reality_check.py (not yet committed)
+- [UNCLEAR] Watch multi_asset_copytrader FOREX SHORT direction at n=150
+- [DONE] Push code changes (commits shown: `99a92d8d38`, `e26a0fcad5`, `915782926d`, `40fd0a8357`)
+- [DONE] Implement M-063: multi_asset_copytrader FOREX LONG block
+- [DONE] Implement hc_filter Gate 7c: COMMODITY confidence floor at 0.55
+- [DONE] Implement M-065: White's Reality Check / Hansen's SPA test
+- [DONE] Implement M-065: Winsorize flag + sensitivity report
+- [DONE] Confirm M-062: COT publication lag guard (pre-existing, confirmed done)
+- [OPEN] Implement M-061: `money_ready_verdict()` — unified DSR+PBO+SPA verdict function
+- [OPEN] Add updates/index.html entry summarizing session work
+- [OPEN] Update agentmemory with session S work
+- [OPEN] Break down any further action items into chunks for review (if needed)
+- [UNCLEAR] MySQL 655k ghost-row purge (PA console required — no code action possible now)
+- [UNCLEAR] `UEPS_ENABLE_PEAD=1` (PA console required — no code action possible now)
+- [UNCLEAR] Time-gated reviews (probation 2026-05-30, CT=F 2026-06-06, etc.)
+- [UNCLEAR] Save report to file and commit (assistant said "Now save the report to file and commit" but no confirmation of completion shown)
+- [UNCLEAR] Write swarm review prompt for session T and run it (assistant said "Now write the swarm review prompt for session T and run it" but no confirmation of completion shown)
+- [UNCLEAR] Dig into actual COMMODITY data with full breakdown (assistant said "let me dig into the actual COMMODITY data with full breakdown" but no results shown)
+- [UNCLEAR] Run the swarm while checking the EQUITY discrepancy (assistant said "Let me run the swarm while also checking the EQUITY discrepancy" but no results shown)
+- [DONE] Write comprehensive plain-English breakdown report of statistical test results
+- [DONE] Fix PBO gate to return N/A when n_strategies < 5
+- [DONE] Add dashboard_data.json fallback for class stats in money_ready_verdict()
+- [DONE] Fix fallback field name from `wr` to `win_rate`
+- [DONE] Run tests and commit changes
+- [OPEN] Deep-dive CRYPTO data quality bug (pnl_pct incorrectly computed for APEUSDT and TRXUSDT)
+- [OPEN] Check database path for missing EQUITY picks in closed_picks.json
+- [DONE] Fix test to mock `_load_dashboard_health` (tests pass 6/6)
+- [DONE] Commit everything, update snapshot, pull full dashboard stats
+- [DONE] Pull full dashboard stats for ALL asset classes including penny stocks, meme coins, ETF
+- [DONE] Push all commits and update verdict snapshot
+- [DONE] Tick and judge session T
+- [OPEN] Fix APEUSDT/TRXUSDT pnl_pct calculation bug (data quality — PA console needed for DB fix)
+- [OPEN] MySQL ghost-row purge 2026-05-24 (removes 655k stale `quan_engine` rows)
+- [OPEN] After those two fixes: evaluate CRYPTO_ENHANCED sub-filter (ml_enhanced SHORT only, confidence ≥ 0.70) for MONEY_READY status
+- [UNCLEAR] Write backup SQL script for database backup to ejaguiar1_backtests (or schedule as part of 2026-05-24 MySQL maintenance window)
+- [DONE] Investigate APEUSDT/TRXUSDT data quality (>-100% pnl_pct in spot)
+- [DONE] Implement pending_spa scan (Q3 from swarm)
+- [DONE] Write session review for the swarm
+- [OPEN] Break down any further action items into chunks for review
+- [DONE] Run `/goal` autonomous loop (sessions S, T, U)
+- [DONE] Check money_ready_verdict per asset class and commit to GitHub
+- [DONE] Explain SPA, DSR, T2 Floor in plain English with real breakdown
+- [DONE] Explain "COT picks" (cotton vs Commitments of Traders)
+- [DONE] Investigate equity discrepancy (n=44 vs n=240)
+- [DONE] Deep dive into CRYPTO = WATCH — Why High WR But Low PF?
+- [DONE] Backup database to ejaguiar1_backtests
+- [DONE] Include every asset class (stocks/crypto/forex/bonds/commodities/futures + cheap stocks/penny stocks/meme coins)
+- [DONE] Pull futures
+- [DONE] Check OPTIMIZATION_REPORT.md and BENCHMARK_AND_OPTIMIZATION_REPORT.md from multiple paths
+- [DONE] Do a swarm-transcript-review
+- [DONE] Write swarm prompt from session transcript and run it
+- [DONE] Add session U findings to updates/index.html
+- [DONE] Update FOOLPROOF_ACTION_PLAN.md with current findings
+- [DONE] Audit CRYPTO stop-loss execution path (read-only)
+- [DONE] Fix direction-blind stop-loss bug in `_resolve_claude_gainer_ml_pick` (commit `fcf499355a`)
+- [DONE] Commit stop-loss fix and action plan updates
+- [OPEN] User approval: add `("COMMODITY", "combined_confidence")` to `BLOCKED_ASSET_STRATEGY_PAIRS` in `audit_trail/quality_gates.py`
+- [DONE] Wire pending_spa_scan into dashboard_generator alongside money_ready_verdicts
+- [DONE] Add EQUITY-specific DSR threshold (MIN_WR_BY_CLASS with 52% floor)
+- [DONE] Tackle FUTURES pipeline audit in parallel
+- [DONE] Update `_verdict` function to use per-class WR floor
+- [DONE] Pass `asset_class` where `_verdict` is called
+- [DONE] Investigate FUTURES pipeline (203 historical picks, WR=3% — not a bug)
+- [DONE] Write FUTURES investigation report
+- [DONE] Run final swarm review
+- [DONE] Verify `combined_confidence` pre-block (already applied via PR #1158)
+- [DONE] Write final swarm transcript review and run it
+- [DONE] Action P1 item: re-scan open SHORT picks (0 picks past SL)
+- [DONE] Commit session review prompt
+- [DONE] Update updates/index.html with Session V findings
+- [DONE] Tick and judge the goal (goal achieved)
+- [OPEN] MySQL ghost-row purge (655k stale rows — requires PA console)
+- [OPEN] UEPS_ENABLE_PEAD=1 verification (requires PA console)
+- [DONE] Merge PR #1153 (hourly audit)
+- [DONE] Update holographic memory (3 learnings + 1 decision)
+- [DONE] Regenerate PF registry (commit `09fc6e596d`)
+- [DONE] Add PF registry discrepancy note to updates/index.html (commit `3f7212e8ca`)
+- [DONE] Run Session W swarm review (grade A)
+- [OPEN] Merge PR #1155 (conflicts)
+- [OPEN] Merge PR #1157 (unknown state)
+- [OPEN] Meta-labeler exec gate wire-up (F9 repair + walk-forward split)
+- [OPEN] EQUITY strategy expansion (scale `stocks_rsi2_pullback` to n=100+, add 2 new strategies)
+- [OPEN] CRYPTO post-fix impact analysis (quantify stop-loss bug effect on PF)
+- [OPEN] MySQL ghost-row purge (655k stale rows, target 2026-05-24)
+- [DONE] Fix `money_ready_verdict()` to read `BLOCKED_ASSET_STRATEGY_PAIRS` instead of only `BLOCKED_STRATEGIES`
+- [DONE] Update call sites to pass `asset_class` to `_load_blocked`
+- [DONE] Refactor `_class_stats` to use per-class blocked sets
+- [OPEN] Verify `_pbo_gate` and `_spa_gate` correctly use class-specific blocked sets (picks already filtered upstream)
+- [OPEN] Feed the chat transcript into the agent swarm for review of further action items
+- [OPEN] Break down any new action items into chunks for review
+- [DONE] Fix CRYPTO PF calculation by excluding BLOCKED_ASSET_STRATEGY_PAIRS in money_ready_verdict.py (refactored _load_blocked and _class_stats)
+- [UNCLEAR] Test and commit the modified money_ready_verdict.py (marked "NOT YET TESTED/COMMITTED" in summary)
+- [DONE] Fix CRYPTO MONEY_READY by adding BLOCKED_SYMBOLS filter to `money_ready_verdict.py`
+- [DONE] Commit and push BLOCKED_SYMBOLS fix (dc34f30020)
+- [DONE] Update `updates/index.html` with CRYPTO MONEY_READY achievement
+- [DONE] Update `FOOLPROOF_ACTION_PLAN.md` for needed updates
+- [DONE] Write and run Session X swarm prompt
+- [DONE] Add swarm review entry to `updates/index.html`
+- [DONE] Update agentmemory and holographic memory
+- [DONE] Commit and push final updates (8ce30980c0, 9b823b8a3a)
+- [DONE] Resolve merge conflict in `agent_shared_memory.json`
+- [DONE] Check local skills under user profile not on GitHub
+- [DONE] Check `swarm-pr-review` and `schedule` skills in `.claude/skills/`
+- [DONE] Set up `/goal` skill specification (goal.md written)
+- [DONE] Check why connors_rsi2_scanner has no live picks (elite_score ≥55 gate blocks signals)
+- [DONE] Write EQUITY path analysis document
+- [DONE] Check meta-labeler F9 repair status (already done)
+- [DONE] Check OVERCONFIDENCE_DECAY A/B test status (wired and running)
+- [DONE] Run Session Y swarm (grade A received)
+- [DONE] Wire connors_rsi2_scanner shadow mode bypassing elite_score gate (code written, 109 tests pass)
+- [DONE] Update updates/index.html with Session Y results
+- [DONE] Update memory
+- [DONE] Add entry under findtorontoevents.ca/updates/index.html for Session Y M-068 + Swarm Review (edit made but not committed)
+- [DONE] Update agentmemory and holographic memory (agent_shared_memory.json merged, commit 9b823b8a3a)
+- [UNCLEAR] Check if local skills under user profile aren't added to GitHub and add them
+- [OPEN] Continue autonomous work on trading-edge audit system at findtorontoevents.ca/audit
+- [DONE] Apply stash cleanly (verified)
+- [DONE] Commit updates/index.html (committed)
+- [DONE] Check v3 transcript scan and skills archive (done)
+- [DONE] Read PF registry and FOREX ATR mutation docs (done)
+- [DONE] Verify git status for uncommitted items (done)
+- [DONE] Check stocks_rsi2_pullback variants and update Tuesday DOW claim in FOOLPROOF_ACTION_PLAN.md (committed)
+- [DONE] Commit and push FOOLPROOF_ACTION_PLAN.md fix (pushed)
+- [DONE] Commit transcript scan fa4a912b (committed)
+- [DONE] Update memory with Session Y/Z state (written)
+- [DONE] Update holographic memory with Session Y/Z key findings (written)
+- [DONE] Judge goal and check for pending actionable items (done)
+- [DONE] Run swarm on round12 final questions (done, verdict MOSTLY_DONE)
+- [DONE] Implement circuit breaker min_n → 20 and EQUITY 7d pnl=0 filter (verified already done)
+- [DONE] Mark memory update complete and judge goal (goal achieved)
+- [OPEN] Keep working on next steps till all todos/action items are completed (user requested after excerpt ends)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user requested after excerpt ends)
+- [OPEN] Break down into chunks for review if needed (user requested after excerpt ends)
+- [DONE] Assess open action items across transcript scans and recent commits
+- [DONE] Implement `realized_n_30d` fix in `money_ready_verdict` (CRYPTO n=0 → n=133)
+- [DONE] Verify fix works on closed_picks data
+- [DONE] Run tests (13/13 pass)
+- [DONE] Run broader quality_gates test pass
+- [DONE] Fix pre-existing slippage wire test (COMMODITY assertion, M-069 units-bug leftover)
+- [DONE] Commit both fixes (realized_n_30d + slippage test)
+- [DONE] Add unit test for BLOCKED_DIRECTION_TRIPLES membership
+- [DONE] Add COMMODITY cta_cross_asset_tsmom assertions to direction triple gate test
+- [DONE] Verify mercury2_fast mutation investigation doc exists and is conclusive
+- [DONE] Commit all changes and push
+- [DONE] Commit untracked session review prompts to preserve audit trail
+- [DONE] Run current session transcript through swarm for review
+- [DONE] Write session Z review, update memory, and judge done
+- [DONE] Fix `charter_drift_circuit_breaker.py` — `realized_n_30d` was always 0 (now returns real counts)
+- [DONE] Fix `test_outcome_resolver_slippage_wire.py` — stale test assertions updated to correct post-fix values
+- [DONE] Commit 14 untracked session review prompt files to repo
+- [DONE] Update holographic memory with Session Z learnings
+- [OPEN] MySQL ghost-row purge (655k rows, target 2026-05-24) — blocked on PA console
+- [OPEN] UEPS_ENABLE_PEAD=1 verification — blocked on PA console
+- [DONE] Keep working on next steps till all todos/action items are completed, then feed transcript into agent swarm for review
+- [DONE] Add entry under findtorontoevents.ca/updates/index.html
+- [DONE] Check if local skills under user profile are not added to GitHub and add them
+- [DONE] Wire `btc_hour_filter` into `_apply_crypto_hour_filter` for BTC-specific symbols
+- [DONE] Add wiring regression tests for `btc_hour_filter` delegation
+- [DONE] Update COMMODITY banner in template.html with accurate deduped stats
+- [DONE] Update MONEY READY button tooltip to reflect CRYPTO=MONEY_READY
+- [DONE] Update CRYPTO span in MAJOR GOAL banner (stale PF=1.30)
+- [DONE] Update "Static data updated" timestamp line
+- [DONE] Commit all three changes (btc_hour_filter wiring + template banner updates)
+- [DONE] Add updates/index.html entry for Session AA (M-073)
+- [DONE] Fix naming in updates entry
+- [DONE] Update holographic memory and agent memory with Session AA work
+- [DONE] Tick the goal
+- [DONE] Launch swarm review of this session's work
+- [DONE] Fix logging on ImportError (HIGH)
+- [DONE] Make BTC exclusion more explicit (HIGH)
+- [DONE] Update COMMODITY banner to NOT_READY (WR=45% < 50% T2 floor)
+- [DONE] Audit slippage tests for remaining old inflated values
+- [DONE] Commit and push swarm-driven fixes
+- [DONE] Save Session AA memory, tick goal, and judge
+- [OPEN] Continue working on next steps until all TODOs/action items completed
+- [OPEN] Set or replace the active goal with the provided text and begin work
+- [OPEN] Work one turn toward the goal with real tool calls/edits/commits
+- [OPEN] If goal not done and budget remains, schedule a wakeup for auto-continuation
+- [OPEN] If swarm finds action items, break them down into chunks for review
+- [DONE] Check COT z-score gate implementation
+- [DONE] Check DXY inverse booster and SHORT-only preference gate
+- [DONE] Check CI health (tests green, 4901 passed)
+- [DONE] Verify DXY data availability
+- [OPEN] Create `tools/dxy_state_updater.py` — fetches DXY, writes state file
+- [OPEN] Create `alpha_engine/dxy_booster.py` — score adjustment module
+- [OPEN] Wire DXY booster into `score_booster._apply_crypto_hour_filter`-style pattern
+- [OPEN] Add DXY booster to new-strategies workflow or dedicated cron
+- [OPEN] Wire DXY booster into `run_score_booster` in score_booster.py
+- [DONE] Wire M-073 (BTC hour filter delegation) into score_booster.py
+- [DONE] Wire M-074 (DXY inverse booster) into score_booster.py
+- [OPEN] Commit alpha_engine/dxy_booster.py (new file, not yet committed)
+- [OPEN] Commit tools/dxy_state_updater.py (new file, not yet committed)
+- [OPEN] Commit alpha_engine/data/dxy_state.json (generated but not committed)
+- [DONE] Update audit_dashboard/template.html with CRYPTO MONEY_READY and COMMODITY NOT_READY status
+- [DONE] Add wiring regression tests to tests/test_btc_hour_filter.py (15/15 pass)
+- [DONE] Commit .github/workflows/new-strategies-scanner.yml
+- [DONE] Commit alpha_engine/data/scanner_output/new_strategies_picks.json
+- [DONE] Create GitHub Actions workflow for daily DXY state updates
+- [DONE] Add `updates/index.html` entry for Session AC (M-074)
+- [DONE] Commit everything for Session AC
+- [DONE] Push commits
+- [DONE] Create swarm review prompt for Session AC and run it
+- [DONE] Apply two concrete fixes: increase stale threshold from 26h to 72h, increase min bar check from 21 to 25
+- [DONE] Push fixups
+- [DONE] Tick and judge the goal for Session AC
+- [DONE] Update memory for Session AC
+- [OPEN] Break down action items into chunks for review if needed
+- [DONE] Fix MONEY READY tooltip inconsistency (COMMODITY "WATCH" → "NOT_READY")
+- [DONE] Update DXY stale threshold from 72h to 96h
+- [DONE] Add cot_positioning SINGLE-STRATEGY EXCEPTION caveat to money_ready_filter.js
+- [DONE] Feed session transcript to agent swarm for review
+- [DONE] Build shadow performance tracker (reads picks, resolves outcomes, writes log)
+- [DONE] Fix Infinity JSON serialization in tracker
+- [DONE] Wire tracker into new-strategies-scanner.yml workflow
+- [DONE] Write tests for shadow tracker (15/15 pass)
+- [OPEN] Address DXY booster ordering question
+- [UNCLEAR] Break down swarm review into chunks if needed
+- [DONE] Document DXY ordering limitation in dxy_booster.py docstring
+- [DONE] Implement stable pick ID (normalize to daily precision)
+- [DONE] Implement promotion threshold logic (n≥10, WR≥50%, PF≥1.5)
+- [DONE] Use `::warning::` annotation instead of silent `echo`
+- [DONE] Add promotion threshold check to summary
+- [DONE] Fix workflow `::warning::` annotation and update tests
+- [DONE] Commit everything (15 tests passing)
+- [DONE] Tick and judge the goal (state: achieved)
+- [DONE] Run deepseek swarm review for Session AC
+- [DONE] Run deepseek swarm review for Session AD
+- [DONE] Run deepseek swarm review for Session AE
+- [DONE] Apply fixups from swarm reviews and commit
+- [DONE] Raise DXY stale threshold from 26h → 72h (Session AC fixup)
+- [DONE] Raise DXY stale threshold from 72h → 96h (Session AD fixup)
+- [DONE] Fix profit_factor: Infinity in shadow tracker JSON (use 9999.0 sentinel)
+- [DONE] Fix test_summary_no_wins_pf_none test (expect 0.0 instead of None)
+- [DONE] Resolve git push rejection with stash/rebase/pop pattern
+- [DONE] Update _STALE_HOURS test after threshold change
+- [DONE] Add M-074 entry in updates/index.html (Session AC)
+- [DONE] Update MONEY READY button tooltip in template.html (Sessions AC + AD)
+- [DONE] Update cot_positioning entry in SUPREME_EDGE_REAL with SINGLE-STRATEGY EXCEPTION caveat (Session AD)
+- [DONE] Write bond_connors_rsi2 backtest file
+- [DONE] Fix MDD calculation (equity starting at 0)
+- [DONE] Update FOOLPROOF_ACTION_PLAN to mark done items
+- [DONE] Write swarm review prompt and commit
+- [DONE] Run swarm review
+- [DONE] Fix timeout trades to be neutral (like shadow tracker)
+- [DONE] Verify cot_net_z field fill rate (confirmed never populated)
+- [DONE] Add data quality warning for dead COT z-score gate
+- [DONE] Fix backtest timeout treatment (exclude from WR/PF)
+- [DONE] Fix compute summary for EXPIRED handling
+- [DONE] Fix results output to report expired separately
+- [DONE] Fix per-symbol WR (was not excluding EXPIRED)
+- [DONE] Update FOOLPROOF with corrected results
+- [DONE] Verify quality_gates.py compiles
+- [DONE] Tick/judge the goal
+- [DONE] Mark line 102 (wire 20 new strategies) as done
+- [DONE] Save memory for session
+- [DONE] Set up `/goal` skill specification in `c:\findtorontoevents_antigravity.ca\.claude\skills\goal`
+- [DONE] Write combined backtest for both strategies (line 103)
+- [DONE] Fix trade simulation logic (overlapping positions, exit tracking)
+- [DONE] Fix sector rotation df lookup (prebuilt map)
+- [DONE] Fix MDD normalization to report as % of total capital deployed
+- [DONE] Update FOOLPROOF with findings (both strategies sub-T2)
+- [DONE] Batch-update FOOLPROOF for lines 116, 118, 130
+- [DONE] Run swarm review on Session AG
+- [DONE] Fix bar index bug
+- [DONE] Raise M-035 threshold to 0.85
+- [DONE] Re-run sector rotation long-only with adjusted params (60-bar hold, 6% TP)
+- [DONE] Refactor `_resolve_trade` to accept max_hold parameter
+- [DONE] Fix sector rotation to use max_hold parameter
+- [DONE] Update FOOLPROOF and config.py with sector rotation improvements (WR 51.4%, Sharpe 1.88, PF 1.27)
+- [DONE] Update FOOLPROOF for confidence inversion
+- [DONE] Verify config.py compiles and run tests
+- [DONE] Save session memory
+- [DONE] equity_sector_rotation_momentum backtest (WR=51.4%, PF=1.27, Sharpe=1.88)
+- [DONE] equity_vix_regime_momentum backtest (WR=40.6%, PF=1.03)
+- [DONE] M-035 CRYPTO confidence gate raised 0.90→0.85 in alpha_engine/config.py:372
+- [DONE] FOOLPROOF audit — 5 items marked done/superseded
+- [OPEN] Work on next steps until all TODOs/action items completed
+- [DONE] Keep working on next steps till all todos/action items are completed, then feed chat transcript into agent swarm for review
+- [DONE] Run deepseek swarm review and resolve REQUEST_CHANGES/NEEDS_DISCUSSION
+- [DONE] Commit changes and mark goal achieved
+- [DONE] Create bond_connors_rsi2 backtest (tools/bond_connors_rsi2_backtest.py)
+- [DONE] Fix bond_connors_rsi2 MDD calculation (mdd_usd / CAPITAL_PER_TRADE)
+- [DONE] Fix bond_connors_rsi2 WR inflation (EXPIRED trades excluded from WR/PF)
+- [DONE] Fix per_symbol WR calculation (use sym_closed, not all trades)
+- [DONE] Write bond_connors_rsi2 backtest output JSON
+- [DONE] Add cot_net_z dead-field comment to quality_gates.py:3562-3573
+- [DONE] Create equity_baby_strategies backtest (tools/equity_baby_strategies_backtest.py)
+- [DONE] Fix equity_baby_strategies overlapping positions (next_entry_bar tracking)
+- [DONE] Fix equity_baby_strategies MDD calculation (total deployed capital)
+- [DONE] Fix sector_rotation bar index mismatch (per-symbol next_entry_bar_by_sym)
+- [DONE] Raise CRYPTO_MAX_CONFIDENCE from 0.90→0.85 in config.py:372
+- [DONE] Update FOOLPROOF_ACTION_PLAN.md with all status changes
+- [DONE] Create session_review_af_2026_05_17.md swarm prompt
+- [DONE] Create session_review_ag_2026_05_17.md swarm prompt
+- [DONE] Write equity_baby_strategies backtest output JSON
+- [DONE] Convert FOREX session liquidity from +8 soft bonus to hard gate (M-078)
+- [DONE] Fix M-078 to fail-closed for missing timestamps (swarm HIGH concern)
+- [DONE] Mark FOOLPROOF line 133 done and commit
+- [DONE] Verify CT=F COT lag-corrected backtest (FOOLPROOF line 85)
+- [DONE] Mark FOOLPROOF line 85 done
+- [DONE] Rewrite VIX regime backtest to use 4H bars (M-079)
+- [DONE] Update FOOLPROOF and commit VIX 4H retest
+- [DONE] Commit all three items (M-078, CT=F COT doc, M-079)
+- [DONE] Assess myfxbook/ig_contrarian phantom data items (lines 131/132)
+- [DONE] Mark lines 131/132 as superseded
+- [DONE] Run swarm review for Session AH
+- [DONE] Boost ig_contrarian_sentiment base score (swarm LOW priority)
+- [DONE] Commit fixups and update FOOLPROOF
+- [DONE] Save session AH memory
+- [OPEN] Provide FRED API key (unlocks macro overlay + bond credit spread)
+- [OPEN] Provide PA console access (unlocks bond_scanner merge)
+- [DONE] Update FOOLPROOF line 172 (ab_analysis.yml auto-commit wiring)
+- [DONE] Fix 2000-char truncation bug in worker_runner.py:1196
+- [DONE] Implement realized_n_30d tool
+- [DONE] Implement COMMODITY survivorship bias detection
+- [DONE] Generate fresh weekly filter with 30d context and COMMODITY bias warning
+- [DONE] Commit changes
+- [DONE] Write swarm review prompt for Session AI
+- [OPEN] Investigate HIGH concerns from swarm review: COMMODITY n discrepancy and FOREX n discrepancy
+- [DONE] Fix FOREX session gate to fail-closed for missing timestamps (M-078)
+- [DONE] Add VIX regime 4H retest backtest function and `--vix4h` flag
+- [DONE] Create `tools/verify_realized_30d.py`
+- [DONE] Create `reports/weekly_filter_2026-05-17T1337Z.md`
+- [DONE] Update FOOLPROOF_ACTION_PLAN.md line 172 (ab_analysis.yml wired)
+- [DONE] Update FOOLPROOF_ACTION_PLAN.md line 171 (CFTC pipeline blocked)
+- [DONE] Create `tools/swarm/prompts/session_review_ai_2026_05_17.md` and submit to swarm review
+- [OPEN] Investigate discrepancy between dashboard COMMODITY n=228 PF=7.71 and pf_registry n=160 PF=1.17 (swarm HIGH concern)
+- [UNCLEAR] Resolve swarm NEEDS_DISCUSSION verdict on session review
+- [DONE] Update `verify_realized_30d.py` to pull dashboard circuit_breaker data for filtered comparison
+- [DONE] Fix circuit_breaker path lookup in script
+- [DONE] Drop missing `realized_pf_30d` column from script
+- [DONE] Write v2 weekly filter incorporating corrected circuit_breaker data
+- [DONE] Write swarm review prompt for Session AI v2 and run it
+- [DONE] Tick counter while swarm runs
+- [DONE] Check if CRYPTO SPA-failing strategies need user-approval request to block
+- [DONE] Re-run swarm if kilo/xai timed out
+- [DONE] Add COT over-emission notation to tool output (condition #1)
+- [DONE] Resolve merge conflicts in `agent_shared_memory.json` and `audit_dashboard/template.html`
+- [DONE] Push to main
+- [DONE] Judge goal and record session memory
+- [OPEN] Surface CRYPTO SPA-failing strategies (ADAUSDT, DOGEUSDT, INJUSDT 15m) to user for P2 escalation / approval to block
+- [DONE] Investigate CI test failures (root causes identified: confidence ceiling change M-035, concentration cap on BTCUSDT)
+- [DONE] Fix `test_crypto_gates_p0.py::test_confidence_at_ceiling_passes` (update 0.90 → 0.85)
+- [OPEN] Fix all remaining failing tests (update base picks confidence from 0.88 to 0.80, disable concentration cap via env isolation)
+- [DONE] Lower confidence from 0.88 to 0.80 in `tests/test_wf_verdict_failing_gate.py`
+- [DONE] Lower confidence from 0.88 to 0.80 in `tests/test_wf_verdict_null_block.py`
+- [DONE] Lower confidence from 0.88 to 0.80 in `tests/test_hf_gate_default_on_safety.py`
+- [DONE] Lower confidence from 0.88 to 0.80 in `tests/test_hf_quality_gate_wire.py`
+- [DONE] Lower confidence from 0.88 to 0.80 in `tests/test_stamp_feed_membership.py`
+- [DONE] Lower confidence from 0.88 to 0.80 in `tests/test_quality_gates.py` (base pick line 28)
+- [DONE] Handle 0.87 confidence values in `test_quality_gates.py` lines 108, 244, 252, 264
+- [DONE] Fix `test_ns_d_behavior_long_picks_rejected` by disabling M-035 or lowering confidence to 0.80
+- [DONE] Fix `TestM034ConfidenceInversionGate::test_gate_allows_high_conf_super_signals_when_disabled` — add M-035 disable
+- [DONE] Fix `TestForexCopytradeBypas::test_gate_on_still_blocks_other_forex_sources` — add directional gate disable
+- [DONE] Run all failing tests locally to verify fixes
+- [DONE] Run full test suite to check for regressions
+- [DONE] Commit the fixes
+- [DONE] Write swarm review prompt and run swarm for Session AJ
+- [DONE] Continue working on next steps until all todos/action items are completed
+- [DONE] Feed chat transcript into agent swarm for review
+- [DONE] Break down transcript into chunks for review if needed
+- [DONE] Resolve REQUEST_CHANGES/NEEDS_DISCUSSION items from swarm review
+- [DONE] Mark goal achieved
+- [DONE] Modify `tests/test_crypto_gates_p0.py` (update M-035 confidence from 0.90 to 0.85)
+- [DONE] Modify `tests/test_wf_verdict_failing_gate.py` (change confidence from 0.88 to 0.80)
+- [DONE] Modify `tests/test_wf_verdict_null_block.py` (change confidence from 0.88 to 0.80)
+- [DONE] Modify `tests/test_hf_gate_default_on_safety.py` (change confidence from 0.88 to 0.80)
+- [DONE] Modify `tests/test_hf_quality_gate_wire.py` (change confidence from 0.88 to 0.80)
+- [DONE] Modify `tests/test_stamp_feed_membership.py` (change confidence from 0.88 to 0.80)
+- [DONE] Modify `tests/test_quality_gates.py` (change confidence from 0.88 to 0.80; add monkeypatch env vars for M-034 and FOREX tests)
+- [DONE] Modify `tests/test_ns_d_ml_crypto_pred_long_reject.py` (change confidence from 0.9 to 0.80)
+- [DONE] Create `tools/swarm/prompts/session_review_aj_2026_05_17.md` (swarm review prompt for Session AJ)
+- [OPEN] Reassess FOREX gate (target ~May 31)
+- [OPEN] Implement COT feature enrichment (CFTC pipeline needed)
+- [OPEN] Implement ml_score gate ≥55 (ml_score not populated upstream)
+- [OPEN] Implement FRED macro overlay (FRED API key needed)
+- [OPEN] Implement bond_scanner.py --merge (PA console access needed)
+- [DONE] Fix TestM034: lower confidence from 0.88 to 0.84, remove M-035 monkeypatch
+- [DONE] Commit fix (23c1ef9d44) and push to main
+- [DONE] Run full test suite — 4941 passed, 37 skipped, 1 xfailed, zero regressions
+- [DONE] Save session AJ memory
+- [DONE] Check CI status — clean
+- [DONE] Investigate why AAPL not making smart picks (gate blocked by trust_tier: "WATCH")
+- [DONE] Check M-047 gate landscape
+- [DONE] Grep for `confidence=0.8[1-5]` to identify remaining vulnerable tests
+- [DONE] Add explanatory comments to TestForexCopytrade as suggested by swarm
+- [DONE] Fix M-037 gate to treat ml_score=0 as "not populated" (fail-open)
+- [DONE] Add regression test for ml_score=0 passing M-037
+- [DONE] Add boundary test for ml_score=0.001 (real score, must be blocked)
+- [DONE] Add epsilon comment to gate code
+- [DONE] Run full test suite (4941 passed)
+- [DONE] Commit and push fixes
+- [DONE] Write swarm review prompt for Session AK
+- [DONE] Apply swarm conditions (comment + boundary test)
+- [OPEN] Judge own work via `goal_state.py judge`
+- [OPEN] If not done and budget remains, schedule wakeup for auto-continuation
+- [OPEN] When goal achieved, feed the chat transcript into the agent swarm for review of further action items
+- [OPEN] Break down any identified action items into chunks for review
+- [DONE] Fix M-037 bug: treat ml_score=0 as "not populated" (fail-open) in `audit_trail/quality_gates.py`
+- [DONE] Add 3 regression tests for M-037 boundary behavior in `tests/test_crypto_gates_p0.py`
+- [DONE] Fix TestM034 unrealistic confidence scenario in `tests/test_quality_gates.py`
+- [DONE] Create session AK swarm review prompt at `tools/swarm/prompts/session_review_ak_2026_05_17.md`
+- [DONE] Update `.claude/goal_state.json` with session IDs `ak-2026-05-17` (achieved) and `al-2026-05-17` (starting)
+- [DONE] Update `MEMORY.md` with Session AK entry
+- [DONE] Create `project_session_ak_2026_05_17.md`
+- [OPEN] Continue autonomous improvement loop: find actionable items, implement fixes, run deepseek swarm review, resolve conditions, commit, mark goal achieved (Session AL starting)
+- [DONE] CI verified green — all 4941 tests pass after M-037 fix
+- [DONE] Bond scanner analysis — 8 picks/run pass gates; BOND PF=0.66 at n=12 is natural variance
+- [DONE] Add BOND PF monitoring thresholds to FOOLPROOF_ACTION_PLAN.md
+- [DONE] Clear stale FOOLPROOF item "Run bond_scanner.py --merge manually"
+- [DONE] Document feed_hygiene.py sentinel (ml_score=0.0 comment)
+- [DONE] Explain EQUITY WATCH verdict (patience problem, not bug)
+- [DONE] Run swarm review for Session AL (deepseek APPROVE, commit f307367d02 pushed)
+- [DONE] Fix M-037 so CRYPTO picks pass gates (2 picks now pass locally)
+- [UNCLEAR] Diagnose why EQUITY, COMMODITY, and FOREX picks are failing gates
+- [UNCLEAR] Investigate 17 HIGH performance alerts
+- [UNCLEAR] Write and run Session AM swarm review
+- [DONE] Continue working on next steps until all todos/action items completed (standing /goal)
+- [DONE] Feed chat transcript into agent swarm for review (standing /goal)
+- [DONE] Verify M-037 bug fix is working (Session AM investigation)
+- [DONE] Investigate 17 HIGH performance alerts (Session AM investigation)
+- [OPEN] Commit session_review_am_2026_05_17.md (new swarm review prompt, not yet committed)
+- [DONE] Check CI status (CI is green, 0 failures, no open PRs)
+- [DONE] Check FOOLPROOF for remaining actionable items and dashboard state
+- [DONE] Investigate dashboard fallback path for data inconsistencies (ETF wr=0.0, BOND top_symbol=USDJPY=X)
+- [DONE] Fix ETF WR bug (field name mismatch: `health.get("wr")` → `win_rate`/`wr_pct`)
+- [DONE] Check mislabeled BOND/USDJPY=X pick (legacy artifact, left closed_picks.json untouched)
+- [DONE] Verify M-080 ETF fix (ETF WR: 0.0 → 0.676)
+- [DONE] Run tests to confirm no regressions (all green)
+- [DONE] Commit M-080 (pushed)
+- [DONE] Build swarm review prompt for Session AN and run swarm
+- [DONE] Check closed_picks.json ETF situation (0 ETF entries, confirms M-080 was correct fix)
+- [DONE] Check swarm results (deepseek APPROVE; kilo status pending)
+- [DONE] Investigate ETF closed_picks gap (M-080)
+- [DONE] Implement `_validate_symbol_class_consistency()` validator (M-081)
+- [DONE] Commit M-080 and M-081 to main
+- [DONE] Commit AN swarm prompt and close out session
+- [DONE] Save Session AN memory and judge goal
+- [OPEN] Keep working on next steps until all TODOs/action items completed
+- [UNCLEAR] Break down transcript into chunks for review (if needed)
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (requires user approval)
+- [OPEN] Add per-class concentration cap for COMMODITY at 85% (requires user approval)
+- [UNCLEAR] Investigate kimi→closed_picks.json pipeline feasibility (deepseek's EQUITY recommendation from AO)
+- [DONE] Whitelist `cross_sectional_reversal` from `confidence_max` restriction (M-082 shipped)
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (WR=12.7% n=71) — pending user approval from Session AO
+- [OPEN] Add `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` — pending user approval from Session AO
+- [OPEN] Check new-strategies-20 shadow tracker for strategies close to promotion threshold
+- [OPEN] Check M-075 strategy promotions
+- [OPEN] Look at other FOOLPROOF items that might have become actionable
+- [UNCLEAR] Investigate `cyclic_momentum_stack` being KILLED_ALPHA at avg +15.03% (n=7)
+- [DONE] Fix M-080: correct WR field mapping in `money_ready_verdict.py` for dashboard fallback
+- [DONE] Fix M-081: add symbol/class consistency log-only warning in `feed_hygiene.py`
+- [DONE] Fix M-082: add per-strategy confidence override for `cross_sectional_reversal` in `forward_validator.py`
+- [DONE] Create swarm review prompt for session AN
+- [DONE] Create swarm review prompt for session AO
+- [DONE] Create swarm review prompt for session AP
+- [DONE] Save memory files for sessions AN, AO, AP
+- [DONE] Update `MEMORY.md` with entries for AN, AO, AP sessions
+- [DONE] Run swarm review (deepseek+kilo) on session transcripts
+- [DONE] Commit changes and push (after git stash/pull/rebase/stash pop)
+- [OPEN] Obtain user approval for COMMODITY two-blocker fixes (blocking `cta_cross_asset_tsmom` and CT=F concentration)
+- [DONE] Write Session AQ swarm review prompt
+- [DONE] Save memory and commit for Session AQ
+- [DONE] Push Session AQ
+- [DONE] Investigate `cyclic_momentum_stack` elite_score sentinel and `fractal_sr_bounce` ml/elite disconnect (Session AR P1 item)
+- [DONE] Write tests for M-083
+- [DONE] Run broader CI for M-083
+- [DONE] Commit M-083
+- [DONE] Push M-083
+- [DONE] Write Session AR swarm review prompt
+- [DONE] Implement shadow tracker cleanup as recommended
+- [DONE] Save Session AR memory and commit
+- [DONE] Pre-compute elite_score for unscored signals before adjustment pipeline (M-083 fix in forward_validator.py)
+- [DONE] Add 7 tests for M-083 elite_score pre-enrichment (tests/test_m083_elite_score_pre_enrichment.py)
+- [DONE] Remove 40 junk-score QUALITY_GATE entries from shadow_blocked.json (reduced 500→460)
+- [DONE] Create session AQ swarm review prompt (tools/swarm/prompts/session_review_aq_2026_05_17.md)
+- [DONE] Create session AR swarm review prompt (tools/swarm/prompts/session_review_ar_2026_05_17.md)
+- [DONE] Create session AQ memory file (project_session_aq_2026_05_17.md)
+- [DONE] Create session AR memory file (project_session_ar_2026_05_17.md)
+- [DONE] Update MEMORY.md with Session AQ and AR entries
+- [OPEN] Continue working on next steps till all todos/action items are completed (standing autonomous goal loop)
+- [DONE] Diagnose QUALITY_GATE kill pattern (cyclic_momentum_stack -8.2 sentinel) — Session AQ
+- [DONE] Fix M-083 root cause (signals with elite_score=None anchored at 0) — Session AR
+- [DONE] Run 7 tests, all green — Session AR
+- [DONE] Clean up 170 junk -8.2 entries from shadow tracker — Session AS
+- [DONE] Write Session AS swarm review and commit
+- [DONE] Run swarm review for Session AS (Deepseek: APPROVE)
+- [DONE] Update memory and advance goal
+- [DONE] Check GitHub Actions (CI running, no failures)
+- [OPEN] Set `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` (requires user approval)
+- [DONE] Investigate `multi_asset_copytrader` EQUITY performance to decide unblocking
+- [DONE] Fix failing test (M-078 FOREX session gate blocking test pick)
+- [DONE] Commit and push test fix
+- [DONE] Check remaining DAILY_IDEAS items (ab_analysis.yml dispatch, FOREX hard-disable)
+- [DONE] Verify FOREX hard-disable default setting
+- [DONE] Correct misleading FOREX_COPYTRADER_ENABLE comment (WR=64.7% → 16.5%)
+- [DONE] Investigate confidence vs trust_score inversion in HIGH_CONVICTION gate
+- [DONE] Write Session AT swarm review covering all work
+- [DONE] Tick and judge goal turn
+- [DONE] Update memory and close goal turn
+- [DONE] Remove 130 junk sentinel entries from shadow_blocked.json (Session AS)
+- [DONE] Fix flaky test test_baseline_usdjpy_passes (Session AT)
+- [DONE] Correct misleading FOREX_COPYTRADER_ENABLE comment (Session AT)
+- [DONE] Confirm CRYPTO MONEY_READY status (Session AT)
+- [DONE] Confirm EQUITY/ETF WATCH status is sample-size issue (Session AT)
+- [OPEN] Block cta_cross_asset_tsmom for COMMODITY (WR=12.7%, n=71) — awaiting user approval
+- [OPEN] Set CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} — awaiting user approval
+- [DONE] Perform quality_gates.py comment audit (deepseek recommendation)
+- [DONE] Check PENDING_UNBLOCK_REVIEW overdue symbol reviews
+- [DONE] Verify DYDXUSDT unblock criteria — confirmed data artifact, updated comment
+- [DONE] Identify WIN_RATE_TRAP_BLACKLIST as dead list (defined but unused)
+- [OPEN] Wire WIN_RATE_TRAP_BLACKLIST into gate logic or remove it — investigation started but not completed
+- [OPEN] Check if ETHUSDT (WR=33.6%, PF=0.33, sum=-31.97%) is blocked — investigation started but not completed
+- [DONE] Document that WIN_RATE_TRAP_BLACKLIST is dead code and protection is already in place via score/trust gates
+- [UNCLEAR] Update PENDING_UNBLOCK_REVIEW for DYDXUSDT to document the data artifact
+- [UNCLEAR] Write the Session AU swarm review
+- [DONE] Continue working on next steps until all TODOs/action items are completed, then feed transcript into agent swarm for review
+- [DONE] Remove 40 junk -8.2 entries from shadow_blocked.json (cyclic_momentum_stack, stochrsi_oversold_bounce, fractal_sr_bounce)
+- [DONE] Remove 130 more -8.2 entries from shadow_blocked.json (30+ strategies)
+- [DONE] Fix test_baseline_usdjpy_passes time-dependency (add FOREX_SESSION_GATE_DISABLED env var)
+- [DONE] Correct FOREX_COPYTRADER_ENABLE comment in quality_gates.py
+- [DONE] Add WIN_RATE_TRAP_BLACKLIST dead code comment in quality_gates.py
+- [DONE] Create session_review_ar_2026_05_17.md
+- [DONE] Create session_review_as_2026_05_17.md
+- [DONE] Create session_review_at_2026_05_17.md
+- [DONE] Update MEMORY.md with AR, AS, AT entries
+- [DONE] Commit all changes (bebf300941, a27b43611e, 0335ba0b02)
+- [DONE] Handle git push rejections (stash, pull --rebase, stash pop, push)
+- [OPEN] Continue to session AU (next step in autonomous goal loop)
+- [OPEN] Feed transcript into agent swarm for review of further action items
+- [DONE] Update 4 overdue PENDING_UNBLOCK_REVIEW dates to 2026-08-01
+- [DONE] Write Session AU swarm review prompt
+- [DONE] Write Session AU memory file and update MEMORY.md
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (WR=12.7%, n=71)
+- [OPEN] Set `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}`
+- [DONE] Check for new action items (CI status, DAILY_IDEAS, source_system='?' issue)
+- [DONE] Investigate source_system='?' upstream filter
+- [DONE] Generate filter report and commit
+- [DONE] Check edge analysis
+- [DONE] Investigate FOREX `forex-rsi-ema-scout` finding (OOS divergence)
+- [DONE] Audit performance comments in quality_gates.py
+- [DONE] Add DYDXUSDT to BLOCKED_SYMBOLS
+- [DONE] Run full test suite
+- [DONE] Fix failing test (add FOREX_SESSION_GATE_DISABLED)
+- [DONE] Fix forex_short_only_blocked gate (add missing env var)
+- [DONE] Run full test suite to confirm zero failures
+- [DONE] Push changes
+- [DONE] Check full test suite background job
+- [DONE] Investigate 8 remaining pre-existing failures
+- [DONE] Fix all three test files (add FOREX_SHORT_ONLY_GATE_DISABLED=1 and FOREX_SESSION_GATE_DISABLED=1)
+- [DONE] Apply fixes to all three test files
+- [DONE] Write Session AV swarm review
+- [DONE] Implement conftest.py recommendation (add FOREX_SESSION_GATE_DISABLED=1)
+- [DONE] Continue goal loop until all todos/action items completed, then feed transcript to agent swarm for review
+- [DONE] Add DYDXUSDT to BLOCKED_SYMBOLS in quality_gates.py
+- [DONE] Update DYDXUSDT PENDING_UNBLOCK_REVIEW date to 2026-06-30
+- [DONE] Extend 5 overdue PENDING_UNBLOCK_REVIEW dates to 2026-08-01
+- [DONE] Add FOREX_SESSION_GATE_DISABLED=1 global setdefault to tests/conftest.py
+- [DONE] Add FOREX_SHORT_ONLY_GATE_DISABLED and FOREX_SESSION_GATE_DISABLED monkeypatches to test_etf_iwm_gld_kill.py
+- [DONE] Add FOREX_SHORT_ONLY_GATE_DISABLED and FOREX_SESSION_GATE_DISABLED monkeypatches to test_jpy_cross_buy_block.py
+- [DONE] Add FOREX_SHORT_ONLY_GATE_DISABLED and FOREX_SESSION_GATE_DISABLED monkeypatches to test_trust_tier_non_crypto_default_on.py
+- [DONE] Add FOREX_SHORT_ONLY_GATE_DISABLED and FOREX_SESSION_GATE_DISABLED monkeypatches to 3 tests in test_quality_gates.py
+- [DONE] Create reports/weekly_filter_2026-05-17.md
+- [DONE] Update reports/strict_filters_latest.json
+- [OPEN] Commit conftest.py changes (noted as "NOT YET COMMITTED")
+- [DONE] Block DYDXUSDT via BLOCKED_SYMBOLS (commit 69ccc0190a)
+- [DONE] Fix 9 FOREX test isolation issues (commit 890c9a4c42)
+- [DONE] Add conftest.py global FOREX_SESSION_GATE_DISABLED=1 (commit a3ce4ce4cd)
+- [DONE] Write weekly filter report (commit da1c2477cd)
+- [DONE] Run Session AV swarm review (deepseek APPROVE)
+- [DONE] Write Session AV memory file
+- [OPEN] Block cta_cross_asset_tsmom for COMMODITY (pending user approval)
+- [OPEN] Set CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} (pending user approval)
+- [OPEN] Keep working on next steps until all TODOs/action items are completed, then feed chat transcript into agent swarm for review and break into chunks if needed
+- [DONE] Run `ab_analysis.yml` (run #25999062203)
+- [DONE] Compile Session AW swarm review
+- [DONE] Commit swarm review prompt and delete stale tweaks files
+- [DONE] Write Session AW memory file
+- [DONE] Tick, judge, and write Session AW memory file
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (awaiting user approval)
+- [OPEN] Raise `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` (awaiting user approval)
+- [DONE] Investigate strategy-level improvements for EQUITY accumulation pathway
+- [DONE] Verify cap level to clear COMMODITY MONEY_READY
+- [DONE] Write Session AX swarm prompt with concentration analysis finding
+- [DONE] Commit corrected COMMODITY recommendation (pushed `844ce0ce03`)
+- [DONE] Write Session AX memory file
+- [DONE] Update MEMORY.md
+- [DONE] Judge the goal
+- [OPEN] Raise `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` in `alpha_engine/money_ready_verdict.py` (awaiting user approval)
+- [DONE] Verify full test suite is green (4950 passed, 0 failed)
+- [DONE] Commit Session AY swarm review (commit `b1346d670a`)
+- [DONE] Write memory for Session AY
+- [UNCLEAR] Check/clean up untracked files (`session_review_aa` prompt, `session-ses_1cff.md`) — mentioned but not shown completed
+- [OPEN] Keep working on next steps till all todos/action items are completed (user's /goal command)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user's /goal command)
+- [OPEN] Break down transcript into chunks for review if needed (user's /goal command)
+- [DONE] Investigate ab_analysis cancellation (3rd time) — root cause found (fetch-depth: 0 causing timeout)
+- [DONE] Investigate DB Freshness Guardian failure — root cause found (check_backtests() missing column existence check)
+- [DONE] Fix DB Freshness Guardian bug (check for imported_at column existence)
+- [DONE] Fix ab_analysis cancellation (use fetch-depth: 1, increase timeout)
+- [DONE] Push commit 3207451eff
+- [OPEN] Dispatch ab_analysis to verify timeout fix works
+- [OPEN] Write the AZ session review
+- [OPEN] Wrap up
+- [DONE] Fix `ab_analysis.yml`: change `fetch-depth: 0` to `fetch-depth: 1`, `timeout-minutes: 15` to `timeout-minutes: 45`
+- [DONE] Fix `tools/db_freshness_check.py`: add SHOW COLUMNS check for `imported_at`, graceful YELLOW fallback
+- [DONE] Add `FOREX_SESSION_GATE_DISABLED=1` setdefault to `tests/conftest.py`
+- [DONE] Delete `tweaks_needed.json` and `tweaks_to_apply.json`
+- [DONE] Write memory files for sessions AV, AW, AX, AY
+- [DONE] Update `MEMORY.md` with AV, AW, AX, AY entries
+- [DONE] Create swarm prompts for sessions AV through AY
+- [OPEN] Create swarm prompt for session AZ
+- [OPEN] Continue goal loop: keep working on next steps till all TODOs/action items completed, then feed transcript into agent swarm for review
+- [DONE] Fix ab_analysis.yml workflow (shallow clone + timeout increase)
+- [DONE] Implement DB Freshness Guardian graceful degradation (YELLOW instead of RED)
+- [OPEN] Implement CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} in money_ready_verdict.py (requires user approval)
+- [OPEN] Feed chat transcript into agent swarm for review and identify further action items
+- [DONE] Check for open PRs or GitHub issues before writing swarm review
+- [DONE] Write swarm review for Session BA
+- [DONE] Commit and close out Session BA (deepseek APPROVE)
+- [OPEN] Wire correlation regime (ELEVATED, sleeve_sizing_scalar=0.555) into Kelly sizing (deferred to future integration PR)
+- [OPEN] Apply CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} in alpha_engine/money_ready_verdict.py (user-approval gate)
+- [OPEN] Check remaining actionable items from MASTER_ACTION_PLAN
+- [OPEN] Check DAILY_IDEAS_XIAOMIMIMO for actionable items
+- [OPEN] Check multi_asset_copytrader FOREX block status (needs user approval per CLAUDE.md)
+- [OPEN] Check cot_paper_pilot status
+- [OPEN] Check equity money-ready path
+- [OPEN] Fix stale openclaude submodule
+- [DONE] Block `('COMMODITY', 'cta_replicator')` — removes 83 losing picks
+- [DONE] Raise concentration cap after block (CT=F share ~97%)
+- [UNCLEAR] Check M-012 (DSR per strategy) — mentioned as genuinely pending
+- [UNCLEAR] Check weekly filter report for quick win on EQUITY analysis
+- [DONE] M-001 (BTC UTC-hour filter) implementation verified
+- [OPEN] EQUITY strategy autopsy (WR=33%, avg_pnl=-0.76%)
+- [OPEN] Check EQUITY symbol split
+- [OPEN] Check EQUITY T1 push status
+- [OPEN] Look for remaining autonomous work
+- [OPEN] Check for new CI failures since morning audit
+- [OPEN] Work on Session BC swarm prompt
+- [DONE] Fix ab_analysis.yml timeout (fetch-depth 0→1, timeout 15→45min)
+- [DONE] Fix DB Freshness Guardian RED (SHOW COLUMNS check + YELLOW fallback)
+- [DONE] Write commodity_nonctf_strategy_autopsy_2026_05_17.md
+- [DONE] Write equity_strategy_autopsy_2026_05_17.md
+- [DONE] Write session_review_az_2026_05_17.md
+- [DONE] Write session_review_ba_2026_05_17.md
+- [DONE] Write session_review_bb_2026_05_17.md
+- [DONE] Write project_session_az_2026_05_17.md
+- [DONE] Write project_session_ba_2026_05_17.md
+- [DONE] Write project_session_bb_2026_05_17.md
+- [DONE] Update MEMORY.md with AZ, BA, BB entries
+- [OPEN] Block cta_replicator COMMODITY non-CT=F (requires user approval)
+- [OPEN] Evaluate cap raise after blocking cta_replicator
+- [OPEN] Continue working on next steps till all todos/action items are completed
+- [DONE] Implement M-012 DSR gate wiring in dashboard_generator.py (add _load_dsr_audit, enrich strategy rows with dsr_score/dsr_verdict)
+- [DONE] Verify syntax of dashboard_generator.py is clean
+- [DONE] Verify M-012 logic end-to-end with a quick test
+- [DONE] Write unit tests for M-012 (4 tests)
+- [DONE] Commit M-012 changes and update MASTER_ACTION_PLAN status
+- [DONE] Write Session BD swarm prompt and run the swarm
+- [DONE] Run swarm review (deepseek APPROVE)
+- [DONE] Commit swarm prompt and close session BD
+- [OPEN] Await user approval on blocking ('COMMODITY', 'cta_replicator') — removes 83 losing picks
+- [OPEN] Await user approval on raising concentration cap to ≥0.85
+- [DONE] Add `_load_dsr_audit()` in dashboard_generator.py (M-012 DSR Gate Wiring)
+- [DONE] Modify `_build_strategy_breakdown()` to stamp `dsr_score` and `dsr_verdict` (M-012)
+- [DONE] Write 4 tests in tests/test_m012_dsr_wireup.py (M-012)
+- [DONE] Update MASTER_ACTION_PLAN: M-012 PENDING → DONE
+- [OPEN] Block `('COMMODITY', 'cta_replicator')` — 83 losing picks, 0 CT=F sacrifice
+- [OPEN] Raise COMMODITY concentration cap to ≥0.85
+- [DONE] Survey existing M-013 ConcentrationChecker implementation
+- [DONE] Survey M-014 confidence clamp implementation
+- [DONE] Verify M-028 (15m quarantine) implementation
+- [DONE] Audit completed items (M-001, M-002, M-006, M-013, M-014) and update MASTER_ACTION_PLAN
+- [DONE] Commit MASTER_ACTION_PLAN update
+- [DONE] Write swarm prompt
+- [DONE] Commit swarm prompt
+- [DONE] Write memory and close goal
+- [DONE] Investigate M-013 (passes_concentration_cap) — already wired, corrected in commit af7920f02b
+- [DONE] Audit MASTER_ACTION_PLAN for zombie PENDING items — 5 items corrected with evidence pointers
+- [DONE] Implement M-028 — 15m timeframe quarantine enforcement in quality_gates.py
+- [DONE] Write tests for M-028 — 5/5 tests pass
+- [DONE] Update MASTER_ACTION_PLAN and commit M-028 changes
+- [DONE] Write swarm prompt and run review — deepseek APPROVE
+- [DONE] Commit swarm prompt and close out session
+- [OPEN] Block ('COMMODITY', 'cta_replicator') — awaiting user approval
+- [OPEN] Raise COMMODITY concentration cap to ≥0.85 — awaiting user approval
+- [OPEN] Break down further action items into chunks for review — contingent on swarm review above
+- [DONE] M-028: 15m Timeframe Quarantine Gate (commit `4dc1485896`)
+- [OPEN] M-033: `claude_gainer_st` stale refresh fix — user approved proceeding, not yet done
+- [OPEN] Ask agent swarm to clarify scope of M-033
+- [DONE] Run swarm review prompt (session_review_*)
+- [DONE] Run `python tools/swarm/swarm_run.py --engines deepseek`
+- [UNCLEAR] Ask agent swarm if anything is unclear (user requested, not shown executed)
+- [DONE] Implement M-033: override is_stale, last_signal_at, active_picks for permanently killed strategies in dashboard_generator.py
+- [DONE] Write and pass tests for M-033 (6/6)
+- [DONE] Update MASTER_ACTION_PLAN and commit M-033
+- [DONE] Run Session BG swarm review (deepseek APPROVE)
+- [DONE] Investigate M-007 (FOREX_HARD_DISABLE) — found already implemented
+- [DONE] Update MASTER_ACTION_PLAN marking M-007 DONE
+- [DONE] Implement M-020: add BOND_ALLOWED_SYMBOLS + surface provenance in walkforward_validator
+- [DONE] Write and pass tests for M-020 (6/6)
+- [DONE] Update MASTER_ACTION_PLAN and commit M-020 + M-007
+- [DONE] Run Session BH swarm review (CONDITIONAL APPROVE)
+- [DONE] Expand BOND_ALLOWED_SYMBOLS to include IEF, SHY, ZN=F, ZB=F
+- [DONE] Fix test to use a truly blocked symbol; 6/6 pass
+- [DONE] Commit expanded allowlist
+- [DONE] Save BG + BH memory
+- [DONE] Investigate M-004 (CRYPTO drag autopsy + auto-quarantine)
+- [DONE] Implement M-004: concentration writer in dashboard_generator.py, quarantine gate in quality_gates.py
+- [DONE] Write and pass tests for M-004 (6/6)
+- [DONE] Update MASTER_ACTION_PLAN and commit M-004
+- [DONE] Run Session BI swarm review (deepseek APPROVE)
+- [DONE] Investigate M-005 (Cross-DB consistency audit) — found already implemented
+- [DONE] Update MASTER_ACTION_PLAN marking M-005 DONE
+- [OPEN] Implement M-019: add MDD hard-cap (Charter §7 -20% MDD) in portfolio_gates.py (implementation started but not shown completed)
+- [DONE] Continue autonomous loop until all TODOs/action items completed, then feed transcript to agent swarm for review
+- [DONE] Submit each session to deepseek swarm for review before next session starts
+- [DONE] Implement M-033 (permanently-killed strategies in collect_system_stats)
+- [DONE] Implement M-004 (system_concentration.json writer + CRYPTO_CONCENTRATION_GATE in quality_gates.py)
+- [DONE] Implement M-020 (BOND symbol filtering in walkforward_validator.py)
+- [OPEN] Complete M-019 (MDD gate in portfolio_gates.py — was in progress at time of interrupt)
+- [OPEN] Ask agent swarm if anything is unclear
+- [OPEN] Feed chat transcript into agent swarm for review after all action items completed
+- [DONE] Write tests (7/7 pass)
+- [DONE] Update MASTER_ACTION_PLAN and commit (`bf8e62fe97`)
+- [DONE] Write and run Session BJ swarm review prompt
+- [DONE] Check CI health
+- [DONE] Check AMD EQUITY reassessment (n≥20 trigger)
+- [DONE] Check if AMD has any code gate/block
+- [DONE] Review MASTER_ACTION_PLAN for PENDING S-effort items
+- [DONE] Mark M-047 as DONE
+- [DONE] Handle M-030 (last_signal_date field)
+- [DONE] Handle M-048 (Binance API audit)
+- [DONE] Handle M-037 (INDEX_STOCK probe)
+- [DONE] Mark M-030 as DONE
+- [DONE] Mark M-031 as DONE
+- [DONE] Mark M-035 as DONE
+- [DONE] Commit MASTER_ACTION_PLAN updates
+- [DONE] Check M-026 (EQUITY day-of-week tilt)
+- [DONE] Check M-027 (FUTURES Thu)
+- [DONE] Update M-026 and M-027 with findings
+- [DONE] Commit MASTER_ACTION_PLAN updates and write Session BK swarm prompt
+- [DONE] Implement M-040 (Hermes phantom-work guard / verify_citations tool)
+- [DONE] Write tests for verify_citations tool (6/6 pass)
+- [DONE] Update MASTER_ACTION_PLAN for M-038 and M-040, then commit (`48f3aff65d`)
+- [DONE] Write and run Session BK swarm review
+- [DONE] Fix prompt to avoid example paths caught by verify_citations
+- [DONE] Implement M-043 (DB credentials secret-scan GHA)
+- [DONE] Mark M-043 as DONE
+- [DONE] Check M-042 (verification matrix scaffold)
+- [DONE] Check M-049 (kill-switch audit)
+- [DONE] Mark M-049 as DONE
+- [DONE] Check M-008 (COT DB MATCH) current state
+- [DONE] Investigate M-008 source_system=None bug
+- [DONE] Commit pending changes and continue with Session BL swarm review
+- [DONE] Update M-008 with findings (PF resolved)
+- [DONE] Write Session BL swarm review and run it
+- [DONE] Commit BL swarm prompt
+- [DONE] Start M-036 (ETF universe expansion)
+- [DONE] Assess M-036 scope (found tickers already exist, data accumulation issue)
+- [DONE] Update M-036 status notes
+- [DONE] Update goal state and judge goal
+- [DONE] Commit and judge goal
+- [DONE] Update memory with session summaries
+- [OPEN] User approval: Block ('COMMODITY', 'cta_replicator')
+- [OPEN] User approval: Raise COMMODITY concentration cap to ≥0.85
+- [DONE] Implement M-041: wire slippage_validator into dashboard_generator.py
+- [DONE] Write tests for M-041 (6/6 pass)
+- [DONE] Commit M-041 as 09ecc85653
+- [OPEN] Add FRED_API_KEY secret in GitHub settings (operator action, not code)
+- [DONE] Implement M-019 portfolio MDD hard-cap gate in portfolio_gates.py
+- [DONE] Create tests/test_m019_portfolio_mdd.py (7 tests, all pass)
+- [DONE] Implement M-040 verify_citations.py phantom-work guard
+- [DONE] Create tests/test_m040_verify_citations.py (6 tests, all pass)
+- [DONE] Wire M-041 slippage_validator scaffold into dashboard_generator.py
+- [DONE] Create tests/test_m041_slippage_validation.py (6 tests, all pass)
+- [DONE] Update MASTER_ACTION_PLAN_2026-05-15.md marking M-019, M-026, M-027, M-030, M-031, M-035, M-037, M-040, M-041, M-042, M-043 as DONE; M-036 as PENDING with note; M-038 as DEFERRED
+- [OPEN] Block ('COMMODITY', 'cta_replicator') — pending user approval
+- [OPEN] Raise COMMODITY concentration cap to ≥0.85 — pending user approval
+- [DONE] Add `FRED_API_KEY` secret in GitHub repository settings (pending item from session BM)
+- [DONE] Approve blocking `('COMMODITY', 'cta_replicator')` — WR=12%, n=83, 0 CT=F picks (pending item from session BM)
+- [DONE] Approve raising COMMODITY concentration cap to ≥0.85 (pending item from session BM)
+- [DONE] Implement M-016 (live-vs-backtest drift circuit breaker)
+- [DONE] Implement M-015 (Decay-alert REDUCE soft-demote framework)
+- [DONE] Implement M-025 (overnight_intraday_reversal EQUITY strategy)
+- [DONE] Complete M-046 (validate_pick_schema.py tests and CI)
+- [DONE] Add tests and freshness check for M-046
+- [DONE] Run full test suite for 3 new test files + prior M-items (44/44 pass)
+- [DONE] Write Session BN swarm review prompt and run it (deepseek APPROVE)
+- [DONE] Tick and judge goal for Session BN
+- [DONE] Implement M-029 (drift-pause auto-flip dry-run, Phase 4.1)
+- [DONE] Write Session BO swarm review and run it (deepseek APPROVE)
+- [DONE] Implement M-022 (commodity_carry_momo_double_sort opt-in sidecar)
+- [DONE] Mark M-022 and M-023 as stale and add tests for both
+- [DONE] Write tests for M-022 and M-023 (10/10 pass)
+- [DONE] Update MASTER_ACTION_PLAN and commit for M-022/M-023
+- [DONE] Check M-024 (ust_tsmom_level BOND TSMOM) (7/7 pass)
+- [DONE] Update MASTER_ACTION_PLAN and commit for M-024
+- [DONE] Check M-025 (overnight_intraday_reversal) (6/6 pass)
+- [DONE] Update plan and commit for M-025
+- [DONE] Check M-009 (PEAD strategy)
+- [DONE] Check what's left that's genuinely implementable (9/9 pass)
+- [DONE] Update plan and commit for remaining items
+- [DONE] Write Session BP swarm review covering BO (M-029) + stale corrections and new implementations (deepseek APPROVE)
+- [DONE] Tick and judge, then update memory for Session BP
+- [OPEN] Tackle M-010 Phase 2 — wire `passes_tier_gate()` into the tv-paper-trade skill
+- [DONE] Implement M-016 (BT_WR_DRIFT gate) in quality_gates.py
+- [DONE] Implement M-015 (decay soft-demote penalty) in quality_gates.py
+- [DONE] Wire `_passes_bt_wr_drift_gate()` into `passes_active_gate()`
+- [DONE] Wire `_get_decay_soft_demote_penalty()` into `calculate_smart_score()`
+- [DONE] Add M-029 dry-run stamp logic
+- [OPEN] Feed chat transcript into agent swarm for review after session batch
+- [OPEN] Get deepseek APPROVE before continuing
+- [OPEN] Judge goal as done=true only when all actionable items are exhausted
+- [DONE] Wire tier gate into `tools/swarm/get_eligible_picks.py`
+- [DONE] Add "Swarm Tier Gate" section to SKILL.md
+- [DONE] Write Session BQ swarm review prompt
+- [DONE] Update MASTER_ACTION_PLAN for M-010 Phase 2
+- [DONE] Assess M-003 (stale PENDING) and update MASTER_ACTION_PLAN
+- [DONE] Sweep remaining PENDING items (M-011, M-021, M-036, M-039)
+- [DONE] Update M-008 and M-038 status in MASTER_ACTION_PLAN
+- [DONE] Write final Session BR swarm review prompt
+- [DONE] Commit prompts and judge goal achieved
+- [DONE] Set new goal: continue from current state, assess actionable next steps
+- [DONE] Check CI health and any failing tests
+- [DONE] Check DAILY_IDEAS for items not in MASTER_ACTION_PLAN
+- [DONE] Verify M-067 implementation status
+- [DONE] Update MASTER_ACTION_PLAN section 25 to DONE for M-067
+- [DONE] Check M-071 and M-072 status
+- [DONE] Commit M-067 correction
+- [DONE] Verify CI is still green
+- [DONE] Write and run Session BS swarm review
+- [DONE] Commit the prompt and complete the goal
+- [DONE] Set /goal to "keep working on next steps till all todos /action items are completed, then feed our chat transcript into our agent swarm and have them review for any further action items needed, if needed break it down into chunks for review."
+- [DONE] Scan for P0.5 items and open checklist items.
+- [DONE] Add `hf_stats.by_asset_class` test to close P0.5/#5.
+- [DONE] Run tests (8/10 passing, 2 skipped).
+- [DONE] Update MASTER_ACTION_PLAN.
+- [DONE] Check P0.5/#4 (Configured-vs-Active Gates panel).
+- [DONE] Check P1/#6 and P1/#7.
+- [DONE] Commit P0.5/#5 completion.
+- [DONE] Pivot to `/money-maker-readyv2` and review recent `.MD` files for statistical edge ideas.
+- [DONE] Run swarm analysis of DAILY_IDEAS files for statistical edge improvement.
+- [DONE] Tick goal state and run swarm analysis.
+- [DONE] Run autonomous loops to exhaust actionable M-items in MASTER_ACTION_PLAN until APPROVE
+- [DONE] Run each batch through deepseek swarm review
+- [DONE] Proceed on next steps; if nothing, review /money-maker-readyv2 and recent .MDs for statistical edge ideas
+- [DONE] Use agent swarm to review ~30 DAILY_IDEAS files for insights on improving statistical edge
+- [DONE] Create get_eligible_picks.py (M-010 Phase 2 filter script)
+- [DONE] Edit SKILL.md to add Swarm Tier Gate section
+- [DONE] Create test_m010_phase2_eligible_picks.py (12 tests)
+- [DONE] Update MASTER_ACTION_PLAN: M-010 Phase 2 complete, M-003/M-008/M-038/M-067 status updates, P0.5/#5 done
+- [DONE] Add test_hf_stats_by_asset_class_shape to test_audit_dashboard_payload.py
+- [DONE] Run swarm reviews (session_review_bq, br, bs) — all APPROVE
+- [DONE] Fix push rejection by stashing, pulling rebase, popping, then pushing
+- [DONE] Write swarm prompt for DAILY_IDEAS edge sweep
+- [DONE] Read full deepseek output and synthesize report
+- [DONE] Write clean edge sweep report (`reports/daily_ideas_edge_sweep_2026_05_17.md`)
+- [DONE] Check MySQL silent-fix item (already fixed)
+- [DONE] Check schema watchdog and FOREX carry items (already implemented)
+- [DONE] Check ETF sector rotation item (already implemented)
+- [DONE] Check phase5 wire-up, CopytraderManager, bond scanner expansion, DBMF replication (already wired)
+- [DONE] Create `tools/mysql_prediction_anomaly_scanner.py`
+- [DONE] Run anomaly scanner on JSON data
+- [DONE] Check P1/#6 (class state machine) and P1/#7 in template.html
+- [DONE] Commit edge sweep report
+- [DONE] Write and run session swarm review
+- [DONE] Implement `check_pending_freshness.py` script
+- [DONE] Write tests for freshness checker (7/7 pass)
+- [DONE] Commit and push freshness checker
+- [DONE] Judge goal (Goal achieved)
+- [OPEN] Continue working on next steps until all TODOs/action items completed, then feed transcript into agent swarm for review and break into chunks if needed
+- [DONE] Create `tools/emit_gate_config.py` that generates `audit_dashboard/data/gate_config.json`
+- [DONE] Create a GitHub workflow for gate config emission
+- [DONE] Add the Configured-vs-Active Gates panel to `template.html`
+- [DONE] Create `reports/daily_ideas_edge_sweep_2026_05_17.md` (committed)
+- [DONE] Create `tools/swarm/prompts/daily_ideas_edge_sweep_2026_05_17.md` (committed)
+- [DONE] Create `tools/swarm/prompts/session_review_bt_2026_05_17.md` (committed)
+- [DONE] Create `tools/check_pending_freshness.py` (committed, 7/7 tests pass)
+- [DONE] Create `tests/test_check_pending_freshness.py` (committed, 7/7 tests pass)
+- [OPEN] Create `tools/emit_gate_config.py` (created but NOT YET COMMITTED)
+- [OPEN] Commit `audit_dashboard/data/gate_config.json` (generated but NOT YET COMMITTED)
+- [OPEN] Review all recent .MDs over past 2 weeks for statistical-edge ideas per asset class
+- [OPEN] Run agent swarm through ~30 DAILY_IDEAS files for additional insights/improvements
+- [DONE] Read template section around Money-Ready tab to find insertion point
+- [DONE] Find tab navigation bar to add "Gate Config" tab button
+- [DONE] Find `tab-moneyready` div to add sibling `tab-gateconfig` div
+- [DONE] Add tab button after Money Ready
+- [DONE] Add `tab-gateconfig` div after `tab-moneyready`
+- [DONE] Add script block before `</body>`
+- [DONE] Create GH Actions workflow (`.github/workflows/gate-config-emit.yml`)
+- [DONE] Write tests for the emitter (`tests/test_emit_gate_config.py`)
+- [DONE] Run tests and verify template syntax (17/17 pass)
+- [DONE] Commit and push everything (commit `1686e9cf6c` to main)
+- [DONE] Run swarm review for session BU (deepseek APPROVE)
+- [DONE] Tick goal counter and judge (Goal achieved)
+- [OPEN] Keep working on next steps until all todos/action items are completed (user's `/goal` command)
+- [OPEN] Break down remaining items into chunks for review if needed
+- [DONE] Implement P1/#6: Add Class State Machine tab
+- [DONE] Implement P2/#8: Add 2 operator preset buttons after MONEY READY
+- [DONE] Implement P2/#9: Add payload-hash/freshness badge near SPA badge
+- [DONE] Update MASTER_ACTION_PLAN to mark P0.5/#4, P1/#6, P2/#8, P2/#9 as DONE
+- [DONE] Commit and push changes (commit `baa12c87ef`)
+- [DONE] Run swarm review and judge the goal (deepseek APPROVE)
+- [DONE] Check M-014 status (already done)
+- [DONE] Check MySQL silent-fail fix (#2 from edge sweep) (already fixed)
+- [DONE] Check all workflows for remaining silent-fail patterns
+- [DONE] Read rest of edge sweep report for open items
+- [DONE] Verify actual status of items #9 and #15 (both already exist)
+- [DONE] Check M-040 (Hermes phantom-work guard)
+- [DONE] Check for new DAILY_IDEAS files and P3/research items
+- [DONE] Update stale Section 15 checkbox list
+- [OPEN] Create comprehensive multi-session swarm review (key deliverable the goal requires)
+- [DONE] Create Gate Config panel (P0.5/#4) — `tools/emit_gate_config.py`, `.github/workflows/gate-config-emit.yml`, `tests/test_emit_gate_config.py`, `audit_dashboard/data/gate_config.json`, template.html tab
+- [DONE] Create Class State Machine tab (P1/#6) — template.html tab button and div
+- [DONE] Create Operator Presets (P2/#8) — `applyCryptoEdgePreset()` and `applyEquityEdgePreset()` in template.html
+- [DONE] Create Payload-Hash Banner (P2/#9) — freshness badge and hashing IIFE in template.html
+- [DONE] Create session BW swarm review prompt
+- [DONE] Push and judge the session BW goal
+- [DONE] Fix stale Section 15 checkboxes (table rows say DONE)
+- [DONE] Fix M-017 position_sizer.py (replace `indicators` import with inline implementations)
+- [DONE] Write tests for M-017 (16/16 pass)
+- [DONE] Update Section 15 checkboxes and MASTER_ACTION_PLAN table row for M-017
+- [DONE] Commit and run M-042 verification matrix
+- [DONE] Update Section 15 checkbox for M-042
+- [DONE] Check remaining unchecked Section 15 items for actionability
+- [DONE] Implement P1/#7 — wire slippage_validator as shadow-default gate blocking MONEY_READY
+- [DONE] Update `_verdict()` to apply the gate
+- [DONE] Wire shadow recommendation into results dict
+- [DONE] Add gate to emit_gate_config.py GATE_REGISTRY
+- [DONE] Write tests for P1/#7 gate
+- [DONE] Regenerate gate_config.json (18 gates), update MASTER_ACTION_PLAN, commit and push
+- [DONE] Run swarm review for session BX and tick/judge
+- [DONE] Fix stale Section 15 checkboxes (M-022, M-024, M-025, M-042 + 9 others)
+- [DONE] Check M-018 ("Wire scaffold into score_pick reporting") for doability
+- [DONE] Create session BX swarm review prompt and run it
+- [DONE] Commit review prompt, tick and judge the goal
+- [DONE] Open PR #1187
+- [DONE] Update MASTER_ACTION_PLAN, mark PR #1027 review
+- [DONE] Pull latest from GitHub and review recent .MD files for proven edge opportunities
+- [DONE] Read reports/PATH_TO_PROVEN_EDGE_2026-05-17.md and reports/pick_traceback_2026-05-17.md
+- [DONE] Build walk-forward eff-stability harness
+- [DONE] Write tests and add per-strategy-WR analysis
+- [UNCLEAR] Run strategy-level WR analysis to document the COT edge finding (shown as started but not confirmed complete)
+- [DONE] Document COT strategy stability and `futures_momentum` underperformance
+- [DONE] Commit the documentation
+- [DONE] Sync project with latest from GitHub, review all recent .MD files for improvements to proven edge per asset class
+- [DONE] Fix `position_sizer.py` orphan imports (M-017) — committed
+- [DONE] Implement P1/#7 slippage gate in `money_ready_verdict.py` — committed
+- [DONE] Add SLIPPAGE_PROMOTION_GATE to GATE_REGISTRY in `emit_gate_config.py` — committed
+- [DONE] Regenerate `gate_config.json` (17→18 gates) — committed
+- [DONE] Update MASTER_ACTION_PLAN checkboxes (PR #1027, PR #1187) — modified, not committed
+- [DONE] Implement `walk_forward_eff_harness.py` (PATH_TO_PROVEN_EDGE Step 1) — written, not committed
+- [DONE] Write `tests/test_walk_forward_eff_harness.py` (42 tests passing) — written, not committed
+- [DONE] Generate `reports/walk_forward_eff_stability.json` — generated, not committed
+- [OPEN] Commit all session BY deliverables (modified/new files)
+- [DONE] Commit session BY work
+- [DONE] Add M-107 to MASTER_ACTION_PLAN
+- [DONE] Create swarm review for session BY
+- [DONE] Run deepseek review for session BY
+- [DONE] Commit plan update and goal state
+- [DONE] Save session memory and present findings
+- [OPEN] Investigate `futures_momentum` (2% WR) as possible anti-signal (30 min)
+- [OPEN] Decide on `quan_engine_scalp` volume reduction (10-20%)
+- [DONE] Fix stale checkbox (PR #1027 closed)
+- [DONE] Implement M-107 hypothesis pre-registration gate (JSON registry)
+- [DONE] Investigate H-005 futures_momentum anti-signal hypothesis
+- [DONE] Update hypothesis registry with futures_momentum findings
+- [DONE] Commit M-107 work
+- [DONE] Handle /dropchat-multipc command
+- [OPEN] Verify send landed using `protocol_inspect tail --limit 5`
+- [OPEN] Triage peer messages, classify, decide accept/defer/reject, write `reports/peer_inbox_<UTC>.md`
+- [OPEN] Output compact 6-line summary to operator
+- [DONE] Build session payload from actual commits
+- [DONE] Log gateway failure in CHATBIBLE_FAILURE.MD per protocol
+- [DONE] Write swarm review prompt for session BZ and run it
+- [DONE] Commit BZ review prompt and tick/judge the goal
+- [DONE] Work on M-039 (cross-commodity spread research module)
+- [DONE] Write tests for M-039
+- [DONE] Update MASTER_ACTION_PLAN M-039 to DONE and commit
+- [DONE] Check M-018 (slippage wiring into PF/Sharpe)
+- [DONE] Mark M-018 done
+- [DONE] Commit all MASTER_ACTION_PLAN fixes and run final swarm review
+- [DONE] Run final swarm review for session BZ
+- [OPEN] Approve or reject three operator decisions (block futures_momentum, reduce quan_engine_scalp volume, block cta_replicator COMMODITY)
+- [OPEN] Feed chat transcript into agent swarm for review and break into chunks if needed
+- [DONE] Check sections 22-26 of MASTER_ACTION_PLAN for missed items
+- [DONE] Verify M-065 (whites_reality_check.py) runs
+- [DONE] Check M-060, M-062, M-063 status
+- [DONE] Correct stale PENDING statuses for M-062, M-063, M-065 in the plan
+- [DONE] Build M-060 monthly confidence calibrator refit workflow
+- [DONE] Check if confidence_calibrator.py fit accepts --asset-class flag and adjust workflow if needed
+- [DONE] Commit all session CA work
+- [OPEN] Run swarm review on chat transcript for further action items
+- [DONE] Send broadcast (gateway was UP)
+- [DONE] Sync project with latest from GitHub
+- [DONE] Review all recent .MD files for improvement opportunities toward proven edge per asset class
+- [DONE] Run `/dropchat-multipc` (first invocation, session BZ — gateway DOWN)
+- [UNCLEAR] Run `/dropchat-multipc` (second invocation, session CA — gateway UP, in-progress at summary time)
+- [DONE] Implement walk-forward effect-stability harness (PATH_TO_PROVEN_EDGE Step 1) — `tools/walk_forward_eff_harness.py` committed
+- [DONE] Write 42 tests for walk-forward harness — `tests/test_walk_forward_eff_harness.py` all pass
+- [DONE] Generate edge analysis report — `reports/edge_analysis_by_strategy_2026-05-17.md` committed
+- [DONE] Pre-register hypotheses per M-107 — `reports/hypothesis_registry.json` committed
+- [DONE] Implement commodity spread momentum (M-039) — `tools/research/commodity_spread_momentum.py` committed
+- [DONE] Write 8 tests for commodity spread momentum — `tests/test_m039_commodity_spread_momentum.py` all pass
+- [DONE] Create monthly confidence calibrator refit workflow — `.github/workflows/monthly-calibrator-refit.yml` committed
+- [DONE] Edit MASTER_ACTION_PLAN — §29 updated (multiple edits)
+- [DONE] Broadcast SESSION_SUMMARY to all peers (message_id=e317b5e4)
+- [DONE] Drain inboxes (both empty)
+- [DONE] Feed session transcript to swarm for review
+- [DONE] Save swarm review and present findings
+- [OPEN] Replace elite_score with rolling strategy-level WR as primary pick ranker (P0, no approval needed)
+- [OPEN] Block futures_momentum (requires operator approval)
+- [OPEN] Reduce quan_engine_scalp volume share (requires operator approval)
+- [OPEN] Block ('COMMODITY', 'cta_replicator') (requires operator approval)
+- [OPEN] Move H-001 COT to LIVE_TESTING with 2% capital allocation (P1)
+- [OPEN] Prototype H-002 PEAD using Yahoo Finance earnings data (P1)
+- [OPEN] Continue working on next steps until all TODOs/action items completed, then feed chat transcript into agent swarm for review (user's /goal command — ongoing loop)
+- [DONE] Implement rolling strategy-level WR as primary pick ranker (M-108)
+- [DONE] Build strategy_wr_ranker.py module
+- [DONE] Wire strategy WR into elite_scorer.py sort step
+- [DONE] Update basket_generator.py to use m108_rank_score
+- [DONE] Update weakest/lowest lookups in basket_generator.py
+- [DONE] Write tests for strategy_wr_ranker.py
+- [DONE] Fix cache bleeding between tests
+- [DONE] Verify all 14 tests pass
+- [DONE] Verify no regressions in related tests
+- [DONE] Commit and push M-108
+- [OPEN] Handle the /dropchat-multipc request
+- [DONE] Log LAN auto-discovery dead (WinError 10013) as known issue in CHATBIBLE.MD
+- [DONE] Implement H-001 COT LIVE_TESTING allocation wiring (Kelly sizing, capped at 10% per pick)
+- [DONE] Implement H-002 PEAD research prototype using Yahoo Finance earnings data
+- [DONE] Update hypothesis_registry.json with H-001 allocation
+- [DONE] Add M-108 to MASTER_ACTION_PLAN
+- [DONE] Add avg_pnl_pct guard in M-108 ranker for DYDXUSDT artifact
+- [DONE] Cap COT per-pick at 10%
+- [DONE] Track avg_pnl_pct in strategy lookup
+- [DONE] Wire strategy_avg_pnl_pct into enrichment
+- [DONE] Run tests to confirm nothing broke
+- [DONE] Commit fixes (5 commits pushed)
+- [DONE] Implement weight decay monitor for M-108
+- [DONE] Implement strategy blocking expiry audit tool (M-109)
+- [DONE] Run swarm review of session CC work
+- [DONE] Run final dropchat broadcast
+- [OPEN] Block `futures_momentum` (WR=2%, n=202) — requires explicit approval
+- [OPEN] Reduce `quan_engine_scalp` volume share (WR=29.9%, n=5,293) — requires explicit approval
+- [OPEN] Block `('COMMODITY', 'cta_replicator')` (WR=12%, n=83) — requires explicit approval
+- [OPEN] Review 83 expired strategy blocks — run `python tools/research/strategy_block_expiry_audit.py`
+- [OPEN] Feed chat transcript into agent swarm for further action item review (requested via /goal command)
+- [DONE] Set up `/goal` skill specification and state management (goal_state.py)
+- [DONE] Fix M-108 composite formula: drop confidence, boost strategy_rolling_wr to 70%
+- [DONE] Update `compute_rank_score` fallback path docstring
+- [DONE] Commit M-108 v2 formula fix
+- [DONE] Keep working on next steps till all todos/action items are completed
+- [DONE] Broadcast session summaries to cross-PC peers via `/dropchat-multipc`
+- [DONE] Send custom PEER_MESSAGE greeting "hey its CLAUDE 1 from eltons laptop" to all peers via gateway
+- [DONE] Build M-108 strategy-level rolling WR ranker (strategy_wr_ranker.py committed)
+- [DONE] Modify elite_scorer.py to use m108_rank_score for final sort
+- [DONE] Modify basket_generator.py to use m108_rank_score for sorting + hedge selection
+- [DONE] Write tests/test_m108_strategy_wr_ranker.py (14 tests)
+- [OPEN] Block futures_momentum (WR=2%, n=202) — pending operator decision
+- [OPEN] Reduce quan_engine_scalp volume share — pending operator decision
+- [OPEN] Block ('COMMODITY', 'cta_replicator') (WR=12%, n=83) — pending operator decision
+- [DONE] Implement dynamic CI penalty for low-n strategy WR (dynamic n-based weight in compute_rank_score)
+- [DONE] Update tests to cover dynamic weight behavior
+- [DONE] Fix floating-point issue in weight calculation (clamp, round, use literal floor)
+- [DONE] Re-apply test file changes after linter revert
+- [DONE] Fix test to use valid input range (n >= MIN_N)
+- [DONE] Commit and push (commit 15f96e40db)
+- [OPEN] Block futures_momentum (soft-cap to rank=0.0) — requires operator approval
+- [OPEN] Investigate risk_reward eff consistently negative across all walk-forward windows
+- [OPEN] Feed chat transcript into agent swarm for review and further action items
+- [DONE] Run `/swarmv2-pr-review` (PR review on swarm v2 system)
+- [DONE] Review Kimi's PR #1187 — validate claims in attached docs
+- [DONE] Locate files in `C:\Users\zerou\Downloads\Kimi_Agent_行动计划文件\`
+- [DONE] Read critical sections of PICK_TRACEABILITY_SPEC and PR_PLAN
+- [DONE] Unblock `futures_momentum` from PERMANENTLY_KILLED_STRATEGIES
+- [DONE] Remove `("FUTURES", "futures_momentum")` from BLOCKED_ASSET_STRATEGY_PAIRS
+- [DONE] Remove `("FUTURES", "multi_asset_copytrader")` from BLOCKED_ASSET_STRATEGY_PAIRS
+- [DONE] Remove `("FUTURES", "multi_asset_copytrader", "LONG")` and `SHORT` from BLOCKED_DIRECTION_TRIPLES
+- [DONE] Add `MONITORED_FUTURES_STRATEGIES` set with shadow-only annotation
+- [DONE] Wire monitor tag into `passes_active_gate`
+- [DONE] Verify FUTURES monitor changes compile
+- [OPEN] Commit changes and post PR review comment on PR #1187
+- [OPEN] Implement Pick Traceability System (`pick_lifecycle_logger.py`, `filter_traceback_engine.py`, `symbol_universe_manager.py`)
+- [DONE] Build pick lifecycle logger using SQLite at `audit_trail/audit_trail.db`
+- [DONE] Verify logger compiles
+- [DONE] Copy Kimi files into repo
+- [DONE] Dispatch 3 parallel swarm agents for review
+- [DONE] Write and run swarm via `swarm_run.py` for Kimi's plan
+- [DONE] Commit lifecycle logger
+- [DONE] Run swarm review on open PRs (`/swarmv2-pr-review`)
+- [DONE] Review PR #1187 (kimi-code-daily-ideas-2026-05-14 branch)
+- [DONE] Use subagents to review all Kimi attachments, validate claims, create tools/functionality per suggestions/modified versions based on swarm consensus
+- [DONE] Review all files from Kimi (7 files in Downloads folder)
+- [DONE] Move futures strategies from blocked to 'monitor' mode
+- [DONE] Run stats on futures strategies for optimization
+- [DONE] Review, critique, and/or implement files and concepts from Kimi using subagents and agent swarms
+- [DONE] Implement M-108 v2.1 strategy-level rolling WR composite with dynamic n-based weight
+- [DONE] Implement Pick Lifecycle Logger (SQLite-backed singleton, 3 tables)
+- [DONE] Implement FilterTracebackEngine
+- [DONE] Wire FUTURES monitor mode into quality_gates.py
+- [DONE] Fix float precision in `_wr_weight_for_n` (use literal 0.50 floor)
+- [DONE] Add tests for `_wr_weight_for_n` and dynamic weight in `compute_rank_score`
+- [DONE] Create session review prompt (`session_review_cd_2026_05_18.md`)
+- [DONE] Create Kimi full review prompt (`kimi_full_review_2026_05_18.md`)
+- [DONE] Copy all 7 Kimi files from Downloads to `reports/` directory
+- [OPEN] Break down remaining action items into chunks for review
+- [DONE] Wire lifecycle logger into `passes_active_gate()` (log_scan, transition_stage, log_filter at rejections)
+- [DONE] Syntax check and commit lifecycle logger wiring
+- [DONE] Wire ETF VIX<25 gate in `passes_active_gate()`
+- [DONE] Commit ETF VIX gate
+- [DONE] Fix PR #1187's `updates/index.html` DOM issue (restore missing `<div class="container" id="updatesContainer">` tag)
+- [DONE] Verify PR #1187 fix
+- [OPEN] Run `/dropchat-multipc`
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to all peers
+- [OPEN] Triage peer messages and write reports/peer_inbox_<UTC>.md
+- [OPEN] Optionally revise and re-commit if peer insight changes decisions
+- [DONE] Build current session payload and broadcast (broadcast sent, message_id=21ffe166)
+- [DONE] Drain inbox (inbox empty, 0 DMs, 0 broadcasts)
+- [DONE] Feed session transcript into agent swarm for review (swarm graded session CE A-)
+- [DONE] Wire remaining 8 log_filter() gates (regime_gate, confidence_threshold, tier_gate priority) — work shown finding those rejection points
+- [OPEN] Complete all remaining action items identified by swarm review (4 new items surfaced, only first one started)
+- [OPEN] Break down further action items into chunks for review if needed
+- [DONE] Find and wire tier_gate rejection (WF verdict / forward validation tier gate)
+- [DONE] Find and wire format_validation gate
+- [DONE] Commit remaining gate wirings and add futures monitor intermediate escalation rule
+- [OPEN] Build index agent for codebase-aware agent swarm
+- [OPEN] Build deep-dive agents (parallel, per-asset-class)
+- [OPEN] Build synthesis agent
+- [OPEN] Resolve quan_engine_scalp block (deferred, needs operator decision)
+- [OPEN] Determine ETF_VIX_GATE_ENFORCE=1 timing (deferred, needs operator decision)
+- [OPEN] Implement post-cost expectancy gate (deferred, needs operator decision)
+- [DONE] Read corrected Kimi agent swarm files (listed 7 files)
+- [OPEN] Validate key claims from corrected deliverable against live repo
+- [OPEN] Build pick provenance agent
+- [OPEN] Provide new GitHub PAT with `repo` scope for `eltonaguiar/findtorontoevents_antigravity.ca`
+- [OPEN] Push `CORRECTED_GAMEPLAN_2026-05-18.md` to `reports/CORRECTED_GAMEPLAN_2026-05-18.md`
+- [OPEN] Push PR descriptions as separate files (if desired)
+- [DONE] Wire `pick_lifecycle_logger` into production `passes_active_gate()` pipeline
+- [DONE] Wire ETF VIX<25 gate (Kimi PR-E1, swarm consensus)
+- [DONE] Fix PR #1187 `updates/index.html` DOM structure (missing `updatesContainer` div)
+- [OPEN] `/dropchat-multipc` — broadcast session summary to peers (requested twice)
+- [OPEN] Review and validate all 8 corrected Kimi files from "C:/Users/zerou/Downloads/Kimi_Agent_Kimi Analysis Review/"
+- [DONE] "yes build it" — confirmed building a hierarchical pick provenance index agent
+- [DONE] Move futures strategies from 'blocked' to 'monitor' (operator directive, already implemented in prior session)
+- [DONE] Build pick provenance index (106KB written)
+- [DONE] Fix regex so `ml_crypto_predictor` no longer shows MONITORED
+- [DONE] Commit and push gate wirings (final 4 gates, including meta_label-soft)
+- [DONE] Run swarm review on session CE (grade A-)
+- [OPEN] Wire all 12 gates before using filter_distribution()
+- [OPEN] Extend FUTURES review to 60 days
+- [OPEN] Analyze vix shadow log before enforcing
+- [OPEN] Post-cost gate confirmed as next priority
+- [UNCLEAR] Read and swarm-review Kimi's 5 new PR specs (grade C given, but no explicit user request shown)
+- [UNCLEAR] Do the dropchat and swarm-transcript-review (mentioned but not shown complete)
+- [OPEN] Triage peer messages, classify, decide accept/defer/reject for task.request DMs
+- [DONE] Broadcast sent, inbox drained (0 new DMs)
+- [DONE] Run swarm-transcript-review (alias of swarm-transcript-scan)
+- [DONE] Extend FUTURES monitor review date (2026-06-18 → 2026-07-18)
+- [DONE] Add min_picks_per_week: 5 KPI per swarm recommendation
+- [DONE] Copy Kimi R2 PR specs to reports/
+- [DONE] Commit Kimi Code's audit_optimizer_cloud_agent.md
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history from PR #1086)
+- [OPEN] Feed chat transcript into agent swarm for review, breaking into chunks if needed
+- [OPEN] Set or replace the active goal via `/goal <text>` and begin work
+- [OPEN] Judge own work and record verdict via `goal_state.py judge --session <SID> --done <bool> --reason "<reason>"`
+- [OPEN] If not done and budget remains, call `ScheduleWakeup` with appropriate delay and prompt `/goal continue`
+- [OPEN] If invoked as `/goal continue`, re-read state and resume from step 2
+- [OPEN] Document MySQL password rotation (stocks123 → new password) — operator DB admin access required
+- [OPEN] Scan prior CE session transcript through the swarm
+- [OPEN] Chunk the 71MB transcript for scanning
+- [OPEN] Run transcript scan in parallel with documenting MySQL issue
+- [OPEN] Check if background CE transcript scan finished and work on remaining items
+- [DONE] Run `/dropchat-multipc` (twice)
+- [DONE] Run `/swarm-transcript-review` on current session
+- [DONE] Review Kimi's latest R2 files from `C:/Users/zerou/Downloads/Kimi_Agent_Kimi Analysis Review2/`
+- [DONE] Build hierarchical pick provenance index agent ("yes build it")
+- [DONE] Wire remaining log_filter() gates (4 of 4 remaining gates wired)
+- [DONE] Implement PR-03 post-cost expectancy shadow gate in `passes_active_gate()`
+- [DONE] Add `get_cost_assumption_for_pick()` helper to `transaction_cost_model.py`
+- [DONE] Verify syntax and run tests for post-cost gate
+- [DONE] Wire M-108 magnitude sanity gate into `passes_active_gate()`
+- [DONE] Commit and push post-cost gate changes
+- [DONE] Remove duplicate M-108 wiring (redundant with PR #1199)
+- [DONE] Wire PR #1030 (strategy emission monitor)
+- [DONE] Update MONEY READY tooltip to reflect current verdicts
+- [DONE] Push updates and run swarm review on session transcript
+- [DONE] Investigate ETF WR=0.0% anomaly in money_ready_verdict
+- [DONE] Commit CG transcript scan
+- [DONE] Fix M-108 magnitude gate test (FOREX test pick with 10% TP)
+- [DONE] Commit fixes and push
+- [OPEN] Check CE transcript scan results for action items
+- [OPEN] Build strategy emission monitor (dormancy detection) — found already exists, ran it
+- [OPEN] Merge PR 1187 (docs-only, stale with conflicts — skipped)
+- [OPEN] Address VIX shadow log empty / default threshold change 25.0 → 20.0
+- [DONE] Add M-103 post-cost expectancy shadow gate to quality_gates.py
+- [DONE] Remove duplicate M-108 wiring from passes_active_gate()
+- [DONE] Change ETF VIX gate threshold from 25.0 to 20.0
+- [DONE] Update MONEY READY button tooltip in template.html
+- [DONE] Fix test_trust_tier_non_crypto_default_on.py with class-appropriate TP/SL
+- [DONE] Run transcript action scan on CE session (reports/transcript_scan_CE_2026_05_18.md)
+- [DONE] Run transcript action scan on CG session (reports/transcript_scan_CG_2026_05_18.md)
+- [OPEN] Rotate MySQL password (stocks123/backtests123)
+- [OPEN] Investigate ETF WR=0.0% anomaly
+- [OPEN] Investigate ETF test_asset_class_health_class_present[ETF] (currently passing)
+- [OPEN] Address dashboard ETF stubs
+- [DONE] Run test suite (5109 passed, 0 failures)
+- [DONE] Investigate PR #1187 (stale docs PR)
+- [DONE] Close PR #1187
+- [DONE] Investigate Pick What-If Query (Kimi R2 PR-05)
+- [DONE] Build tools/pick_whatif_query.py CLI tool
+- [DONE] Commit and push pick_whatif_query.py
+- [DONE] Investigate ETF asset_class_health issue (n=0 resolved picks)
+- [DONE] Check if ETF scanner exists
+- [DONE] Check GitHub Actions for ETF scanner
+- [DONE] Check if ETF picks are generated but not passing gates
+- [DONE] Fix wiring of ETF scanner into production (identified as not wired)
+- [DONE] Revert local ETF scanner merge that dirtied active_picks.json
+- [DONE] Check feature distribution KS-test monitoring (not implemented, requires infrastructure beyond scope)
+- [DONE] Check GitHub Actions health (clean)
+- [DONE] Run swarm transcript scan on updated session
+- [DONE] Scan unscanned session 7b29f719 for action items
+- [DONE] Check quan_engine_scalp block situation (WR=29.9%, already blocked)
+- [DONE] Check remaining MASTER_ACTION_PLAN items (all M-series through M-110 implemented)
+- [DONE] Investigate feature_stability_monitor.py wiring (not feasible without feature store)
+- [DONE] Check dropchat-multipc gateway health (up with 2+ active peers)
+- [DONE] Build session summary and send dropchat
+- [DONE] Send SESSION_CLOSED and make final goal judgment
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (P0, operator-gated)
+- [OPEN] Enable ETF_VIX_GATE_ENFORCE=1 after 30d shadow data collection
+- [OPEN] COMMODITY concentration cap decision (PM approval needed)
+- [OPEN] D-007 ETF MONEY_READY (pending n≥100 resolved picks)
+- [OPEN] Keep working on next steps until all TODOs/action items completed, then feed transcript into agent swarm for review
+- [DONE] Check whether "modified but not committed" items from CH scan were committed in subsequent sessions
+- [DONE] Investigate EQUITY regression (n=421→31, PF 1.41→0.72)
+- [DONE] Investigate FOREX PF=63.22 artifact (CADJPY=X price unit mismatch)
+- [DONE] Fix outcome_resolver to cap FOREX PnL (sanity cap)
+- [DONE] Clean corrupt CADJPY=X record from closed_picks.json
+- [DONE] Add test for sanity cap and run test suite (4/4 passing)
+- [DONE] Verify FOREX PnL after outlier removal (PF 63.22→0.35)
+- [DONE] Run full test suite before committing
+- [DONE] Scan current session transcript for more action items
+- [DONE] Investigate EQUITY regression further (time-window issue, multi_asset_copytrader)
+- [DONE] Check MASTER_ACTION_PLAN for remaining agent-executable items
+- [DONE] Perform rapid_fire CRYPTO strategy analysis (C-006) and write investigation report
+- [DONE] Perform quan_engine investigation (C-005) and commit both reports
+- [OPEN] Tick the goal counter and scan current session transcript for new action items (interrupted mid-sentence)
+- [DONE] Check COMMODITY concentration (CT=F target <40%)
+- [DONE] Verify new tools from rebase need wiring
+- [DONE] Run final broad test pass
+- [DONE] Scan session transcript for new action items
+- [DONE] Check EQUITY lower min_trades override
+- [DONE] Confirm kimi_riseoftheclaw wiring (SMART_GATE_SCORE_BOOST)
+- [DONE] Create `investigations/` directory for quan_engine report and EQUITY symbol universe CSV
+- [OPEN] Create EQUITY symbol universe CSV with ≥200 tickers
+- [DONE] Keep working on next steps till all todos/action items are completed (standing `/goal` directive, session continued)
+- [DONE] Feed chat transcript into agent swarm for review of further action items (standing `/goal` directive)
+- [DONE] Add PNL_SANITY_CAP_BY_CLASS dict and `_pnl_sanity_cap_for()` in `outcome_resolver.py` (M-111)
+- [DONE] Add sanity check in `resolve_single_pick()` for implausible PnL (M-111)
+- [DONE] Add `TestPnlSanityCap` test class in `test_outcome_resolver_noncrypto.py` (4 tests)
+- [DONE] Fix test import from `resolve_pick` to `resolve_single_pick as resolve_pick`
+- [DONE] Remove CADJPY=X FOREX outlier from `closed_picks.json` (8423→8422 picks)
+- [DONE] Create `tools/pick_whatif_query.py` CLI (Kimi R2 PR-05)
+- [DONE] Create `reports/rapid_fire_strategy_investigation_2026-05-18.md` (C-006, NO-GO decision)
+- [DONE] Create `reports/quan_engine_strategy_investigation_2026-05-18.md` (C-005, block maintained)
+- [DONE] Create `investigations/quan_engine_2026-05-18.md` (copy of report per MASTER_ACTION_PLAN)
+- [OPEN] Commit `alpha_engine/data/equity_symbol_universe.csv` (in progress, not yet committed)
+- [DONE] Run full test suite (exit code 0)
+- [DONE] Create EQUITY symbol universe CSV with ≥200 tickers (201 committed & pushed)
+- [DONE] Commit investigations/quan_engine_2026-05-18.md
+- [DONE] C-008 CRYPTO source audit (5 sources healthy, Binance failover up)
+- [DONE] F-001 FOREX HARD_DISABLE verification (active, default=1)
+- [DONE] F-003 HARD_DISABLE rationale log (audit_trail/data/forex_hard_disable_log.json)
+- [DONE] B-002 BOND scanner coverage (all 8 required tickers confirmed)
+- [DONE] CI transcript scan (73MB, 2541 items — no new agent-executable items)
+- [DONE] CI GitHub Actions health check (no stale failures)
+- [OPEN] Break down further action items into chunks for review
+- [DONE] Perform comprehensive sweep of remaining open items against codebase
+- [DONE] Review new files from Kimi
+- [DONE] Cross-check CRYPTO PF numbers against `pf_registry.json`
+- [DONE] Check ML-enhanced quarantine situation
+- [DONE] Diagnose discrepancy between CRYPTO PF (0.643) and money_ready_verdict (2.95)
+- [DONE] Investigate potential bug in money_ready_verdict strategy/source_system check
+- [DONE] Verify ml_enhanced picks are genuine live forward-test picks
+- [DONE] Extract action items from Kimi's key files
+- [OPEN] Add all negative-edge ml_enhanced variants (ADAUSDT, BTCUSDT, SOLANA variants) to the quarantine blocklist
+- [DONE] Review Kimi's files (Set 1: Performance audit with 5 PRs spec'd)
+- [DONE] Review Kimi's files (Set 2: Agent Prompt Library, HONEST_INTEGRATION_GUIDE.md)
+- [OPEN] Add 54 negative-edge ml_enhanced strategy names to crypto_quarantine.json quarantined list
+- [OPEN] Fix pf_registry.json WR=0.0% bug (win_rate field not computed)
+- [OPEN] Re-generate pf_registry.json after M-111 CADJPY cleanup (must not run locally per CLAUDE.md)
+- [DONE] Copy Kimi files to repo and commit
+- [DONE] Fix ETF VIX gate threshold from 20.0 to 25.0 (threshold already 20.0 from swarm calibration, accepted as OK)
+- [DONE] Push changes and run swarm review
+- [DONE] Commit untracked report files from previous session
+- [DONE] Commit quality_gates.py change (enable ETF VIX gate enforcement)
+- [DONE] Run swarm review on current session transcript
+- [DONE] Tick the goal and assess actionable vs. operator-blocked items
+- [DONE] Fix test_smart_gate_forex_uses_forward_wr_alias_fields (test already passes)
+- [DONE] Broader test run
+- [DONE] Fix test that failed due to ml_enhanced_injusdt_1h_d_ensemble_stack being quarantined (use whitelisted strategy)
+- [DONE] Run full test suite (5249 tests pass)
+- [DONE] Implement PR-1: CT=F concentration cap (M-096 for COMMODITY)
+- [DONE] Write tests for M-096
+- [DONE] Fix tests to use HG=F instead of GC=F (blacklisted)
+- [DONE] Fix tests to set COT_DEDUP_GATE_ENABLED=0
+- [OPEN] PR-3: Post-cost expectancy gate promotion
+- [DONE] Review Kimi agent files from Downloads and process all open action items from previous session
+- [DONE] Commit crypto_quarantine.json (PR-4)
+- [DONE] Change ETF_VIX_GATE_ENFORCE default from "0" to "1" in quality_gates.py
+- [DONE] Add M-096 CT=F concentration cap gate to quality_gates.py
+- [DONE] Fix CRYPTO consensus test to use whitelisted ml_enhanced strategy
+- [DONE] Create test_m096_ctf_concentration_cap.py
+- [DONE] Commit docs/kimi_agent_reviews/AGENT_PROMPT_LIBRARY_2026-05-18.md
+- [DONE] Commit docs/kimi_agent_reviews/HONEST_INTEGRATION_GUIDE_2026-05-18.md
+- [DONE] Commit reports/MASTER_ACTION_PLAN_KIMI_V2_2026-05-18.md
+- [DONE] Commit reports/CORRECTED_GAMEPLAN_2026-05-18.md
+- [DONE] Commit reports/PR_PLAN_2026-05-18.md
+- [OPEN] Fix 4 failing M-096 tests in test_m096_ctf_concentration_cap.py
+- [OPEN] Process all open action items until completed (per /goal directive)
+- [DONE] Add `COMMODITY_SHORT_ONLY=0` to tests using LONG direction picks
+- [DONE] Run M-096 tests to verify fix
+- [DONE] Investigate M-096 gate not blocking (hard-reject test returns True)
+- [DONE] Check conftest.py for COMMODITY env var overrides
+- [DONE] Fix `Path.read_text` mock not working in Python 3.12
+- [DONE] Rewrite test to use `monkeypatch.setattr` on `Path.read_text`
+- [DONE] Fix `monkeypatch` missing `addfinalizer` — use `request` fixture
+- [DONE] Fix Windows file locking on `active_picks.json` — make M-096 injectable via env var
+- [DONE] Rewrite tests to write to temp file and point M-096 at injectable path
+- [DONE] Run all 6 M-096 tests — all pass
+- [DONE] Commit and push M-096
+- [DONE] Run targeted test suite — all 17 pass
+- [DONE] Run full test suite — 5240 passed, 0 failed
+- [DONE] Tick goal counter and check MASTER_ACTION_PLAN for next items
+- [DONE] Investigate `rapid_fire` CRYPTO performance
+- [DONE] Investigate `alpha_engine_fast` and `super_signals` CRYPTO performance
+- [DONE] Create investigation doc for `super_signals` CRYPTO and push
+- [DONE] Run swarm transcript review as requested
+- [OPEN] Rotate `ejaguiar1_stocks` MySQL password from `stocks123` + update GitHub Secret
+- [OPEN] Start `python tools/protocol_gateway.py` at `192.168.2.32:8788` for cross-PC gateway
+- [OPEN] Create `rapid_fire` CRYPTO investigation doc
+- [OPEN] Create `aggregated_picks` CRYPTO investigation doc
+- [OPEN] Create weekly filter report (`reports/weekly_filter_*.md`)
+- [OPEN] Add CI coverage check to CI pipeline
+- [OPEN] Create `updates/index.html` entry summarizing recent completed work
+- [OPEN] Rotate MySQL passwords for `ejaguiar1_stocks` and `ejaguiar1_backtests` and update GitHub Secrets (`MYSQL_PASSWORD`, `DB_PASS_STOCKS`, `DB_PASS_BACKTESTS`)
+- [OPEN] Start cross-PC gateway (`python tools/protocol_gateway.py` at `192.168.2.32:8788`)
+- [OPEN] Review investigation doc for blocking `super_signals` CRYPTO and add `("CRYPTO", "super_signals")` to `BLOCKED_ASSET_STRATEGY_PAIRS` if approved
+- [OPEN] Review investigation doc for blocking `aggregated_picks` CRYPTO and add `("CRYPTO", "aggregated_picks")` to `BLOCKED_ASSET_STRATEGY_PAIRS` if approved
+- [OPEN] Complete remaining autonomous items: rapid_fire investigation, updates/index.html entry, check kimi_signal_tracking absence from active_picks
+- [OPEN] Restore clean state of `active_picks.json` (test artifact pollution propagated to remote)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items, chunking if needed
+- [DONE] Fix M-096 CT=F concentration cap tests (4/6 failing)
+- [DONE] Run full test suite to confirm no regressions
+- [DONE] Run swarm transcript review (`/swarm-transcript-review`)
+- [DONE] Create investigation doc for CRYPTO super_signals
+- [DONE] Create investigation doc for CRYPTO aggregated_picks
+- [DONE] Write weekly real-money filter report per money-maker-readyv2 protocol
+- [OPEN] Restore `alpha_engine/data/active_picks.json` from commit `95c0e51d05`
+- [OPEN] User approval to block `("CRYPTO", "super_signals")` in BLOCKED_ASSET_STRATEGY_PAIRS
+- [OPEN] User approval to block `("CRYPTO", "aggregated_picks")` in BLOCKED_ASSET_STRATEGY_PAIRS
+- [DONE] Restore `active_picks.json` to clean state (115 picks, no fake artifacts)
+- [DONE] Push restored `active_picks.json`
+- [DONE] Create `rapid_fire` investigation doc (docs/STRATEGY_INVESTIGATION_rapid_fire_CRYPTO_2026-05-18.md)
+- [DONE] Commit weekly filter report (reports/weekly_filter_2026-05-18T04-33Z.md)
+- [DONE] M-096 CT=F concentration cap — 6/6 tests passing
+- [OPEN] Block `super_signals` CRYPTO in `BLOCKED_ASSET_STRATEGY_PAIRS` (awaiting user approval)
+- [OPEN] Block `aggregated_picks` CRYPTO in `BLOCKED_ASSET_STRATEGY_PAIRS` (awaiting user approval)
+- [OPEN] MySQL password rotation (operator-only)
+- [OPEN] Cross-PC gateway start at 192.168.2.32:8788 (operator-only)
+- [DONE] Run swarm transcript scan while CI completes
+- [DONE] Assess and tackle open FOOLPROOF items
+- [DONE] Verify EQUITY elite_score ≥ 55 gate exists and works
+- [DONE] Investigate why EQUITY pick with high score is blocked (found MSFT in BLOCKED_SYMBOLS)
+- [DONE] Mark FOOLPROOF EQUITY elite_score ≥ 55 item done
+- [DONE] Check transcript scan status/output
+- [DONE] Check CI status and rerun Gate Config Emit (race condition)
+- [DONE] Verify MONEY READY tooltip is up to date (2026-05-18)
+- [DONE] Run rapid_fire CRYPTO-only sub-filter analysis
+- [DONE] Read completed transcript scan output
+- [DONE] Check kimi_signal_tracking absence (expected — blocked for all asset classes)
+- [DONE] Check pf_registry WR bug status (already fixed in M-080)
+- [DONE] Create updates/index.html entry for this session's completed work
+- [OPEN] Investigate raw closed_picks numbers not matching dashboard (data structure discrepancy)
+- [OPEN] Continue rapid_fire raw data discrepancy investigation
+- [OPEN] Update investigation doc with rapid_fire PF=0.97 and 1.10 findings
+- [OPEN] Add weekly filter to CI
+- [OPEN] Check open PRs
+- [OPEN] Commit rapid_fire doc update
+- [OPEN] Implement M-097 gate
+- [OPEN] Write tests for M-097
+- [OPEN] Move M-097 to correct location in passes_active_gate
+- [OPEN] Remove duplicate M-097 block from passes_smart_gate
+- [OPEN] Move M-097 before PER_ASSET_QUALITY_ACTIVE_PERMISSIVE early return
+- [OPEN] Remove original misplaced M-097 block after early return
+- [OPEN] Fix failing disabled gate test (confidence too low)
+- [DONE] Restore active_picks.json from git commit 95c0e51d05
+- [DONE] Commit restored active_picks.json as "fix(data): restore active_picks.json polluted by M-096 test fixture artifacts"
+- [DONE] Add M-097 gate in passes_active_gate before PER_ASSET_QUALITY_ACTIVE_PERMISSIVE early return
+- [DONE] Create tests/test_m097_book_direction_conflict.py with 8 tests
+- [DONE] Update FOOLPROOF_ACTION_PLAN.md: mark per-class ml_score gate ≥55 as DONE
+- [OPEN] Remove duplicate M-097 block at ~line 8214 (dead code when permissive=1)
+- [UNCLEAR] Re-run tests to confirm last fix (confidence=0.60) passes all 8 tests
+- [DONE] Fix M-097 duplicate block in quality_gates.py
+- [DONE] Commit and push M-097 fix
+- [DONE] Run full test suite (5291 passed, 0 failures)
+- [DONE] Fix COT cot_net_z dead-code issue (populate field, update pick dicts, update quality_gates NOTE)
+- [DONE] Commit COT cot_net_z fix
+- [DONE] Write deep-dive report for FUTURES P1 finding (reports/deep_dive_FUTURES_2026-05-18.md)
+- [DONE] Push deep-dive report
+- [OPEN] Block ("CRYPTO", "super_signals") — awaiting user approval
+- [OPEN] Block ("CRYPTO", "aggregated_picks") — awaiting user approval
+- [OPEN] Rotate MySQL passwords (ejaguiar1_stocks, ejaguiar1_backtests) — operator-only
+- [OPEN] Start cross-PC gateway at 192.168.2.32:8788 — operator-only
+- [OPEN] Fix FRED secret to unblock macro overlay gates — operator-only
+- [DONE] Assess open action items and start transcript scan in parallel
+- [DONE] Check for new CI failures
+- [DONE] Check transcript scan progress
+- [DONE] Look at `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` and check pf_registry regeneration
+- [DONE] Verify F-001 FOREX HARD_DISABLE default (line 7850)
+- [DONE] Check M-001 (COT lag) and M-002 (CT=F cap)
+- [DONE] Implement ETF VIX<25 block gate (M-098) in `passes_active_gate`
+- [DONE] Write tests for M-098
+- [DONE] Commit M-098 implementation and tests
+- [DONE] Run transcript scan directly
+- [DONE] Investigate `quan_engine` strategy (C-005) and write strategy investigation doc
+- [DONE] Run broader test to confirm everything passes
+- [DONE] Commit current work and continue with other P0 items while scan runs
+- [DONE] Tick goal counter and look at remaining items in MASTER_ACTION_PLAN (EQUITY, BOND sections)
+- [DONE] Check MASTER_ACTION_PLAN KIMI version for additional items
+- [OPEN] Check if `conflict_reconciler.py` from another agent needs to be wired into production (interrupted)
+- [OPEN] Document F-003 HARD_DISABLE rationale with ticket ref in system log
+- [OPEN] Feed chat transcript into agent swarm for review and break into chunks (requested by user, not shown complete)
+- [DONE] Wire conflict_reconciler into scanner.py
+- [DONE] Verify scanner.py wiring is correct
+- [DONE] Check summarize import and module exports
+- [DONE] Run full test suite (40 tests pass)
+- [OPEN] Implement E-006 (VIX gate exception log) — record every blocked signal with VIX level
+- [UNCLEAR] Add VIX shadow log similar to vix_gate_shadow_log.jsonl
+- [DONE] Complete all TODOs/action items from prior session
+- [DONE] Run swarm transcript scan on chat transcript
+- [DONE] Fix M-097 gate test ordering bug
+- [DONE] Add COT net z-score enrichment to `compute_net_positioning()`
+- [DONE] Write FUTURES deep-dive report
+- [DONE] Implement M-098 ETF VIX gate in `quality_gates.py`
+- [DONE] Write M-098 test file (`test_m098_etf_vix_gate.py`)
+- [DONE] Write quan_engine investigation doc
+- [DONE] Update FOOLPROOF_ACTION_PLAN.md (mark COT items done)
+- [DONE] Update COT NOTE in `quality_gates.py`
+- [OPEN] Complete remaining 4 FOOLPROOF_ACTION_PLAN.md items (PF>4.0 monitoring, FRED GDP/ISM overlay, Fix FRED secret, BOND PF monitoring)
+- [DONE] Write F-003 rationale doc (FOREX_HARD_DISABLE_RATIONALE.md)
+- [DONE] Commit and push F-003 doc, update MASTER_ACTION_PLAN F-003 status
+- [DONE] Tick goal counter and judge
+- [OPEN] User approval: block ("CRYPTO", "super_signals") and ("CRYPTO", "aggregated_picks") in BLOCKED_ASSET_STRATEGY_PAIRS
+- [OPEN] MySQL password rotation
+- [OPEN] Cross-PC gateway start at 192.168.2.32:8788
+- [OPEN] Fix FRED secret
+- [UNCLEAR] Break transcript into chunks for review (if needed)
+- [DONE] Implement M-001 (COT stale marking)
+- [DONE] Implement M-002 (CT=F weekly cap)
+- [DONE] Write tests for M-001
+- [DONE] Write tests for M-002
+- [DONE] Fix M-002 gate placement (move from smart_gate to active_gate)
+- [DONE] Fix NameError in M-002 gate (`_ac` undefined)
+- [OPEN] Check C-008 (elite source protection audit, P1)
+- [DONE] Implement M-001 COT stale marking gate in `passes_active_gate`
+- [DONE] Implement M-002 CT=F weekly concentration cap in `passes_active_gate`
+- [DONE] Remove M-002 from `passes_smart_gate`
+- [DONE] Create `docs/FOREX_HARD_DISABLE_RATIONALE.md`
+- [DONE] Create `tests/test_m001_cot_stale_gate.py` (10 tests, all passing)
+- [DONE] Create `tests/test_m002_ctf_weekly_cap.py` (7 tests, all passing)
+- [DONE] Create `reports/C008_elite_source_audit_2026-05-18.md`
+- [OPEN] Operator must verify CRYPTOCOMPARE_API_KEY (from C-008 audit)
+- [DONE] Commit C-008 report (Elite CRYPTO signal source audit)
+- [DONE] Commit M-001 (COT data staleness gate + tests)
+- [DONE] Commit M-002 (CT=F weekly concentration cap + tests)
+- [DONE] Commit F-003 (FOREX HARD_DISABLE rationale doc)
+- [OPEN] Rotate `ejaguiar1_stocks` / `ejaguiar1_backtests` MySQL passwords
+- [OPEN] Verify `CRYPTOCOMPARE_API_KEY` in GitHub Secrets
+- [OPEN] Start cross-PC gateway at `192.168.2.32:8788`
+- [OPEN] Approve blocking `("CRYPTO", "super_signals")` and `("CRYPTO", "aggregated_picks")`
+- [OPEN] Work on M-003 (COMMODITY universe diversification) — verified already present, no further action shown
+- [OPEN] Work on B-002 (BOND scanner coverage verification) — verified already present, no further action shown
+- [OPEN] Write F-001 verification doc (FOREX hard-blocked by default)
+- [OPEN] Handle hourly audit PR (#1238)
+- [OPEN] Check PR #1237 CI status
+- [UNCLEAR] Break transcript into chunks for agent swarm review (depends on prior item)
+- [DONE] Implement `applyMoneyReady()` function and wire into filter system
+- [DONE] Apply same filter to `renderSummary`
+- [DONE] Add `applyMoneyReady()` global function and update button tooltip
+- [DONE] Update button tooltip per enhancement plan
+- [DONE] Add filter tag for active filter indicator
+- [DONE] Commit and push Money Ready fix
+- [DONE] Merge PR #1237
+- [OPEN] Run transcript scan for this session and tick/judge the goal
+- [OPEN] Continue working on next P0 item: ml_enhanced quarantine (M-105)
+- [OPEN] Write investigation docs for 3 ml_enhanced strategies needing user approval
+- [OPEN] Check non-crypto outcome resolver (highest leverage P0)
+- [OPEN] Run transcript scan for current session
+- [OPEN] Review `PLAN_VET_PREREQ_2026_05_18.md` and `PLAN_VET_DEBATE_2026_05_18.md` for new actionable items
+- [DONE] Fix applyMoneyReady() P0 bug (dashboard button)
+- [DONE] Create C008 elite source audit report
+- [DONE] Create F001 forex hard disable verification report
+- [DONE] Implement M-001 COT staleness gate
+- [DONE] Implement M-002 CT=F weekly concentration cap
+- [DONE] Create test_m001_cot_stale_gate.py
+- [DONE] Create test_m002_ctf_weekly_cap.py
+- [OPEN] Fix non-crypto outcome resolver (heal_null_exit_prices_non_crypto)
+- [OPEN] Quarantine ml_enhanced strategies (BTCUSDT/ADAUSDT LONG)
+- [OPEN] Implement A1 cost model (P0)
+- [OPEN] Implement A2 timeboxes/terminal state (P0)
+- [OPEN] Implement A3 paid data API + resolver logic verification (P0)
+- [OPEN] Feed transcript to agent swarm for further action items
+- [UNCLEAR] Verify CRYPTOCOMPARE_API_KEY (C008 partial)
+- [DONE] Implement F-003: FOREX audit-trail log upgraded to INFO with ticket refs and rationale doc path
+- [DONE] Add A2 timebox amendments to MASTER_ENHANCEMENT_PLAN (§7)
+- [DONE] Verify quality_gates.py syntax and commit both changes
+- [DONE] Check CI status (no failures found)
+- [DONE] Run swarm transcript review on session JSONL (report generated: 340 chunks, 2733 items reviewed)
+- [OPEN] Rotate MySQL passwords and update MYSQL_PASSWORD GitHub Secret
+- [OPEN] Restart cross-PC gateway at 192.168.2.32:8788
+- [DONE] Check new tools added by parallel agents and investigate new action items.
+- [DONE] Investigate Python 3.11 import error.
+- [DONE] Run fresh swarm review on session's accumulated work.
+- [DONE] Update hypothesis registry with verdicts for H-002, H-003, H-004, H-006, H-007, H-008.
+- [DONE] Commit hypothesis registry update (410978bddd).
+- [DONE] Check if transcript scan CN completed.
+- [DONE] Check PATH_TO_PROVEN_EDGE doc and update with registry summary.
+- [DONE] Add pf_registry policy-clean banner to MAJOR GOAL section in dashboard.
+- [DONE] Commit dashboard P0 fix (f3b7e1a23b).
+- [DONE] Check syntax and commit.
+- [OPEN] Wait for transcript scan CN to complete (~2min) and process results.
+- [OPEN] Implement `goal_state.py` helper script
+- [OPEN] Implement `/goal` subcommands (set, status, pause, resume, clear, continue)
+- [OPEN] Implement the goal loop (set → work → tick → judge → decide)
+- [OPEN] Implement the judge self-evaluation logic
+- [OPEN] Implement `ScheduleWakeup` for auto-continuation
+- [DONE] Mark completed P0 items as DONE in MASTER_ENHANCEMENT_PLAN
+- [DONE] Fix non-crypto resolver breakeven-fallback tagging (`_resolver_fallback=true`)
+- [DONE] Continue autonomous goal loop on P0/P1 items from MASTER_ACTION_PLAN and MASTER_ENHANCEMENT_PLAN
+- [DONE] Run swarm transcript reviews to surface further action items
+- [DONE] Add H-002 through H-008 to hypothesis registry
+- [DONE] Add pf-registry banner JavaScript to audit_dashboard/template.html
+- [DONE] Update MASTER_ENHANCEMENT_PLAN with DONE/PARTIAL/BLOCKED/OPEN/SHADOW-ACTIVE statuses
+- [DONE] Fix non-crypto outcome resolver invisibility bug in dashboard_generator.py
+- [DONE] Run background transcript scan (transcript_scan_CN_2026_05_18.md)
+- [OPEN] Complete cl-goal-5 (active goal state)
+- [OPEN] Promote POST_COST_GATE_MODE from shadow to hard_reject by 2026-06-01
+- [OPEN] Fix duplicate re-emission at emitter level (analytically fixed in pf_registry only)
+- [OPEN] Obtain user approval for ml_enhanced quarantine (BLOCKED)
+- [OPEN] Probe CRYPTO H-009
+- [OPEN] Archive system by 2026-08-15 if Phase 4 fails
+- [DONE] Add `_resolver_fallback=True` flag at breakeven assignment sites
+- [DONE] Add `_resolver_fallback=True` flag to max-retries path
+- [DONE] Update MASTER_ENHANCEMENT_PLAN to mark pick_audit_trail as DONE and add resolver_fallback tag fix
+- [DONE] Fix penny-stock-picks checkout to use `TOKEN_FOR_PUSH` instead of `GH_PAT`
+- [DONE] Trigger dxy-state-update.yml workflow
+- [DONE] Remove un-deduped `_100WR_COMBOS` star combos from `aggregated_picks`
+- [DONE] Fix `custom-sports-update` job timeout by removing `fetch-depth: 0`
+- [DONE] Fix commit step token in `custom-sports-update` job
+- [DONE] Implement sign-consistency check (`min_window_consistency`) for incubator graduation
+- [DONE] Add consistency check in `_check_paper_ready()`
+- [DONE] Add tests for hardened graduation gate
+- [DONE] Commit incubator hardening changes
+- [DONE] Update MASTER_ENHANCEMENT_PLAN to mark incubator hardening as done
+- [DONE] Run swarm transcript scan on current session
+- [DONE] Implement `is_liquid_crypto()` gate with CoinGecko cache
+- [DONE] Create ADV fetcher tool
+- [DONE] Add test for `is_liquid_crypto()`
+- [DONE] Commit `is_liquid_crypto()` gate and fetcher
+- [DONE] Wire `is_liquid_crypto()` into `passes_active_gate()` as env-gated soft gate
+- [DONE] Commit gate wiring
+- [DONE] Tick goal counter and judge progress
+- [DONE] Continue working on next steps until all TODOs/action items completed, then feed transcript into agent swarm for review
+- [DONE] Add `_resolver_fallback=True` tag to outcome_resolver.py force-close paths
+- [DONE] Mark non-crypto resolver P0 as DONE in MASTER_ENHANCEMENT_PLAN
+- [DONE] Mark pick_audit_trail_writer as DONE in MASTER_ENHANCEMENT_PLAN
+- [DONE] Mark incubator graduation hardening as DONE in MASTER_ENHANCEMENT_PLAN
+- [DONE] Fix penny-stock-picks.yml (checkout@v4, TOKEN_FOR_PUSH, setup-python@v5)
+- [DONE] Fix sports-betting-refresh.yml (fetch-depth: 1, timeout-minutes: 15, checkout@v4)
+- [DONE] Remove bogus `_100WR_COMBOS` entries from quality_gates.py
+- [DONE] Add CRYPTO ADV liquidity gate to quality_gates.py
+- [DONE] Raise MIN_TRADES 10→20, MIN_WIN_RATE 0.45→0.50 in incubator/ranker.py
+- [DONE] Add MIN_SYMBOL_SIGN_CONSISTENCY and MIN_SYMBOLS_FOR_CONSISTENCY to incubator/ranker.py
+- [OPEN] CRYPTO H-009 probe (user go/no-go)
+- [OPEN] ml_enhanced quarantine (user approval BLOCKED)
+- [DONE] Widen `edge_stability_harness.py` CLOSED path to all 32 pf_registry source files
+- [DONE] Clamp `confidence>1.0` at ingestion
+- [DONE] Commit and push harness fix (`6525f73`)
+- [DONE] Wire CoinGecko ADV cache refresh into crypto-smart-picks workflow (`c544d15e`)
+- [DONE] Broadcast session summary to peers (`message_id=9653545a`)
+- [DONE] Drain inbox
+- [DONE] Generate FUTURES deep-dive report (`reports/deep_dive_futures_2026_05_18.md`)
+- [OPEN] Block `("COMMODITY", "multi_asset_copytrader")` — requires operator approval
+- [OPEN] Approve 5 direction-flip blocks (from hourly audit §5 mutation table) — requires operator approval
+- [OPEN] Go/no-go on H-009 CRYPTO delta-neutral probe — requires operator approval
+- [OPEN] Regime-backfill enrichment job (3 of 8421 picks tagged)
+- [OPEN] Phase 0b EQUITY data feed wiring
+- [DONE] Commit FUTURES deep-dive report to reports/deep_dive_futures_2026_05_18.md
+- [OPEN] User approve three blocking decisions (futures_momentum, multi_asset_copytrader, 5 direction-flip strategies)
+- [OPEN] Implement all approved blocks in one commit
+- [DONE] Run mutation analysis to produce 3-AI consensus evidence for direction-flip candidates.
+- [DONE] Build comprehensive mutation evidence document.
+- [DONE] Fix harness to exclude unresolved picks (status="?" with no pnl_pct) from being counted as losses.
+- [DONE] Verify risk_reward signal is genuine after fix.
+- [DONE] Wire risk_reward as a shadow gate.
+- [DONE] Write a test for the RR gate.
+- [DONE] Simplify tests to only verify RR-specific behavior.
+- [DONE] Commit changes (a0e4a95d6d).
+- [DONE] Run swarm transcript review on the current session.
+- [DONE] Update updates/index.html with session findings.
+- [DONE] Feed chat transcript into agent swarm for review and further action items
+- [DONE] Check for any further action items overlooked, including proactive assistance
+- [DONE] Run /swarm-transcript-review
+- [DONE] Sync project to GitHub and check recently committed .md files for bridging gap to profitability
+- [DONE] Re-invoke /goal with standing goal text
+- [OPEN] Update findtorontoevents.ca/updates/index.html (partially complete per summary)
+- [DONE] Add session CP entry to `updates/index.html` (commit `63f25bd443`)
+- [DONE] Add pip cache to FRED macro GHA workflow (commit `04ab8fe1bf`)
+- [DONE] Merge PR #1239 (hourly audit doc for `futures_momentum`)
+- [DONE] Write mutation evidence doc for direction-flip candidates (`docs/MUTATION_EVIDENCE_direction_flip_2026_05_18.md`, commit `050198af19`)
+- [DONE] Rerun stale CI failure (Run Backtests & Deploy Dashboards)
+- [OPEN] Block `("FUTURES", "futures_momentum")` — awaiting user approval
+- [OPEN] Block `("COMMODITY", "multi_asset_copytrader")` — awaiting user approval
+- [OPEN] Block 4 LONG direction-flip strategies (`ig_contrarian_sentiment`, `myfxbook_retail_contrarian`, `cta_cross_asset_tsmom`, `forex_carry_momentum`) — awaiting user approval
+- [OPEN] Promote M-109 RR gate to enforce (`RR_HIGH_GATE_ENFORCE=1`) — awaiting user approval
+- [DONE] Check ig_contrarian_sentiment SHORT pick flow (T1-grade)
+- [DONE] Try the dropchat (gateway broadcast)
+- [DONE] Implement remaining autonomously-actionable items
+- [DONE] Verify all 6 direction-flip blocks already in BLOCKED_ASSET_STRATEGY_PAIRS
+- [DONE] Verify futures_momentum + multi_asset_copytrader already in MONITORED_FUTURES_STRATEGIES
+- [DONE] Verify btc_hour_filter, EQUITY min_trades=20, kimi passthrough, DB guardian pip cache, audit drift 6h all already done
+- [DONE] Broadcast session summary to agent swarm (3 registered peers)
+- [DONE] Drain inbox (0 pending messages)
+- [OPEN] MySQL password rotation (stocks123 → new) on 50webs console, then update MYSQL_PASSWORD GitHub Secret
+- [DONE] Run freshness check and filter write in parallel with transcript scan
+- [OPEN] Break down any action items into chunks for review
+- [DONE] Update `updates/index.html` with session CP entry
+- [DONE] Add `cache: 'pip'` to `fred-macro-refresh.yml`
+- [DONE] Create `docs/MUTATION_EVIDENCE_direction_flip_2026_05_18.md`
+- [DONE] Create `reports/weekly_filter_20260518T0851Z.md`
+- [OPEN] Push `weekly_filter_20260518T0851Z.md` commit (was starting `git stash && git pull --rebase origin main && git stash pop && git push origin main`)
+- [DONE] Fix `money_ready_verdict` import (wrong module → correct module)
+- [DONE] Fix `compute_position_size` wrong kwargs (manual Kelly calculation)
+- [OPEN] Continue working on next steps until all todos/action items completed (user's standing `/goal`)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user's standing `/goal`)
+- [DONE] Push weekly filter (commit `1900f8b9b4`)
+- [DONE] Run dropchat-multipc gateway check
+- [DONE] Send SESSION_SUMMARY broadcast via dropchat-multipc
+- [DONE] Drain 6 queued peer messages from kilo-code queue
+- [DONE] Run swarm scan on current session transcript
+- [DONE] Fix CT=F label (Cotton, not Wheat) in weekly filter
+- [DONE] Fix MONEY READY filter bug (look up `D.money_ready_verdicts[p.asset_class].verdict`) — commit `ed34c7efe2`
+- [DONE] Update tooltip for MONEY READY filter
+- [DONE] Update comment block near `applyMoneyReady()`
+- [DONE] Trigger Refresh Creator Updates workflow
+- [DONE] Verify hypothesis registry (H-001 LIVE_TESTING, others REJECTED)
+- [DONE] Check Polymarket integration wiring (already wired)
+- [DONE] Assess H-001 (COT commercial-net SHORT signal) — marked ADMITTED
+- [DONE] Check C-008 CRYPTOCOMPARE_API_KEY item (stale — `sentiment_delta` never existed)
+- [OPEN] Approve COMMODITY_CTF_CAP=1 (CT=F Cotton at 84% concentration, cap threshold 35%)
+- [OPEN] Approve RR_HIGH_GATE_ENFORCE=1 (M-109 RR gate shadow-only)
+- [OPEN] Rotate MySQL password (operator action on 50webs console)
+- [OPEN] Check `ig_contrarian_sentiment` SHORT pick flow (new item from swarm scan)
+- [UNCLEAR] Block `("COMMODITY", "multi_asset_copytrader")` — needs user approval
+- [OPEN] Remove `ig_contrarian_sentiment` from `BLOCKED_SOURCE_SYSTEMS` (line 2061) to unblock SHORT picks
+- [OPEN] Enforce `COMMODITY_CTF_CAP=1` (CT=F concentration cap)
+- [OPEN] Enforce `RR_HIGH_GATE_ENFORCE=1` (promote M-109 RR gate from shadow to enforce)
+- [OPEN] Rotate MySQL password (50webs console, operator only)
+- [UNCLEAR] Write mutation investigation doc per CLAUDE.md protocol (mentioned as intent, not shown done)
+- [DONE] Remove stale global block at line 2061 (ig_contrarian_sentiment)
+- [DONE] Write test for the gate change
+- [DONE] Add update card to updates/index.html documenting session fixes
+- [DONE] Tick the goal and check CI status
+- [OPEN] Enforce CT=F concentration cap (COMMODITY_CTF_CAP=1)
+- [OPEN] Hard-reject picks with RR>1.5 (RR_HIGH_GATE_ENFORCE=1)
+- [OPEN] MySQL password rotation (50webs console + update GitHub Secret)
+- [DONE] Close stale issues #1242 and #1241 (fixed this session)
+- [DONE] Close issue #1240 (already resolved)
+- [OPEN] Fix issue #1233 (FTP TLS P0 security) — 34 occurrences of `ssl:verify-certificate no`; operator-gated, commented on issue
+- [OPEN] Fix issue #1221 — `performance.asset_class_health` shows raw n=1954/PF=1.24 for CRYPTO vs policy-clean pf_registry n=475/PF=2.87; tile stats need fixing
+- [DONE] Push weekly filter, dropchat, MONEY READY filter fix, ig_contrarian SHORT unblock
+- [DONE] Update updates/index.html with CR card
+- [DONE] Close stale GitHub issues
+- [OPEN] Assess #1233 FTP TLS
+- [OPEN] Scan MASTER_ACTION_PLAN for remaining P0 PENDING items
+- [UNCLEAR] Add JPY cross symbol blocks (USDJPY=X, EURJPY=X, CADJPY=X) — proposed, needs user approval
+- [DONE] Add M-105 ml_enhanced quarantine flag and prefix filter in `_class_stats`
+- [DONE] Stamp quarantine count on CRYPTO result dict
+- [DONE] Pass quarantine counts through `_class_stats`
+- [DONE] Add quarantine count to each class's stats dict
+- [DONE] Fix reference in `money_ready_verdict()` to use per-class stats field
+- [DONE] Write M-105 tests
+- [DONE] Run full test suite (18/18 pass)
+- [DONE] Mark M-105 as SHADOW in MASTER_ACTION_PLAN and commit
+- [DONE] Update MASTER_ACTION_PLAN for C-1 and C-2, then tick/judge the goal
+- [DONE] Update MASTER_ACTION_PLAN I-5 and commit
+- [DONE] Investigate O-1 (COT lag correction) — update MAP
+- [DONE] Implement I-3 (MDD gate) as shadow gate
+- [DONE] Add `_mdd_cvar_gate()` function
+- [DONE] Wire gate into `money_ready_verdict()` and stamp results
+- [DONE] Write I-3 tests
+- [DONE] Update MASTER_ACTION_PLAN I-3 and commit
+- [DONE] Tick/judge and check remaining PENDING P0 items
+- [DONE] Fix stale test expecting `ig_contrarian_sentiment` blocked for CRYPTO
+- [DONE] Push all fixes
+- [OPEN] Check swarm scan completion (still running at end of excerpt)
+
+## OPEN (654)
+
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh sources (Step 1)
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to `192.168.2.32:8788` (Step 2)
+- [OPEN] Verify send landed via `protocol_inspect tail` (Step 2)
+- [OPEN] Drain inbox (DMs + broadcasts) via `freebuff_adapter.py` (Step 3)
+- [OPEN] Triage peer messages and write `reports/peer_inbox_<UTC>.md` (Step 4)
+- [OPEN] Optionally revise + re-commit if peer insight changes decisions (Step 5)
+- [OPEN] Optionally send SESSION_CLOSED broadcast (Step 6)
+- [OPEN] Output compact 6-line summary to operator (Step 6)
+- [OPEN] Restart cross-PC gateway (python tools/protocol_gateway.py ...)
+- [OPEN] Proceed with remaining ranked action items from swarm review (P1 fixes)
+- [OPEN] Fix 144 workflows using safe_push.sh without TOKEN_FOR_PUSH
+- [OPEN] Bulk TOKEN_FOR_PUSH across 144 safe_push.sh workflows (23 remaining)
+- [OPEN] Hoist per_class_trainer import to module level
+- [OPEN] Document portfolio_gates.evaluate_pick live-enforcement status
+- [OPEN] Rotate MySQL password (requires operator action, will flag)
+- [OPEN] Implement required fix for PR #1089 and merge it
+- [OPEN] Rotate `stocks123` MySQL password (operator action required)
+- [OPEN] Ensure progress every 30 minutes on remaining action items (user requested /loop)
+- [OPEN] Ensure progress on remaining action items (loop continues; not shown completed)
+- [OPEN] Update MYSQL_PASSWORD GitHub Secret to match current DB password (operator action)
+- [OPEN] Run the parsed prompt now (checking current state)
+- [OPEN] Continue looping through action items until all implemented
+- [OPEN] Continue working through remaining action items from the swarm review
+- [OPEN] Self-pacing autonomous loop to continue implementing all remaining action items until complete, using agent swarms when stuck
+- [OPEN] Execute parallel subagents where tasks are independent
+- [OPEN] Review all open PRs with swarm review, then merge or merge a modified version and close original
+- [OPEN] Rotate `stocks123` and `backtests123` passwords on 50webs MySQL control panel
+- [OPEN] Update MYSQL_PASSWORD secret with new rotated password
+- [OPEN] Audit DB_PASS and DB_PASSWORD secrets (last updated Feb 2026)
+- [OPEN] Rerun Cross-DB Consistency workflow (ran before secret fix)
+- [OPEN] Rerun Overnight Mutations workflow (post-fix validation)
+- [OPEN] Rerun Refresh Creator Updates workflow (post-fix validation)
+- [OPEN] Vet, prioritize, and integrate legitimate tools from coinman2 Polymarket article stack
+- [OPEN] Run ETF strategy swarm (spawned in background, not shown completed)
+- [OPEN] Run 5 parallel agents (ETF filters, insider tracker, whale scanner, trade tracker vetting, Kelly sizer) — spawned, not shown completed
+- [OPEN] Update MONEY READY button tooltip and banner
+- [OPEN] Address Kelly paper with concrete strategy implementation (agent building `kelly_f`/`kelly_size_usdc` — not shown committed)
+- [OPEN] Wait for remaining 3 agents (ETF filters, trade tracker vetting, Kelly sizer) to finish
+- [OPEN] Commit results of ETF filter agent when it lands
+- [OPEN] Commit results of Kelly sizer agent when it lands
+- [OPEN] Rotate ejaguiar1_stocks password from stocks123
+- [OPEN] Rotate ejaguiar1_backtests password from backtests123
+- [OPEN] Update MYSQL_PASSWORD/DB_PASS_STOCKS/DB_PASS_BACKTESTS GitHub Secrets
+- [OPEN] Parse input into `[interval] <prompt>` using the three rules
+- [OPEN] Check cloud-first conditions (interval ≥60m or daily phrasing) and ask user if applicable
+- [OPEN] If cloud schedule chosen: invoke `schedule` skill with original input verbatim, then stop
+- [OPEN] If "This session only" with ≥60m interval: continue to fixed-interval mode
+- [OPEN] If "This session only" with daily phrasing only: explain limitation and stop
+- [OPEN] If neither trigger: continue to fixed-interval or dynamic mode
+- [OPEN] In fixed-interval mode: convert interval to cron expression, handle non-clean intervals with rounding
+- [OPEN] Call CronCreate with cron expression, prompt, recurring: true
+- [OPEN] Confirm schedule details with user (including 7-day expiry, job ID, and optional italic line)
+- [OPEN] Execute parsed prompt immediately after scheduling
+- [OPEN] In dynamic mode: run parsed prompt now
+- [OPEN] If next run gated on event and no Monitor running: arm Monitor with persistent: true
+- [OPEN] Confirm self-pacing plan (monitor, fallback delay) before calling ScheduleWakeup
+- [OPEN] Call ScheduleWakeup with delaySeconds, reason, and `/loop <original input>` as prompt
+- [OPEN] If woken by `<task-notification>`: handle event, then call ScheduleWakeup again with same prompt and delay
+- [OPEN] To stop loop: omit ScheduleWakeup and TaskStop any Monitor
+- [OPEN] Continue looping through action items until all implemented, using agent swarms if stuck
+- [OPEN] Regenerate "statistical edge" prompt for user
+- [OPEN] Rotate DB passwords (stocks123/backtests123) — operator action only
+- [OPEN] Strategy emission monitor (daily dormancy report)
+- [OPEN] Feature distribution KS-test monitoring
+- [OPEN] Wire PR #1030 money_ready_filter.js
+- [OPEN] Regenerate "statistical edge" evaluation prompt
+- [OPEN] Set the active goal via `/goal <text>` with the provided goal text and session ID
+- [OPEN] Output a numbered task plan before writing any code
+- [OPEN] Execute the plan end-to-end: work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via `goal_state.py tick`
+- [OPEN] Judge own work via `goal_state.py judge` with a strict verdict
+- [OPEN] If not done and budget remains, schedule a wakeup for auto-continuation
+- [OPEN] If done, report goal achieved with evidence
+- [OPEN] Verify all success criteria are met before stopping
+- [OPEN] Launch `/money-maker-readyv2` (user requested, assistant invoked it but excerpt ends before completion shown)
+- [OPEN] Rotate `ejaguiar1_stocks` password away from `stocks123` (explicitly called out as remaining operator action)
+- [OPEN] Create requirements.txt file
+- [OPEN] Create engine/data_fetcher.py file
+- [OPEN] Build strategy engine with 7 quant strategies
+- [OPEN] Build backtester with walk-forward, transaction costs, slippage
+- [OPEN] Build signal generator with weekly signal pipeline and confidence scoring
+- [OPEN] Build risk manager with Kelly criterion, ATR-based stops, portfolio allocation
+- [OPEN] Build performance analytics (Sharpe, Sortino, profit factor, etc.)
+- [OPEN] Build production-grade HTML dashboard with all metrics and live signals
+- [OPEN] Run backtests to prove edge on historical data per asset class
+- [OPEN] Write full documentation (README, decisions log, limitations)
+- [OPEN] Critique self using tools/swarm_v2 and check if evidence/criteria would have made money
+- [OPEN] Check if the edge was saturated
+- [OPEN] Check if it was a consistency edge
+- [OPEN] Fix EQUITY asset_class mislabeling (all crypto symbols) in universal_resolved_picks.json
+- [OPEN] Fix 4 ghost systems with n=0 in weekly_filter_picks.py (multi_asset_cot, multi_asset_copytrader, claude_gainer, mega_mutation)
+- [OPEN] Address IS/OOS split being only 9-day OOS window (pre-register split boundary before looking at performance)
+- [OPEN] Investigate why `aggregated_picks` and `kimi_signal_tracking` are absent from `active_picks.json` (elite emission pipeline)
+- [OPEN] Review chat transcript and recent changes for remaining action items
+- [OPEN] Investigate open PRs and evaluate with agent swarm
+- [OPEN] Analyze large set of .md/todos, add to graphify, cross-reference against codebase for unimplemented items
+- [OPEN] Review `C:\findtorontoevents_antigravity.ca\reports\MASTER_ACTION_PLAN_2026-05-15.md` and create amended version
+- [OPEN] Create entry under `findtorontoevents.ca/updates/index.html` summarizing completed action items (last 24h), next steps per asset class
+- [OPEN] Compile findings from `/money-maker-readyv2`, consult all AI models/agents, produce large set of todos/action items and items to backtest/review with agent swarms and/or `tools\swarm_v2`
+- [OPEN] Fix COMMODITY pipeline check (follow-up from statistical_edge_analysis)
+- [OPEN] Investigate stocks_competition AC1 (follow-up from statistical_edge_analysis)
+- [OPEN] Re-run GitHub agent (task 18c2e443-88d9-4baf-b818-9f6429430d6d)
+- [OPEN] Produce the HC filter backtest report (background agent still running)
+- [OPEN] Produce the dashboard claim verification (background agent still running)
+- [OPEN] Backfill `trust_score` and `trust_tier` fields into `active_picks.json` (critical gap identified, not shown done)
+- [OPEN] Hyperlink MiniMax files from DAILY_IDEAS.MD
+- [OPEN] Run debate swarm across 5 personas on theoretical→real-money edge
+- [OPEN] Determine HC filter feature/combos producing highest-credibility stats
+- [OPEN] Check if HC button and Guide feature can surface those combos
+- [OPEN] Automate filtering of active_picks using HC findings
+- [OPEN] Document all findings under findtorontoevents.ca/updates/index.html
+- [OPEN] Create HTML user guide tying together Kimi and MiniMax findings
+- [OPEN] Review Kimi attachments and specific files listed
+- [OPEN] Fact-check concepts in supreme plan and 90-day plan docs
+- [OPEN] Create HTML page after verifying which concepts are useful/implemented
+- [OPEN] Check in with Claude peers via /dropchat-multipc
+- [OPEN] Build structured session-summary/v1 JSON payload from real sources (git log, gh pr list)
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter poll
+- [OPEN] Triage peer messages, classify, decide on task.request DMs
+- [OPEN] Write one-line entries to reports/peer_inbox_<UTC>.md
+- [OPEN] Optionally revise + re-commit if peer insight changes decisions
+- [OPEN] Optionally send SESSION_CLOSED broadcast
+- [OPEN] Output 6-line summary to operator
+- [OPEN] Move CRYPTO_ULTRA correction to top of weekly filter report (P1 readability)
+- [OPEN] Rotate ejaguiar1_stocks + ejaguiar1_backtests MySQL passwords (P0 operator action)
+- [OPEN] Continue working through action items using agent swarms until all implemented
+- [OPEN] Check in with Claude peers via dropchat-multipc cross-PC protocol
+- [OPEN] Process Kimi/MiniMax commentary and vet it using subagents/swarms
+- [OPEN] Read Grok PR feedback from `updates/2026-05-16-latest-commits-prs-review-feedback.md`
+- [OPEN] Rotate `ejaguiar1_stocks` password (stocks123 exposed in PR #1086 git history)
+- [OPEN] FTP upload `audit_dashboard/v2/index.html` to `ftps2.50webs.com/findtorontoevents.ca/audit/v2/index.html`
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 exposed in PR #1086 git history)
+- [OPEN] FTP upload audit_dashboard/v2/index.html to production (ftps2.50webs.com)
+- [OPEN] Double-check which models are alive (user requested at end)
+- [OPEN] Restart Claude Code so new env vars (`X_AI_KEY`, `INCEPTION_API_KEY`, `CEREBRAS_API_KEY_PAID`) are picked up (assistant noted this is needed)
+- [OPEN] Use VPN or contact Cerebras support to whitelist IP (to fix Cloudflare block)
+- [OPEN] Check and update free-tier models for: GEMINI_FREE_KEY, GROQ_KEY, HUGGINGFACE_API, KILO_API, NOUS_API_KEY, OLLAMA_CLOUD_KEY, OPENCODE_FREE_TIER, OPENROUTER_FREE_KEY (user requested)
+- [OPEN] Ensure free-tier models are checked and updated (user requested, note Ollama Cloud has paid key)
+- [OPEN] Restart session so TOGETHER_API_KEY is detected by detect_providers()
+- [OPEN] Resolve HuggingFace, Nous, OpenCode endpoints
+- [OPEN] Run swarm to research HuggingFace, Nous, OpenCode endpoints
+- [OPEN] Run swarm_inspect.py --latest after swarm run
+- [OPEN] Run PR review swarm for PR #1103
+- [OPEN] Fix `asset_class` casing bug in the resolver write path (separate PR)
+- [OPEN] Run mutation protocol on `ml_crypto_pred` before any blocking decision
+- [OPEN] Fix the `asset_class` casing bug in PR #1103 (crypto vs CRYPTO split)
+- [OPEN] Build structured JSON payload from session deliverables (Step 1)
+- [OPEN] Run `git log` and `gh pr list` to gather real session data (Step 1)
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter (Step 2)
+- [OPEN] Drain inbox (DMs + broadcasts) via `freebuff_adapter` (Step 3)
+- [OPEN] Output 6-line summary to operator (Output section)
+- [OPEN] Proceed on next steps (user said "proceed on next steps")
+- [OPEN] Fix `pick_monitor.py` lowercase comparisons (started but not shown complete)
+- [OPEN] Investigate CRYPTO UTC-hour filter (Hermes task)
+- [OPEN] Check in with peers
+- [OPEN] Fix any broken lowercase asset_class consumers discovered by casing bug fix
+- [OPEN] Install agentmemory npm package + iii-sdk pip package
+- [OPEN] Create .claude/skills/agentmemory/SKILL.md and personal memory reference file
+- [OPEN] Run ETF + CRYPTO deep research (swarm_v2, per-source breakdown, report)
+- [OPEN] Run MUTATION_THREE_AXIS_PROTOCOL on ml_crypto_pred
+- [OPEN] Investigate 0-second gap dedup violations in hs_lb_None
+- [OPEN] Run `/check-gh-actions` to verify CI health after all changes
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history PR #1086)
+- [OPEN] Save to memory key (user requested "save to memory key in" — no evidence it was executed)
+- [OPEN] Spot-check picks on each asset class failing smart gate/safety gate and verify guard configuration (was IN PROGRESS at summary time)
+- [OPEN] Review /money-maker-readyv2 and all DAILY_IDEAS files
+- [OPEN] Install agentmemory plugin via `/plugin marketplace add` — noted as Claude Code CLI command, not executed in transcript.
+- [OPEN] Verify agentmemory is properly configured and responding
+- [OPEN] Investigate agentmemory embedding issue — memories store successfully but search returns 0 results because embeddings are NOT being generated
+- [OPEN] Use multi-PC protocol and consult other AIs (CEREBRAS_API_KEY_PAID, OPENCODE_FREE_TIER, NOUS_API_KEY) for embedding fix
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history PR #1086) — P0 OPERATOR
+- [OPEN] Trigger full re-embed via consolidate pipeline
+- [OPEN] Fix 5 CI test failures (AAPL un-ban update, ETF floor 40→35 snapshot, revert kimi_riseoftheclaw EQUITY exemption)
+- [OPEN] Fix ETF score floor snapshot test (expects 40, should be 35)
+- [OPEN] Change test_quality_gates.py line 1259: "ETF": 40 → "ETF": 35
+- [OPEN] Fix test_kimi_promotion_unblock.py (via quality_gates.py changes to _NC_SCORE_EQUITY_EXEMPT)
+- [OPEN] Continue DAILY_IDEAS action items: ab_analysis.yml dispatch for COMMODITY multi_asset_cot PF=7.71 verification, BTC UTC-hour filter, FOREX hard-disable enforcement check
+- [OPEN] Read all 16 files listed by user
+- [OPEN] Append analysis of current state and pros/cons of remaining action items to each file
+- [OPEN] Commit each revised file to GitHub main
+- [OPEN] Commit and push to trigger CI
+- [OPEN] Commit all revised DAILY_IDEAS files to GitHub main
+- [OPEN] Rotate `ejaguiar1_stocks` MySQL password (P0 security — `stocks123` in git history)
+- [OPEN] CVX PROBATION review on 2026-05-30
+- [OPEN] CT=F PROBATION review on 2026-06-06
+- [OPEN] Enable `CRYPTO_CONF_INVERSION_GATE=1` after 2026-06-15
+- [OPEN] Rotate OpenRouter API key (`sk-or-v1-c054...`) at openrouter.ai and update Windows env var
+- [OPEN] Convert action plan into todos and deploy agents for P0 items (launched but not shown completed)
+- [OPEN] P1: ETF score≥60 + CRYPTO vote threshold
+- [OPEN] P1: NUPL regime filter + P2: exchange spread divergence
+- [OPEN] P2: OBI/OFI order flow (shadow mode)
+- [OPEN] Commit nupl_regime.py (agent a0c7e4fd7 — pending commit)
+- [OPEN] Parse input into `[interval] <prompt>` per rules (no interval found → dynamic mode, prompt "okay proceed on next steps until all all todos are fulfilled.")
+- [OPEN] Check cloud offer conditions (interval <60m, no daily phrasing → neither trigger met, skip cloud question)
+- [OPEN] Run parsed prompt now (dynamic mode step 1)
+- [OPEN] Decide if next run is gated on an event; if so, arm a Monitor with `persistent: true` (step 2)
+- [OPEN] Confirm self-pacing plan in text (step 3)
+- [OPEN] Call ScheduleWakeup with delay, reason, and prompt `/loop okay proceed on next steps until all todos are fulfilled.` (step 4)
+- [OPEN] Rotate `ejaguiar1_stocks` MySQL password (`stocks123` in git history) — P0 security, not shown done
+- [OPEN] Rotate OpenRouter API key at openrouter.ai — precautionary, not shown done
+- [OPEN] CT=F PROBATION review: 2026-06-06
+- [OPEN] CVX PROBATION review: 2026-05-30
+- [OPEN] Enable M-034 CRYPTO conf inversion gate (`CRYPTO_CONF_INVERSION_GATE=1`) after 2026-06-15
+- [OPEN] Single-persona swarm-pick tier-gate (M-041) — agent spawned, not shown complete
+- [OPEN] ETF sector rotation (macro veto + RS overlay) — agent spawned, not shown complete
+- [OPEN] Bond scanner expansion (TLT/HYG → 14 symbols) — agent spawned, not shown complete
+- [OPEN] Confidence calibration table (`at_confidence_calibration`) — agent spawned, not shown complete
+- [OPEN] MySQL ghost-row purge (655k stale rows) — blocked, needs PA console access
+- [OPEN] UEPS_ENABLE_PEAD=1 check in prod `.env` — blocked, needs PA console access
+- [OPEN] Backtest DB split (`ejaguiar1_backtests`) — secret already set, but actual split not shown done
+- [OPEN] Outcome resolution table (`at_pick_outcomes`) — blocked, needs MySQL access
+- [OPEN] MySQL index audit on `trading_picks` — blocked, needs MySQL access
+- [OPEN] Feed chat transcript into agent swarm for review — requested via /goal command, not shown done
+- [OPEN] MySQL ghost-row purge — blocked on PythonAnywhere console access.
+- [OPEN] UEPS_ENABLE_PEAD=1 — blocked on checking prod `.env` via PA console.
+- [OPEN] NUPL_GATE_ENFORCE=1 — intentional 30-day hold to confirm Coin Metrics API reliability.
+- [OPEN] Run swarm session review of current state
+- [OPEN] Feed chat transcript into agent swarm for further action items review
+- [OPEN] Break down review into chunks if needed
+- [OPEN] MySQL ghost-row purge (infra-blocked, requires user action)
+- [OPEN] UEPS_ENABLE_PEAD=1 verify (infra-blocked, requires user action)
+- [OPEN] NUPL_GATE_ENFORCE=1 enable after 2026-06-16 (infra-blocked, requires user action)
+- [OPEN] MySQL ghost-row purge (655k stale rows) — PA console: `mysql -u ejaguiar1 ejaguiar1_stocks`
+- [OPEN] UEPS_ENABLE_PEAD=1 — check PA `.env` file
+- [OPEN] quan_engine block decision — scheduled for 2026-05-24 autopsy
+- [OPEN] Feed chat transcript into agent swarm for review (requested in /goal command)
+- [OPEN] Set `EQUITY_VIX_FILTER=1` in prod `.env`
+- [OPEN] Set `EQUITY_CONVICTION_TIERS=1` in prod `.env` after 2-week shadow validation
+- [OPEN] PA console: check `UEPS_ENABLE_PEAD=1` and MySQL ghost-row purge
+- [OPEN] 2026-05-24: run `python tools/mutation_analysis.py` on quan_engine picks
+- [OPEN] 2026-06-06: CT=F PROBATION review
+- [OPEN] Set or replace the active goal via `/goal <text>` with the user's stated objective (keep working on next steps till all todos/action items are completed, then feed transcript into agent swarm for review).
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits).
+- [OPEN] Tick the counter via `goal_state.py tick --session <SID>`.
+- [OPEN] Judge own work against the goal text and record verdict via `goal_state.py judge`.
+- [OPEN] If goal not done and budget remains, schedule continuation via `ScheduleWakeup` with prompt `/goal continue`.
+- [OPEN] Once goal is achieved, feed the chat transcript into the agent swarm for review of further action items.
+- [OPEN] If swarm returns action items, break them down into chunks for review.
+- [OPEN] Complete three-axis autopsy for quan_engine (deadline 2026-05-24)
+- [OPEN] Review autopsy results (deadline 2026-05-31)
+- [OPEN] User approval for hard block if no slice salvageable (deadline 2026-06-07)
+- [OPEN] MySQL ghost-row purge (655k stale rows in ejaguiar1_stocks) — blocked, requires PA console
+- [OPEN] UEPS_ENABLE_PEAD=1 verification in prod .env — blocked, requires PA console
+- [OPEN] Restart gateway to restore peer sync (192.168.2.32:8788 unreachable)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user requested via /goal)
+- [OPEN] Delete 655k stale MySQL rows in ejaguiar1_stocks (needs PA console DELETE FROM trading_picks WHERE ...)
+- [OPEN] Set UEPS_ENABLE_PEAD=1 in prod .env (needs PA console)
+- [OPEN] Merge PR #1127 (human review required)
+- [OPEN] Defer C6 (mercury2_fast investigation)
+- [OPEN] Continue autonomous loop: complete all code-actionable items from `reports/daily_ideas_synthesis_2026-05-16.md` and `reports/crypto_edge_artifact_audit_2026_05_17.md`
+- [OPEN] Run swarm review after each batch of completed items
+- [OPEN] Fix A3 (blocked sources still counted) from crypto edge artifact audit
+- [OPEN] Fix A4 (zero fee model) from crypto edge artifact audit
+- [OPEN] Fix B2 (fixed-TP ghost rows) from crypto edge artifact audit
+- [OPEN] Schedule quan_engine Stage 1 (Reduce Risk) autopsy for 2026-05-24
+- [OPEN] PRs #1130/#1132 (C1/D2 CRYPTO ledger fixes) — awaiting eltonaguiar review
+- [OPEN] PR #1125 (COMMODITY COT report correction) — author needs to rebase
+- [OPEN] MySQL 655k stale row DELETE — PA console
+- [OPEN] `UEPS_ENABLE_PEAD=1` — PA console
+- [OPEN] Feed chat transcript into agent swarm for review of further action items
+- [OPEN] Break down into chunks for review if needed
+- [OPEN] PR #1132: author needs to update test assertion to expect 51500 (gap-aware fill price)
+- [OPEN] PR #1125: conflicts — author rebase needed
+- [OPEN] PR #1133: gitleaks scan pending
+- [OPEN] META_LABEL_GATE_ENFORCE=1: enable after 30d shadow data validates pwin calibration
+- [OPEN] MySQL 655k stale row DELETE + UEPS_ENABLE_PEAD=1: PA console access needed
+- [OPEN] Keep working on next steps till all TODOs/action items are completed
+- [OPEN] Break down swarm review into chunks if needed
+- [OPEN] Continue working on next steps until all TODOs/action items are completed
+- [OPEN] Keep working on next steps until all TODOs/action items are completed
+- [OPEN] Check CI results on PR #1132 after re-trigger
+- [OPEN] Continue autonomous loop: keep working on next steps till all todos/action items are completed
+- [OPEN] Feed chat transcript into agent swarm for review
+- [OPEN] Break transcript into chunks for review if needed
+- [OPEN] Break down any found action items into chunks for review
+- [OPEN] Delete 655k stale MySQL rows (requires PA console)
+- [OPEN] Set `UEPS_ENABLE_PEAD=1` (requires PA console)
+- [OPEN] Rotate DB secret + FRED_API_KEY (manual GitHub secrets)
+- [OPEN] Review CVX, DYDXUSDT, TRXUSDT, XOM (due 2026-05-30)
+- [OPEN] Review CT=F (due 2026-06-06)
+- [OPEN] Review META_LABEL_GATE_ENFORCE=1 (due ~2026-06-16)
+- [OPEN] Set COMMODITY confidence floor to 0.50 (swarm recommendation)
+- [OPEN] MySQL 655k DELETE → PA console (externally blocked)
+- [OPEN] UEPS_ENABLE_PEAD=1 → PA console (externally blocked)
+- [OPEN] FRED_API_KEY, DB password rotation → manual GitHub secrets (externally blocked)
+- [OPEN] quan_engine full autopsy → 2026-05-24 after purge (externally blocked)
+- [OPEN] Schedule quan_engine family autopsy for 2026-05-24 (after MySQL ghost-row purge completes)
+- [OPEN] Purge 655k stale MySQL ghost rows (PA console action pending)
+- [OPEN] Feed chat transcript into agent swarm for further action item review
+- [OPEN] Break review into chunks if needed
+- [OPEN] PA console: MySQL purge, `UEPS_ENABLE_PEAD=1`
+- [OPEN] Research M-061 (DSR/PBO wiring)
+- [OPEN] Wire DSR/PBO into `money_ready_verdict()` (M-061)
+- [OPEN] Monitor EQUITY scouts (`price-accel-scout`, `macd-hidden-div-scout`) until n≥10
+- [OPEN] Probation reviews (2026-05-30, 2026-06-06)
+- [OPEN] Gate enforcements (2026-06-15/16)
+- [OPEN] Commit winsorize enhancement to tools/whites_reality_check.py (not yet committed)
+- [OPEN] Implement M-061: `money_ready_verdict()` — unified DSR+PBO+SPA verdict function
+- [OPEN] Add updates/index.html entry summarizing session work
+- [OPEN] Update agentmemory with session S work
+- [OPEN] Break down any further action items into chunks for review (if needed)
+- [OPEN] Deep-dive CRYPTO data quality bug (pnl_pct incorrectly computed for APEUSDT and TRXUSDT)
+- [OPEN] Check database path for missing EQUITY picks in closed_picks.json
+- [OPEN] Fix APEUSDT/TRXUSDT pnl_pct calculation bug (data quality — PA console needed for DB fix)
+- [OPEN] MySQL ghost-row purge 2026-05-24 (removes 655k stale `quan_engine` rows)
+- [OPEN] After those two fixes: evaluate CRYPTO_ENHANCED sub-filter (ml_enhanced SHORT only, confidence ≥ 0.70) for MONEY_READY status
+- [OPEN] Break down any further action items into chunks for review
+- [OPEN] User approval: add `("COMMODITY", "combined_confidence")` to `BLOCKED_ASSET_STRATEGY_PAIRS` in `audit_trail/quality_gates.py`
+- [OPEN] MySQL ghost-row purge (655k stale rows — requires PA console)
+- [OPEN] UEPS_ENABLE_PEAD=1 verification (requires PA console)
+- [OPEN] Merge PR #1155 (conflicts)
+- [OPEN] Merge PR #1157 (unknown state)
+- [OPEN] Meta-labeler exec gate wire-up (F9 repair + walk-forward split)
+- [OPEN] EQUITY strategy expansion (scale `stocks_rsi2_pullback` to n=100+, add 2 new strategies)
+- [OPEN] CRYPTO post-fix impact analysis (quantify stop-loss bug effect on PF)
+- [OPEN] MySQL ghost-row purge (655k stale rows, target 2026-05-24)
+- [OPEN] Verify `_pbo_gate` and `_spa_gate` correctly use class-specific blocked sets (picks already filtered upstream)
+- [OPEN] Feed the chat transcript into the agent swarm for review of further action items
+- [OPEN] Break down any new action items into chunks for review
+- [OPEN] Continue autonomous work on trading-edge audit system at findtorontoevents.ca/audit
+- [OPEN] Keep working on next steps till all todos/action items are completed (user requested after excerpt ends)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user requested after excerpt ends)
+- [OPEN] Break down into chunks for review if needed (user requested after excerpt ends)
+- [OPEN] MySQL ghost-row purge (655k rows, target 2026-05-24) — blocked on PA console
+- [OPEN] UEPS_ENABLE_PEAD=1 verification — blocked on PA console
+- [OPEN] Continue working on next steps until all TODOs/action items completed
+- [OPEN] Set or replace the active goal with the provided text and begin work
+- [OPEN] Work one turn toward the goal with real tool calls/edits/commits
+- [OPEN] If goal not done and budget remains, schedule a wakeup for auto-continuation
+- [OPEN] If swarm finds action items, break them down into chunks for review
+- [OPEN] Create `tools/dxy_state_updater.py` — fetches DXY, writes state file
+- [OPEN] Create `alpha_engine/dxy_booster.py` — score adjustment module
+- [OPEN] Wire DXY booster into `score_booster._apply_crypto_hour_filter`-style pattern
+- [OPEN] Add DXY booster to new-strategies workflow or dedicated cron
+- [OPEN] Wire DXY booster into `run_score_booster` in score_booster.py
+- [OPEN] Commit alpha_engine/dxy_booster.py (new file, not yet committed)
+- [OPEN] Commit tools/dxy_state_updater.py (new file, not yet committed)
+- [OPEN] Commit alpha_engine/data/dxy_state.json (generated but not committed)
+- [OPEN] Break down action items into chunks for review if needed
+- [OPEN] Address DXY booster ordering question
+- [OPEN] Work on next steps until all TODOs/action items completed
+- [OPEN] Provide FRED API key (unlocks macro overlay + bond credit spread)
+- [OPEN] Provide PA console access (unlocks bond_scanner merge)
+- [OPEN] Investigate HIGH concerns from swarm review: COMMODITY n discrepancy and FOREX n discrepancy
+- [OPEN] Investigate discrepancy between dashboard COMMODITY n=228 PF=7.71 and pf_registry n=160 PF=1.17 (swarm HIGH concern)
+- [OPEN] Surface CRYPTO SPA-failing strategies (ADAUSDT, DOGEUSDT, INJUSDT 15m) to user for P2 escalation / approval to block
+- [OPEN] Fix all remaining failing tests (update base picks confidence from 0.88 to 0.80, disable concentration cap via env isolation)
+- [OPEN] Reassess FOREX gate (target ~May 31)
+- [OPEN] Implement COT feature enrichment (CFTC pipeline needed)
+- [OPEN] Implement ml_score gate ≥55 (ml_score not populated upstream)
+- [OPEN] Implement FRED macro overlay (FRED API key needed)
+- [OPEN] Implement bond_scanner.py --merge (PA console access needed)
+- [OPEN] Judge own work via `goal_state.py judge`
+- [OPEN] If not done and budget remains, schedule wakeup for auto-continuation
+- [OPEN] When goal achieved, feed the chat transcript into the agent swarm for review of further action items
+- [OPEN] Break down any identified action items into chunks for review
+- [OPEN] Continue autonomous improvement loop: find actionable items, implement fixes, run deepseek swarm review, resolve conditions, commit, mark goal achieved (Session AL starting)
+- [OPEN] Commit session_review_am_2026_05_17.md (new swarm review prompt, not yet committed)
+- [OPEN] Keep working on next steps until all TODOs/action items completed
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (requires user approval)
+- [OPEN] Add per-class concentration cap for COMMODITY at 85% (requires user approval)
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (WR=12.7% n=71) — pending user approval from Session AO
+- [OPEN] Add `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` — pending user approval from Session AO
+- [OPEN] Check new-strategies-20 shadow tracker for strategies close to promotion threshold
+- [OPEN] Check M-075 strategy promotions
+- [OPEN] Look at other FOOLPROOF items that might have become actionable
+- [OPEN] Obtain user approval for COMMODITY two-blocker fixes (blocking `cta_cross_asset_tsmom` and CT=F concentration)
+- [OPEN] Continue working on next steps till all todos/action items are completed (standing autonomous goal loop)
+- [OPEN] Set `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` (requires user approval)
+- [OPEN] Block cta_cross_asset_tsmom for COMMODITY (WR=12.7%, n=71) — awaiting user approval
+- [OPEN] Set CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} — awaiting user approval
+- [OPEN] Wire WIN_RATE_TRAP_BLACKLIST into gate logic or remove it — investigation started but not completed
+- [OPEN] Check if ETHUSDT (WR=33.6%, PF=0.33, sum=-31.97%) is blocked — investigation started but not completed
+- [OPEN] Continue to session AU (next step in autonomous goal loop)
+- [OPEN] Feed transcript into agent swarm for review of further action items
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (WR=12.7%, n=71)
+- [OPEN] Set `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}`
+- [OPEN] Commit conftest.py changes (noted as "NOT YET COMMITTED")
+- [OPEN] Block cta_cross_asset_tsmom for COMMODITY (pending user approval)
+- [OPEN] Set CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} (pending user approval)
+- [OPEN] Keep working on next steps until all TODOs/action items are completed, then feed chat transcript into agent swarm for review and break into chunks if needed
+- [OPEN] Block `cta_cross_asset_tsmom` for COMMODITY (awaiting user approval)
+- [OPEN] Raise `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` (awaiting user approval)
+- [OPEN] Raise `CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85}` in `alpha_engine/money_ready_verdict.py` (awaiting user approval)
+- [OPEN] Keep working on next steps till all todos/action items are completed (user's /goal command)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user's /goal command)
+- [OPEN] Break down transcript into chunks for review if needed (user's /goal command)
+- [OPEN] Dispatch ab_analysis to verify timeout fix works
+- [OPEN] Write the AZ session review
+- [OPEN] Wrap up
+- [OPEN] Create swarm prompt for session AZ
+- [OPEN] Continue goal loop: keep working on next steps till all TODOs/action items completed, then feed transcript into agent swarm for review
+- [OPEN] Implement CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} in money_ready_verdict.py (requires user approval)
+- [OPEN] Feed chat transcript into agent swarm for review and identify further action items
+- [OPEN] Wire correlation regime (ELEVATED, sleeve_sizing_scalar=0.555) into Kelly sizing (deferred to future integration PR)
+- [OPEN] Apply CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} in alpha_engine/money_ready_verdict.py (user-approval gate)
+- [OPEN] Check remaining actionable items from MASTER_ACTION_PLAN
+- [OPEN] Check DAILY_IDEAS_XIAOMIMIMO for actionable items
+- [OPEN] Check multi_asset_copytrader FOREX block status (needs user approval per CLAUDE.md)
+- [OPEN] Check cot_paper_pilot status
+- [OPEN] Check equity money-ready path
+- [OPEN] Fix stale openclaude submodule
+- [OPEN] EQUITY strategy autopsy (WR=33%, avg_pnl=-0.76%)
+- [OPEN] Check EQUITY symbol split
+- [OPEN] Check EQUITY T1 push status
+- [OPEN] Look for remaining autonomous work
+- [OPEN] Check for new CI failures since morning audit
+- [OPEN] Work on Session BC swarm prompt
+- [OPEN] Block cta_replicator COMMODITY non-CT=F (requires user approval)
+- [OPEN] Evaluate cap raise after blocking cta_replicator
+- [OPEN] Continue working on next steps till all todos/action items are completed
+- [OPEN] Await user approval on blocking ('COMMODITY', 'cta_replicator') — removes 83 losing picks
+- [OPEN] Await user approval on raising concentration cap to ≥0.85
+- [OPEN] Block `('COMMODITY', 'cta_replicator')` — 83 losing picks, 0 CT=F sacrifice
+- [OPEN] Raise COMMODITY concentration cap to ≥0.85
+- [OPEN] Block ('COMMODITY', 'cta_replicator') — awaiting user approval
+- [OPEN] Raise COMMODITY concentration cap to ≥0.85 — awaiting user approval
+- [OPEN] Break down further action items into chunks for review — contingent on swarm review above
+- [OPEN] M-033: `claude_gainer_st` stale refresh fix — user approved proceeding, not yet done
+- [OPEN] Ask agent swarm to clarify scope of M-033
+- [OPEN] Implement M-019: add MDD hard-cap (Charter §7 -20% MDD) in portfolio_gates.py (implementation started but not shown completed)
+- [OPEN] Complete M-019 (MDD gate in portfolio_gates.py — was in progress at time of interrupt)
+- [OPEN] Ask agent swarm if anything is unclear
+- [OPEN] Feed chat transcript into agent swarm for review after all action items completed
+- [OPEN] User approval: Block ('COMMODITY', 'cta_replicator')
+- [OPEN] User approval: Raise COMMODITY concentration cap to ≥0.85
+- [OPEN] Add FRED_API_KEY secret in GitHub settings (operator action, not code)
+- [OPEN] Block ('COMMODITY', 'cta_replicator') — pending user approval
+- [OPEN] Raise COMMODITY concentration cap to ≥0.85 — pending user approval
+- [OPEN] Tackle M-010 Phase 2 — wire `passes_tier_gate()` into the tv-paper-trade skill
+- [OPEN] Feed chat transcript into agent swarm for review after session batch
+- [OPEN] Get deepseek APPROVE before continuing
+- [OPEN] Judge goal as done=true only when all actionable items are exhausted
+- [OPEN] Continue working on next steps until all TODOs/action items completed, then feed transcript into agent swarm for review and break into chunks if needed
+- [OPEN] Create `tools/emit_gate_config.py` (created but NOT YET COMMITTED)
+- [OPEN] Commit `audit_dashboard/data/gate_config.json` (generated but NOT YET COMMITTED)
+- [OPEN] Review all recent .MDs over past 2 weeks for statistical-edge ideas per asset class
+- [OPEN] Run agent swarm through ~30 DAILY_IDEAS files for additional insights/improvements
+- [OPEN] Keep working on next steps until all todos/action items are completed (user's `/goal` command)
+- [OPEN] Break down remaining items into chunks for review if needed
+- [OPEN] Create comprehensive multi-session swarm review (key deliverable the goal requires)
+- [OPEN] Commit all session BY deliverables (modified/new files)
+- [OPEN] Investigate `futures_momentum` (2% WR) as possible anti-signal (30 min)
+- [OPEN] Decide on `quan_engine_scalp` volume reduction (10-20%)
+- [OPEN] Verify send landed using `protocol_inspect tail --limit 5`
+- [OPEN] Triage peer messages, classify, decide accept/defer/reject, write `reports/peer_inbox_<UTC>.md`
+- [OPEN] Output compact 6-line summary to operator
+- [OPEN] Approve or reject three operator decisions (block futures_momentum, reduce quan_engine_scalp volume, block cta_replicator COMMODITY)
+- [OPEN] Feed chat transcript into agent swarm for review and break into chunks if needed
+- [OPEN] Run swarm review on chat transcript for further action items
+- [OPEN] Replace elite_score with rolling strategy-level WR as primary pick ranker (P0, no approval needed)
+- [OPEN] Block futures_momentum (requires operator approval)
+- [OPEN] Reduce quan_engine_scalp volume share (requires operator approval)
+- [OPEN] Block ('COMMODITY', 'cta_replicator') (requires operator approval)
+- [OPEN] Move H-001 COT to LIVE_TESTING with 2% capital allocation (P1)
+- [OPEN] Prototype H-002 PEAD using Yahoo Finance earnings data (P1)
+- [OPEN] Continue working on next steps until all TODOs/action items completed, then feed chat transcript into agent swarm for review (user's /goal command — ongoing loop)
+- [OPEN] Handle the /dropchat-multipc request
+- [OPEN] Block `futures_momentum` (WR=2%, n=202) — requires explicit approval
+- [OPEN] Reduce `quan_engine_scalp` volume share (WR=29.9%, n=5,293) — requires explicit approval
+- [OPEN] Block `('COMMODITY', 'cta_replicator')` (WR=12%, n=83) — requires explicit approval
+- [OPEN] Review 83 expired strategy blocks — run `python tools/research/strategy_block_expiry_audit.py`
+- [OPEN] Feed chat transcript into agent swarm for further action item review (requested via /goal command)
+- [OPEN] Block futures_momentum (WR=2%, n=202) — pending operator decision
+- [OPEN] Reduce quan_engine_scalp volume share — pending operator decision
+- [OPEN] Block ('COMMODITY', 'cta_replicator') (WR=12%, n=83) — pending operator decision
+- [OPEN] Block futures_momentum (soft-cap to rank=0.0) — requires operator approval
+- [OPEN] Investigate risk_reward eff consistently negative across all walk-forward windows
+- [OPEN] Feed chat transcript into agent swarm for review and further action items
+- [OPEN] Commit changes and post PR review comment on PR #1187
+- [OPEN] Implement Pick Traceability System (`pick_lifecycle_logger.py`, `filter_traceback_engine.py`, `symbol_universe_manager.py`)
+- [OPEN] Break down remaining action items into chunks for review
+- [OPEN] Run `/dropchat-multipc`
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to all peers
+- [OPEN] Triage peer messages and write reports/peer_inbox_<UTC>.md
+- [OPEN] Optionally revise and re-commit if peer insight changes decisions
+- [OPEN] Complete all remaining action items identified by swarm review (4 new items surfaced, only first one started)
+- [OPEN] Break down further action items into chunks for review if needed
+- [OPEN] Build index agent for codebase-aware agent swarm
+- [OPEN] Build deep-dive agents (parallel, per-asset-class)
+- [OPEN] Build synthesis agent
+- [OPEN] Resolve quan_engine_scalp block (deferred, needs operator decision)
+- [OPEN] Determine ETF_VIX_GATE_ENFORCE=1 timing (deferred, needs operator decision)
+- [OPEN] Implement post-cost expectancy gate (deferred, needs operator decision)
+- [OPEN] Validate key claims from corrected deliverable against live repo
+- [OPEN] Build pick provenance agent
+- [OPEN] Provide new GitHub PAT with `repo` scope for `eltonaguiar/findtorontoevents_antigravity.ca`
+- [OPEN] Push `CORRECTED_GAMEPLAN_2026-05-18.md` to `reports/CORRECTED_GAMEPLAN_2026-05-18.md`
+- [OPEN] Push PR descriptions as separate files (if desired)
+- [OPEN] `/dropchat-multipc` — broadcast session summary to peers (requested twice)
+- [OPEN] Review and validate all 8 corrected Kimi files from "C:/Users/zerou/Downloads/Kimi_Agent_Kimi Analysis Review/"
+- [OPEN] Wire all 12 gates before using filter_distribution()
+- [OPEN] Extend FUTURES review to 60 days
+- [OPEN] Analyze vix shadow log before enforcing
+- [OPEN] Post-cost gate confirmed as next priority
+- [OPEN] Triage peer messages, classify, decide accept/defer/reject for task.request DMs
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history from PR #1086)
+- [OPEN] Feed chat transcript into agent swarm for review, breaking into chunks if needed
+- [OPEN] Set or replace the active goal via `/goal <text>` and begin work
+- [OPEN] Judge own work and record verdict via `goal_state.py judge --session <SID> --done <bool> --reason "<reason>"`
+- [OPEN] If not done and budget remains, call `ScheduleWakeup` with appropriate delay and prompt `/goal continue`
+- [OPEN] If invoked as `/goal continue`, re-read state and resume from step 2
+- [OPEN] Document MySQL password rotation (stocks123 → new password) — operator DB admin access required
+- [OPEN] Scan prior CE session transcript through the swarm
+- [OPEN] Chunk the 71MB transcript for scanning
+- [OPEN] Run transcript scan in parallel with documenting MySQL issue
+- [OPEN] Check if background CE transcript scan finished and work on remaining items
+- [OPEN] Check CE transcript scan results for action items
+- [OPEN] Build strategy emission monitor (dormancy detection) — found already exists, ran it
+- [OPEN] Merge PR 1187 (docs-only, stale with conflicts — skipped)
+- [OPEN] Address VIX shadow log empty / default threshold change 25.0 → 20.0
+- [OPEN] Rotate MySQL password (stocks123/backtests123)
+- [OPEN] Investigate ETF WR=0.0% anomaly
+- [OPEN] Investigate ETF test_asset_class_health_class_present[ETF] (currently passing)
+- [OPEN] Address dashboard ETF stubs
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (P0, operator-gated)
+- [OPEN] Enable ETF_VIX_GATE_ENFORCE=1 after 30d shadow data collection
+- [OPEN] COMMODITY concentration cap decision (PM approval needed)
+- [OPEN] D-007 ETF MONEY_READY (pending n≥100 resolved picks)
+- [OPEN] Keep working on next steps until all TODOs/action items completed, then feed transcript into agent swarm for review
+- [OPEN] Tick the goal counter and scan current session transcript for new action items (interrupted mid-sentence)
+- [OPEN] Create EQUITY symbol universe CSV with ≥200 tickers
+- [OPEN] Commit `alpha_engine/data/equity_symbol_universe.csv` (in progress, not yet committed)
+- [OPEN] Break down further action items into chunks for review
+- [OPEN] Add all negative-edge ml_enhanced variants (ADAUSDT, BTCUSDT, SOLANA variants) to the quarantine blocklist
+- [OPEN] Add 54 negative-edge ml_enhanced strategy names to crypto_quarantine.json quarantined list
+- [OPEN] Fix pf_registry.json WR=0.0% bug (win_rate field not computed)
+- [OPEN] Re-generate pf_registry.json after M-111 CADJPY cleanup (must not run locally per CLAUDE.md)
+- [OPEN] PR-3: Post-cost expectancy gate promotion
+- [OPEN] Fix 4 failing M-096 tests in test_m096_ctf_concentration_cap.py
+- [OPEN] Process all open action items until completed (per /goal directive)
+- [OPEN] Rotate `ejaguiar1_stocks` MySQL password from `stocks123` + update GitHub Secret
+- [OPEN] Start `python tools/protocol_gateway.py` at `192.168.2.32:8788` for cross-PC gateway
+- [OPEN] Create `rapid_fire` CRYPTO investigation doc
+- [OPEN] Create `aggregated_picks` CRYPTO investigation doc
+- [OPEN] Create weekly filter report (`reports/weekly_filter_*.md`)
+- [OPEN] Add CI coverage check to CI pipeline
+- [OPEN] Create `updates/index.html` entry summarizing recent completed work
+- [OPEN] Rotate MySQL passwords for `ejaguiar1_stocks` and `ejaguiar1_backtests` and update GitHub Secrets (`MYSQL_PASSWORD`, `DB_PASS_STOCKS`, `DB_PASS_BACKTESTS`)
+- [OPEN] Start cross-PC gateway (`python tools/protocol_gateway.py` at `192.168.2.32:8788`)
+- [OPEN] Review investigation doc for blocking `super_signals` CRYPTO and add `("CRYPTO", "super_signals")` to `BLOCKED_ASSET_STRATEGY_PAIRS` if approved
+- [OPEN] Review investigation doc for blocking `aggregated_picks` CRYPTO and add `("CRYPTO", "aggregated_picks")` to `BLOCKED_ASSET_STRATEGY_PAIRS` if approved
+- [OPEN] Complete remaining autonomous items: rapid_fire investigation, updates/index.html entry, check kimi_signal_tracking absence from active_picks
+- [OPEN] Restore clean state of `active_picks.json` (test artifact pollution propagated to remote)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items, chunking if needed
+- [OPEN] Restore `alpha_engine/data/active_picks.json` from commit `95c0e51d05`
+- [OPEN] User approval to block `("CRYPTO", "super_signals")` in BLOCKED_ASSET_STRATEGY_PAIRS
+- [OPEN] User approval to block `("CRYPTO", "aggregated_picks")` in BLOCKED_ASSET_STRATEGY_PAIRS
+- [OPEN] Block `super_signals` CRYPTO in `BLOCKED_ASSET_STRATEGY_PAIRS` (awaiting user approval)
+- [OPEN] Block `aggregated_picks` CRYPTO in `BLOCKED_ASSET_STRATEGY_PAIRS` (awaiting user approval)
+- [OPEN] MySQL password rotation (operator-only)
+- [OPEN] Cross-PC gateway start at 192.168.2.32:8788 (operator-only)
+- [OPEN] Investigate raw closed_picks numbers not matching dashboard (data structure discrepancy)
+- [OPEN] Continue rapid_fire raw data discrepancy investigation
+- [OPEN] Update investigation doc with rapid_fire PF=0.97 and 1.10 findings
+- [OPEN] Add weekly filter to CI
+- [OPEN] Check open PRs
+- [OPEN] Commit rapid_fire doc update
+- [OPEN] Implement M-097 gate
+- [OPEN] Write tests for M-097
+- [OPEN] Move M-097 to correct location in passes_active_gate
+- [OPEN] Remove duplicate M-097 block from passes_smart_gate
+- [OPEN] Move M-097 before PER_ASSET_QUALITY_ACTIVE_PERMISSIVE early return
+- [OPEN] Remove original misplaced M-097 block after early return
+- [OPEN] Fix failing disabled gate test (confidence too low)
+- [OPEN] Remove duplicate M-097 block at ~line 8214 (dead code when permissive=1)
+- [OPEN] Block ("CRYPTO", "super_signals") — awaiting user approval
+- [OPEN] Block ("CRYPTO", "aggregated_picks") — awaiting user approval
+- [OPEN] Rotate MySQL passwords (ejaguiar1_stocks, ejaguiar1_backtests) — operator-only
+- [OPEN] Start cross-PC gateway at 192.168.2.32:8788 — operator-only
+- [OPEN] Fix FRED secret to unblock macro overlay gates — operator-only
+- [OPEN] Check if `conflict_reconciler.py` from another agent needs to be wired into production (interrupted)
+- [OPEN] Document F-003 HARD_DISABLE rationale with ticket ref in system log
+- [OPEN] Feed chat transcript into agent swarm for review and break into chunks (requested by user, not shown complete)
+- [OPEN] Implement E-006 (VIX gate exception log) — record every blocked signal with VIX level
+- [OPEN] Complete remaining 4 FOOLPROOF_ACTION_PLAN.md items (PF>4.0 monitoring, FRED GDP/ISM overlay, Fix FRED secret, BOND PF monitoring)
+- [OPEN] User approval: block ("CRYPTO", "super_signals") and ("CRYPTO", "aggregated_picks") in BLOCKED_ASSET_STRATEGY_PAIRS
+- [OPEN] MySQL password rotation
+- [OPEN] Cross-PC gateway start at 192.168.2.32:8788
+- [OPEN] Fix FRED secret
+- [OPEN] Check C-008 (elite source protection audit, P1)
+- [OPEN] Operator must verify CRYPTOCOMPARE_API_KEY (from C-008 audit)
+- [OPEN] Rotate `ejaguiar1_stocks` / `ejaguiar1_backtests` MySQL passwords
+- [OPEN] Verify `CRYPTOCOMPARE_API_KEY` in GitHub Secrets
+- [OPEN] Start cross-PC gateway at `192.168.2.32:8788`
+- [OPEN] Approve blocking `("CRYPTO", "super_signals")` and `("CRYPTO", "aggregated_picks")`
+- [OPEN] Work on M-003 (COMMODITY universe diversification) — verified already present, no further action shown
+- [OPEN] Work on B-002 (BOND scanner coverage verification) — verified already present, no further action shown
+- [OPEN] Write F-001 verification doc (FOREX hard-blocked by default)
+- [OPEN] Handle hourly audit PR (#1238)
+- [OPEN] Check PR #1237 CI status
+- [OPEN] Run transcript scan for this session and tick/judge the goal
+- [OPEN] Continue working on next P0 item: ml_enhanced quarantine (M-105)
+- [OPEN] Write investigation docs for 3 ml_enhanced strategies needing user approval
+- [OPEN] Check non-crypto outcome resolver (highest leverage P0)
+- [OPEN] Run transcript scan for current session
+- [OPEN] Review `PLAN_VET_PREREQ_2026_05_18.md` and `PLAN_VET_DEBATE_2026_05_18.md` for new actionable items
+- [OPEN] Fix non-crypto outcome resolver (heal_null_exit_prices_non_crypto)
+- [OPEN] Quarantine ml_enhanced strategies (BTCUSDT/ADAUSDT LONG)
+- [OPEN] Implement A1 cost model (P0)
+- [OPEN] Implement A2 timeboxes/terminal state (P0)
+- [OPEN] Implement A3 paid data API + resolver logic verification (P0)
+- [OPEN] Feed transcript to agent swarm for further action items
+- [OPEN] Rotate MySQL passwords and update MYSQL_PASSWORD GitHub Secret
+- [OPEN] Restart cross-PC gateway at 192.168.2.32:8788
+- [OPEN] Wait for transcript scan CN to complete (~2min) and process results.
+- [OPEN] Implement `goal_state.py` helper script
+- [OPEN] Implement `/goal` subcommands (set, status, pause, resume, clear, continue)
+- [OPEN] Implement the goal loop (set → work → tick → judge → decide)
+- [OPEN] Implement the judge self-evaluation logic
+- [OPEN] Implement `ScheduleWakeup` for auto-continuation
+- [OPEN] Complete cl-goal-5 (active goal state)
+- [OPEN] Promote POST_COST_GATE_MODE from shadow to hard_reject by 2026-06-01
+- [OPEN] Fix duplicate re-emission at emitter level (analytically fixed in pf_registry only)
+- [OPEN] Obtain user approval for ml_enhanced quarantine (BLOCKED)
+- [OPEN] Probe CRYPTO H-009
+- [OPEN] Archive system by 2026-08-15 if Phase 4 fails
+- [OPEN] CRYPTO H-009 probe (user go/no-go)
+- [OPEN] ml_enhanced quarantine (user approval BLOCKED)
+- [OPEN] Block `("COMMODITY", "multi_asset_copytrader")` — requires operator approval
+- [OPEN] Approve 5 direction-flip blocks (from hourly audit §5 mutation table) — requires operator approval
+- [OPEN] Go/no-go on H-009 CRYPTO delta-neutral probe — requires operator approval
+- [OPEN] Regime-backfill enrichment job (3 of 8421 picks tagged)
+- [OPEN] Phase 0b EQUITY data feed wiring
+- [OPEN] User approve three blocking decisions (futures_momentum, multi_asset_copytrader, 5 direction-flip strategies)
+- [OPEN] Implement all approved blocks in one commit
+- [OPEN] Update findtorontoevents.ca/updates/index.html (partially complete per summary)
+- [OPEN] Block `("FUTURES", "futures_momentum")` — awaiting user approval
+- [OPEN] Block `("COMMODITY", "multi_asset_copytrader")` — awaiting user approval
+- [OPEN] Block 4 LONG direction-flip strategies (`ig_contrarian_sentiment`, `myfxbook_retail_contrarian`, `cta_cross_asset_tsmom`, `forex_carry_momentum`) — awaiting user approval
+- [OPEN] Promote M-109 RR gate to enforce (`RR_HIGH_GATE_ENFORCE=1`) — awaiting user approval
+- [OPEN] MySQL password rotation (stocks123 → new) on 50webs console, then update MYSQL_PASSWORD GitHub Secret
+- [OPEN] Break down any action items into chunks for review
+- [OPEN] Push `weekly_filter_20260518T0851Z.md` commit (was starting `git stash && git pull --rebase origin main && git stash pop && git push origin main`)
+- [OPEN] Continue working on next steps until all todos/action items completed (user's standing `/goal`)
+- [OPEN] Feed chat transcript into agent swarm for review of further action items (user's standing `/goal`)
+- [OPEN] Approve COMMODITY_CTF_CAP=1 (CT=F Cotton at 84% concentration, cap threshold 35%)
+- [OPEN] Approve RR_HIGH_GATE_ENFORCE=1 (M-109 RR gate shadow-only)
+- [OPEN] Rotate MySQL password (operator action on 50webs console)
+- [OPEN] Check `ig_contrarian_sentiment` SHORT pick flow (new item from swarm scan)
+- [OPEN] Remove `ig_contrarian_sentiment` from `BLOCKED_SOURCE_SYSTEMS` (line 2061) to unblock SHORT picks
+- [OPEN] Enforce `COMMODITY_CTF_CAP=1` (CT=F concentration cap)
+- [OPEN] Enforce `RR_HIGH_GATE_ENFORCE=1` (promote M-109 RR gate from shadow to enforce)
+- [OPEN] Rotate MySQL password (50webs console, operator only)
+- [OPEN] Enforce CT=F concentration cap (COMMODITY_CTF_CAP=1)
+- [OPEN] Hard-reject picks with RR>1.5 (RR_HIGH_GATE_ENFORCE=1)
+- [OPEN] MySQL password rotation (50webs console + update GitHub Secret)
+- [OPEN] Fix issue #1233 (FTP TLS P0 security) — 34 occurrences of `ssl:verify-certificate no`; operator-gated, commented on issue
+- [OPEN] Fix issue #1221 — `performance.asset_class_health` shows raw n=1954/PF=1.24 for CRYPTO vs policy-clean pf_registry n=475/PF=2.87; tile stats need fixing
+- [OPEN] Assess #1233 FTP TLS
+- [OPEN] Scan MASTER_ACTION_PLAN for remaining P0 PENDING items
+- [OPEN] Check swarm scan completion (still running at end of excerpt)

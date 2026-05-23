@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Engine — Grade P&amp;L Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0a12;
+    --card: #12121e;
+    --card-hover: #1a1a2e;
+    --border: #2a2a3e;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --green: #22c55e;
+    --green-dim: #166534;
+    --red: #ef4444;
+    --red-dim: #7f1d1d;
+    --gold: #f59e0b;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--gold), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .stat-chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .stat-chip .val {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .stat-chip .label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover { background: var(--card-hover); color: var(--text); }
+  .tab-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  /* Grade Cards */
+  .grade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .grade-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grade-card:hover { transform: translateY(-2px); border-color: var(--blue); }
+  .grade-card.selected { border-color: var(--gold); box-shadow: 0 0 12px rgba(245,158,11,0.2); }
+
+  .grade-letter {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .grade-S .grade-letter { color: var(--gold); }
+  .grade-A .grade-letter { color: var(--green); }
+  .grade-B .grade-letter { color: var(--blue); }
+  .grade-C .grade-letter { color: var(--cyan); }
+  .grade-D .grade-letter { color: var(--purple); }
+  .grade-F .grade-letter { color: var(--red); }
+  .grade-NA .grade-letter { color: var(--text-dim); font-size: 1.6rem; }
+
+  .grade-stat { font-size: 0.78rem; color: var(--text-dim); }
+  .grade-stat .num { color: var(--text); font-weight: 600; }
+
+  .pnl-positive { color: var(--green) !important; }
+  .pnl-negative { color: var(--red) !important; }
+
+  /* Table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-bottom: 16px;
+  }
+
+  .data-table th {
+    background: var(--card);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+  }
+
+  .data-table th:hover { color: var(--text); }
+
+  .data-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #1a1a28;
+  }
+
+  .data-table tr:hover td { background: var(--card-hover); }
+
+  .data-table tr.clickable { cursor: pointer; }
+
+  /* Calendar */
+  .calendar-wrap {
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    min-width: 500px;
+  }
+
+  .cal-header {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    padding: 4px;
+    font-weight: 600;
+  }
+
+  .cal-day {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px;
+    min-height: 60px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .cal-day:hover { border-color: var(--blue); }
+  .cal-day.empty { background: transparent; border-color: transparent; }
+
+  .cal-day .day-num {
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+  }
+
+  .cal-day .day-pnl {
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+
+  .cal-day .day-picks {
+    color: var(--text-dim);
+    font-size: 0.65rem;
+  }
+
+  .cal-day.positive { border-left: 3px solid var(--green); }
+  .cal-day.negative { border-left: 3px solid var(--red); }
+  .cal-day.neutral { border-left: 3px solid var(--text-dim); }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb a {
+    color: var(--blue);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { color: var(--text-dim); }
+
+  /* Grade criteria */
+  .criteria-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .criteria-panel h3 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    color: var(--gold);
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+
+  .criteria-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .criteria-item .badge {
+    font-weight: 800;
+    font-size: 1.1rem;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .criteria-item .desc {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .criteria-item .desc strong { color: var(--text); }
+
+  .scoring-table {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .scoring-table td {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+    border-bottom: 1px solid #1a1a28;
+  }
+
+  .scoring-table td:first-child { font-weight: 600; min-width: 160px; }
+  .scoring-table td:last-child { color: var(--text-dim); }
+
+  /* Month nav */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    justify-content: center;
+  }
+
+  .month-nav button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  .month-nav button:hover { background: var(--card-hover); }
+  .month-nav .month-label { font-weight: 600; min-width: 140px; text-align: center; }
+
+  /* Drill-down panel */
+  .drill-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .drill-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .badge-wr {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .wr-high { background: var(--green-dim); color: var(--green); }
+  .wr-mid { background: rgba(59,130,246,0.2); color: var(--blue); }
+  .wr-low { background: var(--red-dim); color: var(--red); }
+
+  .hidden { display: none; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-dim);
+  }
+
+  .loading .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    text-align: center;
+    padding: 40px;
+    color: var(--red);
+    background: var(--card);
+    border-radius: 10px;
+    border: 1px solid var(--red-dim);
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .grade-grid { grid-template-columns: repeat(3, 1fr); }
+    h1 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Alpha Engine Grade P&amp;L Dashboard</h1>
+<div class="subtitle" id="genTime">Loading...</div>
+
+<div id="statsBar" class="stats-bar"></div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="calendar">P&amp;L Calendar</button>
+  <button class="tab-btn" data-tab="strategies">Strategies</button>
+  <button class="tab-btn" data-tab="symbols">Symbols</button>
+  <button class="tab-btn" data-tab="criteria">Grade Criteria</button>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div id="tab-overview" class="tab-content">
+  <div class="section-title">Grade Breakdown (Closed Picks)</div>
+  <div class="grade-grid" id="gradeGrid"></div>
+  <div id="drillDown" class="hidden"></div>
+  <div class="section-title">Asset Class Breakdown</div>
+  <div id="assetTable"></div>
+</div>
+
+<!-- CALENDAR TAB -->
+<div id="tab-calendar" class="tab-content hidden">
+  <div class="section-title">Daily P&amp;L Calendar</div>
+  <div class="month-nav">
+    <button id="prevMonth">&larr;</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button id="nextMonth">&rarr;</button>
+  </div>
+  <div class="calendar-wrap">
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+  <div id="dayDetail" class="hidden"></div>
+</div>
+
+<!-- STRATEGIES TAB -->
+<div id="tab-strategies" class="tab-content hidden">
+  <div class="section-title">All Strategies</div>
+  <div id="strategyTable"></div>
+</div>
+
+<!-- SYMBOLS TAB -->
+<div id="tab-symbols" class="tab-content hidden">
+  <div class="section-title">All Symbols</div>
+  <div id="symbolTable"></div>
+</div>
+
+<!-- CRITERIA TAB -->
+<div id="tab-criteria" class="tab-content hidden">
+  <div class="section-title">Grade Criteria Reference</div>
+  <div class="criteria-panel">
+    <h3>Grade Thresholds (max 110 points)</h3>
+    <div class="criteria-grid">
+      <div class="criteria-item">
+        <div class="badge" style="color:var(--gold)">S</div>
+        <div class="desc"><strong>95+ pts — Exceptional</strong><br>All components firing, ML confident, forward validated, strong confluence</div>
+      </div>
+      <div class="criteria-item">
+        <div class="badge" style="color:var(--green)">A</div>
+        <div class="desc"><strong>80-94 pts — Excellent</strong><br>Most components strong, high ML score, proven strategy</div>
+      </div>
+      <div class="criteria-item">
+        <div class="badge" style="color:var(--blue)">B</div>
+        <div class="desc"><strong>65-79 pts — Good</strong><br>Solid fundamentals, moderate confluence</div>
+      </div>
+      <div class="criteria-item">
+        <div class="badge" style="color:var(--cyan)">C</div>
+        <div class="desc"><strong>50-64 pts — Average</strong><br>Some positives offset by weaknesses</div>
+      </div>
+      <div class="criteria-item">
+        <div class="badge" style="color:var(--purple)">D</div>
+        <div class="desc"><strong>35-49 pts — Below Average</strong><br>Limited edge, risky</div>
+      </div>
+      <div class="criteria-item">
+        <div class="badge" style="color:var(--red)">F</div>
+        <div class="desc"><strong>&lt;35 pts — Failing</strong><br>Avoid — no demonstrated edge</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:20px">Scoring Components (max 110 total)</h3>
+    <table class="scoring-table">
+      <tr><td>ML Score</td><td>0-35 pts — ML ranker prediction confidence</td></tr>
+      <tr><td>Forward WR</td><td>0-30 pts — Strategy's historical win rate</td></tr>
+      <tr><td>Confluence</td><td>0-15 pts — Multi-system agreement</td></tr>
+      <tr><td>Position Performance</td><td>0-10 pts — Current market validation</td></tr>
+      <tr><td>Risk:Reward</td><td>0-5 pts — TP/SL ratio quality</td></tr>
+      <tr><td>Monte Carlo</td><td>0-5 pts — Simulation survival rate</td></tr>
+      <tr><td>Leverage Safety</td><td>0-10 pts — Stop distance, volatility, ML confidence</td></tr>
+    </table>
+  </div>
+</div>
+
+<div id="loadingScreen" class="loading">
+  <div class="spinner"></div>
+  Loading grade history data...
+</div>
+
+<div id="errorScreen" class="error-msg hidden"></div>
+
+<script>
+(function() {
+  let DATA = null;
+  let currentMonth = null; // {year, month}
+  let sortState = {};      // tableId -> {col, asc}
+
+  // --- DATA LOADING ---
+  const jsonPaths = [
+    'data/grade_history.json',
+    'alpha_engine/data/grade_history.json',
+    '../alpha_engine/data/grade_history.json',
+    './grade_history.json',
+  ];
+
+  async function loadData() {
+    for (const p of jsonPaths) {
+      try {
+        const resp = await fetch(p);
+        if (resp.ok) {
+          DATA = await resp.json();
+          return true;
+        }
+      } catch(e) {}
+    }
+    return false;
+  }
+
+  // --- UTILS ---
+  function pnlClass(val) { return val > 0 ? 'pnl-positive' : val < 0 ? 'pnl-negative' : ''; }
+  function pnlStr(val) { return (val >= 0 ? '+' : '') + val.toFixed(2) + '%'; }
+  function wrBadge(wr) {
+    const cls = wr >= 55 ? 'wr-high' : wr >= 40 ? 'wr-mid' : 'wr-low';
+    return `<span class="badge-wr ${cls}">${wr.toFixed(1)}%</span>`;
+  }
+
+  function gradeColor(g) {
+    const map = {S:'var(--gold)',A:'var(--green)',B:'var(--blue)',C:'var(--cyan)',D:'var(--purple)',F:'var(--red)'};
+    return map[g] || 'var(--text-dim)';
+  }
+
+  // --- TABS ---
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    });
+  });
+
+  // --- RENDER STATS BAR ---
+  function renderStatsBar() {
+    const s = DATA.stats;
+    const bg = DATA.by_grade;
+    const totalPnl = Object.values(bg).reduce((a,v) => a + (v.total_pnl||0), 0);
+    const totalWins = Object.values(bg).reduce((a,v) => a + (v.wins||0), 0);
+    const totalLosses = Object.values(bg).reduce((a,v) => a + (v.losses||0), 0);
+    const decided = totalWins + totalLosses;
+    const wr = decided > 0 ? (totalWins/decided*100) : 0;
+
+    document.getElementById('statsBar').innerHTML = [
+      chip(s.total_closed, 'Closed Picks'),
+      chip(s.total_active, 'Active Picks'),
+      chip(totalWins + '/' + totalLosses, 'Wins/Losses'),
+      chip(wr.toFixed(1) + '%', 'Win Rate', wr >= 50 ? 'pnl-positive' : 'pnl-negative'),
+      chip(pnlStr(totalPnl), 'Total P&L', pnlClass(totalPnl)),
+      chip(s.graded_closed, 'Graded'),
+      chip(s.ungraded_closed, 'Ungraded'),
+    ].join('');
+  }
+
+  function chip(val, label, cls) {
+    return `<div class="stat-chip"><div class="val ${cls||''}">${val}</div><div class="label">${label}</div></div>`;
+  }
+
+  // --- RENDER GRADE CARDS ---
+  function renderGradeGrid() {
+    const grid = document.getElementById('gradeGrid');
+    const grades = ['S','A','B','C','D','F','N/A'];
+    grid.innerHTML = grades.map(g => {
+      const d = DATA.by_grade[g] || {total:0,wins:0,losses:0,wr:0,avg_pnl:0,total_pnl:0};
+      const cssG = g === 'N/A' ? 'NA' : g;
+      return `<div class="grade-card grade-${cssG}" data-grade="${g}" onclick="window._drillGrade('${g}')">
+        <div class="grade-letter">${g}</div>
+        <div class="grade-stat"><span class="num">${d.total}</span> picks</div>
+        <div class="grade-stat">WR: <span class="num">${d.wr.toFixed(1)}%</span></div>
+        <div class="grade-stat">Avg: <span class="num ${pnlClass(d.avg_pnl)}">${pnlStr(d.avg_pnl)}</span></div>
+        <div class="grade-stat">Total: <span class="num ${pnlClass(d.total_pnl)}">${pnlStr(d.total_pnl)}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // --- DRILL DOWN: Grade -> Strategies -> Picks ---
+  window._drillGrade = function(grade) {
+    const panel = document.getElementById('drillDown');
+    panel.classList.remove('hidden');
+
+    const picks = (DATA.by_grade[grade] || {}).picks || [];
+    if (picks.length === 0) {
+      panel.innerHTML = `<div class="drill-panel"><div class="drill-title">Grade ${grade}: No picks</div></div>`;
+      return;
+    }
+
+    // Group by strategy
+    const byStrat = {};
+    picks.forEach(p => {
+      if (!byStrat[p.strategy]) byStrat[p.strategy] = [];
+      byStrat[p.strategy].push(p);
+    });
+
+    let html = `<div class="drill-panel">
+      <div class="breadcrumb"><a onclick="document.getElementById('drillDown').classList.add('hidden')">All Grades</a>
+      <span class="sep">/</span> <strong style="color:${gradeColor(grade)}">Grade ${grade}</strong></div>
+      <div class="drill-title" style="color:${gradeColor(grade)}">Grade ${grade} — ${picks.length} picks across ${Object.keys(byStrat).length} strategies</div>
+      <table class="data-table"><thead><tr>
+        <th>Strategy</th><th>Picks</th><th>W/L</th><th>WR%</th><th>Avg P&L</th><th>Total P&L</th>
+      </tr></thead><tbody>`;
+
+    Object.entries(byStrat).sort((a,b) => b[1].length - a[1].length).forEach(([strat, sp]) => {
+      const wins = sp.filter(p => p.status === 'WON').length;
+      const losses = sp.filter(p => p.status === 'LOST').length;
+      const dec = wins + losses;
+      const wr = dec > 0 ? wins/dec*100 : 0;
+      const avg = sp.reduce((a,p) => a+p.pnl_pct, 0) / sp.length;
+      const tot = sp.reduce((a,p) => a+p.pnl_pct, 0);
+      html += `<tr class="clickable" onclick="window._drillStrategy('${grade}','${strat}')">
+        <td>${strat}</td><td>${sp.length}</td><td>${wins}/${losses}</td>
+        <td>${wrBadge(wr)}</td><td class="${pnlClass(avg)}">${pnlStr(avg)}</td>
+        <td class="${pnlClass(tot)}">${pnlStr(tot)}</td></tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    panel.innerHTML = html;
+    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  };
+
+  window._drillStrategy = function(grade, strategy) {
+    const panel = document.getElementById('drillDown');
+    const picks = ((DATA.by_grade[grade] || {}).picks || []).filter(p => p.strategy === strategy);
+
+    let html = `<div class="drill-panel">
+      <div class="breadcrumb">
+        <a onclick="document.getElementById('drillDown').classList.add('hidden')">All Grades</a>
+        <span class="sep">/</span>
+        <a onclick="window._drillGrade('${grade}')" style="color:${gradeColor(grade)}">Grade ${grade}</a>
+        <span class="sep">/</span> <strong>${strategy}</strong>
+      </div>
+      <div class="drill-title">${strategy} — ${picks.length} picks (Grade ${grade})</div>
+      <table class="data-table"><thead><tr>
+        <th>Symbol</th><th>Direction</th><th>Status</th><th>P&L</th><th>Entry</th><th>Exit</th><th>Score</th>
+      </tr></thead><tbody>`;
+
+    picks.sort((a,b) => (b.pnl_pct - a.pnl_pct)).forEach(p => {
+      const statusColor = p.status === 'WON' ? 'var(--green)' : p.status === 'LOST' ? 'var(--red)' : 'var(--text-dim)';
+      html += `<tr>
+        <td>${p.symbol}</td>
+        <td>${p.direction}</td>
+        <td style="color:${statusColor};font-weight:600">${p.status}</td>
+        <td class="${pnlClass(p.pnl_pct)}" style="font-weight:600">${pnlStr(p.pnl_pct)}</td>
+        <td>${p.entry_date}</td>
+        <td>${p.exit_date || '-'}</td>
+        <td>${p.elite_score != null ? p.elite_score : '-'}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    panel.innerHTML = html;
+  };
+
+  // --- ASSET CLASS TABLE ---
+  function renderAssetTable() {
+    const ac = DATA.by_asset_class;
+    let html = `<table class="data-table"><thead><tr>
+      <th>Asset Class</th><th>Total</th><th>W/L</th><th>WR%</th><th>Avg P&L</th><th>Total P&L</th><th>Best</th><th>Worst</th>
+    </tr></thead><tbody>`;
+
+    ['crypto','forex','equity'].forEach(cls => {
+      const d = ac[cls] || {total:0,wins:0,losses:0,wr:0,avg_pnl:0,total_pnl:0,best_trade:0,worst_trade:0};
+      html += `<tr>
+        <td style="font-weight:600;text-transform:capitalize">${cls}</td>
+        <td>${d.total}</td><td>${d.wins}/${d.losses}</td>
+        <td>${wrBadge(d.wr)}</td>
+        <td class="${pnlClass(d.avg_pnl)}">${pnlStr(d.avg_pnl)}</td>
+        <td class="${pnlClass(d.total_pnl)}" style="font-weight:600">${pnlStr(d.total_pnl)}</td>
+        <td class="pnl-positive">${pnlStr(d.best_trade)}</td>
+        <td class="pnl-negative">${pnlStr(d.worst_trade)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('assetTable').innerHTML = html;
+  }
+
+  // --- P&L CALENDAR ---
+  function renderCalendar(year, month) {
+    currentMonth = {year, month};
+    const label = new Date(year, month, 1).toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    document.getElementById('monthLabel').textContent = label;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const cal = DATA.daily_calendar;
+
+    let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-header">${d}</div>`).join('');
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayData = cal[dateStr];
+
+      if (dayData) {
+        const cls = dayData.total_pnl > 0 ? 'positive' : dayData.total_pnl < 0 ? 'negative' : 'neutral';
+        html += `<div class="cal-day ${cls}" onclick="window._showDay('${dateStr}')">
+          <div class="day-num">${d}</div>
+          <div class="day-pnl ${pnlClass(dayData.total_pnl)}">${pnlStr(dayData.total_pnl)}</div>
+          <div class="day-picks">${dayData.total_picks}p ${dayData.wins}W/${dayData.losses}L</div>
+        </div>`;
+      } else {
+        html += `<div class="cal-day empty"><div class="day-num" style="color:var(--text-dim)">${d}</div></div>`;
+      }
+    }
+
+    document.getElementById('calendarGrid').innerHTML = html;
+  }
+
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    let {year, month} = currentMonth;
+    month--; if (month < 0) { month = 11; year--; }
+    renderCalendar(year, month);
+  });
+
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    let {year, month} = currentMonth;
+    month++; if (month > 11) { month = 0; year++; }
+    renderCalendar(year, month);
+  });
+
+  window._showDay = function(dateStr) {
+    const panel = document.getElementById('dayDetail');
+    panel.classList.remove('hidden');
+    const day = DATA.daily_calendar[dateStr];
+    if (!day) return;
+
+    let html = `<div class="drill-panel">
+      <div class="drill-title">${dateStr} — ${day.total_picks} picks, P&L: <span class="${pnlClass(day.total_pnl)}">${pnlStr(day.total_pnl)}</span></div>
+      <table class="data-table"><thead><tr>
+        <th>Grade</th><th>Picks</th><th>Wins</th><th>Losses</th><th>P&L</th>
+      </tr></thead><tbody>`;
+
+    Object.entries(day.by_grade).sort((a,b) => {
+      const order = ['S','A','B','C','D','F','N/A'];
+      return order.indexOf(a[0]) - order.indexOf(b[0]);
+    }).forEach(([g, d]) => {
+      html += `<tr>
+        <td style="color:${gradeColor(g)};font-weight:700">${g}</td>
+        <td>${d.total}</td><td>${d.wins}</td><td>${d.losses}</td>
+        <td class="${pnlClass(d.pnl)}" style="font-weight:600">${pnlStr(d.pnl)}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    panel.innerHTML = html;
+    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  };
+
+  // --- STRATEGIES TABLE ---
+  function renderStrategyTable() {
+    const strats = DATA.by_strategy;
+    const rows = Object.entries(strats).map(([name, d]) => ({name, ...d}));
+    rows.sort((a,b) => b.total - a.total);
+
+    let html = `<table class="data-table" id="stratTable"><thead><tr>
+      <th data-col="name">Strategy</th><th data-col="total">Picks</th><th data-col="wins">W/L</th>
+      <th data-col="wr">WR%</th><th data-col="avg_pnl">Avg P&L</th><th data-col="total_pnl">Total P&L</th>
+      <th data-col="best_trade">Best</th><th data-col="worst_trade">Worst</th>
+    </tr></thead><tbody>`;
+
+    rows.forEach(d => {
+      html += `<tr>
+        <td style="font-weight:600">${d.name}</td>
+        <td>${d.total}</td><td>${d.wins}/${d.losses}</td>
+        <td>${wrBadge(d.wr)}</td>
+        <td class="${pnlClass(d.avg_pnl)}">${pnlStr(d.avg_pnl)}</td>
+        <td class="${pnlClass(d.total_pnl)}" style="font-weight:600">${pnlStr(d.total_pnl)}</td>
+        <td class="pnl-positive">${pnlStr(d.best_trade)}</td>
+        <td class="pnl-negative">${pnlStr(d.worst_trade)}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('strategyTable').innerHTML = html;
+  }
+
+  // --- SYMBOLS TABLE ---
+  function renderSymbolTable() {
+    const syms = DATA.by_symbol;
+    const rows = Object.entries(syms).map(([name, d]) => ({name, ...d}));
+    rows.sort((a,b) => b.total - a.total);
+
+    let html = `<table class="data-table" id="symTable"><thead><tr>
+      <th>Symbol</th><th>Picks</th><th>W/L</th><th>WR%</th><th>Avg P&L</th><th>Total P&L</th><th>Best</th><th>Worst</th>
+    </tr></thead><tbody>`;
+
+    rows.forEach(d => {
+      html += `<tr>
+        <td style="font-weight:600">${d.name}</td>
+        <td>${d.total}</td><td>${d.wins}/${d.losses}</td>
+        <td>${wrBadge(d.wr)}</td>
+        <td class="${pnlClass(d.avg_pnl)}">${pnlStr(d.avg_pnl)}</td>
+        <td class="${pnlClass(d.total_pnl)}" style="font-weight:600">${pnlStr(d.total_pnl)}</td>
+        <td class="pnl-positive">${pnlStr(d.best_trade)}</td>
+        <td class="pnl-negative">${pnlStr(d.worst_trade)}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('symbolTable').innerHTML = html;
+  }
+
+  // --- INIT ---
+  async function init() {
+    const ok = await loadData();
+    document.getElementById('loadingScreen').classList.add('hidden');
+
+    if (!ok) {
+      const el = document.getElementById('errorScreen');
+      el.classList.remove('hidden');
+      el.textContent = 'Failed to load grade_history.json. Make sure grade_history_tracker.py has been run and the JSON file is accessible.';
+      return;
+    }
+
+    document.getElementById('genTime').textContent = 'Generated: ' + new Date(DATA.generated_at).toLocaleString();
+
+    renderStatsBar();
+    renderGradeGrid();
+    renderAssetTable();
+    renderStrategyTable();
+    renderSymbolTable();
+
+    // Init calendar to latest month with data
+    const days = Object.keys(DATA.daily_calendar).sort();
+    if (days.length > 0) {
+      const last = new Date(days[days.length - 1] + 'T00:00:00');
+      renderCalendar(last.getFullYear(), last.getMonth());
+    } else {
+      const now = new Date();
+      renderCalendar(now.getFullYear(), now.getMonth());
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

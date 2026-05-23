@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Prediction Dashboards & Data Sources | FindTorontoEvents.ca</title>
+    <meta name="description" content="Complete index of every crypto, stock, penny stock, meme coin, and forex prediction dashboard plus all SQLite databases, backtest JSON data, and ML models.">
+    <link rel="canonical" href="https://findtorontoevents.ca/investments/all-dashboards.html">
+    <style>
+        :root {
+            --bg: #050510;
+            --surface: #0c0c20;
+            --surface-2: #12122e;
+            --border: #1c1c3c;
+            --text: #e4e4f4;
+            --text-dim: #8888aa;
+            --accent-stocks: #6366f1;
+            --accent-crypto: #f97316;
+            --accent-forex: #14b8a6;
+            --accent-meme: #ec4899;
+            --accent-ml: #8b5cf6;
+            --accent-db: #22c55e;
+            --accent-data: #0ea5e9;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --radius: 14px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { color: #88aaff; text-decoration: none; }
+        a:hover { text-decoration: underline; color: #aac8ff; }
+
+        .header {
+            background: rgba(12, 12, 32, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.2rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header h1 {
+            font-size: 1.3rem; font-weight: 800;
+            background: linear-gradient(135deg, #f97316, #8b5cf6, #22c55e);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-nav { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.82rem; }
+        .header-nav a { color: var(--text-dim); padding: 4px 10px; border-radius: 20px; transition: all 0.2s; }
+        .header-nav a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+        .hero {
+            text-align: center;
+            padding: 2.5rem 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+        .hero h2 { font-size: 2rem; font-weight: 300; letter-spacing: 2px; margin-bottom: 0.75rem; }
+        .hero p { color: var(--text-dim); max-width: 680px; margin: 0 auto; line-height: 1.6; font-size: 0.95rem; }
+        .hero .stats-row { display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat-num { font-size: 1.8rem; font-weight: 700; }
+        .hero .stat-label { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+
+        /* TOC */
+        .toc {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2.5rem;
+            display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem;
+        }
+        .toc-label { width: 100%; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.25rem; }
+        .toc a { font-size: 0.85rem; color: var(--text-dim); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); transition: all 0.2s; }
+        .toc a:hover { color: var(--text); border-color: #444; text-decoration: none; background: var(--surface-2); }
+
+        /* Section */
+        .section-heading {
+            display: flex; align-items: center; gap: 1rem;
+            margin: 3rem 0 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-heading h2 {
+            font-size: 1.3rem; font-weight: 700;
+            background-clip: text; -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .section-heading .badge {
+            font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 600;
+        }
+        .section-desc { color: var(--text-dim); font-size: 0.88rem; margin-bottom: 1rem; line-height: 1.6; }
+
+        /* Dashboard table */
+        .dash-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .dash-table th {
+            background: var(--surface);
+            color: var(--text-dim);
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .dash-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid rgba(28,28,60,0.6);
+            vertical-align: top;
+        }
+        .dash-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .dash-table .tag {
+            display: inline-block;
+            font-size: 0.65rem; padding: 2px 7px; border-radius: 12px; font-weight: 600;
+            margin: 1px; white-space: nowrap;
+        }
+        .tag-live   { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .tag-data   { background: rgba(14,165,233,0.15); color: #38bdf8; }
+        .tag-legacy { background: rgba(107,114,128,0.15); color: #9ca3af; }
+        .tag-ml     { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .tag-backtest { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .tag-github { background: rgba(99,102,241,0.12); color: #818cf8; }
+        .tag-picks  { background: rgba(249,115,22,0.15); color: #fb923c; }
+        .tag-db     { background: rgba(34,197,94,0.12); color: #4ade80; }
+
+        .url-cell { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; }
+        .url-cell a { color: #88aaff; }
+
+        .size-cell { color: var(--text-dim); font-size: 0.78rem; white-space: nowrap; }
+
+        /* DB section */
+        .db-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .db-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            font-size: 0.82rem;
+        }
+        .db-card .db-name { font-family: monospace; font-weight: 700; color: var(--green); margin-bottom: 0.3rem; font-size: 0.88rem; }
+        .db-card .db-path { color: var(--text-dim); font-family: monospace; font-size: 0.72rem; word-break: break-all; margin-bottom: 0.35rem; }
+        .db-card .db-meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.3rem; }
+        .db-card .db-meta span { color: var(--text-dim); font-size: 0.72rem; }
+        .db-card .db-meta .val { color: var(--text); font-weight: 600; }
+        .db-card .db-tables { color: #a78bfa; font-size: 0.75rem; margin-top: 0.35rem; font-family: monospace; }
+        .db-card .db-desc { color: var(--text-dim); font-size: 0.76rem; margin-top: 0.3rem; line-height: 1.4; }
+
+        .footer {
+            text-align: center; color: var(--text-dim);
+            font-size: 0.78rem; padding: 2rem 1rem;
+            border-top: 1px solid var(--border); margin-top: 4rem;
+        }
+        .updated-stamp { color: #4ade80; font-size: 0.72rem; font-family: monospace; }
+
+        @media (max-width: 700px) {
+            .dash-table { font-size: 0.78rem; }
+            .dash-table th, .dash-table td { padding: 0.45rem 0.5rem; }
+            .hero h2 { font-size: 1.5rem; }
+            .db-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>📊 All Prediction Dashboards &amp; Data</h1>
+    <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="/investments/">Investment Hub</a>
+        <a href="/updates/">Updates</a>
+        <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/hub/" target="_blank" rel="noopener">ML Hub ↗</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="hero">
+        <h2>Complete Dashboard &amp; Data Directory</h2>
+        <p>Every crypto, stock, penny stock, meme coin, and forex prediction page — plus all SQLite databases, backtest JSON files, and trained ML model files in one place.</p>
+        <div class="stats-row">
+            <div class="stat"><div class="stat-num" style="color:#f97316">40+</div><div class="stat-label">Dashboard Pages</div></div>
+            <div class="stat"><div class="stat-num" style="color:#22c55e">19</div><div class="stat-label">SQLite DBs</div></div>
+            <div class="stat"><div class="stat-num" style="color:#8b5cf6">19</div><div class="stat-label">ML Models (.joblib)</div></div>
+            <div class="stat"><div class="stat-num" style="color:#0ea5e9">24+</div><div class="stat-label">Active-Picks JSON</div></div>
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <div class="toc-label">Jump to section</div>
+        <a href="#crypto">🪙 Crypto</a>
+        <a href="#stocks">📈 Stocks</a>
+        <a href="#forex">💱 Forex</a>
+        <a href="#funds">📊 Mutual Funds</a>
+        <a href="#meme">💀 Meme / Penny</a>
+        <a href="#ml">🤖 Multi-Asset ML</a>
+        <a href="#goldmines">⛏️ Goldmines</a>
+        <a href="#updates">📋 Updates / Reports</a>
+        <a href="#sqlite">🗄️ SQLite Databases</a>
+        <a href="#backtest">📁 Backtest JSON Data</a>
+        <a href="#models">🧠 ML Models</a>
+    </div>
+
+    <!-- ═══ CRYPTO ═══ -->
+    <div id="crypto" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#f97316,#fbbf24)">🪙 Crypto Prediction Dashboards</h2>
+        <span class="badge" style="background:rgba(249,115,22,0.12);color:#fb923c">Live &amp; Historical Data</span>
+    </div>
+    <p class="section-desc">Crypto pair analysis, live prediction tracking, algorithm competitions, and audit trails. All pages include symbol data (BTC, ETH, SOL, DOGE, etc.) with timestamps.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Crypto Pairs Analysis</strong><br><small style="color:var(--text-dim)">Backtest 15 crypto pairs with fees</small></td>
+                <td class="url-cell"><a href="/findcryptopairs/portfolio/" target="_blank">/findcryptopairs/portfolio/</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-backtest">Backtest</span></td>
+                <td>15 pairs, TP/SL tracking, entry timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Crypto Winners</strong><br><small style="color:var(--text-dim)">Top performing crypto picks</small></td>
+                <td class="url-cell"><a href="/findcryptopairs/winners.html" target="_blank">/findcryptopairs/winners.html</a></td>
+                <td><span class="tag tag-picks">Picks</span><span class="tag tag-data">Data</span></td>
+                <td>Winning picks with symbols &amp; dates</td>
+            </tr>
+            <tr>
+                <td><strong>Crypto Algorithm Competition — Live Audit</strong><br><small style="color:var(--text-dim)">Enhanced live competition view</small></td>
+                <td class="url-cell"><a href="/findcryptopairs/algo-competition-enhanced.html" target="_blank">/findcryptopairs/algo-competition-enhanced.html</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">Algo</span></td>
+                <td>Algorithm picks, timestamps, symbol P&amp;L</td>
+            </tr>
+            <tr>
+                <td><strong>Crypto Audit Trail — Complete History</strong><br><small style="color:var(--text-dim)">Full prediction audit log</small></td>
+                <td class="url-cell"><a href="/findcryptopairs/audit-trail.html" target="_blank">/findcryptopairs/audit-trail.html</a></td>
+                <td><span class="tag tag-data">Audit</span><span class="tag tag-data">History</span></td>
+                <td>Complete history of all algorithm predictions</td>
+            </tr>
+            <tr>
+                <td><strong>Crypto Prediction Tracker</strong><br><small style="color:var(--text-dim)">Aggregated predictions from Twitter, Reddit, TradingView analysts</small></td>
+                <td class="url-cell"><a href="/predictions/dashboard/" target="_blank">/predictions/dashboard/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/predictions/dashboard/" target="_blank" rel="noopener">GitHub Pages ↗</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-picks">Social Data</span></td>
+                <td><code>predictions.db</code> — 367 rows, symbols, direction, TP/SL, sentiment</td>
+            </tr>
+            <tr>
+                <td><strong>Antigravity ML Crypto Predictor v4.1</strong><br><small style="color:var(--text-dim)">Real performance dashboard</small></td>
+                <td class="url-cell"><a href="/crypto_roocode/" target="_blank">/crypto_roocode/</a></td>
+                <td><span class="tag tag-ml">ML</span><span class="tag tag-picks">Picks</span></td>
+                <td>ML model predictions with live timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>ANTIGRAVITY-CLAUDEOPUS Live Picks — Forensic Analysis</strong><br><small style="color:var(--text-dim)">Claude-trained crypto picks with forensic detail</small></td>
+                <td class="url-cell"><a href="/crypto_roocode/live-picks.html" target="_blank">/crypto_roocode/live-picks.html</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">ML</span><span class="tag tag-picks">Forensic</span></td>
+                <td>Entry/exit, symbol, date, model confidence</td>
+            </tr>
+            <tr>
+                <td><strong>CryptoFusion Predictor Dashboard</strong><br><small style="color:var(--text-dim)">Multi-model fusion predictor</small></td>
+                <td class="url-cell"><a href="/dashboard.html" target="_blank">/dashboard.html</a></td>
+                <td><span class="tag tag-ml">Fusion</span><span class="tag tag-picks">Predictions</span></td>
+                <td>Fused signals, symbol timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Live Picks Dashboard</strong><br><small style="color:var(--text-dim)">Centralized live picks viewer</small></td>
+                <td class="url-cell"><a href="/dashboard/" target="_blank">/dashboard/</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-picks">Picks</span></td>
+                <td>From <code>data/live_picks.db</code> — 96 picks, last updated 2026-03-04</td>
+            </tr>
+            <tr>
+                <td><strong>Crypto ML Edge Engine</strong><br><small style="color:var(--text-dim)">LightGBM binary classifier, 10 models</small></td>
+                <td class="url-cell"><a href="/crypto_ml_edge/dashboard/" target="_blank">/crypto_ml_edge/dashboard/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/edge/" target="_blank" rel="noopener">GitHub Pages ↗</a></td>
+                <td><span class="tag tag-ml">LightGBM</span><span class="tag tag-live">Live</span></td>
+                <td>BTC/ETH/SOL/ADA/BNB 1h+4h picks, DSR-gated</td>
+            </tr>
+            <tr>
+                <td><strong>AsterDEX Paper Trader — Live Dashboard</strong></td>
+                <td class="url-cell"><a href="/asterdex_paper/dashboard.html" target="_blank">/asterdex_paper/dashboard.html</a></td>
+                <td><span class="tag tag-live">Paper Trading</span></td>
+                <td>Live paper positions with timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>AsterDEX Paper Trading Dashboard</strong></td>
+                <td class="url-cell"><a href="/trading/dashboard.html" target="_blank">/trading/dashboard.html</a></td>
+                <td><span class="tag tag-live">Paper Trading</span></td>
+                <td>From <code>trading/data/positions.db</code></td>
+            </tr>
+            <tr>
+                <td><strong>ATM Challenge — Strategy Evolution Arena</strong></td>
+                <td class="url-cell"><a href="/trading/atm_dashboard.html" target="_blank">/trading/atm_dashboard.html</a></td>
+                <td><span class="tag tag-backtest">Strategy</span></td>
+                <td>Strategy comparisons with performance data</td>
+            </tr>
+            <tr>
+                <td><strong>Pair Fingerprints &amp; Spike Scanner</strong><br><small style="color:var(--text-dim)">Per-asset pattern intelligence</small></td>
+                <td class="url-cell"><a href="/pair-fingerprints.html" target="_blank">/pair-fingerprints.html</a></td>
+                <td><span class="tag tag-data">Fingerprints</span><span class="tag tag-live">Scanner</span></td>
+                <td>Asset-specific spike patterns and timing</td>
+            </tr>
+            <tr>
+                <td><strong>Signal Engine Dashboard</strong><br><small style="color:var(--text-dim)">GitHub Pages hosted</small></td>
+                <td class="url-cell"><a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/signal-engine/" target="_blank" rel="noopener">GitHub Pages ↗</a></td>
+                <td><span class="tag tag-github">GitHub Pages</span><span class="tag tag-live">Live</span></td>
+                <td><code>crypto_signal_engine/data/active_picks.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>Opposite Day Dashboard</strong><br><small style="color:var(--text-dim)">Contrarian picks experiment</small></td>
+                <td class="url-cell"><a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/predictions/dashboard/" target="_blank" rel="noopener">Predictions Dash ↗</a></td>
+                <td><span class="tag tag-data">Experiment</span></td>
+                <td><code>sandbox/data/opposite_day.db</code> — opposite_picks table</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ STOCKS ═══ -->
+    <div id="stocks" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#6366f1,#818cf8)">📈 Stock Prediction Dashboards</h2>
+        <span class="badge" style="background:rgba(99,102,241,0.12);color:#818cf8">Multi-Algorithm</span>
+    </div>
+    <p class="section-desc">Stock portfolio analysis, algorithm competitions, Kimi's Claw stock signals, and multi-algorithm backtest pages with pre-market picks.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Stock Portfolio Analysis</strong><br><small style="color:var(--text-dim)">115+ algorithms, Canada fees</small></td>
+                <td class="url-cell"><a href="/findstocks/portfolio2/consolidated.html" target="_blank">/findstocks/portfolio2/consolidated.html</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-backtest">Backtest</span></td>
+                <td>Consolidated picks, timestamps, algorithm IDs</td>
+            </tr>
+            <tr>
+                <td><strong>Portfolio v2</strong></td>
+                <td class="url-cell"><a href="/findstocks/portfolio2/" target="_blank">/findstocks/portfolio2/</a></td>
+                <td><span class="tag tag-backtest">Backtest</span><span class="tag tag-data">115+ Algos</span></td>
+                <td>Full algo grid with P&amp;L per symbol</td>
+            </tr>
+            <tr>
+                <td><strong>Learning Lab</strong></td>
+                <td class="url-cell"><a href="/findstocks/portfolio2/learning-lab.html" target="_blank">/findstocks/portfolio2/learning-lab.html</a></td>
+                <td><span class="tag tag-data">Education</span></td>
+                <td>Strategy explanations with historical data</td>
+            </tr>
+            <tr>
+                <td><strong>$500/Day Day-Trader Simulator</strong></td>
+                <td class="url-cell"><a href="/findstocks/portfolio2/daytrader-sim.html" target="_blank">/findstocks/portfolio2/daytrader-sim.html</a></td>
+                <td><span class="tag tag-backtest">Simulation</span></td>
+                <td>Simulated intraday picks with timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Global Stock Hub</strong></td>
+                <td class="url-cell"><a href="/findstocks2_global/" target="_blank">/findstocks2_global/</a></td>
+                <td><span class="tag tag-data">Global</span></td>
+                <td>International stocks with symbols &amp; dates</td>
+            </tr>
+            <tr>
+                <td><strong>Daily Stock Picks</strong></td>
+                <td class="url-cell"><a href="/findstocks/" target="_blank">/findstocks/</a></td>
+                <td><span class="tag tag-picks">Pre-Market Picks</span></td>
+                <td>Daily picks with SHA-256 commit timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Stock Research Hub</strong></td>
+                <td class="url-cell"><a href="/findstocks/research/" target="_blank">/findstocks/research/</a></td>
+                <td><span class="tag tag-data">Research</span></td>
+                <td>Strategy research pages</td>
+            </tr>
+            <tr>
+                <td><strong>Kimi's Claw 🐾 Algorithm Battle Arena</strong><br><small style="color:var(--text-dim)">Real database picks — stock algorithms</small></td>
+                <td class="url-cell"><a href="/findstocks/kimis_claw/" target="_blank">/findstocks/kimis_claw/</a></td>
+                <td><span class="tag tag-live">Live DB</span><span class="tag tag-ml">Algo Battle</span></td>
+                <td>Competing algorithms, real symbol picks &amp; timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Kimi's Claw Leaderboard</strong></td>
+                <td class="url-cell"><a href="/findstocks/kimis_claw/leaderboard.html" target="_blank">/findstocks/kimis_claw/leaderboard.html</a></td>
+                <td><span class="tag tag-data">Leaderboard</span></td>
+                <td>Algorithm win rates ranked</td>
+            </tr>
+            <tr>
+                <td><strong>Algorithm Competition Arena (Stocks)</strong><br><small style="color:var(--text-dim)">STOCKSCURSORS CLAW competition</small></td>
+                <td class="url-cell"><a href="/STOCKS/algorithm-competition.html" target="_blank">/STOCKS/algorithm-competition.html</a></td>
+                <td><span class="tag tag-ml">Competition</span><span class="tag tag-data">Data</span></td>
+                <td>JSON: competition-stocks.json (1.5MB), competition-slim.json (780KB)</td>
+            </tr>
+            <tr>
+                <td><strong>Algorithm Competition — Stocks JSON</strong><br><small style="color:var(--text-dim)">Raw competition data</small></td>
+                <td class="url-cell"><a href="/STOCKS/competition/" target="_blank">/STOCKS/competition/</a></td>
+                <td><span class="tag tag-data">JSON</span></td>
+                <td>competition-stocks.json · competition-penny_stocks.json · competition-crypto.json · competition-meme_coins.json · competition-forex.json · competition-slim.json</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ FOREX ═══ -->
+    <div id="forex" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#14b8a6,#2dd4bf)">💱 Forex Prediction Dashboards</h2>
+        <span class="badge" style="background:rgba(20,184,166,0.12);color:#2dd4bf">15 Currency Pairs</span>
+    </div>
+    <p class="section-desc">Forex backtest analysis with spread-based cost modeling across major, cross, and exotic pairs.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Forex Pairs Analysis</strong><br><small style="color:var(--text-dim)">15 pairs, 8 strategies, pip-based spread</small></td>
+                <td class="url-cell"><a href="/findforex2/portfolio/" target="_blank">/findforex2/portfolio/</a></td>
+                <td><span class="tag tag-backtest">Backtest</span><span class="tag tag-live">Live</span></td>
+                <td>Pair symbols (EURUSD, GBPJPY, etc.), timestamps, P&amp;L</td>
+            </tr>
+            <tr>
+                <td><strong>Forex Stats</strong></td>
+                <td class="url-cell"><a href="/findforex2/portfolio/stats/" target="_blank">/findforex2/portfolio/stats/</a></td>
+                <td><span class="tag tag-data">Stats</span></td>
+                <td>Aggregated statistics, win rates by pair</td>
+            </tr>
+            <tr>
+                <td><strong>Forex Competition Data (JSON)</strong></td>
+                <td class="url-cell"><code>/STOCKS/competition/competition-forex.json</code></td>
+                <td><span class="tag tag-data">JSON</span><span class="tag tag-backtest">769KB</span></td>
+                <td>competition-forex.json — all forex pair algo competition data</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ MUTUAL FUNDS ═══ -->
+    <div id="funds" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">📊 Mutual Fund Dashboards</h2>
+        <span class="badge" style="background:rgba(14,165,233,0.12);color:#38bdf8">NAV-Based Tracking</span>
+    </div>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Fund Analysis</strong><br><small style="color:var(--text-dim)">20+ funds from Vanguard, Fidelity, Schwab, T. Rowe Price</small></td>
+                <td class="url-cell"><a href="/findmutualfunds/portfolio1/" target="_blank">/findmutualfunds/portfolio1/</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-backtest">NAV</span></td>
+                <td>Fund symbols (VTSAX, FXAIX, etc.), NAV dates, expense ratios</td>
+            </tr>
+            <tr>
+                <td><strong>Daily Fund Report</strong></td>
+                <td class="url-cell"><a href="/findmutualfunds/portfolio1/report.html" target="_blank">/findmutualfunds/portfolio1/report.html</a></td>
+                <td><span class="tag tag-live">Daily</span></td>
+                <td>Auto-refreshed NAV data with date stamps</td>
+            </tr>
+            <tr>
+                <td><strong>Fund Stats</strong></td>
+                <td class="url-cell"><a href="/findmutualfunds/portfolio1/stats.html" target="_blank">/findmutualfunds/portfolio1/stats.html</a></td>
+                <td><span class="tag tag-data">Stats</span></td>
+                <td>Cumulative returns, Sharpe ratio per fund</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ MEME / PENNY ═══ -->
+    <div id="meme" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#ec4899,#f472b6)">💀 Meme Coin &amp; Penny Stock Dashboards</h2>
+        <span class="badge" style="background:rgba(236,72,153,0.12);color:#f472b6">High Risk / High Reward</span>
+    </div>
+    <p class="section-desc">Meme coin scanner and penny stock competition data — includes symbols (DOGE, SHIB, etc.), volatility data, and pump/dump detection.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Meme Coin Scanner &amp; Competition Data</strong><br><small style="color:var(--text-dim)">Algorithm competition for meme coins</small></td>
+                <td class="url-cell"><a href="/STOCKS/algorithm-competition.html" target="_blank">/STOCKS/algorithm-competition.html</a> (filter: Meme)</td>
+                <td><span class="tag tag-picks">Scanner</span><span class="tag tag-data">JSON</span></td>
+                <td><code>competition-meme_coins.json</code> — 1.04MB of meme coin signal data</td>
+            </tr>
+            <tr>
+                <td><strong>Penny Stock Competition Data</strong></td>
+                <td class="url-cell"><a href="/STOCKS/algorithm-competition.html" target="_blank">/STOCKS/algorithm-competition.html</a> (filter: Penny)</td>
+                <td><span class="tag tag-data">JSON</span><span class="tag tag-picks">Penny</span></td>
+                <td><code>competition-penny_stocks.json</code> — 1.68MB of penny stock signal data</td>
+            </tr>
+            <tr>
+                <td><strong>Meme Scanner API (PHP)</strong><br><small style="color:var(--text-dim)">Backend scanner endpoint</small></td>
+                <td class="url-cell"><code>/findcryptopairs/api/meme_scanner_fixed.php</code></td>
+                <td><span class="tag tag-live">API</span><span class="tag tag-data">Backend</span></td>
+                <td>Real-time meme coin signals, REST API endpoint</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ MULTI-ASSET ML ═══ -->
+    <div id="ml" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#8b5cf6,#a78bfa,#22c55e)">🤖 Multi-Asset ML Trading Systems</h2>
+        <span class="badge" style="background:rgba(139,92,246,0.12);color:#a78bfa">13+ Systems</span>
+    </div>
+    <p class="section-desc">Autonomous ML systems scanning crypto, stocks, and forex. All forward-tested with transparent win rates and P/L.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL(s)</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Trading Systems Hub (Master)</strong><br><small style="color:var(--text-dim)">All 13 ML systems in one command center</small></td>
+                <td class="url-cell">
+                    <a href="/hub/" target="_blank">/hub/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/hub/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">Master Hub</span></td>
+                <td><code>hub/data/integrated_dashboard.json</code> · <code>systems_manifest.json</code> · <code>winning_combos.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>Cross-System Forward Test Monitor</strong><br><small style="color:var(--text-dim)">Consensus picks from all systems</small></td>
+                <td class="url-cell">
+                    <a href="/cross_aggregation/" target="_blank">/cross_aggregation/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/monitor/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">Consensus</span></td>
+                <td>Multi-system aggregated signals, timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Mercury 2 — Signal Engine</strong><br><small style="color:var(--text-dim)">XGBoost x3 ensemble</small></td>
+                <td class="url-cell">
+                    <a href="/mercury2/" target="_blank">/mercury2/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/mercury2/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-ml">XGBoost</span><span class="tag tag-live">Live</span></td>
+                <td><code>mercury2/data/active_picks.json</code> · <code>top_gainers.json</code> · <code>scan_summary.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>KIMI Rise of the Claw</strong><br><small style="color:var(--text-dim)">81 algorithms, elimination engine</small></td>
+                <td class="url-cell">
+                    <a href="/riseoftheclaw.html" target="_blank">/riseoftheclaw.html</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">81 Algos</span></td>
+                <td><code>riseoftheclaw/data/active_picks.json</code> · <code>signal_tracking.json</code> (754KB)</td>
+            </tr>
+            <tr>
+                <td><strong>Alpha Engine — Live Dashboard</strong><br><small style="color:var(--text-dim)">100 strategies, 3 asset classes</small></td>
+                <td class="url-cell">
+                    <a href="/alpha_engine/live_dashboard.html" target="_blank">/alpha_engine/live_dashboard.html</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">100 Strats</span></td>
+                <td><code>alpha_engine/data/active_picks.json</code> · <code>closed_picks.json</code> (233KB) · <code>rigorous_battle_picks.json</code> (968KB)</td>
+            </tr>
+            <tr>
+                <td><strong>Alpha Engine Premium Dashboard</strong></td>
+                <td class="url-cell">
+                    <a href="/alpha_engine/premium_dashboard.html" target="_blank">/alpha_engine/premium_dashboard.html</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/premium.html" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-ml">Premium</span></td>
+                <td>Premium signals with enhanced data</td>
+            </tr>
+            <tr>
+                <td><strong>Strategy DNA Genome Dashboard</strong><br><small style="color:var(--text-dim)">Unified catalog &amp; evolution</small></td>
+                <td class="url-cell">
+                    <a href="/genome/" target="_blank">/genome/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/genome/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-ml">DNA</span><span class="tag tag-db">DB</span></td>
+                <td><code>genome/strategy_registry.db</code> (80KB) — strategies, backtest_results, live_signals, permutations, audit_log tables</td>
+            </tr>
+            <tr>
+                <td><strong>Battleground Arena</strong><br><small style="color:var(--text-dim)">5 competing ML systems</small></td>
+                <td class="url-cell">
+                    <a href="/battleground/" target="_blank">/battleground/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-ml">Battle</span><span class="tag tag-live">Live</span></td>
+                <td><code>battleground/data/active_picks.json</code> · <code>baby_strats_dashboard.json</code> (1.4MB) · <code>bundle_babies.db</code> · <code>dna_factory.db</code></td>
+            </tr>
+            <tr>
+                <td><strong>ML Battleground: SUPERPOWERS ARENA</strong></td>
+                <td class="url-cell"><a href="/ml_battleground/arena.html" target="_blank">/ml_battleground/arena.html</a></td>
+                <td><span class="tag tag-ml">System A/B/C</span><span class="tag tag-live">Live</span></td>
+                <td>Ensemble picks, active_picks.json for all systems</td>
+            </tr>
+            <tr>
+                <td><strong>System A: The Filter</strong></td>
+                <td class="url-cell"><a href="/ml_battleground/system_a_filter/" target="_blank">/ml_battleground/system_a_filter/</a></td>
+                <td><span class="tag tag-ml">EMA+RSI Filter</span></td>
+                <td><code>system_a_filter/data/active_picks.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>System B: The Regime</strong></td>
+                <td class="url-cell"><a href="/ml_battleground/system_b_regime/" target="_blank">/ml_battleground/system_b_regime/</a></td>
+                <td><span class="tag tag-ml">HMM Regime</span></td>
+                <td><code>system_b_regime/data/active_picks.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>System C: The Neural Net</strong></td>
+                <td class="url-cell"><a href="/ml_battleground/system_c_deeplearn/" target="_blank">/ml_battleground/system_c_deeplearn/</a></td>
+                <td><span class="tag tag-ml">GRU Neural Net</span></td>
+                <td><code>system_c_deeplearn/data/active_picks.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>Claws of Doom</strong><br><small style="color:var(--text-dim)">Extreme fear contrarian, 6 strategies</small></td>
+                <td class="url-cell">
+                    <a href="https://eltonaguiar.github.io/CLAWSOFDOOM/" target="_blank" rel="noopener">CLAWSOFDOOM GitHub Pages ↗</a><br>
+                    <small style="color:var(--text-dim)">Source: github.com/eltonaguiar/CLAWSOFDOOM</small>
+                </td>
+                <td><span class="tag tag-github">GitHub Pages</span><span class="tag tag-ml">Contrarian</span></td>
+                <td>Fear &amp; Greed indexed picks, symbol + entry time</td>
+            </tr>
+            <tr>
+                <td><strong>Breakout Arena — 3 Approaches</strong></td>
+                <td class="url-cell">
+                    <a href="/breakout_arena/" target="_blank">/breakout_arena/</a><br>
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/arena/" target="_blank" rel="noopener">GitHub Pages ↗</a>
+                </td>
+                <td><span class="tag tag-ml">S/R Breakout</span><span class="tag tag-ml">ML</span></td>
+                <td>approach_a/b/c active_picks.json; S/R, ML, Spike Reverse</td>
+            </tr>
+            <tr>
+                <td><strong>Regime Terminal v1.0</strong><br><small style="color:var(--text-dim)">HMM Market Regime Detection</small></td>
+                <td class="url-cell"><a href="/regime_terminal/" target="_blank">/regime_terminal/</a></td>
+                <td><span class="tag tag-ml">HMM</span><span class="tag tag-data">Regime</span></td>
+                <td>Market regime probabilities with timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Meta-Strategy Dashboard</strong><br><small style="color:var(--text-dim)">Strategy permutation optimizer</small></td>
+                <td class="url-cell"><code>/meta_strategy/</code></td>
+                <td><span class="tag tag-db">DB</span><span class="tag tag-ml">Permutations</span></td>
+                <td><code>meta_strategy/data/meta_strategy.db</code> (948KB) — permutations, live_performance, walkforward_results, elimination_log</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ GOLDMINES ═══ -->
+    <div id="goldmines" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#fbbf24,#f59e0b,#22c55e)">⛏️ Goldmines — AI Proof-Tracking</h2>
+        <span class="badge" style="background:rgba(245,158,11,0.12);color:#fbbf24">AI Analysis</span>
+    </div>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Data Stored</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>GOLDMINE_WS — Windsurf AI</strong><br><small style="color:var(--text-dim)">Consolidated proof tracker, 9 systems</small></td>
+                <td class="url-cell"><a href="/investments/goldmines/windsurf/" target="_blank">/investments/goldmines/windsurf/</a></td>
+                <td><span class="tag tag-live">Live Proof</span><span class="tag tag-data">9 Systems</span></td>
+                <td>Win rates, date/time proof, pro benchmark, audit trail</td>
+            </tr>
+            <tr>
+                <td><strong>Algorithm Performance Research</strong><br><small style="color:var(--text-dim)">Live vs research comparison</small></td>
+                <td class="url-cell"><a href="/live-monitor/research/" target="_blank">/live-monitor/research/</a></td>
+                <td><span class="tag tag-data">Research</span></td>
+                <td>Performance metrics, algorithm ranking</td>
+            </tr>
+            <tr>
+                <td><strong>Live vs Research Reality Check</strong></td>
+                <td class="url-cell"><a href="/live-monitor/research/live-vs-research.html" target="_blank">/live-monitor/research/live-vs-research.html</a></td>
+                <td><span class="tag tag-data">Analysis</span></td>
+                <td>Drift analysis: live vs backtest win rate gaps</td>
+            </tr>
+            <tr>
+                <td><strong>System Health Alerts — Goldmine Checker</strong></td>
+                <td class="url-cell"><a href="/live-monitor/goldmine-alerts.html" target="_blank">/live-monitor/goldmine-alerts.html</a></td>
+                <td><span class="tag tag-live">Health</span></td>
+                <td>Dead data alerts, freshness timestamps</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ UPDATES / REPORTS ═══ -->
+    <div id="updates" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#64748b,#94a3b8)">📋 Updates &amp; Live Report Pages</h2>
+        <span class="badge" style="background:rgba(100,116,139,0.12);color:#94a3b8">Data-Bearing Pages</span>
+    </div>
+    <p class="section-desc">Pages in the /updates/ section that contain live or historical prediction data (picks, timestamps, symbols).</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Page / Title</th><th>URL</th><th>Tags</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Antigravity AI — Live Crypto Gainer ML Predictions</strong></td>
+                <td class="url-cell"><a href="/updates/antigravity-ml-gainer.html" target="_blank">/updates/antigravity-ml-gainer.html</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-ml">XGBoost+LGB+RF</span></td>
+                <td>Reads <code>updates/data/antigravity_ml_picks.json</code>, <code>antigravity_ml_performance.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>ANTIGRAVITY ML — Live Picks Tracker</strong></td>
+                <td class="url-cell"><a href="/updates/ml-live-picks.html" target="_blank">/updates/ml-live-picks.html</a></td>
+                <td><span class="tag tag-live">Live</span><span class="tag tag-picks">Picks</span></td>
+                <td>Real-time picks tracker with entry timestamps and symbols</td>
+            </tr>
+            <tr>
+                <td><strong>System Health Dashboard + Audit Trail</strong></td>
+                <td class="url-cell"><a href="/updates/health-check-dashboard.html" target="_blank">/updates/health-check-dashboard.html</a></td>
+                <td><span class="tag tag-live">Health</span><span class="tag tag-data">Audit</span></td>
+                <td>System freshness, last-update times, data quality</td>
+            </tr>
+            <tr>
+                <td><strong>Antigravity ML Trainer</strong></td>
+                <td class="url-cell"><a href="/updates/antigravity-ml-trainer.html" target="_blank">/updates/antigravity-ml-trainer.html</a></td>
+                <td><span class="tag tag-ml">Training</span></td>
+                <td>Model training logs and performance metrics</td>
+            </tr>
+            <tr>
+                <td><strong>Antigravity What-If Health Check</strong></td>
+                <td class="url-cell"><a href="/updates/antigravity-whatif-healthcheck.html" target="_blank">/updates/antigravity-whatif-healthcheck.html</a></td>
+                <td><span class="tag tag-data">What-If</span></td>
+                <td>Reads <code>updates/data/antigravity_ml_scorecard.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>Simpleton Performance Report</strong><br><small style="color:var(--text-dim)">Simpleton v0.01 algorithm performance</small></td>
+                <td class="url-cell"><a href="/updates/simpleton-performance.html" target="_blank">/updates/simpleton-performance.html</a></td>
+                <td><span class="tag tag-data">Performance</span></td>
+                <td>Win rate, P&amp;L history, strategy comparison</td>
+            </tr>
+            <tr>
+                <td><strong>Meme Scanner Audit (Mar 2026)</strong></td>
+                <td class="url-cell"><a href="/updates/2026-03-03-meme-scanner-audit.html" target="_blank">/updates/2026-03-03-meme-scanner-audit.html</a></td>
+                <td><span class="tag tag-picks">Meme</span><span class="tag tag-data">Audit</span></td>
+                <td>Meme coin scanner audit — symbol results with timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>Winning Crypto System March 2026</strong></td>
+                <td class="url-cell"><a href="/updates/WINNING_CRYPTO_SYSTEM_MARCH2026.html" target="_blank">/updates/WINNING_CRYPTO_SYSTEM_MARCH2026.html</a></td>
+                <td><span class="tag tag-data">Report</span></td>
+                <td>System-wide performance summary</td>
+            </tr>
+            <tr>
+                <td><strong>Claude ML Gainer</strong></td>
+                <td class="url-cell"><a href="/updates/claude-ml-gainer.html" target="_blank">/updates/claude-ml-gainer.html</a></td>
+                <td><span class="tag tag-ml">Claude</span><span class="tag tag-picks">Picks</span></td>
+                <td>Reads <code>updates/data/claude_ml_picks.json</code> · <code>claude_ml_performance.json</code></td>
+            </tr>
+            <tr>
+                <td><strong>Antigravity ML Picks Dashboard v2.0 (Legacy)</strong></td>
+                <td class="url-cell"><a href="/updates/ml-picks-dashboard.html" target="_blank">/updates/ml-picks-dashboard.html</a></td>
+                <td><span class="tag tag-legacy">Legacy</span><span class="tag tag-backtest">Backtest Only</span></td>
+                <td>v4.1 backtest dashboard, no forward tracking</td>
+            </tr>
+            <tr>
+                <td><strong>Unified Forward Test Dashboard (Legacy)</strong></td>
+                <td class="url-cell"><a href="/updates/unified-dashboard.html" target="_blank">/updates/unified-dashboard.html</a></td>
+                <td><span class="tag tag-legacy">Legacy</span></td>
+                <td>7-system unified dashboard, superseded by ML Hub</td>
+            </tr>
+            <tr>
+                <td><strong>All Updates Index</strong></td>
+                <td class="url-cell"><a href="/updates/" target="_blank">/updates/</a></td>
+                <td><span class="tag tag-data">Index</span></td>
+                <td>Full chronological list of all site updates</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ SQLITE DATABASES ═══ -->
+    <div id="sqlite" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#22c55e,#4ade80)">🗄️ SQLite Databases</h2>
+        <span class="badge" style="background:rgba(34,197,94,0.12);color:#4ade80">19 Databases</span>
+    </div>
+    <p class="section-desc">All SQLite <code>.db</code> files in the repository — location, size, tables, and what prediction/trading data they store.</p>
+
+    <div class="db-grid">
+        <div class="db-card">
+            <div class="db-name">kimi_trading.db</div>
+            <div class="db-path">KIMI_RISEOFTHECLAW/data/kimi_trading.db</div>
+            <div class="db-tables">Tables: picks · rankings · regime · signals</div>
+            <div class="db-meta">
+                <span>Size: <span class="val">100 MB</span></span>
+                <span>Picks: <span class="val">133 rows</span></span>
+            </div>
+            <div class="db-desc">Primary KIMI trading database. Stores algorithm picks with symbols, direction, timestamps, regime state, and performance rankings.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">crypto_data.db</div>
+            <div class="db-path">crypto_data.db (root)</div>
+            <div class="db-tables">Tables: klines</div>
+            <div class="db-meta">
+                <span>Size: <span class="val">3.2 MB</span></span>
+            </div>
+            <div class="db-desc">OHLCV candlestick data (klines) for crypto pairs. Used as price feed for backtesting and ML model training.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">live_picks.db</div>
+            <div class="db-path">data/live_picks.db</div>
+            <div class="db-tables">Tables: live_picks · pick_history</div>
+            <div class="db-meta">
+                <span>Size: <span class="val">1.06 MB</span></span>
+                <span>Picks: <span class="val">96 rows</span></span>
+                <span>Last: <span class="val">2026-03-04</span></span>
+            </div>
+            <div class="db-desc">Active live picks with entry time, symbol, TP/SL, and pick history log. Powers the /dashboard/ page.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">meta_strategy.db</div>
+            <div class="db-path">meta_strategy/data/meta_strategy.db</div>
+            <div class="db-tables">Tables: permutations · permutation_results · live_performance · walkforward_results · elimination_log · adversarial_compat · health_log · permutation_signals</div>
+            <div class="db-meta"><span>Size: <span class="val">948 KB</span></span></div>
+            <div class="db-desc">Meta-strategy optimizer storing permutation results, live performance tracking, walk-forward validation, and strategy elimination logs.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">signal_tracker.db</div>
+            <div class="db-path">KIMI_RISEOFTHECLAW/data/signal_tracker.db</div>
+            <div class="db-tables">Tables: (signal tracking tables)</div>
+            <div class="db-meta"><span>Size: <span class="val">500 KB</span></span></div>
+            <div class="db-desc">Tracks individual signal outcomes for the KIMI Rise of the Claw system.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">predictions.db</div>
+            <div class="db-path">predictions/data/predictions.db</div>
+            <div class="db-tables">Tables: predictions · predictors · scrape_log</div>
+            <div class="db-meta">
+                <span>Size: <span class="val">324 KB</span></span>
+                <span>Predictions: <span class="val">367 rows</span></span>
+            </div>
+            <div class="db-desc">Social media prediction tracker. Stores predictions from Twitter/Reddit/TradingView analysts with symbol, direction, TP, SL, sentiment score, and entry price.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">opposite_day.db</div>
+            <div class="db-path">sandbox/data/opposite_day.db</div>
+            <div class="db-tables">Tables: opposite_picks · timeline_snapshots</div>
+            <div class="db-meta"><span>Size: <span class="val">184 KB</span></span></div>
+            <div class="db-desc">Opposite Day experiment — contrarian picks that flip the direction of Predictions Dashboard signals.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">kimi_trading.db (v1)</div>
+            <div class="db-path">KIMI_FEB172026/data/kimi_trading.db</div>
+            <div class="db-tables">Tables: picks · rankings · regime · signals</div>
+            <div class="db-meta"><span>Size: <span class="val">128 KB</span></span></div>
+            <div class="db-desc">Early version of the KIMI trading database from February 2026.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">dna_factory.db</div>
+            <div class="db-path">battleground/data/dna_factory.db</div>
+            <div class="db-tables">Tables: factory_strategies · factory_trades</div>
+            <div class="db-meta"><span>Size: <span class="val">112 KB</span></span></div>
+            <div class="db-desc">DNA strategy factory — stores evolved strategies and their trade results.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">strategy_registry.db</div>
+            <div class="db-path">genome/strategy_registry.db</div>
+            <div class="db-tables">Tables: strategies · backtest_results · live_signals · permutations · audit_log</div>
+            <div class="db-meta"><span>Size: <span class="val">80 KB</span></span></div>
+            <div class="db-desc">Genome strategy registry — catalog of all strategies with their backtest results, live signals, and mutation audit log.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">signal_log.db</div>
+            <div class="db-path">signal_recorder/data/signal_log.db</div>
+            <div class="db-tables">Tables: signal_log · signal_outcomes · combo_results</div>
+            <div class="db-meta">
+                <span>Size: <span class="val">76 KB</span></span>
+                <span>Signals: <span class="val">151 rows</span></span>
+            </div>
+            <div class="db-desc">Signal outcome recorder. Tracks every signal generated, its outcome (TP hit / SL hit), and combination performance.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">genome.db</div>
+            <div class="db-path">quant_lab/genome_results/genome.db</div>
+            <div class="db-tables">Tables: (genome experiment tables)</div>
+            <div class="db-meta"><span>Size: <span class="val">48 KB</span></span></div>
+            <div class="db-desc">Quant lab genome experiment results.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">paper.db</div>
+            <div class="db-path">paper_trading/data/paper.db</div>
+            <div class="db-tables">Tables: portfolios · positions · equity_snapshots</div>
+            <div class="db-meta"><span>Size: <span class="val">40 KB</span></span></div>
+            <div class="db-desc">Paper trading simulator database. Stores virtual portfolios, open positions, and equity curve snapshots.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">forward_test.db</div>
+            <div class="db-path">incubator/forward_test.db</div>
+            <div class="db-tables">Tables: forward_signals · forward_summary (3 tables)</div>
+            <div class="db-meta"><span>Size: <span class="val">36 KB</span></span></div>
+            <div class="db-desc">Incubator forward testing — baby strategy signals and their forward test summaries.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">bundle_babies.db</div>
+            <div class="db-path">battleground/data/bundle_babies.db</div>
+            <div class="db-tables">Tables: (bundle baby strategy tables)</div>
+            <div class="db-meta"><span>Size: <span class="val">36 KB</span></span></div>
+            <div class="db-desc">Bundle baby strategy performance data from the battleground system.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">positions.db</div>
+            <div class="db-path">trading/data/positions.db</div>
+            <div class="db-tables">Tables: positions · daily_stats · balance_log</div>
+            <div class="db-meta"><span>Size: <span class="val">24 KB</span></span></div>
+            <div class="db-desc">AsterDEX paper trading positions with daily stats and balance history.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">dna_master_picks.db</div>
+            <div class="db-path">data/dna_master_picks.db</div>
+            <div class="db-tables">Tables: (DNA picks tables)</div>
+            <div class="db-meta"><span>Size: <span class="val">16 KB</span></span></div>
+            <div class="db-desc">Master DNA strategy picks database.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">ab_testing.db</div>
+            <div class="db-path">ab_testing_agent/ab_testing.db</div>
+            <div class="db-tables">Tables: (A/B test tables)</div>
+            <div class="db-meta"><span>Size: <span class="val">16 KB</span></span></div>
+            <div class="db-desc">A/B testing agent results for ML model experiments.</div>
+        </div>
+        <div class="db-card">
+            <div class="db-name">crypto_data.db (ab_testing)</div>
+            <div class="db-path">ab_testing_agent/crypto_data.db</div>
+            <div class="db-tables">Tables: (empty)</div>
+            <div class="db-meta"><span>Size: <span class="val">0 KB</span></span></div>
+            <div class="db-desc">Empty crypto data placeholder for A/B testing agent.</div>
+        </div>
+    </div>
+
+    <!-- ═══ BACKTEST JSON DATA ═══ -->
+    <div id="backtest" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">📁 Key Backtest &amp; Live Data Files (JSON/CSV)</h2>
+        <span class="badge" style="background:rgba(14,165,233,0.12);color:#38bdf8">24+ Active-Picks Files</span>
+    </div>
+    <p class="section-desc">Major JSON and CSV data files containing historical backtest results, live picks, and training data. Sorted by importance and size.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>File</th><th>Path</th><th>Size</th><th>Contents</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>combo_trades (large backtest)</strong></td>
+                <td class="url-cell"><code>quant_lab/combo_results/combo_trades_20260302_005225.json</code></td>
+                <td class="size-cell">11.1 MB</td>
+                <td>Large combo strategy backtest trade log</td>
+            </tr>
+            <tr>
+                <td><strong>raw_market_data (training)</strong></td>
+                <td class="url-cell"><code>claude_gainer_ml/data/raw_market_data.json</code></td>
+                <td class="size-cell">2.3 MB</td>
+                <td>Raw OHLCV + features for Claude ML training (crypto pairs)</td>
+            </tr>
+            <tr>
+                <td><strong>feature_matrix (training CSV)</strong></td>
+                <td class="url-cell"><code>claude_gainer_ml/data/feature_matrix.csv</code></td>
+                <td class="size-cell">2.6 MB</td>
+                <td>ML feature matrix for Claude Gainer model training</td>
+            </tr>
+            <tr>
+                <td><strong>ab_test_report (A/B test)</strong></td>
+                <td class="url-cell"><code>ml_crypto_predictor/enhanced_models/ab_tests/ab_test_report.json</code></td>
+                <td class="size-cell">2.0 MB</td>
+                <td>Full A/B test results comparing ML model variants</td>
+            </tr>
+            <tr>
+                <td><strong>competition-penny_stocks.json</strong></td>
+                <td class="url-cell"><code>STOCKS/competition/competition-penny_stocks.json</code></td>
+                <td class="size-cell">1.68 MB</td>
+                <td>Penny stock algorithm competition data with symbols &amp; dates</td>
+            </tr>
+            <tr>
+                <td><strong>baby_strats_dashboard.json</strong></td>
+                <td class="url-cell"><code>battleground/data/baby_strats_dashboard.json</code><br><code>incubator/config/baby_strats_dashboard.json</code></td>
+                <td class="size-cell">1.4 MB each</td>
+                <td>171 baby strategies from battleground backtest + tiered results</td>
+            </tr>
+            <tr>
+                <td><strong>competition-stocks.json</strong></td>
+                <td class="url-cell"><code>STOCKS/competition/competition-stocks.json</code></td>
+                <td class="size-cell">1.5 MB</td>
+                <td>Stock algorithm competition data</td>
+            </tr>
+            <tr>
+                <td><strong>competition-meme_coins.json</strong></td>
+                <td class="url-cell"><code>STOCKS/competition/competition-meme_coins.json</code></td>
+                <td class="size-cell">1.04 MB</td>
+                <td>Meme coin algorithm competition data (DOGE, SHIB, etc.)</td>
+            </tr>
+            <tr>
+                <td><strong>competition-crypto.json</strong></td>
+                <td class="url-cell"><code>STOCKS/competition/competition-crypto.json</code></td>
+                <td class="size-cell">1.04 MB</td>
+                <td>Crypto algorithm competition data</td>
+            </tr>
+            <tr>
+                <td><strong>audit_log.json (KIMI)</strong></td>
+                <td class="url-cell"><code>KIMI_RISEOFTHECLAW/data/audit_log.json</code></td>
+                <td class="size-cell">996 KB</td>
+                <td>Full audit log of all KIMI algorithm predictions</td>
+            </tr>
+            <tr>
+                <td><strong>rigorous_battle_picks.json</strong></td>
+                <td class="url-cell"><code>alpha_engine/data/rigorous_battle_picks.json</code></td>
+                <td class="size-cell">945 KB</td>
+                <td>Alpha Engine battle picks with rigorous validation</td>
+            </tr>
+            <tr>
+                <td><strong>signal_tracking.json (KIMI)</strong></td>
+                <td class="url-cell"><code>KIMI_RISEOFTHECLAW/data/signal_tracking.json</code></td>
+                <td class="size-cell">780 KB</td>
+                <td>Full signal tracking history for KIMI system</td>
+            </tr>
+            <tr>
+                <td><strong>competition-forex.json</strong></td>
+                <td class="url-cell"><code>STOCKS/competition/competition-forex.json</code></td>
+                <td class="size-cell">769 KB</td>
+                <td>Forex algorithm competition data</td>
+            </tr>
+            <tr>
+                <td><strong>signal_tracking.json (riseoftheclaw)</strong></td>
+                <td class="url-cell"><code>riseoftheclaw/data/signal_tracking.json</code></td>
+                <td class="size-cell">737 KB</td>
+                <td>Signal tracking for deployed riseoftheclaw system</td>
+            </tr>
+            <tr>
+                <td><strong>competition-slim.json</strong></td>
+                <td class="url-cell"><code>STOCKS/competition/competition-slim.json</code></td>
+                <td class="size-cell">762 KB</td>
+                <td>Slim competition JSON (cross-asset)</td>
+            </tr>
+            <tr>
+                <td><strong>strategy_rankings.csv</strong></td>
+                <td class="url-cell"><code>backtest_results/strategy_rankings.csv</code><br><code>KIMI_CLAW_RESEARCH_FEB162026/backtest_results/strategy_rankings.csv</code></td>
+                <td class="size-cell">133 KB each</td>
+                <td>Ranked strategy performance from backtest runs</td>
+            </tr>
+            <tr>
+                <td><strong>v4_proof_report.json</strong></td>
+                <td class="url-cell"><code>ml_crypto_predictor/enhanced_models/results/v4_proof_report.json</code></td>
+                <td class="size-cell">531 KB</td>
+                <td>ML Predictor v4 proof report with per-symbol performance</td>
+            </tr>
+            <tr>
+                <td><strong>detailed_results.json</strong></td>
+                <td class="url-cell"><code>backtest_results/detailed_results.json</code></td>
+                <td class="size-cell">354 KB</td>
+                <td>Detailed backtest results for all tested strategies</td>
+            </tr>
+            <tr>
+                <td><strong>active_predictions.json</strong></td>
+                <td class="url-cell"><code>predictions/data/active_predictions.json</code></td>
+                <td class="size-cell">272 KB</td>
+                <td>Currently active social media predictions with symbols &amp; timestamps</td>
+            </tr>
+            <tr>
+                <td><strong>leaderboard.json</strong></td>
+                <td class="url-cell"><code>predictions/data/leaderboard.json</code></td>
+                <td class="size-cell">299 KB</td>
+                <td>Prediction tracker leaderboard — predictor rankings</td>
+            </tr>
+            <tr>
+                <td><strong>stabilization/strategy_registry.json</strong></td>
+                <td class="url-cell"><code>stabilization/strategy_registry.json</code></td>
+                <td class="size-cell">198 KB</td>
+                <td>Stabilization system strategy registry</td>
+            </tr>
+            <tr>
+                <td><strong>pine_generator backtest data</strong></td>
+                <td class="url-cell"><code>pine_generator/data/supertrend_backtest.json</code><br><code>pine_generator/data/vix_spike_reversal_backtest.json</code><br><code>pine_generator/data/vwap_reversion_backtest.json</code></td>
+                <td class="size-cell">~182 KB each</td>
+                <td>Pine Script strategy backtest results — Supertrend, VIX Spike, VWAP Reversion</td>
+            </tr>
+            <tr>
+                <td><strong>active_picks.json — per system</strong></td>
+                <td class="url-cell">24 files across all system <code>data/</code> folders</td>
+                <td class="size-cell">varies</td>
+                <td>Real-time active picks for every system: alpha_engine, battleground, breakout_arena (A/B/C), coinglass_strategies, crypto_ml_edge, crypto_signal_engine, genome, mercury2, ml_battleground (A/B/C/D/E/F ensemble), ml_crypto_predictor, paper_trading, riseoftheclaw</td>
+            </tr>
+            <tr>
+                <td><strong>Binance OHLCV CSVs</strong></td>
+                <td class="url-cell"><code>tmp/Binance_BTCUSDT_1h.csv</code><br><code>tmp/Binance_ETHUSDT_4h.csv</code><br>… (30+ files)</td>
+                <td class="size-cell">~55-67 KB each</td>
+                <td>Raw Binance candlestick data: BTC, ETH, SOL, ADA, BNB, XRP, MATIC, DOGE · timeframes: 15m, 1h, 4h, 1d</td>
+            </tr>
+            <tr>
+                <td><strong>forward_test_results.json</strong></td>
+                <td class="url-cell"><code>forward_test_results.json</code></td>
+                <td class="size-cell">—</td>
+                <td>Root-level forward test results summary</td>
+            </tr>
+            <tr>
+                <td><strong>quantum_fusion_report.json</strong></td>
+                <td class="url-cell"><code>quantum_fusion_report.json</code></td>
+                <td class="size-cell">—</td>
+                <td>Quantum Fusion strategy validation results</td>
+            </tr>
+            <tr>
+                <td><strong>dna_pick_history.json</strong></td>
+                <td class="url-cell"><code>dna_pick_history.json</code></td>
+                <td class="size-cell">—</td>
+                <td>DNA strategy pick history (root level)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ ML MODELS ═══ -->
+    <div id="models" class="section-heading">
+        <h2 style="background:linear-gradient(135deg,#a855f7,#c084fc)">🧠 Trained ML Model Files</h2>
+        <span class="badge" style="background:rgba(168,85,247,0.12);color:#c084fc">19 .joblib files</span>
+    </div>
+    <p class="section-desc">Serialized trained ML models (.joblib) stored in the repository. These are the actual prediction engines used by the dashboards.</p>
+    <table class="dash-table">
+        <thead>
+            <tr><th>Model File</th><th>Path</th><th>Type</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>claude_xgb.joblib</strong></td>
+                <td class="url-cell"><code>claude_gainer_ml/models/</code></td>
+                <td><span class="tag tag-ml">XGBoost</span></td>
+                <td>Claude Gainer ML — top gainer prediction</td>
+            </tr>
+            <tr>
+                <td><strong>claude_rf.joblib</strong></td>
+                <td class="url-cell"><code>claude_gainer_ml/models/</code></td>
+                <td><span class="tag tag-ml">Random Forest</span></td>
+                <td>Claude Gainer ML ensemble</td>
+            </tr>
+            <tr>
+                <td><strong>claude_scaler.joblib</strong></td>
+                <td class="url-cell"><code>claude_gainer_ml/models/</code></td>
+                <td><span class="tag tag-data">Scaler</span></td>
+                <td>Feature normalization for Claude models</td>
+            </tr>
+            <tr>
+                <td><strong>BTCUSDT_1h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — BTC 1h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>BTCUSDT_4h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — BTC 4h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>ETHUSDT_1h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — ETH 1h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>ETHUSDT_4h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — ETH 4h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>SOLUSDT_1h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — SOL 1h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>SOLUSDT_4h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — SOL 4h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>ADAUSDT_4h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — ADA 4h binary classifier</td>
+            </tr>
+            <tr>
+                <td><strong>BNBUSDT_1h_edge.joblib / 4h</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — BNB 1h + 4h classifiers</td>
+            </tr>
+            <tr>
+                <td><strong>XRPUSDT_1h_edge.joblib / 4h</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — XRP 1h + 4h classifiers</td>
+            </tr>
+            <tr>
+                <td><strong>LINKUSDT_4h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — LINK 4h classifier</td>
+            </tr>
+            <tr>
+                <td><strong>DOGEUSDT_4h_edge.joblib</strong></td>
+                <td class="url-cell"><code>crypto_ml_edge/models/</code></td>
+                <td><span class="tag tag-ml">LightGBM</span></td>
+                <td>Crypto ML Edge — DOGE 4h classifier (meme coin)</td>
+            </tr>
+            <tr>
+                <td><strong>ensemble_aggressive.joblib</strong></td>
+                <td class="url-cell"><code>mercury2/models/</code></td>
+                <td><span class="tag tag-ml">XGBoost Ensemble</span></td>
+                <td>Mercury 2 — aggressive mode ensemble</td>
+            </tr>
+            <tr>
+                <td><strong>ensemble_balanced.joblib</strong></td>
+                <td class="url-cell"><code>mercury2/models/</code></td>
+                <td><span class="tag tag-ml">XGBoost Ensemble</span></td>
+                <td>Mercury 2 — balanced mode ensemble</td>
+            </tr>
+            <tr>
+                <td><strong>ensemble_conservative.joblib</strong></td>
+                <td class="url-cell"><code>mercury2/models/</code></td>
+                <td><span class="tag tag-ml">XGBoost Ensemble</span></td>
+                <td>Mercury 2 — conservative mode ensemble</td>
+            </tr>
+            <tr>
+                <td><strong>top_gainer.joblib</strong></td>
+                <td class="url-cell"><code>mercury2/models/</code></td>
+                <td><span class="tag tag-ml">XGBoost</span></td>
+                <td>Mercury 2 — top gainer prediction model</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<div class="footer">
+    <p>Part of <a href="/">FindTorontoEvents.ca</a> — <a href="/investments/">Investment Hub</a> — <a href="/updates/">Updates</a></p>
+    <p style="margin-top:0.4rem" class="updated-stamp">Last compiled: 2026-03-04 · 40+ dashboards · 19 SQLite DBs · 19 ML models</p>
+    <p style="margin-top:1rem;font-size:0.68rem;color:#555;max-width:700px;margin-left:auto;margin-right:auto;">
+        For educational and research purposes only. Not financial advice. All investments involve risk.
+    </p>
+</div>
+<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,0.95);border-top:1px solid #2a2a4a;padding:6px 16px;font-size:11px;color:#888;text-align:center;z-index:9999;backdrop-filter:blur(4px);">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
+</body>
+</html>

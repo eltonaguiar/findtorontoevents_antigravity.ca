@@ -1,0 +1,64 @@
+name: DNA Mutation Cycle
+
+on:
+  schedule:
+    # Run daily at 05:00 UTC
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: dna-mutation-cycle
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  mutation-cycle:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Generate mutations from underperforming strategies
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/dna_mutation_engine.py --closed-picks data/closed_picks.json
+
+      - name: Evaluate existing mutations
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/dna_mutation_engine.py --evaluate --closed-picks data/closed_picks.json
+
+      - name: Print mutation report
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/dna_mutation_engine.py --report
+
+      - name: Commit mutation data
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/dna_mutations.json
+          if git diff --cached --quiet; then
+            echo "No mutation changes to commit"
+          else
+            git commit -m "chore(dna): daily mutation cycle - $(date -u +%Y-%m-%d) [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+

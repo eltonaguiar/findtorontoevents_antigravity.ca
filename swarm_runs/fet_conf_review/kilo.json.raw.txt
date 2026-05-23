@@ -1,0 +1,24 @@
+{
+  "engine": "Kilo AI Verifier",
+  "finding_1_verdict": "agree",
+  "finding_1_concerns": [
+    "For daily-firing strategies, multiple entries closing on the same exit_date due to shared TP hits represent a single market event, not independent trades. Deduplication by exit_date is appropriate to avoid inflated sample sizes and profitability metrics.",
+    "Cross-verification with other elites (INJUSDT_1d_B_lightgbm: PF 41.52→25.88, DYDXUSDT_15m_D_ensemble_stack: PF 60.54→40.20) confirms this pattern exists and that post-dedup metrics remain viable for promotion.",
+    "Alternative deduplication methods (e.g., by entry_date) would undercount due to overlapping entry periods, while no deduplication with concentration-weighting would artificially boost performance through repeated counting of correlated exits."
+  ],
+  "finding_1_recommended_action": "retract_promotion",
+  "finding_2_verdict": "agree",
+  "finding_2_concerns": [
+    "Evidence from alpha_engine/data/closed_picks.json (n=7,472) shows [0.75, 0.80) band has WR 38.7%, PF 0.69, and negative avg PnL, directly contradicting the +18 bonus claim of ~86% WR.",
+    "The +18 bonus inversion (larger than the correct +12 for [0.80, 0.85)) could artificially inflate scores for losing confidence bands, potentially selecting suboptimal picks.",
+    "Parallel bonus on [0.80, 0.85) (template.html:9241) validates the scoring logic exists elsewhere and can be adjusted independently."
+  ],
+  "finding_2_recommended_action": "remove_+18_bonus",
+  "regression_risks": [
+    "No apparent regression risk identified; the bonus appears isolated to score computation in audit_dashboard/template.html:9239, with breakdown.conf_sweet_spot tracking.",
+    "Strategy gates and scaling logic likely reference raw confidence values or total scores independently, not the specific +18 increment.",
+    "Recommend monitoring post-removal pick selection patterns for any unexpected shifts in confidence band distribution."
+  ],
+  "confidence": 0.95,
+  "notes": "Given the 0/11 prior verification rate, both findings are treated with high scrutiny but supported by concrete data paths and cross-validation. No face-value acceptance; evidence-based agreement only."
+}

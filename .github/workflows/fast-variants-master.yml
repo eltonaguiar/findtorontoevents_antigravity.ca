@@ -1,0 +1,122 @@
+name: Fast Trading Variants  Master Scheduler
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"      # Every 4 hours (crypto 24/7 + pre/post market stocks)
+  workflow_dispatch:
+    inputs:
+      run_stocks:
+        description: 'Run fast stocks competition'
+        required: false
+        default: true
+        type: boolean
+      run_crypto:
+        description: 'Run mercury2 fast crypto'
+        required: false
+        default: true
+        type: boolean
+      force_refresh:
+        description: 'Force refresh of all signals'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: fast-variants-master-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: write
+
+jobs:
+  fast-stocks:
+    if: github.event.inputs.run_stocks == true || github.event.schedule
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Fast Stocks Competition
+        env:
+          FORCE_REFRESH: ${{ github.event.inputs.force_refresh || false }}
+        run: |
+          echo "=== Fast Stocks Competition Scanner ==="
+          if [ "$FORCE_REFRESH" = "true" ]; then
+            echo " FORCE REFRESH ENABLED  Clearing existing picks"
+            rm -f STOCKS/competition/fast_forward_picks.json
+          fi
+          cd STOCKS/competition || exit
+          python run_fast_competition.py
+
+  mercury2-fast:
+    if: github.event.inputs.run_crypto == true || github.event.schedule
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Mercury2 Fast Scanner
+        env:
+          FORCE_REFRESH: ${{ github.event.inputs.force_refresh || false }}
+        run: |
+          echo "=== Mercury2 Fast Crypto Scanner ==="
+          if [ "$FORCE_REFRESH" = "true" ]; then
+            echo " FORCE REFRESH ENABLED  Clearing existing picks"
+            rm -f mercury2/mercury2_fast_picks.json
+          fi
+          cd mercury2 || exit
+          python mercury2_fast.py
+
+  # REMOVED 2026-03-26: publisher unification  only audit-dashboard.yml publishes dashboard_payload.json
+  # The regenerate-dashboard job was removed. Fast variant results are committed in their own jobs.
+  commit-results:
+    needs: [fast-stocks, mercury2-fast]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push changes
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          # Check if there are changes to commit
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            echo "Committing fast variants results..."
+            git add STOCKS/competition/fast_forward_picks.json
+            git add mercury2/mercury2_fast_picks.json
+            git commit -m " Fast Variants Update: $(date +'%Y-%m-%d %H:%M') [AUTO] [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

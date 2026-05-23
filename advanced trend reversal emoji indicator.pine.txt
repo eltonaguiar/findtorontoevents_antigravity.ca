@@ -1,0 +1,90 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © FundedRelay
+
+//@version=6
+indicator("Advanced Trend Reversal Emoji Indicator", overlay=true)
+
+// =====================
+// ====== INPUTS =======
+// =====================
+
+// Trend Settings
+fastLength     = input.int(21,  "Fast EMA Length")
+slowLength     = input.int(55,  "Slow EMA Length")
+trendLength    = input.int(200, "Trend Filter EMA Length")
+
+// Momentum Filter
+rsiLength      = input.int(14,  "RSI Length")
+rsiBullLevel   = input.int(55,  "RSI Bullish Threshold")
+rsiBearLevel   = input.int(45,  "RSI Bearish Threshold")
+
+// Volatility Filter
+atrLength      = input.int(14,  "ATR Length")
+atrMultiplier  = input.float(1.0, "ATR Volatility Multiplier")
+
+// =====================
+// ===== CALCULATIONS ==
+// =====================
+
+// EMAs
+fastEMA  = ta.ema(close, fastLength)
+slowEMA  = ta.ema(close, slowLength)
+trendEMA = ta.ema(close, trendLength)
+
+// RSI
+rsiValue = ta.rsi(close, rsiLength)
+
+// ATR
+atrValue = ta.atr(atrLength)
+
+// Volatility condition
+volatilityCondition = ta.tr(true) > atrValue * atrMultiplier
+
+// =====================
+// ==== TREND LOGIC ====
+// =====================
+
+// Bullish condition
+bullishCross = ta.crossover(fastEMA, slowEMA)
+bullishTrend = close > trendEMA and rsiValue > rsiBullLevel and volatilityCondition
+
+bullishSignal = bullishCross and bullishTrend
+
+// Bearish condition
+bearishCross = ta.crossunder(fastEMA, slowEMA)
+bearishTrend = close < trendEMA and rsiValue < rsiBearLevel and volatilityCondition
+
+bearishSignal = bearishCross and bearishTrend
+
+// =====================
+// ====== PLOTTING =====
+// =====================
+
+// Plot EMAs
+plot(fastEMA,  color=color.orange, linewidth=2, title="Fast EMA")
+plot(slowEMA,  color=color.blue,   linewidth=2, title="Slow EMA")
+plot(trendEMA, color=color.gray,   linewidth=2, title="Trend EMA")
+
+// Emoji signals
+plotshape(bullishSignal, 
+     title="Bullish Reversal",
+     location=location.belowbar,
+     color=color.green,
+     style=shape.labelup,
+     text="🚀",
+     size=size.large)
+
+plotshape(bearishSignal, 
+     title="Bearish Reversal",
+     location=location.abovebar,
+     color=color.red,
+     style=shape.labeldown,
+     text="💀",
+     size=size.large)
+
+// =====================
+// ===== ALERTS ========
+// =====================
+
+alertcondition(bullishSignal, title="Bullish Reversal Alert", message="🚀 Bullish Trend Reversal Detected")
+alertcondition(bearishSignal, title="Bearish Reversal Alert", message="💀 Bearish Trend Reversal Detected")

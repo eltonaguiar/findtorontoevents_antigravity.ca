@@ -1,0 +1,133 @@
+name: A/B Analysis + Zero-PnL Audit
+
+# Per Grok PR #917 spec 2026-05-12. Runs the cleaned-up ml_gatekeeper
+# A/B summary + zero-PnL resolver-bug detector daily after the main
+# audit-dashboard cron has refreshed closed_picks.json + trading_picks
+# resolutions.
+#
+# Separate from audit-dashboard.yml because:
+# - Schedule is offset (5:30 ET vs hourly main)
+# - Failure isolation: if these audits fail, main dashboard continues
+# - Easier to disable/re-enable independently
+
+on:
+  schedule:
+    # Daily 05:30 UTC — after the 04:10 + 05:10 hourly main crons run
+    - cron: '30 5 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'ml_gatekeeper/ab_analysis.py'
+      - 'audit_trail/zero_pnl_detector.py'
+      - 'tools/cot_step7_friction_adjusted_mc.py'
+      - 'tools/correlation_regime_sidecar.py'
+      - 'tools/verify_system_pf.py'
+      - 'tools/cot_fetcher_socrata.py'
+      - '.github/workflows/ab_analysis.yml'
+  workflow_dispatch:
+
+# 2026-05-13 fix: prior manual dispatches (25771688329, 25773705562)
+# kept getting cancelled at Checkout because every push to main fired
+# the push-trigger above which superseded them via default concurrency.
+# Allow in-flight runs to complete; serialize new runs in same group.
+concurrency:
+  group: ab-analysis
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  ab-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql yfinance numpy
+
+      - name: Run Zero-PnL Detector
+        env:
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: python audit_trail/zero_pnl_detector.py --limit 500 || echo "zero_pnl_detector non-fatal"
+        continue-on-error: true
+
+      - name: Run A/B Analysis
+        run: python -m ml_gatekeeper.ab_analysis || echo "ab_analysis non-fatal"
+        continue-on-error: true
+
+      - name: Run correlation-regime-shift sidecar
+        run: python tools/correlation_regime_sidecar.py || echo "correlation_regime non-fatal"
+        continue-on-error: true
+
+      - name: Run commodity carry-momentum factor sidecar
+        run: python -m tools.research.commodity_carry_momo || echo "commodity_carry_momo non-fatal"
+        continue-on-error: true
+
+      - name: Fetch CFTC COT positioning (free Socrata feed)
+        # NS-B partial — ships free-tier feed (no paid keys needed).
+        # 11 symbols: CT GC SI CL NG ZW ZC ZS HG PL PA. Emits per-symbol
+        # COT signal (STRONG_BULL_COT etc) + z-scored net positioning.
+        # Outputs audit_dashboard/data/cot_<symbol>.json.
+        run: |
+          for sym in CT GC SI CL NG ZW ZC ZS HG PL PA; do
+            python tools/cot_fetcher_socrata.py --symbol "$sym" --weeks 26 || echo "cot $sym non-fatal"
+            sleep 2  # respect 1k/hr anonymous tier
+          done
+        continue-on-error: true
+
+      - name: Verify all Tier-2 winners DB vs dashboard PF/WR/n
+        env:
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: python tools/verify_system_pf.py --all-winners --pf-min 1.5 --wr-min 50 --mdd-max 20 --n-min 100 || echo "verify_system_pf non-fatal"
+        continue-on-error: true
+
+      - name: Run CT=F friction-adjusted ROR MC + DSR gate
+        env:
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          PYTHONUTF8: '1'
+        run: python tools/cot_step7_friction_adjusted_mc.py --sims 10000 --n-trials 500 || echo "cot_step7_friction non-fatal"
+        continue-on-error: true
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in ml_gatekeeper/data/ab_summary.json ml_gatekeeper/data/ab_rollback_state.json audit_trail/data/zero_pnl_report.json audit_dashboard/data/ab_panel.html audit_dashboard/data/cot_step7_friction_adjusted_mc.json audit_dashboard/data/correlation_regime.json audit_dashboard/data/commodity_carry_momo.json audit_dashboard/data/system_pf_verification.json audit_dashboard/data/cot_ct.json audit_dashboard/data/cot_gc.json audit_dashboard/data/cot_si.json audit_dashboard/data/cot_cl.json audit_dashboard/data/cot_ng.json audit_dashboard/data/cot_zw.json audit_dashboard/data/cot_zc.json audit_dashboard/data/cot_zs.json audit_dashboard/data/cot_hg.json audit_dashboard/data/cot_pl.json audit_dashboard/data/cot_pa.json; do
+            [ -f "$f" ] && git add "$f" || true
+          done
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: A/B analysis + zero-PnL audit refresh [skip ci]"
+            git pull --rebase origin main || true
+            git push || echo "push failed (non-fatal)"
+          fi

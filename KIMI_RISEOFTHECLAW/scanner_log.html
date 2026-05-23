@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alpha — Scanner Log</title>
+    <meta name="description"
+        content="Live scanner log showing every signal scan, new picks detected, and algorithm decisions in real-time.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: #1e293b;
+            --text: #e2e8f0;
+            --text2: #64748b;
+            --green: #00ff88;
+            --green-dim: rgba(0, 255, 136, 0.15);
+            --red: #ff4466;
+            --red-dim: rgba(255, 68, 102, 0.15);
+            --gold: #ffaa00;
+            --blue: #4488ff;
+            --purple: #aa66ff;
+            --cyan: #00d4ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(68, 136, 255, 0.08), rgba(170, 102, 255, 0.08));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .header .subtitle {
+            color: var(--text2);
+            font-size: 0.85rem;
+        }
+
+        .header .nav-links {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .header .nav-links a {
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .header .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text2);
+            margin-bottom: 4px;
+        }
+
+        .stat .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .stat .value.green {
+            color: var(--green);
+        }
+
+        .stat .value.blue {
+            color: var(--blue);
+        }
+
+        .stat .value.gold {
+            color: var(--gold);
+        }
+
+        .stat .value.purple {
+            color: var(--purple);
+        }
+
+        .stat .value.red {
+            color: var(--red);
+        }
+
+        .stat .value.cyan {
+            color: var(--cyan);
+        }
+
+        /* Status indicator */
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .status-text {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .status-detail {
+            color: var(--text2);
+        }
+
+        /* Filter controls */
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 0.7rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text2);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--blue);
+            color: var(--text);
+        }
+
+        .filter-btn.active {
+            background: rgba(68, 136, 255, 0.15);
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        /* Scan entries */
+        .scan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .scan-entry {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            transition: border-color 0.15s;
+        }
+
+        .scan-entry:hover {
+            border-color: rgba(68, 136, 255, 0.3);
+        }
+
+        .scan-entry.has-new {
+            border-left: 3px solid var(--green);
+        }
+
+        .scan-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .scan-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .scan-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-complete {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--green);
+        }
+
+        .badge-signals {
+            background: rgba(255, 170, 0, 0.12);
+            color: var(--gold);
+        }
+
+        .badge-new {
+            background: rgba(170, 102, 255, 0.12);
+            color: var(--purple);
+        }
+
+        .badge-scanned {
+            background: rgba(68, 136, 255, 0.08);
+            color: var(--text2);
+        }
+
+        .badge-runtime {
+            background: rgba(0, 212, 255, 0.08);
+            color: var(--cyan);
+        }
+
+        .scan-details {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .scan-details.show {
+            display: block;
+        }
+
+        .signal-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.75rem;
+        }
+
+        .signal-row:last-child {
+            border-bottom: none;
+        }
+
+        .signal-algo {
+            font-weight: 600;
+            color: var(--blue);
+            min-width: 180px;
+            flex-shrink: 0;
+        }
+
+        .signal-symbol {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--gold);
+            min-width: 70px;
+        }
+
+        .signal-reason {
+            color: var(--text2);
+            flex: 1;
+        }
+
+        .signal-new {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--green);
+        }
+
+        .signal-existing {
+            font-size: 0.6rem;
+            color: var(--text2);
+        }
+
+        .tier-badge {
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 1px 5px;
+            border-radius: 3px;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .tier-t1 {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--green);
+        }
+
+        .tier-scout {
+            background: rgba(255, 170, 0, 0.12);
+            color: var(--gold);
+        }
+
+        .tier-unknown {
+            background: rgba(100, 116, 139, 0.12);
+            color: var(--text2);
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: var(--blue);
+            font-size: 0.7rem;
+            cursor: pointer;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .expand-btn:hover {
+            color: var(--gold);
+        }
+
+        .expand-btn .chev {
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+
+        .expand-btn.open .chev {
+            transform: rotate(90deg);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text2);
+        }
+
+        .loading .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Show more button */
+        .show-more-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--blue);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .show-more-btn:hover {
+            background: rgba(68, 136, 255, 0.1);
+            border-color: var(--blue);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text2);
+            font-size: 0.75rem;
+        }
+
+        .footer a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .signal-algo {
+                min-width: 120px;
+                font-size: 0.65rem;
+            }
+
+            .scan-header {
+                gap: 6px;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 SCANNER LOG</h1>
+            <div class="subtitle">Live Signal Scanner — Every scan, every signal, every decision</div>
+            <div class="nav-links">
+                <a href="dashboard_live.html">← Dashboard</a>
+                <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/scan_runs.json" target="_blank">Raw JSON ↗</a>
+                <a href="METHODOLOGY_AUDIT_TRAIL.md" target="_blank">Methodology ↗</a>
+            </div>
+        </div>
+
+        <div class="status-row" id="status-row">
+            <div class="spinner"
+                style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle"></div>
+            <span class="status-text">Loading scan data…</span>
+        </div>
+
+        <div class="stats-bar" id="stats-bar"></div>
+
+        <div class="filter-row" id="filter-row">
+            <span class="filter-label">Show:</span>
+            <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All Scans</button>
+            <button class="filter-btn" data-filter="new" onclick="applyFilter('new')">🟢 New Picks Only</button>
+            <button class="filter-btn" data-filter="signals" onclick="applyFilter('signals')">⚡ Has Signals</button>
+        </div>
+
+        <div id="scan-list" class="scan-list">
+            <div class="loading">
+                <div class="spinner"></div>
+                Fetching scan_runs.json…
+            </div>
+        </div>
+
+        <button class="show-more-btn" id="show-more" style="display:none" onclick="showMore()">Show More Scans</button>
+
+        <div class="footer">
+            <p>Scanner runs via <strong>GitHub Actions</strong> every 15 minutes. Scans 90+ symbols across 30+
+                algorithms.</p>
+            <p style="margin-top:6px">
+                Built by <strong>Antigravity</strong> · <a href="/updates/">Updates</a> ·
+                <a href="dashboard_live.html">Dashboard</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let allRuns = [];
+        let displayCount = 30;
+        let currentFilter = 'all';
+
+        async function loadData() {
+            try {
+                const resp = await fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/scan_runs.json?t=' + Date.now());
+                allRuns = await resp.json();
+                // Reverse so newest first
+                allRuns.reverse();
+                renderStats();
+                renderList();
+                updateStatus();
+            } catch (e) {
+                document.getElementById('scan-list').innerHTML = `
+                    <div class="loading" style="color:var(--red)">
+                        ❌ Failed to load scan_runs.json: ${e.message}
+                    </div>`;
+            }
+        }
+
+        function updateStatus() {
+            if (!allRuns.length) return;
+            const latest = allRuns[0];
+            const ts = new Date(latest.timestamp);
+            const now = new Date();
+            const agoMs = now - ts;
+            const agoMin = Math.floor(agoMs / 60000);
+            const agoStr = agoMin < 1 ? 'just now' :
+                agoMin < 60 ? `${agoMin}m ago` :
+                    `${Math.floor(agoMin / 60)}h ${agoMin % 60}m ago`;
+
+            const isRecent = agoMin < 20; // within expected 15min interval
+            document.getElementById('status-row').innerHTML = `
+                <div class="status-dot" style="background:${isRecent ? 'var(--green)' : 'var(--gold)'}; ${isRecent ? '' : 'animation:none'}"></div>
+                <span class="status-text" style="color:${isRecent ? 'var(--green)' : 'var(--gold)'}">${isRecent ? 'ACTIVELY SCANNING' : 'LAST SCAN ' + agoStr.toUpperCase()}</span>
+                <span class="status-detail">· Last: ${ts.toLocaleString()} · ${latest.symbols_scanned} symbols · ${latest.signals_found} signals</span>
+            `;
+        }
+
+        function renderStats() {
+            const totalScans = allRuns.length;
+            const totalNewPicks = allRuns.reduce((s, r) => s + (r.new_picks || 0), 0);
+            const totalSignals = allRuns.reduce((s, r) => s + (r.signals_found || 0), 0);
+            const avgSignals = totalScans ? (totalSignals / totalScans).toFixed(1) : 0;
+            const maxSymbols = Math.max(...allRuns.map(r => r.symbols_scanned || 0));
+
+            // Find unique algorithms
+            const algos = new Set();
+            allRuns.forEach(r => (r.signal_details || []).forEach(s => algos.add(s.algorithmName || s.algorithm)));
+
+            // Time span
+            const first = new Date(allRuns[allRuns.length - 1]?.timestamp || 0);
+            const last = new Date(allRuns[0]?.timestamp || 0);
+            const hours = ((last - first) / 3600000).toFixed(0);
+
+            document.getElementById('stats-bar').innerHTML = `
+                <div class="stat"><div class="label">Total Scans</div><div class="value blue">${totalScans}</div></div>
+                <div class="stat"><div class="label">New Picks Found</div><div class="value green">${totalNewPicks}</div></div>
+                <div class="stat"><div class="label">Total Signals</div><div class="value gold">${totalSignals}</div></div>
+                <div class="stat"><div class="label">Avg Signals/Scan</div><div class="value cyan">${avgSignals}</div></div>
+                <div class="stat"><div class="label">Algorithms Active</div><div class="value purple">${algos.size}</div></div>
+                <div class="stat"><div class="label">Max Symbols</div><div class="value blue">${maxSymbols}</div></div>
+                <div class="stat"><div class="label">Time Span</div><div class="value gold">${hours}h</div></div>
+            `;
+        }
+
+        function getFilteredRuns() {
+            if (currentFilter === 'new') return allRuns.filter(r => r.new_picks > 0);
+            if (currentFilter === 'signals') return allRuns.filter(r => r.signals_found > 0);
+            return allRuns;
+        }
+
+        function renderList() {
+            const filtered = getFilteredRuns();
+            const toShow = filtered.slice(0, displayCount);
+            let html = '';
+
+            for (const run of toShow) {
+                const ts = new Date(run.timestamp);
+                const timeStr = ts.toLocaleString();
+                const hasNew = run.new_picks > 0;
+                const details = run.signal_details || [];
+                const id = 'scan-' + ts.getTime();
+
+                html += `
+                <div class="scan-entry ${hasNew ? 'has-new' : ''}">
+                    <div class="scan-header">
+                        <span class="scan-time">${timeStr}</span>
+                        <span class="scan-badge badge-complete">✓ ${run.status}</span>
+                        <span class="scan-badge badge-scanned">${run.symbols_scanned} symbols</span>
+                        ${run.runtime_sec ? `<span class="scan-badge badge-runtime">${run.runtime_sec}s</span>` : ''}
+                        <span class="scan-badge badge-signals">${run.signals_found} signal${run.signals_found !== 1 ? 's' : ''}</span>
+                        ${hasNew ? `<span class="scan-badge badge-new">🟢 ${run.new_picks} NEW PICK${run.new_picks > 1 ? 'S' : ''}</span>` : ''}
+                        <span class="scan-badge" style="background:rgba(100,116,139,0.08);color:var(--text2)">${run.total_active_picks || 0} active</span>
+                        ${details.length ? `
+                        <button class="expand-btn" onclick="toggleDetails('${id}', this)">
+                            <span class="chev">▶</span> ${details.length} signal details
+                        </button>` : ''}
+                    </div>
+                    ${details.length ? `
+                    <div class="scan-details" id="${id}">
+                        ${details.map(s => {
+                    const tierCls = s.tier === 'TIER_1' ? 'tier-t1' : (s.tier === 'SCOUT' ? 'tier-scout' : 'tier-unknown');
+                    return `
+                            <div class="signal-row">
+                                <span class="tier-badge ${tierCls}">${s.tier || '?'}</span>
+                                <span class="signal-symbol">${s.symbol}</span>
+                                <span class="signal-algo">${s.algorithmName || s.algorithm}</span>
+                                <span class="signal-reason">${s.reason}</span>
+                                ${s.new ? '<span class="signal-new">★ NEW</span>' : '<span class="signal-existing">existing</span>'}
+                            </div>`;
+                }).join('')}
+                    </div>` : ''}
+                </div>`;
+            }
+
+            document.getElementById('scan-list').innerHTML = html || '<div class="loading">No scans match this filter.</div>';
+
+            const btn = document.getElementById('show-more');
+            btn.style.display = displayCount < filtered.length ? 'block' : 'none';
+            btn.textContent = `Show More (${displayCount} of ${filtered.length} scans)`;
+        }
+
+        function toggleDetails(id, btn) {
+            const el = document.getElementById(id);
+            el.classList.toggle('show');
+            btn.classList.toggle('open');
+        }
+
+        function applyFilter(filter) {
+            currentFilter = filter;
+            displayCount = 30;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.filter-btn[data-filter="${filter}"]`)?.classList.add('active');
+            renderList();
+        }
+
+        function showMore() {
+            displayCount += 30;
+            renderList();
+        }
+
+        // Load on page open
+        loadData();
+
+        // Auto-refresh every 60s
+        setInterval(loadData, 60000);
+    </script>
+</body>
+
+</html>

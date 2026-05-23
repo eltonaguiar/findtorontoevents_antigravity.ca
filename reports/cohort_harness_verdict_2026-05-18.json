@@ -1,0 +1,49 @@
+{
+  "date": "2026-05-18",
+  "methodology": {
+    "validation": "edge_stability_harness.is_admissible()",
+    "eff_floor": 0.30,
+    "min_stable_windows": 3,
+    "window_days": 14,
+    "data_source": "alpha_engine/data/closed_picks.json (canonical, policy_clean, deduped)",
+    "slippage": "charter_slippage.deduct_slippage (round-trip bps by asset class)"
+  },
+  "cohorts": [
+    {
+      "name": "CRYPTO_7family_LONG",
+      "canonical_n": 0,
+      "proxy_n": 492,
+      "overall_verdict": "KILL",
+      "reason": "No exact match in canonical data; proxy has only 3-4 windows at n>=80; quan_engine_scalp (n=2662) fails harness with sign=mixed"
+    },
+    {
+      "name": "EQUITY_elite>=60",
+      "canonical_n": 1,
+      "claimed_n": 44,
+      "overall_verdict": "KILL",
+      "reason": "44x inflation vs canonical; only 1 pick in canonical data"
+    },
+    {
+      "name": "COMMODITY_SHORT",
+      "canonical_n": 0,
+      "claimed_n": 62,
+      "overall_verdict": "KILL",
+      "reason": "No SHORT-direction COMMODITY picks in canonical data; zero match"
+    },
+    {
+      "name": "FOREX_rsi_ema_scout",
+      "canonical_n": 0,
+      "proxy_n": 29,
+      "overall_verdict": "KILL",
+      "reason": "Strategy renamed; n=7 closest match; all FOREX n=29 insufficient and WR=27.6%"
+    }
+  ],
+  "copytrader": {
+    "closed_trades_n": 321,
+    "completed_outcomes": 0,
+    "verdict": "DATA_INSUFFICIENT",
+    "reason": "All records have outcome=FLAT and pnl=0; forward_wr is estimated not validated"
+  },
+  "hypotheses_pre_registered": ["H-017", "H-018", "H-019", "H-020"],
+  "base_rate": "8 kills, 0 admissible"
+}

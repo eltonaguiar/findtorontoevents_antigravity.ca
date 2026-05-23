@@ -1,0 +1,51 @@
+name: Audit Frontend Manifest
+
+# Regenerates audit_dashboard/audit_frontend_manifest.json — a machine-checkable
+# catalog of every button / tab / filter / ?Guide concept on findtorontoevents.ca/audit.
+# Pure static parser (tools/audit_frontend_manifest.py): reads template.html /
+# hc_filter.js / money_ready_filter.js, never runs a dashboard generator.
+
+on:
+  push:
+    paths:
+      - 'audit_dashboard/template.html'
+      - 'audit_dashboard/hc_filter.js'
+      - 'audit_dashboard/money_ready_filter.js'
+      - 'tools/audit_frontend_manifest.py'
+  schedule:
+    - cron: '40 7 * * *'   # 07:40 UTC daily — off-peak
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Regenerate frontend manifest
+        run: |
+          python tools/audit_frontend_manifest.py
+
+      - name: Commit refreshed manifest if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/audit_frontend_manifest.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit — manifest already up to date."
+          else
+            git commit -m "chore: refresh audit frontend manifest [skip ci]"
+            git pull --rebase origin main || true
+            git push || echo "push failed (non-fatal)"
+          fi

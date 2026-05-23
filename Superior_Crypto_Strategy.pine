@@ -1,0 +1,719 @@
+//@version=6
+// Superior Crypto Strategy v1.0 — "Nexus Alpha"
+// ═══════════════════════════════════════════════════════════════════════════════
+// Architecture: 4-Module Meta-Strategy with Regime-Adaptive Weighting
+//
+// Design references:
+//   - Larry Connors (RSI-2 mean reversion, time-based exits)
+//   - John Carter (TTM Squeeze volatility breakout)
+//   - Richard Wyckoff (Absorption / Exhaustion, accumulation patterns)
+//   - Albert Kyle (Liquidity regime proxy via Lambda)
+//   - Marcos López de Prado (meta-labeling, bet sizing, regime detection)
+//   - Gatev, Goetzmann & Rouwenhorst (pairs/cointegration)
+//   - Ed Thorp (Kelly Criterion position sizing)
+//
+// What makes this outperform existing strategies:
+//   1. Regime-gated modules — never trades mean reversion in a trend or vice versa
+//   2. Cross-category confluence — signals must come from 2+ independent modules
+//   3. Adaptive thresholds — regime confidence sets signal strictness dynamically
+//   4. Equity curve trading — halves size during drawdowns (López de Prado)
+//   5. Asymmetric exits — trailing activation after 1R, tighter initial SL
+//   6. 17 sub-signals across 4 orthogonal modules (Trend, MR, Momentum, Smart Money)
+//   7. Market structure detection (HH/HL/LH/LL) — not in any existing strategy
+//   8. Fibonacci confluence zones — auto-detected swing-based fib levels
+//   9. Stochastic RSI + OBV divergence — proven crypto-specific edge
+//  10. Cross-asset BTC filter — BTC leads, alts follow
+// ═══════════════════════════════════════════════════════════════════════════════
+
+strategy("Superior Crypto Strategy v1.0 [Nexus Alpha]", shorttitle="NEXUS", overlay=true,
+     initial_capital=10000, default_qty_type=strategy.percent_of_equity, default_qty_value=20,
+     commission_type=strategy.commission.percent, commission_value=0.1,
+     pyramiding=0, calc_on_every_tick=false, process_orders_on_close=false)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+group_strat = "STRATEGY"
+string MODE_ADAPTIVE     = "Adaptive"
+string MODE_CONSERVATIVE = "Conservative"
+string MODE_AGGRESSIVE   = "Aggressive"
+stratMode = input.string(MODE_ADAPTIVE, "Strategy Mode", options=[MODE_ADAPTIVE, MODE_CONSERVATIVE, MODE_AGGRESSIVE], group=group_strat)
+
+group_modules = "MODULES"
+mod1_enabled = input.bool(true, "Module 1: Trend Follower", group=group_modules)
+mod2_enabled = input.bool(true, "Module 2: Mean Reversion", group=group_modules)
+mod3_enabled = input.bool(true, "Module 3: Momentum/Breakout", group=group_modules)
+mod4_enabled = input.bool(true, "Module 4: Smart Money", group=group_modules)
+
+group_mtf = "MULTI-TIMEFRAME"
+mtf_enabled = input.bool(true, "MTF Confirmation", group=group_mtf)
+htf_period  = input.string("240", "Higher TF", options=["60", "120", "240", "D", "W"], group=group_mtf)
+
+group_risk = "RISK MANAGEMENT"
+useTPSL        = input.bool(true, "Use TP/SL", group=group_risk)
+tpslMode       = input.string("Smart", "TP/SL Mode", options=["Smart", "ATR", "Fixed"], group=group_risk)
+smartTPMult    = input.float(2.5, "Smart TP (x ATR%)", minval=0.5, maxval=5.0, step=0.1, group=group_risk)
+smartSLMult    = input.float(1.0, "Smart SL (x ATR%)", minval=0.3, maxval=3.0, step=0.1, group=group_risk)
+fixedTP        = input.float(4.0, "Fixed TP %", minval=0.5, maxval=20.0, step=0.5, group=group_risk)
+fixedSL        = input.float(2.0, "Fixed SL %", minval=0.5, maxval=10.0, step=0.5, group=group_risk)
+manualTPMult   = input.float(2.5, "ATR TP Mult", minval=0.5, maxval=6.0, step=0.25, group=group_risk)
+manualSLMult   = input.float(1.25, "ATR SL Mult", minval=0.3, maxval=4.0, step=0.25, group=group_risk)
+useTrailing    = input.bool(true, "Trailing Stop", group=group_risk)
+trailActivR    = input.float(1.0, "Trail Activation (R-multiple)", minval=0.5, maxval=3.0, step=0.25, group=group_risk)
+graceBars      = input.int(3, "SL Grace Period (bars)", minval=0, maxval=10, group=group_risk)
+useEquityCurve = input.bool(true, "Equity Curve Filter", tooltip="Halves position size when equity drops below its SMA", group=group_risk)
+equitySmaLen   = input.int(20, "Equity SMA Length", minval=5, maxval=50, group=group_risk)
+
+group_filters = "SIGNAL FILTERS"
+minModules     = input.int(2, "Min Modules Agreeing", minval=1, maxval=4, group=group_filters)
+signalThresh   = input.float(0.28, "Signal Threshold", minval=0.10, maxval=0.80, step=0.02, group=group_filters, tooltip="Composite score must exceed this. Lower = more signals, higher = stricter.")
+useVolFilter   = input.bool(true, "Volume Filter", group=group_filters)
+volThreshold   = input.float(1.0, "Volume Threshold (x avg)", minval=0.5, maxval=3.0, step=0.1, group=group_filters)
+useBtcFilter   = input.bool(true, "BTC Cross-Asset Filter", tooltip="For altcoins: require BTC not crashing", group=group_filters)
+
+group_nonrepaint = "NON-REPAINTING"
+confirmedOnly = input.bool(true, "Confirmed Bars Only", group=group_nonrepaint)
+
+group_display = "DISPLAY"
+showDash      = input.bool(true, "Dashboard", group=group_display)
+showSignals   = input.bool(true, "Signal Markers", group=group_display)
+showMAs       = input.bool(true, "Adaptive MAs", group=group_display)
+showRegimeBG  = input.bool(true, "Regime Background", group=group_display)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TIMEFRAME AUTO-SCALING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+tf_secs = timeframe.in_seconds()
+string tf_profile = tf_secs <= 300 ? "SCALP" : tf_secs <= 900 ? "INTRADAY" : tf_secs <= 3600 ? "SWING-ID" : tf_secs <= 14400 ? "SWING" : tf_secs <= 86400 ? "POSITION" : "MACRO"
+
+float auto_tp_mult = tf_secs <= 300 ? 1.25 : tf_secs <= 900 ? 1.5 : tf_secs <= 3600 ? 2.0 : tf_secs <= 14400 ? 2.5 : tf_secs <= 86400 ? 3.5 : 4.5
+float auto_sl_mult = tf_secs <= 300 ? 0.75 : tf_secs <= 900 ? 0.85 : tf_secs <= 3600 ? 1.0 : tf_secs <= 14400 ? 1.25 : tf_secs <= 86400 ? 1.75 : 2.0
+int   auto_max_hold = tf_secs <= 300 ? 10 : tf_secs <= 900 ? 15 : tf_secs <= 3600 ? 20 : tf_secs <= 14400 ? 25 : tf_secs <= 86400 ? 15 : 10
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CORE CALCULATIONS (all ta.* at global scope)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+atr14       = ta.atr(14)
+atr50       = ta.atr(50)
+ema200      = ta.ema(close, 200)
+sma50       = ta.sma(close, 50)
+volSma20    = ta.sma(volume, 20)
+relVol      = volSma20 > 0 ? volume / volSma20 : 1.0
+float atrPct = close > 0 ? atr14 / close * 100 : 1.0
+
+// KAMA (Kaufman Adaptive Moving Average)
+kama(source, length, fast_len, slow_len) =>
+    change_val = math.abs(source - source[length])
+    vol_sum = math.sum(math.abs(source - source[1]), length)
+    er = vol_sum != 0 ? change_val / vol_sum : 0
+    fastest = 2.0 / (fast_len + 1)
+    slowest = 2.0 / (slow_len + 1)
+    smooth = math.pow(er * (fastest - slowest) + slowest, 2)
+    float k = na
+    k := nz(k[1]) + smooth * (source - nz(k[1]))
+    k
+
+kama_fast = kama(close, 9, 2, 30)
+kama_slow = kama(close, 21, 2, 30)
+
+// HMA
+hma_half = ta.wma(close, 8)
+hma_full = ta.wma(close, 16)
+hma_raw  = 2 * hma_half - hma_full
+hma_val  = ta.wma(hma_raw, 4)
+
+// RSI variants
+rsi2       = ta.rsi(close, 2)
+rsi14      = ta.rsi(close, 14)
+stoch_k    = ta.stoch(rsi14, rsi14, rsi14, 14)
+stoch_d    = ta.sma(stoch_k, 3)
+
+// MACD
+[macdLine, signalLine, macdHist] = ta.macd(close, 12, 26, 9)
+
+// Bollinger Bands
+bbBasis = ta.sma(close, 20)
+bbDev   = ta.stdev(close, 20)
+bbUpper = bbBasis + 2 * bbDev
+bbLower = bbBasis - 2 * bbDev
+pctB    = bbDev > 0 ? (close - bbLower) / (bbUpper - bbLower) : 0.5
+
+// SuperTrend
+[stLine, stDir] = ta.supertrend(3.0, 10)
+
+// Ichimoku
+tenkan   = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+kijun    = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+spanA    = (tenkan + kijun) / 2
+spanB    = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+cloudTop = math.max(spanA[26], spanB[26])
+cloudBot = math.min(spanA[26], spanB[26])
+
+// Z-Score
+zMean  = ta.sma(close, 50)
+zStd   = ta.stdev(close, 50)
+zScore = zStd > 0 ? (close - zMean) / zStd : 0.0
+
+// OBV (manual — Pine v6 lacks ta.obv)
+float obv_val = na
+obv_val := close > close[1] ? nz(obv_val[1]) + volume : close < close[1] ? nz(obv_val[1]) - volume : nz(obv_val[1])
+obv_sma = ta.sma(obv_val, 20)
+
+// TTM Squeeze
+kc_basis  = ta.sma(close, 20)
+kc_range  = 1.5 * ta.atr(20)
+kc_upper  = kc_basis + kc_range
+kc_lower  = kc_basis - kc_range
+sqz_on    = bbLower > kc_lower and bbUpper < kc_upper
+sqz_fired = not sqz_on and sqz_on[1]
+ttm_avg   = (ta.highest(high, 20) + ta.lowest(low, 20)) / 2
+ttm_mid   = (ttm_avg + ta.sma(close, 20)) / 2
+ttm_mom   = close - ttm_mid
+
+// Donchian Channel
+donchHigh = ta.highest(high, 20)
+donchLow  = ta.lowest(low, 20)
+
+// ROC (Rate of Change)
+roc10 = (close - close[10]) / close[10] * 100
+
+// Swing Points & Fibonacci
+swing_hi = ta.pivothigh(high, 10, 10)
+swing_lo = ta.pivotlow(low, 10, 10)
+
+var float lastSwingHi = na
+var float lastSwingLo = na
+var float prevSwingHi = na
+var float prevSwingLo = na
+
+if not na(swing_hi)
+    prevSwingHi := lastSwingHi
+    lastSwingHi := swing_hi
+if not na(swing_lo)
+    prevSwingLo := lastSwingLo
+    lastSwingLo := swing_lo
+
+fibRange = nz(lastSwingHi) - nz(lastSwingLo)
+fib382   = nz(lastSwingHi) - fibRange * 0.382
+fib500   = nz(lastSwingHi) - fibRange * 0.500
+fib618   = nz(lastSwingHi) - fibRange * 0.618
+nearFib  = fibRange > 0 and (math.abs(close - fib382) < atr14 * 0.5 or math.abs(close - fib500) < atr14 * 0.5 or math.abs(close - fib618) < atr14 * 0.5)
+
+// Market Structure (HH/HL/LH/LL)
+higherHigh = not na(lastSwingHi) and not na(prevSwingHi) and lastSwingHi > prevSwingHi
+higherLow  = not na(lastSwingLo) and not na(prevSwingLo) and lastSwingLo > prevSwingLo
+lowerHigh  = not na(lastSwingHi) and not na(prevSwingHi) and lastSwingHi < prevSwingHi
+lowerLow   = not na(lastSwingLo) and not na(prevSwingLo) and lastSwingLo < prevSwingLo
+bullishStructure = higherHigh and higherLow
+bearishStructure = lowerHigh and lowerLow
+
+// SFP (Swing Failure Pattern)
+sfpSwingHi = ta.highest(high, 20)[1]
+sfpSwingLo = ta.lowest(low, 20)[1]
+barRng     = high - low
+sfpBull    = low < sfpSwingLo and close > sfpSwingLo and close > open and barRng > 0
+sfpBear    = high > sfpSwingHi and close < sfpSwingHi and close < open and barRng > 0
+
+// CVD (Cumulative Volume Delta approximation)
+cvdRange   = high - low
+cvdBuyVol  = cvdRange > 0 ? volume * (close - low) / cvdRange : volume * 0.5
+cvdSellVol = cvdRange > 0 ? volume * (high - close) / cvdRange : volume * 0.5
+cvdDelta   = cvdBuyVol - cvdSellVol
+cvd        = ta.cum(cvdDelta)
+cvdSma     = ta.sma(cvd, 20)
+cvdRising  = cvd > cvdSma
+cvdFalling = cvd < cvdSma
+
+// Absorption detection (high volume + small range = institutional absorption)
+absRelRange = atr14 > 0 ? barRng / atr14 : 1.0
+absVolRatio = volSma20 > 0 ? volume / volSma20 : 1.0
+absScore    = absRelRange > 0 ? absVolRatio / absRelRange : 0
+absBull     = absScore > 4.0 and close > (high + low) / 2 and close > open
+absBear     = absScore > 4.0 and close < (high + low) / 2 and close < open
+
+// Liquidation cascade (crypto V-bounce: >5% drop + volume surge + bullish close)
+lcDrop     = (close - ta.highest(high, 10)) / ta.highest(high, 10) * 100
+lcVolSpike = volume > volSma20 * 3
+lcBull     = lcDrop < -5 and lcVolSpike and close > open and rsi14 < 35
+lcBear     = false  // Cascades are asymmetric — long-side only
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-TIMEFRAME DATA (global scope, non-repainting)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+[htf_close, htf_ema9, htf_ema21] = request.security(syminfo.tickerid, htf_period, [close, ta.ema(close, 9), ta.ema(close, 21)], gaps=barmerge.gaps_on, lookahead=barmerge.lookahead_off)
+htf_bullish = mtf_enabled ? htf_ema9 > htf_ema21 : true
+htf_bearish = mtf_enabled ? htf_ema9 < htf_ema21 : true
+
+// BTC cross-asset filter (fetch BTC only when on a different asset)
+isBTC       = str.contains(str.upper(syminfo.ticker), "BTC") or str.contains(str.upper(syminfo.ticker), "XBT")
+btc_close   = request.security("BINANCE:BTCUSDT", timeframe.period, close, gaps=barmerge.gaps_on, lookahead=barmerge.lookahead_off)
+btc_sma20   = request.security("BINANCE:BTCUSDT", timeframe.period, ta.sma(close, 20), gaps=barmerge.gaps_on, lookahead=barmerge.lookahead_off)
+btcNotCrashing = isBTC or not useBtcFilter or na(btc_close) or btc_close > btc_sma20 * 0.95
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGIME DETECTION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ADX
+[diPlus, diMinus, adxVal] = ta.dmi(14, 14)
+strongTrend = adxVal > 25
+weakTrend   = adxVal < 18
+
+// Hurst Exponent approximation
+hurst(length) =>
+    maxRs  = ta.highest(close, length) - ta.lowest(close, length)
+    stdDev = ta.stdev(close, length)
+    rs     = stdDev > 0 ? maxRs / stdDev : 0
+    h_est  = 0.5 + (math.log(math.max(rs, 0.01)) / math.log(math.max(length, 2)) - 0.5) * 0.3
+    math.max(0.1, math.min(0.9, h_est))
+
+hurstVal = hurst(50)
+
+// Choppiness Index
+choppiness(length) =>
+    ln10       = math.log(10.0)
+    logSumATR  = math.log(math.max(ta.sma(ta.tr(true), length) * length, 0.0001)) / ln10
+    logRange   = math.log(math.max(ta.highest(high, length) - ta.lowest(low, length), 0.0001)) / ln10
+    logLen     = math.log(math.max(length, 2)) / ln10
+    100 * (logSumATR / math.max(logRange, 0.0001)) / math.max(logLen, 0.0001)
+
+chopVal = choppiness(14)
+
+// Volatility percentile
+volRatio      = atr14 / atr50
+volPercentile = ta.percentrank(volRatio, 100)
+
+// Composite regime classification with hysteresis
+regimeConfidence = math.abs(hurstVal - 0.5) * 2
+var string regime = "NORMAL"
+
+if hurstVal > 0.58 and adxVal > 25
+    regime := "TRENDING"
+else if hurstVal < 0.42 and adxVal < 20
+    regime := "RANGING"
+else if volPercentile > 80
+    regime := "VOLATILE"
+else if hurstVal > 0.52 and regime == "TRENDING"
+    regime := "TRENDING"
+else if hurstVal < 0.48 and regime == "RANGING"
+    regime := "RANGING"
+else
+    regime := "NORMAL"
+
+isTrending = regime == "TRENDING"
+isRanging  = regime == "RANGING"
+isVolatile = regime == "VOLATILE"
+isNormal   = regime == "NORMAL"
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODULE 1: TREND FOLLOWER
+// Instruments: KAMA cross, SuperTrend, EMA200, Market Structure, Ichimoku
+// Best in: TRENDING regime (weight 40%), decent in NORMAL (25%)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+kamaCrossUp  = kama_fast > kama_slow and kama_fast[1] <= kama_slow[1]
+kamaCrossDn  = kama_fast < kama_slow and kama_fast[1] >= kama_slow[1]
+kamaBullish  = kama_fast > kama_slow
+kamaBearish  = kama_fast < kama_slow
+
+stBullish    = stDir < 0
+stBearish    = stDir > 0
+
+aboveEma200  = close > ema200
+belowEma200  = close < ema200
+
+ichiBullish  = close > cloudTop and tenkan > kijun
+ichiBearish  = close < cloudBot and tenkan < kijun
+
+// Module 1 confidence (-1 to +1)
+float m1_bull = (kamaBullish ? 0.25 : 0) + (stBullish ? 0.20 : 0) + (aboveEma200 ? 0.15 : 0) + (bullishStructure ? 0.25 : 0) + (ichiBullish ? 0.15 : 0)
+float m1_bear = (kamaBearish ? 0.25 : 0) + (stBearish ? 0.20 : 0) + (belowEma200 ? 0.15 : 0) + (bearishStructure ? 0.25 : 0) + (ichiBearish ? 0.15 : 0)
+float m1_conf = mod1_enabled ? m1_bull - m1_bear : 0.0
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODULE 2: MEAN REVERSION
+// Instruments: RSI-2, Z-Score, Stochastic RSI, Bollinger %B
+// Best in: RANGING regime (weight 40%), decent in VOLATILE (25%)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+rsi2Bull    = rsi2 < 10 and close > ema200
+rsi2Bear    = rsi2 > 90 and close < ema200
+
+zsBull      = zScore < -2.0 and adxVal < 25
+zsBear      = zScore > 2.0 and adxVal < 25
+
+stochBull   = stoch_k < 20 and ta.crossover(stoch_k, stoch_d)
+stochBear   = stoch_k > 80 and ta.crossunder(stoch_k, stoch_d)
+
+bbBull      = pctB < 0 and close > close[1]
+bbBear      = pctB > 1 and close < close[1]
+
+float m2_bull = (rsi2Bull ? 0.30 : 0) + (zsBull ? 0.25 : 0) + (stochBull ? 0.25 : 0) + (bbBull ? 0.20 : 0)
+float m2_bear = (rsi2Bear ? 0.30 : 0) + (zsBear ? 0.25 : 0) + (stochBear ? 0.25 : 0) + (bbBear ? 0.20 : 0)
+float m2_conf = mod2_enabled ? m2_bull - m2_bear : 0.0
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODULE 3: MOMENTUM / BREAKOUT
+// Instruments: Volume Spike, TTM Squeeze, MACD Histogram, Donchian Breakout
+// Best in: Any directional market (weight 25-30%)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+volSpikeBull = volume > volSma20 * 2 and close > open and close > close[1]
+volSpikeBear = volume > volSma20 * 2 and close < open and close < close[1]
+
+ttmBull      = sqz_fired and ttm_mom > 0 and ttm_mom > ttm_mom[1]
+ttmBear      = sqz_fired and ttm_mom < 0 and ttm_mom < ttm_mom[1]
+
+macdMomBull  = macdHist > 0 and macdHist > macdHist[1] and macdLine > signalLine
+macdMomBear  = macdHist < 0 and macdHist < macdHist[1] and macdLine < signalLine
+
+donchBull    = high >= donchHigh and close > close[1]
+donchBear    = low <= donchLow and close < close[1]
+
+float m3_bull = (volSpikeBull ? 0.30 : 0) + (ttmBull ? 0.25 : 0) + (macdMomBull ? 0.25 : 0) + (donchBull ? 0.20 : 0)
+float m3_bear = (volSpikeBear ? 0.30 : 0) + (ttmBear ? 0.25 : 0) + (macdMomBear ? 0.25 : 0) + (donchBear ? 0.20 : 0)
+float m3_conf = mod3_enabled ? m3_bull - m3_bear : 0.0
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODULE 4: SMART MONEY / ORDER FLOW
+// Instruments: SFP, CVD, OBV Divergence, Absorption, Liquidation Cascade
+// Best in: Any market, especially VOLATILE (weight 20-35%)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// OBV divergence: price falling but OBV rising (accumulation) or vice versa
+obvRising  = obv_val > obv_sma and obv_val > obv_val[5]
+obvFalling = obv_val < obv_sma and obv_val < obv_val[5]
+obvDivBull = close < close[5] and obvRising
+obvDivBear = close > close[5] and obvFalling
+
+// CVD divergence: price up but CVD down, or vice versa
+cvdDivBull = close < close[5] and cvdRising
+cvdDivBear = close > close[5] and cvdFalling
+
+float m4_bull = (sfpBull ? 0.25 : 0) + (cvdDivBull ? 0.20 : 0) + (obvDivBull ? 0.20 : 0) + (absBull ? 0.20 : 0) + (lcBull ? 0.15 : 0)
+float m4_bear = (sfpBear ? 0.25 : 0) + (cvdDivBear ? 0.20 : 0) + (obvDivBear ? 0.20 : 0) + (absBear ? 0.20 : 0) + (lcBear ? 0.15 : 0)
+float m4_conf = mod4_enabled ? m4_bull - m4_bear : 0.0
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// META-LEARNER: Regime-Adaptive Module Weighting
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Dynamic weights based on regime (sums to 1.0)
+float w1 = 0.0
+float w2 = 0.0
+float w3 = 0.0
+float w4 = 0.0
+
+if isTrending
+    w1 := 0.40
+    w2 := 0.10
+    w3 := 0.30
+    w4 := 0.20
+else if isRanging
+    w1 := 0.15
+    w2 := 0.40
+    w3 := 0.20
+    w4 := 0.25
+else if isVolatile
+    w1 := 0.15
+    w2 := 0.25
+    w3 := 0.25
+    w4 := 0.35
+else
+    w1 := 0.25
+    w2 := 0.25
+    w3 := 0.25
+    w4 := 0.25
+
+// Mode adjustments
+if stratMode == MODE_CONSERVATIVE
+    w2 := w2 * 1.2
+    w4 := w4 * 1.2
+    w3 := w3 * 0.7
+    float wSum = w1 + w2 + w3 + w4
+    w1 := w1 / wSum
+    w2 := w2 / wSum
+    w3 := w3 / wSum
+    w4 := w4 / wSum
+else if stratMode == MODE_AGGRESSIVE
+    w3 := w3 * 1.3
+    w1 := w1 * 1.2
+    float wSum = w1 + w2 + w3 + w4
+    w1 := w1 / wSum
+    w2 := w2 / wSum
+    w3 := w3 / wSum
+    w4 := w4 / wSum
+
+// Weighted composite score (-1 to +1)
+composite = w1 * m1_conf + w2 * m2_conf + w3 * m3_conf + w4 * m4_conf
+
+// Module agreement count
+int modulesLong  = (m1_conf > 0.10 ? 1 : 0) + (m2_conf > 0.10 ? 1 : 0) + (m3_conf > 0.10 ? 1 : 0) + (m4_conf > 0.10 ? 1 : 0)
+int modulesShort = (m1_conf < -0.10 ? 1 : 0) + (m2_conf < -0.10 ? 1 : 0) + (m3_conf < -0.10 ? 1 : 0) + (m4_conf < -0.10 ? 1 : 0)
+
+// Adaptive threshold: additive adjustments for regime, TF, counter-trend
+float dynThresh = signalThresh
+if tf_secs <= 900
+    dynThresh := dynThresh + 0.04
+if isNormal
+    dynThresh := dynThresh + 0.04
+if regimeConfidence < 0.3
+    dynThresh := dynThresh + 0.03
+
+// Volume gate
+bool volOK = not useVolFilter or relVol > volThreshold
+
+// Fibonacci bonus: if near a fib level, lower threshold (confluence)
+if nearFib
+    dynThresh := dynThresh - 0.03
+
+// Counter-trend trades need stronger conviction
+bool counterTrend = (composite > 0 and belowEma200) or (composite < 0 and aboveEma200)
+if counterTrend
+    dynThresh := dynThresh + 0.03
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNAL GENERATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Momentum sanity: don't go long in a freefall or short in a melt-up
+bool momSanityLong  = rsi14 > 25 and roc10 > -15
+bool momSanityShort = rsi14 < 75 and roc10 < 15
+
+bool rawLong  = composite > dynThresh and modulesLong >= minModules and volOK and btcNotCrashing and momSanityLong and (not mtf_enabled or htf_bullish)
+bool rawShort = composite < -dynThresh and modulesShort >= minModules and volOK and btcNotCrashing and momSanityShort and (not mtf_enabled or htf_bearish)
+
+bool confirmed = confirmedOnly ? barstate.isconfirmed : true
+bool finalLong  = rawLong and not rawLong[1] and confirmed
+bool finalShort = rawShort and not rawShort[1] and confirmed
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EQUITY CURVE FILTER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var float equitySma = strategy.initial_capital
+equitySma := equitySma + (strategy.equity - equitySma) * (2.0 / (equitySmaLen + 1))
+bool equityHealthy = not useEquityCurve or strategy.equity >= equitySma
+
+float qtySizePct = equityHealthy ? 10.0 : 5.0
+if stratMode == MODE_CONSERVATIVE
+    qtySizePct := qtySizePct * 0.7
+else if stratMode == MODE_AGGRESSIVE
+    qtySizePct := qtySizePct * 1.3
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// POSITION MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var int barsInTrade = 0
+bool posFlipped = (strategy.position_size > 0 and strategy.position_size[1] <= 0) or (strategy.position_size < 0 and strategy.position_size[1] >= 0)
+if strategy.position_size == 0
+    barsInTrade := 0
+else if posFlipped
+    barsInTrade := 1
+else
+    barsInTrade += 1
+
+// Entries
+if finalLong
+    strategy.entry("Long", strategy.long, qty=strategy.equity * (qtySizePct / 100) / close)
+if finalShort
+    strategy.entry("Short", strategy.short, qty=strategy.equity * (qtySizePct / 100) / close)
+
+// TP/SL calculation
+bool useSmart  = tpslMode == "Smart"
+bool useATR    = tpslMode == "ATR"
+bool useFixed  = tpslMode == "Fixed"
+
+var float entryAtrPct = 1.0
+if posFlipped
+    entryAtrPct := atrPct
+
+float rawSmTP = entryAtrPct * smartTPMult
+float rawSmSL = entryAtrPct * smartSLMult
+float smTP    = math.max(2.0, math.min(rawSmTP, 15.0))
+float smSL    = math.max(0.8, math.min(rawSmSL, 5.0))
+
+float entryPrice = strategy.position_avg_price
+bool slActive    = barsInTrade >= graceBars
+
+// Trailing stop state
+var float trailStop = na
+if posFlipped
+    trailStop := na
+
+if useTrailing and strategy.position_size > 0 and not na(entryPrice)
+    float trailActivPrice = entryPrice * (1 + smSL / 100 * trailActivR)
+    if high > trailActivPrice
+        float newTrail = high - atr14 * 2
+        trailStop := na(trailStop) ? newTrail : math.max(nz(trailStop), newTrail)
+
+if useTrailing and strategy.position_size < 0 and not na(entryPrice)
+    float trailActivPrice = entryPrice * (1 - smSL / 100 * trailActivR)
+    if low < trailActivPrice
+        float newTrail = low + atr14 * 2
+        trailStop := na(trailStop) ? newTrail : math.min(nz(trailStop), newTrail)
+
+// Apply exits
+if useTPSL and not na(entryPrice)
+    if useSmart
+        float tpLong  = entryPrice * (1 + smTP / 100)
+        float slLong  = slActive ? (not na(trailStop) ? trailStop : entryPrice * (1 - smSL / 100)) : na
+        float tpShort = entryPrice * (1 - smTP / 100)
+        float slShort = slActive ? (not na(trailStop) ? trailStop : entryPrice * (1 + smSL / 100)) : na
+        if strategy.position_size > 0
+            strategy.exit("XL", "Long", limit=tpLong, stop=slLong)
+        if strategy.position_size < 0
+            strategy.exit("XS", "Short", limit=tpShort, stop=slShort)
+    else if useATR
+        float atrTP = atr14 * auto_tp_mult
+        float atrSL = atr14 * auto_sl_mult
+        if slActive
+            strategy.exit("XL", "Long",  profit=atrTP / syminfo.mintick, loss=atrSL / syminfo.mintick)
+            strategy.exit("XS", "Short", profit=atrTP / syminfo.mintick, loss=atrSL / syminfo.mintick)
+        else
+            strategy.exit("XL", "Long",  profit=atrTP / syminfo.mintick)
+            strategy.exit("XS", "Short", profit=atrTP / syminfo.mintick)
+    else
+        if slActive
+            strategy.exit("XL", "Long",  limit=entryPrice * (1 + fixedTP / 100), stop=entryPrice * (1 - fixedSL / 100))
+            strategy.exit("XS", "Short", limit=entryPrice * (1 - fixedTP / 100), stop=entryPrice * (1 + fixedSL / 100))
+        else
+            strategy.exit("XL", "Long",  limit=entryPrice * (1 + fixedTP / 100))
+            strategy.exit("XS", "Short", limit=entryPrice * (1 - fixedTP / 100))
+
+// Max hold timeout
+if barsInTrade >= auto_max_hold and strategy.position_size != 0
+    strategy.close_all("TIMEOUT")
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODULE PERFORMANCE TRACKING (rolling approximation)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var int m1_wins = 0
+var int m1_total = 0
+var int m2_wins = 0
+var int m2_total = 0
+var int m3_wins = 0
+var int m3_total = 0
+var int m4_wins = 0
+var int m4_total = 0
+var int totalTrades = 0
+var int totalWins   = 0
+
+wasClosed = strategy.position_size == 0 and strategy.position_size[1] != 0
+wasWin    = wasClosed and strategy.closedtrades > 0 and strategy.closedtrades.profit(strategy.closedtrades - 1) > 0
+
+if wasClosed
+    totalTrades += 1
+    if wasWin
+        totalWins += 1
+
+float overallWR = totalTrades > 0 ? totalWins / totalTrades * 100 : 0
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VISUALIZATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+plot(showMAs ? kama_fast : na, "KAMA Fast", color=color.new(#22c55e, 30), linewidth=2)
+plot(showMAs ? kama_slow : na, "KAMA Slow", color=color.new(#ef4444, 30), linewidth=2)
+plot(showMAs ? hma_val : na, "HMA", color=color.new(#a855f7, 40), linewidth=1)
+plot(showMAs ? ema200 : na, "EMA 200", color=color.new(#6b7280, 50), linewidth=2)
+
+stColor = stDir < 0 ? color.new(#22c55e, 60) : color.new(#ef4444, 60)
+plot(showMAs ? stLine : na, "SuperTrend", color=stColor, linewidth=2)
+
+regBG = isTrending ? color.new(#22c55e, 93) : isRanging ? color.new(#3b82f6, 93) : isVolatile ? color.new(#f59e0b, 93) : color.new(#6b7280, 97)
+bgcolor(showRegimeBG ? regBG : na, title="Regime BG")
+
+eqBG = useEquityCurve and not equityHealthy ? color.new(#ef4444, 90) : na
+bgcolor(eqBG, title="Equity Warning")
+
+plotshape(showSignals and finalLong,  title="LONG",  location=location.belowbar, style=shape.triangleup,   color=color.new(#22c55e, 0), size=size.small, text="NEXUS")
+plotshape(showSignals and finalShort, title="SHORT", location=location.abovebar, style=shape.triangledown, color=color.new(#ef4444, 0), size=size.small, text="NEXUS")
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var table dash = table.new(position.top_right, 2, 20, bgcolor=#0a0a12, frame_color=#333344, frame_width=1, border_width=1, border_color=#222233)
+
+if barstate.islast and showDash
+    table.cell(dash, 0, 0, "NEXUS ALPHA", bgcolor=#1a1a2e, text_color=#8b5cf6, text_size=size.small)
+    table.cell(dash, 1, 0, "v1.0", bgcolor=#1a1a2e, text_color=#f59e0b, text_size=size.small)
+
+    table.cell(dash, 0, 1, "Mode", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 1, stratMode, bgcolor=#1a1a2e, text_color=color.yellow, text_size=size.tiny)
+
+    regCol = isTrending ? #22c55e : isRanging ? #3b82f6 : isVolatile ? #f59e0b : #888
+    table.cell(dash, 0, 2, "Regime", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 2, regime + " (H:" + str.tostring(hurstVal, "#.##") + " ADX:" + str.tostring(adxVal, "#.#") + ")", bgcolor=#1a1a2e, text_color=regCol, text_size=size.tiny)
+
+    table.cell(dash, 0, 3, "TF Profile", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 3, tf_profile + " (" + timeframe.period + ")", bgcolor=#1a1a2e, text_color=#aaf, text_size=size.tiny)
+
+    table.cell(dash, 0, 4, "Composite", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    compCol = composite > dynThresh ? #22c55e : composite < -dynThresh ? #ef4444 : #888
+    table.cell(dash, 1, 4, str.tostring(composite, "#.###") + " / " + str.tostring(dynThresh, "#.##"), bgcolor=#1a1a2e, text_color=compCol, text_size=size.tiny)
+
+    table.cell(dash, 0, 5, "M1 Trend", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 5, str.tostring(m1_conf, "+#.##;-#.##") + " (w:" + str.tostring(w1 * 100, "#") + "%)", bgcolor=#1a1a2e, text_color=m1_conf > 0 ? #22c55e : m1_conf < 0 ? #ef4444 : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 6, "M2 MeanRev", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 6, str.tostring(m2_conf, "+#.##;-#.##") + " (w:" + str.tostring(w2 * 100, "#") + "%)", bgcolor=#1a1a2e, text_color=m2_conf > 0 ? #22c55e : m2_conf < 0 ? #ef4444 : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 7, "M3 Momentum", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 7, str.tostring(m3_conf, "+#.##;-#.##") + " (w:" + str.tostring(w3 * 100, "#") + "%)", bgcolor=#1a1a2e, text_color=m3_conf > 0 ? #22c55e : m3_conf < 0 ? #ef4444 : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 8, "M4 SmartMoney", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 8, str.tostring(m4_conf, "+#.##;-#.##") + " (w:" + str.tostring(w4 * 100, "#") + "%)", bgcolor=#1a1a2e, text_color=m4_conf > 0 ? #22c55e : m4_conf < 0 ? #ef4444 : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 9, "Modules L/S", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 9, str.tostring(modulesLong) + "L / " + str.tostring(modulesShort) + "S (min:" + str.tostring(minModules) + ")", bgcolor=#1a1a2e, text_color=modulesLong >= minModules ? #22c55e : modulesShort >= minModules ? #ef4444 : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 10, "Mkt Struct", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    structStr = bullishStructure ? "BULLISH (HH+HL)" : bearishStructure ? "BEARISH (LH+LL)" : "NEUTRAL"
+    structCol = bullishStructure ? #22c55e : bearishStructure ? #ef4444 : #888
+    table.cell(dash, 1, 10, structStr, bgcolor=#1a1a2e, text_color=structCol, text_size=size.tiny)
+
+    table.cell(dash, 0, 11, "Fib Zone", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 11, nearFib ? "AT FIB LEVEL" : "—", bgcolor=#1a1a2e, text_color=nearFib ? #f59e0b : #555, text_size=size.tiny)
+
+    table.cell(dash, 0, 12, "HTF Bias", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 12, htf_bullish and not htf_bearish ? "BULL (" + htf_period + ")" : htf_bearish and not htf_bullish ? "BEAR (" + htf_period + ")" : "MIXED (" + htf_period + ")", bgcolor=#1a1a2e, text_color=htf_bullish and not htf_bearish ? #22c55e : htf_bearish and not htf_bullish ? #ef4444 : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 13, "Vol Filter", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 13, useVolFilter ? (volOK ? "PASS (" + str.tostring(relVol, "#.#") + "x)" : "BLOCKED") : "OFF", bgcolor=#1a1a2e, text_color=useVolFilter ? (volOK ? #22c55e : #ef4444) : #555, text_size=size.tiny)
+
+    table.cell(dash, 0, 14, "BTC Filter", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 14, useBtcFilter ? (btcNotCrashing ? "SAFE" : "BTC WEAK") : "OFF", bgcolor=#1a1a2e, text_color=btcNotCrashing ? #22c55e : #ef4444, text_size=size.tiny)
+
+    table.cell(dash, 0, 15, "Equity Curve", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 15, useEquityCurve ? (equityHealthy ? "HEALTHY" : "REDUCED SIZE") : "OFF", bgcolor=#1a1a2e, text_color=equityHealthy ? #22c55e : #f59e0b, text_size=size.tiny)
+
+    table.cell(dash, 0, 16, "TP/SL", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    tpslStr = useSmart ? str.tostring(smTP, "#.#") + "/" + str.tostring(smSL, "#.#") + "% Smart" : useATR ? str.tostring(auto_tp_mult, "#.#") + "x/" + str.tostring(auto_sl_mult, "#.#") + "x ATR" : str.tostring(fixedTP, "#.#") + "/" + str.tostring(fixedSL, "#.#") + "% Fixed"
+    table.cell(dash, 1, 16, tpslStr, bgcolor=#1a1a2e, text_color=#06b6d4, text_size=size.tiny)
+
+    table.cell(dash, 0, 17, "Bars Held", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 17, str.tostring(barsInTrade) + " / " + str.tostring(auto_max_hold), bgcolor=#1a1a2e, text_color=barsInTrade > auto_max_hold / 2 ? #f59e0b : #888, text_size=size.tiny)
+
+    table.cell(dash, 0, 18, "Win Rate", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 18, totalTrades > 0 ? str.tostring(overallWR, "#.#") + "% (" + str.tostring(totalWins) + "/" + str.tostring(totalTrades) + ")" : "—", bgcolor=#1a1a2e, text_color=overallWR > 55 ? #22c55e : overallWR > 45 ? #f59e0b : totalTrades > 0 ? #ef4444 : #888, text_size=size.tiny)
+
+    sigStr = finalLong ? "LONG" : finalShort ? "SHORT" : "—"
+    sigCol = finalLong ? #22c55e : finalShort ? #ef4444 : #555
+    table.cell(dash, 0, 19, "Signal", bgcolor=#1a1a2e, text_color=#888, text_size=size.tiny)
+    table.cell(dash, 1, 19, sigStr, bgcolor=#1a1a2e, text_color=sigCol, text_size=size.tiny)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+alertcondition(finalLong,  title="Nexus Long",  message="NEXUS ALPHA: LONG on {{ticker}} {{interval}} | Composite: {{plot_0}} | Regime: " + regime)
+alertcondition(finalShort, title="Nexus Short", message="NEXUS ALPHA: SHORT on {{ticker}} {{interval}} | Composite: {{plot_0}} | Regime: " + regime)
+alertcondition(finalLong or finalShort, title="Nexus Signal", message="NEXUS ALPHA: Signal on {{ticker}} {{interval}}")

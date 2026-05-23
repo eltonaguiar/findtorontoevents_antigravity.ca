@@ -1,0 +1,146 @@
+name: Rapid Fire - NOW Scanner
+
+on:
+  schedule:
+    - cron: '14,44 * * * *'  # Every 30 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: now-scanner
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # secrets.GITHUB_TOKEN is not defined  use github.token or PAT for push
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Track existing picks (TP/SL/time exits)
+        run: |
+          echo "============================================"
+          echo "  RAPID FIRE  Pick Tracker (TP/SL resolve)"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python rapid_fire_data/pick_tracker.py
+
+      - name: Run Rapid Fire Scanner
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+        run: |
+          echo "============================================"
+          echo "  RAPID FIRE  Real-Time 1h Crypto Scanner"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python NOW.py
+
+      - name: Send FreshPicks to Discord
+        env:
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_FRESHPICKS" ] && [ -f "rapid_fire_data/active_picks.json" ]; then
+            python3 -c "
+          import json, os, sys
+          sys.path.insert(0, '.')
+
+          picks_path = 'rapid_fire_data/active_picks.json'
+          if not os.path.exists(picks_path):
+              print('No active picks')
+              exit(0)
+
+          picks = json.load(open(picks_path))
+          if not picks:
+              print('No picks to send')
+              exit(0)
+
+          try:
+              from cross_aggregation.freshpicks_notify import send_fresh_pick
+              dashboard = 'https://findtorontoevents.ca/findcryptopairs/now.html'
+              stats = {'total': len(picks), 'active': len(picks), 'wins': 0, 'losses': 0,
+                       'win_rate': 0, 'tracking_since': '$(date +%b\ %d)'}
+              sent = 0
+              for p in picks[:5]:  # Top 5 only
+                  fp = {
+                      'symbol': p.get('symbol', ''),
+                      'direction': p.get('direction', 'LONG'),
+                      'entry_price': p.get('entry_price', 0),
+                      'tp_price': p.get('tp_price_1_5', 0),
+                      'sl_price': p.get('sl_price', 0),
+                      'confidence': p.get('confidence', 0) / 100,
+                      'strategy': p.get('strategy', 'unknown'),
+                      'reason': (p.get('reason', '') or '')[:200],
+                  }
+                  if send_fresh_pick('Rapid Fire', fp, dashboard, stats=stats):
+                      sent += 1
+              print(f'Sent {sent} Rapid Fire picks to #fresh-picks')
+          except Exception as e:
+              print(f'Discord notify failed (non-fatal): {e}')
+          " || echo "Discord notification failed (non-fatal)"
+          else
+            echo "No DISCORD_WEBHOOK_FRESHPICKS or no picks"
+          fi
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add findcryptopairs/now.html rapid_fire_data/ || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git stash
+            git pull --rebase -X theirs origin main 2>/dev/null || {
+              git rebase --abort 2>/dev/null || true
+              git checkout --theirs -- alpha_engine/data/ 2>/dev/null || true
+              git add alpha_engine/data/ 2>/dev/null
+              git pull --no-rebase -X theirs origin main 2>/dev/null || true
+            }
+            git stash pop || {
+              # Resolve any stash pop conflicts by accepting our (stashed) version
+              # BUG FIX 2026-04-05 (mirrors 108b99aa85): comment already said "accepting our",
+              # but code tried --theirs first — silently reverting this workflow's regenerated
+              # files. Flipped to try --ours first so the comment matches the behavior.
+              git diff --name-only --diff-filter=U | while read -r f; do
+                git checkout --ours -- "$f" 2>/dev/null || git checkout --theirs -- "$f" 2>/dev/null || true
+                git add "$f" 2>/dev/null || true
+              done
+            }
+            git add findcryptopairs/now.html rapid_fire_data/ || true
+            git diff --cached --quiet && echo "No changes after pull" && exit 0
+            # issue #141: block conflict-marker commits after stash-pop recovery
+            bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+            git commit -m "Rapid Fire scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            for i in 1 2 3 4 5; do
+              git pull --rebase -X theirs origin main 2>/dev/null || {
+                git rebase --abort 2>/dev/null || true
+                git checkout --theirs -- alpha_engine/data/ 2>/dev/null || true
+                git add alpha_engine/data/ 2>/dev/null
+                git pull --no-rebase -X theirs origin main 2>/dev/null || true
+              }
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep $((i * 3))
+            done
+          fi
+

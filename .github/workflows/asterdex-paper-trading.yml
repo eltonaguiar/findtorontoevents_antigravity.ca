@@ -1,0 +1,237 @@
+name: AsterDEX Paper Trading
+
+on:
+  schedule:
+    - cron: '5 * * * *' # Every hour at :05
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Trading mode'
+        required: false
+        default: 'paper'
+      balance:
+        description: 'Starting balance (only used on first run)'
+        required: false
+        default: '1000'
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  trade:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-05-13: 4m insufficient for large-repo checkout + deps + trade step on queue delay.
+    timeout-minutes: 12
+    concurrency:
+      group: asterdex-paper-trading-${{ github.event_name }}
+      cancel-in-progress: ${{ github.event_name == 'push' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy
+
+      - name: Run strategy scanner
+        run: |
+          python -m trading.strategy_runner \
+            --mode ${{ github.event.inputs.mode || 'paper' }} \
+            --balance ${{ github.event.inputs.balance || '1000' }} \
+            --once 2>&1 | tee trading/data/last_run.txt
+
+      - name: Generate dashboard data
+        run: |
+          python << 'PYEOF'
+          import json, sqlite3
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          db_path = Path("trading/data/positions.db")
+          out_path = Path("trading/data/dashboard_data.json")
+          out_path.parent.mkdir(parents=True, exist_ok=True)
+
+          if not db_path.exists():
+              out_path.write_text(json.dumps({"error": "No positions DB yet"}))
+              exit(0)
+
+          conn = sqlite3.connect(str(db_path))
+          conn.row_factory = sqlite3.Row
+
+          # Open positions
+          open_pos = [dict(r) for r in conn.execute(
+              "SELECT * FROM positions WHERE status='OPEN' ORDER BY opened_at DESC"
+          ).fetchall()]
+
+          # Closed positions (last 50)
+          closed_pos = [dict(r) for r in conn.execute(
+              "SELECT * FROM positions WHERE status!='OPEN' ORDER BY closed_at DESC LIMIT 50"
+          ).fetchall()]
+
+          # Balance history
+          balance_log = [dict(r) for r in conn.execute(
+              "SELECT * FROM balance_log ORDER BY id"
+          ).fetchall()]
+
+          # Stats
+          wins = sum(1 for p in closed_pos if (p.get("pnl_usd") or 0) > 0)
+          losses = sum(1 for p in closed_pos if (p.get("pnl_usd") or 0) <= 0)
+          total_pnl = sum(p.get("pnl_usd") or 0 for p in closed_pos)
+          current_balance = balance_log[-1]["balance"] if balance_log else 1000
+          peak = max(b["balance"] for b in balance_log) if balance_log else 1000
+
+          # Strategy breakdown
+          strat_stats = {}
+          for p in closed_pos:
+              s = p.get("strategy", "unknown")
+              if s not in strat_stats:
+                  strat_stats[s] = {"wins": 0, "losses": 0, "pnl": 0}
+              if (p.get("pnl_usd") or 0) > 0:
+                  strat_stats[s]["wins"] += 1
+              else:
+                  strat_stats[s]["losses"] += 1
+              strat_stats[s]["pnl"] += p.get("pnl_usd") or 0
+
+          dashboard = {
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "mode": "PAPER",
+              "balance": round(current_balance, 2),
+              "peak_balance": round(peak, 2),
+              "drawdown_pct": round(((peak - current_balance) / peak) * 100, 2) if peak > 0 else 0,
+              "total_trades": len(closed_pos),
+              "wins": wins,
+              "losses": losses,
+              "win_rate": round(wins / len(closed_pos) * 100, 1) if closed_pos else 0,
+              "total_pnl_usd": round(total_pnl, 2),
+              "open_positions": open_pos,
+              "recent_trades": closed_pos[:20],
+              "equity_curve": [{"timestamp": b["timestamp"], "balance": b["balance"]} for b in balance_log],
+              "strategy_breakdown": strat_stats,
+          }
+
+          out_path.write_text(json.dumps(dashboard, indent=2, default=str))
+          print(f"Dashboard data: {len(open_pos)} open, {len(closed_pos)} closed, balance=${current_balance:,.2f}")
+          conn.close()
+          PYEOF
+
+      - name: Commit results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "bot@findtorontoevents.ca"
+          git config --local user.name "AsterDEX Paper Trader"
+          git add -f trading/data/positions.db 2>/dev/null || true
+          git add trading/data/dashboard_data.json trading/data/signals_log.json trading/data/last_run.txt 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "AsterDEX paper trade: $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" main 2>/dev/null || true
+              bash .github/scripts/safe_push.sh "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          fi
+
+      - name: Deploy dashboard to FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::warning::FTP credentials not configured. Skipping deploy."
+            exit 0
+          fi
+
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+
+          REMOTE_DIR="/findtorontoevents.ca/findstocks/trading"
+
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+          set ssl:verify-certificate no
+          set net:timeout 30
+          set net:max-retries 3
+          mkdir -p $REMOTE_DIR
+          cd $REMOTE_DIR
+          put trading/dashboard.html -o index.html
+          mkdir -p data
+          cd data
+          put trading/data/dashboard_data.json
+          echo "Upload complete"
+          bye
+          FTPEOF
+
+          if [ $? -eq 0 ]; then
+            echo "Deployed to: https://findtorontoevents.ca/findstocks/trading/"
+          else
+            echo "::warning::FTP upload failed"
+          fi
+
+  daily-summary:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
+    needs: trade
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Post Discord summary
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python << 'PYEOF'
+          import os, json, requests
+          from pathlib import Path
+
+          webhook = os.getenv("DISCORD_WEBHOOK_URL")
+          if not webhook:
+              print("No Discord webhook configured")
+              exit(0)
+
+          data_path = Path("trading/data/dashboard_data.json")
+          if not data_path.exists():
+              exit(0)
+
+          d = json.loads(data_path.read_text())
+
+          fields = [
+              {"name": "Balance", "value": f"${d.get('balance', 0):,.2f}", "inline": True},
+              {"name": "PnL", "value": f"${d.get('total_pnl_usd', 0):+,.2f}", "inline": True},
+              {"name": "Win Rate", "value": f"{d.get('win_rate', 0):.1f}%", "inline": True},
+              {"name": "Trades", "value": f"{d.get('total_trades', 0)} ({d.get('wins', 0)}W/{d.get('losses', 0)}L)", "inline": True},
+              {"name": "Drawdown", "value": f"{d.get('drawdown_pct', 0):.1f}%", "inline": True},
+              {"name": "Open Positions", "value": str(len(d.get('open_positions', []))), "inline": True},
+          ]
+
+          embed = {
+              "title": "AsterDEX Paper Trading Daily Summary",
+              "color": 0x22c55e if d.get("total_pnl_usd", 0) >= 0 else 0xef4444,
+              "fields": fields,
+              "footer": {"text": f"Mode: {d.get('mode', 'PAPER')} | {d.get('generated_at', '')}"},
+          }
+
+          try:
+              requests.post(webhook, json={"embeds": [embed]}, timeout=10)
+              print("Discord summary sent")
+          except Exception as e:
+              print(f"Discord failed: {e}")
+          PYEOF
+

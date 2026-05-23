@@ -1,0 +1,315 @@
+//@version=5
+strategy("Simpletonv0.01_STEPFUN_Strategy", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.1, initial_capital=10000, pyramiding=0)
+
+// ============================================
+// STEPFUN STRATEGY - BACKTESTABLE VERSION
+// Non-repainting by default | Strength levels 1-4
+// ============================================
+
+// ——— INPUT PARAMETERS ———
+use_non_repainting = input.bool(true, "Non-Repainting (Recommended)")
+
+// Strategy toggles
+enable_rsi2 = input.bool(true, "Enable RSI-2 Strategy")
+enable_macd = input.bool(true, "Enable MACD Crossover")
+enable_bb_squeeze = input.bool(true, "Enable Bollinger Squeeze")
+enable_volume_spike = input.bool(true, "Enable Volume Spike")
+enable_triple_ema = input.bool(true, "Enable Triple EMA")
+enable_ichimoku = input.bool(true, "Enable Ichimoku Cloud")
+enable_multi_confirmation = input.bool(true, "Enable Multi-Indicator Confirmation")
+
+// Strategy weights for ensemble
+weight_rsi2 = input.float(1.0, "RSI-2 Weight", minval=0.0, maxval=3.0)
+weight_macd = input.float(1.0, "MACD Weight", minval=0.0, maxval=3.0)
+weight_bb = input.float(1.0, "Bollinger Weight", minval=0.0, maxval=3.0)
+weight_volume = input.float(1.2, "Volume Spike Weight", minval=0.0, maxval=3.0)
+weight_ema = input.float(0.8, "Triple EMA Weight", minval=0.0, maxval=3.0)
+weight_ichimoku = input.float(0.9, "Ichimoku Weight", minval=0.0, maxval=3.0)
+weight_multi = input.float(1.5, "Multi-Conf Weight", minval=0.0, maxval=3.0)
+
+// Strength threshold
+min_strength = input.int(2, "Minimum Signal Strength", minval=1, maxval=4)
+
+// TP/SL controls
+enable_tp_sl = input.bool(true, "Enable TP/SL")
+tp_percent = input.float(2.0, "Take Profit %", minval=0.1, step=0.1)
+sl_percent = input.float(1.0, "Stop Loss %", minval=0.1, step=0.1)
+
+// Position sizing
+position_size_pct = input.float(100.0, "Position Size %", minval=1.0, maxval=100.0)
+
+// ============================================
+// CALCULATE INDICATORS
+// ============================================
+
+// RSI-2 (Larry Connors proven strategy)
+rsi2 = ta.rsi(close, 2)
+rsi2_oversold = 30
+rsi2_overbought = 70
+rsi2_buy = use_non_repainting ? (rsi2[1] < rsi2_oversold and rsi2 >= rsi2_oversold) : (rsi2 < rsi2_oversold)
+rsi2_sell = use_non_repainting ? (rsi2[1] > rsi2_overbought and rsi2 <= rsi2_overbought) : (rsi2 > rsi2_overbought)
+
+// MACD Crossover
+[macd_line, signal_line, _] = ta.macd(close, 12, 26, 9)
+macd_buy = use_non_repainting ? (macd_line[1] <= signal_line[1] and macd_line > signal_line) : (macd_line > signal_line)
+macd_sell = use_non_repainting ? (macd_line[1] >= signal_line[1] and macd_line < signal_line) : (macd_line < signal_line)
+
+// Bollinger Band Squeeze
+bb_length = 20
+bb_std = 2.0
+bb_basis = ta.sma(close, bb_length)
+bb_upper = bb_basis + bb_std * ta.stdev(close, bb_length)
+bb_lower = bb_basis - bb_std * ta.stdev(close, bb_length)
+bb_width = (bb_upper - bb_lower) / bb_basis
+bb_squeeze_threshold = 0.05
+bb_squeeze = bb_width < bb_squeeze_threshold
+bb_buy = use_non_repainting ? (close[1] <= bb_lower[1] and close > bb_lower and bb_squeeze) : (close <= bb_lower and bb_squeeze)
+bb_sell = use_non_repainting ? (close[1] >= bb_upper[1] and close < bb_upper and bb_squeeze) : (close >= bb_upper and bb_squeeze)
+
+// Volume Spike (2x average + price confirmation)
+volume_ma = ta.sma(volume, 20)
+volume_spike_multiplier = 2.0
+volume_spike = volume > volume_ma * volume_spike_multiplier
+volume_buy = volume_spike and close > open and close > close[1]
+volume_sell = volume_spike and close < open and close < close[1]
+
+// Triple EMA Stack
+ema_fast = ta.ema(close, 5)
+ema_mid = ta.ema(close, 10)
+ema_slow = ta.ema(close, 20)
+ema_buy = ema_fast > ema_mid and ema_mid > ema_slow and ema_fast > ema_fast[1]
+ema_sell = ema_fast < ema_mid and ema_mid < ema_slow and ema_fast < ema_fast[1]
+
+// Ichimoku Cloud
+tenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+kijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+senkou_span_a = (tenkan + kijun) / 2
+senkou_span_b = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+ichimoku_buy = close > tenkan and close > kijun and close > senkou_span_a and close > senkou_span_b
+ichimoku_sell = close < tenkan and close < kijun and close < senkou_span_a and close < senkou_span_b
+
+// Multi-Indicator Confirmation (4+ indicators agree)
+confirmation_count = 0
+total_enabled = 0
+
+if enable_rsi2
+    total_enabled += 1
+    if rsi2_buy
+        confirmation_count += 1
+    if rsi2_sell
+        confirmation_count -= 1
+
+if enable_macd
+    total_enabled += 1
+    if macd_buy
+        confirmation_count += 1
+    if macd_sell
+        confirmation_count -= 1
+
+if enable_bb_squeeze
+    total_enabled += 1
+    if bb_buy
+        confirmation_count += 1
+    if bb_sell
+        confirmation_count -= 1
+
+if enable_volume_spike
+    total_enabled += 1
+    if volume_buy
+        confirmation_count += 1
+    if volume_sell
+        confirmation_count -= 1
+
+if enable_triple_ema
+    total_enabled += 1
+    if ema_buy
+        confirmation_count += 1
+    if ema_sell
+        confirmation_count -= 1
+
+if enable_ichimoku
+    total_enabled += 1
+    if ichimoku_buy
+        confirmation_count += 1
+    if ichimoku_sell
+        confirmation_count -= 1
+
+// Multi-confirmation requires at least 4 agreeing indicators (75% if 5 enabled, 66% if 4 enabled)
+multi_buy = confirmation_count >= math.max(math.ceil(total_enabled * 0.75), 3)
+multi_sell = confirmation_count <= -math.max(math.ceil(total_enabled * 0.75), 3)
+
+// ============================================
+// STRENGTH CALCULATION (1-4)
+// ============================================
+
+calc_strength(confirm_count, total) =>
+    if total == 0
+        0
+    else
+        ratio = math.abs(confirm_count) / total
+        if ratio >= 0.8  // 80%+ agreement
+            4
+        else if ratio >= 0.6  // 60-79% agreement
+            3
+        else if ratio >= 0.4  // 40-59% agreement
+            2
+        else
+            1
+
+raw_strength = calc_strength(confirmation_count, total_enabled)
+
+// Boost strength for volume spike (high reliability)
+if enable_volume_spike and (volume_buy or volume_sell)
+    raw_strength := math.min(raw_strength + 1, 4)
+
+// Boost strength for multi-confirmation
+if enable_multi_confirmation and (multi_buy or multi_sell)
+    raw_strength := math.min(raw_strength + 1, 4)
+
+final_strength = raw_strength
+
+// ============================================
+// WEIGHTED VOTING SYSTEM
+// ============================================
+
+buy_score = 0.0
+sell_score = 0.0
+
+if enable_rsi2
+    buy_score += (rsi2_buy ? weight_rsi2 : 0)
+    sell_score += (rsi2_sell ? weight_rsi2 : 0)
+
+if enable_macd
+    buy_score += (macd_buy ? weight_macd : 0)
+    sell_score += (macd_sell ? weight_macd : 0)
+
+if enable_bb_squeeze
+    buy_score += (bb_buy ? weight_bb : 0)
+    sell_score += (bb_sell ? weight_bb : 0)
+
+if enable_volume_spike
+    buy_score += (volume_buy ? weight_volume : 0)
+    sell_score += (volume_sell ? weight_volume : 0)
+
+if enable_triple_ema
+    buy_score += (ema_buy ? weight_ema : 0)
+    sell_score += (ema_sell ? weight_ema : 0)
+
+if enable_ichimoku
+    buy_score += (ichimoku_buy ? weight_ichimoku : 0)
+    sell_score += (ichimoku_sell ? weight_ichimoku : 0)
+
+if enable_multi_confirmation
+    buy_score += (multi_buy ? weight_multi : 0)
+    sell_score += (multi_sell ? weight_multi : 0)
+
+// Normalize scores
+total_weight = weight_rsi2 + weight_macd + weight_bb + weight_volume + weight_ema + weight_ichimoku + weight_multi
+buy_norm = total_weight > 0 ? buy_score / total_weight : 0
+sell_norm = total_weight > 0 ? sell_score / total_weight : 0
+
+// Final decision
+buy_signal = buy_norm > sell_norm and buy_norm >= 0.5 and final_strength >= min_strength
+sell_signal = sell_norm > buy_norm and sell_norm >= 0.5 and final_strength >= min_strength
+
+// ============================================
+// STRATEGY EXECUTION
+// ============================================
+
+// Calculate TP/SL levels
+float tp_price = na
+float sl_price = na
+if enable_tp_sl
+    tp_price := buy_signal ? close * (1 + tp_percent / 100) : sell_signal ? close * (1 - tp_percent / 100) : na
+    sl_price := buy_signal ? close * (1 - sl_percent / 100) : sell_signal ? close * (1 + sl_percent / 100) : na
+
+// Entry logic
+if buy_signal and strategy.position_size == 0
+    strategy.entry("Long", strategy.long, qty=position_size_pct)
+    if enable_tp_sl
+        strategy.exit("Long Exit", "Long", limit=tp_price, stop=sl_price)
+
+if sell_signal and strategy.position_size == 0
+    strategy.entry("Short", strategy.short, qty=position_size_pct)
+    if enable_tp_sl
+        strategy.exit("Short Exit", "Short", limit=tp_price, stop=sl_price)
+
+// Exit on opposite signal
+if buy_signal and strategy.position_size < 0
+    strategy.close("Short", comment="Opposite Signal")
+    strategy.entry("Long", strategy.long, qty=position_size_pct)
+    if enable_tp_sl
+        strategy.exit("Long Exit", "Long", limit=tp_price, stop=sl_price)
+
+if sell_signal and strategy.position_size > 0
+    strategy.close("Long", comment="Opposite Signal")
+    strategy.entry("Short", strategy.short, qty=position_size_pct)
+    if enable_tp_sl
+        strategy.exit("Short Exit", "Short", limit=tp_price, stop=sl_price)
+
+// ============================================
+// PLOTTING
+// ============================================
+
+// Signal arrows
+plotshape(buy_signal, title="BUY Signal", location=location.belowbar, color=color.new(color.green, 0), style=shape.triangleup, size=size.small, textcolor=color.white)
+
+plotshape(sell_signal, title="SELL Signal", location=location.abovebar, color=color.new(color.red, 0), style=shape.triangledown, size=size.small, textcolor=color.white)
+
+// Background color for signals
+bgcolor(buy_signal ? color.new(color.green, 85) : na)
+bgcolor(sell_signal ? color.new(color.red, 85) : na)
+
+// TP/SL levels visualization
+float tp_level = na
+float sl_level = na
+if enable_tp_sl and (buy_signal or sell_signal)
+    tp_level := buy_signal ? close * (1 + tp_percent / 100) : close * (1 - tp_percent / 100)
+    sl_level := buy_signal ? close * (1 - sl_percent / 100) : close * (1 + sl_percent / 100)
+    
+    // Only show on most recent bars
+    if bar_index >= bar_index[10]
+        line.new(bar_index - 1, tp_level, bar_index, tp_level, color=color.new(color.green, 70), width=1, style=line.style_dashed)
+        line.new(bar_index - 1, sl_level, bar_index, sl_level, color=color.new(color.red, 70), width=1, style=line.style_dashed)
+
+// ============================================
+// PERFORMANCE TABLE
+// ============================================
+var table perf_table = table.new(position.top_right, 2, 10, border_width=1)
+
+if barstate.islast
+    table.cell(perf_table, 0, 0, "STEPFUN Strategy", bgcolor=color.blue, text_color=color.white)
+    table.cell(perf_table, 1, 0, "Value", bgcolor=color.blue, text_color=color.white)
+    
+    table.cell(perf_table, 0, 1, "Signal", bgcolor=buy_signal ? color.green : sell_signal ? color.red : color.gray)
+    table.cell(perf_table, 1, 1, buy_signal ? "BUY" : sell_signal ? "SELL" : "HOLD", text_color=buy_signal ? color.white : sell_signal ? color.white : color.black)
+    
+    table.cell(perf_table, 0, 2, "Strength", bgcolor=color.orange)
+    table.cell(perf_table, 1, 2, str.tostring(final_strength) + "/4", text_color=color.white)
+    
+    table.cell(perf_table, 0, 3, "Buy Score", bgcolor=color.new(color.green, 80))
+    table.cell(perf_table, 1, 3, str.tostring(buy_norm, "#.##"), text_color=color.white)
+    
+    table.cell(perf_table, 0, 4, "Sell Score", bgcolor=color.new(color.red, 80))
+    table.cell(perf_table, 1, 4, str.tostring(sell_norm, "#.##"), text_color=color.white)
+    
+    table.cell(perf_table, 0, 5, "TP Level", bgcolor=color.new(color.green, 60))
+    table.cell(perf_table, 1, 5, enable_tp_sl ? str.tostring(tp_level, "#.####") : "Disabled", text_color=color.white)
+    
+    table.cell(perf_table, 0, 6, "SL Level", bgcolor=color.new(color.red, 60))
+    table.cell(perf_table, 1, 6, enable_tp_sl ? str.tostring(sl_level, "#.####") : "Disabled", text_color=color.white)
+    
+    table.cell(perf_table, 0, 7, "Non-Repaint", bgcolor=color.new(color.blue, 80))
+    table.cell(perf_table, 1, 7, use_non_repainting ? "ON" : "OFF", text_color=color.white)
+    
+    table.cell(perf_table, 0, 8, "Position", bgcolor=color.new(color.purple, 80))
+    table.cell(perf_table, 1, 8, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", text_color=color.white)
+    
+    table.cell(perf_table, 0, 9, "Equity", bgcolor=color.new(color.orange, 80))
+    table.cell(perf_table, 1, 9, str.tostring(strategy.equity, "#.##"), text_color=color.white)
+
+// ============================================
+// ALERTS
+// ============================================
+alertcondition(buy_signal, "BUY Signal", "STEPFUN Buy Signal | {{ticker}} @ {{close}}")
+alertcondition(sell_signal, "SELL Signal", "STEPFUN Sell Signal | {{ticker}} @ {{close}}")

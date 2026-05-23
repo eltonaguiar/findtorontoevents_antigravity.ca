@@ -1,0 +1,72 @@
+```json
+{
+  "schema_version": "v1",
+  "engine": "synthesis_engine_p5",
+  "asset_class": "FUTURES",
+  "run_id": "run_2026-05-11T19-17-56Z",
+  "synthesis": [
+    {
+      "spec_id": "futures_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 but WR=40% (below 50% floor), MDD=33.5% (exceeds 20% max), n=10 (far below 100 minimum). P4 shows independence but sample is too small for reliable inference. Simplified signal caveat further undermines confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_carry_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5 but WR=40%, MDD=33.5%, n=10 — fails all Tier-2 thresholds. P4 independence noted but irrelevant given tiny sample. Signal translation is simplified proxy, not faithful carry logic.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_regime_switch_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Same PF/WR/MDD/n as momentum_v1 and carry_v1 (n=10). Regime-switch logic untestable with 10 trades. P4 independence vs ensemble_evolver is meaningless at this sample size.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_vol_target_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5, WR=40%, MDD=33.5%, n=10 — fails all Tier-2 criteria. Vol-targeting nuance cannot be evaluated with 10 trades. Simplified signal proxy invalidates results.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_pair_trend_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5, WR=40%, MDD=33.5%, n=10 — fails Tier-2 floor. Pair-trend logic requires more data to assess. P4 independence irrelevant at n=10.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_carry_vol_dbc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=3.5, WR=40%, MDD=33.5%, n=10 — fails all thresholds. Single-asset strategy with 10 trades provides no statistical basis. Simplified signal proxy means actual carry signal was not tested.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_momentum_pdbc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=1.89, WR=46.7% (below 50%), MDD=35% (exceeds 20%), n=15 (below 100). Slightly better n than others but still insufficient. P4 independence noted but sample too small.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_regime_dba_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=2.66, WR=64.7% (above 50%), MDD=15.9% (below 20%) — meets PF/WR/MDD thresholds but n=17 far below 100 minimum. Promising risk/reward but insufficient trade count for reliable verdict. Simplified signal proxy means actual regime logic untested.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_vol_target_uso_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=1.67, WR=14.3% (far below 50%), MDD=54.8% (far above 20%), n=7 — fails all Tier-2 criteria catastrophically. No edge evident.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_diagnostic_noedge_gsg_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=2.22, WR=66.7%, MDD=37.4% (exceeds 20%), n=15 (below 100). High drawdown and low trade count preclude GO verdict despite decent PF/WR.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "All 10 candidates fail the Tier-2 floor (PF≥1.5, WR≥50%, MDD<20%, n≥100). The primary blocker is catastrophic sample size: n ranges from 7 to 17, far below the 100-trade minimum. This is likely an artifact of the simplified signal translation (SMA-crossover proxy instead of faithful spec.entry parsing) combined with the 5-year backtest window on commodity ETFs that trade infrequently relative to the strategy logic. While several candidates show promising PF (2.22-3.5) and WR (40-66.7%), the MDD is excessive (15.9-54.8%) and trade counts are statistically meaningless. The P4 cross-tests showing independence are irrelevant at these sample sizes. Retry conditions: (1) implement faithful-signal translator (v3 queue) to generate realistic trade frequency, (2) extend backtest window beyond 5 years if data available, (3) re-run with minimum 100-trade threshold before evaluating PF/WR/MDD. No candidate warrants wiring into production."
+}
+```

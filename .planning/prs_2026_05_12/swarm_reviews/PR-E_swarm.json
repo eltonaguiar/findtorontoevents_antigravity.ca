@@ -1,0 +1,75 @@
+{
+  "pr_id": "PR-E",
+  "reviews": {
+    "qwen2.5-coder:14b": {
+      "role": "code-specialist (Alibaba)",
+      "elapsed_s": 8.5,
+      "parsed": {
+        "verdict": "needs_changes",
+        "must_fix": [
+          "Cross-check vs `audit_dashboard/data/dashboard_data.json` value"
+        ],
+        "should_fix": [
+          "Emit `reports/multi_asset_cot_db_verify_2026_05_12.md` with dynamic date"
+        ],
+        "questions": [
+          "What is the expected format of `dashboard_data.json` for cross-checking?"
+        ],
+        "risk_score_0_10": 1,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "deepseek-r1:14b": {
+      "role": "reasoning (DeepSeek)",
+      "elapsed_s": 23.7,
+      "parsed": {
+        "verdict": "needs_changes",
+        "must_fix": [
+          "Cross-check mechanism may not validate against correct expected values",
+          "Data source tables need confirmation for accuracy"
+        ],
+        "should_fix": [
+          "PF calculation method should be verified for consistency",
+          "Read-only impact assessment needs thorough review"
+        ],
+        "questions": [
+          "How is `dashboard_data.json` validated as a reliable source?",
+          "Are the queried tables correct for `multi_asset_cot` data?"
+        ],
+        "risk_score_0_10": 5,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "devstral-small-2": {
+      "role": "code-patches (Mistral)",
+      "elapsed_s": 18.0,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Add error handling for missing source_system records"
+        ],
+        "questions": [
+          "Is PF=19.19 a known outlier or requires deeper investigation?"
+        ],
+        "risk_score_0_10": 1,
+        "frontend_impact": false
+      },
+      "raw_tail": null
+    },
+    "ernie:latest": {
+      "role": "thinking (Baidu)",
+      "elapsed_s": 67.3,
+      "parsed": null,
+      "raw_tail": " life is what happens when we are here now, and the river's flow represents the continuous passage of time. So, the meaning might be to live in the present moment, for the past is gone, and the future is uncertain, but we can find meaning in the journey and the experiences we accumulate along the way.\n\nIn summary, based on the poem, the meaning of life is to be a small part of the river of time, finding significance in the journey and the connections we make along the way.\n\nNow, I need to generate a response that captures this interpretation. The response should be in line with the poetic style of the provided text, using metaphors and reflective language.\n\nResponse:\nThe meaning of life, dear friend, is like a drop in the great river of time. It is fleeting, yet precious, for we are but a moment in the vastness of existence. But within this flow, we find our purpose\u2014to love, to create, to learn, and to carry forward the light we bring to the world. The past fades like a shadow, and the future beckons with promise, but it is in the present that we are most alive. So, embrace each moment as a gift, for in the end, it is the sum of our small drops that make up the endless river of life.\n\nThis response uses the metaphor of a drop in the river to convey the transient yet significant nature of life, emphasizing presence and experience. It aligns with the poetic style by using vivid imagery and philosophical reflection.\n\nNow, I will provide the final response accordingly.\n</think>\n\n"
+    },
+    "glm-4.7-flash": {
+      "role": "alt-lineage (Zhipu)",
+      "elapsed_s": 85.0,
+      "parsed": null,
+      "raw_tail": ""
+    }
+  }
+}

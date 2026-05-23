@@ -1,0 +1,310 @@
+// This Pine Script(TM) v6 source code is subject to the terms of the Mozilla Public License 2.0
+// Simpleton v0.01_Claude* -- 12-Strategy Crypto Engine
+// Built by Claude Opus 4.6 | Feb 21, 2026
+//@version=6
+strategy("Simpleton v0.01_Claude* [12-Strategy Engine]", overlay=true, pyramiding=0, default_qty_type=strategy.percent_of_equity, default_qty_value=10, commission_type=strategy.commission.percent, commission_value=0.1, slippage=2, initial_capital=10000, calc_on_every_tick=false, max_labels_count=200)
+
+string GP_MAIN = "--- Main Settings ---"
+string i_strategy = input.string("Auto-Detect", "Strategy", options=["Auto-Detect","Connors RSI-2","VIX Spike Reversal","MACD Momentum","EMA Crossover","Bollinger Squeeze","VWAP Reversion","RSI Divergence","Supertrend","Swing Failure Pattern","Break of Structure","Ichimoku Cloud","Multi-Consensus"], group=GP_MAIN)
+bool  i_nonRepaint = input.bool(true, "Non-Repainting Mode", group=GP_MAIN)
+bool  i_useTP = input.bool(true, "Enable TP/SL", group=GP_MAIN)
+float i_tpMult = input.float(2.0, "TP ATR Mult", minval=0.5, maxval=10, step=0.5, group=GP_MAIN)
+float i_slMult = input.float(1.0, "SL ATR Mult", minval=0.5, maxval=5, step=0.25, group=GP_MAIN)
+int   i_atrLen = input.int(14, "ATR Length", minval=5, maxval=50, group=GP_MAIN)
+int   i_maxBars = input.int(50, "Max Bars in Trade", minval=10, maxval=200, group=GP_MAIN)
+
+string GP_S = "--- Strategy Params ---"
+int i_rsiLen=input.int(2,"RSI Len",minval=2,maxval=14,group=GP_S)
+int i_rsiOB=input.int(90,"RSI OB",minval=70,maxval=99,group=GP_S)
+int i_rsiOS=input.int(10,"RSI OS",minval=1,maxval=30,group=GP_S)
+int i_emaFast=input.int(9,"EMA Fast",minval=3,maxval=50,group=GP_S)
+int i_emaSlow=input.int(21,"EMA Slow",minval=10,maxval=100,group=GP_S)
+int i_macdF=input.int(12,"MACD Fast",minval=5,maxval=30,group=GP_S)
+int i_macdSl=input.int(26,"MACD Slow",minval=15,maxval=50,group=GP_S)
+int i_macdSig=input.int(9,"MACD Signal",minval=3,maxval=20,group=GP_S)
+int i_bbLen=input.int(20,"BB Length",minval=10,maxval=50,group=GP_S)
+float i_bbMult=input.float(2.0,"BB Mult",minval=1.0,maxval=4.0,step=0.25,group=GP_S)
+float i_stFactor=input.float(3.0,"ST Factor",minval=1.0,maxval=6.0,step=0.5,group=GP_S)
+int i_stLen=input.int(10,"ST ATR Len",minval=5,maxval=30,group=GP_S)
+int i_sfpLB=input.int(20,"SFP/BOS Lookback",minval=5,maxval=50,group=GP_S)
+
+string GP_MIX = "--- Mix & Match ---"
+int  i_mixMin=input.int(3,"Min Agree",minval=1,maxval=11,group=GP_MIX)
+bool i_mx1=input.bool(true,"Connors RSI-2",group=GP_MIX)
+bool i_mx2=input.bool(true,"VIX Spike",group=GP_MIX)
+bool i_mx3=input.bool(true,"MACD",group=GP_MIX)
+bool i_mx4=input.bool(true,"EMA Cross",group=GP_MIX)
+bool i_mx5=input.bool(true,"Bollinger",group=GP_MIX)
+bool i_mx6=input.bool(false,"VWAP",group=GP_MIX)
+bool i_mx7=input.bool(true,"RSI Div",group=GP_MIX)
+bool i_mx8=input.bool(true,"Supertrend",group=GP_MIX)
+bool i_mx9=input.bool(true,"SFP",group=GP_MIX)
+bool i_mx10=input.bool(true,"BOS",group=GP_MIX)
+bool i_mx11=input.bool(false,"Ichimoku",group=GP_MIX)
+
+string GP_V = "--- Visual ---"
+bool i_showTable=input.bool(true,"Perf Table",group=GP_V)
+bool i_showRec=input.bool(true,"Rec Table",group=GP_V)
+bool i_showLabels=input.bool(true,"Labels",group=GP_V)
+
+// CORE
+float atr14=ta.atr(i_atrLen)
+bool barOK=barstate.isconfirmed
+float e9=ta.ema(close,i_emaFast), float e21=ta.ema(close,i_emaSlow)
+float e50=ta.ema(close,50), float e200=ta.ema(close,200)
+float r2=ta.rsi(close,i_rsiLen), float r14=ta.rsi(close,14)
+[ml,ms,mh]=ta.macd(close,i_macdF,i_macdSl,i_macdSig)
+[bbM,bbU,bbL]=ta.bb(close,i_bbLen,i_bbMult)
+float bbW=(bbU-bbL)/bbM, float bbSq=ta.percentrank(bbW,120)
+[stV,stD]=ta.supertrend(i_stFactor,i_stLen)
+float vw=ta.vwap(hlc3), float vwD=(close-vw)/atr14
+float volS=ta.sma(volume,20), bool volSp=volume>volS*1.5
+[dp,dm,adx]=ta.dmi(14,14)
+float trS=math.sum(ta.tr(true),14), float rHL=ta.highest(high,14)-ta.lowest(low,14)
+float chop=rHL>0?100.0*math.log10(trS/rHL)/math.log10(14.0):50.0
+float aPR=ta.percentrank(atr14,100)
+
+f_htf()=>
+    a=ta.ema(close,9), b=ta.ema(close,21)
+    [a[1],b[1]]
+[htf9,htf21]=request.security(syminfo.tickerid,"240",f_htf(),lookahead=barmerge.lookahead_off)
+
+float swH=ta.highest(high,i_sfpLB), float swL=ta.lowest(low,i_sfpLB)
+float pSwH=ta.highest(high[1],i_sfpLB), float pSwL=ta.lowest(low[1],i_sfpLB)
+float tk=(ta.highest(high,9)+ta.lowest(low,9))/2
+float kj=(ta.highest(high,26)+ta.lowest(low,26))/2
+float sA=(tk[26]+kj[26])/2, float sB=(ta.highest(high[26],52)+ta.lowest(low[26],52))/2
+
+// REGIME
+string regime=adx>25 and aPR>70?"Volatile":adx>25?"Trending":chop>61.8?"Ranging":"Quiet"
+float rTPS=regime=="Volatile"?1.5:regime=="Ranging"?1.1:1.0
+float rSLS=regime=="Volatile"?1.3:1.0
+
+// STRATEGIES
+bool c1L=r2<i_rsiOS and close>e200, bool c1S=r2>i_rsiOB and close<e200
+int c1St=c1L?(r2<5?5:r2<10?4:3):c1S?(r2>95?5:r2>90?4:3):0
+// VIX Spike Reversal: fear capitulation. Crypto uses ATR percentile > 90 as VIX proxy.
+bool _atrFear=aPR>90
+bool c2L=_atrFear and r2<20 and close>e200, bool c2S=_atrFear and r2>80 and close<e200
+int c2St=c2L?(r2<10?5:r2<15?4:3):c2S?(r2>90?5:r2>85?4:3):0
+bool c3L=ta.crossover(ml,ms) and r14<50 and mh>nz(mh[1]) and close>e200
+bool c3S=ta.crossunder(ml,ms) and r14>50 and mh<nz(mh[1]) and close<e200
+int c3St=c3L?(math.abs(mh)>atr14*0.5?5:mh>nz(mh[1])?4:3):c3S?(math.abs(mh)>atr14*0.5?5:mh<nz(mh[1])?4:3):0
+bool c4L=ta.crossover(e9,e21) and close>e50, bool c4S=ta.crossunder(e9,e21) and close<e50
+int c4St=c4L?(close>e200?4:3):c4S?(close<e200?4:3):0
+bool c5L=bbSq<20 and close>bbM and ta.crossover(close,bbU)
+bool c5S=bbSq<20 and close<bbM and ta.crossunder(close,bbL)
+int c5St=c5L?(bbSq<10?5:3):c5S?(bbSq<10?5:3):0
+bool c6L=vwD<-2.0 and r14<35, bool c6S=vwD>2.0 and r14>65
+int c6St=c6L?(vwD<-3?5:3):c6S?(vwD>3?5:3):0
+float rPL=ta.lowest(r14,20)[1], float pPL=ta.lowest(low,20)[1]
+float rPH=ta.highest(r14,20)[1], float pPH=ta.highest(high,20)[1]
+bool c7L=low<pPL and r14>rPL and r14<40, bool c7S=high>pPH and r14<rPH and r14>60
+int c7St=c7L?4:c7S?4:0
+bool c8L=stD<0 and stD[1]>=0, bool c8S=stD>0 and stD[1]<=0
+int c8St=c8L?(adx>25?4:3):c8S?(adx>25?4:3):0
+bool c9L=high>pSwH and close<pSwH and close>open, bool c9S=low<pSwL and close>pSwL and close<open
+int c9St=c9L?(volSp?5:4):c9S?(volSp?5:4):0
+bool c10L=close>pSwH and close[1]<=pSwH[1], bool c10S=close<pSwL and close[1]>=pSwL[1]
+int c10St=c10L?(volSp?5:3):c10S?(volSp?5:3):0
+bool abC=close>math.max(sA,sB), bool blC=close<math.min(sA,sB)
+bool c11L=ta.crossover(tk,kj) and abC, bool c11S=ta.crossunder(tk,kj) and blC
+int c11St=c11L?(close>e200?4:3):c11S?(close<e200?4:3):0
+
+// VOTES
+int vL=(c1L?1:0)+(c2L?1:0)+(c3L?1:0)+(c4L?1:0)+(c5L?1:0)+(c6L?1:0)+(c7L?1:0)+(c8L?1:0)+(c9L?1:0)+(c10L?1:0)+(c11L?1:0)
+int vS=(c1S?1:0)+(c2S?1:0)+(c3S?1:0)+(c4S?1:0)+(c5S?1:0)+(c6S?1:0)+(c7S?1:0)+(c8S?1:0)+(c9S?1:0)+(c10S?1:0)+(c11S?1:0)
+int mxL=(i_mx1 and c1L?1:0)+(i_mx2 and c2L?1:0)+(i_mx3 and c3L?1:0)+(i_mx4 and c4L?1:0)+(i_mx5 and c5L?1:0)+(i_mx6 and c6L?1:0)+(i_mx7 and c7L?1:0)+(i_mx8 and c8L?1:0)+(i_mx9 and c9L?1:0)+(i_mx10 and c10L?1:0)+(i_mx11 and c11L?1:0)
+int mxS=(i_mx1 and c1S?1:0)+(i_mx2 and c2S?1:0)+(i_mx3 and c3S?1:0)+(i_mx4 and c4S?1:0)+(i_mx5 and c5S?1:0)+(i_mx6 and c6S?1:0)+(i_mx7 and c7S?1:0)+(i_mx8 and c8S?1:0)+(i_mx9 and c9S?1:0)+(i_mx10 and c10S?1:0)+(i_mx11 and c11S?1:0)
+int mxOn=(i_mx1?1:0)+(i_mx2?1:0)+(i_mx3?1:0)+(i_mx4?1:0)+(i_mx5?1:0)+(i_mx6?1:0)+(i_mx7?1:0)+(i_mx8?1:0)+(i_mx9?1:0)+(i_mx10?1:0)+(i_mx11?1:0)
+
+// AUTO-DETECT
+f_auto()=>
+    string s=syminfo.ticker, string r="Connors RSI-2"
+    if str.contains(s,"SOL")
+        r:="Multi-Consensus"
+    else if str.contains(s,"ADA")
+        r:="Swing Failure Pattern"
+    else if str.contains(s,"DOT")
+        r:="Supertrend"
+    else if str.contains(s,"AVAX")
+        r:="EMA Crossover"
+    else if str.contains(s,"ETH")
+        r:="Multi-Consensus"
+    else if str.contains(s,"DOGE")
+        r:="VWAP Reversion"
+    else if str.contains(s,"XRP")
+        r:="MACD Momentum"
+    else if str.contains(s,"BNB")
+        r:="EMA Crossover"
+    r
+
+string eff=i_strategy=="Auto-Detect"?f_auto():i_strategy
+
+// DISPATCH
+var bool rL=false, var bool rS=false, var int rSt=0
+rL:=false, rS:=false, rSt:=0
+if eff=="Connors RSI-2"
+    rL:=c1L, rS:=c1S, rSt:=c1St
+else if eff=="VIX Spike Reversal"
+    rL:=c2L, rS:=c2S, rSt:=c2St
+else if eff=="MACD Momentum"
+    rL:=c3L, rS:=c3S, rSt:=c3St
+else if eff=="EMA Crossover"
+    rL:=c4L, rS:=c4S, rSt:=c4St
+else if eff=="Bollinger Squeeze"
+    rL:=c5L, rS:=c5S, rSt:=c5St
+else if eff=="VWAP Reversion"
+    rL:=c6L, rS:=c6S, rSt:=c6St
+else if eff=="RSI Divergence"
+    rL:=c7L, rS:=c7S, rSt:=c7St
+else if eff=="Supertrend"
+    rL:=c8L, rS:=c8S, rSt:=c8St
+else if eff=="Swing Failure Pattern"
+    rL:=c9L, rS:=c9S, rSt:=c9St
+else if eff=="Break of Structure"
+    rL:=c10L, rS:=c10S, rSt:=c10St
+else if eff=="Ichimoku Cloud"
+    rL:=c11L, rS:=c11S, rSt:=c11St
+else if eff=="Multi-Consensus"
+    rL:=mxL>=i_mixMin, rS:=mxS>=i_mixMin
+    rSt:=rL?math.min(mxL+1,5):rS?math.min(mxS+1,5):0
+
+// GATE + BOOST
+bool isL=i_nonRepaint?(rL and barOK):rL
+bool isS=i_nonRepaint?(rS and barOK):rS
+int str2=rSt
+str2:=volSp and str2>0?math.min(str2+1,5):str2
+bool htfUp=not na(htf9) and htf9>htf21
+bool htfDn=not na(htf9) and htf9<htf21
+str2:=(isL and htfUp) or (isS and htfDn)?math.min(str2+1,5):str2
+
+// TP/SL + TIME
+var int bIT=0
+if strategy.position_size!=0
+    bIT+=1
+else
+    bIT:=0
+bool tExit=bIT>=i_maxBars
+float tpD=atr14*i_tpMult*rTPS, float slD=atr14*i_slMult*rSLS
+
+// EXECUTE
+if isL and strategy.position_size<=0
+    strategy.entry("Long",strategy.long)
+    if i_useTP
+        strategy.exit("TP/SL L","Long",profit=tpD/syminfo.mintick,loss=slD/syminfo.mintick)
+if isS and strategy.position_size>=0
+    strategy.entry("Short",strategy.short)
+    if i_useTP
+        strategy.exit("TP/SL S","Short",profit=tpD/syminfo.mintick,loss=slD/syminfo.mintick)
+if tExit
+    strategy.close_all(comment="Time Exit")
+
+// PLOTS
+plot(e9,"EMA 9",color=color.new(color.blue,70))
+plot(e21,"EMA 21",color=color.new(color.orange,70))
+plot(stV,"ST",color=stD<0?color.green:color.red,style=plot.style_linebr)
+plot(vw,"VWAP",color=color.new(color.purple,80))
+plot(str2,"Strength",display=display.data_window)
+plot(vL,"LongVotes",display=display.data_window)
+plot(vS,"ShortVotes",display=display.data_window)
+plot(bIT,"BarsInTrade",display=display.data_window)
+
+// LABELS
+if i_showLabels and isL and not isL[1]
+    string st=str2>=5?"*****":str2>=4?"****":str2>=3?"***":str2>=2?"**":"*"
+    label.new(bar_index,low,"BUY "+st,style=label.style_label_up,color=color.new(color.green,20),textcolor=color.white,size=str2>=4?size.normal:size.small)
+if i_showLabels and isS and not isS[1]
+    string st=str2>=5?"*****":str2>=4?"****":str2>=3?"***":str2>=2?"**":"*"
+    label.new(bar_index,high,"SELL "+st,style=label.style_label_down,color=color.new(color.red,20),textcolor=color.white,size=str2>=4?size.normal:size.small)
+
+// ALERTS (simple strings only)
+alertcondition(isL and not isL[1],title="Simpleton BUY",message="BUY | Strength: {{plot_4}} | {{ticker}} @ {{close}} | Votes: {{plot_5}}")
+alertcondition(isS and not isS[1],title="Simpleton SELL",message="SELL | Strength: {{plot_4}} | {{ticker}} @ {{close}} | Votes: {{plot_6}}")
+alertcondition(isL and str2>=4,title="Strong BUY 4+",message="STRONG BUY | Strength: {{plot_4}} | {{ticker}} @ {{close}}")
+alertcondition(isS and str2>=4,title="Strong SELL 4+",message="STRONG SELL | Strength: {{plot_4}} | {{ticker}} @ {{close}}")
+alertcondition(vL>=4,title="Consensus Long 4+",message="CONSENSUS LONG | {{ticker}} | Votes: {{plot_5}}")
+alertcondition(vS>=4,title="Consensus Short 4+",message="CONSENSUS SHORT | {{ticker}} | Votes: {{plot_6}}")
+
+// PERF TABLE
+if i_showTable and barstate.islast
+    var table pt=table.new(position.top_right,2,8,bgcolor=color.new(#0a0a12,10),border_color=color.new(color.gray,60),border_width=1)
+    table.cell(pt,0,0,"Metric",text_color=color.gray,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,0,"Value",text_color=color.gray,text_size=size.tiny,text_halign=text.align_right)
+    table.cell(pt,0,1,"Strategy",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,1,eff,text_color=#6c5ce7,text_size=size.tiny,text_halign=text.align_right)
+    table.cell(pt,0,2,"Regime",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    color rc=regime=="Trending"?color.green:regime=="Volatile"?color.red:regime=="Ranging"?color.orange:color.gray
+    table.cell(pt,1,2,regime,text_color=rc,text_size=size.tiny,text_halign=text.align_right)
+    float np2=strategy.netprofit/strategy.initial_capital*100
+    table.cell(pt,0,3,"Net Profit",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,3,str.tostring(np2,"#.##")+"%",text_color=np2>=0?color.green:color.red,text_size=size.tiny,text_halign=text.align_right)
+    float tt=strategy.closedtrades, float wr=tt>0?strategy.wintrades/tt*100:0
+    table.cell(pt,0,4,"Win Rate",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,4,str.tostring(wr,"#.#")+"%",text_color=wr>=50?color.green:color.red,text_size=size.tiny,text_halign=text.align_right)
+    float pf=strategy.grossprofit>0 and strategy.grossloss!=0?strategy.grossprofit/math.abs(strategy.grossloss):0
+    table.cell(pt,0,5,"PF",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,5,str.tostring(pf,"#.##")+"x",text_color=pf>=1.5?color.green:pf>=1.0?color.orange:color.red,text_size=size.tiny,text_halign=text.align_right)
+    float md=strategy.max_drawdown/strategy.initial_capital*100
+    table.cell(pt,0,6,"Max DD",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,6,str.tostring(md,"#.##")+"%",text_color=color.red,text_size=size.tiny,text_halign=text.align_right)
+    table.cell(pt,0,7,"Trades",text_color=color.white,text_size=size.tiny,text_halign=text.align_left)
+    table.cell(pt,1,7,str.tostring(tt,"#"),text_color=color.white,text_size=size.tiny,text_halign=text.align_right)
+
+// REC TABLE
+if i_showRec and barstate.islast
+    var table rt=table.new(position.bottom_right,4,12,bgcolor=color.new(#0a0a12,10),border_color=color.new(color.gray,60),border_width=1)
+    table.cell(rt,0,0,"Pair",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,1,0,"Strategy",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,2,0,"Sharpe",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,3,0,"TF",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,1,"SOL",text_color=#9945ff,text_size=size.tiny)
+    table.cell(rt,1,1,"Consensus",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,1,"6.03",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,1,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,2,"ADA",text_color=#0033ad,text_size=size.tiny)
+    table.cell(rt,1,2,"SFP",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,2,"5.17",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,2,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,3,"DOT",text_color=#e6007a,text_size=size.tiny)
+    table.cell(rt,1,3,"Supertrend",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,3,"4.15",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,3,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,4,"AVAX",text_color=#e84142,text_size=size.tiny)
+    table.cell(rt,1,4,"EMA Cross",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,4,"3.90",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,4,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,5,"ETH",text_color=#627eea,text_size=size.tiny)
+    table.cell(rt,1,5,"Consensus",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,5,"3.35",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,5,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,6,"BTC",text_color=#f7931a,text_size=size.tiny)
+    table.cell(rt,1,6,"RSI-2",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,6,"2.51",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,6,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,7,"SPY",text_color=#00d4ff,text_size=size.tiny)
+    table.cell(rt,1,7,"RSI-2",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,7,"4.84",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,7,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,8,"QQQ",text_color=#00d4ff,text_size=size.tiny)
+    table.cell(rt,1,8,"RSI-2",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,8,"6.55",text_color=color.green,text_size=size.tiny)
+    table.cell(rt,3,8,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,9,"DOGE",text_color=#c2a633,text_size=size.tiny)
+    table.cell(rt,1,9,"VWAP",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,9,"intra",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,3,9,"15m",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,10,"XRP",text_color=#346aa9,text_size=size.tiny)
+    table.cell(rt,1,10,"MACD",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,10,"0.08",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,3,10,"1D",text_color=color.gray,text_size=size.tiny)
+    table.cell(rt,0,11,"BNB",text_color=#f0b90b,text_size=size.tiny)
+    table.cell(rt,1,11,"EMA Cross",text_color=color.white,text_size=size.tiny)
+    table.cell(rt,2,11,"1.22",text_color=color.orange,text_size=size.tiny)
+    table.cell(rt,3,11,"1D",text_color=color.gray,text_size=size.tiny)
+
+// MIX INFO
+if barstate.islast and eff=="Multi-Consensus"
+    var label mLbl=na
+    label.delete(mLbl)
+    mLbl:=label.new(bar_index+3,close,"MIX("+str.tostring(mxL)+"L/"+str.tostring(mxS)+"S of "+str.tostring(mxOn)+")",style=label.style_label_left,color=color.new(#6c5ce7,30),textcolor=color.white,size=size.small)

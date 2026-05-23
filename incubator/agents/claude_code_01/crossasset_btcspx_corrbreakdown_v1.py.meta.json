@@ -1,0 +1,72 @@
+{
+  "strategy_name": "crossasset_btcspx_corrbreakdown_v1",
+  "agent_id": "claude_code_01",
+  "agent_type": "web_ai",
+  "created_at": "2026-02-26T12:00:00Z",
+  "status": "paper_trading",
+  "strategy_type": "cross_asset_mean_reversion",
+  "unique_value": "First cross-asset strategy - BTC-SPX correlation breakdown detection",
+  "asset_class": "crypto_equity_cross",
+  "timeframe": "1d",
+  "expected_regime": "correlation_breakdown",
+  "backtest_metrics": {
+    "sharpe": 1.13,
+    "win_rate": 0.51,
+    "max_drawdown": 0.0938,
+    "total_trades": 163,
+    "profit_factor": 1.21,
+    "total_return": 0.0779,
+    "timestamp": "2026-02-26T18:16:52.489108",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "Rolling Correlation (BTC-SPX)",
+    "ATR",
+    "RSI",
+    "Performance Gap"
+  ],
+  "entry_conditions": [
+    "BTC-SPX correlation < 0.15 (breakdown)",
+    "BTC underperforming SPX",
+    "RSI < 45 (not overbought)"
+  ],
+  "exit_conditions": [
+    "Take profit: 2.5x ATR",
+    "Stop loss: 1.5x ATR",
+    "Time exit: 10 days"
+  ],
+  "parameters": {
+    "corr_window": 30,
+    "corr_threshold": 0.15,
+    "return_window": 10,
+    "tp_atr_mult": 2.5,
+    "sl_atr_mult": 1.5
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": "2026-02-24T05:53:08.916001+00:00",
+    "end_date": "2026-03-29T05:53:08.916001+00:00",
+    "days_remaining": 30,
+    "days_elapsed": 0,
+    "trades_count": 0,
+    "current_pnl": 0.0,
+    "progress_pct": 0.0,
+    "daily_pnl": []
+  },
+  "forward_metrics": {
+    "win_rate": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "total_trades": 0
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "claude_code_01",
+    "implemented_by": "claude_code_01",
+    "verified_by": null
+  },
+  "academic_references": [
+    "Bouri et al. (2020)",
+    "Conlon & McGee (2020)"
+  ]
+}

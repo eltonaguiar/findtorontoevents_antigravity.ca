@@ -1,0 +1,73 @@
+name: Crypto Test Portfolios
+
+on:
+  schedule:
+    - cron: '15 */4 * * *'  # Reduced from */30  doesn't feed audit, 9/12 runs failed
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'update'
+        type: choice
+        options:
+          - update
+          - report
+
+concurrency:
+  group: crypto-test-portfolios
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  portfolio-tracker:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests numpy
+
+      - name: Run portfolio tracker
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  CRYPTO TEST PORTFOLIOS"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          # shellcheck disable=SC2050
+          if [ "${{ inputs.mode }}" = "report" ]; then
+            python alpha_engine/crypto_test_portfolios.py --report
+          else
+            python alpha_engine/crypto_test_portfolios.py
+          fi
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/crypto_portfolio_state.json alpha_engine/data/crypto_portfolio_results.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Auto-update crypto test portfolios $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh

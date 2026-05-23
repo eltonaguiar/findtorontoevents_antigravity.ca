@@ -1,0 +1,843 @@
+# Kubernetes Deployment Manifests
+
+## Namespace
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trading-prod
+  labels:
+    app.kubernetes.io/name: trading-system
+    app.kubernetes.io/environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trading-data
+  labels:
+    app.kubernetes.io/name: trading-data
+    app.kubernetes.io/environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trading-monitoring
+  labels:
+    app.kubernetes.io/name: trading-monitoring
+    app.kubernetes.io/environment: production
+```
+
+## Priority Classes
+
+```yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: trading-critical
+value: 1000000
+globalDefault: false
+description: "Critical trading system components"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: trading-high
+value: 100000
+globalDefault: false
+description: "High priority trading components"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: trading-normal
+value: 10000
+globalDefault: false
+description: "Normal priority trading components"
+```
+
+## ConfigMap
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trading-config
+  namespace: trading-prod
+data:
+  trading.yaml: |
+    risk_limits:
+      max_position_value: 1000000
+      max_position_pct: 0.10
+      max_daily_loss: 50000
+      max_order_size: 100
+      max_slippage_bps: 50
+    
+    circuit_breakers:
+      portfolio_drawdown_pct: 5.0
+      single_position_loss_pct: 2.0
+      data_feed_timeout_ms: 5000
+    
+    execution:
+      default_order_type: LIMIT
+      default_time_in_force: GTC
+      smart_routing_enabled: true
+    
+    strategies:
+      momentum_v2:
+        enabled: true
+        symbols: ["BTC-USD", "ETH-USD"]
+        timeframe: "1m"
+```
+
+## Secrets
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trading-secrets
+  namespace: trading-prod
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://user:password@timescaledb.trading-data.svc.cluster.local:5432/trading"
+  REDIS_URL: "redis://redis-cluster.trading-data.svc.cluster.local:6379"
+```
+
+## Data Ingestion Service
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-ingestion
+  namespace: trading-prod
+  labels:
+    app: data-ingestion
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: data-ingestion
+  template:
+    metadata:
+      labels:
+        app: data-ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      priorityClassName: trading-critical
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: data-ingestion
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: data-ingestion
+          image: trading-system/data-ingestion:latest
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 8080
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: REDIS_URL
+            - name: LOG_LEVEL
+              value: "INFO"
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-ingestion
+  namespace: trading-prod
+spec:
+  selector:
+    app: data-ingestion
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+```
+
+## Signal Generation Service
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: signal-generation
+  namespace: trading-prod
+  labels:
+    app: signal-generation
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: signal-generation
+  template:
+    metadata:
+      labels:
+        app: signal-generation
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      priorityClassName: trading-high
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: signal-generation
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: signal-generation
+          image: trading-system/signal-generation:latest
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 8080
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: REDIS_URL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+      volumes:
+        - name: config
+          configMap:
+            name: trading-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: signal-generation
+  namespace: trading-prod
+spec:
+  selector:
+    app: signal-generation
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+```
+
+## Risk Manager Service
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: risk-manager
+  namespace: trading-prod
+  labels:
+    app: risk-manager
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: risk-manager
+  template:
+    metadata:
+      labels:
+        app: risk-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      priorityClassName: trading-critical
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: risk-manager
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: risk-manager
+          image: trading-system/risk-manager:latest
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 8080
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: REDIS_URL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+      volumes:
+        - name: config
+          configMap:
+            name: trading-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: risk-manager
+  namespace: trading-prod
+spec:
+  selector:
+    app: risk-manager
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+```
+
+## Order Execution Service
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-execution
+  namespace: trading-prod
+  labels:
+    app: order-execution
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: order-execution
+  template:
+    metadata:
+      labels:
+        app: order-execution
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      priorityClassName: trading-critical
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: order-execution
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: order-execution
+          image: trading-system/order-execution:latest
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 8080
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: REDIS_URL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-execution
+  namespace: trading-prod
+spec:
+  selector:
+    app: order-execution
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+```
+
+## Position Tracker Service
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: position-tracker
+  namespace: trading-prod
+  labels:
+    app: position-tracker
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: position-tracker
+  template:
+    metadata:
+      labels:
+        app: position-tracker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      priorityClassName: trading-high
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: position-tracker
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: position-tracker
+          image: trading-system/position-tracker:latest
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 8080
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: REDIS_URL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trading-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: position-tracker
+  namespace: trading-prod
+spec:
+  selector:
+    app: position-tracker
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+```
+
+## Horizontal Pod Autoscaler
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: data-ingestion-hpa
+  namespace: trading-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: data-ingestion
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: signal-generation-hpa
+  namespace: trading-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: signal-generation
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+```
+
+## Pod Disruption Budget
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: data-ingestion-pdb
+  namespace: trading-prod
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: data-ingestion
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: risk-manager-pdb
+  namespace: trading-prod
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: risk-manager
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: order-execution-pdb
+  namespace: trading-prod
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: order-execution
+```
+
+## Network Policies
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: trading-isolation
+  namespace: trading-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: trading-system
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: trading-monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: trading-data
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+```
+
+## Redis Cluster (StatefulSet)
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster
+  namespace: trading-data
+spec:
+  serviceName: redis-cluster
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis-cluster
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command:
+            - redis-server
+            - --appendonly
+            - "yes"
+            - --cluster-enabled
+            - "yes"
+            - --cluster-config-file
+            - /data/nodes.conf
+            - --cluster-node-timeout
+            - "5000"
+          ports:
+            - name: redis
+              containerPort: 6379
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster
+  namespace: trading-data
+spec:
+  selector:
+    app: redis-cluster
+  ports:
+    - port: 6379
+      targetPort: 6379
+  clusterIP: None
+```
+
+## TimescaleDB (StatefulSet)
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: timescaledb
+  namespace: trading-data
+spec:
+  serviceName: timescaledb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: timescaledb
+  template:
+    metadata:
+      labels:
+        app: timescaledb
+    spec:
+      containers:
+        - name: timescaledb
+          image: timescale/timescaledb:latest-pg15
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: timescaledb-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: timescaledb-credentials
+                  key: password
+            - name: POSTGRES_DB
+              value: trading
+          ports:
+            - name: postgres
+              containerPort: 5432
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescaledb
+  namespace: trading-data
+spec:
+  selector:
+    app: timescaledb
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+```

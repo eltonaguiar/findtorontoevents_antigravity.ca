@@ -1,0 +1,103 @@
+name: Penny Skyrocket Detector
+
+# Wires alpha_engine/strategies/skyrocket_detector.py into a recurring
+# runner. Writes alpha_engine/data/skyrocket_picks.json which is registered
+# in audit_trail.dashboard_generator.JSON_PICK_SOURCES so picks reach
+# /audit on the next dashboard rebuild.
+#
+# NB: this is the EQUITY penny-stock detector
+# (alpha_engine/strategies/skyrocket_detector.py). Do not confuse with the
+# unrelated CRYPTO ML detector at skyrocket_detector/detector.py
+# scheduled by .github/workflows/skyrocket-detector.yml.
+
+on:
+  schedule:
+    # Once daily on weekdays at 14:48 UTC (offset from etf-agent :30 and
+    # bond-agent :32 to avoid concurrent runner contention).
+    - cron: '48 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Override watchlist (space-separated tickers; blank = default)'
+        required: false
+        default: ''
+
+concurrency:
+  group: penny-skyrocket-runner
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    name: Penny Skyrocket Scanner
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          update-environment: false
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Run penny skyrocket detector
+        id: scan
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.symbols }}" ]; then
+            ARGS="--symbols ${{ inputs.symbols }}"
+          fi
+          # `scan(save=True)` writes alpha_engine/data/skyrocket_picks.json.
+          # Score gate (>=50) is internal; below-threshold picks are dropped.
+          python -m alpha_engine.strategies.skyrocket_detector $ARGS \
+            || echo "Penny skyrocket scan failed (non-fatal — empty JSON this cycle)"
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Defensive: if the detector wrote no file this cycle, no-op
+          # instead of failing `git add` with exit 128 "did not match
+          # any files". The detector now always writes on save, so this
+          # is belt-and-suspenders.
+          if [ ! -f alpha_engine/data/skyrocket_picks.json ]; then
+            echo "No skyrocket_picks.json produced this cycle — nothing to commit"
+            exit 0
+          fi
+          git add alpha_engine/data/skyrocket_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          TS=$(date -u +"%Y-%m-%d %H:%M UTC")
+          N=$(python -c "import json; d=json.load(open('alpha_engine/data/skyrocket_picks.json')); print(d.get('count', 0))" 2>/dev/null || echo "?")
+          git commit -m "data: skyrocket_picks refresh - ${N} picks (${TS}) [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## Penny Skyrocket Detector"
+            echo "- scan_outcome: ${{ steps.scan.outcome || 'skipped' }}"
+            if [ -f alpha_engine/data/skyrocket_picks.json ]; then
+              N=$(python -c "import json; d=json.load(open('alpha_engine/data/skyrocket_picks.json')); print(d.get('count', 0))" 2>/dev/null || echo "?")
+              echo "- picks: ${N}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,101 @@
+name: DARWIN ENGINE - DNA Evolution Pipeline
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Evolution mode (all/gp/mape/audit/ensemble/failure)'
+        required: false
+        default: 'all'
+      quick:
+        description: 'Quick mode (reduced iterations)'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: write
+
+# issue #141: serialize auto-commit workflows so concurrent runs cannot race
+# each other into the main branch and produce conflict markers in data files.
+concurrency:
+  group: auto-commit-main-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  evolve:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 35  # 2026-05-06: was 25 — commit step ran 17 min on run 25453826974, exceeding 25min limit by ~1 min; raising to 35 gives the 6-pipeline script headroom plus commit under load
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install numpy ccxt
+
+      - name: Run GP DNA Evolution (GENESIS)
+        run: |
+          echo "=== GENESIS: Genetic Programming DNA Evolution ==="
+          python genome/genetic_programmer.py --pop 40 --gens 10 --symbols BTCUSDT,ETHUSDT,SOLUSDT,AVAXUSDT,DOGEUSDT || echo "GP evolution failed (non-fatal)"
+
+      - name: Run Audit Ensemble DNA Evolution (NEXUS)
+        run: |
+          echo "=== NEXUS: Audit Ensemble Meta-Weight DNA Evolution ==="
+          python genome/audit_ensemble_evolver.py --pop 30 --gens 10 || echo "Audit ensemble failed (non-fatal)"
+
+      - name: Run MAP-Elites DNA Evolution (ATLAS)
+        run: |
+          echo "=== ATLAS: MAP-Elites Quality-Diversity DNA Evolution ==="
+          python genome/mape_evolver.py --symbols BTCUSDT,ETHUSDT,SOLUSDT --iterations 500 --initial 50 || echo "MAP-Elites failed (non-fatal)"
+
+      - name: Run Ensemble Coevolution (LEGION)
+        run: |
+          echo "=== LEGION: Ensemble Coevolution DNA Evolution ==="
+          python genome/ensemble_evolver.py --symbols BTCUSDT,ETHUSDT --pop 20 --gens 8 || echo "Ensemble coevolution failed (non-fatal)"
+
+      - name: Run Failure-Specific DNA Evolution
+        run: |
+          echo "=== FAILURE EVOLVER: Learning from losing picks ==="
+          python genome/failure_evolver.py || echo "Failure evolution failed (non-fatal)"
+
+      - name: Revive Stale Systems
+        run: |
+          echo "=== REVIVAL ENGINE: Mutating stale system strategies ==="
+          python genome/revive_stale_systems.py --skip-gp --stale-days 1 --mutations-per 15 || echo "Stale revival failed (non-fatal)"
+
+      - name: Update Paper Trading Portfolios
+        run: |
+          echo "=== Updating DARWIN paper trading portfolios ==="
+          python genome/darwin_portfolio_tracker.py || echo "Portfolio update failed (non-fatal)"
+
+      - name: Commit evolved picks
+        run: |
+          git config user.name "DARWIN ENGINE"
+          git config user.email "darwin@antigravity.ca"
+          # FIX 2026-04-06: removed genome/*.db — strategy_registry.db grew past 100MB
+          # causing GitHub push rejection. DB files should stay as artifacts only.
+          git add genome/data/*.json genome/results/revival_*.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No new picks to commit"
+          else
+            # issue #141: block conflict-marker commits
+            bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+            git commit -m "DARWIN ENGINE: Hourly DNA evolution cycle $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+            git stash 2>/dev/null || true
+            git pull --rebase origin main || true
+            git stash pop 2>/dev/null || true
+            bash .github/scripts/safe_push.sh
+          fi
+

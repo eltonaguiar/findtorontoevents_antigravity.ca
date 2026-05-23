@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money-Maker Plan — ChatGPT Codex (May 11, 2026) | findtorontoevents</title>
+    <meta name="description" content="ChatGPT Codex plan output for /audit real-money readiness. Truth-layer first; class state machine BLOCKED→REHAB→OOS_READY→SHADOW→LIVE_ELIGIBLE. NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-05-11-money-maker-codex.html">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e1a;color:#e0e6ed;line-height:1.65}
+        .container{max-width:1100px;margin:0 auto;padding:36px 20px 60px}
+        header{background:linear-gradient(135deg,#1a2540 0%,#0f1629 100%);padding:32px;border-radius:16px;margin-bottom:24px;border:1px solid #2a3f5f}
+        h1{font-size:1.8em;color:#f472b6;margin-bottom:10px}
+        h2{color:#34d399;font-size:1.25em;margin:18px 0 10px;border-left:4px solid #34d399;padding-left:10px}
+        h3{color:#fbbf24;font-size:1.05em;margin:14px 0 6px}
+        .nfa-banner{background:rgba(239,68,68,0.20);border:2px solid #ef4444;color:#fecaca;padding:13px 16px;border-radius:12px;font-weight:700;text-align:center;margin-bottom:14px}
+        .section{background:#111827;padding:22px;border-radius:12px;margin-bottom:14px;border:1px solid #1f2937}
+        p,li{color:#d1d5db;margin-bottom:7px}
+        ul,ol{padding-left:22px}
+        code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:Consolas,Menlo,monospace}
+        a{color:#60a5fa}
+        .meta-row{font-size:0.85em;color:#94a3b8;margin-bottom:14px}
+        .state{display:inline-block;padding:3px 10px;border-radius:14px;font-size:0.78em;font-weight:700;margin:2px}
+        .s-blocked{background:rgba(239,68,68,0.18);color:#fca5a5}
+        .s-rehab{background:rgba(251,191,36,0.18);color:#fcd34d}
+        .s-oos{background:rgba(96,165,250,0.18);color:#93c5fd}
+        .s-shadow{background:rgba(167,139,250,0.18);color:#c4b5fd}
+        .s-live{background:rgba(34,197,94,0.18);color:#86efac}
+        .back{font-size:0.9em;color:#60a5fa;margin-bottom:14px;display:inline-block}
+    </style>
+</head>
+<body>
+<div class="container">
+
+<a class="back" href="/updates/">&larr; Back to Updates</a> &middot; <a class="back" href="/updates/2026-05-11-money-maker-multi-agent-comparison.html">Comparison page &rarr;</a>
+
+<header>
+    <h1>Money-Maker Plan — ChatGPT Codex</h1>
+    <div class="nfa-banner">RESEARCH SURFACE — NOT FINANCIAL ADVICE</div>
+    <div class="meta-row">Source: OpenAI Codex &middot; Generated 2026-05-11 &middot; Most conservative of the 5 plans (matches user's stated "all classes first" preference)</div>
+</header>
+
+<div class="section">
+    <h2>Summary</h2>
+    <ul>
+        <li><strong>Current truth as of May 11, 2026:</strong> live <code>/audit</code> is fresh, but the stored DB-health artifact is still red across all 6 checks, and <code>hf_stats.concept_drift.drift_alert</code> is still <code>true</code>. The first bottleneck is <strong>data trust, not new alpha</strong>.</li>
+        <li><strong>Class picture:</strong> EQUITY is the strongest broad candidate, ETF has the cleanest OOS profile but is still thin, CRYPTO has strong sub-systems but weak class-level behavior, FOREX is not credible OOS, COMMODITY is concentration-suspect, BOND is too thin.</li>
+        <li>You chose <strong>"All classes first"</strong>. This plan blocks live capital until every major class has a clean verdict and no shared data-integrity blocker can contaminate cross-class decisions.</li>
+        <li>Use the already-shipped <code>.claude/skills/money-maker-ready/SKILL.md</code> as the standard audit protocol. Do not spend time "promoting" the proposal; spend time making its inputs trustworthy and its verdicts class-actionable.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>1. Fix the truth layer before any edge work</h2>
+    <ul>
+        <li>Treat <code>db_health.json</code> as a hard global gate. No class can advance while any of these stay red: <code>pnl_integrity</code>, <code>ghost_rows</code>, <code>open_bloat</code>, <code>phantom_expired</code>, <code>outcome_coverage</code>, <code>won_pnl_contradiction</code>.</li>
+        <li>Repair the MySQL write/resolve path so closed outcomes, terminal statuses, and PnL signs are internally consistent. Target: eliminate phantom-expired rows, frozen validator behavior, and "WON with negative PnL" contradictions.</li>
+        <li>Enforce asset-class tagging at write time and backfill any residual <code>UNKNOWN</code>/mis-tagged rows before class analytics are recomputed.</li>
+        <li>Make the audit pipeline publish a single machine-readable readiness gate in <code>dashboard_data.json</code> that merges DB-health, drift, freshness, and resolver coverage.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>2. Make <code>/audit</code> explicitly class-readiness-aware</h2>
+    <ul>
+        <li>Extend the dashboard payload with a <code>readiness.by_class</code> block for CRYPTO, EQUITY, ETF, FOREX, COMMODITY, and BOND.</li>
+        <li>Each class record includes: <code>verdict</code>, <code>stage</code>, <code>blockers</code>, <code>n_cumulative</code>, <code>n_recent</code>, <code>oos_trades</code>, <code>oos_sharpe</code>, <code>oos_consistency</code>, <code>recent_pf</code>, <code>recent_wr</code>, <code>recent_max_dd</code>, <code>system_concentration</code>, <code>symbol_concentration</code>, <code>data_trust_ok</code>.</li>
+        <li>Add <code>leaders.by_class</code> and <code>draggers.by_class</code> so the dashboard shows which source systems are driving or poisoning each class.</li>
+        <li>Reconcile <code>/audit</code> threshold text with <code>docs/PERFORMANCE_CHARTER.md</code>.</li>
+        <li>Surface <code>capped_vs_raw_pnl_gap</code> and <code>single_symbol_concentration</code> directly in the UI.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>3. Replace the current "real money tracker" with a class-aware rollout state machine</h2>
+    <ul>
+        <li>Retire the current crypto-centric assumptions in <code>alpha_engine/real_money_tracker.py</code> as the readiness authority.</li>
+        <li>Replace with one state per class:
+            <span class="state s-blocked">BLOCKED</span>
+            <span class="state s-rehab">REHAB</span>
+            <span class="state s-oos">OOS_READY</span>
+            <span class="state s-shadow">SHADOW</span>
+            <span class="state s-live">LIVE_ELIGIBLE</span>
+        </li>
+        <li>The state machine must hard-block progression when global gates fail: stale payload, red DB-health, unresolved drift, missing walk-forward.</li>
+        <li><strong>Progression rules:</strong>
+            <ul>
+                <li><span class="state s-rehab">REHAB</span> → <span class="state s-oos">OOS_READY</span>: <code>n ≥ 100</code>, PF/WR/MDD at least Tier 2, positive OOS Sharpe, OOS consistency ≥ 80%.</li>
+                <li><span class="state s-oos">OOS_READY</span> → <span class="state s-shadow">SHADOW</span>: also passes stress/regime replay and concentration caps.</li>
+                <li><span class="state s-shadow">SHADOW</span> → <span class="state s-live">LIVE_ELIGIBLE</span>: 14-30 days of forward shadow tracking with realized-vs-expected variance inside a fixed tolerance band.</li>
+            </ul>
+        </li>
+        <li><strong>Because you chose all-classes-first, no class receives live capital until all six major classes are at least <code>SHADOW</code> and none remain data-ambiguous.</strong></li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>4. Run six parallel class rehab tracks</h2>
+    <h3>EQUITY</h3>
+    <ul><li>Lead class. Bottom-symbol pruning, High Conviction parity, feature upgrades around earnings drift, sector-relative strength, breadth. Force disclosure of capped-vs-raw PnL gap.</li></ul>
+    <h3>ETF</h3>
+    <ul><li>Expand universe to <code>n ≥ 100</code> quickly. Block leveraged ETFs. Add sector-theme concentration caps. Sector-dispersion, AUM, and expense-ratio filters.</li></ul>
+    <h3>CRYPTO</h3>
+    <ul><li>Do not evaluate as a broad class until poison removed. Quarantine documented draggers (<code>kimi_signal_tracking</code>, stale/dead emitters like <code>ml_crypto_pred_v12</code>, overfit <code>baby_strats:crypto_soc_*</code>). Add funding, basis, open-interest, on-chain features. Score by sleeve/subsystem.</li></ul>
+    <h3>FOREX</h3>
+    <ul><li>Keep in mutate-before-kill mode. Rebuild with symbol/direction/session/macro filters. Wire COT, DXY beta, carry/rate differential, news-blackout logic before expecting recovery.</li></ul>
+    <h3>COMMODITY</h3>
+    <ul><li>Treat current headline PF as untrusted until concentration disclosed and walk-forward exists. Symbol concentration caps. Term-structure, COT, inventory, seasonality features. Only promote if edge survives outside CT=F/KC=F concentration.</li></ul>
+    <h3>BOND</h3>
+    <ul><li>Expand universe, add duration/risk filters. Paper-only until meaningful sample.</li></ul>
+</div>
+
+<div class="section">
+    <h2>Test plan</h2>
+    <ul>
+        <li>Re-run the shipped <code>money-maker-ready</code> audit on the freshest deployed payload after every pipeline change; require class-labeled claims in every report.</li>
+        <li>Contract tests for new payload blocks: <code>readiness.by_class</code>, <code>leaders.by_class</code>, <code>draggers.by_class</code>, concentration/caveat fields.</li>
+        <li>Regression tests that fail if dashboard threshold text diverges from <code>PERFORMANCE_CHARTER.md</code>.</li>
+        <li>Integration tests that prove red DB-health or active drift forces <code>BLOCKED</code> in the state machine.</li>
+        <li>Per-class validation tests:
+            <ul>
+                <li>EQUITY stays green only if symbol pruning improves recent PF without breaking OOS consistency.</li>
+                <li>ETF stays non-live below <code>n=100</code>.</li>
+                <li>CRYPTO stays blocked if draggers are present even when elite sleeves look good.</li>
+                <li>FOREX stays blocked while OOS Sharpe is negative.</li>
+                <li>COMMODITY stays blocked if concentration caps breached or walk-forward missing.</li>
+                <li>BOND stays blocked while sample below floor.</li>
+            </ul>
+        </li>
+        <li>Shadow-tracking acceptance test: each class must complete a forward shadow window with variance inside the agreed tolerance before becoming <code>LIVE_ELIGIBLE</code>.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Assumptions and defaults</h2>
+    <ul>
+        <li>"All classes first" = no live capital until CRYPTO, EQUITY, ETF, FOREX, COMMODITY, and BOND all have clean readiness states. FUTURES and SPORTS stay excluded until enough data to join.</li>
+        <li>Tier 2 from <code>docs/PERFORMANCE_CHARTER.md</code> is the minimum promotion floor unless stricter per-class rule documented.</li>
+        <li>Read-only access to <code>ejaguiar1_stocks</code> and <code>ejaguiar1_backtests</code> needed for verification; without it, reports remain advisory not promotion-grade.</li>
+        <li>No years-long backtesting program needed. Path: clean the data, rehab the classes in parallel, complete OOS/stress validation, then run short forward-shadow windows across all classes.</li>
+        <li>Local payload snapshot is stale relative to live page; prefer freshest deployed payload or direct DB query over old checked-in JSON when making promotion decisions.</li>
+    </ul>
+</div>
+
+</div>
+</body>
+</html>

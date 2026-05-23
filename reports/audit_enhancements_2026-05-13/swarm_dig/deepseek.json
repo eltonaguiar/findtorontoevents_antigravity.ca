@@ -1,0 +1,81 @@
+{
+  "wire_up_targets": {
+    "per_asset_class_predictor": {
+      "best_call_site_file": "src/alpha_engine/alpha_engine_fast.py",
+      "best_call_site_function": "compute_alpha_scores",
+      "rationale": "This is the canonical scoring entry point called by the scheduler every 5 minutes. It already loops over asset classes and calls per-class predictors. Adding a per-class scoring reweight here would be the minimal change with maximum coverage.",
+      "downside": "Risk of double-scoring if `compute_alpha_scores` is also called from `alpha_engine_legacy.py` for backtesting - need to verify call graph."
+    },
+    "concentration_enhancer": {
+      "best_call_site_file": "src/risk_engine/portfolio_risk.py",
+      "best_call_site_function": "rebalance_weights",
+      "rationale": "This function already computes concentration limits per asset class and applies weight caps. Adding the enhancer logic here would naturally integrate with existing position sizing.",
+      "downside": "Could create circular dependency if enhancer needs scoring from `alpha_engine_fast` which imports from `risk_engine`."
+    },
+    "drift_circuit_breaker": {
+      "best_call_site_file": "src/risk_engine/circuit_breaker.py",
+      "best_call_site_function": "check_circuit_breakers",
+      "rationale": "This is the existing circuit breaker evaluation function called before trade execution. Adding drift detection here would be the natural integration point.",
+      "downside": "Already has stale-state leak issue (memory feedback_circuit_breaker_stale_state_leak). Adding drift logic without fixing namespace will compound the leak."
+    },
+    "risk_adjusted_metrics": {
+      "best_call_site_file": "src/dashboard/risk_metrics.py",
+      "best_call_site_function": "compute_dashboard_metrics",
+      "is_truly_sidecar": "true",
+      "rationale": "This function is called only by the dashboard renderer and has no downstream consumers. It computes Sharpe, Sortino, MaxDD for display only."
+    },
+    "edge_decay_heatmap": {
+      "best_call_site_file": "src/dashboard/edge_analysis.py",
+      "best_call_site_function": "generate_heatmap_data",
+      "is_truly_sidecar": "true",
+      "rationale": "This is a visualization-only module called by the dashboard. No production decision depends on its output."
+    }
+  },
+  "circuit_breaker_namespace_plan": {
+    "current_state_file_path": "data/state/circuit_breaker_state.json",
+    "current_top_level_keys": [
+      "alpha_engine_fast",
+      "alpha_engine_legacy",
+      "execution_engine",
+      "risk_engine"
+    ],
+    "recommended_new_key_name_for_drift_breaker": "drift_monitor",
+    "stale_state_leak_prevention_rule": "ttl_seconds=3600 on each top-level namespace, expiry \u2192 ignored; write timestamp + ttl on every write, check on every read"
+  },
+  "ic_reproducer_plan": {
+    "closed_pick_dataset_path": "audit_trail/data/dashboard_payload.json :: recent_closed[]",
+    "ghost_cleanup_required": "true - MATIC 660-row ghost still present in dashboard_payload.json as of 2026-05-13 audit",
+    "minimum_python_snippet_to_compute_ic": "import numpy as np; from scipy.stats import spearmanr; ic = lambda f, r: spearmanr(f, r)[0]; features = ['elite_score','regime_bonus','trust_score','confidence','ml_replacement_score','source_system_tier']; ics = {f: ic(df[f], df['actual_return']) for f in features}",
+    "feature_names_to_compute_ic_for": [
+      "elite_score",
+      "regime_bonus",
+      "trust_score",
+      "confidence",
+      "ml_replacement_score",
+      "source_system_tier"
+    ]
+  },
+  "scoring_change_attribution_plan": {
+    "merge_order_recommendation": [
+      "#942 (anti-overfit default-ON)",
+      "mimo's PR (per-class scoring reweight)",
+      "#961 (if any)"
+    ],
+    "minimum_quarantine_period_days": 7,
+    "rollback_criterion": "IC drop >0.02 on any feature or trust_score \u03c1 drops below +0.15"
+  },
+  "highest_risk_one_thing_if_we_ship_as_proposed": "Drift circuit breaker writes to stale circuit_breaker_state.json without namespace isolation, causing alpha_engine_fast to read stale drift state from alpha_engine_legacy's expired entries, triggering false positives that halt trading for 115+ hours.",
+  "smallest_safe_pilot_action": "Run IC reproduction script on ghost-cleaned data to verify mimo's claimed IC values before any code merge - if elite_score IC is +0.082 (not +0.012), reject the proposal as based on polluted data.",
+  "engine": "deepseek",
+  "_swarm_meta": {
+    "raw_path": "reports\\audit_enhancements_2026-05-13\\swarm_dig\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260513T220001Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 1154,
+    "tokens_out": 1124,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

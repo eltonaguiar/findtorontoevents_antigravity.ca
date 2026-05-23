@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-05-14T04:11:02.391350+00:00",
+  "checks": {
+    "cot_db_verifier_dry_run": {
+      "status": "COMPLETE",
+      "exit_code": 0,
+      "stdout_excerpt": "# DRY RUN \u2014 would query:\n# Q1: status breakdown for source_system=multi_asset_cot\n# Q2: aggregate PF/WR from CLOSED rows\n# Q3: per-symbol breakdown (concentration check)\n# Q4: ghost-row detection (constant pnl_pct signatures)\n# Q5: date range\n\n# Run without --dry-run + DB_PASS_STOCKS env to execute.",
+      "stderr_excerpt": ""
+    },
+    "cot_db_verifier_live_run": {
+      "status": "PARTIAL",
+      "exit_code": 4,
+      "stdout_excerpt": "",
+      "stderr_excerpt": "# connecting to mysql.50webs.com:3306 db=ejaguiar1_stocks\nERROR: connection failed: (1045, \"Access denied for user 'ejaguiar1_stocks'@'142.198.176.179' (using password: YES)\")",
+      "note": "PARTIAL means runtime credential/network blocker captured."
+    },
+    "dsr_browser_gate_wired": {
+      "status": "COMPLETE"
+    },
+    "smart_score_shadow_payload_visible": {
+      "status": "COMPLETE"
+    },
+    "systems_grid_staleness_metadata": {
+      "status": "COMPLETE"
+    },
+    "browser_drift_auto_paper_only": {
+      "status": "MISSING",
+      "note": "No explicit drift-alert paper-only enforcement found in money_ready_filter.js."
+    },
+    "strategy_level_staleness_contract": {
+      "status": "MISSING"
+    },
+    "etf_universe_xlf_xle_xlk_readiness": {
+      "status": "PARTIAL",
+      "xlf": false,
+      "xle": false,
+      "xlk": false
+    },
+    "bond_fred_key_path_present": {
+      "status": "COMPLETE"
+    }
+  }
+}

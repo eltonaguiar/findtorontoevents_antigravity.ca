@@ -1,0 +1,81 @@
+name: Kimi Fetch Movies/TV
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  kimi_fetch_movies:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true
+          fi
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo, pdo_mysql, curl
+
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Fetch new movies/TV series
+        env:
+          EJAGUIAR1_TVMOVIESTRAILERS: ${{ secrets.EJAGUIAR1_TVMOVIESTRAILERS }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: |
+          cd movieshows2
+          php fetch_new_content.php | tee fetch_output.txt
+          
+      - name: Deploy to FTP
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          cat > /tmp/lftp_upload.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+          set net:timeout 30
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd findtorontoevents.ca/MOVIESHOWS2 || mkdir -p findtorontoevents.ca/MOVIESHOWS2
+          mirror -R --verbose --only-newer movieshows2/ findtorontoevents.ca/MOVIESHOWS2/
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_upload.script
+
+      - name: Commit fetch log
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add movieshows2/log/pull_log.json || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update movie/TV fetch log (GitHub Actions) [skip ci]"
+            bash .github/scripts/safe_push.sh "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          fi
+
+      - name: Restore workspace for checkout post
+        if: always()
+        run: |
+          git checkout --detach ${{ github.sha }}
+          git reset --hard ${{ github.sha }}
+

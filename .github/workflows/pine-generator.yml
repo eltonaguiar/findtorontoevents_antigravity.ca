@@ -1,0 +1,53 @@
+name: Pine Script Generator
+
+on:
+  workflow_run:
+    workflows: ["ALPHA ENGINE - Live Autonomous Scanner"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-pine:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Generate Pine Script
+        run: python pine_generator/generate_pine.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add pine_generator/output/eltons_predictions.pine pine_generator/output/version.json
+
+          if ! git diff --cached --quiet; then
+            VERSION=$(python -c "import json; print(json.load(open('pine_generator/output/version.json'))['version'])")
+            git commit -m "Elton's Predictions v${VERSION} Pine Script auto-updated [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase origin main || true
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          else
+            echo "No changes to Pine Script output skipping commit."
+          fi
+

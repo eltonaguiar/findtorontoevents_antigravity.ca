@@ -1,0 +1,35 @@
+name: Hoffman IRB Strategy Tracker
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+jobs:
+  track:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql requests
+
+      - name: Post Hoffman tracker report
+        env:
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ejaguiar1_stocks
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ejaguiar1_stocks
+          DISCORD_WEBHOOK_PAPER_TRADE: ${{ secrets.DISCORD_WEBHOOK_PAPER_TRADE }}
+          DISCORD_HEALTH_WEBHOOK: ${{ secrets.DISCORD_HEALTH_WEBHOOK }}
+        run: python -m strategy_health.hoffman_tracker
+

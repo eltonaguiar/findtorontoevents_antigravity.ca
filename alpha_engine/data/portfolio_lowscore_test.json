@@ -1,0 +1,109 @@
+{
+  "created_at": "2026-03-18T19:00:00Z",
+  "purpose": "Track 8 low-score picks from latest scan to test if elite_score is too conservative",
+  "starting_balance": 10000,
+  "market_regime": "CHOPPY/ACCUMULATION",
+  "positions": [
+    {
+      "symbol": "XRPUSDT",
+      "direction": "LONG",
+      "entry_price": 1.45000,
+      "score": 45,
+      "system": "battleground",
+      "strategy": "multi_period_rsi_confluence_xrp",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Highest score of the batch at 45 (D grade). XRP-specific RSI confluence strategy."
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "entry_price": 71063.4,
+      "score": 18,
+      "system": "battleground",
+      "strategy": "crypto_rsi_whaleconfirmed_v1",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Whale-confirmed RSI signal. Conflicts with BTC LONG at similar price."
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "entry_price": 71063.0,
+      "score": 17,
+      "system": "coinglass",
+      "strategy": "coinglass_leverage_squeeze",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Leverage squeeze LONG directly conflicts with 3 BTC SHORTs."
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "entry_price": 71063.0,
+      "score": 17,
+      "system": "coinglass",
+      "strategy": "coinglass_extreme_reversion",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Extreme reversion SHORT. Same system (coinglass) giving opposite BTC signals."
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "entry_price": 71015.8,
+      "score": 17,
+      "system": "quan_engine",
+      "strategy": "multi_agree_swing",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Multi-agreement swing SHORT. Third BTC SHORT signal in this batch."
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "SHORT",
+      "entry_price": 2185.43,
+      "score": 11,
+      "system": "coinglass",
+      "strategy": "coinglass_leverage_squeeze",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Same strategy as BTC LONG but different direction for ETH. Very low score."
+    },
+    {
+      "symbol": "XRPUSDT",
+      "direction": "SHORT",
+      "entry_price": 1.45263,
+      "score": 11,
+      "system": "quan_engine",
+      "strategy": "swing",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Conflicts with XRPUSDT LONG at 1.45. Opposing signals on same asset."
+    },
+    {
+      "symbol": "DOTUSDT",
+      "direction": "LONG",
+      "entry_price": 1.55400,
+      "score": 2,
+      "system": "luxalgo",
+      "strategy": "luxalgo_confluence",
+      "entry_time": "2026-03-18T19:00:00Z",
+      "status": "OPEN",
+      "pnl_pct": null,
+      "notes": "Lowest score in batch (2 = F grade). LuxAlgo confluence with minimal validation."
+    }
+  ],
+  "conflicts": {
+    "BTCUSDT": "3 SHORT + 1 LONG = net SHORT bias but no consensus",
+    "XRPUSDT": "1 LONG + 1 SHORT = fully conflicting"
+  },
+  "hypothesis": "Low elite_score picks may still win in choppy markets. Tracking to measure score-vs-outcome correlation."
+}

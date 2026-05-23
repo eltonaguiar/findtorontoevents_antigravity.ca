@@ -1,0 +1,120 @@
+{
+  "schema_version": "v1",
+  "engine": "grok",
+  "asset_class": "COMMODITY",
+  "candidates": [
+    {
+      "spec_id": "commodity_momentum_gld_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD when 60d price momentum > 0 (price above 60d SMA)",
+      "exit": "exit when 60d price momentum flips negative (price below 60d SMA) or after 30d hold",
+      "sizing": "fixed 10% of portfolio per position, adjusted monthly",
+      "universe": [
+        "GLD"
+      ],
+      "regime_filter": "skip when VIX > 25 (high equity volatility regime)",
+      "source_refs": [
+        "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum-in-Commodities"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.6,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 18.0,
+      "expected_n_per_year": 12,
+      "rationale": "Inspired by time-series momentum research showing robust excess returns in commodities; GLD as a liquid ETF may capture similar trends with retail-accessible instruments."
+    },
+    {
+      "spec_id": "commodity_carry_slv_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long SLV when 20d roll yield proxy (spot vs. 1m forward implied by ETF price trends) suggests backwardation (> 0.5%)",
+      "exit": "exit when roll yield proxy flips to contango (< 0%) or after 20d hold",
+      "sizing": "fixed 10% of portfolio per position, adjusted weekly",
+      "universe": [
+        "SLV"
+      ],
+      "regime_filter": "skip when 30d realized volatility of SLV > 20% (high risk regime)",
+      "source_refs": [
+        "https://www.bis.org/publ/work732.pdf"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.5,
+      "expected_wr": 50.5,
+      "expected_mdd_pct": 19.0,
+      "expected_n_per_year": 15,
+      "rationale": "Carry strategies based on roll yield have historically explained significant commodity returns; SLV may reflect similar dynamics in silver markets."
+    },
+    {
+      "spec_id": "commodity_value_dba_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long DBA when current price < 5y moving average by > 10% (undervalued signal)",
+      "exit": "exit when price crosses above 5y moving average or after 60d hold",
+      "sizing": "fixed 10% of portfolio per position, adjusted monthly",
+      "universe": [
+        "DBA"
+      ],
+      "regime_filter": "skip when 90d correlation between DBA and SPY > 0.5 (equity-driven regime)",
+      "source_refs": [
+        "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.5,
+      "expected_wr": 51.0,
+      "expected_mdd_pct": 17.0,
+      "expected_n_per_year": 8,
+      "rationale": "Value strategies in commodities have shown alpha with low correlation to other factors; DBA as an agricultural ETF may benefit from mean-reversion dynamics."
+    },
+    {
+      "spec_id": "commodity_momentum_pair_gld_slv_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long GLD and short SLV when GLD 60d momentum > 0 and SLV 60d momentum < 0 (relative strength spread > 5%)",
+      "exit": "exit when spread between GLD and SLV 60d momentum narrows to < 2% or after 30d hold",
+      "sizing": "equal weight 5% long GLD and 5% short SLV, adjusted weekly",
+      "universe": [
+        "GLD",
+        "SLV"
+      ],
+      "regime_filter": "skip when VIX > 30 or 30d correlation between GLD and SLV > 0.8 (high co-movement regime)",
+      "source_refs": [
+        "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.7,
+      "expected_wr": 53.0,
+      "expected_mdd_pct": 15.0,
+      "expected_n_per_year": 10,
+      "rationale": "Cross-sectional momentum in commodities has been robust historically; a GLD-SLV pair trade may capture relative strength with lower market exposure."
+    },
+    {
+      "spec_id": "commodity_combined_cper_v1",
+      "asset_class": "COMMODITY",
+      "entry": "long CPER when both 60d momentum > 0 and 20d roll yield proxy > 0.3% (combined signal)",
+      "exit": "exit when either momentum flips negative or roll yield proxy < 0% or after 30d hold",
+      "sizing": "fixed 10% of portfolio per position, adjusted weekly",
+      "universe": [
+        "CPER"
+      ],
+      "regime_filter": "skip when 30d realized volatility of CPER > 25% or VIX > 25 (high risk regime)",
+      "source_refs": [
+        "https://www.bis.org/publ/work853.pdf"
+      ],
+      "proposed_by_engine": "grok",
+      "expected_pf": 1.6,
+      "expected_wr": 52.0,
+      "expected_mdd_pct": 16.0,
+      "expected_n_per_year": 12,
+      "rationale": "Combining momentum and carry signals has historically improved Sharpe ratios; CPER as a copper ETF may benefit from industrial commodity trends."
+    }
+  ],
+  "notes_to_p3": "Focus backtesting on 2020-2025 to capture post-COVID commodity volatility and inflation dynamics. Pay attention to regime filters (VIX, volatility) as commodities are sensitive to macro shifts. For roll yield proxies, use ETF price trends as a rough substitute for futures curve data since direct futures access is out of scope. Monitor trade frequency and drawdowns closely, as commodity ETFs can exhibit sharp moves. If strategies underperform, analyze whether retail edge has decayed due to increased institutional participation or ETF tracking inefficiencies.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_commodity_p2_20260511T191641Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T191731Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 1329,
+    "tokens_out": 1419,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,210 @@
+name: Enhanced ML Crypto Train & Predict
+# Multi-model A/B testing pipeline for 30 crypto pairs 5 timeframes
+
+on:
+  # RE-ENABLED 2026-03-16: circuit breakers restored, confidence 0.75, train-first approach
+  schedule:
+    - cron: '0 2 * * *' # Daily retrain at 2 AM UTC
+    - cron: '19 */2 * * *' # Predict every 2h (staggered off :00 push storms)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'predict'
+        type: choice
+        options:
+          - predict
+          - train-quick
+          - train
+          - full
+          - regime
+          - status
+
+concurrency:
+  group: enhanced-ml-crypto
+  cancel-in-progress: false
+
+jobs:
+  enhanced-ml:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy scikit-learn xgboost lightgbm \
+                    joblib scipy pyarrow pytz
+
+      - name: Determine run mode (with stale-model detection)
+        id: mode
+        run: |
+          # Step 1: resolve the requested mode 
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            REQUESTED="${{ github.event.inputs.mode }}"
+          elif [ "$(date -u +%H)" = "02" ]; then
+            REQUESTED="train-quick"
+          else
+            REQUESTED="predict"
+          fi
+          echo "Requested mode: $REQUESTED"
+
+          # Step 2: if predict, check whether saved models match 65 features 
+          if [ "$REQUESTED" = "predict" ]; then
+            python - <<'PYEOF'
+          import glob, os, sys
+          MODELS_DIR = "ml_crypto_predictor/enhanced_models/models"
+          EXPECTED_FEATURES = 65 # current feature_engine.py output count
+
+          lightgbm_models = glob.glob(f"{MODELS_DIR}/*_lightgbm.joblib")
+          if not lightgbm_models:
+              print("No models found will force train-quick.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("mode=train-quick\n")
+              sys.exit(0)
+
+          try:
+              import joblib, time
+              MAX_AGE_DAYS = 7   # ML staleness watchdog hard-fail flip (2026-05-12)
+              m = joblib.load(lightgbm_models[0])
+              n = getattr(m, "n_features_in_", None) or getattr(m, "n_features_", None)
+              # Feature-count check (existing logic)
+              feat_stale = (n is not None and n != EXPECTED_FEATURES)
+              # Mtime check (new 2026-05-12) — per ml_staleness_audit_2026-05-12.md,
+              # the enhanced_ml_crypto family was 44 days stale despite this workflow
+              # firing daily; the feature-count gate alone misses the case where the
+              # feature schema is stable but models simply aren't being retrained.
+              # Now: any .joblib older than MAX_AGE_DAYS forces train-quick.
+              now = time.time()
+              max_age_sec = MAX_AGE_DAYS * 86400
+              oldest_mtime = min(os.path.getmtime(f) for f in lightgbm_models)
+              age_days = (now - oldest_mtime) / 86400.0
+              mtime_stale = (now - oldest_mtime) > max_age_sec
+              if feat_stale or mtime_stale:
+                  reason = []
+                  if feat_stale:
+                      reason.append(f"feature mismatch (model={n}, expected={EXPECTED_FEATURES})")
+                  if mtime_stale:
+                      reason.append(f"mtime stale ({age_days:.1f} days old; threshold={MAX_AGE_DAYS}d)")
+                  print(f"STALE MODELS: {', '.join(reason)}.")
+                  print("Deleting stale .joblib files so the pipeline retrains fresh.")
+                  deleted = 0
+                  for f in glob.glob(f"{MODELS_DIR}/*.joblib"):
+                      os.remove(f)
+                      deleted += 1
+                  print(f"Deleted {deleted} model files. Forcing train-quick.")
+                  with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                      fh.write("mode=train-quick\n")
+              else:
+                  feat_str = str(n) if n is not None else "unknown"
+                  print(f"Models compatible ({feat_str} features, age={age_days:.1f}d). Running predict.")
+                  with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                      fh.write("mode=predict\n")
+          except Exception as e:
+              print(f"WARNING: Could not inspect model ({e}). Running predict as-is.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("mode=predict\n")
+          PYEOF
+          else
+            # Non-predict modes (train, train-quick, full, regime, status) pass through unchanged
+            echo "mode=$REQUESTED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Retrain feedback model (learns from closed trades)
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "Training feedback model from closed trade outcomes..."
+          python -m ml_crypto_predictor.enhanced_models.feedback_trainer || echo "Feedback training skipped"
+
+      - name: Run enhanced ML pipeline
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          cd ${{ github.workspace }}
+          echo "Running pipeline in mode: ${{ steps.mode.outputs.mode }}"
+          python -m ml_crypto_predictor.enhanced_models.main ${{ steps.mode.outputs.mode }}
+
+      - name: Export picks for cross-aggregator
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python ml_crypto_predictor/enhanced_models/export_picks.py
+
+      - name: Bridge ML picks alpha_engine active_picks.json
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          echo "Bridging ML predictions into alpha_engine pipeline..."
+          cd alpha_engine && python ml_strategy_reviver.py && python ml_reviver_merger.py
+
+      - name: Copy results to dashboard data
+        run: |
+          mkdir -p updates/data
+
+          # Enhanced ML predictions
+          cp -f ml_crypto_predictor/enhanced_models/results/training_summary.json \
+                updates/data/enhanced_ml_training.json 2>/dev/null || true
+          cp -f ml_crypto_predictor/enhanced_models/results/current_regime.json \
+                updates/data/enhanced_ml_regime.json 2>/dev/null || true
+          cp -f ml_crypto_predictor/enhanced_models/ab_tests/ab_test_report.json \
+                updates/data/enhanced_ml_ab_test.json 2>/dev/null || true
+
+          # Also update existing tracker if enhanced picks exist
+          if [ -f crypto_gainer_ml/tracker/enhanced_ml_picks.json ]; then
+            cp -f crypto_gainer_ml/tracker/enhanced_ml_picks.json \
+                  updates/data/enhanced_ml_predictions.json
+          fi
+
+
+      - name: Commit and push results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Antigravity ML Bot"
+          git config user.email "ml-bot@findtorontoevents.ca"
+          git add -A ml_crypto_predictor/enhanced_models/results/ \
+                    ml_crypto_predictor/enhanced_models/ab_tests/ \
+                    ml_crypto_predictor/enhanced_models/models/ \
+                    ml_crypto_predictor/enhanced_models/data/ \
+                    ml_crypto_predictor/enhanced_models/live_picks/ \
+                    alpha_engine/data/ml_reviver_picks.json \
+                    alpha_engine/data/active_picks.json \
+                    crypto_gainer_ml/tracker/ \
+                    updates/data/ || true
+
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          MODE="${{ steps.mode.outputs.mode }}"
+
+          git diff --staged --quiet || \
+            git commit -m "Enhanced ML [$MODE]: ${TIMESTAMP} [skip ci]"
+          bash .github/scripts/safe_push.sh
+
+      - name: Notify ML channel on failure
+        if: failure()
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"\\u274c ML Job FAILED: ${{ github.workflow }}\", \"description\": \"Job: ${{ github.job }}\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nBranch: ${{ github.ref_name }}\", \"color\": 15158332, \"timestamp\": \"$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}]}" \
+            "$DISCORD_ML_CHANNEL" || true
+

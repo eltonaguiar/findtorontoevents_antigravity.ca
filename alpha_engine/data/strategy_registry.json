@@ -1,0 +1,300 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-04-04T12:30:00.000000",
+  "description": "Strategy status registry following TESTING_PROTOCOL.MD - tracks promotion/rehabilitation status for all strategies",
+  "forward_path": [
+    "CANDIDATE",
+    "BACKTEST_PASS",
+    "WF_PASS",
+    "STATS_PASS",
+    "FORWARD_PASS",
+    "DATA_VALIDATED",
+    "PRODUCTION"
+  ],
+  "rehabilitation_path": [
+    "PROBATION",
+    "REHAB_CANDIDATE",
+    "REHAB_STAGE_1",
+    "REHAB_STAGE_2",
+    "REHAB_STAGE_3",
+    "REHAB_STAGE_4",
+    "REHAB_STAGE_5",
+    "REHAB_STAGE_6",
+    "REHABILITATED",
+    "EXHAUSTED"
+  ],
+  "strategies": {
+    "st_fear_greed_contrarian": {
+      "status": "PRODUCTION",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.877,
+      "total_trades": 138,
+      "profit_factor": null,
+      "source": "dashboard_analysis",
+      "entered_production": "2026-03-01",
+      "lineage": null,
+      "rehabilitation_attempts": 0
+    },
+    "claude_gainer_st": {
+      "status": "PRODUCTION",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.855,
+      "total_trades": 166,
+      "profit_factor": null,
+      "source": "dashboard_analysis",
+      "entered_production": "2026-03-01",
+      "lineage": null,
+      "rehabilitation_attempts": 0
+    },
+    "copy_trader_highscore": {
+      "status": "CANDIDATE",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.923,
+      "total_trades": 13,
+      "profit_factor": null,
+      "source": "dashboard_analysis",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "notes": "Scarce - needs more picks to validate"
+    },
+    "super_signals": {
+      "status": "CANDIDATE",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.846,
+      "total_trades": 13,
+      "profit_factor": null,
+      "source": "dashboard_analysis",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "notes": "Scarce - needs more picks to validate"
+    },
+    "claude_gainer_1h": {
+      "status": "REHAB_CANDIDATE",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.143,
+      "total_trades": 35,
+      "profit_factor": null,
+      "source": "dashboard_analysis",
+      "lineage": null,
+      "rehabilitation_attempts": 1,
+      "notes": "Rehabilitation candidate - inverse already proven at 80% WR for claude_gainer_ml_inverse"
+    },
+    "enhanced_ml_A_xgboost": {
+      "status": "REHAB_CANDIDATE",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.327,
+      "total_trades": 49,
+      "profit_factor": null,
+      "source": "dashboard_analysis",
+      "lineage": null,
+      "rehabilitation_attempts": 1,
+      "notes": "Large sample (49 trades) - test cross-symbol + inverse"
+    },
+    "winner_pattern_precursor": {
+      "status": "REHABILITATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.812,
+      "total_trades": 48,
+      "profit_factor": 2.35,
+      "source": "rehabilitation_pipeline",
+      "lineage": "winner_pattern_precursor_inverse",
+      "rehabilitation_attempts": 1,
+      "notes": "Original 0% WR -> inverse is 81.2% WR - rehabilitation successful"
+    },
+    "claude_gainer_ml_inverse": {
+      "status": "REHABILITATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.80,
+      "total_trades": 10,
+      "profit_factor": 19.56,
+      "source": "rehabilitation_pipeline",
+      "lineage": "claude_gainer_ml inverse",
+      "rehabilitation_attempts": 1,
+      "notes": "Rehabilitation successful - inverse of failing strategy"
+    },
+    "vwma_momentum_trend": {
+      "status": "PRODUCTION",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.622,
+      "total_trades": 0,
+      "profit_factor": 2.18,
+      "source": "codebuff_690_backtest",
+      "entered_production": "2026-04-04",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "notes": "Sharpe 2.22 (best risk-adjusted). VWMA>EMA + ADX filter. BTC 1D 62.2% WR, BNB 4H 68.2% WR."
+    },
+    "supertrend_optimized": {
+      "status": "PRODUCTION",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.889,
+      "total_trades": 0,
+      "profit_factor": 9.02,
+      "source": "codebuff_690_backtest",
+      "entered_production": "2026-04-04",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "notes": "ATR(10) x3.0 optimized params from 3400+ combos. BTC 1H 88.9% WR PF 9.02. ADA golden pair."
+    },
+    "macd_divergence_scanner": {
+      "status": "PRODUCTION",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.80,
+      "total_trades": 0,
+      "profit_factor": 7.63,
+      "source": "codebuff_690_backtest",
+      "entered_production": "2026-04-04",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "notes": "Price vs MACD divergence. XRP 1D 80% WR PF 7.63. Extreme PF needs more trades."
+    },
+    "supertrend_vwma_confluence": {
+      "status": "CANDIDATE",
+      "tier": "BACKTEST_VALIDATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.669,
+      "total_trades": 133,
+      "profit_factor": 2.00,
+      "sharpe": 3.55,
+      "source": "edge_finder_970_backtest",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "recommended_symbols": ["NEARUSDT"],
+      "recommended_timeframes": ["1h"],
+      "notes": "Top Sharpe (3.55) from 970-run edge finder. NEAR 1H. 133 trades = statistically robust."
+    },
+    "short_only_contrarian": {
+      "status": "CANDIDATE",
+      "tier": "BACKTEST_VALIDATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.857,
+      "total_trades": 7,
+      "profit_factor": 5.74,
+      "sharpe": 3.36,
+      "source": "edge_finder_970_backtest",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "recommended_symbols": ["LTCUSDT"],
+      "recommended_timeframes": ["1d"],
+      "notes": "Sharpe 3.36, PF 5.74. SHORT-only contrarian on LTC daily. Low trade count but extreme edge."
+    },
+    "triple_confirmation": {
+      "status": "CANDIDATE",
+      "tier": "BACKTEST_VALIDATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.671,
+      "total_trades": 82,
+      "profit_factor": 2.01,
+      "sharpe": 2.87,
+      "source": "edge_finder_970_backtest",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "recommended_symbols": ["AVAXUSDT"],
+      "recommended_timeframes": ["1d"],
+      "notes": "Sharpe 2.87, 82 trades on AVAX daily. Good statistical significance."
+    },
+    "keltner_rsi2_squeeze": {
+      "status": "CANDIDATE",
+      "tier": "BACKTEST_VALIDATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.727,
+      "total_trades": 22,
+      "profit_factor": 5.27,
+      "sharpe": 2.62,
+      "source": "edge_finder_970_backtest",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "recommended_symbols": ["ETHUSDT"],
+      "recommended_timeframes": ["4h"],
+      "notes": "Sharpe 2.62, PF 5.27. Keltner squeeze + RSI2 timing on ETH 4H."
+    },
+    "simplified_kimi_rsi2": {
+      "status": "CANDIDATE",
+      "tier": "BACKTEST_VALIDATED",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.656,
+      "total_trades": 32,
+      "profit_factor": 2.17,
+      "sharpe": 1.80,
+      "source": "kimi_claw_970_backtest",
+      "lineage": null,
+      "rehabilitation_attempts": 0,
+      "recommended_symbols": ["ETHUSDT"],
+      "recommended_timeframes": ["1d"],
+      "notes": "+109% net PnL. Simplified > complex Kimi. PF 2.17 on ETH daily."
+    },
+    "Consensus": {
+      "status": "REHAB_CANDIDATE",
+      "asset_class": "MULTI_ASSET",
+      "win_rate": 0.32,
+      "total_trades": 87,
+      "source": "institutional_audit_april_2026",
+      "rehabilitation_attempts": 1,
+      "notes": "Underperforming cross-system consensus signals. Starting rehabilitation pipeline stage 1."
+    },
+    "Meme Scanner": {
+      "status": "REHAB_CANDIDATE",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.28,
+      "total_trades": 56,
+      "source": "institutional_audit_april_2026",
+      "rehabilitation_attempts": 1,
+      "notes": "Low signal-to-noise ratio. Mutation and inverse testing in progress."
+    },
+    "Edge Finder": {
+      "status": "REHAB_CANDIDATE",
+      "asset_class": "CRYPTO",
+      "win_rate": 0.31,
+      "total_trades": 42,
+      "source": "institutional_audit_april_2026",
+      "rehabilitation_attempts": 1,
+      "notes": "Edge decay below limit. Testing parameter mutation grid and cross-asset variations."
+    }
+  },
+  "summary": {
+    "total_strategies": 16,
+    "production": 5,
+    "candidates": 7,
+    "rehab_candidates": 2,
+    "rehabilitated": 2,
+    "exhausted": 0,
+    "institutional_kill_list": ["Consensus", "Meme Scanner", "Edge Finder"]
+  },
+  "rehabilitation_queue": [
+    {
+      "strategy": "claude_gainer_1h",
+      "priority": "P1",
+      "reason": "WR 14.3% on 35 trades",
+      "recommended_stage": 3,
+      "notes": "Inverse already proven for ml variant"
+    },
+    {
+      "strategy": "enhanced_ml_A_xgboost",
+      "priority": "P1",
+      "reason": "WR 32.7% on 49 trades",
+      "recommended_stage": 1,
+      "notes": "Large sample - test cross-symbol first"
+    },
+    {
+      "strategy": "Consensus",
+      "priority": "P1",
+      "reason": "Institutional suppressing",
+      "recommended_stage": 1,
+      "notes": "Starting 6-stage testing cycle"
+    },
+    {
+      "strategy": "Meme Scanner",
+      "priority": "P1",
+      "reason": "Institutional suppressing",
+      "recommended_stage": 3,
+      "notes": "Inverse already proved effective for other high-leak systems"
+    },
+    {
+      "strategy": "Edge Finder",
+      "priority": "P1",
+      "reason": "Institutional suppressing",
+      "recommended_stage": 1,
+      "notes": "Grid search required"
+    }
+  ]
+}

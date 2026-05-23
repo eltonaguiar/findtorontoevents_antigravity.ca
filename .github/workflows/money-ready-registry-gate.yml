@@ -1,0 +1,67 @@
+# Money-Ready vs PF-Registry consistency gate (BLOCKING).
+# Fails when money_ready_verdict.py declares a class MONEY_READY while the
+# canonical pf_registry rates it below the Tier-2 PF floor, or when a
+# MONEY_READY class breaches money_ready's own per-class concentration limit.
+# See tools/ci_gate_money_ready_vs_registry.py for the rationale.
+#
+# 2026-05-19: flipped warn-mode -> blocking. The CRYPTO divergence is resolved
+# (money_ready_verdict.py now consumes the canonical build_pf_registry pipeline)
+# and the gate passes; `continue-on-error` removed so regressions hard-fail.
+name: Money-Ready Registry Gate
+
+'on':
+  push:
+    branches: [main]
+    paths:
+      - 'alpha_engine/money_ready_verdict.py'
+      - 'alpha_engine/data/closed_picks.json'
+      - 'audit_dashboard/data/pf_registry.json'
+      - 'tools/ci_gate_money_ready_vs_registry.py'
+      - '.github/workflows/money-ready-registry-gate.yml'
+  pull_request:
+    paths:
+      - 'alpha_engine/money_ready_verdict.py'
+      - 'alpha_engine/data/closed_picks.json'
+      - 'audit_dashboard/data/pf_registry.json'
+      - 'tools/ci_gate_money_ready_vs_registry.py'
+      - '.github/workflows/money-ready-registry-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run money-ready / pf-registry consistency gate
+        id: gate
+        env:
+          # 2026-05-19 resolver step 3: enforce monotone-conservative shadow gates (downgrade-only).
+          MDD_GATE_ENFORCE: '1'
+          ML_ENHANCED_CRYPTO_QUARANTINE: '1'
+        run: |
+          python tools/ci_gate_money_ready_vs_registry.py
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "Money-Ready surface is consistent with the canonical pf_registry."

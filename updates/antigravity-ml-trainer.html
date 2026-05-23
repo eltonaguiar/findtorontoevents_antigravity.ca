@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANTIGRAVITY ML Crypto Trainer — Live Dashboard</title>
+    <meta name="description"
+        content="Real-time ML model training dashboard for crypto trading predictions. Track model accuracy, top picks, and self-improvement progress.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --border: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --gradient-green: linear-gradient(135deg, #10b981, #059669);
+            --gradient-blue: linear-gradient(135deg, #3b82f6, #2563eb);
+            --gradient-purple: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #06b6d4, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Section titles */
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title .icon {
+            font-size: 1.5rem;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0.25rem 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-detail {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-green {
+            color: var(--accent-green);
+        }
+
+        .stat-amber {
+            color: var(--accent-amber);
+        }
+
+        .stat-red {
+            color: var(--accent-red);
+        }
+
+        .stat-blue {
+            color: var(--accent-blue);
+        }
+
+        .stat-purple {
+            color: var(--accent-purple);
+        }
+
+        /* Explanation cards */
+        .explainer {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .explainer h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        .explainer p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .explainer ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .explainer ul li {
+            padding: 0.4rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .explainer ul li::before {
+            content: '►';
+            color: var(--accent-purple);
+            font-size: 0.7rem;
+            margin-top: 0.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Pair results table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .results-table th {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .results-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .results-table tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .tag-buy {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .tag-hold {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        .tag-skip {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            height: 8px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 1s ease;
+        }
+
+        /* Timeline */
+        .timeline {
+            margin: 1rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 1rem;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-purple);
+        }
+
+        .timeline-item.active::before {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        .footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+        }
+
+        /* Pick cards */
+        .picks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .pick-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pick-card.top {
+            border-color: var(--accent-green);
+        }
+
+        .pick-card.top::before {
+            content: 'TOP PICK';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--gradient-green);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 0 12px 0 8px;
+        }
+
+        .pick-pair {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .pick-detail {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0.5rem 0;
+        }
+
+        .pick-metrics {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .pick-metric {
+            text-align: center;
+        }
+
+        .pick-metric-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .pick-metric-value {
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .picks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        #loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🚀 ANTIGRAVITY_ML_TRAINER</h1>
+        <div class="subtitle">Machine Learning Crypto Trading Engine — Real-Time Dashboard</div>
+        <div class="badge" id="status-badge">● LOADING...</div>
+    </div>
+
+    <div class="container">
+        <!-- What is this? -->
+        <div class="section-title"><span class="icon">🧠</span> What Is This System Doing?</div>
+        <div class="explainer">
+            <h3>Antigravity ML Crypto Trainer — Explained</h3>
+            <p>This system uses <strong>machine learning</strong> (Gradient Boosting + Random Forest classifiers) to
+                predict which crypto pairs will hit their <strong>Take Profit (TP)</strong> target before their
+                <strong>Stop Loss (SL)</strong> within a set time horizon. Here's exactly what it does:</p>
+            <ul>
+                <li><strong>Data Collection:</strong> Pulls 720+ hourly candles for 14 crypto pairs from Kraken exchange
+                    (BTC, ETH, SOL, XRP, DOGE, DOT, SHIB, ALGO, ARB, APE, INJ, FET, DYDX, TRX)</li>
+                <li><strong>Feature Engineering:</strong> Computes 40+ technical indicators per pair — RSI (3 periods),
+                    EMAs (4 periods), SMAs (3 periods), MACD, Bollinger Bands, ATR, volume ratios, returns (4 periods),
+                    volatility, rate of change</li>
+                <li><strong>Target Definition:</strong> Binary classification — does price reach +2% (TP) before hitting
+                    -1% (SL) within 12 candles? This is a <strong>realistic trading target</strong>, not just "price go
+                    up"</li>
+                <li><strong>Training:</strong> Trains 2 models per pair (Gradient Boosting + Random Forest) with 80/20
+                    time-series split. No data leakage — future data never seen during training</li>
+                <li><strong>Scalping Models:</strong> Separate models with tight TP/SL (0.5%/-0.3%) and fast indicators
+                    for short-term trades</li>
+                <li><strong>Swing Models:</strong> Separate models with wide TP/SL (4%/-2%) and trend indicators for
+                    multi-day holds</li>
+                <li><strong>TP/SL Optimization:</strong> Grid search across 35 TP/SL combinations per pair to find
+                    optimal risk-reward</li>
+                <li><strong>Backtesting:</strong> Walk-forward out-of-sample testing on unseen data — no curve-fitting
+                </li>
+            </ul>
+        </div>
+
+        <!-- Key Stats -->
+        <div class="section-title"><span class="icon">📊</span> Current Model Performance</div>
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Pairs Trained</div>
+                <div class="stat-value stat-blue" id="pairs-trained">—</div>
+                <div class="stat-detail">14 crypto pairs from Kraken</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Models</div>
+                <div class="stat-value stat-purple" id="total-models">—</div>
+                <div class="stat-detail">Base + Scalping + Swing</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Win Rate</div>
+                <div class="stat-value" id="avg-winrate">—</div>
+                <div class="stat-detail">Out-of-sample accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Best F1 Score</div>
+                <div class="stat-value stat-green" id="best-f1">—</div>
+                <div class="stat-detail">Precision × Recall balance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Training Cycles</div>
+                <div class="stat-value stat-amber" id="training-cycles">—</div>
+                <div class="stat-detail">Daily retraining at midnight UTC</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Trained</div>
+                <div class="stat-value stat-blue" id="last-trained" style="font-size:1rem">—</div>
+                <div class="stat-detail">Next: midnight UTC</div>
+            </div>
+        </div>
+
+        <!-- Reliability Timeline -->
+        <div class="section-title"><span class="icon">⏱️</span> Reliability Timeline — When Can You Trust It?</div>
+        <div class="explainer">
+            <h3>How Long Until Reliable?</h3>
+            <p>ML models improve with <strong>more data and more training cycles</strong>. Here's the roadmap:</p>
+            <div class="timeline">
+                <div class="timeline-item active">
+                    <div>
+                        <strong style="color:var(--accent-amber)">Week 1-2: EARLY STAGE (Current)</strong>
+                        <p style="font-size:0.85rem;color:var(--text-secondary)">Models are training on 720 hourly
+                            candles (~30 days of data). F1 scores range 0.05–0.43. Some pairs show edge (SOL, SHIB,
+                            XRP), but models need more diverse market conditions. <strong>Do NOT trade on these signals
+                                yet.</strong></p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div>
+                        <strong style="color:var(--accent-blue)">Week 3-6: DEVELOPING</strong>
+                        <p style="font-size:0.85rem;color:var(--text-secondary)">With 2000+ candles and 20+ training
+                            cycles, models will have seen bull/bear/sideways markets. F1 scores should reach 0.30+
+                            consistently. Paper trading begins — forward picks tracked but no real money.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div>
+                        <strong style="color:var(--accent-green)">Week 7-12: ADVANCED</strong>
+                        <p style="font-size:0.85rem;color:var(--text-secondary)">Models validated across multiple market
+                            regimes. Pairs with F1 > 0.40 and WR > 55% graduate to "reliable" status. Self-improvement
+                            loop ensures failed predictions feed back into training.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div>
+                        <strong style="color:var(--accent-purple)">Month 4+: PRODUCTION</strong>
+                        <p style="font-size:0.85rem;color:var(--text-secondary)">Battle-tested models with 100+ training
+                            cycles, 10,000+ candles, and proven edge on forward picks. Ready for small-position live
+                            trading with strict risk management.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Picks -->
+        <div class="section-title"><span class="icon">🏆</span> Current Top Picks (Forward Predictions)</div>
+        <div id="picks-container" class="picks-grid">
+            <div id="loading">Loading model results...</div>
+        </div>
+        <div class="explainer" style="margin-top:1rem;border-left:3px solid var(--accent-amber)">
+            <p style="color:var(--accent-amber);font-weight:700">⚠️ FORWARD PICKS STATUS</p>
+            <p>These picks are generated by the ML models ranking pairs by prediction confidence. They are <strong>NOT
+                    live trades</strong> — they are tracked predictions. When a pick hits its TP or SL, the result feeds
+                back into the next training cycle. Over time, this self-improvement loop makes the models smarter.</p>
+        </div>
+
+        <!-- Pair-by-Pair Results -->
+        <div class="section-title"><span class="icon">📋</span> Pair-by-Pair Model Results</div>
+        <div style="overflow-x:auto">
+            <table class="results-table" id="results-table">
+                <thead>
+                    <tr>
+                        <th>Pair</th>
+                        <th>Best Model</th>
+                        <th>Accuracy</th>
+                        <th>Precision</th>
+                        <th>F1 Score</th>
+                        <th>Optimal TP</th>
+                        <th>Optimal SL</th>
+                        <th>Signal</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Self-Improvement -->
+        <div class="section-title"><span class="icon">🔄</span> Self-Improvement Loop</div>
+        <div class="explainer">
+            <h3>How the System Gets Smarter Every Day</h3>
+            <ul>
+                <li><strong>Daily Retraining:</strong> Every midnight UTC, the system fetches fresh market data and
+                    retrains all models. Each cycle adds ~24 new candles per pair to the training set.</li>
+                <li><strong>Forward Pick Tracking:</strong> Active picks are monitored — when TP/SL is hit, the outcome
+                    is recorded. Winners and losers inform the next training cycle.</li>
+                <li><strong>Feature Evolution:</strong> 40+ technical indicators are recomputed with latest data. Models
+                    learn which indicators matter most for each pair.</li>
+                <li><strong>TP/SL Optimization:</strong> Optimal take-profit and stop-loss levels are re-optimized daily
+                    for each pair based on recent price action.</li>
+                <li><strong>Walk-Forward Validation:</strong> Backtests always use out-of-sample data to prevent
+                    overfitting. If a model's edge disappears, it gets flagged.</li>
+            </ul>
+            <div style="margin-top:1rem">
+                <div class="stat-label">Model Improvement Progress</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="improvement-bar" style="width:15%;background:var(--gradient-purple)">
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted)">
+                    <span>Early (Current)</span>
+                    <span>Developing</span>
+                    <span>Advanced</span>
+                    <span>Production</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>⚠️ NOT FINANCIAL ADVICE</strong> — All metrics are backtested. Forward picks are tracked predictions,
+            not live trades.</p>
+        <p style="margin-top:0.5rem">ANTIGRAVITY ML Engine v1.0 | Auto-retrains daily | <a href="/updates/">← Back to
+                Dashboard</a></p>
+    </div>
+
+    <script>
+        async function loadData() {
+            const statusBadge = document.getElementById('status-badge');
+
+            // Try to load training results
+            let baseResults = null;
+            let scalpResults = null;
+            let swingResults = null;
+            let optimResults = null;
+
+            try {
+                // Try GitHub raw URLs for the committed JSON files
+                const urls = [
+                    { key: 'base', path: 'ml_crypto_predictor/models/training_results.json' },
+                    { key: 'scalp', path: 'ml_crypto_predictor/models/scalping/scalp_results.json' },
+                    { key: 'swing', path: 'ml_crypto_predictor/models/swing/swing_results.json' },
+                    { key: 'optim', path: 'ml_crypto_predictor/optim/optimal_tpsl.json' }
+                ];
+
+                const baseUrl = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+
+                for (const u of urls) {
+                    try {
+                        const r = await fetch(baseUrl + u.path + '?t=' + Date.now());
+                        if (r.ok) {
+                            const data = await r.json();
+                            if (u.key === 'base') baseResults = data;
+                            if (u.key === 'scalp') scalpResults = data;
+                            if (u.key === 'swing') swingResults = data;
+                            if (u.key === 'optim') optimResults = data;
+                        }
+                    } catch (e) { console.log('Failed to load', u.key, e); }
+                }
+            } catch (e) { console.error('Load error', e); }
+
+            if (!baseResults || !baseResults.results) {
+                statusBadge.textContent = '● AWAITING FIRST TRAINING';
+                statusBadge.style.background = 'rgba(245,158,11,0.15)';
+                statusBadge.style.color = '#f59e0b';
+                statusBadge.style.borderColor = 'rgba(245,158,11,0.3)';
+                document.getElementById('loading').textContent = 'No training data yet. First training run at midnight UTC.';
+                return;
+            }
+
+            // Status
+            statusBadge.textContent = '● TRAINING ACTIVE — Daily at Midnight UTC';
+            statusBadge.style.background = 'rgba(16,185,129,0.15)';
+            statusBadge.style.color = '#10b981';
+            statusBadge.style.borderColor = 'rgba(16,185,129,0.3)';
+
+            const results = baseResults.results;
+            const pairs = Object.keys(results);
+
+            // Stats
+            let totalModels = 0;
+            let f1Scores = [];
+            let accScores = [];
+            let precScores = [];
+
+            pairs.forEach(p => {
+                ['gradient_boost', 'random_forest'].forEach(m => {
+                    if (results[p][m]) {
+                        totalModels++;
+                        f1Scores.push(results[p][m].f1);
+                        accScores.push(results[p][m].accuracy);
+                        precScores.push(results[p][m].precision);
+                    }
+                });
+            });
+
+            const scalpCount = scalpResults ? (scalpResults.pairs || 0) : 0;
+            const swingCount = swingResults ? (swingResults.pairs || 0) : 0;
+
+            document.getElementById('pairs-trained').textContent = pairs.length;
+            document.getElementById('total-models').textContent = totalModels + (scalpCount * 1) + (swingCount * 1);
+
+            const avgAcc = accScores.reduce((a, b) => a + b, 0) / accScores.length;
+            const avgF1 = f1Scores.reduce((a, b) => a + b, 0) / f1Scores.length;
+            const bestF1 = Math.max(...f1Scores);
+
+            const wrEl = document.getElementById('avg-winrate');
+            wrEl.textContent = (avgAcc * 100).toFixed(1) + '%';
+            wrEl.className = 'stat-value ' + (avgAcc >= 0.6 ? 'stat-green' : avgAcc >= 0.5 ? 'stat-amber' : 'stat-red');
+
+            document.getElementById('best-f1').textContent = bestF1.toFixed(3);
+            document.getElementById('training-cycles').textContent = '1';
+
+            const trainedAt = baseResults.trained_at || 'Unknown';
+            document.getElementById('last-trained').textContent = trainedAt.replace('T', ' ').substring(0, 19);
+
+            // Progress bar - based on average F1
+            const progressPct = Math.min(100, Math.max(5, avgF1 * 250));
+            document.getElementById('improvement-bar').style.width = progressPct + '%';
+
+            // Sort pairs by F1 for picks and table
+            const sorted = pairs.map(p => ({
+                pair: p,
+                winner: results[p].winner || '?',
+                winnerF1: results[p].winner_f1 || 0,
+                acc: results[p][results[p].winner]?.accuracy || 0,
+                prec: results[p][results[p].winner]?.precision || 0,
+                f1: results[p][results[p].winner]?.f1 || results[p].winner_f1 || 0,
+                optTp: optimResults?.results?.[p]?.tp || 0.02,
+                optSl: optimResults?.results?.[p]?.sl || -0.01,
+                optSharpe: optimResults?.results?.[p]?.sharpe || 0,
+                optWr: optimResults?.results?.[p]?.win_rate || 0,
+            })).sort((a, b) => b.f1 - a.f1);
+
+            // Top Picks
+            const picksContainer = document.getElementById('picks-container');
+            picksContainer.innerHTML = '';
+
+            sorted.slice(0, 5).forEach((p, i) => {
+                const isTop = i === 0;
+                const signal = p.f1 >= 0.25 ? 'BUY ZONE' : p.f1 >= 0.15 ? 'WATCH' : 'EARLY';
+                const signalClass = p.f1 >= 0.25 ? 'tag-buy' : p.f1 >= 0.15 ? 'tag-hold' : 'tag-skip';
+
+                picksContainer.innerHTML += `
+                <div class="pick-card ${isTop ? 'top' : ''}">
+                    <div class="pick-pair">${p.pair} <span class="tag ${signalClass}">${signal}</span></div>
+                    <div class="pick-detail">Model: ${p.winner} | Optimal TP: ${(p.optTp * 100).toFixed(1)}% SL: ${(p.optSl * 100).toFixed(1)}%</div>
+                    <div class="pick-metrics">
+                        <div class="pick-metric">
+                            <div class="pick-metric-label">Win Rate</div>
+                            <div class="pick-metric-value ${p.acc >= 0.6 ? 'stat-green' : 'stat-amber'}">${(p.acc * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="pick-metric">
+                            <div class="pick-metric-label">F1 Score</div>
+                            <div class="pick-metric-value stat-purple">${p.f1.toFixed(3)}</div>
+                        </div>
+                        <div class="pick-metric">
+                            <div class="pick-metric-label">Precision</div>
+                            <div class="pick-metric-value stat-blue">${(p.prec * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="pick-metric">
+                            <div class="pick-metric-label">Sharpe</div>
+                            <div class="pick-metric-value stat-cyan">${p.optSharpe.toFixed(1)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            });
+
+            // Full results table
+            const tbody = document.getElementById('results-body');
+            tbody.innerHTML = '';
+            sorted.forEach(p => {
+                const signal = p.f1 >= 0.30 ? 'BUY ZONE' : p.f1 >= 0.15 ? 'WATCH' : 'LEARNING';
+                const signalClass = p.f1 >= 0.30 ? 'tag-buy' : p.f1 >= 0.15 ? 'tag-hold' : 'tag-skip';
+                tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight:700">${p.pair}</td>
+                    <td>${p.winner}</td>
+                    <td class="${p.acc >= 0.6 ? 'stat-green' : 'stat-amber'}">${(p.acc * 100).toFixed(1)}%</td>
+                    <td>${(p.prec * 100).toFixed(1)}%</td>
+                    <td class="${p.f1 >= 0.25 ? 'stat-green' : p.f1 >= 0.15 ? 'stat-amber' : 'stat-red'}">${p.f1.toFixed(3)}</td>
+                    <td class="stat-green">+${(p.optTp * 100).toFixed(1)}%</td>
+                    <td class="stat-red">${(p.optSl * 100).toFixed(1)}%</td>
+                    <td><span class="tag ${signalClass}">${signal}</span></td>
+                </tr>
+            `;
+            });
+        }
+
+        loadData();
+        // Auto-refresh every 5 minutes
+        setInterval(loadData, 300000);
+    </script>
+</body>
+
+</html>

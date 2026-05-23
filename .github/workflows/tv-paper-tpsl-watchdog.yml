@@ -1,0 +1,40 @@
+name: TV Paper TP/SL Watchdog
+
+on:
+  schedule:
+    # Every 15 min
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    # 2026-05-13: 3m was too tight — run 25826948681 cancelled mid-checkout (~3m) on a congested
+    # runner for a ~20k-file tree. Allow checkout + Python enough headroom.
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run TP/SL audit
+        run: |
+          if [ ! -f alpha_engine/data/tv_paper_positions_snapshot.json ]; then
+            echo "No positions snapshot yet — watchdog in standby mode."
+            echo "Upstream agent with TV desktop access must produce this file."
+            exit 0
+          fi
+          python tools/tv_paper_tpsl_audit.py || {
+            echo "::warning ::TV paper TP/SL violations detected — see job log."
+            exit 0
+          }
+        continue-on-error: true

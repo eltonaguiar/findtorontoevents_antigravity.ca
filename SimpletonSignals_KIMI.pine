@@ -1,0 +1,262 @@
+// @version=6
+// @name=Simpleton Signals KIMI
+// @description=Buy/Sell signal indicator with strength levels 1-4 - Clean visual signals for crypto trading
+// @author=KIMI
+// @version=0.02
+
+indicator("Simpleton Signals KIMI", shorttitle="SIMPSig_K", overlay=true)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INPUTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// RSI Settings
+rsiLength = input.int(14, title="RSI Length", minval=2, maxval=50, group="📊 RSI Settings")
+rsiOverbought = input.int(70, title="RSI Overbought", minval=50, maxval=90, group="📊 RSI Settings")
+rsiOversold = input.int(30, title="RSI Oversold", minval=10, maxval=50, group="📊 RSI Settings")
+
+// MACD Settings
+macdFast = input.int(12, title="MACD Fast", minval=5, maxval=50, group="📉 MACD Settings")
+macdSlow = input.int(26, title="MACD Slow", minval=10, maxval=100, group="📉 MACD Settings")
+macdSignal = input.int(9, title="MACD Signal", minval=5, maxval=50, group="📉 MACD Settings")
+
+// SuperTrend Settings
+stFactor = input.float(3.0, title="SuperTrend Factor", minval=1.0, maxval=10.0, step=0.1, group="📈 SuperTrend Settings")
+stPeriod = input.int(10, title="SuperTrend ATR Period", minval=5, maxval=50, group="📈 SuperTrend Settings")
+
+// EMA Settings
+emaFast = input.int(9, title="Fast EMA", minval=5, maxval=50, group="📊 EMA Settings")
+emaMedium = input.int(21, title="Medium EMA", minval=10, maxval=100, group="📊 EMA Settings")
+emaSlow = input.int(50, title="Slow EMA", minval=20, maxval=200, group="📊 EMA Settings")
+
+// Display Settings
+showLabels = input.bool(true, title="Show Signal Labels", group="🎨 Display Settings")
+showTable = input.bool(true, title="Show Info Table", group="🎨 Display Settings")
+showBackground = input.bool(true, title="Show Background Coloring", group="🎨 Display Settings")
+
+// Signal Threshold
+minSignalLevel = input.int(2, title="Min Signal Level to Display", minval=1, maxval=4, group="🎯 Signal Filter")
+
+// TP/SL Settings (drawn on strong signals L3+)
+showTPSL = input.bool(true, title="Show TP/SL Lines on Strong Signals", group="🎯 TP/SL Lines")
+tpMult = input.float(2.0, title="TP = ATR x", minval=0.5, maxval=6.0, step=0.25, group="🎯 TP/SL Lines")
+slMult = input.float(1.0, title="SL = ATR x", minval=0.3, maxval=4.0, step=0.25, group="🎯 TP/SL Lines")
+tpslMinLevel = input.int(3, title="Min Level for TP/SL Lines", minval=2, maxval=4, group="🎯 TP/SL Lines")
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INDICATOR CALCULATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// RSI
+rsi = ta.rsi(close, rsiLength)
+
+// MACD
+[macdLine, signalLine, macdHist] = ta.macd(close, macdFast, macdSlow, macdSignal)
+
+// SuperTrend
+[stValue, stDirection] = ta.supertrend(stFactor, stPeriod)
+
+// EMAs
+fastEMA = ta.ema(close, emaFast)
+mediumEMA = ta.ema(close, emaMedium)
+slowEMA = ta.ema(close, emaSlow)
+
+// ATR for TP/SL calculation
+atrVal = ta.atr(14)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SIGNAL CONDITIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// RSI signals
+rsiBuy = rsi < rsiOversold
+rsiSell = rsi > rsiOverbought
+
+// MACD signals
+macdBuy = macdLine > signalLine
+macdSell = macdLine < signalLine
+
+// SuperTrend signals
+stBuy = stDirection < 0
+stSell = stDirection > 0
+
+// EMA alignment
+emaBullish = fastEMA > mediumEMA and mediumEMA > slowEMA
+emaBearish = fastEMA < mediumEMA and mediumEMA < slowEMA
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SIGNAL STRENGTH CALCULATION (1-4)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Count buy confirmations
+buyScore = 0
+buyScore += rsiBuy ? 1 : 0
+buyScore += macdBuy ? 1 : 0
+buyScore += stBuy ? 1 : 0
+buyScore += emaBullish ? 1 : 0
+
+// Count sell confirmations
+sellScore = 0
+sellScore += rsiSell ? 1 : 0
+sellScore += macdSell ? 1 : 0
+sellScore += stSell ? 1 : 0
+sellScore += emaBearish ? 1 : 0
+
+// Determine overall signal
+isBuy = buyScore >= minSignalLevel and buyScore > sellScore
+isSell = sellScore >= minSignalLevel and sellScore > buyScore
+
+signalLevel = isBuy ? buyScore : isSell ? sellScore : 0
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PLOTTING
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Plot EMAs
+plot(fastEMA, color=color.new(#00d4ff, 50), title="Fast EMA", linewidth=1)
+plot(mediumEMA, color=color.new(#ff9f43, 50), title="Medium EMA", linewidth=1)
+plot(slowEMA, color=color.new(#a55eea, 50), title="Slow EMA", linewidth=1)
+
+// Plot SuperTrend
+plot(stDirection < 0 ? stValue : na, color=color.new(#26de81, 0), style=plot.style_linebr, title="ST Support", linewidth=2)
+plot(stDirection > 0 ? stValue : na, color=color.new(#ff6b6b, 0), style=plot.style_linebr, title="ST Resistance", linewidth=2)
+
+// Background coloring based on signal strength
+color bg_strong = showBackground and signalLevel >= 4 ? color.new(isBuy ? color.green : color.red, 80) : na
+color bg_medium = showBackground and signalLevel == 3 ? color.new(isBuy ? color.lime : color.maroon, 85) : na
+color bg_weak = showBackground and signalLevel == 2 ? color.new(isBuy ? color.teal : color.fuchsia, 90) : na
+bgcolor(signalLevel >= 4 ? bg_strong : signalLevel == 3 ? bg_medium : bg_weak, title="Signal Background")
+
+// Signal shapes (text must be const string — use labels for dynamic text)
+plotshape(isBuy and signalLevel >= minSignalLevel, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.normal, text="BUY")
+plotshape(isSell and signalLevel >= minSignalLevel, title="Sell Signal", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.normal, text="SELL")
+
+// Dynamic labels with signal level
+if isBuy and signalLevel >= minSignalLevel and showLabels
+    label.new(bar_index, low, "L" + str.tostring(buyScore), style=label.style_none, textcolor=color.green, size=size.small)
+if isSell and signalLevel >= minSignalLevel and showLabels
+    label.new(bar_index, high, "L" + str.tostring(sellScore), style=label.style_none, textcolor=color.red, size=size.small)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TP/SL LINES ON STRONG SIGNALS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Persistent state for active TP/SL lines
+var line tpLine = na
+var line slLine = na
+var line entryLine = na
+var label tpLabel = na
+var label slLabel = na
+var float activeTP = na
+var float activeSL = na
+var float activeEntry = na
+var bool activeIsBuy = false
+
+// Strong buy signal fires — draw new TP/SL
+if showTPSL and isBuy and buyScore >= tpslMinLevel
+    if not na(tpLine)
+        line.delete(tpLine)
+    if not na(slLine)
+        line.delete(slLine)
+    if not na(entryLine)
+        line.delete(entryLine)
+    if not na(tpLabel)
+        label.delete(tpLabel)
+    if not na(slLabel)
+        label.delete(slLabel)
+    activeEntry := close
+    activeTP := close + atrVal * tpMult
+    activeSL := close - atrVal * slMult
+    activeIsBuy := true
+    entryLine := line.new(bar_index, close, bar_index + 20, close, color=#00d4ff, style=line.style_dashed, width=1)
+    tpLine := line.new(bar_index, activeTP, bar_index + 20, activeTP, color=#00ff88, style=line.style_solid, width=2)
+    slLine := line.new(bar_index, activeSL, bar_index + 20, activeSL, color=#ff4444, style=line.style_solid, width=2)
+    tpLabel := label.new(bar_index + 20, activeTP, "TP", style=label.style_none, textcolor=#00ff88, size=size.small)
+    slLabel := label.new(bar_index + 20, activeSL, "SL", style=label.style_none, textcolor=#ff4444, size=size.small)
+
+// Strong sell signal fires — draw new TP/SL (reversed)
+if showTPSL and isSell and sellScore >= tpslMinLevel
+    if not na(tpLine)
+        line.delete(tpLine)
+    if not na(slLine)
+        line.delete(slLine)
+    if not na(entryLine)
+        line.delete(entryLine)
+    if not na(tpLabel)
+        label.delete(tpLabel)
+    if not na(slLabel)
+        label.delete(slLabel)
+    activeEntry := close
+    activeTP := close - atrVal * tpMult
+    activeSL := close + atrVal * slMult
+    activeIsBuy := false
+    entryLine := line.new(bar_index, close, bar_index + 20, close, color=#00d4ff, style=line.style_dashed, width=1)
+    tpLine := line.new(bar_index, activeTP, bar_index + 20, activeTP, color=#00ff88, style=line.style_solid, width=2)
+    slLine := line.new(bar_index, activeSL, bar_index + 20, activeSL, color=#ff4444, style=line.style_solid, width=2)
+    tpLabel := label.new(bar_index + 20, activeTP, "TP", style=label.style_none, textcolor=#00ff88, size=size.small)
+    slLabel := label.new(bar_index + 20, activeSL, "SL", style=label.style_none, textcolor=#ff4444, size=size.small)
+
+// Check if TP or SL was hit — delete lines
+if not na(activeTP) and not na(activeSL)
+    bool tpHit = activeIsBuy ? high >= activeTP : low <= activeTP
+    bool slHit = activeIsBuy ? low <= activeSL : high >= activeSL
+    if tpHit or slHit
+        if not na(tpLine)
+            line.delete(tpLine)
+        if not na(slLine)
+            line.delete(slLine)
+        if not na(entryLine)
+            line.delete(entryLine)
+        if not na(tpLabel)
+            label.delete(tpLabel)
+        if not na(slLabel)
+            label.delete(slLabel)
+        activeTP := na
+        activeSL := na
+        activeEntry := na
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INFO TABLE
+// ═════════════════════════════════════════════════════════════════════════════
+
+var table infoTable = table.new(position.top_right, 2, 9, bgcolor=color.new(#0a0a12, 5), frame_width=1, frame_color=#333344)
+
+if showTable and barstate.islast
+    table.cell(infoTable, 0, 0, "SIMP Signals KIMI", text_color=#00d4ff, text_size=size.normal, text_font_family=font.family_monospace)
+    table.cell(infoTable, 1, 0, "v0.02", text_color=#666677, text_size=size.small)
+    table.cell(infoTable, 0, 1, "Current Signal", text_color=#8899aa, text_size=size.small)
+    string sig_txt = isBuy ? "BUY" : isSell ? "SELL" : "NONE"
+    color sig_col = isBuy ? color.green : isSell ? color.red : #666677
+    table.cell(infoTable, 1, 1, sig_txt, text_color=sig_col, text_size=size.small)
+    table.cell(infoTable, 0, 2, "Signal Strength", text_color=#8899aa, text_size=size.small)
+    color str_col = signalLevel >= 4 ? #00d4ff : signalLevel >= 3 ? color.green : signalLevel >= 2 ? color.yellow : #666677
+    table.cell(infoTable, 1, 2, str.tostring(signalLevel) + "/4", text_color=str_col, text_size=size.small)
+    table.cell(infoTable, 0, 3, "RSI", text_color=#8899aa, text_size=size.small)
+    color rsi_col = rsi < rsiOversold ? color.green : rsi > rsiOverbought ? color.red : #8899aa
+    table.cell(infoTable, 1, 3, str.tostring(rsi, "#.#"), text_color=rsi_col, text_size=size.small)
+    table.cell(infoTable, 0, 4, "MACD", text_color=#8899aa, text_size=size.small)
+    string macd_txt = macdBuy ? "Bullish" : macdSell ? "Bearish" : "Neutral"
+    color macd_col = macdBuy ? color.green : macdSell ? color.red : #666677
+    table.cell(infoTable, 1, 4, macd_txt, text_color=macd_col, text_size=size.small)
+    table.cell(infoTable, 0, 5, "SuperTrend", text_color=#8899aa, text_size=size.small)
+    string st_txt = stBuy ? "Support" : stSell ? "Resistance" : "Neutral"
+    color st_col = stBuy ? color.green : stSell ? color.red : #666677
+    table.cell(infoTable, 1, 5, st_txt, text_color=st_col, text_size=size.small)
+    table.cell(infoTable, 0, 6, "EMA Trend", text_color=#8899aa, text_size=size.small)
+    string ema_txt = emaBullish ? "Bullish" : emaBearish ? "Bearish" : "Mixed"
+    color ema_col = emaBullish ? color.green : emaBearish ? color.red : #666677
+    table.cell(infoTable, 1, 6, ema_txt, text_color=ema_col, text_size=size.small)
+    table.cell(infoTable, 0, 7, "TP/SL", text_color=#8899aa, text_size=size.small)
+    string tpsl_txt = not na(activeTP) ? str.tostring(activeTP, "#.##") + " / " + str.tostring(activeSL, "#.##") : "No active"
+    color tpsl_col = not na(activeTP) ? #00d4ff : #666677
+    table.cell(infoTable, 1, 7, tpsl_txt, text_color=tpsl_col, text_size=size.small)
+    table.cell(infoTable, 0, 8, "ATR(14)", text_color=#555577, text_size=size.tiny)
+    table.cell(infoTable, 1, 8, str.tostring(atrVal, "#.##"), text_color=#555577, text_size=size.tiny)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+alertcondition(isBuy and signalLevel >= 3, title="Strong Buy Signal", message="Strong BUY Signal | {{ticker}} @ {{close}}")
+alertcondition(isSell and signalLevel >= 3, title="Strong Sell Signal", message="Strong SELL Signal | {{ticker}} @ {{close}}")
+alertcondition(signalLevel >= 3, title="Any Strong Signal", message="Strong Signal | {{ticker}} @ {{close}}")

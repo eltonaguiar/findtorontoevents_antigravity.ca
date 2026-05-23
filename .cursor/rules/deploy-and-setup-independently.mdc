@@ -1,0 +1,15 @@
+---
+description: Deploy code and run setup/migrations yourself. Do not ask the user to run SQL, open phpMyAdmin, or do manual steps.
+globs: 
+alwaysApply: true
+---
+
+# Deploy and run setup independently
+
+1. **Deploy yourself.** When you add or change code that affects the live site (API, schema, scripts), run `python tools/deploy_to_ftp.py` and deploy. Do not say "you should deploy" or "run this in phpMyAdmin" — deploy the code yourself.
+
+2. **Apply schema/setup yourself.** For database or config setup:
+   - Prefer **deployable setup scripts** (e.g. `ensure_debug_log_table.php`, `setup_tables.php`) that run via HTTP. Deploy them, then **call the setup URL** (e.g. `https://findtorontoevents.ca/fc/api/ensure_debug_log_table.php`) to apply the change. If the request times out, the table may still be created on first use by the main API (e.g. `debug_log.php` includes `debuglog_ensure_table.php`).
+   - Do not ask the user to "run this SQL in phpMyAdmin" or "run these steps manually." Provide one-time endpoints and invoke them after deploy when possible.
+
+3. **Be independent.** Complete the full flow: implement → deploy → run setup (or document why setup ran automatically). Avoid handing off manual steps to the user unless there is no other option (e.g. secrets only they have).

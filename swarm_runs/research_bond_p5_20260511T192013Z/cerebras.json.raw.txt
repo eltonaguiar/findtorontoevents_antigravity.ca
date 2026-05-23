@@ -1,0 +1,94 @@
+{
+  "schema_version": "v1",
+  "engine": "assistant_3",
+  "asset_class": "BOND",
+  "run_id": "run_2026-05-11T19-01-40Z",
+  "synthesis": [
+    {
+      "spec_id": "bond_momentum_longshort_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 – no profitability and too few trades; cross‑test shows independence but signal is simplified.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_term_premium_slope_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 – no edge; simplified SMA proxy likely mis‑represents intended term‑premium logic.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_spread_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 – no statistical edge; regime filter and risk‑parity sizing not enough to generate returns.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_regime_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 – flat performance; simplified signal likely mis‑aligned with true volatility‑regime intent.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_credit_spread_term_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets Tier‑2 PF but WR=33.3% and n=9 are far below requirements; cross‑test independence is good but signal simplification limits confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_inflation_rotation_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.99 exceeds floor, WR=45.5% close to target, yet n=11 trades is insufficient; regime filter and simplified spread logic need validation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_momentum_cross_country_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 – below PF threshold and trade count; simplified SMA crossover likely mis‑represents cross‑country momentum.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_premium_on_off_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets PF floor but WR=33.3% and n=9 are too low; cross‑test independence is fine but signal translation is still approximate.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_macro_factor_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 – insufficient PF and trade count; simplified macro composite likely diverges from intended factor model.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_regime_switching_duration_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 – no observable edge; regime‑switching logic not captured by the SMA proxy.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_momentum_cross_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 – below PF threshold; simplified momentum selection may not reflect true top‑2 ETF performance.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_term_premium_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.0, WR=0.0%, n=5 – no edge; term‑premium estimate reduced to SMA crossover, losing intended signal nuance.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_liquidity_premium_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=0.94, WR=42.9%, n=7 – PF below floor; simplified spread widening rule likely mis‑captures true liquidity premium dynamics.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "bond_credit_spread_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=1.51 meets PF floor, but WR=33.3% and n=9 trades fall short; cross‑test independence is good, yet simplified spread percentile logic needs refinement.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "None of the evaluated bond candidates satisfy the Tier‑2 floor (PF ≥1.5, WR ≥50%, MDD <20%, n ≥100). The few strategies that achieve PF ≥1.5 have very low trade counts and sub‑target win rates, making their statistical significance weak. Moreover, all signals are currently approximated by SMA crossovers, so the true intended logic is not yet faithfully represented. Until longer histories (≥100 trades) and a faithful signal translator are available, no edge can be confirmed."
+}

@@ -1,0 +1,216 @@
+{
+  "router": {
+    "db_path": "unified_signals.db",
+    "conflict_window_minutes": 30,
+    "min_confidence": 0.4,
+    "consensus_threshold": 0.5,
+    "output_path": "live_picks.json"
+  },
+  "priority_order": [
+    "BATTLEGROUND",
+    "ALPHA_ENGINE",
+    "MERCURY2",
+    "MULTI_ASSET",
+    "KIMI"
+  ],
+  "conflict_resolver": "priority_based",
+  "sources": {
+    "battleground": {
+      "enabled": true,
+      "priority": 1,
+      "adapter": "BattlegroundAdapter",
+      "integrations": [
+        {
+          "type": "file_watcher",
+          "directory": "/data/battleground/output",
+          "pattern": "*.json",
+          "interval_seconds": 30
+        },
+        {
+          "type": "webhook",
+          "path": "/webhook/battleground",
+          "port": 8080
+        }
+      ]
+    },
+    "alpha_engine": {
+      "enabled": true,
+      "priority": 2,
+      "adapter": "AlphaEngineAdapter",
+      "integrations": [
+        {
+          "type": "database_poll",
+          "db_path": "/data/alpha_engine/signals.db",
+          "query": "SELECT * FROM signals WHERE status = 'active' AND created_at > ?",
+          "column_mapping": {
+            "pair": "symbol",
+            "signal": "direction",
+            "confidence": "confidence",
+            "entry_price": "suggested_price",
+            "stop_loss": "stop_loss",
+            "take_profit": "take_profit",
+            "timeframe": "timeframe",
+            "strategy": "strategy",
+            "id": "source_signal_id"
+          },
+          "interval_seconds": 60
+        },
+        {
+          "type": "webhook",
+          "path": "/webhook/alpha_engine",
+          "port": 8080
+        }
+      ]
+    },
+    "mercury2": {
+      "enabled": true,
+      "priority": 3,
+      "adapter": "Mercury2Adapter",
+      "integrations": [
+        {
+          "type": "redis",
+          "url": "redis://localhost:6379",
+          "channel": "mercury2:predictions"
+        },
+        {
+          "type": "database_poll",
+          "db_path": "/data/mercury2/predictions.db",
+          "query": "SELECT * FROM predictions WHERE timestamp > ?",
+          "column_mapping": {
+            "symbol": "symbol",
+            "prob_up": "prob_up",
+            "prob_down": "prob_down",
+            "predicted_price": "suggested_price",
+            "prediction_horizon": "timeframe",
+            "model_version": "model_version",
+            "prediction_id": "source_signal_id"
+          },
+          "interval_seconds": 300
+        }
+      ]
+    },
+    "multi_asset": {
+      "enabled": true,
+      "priority": 4,
+      "adapter": "MultiAssetAdapter",
+      "integrations": [
+        {
+          "type": "file_watcher",
+          "directory": "/data/multi_asset/picks",
+          "pattern": "*.json",
+          "interval_seconds": 60
+        },
+        {
+          "type": "database_poll",
+          "db_path": "/data/multi_asset/picks.db",
+          "query": "SELECT * FROM picks WHERE date > ?",
+          "column_mapping": {
+            "ticker": "symbol",
+            "recommendation": "direction",
+            "score": "score",
+            "target_entry": "suggested_price",
+            "target_exit": "stop_loss",
+            "type": "asset_class",
+            "horizon": "timeframe",
+            "sector_rotation": "strategy",
+            "pick_id": "source_signal_id"
+          },
+          "interval_seconds": 3600
+        }
+      ]
+    },
+    "kimi": {
+      "enabled": true,
+      "priority": 5,
+      "adapter": "KIMIAdapter",
+      "integrations": [
+        {
+          "type": "api_poll",
+          "endpoint": "https://api.kimi.example.com/v1/signals",
+          "headers": {
+            "Authorization": "Bearer ${KIMI_API_TOKEN}",
+            "Content-Type": "application/json"
+          },
+          "interval_seconds": 300
+        },
+        {
+          "type": "webhook",
+          "path": "/webhook/kimi",
+          "port": 8080
+        }
+      ]
+    }
+  },
+  "aggregation": {
+    "interval_minutes": 5,
+    "output_formats": ["json", "database"],
+    "max_picks_per_output": 50,
+    "min_consensus_score": 0.5
+  },
+  "conflict_resolution": {
+    "window_minutes": 30,
+    "methods": {
+      "priority_based": {
+        "description": "Select highest priority signal",
+        "use_for": ["default"]
+      },
+      "confidence_based": {
+        "description": "Select highest confidence signal",
+        "use_for": ["same_priority"]
+      },
+      "consensus_merge": {
+        "description": "Merge signals with weighted average",
+        "use_for": ["multi_direction"]
+      },
+      "directional_agreement": {
+        "description": "Require 60% agreement on direction",
+        "use_for": ["validation"]
+      }
+    }
+  },
+  "deduplication": {
+    "enabled": true,
+    "fingerprint_fields": ["source", "symbol", "direction"],
+    "time_granularity": "minute",
+    "retention_hours": 24
+  },
+  "output": {
+    "live_picks_json": {
+      "enabled": true,
+      "path": "live_picks.json",
+      "format": "json",
+      "include_fields": [
+        "symbol",
+        "direction",
+        "consensus_score",
+        "confidence",
+        "source",
+        "sources",
+        "agreement_ratio",
+        "suggested_price",
+        "stop_loss",
+        "take_profit",
+        "signal_id",
+        "timestamp"
+      ]
+    },
+    "webhook_forward": {
+      "enabled": false,
+      "url": "https://your-trading-system.com/webhook/signals",
+      "headers": {
+        "Authorization": "Bearer ${WEBHOOK_TOKEN}"
+      }
+    },
+    "database_replication": {
+      "enabled": false,
+      "target_db": "trading_master.db",
+      "table": "unified_signals"
+    }
+  },
+  "monitoring": {
+    "log_level": "INFO",
+    "stats_interval_minutes": 5,
+    "alert_on_conflict_rate": 0.3,
+    "alert_on_low_consensus": 0.4
+  }
+}

@@ -1,0 +1,106 @@
+name: Outcome Resolver  Validate Unresolved Picks
+
+on:
+  schedule:
+    # Every hour (was every 2h  missing intra-period TP/SL hits, Kimi K10)
+    - cron: '15 */1 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview only (no file changes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+concurrency:
+  group: outcome-resolver
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  resolve-outcomes:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy requests
+        env:
+          PIP_BREAK_SYSTEM_PACKAGES: "1"
+
+      - name: Prune expired picks from active_picks.json
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python alpha_engine/prune_active_picks.py --dry-run
+          else
+            python alpha_engine/prune_active_picks.py
+          fi
+
+      - name: Run Outcome Resolver
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  OUTCOME RESOLVER - Validate Closed Picks"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python alpha_engine/outcome_resolver.py --dry-run
+          else
+            python alpha_engine/outcome_resolver.py
+          fi
+
+      - name: Commit resolved picks
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true' }}
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/closed_picks.json alpha_engine/data/outcome_resolver_log.json
+          git add alpha_engine/data/active_picks.json alpha_engine/data/expired_picks_archive.json 2>/dev/null || true
+          git add rapid_fire_data/closed_picks.json rapid_fire_data/now_picks.json 2>/dev/null || true
+          git add quan_engine/data/active_signals.json quan_engine/data/quan_engine.db 2>/dev/null || true
+          git add claude_gainer_ml/tracker/claude_live_picks.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          RESOLVED=$(python -c "
+          import json
+          try:
+              with open('alpha_engine/data/outcome_resolver_log.json') as f:
+                  log = json.load(f)
+              last = log[-1] if log else {}
+              core = last.get('resolved_count', 0)
+              qe = last.get('quan_engine_resolved', 0)
+              rf = last.get('rapid_fire_closed_resolved', 0)
+              rfn = last.get('rapid_fire_now_resolved', 0)
+              cgml = last.get('claude_gainer_ml_resolved', 0)
+              total = core + qe + rf + rfn + cgml
+              print(f\"{total} picks (WR={last.get('win_rate', 0)}%)\")
+          except: print('picks')
+          ")
+          git commit -m "auto: outcome resolver - resolved ${RESOLVED} [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh
+

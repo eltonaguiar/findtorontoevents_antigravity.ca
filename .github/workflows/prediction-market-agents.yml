@@ -1,0 +1,74 @@
+name: Prediction Market Agents
+
+on:
+  schedule:
+    - cron: '15 */2 * * *'  # Every 2 hours at :15
+  workflow_dispatch:
+
+concurrency:
+  group: prediction-market-agents
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  prediction-market-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            prediction_market_agents
+            shared
+            alpha_engine
+            copy_trader_intel
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests pandas numpy
+
+      - name: Run Prediction Market Agent Orchestrator
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  PREDICTION MARKET AGENTS"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python -m prediction_market_agents.orchestrator
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add prediction_market_agents/data/*.json 2>/dev/null || true
+          git add alpha_engine/data/active_picks.json 2>/dev/null || true
+          git add copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true
+          git add copy_trader_intel/data/polymarket_picks.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Prediction market agents scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

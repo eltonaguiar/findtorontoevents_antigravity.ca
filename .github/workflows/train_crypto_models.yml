@@ -1,0 +1,233 @@
+name: Train Crypto ML Models
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# issue #141: serialize auto-commit workflows so concurrent runs cannot race
+# each other into the main branch and produce conflict markers in data files.
+concurrency:
+  group: auto-commit-main-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn "ccxt>=4.3.80,<4.4" joblib requests xgboost shap
+
+    - name: Fetch and populate DB
+      run: |
+        rm -f crypto_data.db
+        python ml_crypto_predictor/fetch_and_populate_db.py
+
+    - name: Run Production ML Engine v3.1
+      env:
+        COIN_GECKO: ${{ secrets.COIN_GECKO }}
+      run: python ml_crypto_predictor/production_engine.py
+
+    - name: Deploy picks to live site
+      if: always()
+      env:
+        FTP_PASS: ${{ secrets.FTP_PASS }}
+      run: |
+        python3 << 'PYEOF'
+        import ftplib, os
+        ftp_pass = os.environ.get('FTP_PASS', '')
+        if not ftp_pass:
+            print("No FTP password, skipping deploy")
+            exit(0)
+        try:
+            ftp = ftplib.FTP('ftps2.50webs.com', timeout=60)
+            ftp.login('ejaguiar1', ftp_pass)
+            ftp.cwd('/findtorontoevents.ca/updates/data')
+
+            files = [
+                'updates/data/antigravity_ml_live_picks.json',
+                'updates/data/antigravity_ml_performance.json',
+                'updates/data/antigravity_ml_scorecard.json',
+            ]
+            for f_path in files:
+                if os.path.exists(f_path):
+                    fname = os.path.basename(f_path)
+                    with open(f_path, 'rb') as f:
+                        ftp.storbinary(f'STOR {fname}', f)
+                    print(f"Deployed: {fname}")
+
+            ftp.quit()
+            print("FTP deploy complete!")
+        except Exception as e:
+            print(f"FTP deploy error: {e}")
+        PYEOF
+
+    - name: Commit updated models and results
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        mkdir -p backtest_results ml_crypto_predictor/production_models
+        # Stage all ML outputs
+        git add ml_crypto_predictor/models/ ml_crypto_predictor/production_models/ \
+                ml_crypto_predictor/optim/ backtest_results/ \
+                updates/data/ || true
+        # Also add any new untracked model files
+        git add -A ml_crypto_predictor/ backtest_results/ updates/data/ || true
+        git diff --cached --quiet && echo "No changes" && exit 0
+        # issue #141: block conflict-marker commits
+        bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+        git commit -m "ML Engine v3.1: Daily training + XGB ensemble + calibration [skip ci]"
+        for i in 1 2 3 4 5; do
+          # Stash any remaining unstaged changes before pull
+          git stash --include-untracked 2>/dev/null || true
+          git pull --rebase -X theirs origin main 2>/dev/null || {
+            echo "Rebase conflict on attempt $i, aborting rebase and merging..."
+            git rebase --abort 2>/dev/null || true
+            git checkout --theirs -- alpha_engine/data/ 2>/dev/null
+            git add alpha_engine/data/ 2>/dev/null
+            git pull --no-rebase -X theirs origin main 2>/dev/null || true
+          }
+          git stash pop 2>/dev/null || true
+          if bash .github/scripts/safe_push.sh; then
+            echo "Pushed successfully on attempt $i"
+            exit 0
+          fi
+          echo "Push attempt $i failed, retrying in 10s..."
+          sleep 10
+        done
+        echo "Push failed after 5 attempts"
+        exit 1
+
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: ml-results
+        path: |
+          backtest_results/
+          updates/data/antigravity_ml_*.json
+
+    - name: Send training completion to Discord
+      if: always()
+      # env:
+        # DISABLED: noisy/underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        python3 << 'PYEOF'
+        import json, os, requests, glob
+        from datetime import datetime, timezone
+
+        webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
+        if not webhook:
+            print("No DISCORD_WEBHOOK_URL"); exit(0)
+
+        now = datetime.now(timezone.utc)
+
+        # Load backtest results
+        bt_results = {}
+        bt_path = 'backtest_results/walk_forward_results.json'
+        if os.path.exists(bt_path):
+            with open(bt_path) as f:
+                bt_results = json.load(f)
+
+        # Load performance
+        perf = {}
+        perf_path = 'updates/data/antigravity_ml_performance.json'
+        if os.path.exists(perf_path):
+            with open(perf_path) as f:
+                perf = json.load(f)
+
+        # Load picks
+        picks = []
+        picks_path = 'updates/data/antigravity_ml_live_picks.json'
+        if os.path.exists(picks_path):
+            with open(picks_path) as f:
+                picks = json.load(f)
+
+        # Build summary
+        pairs_profitable = sum(1 for r in bt_results.values()
+                               if isinstance(r, dict) and r.get('profit_factor', 0) > 1.0)
+        pairs_total = len(bt_results)
+
+        scorecard = perf.get('forward_scorecard', perf.get('scorecard', {}))
+        model_status = scorecard.get('status', 'unknown').upper()
+
+        fields = []
+
+        # Backtest summary
+        if bt_results:
+            best_pairs = sorted(
+                [(k, v) for k, v in bt_results.items() if isinstance(v, dict)],
+                key=lambda x: x[1].get('profit_factor', 0), reverse=True
+            )[:5]
+            bt_lines = []
+            for pair, data in best_pairs:
+                wr = data.get('win_rate', 0)
+                pf = data.get('profit_factor', 0)
+                sh = data.get('sharpe_ratio', 0)
+                emoji = '' if pf > 1.0 else ''
+                bt_lines.append(f"{emoji} {pair}: WR={wr:.0%} PF={pf:.2f} Sharpe={sh:.1f}")
+
+            fields.append({
+                'name': f' Walk-Forward Backtest ({pairs_profitable}/{pairs_total} profitable)',
+                'value': '\n'.join(bt_lines) or 'No results',
+                'inline': False
+            })
+
+        # Live picks
+        if picks:
+            pick_lines = []
+            for p in picks[:5]:
+                conf = p.get('confidence', '?')
+                sym = p.get('symbol', '?')
+                prob = p.get('pump_probability', 0)
+                entry = p.get('entry_price', 0)
+                pick_lines.append(f"{conf} | {sym} @ ${entry:.4f} ({prob:.0%})")
+            fields.append({
+                'name': f' Live Picks ({len(picks)} generated)',
+                'value': '\n'.join(pick_lines),
+                'inline': False
+            })
+
+        color = 0x22c55e if pairs_profitable > pairs_total // 2 else (
+            0xf59e0b if pairs_profitable > 0 else 0xef4444
+        )
+
+        payload = {
+            'embeds': [{
+                'title': f' ML Engine v3.1 {model_status}',
+                'description': (
+                    f"Daily training complete {now.strftime('%Y-%m-%d %H:%M UTC')}\n"
+                    f"Walk-forward validated: **{pairs_profitable}/{pairs_total}** pairs profitable\n"
+                    f"Live picks: **{len(picks)}** generated\n\n"
+                    f"[Dashboard](https://findtorontoevents.ca/updates/antigravity-ml-gainer.html) | "
+                    f"[Monitor](https://findtorontoevents.ca/live-monitor/live-monitor.html)"
+                ),
+                'color': color,
+                'fields': fields,
+                'footer': {'text': 'Antigravity ML v3.1 | PAPER TRADE ONLY'},
+                'timestamp': now.isoformat()
+            }]
+        }
+
+        try:
+            r = requests.post(webhook, json=payload, timeout=15)
+            print(f"Discord: {r.status_code}")
+        except Exception as e:
+            print(f"Discord failed: {e}")
+        PYEOF
+

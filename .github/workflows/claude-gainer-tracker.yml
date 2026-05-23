@@ -1,0 +1,337 @@
+name: Claude Code Gainer ML Tracker
+
+on:
+  schedule:
+    - cron: '15 */4 * * *' # Every 4 hours at :15 (offset from Cursor's :00)
+    - cron: '15 13 * * *' # Also at 13:15 UTC (optimal breakout window)
+    - cron: '0 6 * * 0' # Sunday 6 AM UTC weekly retrain
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode: predict, track, retrain, dashboard-only'
+        required: false
+        default: 'predict'
+      refresh_source:
+        description: 'Source of refresh trigger (discord, web, manual)'
+        required: false
+        default: 'manual'
+
+env:
+  ASTERDEX_API_KEY: ${{ secrets.ASTERDEX_API_KEY }}
+  ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  DISCORD_ML_CHANNEL_ID: '1469431505439948920'
+
+jobs:
+  predict-and-track:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r claude_gainer_ml/requirements.txt
+
+      - name: "Step 0: Write dashboard status (scanning)"
+        run: |
+          mkdir -p updates/data
+          echo '{
+            "status": "scanning",
+            "message": "ML scan in progress (triggered by ${{ github.event.inputs.refresh_source || 'scheduled' }})",
+            "eta_seconds": 900,
+            "timestamp": "'$(date -u -Iseconds)'",
+            "triggered_by": "${{ github.event.inputs.refresh_source || 'github_actions' }}",
+            "run_id": "${{ github.run_id }}"
+          }' > updates/data/dashboard_status.json
+
+      - name: "Step 1: Check TP/SL on active picks (ML feedback)"
+        if: ${{ github.event.inputs.mode != 'dashboard-only' }}
+        env:
+          ASTERDEX_API_KEY: ${{ secrets.ASTERDEX_API_KEY }}
+          ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
+        run: |
+          echo ""
+          echo "CLAUDE CODE - REVERSE ENGINEERED DAILY TOP GAINERS STRAT"
+          echo ""
+          cd claude_gainer_ml
+          python tp_sl_tracker.py || echo "No active picks to track"
+
+      - name: "Step 2: Run live predictions (threshold=adaptive)"
+        if: ${{ github.event.inputs.mode != 'dashboard-only' }}
+        env:
+          ASTERDEX_API_KEY: ${{ secrets.ASTERDEX_API_KEY }}
+          ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
+        run: |
+          cd claude_gainer_ml
+          python live_scanner.py
+
+      - name: "Step 3: Self-improvement + ML feedback loop"
+        if: ${{ github.event.inputs.mode != 'dashboard-only' }}
+        run: |
+          cd claude_gainer_ml
+          python self_improver.py 2>&1 || echo "::warning::Self-improver failed with exit code $?"
+
+      - name: "Step 4: Copy results to updates data"
+        run: |
+          mkdir -p updates/data
+          cp -f claude_gainer_ml/tracker/claude_performance.json updates/data/claude_ml_performance.json 2>/dev/null || true
+          cp -f claude_gainer_ml/tracker/claude_pick_history.json updates/data/claude_ml_history.json 2>/dev/null || true
+          cp -f claude_gainer_ml/tracker/claude_live_picks.json updates/data/claude_ml_picks.json 2>/dev/null || true
+          cp -f claude_gainer_ml/tracker/claude_scan_log.json updates/data/claude_ml_scan_log.json 2>/dev/null || true
+
+      - name: "Step 4b: Sync active picks into dashboard performance JSON"
+        run: |
+          python3 -c "
+          import json, os
+          picks_path = 'claude_gainer_ml/tracker/claude_live_picks.json'
+          perf_path = 'updates/data/antigravity_ml_performance.json'
+          if os.path.exists(picks_path) and os.path.exists(perf_path):
+              picks_data = json.load(open(picks_path))
+              perf_data = json.load(open(perf_path))
+              active = [p for p in picks_data.get('picks', []) if p.get('status') == 'ACTIVE']
+              perf_data['active_picks'] = active
+              perf_data['last_run'] = picks_data.get('updated_at', perf_data.get('last_run', ''))
+              json.dump(perf_data, open(perf_path, 'w'), indent=2)
+              print(f'Synced {len(active)} active picks into {perf_path}')
+          else:
+              print(f'Missing files: picks={os.path.exists(picks_path)} perf={os.path.exists(perf_path)}')
+          "
+
+      - name: "Step 5: Write dashboard status (complete)"
+        run: |
+          PICKS=$(python3 -c "import json; d=json.load(open('claude_gainer_ml/tracker/claude_live_picks.json')); print(len([p for p in d.get('picks',d) if isinstance(d,dict) and p.get('status')=='ACTIVE'] if isinstance(d,dict) else d))" 2>/dev/null || echo "0")
+          echo '{
+            "status": "idle",
+            "message": "Last scan complete '"$PICKS"' active picks",
+            "eta_seconds": 0,
+            "timestamp": "'$(date -u -Iseconds)'",
+            "triggered_by": "${{ github.event.inputs.refresh_source || 'github_actions' }}",
+            "run_id": "${{ github.run_id }}",
+            "active_picks": '"$PICKS"'
+          }' > updates/data/dashboard_status.json
+
+      - name: "Step 6: Commit results"
+        run: |
+          git config user.name "Claude Code Bot"
+          git config user.email "claude-code@findtorontoevents.ca"
+          git add claude_gainer_ml/tracker/ updates/data/ || true
+          git add claude_gainer_ml/models/training_meta.json claude_gainer_ml/models/claude_rf.joblib claude_gainer_ml/models/claude_xgb.joblib claude_gainer_ml/models/claude_scaler.joblib 2>/dev/null || true
+          git add claude_gainer_ml/data/online_training_data.csv claude_gainer_ml/models/improvement_log.json 2>/dev/null || true
+          git add claude_gainer_ml/data/gainer_predictions.json 2>/dev/null || true
+          git add data/freshpicks_gate_state.json 2>/dev/null || true
+
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          PICKS=$(python3 -c "import json; d=json.load(open('claude_gainer_ml/tracker/claude_live_picks.json')); print(len(d.get('picks',d) if isinstance(d,dict) else d))" 2>/dev/null || echo "0")
+          RESOLVED=$(python3 -c "import json,os; f='claude_gainer_ml/tracker/claude_pick_history.json'; print(len(json.load(open(f))) if os.path.exists(f) else 0)" 2>/dev/null || echo "0")
+
+          git diff --staged --quiet || git commit -m "Claude Code ML: ${PICKS} active, ${RESOLVED} resolved @ ${TIMESTAMP} [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+
+      - name: "Step 7: Send enhanced Discord notification"
+        if: ${{ github.event.inputs.mode != 'dashboard-only' }}
+        run: |
+          python3 -c "
+          import json, os, requests
+          webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
+          if not webhook:
+              print('No webhook URL')
+              exit(0)
+
+          # Load picks data
+          picks_data = {}
+          try:
+              with open('claude_gainer_ml/tracker/claude_live_picks.json') as f:
+                  picks_data = json.load(f)
+          except: pass
+
+          active = [p for p in picks_data.get('picks', []) if p.get('status') == 'ACTIVE']
+
+          if not active:
+              print('No active picks to notify')
+              exit(0)
+
+          fields = []
+          for p in active[:5]:
+              sig = ' | '.join(p.get('signals', ['ML Signal'])[:3])
+              fields.append({
+                  'name': f\"{p.get('symbol','?')} {p.get('confidence','LOW')} ({p.get('pump_probability',0):.0%})\",
+                  'value': f\"Entry: \${p.get('entry_price',0):.6f}\nTP1: \${p.get('tp1_price',0):.6f} (+5%)\nSL: \${p.get('sl_price',0):.6f} (-5%)\nSignals: {sig}\",
+                  'inline': False
+              })
+
+          from datetime import datetime, timezone
+          now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+          source = '${{ github.event.inputs.refresh_source || 'scheduled' }}'
+
+          payload = {
+              'content': 'Captain Hook: **CLAUDE CODE - REVERSE ENGINEERED DAILY TOP GAINERS STRAT -->**',
+              'embeds': [{
+                  'title': f'Top Gainer Predictions {now}',
+                  'description': f' {len(active)} active picks | Source: {source}\n\n [**View Full Dashboard**](https://findtorontoevents.ca/updates/antigravity-ml-gainer.html)\n Use \`!refresh\` for on-demand scan | \`!dashboard\` for link | \`/fc-crypto\` for picks',
+                  'color': 0x00ff88,
+                  'fields': fields,
+                  'footer': {'text': 'CLAUDE CODE ML v2.0 | !refresh for on-demand | Dashboard | Not financial advice'},
+              }]
+          }
+
+          r = requests.post(webhook, json=payload, timeout=10)
+          print(f'Discord: {r.status_code}')
+          "
+
+      - name: "Step 8: Send FreshPicks for new active picks"
+        if: ${{ github.event.inputs.mode != 'dashboard-only' }}
+        env:
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_FRESHPICKS" ]; then
+            python3 -c "
+          import json, os, sys
+          sys.path.insert(0, '.')
+          from cross_aggregation.freshpicks_notify import send_fresh_pick
+
+          # Load active picks
+          picks_data = {}
+          try:
+              with open('claude_gainer_ml/tracker/claude_live_picks.json') as f:
+                  picks_data = json.load(f)
+          except:
+              print('No picks file found')
+              exit(0)
+
+          active = [p for p in picks_data.get('picks', []) if p.get('status') == 'ACTIVE']
+          if not active:
+              print('No active picks for FreshPicks')
+              exit(0)
+
+          # Track previously sent key by symbol+entry to allow same symbol at different entries
+          sent_path = 'claude_gainer_ml/tracker/freshpicks_sent.json'
+          sent_keys = set()
+          if os.path.exists(sent_path):
+              try:
+                  sent_keys = set(json.load(open(sent_path)))
+              except: pass
+
+          def pick_key(p):
+              return f\"{p.get('symbol','')}__{round(float(p.get('entry_price',0)), 6)}\"
+
+          new_picks = [p for p in active if pick_key(p) not in sent_keys]
+          if not new_picks:
+              print(f'All {len(active)} picks already sent to FreshPicks')
+              exit(0)
+
+          # Build FORWARD-ONLY performance stats (live TP/SL tracking)
+          stats = {'total': 0, 'active': len(active), 'wins': 0, 'losses': 0,
+                   'win_rate': 0, 'realized_pnl_pct': 0, 'unrealized_pnl_pct': 0,
+                   'tracking_since': '', 'recent_closed': []}
+          try:
+              perf = json.load(open('claude_gainer_ml/tracker/claude_performance.json'))
+              stats['total'] = perf.get('total_picks', 0)
+              stats['wins'] = perf.get('total_wins', 0)
+              stats['losses'] = perf.get('total_losses', 0)
+              stats['win_rate'] = perf.get('win_rate', 0)
+              stats['realized_pnl_pct'] = perf.get('total_pnl_pct', 0)
+          except: pass
+          try:
+              history = json.load(open('claude_gainer_ml/tracker/claude_pick_history.json'))
+              # Tracking start date from earliest closed pick
+              dates = [h.get('entry_time', '')[:10] for h in history if h.get('entry_time')]
+              if dates:
+                  stats['tracking_since'] = min(dates)
+              for h in history[-5:]:
+                  is_win = 'TAKE_PROFIT' in h.get('exit_reason', '')
+                  stats['recent_closed'].append({
+                      'symbol': h.get('symbol', '?'),
+                      'pnl_pct': h.get('pnl_pct', 0) / 100 if abs(h.get('pnl_pct', 0)) > 1 else h.get('pnl_pct', 0),
+                      'status': 'WON' if is_win else 'LOST',
+                      'strategy': 'Gainer ML',
+                  })
+              # Rolling WR (last 20 closed) + max drawdown
+              if len(history) >= 20:
+                  last20 = history[-20:]
+                  stats['rolling_wr_20'] = sum(1 for h in last20 if 'TAKE_PROFIT' in h.get('exit_reason', '')) / 20 * 100
+              cum = 0; peak = 0; dd = 0
+              for h in history:
+                  cum += h.get('pnl_pct', 0)
+                  peak = max(peak, cum)
+                  dd = min(dd, cum - peak)
+              stats['max_drawdown_pct'] = round(dd, 2)
+          except: pass
+
+          dashboard = 'https://findtorontoevents.ca/updates/antigravity-ml-gainer.html'
+          sent = 0
+          for p in new_picks:
+              sigs = ', '.join(p.get('signals', ['ML'])[:3])
+              fp = {
+                  'symbol': p.get('symbol', ''),
+                  'direction': 'LONG',
+                  'entry_price': p.get('entry_price', 0),
+                  'tp_price': p.get('tp1_price', 0),
+                  'sl_price': p.get('sl_price', 0),
+                  'confidence': p.get('pump_probability', 0),
+                  'strategy': f\"Gainer ML ({p.get('confidence','?')})\",
+                  'reason': f'Signals: {sigs}',
+              }
+              if send_fresh_pick('Claude Gainer ML', fp, dashboard, stats=stats):
+                  sent += 1
+
+          # Save sent keys (keep last 500)
+          all_sent = list(sent_keys | {pick_key(p) for p in new_picks})
+          if len(all_sent) > 500: all_sent = all_sent[-500:]
+          json.dump(all_sent, open(sent_path, 'w'))
+          print(f'Sent {sent}/{len(new_picks)} new gainer picks to #fresh-picks')
+          " || echo "FreshPicks notification failed (non-fatal)"
+          else
+            echo "No DISCORD_WEBHOOK_FRESHPICKS set, skipping"
+          fi
+
+  # Weekly retrain job
+  weekly-retrain:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    permissions:
+      contents: write
+    if: contains(github.event.schedule || '', '0 6 * * 0') # Only Sunday 6 AM UTC
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install deps
+        run: pip install -r claude_gainer_ml/requirements.txt
+
+      - name: Retrain model (real-market augmented + resolved pick features)
+        run: |
+          cd claude_gainer_ml
+          python trigger_retraining.py --augment 30 --days 60 || echo "Retraining failed keeping current model"
+
+      - name: Commit new model
+        run: |
+          git config user.name "Claude Code Bot"
+          git config user.email "claude-code@findtorontoevents.ca"
+          git add claude_gainer_ml/models/ claude_gainer_ml/data/online_training_data.csv claude_gainer_ml/data/augmented_real_data.csv claude_gainer_ml/tracker/claude_pick_history.json || true
+          git diff --staged --quiet || git commit -m "Claude Code ML: Weekly retrain via trigger_retraining.py [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

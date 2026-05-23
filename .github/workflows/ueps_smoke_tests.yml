@@ -1,0 +1,122 @@
+# Opt-in sidecar workflow. Runner module is created in a future PR. Safe to run on workflow_dispatch — runner step is no-op if module missing.
+#
+# UEPS Phase 14: Smoke-test gate
+#
+# Runs the UEPS pytest suite on every PR that touches a UEPS source file or
+# matching test. This is the gate that catches contract drift early — before
+# the hourly cron screeners try to run with broken plumbing.
+#
+# Patterns adopted from .github/workflows/audit-dashboard.yml (PR #436):
+#   - fetch-depth: 0 on checkout
+#   - concurrency cancel-in-progress (PRs only — no cron here)
+#   - `if: always()` on diagnostic upload
+#
+# CLAUDE.md Wire-Up Rule: opt-in sidecar — runs only when UEPS files change.
+
+name: UEPS Smoke Tests
+
+'on':
+  pull_request:
+    paths:
+      - 'alpha_engine/long_term_pick_contract.py'
+      - 'alpha_engine/fundamentals_fetcher.py'
+      - 'alpha_engine/value_screener.py'
+      - 'alpha_engine/swing_screener.py'
+      - 'alpha_engine/thesis_resolver.py'
+      - 'alpha_engine/swing_resolver.py'
+      - 'alpha_engine/earnings_calendar_fetcher.py'
+      - 'alpha_engine/dividend_history_fetcher.py'
+      - 'tests/test_*ueps*.py'
+      - 'tests/test_long_term_*.py'
+      - 'tests/test_*screener.py'
+      - 'tests/test_*_resolver.py'
+      - 'tests/test_fundamentals_fetcher.py'
+      - 'tests/test_earnings_calendar_fetcher.py'
+      - 'tests/test_dividend_history_fetcher.py'
+      - 'tests/test_value_backtest.py'
+  workflow_dispatch:
+
+concurrency:
+  group: ueps-smoke-${{ github.event_name == 'push' && 'push' || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ueps-pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install pandas pyarrow
+          fi
+          # pytest is required even if it's not in requirements.txt
+          pip install pytest pyyaml
+
+      - name: Discover UEPS test files (skip missing)
+        id: discover
+        run: |
+          # Build the pytest target list dynamically — skip files that don't
+          # exist yet (early phases of the UEPS rollout don't have all test
+          # files in place). The smoke gate must remain green when only a
+          # subset of phases are merged.
+          targets=""
+          for f in \
+            tests/test_long_term_pick_contract.py \
+            tests/test_fundamentals_fetcher.py \
+            tests/test_earnings_calendar_fetcher.py \
+            tests/test_dividend_history_fetcher.py \
+            tests/test_swing_screener.py \
+            tests/test_thesis_resolver.py \
+            tests/test_swing_resolver.py \
+            tests/test_value_screener.py \
+            tests/test_value_backtest.py; do
+            if [ -f "$f" ]; then
+              targets="$targets $f"
+              echo "  + $f"
+            else
+              echo "  - $f (missing — skipped)"
+            fi
+          done
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+
+      - name: Run UEPS pytest suite
+        id: pytest
+        if: steps.discover.outputs.targets != ''
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m pytest ${{ steps.discover.outputs.targets }} -v
+
+      - name: No UEPS test files present
+        if: steps.discover.outputs.targets == ''
+        run: |
+          echo "::warning::No UEPS test files found on this branch — gate is a no-op."
+          echo "This is expected for early UEPS phases; the gate becomes meaningful as test files land."
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## UEPS Smoke Tests"
+            echo ""
+            echo "- pytest_outcome: ${{ steps.pytest.outcome || 'skipped' }}"
+            echo "- targets: \`${{ steps.discover.outputs.targets }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

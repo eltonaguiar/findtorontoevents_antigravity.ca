@@ -1,0 +1,455 @@
+
+// NEW STRATEGIES DASHBOARD INTEGRATION
+// Auto-generated: 2026-03-16T00:27:41.782614
+
+const NEW_STRATEGIES_CONFIG = {
+  "new_strategies": [
+    {
+      "strategy_name": "KC_SCALP_v1",
+      "strategy_type": "PROP_FIRM",
+      "category": "SCALPING",
+      "description": "Keltner Channel compression breakout scalper",
+      "target_win_rate": 0.75,
+      "target_profit_factor": 2.0,
+      "max_drawdown_target": 0.05,
+      "timeframe": "1h",
+      "hold_time_hours": 4,
+      "position_size": 0.1,
+      "risk_reward": 1.5,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT"
+      ],
+      "entry_logic": "Keltner band compression + volume expansion",
+      "exit_logic": "ATR-based TP/SL + 4h time stop",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.15
+    },
+    {
+      "strategy_name": "VWAP_ELITE_v1",
+      "strategy_type": "PROP_FIRM",
+      "category": "MEAN_REVERSION",
+      "description": "VWAP mean reversion with RSI and volatility filters",
+      "target_win_rate": 0.7,
+      "target_profit_factor": 1.8,
+      "max_drawdown_target": 0.06,
+      "timeframe": "1h",
+      "hold_time_hours": 6,
+      "position_size": 0.08,
+      "risk_reward": 1.5,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "LINKUSDT",
+        "AVAXUSDT"
+      ],
+      "entry_logic": "Price >2std from VWAP + RSI extreme + vol filter",
+      "exit_logic": "Return to VWAP or 6h time stop",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.12
+    },
+    {
+      "strategy_name": "MTF_RSI_v1",
+      "strategy_type": "PROP_FIRM",
+      "category": "MOMENTUM",
+      "description": "Multi-timeframe RSI confluence for high-confidence entries",
+      "target_win_rate": 0.72,
+      "target_profit_factor": 1.9,
+      "max_drawdown_target": 0.05,
+      "timeframe": "1h",
+      "hold_time_hours": 12,
+      "position_size": 0.1,
+      "risk_reward": 1.67,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "ADAUSDT",
+        "DOTUSDT"
+      ],
+      "entry_logic": "RSI(1h,4h,1d) all aligned oversold/overbought",
+      "exit_logic": "RSI reversion to 50 or TP/SL",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.13
+    },
+    {
+      "strategy_name": "FLASH_REV_v1",
+      "strategy_type": "GENERAL",
+      "category": "CRISIS_ALPHA",
+      "description": "Flash crash reversal hunter - extreme drop capture",
+      "target_win_rate": 0.78,
+      "target_profit_factor": 2.5,
+      "max_drawdown_target": 0.08,
+      "timeframe": "1h",
+      "hold_time_hours": 12,
+      "position_size": 0.05,
+      "risk_reward": 2.0,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "LINKUSDT"
+      ],
+      "entry_logic": ">5% drop in 4h + RSI <25 + volume spike",
+      "exit_logic": "RSI recovery or 12h time stop",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.08
+    },
+    {
+      "strategy_name": "FUNDING_PRO_v1",
+      "strategy_type": "GENERAL",
+      "category": "FUNDING_ARB",
+      "description": "Funding rate momentum with RSI confirmation",
+      "target_win_rate": 0.7,
+      "target_profit_factor": 2.0,
+      "max_drawdown_target": 0.06,
+      "timeframe": "1h",
+      "hold_time_hours": 8,
+      "position_size": 0.08,
+      "risk_reward": 1.67,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "DOGEUSDT"
+      ],
+      "entry_logic": "Extreme funding rate + RSI confirmation",
+      "exit_logic": "Funding normalization or TP/SL",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.1
+    },
+    {
+      "strategy_name": "HMA_TREND_v1",
+      "strategy_type": "GENERAL",
+      "category": "TREND_FOLLOWING",
+      "description": "HMA trend following with ADX confirmation",
+      "target_win_rate": 0.65,
+      "target_profit_factor": 1.8,
+      "max_drawdown_target": 0.08,
+      "timeframe": "1h",
+      "hold_time_hours": 24,
+      "position_size": 0.08,
+      "risk_reward": 2.0,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "LINKUSDT"
+      ],
+      "entry_logic": "HMA slope + ADX>25 + pullback to HMA",
+      "exit_logic": "HMA reversal or trailing stop",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.08
+    },
+    {
+      "strategy_name": "BB_SQUEEZE_v1",
+      "strategy_type": "GENERAL",
+      "category": "BREAKOUT",
+      "description": "Bollinger Band squeeze breakout with volume",
+      "target_win_rate": 0.68,
+      "target_profit_factor": 1.8,
+      "max_drawdown_target": 0.06,
+      "timeframe": "1h",
+      "hold_time_hours": 8,
+      "position_size": 0.08,
+      "risk_reward": 1.67,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "MATICUSDT"
+      ],
+      "entry_logic": "BB width compression + breakout + volume",
+      "exit_logic": "Opposite band touch or TP/SL",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.08
+    },
+    {
+      "strategy_name": "MULTI_FACTOR_v1",
+      "strategy_type": "GENERAL",
+      "category": "ENSEMBLE",
+      "description": "Adaptive multi-factor scoring ensemble",
+      "target_win_rate": 0.65,
+      "target_profit_factor": 1.7,
+      "max_drawdown_target": 0.07,
+      "timeframe": "1h",
+      "hold_time_hours": 12,
+      "position_size": 0.06,
+      "risk_reward": 1.67,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT"
+      ],
+      "entry_logic": "Composite score >0.6 from trend/momentum/vol/volume",
+      "exit_logic": "Score reversal or 12h time stop",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.06
+    },
+    {
+      "strategy_name": "keltner_hma_filter_enhanced",
+      "strategy_type": "ALPHA_ENGINE",
+      "category": "BREAKOUT",
+      "description": "Enhanced Keltner squeeze breakout + dynamic HMA slope with validation & volatility adjustment",
+      "target_win_rate": 0.7,
+      "target_profit_factor": 1.9,
+      "max_drawdown_target": 0.05,
+      "timeframe": "1h",
+      "hold_time_hours": 8,
+      "position_size": 0.1,
+      "risk_reward": 1.67,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "LINKUSDT"
+      ],
+      "entry_logic": "Keltner squeeze + HMA slope alignment (dynamic threshold)",
+      "exit_logic": "Volatility-adjusted ATR TP/SL",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.12
+    },
+    {
+      "strategy_name": "multi_sigma_volume_enhanced",
+      "strategy_type": "ALPHA_ENGINE",
+      "category": "MEAN_REVERSION",
+      "description": "Multi-sigma reversion + volume expansion with dynamic sigma threshold",
+      "target_win_rate": 0.72,
+      "target_profit_factor": 2.0,
+      "max_drawdown_target": 0.06,
+      "timeframe": "1h",
+      "hold_time_hours": 6,
+      "position_size": 0.09,
+      "risk_reward": 1.33,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT"
+      ],
+      "entry_logic": "Dynamic sigma extreme + volume expansion",
+      "exit_logic": "ATR-based reversion TP/SL",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.11
+    },
+    {
+      "strategy_name": "hurst_rsi_extreme_enhanced",
+      "strategy_type": "ALPHA_ENGINE",
+      "category": "MEAN_REVERSION",
+      "description": "Hurst mean-reversion regime + dynamic RSI extremes with validation",
+      "target_win_rate": 0.75,
+      "target_profit_factor": 2.1,
+      "max_drawdown_target": 0.04,
+      "timeframe": "1h",
+      "hold_time_hours": 12,
+      "position_size": 0.11,
+      "risk_reward": 2.0,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "ADAUSDT",
+        "DOTUSDT"
+      ],
+      "entry_logic": "Hurst < dynamic threshold + RSI extreme",
+      "exit_logic": "Mean reversion TP/SL",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.13
+    },
+    {
+      "strategy_name": "VWAP_RSI_INSTITUTIONAL",
+      "strategy_type": "BABY_STRATEGY",
+      "category": "MEAN_REVERSION",
+      "description": "VWAP + Triple RSI(14/21/50) institutional confluence mean reversion",
+      "target_win_rate": 0.68,
+      "target_profit_factor": 1.9,
+      "max_drawdown_target": 0.06,
+      "timeframe": "1h",
+      "hold_time_hours": 6,
+      "position_size": 0.08,
+      "risk_reward": 1.5,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT"
+      ],
+      "entry_logic": "Price near VWAP + RSI(14)<40 + RSI(21)>50 + RSI(50)>55 + volume",
+      "exit_logic": "TP at 2-sigma VWAP band, SL at 1-sigma opposite band",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.1
+    },
+    {
+      "strategy_name": "LIQUIDATION_CASCADE_CONTRARIAN",
+      "strategy_type": "BABY_STRATEGY",
+      "category": "STRUCTURAL",
+      "description": "Catches wick bounces after liquidation cascades using volume/ATR spike detection",
+      "target_win_rate": 0.62,
+      "target_profit_factor": 1.8,
+      "max_drawdown_target": 0.08,
+      "timeframe": "1h",
+      "hold_time_hours": 8,
+      "position_size": 0.06,
+      "risk_reward": 2.0,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT",
+        "AVAXUSDT",
+        "DOGEUSDT",
+        "ADAUSDT"
+      ],
+      "entry_logic": "Wick >3x ATR + volume spike >3x + recovery >50% of wick",
+      "exit_logic": "TP at 50% of wick range, SL beyond wick extreme + 0.5 ATR",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.08
+    },
+    {
+      "strategy_name": "REGIME_SENTINEL_COMPOSITE",
+      "strategy_type": "BABY_STRATEGY",
+      "category": "META_STRATEGY",
+      "description": "Multi-factor regime classifier + extreme fear/greed contrarian signals",
+      "target_win_rate": 0.75,
+      "target_profit_factor": 2.2,
+      "max_drawdown_target": 0.05,
+      "timeframe": "1h",
+      "hold_time_hours": 24,
+      "position_size": 0.1,
+      "risk_reward": 2.0,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT"
+      ],
+      "entry_logic": "ACCUMULATION regime + extreme fear (<15) + RSI<30",
+      "exit_logic": "Regime shift to DISTRIBUTION or extreme greed",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.12
+    },
+    {
+      "strategy_name": "RSI_PAIRS_ARBITRAGE",
+      "strategy_type": "BABY_STRATEGY",
+      "category": "STATISTICAL_ARBITRAGE",
+      "description": "Z-score spread + RSI-timed pairs arbitrage on correlated crypto",
+      "target_win_rate": 0.74,
+      "target_profit_factor": 2.2,
+      "max_drawdown_target": 0.04,
+      "timeframe": "1h",
+      "hold_time_hours": 48,
+      "position_size": 0.08,
+      "risk_reward": 1.6,
+      "asset_class": "CRYPTO",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "entry_logic": "Z-score <-2.0 + RSI underperformer <35 (long spread)",
+      "exit_logic": "Z-score reversion to \u00b10.5 or stop at \u00b13.5",
+      "status": "APPROVED_FOR_FORWARD",
+      "forward_test_allocation": 0.08
+    }
+  ],
+  "strategy_groups": {
+    "PROP_FIRM": [
+      "KC_SCALP_v1",
+      "VWAP_ELITE_v1",
+      "MTF_RSI_v1"
+    ],
+    "GENERAL": [
+      "FLASH_REV_v1",
+      "FUNDING_PRO_v1",
+      "HMA_TREND_v1",
+      "BB_SQUEEZE_v1",
+      "MULTI_FACTOR_v1"
+    ]
+  },
+  "performance_targets": {
+    "PROP_FIRM": {
+      "win_rate": 0.7,
+      "profit_factor": 1.8
+    },
+    "GENERAL": {
+      "win_rate": 0.65,
+      "profit_factor": 1.6
+    }
+  },
+  "colors": {
+    "KC_SCALP_v1": "#4CAF50",
+    "VWAP_ELITE_v1": "#2196F3",
+    "MTF_RSI_v1": "#9C27B0",
+    "FLASH_REV_v1": "#FF9800",
+    "FUNDING_PRO_v1": "#00BCD4",
+    "HMA_TREND_v1": "#E91E63",
+    "BB_SQUEEZE_v1": "#795548",
+    "MULTI_FACTOR_v1": "#607D8B"
+  }
+};
+
+// Strategy group colors for charting
+const STRATEGY_COLORS = {"KC_SCALP_v1": "#4CAF50", "VWAP_ELITE_v1": "#2196F3", "MTF_RSI_v1": "#9C27B0", "FLASH_REV_v1": "#FF9800", "FUNDING_PRO_v1": "#00BCD4", "HMA_TREND_v1": "#E91E63", "BB_SQUEEZE_v1": "#795548", "MULTI_FACTOR_v1": "#607D8B"};
+
+// Performance target thresholds
+const PERFORMANCE_TARGETS = {"PROP_FIRM": {"win_rate": 0.7, "profit_factor": 1.8}, "GENERAL": {"win_rate": 0.65, "profit_factor": 1.6}};
+
+// Filter functions for dashboard
+function isNewStrategy(strategyName) {
+    return NEW_STRATEGIES_CONFIG.new_strategies.some(s => s.strategy_name === strategyName);
+}
+
+function getStrategyType(strategyName) {
+    const strat = NEW_STRATEGIES_CONFIG.new_strategies.find(s => s.strategy_name === strategyName);
+    return strat ? strat.strategy_type : 'UNKNOWN';
+}
+
+function getStrategyTarget(strategyName, metric) {
+    const type = getStrategyType(strategyName);
+    return PERFORMANCE_TARGETS[type]?.[metric] || null;
+}
+
+// Health score calculation for new strategies
+function calculateStrategyHealth(strategyName, actualWinRate, actualPF) {
+    const targetWR = getStrategyTarget(strategyName, 'win_rate') || 0.65;
+    const targetPF = getStrategyTarget(strategyName, 'profit_factor') || 1.6;
+    
+    const wrScore = Math.min(actualWinRate / targetWR, 1.5);
+    const pfScore = actualPF === Infinity ? 1.5 : Math.min(actualPF / targetPF, 1.5);
+    
+    const healthScore = (wrScore + pfScore) / 2 * 100;
+    
+    if (healthScore >= 90) return { status: 'HEALTHY', badge: '[GREEN]', score: healthScore };
+    if (healthScore >= 70) return { status: 'WATCH', badge: '[YELLOW]', score: healthScore };
+    return { status: 'DEGRADED', badge: '[RED]', score: healthScore };
+}
+
+// Export for use in dashboard
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { NEW_STRATEGIES_CONFIG, STRATEGY_COLORS, PERFORMANCE_TARGETS,
+                       isNewStrategy, getStrategyType, calculateStrategyHealth };
+}

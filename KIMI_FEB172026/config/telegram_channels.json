@@ -1,0 +1,35 @@
+{
+  "description": "Telegram channels to monitor for crypto signals",
+  "channels": [
+    {
+      "name": "CryptoSignals",
+      "type": "public",
+      "weight": 1.0,
+      "keywords": ["BTC", "ETH", "SOL", "entry", "TP", "SL"]
+    },
+    {
+      "name": "WhaleAlert",
+      "type": "public", 
+      "weight": 1.2,
+      "keywords": ["whale", "transfer", "million"]
+    },
+    {
+      "name": "DeFiAlpha",
+      "type": "public",
+      "weight": 0.9,
+      "keywords": ["yield", "APY", "farm", "pool"]
+    }
+  ],
+  "settings": {
+    "scan_interval_minutes": 5,
+    "signal_ttl_hours": 4,
+    "min_confidence": 0.6,
+    "parse_patterns": [
+      "(?:entry|buy|long)[\\s:]*(\\d+\\.?\\d*)",
+      "(?:tp1|target\\s*1)[\\s:]*(\\d+\\.?\\d*)",
+      "(?:tp2|target\\s*2)[\\s:]*(\\d+\\.?\\d*)",
+      "(?:sl|stop\\s*loss)[\\s:]*(\\d+\\.?\\d*)",
+      "\\$([A-Z]{2,10})"
+    ]
+  }
+}

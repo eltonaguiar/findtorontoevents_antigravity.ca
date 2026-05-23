@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Challenge — Full Audit Trail</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a12;--card:#12121e;--card-hover:#181830;--border:#2a2a3e;
+  --text:#e2e8f0;--text-dim:#8892a8;--text-muted:#5a6478;
+  --green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#3b82f6;
+  --purple:#a855f7;--cyan:#06b6d4;--orange:#f97316;--pink:#ec4899;
+}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.page-header{padding:2rem 1.5rem 1rem;max-width:1400px;margin:0 auto}
+.page-header h1{font-size:1.8rem;font-weight:700;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-header .subtitle{color:var(--text-dim);margin-top:0.25rem;font-size:0.9rem}
+.timestamp{color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem}
+
+/* Summary Banner */
+.summary-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;padding:1.5rem;max-width:1400px;margin:0 auto}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;text-align:center}
+.stat-card .label{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.3rem}
+.stat-card .value{font-size:1.6rem;font-weight:700}
+.stat-card .value.green{color:var(--green)}.stat-card .value.red{color:var(--red)}.stat-card .value.blue{color:var(--blue)}.stat-card .value.yellow{color:var(--yellow)}
+
+/* Controls */
+.controls{padding:0.5rem 1.5rem;max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center}
+.controls label{color:var(--text-dim);font-size:0.8rem;margin-right:0.25rem}
+.controls select,.controls input{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.6rem;font-size:0.85rem}
+.tab-bar{display:flex;flex-wrap:wrap;gap:0.4rem;padding:0.5rem 1.5rem;max-width:1400px;margin:0 auto}
+.tab-btn{background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.9rem;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+.tab-btn:hover{border-color:var(--blue);color:var(--text)}
+.tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* Portfolio Grid */
+.portfolio-grid{padding:1rem 1.5rem;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+
+/* Portfolio Card */
+.port-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.2s}
+.port-card:hover{border-color:#3a3a5e}
+.port-card-header{padding:1rem 1.2rem;cursor:pointer;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;user-select:none}
+.port-card-header:hover{background:var(--card-hover)}
+.port-name{font-weight:600;font-size:1.05rem}
+.badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.badge-active{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.badge-passed{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.badge-blown{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+.badge-method{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25)}
+.badge-deep{background:rgba(234,179,8,0.12);color:var(--yellow);border:1px solid rgba(234,179,8,0.25)}
+.badge-prop{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.25)}
+.badge-reset{background:rgba(239,68,68,0.2);color:var(--red);border:1px solid rgba(239,68,68,0.4);font-weight:700}
+.badge-no-reset{background:rgba(34,197,94,0.08);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.badge-htf{background:rgba(6,182,212,0.12);color:var(--cyan);border:1px solid rgba(6,182,212,0.25)}
+.badge-noncrypto{background:rgba(236,72,153,0.12);color:var(--pink);border:1px solid rgba(236,72,153,0.25)}
+.header-stats{margin-left:auto;display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap}
+.header-stat{text-align:right}
+.header-stat .hs-label{font-size:0.65rem;color:var(--text-muted);text-transform:uppercase}
+.header-stat .hs-val{font-size:1rem;font-weight:600}
+.chevron{color:var(--text-muted);font-size:1.2rem;transition:transform 0.2s;margin-left:0.5rem}
+.port-card.open .chevron{transform:rotate(180deg)}
+
+/* Card Body */
+.port-card-body{display:none;padding:0 1.2rem 1.2rem;border-top:1px solid var(--border)}
+.port-card.open .port-card-body{display:block}
+
+/* Sections */
+.section-title{font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-dim);margin:1.2rem 0 0.6rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.6rem}
+.mini-stat{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem}
+.mini-stat .ms-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase}
+.mini-stat .ms-val{font-size:1.1rem;font-weight:600;margin-top:0.15rem}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;margin-top:0.5rem}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th{background:rgba(255,255,255,0.03);color:var(--text-dim);font-weight:600;text-transform:uppercase;font-size:0.7rem;letter-spacing:0.04em;padding:0.5rem 0.6rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:0.45rem 0.6rem;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.pos{color:var(--green)}.neg{color:var(--red)}.neut{color:var(--text-dim)}
+
+/* Equity Chart */
+.equity-chart{margin-top:0.5rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:0.75rem}
+.equity-chart svg{width:100%;height:120px}
+
+/* Description */
+.port-desc{color:var(--text-dim);font-size:0.8rem;font-style:italic;margin-bottom:0.5rem}
+
+/* Prop Firm Limits */
+.prop-limits{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem}
+.prop-limit{background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:6px;padding:0.4rem 0.7rem;font-size:0.8rem}
+.prop-limit span{color:var(--orange);font-weight:600}
+
+/* Empty State */
+.empty-state{color:var(--text-muted);font-size:0.85rem;padding:1rem;text-align:center;font-style:italic}
+
+/* Loading */
+.loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:1rem}
+.loading .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);padding:1rem;border-radius:8px;max-width:600px;margin:2rem auto;text-align:center}
+
+/* Price Status Bar */
+.price-status-bar{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 1.5rem;max-width:1400px;margin:0 auto;flex-wrap:wrap;font-size:0.8rem}
+.price-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:0.3rem}
+.price-status-dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
+.price-status-dot.stale{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.price-status-dot.offline{background:var(--red);box-shadow:0 0 6px var(--red)}
+.price-status-text{color:var(--text-dim)}
+.price-source-badge{display:inline-block;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.7rem;font-weight:600;background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.price-refresh-btn{background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.78rem;transition:all 0.2s;margin-left:auto}
+.price-refresh-btn:hover{border-color:var(--blue);color:var(--text)}
+.price-refresh-btn:disabled{opacity:0.5;cursor:not-allowed}
+.price-refresh-btn .spin-icon{display:inline-block;transition:transform 0.3s}
+.price-refresh-btn.refreshing .spin-icon{animation:spin 0.8s linear infinite}
+.price-countdown{color:var(--text-muted);font-size:0.72rem;min-width:80px;text-align:right}
+
+/* Active Picks Rollup */
+.rollup-container{padding:1rem 1.5rem;max-width:1400px;margin:0 auto;display:none}
+.rollup-container.visible{display:block}
+.rollup-toggle-bar{display:flex;gap:0.5rem;margin-bottom:1rem}
+.rollup-toggle{background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.9rem;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+.rollup-toggle:hover{border-color:var(--cyan);color:var(--text)}
+.rollup-toggle.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.rollup-section{margin-bottom:1.5rem}
+.rollup-section-header{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px 8px 0 0;cursor:pointer}
+.rollup-section-header:hover{background:rgba(255,255,255,0.05)}
+.rollup-section-title{font-weight:600;font-size:0.95rem}
+.rollup-section-stats{display:flex;gap:1rem;font-size:0.8rem}
+.rollup-section-stats span{color:var(--text-dim)}
+.rollup-section-body{border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden}
+.concentration-warn{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:0.8rem 1rem;margin-bottom:1rem}
+.concentration-warn .warn-title{color:var(--red);font-weight:600;font-size:0.85rem;margin-bottom:0.4rem}
+.concentration-warn .warn-item{font-size:0.8rem;color:var(--text-dim);line-height:1.6}
+.concentration-warn .warn-item .sym{color:var(--yellow);font-weight:600}
+.rollup-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin-bottom:1rem}
+.rollup-stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.7rem 0.9rem;text-align:center}
+.rollup-stat .rs-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em}
+.rollup-stat .rs-val{font-size:1.3rem;font-weight:700;margin-top:0.2rem}
+
+/* Risk Management Panel */
+.risk-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1rem}
+.risk-panel-title{font-size:1.1rem;font-weight:700;margin-bottom:12px;background:linear-gradient(135deg,var(--orange),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:8px}
+.risk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.risk-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px}
+.risk-card .rc-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.risk-card .rc-val{font-size:1.4rem;font-weight:800}
+.risk-card .rc-sub{font-size:0.7rem;color:var(--text-dim);margin-top:2px}
+.regime-badge-lg{display:inline-block;padding:4px 12px;border-radius:6px;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
+.regime-bull{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.regime-bear{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+.regime-chop{background:rgba(234,179,8,0.15);color:var(--yellow);border:1px solid rgba(234,179,8,0.3)}
+.exposure-bar{height:20px;border-radius:10px;overflow:hidden;display:flex;margin-top:6px}
+.exposure-long{background:var(--green);height:100%}
+.exposure-short{background:var(--red);height:100%}
+.exposure-cash{background:var(--border);height:100%}
+.corr-alert{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:8px 10px;margin-top:10px;font-size:0.8rem;color:var(--red)}
+
+/* Responsive */
+@media(max-width:768px){
+  .summary-banner{grid-template-columns:repeat(2,1fr)}
+  .header-stats{margin-left:0;margin-top:0.5rem;width:100%}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .page-header h1{font-size:1.4rem}
+}
+@media(max-width:480px){
+  .summary-banner{grid-template-columns:1fr}
+  .controls{flex-direction:column;align-items:stretch}
+}
+</style>
+<!-- cache-version: 1773141270 -->
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Portfolio Challenge — Full Audit Trail</h1>
+  <div class="subtitle">26 Simulated Portfolios (12 Signal + 4 Deep-Value + 3 HTF/Hoffman + 3 Prop + 4 Non-Crypto) | CRYPTO / EQUITY / FOREX / FUTURES / ETF / PENNY | Real-Time Performance Tracking</div>
+  <div style="margin-top:0.5rem;font-size:0.85rem">
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/audit_dashboard/BLUEPRINT.md" style="color:var(--cyan);margin-right:1rem">System Blueprint</a>
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/audit_dashboard/LEARNINGS.md" style="color:var(--orange);margin-right:1rem">Key Learnings &amp; Mistakes</a>
+    <a href="claudes_test.html" style="color:var(--purple);margin-right:1rem">Live Dashboard</a>
+    <a href="../cross_aggregation/consensus_dashboard.html" style="color:#ffd700;margin-right:1rem;font-weight:700">&#9733; Consensus Picks</a>
+    <a href="../multi_asset/dashboard.html" style="color:#f97316;margin-right:1rem;font-weight:700">Multi-Asset Tournament</a>
+    <a href="funds.html" style="color:#22c55e;margin-right:1rem;font-weight:700">Strategy Funds</a>
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/audit_dashboard" style="color:var(--text-dim)">Source Code</a>
+  </div>
+  <div class="timestamp" id="genTime"></div>
+</div>
+
+<div class="summary-banner" id="summaryBanner"></div>
+
+<!-- Global Strategy + Asset Class Analytics -->
+<div id="globalAnalytics" style="max-width:1400px;margin:0 auto;padding:0 1.5rem"></div>
+
+<!-- Risk Management Panel -->
+<div id="riskPanel" style="max-width:1400px;margin:0 auto;padding:0 1.5rem"></div>
+
+<div class="controls">
+  <div>
+    <label for="sortBy">Sort by:</label>
+    <select id="sortBy">
+      <option value="pnl_desc">P&L % (High to Low)</option>
+      <option value="pnl_asc">P&L % (Low to High)</option>
+      <option value="wr_desc">Win Rate (High to Low)</option>
+      <option value="sharpe_desc">Sharpe (High to Low)</option>
+      <option value="trades_desc">Trades (Most)</option>
+      <option value="lasttrade_desc">Last Trade (Recent)</option>
+      <option value="lasttrade_asc">Last Trade (Oldest)</option>
+      <option value="resets_desc">Resets (Most)</option>
+      <option value="name_asc">Name (A-Z)</option>
+    </select>
+  </div>
+  <div>
+    <label for="searchBox">Search:</label>
+    <input type="text" id="searchBox" placeholder="Filter portfolios...">
+  </div>
+</div>
+
+<div class="price-status-bar" id="priceStatusBar">
+  <span class="price-status-dot offline" id="priceStatusDot"></span>
+  <span class="price-status-text" id="priceStatusText">Prices: loading...</span>
+  <span class="price-source-badge" id="priceSourceBadge" style="display:none"></span>
+  <span class="price-countdown" id="priceCountdown"></span>
+  <button class="price-refresh-btn" id="priceRefreshBtn" onclick="manualRefreshPrices()" title="Refresh live prices">
+    <span class="spin-icon">&#8635;</span> Refresh Prices
+  </button>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="all">All (26)</button>
+  <button class="tab-btn" data-tab="crypto" style="background:#1a1a2e;border-color:#a78bfa;color:#a78bfa">Crypto Only (22)</button>
+  <button class="tab-btn" data-tab="signal">Signal-Based (12)</button>
+  <button class="tab-btn" data-tab="deep">Deep-Value (4)</button>
+  <button class="tab-btn" data-tab="htf">HTF/Hoffman (3)</button>
+  <button class="tab-btn" data-tab="prop">Prop Firm (3)</button>
+  <button class="tab-btn" data-tab="noncrypto">Non-Crypto (4)</button>
+  <button class="tab-btn" data-tab="rollup" style="background:#1a2e1a;border-color:#22c55e;color:#22c55e" onclick="toggleRollup()">Active Picks Rollup</button>
+</div>
+
+<!-- Asset Class Filter Bar -->
+<div class="tab-bar" id="acTabBar" style="padding-top:0">
+  <span style="color:var(--text-muted);font-size:0.75rem;margin-right:0.5rem;align-self:center">Asset Class:</span>
+  <button class="tab-btn ac-btn active" data-ac="ALL" onclick="setAssetClassFilter('ALL',this)" style="font-size:0.72rem;padding:3px 8px">ALL</button>
+  <button class="tab-btn ac-btn" data-ac="CRYPTO" onclick="setAssetClassFilter('CRYPTO',this)" style="font-size:0.72rem;padding:3px 8px;background:#1e2a3a;color:#60a5fa;border-color:#60a5fa">CRYPTO</button>
+  <button class="tab-btn ac-btn" data-ac="EQUITY" onclick="setAssetClassFilter('EQUITY',this)" style="font-size:0.72rem;padding:3px 8px;background:#1e3a1e;color:#22c55e;border-color:#22c55e">EQUITY</button>
+  <button class="tab-btn ac-btn" data-ac="FOREX" onclick="setAssetClassFilter('FOREX',this)" style="font-size:0.72rem;padding:3px 8px;background:#3a2a1e;color:#eab308;border-color:#eab308">FOREX</button>
+  <button class="tab-btn ac-btn" data-ac="FUTURES" onclick="setAssetClassFilter('FUTURES',this)" style="font-size:0.72rem;padding:3px 8px;background:#1e3a5f;color:#06b6d4;border-color:#06b6d4">FUTURES</button>
+  <button class="tab-btn ac-btn" data-ac="ETF" onclick="setAssetClassFilter('ETF',this)" style="font-size:0.72rem;padding:3px 8px;background:#2a1e3a;color:#a855f7;border-color:#a855f7">ETF</button>
+  <button class="tab-btn ac-btn" data-ac="PENNY_STOCK" onclick="setAssetClassFilter('PENNY_STOCK',this)" style="font-size:0.72rem;padding:3px 8px;background:#3a1e1e;color:#ef4444;border-color:#ef4444">PENNY</button>
+  <button class="tab-btn ac-btn" data-ac="MEMECOIN" onclick="setAssetClassFilter('MEMECOIN',this)" style="font-size:0.72rem;padding:3px 8px;background:#1e2a3a;color:#60a5fa;border-color:#60a5fa">MEMECOIN</button>
+</div>
+
+<div class="rollup-container" id="rollupContainer">
+  <div class="rollup-summary-grid" id="rollupSummary"></div>
+  <div id="rollupConcentration"></div>
+  <div class="rollup-toggle-bar">
+    <button class="rollup-toggle active" onclick="setRollupView('portfolio')">By Portfolio</button>
+    <button class="rollup-toggle" onclick="setRollupView('symbol')">By Symbol</button>
+    <button class="rollup-toggle" onclick="setRollupView('all')">All Picks (Flat)</button>
+  </div>
+  <div id="rollupContent"></div>
+</div>
+
+<div class="portfolio-grid" id="portfolioGrid"></div>
+
+<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:0.75rem">
+  Portfolio Challenge Audit Trail | Data refreshes every 30 min
+</div>
+
+<script>
+const CATEGORY_MAP = {
+  signal: ['score_leaders','proven_only','momentum_riders','contrarian','regime_aligned','high_conviction','rr_kings','consensus_plays','fresh_signals','sector_rotation','anti_meme','claude_best'],
+  deep: ['deep_drawdown_dca','rsi_capitulation','fear_greed_contrarian','relative_strength_recovery'],
+  htf: ['hoffman_elite','htf_trend_follow','htf_weekly_momentum'],
+  prop: ['prop_conservative','prop_aggressive','prop_swing'],
+  noncrypto: ['stocks_best','stocks_short_term','forex_carry','multi_asset_diversified','futures_index','etf_rotation','all_asset_tournament']
+};
+const DEEP_VALUE_IDS = new Set(CATEGORY_MAP.deep);
+const METHOD_LABELS = {
+  score:'Score',proven:'Proven',momentum:'Momentum',contrarian:'Contrarian',
+  regime:'Regime',conviction:'Conviction',rr:'R:R',consensus:'Consensus',
+  fresh:'Fresh',sector:'Sector',anti_meme:'Anti-Meme',best:'Best',
+  prop_conservative:'Conservative',prop_aggressive:'Aggressive',prop_swing:'Swing',
+  drawdown_dca:'DCA',rsi_capitulation:'RSI Cap',fear_greed:'F&G',rel_strength:'Rel Str',
+  hoffman:'Hoffman',htf:'HTF',htf_trend:'Trend Follow',htf_weekly:'Weekly Mom',
+  stocks:'Stocks',forex:'Forex',multi:'Multi-Asset',noncrypto_best:'Stocks Best',
+  noncrypto_reversal:'Short-Term',noncrypto_diversified:'Diversified'
+};
+
+let allPortfolios = [];
+let currentTab = 'all';
+let currentACFilter = 'ALL'; // Global asset class filter
+
+function setAssetClassFilter(ac, btn) {
+  currentACFilter = ac;
+  document.querySelectorAll('.ac-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGlobalAnalytics();
+  renderPortfolios();
+}
+
+function fmt(n, d=2) { if (n == null) return '--'; var v = Number(n); return isFinite(v) ? v.toFixed(d) : '--'; }
+function fmtPrice(n) {
+  if (n == null) return '--';
+  n = Number(n);
+  if (!isFinite(n) || n === 0) return '--';
+  var abs = Math.abs(n);
+  if (abs >= 1000) return n.toFixed(2);
+  if (abs >= 1) return n.toFixed(4);
+  if (abs >= 0.001) return n.toFixed(6);
+  return n.toFixed(8);
+}
+function fmtUsd(n) { if (n == null) return '--'; var v = Number(n); return isFinite(v) ? '$' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '--'; }
+function pnlClass(n) { return n > 0.005 ? 'pos' : n < -0.005 ? 'neg' : 'neut'; }
+function pnlSign(n) { return n > 0 ? '+' : ''; }
+
+// Known approximate price ranges for sanity check
+const PRICE_SANITY = {
+  DOGEUSDT: [0.05, 1.0], SHIBUSDT: [0.000001, 0.001], PEPEUSDT: [0.000001, 0.01],
+  BTCUSDT: [30000, 200000], ETHUSDT: [1000, 10000], SOLUSDT: [20, 500],
+  XRPUSDT: [0.3, 10], AVAXUSDT: [5, 100], TRXUSDT: [0.05, 0.50],
+  ADAUSDT: [0.2, 5], DOTUSDT: [2, 50], LINKUSDT: [5, 100],
+  BNBUSDT: [200, 1500], MATICUSDT: [0.2, 5],
+  NEARUSDT: [0.5, 20], FLOWUSDT: [0.01, 5], VIRTUALUSDT: [0.1, 50],
+  PENGUUSDT: [0.001, 0.5], WLFIUSDT: [0.01, 5], PENDLEUSDT: [0.5, 20],
+  FETUSDT: [0.05, 10], EURUSDT: [0.8, 1.5], RENDERUSDT: [0.5, 20],
+  SEIUSDT: [0.05, 5],
+};
+function priceWarning(sym, price) {
+  const normSym = extractBase(sym) + 'USDT';
+  const range = PRICE_SANITY[sym] || PRICE_SANITY[normSym];
+  if (!range || !price) return '';
+  if (price < range[0] * 0.1 || price > range[1] * 10) {
+    return ' <span style="color:var(--red)" title="Price outside expected range">!!!</span>';
+  }
+  return '';
+}
+
+function fmtEST(iso) {
+  if (!iso) return '--';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('en-US', {timeZone:'America/New_York', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true}) + ' EST';
+  } catch(e) { return iso.slice(0,16).replace('T',' '); }
+}
+function statusBadge(s) {
+  if (!s) s = 'ACTIVE';
+  const cls = s === 'ACTIVE' ? 'badge-active' : s === 'PASSED' ? 'badge-passed' : 'badge-blown';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+function hoursAgo(iso) {
+  if (!iso) return '--';
+  const ms = Date.now() - new Date(iso).getTime();
+  return Math.max(0, (ms / 3600000)).toFixed(1);
+}
+function timeSince(iso) {
+  if (!iso) return '--';
+  const h = (Date.now() - new Date(iso).getTime()) / 3600000;
+  if (h < 1) return Math.round(h * 60) + 'm';
+  if (h < 48) return h.toFixed(1) + 'h';
+  return (h / 24).toFixed(1) + 'd';
+}
+function tradeDuration(openedIso, closedIso) {
+  if (!openedIso || !closedIso) return '--';
+  const h = (new Date(closedIso).getTime() - new Date(openedIso).getTime()) / 3600000;
+  if (h < 0) return '--';
+  if (h < 1) return Math.round(h * 60) + 'm';
+  if (h < 48) return h.toFixed(1) + 'h';
+  return (h / 24).toFixed(1) + 'd';
+}
+
+function calcSharpe(equityHistory) {
+  if (!equityHistory || equityHistory.length < 20) return null;  // Need meaningful sample
+  const returns = [];
+  for (let i = 1; i < equityHistory.length; i++) {
+    const prev = equityHistory[i-1].equity;
+    if (!prev || prev <= 0) continue;
+    const r = (equityHistory[i].equity - prev) / prev;
+    returns.push(r);
+  }
+  if (returns.length < 10) return null;
+  const mean = returns.reduce((a,b) => a+b, 0) / returns.length;
+  const variance = returns.reduce((a,r) => a + (r - mean) ** 2, 0) / (returns.length - 1);
+  const std = Math.sqrt(variance);
+  if (std === 0) return null;  // Zero volatility = no meaningful Sharpe
+  // Annualize: assume ~48 observations per day (every 30 min), 365 days/year
+  const periodsPerYear = 48 * 365;
+  const sharpe = (mean / std) * Math.sqrt(periodsPerYear);
+  return Math.max(-10, Math.min(10, sharpe));  // Cap at +/-10 (world-class is ~3-4)
+}
+
+function calcProfitFactor(closed) {
+  if (!closed || closed.length === 0) return null;
+  let gross_profit = 0, gross_loss = 0;
+  closed.forEach(t => {
+    // Use net_pnl_usd (after commission) for accurate profit factor
+    const pnl = t.net_pnl_usd != null ? t.net_pnl_usd : (t.pnl_usd || 0);
+    if (pnl > 0) gross_profit += pnl;
+    else gross_loss += Math.abs(pnl);
+  });
+  if (gross_loss === 0) return gross_profit > 0 ? 99 : null;
+  return gross_profit / gross_loss;
+}
+
+function getCategory(id) {
+  for (const [cat, ids] of Object.entries(CATEGORY_MAP)) {
+    if (ids.includes(id)) return cat;
+  }
+  return 'signal'; // default
+}
+
+function buildSummary(portfolios) {
+  const total = portfolios.length;
+  const running = portfolios.filter(p => p.resets === 0).length;
+  const totalResets = portfolios.reduce((a,p) => a + (p.resets || 0), 0);
+  const combinedPnl = portfolios.reduce((a,p) => {
+    const eq = (typeof calcLiveEquity === 'function') ? calcLiveEquity(p) : p.equity;
+    return a + (eq - p.initial_capital);
+  }, 0);
+  const combinedPnlPct = portfolios.reduce((a,p) => {
+    const eq = (typeof calcLiveEquity === 'function') ? calcLiveEquity(p) : p.equity;
+    return a + ((eq - p.initial_capital) / p.initial_capital * 100);
+  }, 0) / (total || 1);
+  const oldestCreated = portfolios.reduce((oldest, p) => {
+    const t = new Date(p.created_at).getTime();
+    return t < oldest ? t : oldest;
+  }, Date.now());
+  const hoursActive = ((Date.now() - oldestCreated) / 3600000).toFixed(1);
+
+  // Build P&L breakdown tooltip: top contributors
+  const pnlByPort = portfolios.map(p => {
+    const eq = (typeof calcLiveEquity === 'function') ? calcLiveEquity(p) : p.equity;
+    return { name: p.name, pnl: eq - p.initial_capital, pct: ((eq - p.initial_capital) / p.initial_capital * 100) };
+  }).sort((a,b) => b.pnl - a.pnl);
+  const top5 = pnlByPort.filter(p => p.pnl !== 0).slice(0, 5);
+  const bottom3 = pnlByPort.filter(p => p.pnl < 0).slice(-3).reverse();
+  let breakdownHtml = '<div style="font-size:0.78em; color:#94a3b8; margin-top:4px; line-height:1.5">';
+  if (top5.length > 0) {
+    breakdownHtml += '<div style="color:#a78bfa; font-weight:600; margin-bottom:2px">Top contributors:</div>';
+    top5.forEach(p => {
+      const cls = p.pnl >= 0 ? 'green' : 'red';
+      breakdownHtml += `<div><span style="color:${p.pnl>=0?'#22c55e':'#ef4444'}">${pnlSign(p.pnl)}${fmtUsd(p.pnl)}</span> ${p.name} (${pnlSign(p.pct)}${fmt(p.pct)}%)</div>`;
+    });
+  }
+  if (bottom3.length > 0) {
+    breakdownHtml += '<div style="color:#ef4444; font-weight:600; margin-top:4px">Biggest losers:</div>';
+    bottom3.forEach(p => {
+      breakdownHtml += `<div><span style="color:#ef4444">${fmtUsd(p.pnl)}</span> ${p.name} (${fmt(p.pct)}%)</div>`;
+    });
+  }
+  const zeroCount = pnlByPort.filter(p => p.pnl === 0).length;
+  if (zeroCount > 0) breakdownHtml += `<div style="color:#6b7280">${zeroCount} portfolios at $0 (waiting/new)</div>`;
+  breakdownHtml += '</div>';
+
+  const totalOpen = portfolios.reduce((a,p) => a + (p.positions||[]).length, 0);
+  const totalClosed = portfolios.reduce((a,p) => a + (p.closed ? p.closed.length : 0), 0);
+
+  document.getElementById('summaryBanner').innerHTML = `
+    <div class="stat-card"><div class="label">Total Portfolios</div><div class="value blue">${total}</div></div>
+    <div class="stat-card"><div class="label">Running Strong</div><div class="value green">${running}</div></div>
+    <div class="stat-card"><div class="label">Total Resets</div><div class="value ${totalResets > 0 ? 'red' : 'green'}">${totalResets}</div></div>
+    <div class="stat-card">
+      <div class="label">Combined P&L</div>
+      <div class="value ${combinedPnl >= 0 ? 'green' : 'red'}">${pnlSign(combinedPnl)}${fmtUsd(combinedPnl)}</div>
+      ${breakdownHtml}
+    </div>
+    <div class="stat-card"><div class="label">Avg P&L %</div><div class="value ${combinedPnlPct >= 0 ? 'green' : 'red'}">${pnlSign(combinedPnlPct)}${fmt(combinedPnlPct)}%</div></div>
+    <div class="stat-card"><div class="label">Positions</div><div class="value yellow">${totalOpen} open / ${totalClosed} closed</div></div>
+    <div class="stat-card"><div class="label">Hours Active</div><div class="value yellow">${hoursActive}h</div></div>
+  `;
+}
+
+function buildEquityChart(equityHistory, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!equityHistory || equityHistory.length < 2) {
+    container.innerHTML = '<div class="empty-state">Insufficient data for chart</div>';
+    return;
+  }
+  const values = equityHistory.map(e => e.equity).filter(v => v != null && isFinite(v));
+  if (values.length < 2) {
+    container.innerHTML = '<div class="empty-state">Insufficient data for chart</div>';
+    return;
+  }
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const range = maxV - minV || 1;
+  const w = 600, h = 100, padX = 0, padY = 5;
+  const stepX = w / (values.length - 1);
+
+  let pathD = '';
+  values.forEach((v, i) => {
+    const x = padX + i * stepX;
+    const y = padY + (1 - (v - minV) / range) * (h - padY * 2);
+    pathD += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+  });
+
+  const lastV = values[values.length - 1];
+  const firstV = values[0];
+  const color = lastV >= firstV ? '#22c55e' : '#ef4444';
+
+  const areaD = pathD + ` L${(padX + (values.length-1)*stepX).toFixed(1)},${h} L${padX},${h} Z`;
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="grad_${containerId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaD}" fill="url(#grad_${containerId})" />
+      <path d="${pathD}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      <text x="2" y="12" fill="#5a6478" font-size="10">${fmtUsd(maxV)}</text>
+      <text x="2" y="${h-3}" fill="#5a6478" font-size="10">${fmtUsd(minV)}</text>
+    </svg>
+  `;
+}
+
+const AC_BADGES = {
+  CRYPTO:'background:#1e2a3a;color:#60a5fa', EQUITY:'background:#1e3a1e;color:#22c55e',
+  FOREX:'background:#3a2a1e;color:#eab308', FUTURES:'background:#1e3a5f;color:#06b6d4',
+  ETF:'background:#2a1e3a;color:#a855f7', PENNY_STOCK:'background:#3a1e1e;color:#ef4444',
+  MEMECOIN:'background:#1e2a3a;color:#60a5fa', UNKNOWN:'background:#2a2a2a;color:#888'
+};
+function acBadge(ac) {
+  const s = AC_BADGES[ac] || AC_BADGES.UNKNOWN;
+  return `<span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:0.65rem;font-weight:600;${s}">${ac || 'N/A'}</span>`;
+}
+
+function buildAssetClassFilter(portId, positions, closed) {
+  const all = [...(positions||[]), ...(closed||[])];
+  const classes = [...new Set(all.map(p => p.asset_class).filter(Boolean))].sort();
+  if (classes.length <= 1) return '';
+  return `<div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 8px;">
+    <button class="tab-btn active" style="font-size:0.7rem;padding:2px 8px" onclick="filterAssetClass('${portId}','all',this)">All</button>
+    ${classes.map(ac => `<button class="tab-btn" style="font-size:0.7rem;padding:2px 8px" onclick="filterAssetClass('${portId}','${ac}',this)">${ac}</button>`).join('')}
+  </div>`;
+}
+
+function filterAssetClass(portId, ac, btn) {
+  const card = document.querySelector(`.port-card[data-id="${portId}"]`);
+  if (!card) return;
+  card.querySelectorAll('.ac-filterable').forEach(row => {
+    if (ac === 'all') { row.style.display = ''; return; }
+    const rowAc = row.dataset.ac || '';
+    row.style.display = rowAc === ac ? '' : 'none';
+  });
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function buildHoldingsTable(positions) {
+  if (!positions || positions.length === 0) return '<div class="empty-state">No active holdings</div>';
+  let html = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Symbol</th><th>Class</th><th>Dir</th><th>Size</th><th>Entry</th><th>TP</th><th>SL</th><th>Current</th><th>PnL%</th><th>PnL$</th><th>Strategy</th><th>Opened (EST)</th></tr></thead><tbody>`;
+  positions.forEach(p => {
+    const livePrice = livePrices[p.symbol] || p.current_price || p.entry_price;
+    let pnl_pct = p.pnl_pct || 0;
+    let pnl_usd = p.pnl_usd || 0;
+    if ((livePrices[p.symbol] || p.current_price) && p.entry_price > 0 && livePrice !== p.entry_price) {
+      if (p.direction === 'LONG') {
+        pnl_pct = ((livePrice - p.entry_price) / p.entry_price) * 100;
+      } else {
+        pnl_pct = ((p.entry_price - livePrice) / p.entry_price) * 100;
+      }
+      pnl_usd = (pnl_pct / 100) * (p.size_usd || 0);
+    }
+    const cls = pnlClass(pnl_pct);
+    const warn = priceWarning(p.symbol, p.entry_price);
+    const ac = p.asset_class || 'UNKNOWN';
+    html += `<tr class="ac-filterable" data-ac="${ac}">
+      <td><strong>${p.symbol}</strong>${warn}</td>
+      <td>${acBadge(ac)}</td>
+      <td>${p.direction === 'LONG' ? '<span class="pos">LONG</span>' : '<span class="neg">SHORT</span>'}</td>
+      <td>${fmtUsd(p.size_usd)}</td>
+      <td>${fmtPrice(p.entry_price)}</td>
+      <td>${fmtPrice(p.take_profit)}</td>
+      <td>${fmtPrice(p.stop_loss)}</td>
+      <td>${fmtPrice(livePrice)}</td>
+      <td class="${cls}">${pnlSign(pnl_pct)}${fmt(pnl_pct)}%</td>
+      <td class="${cls}">${pnlSign(pnl_usd)}${fmtUsd(pnl_usd)}</td>
+      <td style="font-size:0.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis">${p.strategy || '--'}</td>
+      <td style="font-size:0.72rem">${fmtEST(p.opened_at)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildClosedTable(closed) {
+  if (!closed || closed.length === 0) return '<div class="empty-state">No closed trades yet</div>';
+  let html = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Symbol</th><th>Class</th><th>Dir</th><th>Entry</th><th>Exit</th><th>PnL%</th><th>PnL$</th><th>Reason</th><th>Strategy</th><th>Opened (EST)</th><th>Closed (EST)</th><th>Duration</th></tr></thead><tbody>`;
+  closed.forEach(t => {
+    const cls = pnlClass(t.pnl_pct);
+    const dur = t.opened_at && t.closed_at ? tradeDuration(t.opened_at, t.closed_at) : '--';
+    const pnlUsd = t.net_pnl_usd != null ? t.net_pnl_usd : (t.pnl_usd || 0);
+    const warn = priceWarning(t.symbol, t.entry_price);
+    const ac = t.asset_class || 'UNKNOWN';
+    html += `<tr class="ac-filterable" data-ac="${ac}">
+      <td><strong>${t.symbol}</strong>${warn}</td>
+      <td>${acBadge(ac)}</td>
+      <td>${t.direction === 'LONG' ? '<span class="pos">LONG</span>' : '<span class="neg">SHORT</span>'}</td>
+      <td>${fmtPrice(t.entry_price)}</td>
+      <td>${fmtPrice(t.exit_price)}</td>
+      <td class="${cls}">${pnlSign(t.pnl_pct)}${fmt(t.pnl_pct)}%</td>
+      <td class="${cls}">${pnlSign(pnlUsd)}${fmtUsd(pnlUsd)}</td>
+      <td>${t.exit_reason || t.close_reason || t.reason || '--'}</td>
+      <td style="font-size:0.72rem">${t.strategy || '--'}</td>
+      <td style="font-size:0.72rem">${fmtEST(t.opened_at)}</td>
+      <td style="font-size:0.72rem">${fmtEST(t.closed_at)}</td>
+      <td>${dur}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildStrategyBreakdown(closed, positions) {
+  const allTrades = [...(closed || [])];
+  if (allTrades.length === 0) return '';
+  // Group by strategy
+  const byStrat = {};
+  allTrades.forEach(t => {
+    const s = t.strategy || 'unknown';
+    if (!byStrat[s]) byStrat[s] = { trades: 0, wins: 0, pnl_sum: 0, pnl_list: [] };
+    byStrat[s].trades++;
+    const pnl = t.pnl_pct || 0;
+    if (pnl > 0) byStrat[s].wins++;
+    byStrat[s].pnl_sum += pnl;
+    byStrat[s].pnl_list.push(pnl);
+  });
+
+  const strats = Object.entries(byStrat).map(([name, d]) => {
+    const wr = d.trades > 0 ? d.wins / d.trades : 0;
+    const avgPnl = d.pnl_sum / d.trades;
+    const pnls = d.pnl_list;
+    const std = pnls.length > 1 ? Math.sqrt(pnls.reduce((s, p) => s + Math.pow(p - avgPnl, 2), 0) / pnls.length) : 1;
+    const sharpe = std > 0 ? (avgPnl / std) * Math.sqrt(50) : 0;
+    const downside = pnls.filter(p => p < 0);
+    const dStd = downside.length > 1 ? Math.sqrt(downside.reduce((s, p) => s + p * p, 0) / downside.length) : 1;
+    const sortino = dStd > 0 ? (avgPnl / dStd) * Math.sqrt(50) : 0;
+    const grossW = pnls.filter(p => p > 0).reduce((a, b) => a + b, 0);
+    const grossL = Math.abs(pnls.filter(p => p < 0).reduce((a, b) => a + b, 0));
+    const pf = grossL > 0 ? grossW / grossL : 0;
+    return { name, ...d, wr, avgPnl, sharpe, sortino, pf };
+  }).sort((a, b) => b.wr - a.wr);
+
+  let html = `<div class="section-title">Strategy Performance (Top Strategies by Win Rate)</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Strategy</th><th>Trades</th><th>Wins</th><th>Win Rate</th><th>Avg PnL</th><th>Sharpe</th><th>Sortino</th><th>Profit Factor</th><th>Total PnL</th></tr></thead><tbody>`;
+  strats.forEach(s => {
+    const wrCls = s.wr >= 0.6 ? 'pos' : s.wr >= 0.45 ? '' : 'neg';
+    html += `<tr>
+      <td style="font-size:0.75rem"><strong>${s.name}</strong></td>
+      <td>${s.trades}</td>
+      <td class="pos">${s.wins}</td>
+      <td class="${wrCls}" style="font-weight:700">${(s.wr * 100).toFixed(1)}%</td>
+      <td class="${pnlClass(s.avgPnl)}">${s.avgPnl >= 0 ? '+' : ''}${s.avgPnl.toFixed(2)}%</td>
+      <td>${s.sharpe.toFixed(2)}</td>
+      <td>${s.sortino.toFixed(2)}</td>
+      <td>${s.pf.toFixed(2)}</td>
+      <td class="${pnlClass(s.pnl_sum)}">${s.pnl_sum >= 0 ? '+' : ''}${s.pnl_sum.toFixed(2)}%</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildAssetClassBreakdown(closed, positions) {
+  const allTrades = [...(closed || [])];
+  const allPositions = [...(positions || [])];
+  const classes = [...new Set([...allTrades.map(t => t.asset_class), ...allPositions.map(p => p.asset_class)].filter(Boolean))];
+  if (classes.length <= 1 && allTrades.length < 2) return '';
+
+  let html = `<div class="section-title">Performance by Asset Class</div><div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">`;
+  classes.sort().forEach(ac => {
+    const trades = allTrades.filter(t => t.asset_class === ac);
+    const open = allPositions.filter(p => p.asset_class === ac);
+    const wins = trades.filter(t => (t.pnl_pct || 0) > 0).length;
+    const wr = trades.length > 0 ? (wins / trades.length * 100) : null;
+    const totalPnl = trades.reduce((s, t) => s + (t.pnl_pct || 0), 0);
+    const avgPnl = trades.length > 0 ? totalPnl / trades.length : 0;
+    const badge = AC_BADGES[ac] || AC_BADGES.UNKNOWN;
+
+    // Certainty score
+    let certainty = 'LOW', certColor = 'var(--red)';
+    if (trades.length >= 10 && wr >= 55) { certainty = 'HIGH'; certColor = 'var(--green)'; }
+    else if (trades.length >= 5 && wr >= 50) { certainty = 'MEDIUM'; certColor = 'var(--yellow)'; }
+
+    html += `<div class="mini-stat" style="border-left:3px solid ${badge.split('color:')[1]?.split(';')[0]?.split("'")[0] || '#888'}">
+      <div class="ms-label">${acBadge(ac)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;font-size:0.75rem">
+        <div>Closed: <strong>${trades.length}</strong></div>
+        <div>Open: <strong>${open.length}</strong></div>
+        <div>Win Rate: <strong class="${wr !== null ? (wr >= 55 ? 'pos' : wr >= 45 ? '' : 'neg') : ''}">${wr !== null ? wr.toFixed(1) + '%' : '--'}</strong></div>
+        <div>Avg PnL: <strong class="${pnlClass(avgPnl)}">${avgPnl >= 0 ? '+' : ''}${avgPnl.toFixed(2)}%</strong></div>
+        <div>Total PnL: <strong class="${pnlClass(totalPnl)}">${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}%</strong></div>
+        <div>Certainty: <strong style="color:${certColor}">${certainty}</strong></div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function buildResetHistory(resetHistory) {
+  if (!resetHistory || resetHistory.length === 0) return '';
+  let html = `<div class="section-title">Reset History</div><div class="tbl-wrap"><table>
+    <thead><tr><th>Cycle</th><th>Final Equity</th><th>P&L%</th><th>Wins</th><th>Losses</th><th>Max DD</th><th>Reason</th><th>Date</th></tr></thead><tbody>`;
+  resetHistory.forEach((r, i) => {
+    const pnlPct = r.pnl_pct || ((r.final_equity - (r.initial_capital||10000)) / (r.initial_capital||10000) * 100);
+    const cls = pnlClass(pnlPct);
+    html += `<tr>
+      <td>#${i+1}</td>
+      <td>${fmtUsd(r.final_equity || r.equity)}</td>
+      <td class="${cls}">${pnlSign(pnlPct)}${fmt(pnlPct)}%</td>
+      <td class="pos">${r.wins || 0}</td>
+      <td class="neg">${r.losses || 0}</td>
+      <td class="neg">${fmt(r.max_drawdown_pct || r.max_dd || 0)}%</td>
+      <td>${r.reason || '--'}</td>
+      <td>${r.reset_at ? new Date(r.reset_at).toLocaleDateString() : '--'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildLifetimeStats(p) {
+  if (!p.resets || p.resets === 0) return '';
+  const totalWins = (p.lifetime_wins || p.wins || 0);
+  const totalLosses = (p.lifetime_losses || p.losses || 0);
+  const totalPnl = (p.lifetime_pnl || (p.equity - p.initial_capital));
+  const totalComm = p.total_commission || 0;
+  const bestEq = p.lifetime_best_equity || p.high_water_mark || p.equity;
+  const worstDD = p.lifetime_worst_dd || p.max_drawdown_pct || 0;
+  return `
+    <div class="section-title">Lifetime Stats (All Cycles)</div>
+    <div class="stats-grid">
+      <div class="mini-stat"><div class="ms-label">Total Wins</div><div class="ms-val pos">${totalWins}</div></div>
+      <div class="mini-stat"><div class="ms-label">Total Losses</div><div class="ms-val neg">${totalLosses}</div></div>
+      <div class="mini-stat"><div class="ms-label">Lifetime P&L</div><div class="ms-val ${pnlClass(totalPnl)}">${pnlSign(totalPnl)}${fmtUsd(totalPnl)}</div></div>
+      <div class="mini-stat"><div class="ms-label">Total Commission</div><div class="ms-val">${fmtUsd(totalComm)}</div></div>
+      <div class="mini-stat"><div class="ms-label">Best Equity</div><div class="ms-val">${fmtUsd(bestEq)}</div></div>
+      <div class="mini-stat"><div class="ms-label">Worst Drawdown</div><div class="ms-val neg">${fmt(worstDD)}%</div></div>
+    </div>
+  `;
+}
+
+function calcLiveEquity(p) {
+  // Recalculate equity using live prices instead of stale snapshots
+  // Formula: cash + sum(open position size_usd) + sum(open unrealized PnL)
+  // This matches the backend's equity = cash + allocated + unrealized
+  // Cash already reflects all realized gains/losses and entry costs
+  var cash = p.cash || 0;
+  var allocated = 0;
+  var unrealized = 0;
+  (p.positions || []).forEach(function(pos) {
+    allocated += (pos.size_usd || 0);
+    var livePrice = livePrices[pos.symbol] || pos.current_price || pos.entry_price;
+    var entry = pos.entry_price || 0;
+    var size = pos.size_usd || 0;
+    if (livePrice && entry > 0 && size > 0) {
+      var pct = pos.direction === 'LONG'
+        ? ((livePrice - entry) / entry) * 100
+        : ((entry - livePrice) / entry) * 100;
+      unrealized += (pct / 100) * size;
+    } else {
+      unrealized += (pos.pnl_usd || 0);
+    }
+  });
+  return cash + allocated + unrealized;
+}
+
+function buildPortfolioCard(p, idx) {
+  // Use live-recalculated equity instead of stale stored value
+  const liveEquity = calcLiveEquity(p);
+  const storedEquity = p.equity;
+  const equityDrift = Math.abs(storedEquity - liveEquity);
+  const useEquity = liveEquity; // Always prefer live calculation
+  const pnlPct = (useEquity - p.initial_capital) / p.initial_capital * 100;
+  const unrealizedPnl = p.positions.reduce((a, pos) => {
+    const lp = livePrices[pos.symbol] || pos.current_price || pos.entry_price;
+    if (lp && pos.entry_price > 0 && pos.size_usd > 0) {
+      const pct = pos.direction === 'LONG' ? ((lp - pos.entry_price) / pos.entry_price) : ((pos.entry_price - lp) / pos.entry_price);
+      return a + pct * pos.size_usd;
+    }
+    return a + (pos.pnl_usd || 0);
+  }, 0);
+  const realizedPnl = p.closed ? p.closed.reduce((a, t) => a + (t.net_pnl_usd != null ? t.net_pnl_usd : (t.pnl_usd || 0)), 0) : 0;
+  const holdingsValue = p.positions.reduce((a, pos) => a + (pos.size_usd || 0), 0);
+  const closedCount = p.closed ? p.closed.length : 0;
+  const openCount = (p.positions || []).length;
+  const totalTrades = closedCount + openCount;
+  // Compute last trade timestamp (most recent entry or close across all trades)
+  let lastTradeTs = '';
+  (p.positions || []).forEach(pos => {
+    const ts = pos.entry_time || pos.timestamp || '';
+    if (ts && ts > lastTradeTs) lastTradeTs = ts;
+  });
+  (p.closed || []).forEach(t => {
+    const ts = t.close_time || t.closed_at || t.entry_time || t.timestamp || '';
+    if (ts && ts > lastTradeTs) lastTradeTs = ts;
+  });
+  const wins = p.closed ? p.closed.filter(t => (t.net_pnl_usd !== undefined ? t.net_pnl_usd : (t.pnl_usd || 0)) > 0).length : 0;
+  const wr = closedCount > 0 ? (wins / closedCount * 100) : (openCount > 0 ? '--' : '--');
+  const sharpe = calcSharpe(p.equity_history);
+  const pf = calcProfitFactor(p.closed);
+  const cat = getCategory(p.id);
+  const isDeep = DEEP_VALUE_IDS.has(p.id);
+  const chartId = `chart_${p.id}`;
+
+  let methodLabel = METHOD_LABELS[p.methodology] || p.methodology;
+
+  let badges = statusBadge(p.status);
+  badges += ` <span class="badge badge-method">${methodLabel}</span>`;
+  if (isDeep) badges += ' <span class="badge badge-deep">Deep-Value</span>';
+  if (cat === 'htf') badges += ' <span class="badge badge-htf">HTF</span>';
+  if (cat === 'noncrypto') {
+    badges += ' <span class="badge badge-noncrypto">Non-Crypto</span>';
+    // Show specific asset class badges based on portfolio trades
+    const portACs = new Set([...(p.positions||[]).map(t=>t.asset_class), ...(p.closed||[]).map(t=>t.asset_class)].filter(Boolean));
+    portACs.forEach(ac => { if (ac !== 'CRYPTO' && ac !== 'MEMECOIN') badges += ' ' + acBadge(ac); });
+  }
+  if (p.prop_firm) badges += ' <span class="badge badge-prop">Prop Firm</span>';
+  if (p.resets > 0) {
+    badges += ` <span class="badge badge-reset">${p.resets} Reset${p.resets > 1 ? 's' : ''}</span>`;
+  } else {
+    badges += ' <span class="badge badge-no-reset">0 Resets</span>';
+  }
+
+  let propLimits = '';
+  if (p.prop_firm) {
+    propLimits = `<div class="prop-limits">
+      <div class="prop-limit">Daily Loss Limit: <span>${fmt(p.daily_loss_limit_pct)}%</span></div>
+      <div class="prop-limit">Max Drawdown: <span>${fmt(p.max_drawdown_limit_pct)}%</span></div>
+      <div class="prop-limit">Profit Target: <span>${fmt(p.profit_target_pct)}%</span></div>
+      <div class="prop-limit">Capital: <span>${fmtUsd(p.initial_capital)}</span></div>
+    </div>`;
+  }
+
+  return `
+    <div class="port-card" data-id="${p.id}" data-cat="${cat}" data-pnl="${pnlPct}" data-wr="${typeof wr === 'number' ? wr : -1}" data-sharpe="${sharpe || 0}" data-trades="${totalTrades}" data-resets="${p.resets}" data-name="${p.name}" data-lasttrade="${lastTradeTs || ''}">
+      <div class="port-card-header" onclick="toggleCard('${p.id}')">
+        <span class="port-name">${p.name}</span>
+        ${badges}
+        <div class="header-stats">
+          <div class="header-stat">
+            <div class="hs-label" title="Current portfolio value (initial capital + realized + unrealized P&L - fees). Recalculated with live market prices.">Equity</div>
+            <div class="hs-val">${fmtUsd(useEquity)}${equityDrift > 50 ? ' <span style="color:var(--yellow);font-size:0.65rem" title="Live equity differs from stored by ' + fmtUsd(equityDrift) + '">&Delta;</span>' : ''}</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label" title="Profit & Loss percentage: (equity - initial capital) / initial capital. Positive = profit, negative = loss.">P&L</div>
+            <div class="hs-val ${pnlClass(pnlPct)}">${pnlSign(pnlPct)}${fmt(pnlPct)}%</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label" title="Maximum Drawdown: The largest peak-to-trough decline in equity. Lower is better. E.g., 5% means equity dropped 5% from its highest point.">Max DD</div>
+            <div class="hs-val neg">${fmt(p.max_drawdown_pct || 0)}%</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label" title="Average P&L per closed trade. Positive means trades are profitable on average.">Avg PnL</div>
+            <div class="hs-val ${pnlClass(closedCount > 0 ? (p.closed || []).reduce((a,t) => a + (t.pnl_pct || 0), 0) / closedCount : 0)}">${closedCount > 0 ? (pnlSign((p.closed || []).reduce((a,t) => a + (t.pnl_pct || 0), 0) / closedCount) + fmt(Math.abs((p.closed || []).reduce((a,t) => a + (t.pnl_pct || 0), 0) / closedCount)) + '%') : '--'}</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label">Trades</div>
+            <div class="hs-val" title="${openCount} open, ${closedCount} closed">${totalTrades}</div>
+          </div>
+          <div class="header-stat">
+            <div class="hs-label" title="Most recent trade entry or close time (EST)">Last Trade</div>
+            <div class="hs-val" style="font-size:0.75rem;color:${lastTradeTs ? (((Date.now() - new Date(lastTradeTs).getTime()) / 3600000) > 48 ? 'var(--red)' : ((Date.now() - new Date(lastTradeTs).getTime()) / 3600000) > 24 ? 'var(--yellow)' : 'var(--green)') : 'var(--text-muted)'}">${lastTradeTs ? new Date(lastTradeTs).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}).replace(',','') : '--'}</div>
+          </div>
+        </div>
+        <span class="chevron">&#9660;</span>
+      </div>
+      <div class="port-card-body">
+        <div class="port-desc">${p.description || ''}</div>
+        ${propLimits}
+
+        <div class="section-title">Current Cycle Stats</div>
+        <div class="stats-grid">
+          <div class="mini-stat"><div class="ms-label" title="Current portfolio value recalculated with live market prices">Equity</div><div class="ms-val">${fmtUsd(useEquity)}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Profit & Loss: (equity - initial capital) / initial capital. Shows total return since portfolio started.">P&L %</div><div class="ms-val ${pnlClass(pnlPct)}">${pnlSign(pnlPct)}${fmt(pnlPct)}%</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Win Rate: percentage of closed trades that were profitable. Higher is better. 50%+ with good risk:reward is solid.">Win Rate</div><div class="ms-val">${typeof wr === 'number' ? fmt(wr) + '%' : wr}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Number of currently open (active) positions">Open</div><div class="ms-val">${openCount}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Number of trades that have been closed (hit TP, SL, or manual exit)">Closed</div><div class="ms-val">${closedCount}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Sharpe Ratio: risk-adjusted return. Measures return per unit of volatility. >1.0 is good, >2.0 is excellent. Negative means losing money.">Sharpe Ratio</div><div class="ms-val">${sharpe != null ? fmt(sharpe) : '--'}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Maximum Drawdown: the largest peak-to-trough equity decline. Shows worst-case loss from highest point. Lower is better.">Max Drawdown</div><div class="ms-val neg">${fmt(p.max_drawdown_pct)}%</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Profit Factor: total gross profit / total gross loss. >1.0 means profitable overall. >1.5 is good, >2.0 is excellent.">Profit Factor</div><div class="ms-val">${pf != null ? fmt(pf) : '--'}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="High Water Mark: the highest equity value ever reached by this portfolio. Used to calculate drawdown.">High Water Mark</div><div class="ms-val">${fmtUsd(p.high_water_mark)}</div></div>
+        </div>
+
+        <div class="section-title">P&L Breakdown</div>
+        <div class="stats-grid">
+          <div class="mini-stat"><div class="ms-label" title="Unrealized P&L: profit/loss on positions still open, calculated using live market prices. Changes as prices move.">Unrealized P&L</div><div class="ms-val ${pnlClass(unrealizedPnl)}">${pnlSign(unrealizedPnl)}${fmtUsd(unrealizedPnl)}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Realized P&L: profit/loss on trades that have been closed (exited). This is locked in and won't change.">Realized P&L</div><div class="ms-val ${pnlClass(realizedPnl)}">${pnlSign(realizedPnl)}${fmtUsd(realizedPnl)}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Total dollar value of all currently open positions (sum of all position sizes).">Holdings Value</div><div class="ms-val">${fmtUsd(holdingsValue)}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Available cash not currently invested in positions.">Cash</div><div class="ms-val">${fmtUsd(p.cash)}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Total trading commission fees paid. Deducted from equity.">Commission</div><div class="ms-val neg">${fmtUsd(p.total_commission)}</div></div>
+          <div class="mini-stat"><div class="ms-label" title="Total slippage cost: the difference between expected and actual execution prices. Deducted from equity.">Slippage</div><div class="ms-val neg">${fmtUsd(p.total_slippage)}</div></div>
+        </div>
+
+        ${buildStrategyBreakdown(p.closed, p.positions)}
+        ${buildAssetClassBreakdown(p.closed, p.positions)}
+
+        <div class="section-title">Filter by Asset Class</div>
+        ${buildAssetClassFilter(p.id, p.positions, p.closed)}
+
+        <div class="section-title">Active Holdings (${p.positions.length})</div>
+        ${buildHoldingsTable(p.positions)}
+
+        <div class="section-title">Closed Trades (${p.closed ? p.closed.length : 0})</div>
+        ${buildClosedTable(p.closed)}
+
+        ${buildResetHistory(p.reset_history)}
+        ${buildLifetimeStats(p)}
+
+        <div class="section-title">Equity Curve</div>
+        <div class="equity-chart" id="${chartId}"></div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleCard(id) {
+  const card = document.querySelector(`.port-card[data-id="${id}"]`);
+  if (!card) return;
+  const wasOpen = card.classList.contains('open');
+  card.classList.toggle('open');
+  if (!wasOpen) {
+    const p = allPortfolios.find(x => x.id === id);
+    if (p) buildEquityChart(p.equity_history, `chart_${id}`);
+  }
+}
+
+function calcStratMetrics(pnls) {
+  if (!pnls || pnls.length === 0) return { sharpe: 0, sortino: 0, pf: 0, expectancy: 0, avgHold: null };
+  const mean = pnls.reduce((a, b) => a + b, 0) / pnls.length;
+  const std = pnls.length > 1 ? Math.sqrt(pnls.reduce((s, p) => s + Math.pow(p - mean, 2), 0) / pnls.length) : 1;
+  const sharpe = std > 0 ? (mean / std) * Math.sqrt(50) : 0;
+  const downside = pnls.filter(p => p < 0);
+  const dStd = downside.length > 1 ? Math.sqrt(downside.reduce((s, p) => s + p * p, 0) / downside.length) : 1;
+  const sortino = dStd > 0 ? (mean / dStd) * Math.sqrt(50) : 0;
+  const grossW = pnls.filter(p => p > 0).reduce((a, b) => a + b, 0);
+  const grossL = Math.abs(pnls.filter(p => p < 0).reduce((a, b) => a + b, 0));
+  const pf = grossL > 0 ? grossW / grossL : (grossW > 0 ? 99 : 0);
+  const wins = pnls.filter(p => p > 0);
+  const losses = pnls.filter(p => p <= 0);
+  const avgWin = wins.length > 0 ? wins.reduce((a, b) => a + b, 0) / wins.length : 0;
+  const avgLoss = losses.length > 0 ? losses.reduce((a, b) => a + b, 0) / losses.length : 0;
+  const wr = pnls.length > 0 ? wins.length / pnls.length : 0;
+  const expectancy = (wr * avgWin) + ((1 - wr) * avgLoss);
+  return { sharpe, sortino, pf, expectancy };
+}
+
+function calcAvgHoldTime(trades) {
+  const durations = trades.filter(t => t.opened_at && t.closed_at).map(t => {
+    return (new Date(t.closed_at).getTime() - new Date(t.opened_at).getTime()) / 3600000;
+  }).filter(h => h > 0 && h < 720);
+  if (durations.length === 0) return null;
+  const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
+  return avg;
+}
+
+function fmtHold(hours) {
+  if (hours == null) return '--';
+  if (hours < 1) return Math.round(hours * 60) + 'm';
+  if (hours < 48) return hours.toFixed(1) + 'h';
+  return (hours / 24).toFixed(1) + 'd';
+}
+
+function renderGlobalAnalytics() {
+  const container = document.getElementById('globalAnalytics');
+  const allClosed = [];
+  const allOpen = [];
+  allPortfolios.forEach(p => {
+    (p.closed || []).forEach(t => allClosed.push(t));
+    (p.positions || []).forEach(pos => allOpen.push(pos));
+  });
+  if (allClosed.length === 0 && allOpen.length === 0) { container.innerHTML = ''; return; }
+
+  const acList = ['CRYPTO','EQUITY','FOREX','FUTURES','ETF','PENNY_STOCK','MEMECOIN'];
+  const acStats = {};
+  acList.forEach(ac => {
+    const trades = allClosed.filter(t => t.asset_class === ac);
+    const open = allOpen.filter(p => p.asset_class === ac);
+    const wins = trades.filter(t => (t.pnl_pct || 0) > 0).length;
+    const wr = trades.length > 0 ? wins / trades.length : null;
+    const totalPnl = trades.reduce((s, t) => s + (t.pnl_pct || 0), 0);
+    const avgPnl = trades.length > 0 ? totalPnl / trades.length : 0;
+    const pnls = trades.map(t => t.pnl_pct || 0);
+    const metrics = calcStratMetrics(pnls);
+    const avgHold = calcAvgHoldTime(trades);
+    let cert = 'NONE', certColor = '#555';
+    if (trades.length >= 20 && wr >= 0.58) { cert = 'HIGH'; certColor = 'var(--green)'; }
+    else if (trades.length >= 10 && wr >= 0.52) { cert = 'MEDIUM'; certColor = 'var(--yellow)'; }
+    else if (trades.length >= 3) { cert = 'LOW'; certColor = 'var(--red)'; }
+    acStats[ac] = { trades: trades.length, open: open.length, wins, wr, totalPnl, avgPnl, cert, certColor, ...metrics, avgHold };
+  });
+
+  // Per Strategy — filtered by AC if selected
+  const filteredClosed = currentACFilter === 'ALL' ? allClosed : allClosed.filter(t => t.asset_class === currentACFilter);
+  const byStrat = {};
+  filteredClosed.forEach(t => {
+    const s = t.strategy || 'unknown';
+    if (!byStrat[s]) byStrat[s] = { trades: 0, wins: 0, pnlSum: 0, pnls: [], byAC: {}, holdTimes: [] };
+    byStrat[s].trades++;
+    const pnl = t.pnl_pct || 0;
+    if (pnl > 0) byStrat[s].wins++;
+    byStrat[s].pnlSum += pnl;
+    byStrat[s].pnls.push(pnl);
+    const ac = t.asset_class || 'UNKNOWN';
+    if (!byStrat[s].byAC[ac]) byStrat[s].byAC[ac] = 0;
+    byStrat[s].byAC[ac]++;
+    if (t.opened_at && t.closed_at) {
+      const h = (new Date(t.closed_at).getTime() - new Date(t.opened_at).getTime()) / 3600000;
+      if (h > 0 && h < 720) byStrat[s].holdTimes.push(h);
+    }
+  });
+  const topStrats = Object.entries(byStrat)
+    .filter(([, d]) => d.trades >= 1)
+    .map(([name, d]) => {
+      const m = calcStratMetrics(d.pnls);
+      const avgHold = d.holdTimes.length > 0 ? d.holdTimes.reduce((a, b) => a + b, 0) / d.holdTimes.length : null;
+      return { name, ...d, wr: d.wins / d.trades, avgPnl: d.pnlSum / d.trades, ...m, avgHold };
+    })
+    .sort((a, b) => b.wr - a.wr || b.trades - a.trades)
+    .slice(0, 20);
+
+  const hasData = acList.some(ac => acStats[ac].trades > 0 || acStats[ac].open > 0);
+  if (!hasData) { container.innerHTML = ''; return; }
+
+  const acFilterLabel = currentACFilter === 'ALL' ? 'All Asset Classes' : currentACFilter;
+
+  container.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1rem">
+      <h3 style="font-size:1.1rem;margin-bottom:12px;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+        Asset Class Predictability Overview (All Portfolios)
+      </h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+        ${acList.filter(ac => acStats[ac].trades > 0 || acStats[ac].open > 0).map(ac => {
+          const s = acStats[ac];
+          const highlight = currentACFilter === ac ? 'border:2px solid var(--cyan);' : 'border:1px solid var(--border);';
+          return `<div style="background:var(--bg);${highlight}border-radius:8px;padding:10px;cursor:pointer" onclick="setAssetClassFilter('${ac}',document.querySelector('.ac-btn[data-ac=${ac}]'))">
+            <div style="margin-bottom:4px">${acBadge(ac)}</div>
+            <div style="font-size:1.4rem;font-weight:800;${s.wr !== null ? (s.wr >= 0.55 ? 'color:var(--green)' : s.wr >= 0.45 ? 'color:var(--yellow)' : 'color:var(--red)') : ''}">${s.wr !== null ? (s.wr * 100).toFixed(1) + '%' : '--'}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">Win Rate (${s.trades} closed / ${s.open} open)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:4px;font-size:0.7rem">
+              <div>Avg PnL: <span class="${pnlClass(s.avgPnl)}">${s.avgPnl >= 0 ? '+' : ''}${s.avgPnl.toFixed(2)}%</span></div>
+              <div>Sharpe: <strong>${s.sharpe.toFixed(2)}</strong></div>
+              <div>Sortino: <strong>${s.sortino.toFixed(2)}</strong></div>
+              <div>PF: <strong>${s.pf.toFixed(2)}</strong></div>
+              <div>Avg Hold: <strong>${fmtHold(s.avgHold)}</strong></div>
+              <div>Certainty: <strong style="color:${s.certColor}">${s.cert}</strong></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      ${topStrats.length > 0 ? `
+      <h3 style="font-size:1rem;margin:16px 0 8px;color:var(--text-dim)">Top Strategies — ${acFilterLabel} (${filteredClosed.length} trades)</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Rank</th><th>Strategy</th><th>Trades</th><th>Win Rate</th><th>Avg PnL</th><th>Sharpe</th><th>Sortino</th><th>PF</th><th>Expectancy</th><th>Avg Hold</th><th>Asset Classes</th></tr></thead>
+        <tbody>${topStrats.map((s, i) => {
+          const wrCls = s.wr >= 0.6 ? 'pos' : s.wr >= 0.45 ? '' : 'neg';
+          const acTags = Object.entries(s.byAC).map(([ac, ct]) => acBadge(ac) + `<span style="font-size:0.6rem;margin-left:2px">(${ct})</span>`).join(' ');
+          const medal = i === 0 ? '<span style="font-size:1.1rem">&#x1F947;</span>' : i === 1 ? '<span style="font-size:1.1rem">&#x1F948;</span>' : i === 2 ? '<span style="font-size:1.1rem">&#x1F949;</span>' : '#' + (i + 1);
+          return `<tr${i < 3 ? ' style="background:rgba(255,215,0,0.04)"' : ''}>
+            <td style="font-weight:700">${medal}</td>
+            <td style="font-size:0.75rem"><strong>${s.name}</strong></td>
+            <td>${s.trades}</td>
+            <td class="${wrCls}" style="font-weight:700">${(s.wr * 100).toFixed(1)}%</td>
+            <td class="${pnlClass(s.avgPnl)}">${s.avgPnl >= 0 ? '+' : ''}${s.avgPnl.toFixed(2)}%</td>
+            <td>${s.sharpe.toFixed(2)}</td>
+            <td>${s.sortino.toFixed(2)}</td>
+            <td>${s.pf.toFixed(2)}</td>
+            <td class="${pnlClass(s.expectancy)}">${s.expectancy >= 0 ? '+' : ''}${s.expectancy.toFixed(3)}%</td>
+            <td>${fmtHold(s.avgHold)}</td>
+            <td style="font-size:0.7rem">${acTags}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>` : ''}
+    </div>
+
+    <!-- Methodology & Backtest Summary -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1rem">
+      <h3 style="font-size:1.1rem;margin-bottom:12px;background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer" onclick="document.getElementById('methodologyBody').style.display=document.getElementById('methodologyBody').style.display==='none'?'block':'none'">
+        Trading Methodology &amp; Backtest Summary &#9660;
+      </h3>
+      <div id="methodologyBody">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:16px">
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--cyan);margin-bottom:6px;font-size:0.85rem">Backtest Parameters</div>
+            <div style="font-size:0.78rem;line-height:1.7;color:var(--text-dim)">
+              <div><strong>Data Source:</strong> Yahoo Finance (yfinance)</div>
+              <div><strong>Lookback Period:</strong> 2 years of daily OHLCV data</div>
+              <div><strong>Walk-Forward Step:</strong> Every 2 bars (daily candles)</div>
+              <div><strong>Out-of-Sample:</strong> No look-ahead bias — signals generated bar-by-bar</div>
+              <div><strong>Commission Model:</strong> 0.1% per trade (round-trip)</div>
+              <div><strong>Slippage Model:</strong> 0.05% per entry/exit</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--green);margin-bottom:6px;font-size:0.85rem">Position Sizing</div>
+            <div style="font-size:0.78rem;line-height:1.7;color:var(--text-dim)">
+              <div><strong>Default:</strong> 5-10% of portfolio equity per trade</div>
+              <div><strong>Max Open Positions:</strong> 10 concurrent</div>
+              <div><strong>Max Per Symbol:</strong> 1 position at a time</div>
+              <div><strong>Portfolio Capital:</strong> $10,000 simulated per portfolio</div>
+              <div><strong>Leverage:</strong> None (1x, spot only)</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--purple);margin-bottom:6px;font-size:0.85rem">Risk Management Metrics</div>
+            <div style="font-size:0.78rem;line-height:1.7;color:var(--text-dim)">
+              <div><strong>Sharpe Ratio:</strong> Return / StdDev (annualized)</div>
+              <div><strong>Sortino Ratio:</strong> Return / Downside StdDev (hedge fund standard)</div>
+              <div><strong>Profit Factor:</strong> Gross Wins / Gross Losses (>1.5 = strong)</div>
+              <div><strong>Expectancy:</strong> (WR &times; AvgWin) + ((1-WR) &times; AvgLoss)</div>
+              <div><strong>Calmar Ratio:</strong> Annual Return / Max Drawdown</div>
+              <div><strong>Certainty Score:</strong> Trade count (60%) + WR consistency (40%)</div>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="font-size:0.9rem;color:var(--text-dim);margin-bottom:8px">Strategy Entry/Exit Rules &amp; TP/SL per Asset Class</h4>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Strategy</th><th>Entry Signal</th><th>Exit Signal</th><th>Indicators</th><th>Research Basis</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>connors_rsi2</strong></td>
+              <td>RSI(2) &lt; 10 + price &gt; 200d SMA (LONG)<br>RSI(2) &gt; 90 + price &lt; 200d SMA (SHORT)</td>
+              <td>TP/SL hit or RSI(2) crosses 5d SMA</td>
+              <td>RSI(2), SMA(200), SMA(5)</td>
+              <td>Connors &amp; Alvarez (2009) — 75.7% WR on SPY (p=6&times;10&#8315;&#8310;, Sharpe 4.84)</td>
+            </tr>
+            <tr>
+              <td><strong>mean_reversion_bollinger</strong></td>
+              <td>Price &lt; Lower BB(20,2) + RSI(14) &lt; 30 (LONG)<br>Price &gt; Upper BB(20,2) + RSI(14) &gt; 70 (SHORT)</td>
+              <td>TP = middle band, SL = category default</td>
+              <td>BB(20,2), RSI(14)</td>
+              <td>Bollinger (2001) — well-documented edge on indices &amp; forex</td>
+            </tr>
+            <tr>
+              <td><strong>ema_stack_momentum</strong></td>
+              <td>EMA(9) &gt; EMA(21) &gt; EMA(50) &gt; EMA(200) + ADX &gt; 25</td>
+              <td>Dynamic SL = EMA(50) if &lt;99% of entry, else category SL</td>
+              <td>EMA(9/21/50/200), ADX(14)</td>
+              <td>Multi-timeframe trend alignment — Elder &amp; Minervini methods</td>
+            </tr>
+            <tr>
+              <td><strong>macd_divergence</strong></td>
+              <td>Price makes lower low, MACD histogram makes higher low (bullish divergence)</td>
+              <td>TP/SL per asset class defaults</td>
+              <td>MACD(12,26,9)</td>
+              <td>Appel (1979) — classic divergence reversal signal</td>
+            </tr>
+            <tr>
+              <td><strong>vix_reversal</strong></td>
+              <td>VIX spikes &gt;20% in 5 days then reverses &gt;10% down from peak</td>
+              <td>TP/SL per asset class defaults</td>
+              <td>VIX (^VIX)</td>
+              <td>Whaley (2000, 2009) — VIX mean reversion after fear spikes</td>
+            </tr>
+          </tbody>
+        </table></div>
+
+        <h4 style="font-size:0.9rem;color:var(--text-dim);margin:12px 0 8px">TP/SL Parameters by Asset Class</h4>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Asset Class</th><th>Stop Loss</th><th>Take Profit</th><th>Max Hold (days)</th><th>Risk:Reward</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr><td>${acBadge('FUTURES')}</td><td class="neg">-4.0%</td><td class="pos">+8.0%</td><td>10</td><td>2.0</td><td>High leverage environment, tighter stops</td></tr>
+            <tr><td>${acBadge('EQUITY')}</td><td class="neg">-6.0%</td><td class="pos">+12.0%</td><td>10</td><td>2.0</td><td>Standard equity volatility band</td></tr>
+            <tr><td>${acBadge('FOREX')}</td><td class="neg">-2.5%</td><td class="pos">+3.0%</td><td>14</td><td>1.2</td><td>Low volatility pairs, tighter ranges</td></tr>
+            <tr><td>${acBadge('ETF')}</td><td class="neg">-5.0%</td><td class="pos">+10.0%</td><td>15</td><td>2.0</td><td>Diversified basket, moderate volatility</td></tr>
+            <tr><td>${acBadge('PENNY_STOCK')}</td><td class="neg">-12.0%</td><td class="pos">+25.0%</td><td>5</td><td>2.1</td><td>High vol, wide stops, short hold for momentum</td></tr>
+            <tr><td>${acBadge('CRYPTO')}</td><td class="neg">-8.0%</td><td class="pos">+15.0%</td><td>7</td><td>1.9</td><td>24/7 market, high volatility regime</td></tr>
+            <tr><td>${acBadge('MEMECOIN')}</td><td class="neg">-15.0%</td><td class="pos">+30.0%</td><td>3</td><td>2.0</td><td>Extreme volatility, very short hold only</td></tr>
+          </tbody>
+        </table></div>
+
+        <h4 style="font-size:0.9rem;color:var(--text-dim);margin:12px 0 8px">Symbol Universe</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:0.78rem;color:var(--text-dim)">
+          <div>${acBadge('FUTURES')} ES=F, NQ=F, YM=F, CL=F, GC=F, SI=F, ZN=F</div>
+          <div>${acBadge('EQUITY')} AAPL, MSFT, NVDA, GOOGL, AMZN, META, TSLA, JPM, V</div>
+          <div>${acBadge('FOREX')} EURUSD, USDJPY, GBPUSD, AUDUSD, NZDUSD</div>
+          <div>${acBadge('ETF')} SPY, QQQ, XLK, XLF, XLE, GLD, TLT, IWM</div>
+          <div>${acBadge('PENNY_STOCK')} SOFI, NIO, PLTR, MARA, RIOT, IONQ</div>
+          <div>${acBadge('CRYPTO')} BTC, ETH, SOL, XRP, DOGE + 60 alts (Alpha Engine)</div>
+          <div>${acBadge('MEMECOIN')} PEPE, SHIB, WIF, BONK, FLOKI + memecoins</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPortfolios() {
+  const grid = document.getElementById('portfolioGrid');
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const sortBy = document.getElementById('sortBy').value;
+
+  let filtered = allPortfolios.filter(p => {
+    const cat = getCategory(p.id);
+    if (currentTab === 'crypto') {
+      if (cat === 'noncrypto') return false;  // exclude non-crypto
+    } else if (currentTab !== 'all' && cat !== currentTab) return false;
+    if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search) && !(p.description||'').toLowerCase().includes(search)) return false;
+    // Asset class filter: only show portfolios that have trades/positions in the selected class
+    if (currentACFilter !== 'ALL') {
+      const allTrades = [...(p.positions || []), ...(p.closed || [])];
+      const hasAC = allTrades.some(t => t.asset_class === currentACFilter);
+      if (!hasAC) return false;
+    }
+    return true;
+  });
+
+  // Pre-compute last trade timestamps for sort
+  filtered.forEach(p => {
+    let lt = '';
+    (p.positions||[]).forEach(pos => { const ts = pos.entry_time||pos.timestamp||''; if (ts > lt) lt = ts; });
+    (p.closed||[]).forEach(t => { const ts = t.close_time||t.closed_at||t.entry_time||t.timestamp||''; if (ts > lt) lt = ts; });
+    p._lastTradeTs = lt;
+  });
+  filtered.sort((a, b) => {
+    const aEq = calcLiveEquity(a);
+    const bEq = calcLiveEquity(b);
+    const aPnl = (aEq - a.initial_capital) / a.initial_capital * 100;
+    const bPnl = (bEq - b.initial_capital) / b.initial_capital * 100;
+    const aTrades = (a.wins||0) + (a.losses||0);
+    const bTrades = (b.wins||0) + (b.losses||0);
+    switch(sortBy) {
+      case 'pnl_desc': return bPnl - aPnl;
+      case 'pnl_asc': return aPnl - bPnl;
+      case 'wr_desc': {
+        const aWr = aTrades > 0 ? a.wins/aTrades : -1;
+        const bWr = bTrades > 0 ? b.wins/bTrades : -1;
+        return bWr - aWr;
+      }
+      case 'sharpe_desc': return (calcSharpe(b.equity_history)||0) - (calcSharpe(a.equity_history)||0);
+      case 'trades_desc': return bTrades - aTrades;
+      case 'lasttrade_desc': {
+        const aLt = a._lastTradeTs || ''; const bLt = b._lastTradeTs || '';
+        return bLt.localeCompare(aLt);
+      }
+      case 'lasttrade_asc': {
+        const aLt2 = a._lastTradeTs || ''; const bLt2 = b._lastTradeTs || '';
+        return aLt2.localeCompare(bLt2) || -1;
+      }
+      case 'resets_desc': return (b.resets||0) - (a.resets||0);
+      case 'name_asc': return a.name.localeCompare(b.name);
+      default: return bPnl - aPnl;
+    }
+  });
+
+  grid.innerHTML = filtered.map((p, i) => buildPortfolioCard(p, i)).join('');
+}
+
+function getFilteredPortfolios() {
+  return allPortfolios.filter(p => {
+    const cat = getCategory(p.id);
+    if (currentTab === 'crypto') {
+      if (cat === 'noncrypto') return false;
+    } else if (currentTab !== 'all' && cat !== currentTab) return false;
+    if (currentACFilter !== 'ALL') {
+      const allTrades = [...(p.positions || []), ...(p.closed || [])];
+      if (!allTrades.some(t => t.asset_class === currentACFilter)) return false;
+    }
+    return true;
+  });
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  // Hide rollup when switching to a portfolio tab
+  if (typeof rollupVisible !== 'undefined' && rollupVisible) {
+    rollupVisible = false;
+    document.getElementById('rollupContainer').classList.remove('visible');
+    document.getElementById('portfolioGrid').style.display = 'flex';
+    var rollupBtn = document.querySelector('[data-tab="rollup"]');
+    if (rollupBtn) rollupBtn.classList.remove('active');
+  }
+  buildSummary(getFilteredPortfolios());
+  renderPortfolios();
+}
+
+// ── Live Price Engine: Multi-Source Failover ──
+let livePrices = {};
+let priceSource = null;
+let lastPriceFetch = null;
+let priceFetchCount = 0;
+let priceRefreshTimer = null;
+let countdownTimer = null;
+const PRICE_REFRESH_INTERVAL = 60; // seconds
+
+// CoinGecko ID mapping for common symbols
+const COINGECKO_IDS = {
+  BTC:'bitcoin', ETH:'ethereum', SOL:'solana', XRP:'ripple', ADA:'cardano',
+  DOGE:'dogecoin', SHIB:'shiba-inu', PEPE:'pepe', AVAX:'avalanche-2',
+  DOT:'polkadot', LINK:'chainlink', BNB:'binancecoin', MATIC:'matic-network',
+  TRX:'tron', LTC:'litecoin', UNI:'uniswap', NEAR:'near', ATOM:'cosmos',
+  ARB:'arbitrum', OP:'optimism', FTM:'fantom', ALGO:'algorand',
+  APT:'aptos', SUI:'sui', SEI:'sei-network', INJ:'injective-protocol',
+  TIA:'celestia', RENDER:'render-token', FET:'fetch-ai', WIF:'dogwifcoin',
+  BONK:'bonk', FLOKI:'floki', NOT:'notcoin', TON:'the-open-network',
+  HBAR:'hedera-hashgraph', VET:'vechain', FIL:'filecoin', ICP:'internet-computer',
+  IMX:'immutable-x', AAVE:'aave', MKR:'maker', CRV:'curve-dao-token',
+  RUNE:'thorchain', STX:'blockstack', GRT:'the-graph',
+};
+
+// Stock/forex symbols (for Yahoo Finance fallback)
+const STOCK_SYMBOLS = new Set([
+  'AAPL','COIN','SPY','MSFT','GOOGL','AMZN','TSLA','META','NVDA','QQQ',
+  'IWM','DIA','GLD','SLV','TLT','XLF','XLE','XLK','MSTR','RIOT','MARA',
+  'BITF','CLSK','HUT','MA','JNJ','PG','BA','V','JPM',
+  'EURUSD=X','GBPUSD=X','USDJPY=X','AUDUSD=X',
+]);
+const FOREX_SYMBOLS = new Set(['EURUSD=X','GBPUSD=X','USDJPY=X','AUDUSD=X','EURUSDT']);
+
+function isCryptoSymbol(sym) {
+  if (STOCK_SYMBOLS.has(sym) || FOREX_SYMBOLS.has(sym)) return false;
+  // Match: BTCUSDT, BTC-USD, BTC-USDT, FET_USDT, ETHBUSD, etc.
+  return sym.endsWith('USDT') || sym.endsWith('USD') || sym.endsWith('BUSD')
+    || /-USD$/i.test(sym) || /-USDT$/i.test(sym) || /_USDT$/i.test(sym);
+}
+
+function extractBase(sym) {
+  return sym.replace(/[-_]/g,'').replace(/USDT$|USD$|BUSD$|=X$/,'');
+}
+
+function validatePrice(sym, price) {
+  if (!price || price <= 0 || !isFinite(price)) return false;
+  // Normalize symbol for sanity lookup: BNB-USD → BNBUSDT, FET_USDT → FETUSDT
+  const normSym = extractBase(sym) + 'USDT';
+  const range = PRICE_SANITY[sym] || PRICE_SANITY[normSym];
+  if (range) {
+    if (price < range[0] * 0.1 || price > range[1] * 10) {
+      console.warn('[Price] Sanity FAIL: ' + sym + ' = ' + price + ' (expected ' + range[0] + '-' + range[1] + ')');
+      return false;
+    }
+  }
+  return true;
+}
+
+function setLivePrice(sym, price) {
+  if (!validatePrice(sym, price)) return false;
+  livePrices[sym] = price;
+  const base = extractBase(sym);
+  if (base && !livePrices[base + '-USD']) livePrices[base + '-USD'] = price;
+  if (base && !livePrices[base + 'USDT'] && sym !== base + 'USDT') livePrices[base + 'USDT'] = price;
+  return true;
+}
+
+// Source 1: Binance REST API (normalize hyphens: SUI-USDT → SUIUSDT)
+async function fetchBinance(cryptoSyms) {
+  var symMap = {};
+  cryptoSyms.forEach(function(s) {
+    var norm = s.replace(/[-_]/g, '');
+    if (norm.endsWith('USDT')) symMap[norm] = s;
+    else {
+      var base = extractBase(s);
+      if (base) symMap[base + 'USDT'] = s;
+    }
+  });
+  var binanceSyms = Object.keys(symMap);
+  if (binanceSyms.length === 0) return { filled: 0, total: 0 };
+  var filled = 0;
+  // Chunk to avoid URL length limits (Binance rejects >40 symbols in one call)
+  for (var chunk = 0; chunk < binanceSyms.length; chunk += 40) {
+    var batch = binanceSyms.slice(chunk, chunk + 40);
+    var url = 'https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(batch));
+    var resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) throw new Error('Binance HTTP ' + resp.status);
+    var data = await resp.json();
+    data.forEach(function(t) {
+      var origSym = symMap[t.symbol] || t.symbol;
+      if (setLivePrice(origSym, parseFloat(t.price))) filled++;
+    });
+  }
+  return { filled: filled, total: binanceSyms.length };
+}
+
+// Source 2: Bybit v5 public API (normalize hyphens: SUI-USDT → SUIUSDT)
+async function fetchBybit(cryptoSyms) {
+  var missing = cryptoSyms.filter(function(s) { return !livePrices[s]; });
+  if (missing.length === 0) return { filled: 0, total: 0 };
+  var filled = 0;
+  var toFetch = missing.slice(0, 25);
+  var promises = toFetch.map(async function(sym) {
+    try {
+      var bySym = sym.replace(/[-_]/g, '');
+      if (!bySym.endsWith('USDT')) bySym = extractBase(sym) + 'USDT';
+      var url = 'https://api.bybit.com/v5/market/tickers?category=spot&symbol=' + bySym;
+      var resp = await fetch(url, { signal: AbortSignal.timeout(4000) });
+      if (!resp.ok) return;
+      var data = await resp.json();
+      if (data.result && data.result.list && data.result.list.length > 0) {
+        var price = parseFloat(data.result.list[0].lastPrice);
+        if (setLivePrice(sym, price)) filled++;
+      }
+    } catch(e) { /* skip */ }
+  });
+  await Promise.allSettled(promises);
+  return { filled: filled, total: toFetch.length };
+}
+
+// Source 3: CoinGecko
+async function fetchCoinGecko(cryptoSyms) {
+  var missing = cryptoSyms.filter(function(s) { return !livePrices[s]; });
+  if (missing.length === 0) return { filled: 0, total: 0 };
+  var idMap = {};
+  missing.forEach(function(sym) {
+    var base = extractBase(sym);
+    var cgId = COINGECKO_IDS[base];
+    if (cgId) idMap[cgId] = sym;
+  });
+  var ids = Object.keys(idMap);
+  if (ids.length === 0) return { filled: 0, total: 0 };
+  var url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd';
+  var resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+  if (!resp.ok) throw new Error('CoinGecko HTTP ' + resp.status);
+  var data = await resp.json();
+  var filled = 0;
+  for (var cgId in idMap) {
+    if (data[cgId] && data[cgId].usd) {
+      if (setLivePrice(idMap[cgId], data[cgId].usd)) filled++;
+    }
+  }
+  return { filled: filled, total: ids.length };
+}
+
+// Source 4: CryptoCompare
+async function fetchCryptoCompare(cryptoSyms) {
+  var missing = cryptoSyms.filter(function(s) { return !livePrices[s]; });
+  if (missing.length === 0) return { filled: 0, total: 0 };
+  var baseSet = {};
+  missing.forEach(function(s) { var b = extractBase(s); if (b) baseSet[b] = true; });
+  var bases = Object.keys(baseSet);
+  if (bases.length === 0) return { filled: 0, total: 0 };
+  var url = 'https://min-api.cryptocompare.com/data/pricemulti?fsyms=' + bases.join(',') + '&tsyms=USD';
+  var resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  if (!resp.ok) throw new Error('CryptoCompare HTTP ' + resp.status);
+  var data = await resp.json();
+  var filled = 0;
+  missing.forEach(function(sym) {
+    var base = extractBase(sym);
+    if (data[base] && data[base].USD) {
+      if (setLivePrice(sym, data[base].USD)) filled++;
+    }
+  });
+  return { filled: filled, total: bases.length };
+}
+
+// Stock prices via Yahoo Finance (with CORS proxy failover)
+async function fetchStockPrices(stockSyms) {
+  if (stockSyms.length === 0) return { filled: 0, total: 0 };
+  var filled = 0;
+  var symsStr = stockSyms.join(',');
+  var yUrl = 'https://query1.finance.yahoo.com/v8/finance/spark?symbols=' + symsStr + '&range=1d&interval=1d';
+
+  function parseYahooData(data) {
+    var count = 0;
+    stockSyms.forEach(function(sym) {
+      try {
+        if (livePrices[sym]) return;
+        var spark = (data.spark && data.spark.result) ? data.spark.result.find(function(r) { return r.symbol === sym; }) : null;
+        var close = spark && spark.response && spark.response[0] && spark.response[0].meta ? spark.response[0].meta.regularMarketPrice : null;
+        if (close && close > 0 && isFinite(close)) { livePrices[sym] = close; count++; }
+      } catch(e) {}
+    });
+    return count;
+  }
+
+  // Try Yahoo direct first
+  try {
+    var resp = await fetch(yUrl, { signal: AbortSignal.timeout(5000) });
+    if (resp.ok) {
+      filled += parseYahooData(await resp.json());
+      if (filled >= stockSyms.length) return { filled: filled, total: stockSyms.length };
+    }
+  } catch(e) { console.warn('[Price] Yahoo direct failed:', e.message); }
+
+  // Try Yahoo v8 chart API (sometimes has better CORS)
+  var remaining0 = stockSyms.filter(function(s) { return !livePrices[s]; });
+  for (var k = 0; k < remaining0.length; k++) {
+    try {
+      var chartUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/' + remaining0[k] + '?interval=1d&range=1d';
+      var chartResp = await fetch(chartUrl, { signal: AbortSignal.timeout(4000) });
+      if (chartResp.ok) {
+        var chartData = await chartResp.json();
+        var meta = chartData.chart && chartData.chart.result && chartData.chart.result[0] ? chartData.chart.result[0].meta : null;
+        if (meta && meta.regularMarketPrice > 0) { livePrices[remaining0[k]] = meta.regularMarketPrice; filled++; }
+      }
+    } catch(e) {}
+  }
+  if (stockSyms.every(function(s) { return !!livePrices[s]; })) return { filled: filled, total: stockSyms.length };
+
+  // CORS proxy chain for remaining symbols
+  var proxies = [
+    'https://corsproxy.io/?' + encodeURIComponent(yUrl),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(yUrl),
+  ];
+  for (var i = 0; i < proxies.length; i++) {
+    if (stockSyms.every(function(s) { return !!livePrices[s]; })) break;
+    try {
+      var resp2 = await fetch(proxies[i], { signal: AbortSignal.timeout(6000) });
+      if (resp2.ok) {
+        filled += parseYahooData(await resp2.json());
+        if (filled > 0) break;
+      }
+    } catch(e) { console.warn('[Price] Yahoo proxy ' + (i+1) + ' failed:', e.message); }
+  }
+
+  // Last resort: try individual CryptoCompare for any stock that might also be a token
+  var remaining = stockSyms.filter(function(s) { return !livePrices[s]; });
+  for (var j = 0; j < remaining.length; j++) {
+    try {
+      var sym = remaining[j];
+      var ccUrl = 'https://min-api.cryptocompare.com/data/price?fsym=' + sym + '&tsyms=USD';
+      var resp3 = await fetch(ccUrl, { signal: AbortSignal.timeout(3000) });
+      if (resp3.ok) {
+        var d = await resp3.json();
+        if (d.USD && d.USD > 0 && isFinite(d.USD)) { livePrices[sym] = d.USD; filled++; }
+      }
+    } catch(e) {}
+  }
+
+  return { filled: filled, total: stockSyms.length };
+}
+
+// ── Main failover orchestrator ──
+async function fetchLivePrices(symbols) {
+  var allSyms = [...new Set(symbols)];
+  var cryptoSyms = allSyms.filter(isCryptoSymbol);
+  var stockSyms = allSyms.filter(function(s) { return STOCK_SYMBOLS.has(s) || FOREX_SYMBOLS.has(s); });
+  var sources = [];
+  var totalFilled = 0;
+  var totalNeeded = allSyms.length;
+
+  updatePriceStatus('loading', 'Fetching prices...', null);
+
+  // Try each crypto source in failover order
+  var cryptoSources = [
+    { name: 'Binance', fn: function() { return fetchBinance(cryptoSyms); } },
+    { name: 'Bybit', fn: function() { return fetchBybit(cryptoSyms); } },
+    { name: 'CoinGecko', fn: function() { return fetchCoinGecko(cryptoSyms); } },
+    { name: 'CryptoCompare', fn: function() { return fetchCryptoCompare(cryptoSyms); } },
+  ];
+
+  for (var i = 0; i < cryptoSources.length; i++) {
+    var src = cryptoSources[i];
+    var missingCount = cryptoSyms.filter(function(s) { return !livePrices[s]; }).length;
+    if (missingCount === 0) break;
+    try {
+      var result = await src.fn();
+      if (result.filled > 0) {
+        sources.push(src.name);
+        totalFilled += result.filled;
+        console.log('[Price] ' + src.name + ': ' + result.filled + '/' + result.total + ' filled');
+      }
+    } catch(e) {
+      console.warn('[Price] ' + src.name + ' failed:', e.message);
+    }
+  }
+
+  // Fetch stock prices
+  if (stockSyms.length > 0) {
+    try {
+      var stockResult = await fetchStockPrices(stockSyms);
+      if (stockResult.filled > 0) {
+        sources.push('Yahoo');
+        totalFilled += stockResult.filled;
+      }
+    } catch(e) { console.warn('[Price] Yahoo failed:', e.message); }
+  }
+
+  // Update status
+  lastPriceFetch = new Date();
+  priceFetchCount++;
+  priceSource = sources.length > 0 ? sources.join(' + ') : null;
+
+  var missingFinal = allSyms.filter(function(s) { return !livePrices[s]; });
+  if (totalFilled === 0) {
+    updatePriceStatus('offline', 'All price sources failed \u2014 using backend prices', null);
+  } else if (missingFinal.length > 0) {
+    var missingStr = missingFinal.slice(0, 5).join(', ') + (missingFinal.length > 5 ? '...' : '');
+    updatePriceStatus('stale', totalFilled + '/' + totalNeeded + ' live (missing: ' + missingStr + ') \u2014 using backend prices for rest', sources.join(' + '));
+    console.log('[Price] Missing symbols:', missingFinal.join(', '));
+  } else {
+    updatePriceStatus('live', totalFilled + ' prices live', sources.join(' + '));
+  }
+
+  startCountdown();
+}
+
+function updatePriceStatus(status, text, source) {
+  var dot = document.getElementById('priceStatusDot');
+  var txt = document.getElementById('priceStatusText');
+  var badge = document.getElementById('priceSourceBadge');
+  if (!dot) return;
+  dot.className = 'price-status-dot ' + status;
+  txt.textContent = text;
+  if (source) {
+    badge.textContent = source;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function startCountdown() {
+  if (countdownTimer) clearInterval(countdownTimer);
+  var el = document.getElementById('priceCountdown');
+  if (!el) return;
+  var remaining = PRICE_REFRESH_INTERVAL;
+  el.textContent = 'next: ' + remaining + 's';
+  countdownTimer = setInterval(function() {
+    remaining--;
+    if (remaining <= 0) {
+      el.textContent = 'refreshing...';
+      clearInterval(countdownTimer);
+    } else {
+      el.textContent = 'next: ' + remaining + 's';
+    }
+  }, 1000);
+}
+
+async function manualRefreshPrices() {
+  var btn = document.getElementById('priceRefreshBtn');
+  if (btn) { btn.disabled = true; btn.classList.add('refreshing'); }
+  var allSymbols = new Set();
+  allPortfolios.forEach(function(p) {
+    (p.positions || []).forEach(function(pos) { allSymbols.add(pos.symbol); });
+  });
+  var previousPrices = Object.assign({}, livePrices);
+  try {
+    livePrices = {};
+    await fetchLivePrices([...allSymbols]);
+    if (Object.keys(livePrices).length === 0 && Object.keys(previousPrices).length > 0) {
+      livePrices = previousPrices;
+      updatePriceStatus('stale', 'Refresh got no data — showing last known prices', priceSource);
+    }
+  } catch(e) {
+    console.error('[Price] Manual refresh failed:', e.message);
+    livePrices = previousPrices;
+    updatePriceStatus('offline', 'Refresh failed: ' + e.message + ' — using last known prices', null);
+  }
+  buildSummary(allPortfolios);
+  renderPortfolios();
+  if (rollupVisible) buildRollup();
+  if (btn) { btn.disabled = false; btn.classList.remove('refreshing'); }
+  // Reset auto-refresh timer
+  if (priceRefreshTimer) clearInterval(priceRefreshTimer);
+  priceRefreshTimer = setInterval(autoRefreshPrices, PRICE_REFRESH_INTERVAL * 1000);
+}
+
+async function autoRefreshPrices() {
+  var allSymbols = new Set();
+  allPortfolios.forEach(function(p) {
+    (p.positions || []).forEach(function(pos) { allSymbols.add(pos.symbol); });
+  });
+  if (allSymbols.size === 0) return;
+  var previousPrices = Object.assign({}, livePrices);
+  try {
+    livePrices = {};
+    await fetchLivePrices([...allSymbols]);
+    if (Object.keys(livePrices).length === 0 && Object.keys(previousPrices).length > 0) {
+      livePrices = previousPrices;
+      updatePriceStatus('stale', 'Refresh returned no data — showing last known prices', priceSource);
+    }
+  } catch(e) {
+    console.error('[Price] Auto-refresh failed:', e.message);
+    livePrices = previousPrices;
+    updatePriceStatus('offline', 'Auto-refresh failed: ' + e.message + ' — using last known prices', null);
+  }
+  buildSummary(allPortfolios);
+  renderPortfolios();
+  if (typeof rollupVisible !== 'undefined' && rollupVisible) buildRollup();
+}
+
+// ── Active Picks Rollup ──
+let rollupView = 'portfolio';
+let rollupVisible = false;
+
+function toggleRollup() {
+  rollupVisible = !rollupVisible;
+  var container = document.getElementById('rollupContainer');
+  var grid = document.getElementById('portfolioGrid');
+  var btn = document.querySelector('[data-tab="rollup"]');
+  if (rollupVisible) {
+    container.classList.add('visible');
+    grid.style.display = 'none';
+    btn.classList.add('active');
+    buildRollup();
+  } else {
+    container.classList.remove('visible');
+    grid.style.display = 'flex';
+    btn.classList.remove('active');
+  }
+}
+
+function setRollupView(view) {
+  rollupView = view;
+  document.querySelectorAll('.rollup-toggle').forEach(function(b) {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(
+      view === 'portfolio' ? 'portfolio' : view === 'symbol' ? 'symbol' : 'flat'
+    ));
+  });
+  buildRollup();
+}
+
+function getAllActivePicks() {
+  var picks = [];
+  allPortfolios.forEach(function(p) {
+    (p.positions || []).forEach(function(pos) {
+      var livePrice = livePrices[pos.symbol] || pos.current_price || pos.entry_price;
+      var pnl_pct = 0, pnl_usd = 0;
+      if (livePrice && pos.entry_price > 0 && livePrice !== pos.entry_price) {
+        if (pos.direction === 'LONG') pnl_pct = ((livePrice - pos.entry_price) / pos.entry_price) * 100;
+        else pnl_pct = ((pos.entry_price - livePrice) / pos.entry_price) * 100;
+        pnl_usd = (pnl_pct / 100) * (pos.size_usd || 0);
+      } else {
+        pnl_pct = pos.pnl_pct || 0;
+        pnl_usd = pos.pnl_usd || 0;
+      }
+      picks.push({
+        portfolio: p.name || p.id,
+        portfolioId: p.id,
+        symbol: pos.symbol,
+        direction: pos.direction,
+        size_usd: pos.size_usd || 0,
+        entry_price: pos.entry_price,
+        live_price: livePrice,
+        pnl_pct: pnl_pct,
+        pnl_usd: pnl_usd,
+        strategy: pos.strategy || '--',
+        opened_at: pos.opened_at,
+        take_profit: pos.take_profit,
+        stop_loss: pos.stop_loss
+      });
+    });
+  });
+  return picks;
+}
+
+function buildRollup() {
+  var picks = getAllActivePicks();
+
+  // Summary stats
+  var totalPicks = picks.length;
+  var totalSize = picks.reduce(function(a, p) { return a + p.size_usd; }, 0);
+  var totalPnlUsd = picks.reduce(function(a, p) { return a + p.pnl_usd; }, 0);
+  var totalPnlPct = totalSize > 0 ? (totalPnlUsd / totalSize) * 100 : 0;
+  var uniqueSymbols = new Set(picks.map(function(p) { return p.symbol; }));
+  var activePortfolios = new Set(picks.map(function(p) { return p.portfolioId; }));
+  var longs = picks.filter(function(p) { return p.direction === 'LONG'; }).length;
+  var shorts = picks.length - longs;
+  var winners = picks.filter(function(p) { return p.pnl_pct > 0; }).length;
+
+  document.getElementById('rollupSummary').innerHTML =
+    '<div class="rollup-stat"><div class="rs-label">Active Picks</div><div class="rs-val" style="color:var(--cyan)">' + totalPicks + '</div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Portfolios Active</div><div class="rs-val" style="color:var(--blue)">' + activePortfolios.size + ' / ' + allPortfolios.length + '</div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Unique Symbols</div><div class="rs-val" style="color:var(--purple)">' + uniqueSymbols.size + '</div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Total Exposure</div><div class="rs-val">' + fmtUsd(totalSize) + '</div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Unrealized P&L</div><div class="rs-val ' + pnlClass(totalPnlUsd) + '">' + pnlSign(totalPnlUsd) + fmtUsd(totalPnlUsd) + '</div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Avg P&L %</div><div class="rs-val ' + pnlClass(totalPnlPct) + '">' + pnlSign(totalPnlPct) + fmt(totalPnlPct) + '%</div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Long / Short</div><div class="rs-val"><span class="pos">' + longs + 'L</span> / <span class="neg">' + shorts + 'S</span></div></div>' +
+    '<div class="rollup-stat"><div class="rs-label">Winners</div><div class="rs-val ' + (winners > picks.length/2 ? 'pos' : 'neg') + '">' + winners + ' / ' + totalPicks + '</div></div>';
+
+  // Concentration warnings
+  var symCount = {};
+  var symExposure = {};
+  picks.forEach(function(p) {
+    symCount[p.symbol] = (symCount[p.symbol] || 0) + 1;
+    symExposure[p.symbol] = (symExposure[p.symbol] || 0) + p.size_usd;
+  });
+  var concentrated = Object.keys(symCount).filter(function(s) { return symCount[s] >= 2; }).sort(function(a, b) { return symCount[b] - symCount[a]; });
+  var warnHtml = '';
+  if (concentrated.length > 0 && totalPicks > 2) {
+    warnHtml = '<div class="concentration-warn"><div class="warn-title">Symbol Concentration Warning</div>';
+    concentrated.forEach(function(sym) {
+      var pct = totalSize > 0 ? (symExposure[sym] / totalSize * 100).toFixed(1) : 0;
+      warnHtml += '<div class="warn-item"><span class="sym">' + sym + '</span> appears in <strong>' + symCount[sym] + '</strong> portfolios (' + pct + '% of total exposure, ' + fmtUsd(symExposure[sym]) + ')</div>';
+    });
+    warnHtml += '</div>';
+  }
+  document.getElementById('rollupConcentration').innerHTML = warnHtml;
+
+  // Build view
+  if (rollupView === 'portfolio') buildRollupByPortfolio(picks);
+  else if (rollupView === 'symbol') buildRollupBySymbol(picks);
+  else buildRollupFlat(picks);
+}
+
+function buildRollupByPortfolio(picks) {
+  var groups = {};
+  picks.forEach(function(p) {
+    if (!groups[p.portfolioId]) groups[p.portfolioId] = { name: p.portfolio, picks: [] };
+    groups[p.portfolioId].picks.push(p);
+  });
+
+  // Also add idle portfolios
+  allPortfolios.forEach(function(pf) {
+    if (!groups[pf.id]) groups[pf.id] = { name: pf.name || pf.id, picks: [] };
+  });
+
+  var html = '';
+  var sortedKeys = Object.keys(groups).sort(function(a, b) {
+    var aPnl = groups[a].picks.reduce(function(s, p) { return s + p.pnl_usd; }, 0);
+    var bPnl = groups[b].picks.reduce(function(s, p) { return s + p.pnl_usd; }, 0);
+    return bPnl - aPnl;
+  });
+
+  sortedKeys.forEach(function(id) {
+    var g = groups[id];
+    var totalPnl = g.picks.reduce(function(s, p) { return s + p.pnl_usd; }, 0);
+    var totalSize = g.picks.reduce(function(s, p) { return s + p.size_usd; }, 0);
+    var pnlPctAvg = totalSize > 0 ? (totalPnl / totalSize * 100) : 0;
+    var count = g.picks.length;
+
+    html += '<div class="rollup-section">';
+    html += '<div class="rollup-section-header">';
+    html += '<span class="rollup-section-title">' + g.name + '</span>';
+    html += '<div class="rollup-section-stats">';
+    html += '<span>' + count + ' position' + (count !== 1 ? 's' : '') + '</span>';
+    if (count > 0) {
+      html += '<span>Exposure: ' + fmtUsd(totalSize) + '</span>';
+      html += '<span class="' + pnlClass(totalPnl) + '">P&L: ' + pnlSign(totalPnl) + fmtUsd(totalPnl) + ' (' + pnlSign(pnlPctAvg) + fmt(pnlPctAvg) + '%)</span>';
+    } else {
+      html += '<span style="color:var(--yellow)">IDLE — no positions</span>';
+    }
+    html += '</div></div>';
+
+    if (count > 0) {
+      html += '<div class="rollup-section-body">' + buildPicksTable(g.picks) + '</div>';
+    }
+    html += '</div>';
+  });
+
+  document.getElementById('rollupContent').innerHTML = html || '<div class="empty-state">No active positions across any portfolio</div>';
+}
+
+function buildRollupBySymbol(picks) {
+  var groups = {};
+  picks.forEach(function(p) {
+    if (!groups[p.symbol]) groups[p.symbol] = [];
+    groups[p.symbol].push(p);
+  });
+
+  var html = '';
+  var sortedSyms = Object.keys(groups).sort(function(a, b) {
+    return groups[b].length - groups[a].length;
+  });
+
+  sortedSyms.forEach(function(sym) {
+    var g = groups[sym];
+    var totalPnl = g.reduce(function(s, p) { return s + p.pnl_usd; }, 0);
+    var totalSize = g.reduce(function(s, p) { return s + p.size_usd; }, 0);
+    var pnlPctAvg = totalSize > 0 ? (totalPnl / totalSize * 100) : 0;
+    var dirs = g.map(function(p) { return p.direction; });
+    var hasConflict = dirs.includes('LONG') && dirs.includes('SHORT');
+
+    html += '<div class="rollup-section">';
+    html += '<div class="rollup-section-header">';
+    html += '<span class="rollup-section-title">' + sym + (hasConflict ? ' <span style="color:var(--red);font-size:0.75rem">CONFLICTING DIRECTIONS</span>' : '') + '</span>';
+    html += '<div class="rollup-section-stats">';
+    html += '<span>' + g.length + ' portfolio' + (g.length !== 1 ? 's' : '') + '</span>';
+    html += '<span>Total Exposure: ' + fmtUsd(totalSize) + '</span>';
+    html += '<span class="' + pnlClass(totalPnl) + '">P&L: ' + pnlSign(totalPnl) + fmtUsd(totalPnl) + ' (' + pnlSign(pnlPctAvg) + fmt(pnlPctAvg) + '%)</span>';
+    html += '</div></div>';
+    html += '<div class="rollup-section-body">' + buildPicksTableWithPortfolio(g) + '</div>';
+    html += '</div>';
+  });
+
+  document.getElementById('rollupContent').innerHTML = html || '<div class="empty-state">No active positions</div>';
+}
+
+function buildRollupFlat(picks) {
+  var sorted = picks.slice().sort(function(a, b) { return b.pnl_usd - a.pnl_usd; });
+  document.getElementById('rollupContent').innerHTML = sorted.length > 0
+    ? '<div class="tbl-wrap">' + buildPicksTableWithPortfolio(sorted) + '</div>'
+    : '<div class="empty-state">No active positions</div>';
+}
+
+function buildPicksTable(picks) {
+  var html = '<table><thead><tr><th>Symbol</th><th>Dir</th><th>Size</th><th>Entry</th><th>Current</th><th>TP</th><th>SL</th><th>PnL%</th><th>PnL$</th><th>Strategy</th><th>Opened</th></tr></thead><tbody>';
+  picks.forEach(function(p) {
+    var cls = pnlClass(p.pnl_pct);
+    html += '<tr><td><strong>' + p.symbol + '</strong></td>';
+    html += '<td>' + (p.direction === 'LONG' ? '<span class="pos">LONG</span>' : '<span class="neg">SHORT</span>') + '</td>';
+    html += '<td>' + fmtUsd(p.size_usd) + '</td>';
+    html += '<td>' + fmtPrice(p.entry_price) + '</td>';
+    html += '<td>' + fmtPrice(p.live_price) + '</td>';
+    html += '<td>' + fmtPrice(p.take_profit) + '</td>';
+    html += '<td>' + fmtPrice(p.stop_loss) + '</td>';
+    html += '<td class="' + cls + '">' + pnlSign(p.pnl_pct) + fmt(p.pnl_pct) + '%</td>';
+    html += '<td class="' + cls + '">' + pnlSign(p.pnl_usd) + fmtUsd(p.pnl_usd) + '</td>';
+    html += '<td style="font-size:0.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis">' + p.strategy + '</td>';
+    html += '<td style="font-size:0.72rem">' + fmtEST(p.opened_at) + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function buildPicksTableWithPortfolio(picks) {
+  var html = '<table><thead><tr><th>Portfolio</th><th>Symbol</th><th>Dir</th><th>Size</th><th>Entry</th><th>Current</th><th>PnL%</th><th>PnL$</th><th>Strategy</th><th>Opened</th></tr></thead><tbody>';
+  picks.forEach(function(p) {
+    var cls = pnlClass(p.pnl_pct);
+    html += '<tr><td style="font-size:0.75rem">' + p.portfolio + '</td>';
+    html += '<td><strong>' + p.symbol + '</strong></td>';
+    html += '<td>' + (p.direction === 'LONG' ? '<span class="pos">LONG</span>' : '<span class="neg">SHORT</span>') + '</td>';
+    html += '<td>' + fmtUsd(p.size_usd) + '</td>';
+    html += '<td>' + fmtPrice(p.entry_price) + '</td>';
+    html += '<td>' + fmtPrice(p.live_price) + '</td>';
+    html += '<td class="' + cls + '">' + pnlSign(p.pnl_pct) + fmt(p.pnl_pct) + '%</td>';
+    html += '<td class="' + cls + '">' + pnlSign(p.pnl_usd) + fmtUsd(p.pnl_usd) + '</td>';
+    html += '<td style="font-size:0.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis">' + p.strategy + '</td>';
+    html += '<td style="font-size:0.72rem">' + fmtEST(p.opened_at) + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+async function loadRiskMetrics() {
+  try {
+    const resp = await fetch('data/risk_metrics.json', { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch(e) { return null; }
+}
+
+function renderRiskPanel(metrics) {
+  const container = document.getElementById('riskPanel');
+  if (!metrics || !container) return;
+
+  const regime = (metrics.regime || metrics.overall_risk_level || 'CHOP').toUpperCase();
+  const regimeClass = regime === 'BULL' || regime === 'BULLISH' || regime === 'LOW' ? 'regime-bull' : regime === 'BEAR' || regime === 'BEARISH' || regime === 'HIGH' ? 'regime-bear' : 'regime-chop';
+  const regimeLabel = regime === 'BULLISH' ? 'BULL' : regime === 'BEARISH' ? 'BEAR' : regime;
+  const vix = metrics.vix != null ? metrics.vix.toFixed(1) : '--';
+
+  const vm = metrics.var_metrics || {};
+  const var95 = vm.var_95 != null ? vm.var_95 * 100 : (metrics.var_95 != null ? metrics.var_95 : null);
+  const var99 = vm.var_99 != null ? vm.var_99 * 100 : (metrics.var_99 != null ? metrics.var_99 : null);
+  const cvar = vm.cvar_95 != null ? vm.cvar_95 * 100 : (metrics.cvar != null ? metrics.cvar : null);
+
+  const sharpe = metrics.sharpe != null ? metrics.sharpe : null;
+  const sortino = metrics.sortino != null ? metrics.sortino : null;
+  const calmar = metrics.calmar != null ? metrics.calmar : null;
+
+  const eb = metrics.exposure_breakdown || {};
+  const longPct = eb.long_pct != null ? eb.long_pct * 100 : (metrics.long_exposure_pct != null ? metrics.long_exposure_pct : 50);
+  const shortPct = eb.short_pct != null ? eb.short_pct * 100 : (metrics.short_exposure_pct != null ? metrics.short_exposure_pct : 0);
+  const cashPct = Math.max(0, 100 - longPct - shortPct);
+
+  function varColor(v) {
+    if (v == null) return 'var(--text-dim)';
+    const abs = Math.abs(v);
+    if (abs < 2) return 'var(--green)';
+    if (abs < 5) return 'var(--yellow)';
+    return 'var(--red)';
+  }
+  function ratioColor(v) {
+    if (v == null) return 'var(--text-dim)';
+    if (v > 1.0) return 'var(--green)';
+    if (v >= 0) return 'var(--yellow)';
+    return 'var(--red)';
+  }
+  function fmtVal(v, decimals) {
+    if (v == null) return '--';
+    return v.toFixed(decimals || 2);
+  }
+
+  const cr = metrics.correlation_risk || {};
+  const corrPairs = cr.correlated_pairs || metrics.correlated_pairs || [];
+  const corrHtml = corrPairs.length > 0
+    ? `<div class="corr-alert">
+        <strong>Correlation Alert:</strong> ${corrPairs.length} pair${corrPairs.length > 1 ? 's' : ''} with &gt;70% correlation:
+        ${corrPairs.map(p => `<span style="color:var(--yellow);font-weight:600">${p.pair || p}</span>`).join(', ')}
+      </div>`
+    : '';
+
+  container.innerHTML = `
+    <div class="risk-panel">
+      <div class="risk-panel-title">
+        Risk Management
+        <span class="regime-badge-lg ${regimeClass}">${regimeLabel}</span>
+        <span style="font-size:0.75rem;color:var(--text-dim);font-weight:400;-webkit-text-fill-color:var(--text-dim)">VIX: ${vix}</span>
+      </div>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <div class="rc-label">95% VaR (Daily)</div>
+          <div class="rc-val" style="color:${varColor(var95)}">${fmtVal(var95)}%</div>
+          <div class="rc-sub">Max expected daily loss (95% confidence)</div>
+        </div>
+        <div class="risk-card">
+          <div class="rc-label">99% VaR (Daily)</div>
+          <div class="rc-val" style="color:${varColor(var99)}">${fmtVal(var99)}%</div>
+          <div class="rc-sub">Extreme tail risk threshold</div>
+        </div>
+        <div class="risk-card">
+          <div class="rc-label">CVaR / Expected Shortfall</div>
+          <div class="rc-val" style="color:${varColor(cvar)}">${fmtVal(cvar)}%</div>
+          <div class="rc-sub">Average loss beyond VaR</div>
+        </div>
+        <div class="risk-card">
+          <div class="rc-label">Sharpe Ratio</div>
+          <div class="rc-val" style="color:${ratioColor(sharpe)}">${fmtVal(sharpe)}</div>
+          <div class="rc-sub">Risk-adjusted return (annualized)</div>
+        </div>
+        <div class="risk-card">
+          <div class="rc-label">Sortino Ratio</div>
+          <div class="rc-val" style="color:${ratioColor(sortino)}">${fmtVal(sortino)}</div>
+          <div class="rc-sub">Downside risk-adjusted return</div>
+        </div>
+        <div class="risk-card">
+          <div class="rc-label">Calmar Ratio</div>
+          <div class="rc-val" style="color:${ratioColor(calmar)}">${fmtVal(calmar)}</div>
+          <div class="rc-sub">Return / Max drawdown</div>
+        </div>
+        <div class="risk-card" style="grid-column:span 2">
+          <div class="rc-label">Long / Short / Cash Exposure</div>
+          <div class="exposure-bar">
+            <div class="exposure-long" style="width:${longPct}%" title="Long ${longPct.toFixed(1)}%"></div>
+            <div class="exposure-short" style="width:${shortPct}%" title="Short ${shortPct.toFixed(1)}%"></div>
+            <div class="exposure-cash" style="width:${cashPct.toFixed(1)}%" title="Cash ${cashPct.toFixed(1)}%"></div>
+          </div>
+          <div class="rc-sub" style="display:flex;gap:12px;margin-top:4px">
+            <span style="color:var(--green)">Long ${longPct.toFixed(1)}%</span>
+            <span style="color:var(--red)">Short ${shortPct.toFixed(1)}%</span>
+            <span style="color:var(--text-dim)">Cash ${cashPct.toFixed(1)}%</span>
+          </div>
+        </div>
+      </div>
+      ${corrHtml}
+    </div>
+  `;
+}
+
+async function init() {
+  const grid = document.getElementById('portfolioGrid');
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading portfolio data...</div></div>';
+
+  try {
+    const resp = await fetch('data/claudes_test_state.json', { signal: AbortSignal.timeout(15000) });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + resp.statusText);
+    const data = await resp.json();
+
+    // Parse: JSON is flat (portfolio_id -> portfolio_data)
+    allPortfolios = Object.entries(data).map(([id, p]) => {
+      const closed = p.closed || p.recent_closed || [];
+      // Use net_pnl_usd (after commission) if available, otherwise fall back to pnl_pct
+      const wins = closed.filter(t => {
+        const net = t.net_pnl_usd != null ? t.net_pnl_usd : (t.pnl_usd || 0);
+        return net > 0;
+      }).length;
+      const losses = closed.filter(t => {
+        const net = t.net_pnl_usd != null ? t.net_pnl_usd : (t.pnl_usd || 0);
+        return net <= 0;
+      }).length;
+      let status = p.status || 'ACTIVE';
+      if (p.max_drawdown_pct && Math.abs(p.max_drawdown_pct) > (p.max_drawdown_limit_pct || 99)) status = 'BLOWN';
+      return {
+        ...p,
+        id: p.id || id,
+        closed: closed,
+        wins: wins,
+        losses: losses,
+        resets: p.resets || (p.reset_history || []).length || 0,
+        status: status,
+        positions: p.positions || [],
+        equity: p.equity || p.initial_capital || 10000,
+        initial_capital: p.initial_capital || 10000,
+        cash: p.cash || 0,
+        equity_history: p.equity_history || [],
+        total_commission: p.total_commission || 0,
+        total_slippage: p.total_slippage || 0,
+        max_drawdown_pct: p.max_drawdown_pct || 0,
+        high_water_mark: p.high_water_mark || p.equity || 10000,
+      };
+    });
+
+    // Collect all symbols for live price fetch
+    const allSymbols = new Set();
+    allPortfolios.forEach(p => {
+      (p.positions || []).forEach(pos => allSymbols.add(pos.symbol));
+    });
+    await fetchLivePrices([...allSymbols]);
+
+    // Start auto-refresh every 60 seconds
+    priceRefreshTimer = setInterval(autoRefreshPrices, PRICE_REFRESH_INTERVAL * 1000);
+
+    // Set timestamp
+    let latestTs = 0;
+    allPortfolios.forEach(p => {
+      (p.positions || []).forEach(pos => {
+        const t = new Date(pos.opened_at || 0).getTime();
+        if (t > latestTs) latestTs = t;
+      });
+    });
+    const lastStr = latestTs > 0 ? new Date(latestTs).toLocaleString('en-US', {timeZone:'America/New_York'}) + ' EST' : 'N/A';
+    const dataAgeHrs = latestTs > 0 ? (Date.now() - latestTs) / 3600000 : 0;
+    const staleWarning = dataAgeHrs > 24 ? ' | <span style="color:var(--red);font-weight:600">WARNING: Backend data is ' + Math.round(dataAgeHrs) + 'h old!</span>' : (dataAgeHrs > 6 ? ' | <span style="color:var(--yellow)">Backend data is ' + Math.round(dataAgeHrs) + 'h old</span>' : '');
+    document.getElementById('genTime').innerHTML = 'Data as of: ' + lastStr + ' | Viewed: ' + new Date().toLocaleString('en-US', {timeZone:'America/New_York'}) + ' EST' + staleWarning;
+
+    // Update tab counts
+    const counts = {};
+    allPortfolios.forEach(p => { const c = getCategory(p.id); counts[c] = (counts[c]||0) + 1; });
+    const cryptoCount = allPortfolios.length - (counts['noncrypto'] || 0);
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      const tab = b.dataset.tab;
+      if (tab === 'all') b.textContent = 'All (' + allPortfolios.length + ')';
+      else if (tab === 'crypto') b.textContent = 'Crypto Only (' + cryptoCount + ')';
+      else if (counts[tab] != null) b.textContent = b.textContent.replace(/\(\d+\)/, '(' + counts[tab] + ')');
+    });
+
+    // Update AC tab counts
+    const acCounts = {};
+    allPortfolios.forEach(p => {
+      const acs = new Set([...(p.positions||[]).map(t=>t.asset_class), ...(p.closed||[]).map(t=>t.asset_class)].filter(Boolean));
+      acs.forEach(ac => { acCounts[ac] = (acCounts[ac]||0) + 1; });
+    });
+    document.querySelectorAll('.ac-btn').forEach(b => {
+      const ac = b.dataset.ac;
+      if (ac === 'ALL') return;
+      const ct = acCounts[ac] || 0;
+      if (ct === 0) { b.style.opacity = '0.4'; }
+    });
+
+    buildSummary(allPortfolios);
+    renderGlobalAnalytics();
+    renderPortfolios();
+
+    // Load risk metrics (non-blocking)
+    loadRiskMetrics().then(renderRiskPanel);
+
+  } catch (err) {
+    grid.innerHTML = '<div class="error-msg">Failed to load portfolio data: ' + err.message + '<br><br>Make sure <code>data/claudes_test_state.json</code> is accessible.</div>';
+  }
+}
+
+// Event listeners
+document.getElementById('sortBy').addEventListener('change', renderPortfolios);
+document.getElementById('searchBox').addEventListener('input', renderPortfolios);
+document.querySelectorAll('.tab-btn').forEach(b => {
+  if (b.dataset.tab !== 'rollup') b.addEventListener('click', () => setTab(b.dataset.tab));
+});
+
+init();
+</script>
+<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,0.95);border-top:1px solid #2a2a4a;padding:6px 16px;font-size:11px;color:#888;text-align:center;z-index:9999;backdrop-filter:blur(4px);">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
+</body>
+</html>

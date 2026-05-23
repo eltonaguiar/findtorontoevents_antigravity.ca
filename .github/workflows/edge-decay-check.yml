@@ -1,0 +1,51 @@
+# Tier 1: rolling edge decay vs older baseline (HF tiers + UNTIERED)
+name: Edge decay monitor
+
+'on':
+  schedule:
+    - cron: '20 7 * * 1-5'  # weekdays 07:20 UTC
+  workflow_dispatch:
+    inputs:
+      fail_on_alert:
+        description: 'Exit 1 if S/A/B is DECAYING or CRITICAL'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install -r tools/requirements-hf-validation.txt
+
+      - name: Run edge decay monitor
+        shell: bash
+        run: |
+          FAIL_FLAG=""
+          if [ "${{ github.event.inputs.fail_on_alert }}" = "true" ]; then
+            FAIL_FLAG="--fail-on-alert"
+          fi
+          python tools/edge_decay_monitor.py --json-out audit_trail/data/edge_decay_report.json ${FAIL_FLAG}
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-decay-report
+          path: audit_trail/data/edge_decay_report.json
+          if-no-files-found: warn

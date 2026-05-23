@@ -1,0 +1,15 @@
+function addToQueue() {
+            const currentIndex = Math.floor(document.getElementById('container').scrollTop / window.innerHeight);
+            const movie = filteredMovies[currentIndex];
+
+            if (movie && !myQueue.find(m => m.id === movie.id)) {
+                myQueue.push(movie);
+                localStorage.setItem('movieQueue', JSON.stringify(myQueue));
+                document.getElementById('queueCount').textContent = myQueue.length;
+                showToast('\u2705 Added "' + movie.title + '" to queue', 'success');
+            } else if (movie) {
+                showToast('Already in queue!', 'warning');
+            }
+        }
+
+        

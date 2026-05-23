@@ -1,0 +1,4422 @@
+{
+  "snapshot_timestamp": "2026-05-22T18:35:42.400136+00:00",
+  "audit_cutoff": "2026-03-13T11:30:00+00:00",
+  "description": "Baseline snapshot for 7 critical fixes applied 2026-03-13",
+  "fixes_applied": [
+    "1. SL placement fix (ATR-based instead of fixed %)",
+    "2. ML AUC threshold gate (>0.55 required)",
+    "3. Forward-validation minimum trades increased (15 -> 30)",
+    "4. DSR gate for incubator promotion (Sharpe >= 1.0)",
+    "5. Consensus minimum agreement count raised (2 -> 3)",
+    "6. Exit-reason tracking added to all systems",
+    "7. Walk-forward confirmation required before production"
+  ],
+  "systems": {
+    "alpha_engine": {
+      "system": "alpha_engine",
+      "aggregate": {
+        "total_strategies": 367,
+        "total_closed": 17570,
+        "total_wins": 51,
+        "overall_wr": 0.29,
+        "total_sl_hits": 63,
+        "sl_hit_rate": 0.36
+      },
+      "before_audit": {
+        "total_closed": 152,
+        "wins": 83,
+        "losses": 69,
+        "win_rate": 54.61,
+        "avg_pnl_pct": 0.0272,
+        "total_pnl_pct": 4.1344,
+        "sharpe": 3.475,
+        "sl_hit_count": 68,
+        "sl_hit_rate": 44.74
+      },
+      "after_audit": {
+        "total_closed": 2157,
+        "wins": 844,
+        "losses": 1313,
+        "win_rate": 39.13,
+        "avg_pnl_pct": -0.008,
+        "total_pnl_pct": -17.196,
+        "sharpe": -1.31,
+        "sl_hit_count": 120,
+        "sl_hit_rate": 5.56
+      }
+    },
+    "kimi_scanner": {
+      "system": "kimi_scanner",
+      "aggregate": {
+        "total_signals": 1167,
+        "wins": 175,
+        "losses": 924,
+        "open": 68,
+        "win_rate": 15.9,
+        "avg_pnl": -0.14,
+        "total_pnl": -157.43
+      },
+      "ml": {
+        "cv_auc_mean": 0.647,
+        "cv_auc_std": 0.0277,
+        "n_samples": 1008,
+        "mode": "random_forest",
+        "trained_at": "2026-05-22T18:11:27.855128+00:00"
+      },
+      "before_audit": {
+        "total": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr": 0.0,
+        "avg_pnl": 0.0
+      },
+      "after_audit": {
+        "total": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr": 0.0,
+        "avg_pnl": 0.0
+      }
+    },
+    "cross_aggregator": {
+      "system": "cross_aggregator",
+      "aggregate": {
+        "active_count": 60,
+        "closed_count": 200,
+        "total": 200,
+        "wins": 62,
+        "losses": 138,
+        "wr": 31.0,
+        "avg_pnl": 0.7082
+      },
+      "before_audit": {
+        "total": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr": 0.0,
+        "avg_pnl": 0.0
+      },
+      "after_audit": {
+        "total": 200,
+        "wins": 62,
+        "losses": 138,
+        "wr": 31.0,
+        "avg_pnl": 0.7082
+      }
+    },
+    "incubator": {
+      "system": "incubator",
+      "aggregate": {
+        "active_strategies": 5,
+        "closed_count": 214
+      },
+      "before_audit": {
+        "total_closed": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "avg_pnl_pct": 0.0,
+        "total_pnl_pct": 0.0,
+        "sharpe": 0.0,
+        "sl_hit_count": 0,
+        "sl_hit_rate": 0.0
+      },
+      "after_audit": {
+        "total_closed": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "avg_pnl_pct": 0.0,
+        "total_pnl_pct": 0.0,
+        "sharpe": 0.0,
+        "sl_hit_count": 0,
+        "sl_hit_rate": 0.0
+      }
+    }
+  },
+  "strategy_detail": {
+    "quan_engine_scalp": {
+      "closed": 5293,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2995,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "quan_engine_swing": {
+      "closed": 109,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2752,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "quan_engine_position": {
+      "closed": 26,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "futures_momentum": {
+      "closed": 219,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0228,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "forex_rsi2_mean_reversion": {
+      "closed": 147,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1565,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "macd_crossover": {
+      "closed": 16,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6875,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "volume_spike_breakout": {
+      "closed": 196,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0969,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rsi_bounce": {
+      "closed": 51,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1961,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rsi_overbought": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "stochrsi_macd_combo": {
+      "closed": 39,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1538,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "macd_rsi_confluence": {
+      "closed": 186,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.172,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ETHUSDT_15m_B_lightgbm": {
+      "closed": 2,
+      "wins": 0,
+      "losses": 2,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 50.0,
+      "exit_reasons": {
+        "SL_HIT": 1,
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": -70.989
+    },
+    "ml_enhanced_BNBUSDT_15m_B_lightgbm": {
+      "closed": 22,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.8182,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SOLUSDT_15m_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_LINKUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_LTCUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ETCUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DOGEUSDT_15m_D_ensemble_stack": {
+      "closed": 27,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5185,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_INJUSDT_15m_D_ensemble_stack": {
+      "closed": 26,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0385,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SEIUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ATOMUSDT_15m_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_NEARUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_WLDUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_STRKUSDT_15m_D_ensemble_stack": {
+      "closed": 29,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.8966,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_CHZUSDT_15m_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ZKUSDT_15m_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ZROUSDT_15m_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_POLUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BTCUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ETHUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BNBUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SOLUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_XRPUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TRXUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TRXUSDT_4h_D_ensemble_stack": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ADAUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AVAXUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DOTUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_LINKUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BCHUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SUIUSDT_1h_A_xgboost": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_INJUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ARBUSDT_1h_D_ensemble_stack": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_OPUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SEIUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TIAUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_APTUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ATOMUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_FILUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_NEARUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ALGOUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TONUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TONUSDT_4h_D_ensemble_stack": {
+      "closed": 19,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5789,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_AAVEUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DYDXUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DYDXUSDT_15m_D_ensemble_stack": {
+      "closed": 31,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.9677,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_FETUSDT_1h_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_WLDUSDT_1h_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_STRKUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_JTOUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_WUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_WUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_APEUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_CHZUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_POLUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BTCUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ETHUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BNBUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SOLUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_XRPUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ADAUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AVAXUSDT_4h_A_xgboost": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.125,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_LTCUSDT_4h_A_xgboost": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ETCUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DOGEUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SHIBUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SHIBUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_HBARUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SUIUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_INJUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ARBUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_OPUSDT_4h_D_ensemble_stack": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.25,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_TIAUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ATOMUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_NEARUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ALGOUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AAVEUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_WLDUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_APEUSDT_4h_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ZKUSDT_4h_D_ensemble_stack": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ZKUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ZROUSDT_4h_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_POLUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BTCUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ETHUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BNBUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SOLUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_XRPUSDT_1d_D_ensemble_stack": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6071,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_TRXUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ADAUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DOTUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_LINKUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_LINKUSDT_4h_A_xgboost": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_LTCUSDT_1d_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BCHUSDT_1d_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ETCUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SHIBUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_HBARUSDT_1d_D_ensemble_stack": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4286,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SUIUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_INJUSDT_1d_B_lightgbm": {
+      "closed": 31,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.9355,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ARBUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_OPUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SEIUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TIAUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_APTUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ATOMUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_FILUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TONUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AAVEUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DYDXUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_FETUSDT_1d_B_lightgbm": {
+      "closed": 45,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5556,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_STRKUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_JTOUSDT_1d_B_lightgbm": {
+      "closed": 30,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_CHZUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ZROUSDT_1d_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AVAXUSDT_1d_B_lightgbm": {
+      "closed": 25,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.44,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ETCUSDT_1h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ZROUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BCHUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_APTUSDT_4h_A_xgboost": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_JTOUSDT_4h_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_NEARUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_WLDUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_POLUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_JTOUSDT_1h_A_xgboost": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AVAXUSDT_1d_A_xgboost": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_BTCUSDT_15m_D_ensemble_stack": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ADAUSDT_15m_D_ensemble_stack": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ADAUSDT_15m_B_lightgbm": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6071,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_RENDERUSDT_1h_D_ensemble_stack": {
+      "closed": 49,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6122,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_RENDERUSDT_4h_D_ensemble_stack": {
+      "closed": 37,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5676,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_RENDERUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_DOGEUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_ATOMUSDT_1h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SOLUSDT_4h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_AVAXUSDT_4h_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_TIAUSDT_4h_E_catboost_v3": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_APEUSDT_1d_D_ensemble_stack": {
+      "closed": 30,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_POLUSDT_1d_B_lightgbm": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4643,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_XRPUSDT_15m_D_ensemble_stack": {
+      "closed": 2,
+      "wins": 2,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 1,
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 25.003
+    },
+    "ml_enhanced_AAVEUSDT_15m_B_lightgbm": {
+      "closed": 2,
+      "wins": 0,
+      "losses": 2,
+      "wr": 0.0,
+      "sl_hits": 2,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 2
+      },
+      "kelly": 0,
+      "sharpe": -80.515
+    },
+    "ml_enhanced_JTOUSDT_15m_D_ensemble_stack": {
+      "closed": 2,
+      "wins": 0,
+      "losses": 2,
+      "wr": 0.0,
+      "sl_hits": 2,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 2
+      },
+      "kelly": 0,
+      "sharpe": -30.759
+    },
+    "ml_enhanced_TRXUSDT_4h_B_lightgbm": {
+      "closed": 2,
+      "wins": 0,
+      "losses": 2,
+      "wr": 0.0,
+      "sl_hits": 2,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 2
+      },
+      "kelly": 0,
+      "sharpe": -13490.064
+    },
+    "ml_enhanced_AVAXUSDT_1d_D_ensemble_stack": {
+      "closed": 2,
+      "wins": 2,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "EXPIRED": 2
+      },
+      "kelly": 0,
+      "sharpe": 1127.491
+    },
+    "ml_enhanced_TRXUSDT_1d_B_lightgbm": {
+      "closed": 26,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1154,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_AVAXUSDT_15m_D_ensemble_stack": {
+      "closed": 30,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SUIUSDT_15m_B_lightgbm": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_FETUSDT_15m_D_ensemble_stack": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_FETUSDT_15m_B_lightgbm": {
+      "closed": 29,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6552,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ALGOUSDT_15m_B_lightgbm": {
+      "closed": 26,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cftc_cot_commercial_signal": {
+      "closed": 137,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7153,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_APEUSDT": {
+      "closed": 15,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ZROUSDT": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "unknown": {
+      "closed": 1404,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4829,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cross_sectional_reversal": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.125,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "prediction_market_consensus": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ETCUSDT": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_TIAUSDT": {
+      "closed": 13,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6154,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ALGOUSDT": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_JTOUSDT": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ARBUSDT": {
+      "closed": 11,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1818,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_OPUSDT": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.25,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "myfxbook_retail_contrarian": {
+      "closed": 138,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1739,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cta_cross_asset_tsmom": {
+      "closed": 256,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4453,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "combined_confidence": {
+      "closed": 25,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.36,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "fx_smart_forex_rsi2_mean_reversion": {
+      "closed": 14,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4286,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "stocks_rsi2_pullback": {
+      "closed": 60,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "fx_smart_carry_trade_momentum": {
+      "closed": 32,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2188,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "stocks_rsi2_pullback_tight": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "cot_positioning": {
+      "closed": 140,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_CHZUSDT": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ig_contrarian_sentiment": {
+      "closed": 258,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2636,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_LINKUSDT": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4167,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ETHUSDT": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_AVAXUSDT": {
+      "closed": 10,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_BNBUSDT": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1429,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ATOMUSDT": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SHIBUSDT": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SOLUSDT": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1429,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_XRPUSDT": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2857,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_ADAUSDT": {
+      "closed": 10,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_NEARUSDT": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_DOGEUSDT": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2857,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_FILUSDT": {
+      "closed": 13,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1538,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_AAVEUSDT": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_FETUSDT": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cta_golden_cross_200": {
+      "closed": 1,
+      "wins": 0,
+      "losses": 1,
+      "wr": 0.0,
+      "sl_hits": 1,
+      "sl_hit_rate": 100.0,
+      "exit_reasons": {
+        "SL_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "regime_accumulation": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "FOREX_TIME_EXIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "ml_enhanced_SEIUSDT": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_APTUSDT": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rsi_vwap_contrarian": {
+      "closed": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {
+        "TP_HIT": 1
+      },
+      "kelly": 0,
+      "sharpe": 0
+    },
+    "forex_carry_momentum": {
+      "closed": 178,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0506,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "justin_aggressive_mut": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rapid_momentum_filter_mut": {
+      "closed": 39,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2051,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rapid_top10_only_mut": {
+      "closed": 10,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rapid_rsi_filter_mut": {
+      "closed": 54,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2593,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rapid_trend_only_mut": {
+      "closed": 25,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rapid_volume_gate_mut": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2857,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "luxalgo_confluence": {
+      "closed": 2072,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4271,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Consecutive Beats": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "MomentumEMA": {
+      "closed": 77,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5714,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "MeanReversionBB": {
+      "closed": 218,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4174,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_fear_greed_contrarian": {
+      "closed": 430,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5302,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "gainer_compression_relaxed_mut": {
+      "closed": 62,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1935,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "justin_scalper_mut": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Extreme Fear Contrarian Buy": {
+      "closed": 59,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7288,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "drawdown_recovery_rsi_sol": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "enhanced_ml_A_xgboost": {
+      "closed": 777,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4003,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "claude_ml_moderate_mut": {
+      "closed": 163,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4724,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "inverse_ml_enhanced_ADAUSDT_15m_D": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "inverse_ml_enhanced_RENDERUSDT_4h_D": {
+      "closed": 14,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4286,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "crypto_keltner_compression_expansion_v1": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "keltner_compression_expansion_sol_v1": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "justin_moderate_mut": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.375,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Crypto RSI Scout": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.375,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "inverse_ml_enhanced_RENDERUSDT_1h_D": {
+      "closed": 13,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6923,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_TRXUSDT": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_obv_support_divergence": {
+      "closed": 623,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5104,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "signal_engine_momentum_mut": {
+      "closed": 75,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3733,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "gainer_momentum_streak_mut": {
+      "closed": 15,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "kimi_bollinger_aggressive_mut": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.25,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "battleground_rsi_no_regime_mut": {
+      "closed": 11,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3636,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "incubator_gainer": {
+      "closed": 23,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4783,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_WLDUSDT": {
+      "closed": 15,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "battleground_vwap_1h_mut": {
+      "closed": 35,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_bb_squeeze_expansion": {
+      "closed": 179,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3408,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "drawdown_recovery_rsi_eth": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "claude_ml_conservative_mut": {
+      "closed": 33,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1212,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Earnings Drift": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "kimi_funding_arb_relaxed_mut": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2857,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "inverse_ml_enhanced_BTCUSDT_15m_D": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1111,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "A_amp_VolatilityRegimeSwitch_v0": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.125,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Price Acceleration Detector": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Bollinger MR": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hs_Auros_66M": {
+      "closed": 11,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "signal_engine_wide_net_mut": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3214,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "CCI Reversal Scout": {
+      "closed": 21,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "signal_engine_no_premium_mut": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "signal_engine_relaxed_mut": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "battleground_ml_relaxed_mut": {
+      "closed": 29,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2414,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "gainer_obv_divergence_mut": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "kimi_flash_crash_relaxed_mut": {
+      "closed": 10,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "drawdown_recovery_rsi_xrp": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "BTC 4H RSI+MACD Confluence": {
+      "closed": 23,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.087,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Value + Quality": {
+      "closed": 14,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.8571,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hs_ABC_41M": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_multi_day_momentum": {
+      "closed": 509,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4224,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Multi-Timeframe Trend Alignment": {
+      "closed": 68,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.9706,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_momentum_compression": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_rsi_momentum_confluence": {
+      "closed": 279,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.552,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ML Ranker": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7143,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Meta Learner": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hs_lb_None": {
+      "closed": 178,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1798,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "copy_hl_lb_None": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.625,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Quality Compounders": {
+      "closed": 11,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6364,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "AuditEnsemble_LONG": {
+      "closed": 123,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.9675,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_SUIUSDT": {
+      "closed": 12,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Altcoin Season Rotation": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_atr_vol_breakout": {
+      "closed": 97,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5361,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Whale Accumulation Proxy": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rl_ppo_agent": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "chatgpt_combined_v1 (super)": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "chatgpt_combined_v1 (strong)": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.375,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "evolutionary_regime_engine": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5556,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "keltner_compression_breakout": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "regime_aware_independent": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "data_first_scanner_follow": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "tight_tp_precision": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "GPX_Gen10_2a4b0b": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.25,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "GPM_Gen10_16158d": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "GPX_Gen14_da88cc": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "macd_classic_crossover": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Revival_Mutated_unknown": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Revival_Mutated_funding_rate_carry_ETHUSDT": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "keltner_expansion_continuation": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "williams_r_oversold_recovery": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "tight_tp_precision_long": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "sr_breakout_retest": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "bollinger_keltner_squeeze_breakout": {
+      "closed": 13,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2308,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "mvrv_contrarian_dip": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "clone_hl_copy_PensionFund_24M": {
+      "closed": 24,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7083,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "clone_hl_copy_lb_None": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4643,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "clone_hl_copy_ABC_41M": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "clone_hl_copy_Auros_66M": {
+      "closed": 16,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.625,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hs_PensionFund_24M": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5556,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "A_amp_PriceRocMeanReversion_v0": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "VWAP Deviation Scalp": {
+      "closed": 30,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.8667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "RSI Divergence Scalp": {
+      "closed": 23,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7826,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Bollinger Band Squeeze Breakout": {
+      "closed": 17,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3529,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "kalman_filter_trend": {
+      "closed": 16,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0625,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "proven_tsmom_momentum": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "clone_hl_copy_whale_433roi": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.25,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "EMA Ribbon Momentum Pullback": {
+      "closed": 20,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ml_enhanced_INJUSDT": {
+      "closed": 10,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "A_amp_VolumeProfileDeviation_v0": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "C1_fix_wide_entry_OrderBlockRetest": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Revival_Mutated_deep_learn_ensemble_SOLUSDT": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "basket_corr_gate_mut": {
+      "closed": 14,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4286,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "vol_scaler_size_mut": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "mtf_align_mut": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4286,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "seasonal_factor_rotation": {
+      "closed": 22,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3182,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "order_book_imbalance": {
+      "closed": 13,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3846,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "proven_propfirm_conservative": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.2222,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "fractal_sr_bounce": {
+      "closed": 28,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "autocorrelation_exploiter": {
+      "closed": 19,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.1579,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hurst_mean_reversion": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.75,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "proven_vwap_mean_reversion": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4286,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cumulative_delta_divergence": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.8,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "lw_vwap_mean_reversion": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hurst_regime_adaptive": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "volume_profile_poc_reversion": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "spot_perp_basis_arb": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "multi_sigma_reversal": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "options_25delta_skew": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "hayes_liquidity_index": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "widened_tp_momentum_carry": {
+      "closed": 16,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3125,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "day_of_week_effect": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "markov_zone_transition": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "proven_triple_ema_pullback": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "community_london_breakout_v2_forex": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "swing_structure": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.8333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "entropy_regime_breakout": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ctrend_multi_horizon": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "tsmom_28d": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cmf_zero_line_cross": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ttm_squeeze": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "rsi_hidden_divergence": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "super_hma_breakout_volume": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ai_ema_pullback": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.25,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cyclic_momentum_stack": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cyclic_momentum_adaptive": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "carry_trade_momentum": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "connors_rsi2_scanner": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "momentum_rider_ml": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cross_system_regime_arbitrage": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "momentum_rider_base": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.5,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "futures_bb_mean_reversion": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cta_fx_multifactor": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "fx_smart_forex_mean_reversion_200d": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.3333,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "smart_money_accumulation": {
+      "closed": 4,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "cta_commodity_momentum_term": {
+      "closed": 11,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "williams_r_sma_oscillator": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "A_amp_MultiTimeframeConfluence_v0": {
+      "closed": 6,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "battleground_contrarian_sell_mut": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.6667,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Skyrocket Breakout Scalper": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7778,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "B_flip_PriceRocMeanReversion": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4444,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "atr_percentile_gate": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "stocksunify2_volatility_adjusted_momentum_v2": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "stocksunify2_adversarial_trend_v2": {
+      "closed": 8,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "ema_stack": {
+      "closed": 11,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "bollinger_squeeze": {
+      "closed": 252,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0079,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "st_rsi_vol_bounce": {
+      "closed": 23,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.4783,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Bullish RSI Divergence (Crypto)": {
+      "closed": 9,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.7778,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "C1_fix_wide_entry_AdaptiveMomentum": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "A_amp_AdaptiveMomentum_v0": {
+      "closed": 3,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "Crypto Funding Confluence (RSI+BB)": {
+      "closed": 7,
+      "wins": 0,
+      "losses": 0,
+      "wr": 1.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    },
+    "bond_mean_reversion": {
+      "closed": 5,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0.0,
+      "sl_hits": 0,
+      "sl_hit_rate": 0.0,
+      "exit_reasons": {},
+      "kelly": 0.0,
+      "sharpe": 0.0
+    }
+  }
+}

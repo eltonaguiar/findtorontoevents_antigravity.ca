@@ -1,0 +1,79 @@
+name: Claude Gainer Short-Term Predictor
+
+on:
+  schedule:
+    # 2026-04-12: offset from :00/:30 to :07/:37 to dodge runner queue contention.
+    # Repo has 18+ workflows on */30 firing at :00/:30, starving Claude Gainer
+    # of runners and triggering external cancellation. Offsetting by 7 minutes
+    # gives runners time to free up. Verified chronic cancellation: 3/3 manual
+    # workflow_dispatch attempts also cancelled at high-contention times.
+    - cron: '7,37 * * * *'  # Every 30 minutes, offset by 7 to dodge queue
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: claude-gainer-st
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-05-13: run 25826595372 — fetch-depth:0 checkout took ~18m; job hit 20m during push.
+    # Shallow clone + margin for scanner + safe_push rebase.
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: python -m pip install pymysql numpy
+
+      - name: Run Short-Term Scanner
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+        run: |
+          echo "============================================"
+          echo "  CLAUDE GAINER  Short-Term Predictor v1.0"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python -m claude_gainer_ml.short_term_scanner --timeframe both --pairs 20
+
+      - name: Commit results
+        id: commit_results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          echo "created=false" >> "$GITHUB_OUTPUT"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Include short_term_closed.json (resolved picks for audit dashboard)
+          git add claude_gainer_ml/tracker/short_term_*.json || true
+          git add data/freshpicks_gate_state.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Claude Gainer ST scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          echo "created=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push results
+        if: steps.commit_results.outputs.created == 'true'
+        run: bash .github/scripts/safe_push.sh
+

@@ -1,0 +1,107 @@
+name: Walk-Forward Backtest (Weekly)
+
+on:
+  schedule:
+    - cron: '0 8 * * 0'  # Every Sunday at 08:00 UTC
+  workflow_dispatch:
+    inputs:
+      strategies:
+        description: 'Comma-separated strategy names (blank = all built-in)'
+        required: false
+        default: ''
+      symbols:
+        description: 'Comma-separated symbols (blank = default top 10)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+env:
+  GH_PAT: ${{ secrets.GH_PAT }}
+
+jobs:
+  walk-forward:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        # 2026-04-19: 3 consecutive weekly runs failed with
+        # ModuleNotFoundError: No module named 'numpy' on the institutional
+        # backtest suite step. Workflow had no pip install at all. Adding the
+        # core scientific stack here so all downstream steps have numpy/pandas/
+        # scipy available. yfinance is also pre-installed (was duplicated in
+        # the forex step on line 80).
+        run: pip install --quiet numpy pandas scipy yfinance scikit-learn
+
+      - name: Syntax check
+        run: |
+          python -m py_compile alpha_engine/walk_forward_backtester.py
+          python -m py_compile alpha_engine/generate_wf_audit_picks.py
+          python -m py_compile alpha_engine/forex_walk_forward_builtins.py
+
+      - name: Run walk-forward backtest
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.strategies }}" ]; then
+            IFS=',' read -ra STRATS <<< "${{ github.event.inputs.strategies }}"
+            ARGS="$ARGS --strategies ${STRATS[*]}"
+          fi
+          if [ -n "${{ github.event.inputs.symbols }}" ]; then
+            IFS=',' read -ra SYMS <<< "${{ github.event.inputs.symbols }}"
+            ARGS="$ARGS --symbols ${SYMS[*]}"
+          fi
+          python -m alpha_engine.walk_forward_backtester $ARGS
+
+      - name: Run institutional backtest suite
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m alpha_engine.validation.institutional_backtest_suite \
+            --strategy-results alpha_engine/data/walk_forward_results.json \
+            --pair-results backtest_results/walk_forward_results.json \
+            --output alpha_engine/data/institutional_backtest_report.json \
+            --bootstrap-sims 3000
+
+      - name: Generate WF audit picks for dashboard
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.generate_wf_audit_picks
+
+      - name: Forex builtin walk-forward (yfinance)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          pip install --quiet yfinance
+          python -m alpha_engine.forex_walk_forward_builtins
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f alpha_engine/data/walk_forward_results.json ]; then
+            git add alpha_engine/data/walk_forward_results.json
+            git add alpha_engine/data/institutional_backtest_report.json 2>/dev/null || true
+            git add alpha_engine/data/wf_audit_picks.json 2>/dev/null || true
+            git add alpha_engine/data/forex_walk_forward_results.json 2>/dev/null || true
+            git diff --cached --quiet || git commit -m "data: weekly walk-forward backtest results $(date -u +%Y-%m-%d) [skip ci]"
+            git pull --rebase origin main || true
+            bash .github/scripts/safe_push.sh
+          else
+            echo "No results file generated"
+          fi
+

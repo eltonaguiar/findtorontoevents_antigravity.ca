@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peer AI Review: What's Real, What's Fake — May 16, 2026 | Find Toronto Events</title>
+  <meta name="description" content="Honest assessment of Kimi and MiniMax peer AI reviews against our pre-registered OOS data. Which AI was right? Which fabricated? What filters actually work?">
+  <link rel="stylesheet" href="../styles/updates.css">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e1a; color: #d1d5db; margin: 0; padding: 0; }
+    .page-header { background: linear-gradient(135deg, #0a0e1a 0%, #1a1035 50%, #0a0e1a 100%); border-bottom: 2px solid #7c3aed; padding: 40px 20px 30px; text-align: center; }
+    .page-header h1 { color: #a78bfa; font-size: 2em; margin: 0 0 10px; }
+    .page-header .subtitle { color: #9ca3af; font-size: 1em; }
+    .page-header .meta { color: #6b7280; font-size: 0.85em; margin-top: 8px; }
+    .back-link { display: inline-block; margin-top: 16px; color: #7c3aed; text-decoration: none; font-size: 0.9em; }
+    .back-link:hover { color: #a78bfa; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+
+    .toc { background: #111827; border: 1px solid #374151; border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+    .toc h2 { color: #f59e0b; margin: 0 0 14px; font-size: 1em; text-transform: uppercase; letter-spacing: 0.1em; }
+    .toc ol { margin: 0; padding-left: 20px; line-height: 1.9; }
+    .toc a { color: #06b6d4; text-decoration: none; }
+    .toc a:hover { color: #a78bfa; }
+
+    .verdict-banner { border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .verdict-banner.green { background: rgba(34,197,94,0.1); border: 1px solid #22c55e; }
+    .verdict-banner.red { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; }
+    .verdict-banner.yellow { background: rgba(245,158,11,0.1); border: 1px solid #f59e0b; }
+    .verdict-banner.blue { background: rgba(6,182,212,0.1); border: 1px solid #06b6d4; }
+
+    h2.section-title { color: #f59e0b; border-bottom: 1px solid #374151; padding-bottom: 10px; margin-top: 40px; font-size: 1.3em; }
+    h3 { color: #e5e7eb; font-size: 1.05em; margin-top: 24px; }
+
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88em; }
+    th { background: #1f2937; color: #9ca3af; text-align: left; padding: 9px 12px; font-weight: 600; text-transform: uppercase; font-size: 0.78em; letter-spacing: 0.05em; }
+    td { padding: 9px 12px; border-bottom: 1px solid #1f2937; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #111827; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; font-weight: 700; }
+    .badge.green { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .badge.red { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .badge.yellow { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .badge.blue { background: rgba(6,182,212,0.15); color: #06b6d4; border: 1px solid rgba(6,182,212,0.3); }
+    .badge.purple { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+
+    .code-block { background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 14px 16px; font-family: 'Courier New', monospace; font-size: 0.83em; color: #e5e7eb; overflow-x: auto; margin: 12px 0; white-space: pre-wrap; }
+    .highlight-box { background: #1a1035; border-left: 4px solid #7c3aed; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .warning-box { background: #1a0e00; border-left: 4px solid #f59e0b; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .success-box { background: #0a1a0e; border-left: 4px solid #22c55e; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .danger-box { background: #1a0a0a; border-left: 4px solid #ef4444; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+
+    .filter-recipe { background: #111827; border: 1px solid #374151; border-radius: 10px; padding: 20px; margin: 16px 0; }
+    .filter-recipe h4 { color: #22c55e; margin: 0 0 12px; font-size: 1em; }
+    .filter-recipe .step { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
+    .filter-recipe .step-num { color: #7c3aed; font-weight: 700; min-width: 22px; }
+
+    .ai-card { background: #111827; border: 1px solid #374151; border-radius: 10px; padding: 20px 22px; margin-bottom: 20px; }
+    .ai-card .ai-name { font-size: 1.1em; font-weight: 700; margin-bottom: 6px; }
+    .ai-card .verdict { font-size: 0.85em; margin-bottom: 12px; }
+
+    p { line-height: 1.7; margin: 0 0 12px; }
+    ul { line-height: 1.8; padding-left: 22px; margin: 0 0 12px; }
+    li { margin-bottom: 4px; }
+    code { background: #1f2937; color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 0.87em; }
+
+    .footer { text-align: center; color: #6b7280; font-size: 0.82em; padding: 40px 20px; border-top: 1px solid #1f2937; margin-top: 60px; }
+    .footer a { color: #7c3aed; }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>&#x1F916; Peer AI Review: What's Real, What's Fake</h1>
+  <div class="subtitle">Kimi + MiniMax vs. Our Pre-Registered OOS Data — May 16, 2026</div>
+  <div class="meta">Session duration: ~2 hours &nbsp;|&nbsp; OOS dataset: 5,000 picks (pre-registered Apr 1, 2026) &nbsp;|&nbsp; Verified by: Claude Code</div>
+  <a class="back-link" href="/updates/">&larr; Back to Updates</a>
+</div>
+
+<div class="container">
+
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#tldr">Executive Summary (TL;DR)</a></li>
+      <li><a href="#oos-ground-truth">Our Ground Truth: Pre-Registered OOS Results</a></li>
+      <li><a href="#minimax">MiniMax — Wrong then Self-Corrected to Verified</a></li>
+      <li><a href="#kimi">Kimi — Admitted Synthetic Data, Useful Code Contribution</a></li>
+      <li><a href="#hc-filter">HC Filter Root Cause: Why 0 Passes on Active Picks</a></li>
+      <li><a href="#who-was-right">Scoreboard: Who Got What Right</a></li>
+      <li><a href="#strategy-breakdown">New Finding: Per-Strategy Breakdown in aggregated_picks</a></li>
+      <li><a href="#filters">Recommended Filters (OOS-Validated Only)</a></li>
+      <li><a href="#action-items">Action Items</a></li>
+    </ol>
+  </div>
+
+  <!-- TL;DR -->
+  <h2 class="section-title" id="tldr">1. Executive Summary (TL;DR)</h2>
+
+  <div class="verdict-banner green">
+    <strong style="color:#22c55e;">Bottom line:</strong> We ran two external AI peer reviews (Kimi and MiniMax) against our pre-registered OOS data. Both made major errors initially. MiniMax self-corrected and all corrected numbers are now verified. Kimi admitted everything was synthetic (fake) data — their code engine is real and reusable, their performance claims are not. The single most actionable finding: two source systems (<code>kimi_signal_tracking</code> and <code>aggregated_picks</code>) dominate all real edge (WR 76-78%, PF 6-7). Everything else is noise.
+  </div>
+
+  <table>
+    <tr><th>AI Reviewer</th><th>Initial Verdict</th><th>After Correction</th><th>Most Valuable Finding</th></tr>
+    <tr>
+      <td><strong>MiniMax</strong></td>
+      <td><span class="badge red">Wrong dataset (55,510 picks)</span></td>
+      <td><span class="badge green">All corrected claims VERIFIED ✅</span></td>
+      <td>Per-strategy breakdown inside aggregated_picks (AuditEnsemble_LONG: WR=94.2%)</td>
+    </tr>
+    <tr>
+      <td><strong>Kimi</strong></td>
+      <td><span class="badge red">CRYPTO PF=16.57 (synthetic)</span></td>
+      <td><span class="badge yellow">Honest: "all data was fake"</span></td>
+      <td>backtest.py: PurgedKFold, PBO, DSR, WFE, Kelly — production-quality code</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Code (us)</strong></td>
+      <td><span class="badge blue">OOS verifier</span></td>
+      <td><span class="badge green">Ground truth</span></td>
+      <td>HC filter trust_score gap: root cause of 0 passes on active picks</td>
+    </tr>
+  </table>
+
+
+  <!-- OOS Ground Truth -->
+  <h2 class="section-title" id="oos-ground-truth">2. Our Ground Truth: Pre-Registered OOS Results</h2>
+
+  <p>All claims in this session were verified against <code>audit_trail/data/universal_resolved_picks.json</code> — a pre-registered out-of-sample split with <strong>5,000 picks</strong>, cutoff 2026-04-01, bootstrap CI 5,000 iterations (seed=42). Win condition: <code>pnl_pct &gt; 0</code>.</p>
+
+  <table>
+    <tr>
+      <th>Source System</th><th>n (OOS)</th><th>Win Rate</th><th>Profit Factor</th><th>CI Lower</th><th>Tier</th>
+    </tr>
+    <tr>
+      <td><strong>kimi_signal_tracking</strong></td>
+      <td>368</td>
+      <td style="color:#22c55e;font-weight:700;">76.6%</td>
+      <td style="color:#22c55e;font-weight:700;">7.70</td>
+      <td>5.84</td>
+      <td><span class="badge green">TIER 1</span></td>
+    </tr>
+    <tr>
+      <td><strong>aggregated_picks</strong></td>
+      <td>385</td>
+      <td style="color:#22c55e;font-weight:700;">77.9%</td>
+      <td style="color:#22c55e;font-weight:700;">6.94</td>
+      <td>5.71</td>
+      <td><span class="badge green">TIER 1</span></td>
+    </tr>
+    <tr>
+      <td><strong>stocks_competition</strong></td>
+      <td>53</td>
+      <td style="color:#a78bfa;font-weight:700;">67.9%</td>
+      <td style="color:#a78bfa;font-weight:700;">3.71</td>
+      <td>2.28</td>
+      <td><span class="badge purple">TIER 1 (AC1 warning)</span></td>
+    </tr>
+    <tr>
+      <td><strong>signal_validation</strong></td>
+      <td>291</td>
+      <td>50.2%</td>
+      <td>1.95</td>
+      <td>1.41</td>
+      <td><span class="badge blue">TIER 2</span></td>
+    </tr>
+    <tr>
+      <td><strong>alpha_engine</strong></td>
+      <td>—</td>
+      <td style="color:#ef4444;">31.0%</td>
+      <td style="color:#ef4444;">0.81</td>
+      <td>&lt;1.0</td>
+      <td><span class="badge red">AVOID</span></td>
+    </tr>
+    <tr>
+      <td><strong>ml_crypto_pred / ml_enhanced</strong></td>
+      <td>297</td>
+      <td style="color:#ef4444;">33-35%</td>
+      <td style="color:#ef4444;">0.82</td>
+      <td>&lt;1.0</td>
+      <td><span class="badge red">AVOID</span></td>
+    </tr>
+    <tr>
+      <td><strong>Direction: LONG</strong></td>
+      <td>—</td>
+      <td>47.9%</td>
+      <td>1.72</td>
+      <td>—</td>
+      <td><span class="badge yellow">FAVOR</span></td>
+    </tr>
+    <tr>
+      <td><strong>Direction: SHORT</strong></td>
+      <td>—</td>
+      <td style="color:#ef4444;">30.6%</td>
+      <td style="color:#ef4444;">0.90</td>
+      <td>&lt;1.0</td>
+      <td><span class="badge red">BLOCK</span></td>
+    </tr>
+  </table>
+
+  <div class="warning-box">
+    <strong style="color:#f59e0b;">Aggregate system performance ≠ elite system performance.</strong> Kimi analyzed the aggregate (all 130+ systems: overall WR=40%, PF=1.02). The aggregate looks poor because losing systems (alpha_engine WR=31%, ml_crypto_pred WR=35%) drag down the mean. The elite systems (kimi_signal_tracking, aggregated_picks) show WR=76-78% — but they represent only ~15% of all picks by volume. Source system filtering is the most important gate.
+  </div>
+
+
+  <!-- MiniMax -->
+  <h2 class="section-title" id="minimax">3. MiniMax — Wrong then Self-Corrected to Verified</h2>
+
+  <div class="ai-card">
+    <div class="ai-name" style="color:#06b6d4;">MiniMax</div>
+    <div class="verdict"><span class="badge red">Round 1: Wrong dataset</span> &nbsp;→&nbsp; <span class="badge green">Round 2: All corrected claims VERIFIED</span></div>
+
+    <h3 style="color:#ef4444;margin-top:0;">Round 1 — Major Errors (using live dashboard, 55,510 picks)</h3>
+    <table>
+      <tr><th>MiniMax Claim</th><th>OOS Reality</th><th>Verdict</th></tr>
+      <tr><td>ml_enhanced CRYPTO: 95-100% WR (INJ, FET, DYDX)</td><td>ml_enhanced OOS: WR=33.2%, PF=0.82 — <strong>losing</strong></td><td><span class="badge red">FABRICATED</span></td></tr>
+      <tr><td>COMMODITY cot_positioning: WR=89.8%, PF=13.1, n=49</td><td>COMMODITY in OOS: <strong>n=0</strong> (COT timing leakage)</td><td><span class="badge red">UNVERIFIABLE</span></td></tr>
+      <tr><td>ETF: WR=57.4%, n=108</td><td>ETF in OOS: <strong>n=0</strong> (not yet through resolver)</td><td><span class="badge red">WRONG SOURCE</span></td></tr>
+      <tr><td>$150,000 capital allocation</td><td>No statistical basis — fabricated</td><td><span class="badge red">DO NOT USE</span></td></tr>
+      <tr><td>FOREX blocked</td><td>FOREX OOS: WR=29.4%, PF&lt;1 — confirmed sub-floor</td><td><span class="badge green">CORRECT</span></td></tr>
+    </table>
+
+    <h3 style="color:#22c55e;">Round 2 — Self-Corrected Claims (all verified ✅)</h3>
+    <table>
+      <tr><th>MiniMax Corrected Claim</th><th>Our OOS Data</th><th>Verdict</th></tr>
+      <tr><td>aggregated_picks: n=383, WR=78.1%, PF=7.02</td><td>n=385, WR=77.9%, PF=6.94</td><td><span class="badge green">VERIFIED ✅</span></td></tr>
+      <tr><td>kimi_signal_tracking: n=354, WR=76.8%, PF=7.68</td><td>n=368, WR=76.6%, PF=7.7</td><td><span class="badge green">VERIFIED ✅</span></td></tr>
+      <tr><td>signal_validation: WR=50.2%</td><td>n=291, WR=50.2%, PF=1.95</td><td><span class="badge green">VERIFIED ✅</span></td></tr>
+      <tr><td>stocks_competition: WR=67.9%, PF=3.71</td><td>n=53, WR=67.9%, PF=3.71</td><td><span class="badge green">EXACT MATCH ✅</span></td></tr>
+      <tr><td>alpha_engine: WR=31%, AVOID</td><td>WR=31.0%, PF=0.81</td><td><span class="badge green">VERIFIED ✅</span></td></tr>
+      <tr><td>ml_crypto_pred: WR=35.1%, AVOID</td><td>WR=35.1%, PF=0.82</td><td><span class="badge green">EXACT MATCH ✅</span></td></tr>
+      <tr><td>LONG: WR=47.7%, PF=1.70</td><td>WR=47.9%, PF=1.72</td><td><span class="badge green">VERIFIED ✅</span></td></tr>
+      <tr><td>SHORT: WR=30.5%, PF=0.89, AVOID</td><td>WR=30.6%, PF=0.90</td><td><span class="badge green">VERIFIED ✅</span></td></tr>
+    </table>
+    <p style="color:#9ca3af;font-size:0.85em;">MiniMax chat reference: <a href="https://agent.minimax.io/share/398788923621504?chat_type=2" target="_blank" rel="noopener" style="color:#06b6d4;">agent.minimax.io/share/398788923621504</a></p>
+  </div>
+
+
+  <!-- Kimi -->
+  <h2 class="section-title" id="kimi">4. Kimi — Admitted Synthetic Data, Useful Code Contribution</h2>
+
+  <div class="ai-card">
+    <div class="ai-name" style="color:#f59e0b;">Kimi</div>
+    <div class="verdict"><span class="badge red">All performance claims: SYNTHETIC (fake) data</span> &nbsp;|&nbsp; <span class="badge green">Code engine: production-quality</span></div>
+
+    <div class="danger-box">
+      <strong style="color:#ef4444;">Kimi admitted (2026-05-16, 2:43am EST):</strong> "My dashboard was based on SYNTHETIC GBM-calibrated data. NOT real market data. My T1/T2 claims are NOT based on your real data."
+    </div>
+
+    <h3>What Kimi Claimed vs Reality</h3>
+    <table>
+      <tr><th>Kimi Claimed PF</th><th>Our Real PF (dashboard_data.json)</th><th>Overstatement</th></tr>
+      <tr><td>CRYPTO: PF=16.57</td><td>PF=1.30</td><td style="color:#ef4444;font-weight:700;">12x overstate</td></tr>
+      <tr><td>EQUITY: PF=2.62</td><td>PF=1.55</td><td style="color:#f59e0b;">1.7x overstate</td></tr>
+      <tr><td>FOREX: PF=2.09</td><td>PF=0.86 (losing)</td><td style="color:#ef4444;font-weight:700;">2.4x overstate (actually sub-floor)</td></tr>
+      <tr><td>COMMODITY: PF=2.47</td><td>PF=2.48 (but COT artifact)</td><td style="color:#22c55e;">Coincidence / close (n=0 in OOS)</td></tr>
+      <tr><td>ETF: PF=1.93</td><td>PF=2.25 (dashboard) / n=0 (OOS)</td><td style="color:#f59e0b;">Actually understated — ETF is better</td></tr>
+      <tr><td>BOND: PF=1.89</td><td>PF=0.66</td><td style="color:#ef4444;font-weight:700;">2.9x overstate (actually sub-floor)</td></tr>
+    </table>
+
+    <h3>What to Keep from Kimi</h3>
+    <table>
+      <tr><th>Component</th><th>Status</th><th>Value</th></tr>
+      <tr><td><code>edge_engine/backtest.py</code></td><td><span class="badge green">REAL CODE</span></td><td>PurgedKFold, PBO, DSR, WFE, Kelly sizing — production-quality validation tooling</td></tr>
+      <tr><td><code>edge_engine/signal_generator.py</code></td><td><span class="badge yellow">FRAMEWORK</span></td><td>Signal generation framework; needs wiring to our DB</td></tr>
+      <tr><td><code>dashboard/*.html</code> (4 files)</td><td><span class="badge blue">UI SHELL</span></td><td>Dark-themed React+Chart.js dashboard; adapt <code>fetch()</code> URL to our data</td></tr>
+      <tr><td><code>dashboard/css/styles.css</code></td><td><span class="badge green">REAL CSS</span></td><td>Production dark-theme styling, drop-in reusable</td></tr>
+      <tr><td><code>edge_configs/*.json</code> (6 files)</td><td><span class="badge red">DISCARD</span></td><td>Based on synthetic backtests — misleading, delete immediately</td></tr>
+      <tr><td><code>data/01_raw/*.parquet</code> (6 files, ~83 MB)</td><td><span class="badge red">DISCARD</span></td><td>Synthetic OHLCV generated by GBM — not real market data</td></tr>
+    </table>
+
+    <h3>Kimi's Honest Assessment of Our Real Data</h3>
+    <p>Using our actual <code>dashboard_data.json</code>, Kimi gave an honest breakdown:</p>
+    <ul>
+      <li><strong style="color:#22c55e;">EQUITY: PF=1.55, WR=51.4%, n=426</strong> — Genuine T2 candidate</li>
+      <li><strong style="color:#22c55e;">ETF: PF=1.33, WR=57.4%, n=108</strong> — Marginal, charter met</li>
+      <li><strong style="color:#f59e0b;">COMMODITY: PF=2.48, WR=61.2%, n=345</strong> — COT timing artifact warning</li>
+      <li><strong style="color:#f59e0b;">CRYPTO: PF=1.30, WR=46.3%, n=8,115</strong> — Dragged by losing sub-systems</li>
+      <li><strong style="color:#ef4444;">FOREX: PF=0.86 — confirmed sub-floor (PF &lt; 1)</strong></li>
+      <li><strong style="color:#ef4444;">BOND: PF=0.66, n=11 — sub-floor, n insufficient</strong></li>
+    </ul>
+    <p style="color:#9ca3af;font-size:0.85em;">Note: Kimi's "CRYPTO PF=1.30" reflects aggregate system performance. Elite systems inside CRYPTO (kimi_signal_tracking WR=76.6%, aggregated_picks WR=77.9%) are hidden by the aggregate view. Source system filtering unlocks the real edge.</p>
+  </div>
+
+
+  <!-- HC Filter -->
+  <h2 class="section-title" id="hc-filter">5. HC Filter Root Cause: Why 0 Passes on Active Picks</h2>
+
+  <div class="danger-box">
+    <strong style="color:#ef4444;">Root cause found:</strong> The <code>trust_score</code> field is <strong>absent from all 135 active picks</strong> in <code>alpha_engine/data/active_picks.json</code>. Gate 7 of the HC filter requires <code>trust_score &gt;= 6</code> as an unconditional gate — defaulting to 0.0 when missing means every pick fails. Result: HC filter always returns 0 passes, even for genuinely strong picks.
+  </div>
+
+  <h3>HC Filter Gate Verdicts (from OOS backtest)</h3>
+  <p>The HC filter backtest agent ran against our 5,000-pick OOS dataset. Key findings:</p>
+  <table>
+    <tr><th>Gate</th><th>Verdict</th><th>Notes</th></tr>
+    <tr><td>G1: score ≥ 40</td><td><span class="badge green">WORKING</span></td><td>elite_score &lt; 40 collapses to WR=11.1%</td></tr>
+    <tr><td>G3: trust_tier blacklist</td><td><span class="badge green">LIKELY WORKING</span></td><td>Source system proxy confirms — mutation_lab, battleground: WR 0-10%</td></tr>
+    <tr><td>G6: per-class score floors</td><td><span class="badge yellow">PARTIAL</span></td><td>Floor meaningful, upper bands flat — CRYPTO 0.80-0.90 conf is actual danger zone</td></tr>
+    <tr><td>G8: confidence &gt; 0.90 blocked</td><td><span class="badge red">MISSPECIFIED</span></td><td>0.80-0.90 is the actual danger zone (PF=0.96); &gt;0.90 is better than 0.80-0.90</td></tr>
+    <tr><td>G5: fwd_wr gate</td><td><span class="badge yellow">CANNOT VALIDATE</span></td><td>strat_fwd_wr absent from OOS export</td></tr>
+    <tr><td>G7: trust_score ≥ 6</td><td><span class="badge yellow">CANNOT VALIDATE</span></td><td>trust_score absent from OOS export AND from active_picks.json</td></tr>
+    <tr><td>G9: regime/DSR gate</td><td><span class="badge yellow">CANNOT VALIDATE</span></td><td>regime fields absent from OOS export</td></tr>
+  </table>
+
+  <h3>Compound Filter That Actually Works (OOS-Validated)</h3>
+  <table>
+    <tr><th>Filter</th><th>N picks</th><th>Win Rate</th><th>Profit Factor</th></tr>
+    <tr><td>All OOS picks (no filter)</td><td>5,000</td><td>43.5%</td><td>1.48</td></tr>
+    <tr><td>Elite sources only (kimi + aggregated)</td><td>1,097</td><td>69.6%</td><td>4.94</td></tr>
+    <tr><td>Elite sources + confidence &gt; 0.65</td><td>367</td><td style="color:#22c55e;font-weight:700;">78.5%</td><td style="color:#22c55e;font-weight:700;">7.07</td></tr>
+  </table>
+
+  <div class="success-box">
+    <strong style="color:#22c55e;">Key insight:</strong> Confidence alone adds 0 percentage points to WR. Source system selection adds +26pp. Confidence &gt; 0.65 then adds another ~9pp within elite sources. This is the correct order of operations.
+  </div>
+
+  <h3>Fix Required (P0)</h3>
+  <p>The <code>trust_score</code> must be enriched into <code>active_picks.json</code> before the full HC filter can operate. Until then, use the proxy 4-gate filter:</p>
+  <div class="code-block">source_system IN [kimi_signal_tracking, aggregated_picks, stocks_competition]
+AND confidence >= 0.65
+AND risk_reward >= 1.5
+AND direction = LONG (CRYPTO)</div>
+
+
+  <!-- Who was right -->
+  <h2 class="section-title" id="who-was-right">6. Scoreboard: Who Got What Right</h2>
+
+  <table>
+    <tr><th>Claim / Topic</th><th>MiniMax</th><th>Kimi</th><th>Truth</th></tr>
+    <tr>
+      <td>Top CRYPTO systems</td>
+      <td><span class="badge yellow">Initial: wrong. Corrected: aggregated_picks ✅</span></td>
+      <td><span class="badge red">Missed — analyzed aggregate only</span></td>
+      <td>kimi_signal_tracking + aggregated_picks (WR 76-78%)</td>
+    </tr>
+    <tr>
+      <td>FOREX performance</td>
+      <td><span class="badge green">CORRECT — blocked ✅</span></td>
+      <td><span class="badge green">CORRECT — PF=0.86 sub-floor ✅</span></td>
+      <td>PF=0.86, WR=29.4% — confirmed loser</td>
+    </tr>
+    <tr>
+      <td>COMMODITY</td>
+      <td><span class="badge red">Fabricated n=345 (OOS n=0)</span></td>
+      <td><span class="badge yellow">Correct PF=2.48 but artifact warning ✅</span></td>
+      <td>COT timing leakage inflates; n=0 in OOS</td>
+    </tr>
+    <tr>
+      <td>ETF</td>
+      <td><span class="badge red">n=108 from wrong source</span></td>
+      <td><span class="badge yellow">PF=1.33 understated (actual 2.25) ⚠️</span></td>
+      <td>Dashboard: PF=2.25, WR=66.7% — better than both claimed</td>
+    </tr>
+    <tr>
+      <td>ml_enhanced / ml_crypto_pred</td>
+      <td><span class="badge red">Initial: 95-100% WR (wrong). Corrected: 35.1% ✅</span></td>
+      <td><span class="badge red">Not analyzed</span></td>
+      <td>WR=33-35%, PF=0.82 — losing system</td>
+    </tr>
+    <tr>
+      <td>SHORT direction</td>
+      <td><span class="badge green">CORRECT — SHORT=30.6%, AVOID ✅</span></td>
+      <td><span class="badge yellow">Partial — mentioned FOREX SHORT only</span></td>
+      <td>All CRYPTO SHORT: WR=30.3%, PF=0.90 — net negative</td>
+    </tr>
+    <tr>
+      <td>Capital allocation ($150K)</td>
+      <td><span class="badge red">FABRICATED — do not use</span></td>
+      <td><span class="badge red">Not proposed</span></td>
+      <td>Use OOS bootstrap: 0.5-0.75% per pick max for Tier 1</td>
+    </tr>
+    <tr>
+      <td>Performance claims (PF/WR numbers)</td>
+      <td><span class="badge green">After correction: all within rounding ✅</span></td>
+      <td><span class="badge red">All synthetic — discard</span></td>
+      <td>OOS is the canonical source</td>
+    </tr>
+    <tr>
+      <td>Code / tooling contribution</td>
+      <td><span class="badge yellow">EXACT_FILTERS_FOR_UI.md — KIMI code refs verified</span></td>
+      <td><span class="badge green">backtest.py (PBO, DSR, WFE) — real production code ✅</span></td>
+      <td>Both contributed usable tooling</td>
+    </tr>
+  </table>
+
+
+  <!-- Strategy Breakdown -->
+  <h2 class="section-title" id="strategy-breakdown">7. New Finding: Per-Strategy Breakdown in aggregated_picks</h2>
+
+  <p>MiniMax's self-corrected analysis revealed per-strategy performance <em>within</em> <code>aggregated_picks</code>. All verified against OOS data. This is the most actionable new finding from this session.</p>
+
+  <table>
+    <tr><th>Strategy</th><th>n</th><th>Win Rate</th><th>Profit Factor</th><th>Action</th></tr>
+    <tr>
+      <td><strong>VWAP Deviation Scalp</strong></td>
+      <td>35</td>
+      <td style="color:#22c55e;font-weight:700;">97.1%</td>
+      <td style="color:#22c55e;font-weight:700;">119.0</td>
+      <td><span class="badge green">TARGET — near-perfect (n thin)</span></td>
+    </tr>
+    <tr>
+      <td><strong>AuditEnsemble_LONG</strong></td>
+      <td>104</td>
+      <td style="color:#22c55e;font-weight:700;">94.2%</td>
+      <td style="color:#22c55e;font-weight:700;">37.79</td>
+      <td><span class="badge green">TARGET — best n&gt;100 strategy</span></td>
+    </tr>
+    <tr>
+      <td><strong>Multi-Timeframe Trend Alignment</strong></td>
+      <td>76</td>
+      <td style="color:#22c55e;font-weight:700;">90.8%</td>
+      <td style="color:#22c55e;font-weight:700;">21.2</td>
+      <td><span class="badge green">TARGET — strong n=76</span></td>
+    </tr>
+    <tr>
+      <td><strong>RSI Divergence Scalp</strong></td>
+      <td>24</td>
+      <td>83.3%</td>
+      <td>9.86</td>
+      <td><span class="badge yellow">WATCH</span></td>
+    </tr>
+    <tr>
+      <td>EMA Ribbon Momentum Pullback</td>
+      <td>20</td>
+      <td>75.0%</td>
+      <td>5.25</td>
+      <td><span class="badge yellow">WATCH</span></td>
+    </tr>
+    <tr>
+      <td>CCI Reversal Scout</td>
+      <td>21</td>
+      <td>66.7%</td>
+      <td>5.44</td>
+      <td><span class="badge yellow">WATCH</span></td>
+    </tr>
+    <tr>
+      <td>incubator_gainer</td>
+      <td>22</td>
+      <td>50.0%</td>
+      <td>1.84</td>
+      <td><span class="badge yellow">MARGINAL</span></td>
+    </tr>
+    <tr>
+      <td>Bollinger Band Squeeze Breakout</td>
+      <td>19</td>
+      <td style="color:#ef4444;">42.1%</td>
+      <td style="color:#ef4444;">1.31</td>
+      <td><span class="badge red">BELOW FLOOR</span></td>
+    </tr>
+  </table>
+
+  <div class="highlight-box">
+    <strong style="color:#a78bfa;">Recommendation:</strong> Add <code>strategy IN ['AuditEnsemble_LONG', 'Multi-Timeframe Trend Alignment', 'VWAP Deviation Scalp']</code> as a positive filter to <code>tools/weekly_filter_picks.py</code>. These three strategies drive virtually all of <code>aggregated_picks</code>' edge. Adding strategy-level filtering would materially improve pick quality beyond just filtering on <code>source_system</code>.
+  </div>
+
+
+  <!-- Filters -->
+  <h2 class="section-title" id="filters">8. Recommended Filters (OOS-Validated Only)</h2>
+
+  <h3>Real-Money Filter (use these)</h3>
+  <div class="filter-recipe">
+    <h4>Tier 1 — Primary Allocation (0.5-0.75% per pick)</h4>
+    <div class="step"><span class="step-num">1</span><span><code>source_system</code> IN [<strong>aggregated_picks</strong>, <strong>kimi_signal_tracking</strong>] → WR 77-78%, PF 6-7</span></div>
+    <div class="step"><span class="step-num">2</span><span><code>strategy</code> IN [AuditEnsemble_LONG, Multi-Timeframe Trend Alignment, VWAP Deviation Scalp] (within aggregated_picks)</span></div>
+    <div class="step"><span class="step-num">3</span><span><code>direction</code> = LONG only (CRYPTO SHORT: WR=30.3% — block)</span></div>
+    <div class="step"><span class="step-num">4</span><span><code>confidence</code> &gt;= 0.65 (adds +9pp WR within elite sources)</span></div>
+    <div class="step"><span class="step-num">5</span><span><code>confidence</code> &lt; 0.80 or &gt; 0.90 (avoid 0.80-0.90 danger zone)</span></div>
+    <div class="step"><span class="step-num">6</span><span><code>risk_reward</code> &gt;= 1.5 (RR &gt; 2.0–2.5 collapses to WR=7.3% — avoid aggressive TP)</span></div>
+  </div>
+
+  <div class="filter-recipe">
+    <h4>Tier 2 — Smaller Allocation (0.25% per pick)</h4>
+    <div class="step"><span class="step-num">1</span><span><code>source_system</code> IN [signal_validation, stocks_competition] + direction = LONG</span></div>
+    <div class="step"><span class="step-num">2</span><span><code>confidence</code> &gt;= 0.65</span></div>
+  </div>
+
+  <div class="filter-recipe">
+    <h4 style="color:#ef4444;">AVOID (block even if other gates pass)</h4>
+    <div class="step"><span class="step-num">&#10007;</span><span><code>source_system</code> IN [alpha_engine, ml_crypto_pred, mutation_lab, battleground]</span></div>
+    <div class="step"><span class="step-num">&#10007;</span><span><code>direction</code> = SHORT (all CRYPTO shorts: WR=30.3%, net negative)</span></div>
+    <div class="step"><span class="step-num">&#10007;</span><span><code>asset_class</code> = FOREX (PF=0.86, confirmed sub-floor)</span></div>
+    <div class="step"><span class="step-num">&#10007;</span><span><code>confidence</code> 0.80-0.90 range (actual danger zone: PF=0.96 in OOS)</span></div>
+    <div class="step"><span class="step-num">&#10007;</span><span><code>strategy</code> = Bollinger Band Squeeze Breakout (WR=42.1%, below floor)</span></div>
+  </div>
+
+
+  <!-- Action Items -->
+  <h2 class="section-title" id="action-items">9. Action Items</h2>
+
+  <table>
+    <tr><th>Priority</th><th>Task</th><th>File</th></tr>
+    <tr>
+      <td><span class="badge red">P0</span></td>
+      <td>Add trust_score enrichment to active_picks.json (HC filter always returns 0 without it)</td>
+      <td><code>alpha_engine/data/active_picks.json</code> + enrichment pipeline</td>
+    </tr>
+    <tr>
+      <td><span class="badge red">P0</span></td>
+      <td>Wire kimi_signal_tracking + aggregated_picks to emit picks to active_picks.json</td>
+      <td><code>alpha_engine/outcome_resolver.py</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge yellow">P1</span></td>
+      <td>Add ELITE_STRATEGIES dict to weekly_filter_picks.py (AuditEnsemble_LONG WR=94.2%, MTF WR=90.8%, VWAP WR=97.1%)</td>
+      <td><code>tools/weekly_filter_picks.py</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge yellow">P1</span></td>
+      <td>Fix HC Gate 8: block confidence 0.80-0.90 (not &gt;0.90) — corrects misspecification</td>
+      <td><code>audit_dashboard/hc_filter.js</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge yellow">P1</span></td>
+      <td>Block CRYPTO SHORT direction in active filter (WR=30.3% — losing after costs)</td>
+      <td><code>audit_dashboard/hc_filter.js</code> or <code>tools/weekly_filter_picks.py</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge blue">P2</span></td>
+      <td>Wire Kimi's backtest.py to our closed picks CSV (real PBO, DSR, WFE validation)</td>
+      <td><code>edge_engine/backtest.py</code> (Kimi's file — keep)</td>
+    </tr>
+    <tr>
+      <td><span class="badge blue">P2</span></td>
+      <td>Add strategy-level filter to HC filter (AuditEnsemble_LONG, MTF, VWAP)</td>
+      <td><code>audit_dashboard/hc_filter.js</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge blue">P2</span></td>
+      <td>Fix COMMODITY pipeline (COT timing leakage — n=0 in OOS prevents validation)</td>
+      <td><code>reports/cot_timing_leakage_audit_2026-05-13.md</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge purple">OPERATOR</span></td>
+      <td>Rotate ejaguiar1_backtests DB password (stocks123 exposed in git history PR #1086)</td>
+      <td>GitHub Secrets: DB_PASS_BACKTESTS</td>
+    </tr>
+  </table>
+
+  <div class="success-box">
+    <strong style="color:#22c55e;">Summary:</strong> The real edge lives in 2 systems (kimi_signal_tracking + aggregated_picks), 3 strategies within those (AuditEnsemble_LONG, Multi-Timeframe Trend Alignment, VWAP Deviation Scalp), LONG direction only, confidence 0.65-0.80. Source system selection is the dominant filter — adds +26pp WR vs. no filter. MiniMax was right after self-correction. Kimi's performance claims were synthetic. Our OOS data is the only authoritative source.
+  </div>
+
+  <div style="margin-top:30px;padding:16px 20px;background:#111827;border-radius:10px;font-size:0.85em;color:#6b7280;">
+    <strong>Sources:</strong>
+    <ul style="margin:8px 0 0;padding-left:20px;line-height:1.8;">
+      <li><code>audit_trail/data/universal_resolved_picks.json</code> — 5,000 picks, pre-registered OOS split (cutoff 2026-04-01)</li>
+      <li><code>reports/hc_filter_backtest_2026-05-16.md</code> — HC gate OOS backtest analysis</li>
+      <li><code>reports/peer_notes/minimax_corrected_VERIFIED_2026-05-16.md</code> — MiniMax self-correction verification</li>
+      <li><code>reports/peer_notes/minimax_ultimate_edge_2026-05-16_VETTED.md</code> — MiniMax Round 1 vetting</li>
+      <li><code>docs/EXACT_FILTERS_FOR_UI_minimax_2026-05-16.md</code> — KIMI code references verified</li>
+      <li><code>C:\Users\zerou\Downloads\HONEST_INTEGRATION_GUIDE.md</code> — Kimi's honest self-assessment</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Generated by Claude Code &mdash; May 16, 2026 &mdash; <a href="/updates/">Back to Updates</a> &mdash; <a href="/audit/">Audit Dashboard</a></p>
+</div>
+
+</body>
+</html>

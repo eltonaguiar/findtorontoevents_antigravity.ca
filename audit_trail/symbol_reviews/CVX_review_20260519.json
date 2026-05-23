@@ -1,0 +1,64 @@
+{
+  "symbol": "CVX",
+  "review_date": "2026-05-19",
+  "reviewer": "blocked_symbol_review_monitor (automated)",
+  "data_source": "alpha_engine/data/closed_picks.json (local)",
+  "scheduled_review_date": "2026-05-30",
+  "asset_class": "EQUITY",
+  "stage_before_review": "PENDING_UNBLOCK_REVIEW (comment says SHADOW; line ~1517 comment says PROBATION)",
+  "block_date": "2026-04-28",
+  "block_reason": "Blocked via goldmine_stocks system (0/2 WR on CVX within that system). Original EQUITY_BLOCKED_SYMBOLS membership removed 2026-05-16 when comment noted 'CVX promoted to PROBATION'.",
+
+  "inconsistency_analysis": {
+    "issue": "stage_label_mismatch",
+    "location_1": "quality_gates.py line ~1517 comment: 'CVX promoted to PROBATION 2026-05-16; CVX removed from block set'",
+    "location_2": "quality_gates.py EQUITY_BLOCKED_SYMBOLS line 1521: {\"XLE\", \"XOM\"} — CVX correctly absent",
+    "location_3": "quality_gates.py PENDING_UNBLOCK_REVIEW line ~2019: stage description 'SHADOW. Strong recovery; needs n>=20'",
+    "resolution": "CVX is NOT in EQUITY_BLOCKED_SYMBOLS (correctly removed). PENDING_UNBLOCK_REVIEW tracks it as SHADOW (n<20, monitoring-only). The 'promoted to PROBATION' language in the comment at line ~1517 was premature — the code correctly tracks it as SHADOW via PENDING_UNBLOCK_REVIEW. No code fix needed; comment at line ~1517 should be clarified.",
+    "dual_state_confirmed": false,
+    "note": "The task brief expected CVX in both EQUITY_BLOCKED_SYMBOLS and PROBATION_STATUS. Actual state: CVX is absent from EQUITY_BLOCKED_SYMBOLS (correct) and absent from PROBATION_STATUS. It is tracked only in PENDING_UNBLOCK_REVIEW as SHADOW. No inconsistency in code enforcement — only a misleading comment at line ~1517."
+  },
+
+  "thresholds": {
+    "SHADOW": {"n_min": 10, "wr_min_pct": 50, "pf_min": 1.3},
+    "PROBATION": {"n_min": 20, "wr_min_pct": 52, "pf_min": 1.3}
+  },
+
+  "local_stats": {
+    "n": 4,
+    "wins": 1,
+    "losses": 3,
+    "wr_pct": 25.0,
+    "pf": 0.32,
+    "picks": [
+      {"timestamp": "2026-04-20", "pnl_pct": 0.01037, "status": "WON", "source": null},
+      {"timestamp": "2026-05-07", "pnl_pct": -0.03, "status": "LOST", "source": "multi_asset_copytrader"},
+      {"timestamp": "2026-05-18", "pnl_pct": -0.034102, "status": "LOST", "source": "multi_asset_copytrader"},
+      {"timestamp": "2026-05-18", "pnl_pct": -0.034155, "status": "LOST", "source": "multi_asset_copytrader"}
+    ]
+  },
+
+  "quality_gates_comment_claim": {
+    "source": "quality_gates.py PENDING_UNBLOCK_REVIEW comment line ~2019",
+    "claimed_n": 12,
+    "claimed_wr_pct": 75.0,
+    "claimed_pf": 3.48,
+    "claimed_stage": "SHADOW",
+    "note": "Likely from MySQL data. Local closed_picks.json only has n=4."
+  },
+
+  "thresholds_met": {
+    "SHADOW": {
+      "n_met": false,
+      "wr_met": false,
+      "pf_met": false,
+      "overall": false,
+      "note": "Local: n=4 << 10 minimum; WR=25% << 50%; PF=0.32 << 1.3. MySQL may show better data (n=12, WR=75%, PF=3.48) but cannot verify locally."
+    }
+  },
+
+  "verdict": "KEEP_SHADOW",
+  "verdict_reason": "Local data insufficient (n=4). quality_gates.py comment claims n=12/WR=75%/PF=3.48 from MySQL — if accurate, this is SHADOW-eligible (n<20 prevents PROBATION). Must verify against MySQL before any stage change. 3 of 4 recent picks are from multi_asset_copytrader on 2026-05-18 — this system has a checkered history; verify source quality.",
+  "recommended_action": "1) Query MySQL for CVX post-block picks to verify n=12/WR=75%/PF=3.48 claim. 2) If confirmed, update PENDING_UNBLOCK_REVIEW comment to reflect accurate SHADOW status. 3) Clarify comment at quality_gates.py line ~1517 — change 'promoted to PROBATION' to 'moved to SHADOW monitoring (PENDING_UNBLOCK_REVIEW)'. 4) Do not add to PROBATION_STATUS until n>=20 is confirmed.",
+  "next_review_date": "2026-07-01"
+}

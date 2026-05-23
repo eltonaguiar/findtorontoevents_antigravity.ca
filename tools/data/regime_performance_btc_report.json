@@ -1,0 +1,67 @@
+{
+  "generated_at_utc": "2026-04-06T05:40:05Z",
+  "source_dashboard": "E:/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json",
+  "btc_data": {
+    "source": "api.binance.com /api/v3/klines BTCUSDT 1d",
+    "candles_used": 120,
+    "regime_thresholds": {
+      "crisis_r_leq": -0.03,
+      "bear_r_leq": -0.005,
+      "bull_r_geq": 0.005,
+      "otherwise": "SIDEWAYS"
+    }
+  },
+  "config": {
+    "min_trades": 15,
+    "crypto_only": false
+  },
+  "summary": {
+    "closed_picks_assigned": 3190,
+    "closed_picks_unknown_regime_day": 0,
+    "regimes_reported": [
+      "BULL",
+      "SIDEWAYS",
+      "BEAR",
+      "CRISIS"
+    ]
+  },
+  "per_regime": {
+    "BULL": {
+      "n_trades": 1320,
+      "mean_pnl_pct": 0.235998,
+      "win_rate_pct": 50.3,
+      "sharpe_like": 2.314724,
+      "sortino_like": 1.965086,
+      "calmar_like": 1.761103,
+      "sum_pnl_pct": 311.5179
+    },
+    "SIDEWAYS": {
+      "n_trades": 1048,
+      "mean_pnl_pct": 0.604458,
+      "win_rate_pct": 60.5,
+      "sharpe_like": 4.629427,
+      "sortino_like": 6.543841,
+      "calmar_like": 5.204012,
+      "sum_pnl_pct": 633.4719
+    },
+    "BEAR": {
+      "n_trades": 702,
+      "mean_pnl_pct": -1.221349,
+      "win_rate_pct": 23.93,
+      "sharpe_like": -11.493664,
+      "sortino_like": -10.656929,
+      "calmar_like": -0.996836,
+      "sum_pnl_pct": -857.3867
+    },
+    "CRISIS": {
+      "n_trades": 120,
+      "mean_pnl_pct": -1.347328,
+      "win_rate_pct": 21.67,
+      "sharpe_like": -6.307489,
+      "sortino_like": -5.266153,
+      "calmar_like": -0.964205,
+      "sum_pnl_pct": -161.6794
+    }
+  },
+  "note": "BTC daily close-to-close labels are a coarse macro proxy, not strategy-native HMM. Sharpe/Sortino/Calmar are trade-PnL heuristics."
+}

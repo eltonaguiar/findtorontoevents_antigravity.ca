@@ -1,0 +1,101 @@
+name: Polymarket Prediction Market Signals (Multi-Asset)
+
+on:
+  schedule:
+    - cron: '13,43 * * * *'  # Staggered from :00/:30 mega-cluster
+  workflow_dispatch:
+
+concurrency:
+  group: polymarket-signals
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  polymarket-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # 2026-05-13: run 25821039715 ~10m wall — default timeout edge on slow queue.
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        # 2026-04-17: added yfinance (cherry-pick from PR #243 infra only).
+        # Needed for non-crypto price fetches if multi-asset scanner is enabled
+        # later; harmless when unused (imports are try/except-guarded).
+        run: pip install requests pandas numpy yfinance
+
+      - name: Run Polymarket signal scanner (multi-asset)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "============================================"
+          echo "  POLYMARKET - Prediction Market Signals"
+          echo "  Multi-Asset: Crypto + Equities + Commodities + Macro"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/polymarket_signals.py
+
+      - name: Run Polymarket wallet intelligence
+        run: |
+          echo "  POLYMARKET - Wallet Intelligence"
+          python copy_trader_intel/polymarket_scraper.py
+
+      - name: Run Kalshi signals (multi-asset)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "  KALSHI - Multi-Timeframe Consensus (Crypto + Macro + Equities)"
+          python alpha_engine/kalshi_signals.py || echo "Kalshi signals failed (non-fatal)"
+
+      - name: Run Prediction Market Whales
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "  WHALES - Prediction Market Whale Tracker"
+          python alpha_engine/prediction_market_whales.py || echo "Whale tracker failed (non-fatal)"
+
+      - name: Run Prediction Market Consensus (multi-asset)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "  CONSENSUS - Cross-Market Multi-Asset Aggregation"
+          python alpha_engine/prediction_market_consensus.py || echo "Consensus failed (non-fatal)"
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add alpha_engine/data/polymarket_signals.json 2>/dev/null || true
+          git add alpha_engine/data/kalshi_signals.json 2>/dev/null || true
+          git add alpha_engine/data/prediction_market_picks.json 2>/dev/null || true
+          git add alpha_engine/data/prediction_market_whales.json 2>/dev/null || true
+          git add copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true
+          git add copy_trader_intel/data/polymarket_picks.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Prediction market signals $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

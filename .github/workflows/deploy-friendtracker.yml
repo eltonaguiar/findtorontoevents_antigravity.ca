@@ -1,0 +1,267 @@
+name: "Deploy FriendTracker"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'friendtracker/**'
+      - '.github/workflows/deploy-friendtracker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Deploy to torontoevent.net (GoDaddy)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping")
+              exit(0)
+
+          src = Path("friendtracker")
+
+          print(f"Connecting to {host} (torontoevent.net)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print("Connected")
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f"  {remote_path}")
+
+          uploaded = 0
+          for f in src.rglob("*"):
+              if f.is_file():
+                  rel = f.relative_to(src)
+                  upload(ftp, f, f"friendtracker/{rel.as_posix()}")
+                  uploaded += 1
+
+          ftp.quit()
+          print(f"\nDeployed {uploaded} files to torontoevent.net/friendtracker/")
+          PYEOF
+
+      - name: Deploy to findtorontoevents.ca (50webs)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os
+          from pathlib import Path
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping")
+              exit(0)
+
+          src = Path("friendtracker")
+          SITE_ROOT = "findtorontoevents.ca"
+
+          print(f"Connecting to {host} (50webs)...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+          print("Connected")
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          def upload(ftp, local_path, remote_path):
+              parts = remote_path.split("/")
+              d = "/".join(parts[:-1])
+              if d:
+                  ensure_dir(ftp, d)
+              else:
+                  ftp.cwd("/")
+              with open(local_path, "rb") as f:
+                  ftp.storbinary(f"STOR {parts[-1]}", f)
+              print(f"  {remote_path}")
+
+          uploaded = 0
+          for f in src.rglob("*"):
+              if f.is_file():
+                  rel = f.relative_to(src)
+                  upload(ftp, f, f"{SITE_ROOT}/friendtracker/{rel.as_posix()}")
+                  uploaded += 1
+
+          ftp.quit()
+          print(f"\nDeployed {uploaded} files to findtorontoevents.ca/friendtracker/")
+          PYEOF
+
+      - name: Deploy ft_*.php API files to findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, glob
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping API deploy")
+              exit(0)
+
+          SITE_ROOT = "findtorontoevents.ca"
+
+          print(f"Connecting to {host} (50webs) for API files...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          # Upload ft_*.php and ensure_tables.php to /fc/api/
+          api_files = glob.glob("favcreators/docs/api/ft_*.php")
+          api_files += glob.glob("favcreators/docs/api/ensure_tables.php")
+
+          ensure_dir(ftp, f"{SITE_ROOT}/fc/api")
+
+          for f in api_files:
+              fname = os.path.basename(f)
+              ftp.cwd("/")
+              ensure_dir(ftp, f"{SITE_ROOT}/fc/api")
+              with open(f, "rb") as fp:
+                  ftp.storbinary(f"STOR {fname}", fp)
+              print(f"  {SITE_ROOT}/fc/api/{fname}")
+
+          ftp.quit()
+          print(f"\nDeployed {len(api_files)} API files")
+          PYEOF
+
+      - name: Deploy ft_*.php API files to torontoevent.net
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os, glob
+
+          host = os.environ.get("FTP_HOST", "")
+          user = os.environ.get("FTP_USER", "")
+          pwd  = os.environ.get("FTP_PASS", "")
+
+          if not all([host, user, pwd]):
+              print("FTP credentials not set, skipping")
+              exit(0)
+
+          print(f"Connecting to {host} (torontoevent.net) for API files...")
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pwd)
+
+          def ensure_dir(ftp, remote_dir):
+              ftp.cwd("/")
+              for part in remote_dir.split("/"):
+                  if not part: continue
+                  try:
+                      ftp.cwd(part)
+                  except:
+                      try:
+                          ftp.mkd(part)
+                          ftp.cwd(part)
+                      except Exception as e:
+                          print(f"  mkd {part}: {e}")
+                          return False
+              return True
+
+          api_files = glob.glob("favcreators/docs/api/ft_*.php")
+          api_files += glob.glob("favcreators/docs/api/ensure_tables.php")
+
+          ensure_dir(ftp, "fc/api")
+
+          for f in api_files:
+              fname = os.path.basename(f)
+              ftp.cwd("/")
+              ensure_dir(ftp, "fc/api")
+              with open(f, "rb") as fp:
+                  ftp.storbinary(f"STOR {fname}", fp)
+              print(f"  fc/api/{fname}")
+
+          ftp.quit()
+          print(f"\nDeployed {len(api_files)} API files to torontoevent.net")
+          PYEOF
+
+      - name: Verify
+        run: |
+          sleep 5
+          for URL in \
+            "https://findtorontoevents.ca/friendtracker/" \
+            "https://findtorontoevents.ca/friendtracker/styles.css" \
+            "https://findtorontoevents.ca/friendtracker/script.js" \
+            "https://torontoevent.net/friendtracker/"; do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 10 "$URL" || echo "000")
+            echo "$URL -> HTTP $STATUS"
+          done
+

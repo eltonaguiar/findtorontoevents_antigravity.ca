@@ -1,0 +1,681 @@
+#!/usr/bin/env python3
+"""
+Deploy Toronto Events + FavCreators to FTP (full set — no partial deploy).
+
+Quick partial uploads (same FTP_* env vars):
+  python tools/deploy_to_ftp.py --audit-only
+  python tools/deploy_to_ftp.py --updates-only
+  python tools/deploy_to_ftp.py --live-monitor-only
+
+Uploads to FTP_REMOTE_PATH only (never to FTP account root). Puts index.html,
+.htaccess, events.json, last_update.json, next/_next/, stats/, fc/, api/ under
+findtorontoevents.ca/ (or findtorontoevents.ca/findevents if set). See DEPLOYMENT_NOTES.md.
+
+Uses environment variables:
+  FTP_SERVER  (or FTP_HOST) - FTP hostname
+  FTP_USER    - FTP username
+  FTP_PASS    - FTP password
+  FTP_REMOTE_PATH         - Remote path (default: findtorontoevents.ca)
+
+Run from project root:
+  set FTP_SERVER=... FTP_USER=... FTP_PASS=...
+  python tools/deploy_to_ftp.py
+
+After deploy: run npm run verify:remote.
+"""
+import os
+import ftplib
+from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+WORKSPACE = _SCRIPT_DIR.parent
+
+# Load workspace .env so FTP_* are set when not in shell (e.g. Cursor run)
+_env_file = WORKSPACE / ".env"
+if _env_file.exists():
+    for line in _env_file.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, _, v = line.partition("=")
+            k, v = k.strip(), v.strip()
+            if k and os.environ.get(k) in (None, ""):
+                os.environ.setdefault(k, v)
+    if "FTP_SERVER" not in os.environ and os.environ.get("FTP_HOST"):
+        os.environ.setdefault("FTP_SERVER", os.environ["FTP_HOST"])
+
+# Default remote path: site lives under findtorontoevents.ca/ (never upload to FTP account root)
+DEFAULT_REMOTE_PATH = "findtorontoevents.ca"
+
+
+def _env(key: str, fallback: str = "") -> str:
+    return os.environ.get(key, fallback).strip()
+
+
+def _ensure_dir(ftp: ftplib.FTP, remote_dir: str) -> bool:
+    ftp.cwd("/")
+    for part in remote_dir.split("/"):
+        if not part:
+            continue
+        try:
+            ftp.cwd(part)
+        except ftplib.error_perm:
+            try:
+                ftp.mkd(part)
+                ftp.cwd(part)
+            except Exception as e:
+                print(f"  Warning: mkd/cwd {part}: {e}")
+                return False
+    return True
+
+
+def _upload_tree(ftp: ftplib.FTP, local_dir: Path, remote_base: str) -> int:
+    ftp.cwd("/")
+    if not _ensure_dir(ftp, remote_base):
+        return 0
+    count = 0
+    for root, dirs, files in os.walk(local_dir):
+        for name in files:
+            local_path = Path(root) / name
+            rel = local_path.relative_to(local_dir)
+            remote_path = remote_base + "/" + str(rel).replace("\\", "/")
+            remote_parts = remote_path.split("/")
+            remote_file = remote_parts[-1]
+            remote_parent = "/".join(remote_parts[:-1])
+            ftp.cwd("/")
+            _ensure_dir(ftp, remote_parent)
+            try:
+                with open(local_path, "rb") as f:
+                    ftp.storbinary(f"STOR {remote_file}", f)
+                print(f"  {remote_path}")
+                count += 1
+            except Exception as e:
+                print(f"  ERROR {remote_path}: {e}")
+    return count
+
+
+def _upload_file(ftp: ftplib.FTP, local_path: Path, remote_path: str) -> bool:
+    remote_dir = "/".join(remote_path.split("/")[:-1])
+    ftp.cwd("/")
+    if remote_dir and not _ensure_dir(ftp, remote_dir):
+        return False
+    try:
+        with open(local_path, "rb") as f:
+            ftp.storbinary(f"STOR {remote_path.split('/')[-1]}", f)
+        print(f"  {remote_path}")
+        return True
+    except Exception as e:
+        print(f"  ERROR {remote_path}: {e}")
+        return False
+
+
+def deploy_main_site(ftp: ftplib.FTP, remote_base: str) -> bool:
+    """Upload index.html, .htaccess, events.json, next/_next/ to remote_base."""
+    ok = True
+    # index.html
+    idx = WORKSPACE / "index.html"
+    if idx.is_file():
+        if _upload_file(ftp, idx, f"{remote_base}/index.html"):
+            pass
+        else:
+            ok = False
+    else:
+        print(f"  Skip index.html (not found)")
+    # .htaccess
+    ht = WORKSPACE / ".htaccess"
+    if ht.is_file():
+        _upload_file(ftp, ht, f"{remote_base}/.htaccess")
+    # events.json (canonical); upload to both root and next/ so frontend (loads /next/events.json) gets all sources
+    ev = WORKSPACE / "events.json"
+    if ev.is_file():
+        _upload_file(ftp, ev, f"{remote_base}/events.json")
+        _upload_file(ftp, ev, f"{remote_base}/next/events.json")
+    elif (WORKSPACE / "next" / "events.json").is_file():
+        _upload_file(ftp, WORKSPACE / "next" / "events.json", f"{remote_base}/next/events.json")
+    # ai-assistant.js (AI chat + voice assistant, no API keys needed)
+    ai = WORKSPACE / "ai-assistant.js"
+    if ai.is_file():
+        _upload_file(ftp, ai, f"{remote_base}/ai-assistant.js")
+    # last_update.json (stats page: last updated time + source)
+    lu = WORKSPACE / "last_update.json"
+    if lu.is_file():
+        _upload_file(ftp, lu, f"{remote_base}/last_update.json")
+    # next/_next/
+    next_next = WORKSPACE / "next" / "_next"
+    if next_next.is_dir():
+        n = _upload_tree(ftp, next_next, f"{remote_base}/next/_next")
+        print(f"  -> {n} files under next/_next/")
+    else:
+        print(f"  Skip next/_next (not found at {next_next})")
+    return ok
+
+
+def deploy_favcreators(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload favcreators/docs as /fc/ (avoids 500 on host for /favcreators/). admin/admin in api/login.php."""
+    local_docs = WORKSPACE / "favcreators" / "docs"
+    if not local_docs.is_dir():
+        print("  Skip FavCreators (favcreators/docs not found)")
+        return True
+    # Deploy to findtorontoevents.ca/fc/ only (never to bare "fc" at FTP root)
+    remotes = ["findtorontoevents.ca/fc"]
+    if main_remote_base:
+        remotes.append(f"{main_remote_base}/fc")
+    for remote in remotes:
+        print(f"  Uploading FavCreators to {remote}/ ...")
+        n = _upload_tree(ftp, local_docs, remote)
+        print(f"    -> {n} files")
+    return True
+
+
+def deploy_favcreators_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload favcreators/public/api/ to fc/api/ (PHP + .env.example + initial_creators.json). Tables are auto-created via ensure_tables.php."""
+    local_api = WORKSPACE / "favcreators" / "public" / "api"
+    if not local_api.is_dir():
+        print("  Skip FavCreators API (favcreators/public/api not found)")
+        return True
+    remotes = ["findtorontoevents.ca/fc/api"]
+    if main_remote_base:
+        remotes.append(f"{main_remote_base}/fc/api")
+    for remote in remotes:
+        print(f"  Uploading FavCreators API to {remote}/ ...")
+        n = _upload_tree(ftp, local_api, remote)
+        print(f"    -> {n} files")
+    return True
+
+
+def deploy_events_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload api/events/ to /fc/events-api/ (PHP endpoints for events database)."""
+    local_api = WORKSPACE / "api" / "events"
+    if not local_api.is_dir():
+        print("  Skip Events API (api/events not found)")
+        return True
+    # Deploy to findtorontoevents.ca/fc/events-api/ only (never to bare path at FTP root)
+    remotes = ["findtorontoevents.ca/fc/events-api"]
+    if main_remote_base:
+        remotes.append(f"{main_remote_base}/fc/events-api")
+    for remote in remotes:
+        print(f"  Uploading Events API to {remote}/ ...")
+        n = _upload_tree(ftp, local_api, remote)
+        print(f"    -> {n} files")
+    return True
+
+
+def deploy_api_auth(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload api/ (google_auth, google_callback, auth_db_config, .htaccess, ttt_match, vr_user_progress) to /api/ for main-site."""
+    auth_files = [
+        "google_auth.php",
+        "google_callback.php",
+        "auth_db_config.php",
+        ".htaccess",
+        "ttt_match.php",
+        "vr_user_progress.php",
+    ]
+    remotes = ["findtorontoevents.ca/api"]
+    if main_remote_base:
+        remotes.append(f"{main_remote_base}/api")
+    for remote in remotes:
+        print(f"  Uploading API auth to {remote}/ ...")
+        ftp.cwd("/")
+        _ensure_dir(ftp, remote)
+        for name in auth_files:
+            local_path = WORKSPACE / "api" / name
+            if local_path.is_file():
+                _upload_file(ftp, local_path, f"{remote}/{name}")
+    return True
+
+
+def deploy_stats_page(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload stats/ to /stats/ (statistics page)."""
+    local_stats = WORKSPACE / "stats"
+    if not local_stats.is_dir():
+        print("  Skip Stats page (stats/ not found)")
+        return True
+    # Deploy to findtorontoevents.ca/stats/ only (never to bare "stats" at FTP root)
+    remotes = ["findtorontoevents.ca/stats"]
+    if main_remote_base:
+        remotes.append(f"{main_remote_base}/stats")
+    for remote in remotes:
+        print(f"  Uploading Stats page to {remote}/ ...")
+        n = _upload_tree(ftp, local_stats, remote)
+        print(f"    -> {n} files")
+    return True
+
+
+def deploy_vr(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload the entire vr/ directory (HTML, JS, CSS, subdirectories) to remote_base/vr/."""
+    local_vr = WORKSPACE / "vr"
+    if not local_vr.is_dir():
+        print("  Skip VR (vr/ not found)")
+        return True
+    remote = f"{main_remote_base}/vr" if main_remote_base else "findtorontoevents.ca/vr"
+    print(f"  Uploading VR to {remote}/ ...")
+    n = _upload_tree(ftp, local_vr, remote)
+    print(f"  -> {n} files under vr/")
+    return n > 0
+
+
+def deploy_fightgame(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload FIGHTGAME/ to /FIGHTGAME/ (Shadow Arena fighting game)."""
+    local_fg = WORKSPACE / "FIGHTGAME"
+    if not local_fg.is_dir():
+        print("  FIGHTGAME/ not found, skipping.")
+        return False
+    remote = f"{main_remote_base}/FIGHTGAME" if main_remote_base else "FIGHTGAME"
+    n = _upload_tree(ftp, local_fg, remote)
+    print(f"  Uploaded {n} files to /{remote}/")
+    return n > 0
+
+
+def deploy_updates(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload updates/ to /updates/ (Latest Updates changelog page)."""
+    local_updates = WORKSPACE / "updates"
+    if not local_updates.is_dir():
+        print("  updates/ not found, skipping.")
+        return False
+    remote = f"{main_remote_base}/updates" if main_remote_base else "findtorontoevents.ca/updates"
+    print(f"  Uploading Updates page to {remote}/ ...")
+    n = _upload_tree(ftp, local_updates, remote)
+    print(f"  -> {n} files under updates/")
+    return n > 0
+
+
+def deploy_findstocks(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload findstocks/api/, findstocks/portfolio/, and findstocks/portfolio2/ to /findstocks/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+
+    # Upload API endpoints
+    local_api = WORKSPACE / "findstocks" / "api"
+    if local_api.is_dir():
+        remote_api = f"{base}/findstocks/api"
+        n = _upload_tree(ftp, local_api, remote_api)
+        print(f"  -> {n} files under findstocks/api/")
+        total += n
+
+    # Upload portfolio page
+    local_portfolio = WORKSPACE / "findstocks" / "portfolio"
+    if local_portfolio.is_dir():
+        remote_portfolio = f"{base}/findstocks/portfolio"
+        n = _upload_tree(ftp, local_portfolio, remote_portfolio)
+        print(f"  -> {n} files under findstocks/portfolio/")
+        total += n
+
+    # Upload portfolio2 (Alpha Forge + advanced analytics)
+    local_portfolio2 = WORKSPACE / "findstocks" / "portfolio2"
+    if local_portfolio2.is_dir():
+        remote_portfolio2 = f"{base}/findstocks/portfolio2"
+        n = _upload_tree(ftp, local_portfolio2, remote_portfolio2)
+        print(f"  -> {n} files under findstocks/portfolio2/")
+        total += n
+
+    return total > 0
+
+
+def deploy_investments(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload investments/ landing page to /investments/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    local_dir = WORKSPACE / "investments"
+    if not local_dir.is_dir():
+        print("  -> investments/ directory not found, skipping")
+        return False
+    remote_dir = f"{base}/investments"
+    n = _upload_tree(ftp, local_dir, remote_dir)
+    print(f"  -> {n} files under investments/")
+    return n > 0
+
+
+def deploy_forex(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload findforex2/ to /findforex2/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+    for sub in ("api", "portfolio"):
+        local_dir = WORKSPACE / "findforex2" / sub
+        if local_dir.is_dir():
+            remote_dir = f"{base}/findforex2/{sub}"
+            n = _upload_tree(ftp, local_dir, remote_dir)
+            print(f"  -> {n} files under findforex2/{sub}/")
+            total += n
+    return total > 0
+
+
+def deploy_crypto(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload findcryptopairs/ to /findcryptopairs/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+    for sub in ("api", "portfolio"):
+        local_dir = WORKSPACE / "findcryptopairs" / sub
+        if local_dir.is_dir():
+            remote_dir = f"{base}/findcryptopairs/{sub}"
+            n = _upload_tree(ftp, local_dir, remote_dir)
+            print(f"  -> {n} files under findcryptopairs/{sub}/")
+            total += n
+    return total > 0
+
+
+def deploy_live_monitor(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload live-monitor/ (sports betting API, goldmine, etc.) to /live-monitor/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    local_dir = WORKSPACE / "live-monitor"
+    if not local_dir.is_dir():
+        print("  -> live-monitor/ not found, skipping")
+        return False
+    remote_dir = f"{base}/live-monitor"
+    n = _upload_tree(ftp, local_dir, remote_dir)
+    print(f"  -> {n} files under live-monitor/")
+    return n > 0
+
+
+def deploy_audit_dashboard(ftp: ftplib.FTP, main_remote_base: str) -> int:
+    """Upload audit HTML/JS/data to /audit/ and /audit_dashboard/ (live mirrors common URLs)."""
+    base = main_remote_base.rstrip("/")
+    local_dir = WORKSPACE / "audit_dashboard"
+    names = ("index.html", "dashboard_enhancements.js", "template.html", "hc_filter.js")
+    n = 0
+    for name in names:
+        local_path = local_dir / name
+        if not local_path.is_file():
+            continue
+        for prefix in ("audit", "audit_dashboard"):
+            remote = f"{base}/{prefix}/{name}"
+            if _upload_file(ftp, local_path, remote):
+                n += 1
+    # Also upload data files (dashboard_data.json is critical — JS fetches it separately)
+    data_dir = local_dir / "data"
+    if data_dir.is_dir():
+        for data_file in (
+            "dashboard_data.json",
+            # pf_registry.json is the CANONICAL policy-clean-net per-class view.
+            # template.html `#pf-registry-banner` fetches it directly so the
+            # honest (deduped, net-of-slippage) PF/WR is always visible even
+            # when asset_class_health is inflated. Without this upload the
+            # banner 404s on the live site. (Issue #1221, 2026-05-19.)
+            "pf_registry.json",
+            "hyrotrader_picks.json",
+            "hyrotrader_journal.json",
+            "hyro_live_strategies.json",
+            "hyro_quan_bridge.json",
+            "hyrotrader_enhanced_picks.json",
+            "hyrotrader_short_term_entries.json",
+            "hyro_backtest_results.json",
+        ):
+            local_path = data_dir / data_file
+            if local_path.is_file():
+                for prefix in ("audit", "audit_dashboard"):
+                    _ensure_dir(ftp, f"{base}/{prefix}/data")
+                    remote = f"{base}/{prefix}/data/{data_file}"
+                    if _upload_file(ftp, local_path, remote):
+                        n += 1
+    # HC gate params config (loaded by hc_filter.js at runtime)
+    config_dir = WORKSPACE / "config"
+    hc_params = config_dir / "hc_gate_params.json"
+    if hc_params.is_file():
+        for prefix in ("audit", "audit_dashboard"):
+            _ensure_dir(ftp, f"{base}/{prefix}/config")
+            remote = f"{base}/{prefix}/config/hc_gate_params.json"
+            if _upload_file(ftp, hc_params, remote):
+                n += 1
+    # HyroTrader static tracker (/audit/hyrotrader/)
+    hyro_dir = local_dir / "hyrotrader"
+    if hyro_dir.is_dir():
+        hyro_index = hyro_dir / "index.html"
+        if hyro_index.is_file():
+            for prefix in ("audit", "audit_dashboard"):
+                remote = f"{base}/{prefix}/hyrotrader/index.html"
+                if _upload_file(ftp, hyro_index, remote):
+                    n += 1
+        for js in sorted(hyro_dir.glob("*.js")):
+            for prefix in ("audit", "audit_dashboard"):
+                remote = f"{base}/{prefix}/hyrotrader/{js.name}"
+                if _upload_file(ftp, js, remote):
+                    n += 1
+    print(f"  -> {n} audit file upload(s) under {base}/audit/ and .../audit_dashboard/")
+    return n
+
+
+def deploy_audit_only() -> None:
+    """FTP upload audit dashboard only (quick fix). Same env vars as full deploy."""
+    # Pre-deploy crypto pick count validation
+    _data_path = WORKSPACE / "audit_dashboard" / "data" / "dashboard_data.json"
+    if _data_path.is_file():
+        import json as _json
+        try:
+            with open(_data_path, encoding="utf-8") as _f:
+                _payload = _json.load(_f)
+            _active = _payload.get("picks", {}).get("active", [])
+            _crypto = [p for p in _active if "USDT" in (p.get("symbol") or "")]
+            print(f"  [VALIDATION] {len(_crypto)} crypto picks in payload (minimum: 20)")
+            if len(_crypto) < 5:
+                print(f"  [CRITICAL] Only {len(_crypto)} crypto picks — refusing to deploy stale/broken data")
+                print(f"  [CRITICAL] Run dashboard generator or patch payload first")
+                raise SystemExit(1)
+            elif len(_crypto) < 20:
+                print(f"  [WARNING] Only {len(_crypto)} crypto picks — below 20 minimum target")
+        except (ValueError, KeyError) as e:
+            print(f"  [WARNING] Could not validate payload: {e}")
+
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"Audit-only deploy to FTP: {host}")
+    print(f"Remote: {remote_path}/audit/ (+ audit_dashboard/)")
+    if parent_root:
+        print(f"Also: {parent_root}/audit/")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            deploy_audit_dashboard(ftp, remote_path)
+            if parent_root:
+                deploy_audit_dashboard(ftp, parent_root)
+        print("Audit deploy complete.")
+    except Exception as e:
+        print(f"Audit deploy failed: {e}")
+        raise SystemExit(1)
+
+
+def deploy_live_monitor_only() -> None:
+    """FTP upload live-monitor/ only. Same env vars as full deploy."""
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"Live-monitor-only deploy to FTP: {host}")
+    print(f"Remote: {remote_path}/live-monitor/")
+    if parent_root:
+        print(f"Also: {parent_root}/live-monitor/")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            deploy_live_monitor(ftp, remote_path)
+            if parent_root:
+                deploy_live_monitor(ftp, parent_root)
+        print("Live-monitor deploy complete.")
+    except Exception as e:
+        print(f"Live-monitor deploy failed: {e}")
+        raise SystemExit(1)
+
+
+def deploy_updates_only() -> None:
+    """FTP upload updates/ only (changelog). Same env vars as full deploy."""
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"Updates-only deploy to FTP: {host}")
+    print(f"Remote: {remote_path}/updates/")
+    if parent_root:
+        print(f"Also: {parent_root}/updates/")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            deploy_updates(ftp, remote_path)
+            if parent_root:
+                deploy_updates(ftp, parent_root)
+        print("Updates deploy complete.")
+    except Exception as e:
+        print(f"Updates deploy failed: {e}")
+        raise SystemExit(1)
+
+
+def main() -> None:
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    # If remote_path is e.g. findtorontoevents.ca/findevents, also deploy main site to parent findtorontoevents.ca/ so the domain root serves the site.
+    # All uploads stay under findtorontoevents.ca/ (never to FTP account root).
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"Deploy to FTP: {host}")
+    print(f"Remote path: {remote_path} (all files under this or {parent_root or remote_path}, never FTP root)")
+    if parent_root:
+        print(f"Also deploying main site to: {parent_root}/ (domain root)")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            print("Connected.\n")
+
+            print(f"Uploading main site to {remote_path}/ ...")
+            deploy_main_site(ftp, remote_path)
+            if parent_root:
+                print(f"Uploading main site to {parent_root}/ (domain root) ...")
+                deploy_main_site(ftp, parent_root)
+            print()
+
+            print("Uploading FavCreators to /fc/ (guest + admin/admin) ...")
+            deploy_favcreators(ftp, remote_path)
+            print()
+
+            print("Uploading FavCreators API to /fc/api/ (PHP, ensure_tables, seed) ...")
+            deploy_favcreators_api(ftp, remote_path)
+            print()
+
+            print("Uploading API auth to /api/ (Google login for main site) ...")
+            deploy_api_auth(ftp, parent_root or remote_path)
+            print()
+
+            print("Uploading Events API to /api/events/ (PHP endpoints for events DB) ...")
+            deploy_events_api(ftp, remote_path)
+            print()
+
+            print("Uploading Stats page to /stats/ ...")
+            deploy_stats_page(ftp, remote_path)
+            print()
+
+            print("Uploading VR Hub + games to /vr/ ...")
+            deploy_vr(ftp, remote_path)
+            if parent_root:
+                deploy_vr(ftp, parent_root)
+            print()
+
+            print("Uploading Shadow Arena to /FIGHTGAME/ ...")
+            deploy_fightgame(ftp, remote_path)
+            if parent_root:
+                deploy_fightgame(ftp, parent_root)
+            print()
+
+            print("Uploading Updates page to /updates/ ...")
+            deploy_updates(ftp, remote_path)
+            if parent_root:
+                deploy_updates(ftp, parent_root)
+            print()
+
+            print("Uploading Investment Tools landing to /investments/ ...")
+            deploy_investments(ftp, remote_path)
+            if parent_root:
+                deploy_investments(ftp, parent_root)
+            print()
+
+            print("Uploading FindStocks API + Portfolio to /findstocks/ ...")
+            deploy_findstocks(ftp, remote_path)
+            if parent_root:
+                deploy_findstocks(ftp, parent_root)
+            print()
+
+            print("Uploading Forex API + Portfolio to /findforex2/ ...")
+            deploy_forex(ftp, remote_path)
+            if parent_root:
+                deploy_forex(ftp, parent_root)
+            print()
+
+            print("Uploading Crypto API + Portfolio to /findcryptopairs/ ...")
+            deploy_crypto(ftp, remote_path)
+            if parent_root:
+                deploy_crypto(ftp, parent_root)
+            print()
+
+            print("Uploading Live Monitor (sports API, goldmine) to /live-monitor/ ...")
+            deploy_live_monitor(ftp, remote_path)
+            if parent_root:
+                deploy_live_monitor(ftp, parent_root)
+            print()
+
+            print("Uploading Unified Audit Dashboard to /audit/ and /audit_dashboard/ ...")
+            deploy_audit_dashboard(ftp, remote_path)
+            if parent_root:
+                deploy_audit_dashboard(ftp, parent_root)
+            print()
+
+        print("Deploy complete.")
+        print()
+        print("Post-deploy steps for Events API:")
+        print("  1. Setup tables: https://findtorontoevents.ca/fc/events-api/setup_tables.php")
+        print("  2. Sync events: https://findtorontoevents.ca/fc/events-api/sync_events.php")
+        print("  3. View stats: https://findtorontoevents.ca/stats/")
+    except Exception as e:
+        print(f"Deploy failed: {e}")
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    import sys
+
+    if "--audit-only" in sys.argv:
+        deploy_audit_only()
+    elif "--live-monitor-only" in sys.argv:
+        deploy_live_monitor_only()
+    elif "--updates-only" in sys.argv:
+        deploy_updates_only()
+    else:
+        main()

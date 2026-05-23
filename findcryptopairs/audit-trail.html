@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Algorithm Audit Trail | Complete History</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0f0;
+            line-height: 1.6;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #2a2a3a;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        
+        .filters {
+            background: #12121a;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filters label { color: #888; }
+        .filters select, .filters input {
+            background: #1a1a25;
+            border: 1px solid #2a2a3a;
+            color: #e0e0f0;
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+        
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #12121a;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .audit-table th {
+            background: #1a1a25;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #888;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        .audit-table td {
+            padding: 15px;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        .audit-table tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .symbol { font-weight: bold; color: #22c55e; font-size: 1.1rem; }
+        .algo-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .type-academic { background: #3b82f6; color: white; }
+        .type-reddit { background: #f59e0b; color: black; }
+        .type-baseline { background: #8b5cf6; color: white; }
+        
+        .pnl-pos { color: #22c55e; font-weight: bold; }
+        .pnl-neg { color: #ef4444; font-weight: bold; }
+        
+        .confidence-high { color: #22c55e; }
+        .confidence-medium { color: #f59e0b; }
+        .confidence-lean { color: #6b7280; }
+        
+        .reason-cell {
+            max-width: 300px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        
+        .time-cell {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .status-open { color: #22c55e; }
+        .status-closed { color: #ef4444; }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background: #1a1a25;
+            border: 1px solid #2a2a3a;
+            color: #e0e0f0;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .pagination button:hover { background: #2a2a3a; }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+        #price-status {
+            text-align: right;
+            color: #555;
+            font-size: 0.8em;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+        #price-status.live { color: #22c55e; }
+        #price-status.error { color: #f59e0b; }
+        .live-badge {
+            color: #60a5fa;
+            font-size: 0.7em;
+            font-weight: bold;
+            vertical-align: middle;
+            margin-left: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Complete Audit Trail</h1>
+            <p>Every algorithm pick with full details: when, why, how it works, and results.</p>
+        </div>
+        
+        <div class="filters">
+            <label>Algorithm:</label>
+            <select id="filter-algo">
+                <option value="">All</option>
+            </select>
+            
+            <label>Coin:</label>
+            <select id="filter-coin">
+                <option value="">All</option>
+            </select>
+            
+            <label>Status:</label>
+            <select id="filter-status">
+                <option value="">All</option>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+            </select>
+            
+            <label>Date From:</label>
+            <input type="date" id="filter-date-from">
+            
+            <label>Date To:</label>
+            <input type="date" id="filter-date-to">
+        </div>
+        
+        <table class="audit-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Time (EST)</th>
+                    <th>Algorithm</th>
+                    <th>Category</th>
+                    <th>Coin</th>
+                    <th>Entry Price</th>
+                    <th>Exit / Current</th>
+                    <th>PnL %</th>
+                    <th>Confidence</th>
+                    <th>Consensus</th>
+                    <th>Status</th>
+                    <th>Reason / How It Works</th>
+                </tr>
+            </thead>
+            <tbody id="audit-body">
+                <tr><td colspan="12" class="loading">Loading audit data...</td></tr>
+            </tbody>
+        </table>
+        
+        <div id="price-status">Prices: waiting for update...</div>
+        <div class="pagination" id="pagination"></div>
+    </div>
+    
+    <script>
+        let allPicks = [];
+        let currentPage = 1;
+        const perPage = 50;
+
+        const algoHowItWorks = {
+            'ema_trend': 'Triple EMA (9/21/55) must align. 9 > 21 > 55 for LONG. Strength measured by EMA spread.',
+            'pulse_baseline': 'Combines momentum + volume + social sentiment. Baseline for comparison.',
+            'anti_dump': 'Filters manipulation. Requires safety score 7+/10, low spread, clean chart.',
+            'vwap_momentum': 'Volume-weighted average price momentum. Academic strategy from SSRN.',
+            'rsi_oversold': 'Buys when RSI < 30 (oversold). Mean reversion play.',
+            'bb_mean_reversion': 'Bollinger Bands: buys when price hits lower band, targets middle.',
+            'obv_accumulation': 'On-Balance Volume divergence detection.',
+            'whale_volume': 'Detects volume spikes indicating whale activity.',
+            'atr_breakout': 'ATR-based volatility breakout with dynamic stops.',
+            'social_momentum': 'CoinGecko trending coins + price momentum combo.',
+            'scalper': 'Tight 2-4% TP/SL targets for quick in-and-out.',
+            'funding-rate-arb': 'Funding rate arbitrage: long spot + short perps for market-neutral carry.',
+            'multi_period_rsi_confluence': 'Multi-timeframe RSI confluence for high-probability entries.',
+            'bollinger-squeeze': 'Bollinger Band squeeze breakout detection.',
+            'kalman_filter_trend': 'Kalman filter adaptive trend following.',
+            'ema_stack': 'EMA 9/21/50/200 stack alignment for trend confirmation.',
+        };
+
+        // Safe getter with fallback
+        function safe(val, fallback) {
+            if (val === undefined || val === null || val === '') return fallback !== undefined ? fallback : '-';
+            return val;
+        }
+        function safeNum(val) {
+            const n = parseFloat(val);
+            return isNaN(n) ? null : n;
+        }
+        function formatPrice(val) {
+            const n = safeNum(val);
+            if (n === null) return '-';
+            if (Math.abs(n) < 1) return '$' + n.toFixed(6);
+            if (Math.abs(n) < 100) return '$' + n.toFixed(4);
+            return '$' + n.toFixed(2);
+        }
+        function formatPnl(val) {
+            const n = safeNum(val);
+            if (n === null) return '<span style="color:#666">-</span>';
+            const cls = n >= 0 ? 'pnl-pos' : 'pnl-neg';
+            return `<span class="${cls}">${n >= 0 ? '+' : ''}${n.toFixed(2)}%</span>`;
+        }
+        function formatTime(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                // Ensure UTC timestamps without timezone info are treated as UTC
+                let clean = String(dateStr).trim();
+                if (!/[Z+-]\d{2}:?\d{2}$/.test(clean) && !clean.endsWith('Z')) clean += 'Z';
+                const d = new Date(clean);
+                if (isNaN(d.getTime())) return '-';
+                return d.toLocaleString('en-US', {
+                    timeZone: 'America/New_York',
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) + ' ET';
+            } catch(e) { return '-'; }
+        }
+
+        // Normalize a pick from any data source into a common schema
+        function normalizePick(raw, algoName, algoCategory) {
+            // Compute PnL from entry/current price if not provided
+            const entryPrice = safeNum(raw.entryPrice ?? raw.entry_price);
+            const currentPrice = safeNum(raw.currentPrice ?? raw.current_price);
+            const exitPrice = safeNum(raw.exitPrice ?? raw.exit_price);
+            let pnl = safeNum(raw.pnl_pct ?? raw.pnlPct);
+            if (pnl === null && entryPrice && currentPrice && entryPrice > 0) {
+                pnl = ((currentPrice - entryPrice) / entryPrice) * 100;
+            }
+
+            // Determine status
+            let status = safe(raw.status, 'OPEN').toString().toUpperCase();
+            if (status === 'ACTIVE') status = 'OPEN';
+
+            // Determine confidence display
+            let conf = safe(raw.confidence, '-');
+            if (typeof conf === 'number') {
+                if (conf <= 1) conf = (conf * 100).toFixed(0) + '%';
+                else conf = conf.toFixed(0) + '%';
+            }
+
+            // Determine algorithm name (try multiple fields)
+            const algo = algoName || raw.algo || raw.strategy || raw.source_system || raw.algo_name || 'unknown';
+
+            // Determine timestamp (try multiple fields)
+            const timestamp = raw.entryDate || raw.entry_date || raw.created_at || raw.timestamp || raw.opened_at || raw.signal_time || '';
+
+            // Consensus / agreeing systems
+            const agreeing = raw.agreeing_systems || raw.agreeingSystems || [];
+            const consensusCount = raw.consensus_count ?? raw.consensusCount ?? agreeing.length ?? 0;
+
+            // Signal / reason
+            const reason = raw.reason || raw.signal || raw.direction || raw.exit_reason || '-';
+
+            // TP/SL info for display
+            const tpPct = safeNum(raw.tpPct ?? raw.tp_pct);
+            const slPct = safeNum(raw.slPct ?? raw.sl_pct);
+            let extra = '';
+            if (tpPct !== null) extra += ` | TP: ${tpPct}%`;
+            if (slPct !== null) extra += ` | SL: ${slPct}%`;
+
+            return {
+                symbol: safe(raw.symbol, '???'),
+                algo: algo,
+                algoCategory: algoCategory || raw.algo_type || raw.category || raw.asset_class || raw.tier || '-',
+                entryPrice: entryPrice,
+                exitPrice: exitPrice,
+                currentPrice: currentPrice,
+                pnl: pnl,
+                confidence: conf,
+                consensusCount: consensusCount,
+                status: status,
+                reason: reason + extra,
+                timestamp: timestamp,
+            };
+        }
+
+        // Parse PHP API response (pump_watch_demo.json schema)
+        function parsePHPData(data) {
+            const picks = [];
+            // Format 1: { algorithms: [...] }
+            if (Array.isArray(data.algorithms)) {
+                for (const algo of data.algorithms) {
+                    const name = algo.name || algo.id || 'unknown';
+                    const category = algo.category || algo.tier || '-';
+                    for (const p of (algo.activePicks || [])) {
+                        picks.push(normalizePick(p, name, category));
+                    }
+                    for (const p of (algo.closedPicks || [])) {
+                        const np = normalizePick(p, name, category);
+                        if (np.status === 'OPEN') np.status = 'CLOSED';
+                        picks.push(np);
+                    }
+                }
+            }
+            // Format 2: { by_algo: { name: [picks] } }
+            if (data.by_algo) {
+                for (const [name, algoArr] of Object.entries(data.by_algo)) {
+                    for (const p of algoArr) {
+                        picks.push(normalizePick(p, name, null));
+                    }
+                }
+            }
+            return picks;
+        }
+
+        // Parse GitHub fallback (dashboard_payload.json schema)
+        function parseGitHubData(data) {
+            const picks = [];
+            const activePicks = data.picks?.active || [];
+            const closedPicks = data.picks?.closed || [];
+            for (const p of activePicks) {
+                picks.push(normalizePick(p, null, null));
+            }
+            for (const p of closedPicks) {
+                const np = normalizePick(p, null, null);
+                if (np.status === 'OPEN') np.status = 'CLOSED';
+                picks.push(np);
+            }
+            return picks;
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch('api/algo_competition.php?action=current&_cb=' + Date.now(), {cache: 'no-store'});
+                const text = await res.text();
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (parseErr) {
+                    console.warn('API returned non-JSON. Trying GitHub fallback...');
+                    try {
+                        const ghRes = await fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/audit_trail/data/dashboard_payload.json?t=' + Date.now());
+                        if (ghRes.ok) {
+                            const ghData = await ghRes.json();
+                            allPicks = parseGitHubData(ghData);
+                            allPicks.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                            populateFilters();
+                            renderTable();
+                            const notice = document.createElement('div');
+                            notice.style.cssText = 'background:#1a1a30;border:1px solid #f59e0b;border-radius:8px;padding:10px 16px;margin-bottom:12px;color:#f59e0b;font-size:13px;text-align:center';
+                            notice.innerHTML = 'Using cached data (PHP API unavailable). Some picks may not be up-to-date. <a href="/audit/" style="color:#3b82f6;text-decoration:underline">Full Audit Dashboard</a>';
+                            document.querySelector('.container').insertBefore(notice, document.querySelector('.filters'));
+                            return;
+                        }
+                    } catch(ghErr) { console.warn('GitHub fallback also failed:', ghErr); }
+                    document.getElementById('audit-body').innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px;">
+                        <div style="color: #f59e0b; font-size: 1.2rem; margin-bottom: 15px;">Audit data temporarily unavailable</div>
+                        <div style="color: #888; margin-bottom: 20px;">The database API is not responding. This is a server-side issue.</div>
+                        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                            <a href="/audit/" style="color:#3b82f6;text-decoration:underline;">Audit Dashboard (full data)</a>
+                            <a href="/findcryptopairs/genome.html" style="color:#22c55e;text-decoration:underline;">Genome Dashboard</a>
+                            <a href="/findcryptopairs/now.html" style="color:#f59e0b;text-decoration:underline;">Live Picks</a>
+                            <a href="/findcryptopairs/algo-competition-enhanced.html" style="color:#8b5cf6;text-decoration:underline;">Algo Competition</a>
+                        </div>
+                    </td></tr>`;
+                    return;
+                }
+
+                // Parse PHP API data (handles both algorithms[] and by_algo{} formats)
+                allPicks = parsePHPData(data);
+
+                // If PHP returned empty, try GitHub fallback too
+                if (allPicks.length === 0) {
+                    try {
+                        const ghRes = await fetch('https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/audit_trail/data/dashboard_payload.json?t=' + Date.now());
+                        if (ghRes.ok) {
+                            const ghData = await ghRes.json();
+                            allPicks = parseGitHubData(ghData);
+                        }
+                    } catch(e) { /* ignore */ }
+                }
+
+                allPicks.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                populateFilters();
+                renderTable();
+
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('audit-body').innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px;">
+                    <div style="color: #ef4444; font-size: 1.1rem; margin-bottom: 10px;">Error loading data</div>
+                    <div style="color: #888;">${err.message || 'Network error'}</div>
+                    <div style="margin-top:15px;"><a href="/audit/" style="color:#3b82f6;text-decoration:underline;">Back to Audit Dashboard</a></div>
+                </td></tr>`;
+            }
+        }
+
+        function populateFilters() {
+            const algos = [...new Set(allPicks.map(p => p.algo).filter(Boolean))].sort();
+            const coins = [...new Set(allPicks.map(p => p.symbol).filter(Boolean))].sort();
+
+            const algoSelect = document.getElementById('filter-algo');
+            // Clear existing options except "All"
+            algoSelect.innerHTML = '<option value="">All</option>';
+            algos.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a;
+                opt.textContent = a;
+                algoSelect.appendChild(opt);
+            });
+
+            const coinSelect = document.getElementById('filter-coin');
+            coinSelect.innerHTML = '<option value="">All</option>';
+            coins.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                coinSelect.appendChild(opt);
+            });
+        }
+
+        function renderTable() {
+            const algo = document.getElementById('filter-algo').value;
+            const coin = document.getElementById('filter-coin').value;
+            const status = document.getElementById('filter-status').value;
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+
+            let filtered = allPicks.filter(p => {
+                if (algo && p.algo !== algo) return false;
+                if (coin && p.symbol !== coin) return false;
+                if (status && p.status !== status) return false;
+                if (dateFrom && p.timestamp) {
+                    try { if (new Date(p.timestamp) < new Date(dateFrom)) return false; } catch(e) {}
+                }
+                if (dateTo && p.timestamp) {
+                    try { if (new Date(p.timestamp) > new Date(dateTo + 'T23:59:59')) return false; } catch(e) {}
+                }
+                return true;
+            });
+
+            const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * perPage;
+            const pageData = filtered.slice(start, start + perPage);
+
+            const tbody = document.getElementById('audit-body');
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#888;">No picks match the current filters.</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map((p, idx) => {
+                    const rowNum = start + idx + 1;
+                    const howItWorks = algoHowItWorks[p.algo] || 'Algorithm strategy';
+                    const confLower = (typeof p.confidence === 'string' ? p.confidence : '').toLowerCase();
+                    let confClass = 'confidence-lean';
+                    if (confLower.includes('high') || parseInt(confLower) >= 70) confClass = 'confidence-high';
+                    else if (confLower.includes('medium') || parseInt(confLower) >= 40) confClass = 'confidence-medium';
+                    const catLower = (p.algoCategory || '').toString().toLowerCase();
+                    let typeClass = 'type-baseline';
+                    if (catLower.includes('crypto')) typeClass = 'type-academic';
+                    else if (catLower.includes('reddit') || catLower.includes('community')) typeClass = 'type-reddit';
+
+                    return `
+                        <tr>
+                            <td class="time-cell">#${rowNum}</td>
+                            <td class="time-cell">${formatTime(p.timestamp)}</td>
+                            <td><span class="algo-badge ${typeClass}">${safe(p.algo)}</span></td>
+                            <td>${safe(p.algoCategory)}</td>
+                            <td><span class="symbol">${safe(p.symbol)}</span></td>
+                            <td>${formatPrice(p.entryPrice)}</td>
+                            <td>${p.exitPrice != null ? formatPrice(p.exitPrice) : (p._livePrice != null ? formatPrice(p._livePrice) + ' <span class="live-badge">LIVE</span>' : (p.currentPrice != null ? formatPrice(p.currentPrice) + ' <small style="color:#888">(current)</small>' : '-'))}</td>
+                            <td>${p._livePnl != null ? `<span style="color:${p._livePnl>=0?'#22c55e':'#ef4444'};font-weight:bold">${p._livePnl>=0?'+':''}${p._livePnl.toFixed(2)}%</span>` : formatPnl(p.pnl)}</td>
+                            <td class="${confClass}">${safe(p.confidence)}</td>
+                            <td>${p.consensusCount > 0 ? p.consensusCount + ' algos' : '-'}</td>
+                            <td class="status-${(p.status || '').toLowerCase()}">${safe(p.status)}</td>
+                            <td class="reason-cell">
+                                <div><strong>Signal:</strong> ${safe(p.reason)}</div>
+                                <div style="margin-top: 5px; color: #666;"><strong>How:</strong> ${howItWorks}</div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Pagination
+            const pg = document.getElementById('pagination');
+            pg.innerHTML = `
+                <button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Previous</button>
+                <span style="padding: 10px;">Page ${currentPage} of ${totalPages} (${filtered.length} picks)</span>
+                <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Next</button>
+            `;
+        }
+
+        function changePage(p) {
+            currentPage = p;
+            renderTable();
+        }
+
+        // Event listeners
+        document.getElementById('filter-algo').addEventListener('change', () => { currentPage = 1; renderTable(); });
+        document.getElementById('filter-coin').addEventListener('change', () => { currentPage = 1; renderTable(); });
+        document.getElementById('filter-status').addEventListener('change', () => { currentPage = 1; renderTable(); });
+        document.getElementById('filter-date-from').addEventListener('change', () => { currentPage = 1; renderTable(); });
+        document.getElementById('filter-date-to').addEventListener('change', () => { currentPage = 1; renderTable(); });
+
+        // --- Sortable column headers ---
+        let sortCol = null;
+        let sortAsc = true;
+
+        function makeSortable() {
+            const table = document.querySelector('.audit-table');
+            if (!table) return;
+            const headers = table.querySelectorAll('th');
+            const colKeys = ['_rowNum','timestamp','algo','algoCategory','symbol','entryPrice','exitPrice','pnl','confidence','consensusCount','status','reason'];
+            headers.forEach((th, colIdx) => {
+                if (colIdx === 0 || colIdx === 11) return;
+                th.style.cursor = 'pointer';
+                th.title = 'Click to sort';
+                th.addEventListener('click', () => {
+                    const key = colKeys[colIdx];
+                    if (sortCol === key) sortAsc = !sortAsc;
+                    else { sortCol = key; sortAsc = true; }
+                    headers.forEach(h => h.textContent = h.textContent.replace(/ [\u25B2\u25BC]/g, ''));
+                    th.textContent = th.textContent + (sortAsc ? ' \u25B2' : ' \u25BC');
+                    allPicks.sort((a, b) => {
+                        let va = a[key], vb = b[key];
+                        if (key === 'pnl' || key === 'entryPrice' || key === 'exitPrice' || key === 'consensusCount') {
+                            va = parseFloat(va) || 0; vb = parseFloat(vb) || 0;
+                            return sortAsc ? va - vb : vb - va;
+                        }
+                        if (key === 'timestamp') {
+                            va = new Date(va || 0).getTime(); vb = new Date(vb || 0).getTime();
+                            return sortAsc ? va - vb : vb - va;
+                        }
+                        va = String(va || ''); vb = String(vb || '');
+                        return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+                    });
+                    currentPage = 1;
+                    renderTable();
+                });
+            });
+        }
+
+        makeSortable();
+        loadData();
+
+        // ============================================================
+        // Live Price Engine with 3-source failover
+        // ============================================================
+        const PriceEngine = {
+            cache: {},
+            cacheTTL: 30000,
+
+            coinMap: {
+                'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana',
+                'XRPUSDT': 'ripple', 'BNBUSDT': 'binancecoin', 'ADAUSDT': 'cardano',
+                'DOGEUSDT': 'dogecoin', 'AVAXUSDT': 'avalanche-2', 'DOTUSDT': 'polkadot',
+                'LINKUSDT': 'chainlink', 'MATICUSDT': 'matic-network', 'LTCUSDT': 'litecoin',
+                'UNIUSDT': 'uniswap', 'ATOMUSDT': 'cosmos', 'NEARUSDT': 'near',
+                'AAVEUSDT': 'aave', 'SHIBUSDT': 'shiba-inu', 'TRXUSDT': 'tron',
+                'BTC-USD': 'bitcoin', 'ETH-USD': 'ethereum', 'SOL-USD': 'solana',
+                'XRP-USD': 'ripple', 'BNB-USD': 'binancecoin', 'ADA-USD': 'cardano',
+                'DOGE-USD': 'dogecoin', 'AVAX-USD': 'avalanche-2', 'DOT-USD': 'polkadot',
+                'LINK-USD': 'chainlink', 'MATIC-USD': 'matic-network',
+            },
+
+            async fetchPrices(symbols) {
+                const prices = {};
+
+                // Source 1: Binance (bulk fetch all tickers)
+                try {
+                    const resp = await fetch('https://api.binance.com/api/v3/ticker/price');
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        const lookup = {};
+                        data.forEach(t => lookup[t.symbol] = parseFloat(t.price));
+                        symbols.forEach(s => {
+                            // Normalise: BTC-USD → BTCUSDT, already BTCUSDT stays
+                            const key = s.replace('-', '').replace(/USD$/, 'USDT');
+                            if (lookup[key]) prices[s] = lookup[key];
+                            else if (lookup[s]) prices[s] = lookup[s];
+                        });
+                        if (Object.keys(prices).length > 0) return prices;
+                    }
+                } catch(e) { console.warn('Binance failed:', e.message); }
+
+                // Source 2: CoinGecko (free, no key needed)
+                try {
+                    const ids = [...new Set(symbols.map(s => this.coinMap[s]).filter(Boolean))].join(',');
+                    if (ids) {
+                        const resp = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            symbols.forEach(s => {
+                                const id = this.coinMap[s];
+                                if (id && data[id]) prices[s] = data[id].usd;
+                            });
+                            if (Object.keys(prices).length > 0) return prices;
+                        }
+                    }
+                } catch(e) { console.warn('CoinGecko failed:', e.message); }
+
+                // Source 3: CryptoCompare
+                try {
+                    const fsyms = [...new Set(symbols.map(s => s.replace('USDT','').replace('-USD','')))].join(',');
+                    const resp = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${fsyms}&tsyms=USD`);
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        symbols.forEach(s => {
+                            const base = s.replace('USDT','').replace('-USD','');
+                            if (data[base] && data[base].USD) prices[s] = data[base].USD;
+                        });
+                    }
+                } catch(e) { console.warn('CryptoCompare failed:', e.message); }
+
+                return prices;
+            },
+
+            async getLive(symbols) {
+                const now = Date.now();
+                const stale = symbols.filter(s => !this.cache[s] || (now - this.cache[s].ts) > this.cacheTTL);
+                if (stale.length > 0) {
+                    const fresh = await this.fetchPrices(stale);
+                    Object.entries(fresh).forEach(([s, p]) => {
+                        this.cache[s] = { price: p, ts: now };
+                    });
+                }
+                const result = {};
+                symbols.forEach(s => {
+                    if (this.cache[s]) result[s] = this.cache[s].price;
+                });
+                return result;
+            }
+        };
+
+        // ============================================================
+        // Live price auto-update loop for audit trail table
+        // Patches allPicks with live prices then re-renders current page
+        // ============================================================
+        async function updateAuditLivePrices() {
+            const statusEl = document.getElementById('price-status');
+            if (!allPicks || allPicks.length === 0) return;
+
+            // Collect unique symbols from OPEN picks
+            const openPicks = allPicks.filter(p => (p.status || '').toUpperCase() === 'OPEN');
+            if (openPicks.length === 0) {
+                if (statusEl) {
+                    statusEl.textContent = 'Prices: no open picks to update';
+                    statusEl.className = '';
+                }
+                return;
+            }
+
+            const symbolSet = new Set(openPicks.map(p => p.symbol).filter(s => s && s !== '???'));
+            if (symbolSet.size === 0) return;
+
+            try {
+                const prices = await PriceEngine.getLive([...symbolSet]);
+
+                // Patch allPicks with live prices
+                let updated = 0;
+                allPicks.forEach(p => {
+                    if ((p.status || '').toUpperCase() !== 'OPEN') return;
+                    const livePrice = prices[p.symbol];
+                    if (!livePrice) return;
+
+                    p._livePrice = livePrice;
+
+                    // Recalculate PnL if we have an entry price
+                    if (p.entryPrice && p.entryPrice > 0) {
+                        const reasonLower = (p.reason || '').toLowerCase();
+                        const isShort = reasonLower.includes('short') && !reasonLower.includes('long');
+                        if (isShort) {
+                            p._livePnl = (p.entryPrice - livePrice) / p.entryPrice * 100;
+                        } else {
+                            p._livePnl = (livePrice - p.entryPrice) / p.entryPrice * 100;
+                        }
+                    }
+                    updated++;
+                });
+
+                if (updated > 0) {
+                    // Re-render the current page to show updated prices (renderTable uses p._livePrice / p._livePnl)
+                    renderTable();
+
+                    if (statusEl) {
+                        const estTime = new Date().toLocaleTimeString('en-US', {timeZone: 'America/New_York', hour12: true});
+                        statusEl.textContent = `Prices: Live (${estTime} ET) — ${updated} open picks updated — 30s refresh`;
+                        statusEl.className = 'live';
+                    }
+                } else {
+                    if (statusEl) {
+                        statusEl.textContent = 'Prices: no price data available from any source';
+                        statusEl.className = 'error';
+                    }
+                }
+            } catch(e) {
+                console.warn('Live price update failed:', e.message);
+                if (statusEl) {
+                    statusEl.textContent = 'Prices: update failed — will retry in 30s';
+                    statusEl.className = 'error';
+                }
+            }
+        }
+
+        // Start live price updates: first run 2s after data loads, then every 30s
+        setTimeout(updateAuditLivePrices, 2000);
+        setInterval(updateAuditLivePrices, 30000);
+    </script>
+</body>
+</html>

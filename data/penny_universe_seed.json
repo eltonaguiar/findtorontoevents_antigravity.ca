@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "purpose": "Static fallback universe for scripts/penny_stock_picks.py when the primary findstocks/portfolio2/api/penny_stocks.php endpoint is unreachable (HTTP 404 — see reports/penny_picks_brokie_suitability_2026-05-13.md).",
+    "filters_applied_at_runtime": "scripts/penny_stock_picks.py::_yf_universe_fallback applies MIN_PRICE=$1, MAX_PRICE=$5, MIN_VOLUME=200K, MIN_MARKET_CAP=$50M, BLOCKED_EXCHANGES (OTC/Pink).",
+    "exchange_scope": "NYSE / NASDAQ / NYSE-A only (US). Canadian listings excluded — tv-paper-trade skill doesn't support TSX/TSX-V adapters.",
+    "delisted_blocklist": [
+      "FFIE", "MULN", "BIOR", "WISH", "PROG", "CEI", "NILE",
+      "RDBX", "PRTY", "GOEV", "REV", "APRN"
+    ],
+    "delisted_note": "Per skyrocket-runner failure logs 2026-05-04+. Do not re-add without confirming current listing status via yfinance.",
+    "risky_flags": {
+      "CYPH": "penny-pump pattern",
+      "AKBA": "biotech adverse-event risk",
+      "SNDL": "cannabis",
+      "MNKD": "penny-pump pattern",
+      "SMJF": "sub-1M avg vol",
+      "RLX": "ADR + regulatory risk",
+      "GSM": "penny-pump pattern",
+      "BDN": "low liquidity",
+      "HRZN": "BDC; trade smaller size",
+      "RPAY": "penny-pump pattern",
+      "guidance": "When sized into BROKIE, use 1-2% max per the risky_flags list above. Other 49 symbols can use the BROKIE default 5-10% sizing."
+    },
+    "last_updated_utc": "2026-05-13",
+    "n_symbols": 59,
+    "source": [
+      "Expanded 2026-05-13 by cavecrew-investigator agent against findstocks/portfolio2/data/penny_picks_latest.json (2026-04-27 cached picks), filtered to US-listed only, yfinance-verified current price 1-5 USD and avg volume >=200K.",
+      "Excluded 8 symbols from the cached set: BTG/KOPN/FSCO above $5, CGEN/CPIX/CAST below 200K vol, OPTU/PROP below $1.",
+      "Future expansion via tools/research/penny_universe_expander.py (not yet built) or manual append after symbol-vetting."
+    ]
+  },
+  "symbols": [
+    "ABEV", "ACB", "AKBA", "APPS", "BATL", "BBD", "BDN", "BMBL",
+    "BTE", "BUR", "CCC", "CIG", "CLVT", "COTY", "CRON", "CYH",
+    "CYPH", "DDD", "DNUT", "EVH", "EVTL", "GAU", "GENI", "GGB",
+    "GORO", "GRAB", "GROY", "GSM", "HIVE", "HNST", "HRZN", "IQ",
+    "ITRG", "KOS", "LPL", "LX", "MDXG", "MNKD", "MQ", "MVST",
+    "NWL", "NXDR", "OLPX", "PSEC", "REI", "RLX", "RPAY", "SFIX",
+    "SMJF", "SNDL", "SVC", "TDUP", "TRX", "UDMY", "UWMC", "VFF",
+    "WIT", "XRX", "YEXT"
+  ]
+}

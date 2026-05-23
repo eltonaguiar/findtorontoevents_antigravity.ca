@@ -1,0 +1,56 @@
+# Daily Hyro tooling: refresh filtered picks JSON + run prop-constrained backtests.
+# Artifacts only (no auto-commit) — download from the workflow run if needed.
+name: Hyro daily (filter + backtest)
+
+'on':
+  schedule:
+    - cron: '35 13 * * *'  # ~08:35 ET
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hyro-daily
+  cancel-in-progress: true
+
+jobs:
+  hyro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Hyro filter (live dashboard → hyrotrader_picks.json)
+        env:
+          GITHUB_ACTIONS: 'true'
+        run: |
+          python tools/hyro_filter_from_dashboard.py \
+            --daily-used 0 --overall-used 0 --trading-days 0 \
+            --save --output audit_dashboard/data/hyrotrader_picks.json
+        continue-on-error: true
+
+      - name: Hyro backtest (expanded symbols × strategies, LONG-only)
+        env:
+          GITHUB_ACTIONS: 'true'
+        run: |
+          python tools/hyro_backtest.py --all --long-only --months 6 --risk 0.75 \
+            --symbols BTCUSDT ETHUSDT SOLUSDT AVAXUSDT XRPUSDT APTUSDT ETCUSDT LINKUSDT SEIUSDT \
+            --rsi2-long 12 --rsi2-short 88 \
+            --save --output audit_dashboard/data/hyro_backtest_results.json --quiet
+        continue-on-error: true
+
+      - name: Upload Hyro JSON artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hyro-json-${{ github.run_id }}
+          path: |
+            audit_dashboard/data/hyrotrader_picks.json
+            audit_dashboard/data/hyro_backtest_results.json
+          if-no-files-found: warn

@@ -1,0 +1,17 @@
+# === Security: block direct access to sensitive files ===
+<FilesMatch "(\.env|\.env\.*|\.htaccess|\.htpasswd|.*\.sql|.*\.md|.*\.json|db_config\.php|db_connect\.php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Allow initial_creators.json to be read by PHP (server-side only, not browser-direct)
+# (blocked above via FilesMatch — PHP file_get_contents still works server-side)
+
+# === PHP execution ===
+# Google OAuth / env vars: set via hosting control panel, not here.
+# CORS: handled per-file in each PHP script. Do NOT set blanket CORS here —
+# it produces "*, *" double headers that browsers reject.
+# get_me.php uses credentials:'include' which requires a specific origin, not wildcard.
+
+# === Disable directory listing ===
+Options -Indexes

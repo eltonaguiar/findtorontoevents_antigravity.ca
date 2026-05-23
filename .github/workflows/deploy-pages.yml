@@ -1,0 +1,135 @@
+# DISABLED  deploy-riseoftheclaw.yml is the unified GitHub Pages deploy.
+# This partial workflow was overwriting the full deploy on every push, causing 404s.
+# All content from this workflow has been merged into deploy-riseoftheclaw.yml.
+# Keep workflow_dispatch for emergency use only.
+name: Deploy to GitHub Pages (DISABLED)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "deploy-pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    env:
+      # Project Pages URL is https://<user>.github.io/<repo>/ so base path is /<repo>
+      PAGES_BASE: /${{ github.event.repository.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Prepare site directory
+        run: |
+          mkdir -p site
+          cp index.html site/ 2>/dev/null || true
+          cp index4.html site/ 2>/dev/null || true
+          cp -r next site/
+          cp -r _next site/ 2>/dev/null || true
+          cp -r data site/
+          if [ -f events.json ]; then cp events.json site/; fi
+          if [ -f last_update.json ]; then cp last_update.json site/; fi
+          if [ -d stats ]; then cp -r stats site/; fi
+          if [ -f favicon.ico ]; then cp favicon.ico site/; elif [ -f favcreators/docs/favicon.ico ]; then cp favcreators/docs/favicon.ico site/favicon.ico; elif [ -f favcreators/favicon.ico ]; then cp favcreators/favicon.ico site/favicon.ico; fi
+          touch site/.nojekyll
+          # Custom 404 page for deploy gaps
+          if [ -f 404.html ]; then cp 404.html site/; fi
+          if [ -d favcreators/docs ]; then
+            mkdir -p site/fc
+            cp -r favcreators/docs/* site/fc/
+          fi
+          # Algorithm Competition Arena
+          if [ -d STOCKS/competition ]; then
+            mkdir -p site/STOCKS/competition
+            cp STOCKS/competition/index.html site/STOCKS/competition/
+            cp STOCKS/competition/competition-slim.json site/STOCKS/competition/ 2>/dev/null || true
+            cp STOCKS/competition/competition-*.json site/STOCKS/competition/ 2>/dev/null || true
+          fi
+          if [ -f STOCKS/algorithm-competition.html ]; then
+            mkdir -p site/STOCKS
+            cp STOCKS/algorithm-competition.html site/STOCKS/
+          fi
+          # Predictions dashboard
+          if [ -d predictions ]; then
+            mkdir -p site/predictions
+            cp -r predictions/* site/predictions/
+          fi
+          # Updates page (all HTML files + data)
+          if [ -d updates ]; then
+            mkdir -p site/updates
+            cp updates/*.html site/updates/ 2>/dev/null || true
+            cp -r updates/data site/updates/ 2>/dev/null || true
+          fi
+          # Crypto ML Edge dashboard
+          if [ -d crypto_ml_edge/dashboard ]; then
+            mkdir -p site/edge
+            cp crypto_ml_edge/dashboard/index.html site/edge/
+            cp crypto_ml_edge/data/active_picks.json site/edge/ 2>/dev/null || true
+          fi
+          # Battleground / Baby Strat Incubator
+          if [ -d battleground ]; then
+            echo "Copying battleground..."
+            mkdir -p site/battleground/data
+            cp battleground/index.html site/battleground/
+            cp battleground/app.js site/battleground/ 2>/dev/null || true
+            cp battleground/data/*.json site/battleground/data/ 2>/dev/null || true
+            ls -la site/battleground/
+          fi
+          # KIMI Claw Research
+          if [ -d KIMI_CLAW_RESEARCH_FEB162026 ]; then
+            mkdir -p site/KIMI_CLAW_RESEARCH_FEB162026
+            cp KIMI_CLAW_RESEARCH_FEB162026/index.html site/KIMI_CLAW_RESEARCH_FEB162026/
+          fi
+          # Updates page (root level)
+          if [ -f updates_torontoevent.html ]; then
+            cp updates_torontoevent.html site/
+          fi
+          # Trading Systems Hub
+          if [ -f hub/index.html ]; then
+            mkdir -p site/hub
+            cp hub/index.html site/hub/index.html
+          fi
+          # Mercury2 Dashboard
+          if [ -d mercury2 ] && [ -f mercury2/index.html ]; then
+            mkdir -p site/mercury2
+            cp mercury2/index.html site/mercury2/
+            cp -r mercury2/data site/mercury2/ 2>/dev/null || true
+          fi
+          # Baby Strat data - copy to battleground for easy access
+          if [ -f incubator/config/baby_strats_dashboard.json ]; then
+            mkdir -p site/battleground/data
+            cp incubator/config/baby_strats_dashboard.json site/battleground/data/
+          fi
+
+      - name: Rewrite asset base path for GitHub Pages
+        run: |
+          # Project Pages are served at /REPO_NAME/ so assets must use that prefix (local source unchanged)
+          for f in $(find site -name '*.html'); do
+            sed -i "s|\"/next|\"$PAGES_BASE/next|g" "$f"
+            sed -i "s|'/next|'$PAGES_BASE/next|g" "$f"
+            sed -i "s|href=\"/favicon.ico\"|href=\"$PAGES_BASE/favicon.ico\"|g" "$f"
+          done
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+

@@ -1,0 +1,30 @@
+{
+  "calculate_smart_score_wireup_verdict": "APPROVE",
+  "calculate_smart_score_concerns": [
+    "The blend ratio of 0.4 is used without clear justification.",
+    "The shadow logging field name could be more canonical."
+  ],
+  "passes_active_gate_wireup_verdict": "REQUEST_CHANGES",
+  "passes_active_gate_concerns": [
+    "The I/O cost of reading active_picks.json from disk on every gate call is high.",
+    "The concentration cap check does not handle exceptions well, it should log the exception instead of just passing."
+  ],
+  "io_cost_concern_on_active_gate": "HIGH - every gate call reading active_picks.json from disk",
+  "recommended_cache_pattern_for_active_picks": "module-level lru_cache with 30s TTL",
+  "blend_ratio_0_4_vs_0_5_vs_other": "0.5 - a more common and intuitive blend ratio",
+  "shadow_logging_field_name": "smart_score_v2_shadow - a more canonical name",
+  "must_clear_shadow_field_on_pick_save": "true - to prevent the field from leaking into downstream consumers",
+  "single_biggest_risk_of_this_wireup": "The high I/O cost of reading active_picks.json from disk on every gate call could lead to performance issues.",
+  "engine": "groq",
+  "_swarm_meta": {
+    "raw_path": "reports\\audit_enhancements_2026-05-13\\swarm_wireup\\groq.json.raw.txt",
+    "engine": "groq",
+    "ts": "20260513T221017Z",
+    "session_id": "",
+    "model_fingerprint": "llama-3.3-70b-versatile",
+    "tokens_in": 922,
+    "tokens_out": 285,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

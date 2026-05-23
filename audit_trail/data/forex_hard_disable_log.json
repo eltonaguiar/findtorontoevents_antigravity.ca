@@ -1,0 +1,41 @@
+{
+  "decision_id": "F-001",
+  "action_plan_ref": "MASTER_ACTION_PLAN_2026-05-18.md §2.5.1",
+  "timestamp_utc": "2026-05-18T03:10:00Z",
+  "decision": "FOREX_HARD_DISABLE=1",
+  "rationale": "FOREX asset class has WR=33.3% (below 50% random baseline) and PF=0.48. Every dollar wagered in FOREX returns $0.48 on average. With n=45 closed picks the edge is statistically indistinguishable from a random SELL bias. The HARD_DISABLE prevents new FOREX signal routing until the class meets money-ready criteria.",
+  "evidence": {
+    "win_rate": 0.333,
+    "profit_factor": 0.48,
+    "n_resolved": 45,
+    "total_cumulative_pnl_pct": "negative",
+    "pbo": "FAIL",
+    "spa": "FAIL",
+    "post_cost_expectancy": "negative"
+  },
+  "money_ready_gap": {
+    "wr_required": 0.55,
+    "wr_current": 0.333,
+    "pf_required": 1.5,
+    "pf_current": 0.48,
+    "n_required": 150,
+    "n_current": 45
+  },
+  "gate_implementation": {
+    "file": "audit_trail/quality_gates.py",
+    "line": 7789,
+    "env_var": "FOREX_HARD_DISABLE",
+    "default": "1",
+    "override_to_reenable": "FOREX_HARD_DISABLE=0 (requires carry-factor rehab completion)"
+  },
+  "lift_criteria": [
+    "WR >= 55% on n >= 150 resolved forward-test picks",
+    "PF >= 1.5 on same sample",
+    "PBO < 0.10 (Bailey et al., 2016)",
+    "Post-cost expectancy positive after swap costs",
+    "Carry trade backtest complete with positive results"
+  ],
+  "mutation_protocol": "docs/MUTATION_THREE_AXIS_PROTOCOL.md — active carry backtest path (F-004/F-005)",
+  "next_review_date": "2026-06-17",
+  "logged_by": "Claude Code autonomous session — F-003 fulfillment"
+}

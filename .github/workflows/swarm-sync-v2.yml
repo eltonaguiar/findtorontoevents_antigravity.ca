@@ -1,0 +1,106 @@
+name: Swarm State Sync
+
+on:
+  schedule:
+    # Every 30 minutes — keep state files synced across PCs
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    # Trigger manually: gh workflow run swarm-sync-v2.yml
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure git
+        run: |
+          git config --global user.name 'swarm-sync[bot]'
+          git config --global user.email 'swarm-sync@antigravity.ca'
+
+      - name: Checkout main (read remote state)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          # persist-credentials must stay true: the "Sync state files" step
+          # runs `git push origin main` and needs the checkout creds.
+          persist-credentials: true
+          # Fall back to the auto-provisioned GITHUB_TOKEN when GH_PAT_AGENTS
+          # is unset/revoked — otherwise checkout hard-fails with
+          # "could not read Username". GITHUB_TOKEN + `permissions: contents:
+          # write` (declared above) is sufficient for same-repo push.
+          token: ${{ secrets.GH_PAT_AGENTS || github.token }}
+
+      - name: Sync state files
+        run: |
+          set -euo pipefail
+
+          echo '=== STEP 1: Determine what needs merging ==='
+          CHANGED_FILES=()
+
+          for file in agent_shared_memory.json agent_swarm_state.json; do
+            if [ ! -f "$file" ]; then
+              echo "SKIP: $file does not exist in main branch"
+              continue
+            fi
+
+            echo "--- ${file} ---"
+
+            local_updated=$(python3 tools/swarm_sync.py "$file")
+            echo "  local: ${local_updated}"
+
+            remote_hash=$(git show "main:${file}" 2>/dev/null | python3 tools/swarm_sync.py /dev/stdin) || echo '0'
+            echo "  remote: ${remote_hash}"
+
+            if [ "x${local_updated:-0}" != "x${remote_hash:-0}" ] && [ -n "${remote_hash}" ] && [ "${remote_hash}" != '0' ]; then
+              echo '  -> remote newer, merging remote -> local'
+              git show "main:${file}" > "$file"
+              CHANGED_FILES+=("$file")
+            elif [ "x${local_updated:-0}" = x0 ] && [ -n "${remote_hash}" ]; then
+              echo '  -> local empty, restoring from remote'
+              git show "main:${file}" > "$file"
+              CHANGED_FILES+=("$file")
+            else
+              echo '  -> up-to-date or no remote version'
+            fi
+          done
+
+          echo ''
+          echo '=== STEP 2: Push merged changes ==='
+          if [ ${#CHANGED_FILES[@]} -gt 0 ]; then
+            git add "${CHANGED_FILES[@]}"
+            # Guard against the "restored from remote -> identical content" case:
+            # git show pulls bytes that match HEAD, so the working tree is dirty
+            # but the index has no diff, and `git commit` exits 1 under set -e.
+            # Skip the commit + push when nothing actually changed.
+            if git diff --cached --quiet; then
+              echo 'No effective changes after restore — nothing to push'
+              exit 0
+            fi
+            if [ -f .github/scripts/safe_commit_push.sh ]; then
+              bash .github/scripts/safe_commit_push.sh 'chore(swarm): bidirectional sync agent state files [skip ci]' "${CHANGED_FILES[@]}"
+              echo 'PUSHED OK'
+            else
+              git commit -m 'chore(swarm): bidirectional sync agent state files [skip ci]'
+
+              if ! git pull --rebase origin main; then
+                echo 'ERROR: rebase conflict — aborting sync to avoid corrupting state files'
+                git rebase --abort 2>/dev/null || true
+                exit 1
+              fi
+
+              if git diff --cached | grep -qE '^<<<<<<<|^=======|^>>>>>>>'; then
+                echo 'ERROR: conflict markers in staged files — aborting push'
+                exit 1
+              fi
+
+              git push origin main
+              echo 'PUSHED OK'
+            fi
+          else
+            echo 'No files changed — nothing to push'
+          fi

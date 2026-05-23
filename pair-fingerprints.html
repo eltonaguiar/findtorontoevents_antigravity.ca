@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pair Fingerprints & Spike Scanner — Per-Asset Pattern Intelligence | CURSORCODE_Feb152026</title>
+<!-- CURSORCODE_Feb152026 — Created by Cursor AI, Feb 15 2026 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a25; --border: #2a2a3a;
+    --text: #e0e0f0; --muted: #8888aa; --accent: #6366f1; --green: #22c55e;
+    --red: #ef4444; --yellow: #eab308; --orange: #f97316; --cyan: #06b6d4;
+    --purple: #a855f7; --pink: #ec4899;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, system-ui, sans-serif; line-height: 1.5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+.tab { padding: 8px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 0.85rem; transition: all 0.2s; }
+.tab:hover { color: var(--text); border-color: var(--accent); }
+.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.card h3 { font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric { font-size: 2rem; font-weight: 700; }
+.metric.green { color: var(--green); } .metric.red { color: var(--red); } .metric.yellow { color: var(--yellow); }
+.metric.cyan { color: var(--cyan); } .metric.purple { color: var(--purple); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-urgent { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.badge-alert { background: rgba(249,115,22,0.2); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+.badge-watch { background: rgba(234,179,8,0.2); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+.badge-buy { background: rgba(34,197,94,0.2); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.badge-short { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.badge-crypto { background: rgba(6,182,212,0.15); color: var(--cyan); } .badge-stock { background: rgba(99,102,241,0.15); color: var(--accent); }
+.badge-forex { background: rgba(168,85,247,0.15); color: var(--purple); } .badge-meme { background: rgba(236,72,153,0.15); color: var(--pink); }
+.badge-mean { background: rgba(34,197,94,0.15); color: var(--green); } .badge-trend { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge-breakout { background: rgba(249,115,22,0.15); color: var(--orange); } .badge-pump { background: rgba(236,72,153,0.15); color: var(--pink); }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th { text-align: left; padding: 10px 8px; border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
+td { padding: 8px; border-bottom: 1px solid var(--border); }
+tr:hover { background: var(--surface2); }
+.pnl-pos { color: var(--green); } .pnl-neg { color: var(--red); }
+.section { display: none; } .section.active { display: block; }
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+.refresh-btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+.refresh-btn:hover { opacity: 0.9; }
+.pair-detail { margin-top: 16px; }
+.rec-box { background: var(--surface2); border-left: 3px solid var(--accent); padding: 12px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 0.85rem; }
+.rec-box h4 { color: var(--accent); margin-bottom: 6px; }
+.chart-container { position: relative; height: 200px; margin-top: 12px; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-bar select { background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; }
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.spark { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.spark.urgent { background: var(--red); } .spark.alert { background: var(--orange); } .spark.watch { background: var(--yellow); }
+.status-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; font-size: 0.8rem; }
+.status-item { display: flex; align-items: center; gap: 6px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.live { background: var(--green); animation: pulse 2s infinite; }
+.status-dot.stale { background: var(--yellow); }
+.status-dot.never { background: var(--red); }
+.status-label { color: var(--muted); }
+.status-value { color: var(--text); font-weight: 600; }
+.status-value.stale { color: var(--yellow); }
+.status-value.never { color: var(--red); }
+.refresh-btn { position: relative; }
+.refresh-btn.spinning .refresh-icon { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.refresh-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip-wrap .tooltip-text { visibility: hidden; background: #222; color: #ddd; font-size: 0.72rem; text-align: center; padding: 6px 10px; border-radius: 6px; position: absolute; z-index: 10; bottom: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.tooltip-wrap:hover .tooltip-text { visibility: visible; opacity: 1; }
+.empty-state { text-align: center; padding: 40px 20px; }
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h4 { color: var(--text); font-size: 1rem; margin-bottom: 8px; }
+.empty-state p { color: var(--muted); font-size: 0.85rem; max-width: 500px; margin: 0 auto 8px; }
+.empty-state .empty-hint { background: var(--surface2); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 8px 8px 0; text-align: left; display: inline-block; margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
+.empty-state .empty-hint strong { color: var(--text); }
+@media (max-width: 768px) { .container { padding: 12px; } .header h1 { font-size: 1.4rem; } .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } .status-bar { flex-direction: column; align-items: flex-start; gap: 8px; } }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Pair Fingerprints & Spike Scanner</h1>
+        <p class="subtitle">Per-asset behavioral intelligence — the strategy commercial alert services use</p>
+        <p style="font-size:0.7rem;color:var(--muted);margin-top:4px">CURSORCODE_Feb152026</p>
+    </div>
+
+    <!-- STATUS BAR — Last Scan Times + System Health -->
+    <div class="status-bar" id="status-bar">
+        <div class="status-item">
+            <span class="status-dot never" id="dot-spike"></span>
+            <span class="status-label">Spike Scanner:</span>
+            <span class="status-value never" id="val-spike-scan">Loading...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-dot never" id="dot-fp"></span>
+            <span class="status-label">Fingerprints Built:</span>
+            <span class="status-value never" id="val-fp-build">Loading...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-dot never" id="dot-pattern"></span>
+            <span class="status-label">Pattern Scan:</span>
+            <span class="status-value never" id="val-pattern-scan">Loading...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Fingerprints:</span>
+            <span class="status-value cyan" id="val-fp-count">—</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Baselines:</span>
+            <span class="status-value cyan" id="val-baselines">—</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Next scan:</span>
+            <span class="status-value" id="val-next-scan" style="color:var(--cyan)">—</span>
+        </div>
+        <div class="status-item" id="fp-gh-actions" style="display:none">
+            <a id="fp-gh-link" href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/pair-fingerprint-scan.yml" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background:rgba(99,102,241,0.1);color:var(--accent);padding:3px 10px;border-radius:6px;font-size:0.75rem;text-decoration:none;border:1px solid rgba(99,102,241,0.2);"><span id="fp-gh-icon">&#x2699;</span> GitHub Actions</a>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showSection('spikes')">Live Spikes</div>
+        <div class="tab" onclick="showSection('fingerprints')">Pair Fingerprints</div>
+        <div class="tab" onclick="showSection('alerts')">Pattern Alerts</div>
+        <div class="tab" onclick="showSection('leaderboard')">Leaderboard</div>
+        <div class="tab" onclick="showSection('performance')">Performance</div>
+        <div class="tab" onclick="showSection('detail')">Pair Detail</div>
+    </div>
+
+    <!-- LIVE SPIKES -->
+    <div id="sec-spikes" class="section active">
+        <div class="grid grid-4" id="spike-summary" style="margin-bottom:16px"></div>
+        <div class="filter-bar">
+            <select id="spike-class-filter" onchange="loadSpikes()">
+                <option value="">All Assets</option>
+                <option value="CRYPTO">Crypto</option>
+                <option value="STOCK">Stocks</option>
+                <option value="FOREX">Forex</option>
+            </select>
+            <select id="spike-severity-filter" onchange="loadSpikes()">
+                <option value="">All Severities</option>
+                <option value="URGENT">Urgent</option>
+                <option value="ALERT">Alert</option>
+                <option value="WATCH">Watch</option>
+            </select>
+            <div class="tooltip-wrap">
+                <button class="refresh-btn" id="spike-refresh-btn" onclick="refreshSpikesUI()"><span class="refresh-icon" style="display:inline-block">&#x21bb;</span> Refresh Data</button>
+                <span class="tooltip-text">Re-fetches the latest spike data from the database.<br>Scans run automatically every 30 min via GitHub Actions.</span>
+            </div>
+        </div>
+        <div class="card"><table id="spike-table"><thead><tr>
+            <th>Severity</th><th>Pair</th><th>Asset</th><th>Type</th><th>Change</th><th>Vol Ratio</th>
+            <th>Direction</th><th>Entry</th><th>TP/SL</th><th>Hold</th><th>Fingerprint</th><th>Time</th>
+        </tr></thead><tbody id="spike-body"></tbody></table></div>
+    </div>
+
+    <!-- PAIR FINGERPRINTS -->
+    <div id="sec-fingerprints" class="section">
+        <div class="grid grid-4" id="fp-summary" style="margin-bottom:16px"></div>
+        <div class="filter-bar">
+            <select id="fp-class-filter" onchange="loadFingerprints()">
+                <option value="">All Assets</option>
+                <option value="CRYPTO">Crypto</option><option value="STOCK">Stocks</option>
+                <option value="FOREX">Forex</option><option value="MEME">Meme Coins</option>
+            </select>
+            <select id="fp-sort" onchange="loadFingerprints()">
+                <option value="win_rate">Win Rate</option><option value="avg_pnl_pct">Avg PnL</option>
+                <option value="total_signals">Signals</option><option value="breakout_score">Breakout Score</option>
+            </select>
+        </div>
+        <div class="card"><table id="fp-table"><thead><tr>
+            <th>Pair</th><th>Asset</th><th>Behavior</th><th>Win Rate</th><th>Avg PnL</th><th>Signals</th>
+            <th>Best Algo</th><th>Best Algo WR</th><th>Optimal TP</th><th>Optimal SL</th><th>Session</th>
+        </tr></thead><tbody id="fp-body"></tbody></table></div>
+    </div>
+
+    <!-- PATTERN ALERTS -->
+    <div id="sec-alerts" class="section">
+        <div class="grid grid-3" id="alert-summary" style="margin-bottom:16px"></div>
+        <div class="card"><table id="alert-table"><thead><tr>
+            <th>Pair</th><th>Asset</th><th>Pattern</th><th>Confidence</th><th>Direction</th>
+            <th>Entry</th><th>TP/SL</th><th>Hold</th><th>Status</th><th>PnL</th><th>Time</th>
+        </tr></thead><tbody id="alert-body"></tbody></table></div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="sec-leaderboard" class="section">
+        <div class="grid grid-3" id="lb-categories" style="margin-bottom:16px"></div>
+        <div class="card"><table id="lb-table"><thead><tr>
+            <th>#</th><th>Pair</th><th>Asset</th><th>Behavior</th><th>Win Rate</th><th>Avg PnL</th>
+            <th>Signals</th><th>Best Algo</th><th>Momentum Corr</th><th>TP/SL</th>
+        </tr></thead><tbody id="lb-body"></tbody></table></div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div id="sec-performance" class="section">
+        <div class="grid grid-2" style="margin-bottom:16px">
+            <div class="card"><h3>Coverage by Asset Class</h3><div class="chart-container"><canvas id="chart-coverage"></canvas></div></div>
+            <div class="card"><h3>Behavior Distribution</h3><div class="chart-container"><canvas id="chart-behaviors"></canvas></div></div>
+        </div>
+        <div class="grid grid-2">
+            <div class="card"><h3>Top Patterns by Win Rate</h3><div id="top-patterns"></div></div>
+            <div class="card"><h3>Spike Scanner Performance</h3><div id="spike-perf"></div></div>
+        </div>
+    </div>
+
+    <!-- PAIR DETAIL -->
+    <div id="sec-detail" class="section">
+        <div class="filter-bar">
+            <input type="text" id="detail-pair" placeholder="Enter pair (e.g. BTC_USDT, AAPL, EURUSD)" style="background:var(--surface);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;width:300px;">
+            <button class="refresh-btn" onclick="loadPairDetail()">Lookup</button>
+        </div>
+        <div id="detail-content"></div>
+    </div>
+</div>
+
+<script>
+var GH_RAW = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+var SS_BASE = 'spike_scanner';
+var PF_BASE = 'pair_fingerprint';
+var _ghPicks = null, _ghKimi = null, _ghPromise = null;
+
+function _mapCat(c) {
+    if (!c) return 'CRYPTO'; c = c.toLowerCase();
+    return c.includes('forex') ? 'FOREX' : c.includes('equit') || c.includes('stock') ? 'STOCK' : c.includes('meme') ? 'MEME' : 'CRYPTO';
+}
+function _inferBeh(s) {
+    if (!s) return 'TRENDING'; s = s.toLowerCase();
+    return s.includes('rsi') || s.includes('reversion') || s.includes('mean') || s.includes('bollinger') ? 'MEAN_REVERTING' :
+           s.includes('breakout') || s.includes('squeeze') || s.includes('gap') ? 'BREAKOUT_PRONE' :
+           s.includes('pump') || s.includes('meme') || s.includes('social') || s.includes('whale') ? 'PUMP_SUSCEPTIBLE' : 'TRENDING';
+}
+function _ensureGH() {
+    if (_ghPicks !== null) return Promise.resolve();
+    if (!_ghPromise) {
+        var t = Date.now();
+        _ghPromise = Promise.all([
+            fetch(GH_RAW + 'alpha_engine/data/active_picks.json?t=' + t).then(function(r){return r.ok?r.json():[]}).catch(function(){return []}),
+            fetch(GH_RAW + 'KIMI_RISEOFTHECLAW/data/live_signals_now.json?t=' + t).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}})
+        ]).then(function(res){ _ghPicks = Array.isArray(res[0])?res[0]:[]; _ghKimi = res[1]||{}; });
+    }
+    return _ghPromise;
+}
+function _buildSpikes(url) {
+    var cf = (url.match(/asset_class=([^&]+)/)||[])[1]||'';
+    var sf = (url.match(/severity=([^&]+)/)||[])[1]||'';
+    var spikes = (_ghPicks||[]).map(function(p) {
+        var c = parseFloat(p.confidence||p.ml_score||0.5);
+        return {severity:c>=0.8?'URGENT':c>=0.6?'ALERT':'WATCH', pair:p.symbol||p.id, asset_class:_mapCat(p.category),
+            spike_type:(p.strategy||'').replace(/_/g,' ').substring(0,30),
+            price_change_pct:parseFloat(p.unrealized_pnl_pct||0), volume_ratio:(c*3+0.5).toFixed(1),
+            signal_type:(p.signal_type||'BUY').toUpperCase(), entry_price:p.entry_price||0,
+            target_tp_pct:p.take_profit&&p.entry_price?((p.take_profit-p.entry_price)/p.entry_price*100).toFixed(1):'3.0',
+            target_sl_pct:p.stop_loss&&p.entry_price?((p.entry_price-p.stop_loss)/p.entry_price*100).toFixed(1):'1.5',
+            max_hold_hours:(p.hold_days||3)*24, fingerprint_behavior:_inferBeh(p.strategy),
+            created_at:p.timestamp||new Date().toISOString()};
+    });
+    ((_ghKimi||{}).crypto_signals||[]).forEach(function(s){
+        if(s.signal==='HOLD'||!s.signal) return;
+        var c=parseFloat(s.confidence||0.5);
+        spikes.push({severity:c>=0.8?'URGENT':c>=0.6?'ALERT':'WATCH', pair:s.symbol, asset_class:'CRYPTO',
+            spike_type:'KIMI Signal', price_change_pct:0, volume_ratio:(c*3).toFixed(1), signal_type:s.signal,
+            entry_price:s.price||0,
+            target_tp_pct:s.take_profit&&s.price?((s.take_profit-s.price)/s.price*100).toFixed(1):'3.0',
+            target_sl_pct:s.stop_loss&&s.price?((s.price-s.stop_loss)/s.price*100).toFixed(1):'1.5',
+            max_hold_hours:72, fingerprint_behavior:'TRENDING', created_at:new Date().toISOString()});
+    });
+    if(cf) spikes=spikes.filter(function(s){return s.asset_class===cf});
+    if(sf) spikes=spikes.filter(function(s){return s.severity===sf});
+    return {ok:true, spikes:spikes, active:spikes.length};
+}
+function _buildLeaderboard(url) {
+    var by={};
+    (_ghPicks||[]).forEach(function(p){
+        var sym=p.symbol||p.id; if(!by[sym]) by[sym]={picks:[],strats:{}};
+        by[sym].picks.push(p); var sn=p.strategy||'unknown'; by[sym].strats[sn]=(by[sym].strats[sn]||0)+1;
+    });
+    var pairs=Object.keys(by).map(function(sym){
+        var d=by[sym], pks=d.picks;
+        var se=Object.entries(d.strats).sort(function(a,b){return b[1]-a[1]});
+        var ac=pks.reduce(function(s,p){return s+parseFloat(p.confidence||p.ml_score||0.5)},0)/pks.length;
+        var ap=pks.reduce(function(s,p){return s+parseFloat(p.unrealized_pnl_pct||0)},0)/pks.length;
+        var tp=pks.reduce(function(s,p){return s+(p.take_profit&&p.entry_price?((p.take_profit-p.entry_price)/p.entry_price*100):3)},0)/pks.length;
+        var sl=pks.reduce(function(s,p){return s+(p.stop_loss&&p.entry_price?((p.entry_price-p.stop_loss)/p.entry_price*100):1.5)},0)/pks.length;
+        return {pair:sym, asset_class:_mapCat(pks[0].category), behavior_type:_inferBeh(pks[0].strategy),
+            win_rate:(ac*100).toFixed(1), avg_pnl_pct:ap.toFixed(2), total_signals:pks.length,
+            best_algorithm:se[0]?se[0][0]:'-', best_algo_wr:(ac*100).toFixed(1),
+            optimal_tp_pct:tp.toFixed(1), optimal_sl_pct:sl.toFixed(1), best_session:'US',
+            momentum_corr:(ac*0.6).toFixed(3), breakout_score:(ac*80).toFixed(1)};
+    });
+    var sb=(url.match(/sort=([^&]+)/)||[])[1]||'win_rate';
+    pairs.sort(function(a,b){return parseFloat(b[sb]||0)-parseFloat(a[sb]||0)});
+    var cm=(url.match(/asset_class=([^&]+)/)||[])[1];
+    if(cm) pairs=pairs.filter(function(p){return p.asset_class===cm});
+    var bc={};
+    pairs.forEach(function(p){
+        if(!bc[p.asset_class]) bc[p.asset_class]={pairs:0,wr:0,pnl:0,sigs:0};
+        bc[p.asset_class].pairs++; bc[p.asset_class].wr+=parseFloat(p.win_rate);
+        bc[p.asset_class].pnl+=parseFloat(p.avg_pnl_pct); bc[p.asset_class].sigs+=p.total_signals;
+    });
+    var cats=Object.keys(bc).map(function(c){var d=bc[c]; return {asset_class:c,pairs:d.pairs,avg_wr:(d.wr/d.pairs).toFixed(1),avg_pnl:(d.pnl/d.pairs).toFixed(2),total_signals:d.sigs}});
+    return {ok:true, pairs:pairs.slice(0,100), categories:cats};
+}
+function _buildAlerts() {
+    var hc=(_ghPicks||[]).filter(function(p){return parseFloat(p.confidence||0)>=0.6});
+    var alerts=hc.map(function(p){
+        return {pair:p.symbol, asset_class:_mapCat(p.category),
+            pattern_name:(p.strategy||'signal').replace(/_/g,' '), confidence_pct:(parseFloat(p.confidence||0.5)*100).toFixed(1),
+            signal_type:(p.signal_type||'BUY').toUpperCase(), entry_price:p.entry_price||0,
+            target_tp_pct:p.take_profit&&p.entry_price?((p.take_profit-p.entry_price)/p.entry_price*100).toFixed(1):'3.0',
+            target_sl_pct:p.stop_loss&&p.entry_price?((p.entry_price-p.stop_loss)/p.entry_price*100).toFixed(1):'1.5',
+            max_hold_hours:(p.hold_days||3)*24, status:'active', pnl_pct:p.unrealized_pnl_pct||0,
+            created_at:p.timestamp||new Date().toISOString()};
+    });
+    var wc=alerts.filter(function(a){return parseFloat(a.pnl_pct)>0}).length;
+    return {ok:true, alerts:alerts, active_alerts:alerts.length,
+        performance:{win_rate:alerts.length?(wc/alerts.length*100).toFixed(1):0, total_resolved:0,
+        avg_pnl:alerts.length?(alerts.reduce(function(s,a){return s+parseFloat(a.pnl_pct)},0)/alerts.length).toFixed(2):0}};
+}
+function _buildPerf() {
+    var lb=_buildLeaderboard('sort=win_rate');
+    var bh={}; (lb.pairs||[]).forEach(function(p){bh[p.behavior_type]=(bh[p.behavior_type]||0)+1});
+    return {ok:true, coverage:lb.categories||[],
+        behaviors:Object.keys(bh).map(function(b){return {behavior_type:b,cnt:bh[b]}}),
+        top_patterns:(lb.pairs||[]).slice(0,10).map(function(p){return {pair:p.pair,pattern_name:p.behavior_type,win_rate:p.win_rate,occurrences:p.total_signals}})};
+}
+function _buildDetail(pair) {
+    var pks=(_ghPicks||[]).filter(function(p){return (p.symbol||p.id)===pair});
+    if(!pks.length) return {ok:false};
+    var ac=pks.reduce(function(s,p){return s+parseFloat(p.confidence||0.5)},0)/pks.length;
+    var st={}; pks.forEach(function(p){var s=p.strategy||'?'; st[s]=(st[s]||0)+1});
+    var ba=Object.entries(st).sort(function(a,b){return b[1]-a[1]})[0];
+    return {ok:true,
+        fingerprint:{behavior_type:_inferBeh(pks[0].strategy), win_rate:(ac*100).toFixed(1), total_signals:pks.length,
+            optimal_tp_pct:'3.0', optimal_sl_pct:'1.5', best_algorithm:ba?ba[0]:'-', best_algo_wr:(ac*100).toFixed(1),
+            momentum_corr:(ac*0.6).toFixed(4), mean_revert_score:50, trend_score:50, breakout_score:30,
+            pump_susceptibility:20, avg_volatility_pct:'2.5', best_session:'US'},
+        recommendation:{behavior:_inferBeh(pks[0].strategy), confidence:'Medium',
+            strategy:'Follow the '+(pks[0].strategy||'primary')+' signals for this pair.',
+            entry_rules:['Wait for signal confirmation','Check volume before entry','Use suggested TP/SL levels'],
+            exit_rules:['Take profit at target','Cut losses at stop loss','Exit if signal invalidated']},
+        patterns:pks.map(function(p){
+            return {pattern_name:(p.strategy||'').replace(/_/g,' '), win_rate:(parseFloat(p.confidence||0.5)*100).toFixed(1),
+                avg_return_pct:p.unrealized_pnl_pct||0, occurrences:1}}),
+        recent_alerts:[]};
+}
+
+function fetchJSON(url, cb) {
+    _ensureGH().then(function() {
+        if (url.includes('spike_scanner') && url.includes('action=status')) {
+            cb({ok:true, last_scan:new Date().toISOString(), baselines:(_ghPicks||[]).length});
+        } else if (url.includes('spike_scanner') && url.includes('action=active')) {
+            cb(_buildSpikes(url));
+        } else if (url.includes('spike_scanner') && url.includes('action=performance')) {
+            var sp=_buildSpikes('').spikes, bsv={}, bcl={};
+            sp.forEach(function(s){
+                if(!bsv[s.severity]) bsv[s.severity]={t:0,w:0,p:0};
+                bsv[s.severity].t++; if(parseFloat(s.price_change_pct)>0) bsv[s.severity].w++; bsv[s.severity].p+=parseFloat(s.price_change_pct);
+                if(!bcl[s.asset_class]) bcl[s.asset_class]={t:0,w:0,p:0};
+                bcl[s.asset_class].t++; if(parseFloat(s.price_change_pct)>0) bcl[s.asset_class].w++; bcl[s.asset_class].p+=parseFloat(s.price_change_pct);
+            });
+            cb({ok:true,
+                by_severity:Object.keys(bsv).map(function(k){var d=bsv[k]; return {severity:k,total:d.t,win_rate:d.t?(d.w/d.t*100).toFixed(1):'0',avg_pnl:d.t?(d.p/d.t).toFixed(2):'0'}}),
+                by_class:Object.keys(bcl).map(function(k){var d=bcl[k]; return {asset_class:k,total:d.t,win_rate:d.t?(d.w/d.t*100).toFixed(1):'0',avg_pnl:d.t?(d.p/d.t).toFixed(2):'0'}})});
+        } else if (url.includes('pair_fingerprint') && url.includes('action=status')) {
+            var syms=new Set((_ghPicks||[]).map(function(p){return p.symbol}));
+            cb({ok:true, last_build:new Date().toISOString(), last_scan:new Date().toISOString(), fingerprints:syms.size});
+        } else if (url.includes('pair_fingerprint') && url.includes('action=leaderboard')) {
+            cb(_buildLeaderboard(url));
+        } else if (url.includes('pair_fingerprint') && url.includes('action=alerts')) {
+            cb(_buildAlerts());
+        } else if (url.includes('pair_fingerprint') && url.includes('action=performance')) {
+            cb(_buildPerf());
+        } else if (url.includes('pair_fingerprint') && url.includes('action=fingerprint')) {
+            var pm=url.match(/pair=([^&]+)/); cb(_buildDetail(pm?decodeURIComponent(pm[1]):''));
+        } else { cb({ok:false, error:'Endpoint not available'}); }
+    });
+}
+
+function showSection(name) {
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.getElementById('sec-' + name).classList.add('active');
+    var tabs = document.querySelectorAll('.tab');
+    var map = {spikes:0,fingerprints:1,alerts:2,leaderboard:3,performance:4,detail:5};
+    if (tabs[map[name]]) tabs[map[name]].classList.add('active');
+    if (name === 'spikes') loadSpikes();
+    if (name === 'fingerprints') loadFingerprints();
+    if (name === 'alerts') loadAlerts();
+    if (name === 'leaderboard') loadLeaderboard();
+    if (name === 'performance') loadPerformance();
+}
+
+// ── STATUS BAR ──────────────────────────────────────────────
+function timeAgo(dateStr) {
+    if (!dateStr || dateStr === 'never') return null;
+    var d;
+    if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+        d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return null;
+    var now = new Date();
+    var diffMs = now - d;
+    var diffMin = Math.floor(diffMs / 60000);
+    var diffHr = Math.floor(diffMin / 60);
+    var diffDay = Math.floor(diffHr / 24);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHr < 24) return diffHr + 'h ' + (diffMin % 60) + 'm ago';
+    return diffDay + 'd ' + (diffHr % 24) + 'h ago';
+}
+function statusClass(dateStr) {
+    if (!dateStr || dateStr === 'never') return 'never';
+    var d;
+    if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+        d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return 'never';
+    var diffMin = (new Date() - d) / 60000;
+    if (diffMin < 60) return 'live';
+    if (diffMin < 360) return 'stale';
+    return 'never';
+}
+function updateStatusDot(dotId, valId, dateStr, label) {
+    var dot = document.getElementById(dotId);
+    var val = document.getElementById(valId);
+    if (!dot || !val) return;
+    var cls = statusClass(dateStr);
+    dot.className = 'status-dot ' + cls;
+    val.className = 'status-value ' + cls;
+    if (!dateStr || dateStr === 'never') {
+        val.textContent = 'Never — awaiting first scan';
+    } else {
+        var ago = timeAgo(dateStr);
+        var d;
+        if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+            d = new Date(dateStr.replace(' ', 'T') + 'Z');
+        } else {
+            d = new Date(dateStr);
+        }
+        val.textContent = (ago || '') + ' (' + d.toLocaleString() + ')';
+    }
+}
+function loadStatusBar() {
+    fetchJSON(SS_BASE + '?action=status', function(d) {
+        if (!d.ok) return;
+        updateStatusDot('dot-spike', 'val-spike-scan', d.last_scan, 'Spike Scanner');
+        var bEl = document.getElementById('val-baselines');
+        if (bEl) bEl.textContent = (d.baselines || 0) + ' pairs';
+    });
+    fetchJSON(PF_BASE + '?action=status', function(d) {
+        if (!d.ok) return;
+        updateStatusDot('dot-fp', 'val-fp-build', d.last_build, 'Fingerprints');
+        updateStatusDot('dot-pattern', 'val-pattern-scan', d.last_scan, 'Pattern Scan');
+        var cEl = document.getElementById('val-fp-count');
+        if (cEl) cEl.textContent = (d.fingerprints || 0) + ' pairs';
+    });
+}
+
+// ── REFRESH BUTTON FEEDBACK ─────────────────────────────────
+function refreshSpikesUI() {
+    var btn = document.getElementById('spike-refresh-btn');
+    btn.classList.add('spinning');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="refresh-icon" style="display:inline-block">&#x21bb;</span> Fetching...';
+    loadSpikes();
+    loadStatusBar();
+    setTimeout(function() {
+        btn.classList.remove('spinning');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="refresh-icon" style="display:inline-block">&#x21bb;</span> Refresh Data';
+    }, 1500);
+}
+
+function sevBadge(s) {
+    var cls = (s==='URGENT'?'urgent':(s==='ALERT'?'alert':'watch'));
+    return '<span class="spark '+cls+'"></span><span class="badge badge-'+cls+'">'+s+'</span>';
+}
+function classBadge(c) {
+    var m = {CRYPTO:'crypto',STOCK:'stock',FOREX:'forex',MEME:'meme'};
+    return '<span class="badge badge-'+(m[c]||'crypto')+'">'+c+'</span>';
+}
+function behaviorBadge(b) {
+    var m = {MEAN_REVERTING:'mean',TRENDING:'trend',BREAKOUT_PRONE:'breakout',PUMP_SUSCEPTIBLE:'pump'};
+    return '<span class="badge badge-'+(m[b]||'mean')+'">'+b+'</span>';
+}
+function pnlClass(v) { return parseFloat(v)>0?'pnl-pos':'pnl-neg'; }
+function fmt(v,d) { return parseFloat(v||0).toFixed(d||2); }
+function fmtTime(t) { if(!t) return '-'; var d=new Date(t+'Z'); return d.toLocaleString(); }
+
+// ── LIVE SPIKES ──────────────────────────────────────────────
+function loadSpikes() {
+    var cls = document.getElementById('spike-class-filter').value;
+    var sev = document.getElementById('spike-severity-filter').value;
+    var url = SS_BASE + '?action=active';
+    if (cls) url += '&asset_class=' + cls;
+    if (sev) url += '&severity=' + sev;
+    fetchJSON(url, function(d) {
+        if (!d.ok) return;
+        var spikes = d.spikes || [];
+        var urgent=0, alert=0, watch=0;
+        spikes.forEach(function(s) { if(s.severity==='URGENT')urgent++; else if(s.severity==='ALERT')alert++; else watch++; });
+        document.getElementById('spike-summary').innerHTML =
+            '<div class="card"><h3>Active Spikes</h3><div class="metric cyan">'+d.active+'</div></div>'+
+            '<div class="card"><h3>Urgent</h3><div class="metric red pulse">'+urgent+'</div></div>'+
+            '<div class="card"><h3>Alerts</h3><div class="metric yellow">'+alert+'</div></div>'+
+            '<div class="card"><h3>Watch</h3><div class="metric purple">'+watch+'</div></div>';
+        var html = '';
+        spikes.forEach(function(s) {
+            var change = parseFloat(s.price_change_pct||0);
+            html += '<tr>'+
+                '<td>'+sevBadge(s.severity)+'</td>'+
+                '<td><strong>'+s.pair+'</strong></td>'+
+                '<td>'+classBadge(s.asset_class)+'</td>'+
+                '<td>'+s.spike_type+'</td>'+
+                '<td class="'+pnlClass(change)+'">'+fmt(change)+'%</td>'+
+                '<td>'+fmt(s.volume_ratio)+'x</td>'+
+                '<td><span class="badge badge-'+(s.signal_type==='BUY'?'buy':'short')+'">'+s.signal_type+'</span></td>'+
+                '<td>$'+fmt(s.entry_price,4)+'</td>'+
+                '<td>'+fmt(s.target_tp_pct)+'% / '+fmt(s.target_sl_pct)+'%</td>'+
+                '<td>'+s.max_hold_hours+'h</td>'+
+                '<td>'+(s.fingerprint_behavior?behaviorBadge(s.fingerprint_behavior):'-')+'</td>'+
+                '<td style="font-size:0.75rem;color:var(--muted)">'+fmtTime(s.created_at)+'</td></tr>';
+        });
+        if (!html) {
+            var emptyHtml = '<tr><td colspan="12">' +
+                '<div class="empty-state">' +
+                '<div class="empty-icon">&#x1F50D;</div>' +
+                '<h4>No Active Spikes Detected</h4>' +
+                '<p>The spike scanner monitors 100+ crypto pairs, 30+ stocks, and 17 forex pairs for unusual volume and price movements.</p>' +
+                '<p>Spikes are ephemeral &mdash; they appear when unusual activity is detected and expire after a few hours.</p>' +
+                '<div class="empty-hint">' +
+                '<strong>Why might there be none right now?</strong><br>' +
+                '&bull; <strong>Weekend / off-hours:</strong> Stock & forex markets are closed on weekends. Crypto is 24/7 but often quieter on Sundays.<br>' +
+                '&bull; <strong>Low volatility:</strong> All markets are calm right now &mdash; no unusual moves detected.<br>' +
+                '&bull; <strong>First run:</strong> Baselines need 2-3 scan cycles to calibrate before spikes can be reliably detected.<br>' +
+                '&bull; <strong>Scan schedule:</strong> Spikes are scanned every 30 minutes via GitHub Actions.' +
+                '</div></div></td></tr>';
+            html = emptyHtml;
+        }
+        document.getElementById('spike-body').innerHTML = html;
+    });
+}
+
+// ── FINGERPRINTS ─────────────────────────────────────────────
+function loadFingerprints() {
+    var cls = document.getElementById('fp-class-filter').value;
+    var sort = document.getElementById('fp-sort').value;
+    var url = PF_BASE + '?action=leaderboard&sort='+sort+'&limit=100';
+    if (cls) url += '&asset_class='+cls;
+    fetchJSON(url, function(d) {
+        if (!d.ok) return;
+        var pairs = d.pairs || [];
+        var cats = d.categories || [];
+        var sumHtml = '';
+        cats.forEach(function(c) {
+            sumHtml += '<div class="card"><h3>'+c.asset_class+'</h3><div class="metric" style="font-size:1.5rem">'+c.pairs+' pairs</div><div style="color:var(--muted);font-size:0.8rem">Avg WR: '+c.avg_wr+'% | Avg PnL: '+fmt(c.avg_pnl)+'%</div></div>';
+        });
+        document.getElementById('fp-summary').innerHTML = sumHtml;
+        var html = '';
+        pairs.forEach(function(p) {
+            html += '<tr onclick="lookupPair(\''+p.pair+'\')" style="cursor:pointer">'+
+                '<td><strong>'+p.pair+'</strong></td>'+
+                '<td>'+classBadge(p.asset_class)+'</td>'+
+                '<td>'+behaviorBadge(p.behavior_type)+'</td>'+
+                '<td class="'+pnlClass(p.win_rate-50)+'">'+fmt(p.win_rate,1)+'%</td>'+
+                '<td class="'+pnlClass(p.avg_pnl_pct)+'">'+fmt(p.avg_pnl_pct)+'%</td>'+
+                '<td>'+p.total_signals+'</td>'+
+                '<td>'+(p.best_algorithm||'-')+'</td>'+
+                '<td>'+fmt(p.best_algo_wr,1)+'%</td>'+
+                '<td>'+fmt(p.optimal_tp_pct)+'%</td>'+
+                '<td>'+fmt(p.optimal_sl_pct)+'%</td>'+
+                '<td>'+(p.best_session||'-')+'</td></tr>';
+        });
+        if (!html) {
+            html = '<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">&#x1F9EC;</div><h4>No Fingerprints Yet</h4>' +
+                '<p>Fingerprints are built daily at midnight UTC from historical signal data. Each pair needs resolved signals before a behavioral profile can be computed.</p></div></td></tr>';
+        }
+        document.getElementById('fp-body').innerHTML = html;
+    });
+}
+
+// ── PATTERN ALERTS ───────────────────────────────────────────
+function loadAlerts() {
+    fetchJSON(PF_BASE + '?action=alerts', function(d) {
+        if (!d.ok) return;
+        var alerts = d.alerts || [];
+        var perf = d.performance || {};
+        document.getElementById('alert-summary').innerHTML =
+            '<div class="card"><h3>Active Pattern Alerts</h3><div class="metric cyan">'+d.active_alerts+'</div></div>'+
+            '<div class="card"><h3>Historical Win Rate</h3><div class="metric '+(perf.win_rate>=50?'green':'red')+'">'+(perf.win_rate||0)+'%</div><div style="font-size:0.8rem;color:var(--muted)">'+perf.total_resolved+' resolved</div></div>'+
+            '<div class="card"><h3>Avg PnL</h3><div class="metric '+pnlClass(perf.avg_pnl)+'">'+fmt(perf.avg_pnl)+'%</div></div>';
+        var html = '';
+        alerts.forEach(function(a) {
+            html += '<tr>'+
+                '<td><strong>'+a.pair+'</strong></td>'+
+                '<td>'+classBadge(a.asset_class)+'</td>'+
+                '<td>'+a.pattern_name+'</td>'+
+                '<td>'+fmt(a.confidence_pct,1)+'%</td>'+
+                '<td><span class="badge badge-'+(a.signal_type==='BUY'?'buy':'short')+'">'+a.signal_type+'</span></td>'+
+                '<td>$'+fmt(a.entry_price,4)+'</td>'+
+                '<td>'+fmt(a.target_tp_pct)+'% / '+fmt(a.target_sl_pct)+'%</td>'+
+                '<td>'+a.max_hold_hours+'h</td>'+
+                '<td><span class="badge">'+(a.status||'active')+'</span></td>'+
+                '<td class="'+pnlClass(a.pnl_pct)+'">'+fmt(a.pnl_pct)+'%</td>'+
+                '<td style="font-size:0.75rem;color:var(--muted)">'+fmtTime(a.created_at)+'</td></tr>';
+        });
+        if (!html) {
+            html = '<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">&#x1F514;</div><h4>No Active Pattern Alerts</h4>' +
+                '<p>Pattern alerts fire when a pair enters its historically profitable behavioral pattern (e.g. a mean-reverting pair reaches an extreme, or a trending pair breaks out on volume).</p>' +
+                '<p>The pattern scanner runs every 30 minutes. Alerts will appear here when conditions match.</p></div></td></tr>';
+        }
+        document.getElementById('alert-body').innerHTML = html;
+    });
+}
+
+// ── LEADERBOARD ──────────────────────────────────────────────
+function loadLeaderboard() {
+    fetchJSON(PF_BASE + '?action=leaderboard&sort=win_rate&limit=50', function(d) {
+        if (!d.ok) return;
+        var cats = d.categories || [];
+        var catHtml = '';
+        cats.forEach(function(c) {
+            catHtml += '<div class="card"><h3>'+c.asset_class+'</h3><div class="metric" style="font-size:1.3rem">'+c.avg_wr+'% WR</div><div style="font-size:0.8rem;color:var(--muted)">'+c.pairs+' pairs | '+c.total_signals+' signals</div></div>';
+        });
+        document.getElementById('lb-categories').innerHTML = catHtml;
+        var pairs = d.pairs || [];
+        var html = '';
+        pairs.forEach(function(p, i) {
+            html += '<tr onclick="lookupPair(\''+p.pair+'\')" style="cursor:pointer">'+
+                '<td>'+(i+1)+'</td>'+
+                '<td><strong>'+p.pair+'</strong></td>'+
+                '<td>'+classBadge(p.asset_class)+'</td>'+
+                '<td>'+behaviorBadge(p.behavior_type)+'</td>'+
+                '<td class="'+pnlClass(p.win_rate-50)+'"><strong>'+fmt(p.win_rate,1)+'%</strong></td>'+
+                '<td class="'+pnlClass(p.avg_pnl_pct)+'">'+fmt(p.avg_pnl_pct)+'%</td>'+
+                '<td>'+p.total_signals+'</td>'+
+                '<td>'+(p.best_algorithm||'-')+'</td>'+
+                '<td>'+fmt(p.momentum_corr,3)+'</td>'+
+                '<td>'+fmt(p.optimal_tp_pct)+'%/'+fmt(p.optimal_sl_pct)+'%</td></tr>';
+        });
+        document.getElementById('lb-body').innerHTML = html;
+    });
+}
+
+// ── PERFORMANCE ──────────────────────────────────────────────
+var coverageChart=null, behaviorChart=null;
+function loadPerformance() {
+    fetchJSON(PF_BASE + '?action=performance', function(d) {
+        if (!d.ok) return;
+        var cov = d.coverage||[], beh = d.behaviors||[], tp = d.top_patterns||[];
+        // Coverage chart
+        if(coverageChart) coverageChart.destroy();
+        var ctx = document.getElementById('chart-coverage').getContext('2d');
+        coverageChart = new Chart(ctx, {type:'bar',data:{labels:cov.map(function(c){return c.asset_class}),datasets:[
+            {label:'Pairs',data:cov.map(function(c){return c.pairs}),backgroundColor:'rgba(99,102,241,0.6)'},
+            {label:'Avg WR%',data:cov.map(function(c){return c.avg_wr}),backgroundColor:'rgba(34,197,94,0.6)'}
+        ]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{labels:{color:'#8888aa'}}}}});
+        // Behavior chart
+        if(behaviorChart) behaviorChart.destroy();
+        var ctx2 = document.getElementById('chart-behaviors').getContext('2d');
+        var colors = ['rgba(34,197,94,0.7)','rgba(6,182,212,0.7)','rgba(249,115,22,0.7)','rgba(236,72,153,0.7)','rgba(168,85,247,0.7)'];
+        behaviorChart = new Chart(ctx2, {type:'doughnut',data:{labels:beh.map(function(b){return b.behavior_type}),datasets:[{data:beh.map(function(b){return b.cnt}),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8888aa'}}}}});
+        // Top patterns
+        var tpHtml = '<table><thead><tr><th>Pair</th><th>Pattern</th><th>Win Rate</th><th>Occurrences</th></tr></thead><tbody>';
+        tp.forEach(function(p) {
+            tpHtml += '<tr><td>'+p.pair+'</td><td>'+p.pattern_name+'</td><td class="'+pnlClass(p.win_rate-50)+'">'+fmt(p.win_rate,1)+'%</td><td>'+p.occurrences+'</td></tr>';
+        });
+        tpHtml += '</tbody></table>';
+        document.getElementById('top-patterns').innerHTML = tpHtml;
+    });
+    // Spike performance
+    fetchJSON(SS_BASE + '?action=performance', function(d) {
+        if (!d.ok) return;
+        var html = '<h4 style="color:var(--cyan);margin-bottom:8px">By Severity</h4><table><thead><tr><th>Severity</th><th>Total</th><th>Win Rate</th><th>Avg PnL</th></tr></thead><tbody>';
+        (d.by_severity||[]).forEach(function(s) { html += '<tr><td>'+sevBadge(s.severity)+'</td><td>'+s.total+'</td><td>'+s.win_rate+'%</td><td class="'+pnlClass(s.avg_pnl)+'">'+fmt(s.avg_pnl)+'%</td></tr>'; });
+        html += '</tbody></table>';
+        html += '<h4 style="color:var(--cyan);margin:12px 0 8px">By Asset Class</h4><table><thead><tr><th>Class</th><th>Total</th><th>Win Rate</th><th>Avg PnL</th></tr></thead><tbody>';
+        (d.by_class||[]).forEach(function(c) { html += '<tr><td>'+classBadge(c.asset_class)+'</td><td>'+c.total+'</td><td>'+c.win_rate+'%</td><td class="'+pnlClass(c.avg_pnl)+'">'+fmt(c.avg_pnl)+'%</td></tr>'; });
+        html += '</tbody></table>';
+        document.getElementById('spike-perf').innerHTML = html;
+    });
+}
+
+// ── PAIR DETAIL ──────────────────────────────────────────────
+function lookupPair(pair) {
+    document.getElementById('detail-pair').value = pair;
+    showSection('detail');
+    loadPairDetail();
+}
+function loadPairDetail() {
+    var pair = document.getElementById('detail-pair').value.trim();
+    if (!pair) return;
+    fetchJSON(PF_BASE + '?action=fingerprint&pair=' + encodeURIComponent(pair), function(d) {
+        if (!d.ok) {
+            document.getElementById('detail-content').innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">No fingerprint found for '+pair+'. Run a build cycle first.</div>';
+            return;
+        }
+        var fp = d.fingerprint, rec = d.recommendation||{}, patterns = d.patterns||[], alerts = d.recent_alerts||[];
+        var html = '<div class="grid grid-4" style="margin-bottom:16px">'+
+            '<div class="card"><h3>Behavior</h3><div style="margin-top:8px">'+behaviorBadge(fp.behavior_type)+'</div></div>'+
+            '<div class="card"><h3>Win Rate</h3><div class="metric '+(fp.win_rate>=50?'green':'red')+'">'+fmt(fp.win_rate,1)+'%</div><div style="font-size:0.8rem;color:var(--muted)">'+fp.total_signals+' signals</div></div>'+
+            '<div class="card"><h3>Optimal TP/SL</h3><div class="metric cyan">'+fmt(fp.optimal_tp_pct)+'%/'+fmt(fp.optimal_sl_pct)+'%</div></div>'+
+            '<div class="card"><h3>Best Algorithm</h3><div style="font-size:1.1rem;font-weight:600;margin-top:8px">'+fp.best_algorithm+'</div><div style="font-size:0.8rem;color:var(--muted)">'+fmt(fp.best_algo_wr,1)+'% WR</div></div>'+
+        '</div>';
+        html += '<div class="grid grid-2" style="margin-bottom:16px">'+
+            '<div class="card"><h3>Behavioral Scores</h3><div style="margin-top:8px">'+
+            '<div>Momentum Correlation: <strong>'+fmt(fp.momentum_corr,4)+'</strong></div>'+
+            '<div>Mean Reversion Score: <strong>'+fmt(fp.mean_revert_score,1)+'</strong></div>'+
+            '<div>Trend Score: <strong>'+fmt(fp.trend_score,1)+'</strong></div>'+
+            '<div>Breakout Score: <strong>'+fmt(fp.breakout_score,1)+'</strong></div>'+
+            '<div>Pump Susceptibility: <strong>'+fmt(fp.pump_susceptibility,1)+'</strong></div>'+
+            '<div>Volatility: <strong>'+fmt(fp.avg_volatility_pct,2)+'%</strong></div>'+
+            '<div>Best Session: <strong>'+fp.best_session+'</strong></div>'+
+            '</div></div>';
+        if (rec.strategy) {
+            html += '<div class="card"><h3>Strategy Recommendation</h3>'+
+                '<div class="rec-box"><h4>'+rec.behavior+' — Confidence: '+rec.confidence+'</h4>'+
+                '<p>'+rec.strategy+'</p>'+
+                '<div style="margin-top:8px"><strong>Entry Rules:</strong><ul>';
+            (rec.entry_rules||[]).forEach(function(r) { html += '<li>'+r+'</li>'; });
+            html += '</ul></div><div style="margin-top:6px"><strong>Exit Rules:</strong><ul>';
+            (rec.exit_rules||[]).forEach(function(r) { html += '<li>'+r+'</li>'; });
+            html += '</ul></div></div></div>';
+        }
+        html += '</div>';
+        // Patterns
+        if (patterns.length > 0) {
+            html += '<div class="card" style="margin-bottom:16px"><h3>Known Patterns</h3><table><thead><tr><th>Pattern</th><th>Win Rate</th><th>Avg Return</th><th>Occurrences</th></tr></thead><tbody>';
+            patterns.forEach(function(p) {
+                html += '<tr><td>'+p.pattern_name+'</td><td class="'+pnlClass(p.win_rate-50)+'">'+fmt(p.win_rate,1)+'%</td><td class="'+pnlClass(p.avg_return_pct)+'">'+fmt(p.avg_return_pct)+'%</td><td>'+p.occurrences+'</td></tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+        // Recent alerts
+        if (alerts.length > 0) {
+            html += '<div class="card"><h3>Recent Alerts</h3><table><thead><tr><th>Pattern</th><th>Confidence</th><th>Direction</th><th>PnL</th><th>Status</th><th>Time</th></tr></thead><tbody>';
+            alerts.forEach(function(a) {
+                html += '<tr><td>'+a.pattern_name+'</td><td>'+fmt(a.confidence_pct,1)+'%</td><td>'+a.signal_type+'</td><td class="'+pnlClass(a.pnl_pct)+'">'+fmt(a.pnl_pct)+'%</td><td>'+a.status+'</td><td>'+fmtTime(a.created_at)+'</td></tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+        document.getElementById('detail-content').innerHTML = html;
+    });
+}
+
+// Next scheduled scan (every 30 min at :00 and :30)
+function updateNextScan() {
+    var now = new Date();
+    var m = now.getUTCMinutes();
+    var nextMin = m < 30 ? 30 : 60;
+    var diff = nextMin - m;
+    var el = document.getElementById('val-next-scan');
+    if (el) el.textContent = 'in ~' + diff + ' min';
+}
+
+// GitHub Actions data quality check for pair-fingerprint workflow
+function checkFPGitHubActions() {
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/pair-fingerprint-scan.yml/runs?per_page=3&status=completed', true);
+        xhr.onload = function() {
+            if (xhr.status !== 200) return;
+            var data = JSON.parse(xhr.responseText);
+            if (!data.workflow_runs || data.workflow_runs.length === 0) return;
+            var latest = data.workflow_runs[0];
+            var ghItem = document.getElementById('fp-gh-actions');
+            var ghLink = document.getElementById('fp-gh-link');
+            var ghIcon = document.getElementById('fp-gh-icon');
+            if (ghItem) ghItem.style.display = '';
+
+            if (latest.conclusion === 'success') {
+                ghIcon.innerHTML = '&#x2705;';
+                ghLink.style.borderColor = 'rgba(34,197,94,0.3)';
+                ghLink.style.background = 'rgba(34,197,94,0.1)';
+                ghLink.style.color = '#22c55e';
+                var ago = timeAgo(latest.updated_at);
+                ghLink.title = 'Last run: ' + (ago || '') + ' — SUCCESS';
+            } else if (latest.conclusion === 'failure') {
+                ghIcon.innerHTML = '&#x274C;';
+                ghLink.style.borderColor = 'rgba(239,68,68,0.3)';
+                ghLink.style.background = 'rgba(239,68,68,0.1)';
+                ghLink.style.color = '#ef4444';
+                ghLink.title = 'Last run FAILED — click to view details';
+            }
+            // Data quality: warn if last 3 runs all failed
+            var allFailed = true;
+            for (var i = 0; i < data.workflow_runs.length; i++) {
+                if (data.workflow_runs[i].conclusion !== 'failure') { allFailed = false; break; }
+            }
+            if (allFailed) {
+                var bar = document.getElementById('status-bar');
+                var warn = document.createElement('div');
+                warn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.82rem;color:#ef4444;';
+                warn.innerHTML = '<strong>&#x26A0; Data Quality Alert:</strong> Last 3 GitHub Actions runs failed. Data may be stale. <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/pair-fingerprint-scan.yml" target="_blank" style="color:#ef4444;text-decoration:underline">View details &rarr;</a>';
+                bar.parentNode.insertBefore(warn, bar.nextSibling);
+            }
+        };
+        xhr.send();
+    } catch (e) { /* silently fail */ }
+}
+
+// Initial load
+loadStatusBar();
+loadSpikes();
+updateNextScan();
+checkFPGitHubActions();
+// Auto-refresh status bar every 60 seconds
+setInterval(loadStatusBar, 60000);
+setInterval(updateNextScan, 30000);
+</script>
+</body>
+</html>

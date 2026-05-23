@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETF — 90-Day Plan — findtorontoevents.ca</title>
+<style>:root{--accent:#06b6d4}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>Asset Class 90-Day Plan — ETF — 2026-05-15</h1>
+<p><strong>Senior Quant Audit</strong> using <code>money-maker-continual-improve</code> skill (7-step process).<br />
+<strong>Focus</strong>: Current live performance (n=106, PF 1.48, WR 58.5% — now past charter floor) vs exceptional backtested sector-rotation + VIX-regime edge (PF 2.05→3.22 on 11y SPDR 11-sector momentum); data quality (yfinance + dedicated etf_strategies.py); whether sector rotation, VIX regime, or other ETF-specific edges (Faber TAA, Antonacci Dual Momentum, economic) justify targeted investment vs COMMODITY/EQUITY priority; realistic 0.1% pilot sizing recommendation.<br />
+<strong>Data sources</strong>: <code>audit_dashboard/data/dashboard_data.json</code> (2026-05-15T02:06Z), <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code>, <code>reports/SUPREME_PLAN_90days.md</code>, <code>alpha_engine/etf_strategies.py</code>, <code>alpha_engine/config.py</code> (ETF_SYMBOLS + etf_sector_momentum weight), <code>tools/etf_sector_emitter.py</code>, <code>tools/etf_emitter_spike.py</code>, <code>audit_trail/vix_regime_gate.py</code>, <code>tools/backtest_etf_sector_rotation.py</code>, <code>tools/backtest_etf_rotation_vix_regime.py</code>, <code>tools/backtest_etf_sector_rotation_slippage.py</code>, <code>tools/backtest_etf_economic.py</code>, <code>reports/etf_vix_regime_breakthrough_20260513.md</code>, <code>reports/etf_sector_rotation_backtest_20260513T020800Z.md</code>, <code>reports/etf_abc_backtest_20260513.md</code>, <code>reports/backtest_etf_economic_2026_05_12_0615Z.md</code>, <code>reports/fix_ETF_20260505T005402Z.md</code>, <code>reports/audit_asset_feedback_2026-05-05T0121Z_ETF.md</code>, <code>reports/expanded_enhancement_plan_2026-05-14.md</code>, <code>reports/asset_class_research_EQUITY_2026_05_12_0438Z.md</code> (VIX transfer), recent etf_sector_picks.json.</p>
+<p><strong>Current Charter context</strong> (from CLAUDE.md / master plan / supreme): ETF borderline but improving (May-3: PF 1.24 / WR 55.2% / n=87; May-5 feedback: n=88 PF1.20; today: PF 1.48 / WR 58.5% / n=106 resolved, sizing_allowed=true, sample_tier=stable). M-023 <code>sector_dual_momentum_12_1</code> (Antonacci, 9 SPDR) PENDING; M-036 ETF universe expansion (XLF/XLE/XLK) to n→150 PENDING. ETF Pilot target 2026-06-01 <strong>NEEDS-EVIDENCE-FIRST</strong> — "n=87-107 just past floor; PF 1.24 below T2 by 0.26. Pilot acceptable but only at 0.1% per Rung-5 sizing." Per SUPREME_PLAN: tertiary track (parallel, lower effort), sector rotation + macro regime models; only scale post-COMMODITY success. T2 target: PF&gt;1.5 / WR&gt;50 / MDD&lt;20 / n≥100. Backtests show clear path via existing code.</p>
+<hr />
+<h2>Step 1: Establish Brutal Baseline (ETF)</h2>
+<p><strong>Live performance</strong> (<code>dashboard_data.json::performance.asset_class_health.ETF</code> + <code>by_asset_class.ETF</code> + concentration):
+- Resolved n=106 (closed:116, active:7) — just crossed charter min n=100 floor (was 87-88 May 3-5). Resolved_n=106.
+- WR: 58.5% (wins 62 / losses 44 on closed).
+- PF: 1.48 (by_asset_class), total_pnl_pct +50.59, expectancy +0.48 (positive), avg_win 2.52 / avg_loss 2.4.
+- Sizing allowed: true; status: stable; circuit_breaker: cold_start (n=0&lt;30 30d realized) but no breach.
+- Concentration (OK tier, no warn/block): top_symbol XLE (Energy Select) 20.55% share / 53.74% of PnL mass; top_strategy "intermarket-flow-scout" 16.71% share / 43.69% PnL mass. honest_label: "ETF edge = intermarket-flow-scout on XLE (21% of class PnL)".
+- vs prior: clear lift (PF +0.24, WR +3-5pp, n+19 since early May) — some cleanup + natural samples + possible new emissions.
+- System context: EQUITY (1.57 PF / 51.9% WR / n=420), COMMODITY (2.49 / 61.5% / 322) lead; ETF now competitive on WR/PF with small n but far below their volume/edge maturity.</p>
+<p><strong>ETF-specific edges in production vs backtest</strong>:
+- <strong>Live drivers</strong>: Mixed (intermarket-flow-scout dominant on XLE; some vt_baby_strategies vt_adx_rsi2_etf / vt_thematic_etf_momentum; etf_sector_momentum / etf_dual_momentum from etf_strategies). Emitter <code>etf_sector_emitter.py</code> (Faber) last ran 2026-05-15T01:12Z but produced <strong>0 picks</strong> (no sectors above 200d SMA with positive 3m momo today).
+- <strong>Backtest-proven (Tier-2 / near Tier-1)</strong>: 
+  - <code>tools/backtest_etf_sector_rotation.py</code> (11y 2015-05-13, 122 monthly periods, 11 SPDR sectors XLK/XLE/XLF/XLV/XLI/XLY/XLP/XLU/XLB/XLRE/XLC, 12-1m momentum top-3 equal-weight long-only): PF <strong>2.05</strong>, WR <strong>70.49%</strong>, Sharpe ann. <strong>0.97</strong>, MDD 16.10%, total +283.71% (beats SPY ~3x window). Tier-2 confirmed (PF&gt;1.5/WR&gt;50/n=100/MDD&lt;20); Tier-1 candidate (MDD 1.8pp short of ≤10%).
+  - VIX overlay (<code>backtest_etf_rotation_vix_regime.py</code> + <code>etf_vix_regime_breakthrough_20260513.md</code>): VIX&lt;25 gate (skip ~16% high-vol months): PF <strong>3.22</strong>, Sharpe <strong>1.63</strong>, MDD <strong>11.8%</strong>, n=102 periods, total +395% (vs baseline +284%). <strong>Tier-1 PF + Sharpe; Tier-2 MDD + n</strong>. VIX&lt;22: PF3.91 / Sharpe1.93 / MDD8.1% n=88. Pattern transfers exactly from EQUITY VIX success (second class with this result).
+  - Friction robustness (<code>backtest_etf_sector_rotation_slippage.py</code>): realistic 2.5bp total/leg (monthly rebalance ~6 trades/mo): PF 2.03 (naive 2.05); even 10bp stress PF1.99. Edge survives costs.
+  - Long-short (top3/bottom3): PF 0.937 / negative Sharpe — <strong>REJECT</strong> (bottom sectors mean-revert in recoveries; long-only correct form).
+  - Black-Litterman (PyPortfolioOpt): failed (LinAlgError on rolling cov) — deferred (needs Ledoit-Wolf + ridge).
+- <strong>Code assets</strong>: <code>alpha_engine/etf_strategies.py</code> (etf_dual_momentum Antonacci absolute+relative 12m; etf_sector_momentum Faber 10mo SMA + 3m momo + ADX; tailored _etf_tp_sl ATR 2.5/1.5 capped 10%/6% for baskets); <code>config.py:ETF_SYMBOLS</code> (19+ liquid names incl full 11 sectors + SPY/QQQ/IWM/GLD/SLV/SMH/ARKK/EEM/EFA/VNQ/DBC + recent expansions); <code>etf_sector_emitter.py</code> (yfinance 13mo OHLCV, normalizes to pick schema, opt-in sidecar wire-up, ETF_SECTOR_EMITTER_ENABLED flag); <code>vix_regime_gate.py</code> (already covers asset_class ETF + EQUITY; YC too); <code>quality_gates.py</code> references etf_sector_momentum.
+- Other attempted: <code>backtest_etf_economic_2026_05_12_0615Z.md</code> — <strong>DATA_GAP</strong> (no FRED key, yfinance proxy failed). Economic momentum not yet live.</p>
+<p><strong>Data quality assessment</strong>:
+- <strong>Strengths</strong>: yfinance (free, auto_adjust=True, clean for liquid ETFs); dedicated module with academic citations (Faber 2007 TAA, Antonacci 2014 Dual Momentum); recent fixes (2026-05-14 MMR audit in etf_strategies.py for TLT/HYG BOND_SYMBOLS union + wanted filter — fixed prior 5-sector drop); ATR risk model ETF-specific; emitter + backtest tools mature; resolver-v2 noise filter applied; concentration OK (no block); n now meets floor with positive expectancy.
+- <strong>Weaknesses</strong>: Small live n=106 (noisy stats, cold_start 30d); emitter 0 picks today (regime-dependent — sectors not all above SMA); XLE/energy concentration (sector bias risk, though rotation should mitigate); live edge currently "intermarket-flow-scout" (generic? not pure rotation — dilutes vs backtest purity); FRED economic data access gap (no key in env for backtests/pipeline); some broader ETFs (SPY etc) historically mis-tagged to EQUITY (fixed); yf fetch can fail gracefully but no fallback cache in emitter; no full slippage/ADV model wired for ETF emissions yet (PR #1026 scaffolds exist); modest volume vs CRYPTO/EQUITY.
+- <strong>Quality verdict</strong>: <strong>Good foundation, under-exploited</strong>. The academic rotation + VIX edge is high-quality (friction-robust, regime-aware, transferable), but production relies on mixed/generic sources + incomplete wiring of proven backtests. Data pipeline (yfinance) reliable for these names; outcome tracking part of general system (no ETF-specific resolver gaps flagged unlike CRYPTO ML). Universe expanded well (config 19+), but emitter not firing consistently.</p>
+<p><strong>GitHub Actions / Data flow</strong>: ETF via etf_sector_emitter (alpha-engine-etf.yml workflow per dashboard_generator), production_scanner / multi_asset/scanner (category tagging), scoring (elite_scorer etc), quality_gates (passes_active_gate includes ETF), dashboard. Recent direct commits + PRs touched ETF (sector momo, VIX). GHA audit-dashboard.yml covers.</p>
+<p><strong>Summary baseline</strong>: Live ETF now viable (n=106 / PF1.48 / WR58.5% / sizing true) but small-sample + mixed sources lag the clean Tier-2/near-Tier-1 rotation edge proven in 11y backtests (PF2.05→3.22 w/ VIX). XLE concentration + 0 active rotation picks today highlight wiring gap. Data quality solid (yfinance + academic strats) but economic extension blocked + emitter underused. Matches "borderline but improving" in master; clear path to T2 via existing tools without new paid data.</p>
+<hr />
+<h2>Step 2: Identify the Single Best Pilot Candidate (within ETF)</h2>
+<p><strong>Filters applied</strong>: Live PF&gt;1.4 + WR&gt;55% + n≥100 on sub-strat; explainable academic edge; backtest Tier-2+ with costs; low dev cost (reuse etf_strategies + vix_gate + emitter); feasible paper validation in 30-60d; diversifies COMMODITY cotton risk.</p>
+<ul>
+<li><strong>Recommended Pilot</strong>: <strong>SPDR Sector Rotation + VIX Regime (Faber TAA + Antonacci Dual Momentum on 11-sector universe XLK/XLE/XLF/XLV/XLI/XLY/XLP/XLU/XLB/XLRE/XLC + IWM)</strong> powered by:</li>
+<li><code>etf_sector_momentum</code> (Faber 10mo SMA filter + 3m momo + ADX; top-3 long-only) + <code>etf_dual_momentum</code> (12m absolute+relative).</li>
+<li>VIX&lt;25 (or &lt;22) regime gate (skip rebalance in high-vol; already coded for ETF in vix_regime_gate.py + backtest tool).</li>
+<li>Emitter <code>etf_sector_emitter.py</code> (daily yfinance, writes alpha_engine/data/etf_sector_picks.json; opt-in sidecar).</li>
+<li>Friction model (2.5-5bp realistic) + existing ATR TP/SL.</li>
+<li>Strict long-only (short leg falsified).</li>
+<li>Justification: Backtest PF 2.05 (baseline) / 3.22 (VIX) on 122/102 periods beats live mixed 1.48 by 0.57-1.74 PF; WR 70%+; MDD compressed to 11.8% (T2); Sharpe 1.63 competitive with COMMODITY; 11y incl 2020/2022 crashes robust; monthly cadence low turnover (friction &lt;2% annual drag); external replication (AQR QMOM/IMOM, Faber TAA funds, sector ETFs like XLY etc). XLE concentration today is symptom of non-rotation sources — pure rotation diversifies across sectors. Matches supreme "sector rotation + macro regime". Low risk: no new data feeds (yfinance already used), Wire-Up compliant (sidecar).</li>
+<li>Secondary: Add 1-2 macro (EEM/EFA/DBC/VNQ) or style (SCHD) for broader rotation once core fires; economic (FRED yield-curve / macro) as P2 after FRED key wired (M-032).</li>
+<li>Not full class pilot (COMMODITY #1; EQUITY secondary). ETF pilot conditional per 2026-06-01 schedule + 0.1% Rung-5 sizing until 30d+ paper PF&gt;1.6 post-costs.</li>
+</ul>
+<p><strong>Why this over intermarket-flow-scout or baby ETF?</strong> Backtest purity + academic + VIX lift (proven transfer from EQUITY) + existing code (no rewrite) &gt; opaque generic scout on single XLE. Rotation naturally solves concentration.</p>
+<hr />
+<h2>Step 3: Gap Analysis (ETF)</h2>
+<table>
+<thead>
+<tr>
+<th>Gap Type</th>
+<th>Diagnostic (data-backed)</th>
+<th>Severity</th>
+<th>Typical Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wiring / Emission gap (0 picks today)</td>
+<td>etf_sector_emitter ran 2026-05-15 but picks=[] (no sectors &gt;200d SMA + positive 3m); M-023 dual_momentum_12_1 + M-036 expansion still PENDING in master; vix_regime_gate supports ETF but not default-enforced on ETF emissions (only EQUITY-heavy in some paths); etf_sector_picks.json empty. Live edge = intermarket-flow-scout (not rotation).</td>
+<td><strong>P0</strong></td>
+<td>Enable ETF_SECTOR_EMITTER_ENABLED=1 default; wire VIX gate default for ETF (env + quality_gates); implement/activate M-023 sector_dual_momentum_12_1 as opt-in sidecar (alpha_engine/strategies/ or extend etf_strategies); update dashboard_generator + alpha-engine-etf.yml; shadow 14d per Wire-Up.</td>
+</tr>
+<tr>
+<td>Live n small + mixed sources dilute</td>
+<td>n=106 just floor; XLE 54% PnL mass from non-rotation "intermarket-flow-scout"; baby vt_*_etf low volume; no pure rotation contributing to recent_closed. Backtest n=102-122 periods &gt;&gt; live.</td>
+<td><strong>P1</strong></td>
+<td>Prune/reweight intermarket-flow-scout if its ETF contrib PF&lt;1.4 (check hf_stats or recent_closed slice); promote etf_sector_momentum / dual as primary ETF source (config STRATEGY_WEIGHT_OVERRIDES, passes_active_gate); target 30-50% ETF volume from rotation within 30d.</td>
+</tr>
+<tr>
+<td>Economic / macro data gap</td>
+<td>backtest_etf_economic.py failed (no FRED key); yield-curve / macro regime (M-032) not wired for ETF (only EQUITY VIX+YC combos shipped).</td>
+<td><strong>P2</strong></td>
+<td>Add FRED key to env + fred_data_fetcher.py usage in new etf_economic_momentum sidecar (or combine with VIX); test on DBC / VNQ / TIP. Low priority until core rotation live.</td>
+</tr>
+<tr>
+<td>Friction / execution realism for rotation</td>
+<td>Backtests include slippage variants (PF holds); but no production tx_costs.py call for ETF emitter/picks; slippage_validator (PR #1026) not yet wired for ETF.</td>
+<td><strong>P1</strong></td>
+<td>Wire transaction_costs + slippage_validator for ETF in resolver/quality_gates (0.05-0.15% roundtrip monthly realistic); add to emitter backtest path.</td>
+</tr>
+<tr>
+<td>Outcome tracking / small-sample noise</td>
+<td>n=106 limits DSR/stat sig; resolver general (no ETF-specific exclusion like CRYPTO ML); paper TV accounts active but ETF volume low.</td>
+<td><strong>P2</strong></td>
+<td>Enforce 30d paper on rotation before any sizing; add per-class DSR in statistical_rigor.py for ETF; dashboard tile for ETF rotation PF vs mixed.</td>
+</tr>
+<tr>
+<td>Universe / concentration risk</td>
+<td>Config has 19+ good names (full sectors + macro); but live skewed to XLE; TLT/HYG now correctly routed via recent etf_strategies fix.</td>
+<td><strong>P1</strong></td>
+<td>Enforce rotation emitter as primary (auto-diversifies); add concentration cap &lt;25% per symbol for ETF in sizer; monitor XLE share.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why live lags backtest?</strong> Mixed generic sources (intermarket on XLE) + incomplete rotation wiring/emission + no VIX gate enforcement on ETF path. Rotation is regime-dependent (0 signals some days — normal for trend filter). Data quality not root cause — execution gap is.</p>
+<hr />
+<h2>Step 4: Decision Framework for Strategies (live &gt;60d)</h2>
+<ul>
+<li><strong>Statistically significant negative alpha (PF&lt;1.0 or WR&lt;45% sustained, n&gt;30 on ETF contrib)</strong>: Delete or hard quarantine (BLOCKED_SOURCE_SYSTEMS + probation). E.g. if intermarket-flow-scout ETF slice &lt;1.3 PF or drags XLE concentration, quarantine or invert.</li>
+<li><strong>Positive but fragile / concentrated (PF 1.3-1.5, high single-symbol share)</strong>: Tighten + volume cap. Keep intermarket-flow-scout only if ETF-specific and not &gt;25% class vol; promote pure rotation.</li>
+<li><strong>Only keep if survives walk-forward + live paper with real costs + VIX gate</strong>: Promote etf_sector_momentum (Faber), etf_dual_momentum (Antonacci), vt_thematic_etf_momentum / vt_adx_rsi2_etf (if ETF-tagged), any baby rotation. VIX overlay mandatory for momentum variants.</li>
+<li><strong>Per master (M-023/M-036)</strong>: Activate sector dual + universe expansion as opt-in sidecars with Wiring Plan.</li>
+<li><strong>Delete/invert vs promote (file paths)</strong>:</li>
+<li>Quarantine/delete low-PF ETF contrib: <code>alpha_engine/strategy_blocklist.py</code>, <code>audit_trail/quality_gates.py</code> (extend ETF source rules), BLOCKED_SOURCE_SYSTEMS.</li>
+<li>Promote/wire: <code>alpha_engine/etf_strategies.py</code> (already good), <code>tools/etf_sector_emitter.py</code> (enable + schedule), <code>audit_trail/vix_regime_gate.py</code> (ETF default), <code>alpha_engine/config.py</code> (weights + ETF_SYMBOLS clean), new or extend <code>strategies/etf_sector_rotation_momentum.py</code> per backtest recs.</li>
+<li>Reference: <code>docs/MUTATION_THREE_AXIS_PROTOCOL.md</code> (rehab not silent kill); no mutation needed — backtests already strong.</li>
+</ul>
+<p><strong>Strategies to prioritize for ETF pilot</strong>: etf_sector_momentum + VIX gate (highest backtest conviction), etf_dual_momentum (secondary), existing vt_*_etf if they pass VIX filter.</p>
+<hr />
+<h2>Step 5: Leverage AI Keys Intelligently — High-ROI Prompt Templates (tailored to gaps)</h2>
+<p><strong>1. Rotation Emitter Activation + VIX Integration</strong>:</p>
+<pre><code>Given etf_sector_emitter.py (Faber, currently 0 picks 2026-05-15), etf_strategies.py (etf_sector_momentum + etf_dual_momentum), vix_regime_gate.py (supports ETF), and backtest results (PF 3.22 VIX&lt;25 on 102 periods), produce: (a) exact env + code change to make VIX&lt;25 default for all ETF asset_class emissions (quality_gates + dashboard_generator), (b) fix for emitter to always emit (or log why 0), (c) 14-day shadow validation plan + Wiring Plan section for PR, (d) pseudocode to combine dual_momentum fallback when sector_momentum empty. Target: rotation contributing ≥40% ETF volume within 30d.
+</code></pre>
+<p><strong>2. FRED Economic + Macro Regime for ETF</strong>:</p>
+<pre><code>Design low-cost FRED integration (yield curve 10y-2y, CPI, unemployment) for ETF rotation (e.g. gate EEM/DBC during inversion or high inflation). Exact free FRED API usage (fred_data_fetcher.py exists), cache, backtest on historical (2015+), expected PF/MDD lift on sector + macro ETFs (VNQ/DBC/TIP). Include in new etf_macro_regime.py sidecar (opt-in). Reference M-032 and equity_yc_regime_breakthrough.
+</code></pre>
+<p><strong>3. Live vs Backtest Reconciliation + Concentration Fix</strong>:</p>
+<pre><code>Analyze why live ETF PF 1.48 / XLE 54% PnL vs backtest PF 2.05-3.22 on pure rotation. Recommend: exact recent_closed slice query for ETF sources/PF by symbol (XLE vs XLK etc), prune plan for intermarket-flow-scout ETF contrib if &lt;1.4 PF, rotation volume target, and dashboard tile showing &quot;ETF Rotation (VIX-gated) vs Mixed&quot; PF/WR/n. Cite dashboard_data + hf_stats.
+</code></pre>
+<hr />
+<h2>Step 6: Low-Cost Data &amp; Validation Stack</h2>
+<ul>
+<li><strong>Cache everything</strong>: yfinance responses (daily JSON in alpha_engine/data/ like etf_sector_picks); VIX (^VIX) + YC (^TNX-^FVX) cached in vix_regime_gate.py (already has _VIX_CACHE / _YC_CACHE + TTL).</li>
+<li><strong>Walk-forward / rolling OOS mandatory</strong>: On 11-sector SPDR only (already in backtests); extend with CPCV for VIX thresholds. Re-run backtests monthly.</li>
+<li><strong>Monte-Carlo / bootstrap</strong>: For CI on PF/MDD post-friction (target 95% CI PF&gt;1.8 for rotation).</li>
+<li><strong>Truth source</strong>: Live paper trading (tv-paper-trade accounts) on rotation signals vs backtest. 30d rolling WR/PF post 5-10bp costs + slippage_validator. 7d soak before any gate.</li>
+<li><strong>Resolver/DB</strong>: General resolver-v2 sufficient; add ETF rotation source tag for tracking. DB freshness guardian (M-002) covers emitter runs.</li>
+<li><strong>External cheap</strong>: yfinance only (no paid); FRED free tier once key added; VIX/YC public. No Glassnode etc needed.</li>
+<li><strong>Anti-overfit</strong>: DSR/PSR (statistical_rigor.py), trust_score ≥0.55 for ETF, elite_score per-class, anti_overfit_audit_sidecar. VIX gate itself is regime anti-overfit.</li>
+<li><strong>Validation</strong>: Reproduce backtests (<code>python tools/backtest_etf_rotation_vix_regime.py</code>); 14d shadow emitter; compare paper vs dashboard ETF tile.</li>
+</ul>
+<hr />
+<h2>Step 7: Focused Output — 30/60/90-Day Execution Recommendation</h2>
+<p><strong>Pilot</strong>: SPDR 11-Sector Rotation + VIX&lt;25 Regime (Faber + Dual Momentum long-only). Target post-90d: PF ≥1.8 / WR ≥58% / n≥80 clean resolved on rotation signals (quality &gt; mixed volume), VIX gate active on ≥70% ETF emissions, XLE concentration &lt;25% class PnL, 0.1%→0.5% sizing if gates passed. Contributes to "phenomenal performance across ALL asset classes" (Goal #1) as low-effort Tier-2 candidate behind COMMODITY.</p>
+<p><strong>30 Days (P0 — Wire the proven edge, stop dilution)</strong>:
+- Activate + schedule <code>etf_sector_emitter.py</code> (ETF_SECTOR_EMITTER_ENABLED=1 default; add to GHA alpha-engine-etf.yml or cron); ensure daily run produces rotation picks when conditions met (log skips).
+- Wire VIX regime gate default for ETF: update <code>audit_trail/quality_gates.py</code>, <code>audit_trail/vix_regime_gate.py</code> (env VIX_REGIME_GATE_ETF_ENABLED=1), <code>audit_dashboard/template.html</code> (ETF tile shows VIX filter status), dashboard_generator. Reference backtest sweet spot VIX&lt;25.
+- Activate M-023: ship <code>sector_dual_momentum_12_1</code> (or map to existing etf_dual_momentum) as opt-in sidecar with full Wiring Plan + 14d shadow (per CLAUDE.md).
+- Prune / cap: if intermarket-flow-scout ETF contrib PF&lt;1.4 or &gt;30% vol, reduce weight in config / quality_gates; target rotation ≥30% ETF volume.
+- Paper: 0.1% risk shadow on all new rotation + VIX-gated signals (target n≥15-20 in 30d, PF&gt;1.6 post simulated costs).
+- Data: Add FRED key (if available) + stub etf_economic sidecar; fix any yf fetch in emitter.
+- Docs: Update <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code> Section 21 + M-023/M-036 status (evidence-backed); create this <code>reports/asset_class_90day_plan_ETF_2026-05-15.md</code>; add to supreme plan ETF track.
+- Success: Dashboard ETF tile shows rotation source active + VIX filter; emitter producing &gt;0 picks on avg days; XLE PnL share dropping; paper PF&gt;1.5.</p>
+<p><strong>60 Days (P1 — Validate + scale paper)</strong>:
+- Full 30-45d paper pilot: 0.2-0.3% risk on rotation book (all 11 sectors + VIX gate + dual fallback); rolling metrics target PF&gt;1.7 / WR&gt;58 / MDD&lt;15 / n≥40 clean. Journal every deviation.
+- Walk-forward re-backtest + MC on live data window; add slippage_validator + tx_costs for ETF path.
+- Expand universe slightly (M-036): ensure full 19+ in ETF_SYMBOLS + emitter (EEM/EFA/DBC etc for macro rotation); test international tilt.
+- Economic layer: wire FRED yield-curve / inflation gate for defensive sectors (XLP/XLU/XLV) during inversion (combine with VIX).
+- Prune remaining drags; promote 2-3 rotation variants only for ETF.
+- External: Compare paper to public sector rotation (e.g. Faber TAA funds, XL sector perf); Hyperliquid or futures analogs if relevant.
+- GHA + monitoring: ETF freshness in db-freshness badge; concentration alerts.
+- Success: Paper meets T2 thresholds (PF≥1.6 / WR≥52 / n≥60 / MDD&lt;18 on 45d+); M-023/M-036 closed with repro; rotation &gt;50% ETF PnL.</p>
+<p><strong>90 Days (P2 — Go/No-Go for micro-sizing + T2 candidate)</strong>:
+- If paper pilot passes (clean 60d rolling PF&gt;1.8 / WR&gt;58 / n≥80 post real costs/slippage, DSR&gt;0.85, corr&lt;0.6 with COMMODITY/EQUITY, no VIX-regime failure in live, XLE&lt;25%): promote to 0.3-0.5% live micro sleeve (skin-in-game per M-061), full dashboard integration, update master institutional schedule ETF pilot date. Consider 2nd leg (risk-parity or quarterly rebalance variant).
+- Else: Maintain 0.1% max, double down on VIX + rotation purity (drop any remaining generic scout), further universe filter (drop ARKK/KWEB if volatile), consider "ETF research-only" if no lift. Re-eval vs BOND thin sample.
+- Master plan updates: Close M-023/M-036/M-0xx (VIX-ETF) with paper logs + dashboard delta + backtest repro; add M-0xx for FRED ETF macro if successful. All via clean PRs + swarm per AGENTS.md + Wire-Up Rule.
+- Overall: ETF moves from "borderline T3 / mixed" to "Tier-2 candidate on rotation + VIX" (2nd class after COMMODITY). Diversifies single-symbol commodity risk. Contributes to phenomenal /audit performance across classes. If succeeds, ETF becomes reliable parallel sleeve (low capital, high edge clarity).
+- If COMMODITY pilot fails gate, de-prioritize ETF further.</p>
+<p><strong>Risks / Anti-patterns avoided</strong>: No heavy capital before 30-60d paper + VIX gate live (avoids small-n overfit); no complex BL/risk-parity before basic rotation fires (BL falsified in backtest); prune mixed sources &gt; add volume; no silent promotion (evidence-first per master); no new paid data (yfinance + FRED free); respect "only scale if COMMODITY succeeds" from supreme; follow MUTATION_THREE_AXIS if any rehab needed.
+- Anti: Do not force daily signals (momentum is regime-gated — 0 picks normal); do not ignore XLE concentration without rotation emitter.</p>
+<p><strong>Files to touch (Wire-Up compliant, small focused PRs, opt-in/sidecar where possible)</strong>: <code>tools/etf_sector_emitter.py</code> (enable + logging), <code>alpha_engine/etf_strategies.py</code> (minor if dual expansion), <code>audit_trail/vix_regime_gate.py</code> + <code>quality_gates.py</code> (ETF default + source rules), <code>alpha_engine/config.py</code> (weights, ETF_SYMBOLS), <code>audit_dashboard/template.html</code> + <code>dashboard_generator.py</code> (tiles + emitter source), <code>alpha_engine/production_scanner.py</code> / <code>scanner.py</code> (category/ETF hints), <code>tools/backtest_etf_rotation_vix_regime.py</code> (repro + update), new <code>strategies/etf_sector_rotation_momentum.py</code> (if separate from emitter per backtest rec), <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code> (Section 21 + M-023 status). Reference <code>docs/MUTATION_THREE_AXIS_PROTOCOL.md</code>.</p>
+<p><strong>Expected impact</strong>: +0.3-0.8 PF lift on ETF class (rotation purity + VIX compression); n growth to 150-200 clean rotation samples; XLE concentration normalized (&lt;25%); path to T2 (PF&gt;1.6 / WR&gt;52 / MDD&lt;18) within 90d at 0.1-0.5% sizing. Low dev cost (reuse 90% existing), high edge clarity, diversifies platform. Positions ETF as reliable 3rd/4th asset class post-COMMODITY/EQUITY.</p>
+<p><strong>Next</strong>: Spawn deep-dive subagent only if FRED economic or specific source (intermarket autopsy) needed; otherwise execute 30d wiring immediately. Re-run backtests + paper monitor weekly. Update supreme + master only on evidence. All changes via clean branches + PRs per AGENTS.md.</p>
+<p><strong>References</strong> (absolute paths):
+- Data: <code>/mnt/e/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json</code>
+- Master/Supreme: <code>/mnt/e/findtorontoevents_antigravity.ca/reports/MASTER_ACTION_PLAN_2026-05-15.md</code>, <code>/mnt/e/findtorontoevents_antigravity.ca/reports/SUPREME_PLAN_90days.md</code>
+- Code: <code>/mnt/e/findtorontoevents_antigravity.ca/alpha_engine/etf_strategies.py</code>, <code>config.py</code>, <code>tools/etf_sector_emitter.py</code>, <code>audit_trail/vix_regime_gate.py</code>, <code>quality_gates.py</code>
+- Backtests/Reports: <code>/mnt/e/findtorontoevents_antigravity.ca/reports/etf_vix_regime_breakthrough_20260513.md</code>, <code>etf_sector_rotation_backtest_20260513T020800Z.md</code>, <code>etf_abc_backtest_20260513.md</code>, <code>fix_ETF_20260505T005402Z.md</code>, <code>audit_asset_feedback_2026-05-05T0121Z_ETF.md</code>, <code>backtest_etf_economic_2026_05_12_0615Z.md</code>, <code>expanded_enhancement_plan_2026-05-14.md</code></p>
+<p>This plan is ruthless, data-driven, focused on compounding the clean academic rotation edge while eliminating mixed-source dilution. ETF is worth targeted (not heavy) investment in the next 90 days — high conviction on VIX-augmented sector momentum as the path to T2.</p>
+<hr />
+<p><em>Generated 2026-05-15 per money-maker-continual-improve skill invocation. Pilot asset class for system remains COMMODITY; this is ETF-specific 90d wiring + validation plan (tertiary parallel track).</em></p>
+<div class="src">Source: <code>reports/asset_class_90day_plan_ETF_2026-05-15.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

@@ -1,0 +1,77 @@
+---
+description: PHP version and server environment constraints for all PHP code
+globs: **/*.php
+alwaysApply: false
+---
+
+# PHP 5.2 Server Environment
+
+The production server runs **PHP 5.2**. All PHP code must be compatible.
+
+**A single PHP 5.3+ construct in ANY included file (even config.php) will cause a fatal Parse error and take down every endpoint that includes it.** This has happened multiple times with `?:` and `??` operators.
+
+## Language Restrictions (PHP 5.2) — HARD RULES
+
+**NEVER use any of these constructs in PHP files. They cause instant fatal errors on the production server.**
+
+- **No short ternary `?:`** — NEVER write `getenv('X') ?: ''` or `$x ?: $y`. Always use the full form: `$v = getenv('X'); $result = ($v !== false && $v !== '') ? $v : '';` or use a helper function.
+- **No null coalescing `??`** — NEVER write `$x ?? 'default'`. Use `isset($x) ? $x : 'default'`.
+- **No `[]` array syntax** — NEVER write `$a = []` or `['key' => 'val']`. Use `array()`.
+- **No closures / anonymous functions** — NEVER write `function() { ... }` or pass `function($x)` as an argument. Extract to a named function.
+- **No namespaces** (`namespace`, `use`)
+- **No traits**, generators, `finally`, `yield`, `...` splat operator
+- **No `::class` constant**, typed properties, return type declarations, or scalar type hints
+- **No `json_encode()` options** parameter (added in 5.3) — plain `json_encode($data)` only
+- **No late static binding** (`static::`)
+- **No `goto`**, `__DIR__` (use `dirname(__FILE__)` instead)
+- **No `http_response_code()`** — use `header('HTTP/1.1 CODE Status')` instead
+- **No arrow functions** `fn() =>`
+- **No `match` expressions**, nullsafe `?->`, named arguments
+- Use `mysql_*` functions if needed (not `mysqli_*` or PDO, unless server has them)
+
+## Common Mistake Patterns (AVOID THESE)
+
+These are real examples of code that has broken production. **Never generate code like this:**
+
+| BAD (breaks production) | GOOD (PHP 5.2 safe) |
+|---|---|
+| `getenv('X') ?: ''` | `$v = getenv('X'); define('X', ($v !== false && $v !== '') ? $v : '');` |
+| `$x ?? 'default'` | `isset($x) ? $x : 'default'` |
+| `$arr = ['a', 'b']` | `$arr = array('a', 'b')` |
+| `json_encode($d, JSON_PRETTY_PRINT)` | `json_encode($d)` |
+| `http_response_code(404)` | `header('HTTP/1.1 404 Not Found')` |
+| `__DIR__ . '/file.php'` | `dirname(__FILE__) . '/file.php'` |
+| `array_map(function($x) { ... }, $arr)` | Write a named function, then `array_map('my_func', $arr)` |
+
+## php.ini Settings
+
+| Setting                  | Value                   |
+|--------------------------|-------------------------|
+| register_globals         | On                      |
+| short_open_tag           | On                      |
+| display_errors           | On                      |
+| error_reporting          | E_ALL & ~E_NOTICE       |
+| log_errors               | Off                     |
+| magic_quotes_gpc         | Off                     |
+| file_uploads             | On                      |
+| allow_url_fopen          | On                      |
+| allow_url_include        | On                      |
+| max_input_vars           | 1000                    |
+| memory_limit             | 128M                    |
+| post_max_size            | 8M                      |
+| upload_max_filesize      | 2M                      |
+| max_execution_time       | 30                      |
+| opcache.enable_file_override | On                  |
+
+## Disabled Extensions
+
+imagick, ioncube, apc, memcached, sysvsem, ssh2, rar, gmp, zend_optimizer — all **Off**.
+
+## Practical Reminders
+
+- `short_open_tag` is On, so `<?= $var ?>` and `<? ... ?>` work, but prefer `<?php` for clarity.
+- `allow_url_fopen` / `allow_url_include` are On — `file_get_contents('https://...')` works for remote calls.
+- `upload_max_filesize` is **2 MB** — keep uploaded files under this limit.
+- `post_max_size` is **8 MB** — total POST body must stay under this.
+- `max_execution_time` is **30 s** — long-running scripts must finish within 30 seconds or be split.
+- `register_globals` is On — avoid variable names that collide with `$_GET`/`$_POST` keys.

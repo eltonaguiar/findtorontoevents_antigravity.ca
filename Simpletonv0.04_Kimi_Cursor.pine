@@ -1,0 +1,593 @@
+//@version=5
+// Simpleton Signals Kimi_Cursor v0.06
+// ====================================
+// Backtested on 31 coins across TradingView (1H, 3 years, Binance).
+// v0.05 was profitable on 6/31 coins. v0.06 targets the 25 that failed.
+//
+// HOW IT WORKS (plain English):
+// This strategy watches 9 different technical indicators at once.
+// Each indicator "votes" on whether to go long or short.
+// When enough indicators agree, it enters a trade.
+//
+// MODES EXPLAINED:
+//   "Multi-Indicator" = All 9 indicators get 1 vote each. Simple majority rules.
+//       Like asking 9 people for their opinion — if enough say "buy", you buy.
+//
+//   "Dynamic" = Same 9 indicators, but their votes are WEIGHTED by market conditions.
+//       In a trending market, trend-following indicators (SuperTrend, MACD, etc.)
+//       get 2x voting power. In a range-bound market, mean-reversion indicators
+//       (RSI, Bollinger Bands, Z-Score) get 2x power instead.
+//       Like giving extra weight to experts who specialize in the current situation.
+//
+//   Individual modes = Use only one indicator at a time (for testing/comparison).
+//
+// WHAT'S NEW IN v0.06 (from v0.05):
+//   Based on analysis of 31-coin TradingView backtests:
+//   1. TREND BIAS FILTER: counter-trend trades now need +1 extra vote to fire.
+//      Data showed 8 coins had profitable shorts but losing longs (or vice versa).
+//      This filter reduces the losing side automatically.
+//   2. AUTO-SCALE TP/SL by volatility as the new default. The old fixed 3%/2% was
+//      too tight for volatile alts (SEI, APE, INJ lost -15-20%). Now TP/SL scales
+//      with each symbol's ATR%, so BTC keeps ~3%/2% while SOL gets ~5%/3%.
+//   3. RAISED CONFIRMATION in MIXED regime from 3 to 4 votes. MIXED is the
+//      noisiest regime — requiring more agreement cuts false signals.
+//   4. ENTRY GRACE PERIOD: SL doesn't activate for the first few bars, preventing
+//      immediate stop-outs from entry-bar volatility.
+//
+// INDICATORS (9 total):
+//   From KIMI engine:   RSI-2, SuperTrend, MACD, Triple EMA, Bollinger Bands
+//   From CURSOR engine: Ichimoku Cloud, HMA Trend, Swing Failure Pattern, Z-Score
+
+strategy("Simpleton v0.06 Kimi_Cursor", shorttitle="SIMP_KC06", overlay=true,
+     initial_capital=10000, default_qty_type=strategy.percent_of_equity, default_qty_value=10,
+     commission_type=strategy.commission.percent, commission_value=0.1,
+     pyramiding=0, calc_on_every_tick=false)
+
+// ============================================================================
+// STRATEGY MODE
+// ============================================================================
+string MODE_RSI2        = "RSI-2 Mean Reversion"
+string MODE_SUPERTREND  = "SuperTrend"
+string MODE_MACD        = "MACD Crossover"
+string MODE_TRIPLEEMA   = "Triple EMA"
+string MODE_BB          = "Bollinger Bands"
+string MODE_ICHIMOKU    = "Ichimoku Cloud"
+string MODE_HMA         = "HMA Trend"
+string MODE_SFP         = "Swing Failure Pattern"
+string MODE_ZSCORE      = "Z-Score Mean Reversion"
+string MODE_MULTI       = "Multi-Indicator"
+string MODE_DYNAMIC     = "Dynamic"
+
+strategyMode = input.string(MODE_DYNAMIC, "Strategy Mode", options=[
+     MODE_RSI2, MODE_SUPERTREND, MODE_MACD, MODE_TRIPLEEMA, MODE_BB,
+     MODE_ICHIMOKU, MODE_HMA, MODE_SFP, MODE_ZSCORE, MODE_MULTI, MODE_DYNAMIC],
+     tooltip="Dynamic = indicators vote with extra weight based on market conditions (recommended). Multi = all 9 vote equally. Individual = single indicator only.",
+     group="Strategy")
+
+// ============================================================================
+// RISK MANAGEMENT
+// ============================================================================
+useTPSL      = input.bool(true, "Use Take Profit / Stop Loss", group="Risk Management")
+string TPSL_SMART  = "Smart (Vol-Normalized)"
+string TPSL_HYBRID = "Hybrid (Fixed short TF, ATR long TF)"
+string TPSL_ATR    = "ATR Auto-Scale"
+string TPSL_FIXED  = "Fixed Percentage"
+tpslMode     = input.string(TPSL_SMART, "TP/SL Mode", options=[TPSL_SMART, TPSL_HYBRID, TPSL_ATR, TPSL_FIXED], tooltip="Smart (recommended): auto-scales TP/SL by each symbol's volatility. BTC gets ~3%/2%, SOL gets ~5%/3%. Hybrid: fixed % on <=1H, ATR on 4H+. Fixed: manual %.", group="Risk Management")
+fixedTP      = input.float(3.0, "Fixed TP %", minval=0.1, maxval=50.0, step=0.1, group="Risk Management")
+fixedSL      = input.float(2.0, "Fixed SL %", minval=0.1, maxval=50.0, step=0.1, group="Risk Management")
+smartTPMult  = input.float(1.5, "Smart TP (x ATR%)", minval=0.5, maxval=5.0, step=0.25, tooltip="TP = ATR% * this multiplier. E.g. BTC ATR%=2 → TP=3%. SOL ATR%=4 → TP=6%.", group="Risk Management")
+smartSLMult  = input.float(1.0, "Smart SL (x ATR%)", minval=0.3, maxval=3.0, step=0.25, tooltip="SL = ATR% * this multiplier. E.g. BTC ATR%=2 → SL=2%. SOL ATR%=4 → SL=4%.", group="Risk Management")
+manualTPMult = input.float(2.5, "Manual TP (ATR x)", minval=0.5, maxval=8.0, step=0.25, group="Risk Management")
+manualSLMult = input.float(1.25, "Manual SL (ATR x)", minval=0.3, maxval=5.0, step=0.25, group="Risk Management")
+useAutoScale = input.bool(true, "Auto-Scale ATR by Timeframe", tooltip="When ON, TP/SL ATR multipliers auto-adjust per timeframe profile (SCALP→MACRO). When OFF, uses manual ATR multiples above.", group="Risk Management")
+useTrendBias = input.bool(true, "Trend Bias Filter", tooltip="When ON, counter-trend trades need +1 extra confirmation vote. Reduces losing trades that fight the trend. Based on 31-coin analysis: 8 coins had one profitable side dragged down by the other.", group="Signal Filters")
+graceBars    = input.int(3, "Entry Grace Period (bars)", minval=0, maxval=20, tooltip="SL doesn't activate for this many bars after entry. Prevents immediate stop-outs from entry-bar noise. Data showed losers exit in 9-15 bars vs winners 20-30+.", group="Signal Filters")
+useVolFilter = input.bool(false, "Volume Filter", tooltip="When ON, signals require above-average volume. Reduces noise on low-vol bars.", group="Signal Filters")
+volThreshold = input.float(1.2, "Volume Threshold (x avg)", minval=0.5, maxval=5.0, step=0.1, tooltip="Signal only fires when volume > SMA(20) * this value.", group="Signal Filters")
+
+// ============================================================================
+// REGIME DETECTION
+// ============================================================================
+adxPeriod    = input.int(14, "ADX Period", minval=5, maxval=50, group="Regime Detection")
+adxTrendThr  = input.int(25, "ADX Trend Threshold", minval=15, maxval=45, group="Regime Detection")
+adxRangeThr  = input.int(15, "ADX Range Threshold", minval=5, maxval=30, group="Regime Detection")
+
+// ============================================================================
+// INDICATOR PARAMETERS
+// ============================================================================
+// RSI-2
+rsiLen       = input.int(2, "RSI Length", minval=2, maxval=14, group="RSI-2")
+rsiOS        = input.int(30, "RSI Oversold", minval=10, maxval=45, group="RSI-2")
+rsiOB        = input.int(70, "RSI Overbought", minval=55, maxval=90, group="RSI-2")
+useTrendFilt = input.bool(true, "Use 200 EMA Trend Filter", group="RSI-2")
+
+// SuperTrend
+stFactor     = input.float(3.0, "SuperTrend Factor", minval=1.0, maxval=10.0, step=0.5, group="SuperTrend")
+stATRPeriod  = input.int(10, "SuperTrend ATR Period", minval=5, maxval=50, group="SuperTrend")
+
+// MACD
+macdFast     = input.int(12, "MACD Fast", minval=5, maxval=30, group="MACD")
+macdSlow     = input.int(26, "MACD Slow", minval=10, maxval=50, group="MACD")
+macdSig      = input.int(9, "MACD Signal", minval=3, maxval=20, group="MACD")
+
+// Triple EMA
+emaFast      = input.int(9, "Fast EMA", minval=3, maxval=30, group="Triple EMA")
+emaMed       = input.int(21, "Medium EMA", minval=10, maxval=50, group="Triple EMA")
+emaSlow      = input.int(50, "Slow EMA", minval=20, maxval=100, group="Triple EMA")
+
+// Bollinger Bands
+bbLen        = input.int(20, "BB Length", minval=10, maxval=50, group="Bollinger Bands")
+bbMult       = input.float(2.0, "BB Multiplier", minval=1.0, maxval=4.0, step=0.1, group="Bollinger Bands")
+
+// Ichimoku
+ichiTenkan   = input.int(9, "Tenkan Period", minval=5, maxval=20, group="Ichimoku Cloud")
+ichiKijun    = input.int(26, "Kijun Period", minval=15, maxval=52, group="Ichimoku Cloud")
+ichiSenkou   = input.int(52, "Senkou B Period", minval=26, maxval=120, group="Ichimoku Cloud")
+
+// HMA
+hmaPeriod    = input.int(50, "HMA Period", minval=10, maxval=200, group="HMA Trend")
+
+// SFP
+sfpLookback  = input.int(20, "SFP Swing Lookback", minval=5, maxval=50, group="SFP")
+sfpWickRatio = input.float(0.25, "SFP Min Wick Ratio", minval=0.1, maxval=0.5, step=0.05, group="SFP")
+
+// Z-Score
+zscorePeriod = input.int(20, "Z-Score Period", minval=10, maxval=50, group="Z-Score MR")
+zscoreEntry  = input.float(2.0, "Z-Score Entry Threshold", minval=1.0, maxval=4.0, step=0.25, group="Z-Score MR")
+
+// Multi/Dynamic
+minConfirm   = input.int(3, "Min Confirmations (Multi)", minval=1, maxval=9, group="Voting System")
+
+// ============================================================================
+// TIMEFRAME AUTO-SCALING (from Crypto_Pair_Selector_v2_STEPFUN pattern)
+// ============================================================================
+tf_secs = timeframe.in_seconds()
+
+float auto_tp_mult = tf_secs <= 300 ? 1.25 : tf_secs <= 900 ? 1.5 : tf_secs <= 3600 ? 2.0 : tf_secs <= 14400 ? 2.5 : tf_secs <= 86400 ? 3.5 : 4.5
+float auto_sl_mult = tf_secs <= 300 ? 0.75 : tf_secs <= 900 ? 0.75 : tf_secs <= 3600 ? 1.0 : tf_secs <= 14400 ? 1.25 : tf_secs <= 86400 ? 1.75 : 2.0
+int   auto_max_hold = tf_secs <= 300 ? 8 : tf_secs <= 900 ? 12 : tf_secs <= 3600 ? 15 : tf_secs <= 14400 ? 20 : tf_secs <= 86400 ? 12 : 8
+string tf_profile = tf_secs <= 300 ? "SCALP" : tf_secs <= 900 ? "INTRADAY" : tf_secs <= 3600 ? "SWING-ID" : tf_secs <= 14400 ? "SWING" : tf_secs <= 86400 ? "POSITION" : "MACRO"
+
+float tp_mult_active = useAutoScale ? auto_tp_mult : manualTPMult
+float sl_mult_active = useAutoScale ? auto_sl_mult : manualSLMult
+
+// ============================================================================
+// SHARED INDICATORS
+// ============================================================================
+atr14       = ta.atr(14)
+ema200      = ta.ema(close, 200)
+sma50       = ta.sma(close, 50)
+[diPlus, diMinus, adxVal] = ta.dmi(adxPeriod, adxPeriod)
+volSMA20    = ta.sma(volume, 20)
+
+// ============================================================================
+// VOLATILITY CLASSIFICATION
+// ============================================================================
+float atrPct = close > 0 ? atr14 / close * 100 : 0.0
+string volClass = atrPct > 4.0 ? "HIGH" : atrPct > 2.0 ? "MED" : "LOW"
+bool volOK = not useVolFilter or (volSMA20 > 0 and volume > volSMA20 * volThreshold)
+
+// Smart TP/SL: volatility-normalized with floor/cap to stay sane
+float rawSmartTP = atrPct * smartTPMult
+float rawSmartSL = atrPct * smartSLMult
+float smartTP_pct = math.max(2.5, math.min(rawSmartTP, 10.0))
+float smartSL_pct = math.max(1.5, math.min(rawSmartSL, 6.0))
+
+// ============================================================================
+// ADX REGIME CLASSIFICATION
+// ============================================================================
+string regime = adxVal >= adxTrendThr ? "TREND" : adxVal >= adxRangeThr ? "MIXED" : "RANGE"
+bool isTrend = regime == "TREND"
+bool isRange = regime == "RANGE"
+bool isMixed = regime == "MIXED"
+
+// ============================================================================
+// INDICATOR 1: RSI-2 MEAN REVERSION
+// ============================================================================
+rsiVal     = ta.rsi(close, rsiLen)
+bool rsiBuy  = rsiVal < rsiOS and rsiVal[1] <= rsiOS and (not useTrendFilt or close > ema200)
+bool rsiSell = rsiVal > rsiOB and rsiVal[1] >= rsiOB and (not useTrendFilt or close < ema200)
+
+// ============================================================================
+// INDICATOR 2: SUPERTREND
+// ============================================================================
+[stLine, stDir] = ta.supertrend(stFactor, stATRPeriod)
+bool stBuy  = stDir < 0 and stDir[1] > 0
+bool stSell = stDir > 0 and stDir[1] < 0
+
+// ============================================================================
+// INDICATOR 3: MACD CROSSOVER
+// ============================================================================
+[macdLine, signalLine, histLine] = ta.macd(close, macdFast, macdSlow, macdSig)
+bool macdBuy  = macdLine > signalLine and macdLine[1] <= signalLine[1]
+bool macdSell = macdLine < signalLine and macdLine[1] >= signalLine[1]
+
+// ============================================================================
+// INDICATOR 4: TRIPLE EMA
+// ============================================================================
+fastEMA  = ta.ema(close, emaFast)
+medEMA   = ta.ema(close, emaMed)
+slowEMA  = ta.ema(close, emaSlow)
+
+bool emaBullish = fastEMA > medEMA and medEMA > slowEMA
+bool emaBearish = fastEMA < medEMA and medEMA < slowEMA
+bool tripleEMABuy  = emaBullish and (not emaBullish[1] or not emaBullish[2])
+bool tripleEMASell = emaBearish and (not emaBearish[1] or not emaBearish[2])
+
+// ============================================================================
+// INDICATOR 5: BOLLINGER BANDS
+// ============================================================================
+bbBasis  = ta.sma(close, bbLen)
+bbDev    = ta.stdev(close, bbLen) * bbMult
+bbUpper  = bbBasis + bbDev
+bbLower  = bbBasis - bbDev
+bool bbBuy  = close < bbLower and close[1] <= bbLower[1]
+bool bbSell = close > bbUpper and close[1] >= bbUpper[1]
+
+// ============================================================================
+// INDICATOR 6: ICHIMOKU CLOUD
+// ============================================================================
+tenkan   = (ta.highest(high, ichiTenkan) + ta.lowest(low, ichiTenkan)) / 2
+kijun    = (ta.highest(high, ichiKijun) + ta.lowest(low, ichiKijun)) / 2
+spanA    = (tenkan + kijun) / 2
+spanB    = (ta.highest(high, ichiSenkou) + ta.lowest(low, ichiSenkou)) / 2
+cloudTop = math.max(spanA[ichiKijun], spanB[ichiKijun])
+cloudBot = math.min(spanA[ichiKijun], spanB[ichiKijun])
+
+bool tkCrossUp  = ta.crossover(tenkan, kijun)
+bool tkCrossDn  = ta.crossunder(tenkan, kijun)
+bool ichiBuy    = tkCrossUp and close > cloudTop and spanA[ichiKijun] > spanB[ichiKijun]
+bool ichiSell   = tkCrossDn and close < cloudBot and spanA[ichiKijun] < spanB[ichiKijun]
+
+// ============================================================================
+// INDICATOR 7: HMA TREND
+// ============================================================================
+hmaHalf  = ta.wma(close, hmaPeriod / 2)
+hmaFull  = ta.wma(close, hmaPeriod)
+hmaDiff  = 2 * hmaHalf - hmaFull
+hmaVal   = ta.wma(hmaDiff, math.round(math.sqrt(hmaPeriod)))
+rsi14    = ta.rsi(close, 14)
+
+bool hmaTurnUp  = hmaVal > hmaVal[1] and hmaVal[1] <= hmaVal[2]
+bool hmaTurnDn  = hmaVal < hmaVal[1] and hmaVal[1] >= hmaVal[2]
+bool hmaBuy     = hmaTurnUp and close > sma50 and rsi14 < 75
+bool hmaSell    = hmaTurnDn and close < sma50 and rsi14 > 25
+
+// ============================================================================
+// INDICATOR 8: SWING FAILURE PATTERN (SFP)
+// ============================================================================
+swingHi  = ta.highest(high, sfpLookback)[1]
+swingLo  = ta.lowest(low, sfpLookback)[1]
+barRange = high - low
+wickBelow = low < swingLo ? swingLo - low : 0.0
+wickAbove = high > swingHi ? high - swingHi : 0.0
+
+bool sfpBuy  = low < swingLo and close > swingLo and close > open and barRange > 0 and wickBelow / barRange >= sfpWickRatio
+bool sfpSell = high > swingHi and close < swingHi and close < open and barRange > 0 and wickAbove / barRange >= sfpWickRatio
+
+// ============================================================================
+// INDICATOR 9: Z-SCORE MEAN REVERSION
+// ============================================================================
+zMean    = ta.sma(close, zscorePeriod)
+zStd     = ta.stdev(close, zscorePeriod)
+zScore   = zStd > 0 ? (close - zMean) / zStd : 0.0
+bool zscoreBuy  = zScore < -zscoreEntry
+bool zscoreSell = zScore > zscoreEntry
+
+// ============================================================================
+// VOTING SYSTEM
+// ============================================================================
+
+// --- Category tags for regime gating ---
+// Trend-following: SuperTrend, MACD, Triple EMA, Ichimoku, HMA
+// Mean-reversion: RSI-2, Bollinger Bands, Z-Score
+// Universal: SFP (works in all regimes)
+
+// Static Multi-Indicator: all 9 vote equally
+int staticLong = 0
+staticLong += rsiBuy      ? 1 : 0
+staticLong += stBuy       ? 1 : 0
+staticLong += macdBuy     ? 1 : 0
+staticLong += tripleEMABuy? 1 : 0
+staticLong += bbBuy       ? 1 : 0
+staticLong += ichiBuy     ? 1 : 0
+staticLong += hmaBuy      ? 1 : 0
+staticLong += sfpBuy      ? 1 : 0
+staticLong += zscoreBuy   ? 1 : 0
+
+int staticShort = 0
+staticShort += rsiSell      ? 1 : 0
+staticShort += stSell       ? 1 : 0
+staticShort += macdSell     ? 1 : 0
+staticShort += tripleEMASell? 1 : 0
+staticShort += bbSell       ? 1 : 0
+staticShort += ichiSell     ? 1 : 0
+staticShort += hmaSell      ? 1 : 0
+staticShort += sfpSell      ? 1 : 0
+staticShort += zscoreSell   ? 1 : 0
+
+// Dynamic mode: soft-weighted voting
+// TREND: trend-following gets 2x, MR gets 1x (dip-buying still contributes)
+// RANGE: MR gets 2x, trend-following gets 1x
+// MIXED: all get 1x
+// SFP is always 1x (universal)
+int dynLong = 0
+int dynShort = 0
+
+// Trend-following group: 2x in TREND, 1x otherwise
+int tfW = isTrend ? 2 : 1
+dynLong  += stBuy        ? tfW : 0
+dynLong  += macdBuy      ? tfW : 0
+dynLong  += tripleEMABuy ? tfW : 0
+dynLong  += ichiBuy      ? tfW : 0
+dynLong  += hmaBuy       ? tfW : 0
+
+dynShort += stSell        ? tfW : 0
+dynShort += macdSell      ? tfW : 0
+dynShort += tripleEMASell ? tfW : 0
+dynShort += ichiSell      ? tfW : 0
+dynShort += hmaSell       ? tfW : 0
+
+// Mean-reversion group: 2x in RANGE, 1x otherwise
+int mrW = isRange ? 2 : 1
+dynLong  += rsiBuy    ? mrW : 0
+dynLong  += bbBuy     ? mrW : 0
+dynLong  += zscoreBuy ? mrW : 0
+
+dynShort += rsiSell    ? mrW : 0
+dynShort += bbSell     ? mrW : 0
+dynShort += zscoreSell ? mrW : 0
+
+// SFP is universal (1x always)
+dynLong  += sfpBuy  ? 1 : 0
+dynShort += sfpSell ? 1 : 0
+
+// Dynamic threshold: scales with max possible votes
+// TREND: max = 5*2 + 3*1 + 1 = 14, threshold = 4
+// RANGE: max = 3*2 + 5*1 + 1 = 12, threshold = 4
+// MIXED: max = 9*1 = 9, threshold = 4 (raised from 3 — MIXED is noisiest)
+int dynThreshold = 4
+
+// Trend bias: counter-trend trades need +1 extra vote
+bool aboveEMA200 = close > ema200
+int dynLongThreshold  = useTrendBias and not aboveEMA200 ? dynThreshold + 1 : dynThreshold
+int dynShortThreshold = useTrendBias and aboveEMA200     ? dynThreshold + 1 : dynThreshold
+
+// ============================================================================
+// SIGNAL SELECTION (gated by volume filter when enabled)
+// ============================================================================
+bool rawBuy  = false
+bool rawSell = false
+
+if strategyMode == MODE_RSI2
+    rawBuy  := rsiBuy
+    rawSell := rsiSell
+else if strategyMode == MODE_SUPERTREND
+    rawBuy  := stBuy
+    rawSell := stSell
+else if strategyMode == MODE_MACD
+    rawBuy  := macdBuy
+    rawSell := macdSell
+else if strategyMode == MODE_TRIPLEEMA
+    rawBuy  := tripleEMABuy
+    rawSell := tripleEMASell
+else if strategyMode == MODE_BB
+    rawBuy  := bbBuy
+    rawSell := bbSell
+else if strategyMode == MODE_ICHIMOKU
+    rawBuy  := ichiBuy
+    rawSell := ichiSell
+else if strategyMode == MODE_HMA
+    rawBuy  := hmaBuy
+    rawSell := hmaSell
+else if strategyMode == MODE_SFP
+    rawBuy  := sfpBuy
+    rawSell := sfpSell
+else if strategyMode == MODE_ZSCORE
+    rawBuy  := zscoreBuy
+    rawSell := zscoreSell
+else if strategyMode == MODE_MULTI
+    rawBuy  := staticLong >= minConfirm
+    rawSell := staticShort >= minConfirm
+else if strategyMode == MODE_DYNAMIC
+    rawBuy  := dynLong  >= dynLongThreshold
+    rawSell := dynShort >= dynShortThreshold
+
+bool finalBuy  = rawBuy  and volOK
+bool finalSell = rawSell and volOK
+
+// ============================================================================
+// POSITION MANAGEMENT
+// ============================================================================
+// Track bars in current trade (resets on new entry AND on position flip)
+var int barsInTrade = 0
+bool posFlipped = (strategy.position_size > 0 and strategy.position_size[1] <= 0) or (strategy.position_size < 0 and strategy.position_size[1] >= 0)
+if strategy.position_size == 0
+    barsInTrade := 0
+else if posFlipped
+    barsInTrade := 1
+else
+    barsInTrade += 1
+
+if finalBuy
+    strategy.entry("Long", strategy.long)
+if finalSell
+    strategy.entry("Short", strategy.short)
+
+// TP/SL mode resolution
+bool useSmart = tpslMode == TPSL_SMART
+bool useATR   = tpslMode == TPSL_ATR or (tpslMode == TPSL_HYBRID and tf_secs > 3600)
+bool useFixed = tpslMode == TPSL_FIXED or (tpslMode == TPSL_HYBRID and tf_secs <= 3600)
+
+// Capture ATR% at trade entry for anchored Smart exits (also captures on flip)
+var float entryAtrPct = 0.0
+if posFlipped
+    entryAtrPct := atrPct
+
+// Smart: entry-anchored volatility-normalized TP/SL (with floor/cap)
+float rawEntryTP = entryAtrPct * smartTPMult
+float rawEntrySL = entryAtrPct * smartSLMult
+float smartEntryTP = math.max(2.5, math.min(rawEntryTP, 10.0))
+float smartEntrySL = math.max(1.5, math.min(rawEntrySL, 6.0))
+float entryPrice   = strategy.position_avg_price
+
+// Grace period: SL only active after N bars in trade
+bool slActive = barsInTrade >= graceBars
+
+// Active TP/SL percentages for display
+float activeTP_pct = useSmart ? (entryAtrPct > 0 ? smartEntryTP : smartTP_pct) : fixedTP
+float activeSL_pct = useSmart ? (entryAtrPct > 0 ? smartEntrySL : smartSL_pct) : fixedSL
+
+// TP/SL exits (grace period: SL activates only after graceBars)
+if useTPSL
+    if useSmart
+        float tpLong  = entryPrice * (1 + smartEntryTP / 100)
+        float slLong  = slActive ? entryPrice * (1 - smartEntrySL / 100) : na
+        float tpShort = entryPrice * (1 - smartEntryTP / 100)
+        float slShort = slActive ? entryPrice * (1 + smartEntrySL / 100) : na
+        if strategy.position_size > 0
+            strategy.exit("TP/SL L", "Long",  limit=tpLong, stop=slLong)
+        if strategy.position_size < 0
+            strategy.exit("TP/SL S", "Short", limit=tpShort, stop=slShort)
+    else if useATR
+        float atrTP = atr14 * tp_mult_active
+        float atrSL = atr14 * sl_mult_active
+        if slActive
+            strategy.exit("TP/SL L", "Long",  profit=atrTP / syminfo.mintick, loss=atrSL / syminfo.mintick)
+            strategy.exit("TP/SL S", "Short", profit=atrTP / syminfo.mintick, loss=atrSL / syminfo.mintick)
+        else
+            strategy.exit("TP/SL L", "Long",  profit=atrTP / syminfo.mintick)
+            strategy.exit("TP/SL S", "Short", profit=atrTP / syminfo.mintick)
+    else
+        if slActive
+            strategy.exit("TP/SL L", "Long",  limit=close * (1 + fixedTP / 100), stop=close * (1 - fixedSL / 100))
+            strategy.exit("TP/SL S", "Short", limit=close * (1 - fixedTP / 100), stop=close * (1 + fixedSL / 100))
+        else
+            strategy.exit("TP/SL L", "Long",  limit=close * (1 + fixedTP / 100))
+            strategy.exit("TP/SL S", "Short", limit=close * (1 - fixedTP / 100))
+
+// Max hold timeout (ATR mode only -- prevents stale positions)
+if useATR and barsInTrade >= auto_max_hold and strategy.position_size != 0
+    strategy.close_all("TIMEOUT")
+
+// ============================================================================
+// VISUALIZATION
+// ============================================================================
+// EMAs
+plot(fastEMA, "Fast EMA", color=color.new(color.green, 70), linewidth=1)
+plot(medEMA,  "Med EMA",  color=color.new(color.orange, 70), linewidth=1)
+plot(slowEMA, "Slow EMA", color=color.new(color.red, 70), linewidth=1)
+plot(ema200,  "EMA 200",  color=color.new(color.gray, 60), linewidth=2)
+
+// SuperTrend
+stColor = stDir < 0 ? color.new(color.green, 70) : color.new(color.red, 70)
+plot(stLine, "SuperTrend", color=stColor, linewidth=2)
+
+// BB
+plot(bbUpper, "BB Upper", color=color.new(color.blue, 80), linewidth=1)
+plot(bbLower, "BB Lower", color=color.new(color.blue, 80), linewidth=1)
+
+// HMA
+plot(hmaVal, "HMA", color=color.new(color.purple, 60), linewidth=2)
+
+// Regime background
+bgCol = isTrend ? color.new(color.red, 95) : isRange ? color.new(color.green, 95) : color.new(color.gray, 97)
+bgcolor(bgCol, title="Regime BG")
+
+// Trade signals
+plotshape(finalBuy,  title="BUY",  location=location.belowbar, style=shape.triangleup,   color=color.new(color.green, 0), size=size.small, text="BUY")
+plotshape(finalSell, title="SELL", location=location.abovebar, style=shape.triangledown, color=color.new(color.red, 0),   size=size.small, text="SELL")
+
+// ============================================================================
+// DASHBOARD TABLE
+// ============================================================================
+var table dash = table.new(position.top_right, 2, 17, bgcolor=#0a0a12, frame_color=#333344, frame_width=1, border_width=1, border_color=#222233)
+
+// Voting counts for display
+int displayLong  = strategyMode == MODE_DYNAMIC ? dynLong  : staticLong
+int displayShort = strategyMode == MODE_DYNAMIC ? dynShort : staticShort
+int maxVotes     = strategyMode == MODE_DYNAMIC ? (isTrend ? 14 : isRange ? 12 : 9) : 9
+
+if barstate.islast
+    // Row 0: Header
+    table.cell(dash, 0, 0, "SIMP v0.06", bgcolor=#1a1a2e, text_color=#8888ff, text_size=size.small)
+    table.cell(dash, 1, 0, "Kimi_Cursor", bgcolor=#1a1a2e, text_color=#f59e0b, text_size=size.small)
+
+    // Row 1: Mode
+    table.cell(dash, 0, 1, "Mode", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 1, strategyMode, bgcolor=#1a1a2e, text_color=color.yellow, text_size=size.tiny)
+
+    // Row 2: Regime
+    regimeCol = isTrend ? color.red : isRange ? color.green : color.gray
+    table.cell(dash, 0, 2, "Regime", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 2, regime + " (ADX " + str.tostring(adxVal, "#.#") + ")", bgcolor=#1a1a2e, text_color=regimeCol, text_size=size.tiny)
+
+    // Row 3: TF Profile
+    table.cell(dash, 0, 3, "TF Profile", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 3, tf_profile + " (" + timeframe.period + ")", bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.tiny)
+
+    // Row 4: Long Votes
+    table.cell(dash, 0, 4, "Long Votes", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 4, str.tostring(displayLong) + "/" + str.tostring(maxVotes), bgcolor=#1a1a2e, text_color=color.green, text_size=size.tiny)
+
+    // Row 5: Short Votes
+    table.cell(dash, 0, 5, "Short Votes", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 5, str.tostring(displayShort) + "/" + str.tostring(maxVotes), bgcolor=#1a1a2e, text_color=color.red, text_size=size.tiny)
+
+    // Row 6: TP/SL
+    string tpslTxt = not useTPSL ? "OFF" : useSmart ? str.tostring(smartTP_pct, "#.#") + "/" + str.tostring(smartSL_pct, "#.#") + "% Smart" : useATR ? str.tostring(tp_mult_active, "#.##") + "x/" + str.tostring(sl_mult_active, "#.##") + "x ATR" : str.tostring(fixedTP, "#.#") + "/" + str.tostring(fixedSL, "#.#") + "% Fixed"
+    table.cell(dash, 0, 6, "TP/SL", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 6, tpslTxt, bgcolor=#1a1a2e, text_color=useSmart ? #06b6d4 : color.white, text_size=size.tiny)
+
+    // Row 7: ATR% and Vol Class
+    volClassCol = volClass == "HIGH" ? color.red : volClass == "MED" ? color.orange : color.green
+    table.cell(dash, 0, 7, "ATR%", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 7, str.tostring(atrPct, "#.##") + "% " + volClass, bgcolor=#1a1a2e, text_color=volClassCol, text_size=size.tiny)
+
+    // Row 8: ATR value
+    table.cell(dash, 0, 8, "ATR(14)", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 8, str.tostring(atr14, "#.##"), bgcolor=#1a1a2e, text_color=#aaaaaa, text_size=size.tiny)
+
+    // Row 9: Max Hold
+    table.cell(dash, 0, 9, "Max Hold", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 9, useATR ? str.tostring(auto_max_hold) + " bars" : "No limit", bgcolor=#1a1a2e, text_color=#aaaaaa, text_size=size.tiny)
+
+    // Row 10: RSI
+    rsiCol = rsiVal < rsiOS ? color.green : rsiVal > rsiOB ? color.red : color.gray
+    table.cell(dash, 0, 10, "RSI(" + str.tostring(rsiLen) + ")", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 10, str.tostring(rsiVal, "#.#"), bgcolor=#1a1a2e, text_color=rsiCol, text_size=size.tiny)
+
+    // Row 11: Z-Score
+    zCol = zScore < -zscoreEntry ? color.green : zScore > zscoreEntry ? color.red : color.gray
+    table.cell(dash, 0, 11, "Z-Score", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 11, str.tostring(zScore, "#.##"), bgcolor=#1a1a2e, text_color=zCol, text_size=size.tiny)
+
+    // Row 12: Bars in Trade
+    table.cell(dash, 0, 12, "Bars Held", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 12, str.tostring(barsInTrade), bgcolor=#1a1a2e, text_color=barsInTrade > auto_max_hold / 2 ? color.orange : color.gray, text_size=size.tiny)
+
+    // Row 13: Volume Filter
+    table.cell(dash, 0, 13, "Vol Filter", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 13, useVolFilter ? (volOK ? "PASS" : "BLOCKED") : "OFF", bgcolor=#1a1a2e, text_color=useVolFilter ? (volOK ? color.green : color.red) : #555555, text_size=size.tiny)
+
+    // Row 14: Trend Bias
+    string biasStr = useTrendBias ? (aboveEMA200 ? "BULLISH (shorts +1)" : "BEARISH (longs +1)") : "OFF"
+    color biasCol = useTrendBias ? (aboveEMA200 ? color.green : color.red) : #555555
+    table.cell(dash, 0, 14, "Trend Bias", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 14, biasStr, bgcolor=#1a1a2e, text_color=biasCol, text_size=size.tiny)
+
+    // Row 15: Grace Period
+    string graceStr = graceBars > 0 ? (slActive ? "SL ACTIVE" : str.tostring(graceBars - barsInTrade) + " bars left") : "OFF"
+    color graceCol = graceBars > 0 ? (slActive ? color.green : color.orange) : #555555
+    table.cell(dash, 0, 15, "SL Grace", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 15, graceStr, bgcolor=#1a1a2e, text_color=graceCol, text_size=size.tiny)
+
+    // Row 16: Signal Status
+    table.cell(dash, 0, 16, "Signal", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(dash, 1, 16, finalBuy ? "LONG" : finalSell ? "SHORT" : "—", bgcolor=#1a1a2e, text_color=finalBuy ? color.green : finalSell ? color.red : #555555, text_size=size.tiny)
+
+// ============================================================================
+// ALERTS
+// ============================================================================
+alertcondition(finalBuy,  title="KC06 Buy",  message="Kimi_Cursor v0.06: BUY signal on {{ticker}} {{interval}}")
+alertcondition(finalSell, title="KC06 Sell", message="Kimi_Cursor v0.06: SELL signal on {{ticker}} {{interval}}")

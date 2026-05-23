@@ -1,0 +1,74 @@
+name: walkforward-gate
+
+# Walk-forward CI gate (freebuff B1).
+# Blocks merging strategies with backtest WR > 85% unless they pass walk-forward
+# validation. Justification: r=-0.91 inverse correlation between BT WR and FWD
+# WR (alpha_engine/data/backtest_forward_correlation.json).
+#
+# - On PRs: blocking. Failing the gate fails the PR check.
+# - On main-branch pushes / cron: informational (continue-on-error: true) so
+#   production data flow is not blocked while we tune the gate.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "alpha_engine/**"
+      - "incubator/**"
+      - "tools/check_walkforward_gate.py"
+      - "tests/test_walkforward_gate.py"
+      - ".github/workflows/walkforward-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "alpha_engine/data/walkforward_results.json"
+      - "incubator/backtest_results/**"
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: "BT WR threshold percent above which the gate fires"
+        required: false
+        default: "85"
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so the diff-aware gate can `git diff` vs the PR base.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Syntax check (py_compile)
+        run: python -m py_compile tools/check_walkforward_gate.py
+
+      - name: Run unit tests
+        run: |
+          python -m pip install --quiet pytest
+          pytest tests/test_walkforward_gate.py -v
+
+      - name: Run gate (blocking on PR)
+        if: github.event_name == 'pull_request'
+        # --diff-base: gate only the strategies this PR adds/modifies, not
+        # every pre-existing incubator file. A PR that changes no backtest
+        # results passes regardless of unrelated unproven incubator entries.
+        run: |
+          python tools/check_walkforward_gate.py \
+            --threshold "${{ github.event.inputs.threshold || '85' }}" \
+            --diff-base "origin/${{ github.base_ref }}"
+
+      - name: Run gate (informational on push/cron)
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        run: |
+          python tools/check_walkforward_gate.py \
+            --threshold "${{ github.event.inputs.threshold || '85' }}"

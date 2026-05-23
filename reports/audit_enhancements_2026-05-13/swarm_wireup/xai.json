@@ -1,0 +1,31 @@
+{
+  "calculate_smart_score_wireup_verdict": "APPROVE",
+  "calculate_smart_score_concerns": [
+    "Blend ratio of 0.4 is hardcoded; consider making it configurable via env var for tuning.",
+    "Exception handling is broad; consider logging the error for debugging in production."
+  ],
+  "passes_active_gate_wireup_verdict": "REQUEST_CHANGES",
+  "passes_active_gate_concerns": [
+    "Reading active_picks.json from disk on every gate call is inefficient and risky for I/O errors.",
+    "No fallback if active_picks.json is malformed or empty beyond defaulting to empty list; consider stricter validation.",
+    "Exception handling is too broad; silent failures could mask critical issues in concentration cap logic."
+  ],
+  "io_cost_concern_on_active_gate": "HIGH",
+  "recommended_cache_pattern_for_active_picks": "Module-level lru_cache with 30s TTL to minimize disk reads while keeping data reasonably fresh.",
+  "blend_ratio_0_4_vs_0_5_vs_other": "0.4 is fine for initial testing as it leans conservatively toward legacy score; revisit after shadow mode data collection.",
+  "shadow_logging_field_name": "smart_score_v2_shadow - more generic and forward-compatible for future scoring iterations.",
+  "must_clear_shadow_field_on_pick_save": "true - prevent downstream consumers from accidentally using or persisting experimental fields.",
+  "single_biggest_risk_of_this_wireup": "I/O bottleneck in passes_active_gate from repeated disk reads of active_picks.json could degrade dashboard build performance.",
+  "engine": "xai",
+  "_swarm_meta": {
+    "raw_path": "reports\\audit_enhancements_2026-05-13\\swarm_wireup\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260513T221037Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 883,
+    "tokens_out": 327,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

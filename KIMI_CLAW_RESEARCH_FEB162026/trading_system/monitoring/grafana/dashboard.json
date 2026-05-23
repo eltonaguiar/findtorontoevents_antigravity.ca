@@ -1,0 +1,289 @@
+# Grafana Dashboard Configuration
+# This is a JSON model for the main trading dashboard
+
+{
+  "dashboard": {
+    "id": null,
+    "title": "Live Trading System",
+    "tags": ["trading", "live"],
+    "timezone": "utc",
+    "schemaVersion": 36,
+    "refresh": "5s",
+    
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Status",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [{
+          "expr": "trading_system_status",
+          "legendFormat": "{{ component }}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Circuit Breaker",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [{
+          "expr": "trading_circuit_breaker_active",
+          "legendFormat": "Status"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "INACTIVE", "color": "green"}}, "type": "value"},
+              {"options": {"1": {"text": "ACTIVE", "color": "red"}}, "type": "value"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Total P&L",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "targets": [{
+          "expr": "trading_realized_pnl + trading_unrealized_pnl",
+          "legendFormat": "Total P&L"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 0}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Daily P&L",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [{
+          "expr": "trading_daily_pnl",
+          "legendFormat": "Daily"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 0}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Latency Overview",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(trading_latency_seconds_bucket[5m]))",
+            "legendFormat": "P99 {{ component }}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(trading_latency_seconds_bucket[5m]))",
+            "legendFormat": "P95 {{ component }}"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(trading_latency_seconds_bucket[5m]))",
+            "legendFormat": "P50 {{ component }}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Message Throughput",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "rate(trading_messages_processed_total[1m])",
+            "legendFormat": "{{ type }}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Open Positions",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "targets": [{
+          "expr": "trading_position{quantity!=\"0\"}",
+          "format": "table",
+          "instant": true
+        }],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "renameByName": {
+                "symbol": "Symbol",
+                "quantity": "Quantity",
+                "avg_entry_price": "Avg Entry",
+                "unrealized_pnl": "Unrealized P&L",
+                "realized_pnl": "Realized P&L"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Order Status",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+        "targets": [
+          {
+            "expr": "rate(trading_orders_filled_total[1m])",
+            "legendFormat": "Filled"
+          },
+          {
+            "expr": "rate(trading_orders_rejected_total[1m])",
+            "legendFormat": "Rejected"
+          },
+          {
+            "expr": "rate(trading_orders_cancelled_total[1m])",
+            "legendFormat": "Cancelled"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "P&L Over Time",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "trading_realized_pnl",
+            "legendFormat": "Realized"
+          },
+          {
+            "expr": "trading_unrealized_pnl",
+            "legendFormat": "Unrealized"
+          },
+          {
+            "expr": "trading_realized_pnl + trading_unrealized_pnl",
+            "legendFormat": "Total"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "spanNulls": false
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Component Health",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+        "targets": [
+          {
+            "expr": "trading_component_health",
+            "legendFormat": "{{ component }}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 1,
+            "mappings": [
+              {"options": {"0": {"text": "Unhealthy"}}, "type": "value"},
+              {"options": {"1": {"text": "Healthy"}}, "type": "value"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Queue Depths",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 28},
+        "targets": [{
+          "expr": "trading_queue_depth",
+          "legendFormat": "{{ queue }}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 12,
+        "title": "Error Rate",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 28},
+        "targets": [{
+          "expr": "rate(trading_errors_total[1m])",
+          "legendFormat": "{{ error_type }}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops"
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Active Signals",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 28},
+        "targets": [
+          {
+            "expr": "count(trading_signal{executed=\"false\"})",
+            "legendFormat": "Pending"
+          },
+          {
+            "expr": "rate(trading_signals_generated_total[1m])",
+            "legendFormat": "Rate/min"
+          }
+        ]
+      }
+    ]
+  }
+}

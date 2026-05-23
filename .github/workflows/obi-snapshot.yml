@@ -1,0 +1,37 @@
+name: OBI Hourly Snapshot
+
+on:
+  schedule:
+    - cron: '30 * * * *'  # Half-past every hour (offset from other workflows)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+      - run: pip install requests numpy
+      - name: Fetch OBI snapshots
+        run: |
+          python -c "
+          from ml_crypto_predictor.enhanced_models.orderbook_fetcher import fetch_and_cache_obi
+          from ml_crypto_predictor.enhanced_models.config import CRYPTO_PAIRS
+          result = fetch_and_cache_obi(CRYPTO_PAIRS[:20])
+          print(f'Fetched OBI for {len(result)} symbols')
+          "
+      - name: Commit OBI cache
+        run: |
+          bash .github/scripts/safe_commit_push.sh \
+            "OBI snapshot $(date -u +'%Y-%m-%dT%H:%M')" \
+            ml_crypto_predictor/enhanced_models/data/orderbook_cache/
+

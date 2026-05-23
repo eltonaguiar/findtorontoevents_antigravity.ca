@@ -1,0 +1,52 @@
+# Optional sports-data source dependencies.
+#
+# These are intentionally kept OUT of the main requirements.txt because:
+#   1. They are only used by the sports-betting-refresh GitHub Action.
+#   2. All four consuming scripts gracefully degrade when the import fails
+#      (they exit 0 with a warning) so they are safe to skip locally.
+#   3. Some of these (nflreadpy, sportsdataverse) pull large parquet files
+#      and can be slow on first import — we don't want that blocking
+#      unrelated workflows.
+#
+# Install with:  python3 -m pip install -r requirements-sports-extra.txt
+#
+# See: updates/2026-04-24-sports-data-sources-integration.md
+
+# Unified multi-sport (NFL/NBA/NHL/MLB) historical results for ML backfill.
+# https://github.com/sportsdataverse/sportsdataverse-py
+# Loose version: all consumer scripts degrade gracefully on API-shape mismatch.
+sportsdataverse
+
+# Official successor to the archived nfl_data_py. Pulls nflverse parquet files.
+# https://github.com/nflverse/nflreadpy
+nflreadpy
+
+# NBA.com official API client (reserved for future nba_odds_scraper.py
+# enhancement — injuries + player-level EDGE data). Not consumed by any script
+# in this PR.
+# https://github.com/swar/nba_api
+nba_api
+
+# Convenience wrapper around the NHL Web API (api-web.nhle.com). Only used as
+# a soft-optional helper — nhl_odds_scraper.py talks to the NHL API directly
+# via urllib when this is missing.
+# https://github.com/coreyjs/nhl-api-py
+nhl-api-py
+
+# Historical OddsPortal closing-odds scraper. Primarily a CLI tool; our
+# oddsharvester_clv_backfill.py also shells out to it as a fallback path when
+# the Python API shape is not recognized.
+# https://pypi.org/project/oddsharvester/
+oddsharvester
+
+# pandas is already used elsewhere but pinning here for type-check clarity.
+pandas
+
+# Headless Chromium for ON-licensed JS-rendered sportsbook scraping.
+# Used by:
+#   - live-monitor/olg_prolineplus_scraper.py  (OLG ProLine+ — Next.js SPA)
+#   - live-monitor/betway_ca_scraper.py        (Betway CA — JS-rendered)
+# Both scrapers degrade to exit 0 with a warning if `playwright` import fails,
+# so a missing install never blocks the refresh workflow.
+# After install, run `python -m playwright install --with-deps chromium` once.
+playwright

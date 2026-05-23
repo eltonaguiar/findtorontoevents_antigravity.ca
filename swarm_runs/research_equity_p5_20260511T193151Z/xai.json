@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "engine": "P5_Synthesis",
+  "asset_class": "EQUITY",
+  "run_id": "run_2026-05-11T19-17-46Z",
+  "synthesis": [
+    {
+      "spec_id": "equity_ts_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Despite high PF=55.79 and WR=100.0%, the extremely low n=4 indicates insufficient data for reliability. Cross-test independence is noted, but the simplified signal translation adds uncertainty.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_vol_target_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "High PF=55.79 and WR=100.0% are promising, but n=4 is far below the threshold for confidence. Cross-test independence is positive, yet simplified signal translation remains a caveat.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_carry_pair_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=5.24 and WR=66.7% meet basic thresholds, but n=6 is too low for a reliable verdict. MDD=19.3% is acceptable, and cross-test independence is noted, but simplified signal limits confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_hmm_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Exceptional PF=100.64, WR=100.0%, and Sharpe=1.16 are impressive, but n=3 is critically low, rendering results unreliable. Cross-test independence is positive, but simplified signal translation is a concern.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_bab_pair_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=5.24 and WR=66.7% are decent, but n=6 is insufficient for a confident verdict. MDD=19.3% is within limits, and cross-test independence is noted, though simplified signal translation reduces reliability.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "This run shows no actionable edge due to critically low trade counts (n<10 across all candidates), far below the Tier-2 floor of n\u2265100, making backtest results statistically unreliable despite high PF and WR in some cases. The simplified signal translation further clouds confidence in the results. A retry is recommended with a longer historical window to increase trade counts and after implementing the faithful-signal translator for v3 to ensure accurate spec interpretation.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_equity_p5_20260511T193151Z\\xai.json.raw.txt",
+    "engine": "xai",
+    "ts": "20260511T193213Z",
+    "session_id": "",
+    "model_fingerprint": "grok-3",
+    "tokens_in": 1707,
+    "tokens_out": 595,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,49 @@
+# Audit dashboard Apache config for findtorontoevents.ca/audit
+# Uploaded via .github/workflows/audit-dashboard.yml deploy_findtorontoevents()
+# Last updated: 2026-05-03
+
+# ---------------------------------------------------------------------------
+# Compression — mod_deflate
+# ---------------------------------------------------------------------------
+# The dashboard payload audit_dashboard/data/dashboard_data.json is large
+# (~17-22 MB uncompressed). Without gzip, mobile clients on cellular timeout
+# before init() completes and the empty-state at template.html:16375 fires
+# with the misleading "No data loaded" message.
+#
+# Gzip compression on application/json typically yields 5-10x reduction:
+# 17 MB raw -> ~2-3 MB on the wire. Transparent to all modern clients.
+#
+# Vary header is critical: caches must distinguish gzipped vs raw responses
+# per Accept-Encoding. Without it, an intermediate cache may serve gzipped
+# bytes to a client that didn't ask for them.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+
+    # Tell caches that the response varies by Accept-Encoding so a cached
+    # gzipped body never gets served to a no-encoding client.
+    Header append Vary Accept-Encoding env=!dont-vary
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Cache control for the data payload
+# ---------------------------------------------------------------------------
+# dashboard_data.json regenerates hourly via CI. Tell browsers to revalidate
+# rather than serve stale data; the payload is small enough gzipped that an
+# ETag round-trip is cheap.
+<FilesMatch "\.(json)$">
+    Header set Cache-Control "public, must-revalidate, max-age=300"
+</FilesMatch>
+
+# index.html: short cache, must-revalidate. Template ships hourly; users on
+# 1-hour-old HTML can miss new picks.
+<FilesMatch "^(index|funds|claudes_test|trading_blueprint|kimi_top_picks|antigravity_picks|portfolio_history)\.html$">
+    Header set Cache-Control "public, must-revalidate, max-age=300"
+</FilesMatch>

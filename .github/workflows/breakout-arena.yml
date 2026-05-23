@@ -1,0 +1,79 @@
+name: Breakout Arena  3 Approaches
+
+on:
+  schedule:
+    - cron: '10 * * * *'  # Hourly at :10
+  workflow_dispatch:
+
+jobs:
+  scan-all:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install requests numpy pandas joblib scikit-learn lightgbm 2>/dev/null
+
+      - name: Run Approach A  S/R Breakout
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Approach A: S/R Breakout ==="
+          python -m breakout_arena.approach_a_sr_breakout.scanner 2>&1 || echo "Approach A failed"
+
+      - name: Run Approach B  ML Breakout
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Approach B: ML Breakout ==="
+          python -m breakout_arena.approach_b_ml_breakout.scanner 2>&1 || echo "Approach B failed"
+
+      - name: Run Approach C  Spike Reverse
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "=== Approach C: Spike Reverse ==="
+          python -m breakout_arena.approach_c_spike_reverse.scanner 2>&1 || echo "Approach C failed"
+
+      - name: Push to Audit Trail (SQLite + MySQL)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DB: ${{ secrets.MYSQL_DB }}
+        run: |
+          echo "=== Pushing Arena picks to Audit Trail ==="
+          python -m breakout_arena.audit_push 2>&1 || echo "Audit push failed (non-fatal)"
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add breakout_arena/*/data/*.json audit_trail/data/*.db 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            git commit -m " Breakout Arena scan ${TIMESTAMP} [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          fi
+

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money-Maker Plan — Claude Code (May 11, 2026) | findtorontoevents</title>
+    <meta name="description" content="Claude Code (Opus 4.7) plan-mode output for /audit real-money readiness. Ran the newly-shipped money-maker-ready skill and produced ranked P0-P5 actions. NOT FINANCIAL ADVICE.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-05-11-money-maker-claude-code.html">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e1a;color:#e0e6ed;line-height:1.65}
+        .container{max-width:1100px;margin:0 auto;padding:36px 20px 60px}
+        header{background:linear-gradient(135deg,#1a2540 0%,#0f1629 100%);padding:32px;border-radius:16px;margin-bottom:24px;border:1px solid #2a3f5f}
+        h1{font-size:1.8em;color:#a78bfa;margin-bottom:10px}
+        h2{color:#34d399;font-size:1.25em;margin:18px 0 10px;border-left:4px solid #34d399;padding-left:10px}
+        h3{color:#fbbf24;font-size:1.05em;margin:14px 0 6px}
+        .nfa-banner{background:rgba(239,68,68,0.20);border:2px solid #ef4444;color:#fecaca;padding:13px 16px;border-radius:12px;font-weight:700;text-align:center;margin-bottom:14px}
+        .section{background:#111827;padding:22px;border-radius:12px;margin-bottom:14px;border:1px solid #1f2937}
+        p,li{color:#d1d5db;margin-bottom:7px}
+        ul,ol{padding-left:22px}
+        code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:Consolas,Menlo,monospace}
+        table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88em}
+        th,td{padding:7px 9px;text-align:left;border-bottom:1px solid #1f2937;vertical-align:top}
+        th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700}
+        a{color:#60a5fa}
+        .meta-row{font-size:0.85em;color:#94a3b8;margin-bottom:14px}
+        .correction{background:rgba(251,191,36,0.12);border:1px solid #fbbf24;padding:12px 16px;border-radius:8px;margin:12px 0}
+        .back{font-size:0.9em;color:#60a5fa;margin-bottom:14px;display:inline-block}
+    </style>
+</head>
+<body>
+<div class="container">
+
+<a class="back" href="/updates/">&larr; Back to Updates</a> &middot; <a class="back" href="/updates/2026-05-11-money-maker-multi-agent-comparison.html">Comparison page &rarr;</a>
+
+<header>
+    <h1>Money-Maker Plan — Claude Code (Opus 4.7)</h1>
+    <div class="nfa-banner">RESEARCH SURFACE — NOT FINANCIAL ADVICE</div>
+    <div class="meta-row">Generated 2026-05-11 &middot; Plan mode output &middot; Skill: <code>.claude/skills/money-maker-ready/SKILL.md</code> v1.0 &middot; Plan file: <code>C:\Users\zerou\.claude\plans\follow-that-skill-and-joyful-lemon.md</code></div>
+</header>
+
+<div class="correction">
+    <strong>⚠ Self-correction posted in <a href="/updates/2026-05-11-money-maker-multi-agent-comparison.html">comparison page</a>:</strong> the §1 "all classes n=0" finding below was an Explore-agent read-error, not a data bug. Cursor + the peer 2026-05-11 combined plan both read the same payload and got real n values (COMMODITY n=408, EQUITY n=443, CRYPTO n=7875, etc). Treat §1's "STRUCTURAL BUG" and §2's "MODULE BROKEN" with skepticism and verify both against the canonical reads before acting on the P0 actions tied to them.
+</div>
+
+<div class="section">
+    <h2>Headline verdict</h2>
+    <p><strong>NOT READY.</strong> Three data-layer CRITICALs allegedly block any real-money sign-off:</p>
+    <ol>
+        <li>Dashboard 40.7h stale (vs 2h SLA)</li>
+        <li>All <code>asset_class_health.n=0</code> (<strong>now known to be read-error</strong>; see correction above)</li>
+        <li>Walk-forward module emits 0 folds across every class (<strong>likely also read-error</strong>)</li>
+    </ol>
+    <p>Holding survivors of the cross-check: drift alert TRUE but KS_D uncomputed; <code>baby_strats</code> 12-flag overfit; system draggers (<code>kimi_signal_tracking</code> -954%, <code>mercury2_fast</code>, <code>ml_bg_system_b</code>); <code>claude_gainer_st</code> winner-vs-blacklist contradiction (in BLACKLISTED_STRATEGIES at <code>alpha_engine/config.py:216</code> but tops <code>systems</code> with PF 6.12).</p>
+</div>
+
+<div class="section">
+    <h2>System winners (Tier-2-MDD verified) — 6 pass gate, all unverified</h2>
+    <table>
+        <thead><tr><th>Rank</th><th>System</th><th>PF</th><th>WR %</th><th>n</th><th>MDD %</th><th>Flag</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td>multi_asset_cot</td><td>19.19</td><td>86.9</td><td>130</td><td>17.8</td><td>implausible PF — verify or quarantine</td></tr>
+            <tr><td>2</td><td>aggregated_picks</td><td>6.42</td><td>77.3</td><td>441</td><td>14.4</td><td>aggregator artifact suspect</td></tr>
+            <tr><td>3</td><td>claude_gainer_st</td><td>6.12</td><td>78.5</td><td>3472</td><td>14.0</td><td>in BLACKLISTED — contradiction</td></tr>
+            <tr><td>4</td><td>ml_crypto_pred_v12</td><td>2.53</td><td>55.6</td><td>123</td><td>11.0</td><td>likely DEAD (no last_signal)</td></tr>
+            <tr><td>5</td><td>signal_validation</td><td>2.22</td><td>55.0</td><td>502</td><td>14.1</td><td>validator-as-pick-source meta-eval risk</td></tr>
+            <tr><td>6</td><td>copy_trader_intel</td><td>1.84</td><td>50.0</td><td>739</td><td>2.23</td><td>MDD 2.23% looks synthetic</td></tr>
+        </tbody>
+    </table>
+    <p>All 6 lack <code>last_signal_date</code>. Treat as DEAD until proven live.</p>
+</div>
+
+<div class="section">
+    <h2>System draggers</h2>
+    <table>
+        <thead><tr><th>System</th><th>PnL %</th><th>PF</th></tr></thead>
+        <tbody>
+            <tr><td>kimi_signal_tracking</td><td>-954.9</td><td>0.26</td></tr>
+            <tr><td>multi_asset</td><td>-146.0</td><td>0.31</td></tr>
+            <tr><td>mercury2_fast</td><td>-139.5</td><td>0.07</td></tr>
+            <tr><td>alpha_engine_fast</td><td>-127.6</td><td>0.62</td></tr>
+            <tr><td>paper_trading</td><td>-103.5</td><td>0.35</td></tr>
+            <tr><td>copy_trader_highscore</td><td>-81.8</td><td>0.76</td></tr>
+            <tr><td>ml_bg_system_b</td><td>-54.7</td><td>0.02</td></tr>
+            <tr><td>crypto_winners</td><td>-52.4</td><td>0.36</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Top P0-P2 actions (post-correction)</h2>
+    <table>
+        <thead><tr><th>Priority</th><th>Action</th><th>Effort</th><th>Risk</th></tr></thead>
+        <tbody>
+            <tr><td>P0</td><td>Verify <code>multi_asset_cot</code> PF=19.19 via DB query against <code>ejaguiar1_stocks</code></td><td>1h</td><td>Low</td></tr>
+            <tr><td>P0</td><td>Reconcile <code>claude_gainer_st</code> winner-vs-blacklist contradiction; confirm enforcement at exec gate (memory <code>feedback_gate_at_execution_not_generation</code>)</td><td>1-2h</td><td>Low</td></tr>
+            <tr><td>P0</td><td>Refresh stale <code>dashboard_data.json</code>; diagnose refresh-cron failure via <code>check-gh-actions</code></td><td>0.5h</td><td>Low</td></tr>
+            <tr><td>P1</td><td>Execute existing <code>baby_strats</code> 12-flag quarantine proposal</td><td>1h</td><td>Low</td></tr>
+            <tr><td>P1</td><td>Fix drift detector — KS_D uncomputed-zero + hf_stats 19d stale</td><td>3-4h</td><td>Med</td></tr>
+            <tr><td>P1</td><td>Investigation-gate top draggers per <code>MUTATION_THREE_AXIS_PROTOCOL.md</code></td><td>4-6h</td><td>Med</td></tr>
+            <tr><td>P1</td><td>Add <code>last_signal_date</code> to <code>systems</code> payload</td><td>1-2h</td><td>Low</td></tr>
+            <tr><td>P2</td><td>Audit HC filter against confidence-inversion on ETF/CRYPTO (memory <code>project_performance_reality</code>)</td><td>2-3h</td><td>Low</td></tr>
+            <tr><td>P2</td><td>Re-run cross-permutations; verdict on per-class edge existence</td><td>1h</td><td>Low</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <h2>External-data wires considered</h2>
+    <p>Ranked by impact/effort: Riskfolio-Lib (CVaR/HRP), QuantStats (reporting), pandas-ta (130+ indicators), FRED (macro filter — <code>fred_data_fetcher.py</code> exists, needs key), VectorBT (50-100× backtests), Kalshi (Polymarket pairwise), PyPortfolioOpt, Glassnode/Coinglass widen, Freqtrade, FinRL.</p>
+    <p>All subject to CLAUDE.md Wire-Up Rule — production caller required or explicit opt-in sidecar with Wiring Plan section.</p>
+</div>
+
+<div class="section">
+    <h2>Full plan file</h2>
+    <p>Plan file persisted at <code>C:\Users\zerou\.claude\plans\follow-that-skill-and-joyful-lemon.md</code> (developer workstation, not committed). Contains:</p>
+    <ol>
+        <li>Freshness preflight (FAIL — 40.7h stale)</li>
+        <li>Per-class baseline (now corrected — see top of page)</li>
+        <li>Walk-forward verification</li>
+        <li>System winners + draggers</li>
+        <li>Backtest-overfit detector</li>
+        <li>Drift state</li>
+        <li>UI / filter audit (HC filter, hyrotrader)</li>
+        <li>External data integrations</li>
+        <li>Top statistical edges per asset class</li>
+        <li>P0-P5 ranked recommendations</li>
+        <li>Verifiable claims log</li>
+    </ol>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+name: Overnight Mutations
+
+on:
+  workflow_dispatch:
+    inputs:
+      generations:
+        description: "Number of generations"
+        default: "500"
+      population:
+        description: "Population size"
+        default: "200"
+      symbols:
+        description: "Comma-separated symbols"
+        default: "BTCUSDT,SOLUSDT,ETHUSDT,BNBUSDT,DOGEUSDT,AVAXUSDT"
+  schedule:
+    - cron: "0 2 * * 6"
+
+concurrency:
+  group: mutations
+  cancel-in-progress: false
+
+jobs:
+  mutate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 360
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install numpy
+
+      - name: Run massive mutations
+        run: python alpha_engine/run_massive_mutations.py
+        env:
+          GENERATIONS: ${{ github.event.inputs.generations || '500' }}
+          POPULATION: ${{ github.event.inputs.population || '200' }}
+          SYMBOLS: ${{ github.event.inputs.symbols || 'BTCUSDT,SOLUSDT,ETHUSDT,BNBUSDT,DOGEUSDT,AVAXUSDT' }}
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/massive_mutation_results.json
+          git diff --cached --quiet || git commit -m "Overnight mutation results $(date -u +%Y-%m-%d) [skip ci]"
+          git pull --rebase origin main
+          bash .github/scripts/safe_push.sh
+

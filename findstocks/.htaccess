@@ -1,0 +1,13 @@
+# 301 permanent redirect from /findstocks/ to /audit/
+# Preserves the subdirectories (kimis_claw, portfolio2) as distinct URLs —
+# only the exact `/findstocks/` (and `/findstocks`, /findstocks/index.html)
+# get redirected. This matches the intent to replace the findstocks landing
+# page with the /audit dashboard while keeping the sub-pages accessible.
+
+RewriteEngine On
+
+# Redirect the listing page itself
+RewriteRule ^$                         /audit/ [R=301,L]
+RewriteRule ^index\.html$              /audit/ [R=301,L]
+
+# Leave kimis_claw/ and portfolio2/ subdirectories alone (no rule = pass-through)

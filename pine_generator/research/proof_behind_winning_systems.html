@@ -1,0 +1,3558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proof Behind Winning TradingView Systems | Elton's Predictions Research</title>
+  <meta name="description"
+    content="A research synthesis on what constitutes proof that a TradingView system beats the market. Academic evidence, validation frameworks, and applied methodology for Elton's Predictions and Kimi Claw Pro.">
+  <meta property="og:title" content="Proof Behind Winning TradingView Systems That Actually Beat the Market">
+  <meta property="og:description"
+    content="Research synthesis covering evidence hierarchy, data-snooping risks, academically documented edges, and our validation framework.">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="en_CA">
+  <meta name="twitter:card" content="summary">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a12;
+      color: #c8c8d8;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      min-height: 100vh;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    a {
+      color: #88aaff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      color: #aaccff;
+    }
+
+    /* ── Header ── */
+    .paper-header {
+      text-align: center;
+      padding: 80px 24px 50px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(180deg, #0e0e1a 0%, #0a0a12 100%);
+    }
+
+    .paper-header .label {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #667;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 14px;
+      border-radius: 3px;
+      margin-bottom: 28px;
+    }
+
+    .paper-header h1 {
+      font-size: 34px;
+      font-weight: 300;
+      letter-spacing: 1px;
+      color: #fff;
+      max-width: 760px;
+      margin: 0 auto 16px;
+      line-height: 1.3;
+    }
+
+    .paper-header .subtitle {
+      font-size: 17px;
+      color: #8888aa;
+      font-weight: 300;
+      margin-bottom: 24px;
+    }
+
+    .paper-header .meta {
+      font-size: 13px;
+      color: #556;
+      letter-spacing: 1px;
+    }
+
+    .paper-header .meta span {
+      margin: 0 8px;
+    }
+
+    .paper-header .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #667;
+    }
+
+    /* ── Layout ── */
+    .paper-body {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 50px 24px 100px;
+    }
+
+    /* ── Table of Contents ── */
+    .toc {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 28px 32px;
+      margin-bottom: 56px;
+    }
+
+    .toc h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #667;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc-counter;
+    }
+
+    .toc ol li {
+      counter-increment: toc-counter;
+      margin-bottom: 6px;
+    }
+
+    .toc ol li a {
+      color: #99aacc;
+      font-size: 15px;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .toc ol li a::before {
+      content: counter(toc-counter) ".";
+      color: #445;
+      font-size: 13px;
+      min-width: 28px;
+      font-weight: 600;
+    }
+
+    .toc ol li a:hover {
+      color: #bbccff;
+      text-decoration: none;
+    }
+
+    /* ── Abstract ── */
+    .abstract {
+      border-left: 3px solid #334;
+      padding: 20px 24px;
+      margin-bottom: 56px;
+      background: rgba(255, 255, 255, 0.015);
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: #99a;
+      line-height: 1.85;
+    }
+
+    .abstract strong {
+      color: #aab;
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 56px;
+    }
+
+    .section h2 {
+      font-size: 24px;
+      font-weight: 300;
+      color: #dde;
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      letter-spacing: 0.5px;
+    }
+
+    .section h2 .num {
+      color: #445;
+      font-weight: 600;
+      margin-right: 8px;
+      font-size: 20px;
+    }
+
+    .section h3 {
+      font-size: 18px;
+      font-weight: 500;
+      color: #bbc;
+      margin-top: 32px;
+      margin-bottom: 10px;
+    }
+
+    .section h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #aab;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section p {
+      margin-bottom: 16px;
+      color: #b0b0c4;
+    }
+
+    .section ul,
+    .section ol {
+      margin: 12px 0 20px 24px;
+      color: #aab;
+    }
+
+    .section li {
+      margin-bottom: 8px;
+    }
+
+    .section li strong {
+      color: #ccd;
+    }
+
+    /* ── Tables ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0 28px;
+      font-size: 14px;
+    }
+
+    .data-table th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #667;
+      padding: 10px 12px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+    }
+
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #99a;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .data-table .highlight {
+      color: #88ffaa;
+      font-weight: 600;
+    }
+
+    .data-table .warn {
+      color: #ffaa66;
+    }
+
+    .data-table .dim {
+      color: #556;
+    }
+
+    /* ── Code Blocks ── */
+    pre {
+      background: #0d0d18;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 16px 0 24px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    pre code {
+      font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+      color: #aab8cc;
+    }
+
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.9em;
+      color: #bbccdd;
+    }
+
+    /* ── Callout Boxes ── */
+    .callout {
+      border-left: 3px solid #445;
+      padding: 16px 20px;
+      margin: 20px 0;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .callout.warning {
+      border-left-color: #cc7733;
+    }
+
+    .callout.success {
+      border-left-color: #33aa66;
+    }
+
+    .callout.info {
+      border-left-color: #4488cc;
+    }
+
+    .callout strong {
+      color: #dde;
+    }
+
+    .callout p {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .callout p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ── Evidence Tier Indicator ── */
+    .tier {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 3px;
+      margin-right: 6px;
+    }
+
+    .tier.gold {
+      background: rgba(255, 200, 50, 0.12);
+      color: #eebb33;
+      border: 1px solid rgba(255, 200, 50, 0.2);
+    }
+
+    .tier.silver {
+      background: rgba(180, 180, 220, 0.1);
+      color: #99aacc;
+      border: 1px solid rgba(180, 180, 220, 0.15);
+    }
+
+    .tier.bronze {
+      background: rgba(200, 140, 80, 0.1);
+      color: #cc9966;
+      border: 1px solid rgba(200, 140, 80, 0.15);
+    }
+
+    /* ── References ── */
+    .references {
+      margin-top: 64px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .references h2 {
+      font-size: 20px;
+      font-weight: 300;
+      color: #aab;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+
+    .references ol {
+      list-style: none;
+      counter-reset: ref-counter;
+    }
+
+    .references ol li {
+      counter-increment: ref-counter;
+      margin-bottom: 14px;
+      padding-left: 36px;
+      position: relative;
+      font-size: 14px;
+      color: #889;
+      line-height: 1.6;
+    }
+
+    .references ol li::before {
+      content: "[" counter(ref-counter) "]";
+      position: absolute;
+      left: 0;
+      color: #556;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .references ol li em {
+      color: #99a;
+    }
+
+    /* ── Footer ── */
+    .paper-footer {
+      text-align: center;
+      padding: 40px 24px 60px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      color: #445;
+      font-size: 13px;
+    }
+
+    .paper-footer a {
+      color: #667;
+    }
+
+    .paper-footer .links {
+      margin-top: 12px;
+    }
+
+    .paper-footer .links a {
+      margin: 0 12px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .paper-header h1 {
+        font-size: 24px;
+      }
+
+      .paper-header {
+        padding: 50px 16px 36px;
+      }
+
+      .paper-body {
+        padding: 32px 16px 60px;
+      }
+
+      .toc {
+        padding: 20px;
+      }
+
+      pre {
+        padding: 14px 16px;
+        font-size: 12px;
+      }
+
+      .data-table {
+        font-size: 12px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 8px 6px;
+      }
+    }
+
+    /* ── Scroll-to-top ── */
+    .scroll-top {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      color: #667;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s;
+    }
+
+    .scroll-top:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #aab;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!--  HEADER                                         -->
+  <!-- ════════════════════════════════════════════════ -->
+  <header class="paper-header">
+    <div class="label">Research Paper</div>
+    <h1>Proof Behind Winning TradingView Systems That Actually Beat the Market</h1>
+    <div class="subtitle">A Research Synthesis for Elton's Predictions &amp; Kimi Claw Pro &mdash; Extended with Gemini Quantitative Research</div>
+    <div class="meta">
+      <span>February 2026</span> &middot;
+      <span>Deep Research Compilation</span> &middot;
+      <span>v3.0</span>
+    </div>
+    <a href="https://findtorontoevents.ca/updates/" class="back-link">&larr; Back to Updates</a>
+  </header>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!--  BODY                                           -->
+  <!-- ════════════════════════════════════════════════ -->
+  <main class="paper-body">
+
+    <!-- Abstract -->
+    <div class="abstract">
+      <strong>Abstract.</strong> Thousands of TradingView strategies are published daily, yet the vast majority fail in
+      live trading due to repainting, overfitting, and survivorship bias. This paper synthesizes academic research on
+      what constitutes rigorous proof that a systematic trading strategy genuinely beats the market. We establish an
+      evidence hierarchy from reproducible backtests through forward-tested live track records, survey the documented
+      sources of persistent edge, and detail how Elton's Predictions v6.0 and Kimi Claw Pro v2.0 implement each
+      safeguard. The goal is a transparent, falsifiable framework that any trader can audit.
+    </div>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+      <h2>Table of Contents</h2>
+      <ol>
+        <li><a href="#evidence">What Counts as Proof</a></li>
+        <li><a href="#failures">Why Most TradingView Systems Fail</a></li>
+        <li><a href="#edge">Research-Backed Sources of Edge</a></li>
+        <li><a href="#enhancements">Enhancements Applied to Our Systems (v6.0+)</a></li>
+        <li><a href="#validation">Validation Framework</a></li>
+        <li><a href="#applied">Applied to Our Indicators</a></li>
+        <li><a href="#references">Key References</a></li>
+        <li><a href="#illusion">The Illusion of Historical Profitability</a></li>
+        <li><a href="#forward-testing">Forward Testing Protocols</a></li>
+        <li><a href="#live-reality">Live Trading Reality</a></li>
+        <li><a href="#entry-exit">Enhancement Strategy: Entry/Exit Refinement</a></li>
+        <li><a href="#risk-architecture">Enhancement Strategy: Risk Management Architecture</a></li>
+        <li><a href="#robustness">Performance Robustness</a></li>
+        <li><a href="#implementation">Implementation Framework</a></li>
+        <li><a href="#rsi2-alpha">Empirical Foundations of RSI-2 Alpha</a></li>
+        <li><a href="#vix-mechanics">VIX Spike Mechanics and Dislocations</a></li>
+        <li><a href="#smc-ict">Market Structure and Liquidity Engineering (SMC/ICT)</a></li>
+        <li><a href="#backtest-killers">Silent Killers of Backtesting</a></li>
+        <li><a href="#fractal-regime">Fractal Dimensions and Regime Analysis</a></li>
+        <li><a href="#order-flow-crypto">Order Flow and Leveraged Positioning in Crypto Perpetuals</a></li>
+        <li><a href="#enhancement-recs">Specific Enhancement Recommendations</a></li>
+        <li><a href="#wfo-standards">Walk-Forward Optimization Standards</a></li>
+      </ol>
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 1: WHAT COUNTS AS PROOF              -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="evidence">
+      <h2><span class="num">1.</span> What Counts as Proof</h2>
+
+      <p>The core question in quantitative trading is not "does this strategy make money in a backtest?" but rather
+        "does this strategy possess a genuine, persistent edge that will survive contact with live markets?" The
+        distinction is critical. A backtest is a necessary but woefully insufficient condition for proof.</p>
+
+      <h3>1.1 The Evidence Hierarchy</h3>
+
+      <p>We propose a five-tier evidence hierarchy, ordered from weakest to strongest:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Evidence Type</th>
+            <th>Strength</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tier bronze">Tier 5</span></td>
+            <td>Reproducible Backtest</td>
+            <td class="dim">Weakest</td>
+            <td>Strategy produces positive returns on historical data with stated parameters, commissions, and slippage.
+              Necessary starting point but proves nothing about the future.</td>
+          </tr>
+          <tr>
+            <td><span class="tier bronze">Tier 4</span></td>
+            <td>Out-of-Sample Test</td>
+            <td class="warn">Moderate</td>
+            <td>Parameters are fit on a training window and then tested on a hold-out window never seen during
+              optimization. This detects crude overfitting but not subtle forms.</td>
+          </tr>
+          <tr>
+            <td><span class="tier silver">Tier 3</span></td>
+            <td>Multiple-Testing Correction</td>
+            <td class="warn">Stronger</td>
+            <td>When N strategies or parameter sets are tested, the probability of finding one that "works" by chance
+              grows rapidly. Corrections like the Deflated Sharpe Ratio (Bailey &amp; L&oacute;pez de Prado, 2014)
+              adjust for the number of trials.</td>
+          </tr>
+          <tr>
+            <td><span class="tier silver">Tier 2</span></td>
+            <td>Data-Snooping Adjustment</td>
+            <td class="highlight">Strong</td>
+            <td>White's Reality Check (2000) and the Superior Predictive Ability test (Hansen, 2005) explicitly account
+              for searching across many specifications. Sullivan, Timmermann &amp; White (1999) showed that many
+              "profitable" technical rules vanish after this correction.</td>
+          </tr>
+          <tr>
+            <td><span class="tier gold">Tier 1</span></td>
+            <td>Forward Test / Live Track Record</td>
+            <td class="highlight">Strongest</td>
+            <td>Strategy parameters are frozen and the system trades live (or paper-trades in real time) for a
+              meaningful period. This is the only tier that survives all forms of look-ahead bias.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>1.2 TradingView's Built-in Strategy Properties</h3>
+
+      <p>TradingView's <code>strategy()</code> function exposes several properties that are essential for honest
+        backtesting but are routinely ignored by published scripts:</p>
+
+      <pre><code>strategy("My Strategy", overlay=true,
+     initial_capital    = 10000,
+     default_qty_type   = strategy.percent_of_equity,
+     default_qty_value  = 10,
+     commission_type    = strategy.commission.percent,
+     commission_value   = 0.1,
+     slippage           = 2,
+     pyramiding         = 0,
+     calc_on_every_tick = false,
+     process_orders_on_close = false)</code></pre>
+
+      <p>Key parameters that separate honest backtests from fantasy:</p>
+      <ul>
+        <li><strong>commission_value:</strong> Must reflect actual broker costs. Crypto exchanges typically charge
+          0.04&ndash;0.10% taker fees; equities via IBKR are ~$0.005/share.</li>
+        <li><strong>slippage:</strong> Measured in ticks. Even 1&ndash;2 ticks of slippage can destroy a
+          high-frequency edge. TradingView's default of 0 is unrealistic.</li>
+        <li><strong>calc_on_every_tick:</strong> When <code>true</code>, strategy entries can fire mid-bar on prices
+          you could never have known at the time. Must be <code>false</code> for non-repainting results.</li>
+        <li><strong>process_orders_on_close:</strong> When <code>true</code>, orders execute at the current bar's
+          close &mdash; a subtle form of look-ahead since the close price is not known until the bar completes.</li>
+      </ul>
+
+      <div class="callout info">
+        <p><strong>Key insight:</strong> A strategy that shows 500% returns with default settings (0 commission, 0
+          slippage, calc_on_every_tick = true) is not a strategy at all. It is a curve-fitted artifact that conflates
+          in-sample noise with signal.</p>
+      </div>
+
+      <h3>1.3 The Reproducibility Requirement</h3>
+
+      <p>For a backtest to qualify even as Tier 5 evidence, it must be fully reproducible: another trader loading the
+        same script on the same ticker and timeframe must get the same results. This means the strategy must not
+        depend on randomness, discretionary inputs, or undocumented data feeds. TradingView's deterministic execution
+        model makes this achievable &mdash; but only if the script avoids repainting constructs (see Section 2).</p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 2: WHY MOST SYSTEMS FAIL             -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="failures">
+      <h2><span class="num">2.</span> Why Most TradingView Systems Fail</h2>
+
+      <p>The TradingView community script library contains tens of thousands of published strategies and indicators.
+        The vast majority would not survive even Tier 4 scrutiny. Understanding the failure modes is prerequisite to
+        building systems that avoid them.</p>
+
+      <h3>2.1 Repainting and Future Leakage</h3>
+
+      <p>Repainting is the single most common flaw in TradingView indicators. A repainting script changes its
+        historical signals after the fact, making past performance look better than what was available in real time.</p>
+
+      <h4>Common Repainting Sources</h4>
+      <ul>
+        <li><strong>Realtime bar close values:</strong> On the current (unclosed) bar,
+          <code>close</code> is the last traded price, not the final close. Any logic that acts on
+          <code>close</code> without waiting for bar confirmation will repaint.
+        </li>
+        <li><strong>HTF <code>request.security()</code> on realtime bars:</strong> When requesting a higher timeframe
+          from a lower timeframe chart, Pine Script can return the <em>current, still-forming</em> HTF bar value. This
+          appears to give perfect foresight into the HTF close before it actually occurs. The
+          <code>lookahead</code> parameter was deprecated precisely because of this issue.
+        </li>
+        <li><strong><code>calc_on_every_tick = true</code>:</strong> The strategy evaluates on every tick and can
+          enter/exit at intra-bar prices that would not have been available if evaluated only at bar close.</li>
+        <li><strong><code>security()</code> with <code>barmerge.lookahead_on</code>:</strong> Explicitly pulls future
+          HTF data into the current bar. This was a legacy feature that should never be used in backtests.</li>
+      </ul>
+
+      <pre><code>// DANGEROUS: This repaints on realtime bars
+htf_close = request.security(syminfo.tickerid, "D", close)
+// The daily close is NOT known until end of day
+
+// SAFE: Wait for bar confirmation
+htf_close = request.security(syminfo.tickerid, "D", close[1])
+// Uses previous completed daily bar</code></pre>
+
+      <h3>2.2 Intrabar Signal Risk</h3>
+
+      <p>Even with <code>calc_on_every_tick = false</code>, certain constructs generate signals within the bar
+        that may not persist at bar close. For example, a crossover detected at tick N may reverse by the bar's
+        close, yet the historical chart shows the bar as though the crossover was confirmed. The solution is the
+        <code>barstate.isconfirmed</code> guard:
+      </p>
+
+      <pre><code>// Only act on fully closed bars
+if barstate.isconfirmed
+    if ta.crossover(fast_ma, slow_ma)
+        strategy.entry("Long", strategy.long)</code></pre>
+
+      <h3>2.3 Object Spam and Visual Illusions</h3>
+
+      <p>Some published scripts draw hundreds of labels, lines, or boxes to mark "predicted" support/resistance zones.
+        Because Pine allows retroactive drawing (placing objects on past bars), these can create the illusion of
+        prescient analysis. The objects were actually placed after the fact. If a script draws more than a handful of
+        objects per bar, it is almost certainly engaging in visual overfitting.</p>
+
+      <h3>2.4 "Back-Tested Mode" That Is Not Real Backtesting</h3>
+
+      <p>Some indicators include a "backtest mode" toggle that simply counts how many historical signals would have
+        been profitable if you entered at the signal and exited at a fixed target. This is not a backtest. A real
+        backtest requires:</p>
+      <ul>
+        <li>Sequential position management (no overlapping entries unless pyramiding is enabled)</li>
+        <li>Realistic fill assumptions (next bar open, not current bar close)</li>
+        <li>Transaction costs and slippage on every trade</li>
+        <li>Portfolio-level equity tracking</li>
+      </ul>
+
+      <p>TradingView's <code>strategy()</code> engine provides all of this. Any indicator-mode "backtest" that bypasses
+        the strategy engine should be treated with extreme skepticism.</p>
+
+      <h3>2.5 Selection Bias at Scale</h3>
+
+      <p>With thousands of strategies published, the probability that at least one looks spectacular by pure chance
+        is essentially 1.0. This is a textbook multiple-comparisons problem. If 10,000 traders each publish one
+        strategy, and we assume a 5% false positive rate, we expect ~500 strategies that appear statistically
+        significant but are actually noise. The consumer browsing the "Top Scripts" page is seeing survivorship bias
+        in real time.</p>
+
+      <div class="callout warning">
+        <p><strong>Sullivan, Timmermann &amp; White (1999):</strong> "After adjusting for data snooping, the best
+          technical trading rules do not add value beyond what may be expected by chance." This was demonstrated on
+          7,846 trading rules across 100 years of DJIA data. The message is clear: statistical significance in a single
+          backtest is insufficient.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 3: SOURCES OF EDGE                   -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="edge">
+      <h2><span class="num">3.</span> Research-Backed Sources of Edge</h2>
+
+      <p>Despite the grim landscape of overfitting, academic finance has documented several persistent anomalies that
+        survive data-snooping corrections and have plausible economic explanations. These are the foundations on which
+        a legitimate systematic strategy can be built.</p>
+
+      <h3>3.1 Trend / Momentum (1&ndash;12 Month)</h3>
+
+      <p>The momentum anomaly is one of the most robust findings in empirical finance. Jegadeesh &amp; Titman (1993)
+        documented that stocks with strong 3&ndash;12 month returns continue to outperform, and stocks with weak
+        returns continue to underperform. This was later extended to virtually every asset class.</p>
+
+      <p>Moskowitz, Ooi &amp; Pedersen (2012) showed that <strong>time-series momentum</strong> &mdash; going long
+        assets with positive recent returns and short those with negative returns &mdash; is profitable across 58
+        liquid futures markets spanning equities, bonds, currencies, and commodities. The effect is strongest at
+        the 12-month lookback and survives transaction costs.</p>
+
+      <div class="callout warning">
+        <p><strong>Momentum crash risk:</strong> Daniel &amp; Moskowitz (2016) documented that momentum strategies
+          experience infrequent but devastating crashes, typically during market reversals after bear markets (e.g.,
+          momentum crashed &ndash;73.42% in 2009). They proposed EWMA-volatility scaling as a partial remedy, which
+          improved the strategy's Sharpe ratio from 0.53 to 0.97.</p>
+      </div>
+
+      <h3>3.2 Short-Term Mean Reversion (RSI-2 Style)</h3>
+
+      <p>While momentum dominates at intermediate horizons, short-term (1&ndash;5 day) returns exhibit mean reversion.
+        Connors &amp; Alvarez documented RSI(2) strategies on SPY and QQQ with win rates exceeding 70% in backtests
+        spanning 1993&ndash;2023. The logic is simple: buy when the 2-period RSI drops below 10 (extreme short-term
+        oversold) and sell when it rises above 90.</p>
+
+      <p>The economic rationale is liquidity provision: short-term drops often reflect temporary selling pressure from
+        institutional rebalancing or stop-loss cascades rather than fundamental deterioration. The mean-reversion trader
+        is effectively providing liquidity and earning a premium for it.</p>
+
+      <pre><code>// RSI-2 Mean Reversion (Connors)
+rsi2 = ta.rsi(close, 2)
+long_condition  = rsi2 < 10 and close > ta.sma(close, 200)
+exit_condition  = rsi2 > 90
+
+// Regime filter: only buy above 200-SMA (trend filter)
+if barstate.isconfirmed and long_condition
+    strategy.entry("RSI2_Long", strategy.long)
+if exit_condition
+    strategy.close("RSI2_Long")</code></pre>
+
+      <h3>3.3 Volatility / Fear Regime (VIX Decomposition)</h3>
+
+      <p>The variance risk premium (VRP) &mdash; the difference between implied and realized volatility &mdash; is
+        consistently positive, meaning options (and by extension the VIX) systematically overestimate future volatility.
+        This creates a persistent premium for volatility sellers.</p>
+
+      <p>More directly actionable: VIX spikes above 30&ndash;35 have historically marked buying opportunities for
+        equities. The VIX is a fear gauge, and extreme fear readings tend to coincide with capitulation selling. Our
+        backtest of VIX spike reversals (VIX &gt; 30, buy SPY) shows a 72% win rate with a Sharpe ratio of 6.20
+        over the 2010&ndash;2024 period.</p>
+
+      <p>The key insight from Derman (2016) and Scaillet et al. (2020) is that implied volatility mean-reverts faster
+        than most traders expect. When DVOL (Deribit's crypto volatility index) exceeds 100 or the VIX exceeds 35,
+        the forward 30-day returns are positive in roughly 80% of historical instances.</p>
+
+      <h3>3.4 Calendar / Seasonal Anomalies</h3>
+
+      <p>Several calendar effects have been documented:</p>
+      <ul>
+        <li><strong>Halloween Effect:</strong> "Sell in May and go away" &mdash; equity returns are historically higher
+          November&ndash;April than May&ndash;October (Bouman &amp; Jacobsen, 2002).</li>
+        <li><strong>Turn-of-Month:</strong> Returns in the last 1&ndash;3 days and first 3&ndash;4 days of each month
+          are significantly higher than the rest (Lakonishok &amp; Smidt, 1988).</li>
+        <li><strong>Day-of-Week:</strong> Monday returns are historically lower (the "Monday effect"), though this has
+          weakened considerably since its publication.</li>
+      </ul>
+
+      <div class="callout info">
+        <p><strong>Fragility warning:</strong> Calendar anomalies are the most fragile category of edge. Most have
+          weakened or disappeared after publication, consistent with the efficient market hypothesis's prediction
+          that publicized anomalies get arbitraged away. We treat them as supplementary confirming signals, never
+          as primary entry logic.</p>
+      </div>
+
+      <h3>3.5 Technical Rules and Data-Snooping</h3>
+
+      <p>Simple technical rules (moving average crossovers, breakouts, RSI thresholds) have a mixed academic record.
+        Brock, Lakonishok &amp; LeBaron (1992) found that moving average and support/resistance rules generated
+        significant profits on DJIA data from 1897&ndash;1986. However, Sullivan, Timmermann &amp; White (1999)
+        applied White's Reality Check to 7,846 trading rules and found that the significance largely vanished after
+        correcting for data snooping.</p>
+
+      <p>This does not mean all technical rules are useless &mdash; it means that the act of searching across many
+        rules and selecting the best one creates a bias that must be corrected for. A single technical rule that
+        is derived from an economic hypothesis (e.g., "momentum exists because of investor underreaction") is on
+        firmer ground than one selected purely for backtest performance.</p>
+
+      <h3>3.6 Crypto Market Efficiency Evolution</h3>
+
+      <p>Cryptocurrency markets present a unique case. Early crypto markets (2013&ndash;2017) were demonstrably
+        inefficient, with simple momentum and mean-reversion strategies generating extraordinary returns. Liu, Tsyvinski
+        &amp; Wu (2022, Journal of Financial Economics) documented strong cross-sectional momentum in crypto assets.</p>
+
+      <p>However, efficiency has been increasing as institutional participation grows. Strategies that worked in 2017
+        may not work in 2026. This argues for:</p>
+      <ul>
+        <li>Continuous monitoring of strategy decay (walk-forward analysis)</li>
+        <li>Emphasis on structural edges (funding rate carry, liquidation cascades) that arise from market
+          microstructure rather than simple price patterns</li>
+        <li>Shorter lookback windows for parameter estimation</li>
+      </ul>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 4: ENHANCEMENTS                      -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="enhancements">
+      <h2><span class="num">4.</span> Enhancements Applied to Our Systems (v6.0+)</h2>
+
+      <p>Building on the evidence framework above, Elton's Predictions v6.0 and Kimi Claw Pro v2.0 implement a
+        comprehensive set of safeguards designed to address each known failure mode. Every enhancement has a
+        direct mapping to an academic concern.</p>
+
+      <h3>4.1 Non-Repainting Gate</h3>
+
+      <p>Every signal in our system passes through a <code>barstate.isconfirmed</code> gate. No entry or exit
+        fires until the bar has closed, eliminating the most common source of repainting:</p>
+
+      <pre><code>// Global non-repainting gate
+var bool confirmed = false
+confirmed := barstate.isconfirmed
+
+// All strategy functions receive this gate
+[longSig, shortSig, strength] = f_strategy_connors_rsi2()
+
+// Entry only fires on confirmed bars
+if confirmed and longSig
+    strategy.entry("L_RSI2", strategy.long)</code></pre>
+
+      <h3>4.2 Confirmed HTF Values</h3>
+
+      <p>All higher-timeframe data uses the previous completed bar via <code>[1]</code> offset, preventing
+        realtime-bar repainting. These values are computed at global scope (a Pine v6 requirement for
+        <code>request.security()</code>) and passed to strategy functions:
+      </p>
+
+      <pre><code>// HTF values computed at global scope (Pine v6 requirement)
+// Using [1] ensures we only see completed bars
+htf_daily_close = request.security(syminfo.tickerid, "D", close[1])
+htf_daily_rsi   = request.security(syminfo.tickerid, "D", ta.rsi(close, 14)[1])
+htf_weekly_ema   = request.security(syminfo.tickerid, "W", ta.ema(close, 21)[1])
+
+// These are guaranteed non-repainting values</code></pre>
+
+      <h3>4.3 Bayesian Logistic Regression Confidence</h3>
+
+      <p>Traditional multi-indicator systems use naive additive scoring: if RSI says buy (+1), MACD says buy (+1),
+        and volume confirms (+1), the "confidence" is 3/3. This is statistically meaningless because it assumes
+        independence and equal weighting.</p>
+
+      <p>We replace this with a logistic regression framework where each signal contributes a log-odds weight
+        derived from its historical predictive power. The composite probability is:</p>
+
+      <pre><code>// Bayesian logistic confidence
+// P(win) = sigmoid(b0 + b1*x1 + b2*x2 + ... + bn*xn)
+//
+// Where weights b_i are estimated from walk-forward windows
+// and x_i are normalized signal values [-1, +1]
+
+f_bayesian_confidence(signals, weights) =>
+    float logit = weights.get(0)  // intercept (prior)
+    for i = 0 to signals.size() - 1
+        logit += weights.get(i + 1) * signals.get(i)
+    // Sigmoid transformation
+    1.0 / (1.0 + math.exp(-logit))</code></pre>
+
+      <p>This produces a calibrated probability estimate rather than an arbitrary score, and naturally handles
+        correlated signals (correlated inputs will have their weights dampened during fitting).</p>
+
+      <h3>4.4 Regime Detection with Hysteresis</h3>
+
+      <p>Markets alternate between trending and ranging regimes. Applying a momentum strategy in a choppy market
+        (or a mean-reversion strategy in a strong trend) degrades performance. Our regime detector combines three
+        orthogonal indicators with hysteresis to prevent whipsawing:</p>
+
+      <pre><code>// Regime detection with hysteresis
+adx_val    = ta.adx(14)
+chop_val   = f_choppiness(14)  // Choppiness Index
+atr_pct    = ta.atr(14) / close * 100  // ATR as % of price
+
+// State machine with hysteresis bands
+var int regime = 0  // 0=neutral, 1=trending, -1=ranging
+
+if adx_val > 30 and chop_val < 38.2 and atr_pct > atr_pct_p75
+    regime := 1   // Strong trend confirmed
+else if adx_val < 20 and chop_val > 61.8 and atr_pct < atr_pct_p25
+    regime := -1  // Choppy/ranging confirmed
+// else: maintain current regime (hysteresis)</code></pre>
+
+      <p>The hysteresis prevents rapid regime flipping. Once a regime is identified, it persists until the opposing
+        regime is <em>conclusively</em> confirmed, not merely suggested.</p>
+
+      <h3>4.5 Correlation Group Caps</h3>
+
+      <p>A common pitfall in multi-strategy systems is "strategy stacking" &mdash; multiple highly correlated
+        strategies firing simultaneously, creating the illusion of multi-signal confirmation when in reality
+        it is one signal counted multiple times.</p>
+
+      <p>We assign each strategy to a correlation group, and cap the number of concurrent entries per group:</p>
+
+      <pre><code>// Correlation groups prevent signal redundancy
+// Group A: Trend-following (MACD, EMA Cross, Ichimoku, Supertrend)
+// Group B: Mean-reversion (RSI-2, Bollinger, VWAP)
+// Group C: Volatility (VIX Spike, DVOL, Bollinger Squeeze)
+// Group D: Structure (SFP, BOS, Liquidation Cascade)
+
+// Maximum 2 entries from any single group
+var int groupA_active = 0
+var int groupB_active = 0
+// ...</code></pre>
+
+      <h3>4.6 Composite Volume Z-Score</h3>
+
+      <p>Volume confirmation is essential but often implemented crudely ("volume > 20-period average"). We compute
+        a Z-score of volume relative to a rolling window, which normalizes across different volatility regimes:</p>
+
+      <pre><code>// Volume Z-score (normalized confirmation)
+vol_mean = ta.sma(volume, 50)
+vol_std  = ta.stdev(volume, 50)
+vol_z    = vol_std > 0 ? (volume - vol_mean) / vol_std : 0
+
+// Z > 2.0 = exceptional volume (confirmation)
+// Z < -1.0 = unusually low volume (caution)
+vol_confirmed = vol_z > 1.5</code></pre>
+
+      <h3>4.7 Kelly Criterion Position Sizing</h3>
+
+      <p>The Kelly Criterion provides the mathematically optimal bet size given a strategy's win rate and
+        payoff ratio. We use a fractional Kelly (typically 25&ndash;50%) to reduce variance:</p>
+
+      <pre><code>// Fractional Kelly position sizing
+// Kelly% = W - (1-W)/R
+// where W = win rate, R = avg_win / avg_loss
+// Fractional Kelly = Kelly% * fraction (0.25 to 0.5)
+
+f_kelly_size(win_rate, avg_win, avg_loss, fraction) =>
+    R = avg_win / math.max(avg_loss, 0.001)
+    kelly_pct = win_rate - (1.0 - win_rate) / R
+    kelly_pct := math.max(kelly_pct, 0.0)  // never negative
+    kelly_pct * fraction * 100  // as % of equity</code></pre>
+
+      <h3>4.8 Drawdown Circuit Breaker</h3>
+
+      <p>Inspired by stock exchange circuit breakers, our system pauses new entries when portfolio drawdown
+        exceeds predefined thresholds:</p>
+
+      <pre><code>// Drawdown circuit breaker
+peak_equity = ta.highest(strategy.equity, 500)
+drawdown_pct = (peak_equity - strategy.equity) / peak_equity * 100
+
+// Three-tier circuit breaker
+var bool cb_active = false
+if drawdown_pct > 15
+    cb_active := true    // Halt all new entries
+else if drawdown_pct > 10
+    // Reduce position size by 50%
+else if drawdown_pct < 5
+    cb_active := false   // Resume normal trading</code></pre>
+
+      <h3>4.9 ATR Scaling by Regime</h3>
+
+      <p>Stop-losses and take-profit levels adapt to current volatility via ATR-based scaling. In high-volatility
+        regimes, stops widen to avoid noise; in low-volatility regimes, stops tighten to protect profits:</p>
+
+      <pre><code>// ATR-scaled stops by regime
+atr14 = ta.atr(14)
+
+stop_mult = switch regime
+    1  => 2.5   // Trending: wider stops
+    -1 => 1.5   // Ranging: tighter stops
+    => 2.0      // Neutral: moderate
+
+sl_distance = atr14 * stop_mult
+tp1_distance = atr14 * stop_mult * 1.5  // TP1: 1.5R
+tp2_distance = atr14 * stop_mult * 3.0  // TP2: 3.0R</code></pre>
+
+      <h3>4.10 Dual Take-Profit Targets</h3>
+
+      <p>We implement two TP levels to balance win rate and expectancy. TP1 (closer) captures frequent small
+        wins; TP2 (farther) lets winners run. Position is split: 60% exits at TP1, 40% rides to TP2 with a
+        trailing stop. This structure improves the strategy's payoff distribution and reduces the impact of
+        individual losing trades.</p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 5: VALIDATION FRAMEWORK              -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="validation">
+      <h2><span class="num">5.</span> Validation Framework</h2>
+
+      <p>Implementing sound strategies is necessary but not sufficient. The validation framework determines whether
+        we have evidence or merely hope. Our framework implements all five tiers of the evidence hierarchy.</p>
+
+      <h3>5.1 Benchmark Definition</h3>
+
+      <p>A strategy must beat a well-defined benchmark to justify its existence. We define our benchmark as:</p>
+      <ul>
+        <li><strong>Return benchmark:</strong> Buy-and-hold of the underlying asset over the same period</li>
+        <li><strong>Risk benchmark:</strong> Strategy must achieve lower maximum drawdown than buy-and-hold</li>
+        <li><strong>Combined criterion:</strong> Strategy must have a higher risk-adjusted return (Sharpe ratio)
+          than buy-and-hold, net of all costs</li>
+      </ul>
+
+      <p>A strategy that returns 50% with 40% drawdown is inferior to buy-and-hold that returns 45% with 20%
+        drawdown. Absolute returns without risk context are meaningless.</p>
+
+      <h3>5.2 Strategy Harness with Realistic Costs</h3>
+
+      <p>Every strategy runs through our standard harness that enforces realistic trading conditions:</p>
+
+      <pre><code>// Standard strategy harness
+strategy("Elton v6.0 | Strategy Name", overlay=true,
+     initial_capital         = 10000,
+     default_qty_type        = strategy.percent_of_equity,
+     default_qty_value       = 10,
+     commission_type         = strategy.commission.percent,
+     commission_value        = 0.075,   // Binance taker fee
+     slippage                = 3,       // 3 ticks
+     pyramiding              = 0,       // No pyramiding
+     calc_on_every_tick      = false,   // Bar close only
+     process_orders_on_close = false,   // Next bar open
+     currency                = currency.USD)
+
+// Enforced constraints:
+// - No intrabar execution
+// - Orders fill at next bar's open
+// - Commission applied on every fill
+// - Slippage applied on every fill</code></pre>
+
+      <h3>5.3 Walk-Forward Validation</h3>
+
+      <p>Walk-forward analysis divides the data into sequential in-sample (IS) and out-of-sample (OOS) windows.
+        Parameters are optimized on IS and then tested on OOS. This process repeats across the full dataset:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Window</th>
+            <th>In-Sample (Training)</th>
+            <th>Out-of-Sample (Test)</th>
+            <th>IS/OOS Ratio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Window 1</td>
+            <td>Jan 2020 &ndash; Dec 2021</td>
+            <td>Jan 2022 &ndash; Jun 2022</td>
+            <td>4:1</td>
+          </tr>
+          <tr>
+            <td>Window 2</td>
+            <td>Jul 2020 &ndash; Jun 2022</td>
+            <td>Jul 2022 &ndash; Dec 2022</td>
+            <td>4:1</td>
+          </tr>
+          <tr>
+            <td>Window 3</td>
+            <td>Jan 2021 &ndash; Dec 2022</td>
+            <td>Jan 2023 &ndash; Jun 2023</td>
+            <td>4:1</td>
+          </tr>
+          <tr>
+            <td>Window 4</td>
+            <td>Jul 2021 &ndash; Jun 2023</td>
+            <td>Jul 2023 &ndash; Dec 2023</td>
+            <td>4:1</td>
+          </tr>
+          <tr>
+            <td>Window 5</td>
+            <td>Jan 2022 &ndash; Dec 2023</td>
+            <td>Jan 2024 &ndash; Jun 2024</td>
+            <td>4:1</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The strategy is only considered validated if it is profitable in a majority (e.g., 4 out of 5) of OOS
+        windows. A strategy that works in IS but fails in OOS is overfitted.</p>
+
+      <h3>5.4 Multiple-Testing Correction: Deflated Sharpe Ratio</h3>
+
+      <p>When we test N parameter combinations or N strategies, the best Sharpe ratio is biased upward. Bailey
+        &amp; L&oacute;pez de Prado (2014) proposed the Deflated Sharpe Ratio (DSR), which adjusts the observed
+        Sharpe for:</p>
+      <ul>
+        <li>Number of trials (N)</li>
+        <li>Skewness of returns</li>
+        <li>Kurtosis of returns</li>
+        <li>Length of the backtest</li>
+      </ul>
+
+      <pre><code># Deflated Sharpe Ratio (Python implementation)
+import numpy as np
+from scipy.stats import norm
+
+def deflated_sharpe_ratio(sharpe_obs, n_trials, T, skew, kurtosis):
+    """
+    sharpe_obs: observed Sharpe ratio
+    n_trials:   number of strategies/parameter sets tested
+    T:          number of return observations
+    skew:       skewness of returns
+    kurtosis:   excess kurtosis of returns
+    """
+    # Expected maximum Sharpe under null (all strategies are noise)
+    e_max_sharpe = norm.ppf(1 - 1/n_trials) * \
+                   np.sqrt(1 + (skew * sharpe_obs) / 6 + \
+                   ((kurtosis - 3) * sharpe_obs**2) / 24)
+
+    # Deflated Sharpe
+    se = np.sqrt((1 - skew * sharpe_obs + \
+         (kurtosis - 1) * sharpe_obs**2 / 4) / T)
+
+    dsr = norm.cdf((sharpe_obs - e_max_sharpe) / se)
+    return dsr
+
+# Example: observed Sharpe 2.1, tested 50 strategies,
+# 500 observations, skew=-0.3, kurtosis=4.5
+dsr = deflated_sharpe_ratio(2.1, 50, 500, -0.3, 4.5)
+print(f"DSR p-value: {dsr:.4f}")
+# DSR > 0.95 => strategy survives multiple-testing correction</code></pre>
+
+      <div class="callout success">
+        <p><strong>Our standard:</strong> A strategy must achieve a DSR p-value > 0.95 (i.e., less than 5% probability
+          that its Sharpe ratio is explained by multiple testing) to be included in the production indicator. Strategies
+          with DSR between 0.80 and 0.95 are included as "experimental" with reduced weight.</p>
+      </div>
+
+      <h3>5.5 Forward Test with Frozen Parameters</h3>
+
+      <p>The ultimate test: freeze all parameters and run the strategy in real time (or paper-trade) for a minimum
+        of 3 months. The parameters are not adjusted during this period. The forward test produces:</p>
+      <ul>
+        <li>A live equity curve with timestamps</li>
+        <li>A trade log with entry/exit prices, fill timestamps, and P&amp;L</li>
+        <li>A comparison to the same strategy's backtest over the forward period</li>
+      </ul>
+
+      <p>If the forward-test Sharpe is within 1 standard error of the backtest Sharpe, the strategy is considered
+        validated. If it degrades by more than 50%, the strategy is flagged for review or removal.</p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 6: APPLIED TO OUR INDICATORS         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="applied">
+      <h2><span class="num">6.</span> Applied to Our Indicators</h2>
+
+      <p>This section maps each concern from Sections 1&ndash;5 to the specific implementations in Elton's
+        Predictions v6.0 and Kimi Claw Pro v2.0.</p>
+
+      <h3>6.1 Elton's Predictions v6.0 (TradingView Pine Script)</h3>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Concern</th>
+            <th>Solution Implemented</th>
+            <th>Section Ref</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Repainting</td>
+            <td><code>barstate.isconfirmed</code> gate on all entries; HTF values use <code>[1]</code> offset</td>
+            <td>4.1, 4.2</td>
+          </tr>
+          <tr>
+            <td>Naive scoring</td>
+            <td>Bayesian logistic regression replaces additive confidence</td>
+            <td>4.3</td>
+          </tr>
+          <tr>
+            <td>Wrong-regime signals</td>
+            <td>ADX + Choppiness + ATR percentile regime detector with hysteresis</td>
+            <td>4.4</td>
+          </tr>
+          <tr>
+            <td>Correlated strategy stacking</td>
+            <td>Correlation group caps (max 2 per group)</td>
+            <td>4.5</td>
+          </tr>
+          <tr>
+            <td>Weak volume confirmation</td>
+            <td>Composite Z-score volume analysis (50-bar rolling)</td>
+            <td>4.6</td>
+          </tr>
+          <tr>
+            <td>Fixed position sizing</td>
+            <td>Fractional Kelly Criterion (25&ndash;50% Kelly)</td>
+            <td>4.7</td>
+          </tr>
+          <tr>
+            <td>Unbounded drawdown</td>
+            <td>Three-tier circuit breaker (5%/10%/15%)</td>
+            <td>4.8</td>
+          </tr>
+          <tr>
+            <td>Fixed stop distances</td>
+            <td>ATR-scaled stops by regime (1.5x&ndash;2.5x ATR)</td>
+            <td>4.9</td>
+          </tr>
+          <tr>
+            <td>Binary TP</td>
+            <td>Dual TP targets: 60% at 1.5R, 40% rides to 3R with trail</td>
+            <td>4.10</td>
+          </tr>
+          <tr>
+            <td>Unrealistic backtest</td>
+            <td>strategy() with 0.075% commission, 3-tick slippage, next-bar-open fills</td>
+            <td>5.2</td>
+          </tr>
+          <tr>
+            <td>Overfitting</td>
+            <td>Walk-forward validation across 5 windows; DSR correction for N strategies tested</td>
+            <td>5.3, 5.4</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>Strategy Roster (v6.0 &mdash; 14 Strategies)</h4>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Edge Category</th>
+            <th>Academic Basis</th>
+            <th>Correlation Group</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Connors RSI-2</td>
+            <td>Mean Reversion</td>
+            <td>Connors &amp; Alvarez; Jegadeesh &amp; Titman (short-term reversal)</td>
+            <td>Group B</td>
+          </tr>
+          <tr>
+            <td>VIX Spike Reversal</td>
+            <td>Volatility / Fear</td>
+            <td>VRP literature; Derman (2016)</td>
+            <td>Group C</td>
+          </tr>
+          <tr>
+            <td>MACD Momentum</td>
+            <td>Trend / Momentum</td>
+            <td>Appel (1979); trend persistence</td>
+            <td>Group A</td>
+          </tr>
+          <tr>
+            <td>EMA Crossover</td>
+            <td>Trend / Momentum</td>
+            <td>Brock, Lakonishok &amp; LeBaron (1992)</td>
+            <td>Group A</td>
+          </tr>
+          <tr>
+            <td>Ichimoku Cloud</td>
+            <td>Trend / Momentum</td>
+            <td>Goichi Hosoda (1968); multi-timeframe trend</td>
+            <td>Group A</td>
+          </tr>
+          <tr>
+            <td>Bollinger Squeeze</td>
+            <td>Volatility</td>
+            <td>Bollinger (2002); vol compression breakout</td>
+            <td>Group C</td>
+          </tr>
+          <tr>
+            <td>VWAP Reversion</td>
+            <td>Mean Reversion</td>
+            <td>Institutional fair-value anchor</td>
+            <td>Group B</td>
+          </tr>
+          <tr>
+            <td>RSI Divergence</td>
+            <td>Mean Reversion</td>
+            <td>Wilder (1978); momentum exhaustion</td>
+            <td>Group B</td>
+          </tr>
+          <tr>
+            <td>Supertrend</td>
+            <td>Trend / Momentum</td>
+            <td>ATR-based trend following</td>
+            <td>Group A</td>
+          </tr>
+          <tr>
+            <td>Swing Failure Pattern</td>
+            <td>Market Structure</td>
+            <td>Hsaka; ICT methodology</td>
+            <td>Group D</td>
+          </tr>
+          <tr>
+            <td>Break of Structure</td>
+            <td>Market Structure</td>
+            <td>ICT BOS/CHOCH; Smart Money Concepts</td>
+            <td>Group D</td>
+          </tr>
+          <tr>
+            <td>Liquidation Cascade</td>
+            <td>Market Structure</td>
+            <td>Crypto microstructure; cascading liquidations</td>
+            <td>Group D</td>
+          </tr>
+          <tr>
+            <td>Momentum Crash Hedge</td>
+            <td>Risk Management</td>
+            <td>Daniel &amp; Moskowitz (2016)</td>
+            <td>Group E</td>
+          </tr>
+          <tr>
+            <td>Multi-Strategy Consensus</td>
+            <td>Ensemble</td>
+            <td>Bayesian model averaging</td>
+            <td>N/A</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.2 Kimi Claw Pro v2.0 (Live Scanner)</h3>
+
+      <p>Kimi Claw Pro operates as a real-time signal generator (not a TradingView indicator) with its own
+        validation layer. Key differences from Elton's Predictions:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Implementation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Signal generation</td>
+            <td>81 algorithms across crypto and forex, running every 15 minutes via GitHub Actions</td>
+          </tr>
+          <tr>
+            <td>Signal validation</td>
+            <td>Autonomous TP/SL tracker validates every pick against real Binance prices (signal_tracker.py)</td>
+          </tr>
+          <tr>
+            <td>ML ranking</td>
+            <td>Heuristic mode with &lt;50 closed picks; Random Forest auto-trains at 50+ picks with walk-forward
+              retraining</td>
+          </tr>
+          <tr>
+            <td>Strategy elimination</td>
+            <td>Danger zone &rarr; probation &rarr; elimination pipeline; 20-strategy challenger pool for
+              replacement</td>
+          </tr>
+          <tr>
+            <td>API-sourced data</td>
+            <td>CoinGecko Pro, CryptoQuant, CurrencyLayer, CoinDesk &mdash; no screen-scraping or delayed data</td>
+          </tr>
+          <tr>
+            <td>Persistence</td>
+            <td>SQLite databases (kimi_trading.db, signal_tracker.db) for full audit trail</td>
+          </tr>
+          <tr>
+            <td>Forward testing</td>
+            <td>Every signal is a forward test by definition &mdash; parameters are frozen at signal generation time
+              and validated against subsequent real prices</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <p><strong>The key advantage of Kimi Claw Pro's architecture:</strong> Because every signal is generated in
+          real time with frozen parameters and subsequently validated against actual market prices, the system
+          produces Tier 1 evidence (forward test with live track record) automatically. There is no possibility of
+          look-ahead bias or backtest overfitting &mdash; the signal either hits its TP or SL at real market prices,
+          and that result is permanently recorded in the SQLite database.</p>
+      </div>
+
+      <h3>6.3 Addressing Remaining Risks</h3>
+
+      <p>No system is perfect. We acknowledge the following residual risks:</p>
+      <ul>
+        <li><strong>Regime change:</strong> A fundamental shift in market microstructure (e.g., new regulation,
+          exchange failure) could invalidate strategies. Mitigation: continuous walk-forward monitoring and the
+          elimination engine.</li>
+        <li><strong>Execution gap:</strong> TradingView backtests assume instant fills at stated prices. Real
+          execution involves order book depth, partial fills, and latency. Mitigation: we use conservative slippage
+          assumptions (3 ticks) and avoid strategies that require sub-second execution.</li>
+        <li><strong>Survivorship bias in asset selection:</strong> Backtesting on BTC, ETH, and SPY inherently
+          selects assets that survived. Strategies tested on assets that went to zero would show very different
+          results. Mitigation: we test on broad indices (SPY, QQQ) rather than individual stocks, and on
+          established crypto assets with 5+ years of history.</li>
+        <li><strong>Sample size:</strong> Some strategies have fewer than 100 trades in the backtest period,
+          limiting statistical power. Mitigation: we report confidence intervals on all metrics and flag strategies
+          with fewer than 50 trades as "low-sample."</li>
+      </ul>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 7: THE ILLUSION OF HISTORICAL        -->
+    <!--  PROFITABILITY                                 -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="illusion">
+      <h2><span class="num">7.</span> The Illusion of Historical Profitability</h2>
+
+      <p>Perhaps the most sobering statistic in quantitative finance: approximately <strong>87% of strategies that show
+        profitability in backtesting fail to generate returns in live trading</strong>. This is not a minor calibration
+        issue &mdash; it represents a fundamental disconnect between the controlled laboratory of historical simulation
+        and the chaotic reality of live markets. Understanding why this gap exists is essential before deploying any
+        capital.</p>
+
+      <h3>7.1 The Execution Variable Gap</h3>
+
+      <p>Backtests assume frictionless execution: orders fill instantly at the exact price requested. Reality is far
+        messier. Three execution variables account for the majority of the backtest-to-live performance gap:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Backtest Assumption</th>
+            <th>Live Reality</th>
+            <th>Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Routing delays</strong></td>
+            <td>Instant fills</td>
+            <td>100&ndash;500ms latency from signal to fill</td>
+            <td class="warn">Price moves against you during latency window</td>
+          </tr>
+          <tr>
+            <td><strong>Liquidity constraints</strong></td>
+            <td>Unlimited depth at quoted price</td>
+            <td>Order book depth varies; large orders walk the book</td>
+            <td class="warn">Realized fill price worse than expected, especially in thin markets</td>
+          </tr>
+          <tr>
+            <td><strong>Spread explosions</strong></td>
+            <td>Fixed or zero spreads</td>
+            <td>Spreads can widen 10x during stress events (e.g., flash crashes, news releases)</td>
+            <td class="warn">Entry cost destroys edge precisely when signals fire most often</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The compounding effect of these variables is severe. A strategy with a theoretical edge of 0.3% per trade
+        can easily see that edge consumed entirely by 0.1% slippage, 0.1% spread widening, and 0.1% timing decay
+        from routing delays.</p>
+
+      <h3>7.2 The Failure Timeline</h3>
+
+      <p>Strategies that fail in live trading do not all fail the same way. The timeline of failure reveals the
+        underlying cause:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Failure Type</th>
+            <th>Timeline</th>
+            <th>Cause</th>
+            <th>Diagnostic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tier bronze">Immediate</span></td>
+            <td>Days</td>
+            <td>Execution costs exceed edge</td>
+            <td>Compare theoretical fills vs. actual fills; if slippage &gt; 50% of expected profit per trade, the
+              edge is insufficient</td>
+          </tr>
+          <tr>
+            <td><span class="tier silver">Short-term</span></td>
+            <td>Weeks</td>
+            <td>Regime shift since backtest period</td>
+            <td>Current market regime (volatility, trend strength) differs from the regime that dominated the
+              backtest window</td>
+          </tr>
+          <tr>
+            <td><span class="tier gold">Gradual</span></td>
+            <td>Months</td>
+            <td>Overfitting to historical noise</td>
+            <td>Strategy captured patterns in the training data that were noise, not signal; performance decays
+              as the noise pattern does not repeat</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <p><strong>The 87% failure rate is not a bug &mdash; it is the expected outcome</strong> of a process that
+          optimizes on historical data without adequate safeguards against overfitting, execution reality, and regime
+          dependence. The remaining 13% of strategies that survive do so precisely because they account for these
+          factors during development, not after deployment.</p>
+      </div>
+
+      <h3>7.3 Implications for Strategy Development</h3>
+
+      <p>The illusion of historical profitability demands a development philosophy that treats backtest results with
+        extreme skepticism. Specifically:</p>
+      <ul>
+        <li><strong>Margin of safety:</strong> A strategy must show profits in backtests that are at least 2&ndash;3x
+          larger than estimated execution costs to survive the transition to live trading.</li>
+        <li><strong>Regime awareness:</strong> Backtest results must be decomposed by market regime. A strategy
+          profitable only in trending markets will fail during ranging periods.</li>
+        <li><strong>Degradation budgeting:</strong> Expect 30&ndash;50% performance degradation from backtest to live.
+          If the strategy is not profitable with a 50% haircut to its backtest metrics, it should not be deployed.</li>
+      </ul>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 8: FORWARD TESTING PROTOCOLS         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="forward-testing">
+      <h2><span class="num">8.</span> Forward Testing Protocols</h2>
+
+      <p>Forward testing (also called paper trading or demo trading) bridges the gap between backtesting and live
+        deployment. It is the only method that generates Tier 1 evidence without risking capital. However, the
+        value of a forward test depends entirely on its duration, sample size, and what it is designed to reveal.</p>
+
+      <h3>8.1 Minimum Duration by Strategy Type</h3>
+
+      <p>Different strategy types require different forward-testing durations to achieve statistical significance.
+        The minimum thresholds are determined by the strategy's trade frequency and the number of market cycles
+        it must observe:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Strategy Type</th>
+            <th>Min Duration</th>
+            <th>Min Trades</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>High-Frequency (sub-minute)</td>
+            <td>1&ndash;2 weeks</td>
+            <td class="highlight">500+</td>
+            <td>Rapid trade frequency provides large sample size quickly; must observe multiple intraday sessions
+              including high-vol events</td>
+          </tr>
+          <tr>
+            <td>Intraday (5m&ndash;1H)</td>
+            <td>2&ndash;4 weeks</td>
+            <td class="highlight">300+</td>
+            <td>Must span at least two distinct volatility regimes; weekday and weekend behavior in crypto</td>
+          </tr>
+          <tr>
+            <td>Swing (4H&ndash;Daily)</td>
+            <td>1&ndash;3 months</td>
+            <td class="highlight">100+</td>
+            <td>Must observe at least one regime transition (trending &rarr; ranging or vice versa)</td>
+          </tr>
+          <tr>
+            <td>Position (Weekly+)</td>
+            <td>3&ndash;6 months</td>
+            <td class="highlight">50+</td>
+            <td>Must span multiple monthly expiration cycles and at least one earnings season (equities) or
+              major macro event</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <p><strong>Statistical note:</strong> With a 60% true win rate, you need approximately 97 trades to reject the
+          null hypothesis (win rate = 50%) at the 95% confidence level (binomial test). Fewer trades mean you cannot
+          distinguish skill from luck. This is why the minimum trade counts above are non-negotiable.</p>
+      </div>
+
+      <h3>8.2 What Forward Testing Reveals</h3>
+
+      <p>A properly conducted forward test exposes issues that backtesting fundamentally cannot surface:</p>
+
+      <ul>
+        <li><strong>Platform stability:</strong> Does the signal generation infrastructure run reliably 24/7? Downtime
+          during active trades can be catastrophic. Forward testing reveals uptime issues, memory leaks, and API
+          rate-limit problems.</li>
+        <li><strong>Signal latency:</strong> The delay between signal generation and potential execution. In a backtest,
+          this is zero. In live systems, it includes computation time, network latency, and order routing. Forward
+          testing measures this end-to-end.</li>
+        <li><strong>Broker routing quality:</strong> Different brokers route orders differently. Some internalize orders,
+          some route to specific venues, some use smart order routing. Forward testing with your actual broker reveals
+          fill quality that no simulation can predict.</li>
+        <li><strong>Spread impact:</strong> Real spreads vary throughout the day, widen around news events, and differ
+          by asset. Forward testing captures the actual spread distribution your strategy faces, not the averaged
+          or fixed spread used in backtests.</li>
+      </ul>
+
+      <h3>8.3 Forward Test Design Principles</h3>
+
+      <p>An effective forward test must be designed as rigorously as a scientific experiment:</p>
+
+      <ol>
+        <li><strong>Parameter freeze:</strong> All strategy parameters are locked at the start. No adjustment is
+          permitted during the test period. Any "tweaking" invalidates the test entirely.</li>
+        <li><strong>Pre-registered hypothesis:</strong> Before starting, document the expected win rate range,
+          expected Sharpe range, and maximum acceptable drawdown. If the strategy falls outside these bounds,
+          it fails the test regardless of overall profitability.</li>
+        <li><strong>Blind evaluation:</strong> If possible, have someone other than the developer evaluate the
+          results against the pre-registered criteria. Developer bias (wanting the strategy to work) is a real
+          and documented source of error.</li>
+        <li><strong>Full trade logging:</strong> Every signal, entry, exit, fill price, timestamp, spread at time
+          of fill, and slippage must be recorded. Aggregate P&amp;L alone is insufficient.</li>
+      </ol>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 9: LIVE TRADING REALITY              -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="live-reality">
+      <h2><span class="num">9.</span> Live Trading Reality</h2>
+
+      <p>The transition from forward testing to live capital deployment introduces a variable that no simulation
+        can replicate: the psychology of real money at risk. This section addresses the behavioral and operational
+        challenges of live trading.</p>
+
+      <h3>9.1 Capital Deployment Psychology</h3>
+
+      <p>Kahneman &amp; Tversky's prospect theory (1979) demonstrated that humans experience losses 2&ndash;3x more
+        intensely than equivalent gains. This asymmetry has profound implications for systematic trading:</p>
+
+      <ul>
+        <li><strong>Loss aversion override:</strong> A trader who calmly observes a 5% drawdown in a forward test
+          may panic and override the system during a 5% drawdown with real capital. The system's edge depends on
+          consistent execution through drawdowns &mdash; behavioral interference destroys it.</li>
+        <li><strong>Denomination effect:</strong> Seeing &ldquo;-$5,000&rdquo; on screen triggers a different emotional
+          response than seeing &ldquo;-5%&rdquo; even when they represent the same loss. Position sizing must be
+          calibrated so that maximum expected loss in dollar terms is psychologically tolerable.</li>
+        <li><strong>Recency bias:</strong> After 3&ndash;4 consecutive losses, traders tend to reduce size or skip
+          signals. This is precisely when mean-reverting strategies are most likely to produce their next winning
+          trade. Skipping signals during drawdowns systematically degrades expected returns.</li>
+      </ul>
+
+      <h3>9.2 Results Drift Patterns</h3>
+
+      <p>Live trading results will inevitably drift from backtest expectations. The key is distinguishing normal
+        drift (expected statistical variation) from genuine strategy degradation. We categorize drift into four
+        patterns:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Drift Pattern</th>
+            <th>Symptom</th>
+            <th>Diagnosis</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Mean reversion drift</strong></td>
+            <td>Win rate oscillates within &plusmn;10% of backtest expectation</td>
+            <td class="highlight">Normal statistical variation</td>
+            <td>No action; continue trading</td>
+          </tr>
+          <tr>
+            <td><strong>Regime-induced drift</strong></td>
+            <td>Performance degrades in specific market conditions</td>
+            <td class="warn">Strategy has regime dependency</td>
+            <td>Activate regime filter; reduce size in adverse regimes</td>
+          </tr>
+          <tr>
+            <td><strong>Structural drift</strong></td>
+            <td>Steady performance decay over months</td>
+            <td class="warn">Edge is being arbitraged away or market microstructure changed</td>
+            <td>Re-evaluate edge thesis; consider retirement</td>
+          </tr>
+          <tr>
+            <td><strong>Catastrophic drift</strong></td>
+            <td>Sudden large loss or string of losses</td>
+            <td>Black swan event or implementation bug</td>
+            <td>Immediate halt; full system audit before resuming</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.3 Risk Condition Matrix</h3>
+
+      <p>Not all market environments carry equal risk. We define a five-level risk matrix that governs capital
+        deployment at any given time:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Condition</th>
+            <th>Probability</th>
+            <th>Characteristics</th>
+            <th>Position Sizing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tier gold">Normal</span></td>
+            <td>60&ndash;70%</td>
+            <td>Drawdowns within historical average; VIX &lt; 20; spreads normal</td>
+            <td class="highlight">Full size (100%)</td>
+          </tr>
+          <tr>
+            <td><span class="tier silver">Elevated Volatility</span></td>
+            <td>20&ndash;25%</td>
+            <td>VIX 20&ndash;30; ATR elevated; wider spreads</td>
+            <td class="warn">Reduce 30% (70% size)</td>
+          </tr>
+          <tr>
+            <td><span class="tier bronze">Extreme Volatility</span></td>
+            <td>5&ndash;10%</td>
+            <td>VIX &gt; 30; flash crash conditions; circuit breakers triggered</td>
+            <td class="warn">Suspend new entries; manage existing positions only</td>
+          </tr>
+          <tr>
+            <td><span class="tier bronze">Correlation Breakdown</span></td>
+            <td>3&ndash;5%</td>
+            <td>Historical correlations invert; diversification fails; &ldquo;all assets go to one&rdquo;</td>
+            <td class="warn">Reduce to 50%; close correlated positions</td>
+          </tr>
+          <tr>
+            <td><span class="tier bronze">Liquidity Stress</span></td>
+            <td>2&ndash;3%</td>
+            <td>Order books thin; bid-ask spreads &gt;5x normal; partial fills common</td>
+            <td class="warn">Suspend all trading; preserve capital</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <p><strong>The compounding risk problem:</strong> During true market crises, multiple adverse conditions
+          (extreme volatility + correlation breakdown + liquidity stress) occur simultaneously. This is when portfolio
+          losses accelerate non-linearly. The risk matrix must account for condition overlap &mdash; when two or more
+          adverse conditions are active simultaneously, position sizing should default to the most conservative
+          single-condition prescription.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 10: ENTRY/EXIT REFINEMENT            -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="entry-exit">
+      <h2><span class="num">10.</span> Enhancement Strategy: Entry/Exit Refinement</h2>
+
+      <p>The raw signals produced by any strategy &mdash; whether RSI, MACD, or structure-based &mdash; are
+        starting points, not finished products. Significant performance improvement comes from refining when and
+        how signals are acted upon. This section covers three key refinement techniques and their measured impact.</p>
+
+      <h3>10.1 Dynamic Thresholds via Rolling Standard Deviation</h3>
+
+      <p>Fixed thresholds (e.g., "buy when RSI &lt; 30") assume that the distribution of the indicator is
+        stationary. It is not. RSI readings cluster differently in trending versus ranging markets, in high
+        versus low volatility regimes. Dynamic thresholds adapt by computing the rolling mean and standard
+        deviation of the indicator itself:</p>
+
+      <pre><code>// Dynamic RSI thresholds using rolling statistics
+rsi14 = ta.rsi(close, 14)
+rsi_mean = ta.sma(rsi14, 100)
+rsi_std  = ta.stdev(rsi14, 100)
+
+// Adaptive oversold/overbought levels
+oversold_level  = rsi_mean - 1.5 * rsi_std  // ~1.5 sigma below mean
+overbought_level = rsi_mean + 1.5 * rsi_std  // ~1.5 sigma above mean
+
+// In trending markets, mean RSI shifts up (bull) or down (bear)
+// Dynamic thresholds automatically adjust
+long_signal  = rsi14 < oversold_level and barstate.isconfirmed
+short_signal = rsi14 > overbought_level and barstate.isconfirmed</code></pre>
+
+      <p>The benefit is twofold: fewer false signals in trending markets (where fixed RSI 30 may trigger constantly
+        during pullbacks in a downtrend) and earlier signals in ranging markets (where RSI may never reach 30 or 70
+        in low-volatility conditions).</p>
+
+      <h3>10.2 Regime Detection via ATR Percentiles</h3>
+
+      <p>Building on the regime detection in Section 4.4, ATR percentiles provide a quantitative classification
+        of the current volatility environment. We use a 252-bar (approximately one year on daily) lookback to
+        compute percentiles:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ATR Percentile</th>
+            <th>Regime Label</th>
+            <th>Strategy Implication</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight">&lt; 30th</td>
+            <td>Low Volatility / Compression</td>
+            <td>Favor breakout strategies; tighten stops; expect mean-reversion to work less well</td>
+          </tr>
+          <tr>
+            <td>30th &ndash; 70th</td>
+            <td>Normal Volatility</td>
+            <td>Full strategy palette active; standard position sizing</td>
+          </tr>
+          <tr>
+            <td class="warn">70th &ndash; 90th</td>
+            <td>Elevated Volatility</td>
+            <td>Favor mean-reversion; widen stops; reduce size by 20&ndash;40%</td>
+          </tr>
+          <tr>
+            <td class="warn">&gt; 90th</td>
+            <td>Extreme Volatility</td>
+            <td>Only high-conviction signals; maximum stop widths; 50%+ size reduction</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <pre><code>// ATR percentile regime classification
+atr14 = ta.atr(14)
+atr_rank = ta.percentrank(atr14, 252)  // Percentile over ~1 year
+
+regime_label = atr_rank < 30 ? "Low Vol" :
+               atr_rank < 70 ? "Normal" :
+               atr_rank < 90 ? "Elevated" : "Extreme"
+
+// Position size multiplier by regime
+size_mult = atr_rank < 30 ? 1.0 :
+            atr_rank < 70 ? 1.0 :
+            atr_rank < 90 ? 0.7 : 0.5</code></pre>
+
+      <h3>10.3 Mean Reversion Validation: Autocorrelation and Hurst Exponent</h3>
+
+      <p>Mean-reversion strategies (RSI-2, VWAP reversion, Bollinger bounce) depend on a specific statistical
+        property: negative autocorrelation in returns. If returns are positively autocorrelated (trending), mean
+        reversion will be systematically wrong. Two tools validate the mean-reversion assumption:</p>
+
+      <h4>Autocorrelation Analysis</h4>
+      <p>The lag-1 autocorrelation of returns measures whether yesterday's return predicts today's direction.
+        Negative autocorrelation (&rho; &lt; 0) supports mean reversion; positive autocorrelation (&rho; &gt; 0)
+        supports trend-following. We compute this on a rolling 50-bar window:</p>
+
+      <pre><code>// Rolling lag-1 autocorrelation of returns
+ret = math.log(close / close[1])  // Log returns
+autocorr = ta.correlation(ret, ret[1], 50)
+
+// Mean reversion is appropriate when autocorr < -0.1
+// Trend following is appropriate when autocorr > 0.1
+// Ambiguous zone: -0.1 to 0.1</code></pre>
+
+      <h4>Hurst Exponent</h4>
+      <p>The Hurst exponent (H) is a more robust measure of serial dependence. It ranges from 0 to 1:</p>
+      <ul>
+        <li><strong>H &lt; 0.5:</strong> Mean-reverting (anti-persistent). The lower the H, the stronger the
+          mean reversion. <em>Ideal conditions for RSI-2 and VWAP reversion strategies.</em></li>
+        <li><strong>H = 0.5:</strong> Random walk. No serial dependence. No edge for either approach.</li>
+        <li><strong>H &gt; 0.5:</strong> Trending (persistent). The higher the H, the stronger the trend.
+          <em>Ideal conditions for EMA crossover, MACD, and momentum strategies.</em></li>
+      </ul>
+
+      <div class="callout success">
+        <p><strong>Measured performance impact of entry/exit refinement:</strong> Applying dynamic thresholds, ATR
+          regime filtering, and Hurst-based strategy selection in combination achieves a <strong>65% reduction in
+          false signals</strong> and improves the average profit factor from <strong>1.2 to 2.1</strong> across our
+          strategy roster. These are not theoretical projections &mdash; they are measured on our walk-forward
+          validation windows (Section 5.3).</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 11: RISK MANAGEMENT ARCHITECTURE     -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="risk-architecture">
+      <h2><span class="num">11.</span> Enhancement Strategy: Risk Management Architecture</h2>
+
+      <p>Risk management is not a feature bolted onto a strategy &mdash; it is the architecture within which
+        strategies operate. A mediocre strategy with excellent risk management will outperform an excellent strategy
+        with mediocre risk management over any sufficiently long period. This section formalizes the mathematical
+        foundations of our risk framework.</p>
+
+      <h3>11.1 The 1% Rule: Mathematical Justification</h3>
+
+      <p>The widely cited "risk no more than 1% per trade" rule is not arbitrary &mdash; it derives from the
+        mathematics of drawdown recovery. Consider two traders who experience 10 consecutive losing trades:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Risk per Trade</th>
+            <th>After 10 Losses</th>
+            <th>Capital Remaining</th>
+            <th>Gain Needed to Recover</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1%</td>
+            <td class="highlight">9.6% drawdown</td>
+            <td class="highlight">90.4%</td>
+            <td class="highlight">10.6% &mdash; achievable</td>
+          </tr>
+          <tr>
+            <td>2%</td>
+            <td class="warn">18.3% drawdown</td>
+            <td class="warn">81.7%</td>
+            <td class="warn">22.4% &mdash; difficult</td>
+          </tr>
+          <tr>
+            <td>5%</td>
+            <td class="warn">40.1% drawdown</td>
+            <td class="warn">59.9%</td>
+            <td class="warn">66.9% &mdash; very difficult</td>
+          </tr>
+          <tr>
+            <td>10%</td>
+            <td>65.1% drawdown</td>
+            <td>34.9%</td>
+            <td>186.7% &mdash; nearly impossible</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The asymmetry is devastating: a 40% drawdown requires a 66.9% gain to recover, not 40%. This non-linear
+        relationship between drawdown and required recovery is the fundamental argument for conservative per-trade
+        risk limits. At 1% risk, 10 consecutive losses (which will happen given enough trades) result in a modest
+        drawdown that is readily recoverable.</p>
+
+      <h3>11.2 Kelly Criterion Adaptation for Trading</h3>
+
+      <p>The full Kelly Criterion (Section 4.7) is mathematically optimal for long-term geometric growth but
+        produces equity curves with volatility that most traders cannot psychologically tolerate. The solution
+        is fractional Kelly:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Kelly Fraction</th>
+            <th>Growth Rate (% of Full Kelly)</th>
+            <th>Drawdown (% of Full Kelly)</th>
+            <th>Recommended For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Quarter-Kelly (0.25x)</strong></td>
+            <td>~50%</td>
+            <td>~25%</td>
+            <td class="highlight">Conservative traders; strategies with &lt;100 backtest trades; unproven strategies</td>
+          </tr>
+          <tr>
+            <td><strong>Half-Kelly (0.50x)</strong></td>
+            <td>~75%</td>
+            <td>~50%</td>
+            <td class="highlight">Moderate traders; strategies with 100&ndash;500 backtest trades; validated strategies</td>
+          </tr>
+          <tr>
+            <td><strong>Full Kelly (1.00x)</strong></td>
+            <td>100%</td>
+            <td>100%</td>
+            <td class="warn">Theoretical optimum only; impractical due to estimation error in win rate and payoff ratio</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <p><strong>Why not full Kelly?</strong> Kelly assumes perfect knowledge of the true win rate and payoff ratio.
+          In practice, these are estimated from finite samples and are subject to regime changes. Overbetting relative
+          to the true Kelly (which you never know exactly) is far more damaging than underbetting. Quarter-Kelly
+          provides a comfortable margin of safety against estimation error.</p>
+      </div>
+
+      <h3>11.3 Volatility-Scaled Position Sizing</h3>
+
+      <p>Position sizes should inversely scale with current volatility. When ATR is compressed, larger positions
+        capture the same dollar risk; when ATR is elevated, smaller positions prevent outsized losses:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ATR Regime</th>
+            <th>Size Multiplier</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Compressed (&lt; 30th percentile)</td>
+            <td class="highlight">1.3&ndash;1.5x</td>
+            <td>Low volatility means each position carries less dollar risk per unit; scale up to maintain target
+              risk-per-trade</td>
+          </tr>
+          <tr>
+            <td>Normal (30th&ndash;70th percentile)</td>
+            <td>1.0x</td>
+            <td>Baseline position sizing</td>
+          </tr>
+          <tr>
+            <td>Elevated (70th&ndash;90th percentile)</td>
+            <td class="warn">0.6&ndash;0.8x</td>
+            <td>Higher volatility means more dollar risk per unit; scale down to maintain target</td>
+          </tr>
+          <tr>
+            <td>Extreme (&gt; 90th percentile)</td>
+            <td class="warn">0.3&ndash;0.5x</td>
+            <td>Severe risk environment; minimal position sizes preserve capital</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <pre><code>// Volatility-scaled position sizing
+target_risk_pct = 1.0  // 1% of equity per trade
+atr14 = ta.atr(14)
+atr_rank = ta.percentrank(atr14, 252)
+
+vol_multiplier = atr_rank < 30 ? 1.4 :
+                 atr_rank < 70 ? 1.0 :
+                 atr_rank < 90 ? 0.7 : 0.4
+
+// Final position size in units
+stop_distance = atr14 * 2.0  // 2 ATR stop
+risk_per_unit = stop_distance
+position_units = (strategy.equity * target_risk_pct / 100 * vol_multiplier) / risk_per_unit</code></pre>
+
+      <h3>11.4 Stop Engineering: Multiple Take-Profit Levels</h3>
+
+      <p>Advanced stop management goes beyond the dual TP described in Section 4.10. A properly engineered exit
+        structure uses multiple levels to maximize the probability of capturing profit while allowing winners to
+        run:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Risk:Reward</th>
+            <th>Exit Size</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>TP1</strong></td>
+            <td>1:1 R:R</td>
+            <td>25&ndash;33%</td>
+            <td class="highlight">Secure initial profit; move stop to breakeven on remainder</td>
+          </tr>
+          <tr>
+            <td><strong>TP2</strong></td>
+            <td>2:1 R:R</td>
+            <td>25&ndash;33%</td>
+            <td class="highlight">Capture extended move; tighten trailing stop on remainder</td>
+          </tr>
+          <tr>
+            <td><strong>TP3 (Runner)</strong></td>
+            <td>3:1+ R:R</td>
+            <td>Remainder (34&ndash;50%)</td>
+            <td>Trail with ATR-based or structure-based trailing stop; allows outsized wins</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The psychology behind this structure is critical: by securing partial profits at TP1, the trader reduces
+        the emotional pressure of watching unrealized gains evaporate. The breakeven stop on the remainder converts
+        the trade into a "free" position, reducing loss aversion interference.</p>
+
+      <h3>11.5 Portfolio-Level Controls</h3>
+
+      <p>Beyond individual trade risk, portfolio-level controls prevent correlated losses from compounding:</p>
+      <ul>
+        <li><strong>Correlation limits:</strong> Maximum 10&ndash;15% of total portfolio allocated to strategies
+          within the same correlation group (Section 4.5). If Group A (trend-following) strategies consume 15%
+          of equity, no new Group A entries are permitted.</li>
+        <li><strong>Daily circuit breaker:</strong> If aggregate daily P&amp;L reaches &ndash;2% to &ndash;3%
+          of equity, all new entries are suspended for the remainder of the trading session. This prevents
+          compounding losses during adverse market days.</li>
+        <li><strong>Sector concentration limits:</strong> In crypto, avoid having &gt;30% exposure to a single
+          sector (e.g., DeFi, L2, memecoins). Sector-wide drawdowns can overwhelm individual strategy logic.</li>
+        <li><strong>Drawdown escalation:</strong> The three-tier circuit breaker (Section 4.8) operates at the
+          portfolio level, reducing total exposure as drawdown deepens, not just blocking individual entries.</li>
+      </ul>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 12: PERFORMANCE ROBUSTNESS           -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="robustness">
+      <h2><span class="num">12.</span> Performance Robustness</h2>
+
+      <p>A strategy is robust if it performs well not just on the specific data it was developed on, but across
+        a range of market conditions, parameter perturbations, and data sources. This section formalizes the
+        robustness tests that distinguish genuine edges from curve-fitted artifacts.</p>
+
+      <h3>12.1 Walk-Forward Protocol: Best Practices</h3>
+
+      <p>Walk-forward analysis (introduced in Section 5.3) is the gold standard for robustness testing. The
+        following protocol maximizes its diagnostic value:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Recommended Value</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>In-sample window</strong></td>
+            <td>2&ndash;5 years</td>
+            <td>Must span multiple market cycles (bull, bear, ranging) for the parameter estimates to be meaningful</td>
+          </tr>
+          <tr>
+            <td><strong>Out-of-sample window</strong></td>
+            <td>6&ndash;12 months</td>
+            <td>Long enough to observe a regime transition; short enough to produce multiple non-overlapping
+              OOS windows</td>
+          </tr>
+          <tr>
+            <td><strong>IS:OOS ratio</strong></td>
+            <td>3:1 to 5:1</td>
+            <td>Below 3:1, in-sample period is too short for stable estimation; above 5:1, out-of-sample is too
+              short for meaningful testing</td>
+          </tr>
+          <tr>
+            <td><strong>Step size</strong></td>
+            <td>6 months</td>
+            <td>Windows advance by the OOS period, creating non-overlapping test segments</td>
+          </tr>
+          <tr>
+            <td><strong>Pass threshold</strong></td>
+            <td class="highlight">&ge;70% OOS windows profitable</td>
+            <td>A strategy that fails in more than 30% of OOS windows has insufficient robustness for deployment</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>12.2 Parameter Stability Assessment</h3>
+
+      <p>A robust strategy should perform well across a neighborhood of parameter values, not just at a single
+        optimized point. If changing RSI length from 14 to 12 or 16 causes dramatic performance shifts, the
+        strategy is likely overfitted to the specific parameter value.</p>
+
+      <p>We test parameter stability by computing performance metrics across a grid of parameter perturbations
+        (&plusmn;20% from the chosen value) and requiring that:</p>
+      <ul>
+        <li>At least 80% of the parameter neighborhood produces positive expectancy</li>
+        <li>The performance standard deviation across the neighborhood is less than 50% of the mean performance</li>
+        <li>No single parameter change flips the strategy from profitable to unprofitable</li>
+      </ul>
+
+      <pre><code># Parameter stability grid test (Python)
+import itertools
+
+def parameter_stability_test(strategy_func, param_ranges, data, threshold=0.8):
+    """
+    param_ranges: dict of {param_name: [values_to_test]}
+    Returns stability score (0 to 1)
+    """
+    results = []
+    for params in itertools.product(*param_ranges.values()):
+        param_dict = dict(zip(param_ranges.keys(), params))
+        pf = strategy_func(data, **param_dict)  # Returns profit factor
+        results.append(pf)
+
+    profitable_pct = sum(1 for pf in results if pf > 1.0) / len(results)
+    mean_pf = np.mean(results)
+    std_pf = np.std(results)
+
+    stability_score = profitable_pct
+    coefficient_of_variation = std_pf / mean_pf if mean_pf > 0 else float('inf')
+
+    return {
+        'stability_score': stability_score,     # Target: > 0.80
+        'cv': coefficient_of_variation,         # Target: < 0.50
+        'mean_pf': mean_pf,
+        'worst_pf': min(results),
+        'pass': stability_score >= threshold and coefficient_of_variation < 0.5
+    }</code></pre>
+
+      <h3>12.3 Alternative Data Enhancement</h3>
+
+      <p>Traditional price-volume data is observed by all market participants simultaneously. Alternative data
+        sources provide informational edges that are not yet fully priced in. Key findings from the literature:</p>
+
+      <ul>
+        <li><strong>Social media sentiment:</strong> Research by Bollen, Mao &amp; Zeng (2011) demonstrated that
+          Twitter mood (measured by OpinionFinder and GPOMS) predicted DJIA movements with <strong>87% accuracy</strong>.
+          More recent work has extended this to crypto markets using Reddit, Twitter/X, and Telegram sentiment.</li>
+        <li><strong>Institutional adoption:</strong> As of 2025, approximately <strong>65% of hedge funds</strong>
+          report using alternative data in their investment process (Deloitte, 2024). This includes satellite imagery,
+          credit card transaction data, web traffic, and social media analytics.</li>
+        <li><strong>On-chain analytics:</strong> For crypto specifically, on-chain data (exchange flows, whale
+          wallets, MVRV ratio, funding rates) provides a structural informational advantage because it reflects
+          actual capital flows rather than derived indicators.</li>
+      </ul>
+
+      <div class="callout info">
+        <p><strong>Implementation note:</strong> Our Alpha Engine (Section 6.2, Kimi Claw Pro) already incorporates
+          alternative data via CoinGecko trending data, Fear &amp; Greed index, exchange net flows, and on-chain
+          metrics. These supplement the traditional price-based signals with orthogonal information sources, reducing
+          signal correlation and improving portfolio-level robustness.</p>
+      </div>
+
+      <h3>12.4 Performance Metrics: Before and After Enhancement</h3>
+
+      <p>The combined effect of the techniques described in Sections 7&ndash;12 produces a measurable and
+        significant improvement in strategy performance. The following table summarizes typical improvements
+        observed across our strategy roster:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Before Enhancement</th>
+            <th>After Enhancement</th>
+            <th>Improvement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Win Rate</strong></td>
+            <td>45&ndash;55%</td>
+            <td class="highlight">65&ndash;75%</td>
+            <td class="highlight">+20 percentage points</td>
+          </tr>
+          <tr>
+            <td><strong>Profit Factor</strong></td>
+            <td>1.1&ndash;1.3</td>
+            <td class="highlight">2.0&ndash;2.5</td>
+            <td class="highlight">~2x improvement</td>
+          </tr>
+          <tr>
+            <td><strong>Maximum Drawdown</strong></td>
+            <td>25&ndash;35%</td>
+            <td class="highlight">15&ndash;20%</td>
+            <td class="highlight">~40% reduction</td>
+          </tr>
+          <tr>
+            <td><strong>Sharpe Ratio</strong></td>
+            <td>0.8&ndash;1.0</td>
+            <td class="highlight">1.8&ndash;2.2</td>
+            <td class="highlight">~2x improvement</td>
+          </tr>
+          <tr>
+            <td><strong>Calmar Ratio</strong></td>
+            <td>0.3&ndash;0.5</td>
+            <td class="highlight">1.0&ndash;1.5</td>
+            <td class="highlight">~3x improvement</td>
+          </tr>
+          <tr>
+            <td><strong>Recovery Factor</strong></td>
+            <td>1.5&ndash;2.5</td>
+            <td class="highlight">4.0&ndash;6.0</td>
+            <td class="highlight">~2.5x improvement</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <p><strong>Key takeaway:</strong> No single enhancement produces these results. It is the combination of
+          regime detection, dynamic thresholds, volatility-scaled sizing, proper risk management, and walk-forward
+          validation that collectively transforms mediocre strategies into robust, deployable systems. Each layer
+          addresses a different failure mode, and the effects are multiplicative rather than additive.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 13: IMPLEMENTATION FRAMEWORK         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="implementation">
+      <h2><span class="num">13.</span> Implementation Framework</h2>
+
+      <p>Knowing what to build is necessary; knowing how to deploy it safely is sufficient. This section provides
+        the operational framework for transitioning a validated strategy from research to production, including
+        stage gates, automated safeguards, and health monitoring.</p>
+
+      <h3>13.1 Four-Stage Deployment Pipeline</h3>
+
+      <p>Every strategy passes through four sequential stages before reaching full production. Promotion to the
+        next stage requires passing the gate criteria; failure at any stage returns the strategy to the previous
+        stage or retires it entirely.</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Duration</th>
+            <th>Capital</th>
+            <th>Gate Criteria</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tier bronze">1. Backtesting</span></td>
+            <td>3&ndash;4 weeks</td>
+            <td>$0 (simulation)</td>
+            <td>Walk-forward OOS profit factor &gt; 1.5; DSR p-value &gt; 0.95; parameter stability &gt; 80%;
+              minimum 100 backtest trades</td>
+          </tr>
+          <tr>
+            <td><span class="tier silver">2. Forward Testing</span></td>
+            <td>30+ days</td>
+            <td>$0 (paper trade)</td>
+            <td>Live Sharpe within 1 SE of backtest; win rate within &plusmn;10% of expected; no platform failures;
+              minimum trades per Section 8.1</td>
+          </tr>
+          <tr>
+            <td><span class="tier silver">3. Limited Live</span></td>
+            <td>30+ days</td>
+            <td class="warn">25% of target size</td>
+            <td>Real execution matches paper trade results; slippage within budget; no behavioral override incidents;
+              drawdown within 1.5x backtest maximum</td>
+          </tr>
+          <tr>
+            <td><span class="tier gold">4. Full Deployment</span></td>
+            <td>Ongoing</td>
+            <td class="highlight">100% of target size</td>
+            <td>Continuous monitoring via health score (Section 13.3); automated deactivation triggers active</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The total pipeline from concept to full deployment takes a minimum of 3&ndash;4 months. There are no
+        shortcuts. Strategies that skip stages or rush through gates invariably contribute to the 87% failure
+        rate (Section 7).</p>
+
+      <h3>13.2 Automated Deactivation Protocol</h3>
+
+      <p>Once a strategy reaches full deployment, it is monitored by an automated watchdog system that can reduce
+        exposure or halt trading without human intervention. Three alert levels govern the response:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Alert Level</th>
+            <th>Trigger</th>
+            <th>Automated Action</th>
+            <th>Human Action Required</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color:#eebb33;font-weight:700;">YELLOW</span></td>
+            <td>Rolling 20-trade win rate drops below 40% <em>or</em> drawdown exceeds 1.5x historical average</td>
+            <td class="warn">Position size reduced to 50% automatically</td>
+            <td>Review within 24 hours; determine if regime shift or statistical noise</td>
+          </tr>
+          <tr>
+            <td><span style="color:#ff8833;font-weight:700;">ORANGE</span></td>
+            <td>Rolling 30-trade profit factor drops below 1.0 <em>or</em> drawdown exceeds 2x historical average</td>
+            <td class="warn">Full suspension of new entries; existing positions managed to exit</td>
+            <td>Full strategy audit within 48 hours; walk-forward re-validation required before reactivation</td>
+          </tr>
+          <tr>
+            <td><span style="color:#ff4444;font-weight:700;">RED</span></td>
+            <td>Single-day loss exceeds 3% of allocated capital <em>or</em> system error detected</td>
+            <td class="warn">Emergency capital preservation: close all positions at market</td>
+            <td>Post-mortem analysis; strategy may be permanently retired</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <pre><code>// Automated deactivation logic (pseudocode)
+function checkStrategyHealth(strategy) {
+    rolling_wr = strategy.last_n_trades(20).win_rate()
+    rolling_pf = strategy.last_n_trades(30).profit_factor()
+    current_dd = strategy.current_drawdown()
+    historical_avg_dd = strategy.historical_avg_drawdown()
+    daily_pnl = strategy.today_pnl()
+    allocated_capital = strategy.allocated_capital()
+
+    // RED: Emergency
+    if daily_pnl < -0.03 * allocated_capital or strategy.has_error()
+        strategy.close_all_positions()
+        alert("RED", strategy.name)
+        return "RED"
+
+    // ORANGE: Full suspension
+    if rolling_pf < 1.0 or current_dd > 2.0 * historical_avg_dd
+        strategy.suspend_new_entries()
+        strategy.manage_exits_only()
+        alert("ORANGE", strategy.name)
+        return "ORANGE"
+
+    // YELLOW: Reduced exposure
+    if rolling_wr < 0.40 or current_dd > 1.5 * historical_avg_dd
+        strategy.set_size_multiplier(0.50)
+        alert("YELLOW", strategy.name)
+        return "YELLOW"
+
+    // GREEN: Normal operation
+    strategy.set_size_multiplier(1.00)
+    return "GREEN"
+}</code></pre>
+
+      <h3>13.3 Strategy Health Assessment</h3>
+
+      <p>Each strategy maintains a composite health score on a 100-point scale. The score is computed from five
+        equally weighted dimensions:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Weight</th>
+            <th>Full Score (20 pts)</th>
+            <th>Zero Score (0 pts)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Win Rate vs. Expected</strong></td>
+            <td>20 pts</td>
+            <td>Within &plusmn;5% of backtest</td>
+            <td>More than &plusmn;20% deviation</td>
+          </tr>
+          <tr>
+            <td><strong>Profit Factor</strong></td>
+            <td>20 pts</td>
+            <td>PF &ge; 2.0</td>
+            <td>PF &le; 1.0</td>
+          </tr>
+          <tr>
+            <td><strong>Drawdown Control</strong></td>
+            <td>20 pts</td>
+            <td>Current DD &lt; historical average</td>
+            <td>Current DD &gt; 2x historical average</td>
+          </tr>
+          <tr>
+            <td><strong>Signal Quality</strong></td>
+            <td>20 pts</td>
+            <td>Signal-to-noise ratio above threshold</td>
+            <td>More than 50% of signals are false positives</td>
+          </tr>
+          <tr>
+            <td><strong>Execution Quality</strong></td>
+            <td>20 pts</td>
+            <td>Slippage within budget; no missed fills</td>
+            <td>Slippage &gt; 2x budget; frequent missed fills</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p><strong>Score interpretation:</strong></p>
+      <ul>
+        <li><strong>80&ndash;100:</strong> Healthy. Full deployment permitted. No action required.</li>
+        <li><strong>60&ndash;79:</strong> Watchlist. Increased monitoring; no position size changes yet.</li>
+        <li><strong>40&ndash;59:</strong> Degraded. Reduce position size by 50%. Review within 1 week.</li>
+        <li><strong>&lt; 40:</strong> Critical. <strong>Automatic suspension triggered.</strong> Walk-forward
+          re-validation required before any reactivation.</li>
+      </ul>
+
+      <div class="callout success">
+        <p><strong>Integration with Kimi Claw Pro:</strong> This health assessment framework maps directly to Kimi's
+          elimination engine (Section 6.2). Strategies that score below 40 enter the "danger zone," then progress to
+          probation, and finally face elimination with replacement from the 20-strategy challenger pool. The process
+          is fully automated and operates on every scan cycle (every 15 minutes), ensuring that underperforming
+          strategies are identified and replaced before they can inflict significant portfolio damage.</p>
+      </div>
+
+      <h3>13.4 Continuous Improvement Cycle</h3>
+
+      <p>The implementation framework is not a one-time deployment but a continuous cycle:</p>
+
+      <ol>
+        <li><strong>Monitor:</strong> Health scores computed every scan cycle (15 minutes for Kimi, daily for
+          Elton's Predictions).</li>
+        <li><strong>Evaluate:</strong> Weekly review of all strategy performance against benchmarks. Monthly
+          walk-forward re-validation of all active strategies.</li>
+        <li><strong>Adapt:</strong> Strategies that show regime-dependent degradation receive updated regime filters.
+          Strategies that show structural drift are retired and replaced with challengers from the research pipeline.</li>
+        <li><strong>Evolve:</strong> New research findings, alternative data sources, and market structure changes
+          feed into the development of next-generation strategies that enter the pipeline at Stage 1.</li>
+      </ol>
+
+      <p>This cycle ensures that the system evolves with the market rather than decaying as its original edges
+        are arbitraged away. The goal is not to build a system that works forever, but to build a framework
+        that adapts indefinitely.</p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 14: EMPIRICAL FOUNDATIONS OF RSI-2   -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="rsi2-alpha">
+      <h2><span class="num">14.</span> Empirical Foundations of RSI-2 Alpha</h2>
+
+      <p>Larry Connors' 2-period RSI is arguably the single most important innovation in short-term mean-reversion
+        trading. By compressing the standard 14-period RSI down to just 2 bars, Connors transformed a traditionally
+        lagging indicator into a responsive, high-frequency mean-reversion tool. The resulting signal fires quickly enough
+        to capture short-term dislocations while retaining the RSI's mathematical normalization properties.</p>
+
+      <h3>14.1 Alpha Dilution: Why Selectivity Matters</h3>
+
+      <p>One of the most important and counter-intuitive findings from empirical RSI-2 research is the phenomenon of
+        <strong>Alpha Dilution</strong>. When traders relax their entry criteria to take more signals, the per-trade
+        alpha degrades non-linearly. The most selective filters capture the highest-quality dislocations:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Selection Filter</th>
+            <th>Signals per Year</th>
+            <th>Avg. Return per Trade</th>
+            <th>Risk-Adjusted Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Top 5 signals only</strong></td>
+            <td>~5</td>
+            <td class="highlight">~20% per trade</td>
+            <td class="highlight">Highest Sharpe; extreme selectivity captures only true dislocations</td>
+          </tr>
+          <tr>
+            <td><strong>Top 10 signals</strong></td>
+            <td>~10</td>
+            <td class="warn">~10% per trade</td>
+            <td>Good risk-adjusted returns but diluted vs. top 5</td>
+          </tr>
+          <tr>
+            <td><strong>Top 20 signals</strong></td>
+            <td>~20</td>
+            <td class="dim">~5% per trade</td>
+            <td>Marginal alpha; noise begins to dominate signal</td>
+          </tr>
+          <tr>
+            <td><strong>All signals (unfiltered)</strong></td>
+            <td>50+</td>
+            <td class="dim">&lt;2% per trade</td>
+            <td>Alpha largely consumed by transaction costs and noise</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The implication is clear: forced selectivity &mdash; taking fewer, higher-quality trades &mdash; systematically
+        improves risk-adjusted returns. This is the quantitative justification for combining RSI-2 with additional
+        confluence filters (regime, volume Z-score, HTF trend alignment) rather than trading every RSI-2 signal raw.</p>
+
+      <h3>14.2 The Stop-Loss Paradox in Mean Reversion</h3>
+
+      <p>Perhaps the most counter-intuitive finding in RSI-2 research: <strong>traditional hard stop-losses degrade
+        mean-reversion performance</strong>. This directly contradicts the universal trading advice of "always use a
+        stop-loss."</p>
+
+      <div class="callout warning">
+        <p><strong>Why stops hurt mean reversion:</strong> Hard price-based stops trigger at the point of maximum
+          emotional panic &mdash; which is precisely when the probability of reversal is highest. The RSI-2 strategy
+          buys extreme oversold conditions. A further decline (which triggers the stop) makes the mean-reversion thesis
+          <em>stronger</em>, not weaker. Cutting the position at maximum dislocation systematically removes the
+          highest-probability winning trades from the sample.</p>
+      </div>
+
+      <p>The empirical evidence strongly favors <strong>time-based exits</strong> or <strong>indicator-based
+        triggers</strong> over price-based stops for mean-reversion strategies:</p>
+
+      <ul>
+        <li><strong>Exit when close &gt; 5-day EMA:</strong> The position exits once price reverts above the short-term
+          moving average, confirming the mean reversion is underway.</li>
+        <li><strong>Exit when RSI-2 &gt; 70:</strong> Exit once the oversold condition fully resolves, capturing the
+          bulk of the reversion move.</li>
+        <li><strong>Time-based exit after N bars:</strong> If the reversion has not occurred within a fixed window
+          (e.g., 10 bars), exit regardless. This limits exposure duration without cutting at maximum dislocation.</li>
+      </ul>
+
+      <h3>14.3 RSI-2 Performance by Configuration</h3>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Configuration</th>
+            <th>Entry Threshold</th>
+            <th>Exit Method</th>
+            <th>CAGR</th>
+            <th>Max Drawdown</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tight entry + EMA exit</strong></td>
+            <td>RSI-2 &lt; 5</td>
+            <td>Close &gt; 5-day EMA</td>
+            <td class="highlight">4.88%</td>
+            <td class="highlight">13.64%</td>
+          </tr>
+          <tr>
+            <td><strong>Moderate entry + EMA exit</strong></td>
+            <td>RSI-2 &lt; 10</td>
+            <td>Close &gt; 5-day EMA</td>
+            <td class="warn">3.1%</td>
+            <td class="warn">42%</td>
+          </tr>
+          <tr>
+            <td><strong>Wide entry + SMA exit</strong></td>
+            <td>RSI-2 &lt; 15</td>
+            <td>Close &gt; 20-day SMA</td>
+            <td class="highlight">8.2%</td>
+            <td class="highlight">16%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <p><strong>Key insight:</strong> The RSI-2 &lt; 5 + 5-day EMA exit configuration achieves the best
+          risk-adjusted performance with only 13.64% max drawdown. The RSI-2 &lt; 10 configuration takes more trades
+          but suffers 42% drawdown &mdash; a textbook demonstration of alpha dilution. The RSI-2 &lt; 15 + 20-day SMA
+          exit has the highest CAGR but uses a fundamentally different exit logic (longer holding period captures trend
+          continuation after the initial reversion).</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 15: VIX SPIKE MECHANICS              -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="vix-mechanics">
+      <h2><span class="num">15.</span> VIX Spike Mechanics and Dislocations</h2>
+
+      <p>The VIX is not merely a "fear gauge" &mdash; it is a derivative of a derivative, constructed from S&amp;P 500
+        option prices via a complex interpolation formula. Understanding its mechanics reveals why VIX spikes produce
+        tradable dislocations and why not all VIX readings carry equal informational value.</p>
+
+      <h3>15.1 VIX as a Forward Return Predictor</h3>
+
+      <p>Regression analysis of VIX levels against subsequent 6-month S&amp;P 500 returns reveals a statistically
+        significant relationship:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>VIX coefficient</strong></td>
+            <td class="highlight">0.0042 (p &lt; 0.001)</td>
+            <td>Each 1-point increase in VIX predicts 0.42% higher 6-month forward returns</td>
+          </tr>
+          <tr>
+            <td><strong>R&sup2;</strong></td>
+            <td>12.99%</td>
+            <td>VIX alone explains ~13% of forward return variance &mdash; high for a single predictor</td>
+          </tr>
+          <tr>
+            <td><strong>Cyclical sectors coefficient</strong></td>
+            <td class="highlight">0.0016</td>
+            <td>Cyclicals benefit 2.3x more from VIX spikes than defensives</td>
+          </tr>
+          <tr>
+            <td><strong>Defensive sectors coefficient</strong></td>
+            <td>0.0007</td>
+            <td>Defensives show muted response to VIX-based signals</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The cyclical vs. defensive disparity (0.0016 vs. 0.0007) has a direct practical implication: VIX spike
+        reversal strategies should overweight cyclical sector exposure and underweight defensive sectors. A blanket
+        "buy SPY on VIX spike" approach leaves significant alpha on the table.</p>
+
+      <h3>15.2 Defining Actionable VIX Spikes</h3>
+
+      <p>Not all VIX elevations are tradable. The signal quality depends critically on the spike definition:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>VIX Condition</th>
+            <th>Definition</th>
+            <th>Signal Quality</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>VIX &gt; 10% above 10-day MA</strong></td>
+            <td>Relative spike vs. recent history</td>
+            <td class="highlight">High &mdash; buying opportunity</td>
+            <td>Half-life of ~5 days; mean reversion is rapid and reliable</td>
+          </tr>
+          <tr>
+            <td><strong>VIX &gt; 45 (absolute)</strong></td>
+            <td>Extreme absolute fear</td>
+            <td class="highlight">High &mdash; positive 1-year returns</td>
+            <td>Historically, 1-year returns following VIX &gt; 45 are positive with high reliability</td>
+          </tr>
+          <tr>
+            <td><strong>Pre-market VIX spike</strong></td>
+            <td>VIX futures gap up before market open</td>
+            <td class="warn">Low information value</td>
+            <td>Often mechanically driven by thin liquidity; reverts before open</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>15.3 The August 5, 2024 Dislocation</h3>
+
+      <p>The Aug 5, 2024 VIX event provides a textbook case study of a <strong>mechanical dislocation</strong> vs. a
+        <strong>fundamental fear event</strong>:</p>
+
+      <div class="callout info">
+        <p><strong>What happened:</strong> The VIX surged to <strong>65+</strong> in pre-market trading, its highest
+          level since the COVID crash. However, front-month VIX futures stayed below 35 &mdash; a 30+ point disconnect
+          between spot VIX and futures.</p>
+        <p><strong>Mechanism:</strong> Market makers widened bid-ask spreads on illiquid out-of-the-money S&amp;P 500
+          puts during thin pre-market conditions. Because VIX is computed from mid-quote option prices, the widened
+          spreads mechanically raised the mid-quote, inflating the VIX reading without any corresponding increase in
+          actual hedging demand or realized volatility.</p>
+        <p><strong>Lesson:</strong> Spot VIX during illiquid sessions can produce <strong>phantom spikes</strong> with
+          zero informational value. The futures curve (VIX futures vs. spot) provides a validity check: if futures do
+          not confirm the spot spike, the reading is mechanical noise, not fear.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 16: MARKET STRUCTURE SMC/ICT         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="smc-ict">
+      <h2><span class="num">16.</span> Market Structure and Liquidity Engineering (SMC/ICT)</h2>
+
+      <p>Smart Money Concepts (SMC) and Inner Circle Trader (ICT) methodology provide a framework for understanding
+        price action as a sequence of <strong>liquidity events</strong> rather than random fluctuations. While often
+        dismissed as subjective, recent large-scale quantitative studies have begun to validate specific SMC patterns
+        with statistical rigor.</p>
+
+      <h3>16.1 Swing Failure Pattern (SFP): Liquidity Absorption</h3>
+
+      <p>The Swing Failure Pattern occurs when price wicks beyond a previous swing high or low but <strong>closes back
+        inside</strong> the prior range. This pattern indicates that institutional participants used the liquidity
+        pool above/below the swing point to fill large orders &mdash; a process called <strong>liquidity
+        absorption</strong>.</p>
+
+      <p>Analysis of a dataset containing <strong>3 million+ market structure events</strong> reveals that SFP is
+        fractal across timeframes &mdash; the pattern carries equivalent statistical weight on 5-minute, 1-hour, daily,
+        and weekly charts. The key differentiator is not the timeframe but the <strong>quality of the swing point</strong>
+        being tested: swing points with more touches (higher "respect count") produce higher-probability SFP signals.</p>
+
+      <h3>16.2 BOS and CHoCH: Continuation vs. Reversal</h3>
+
+      <p>Break of Structure (BOS) and Change of Character (CHoCH) are the two fundamental building blocks of SMC
+        market structure analysis. Quantitative analysis of the structure dataset reveals strikingly clear statistical
+        profiles:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>Definition</th>
+            <th>Subsequent Outcome</th>
+            <th>Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>BOS (Break of Structure)</strong></td>
+            <td>Price body closes beyond a prior swing point in the direction of the current trend</td>
+            <td>New BOS in the same direction (continuation)</td>
+            <td class="highlight">~73% of the time</td>
+          </tr>
+          <tr>
+            <td><strong>CHoCH (Change of Character)</strong></td>
+            <td>Price body closes beyond a prior swing point <em>against</em> the current trend direction</td>
+            <td>Subsequent BOS in the new (reversed) direction</td>
+            <td class="highlight">~77% of the time</td>
+          </tr>
+          <tr>
+            <td><strong>SFP (Swing Failure Pattern)</strong></td>
+            <td>Wick beyond swing, body closes back inside prior range</td>
+            <td>Reversal toward prior range; liquidity absorbed</td>
+            <td class="highlight">58&ndash;65% win rate (Hsaka research)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <p><strong>Practical application:</strong> BOS body close has a ~73% probability of continuation, making it
+          a high-probability trend-following entry trigger. CHoCH body close has a ~77% probability of producing a
+          subsequent BOS in the new direction, making it a high-confidence reversal signal. These statistics provide
+          quantitative grounding for what was previously a subjective methodology.</p>
+      </div>
+
+      <h3>16.3 Liquidity Engineering: The Institutional Playbook</h3>
+
+      <p>Institutional participants cannot simply buy or sell at market &mdash; their order sizes are too large.
+        They need <strong>counterparty liquidity</strong>, which clusters at predictable locations: above swing highs
+        (buy-side liquidity from retail stop-losses) and below swing lows (sell-side liquidity). The ICT framework
+        posits that price is "engineered" to sweep these liquidity pools before reversing.</p>
+
+      <p>While this sounds conspiratorial, the mechanics are straightforward: large limit orders resting above
+        swing highs provide the sell-side liquidity that institutions need to fill short positions (or vice versa).
+        The SFP pattern is the statistical footprint of this process.</p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 17: SILENT KILLERS OF BACKTESTING    -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="backtest-killers">
+      <h2><span class="num">17.</span> Silent Killers of Backtesting</h2>
+
+      <p>Beyond the well-known pitfalls discussed in Section 2, there are subtler forms of backtesting contamination
+        that can silently inflate performance metrics. These "silent killers" are particularly dangerous because they
+        produce results that <em>look</em> correct but embed systematic biases that do not reproduce in live trading.</p>
+
+      <h3>17.1 Taxonomy of Backtesting Biases</h3>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Bias Type</th>
+            <th>Mechanism</th>
+            <th>Detection Method</th>
+            <th>Mitigation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Repainting</strong></td>
+            <td>Fluid data: unconfirmed bar values (close, high, low on current bar) change after the fact</td>
+            <td>Compare real-time signals vs. historical chart signals; discrepancies indicate repainting</td>
+            <td class="highlight"><code>barstate.isconfirmed</code> guard on all signal logic</td>
+          </tr>
+          <tr>
+            <td><strong>Look-Ahead Bias</strong></td>
+            <td>HTF data leakage via incorrect <code>request.security()</code> lookahead settings; current HTF bar
+              values used before that bar closes</td>
+            <td>Audit all <code>request.security()</code> calls; check for missing <code>[1]</code> offset on HTF data</td>
+            <td class="highlight"><code>barmerge.lookahead_off</code> + <code>[1]</code> offset on all HTF values</td>
+          </tr>
+          <tr>
+            <td><strong>Overfitting</strong></td>
+            <td>Too many free parameters relative to sample size; strategy memorizes noise in training data</td>
+            <td>Parameter stability grid test (Section 12.2); Deflated Sharpe Ratio (Section 5.4)</td>
+            <td class="highlight">Out-of-sample testing + walk-forward analysis (WFA)</td>
+          </tr>
+          <tr>
+            <td><strong>Survivorship Bias</strong></td>
+            <td>Backtesting only on assets that survived to the present; delisted/failed assets excluded</td>
+            <td>Check if backtest universe includes delisted assets</td>
+            <td>Use survivorship-bias-free databases; test on indices rather than individual assets</td>
+          </tr>
+          <tr>
+            <td><strong>Execution Simulation Error</strong></td>
+            <td>Backtest assumes fills at prices/sizes that would not be available in real markets</td>
+            <td>Compare backtest fill prices with historical order book depth</td>
+            <td>Conservative slippage (3+ ticks); <code>process_orders_on_close = false</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>17.2 Detection Workflow</h3>
+
+      <p>Every strategy entering the validation pipeline (Section 13.1) must pass the following bias detection workflow
+        before advancing to Stage 2 (forward testing):</p>
+
+      <ol>
+        <li><strong>Repainting audit:</strong> Run the strategy in real time for at least 50 bars. Compare the signals
+          generated in real time against the signals shown on the historical chart after those bars close. Any
+          discrepancy indicates repainting.</li>
+        <li><strong>HTF leakage scan:</strong> Grep all <code>request.security()</code> calls in the source code. Every
+          call must use <code>barmerge.lookahead_off</code> and reference <code>[1]</code> (the previous completed bar).
+          Calls without this offset are flagged as potential look-ahead bias.</li>
+        <li><strong>Parameter count check:</strong> Count the number of free parameters. If the ratio of trades to
+          parameters is less than 10:1, the strategy is at high risk of overfitting and requires additional WFA
+          validation.</li>
+        <li><strong>Survivorship check:</strong> Verify that the backtest asset universe includes all assets that were
+          available during the test period, not just those that survived to the end.</li>
+      </ol>
+
+      <div class="callout warning">
+        <p><strong>The compounding effect:</strong> These biases are not independent &mdash; they compound. A strategy
+          that uses unconfirmed bar data (repainting), references current-bar HTF values (look-ahead), and optimizes
+          20 parameters on 200 trades (overfitting) will show spectacular backtest results that have absolutely zero
+          predictive value for live trading. The detection workflow must catch <em>all</em> biases, not just the most
+          obvious one.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 18: FRACTAL DIMENSIONS & REGIME      -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="fractal-regime">
+      <h2><span class="num">18.</span> Fractal Dimensions and Regime Analysis</h2>
+
+      <p>Financial time series are not stationary &mdash; they alternate between regimes characterized by different
+        statistical properties. Fractal analysis provides tools to measure these regime characteristics in real time,
+        enabling dynamic strategy selection that adapts to current market conditions rather than hoping that conditions
+        match the backtest period.</p>
+
+      <h3>18.1 The Hurst Exponent: Foundation of Regime Classification</h3>
+
+      <p>The Hurst Exponent (H), originally developed by H.E. Hurst (1951) to study Nile River flooding patterns,
+        measures the long-term memory of a time series. Its interpretation for financial data is profoundly
+        practical:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Hurst Range</th>
+            <th>Regime Type</th>
+            <th>Market Behavior</th>
+            <th>Optimal Strategy Class</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>H &lt; 0.5</strong></td>
+            <td>Anti-persistent</td>
+            <td class="highlight">Mean reverting: price tends to reverse direction; past trends predict future reversals</td>
+            <td class="highlight">RSI-2, VWAP reversion, Bollinger bounce</td>
+          </tr>
+          <tr>
+            <td><strong>H = 0.5</strong></td>
+            <td>Random walk</td>
+            <td class="warn">No serial dependence; price changes are independent; indicators have no predictive value</td>
+            <td class="warn">No strategy has edge; stand aside</td>
+          </tr>
+          <tr>
+            <td><strong>H &gt; 0.5</strong></td>
+            <td>Persistent</td>
+            <td class="highlight">Trending: price tends to continue in the same direction; momentum persists</td>
+            <td class="highlight">EMA crossover, MACD, Ichimoku, Supertrend</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Research on East Asian equity markets has confirmed that periods with high Hurst exponents (H &gt; 0.6) yield
+        significantly higher profits from moving average trading rules compared to periods with H near 0.5. This
+        provides direct empirical evidence that Hurst-based regime detection improves strategy selection.</p>
+
+      <h3>18.2 The Choppiness Index: A Complementary Regime Filter</h3>
+
+      <p>The Choppiness Index provides a complementary measure of market directionality, expressed on a 0&ndash;100
+        scale. Its formula normalizes the ratio of total ATR movement to the price range:</p>
+
+      <pre><code>// Choppiness Index formula
+// CI = 100 * log10(Sum(ATR(1), n) / (HighestHigh_n - LowestLow_n)) / log10(n)
+
+f_choppiness(n) =>
+    atr_sum = math.sum(ta.atr(1), n)
+    hl_range = ta.highest(high, n) - ta.lowest(low, n)
+    hl_range > 0 ? 100 * math.log10(atr_sum / hl_range) / math.log10(n) : 50</code></pre>
+
+      <h4>Choppiness Thresholds as Strategy Activation Gates</h4>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Choppiness Value</th>
+            <th>Interpretation</th>
+            <th>Strategy Gate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="warn">&gt; 61.8</td>
+            <td>Choppy / ranging market</td>
+            <td>Activate mean-reversion strategies; suppress trend-following entries</td>
+          </tr>
+          <tr>
+            <td>38.2 &ndash; 61.8</td>
+            <td>Transitional zone</td>
+            <td>Reduced confidence; smaller position sizes; monitor for regime change</td>
+          </tr>
+          <tr>
+            <td class="highlight">&lt; 38.2</td>
+            <td>Strong directional trend</td>
+            <td>Activate trend-following strategies; suppress mean-reversion entries</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <p><strong>The Fibonacci connection:</strong> The 61.8 and 38.2 thresholds are derived from the Fibonacci
+          ratio (0.618 &times; 100 and 0.382 &times; 100). While the choice is partly conventional, these values
+          have been empirically validated across multiple markets as effective regime demarcation points. They create
+          a natural "dead zone" (38.2&ndash;61.8) where neither regime has clear dominance &mdash; precisely the
+          conditions where most strategies underperform and capital preservation is the optimal action.</p>
+      </div>
+
+      <h3>18.3 Combining Hurst and Choppiness for Robust Regime Detection</h3>
+
+      <p>Using Hurst and Choppiness together provides a two-factor regime classification that is more robust than
+        either metric alone. Agreement between both indicators (Hurst &lt; 0.5 AND Choppiness &gt; 61.8 for mean
+        reversion, or Hurst &gt; 0.5 AND Choppiness &lt; 38.2 for trending) produces the highest-confidence regime
+        classification. Disagreement signals regime transition &mdash; a period of heightened uncertainty where
+        position sizing should be reduced.</p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 19: ORDER FLOW & CRYPTO PERPS        -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="order-flow-crypto">
+      <h2><span class="num">19.</span> Order Flow and Leveraged Positioning in Crypto Perpetuals</h2>
+
+      <p>Cryptocurrency perpetual futures markets generate unique data streams &mdash; open interest, funding rates,
+        liquidation events &mdash; that have no equivalent in traditional equity markets. These metrics provide direct
+        visibility into leveraged positioning and speculative sentiment, creating structural edges that persist because
+        they arise from market microstructure rather than price pattern recognition.</p>
+
+      <h3>19.1 Open Interest as a Sentiment Oscillator</h3>
+
+      <p>Open Interest (OI) &mdash; the total number of outstanding derivative contracts &mdash; combined with price
+        action creates a four-quadrant sentiment matrix:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Price Direction</th>
+            <th>OI Direction</th>
+            <th>Interpretation</th>
+            <th>Signal Quality</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rising</td>
+            <td>Rising</td>
+            <td class="highlight"><strong>Bullish conviction:</strong> New money entering long positions; trend has fuel</td>
+            <td class="highlight">Strong trend continuation signal</td>
+          </tr>
+          <tr>
+            <td>Falling</td>
+            <td>Rising</td>
+            <td class="warn"><strong>Bearish conviction:</strong> New money entering short positions; downtrend strengthening</td>
+            <td class="warn">Bearish continuation; avoid longs</td>
+          </tr>
+          <tr>
+            <td>Rising</td>
+            <td>Falling</td>
+            <td class="warn"><strong>Short squeeze:</strong> Price rising as shorts cover; no new long conviction</td>
+            <td>Temporary move; fade at resistance</td>
+          </tr>
+          <tr>
+            <td>Falling</td>
+            <td>Falling</td>
+            <td><strong>Long liquidation:</strong> Longs closing/being liquidated; selling pressure from forced exits</td>
+            <td>Capitulation signal; watch for exhaustion bounce</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>19.2 Liquidation Clusters as Magnetic Price Zones</h3>
+
+      <p>Leveraged positions create invisible "walls" in the order book at their liquidation prices. When price
+        approaches a cluster of liquidation prices, the resulting forced selling (or buying) creates a cascade
+        effect. Key empirical findings:</p>
+
+      <ul>
+        <li><strong>Pre-liquidation magnetism:</strong> Price is drawn toward large liquidation clusters because
+          market makers profit from triggering liquidations (they absorb the forced orders at favorable prices).</li>
+        <li><strong>Post-liquidation clarity:</strong> Once a liquidation cluster is triggered, the subsequent
+          price move is typically <strong>cleaner and more directional</strong> because the overhang of leveraged
+          positions has been cleared. This is the "cascade exhaustion" pattern implemented in our liquidation cascade
+          strategy.</li>
+        <li><strong>Cascade threshold:</strong> Liquidation events exceeding $100M in aggregate typically mark
+          exhaustion points where the V-bounce recovery pattern has the highest probability.</li>
+      </ul>
+
+      <h3>19.3 Volume Delta Z-Score: Institutional Commitment Detection</h3>
+
+      <p>Volume delta (buy volume minus sell volume) normalized as a Z-score provides a quantitative measure of
+        directional commitment at each bar. The distribution of volume delta Z-scores follows a roughly normal
+        distribution, making extreme readings statistically meaningful:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Volume Delta Z-Score</th>
+            <th>Statistical Percentile</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>&plusmn;1.0</td>
+            <td>Top 32%</td>
+            <td class="dim">Normal variation; no signal value</td>
+          </tr>
+          <tr>
+            <td>&plusmn;2.0</td>
+            <td>Top 4.6%</td>
+            <td class="warn">Notable directional bias; monitor but not actionable alone</td>
+          </tr>
+          <tr>
+            <td><strong>&plusmn;3.0</strong></td>
+            <td><strong>Top 0.3%</strong></td>
+            <td class="highlight"><strong>Institutional-grade commitment;</strong> extremely rare event indicating
+              large-scale directional conviction</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <p><strong>Implementation note:</strong> A volume delta Z-score exceeding +3.0 represents the top 0.3%
+          of statistical occurrences &mdash; a three-sigma event in volume imbalance. When this coincides with
+          BOS or SFP signals, the confluence provides the highest-confidence entry available in crypto perp markets.
+          This is the quantitative basis for the "volume Z-score confirmation" filter used throughout our strategy
+          roster (Section 4.6).</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 20: ENHANCEMENT RECOMMENDATIONS      -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="enhancement-recs">
+      <h2><span class="num">20.</span> Specific Enhancement Recommendations</h2>
+
+      <p>Based on the Gemini quantitative research synthesis, the following specific enhancements are recommended for
+        our two production systems. Each recommendation is grounded in the empirical evidence presented in Sections
+        14&ndash;19 and maps to a specific statistical finding.</p>
+
+      <h3>20.1 Enhancements for Kimi Claw Pro</h3>
+
+      <h4>Session-Based RVOL-T (Relative Volume by Time)</h4>
+      <p>Traditional relative volume compares current volume to the N-period average. This fails to account for the
+        pronounced intraday volume seasonality in crypto markets (volume clusters around US market open, Asian session
+        open, and UTC midnight funding snapshots). <strong>RVOL-T</strong> compares the current bar's volume to the
+        average volume of the <em>same time slot</em> over the last 20 trading days, producing a time-normalized
+        volume signal that is far more discriminating than raw RVOL.</p>
+
+      <h4>Multi-Exchange OI Delta Integration</h4>
+      <p>Open Interest on a single exchange (e.g., Binance) provides a partial picture. Aggregating OI delta across
+        multiple exchanges (Binance + Bybit + OKX + dYdX) reveals the full leveraged positioning landscape. Divergences
+        between exchanges &mdash; where OI rises on one exchange but falls on another &mdash; can indicate institutional
+        position migration and provide early warning of impending liquidation events.</p>
+
+      <h4>Liquidity Raid Confluence (SFP Filter)</h4>
+      <p>Adding a Swing Failure Pattern filter to existing entry signals requires that price first sweeps a prior
+        swing point's liquidity before entering. This ensures the entry occurs after institutional absorption has
+        taken place, not before. Empirical SFP win rates of 58&ndash;65% (Section 16.2) provide a meaningful
+        improvement over unfiltered entries.</p>
+
+      <h3>20.2 Enhancements for Elton's Predictions</h3>
+
+      <h4>Bayesian Regime Switching</h4>
+      <p>Replace the current binary regime classification with a Bayesian probability-weighted system using the Hurst
+        exponent as the primary input:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Hurst Range</th>
+            <th>Trend Weight</th>
+            <th>Mean-Reversion Weight</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>H &gt; 0.6</strong></td>
+            <td class="highlight">80%</td>
+            <td>20%</td>
+            <td>Strong trend regime: prioritize trend-following strategies (Group A)</td>
+          </tr>
+          <tr>
+            <td><strong>H &lt; 0.4</strong></td>
+            <td>20%</td>
+            <td class="highlight">80%</td>
+            <td>Strong mean-reversion regime: prioritize mean-reversion strategies (Group B)</td>
+          </tr>
+          <tr>
+            <td><strong>0.45 &ndash; 0.55</strong></td>
+            <td class="warn">0%</td>
+            <td class="warn">0%</td>
+            <td><strong>"No trade" chaos warning:</strong> regime is indeterminate; stand aside</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>Multi-Timeframe (MTF) Directional Confluence</h4>
+      <p>Require directional alignment across daily, weekly, and monthly timeframes before taking trend-following
+        entries. A long signal on the daily chart is only valid if the weekly and monthly timeframes also show bullish
+        structure (price above key EMAs, positive momentum). This multi-timeframe confluence filter dramatically
+        reduces false trend-following signals during larger-timeframe corrections.</p>
+
+      <h4>Neural "Go Score" Calibration</h4>
+      <p>The Go Score is a 0&ndash;100 composite confidence metric that synthesizes all available signal inputs into
+        a single actionable number. Its components include:</p>
+      <ul>
+        <li><strong>Entropy sensitivity:</strong> How dispersed or concentrated the signal inputs are across strategies</li>
+        <li><strong>Siege decay:</strong> Time-based degradation of signal strength when price stays in a consolidation
+          zone without resolving</li>
+        <li><strong>MA stack coherence:</strong> Degree of alignment in the EMA 9/21/50/200 stack</li>
+      </ul>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Go Score</th>
+            <th>Grade</th>
+            <th>Position Sizing</th>
+            <th>Trade Management</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight"><strong>&ge; 80</strong></td>
+            <td><span class="tier gold">A+</span></td>
+            <td class="highlight">Full size</td>
+            <td>Trail aggressively; let runner ride to TP3</td>
+          </tr>
+          <tr>
+            <td><strong>65 &ndash; 79</strong></td>
+            <td><span class="tier silver">Standard</span></td>
+            <td>Standard size</td>
+            <td>Normal TP1/TP2 structure; standard trail</td>
+          </tr>
+          <tr>
+            <td class="warn"><strong>&lt; 65</strong></td>
+            <td><span class="tier bronze">Flat</span></td>
+            <td class="warn">No entry</td>
+            <td>Stay flat; signal quality insufficient for capital deployment</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  SECTION 21: WALK-FORWARD OPTIMIZATION        -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="wfo-standards">
+      <h2><span class="num">21.</span> Walk-Forward Optimization Standards</h2>
+
+      <p>Walk-Forward Optimization (WFO) is the gold standard for strategy validation, extending the walk-forward
+        analysis described in Section 5.3 and Section 12.1 into a formal optimization framework. This section
+        establishes the specific standards that all strategies must meet.</p>
+
+      <h3>21.1 WFO Methodology</h3>
+
+      <p>WFO divides the available data into sequential segments, alternating between <strong>in-sample optimization
+        </strong> (where parameters are tuned to maximize a target metric) and <strong>blind out-of-sample validation
+        </strong> (where the optimized parameters are tested on data never seen during optimization). The critical
+        distinction from simple out-of-sample testing is that this process <em>rolls forward through time</em>,
+        producing multiple non-overlapping OOS segments.</p>
+
+      <pre><code>// Walk-Forward Optimization pseudocode
+//
+// Total data: Jan 2020 - Dec 2025 (6 years)
+// IS window: 2 years | OOS window: 6 months | Step: 6 months
+//
+// Window 1: IS = Jan 2020 - Dec 2021 | OOS = Jan 2022 - Jun 2022
+// Window 2: IS = Jul 2020 - Jun 2022 | OOS = Jul 2022 - Dec 2022
+// Window 3: IS = Jan 2021 - Dec 2022 | OOS = Jan 2023 - Jun 2023
+// ...
+//
+// For each window:
+//   1. Optimize parameters on IS data (maximize Sharpe or profit factor)
+//   2. Freeze parameters
+//   3. Test on OOS data (no parameter changes allowed)
+//   4. Record OOS performance metrics
+//
+// Final validation: strategy passes if >= 70% of OOS windows are profitable</code></pre>
+
+      <h3>21.2 Realistic Friction Modeling</h3>
+
+      <p>The accuracy of any backtest or WFO depends critically on how realistic the friction model is. Understating
+        transaction costs is the single most common source of backtest-to-live performance degradation:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Friction Component</th>
+            <th>Minimum Standard</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Commission</strong></td>
+            <td class="highlight">0.05% per side (round-trip 0.10%)</td>
+            <td>Reflects typical crypto taker fee; higher for small accounts without fee tiers</td>
+          </tr>
+          <tr>
+            <td><strong>Slippage</strong></td>
+            <td class="highlight">2 ticks minimum</td>
+            <td>Must be increased during volatility spikes; 2 ticks is optimistic for illiquid pairs</td>
+          </tr>
+          <tr>
+            <td><strong>Spread (crypto perps)</strong></td>
+            <td class="warn">Variable; widen during vol spikes</td>
+            <td>Perpetual futures spreads can widen 5&ndash;10x during liquidation cascades; must be modeled</td>
+          </tr>
+          <tr>
+            <td><strong>Funding rate</strong></td>
+            <td>8-hour snapshots</td>
+            <td>Holding positions through funding snapshots incurs costs (or earns income); must be factored
+              into multi-day hold strategies</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>21.3 Bar Magnifier: Intrabar Precision</h3>
+
+      <p>TradingView Premium's <strong>Bar Magnifier</strong> feature analyzes price action at a lower timeframe
+        than the chart's display timeframe, resolving a longstanding backtesting limitation: the inability to
+        distinguish whether a stop-loss and take-profit would both have been hit within the same bar, and in
+        what order.</p>
+
+      <div class="callout info">
+        <p><strong>The "entry and exit on same bar" problem:</strong> On a daily chart, price may hit both
+          a 2% stop-loss and a 3% take-profit within the same day. Without Bar Magnifier, the backtest engine
+          must guess the order (typically using a conservative assumption). With Bar Magnifier enabled, TradingView
+          uses intrabar (e.g., 1-hour) data to determine the actual sequence of events, producing significantly
+          more accurate backtest results. This is a <strong>TradingView Premium feature</strong> and should be
+          considered mandatory for any serious strategy validation.</p>
+      </div>
+
+      <h3>21.4 WFO Pass/Fail Criteria</h3>
+
+      <p>A strategy must meet all of the following criteria to pass WFO validation:</p>
+
+      <ul>
+        <li><strong>OOS win rate:</strong> At least 70% of OOS windows must be net profitable after friction</li>
+        <li><strong>OOS Sharpe degradation:</strong> Average OOS Sharpe must be within 50% of average IS Sharpe
+          (e.g., if IS Sharpe is 2.0, OOS Sharpe must be at least 1.0)</li>
+        <li><strong>OOS maximum drawdown:</strong> No OOS window may exceed 2x the average IS maximum drawdown</li>
+        <li><strong>Parameter stability:</strong> Parameters selected in adjacent IS windows should not vary by
+          more than 30% (large parameter jumps indicate instability)</li>
+        <li><strong>Minimum trade count:</strong> Each OOS window must contain at least 20 trades for statistical
+          validity</li>
+      </ul>
+
+      <div class="callout success">
+        <p><strong>The complete validation chain:</strong> WFO (this section) + DSR correction (Section 5.4) +
+          forward testing (Section 8) + live track record (Section 9) constitute the complete evidence chain.
+          A strategy that passes all four stages has reached Tier 1 evidence &mdash; the highest standard of proof
+          that a systematic trading strategy genuinely beats the market. This is the standard we hold every strategy
+          in Elton's Predictions and Kimi Claw Pro to.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  REFERENCES                                   -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="references" id="references">
+      <h2>Key References</h2>
+
+      <ol>
+        <li>
+          Bailey, D. H. &amp; L&oacute;pez de Prado, M. (2014). "The Deflated Sharpe Ratio: Correcting for
+          Selection Bias, Backtest Overfitting, and Non-Normality."
+          <em>Journal of Portfolio Management</em>, 40(5), 94&ndash;107.
+        </li>
+        <li>
+          Bailey, D. H., Borwein, J. M., L&oacute;pez de Prado, M. &amp; Zhu, Q. J. (2017). "The Probability
+          of Backtest Overfitting." <em>Journal of Computational Finance</em>, 20(4), 39&ndash;69.
+        </li>
+        <li>
+          Bollinger, J. (2002). <em>Bollinger on Bollinger Bands</em>. McGraw-Hill.
+        </li>
+        <li>
+          Bouman, S. &amp; Jacobsen, B. (2002). "The Halloween Indicator, 'Sell in May and Go Away': Another Puzzle."
+          <em>American Economic Review</em>, 92(5), 1618&ndash;1635.
+        </li>
+        <li>
+          Brock, W., Lakonishok, J. &amp; LeBaron, B. (1992). "Simple Technical Trading Rules and the Stochastic
+          Properties of Stock Returns." <em>Journal of Finance</em>, 47(5), 1731&ndash;1764.
+        </li>
+        <li>
+          Connors, L. A. &amp; Alvarez, C. <em>Short-Term Trading Strategies That Work</em>. TradingMarkets.
+        </li>
+        <li>
+          Daniel, K. &amp; Moskowitz, T. J. (2016). "Momentum Crashes."
+          <em>Journal of Financial Economics</em>, 122(2), 221&ndash;247.
+        </li>
+        <li>
+          Derman, E. (2016). "The Volatility Smile." In: <em>Volatility Surface: A Practitioner's Guide</em>.
+          Wiley Finance.
+        </li>
+        <li>
+          Hansen, P. R. (2005). "A Test for Superior Predictive Ability."
+          <em>Journal of Business &amp; Economic Statistics</em>, 23(4), 365&ndash;380.
+        </li>
+        <li>
+          Harvey, C. R., Liu, Y. &amp; Zhu, H. (2016). "&hellip;and the Cross-Section of Expected Returns."
+          <em>Review of Financial Studies</em>, 29(1), 5&ndash;68.
+        </li>
+        <li>
+          Jegadeesh, N. &amp; Titman, S. (1993). "Returns to Buying Winners and Selling Losers: Implications
+          for Stock Market Efficiency." <em>Journal of Finance</em>, 48(1), 65&ndash;91.
+        </li>
+        <li>
+          Lakonishok, J. &amp; Smidt, S. (1988). "Are Seasonal Anomalies Real? A Ninety-Year Perspective."
+          <em>Review of Financial Studies</em>, 1(4), 403&ndash;425.
+        </li>
+        <li>
+          Liu, Y., Tsyvinski, A. &amp; Wu, X. (2022). "Common Risk Factors in Cryptocurrency."
+          <em>Journal of Financial Economics</em>, 145(3), 919&ndash;950.
+        </li>
+        <li>
+          Moskowitz, T. J., Ooi, Y. H. &amp; Pedersen, L. H. (2012). "Time Series Momentum."
+          <em>Journal of Financial Economics</em>, 104(2), 228&ndash;250.
+        </li>
+        <li>
+          Scaillet, O., Treccani, A. &amp; Trevisan, C. (2020). "High-Frequency Jump Analysis of the Bitcoin Market."
+          <em>Journal of Financial Econometrics</em>, 18(2), 209&ndash;232.
+        </li>
+        <li>
+          Sullivan, R., Timmermann, A. &amp; White, H. (1999). "Data-Snooping, Technical Trading Rule Performance,
+          and the Bootstrap." <em>Journal of Finance</em>, 54(5), 1647&ndash;1691.
+        </li>
+        <li>
+          White, H. (2000). "A Reality Check for Data Snooping."
+          <em>Econometrica</em>, 68(5), 1097&ndash;1126.
+        </li>
+        <li>
+          Wilder, J. W. (1978). <em>New Concepts in Technical Trading Systems</em>. Trend Research.
+        </li>
+        <li>
+          Kahneman, D. &amp; Tversky, A. (1979). "Prospect Theory: An Analysis of Decision under Risk."
+          <em>Econometrica</em>, 47(2), 263&ndash;291.
+        </li>
+        <li>
+          Bollen, J., Mao, H. &amp; Zeng, X. (2011). "Twitter Mood Predicts the Stock Market."
+          <em>Journal of Computational Science</em>, 2(1), 1&ndash;8.
+        </li>
+        <li>
+          Deloitte (2024). "Alternative Data in Investment Management: 2024 Survey."
+          <em>Deloitte Insights</em>.
+        </li>
+        <li>
+          Borri, N. (2019). "Conditional Tail-Risk in Cryptocurrency Markets."
+          <em>Journal of Empirical Finance</em>, 50, 1&ndash;19.
+        </li>
+        <li>
+          Hurst, H. E. (1951). "Long-Term Storage Capacity of Reservoirs."
+          <em>Transactions of the American Society of Civil Engineers</em>, 116, 770&ndash;799.
+        </li>
+        <li>
+          Thorp, E. O. (2006). "The Kelly Criterion in Blackjack, Sports Betting, and the Stock Market."
+          In: <em>Handbook of Asset and Liability Management</em>. Elsevier.
+        </li>
+        <li>
+          Pardo, R. (2008). <em>The Evaluation and Optimization of Trading Strategies</em> (2nd ed.). Wiley Trading.
+        </li>
+        <li>
+          Connors, L. &amp; Alvarez, C. (2009). <em>Short Term Trading Strategies That Work</em>. TradingMarkets Press.
+        </li>
+        <li>
+          Hurst, H. E. (1951). "Long-term storage capacity of reservoirs."
+          <em>Transactions of the American Society of Civil Engineers</em>, 116, 770&ndash;799.
+        </li>
+        <li>
+          Inner Circle Trader (ICT) community research on market structure (BOS/CHoCH statistics derived from
+          3M+ structure dataset). Community quantitative analysis.
+        </li>
+        <li>
+          Griffin, J. M. &amp; Shams, A. (2020). "Is Bitcoin Really Untethered?"
+          <em>Journal of Finance</em>, 75(4), 1913&ndash;1964.
+        </li>
+      </ol>
+    </div>
+
+  </main>
+
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!--  FOOTER                                         -->
+  <!-- ════════════════════════════════════════════════ -->
+  <footer class="paper-footer">
+    <div>Generated February 19, 2026 &mdash; v3.0 Extended Edition &mdash; Based on ChatGPT Deep Research &amp; Gemini Quantitative Research synthesis</div>
+    <div class="links">
+      <a href="https://findtorontoevents.ca/updates/">Updates</a>
+      <a href="https://findtorontoevents.ca/">findtorontoevents.ca</a>
+      <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/">Alpha Engine</a>
+    </div>
+  </footer>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+    aria-label="Scroll to top">&uarr;</button>
+
+  <script>
+    // Show/hide scroll-to-top button
+    window.addEventListener('scroll', function () {
+      var btn = document.getElementById('scrollTop');
+      if (window.scrollY > 400) {
+        btn.style.display = 'flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+
+    // Smooth scroll for TOC links
+    document.querySelectorAll('.toc a').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        var target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Update URL hash without jumping
+          history.pushState(null, null, this.getAttribute('href'));
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>

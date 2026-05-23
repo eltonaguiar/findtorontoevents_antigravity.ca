@@ -1,0 +1,23 @@
+{
+  "pr": 999,
+  "engine": "claude-sonnet",
+  "verdict": "REQUEST_CHANGES",
+  "confidence": "HIGH",
+  "summary": "PR removes the walkforward payload key consumed by the dashboard frontend, will break /audit's per-class panel.",
+  "strengths": [
+    {"claim": "Smoke test added", "evidence": "tests/test_walkforward.py:14 added in diff"}
+  ],
+  "concerns": [
+    {
+      "severity": "blocking",
+      "claim": "Dashboard frontend reads data.walkforward_by_class but the payload key is renamed to data.wf_class",
+      "evidence": "audit_dashboard/template.html:4123 still references walkforward_by_class; gh pr diff 999 shows audit_trail/dashboard_generator.py renaming the key",
+      "requested_fix": "Either keep the old key or update template.html in the same PR"
+    }
+  ],
+  "commentary_text": "Blocking: payload-key rename without a corresponding template update. See template.html:4123.",
+  "fabrication_risk": {
+    "level": "LOW",
+    "notes": "All claims grepped against checked-out branch"
+  }
+}

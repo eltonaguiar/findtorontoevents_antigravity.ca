@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toronto Events Database Audit &mdash; FindTorontoEvents.ca</title>
+<meta name="description" content="Independent third-party audit of FindTorontoEvents.ca: data quality, coverage gaps vs. competitors, and the 180-day roadmap to 65-75% coverage of the Toronto event ecosystem." />
+<style>
+  :root {
+    --pk-200:#e9d5ff; --pk-300:#c084fc; --pk-400:#a855f7; --pk-500:#9333ea;
+    --pk-600:#7e22ce; --pk-900:#3b0764;
+    --bg-0:#0a0a0f; --bg-1:#12121a; --bg-2:#1a1a25;
+    --t-1:#f0f0f5; --t-2:#a0a0b5; --t-3:#606075;
+    --ok:#22c55e; --warn:#eab308; --bad:#ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-0); color: var(--t-1);
+  }
+  header.hero {
+    background: linear-gradient(180deg, var(--pk-900) 0%, var(--bg-0) 100%);
+    padding: 4rem 1.5rem 3rem;
+    text-align: center;
+    border-bottom: 1px solid var(--bg-2);
+  }
+  .hero .kicker {
+    display:inline-block; padding: .25rem .75rem;
+    background: rgba(168,85,247,.15); border: 1px solid var(--pk-500);
+    border-radius: 999px; font-size: .8rem; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--pk-300); margin-bottom: 1rem;
+  }
+  .hero h1 { font-size: clamp(1.75rem, 4vw, 2.75rem); margin: 0 0 .75rem; }
+  .hero p.subtitle { color: var(--t-2); max-width: 720px; margin: 0 auto 1.5rem; }
+  .hero .meta { color: var(--t-3); font-size: .9rem; }
+  .hero .actions { margin-top: 1.5rem; }
+  .btn {
+    display: inline-block; padding: .65rem 1.25rem; margin: .25rem;
+    background: var(--pk-500); color: #fff; border-radius: 8px;
+    text-decoration: none; font-weight: 600; transition: background .15s;
+  }
+  .btn:hover { background: var(--pk-400); }
+  .btn.ghost { background: transparent; border: 1px solid var(--pk-500); color: var(--pk-300); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  section { margin: 3rem 0; }
+  h2 {
+    font-size: 1.5rem; padding-bottom: .5rem; margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--bg-2);
+  }
+  h3 { font-size: 1.15rem; margin: 1.5rem 0 .75rem; color: var(--pk-300); }
+
+  .stats {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .stat {
+    background: var(--bg-1); border: 1px solid var(--bg-2);
+    border-left: 3px solid var(--pk-400);
+    padding: 1.1rem 1.25rem; border-radius: 8px;
+  }
+  .stat .num { font-size: 1.85rem; font-weight: 700; color: var(--pk-300); }
+  .stat .label { color: var(--t-2); font-size: .85rem; margin-top: .15rem; }
+  .stat.warn { border-left-color: var(--warn); }
+  .stat.bad  { border-left-color: var(--bad); }
+  .stat.ok   { border-left-color: var(--ok); }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: .92rem;
+    background: var(--bg-1); border-radius: 8px; overflow: hidden;
+  }
+  th, td { padding: .75rem 1rem; text-align: left; border-bottom: 1px solid var(--bg-2); }
+  th { background: var(--bg-2); color: var(--pk-300); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill {
+    display: inline-block; padding: .15rem .55rem; border-radius: 999px;
+    font-size: .75rem; font-weight: 600;
+  }
+  .pill.bad   { background: rgba(239,68,68,.15);  color: #fca5a5; }
+  .pill.warn  { background: rgba(234,179,8,.15);  color: #fde68a; }
+  .pill.ok    { background: rgba(34,197,94,.15);  color: #86efac; }
+
+  figure {
+    margin: 1.5rem 0; padding: 1rem; background: var(--bg-1);
+    border: 1px solid var(--bg-2); border-radius: 8px;
+  }
+  figure img { width: 100%; height: auto; display: block; border-radius: 4px; }
+  figure figcaption { color: var(--t-2); font-size: .85rem; margin-top: .65rem; text-align: center; }
+
+  .callout {
+    background: linear-gradient(135deg, rgba(168,85,247,.08), rgba(168,85,247,.02));
+    border-left: 3px solid var(--pk-400);
+    padding: 1rem 1.25rem; border-radius: 6px; margin: 1.25rem 0;
+  }
+  .callout strong { color: var(--pk-300); }
+
+  ul.findings { padding-left: 1.25rem; }
+  ul.findings li { margin: .5rem 0; }
+
+  .grid-2 { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+  footer {
+    text-align: center; padding: 2rem 1rem; color: var(--t-3);
+    border-top: 1px solid var(--bg-2); font-size: .85rem;
+  }
+  footer a { color: var(--pk-300); text-decoration: none; }
+
+  nav.toc {
+    background: var(--bg-1); border: 1px solid var(--bg-2);
+    border-radius: 8px; padding: 1rem 1.25rem; margin: 0 0 2rem;
+  }
+  nav.toc h2 { margin: 0 0 .5rem; padding: 0; border: none; font-size: 1rem; }
+  nav.toc ol { margin: 0; padding-left: 1.25rem; color: var(--t-2); }
+  nav.toc a { color: var(--pk-300); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    table { font-size: .82rem; }
+    th, td { padding: .5rem .65rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">Independent Audit &middot; April 2026</div>
+  <h1>Toronto Events Database Audit</h1>
+  <p class="subtitle">A third-party assessment of FindTorontoEvents.ca's data quality, coverage gaps versus competitors, and the 180-day roadmap from 35% to 65-75% coverage of the Toronto event ecosystem.</p>
+  <div class="meta">15,000 words &middot; 8 charts &middot; 28 citations &middot; assessed 2026-04-25</div>
+  <div class="actions">
+    <a class="btn" href="Toronto_Events_Database_Audit.docx">Download full report (.docx)</a>
+    <a class="btn ghost" href="/">Back to events</a>
+  </div>
+</header>
+
+<main>
+
+<nav class="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#summary">Executive summary</a></li>
+    <li><a href="#critical">Critical finding</a></li>
+    <li><a href="#quality">Database quality</a></li>
+    <li><a href="#coverage">Competitive coverage</a></li>
+    <li><a href="#festivals">2026 festivals coverage</a></li>
+    <li><a href="#actions">Top 5 priority actions</a></li>
+    <li><a href="#progress">Progress &amp; remediation</a></li>
+  </ol>
+</nav>
+
+<section id="summary">
+  <h2>Executive summary</h2>
+  <div class="stats">
+    <div class="stat"><div class="num">4,422</div><div class="label">Live events on site</div></div>
+    <div class="stat warn"><div class="num">~35%</div><div class="label">Of Toronto event ecosystem covered</div></div>
+    <div class="stat bad"><div class="num">53.8%</div><div class="label">Events missing descriptions (SQL store)</div></div>
+    <div class="stat ok"><div class="num">7,204</div><div class="label">Net-new events unlocked by TPL fix</div></div>
+  </div>
+  <div class="callout" style="margin-top: 1.5rem;">
+    <strong>Bottom line:</strong> the site has near-parity coverage on paid/ticketed events but massive blind spots in free community programming, library events, and the singles/dating vertical. Following the priority roadmap raises coverage to <strong>65-75%</strong> within 180 days and lifts the catalog from 4,422 to <strong>15,000-20,000 events</strong>.
+  </div>
+</section>
+
+<section id="critical">
+  <h2>Critical finding &mdash; SQL silo disconnected</h2>
+  <p>The live site sources events from a static <code>events.json</code> (4,422 events, refreshed daily by GitHub Actions). The separately maintained <code>ejaguiar1_events</code> SQL database (1,046 events, last updated 2026-02-21) is <strong>not connected to the frontend</strong>. It is a stranded data silo. Either retire it or rewire the read path.</p>
+</section>
+
+<section id="quality">
+  <h2>Database quality (SQL store)</h2>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th class="num">Value</th><th>Severity</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Total events</td><td class="num">1,046</td><td>&mdash;</td></tr>
+      <tr><td>Upcoming events</td><td class="num">227 (21.7%)</td><td><span class="pill warn">Low inventory</span></td></tr>
+      <tr><td>Past events</td><td class="num">819 (78.3%)</td><td><span class="pill bad">78% stale</span></td></tr>
+      <tr><td>Missing descriptions</td><td class="num">563 (53.8%)</td><td><span class="pill bad">Critical</span></td></tr>
+      <tr><td>$0 price not flagged free</td><td class="num">706</td><td><span class="pill bad">High</span></td></tr>
+      <tr><td>URL duplicates</td><td class="num">23 groups (72 rows)</td><td><span class="pill warn">Medium</span></td></tr>
+      <tr><td>Last update</td><td class="num">2026-02-21</td><td><span class="pill warn">~2 months stale</span></td></tr>
+      <tr><td>Singles / dating share</td><td class="num">0.6%</td><td><span class="pill bad">Vertical gap</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-top: 1.5rem;">
+    <figure>
+      <img src="chart_categories.png" alt="Event distribution by category" loading="lazy" />
+      <figcaption>Event distribution by category &mdash; SQL store</figcaption>
+    </figure>
+    <figure>
+      <img src="chart_quality.png" alt="Database quality health dashboard" loading="lazy" />
+      <figcaption>Database quality health dashboard</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="coverage">
+  <h2>Competitive coverage</h2>
+  <p>Comparison of FindTorontoEvents.ca against the major event sources for Toronto.</p>
+  <table>
+    <thead>
+      <tr><th>Source</th><th class="num">Their events</th><th>Our coverage</th><th>Gap</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>FindTorontoEvents.ca</strong></td><td class="num">4,422</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td>Eventbrite Toronto</td><td class="num">4,500&ndash;6,500</td><td>Partial overlap</td><td><span class="pill warn">Medium</span></td></tr>
+      <tr><td>Meetup Toronto</td><td class="num">1,800&ndash;2,500</td><td>Some overlap</td><td><span class="pill warn">Medium</span></td></tr>
+      <tr><td>Toronto Public Library</td><td class="num">7,000&ndash;10,000/yr</td><td>6,356 &mdash; <strong>verified 2026-05-02</strong></td><td><span class="pill ok">Fixed</span></td></tr>
+      <tr><td>Single in the City</td><td class="num">17 upcoming</td><td>0 &mdash; scraper wired; site returns 403 (WAF/IP block)</td><td><span class="pill warn">Blocked upstream</span></td></tr>
+      <tr><td>Flare Events</td><td class="num">6 upcoming</td><td>0</td><td><span class="pill bad">Vertical</span></td></tr>
+      <tr><td>Toronto Dating Hub</td><td class="num">9 upcoming</td><td>0</td><td><span class="pill bad">Vertical</span></td></tr>
+      <tr><td>Facebook Events</td><td class="num">2,000&ndash;5,000/yr</td><td>Minimal</td><td><span class="pill warn">Medium</span></td></tr>
+      <tr><td>Luma (tech / creator)</td><td class="num">500&ndash;1,000/yr</td><td>0</td><td><span class="pill warn">Growth</span></td></tr>
+      <tr><td>Universities (UofT / York / TMU)</td><td class="num">200&ndash;500/yr</td><td>Minimal</td><td><span class="pill warn">Medium</span></td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <img src="chart_coverage.png" alt="Coverage gap analysis" loading="lazy" />
+    <figcaption>Coverage gap analysis vs. major Toronto event sources</figcaption>
+  </figure>
+</section>
+
+<section id="festivals">
+  <h2>2026 major festivals &mdash; sub-event capture gaps</h2>
+  <p>Major Toronto festivals are present as marquee events but their dozens-to-hundreds of <em>sub-events</em> (panels, fan-fest activations, daily programming, independent installations) are not.</p>
+  <table>
+    <thead>
+      <tr><th>Festival</th><th>Date</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>FIFA World Cup Toronto</td><td>Jun 12 &ndash; Jul 2</td><td>Fan Fest sub-events scattered across platforms</td></tr>
+      <tr><td>Caribana</td><td>Jul 30 &ndash; Aug 3</td><td>Multiple events; typically only main parade captured</td></tr>
+      <tr><td>TIFF</td><td>Sep 10 &ndash; 20</td><td>Industry / premium events missed</td></tr>
+      <tr><td>CNE</td><td>Aug 21 &ndash; Sep 7</td><td>Daily programming not captured</td></tr>
+      <tr><td>Nuit Blanche</td><td>Oct 3</td><td>Independent artist installations missed</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="actions">
+  <h2>Top 5 priority actions</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Action</th><th class="num">Impact</th><th>Timeline</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Fix Toronto Public Library scraper (BiblioCommons API)</td><td class="num">+7K&ndash;10K events/yr</td><td>0&ndash;30 days</td></tr>
+      <tr><td>2</td><td>Add scrapers for Single in the City, Flare Events, Toronto Dating Hub</td><td class="num">+32 events + singles SEO</td><td>0&ndash;30 days</td></tr>
+      <tr><td>3</td><td>Retire or reconnect the SQL silo</td><td class="num">Architecture clarity</td><td>0&ndash;30 days</td></tr>
+      <tr><td>4</td><td>Build Eventbrite + Meetup API connectors</td><td class="num">+3.5K&ndash;5K events</td><td>30&ndash;90 days</td></tr>
+      <tr><td>5</td><td>AI description enrichment for the 53.8% gap</td><td class="num">Quality + searchability</td><td>30&ndash;90 days</td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <img src="chart_priorities.png" alt="Priority action matrix" loading="lazy" />
+    <figcaption>Priority action matrix &mdash; impact vs. effort</figcaption>
+  </figure>
+</section>
+
+<section id="progress">
+  <h2>Progress &amp; remediation</h2>
+  <p>Status of the audit's recommendations, updated as work lands.</p>
+  <table>
+    <thead>
+      <tr><th>Priority</th><th>Action</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>TPL scraper rewrite (BiblioCommons gateway, ~7,200 events)</td><td><span class="pill ok">Verified in production (2026-05-02) &mdash; 6,356 events</span></td></tr>
+      <tr><td>2a</td><td>Single in the City scraper (Tribe REST API)</td><td><span class="pill warn">Scraper wired (2026-04-25); 0 events &mdash; singleinthecity.ca blocks server IP (403 host_not_allowed); needs proxy or alt source</span></td></tr>
+      <tr><td>2b</td><td>Flare Events / Toronto Dating Hub scrapers</td><td><span class="pill warn">Deferred &mdash; needs JS rendering</span></td></tr>
+      <tr><td>3</td><td>SQL silo decision (retire vs. reconnect)</td><td><span class="pill warn">Pending product call</span></td></tr>
+      <tr><td>4</td><td>Eventbrite / Meetup official API connectors</td><td><span class="pill warn">Pending</span></td></tr>
+      <tr><td>5</td><td>AI description enrichment</td><td><span class="pill warn">Pending</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+
+<footer>
+  <p>Audit conducted 2026-04-25 &middot; Independent third-party assessment</p>
+  <p><a href="/">findtorontoevents.ca</a> &middot; <a href="Toronto_Events_Database_Audit.docx">Download full report</a></p>
+</footer>
+
+</body>
+</html>

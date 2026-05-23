@@ -1,0 +1,838 @@
+{
+  "generated_at": "2026-03-21T12:00:00Z",
+  "version": "1.0.0",
+  "description": "Crypto & Forex signal aggregator platforms - verified trader performance database",
+  "total_platforms": 10,
+  "total_signal_providers": 20,
+  "platforms": {
+    "3commas": {
+      "name": "3Commas",
+      "type": "bot_marketplace",
+      "url": "https://3commas.io",
+      "marketplace_url": "https://3commas.io/crypto-signals",
+      "description": "Crypto trading bot marketplace with signal provider subscriptions",
+      "verification_level": "platform_verified",
+      "verification_method": "Automatic P&L tracking by platform - providers cannot self-report. Sharpe ratio classification: top 20% = Stable, rest = Risky",
+      "data_quality": 8,
+      "has_public_api": true,
+      "api_docs": "https://github.com/3commas-io/3commas-official-api-docs",
+      "supported_exchanges": ["Binance", "Bybit", "OKX", "KuCoin", "Gate.io", "Bitget", "Coinbase", "Kraken", "Huobi", "Bitstamp", "Gemini", "Poloniex", "Bittrex", "MEXC"],
+      "metrics_tracked": ["WPY", "MPY", "APY", "sharpe_ratio", "total_trades", "win_rate", "subscriber_count"],
+      "fee_model": "subscription_based",
+      "pricing": {"starter": "$0/mo", "advanced": "$32/mo", "pro": "$66/mo"},
+      "typical_returns": "15-30% annually with DCA bots (proper risk management)",
+      "risk_note": "60-70% of automated traders lose money due to poor setup",
+      "top_signal_providers": [
+        {
+          "name": "TradingView Signals",
+          "type": "technical_analysis",
+          "classification": "Stable",
+          "pricing": "Free",
+          "focus": "BTC, ETH, major alts",
+          "automation": "DCA bot, Grid bot"
+        },
+        {
+          "name": "Quality Signals (QFL)",
+          "type": "quantitative",
+          "classification": "Stable",
+          "pricing": "Paid",
+          "focus": "Quick Fingers Luc base drops",
+          "automation": "DCA bot"
+        }
+      ]
+    },
+    "cornix": {
+      "name": "Cornix",
+      "type": "telegram_signal_automation",
+      "url": "https://cornix.io",
+      "description": "Automates Telegram signal channel trades across exchanges. Tracks and verifies signal provider performance via logs.",
+      "verification_level": "log_verified",
+      "verification_method": "Cornix logs trade entries/exits from Telegram signals automatically. Performance is verifiable via Cornix dashboard.",
+      "data_quality": 7,
+      "has_public_api": false,
+      "api_notes": "No public API for leaderboard data. Cornix Pro aggregates elite channels with AI predictions.",
+      "supported_exchanges": ["Binance", "Bybit", "KuCoin", "Huobi", "OKX", "BingX", "Bitget"],
+      "metrics_tracked": ["win_rate", "total_pnl", "signal_count", "avg_return_per_trade"],
+      "fee_model": "subscription_per_channel",
+      "pricing": {"basic": "$19.99/mo", "pro": "$29.99/mo"},
+      "top_cornix_channels": [
+        {
+          "name": "WolfX Signals",
+          "win_rate": 0.9337,
+          "signals_per_week": "5-10",
+          "focus": "Crypto, Forex, Gold",
+          "cornix_support": true,
+          "pricing": "$97/mo",
+          "members": 15000,
+          "verification": "cornix_logged"
+        },
+        {
+          "name": "Crypto Whale Pumps",
+          "win_rate": 0.82,
+          "signals_per_week": "10+",
+          "focus": "CEX and DEX",
+          "cornix_support": true,
+          "pricing": "$100/mo or $1500 lifetime",
+          "members": 28000,
+          "verification": "cornix_logged"
+        },
+        {
+          "name": "CoinCodeCap Signals",
+          "win_rate": 0.80,
+          "focus": "Spot, Futures, NFT",
+          "cornix_support": true,
+          "pricing": "$499 lifetime",
+          "members": 27000,
+          "verification": "cornix_logged"
+        },
+        {
+          "name": "Sublime Traders",
+          "win_rate": 0.79,
+          "focus": "Binance, Bitmex, OKX, Bybit",
+          "cornix_support": true,
+          "pricing": "$69-$198/mo",
+          "members": 19000,
+          "verification": "cornix_logged"
+        },
+        {
+          "name": "Signals Blue",
+          "win_rate": 0.9426,
+          "win_rate_note": "94.26% on 35 signals sample (July 2025)",
+          "focus": "Binance, KuCoin, Huobi",
+          "cornix_support": true,
+          "pricing": "£229.99/mo or £899.99 lifetime",
+          "members": 25000,
+          "verification": "cornix_logged",
+          "api_available": true,
+          "api_note": "Sends signals via API to advanced users"
+        },
+        {
+          "name": "2moon Crypto Signals",
+          "win_rate": 0.95,
+          "signals_per_day": "4-9",
+          "focus": "Binance, OKX, KuCoin, Bybit",
+          "cornix_support": true,
+          "pricing": "$297-$1500 lifetime",
+          "members": 58000,
+          "verification": "unverified_claim"
+        }
+      ]
+    },
+    "cryptohopper": {
+      "name": "CryptoHopper",
+      "type": "automated_trading_marketplace",
+      "url": "https://www.cryptohopper.com",
+      "marketplace_url": "https://www.cryptohopper.com/marketplace/strategies",
+      "description": "Cloud-based crypto trading bot with strategy marketplace. AI component auto-backtests and selects best strategy.",
+      "verification_level": "backtest_verified",
+      "verification_method": "Platform vets marketplace contributors. AI backtests strategies and rates them. ROI/win rate shown on leaderboard. Caveat: backtest data may suffer overfitting or survivorship bias.",
+      "data_quality": 7,
+      "has_public_api": true,
+      "api_docs": "https://docs.cryptohopper.com",
+      "supported_exchanges": ["Binance", "Coinbase Pro", "Kraken", "Bitfinex", "Poloniex", "Huobi", "OKX", "KuCoin", "Bitvavo", "Bybit"],
+      "metrics_tracked": ["roi", "win_rate", "download_count", "risk_level"],
+      "fee_model": "strategy_purchase + subscription",
+      "pricing": {"explorer": "$0/mo", "adventurer": "$29/mo", "hero": "$69/mo"},
+      "top_strategies": [
+        {
+          "name": "Triple Screen Conservative Slow",
+          "price": "$9.99",
+          "downloads": 6344,
+          "type": "conservative_trend"
+        },
+        {
+          "name": "Bollinger + Stoch Cross Long Term",
+          "price": "Free",
+          "downloads": 4572,
+          "type": "mean_reversion"
+        },
+        {
+          "name": "Multiple TA",
+          "price": "Free",
+          "downloads": 4221,
+          "type": "multi_indicator"
+        },
+        {
+          "name": "Star Flow Trend (5-15-30)",
+          "price": "Free",
+          "downloads": 2843,
+          "type": "trend_following"
+        },
+        {
+          "name": "Bear Star",
+          "price": "$10.99",
+          "downloads": 393,
+          "type": "bearish_strategy"
+        },
+        {
+          "name": "Bull Star",
+          "price": "$17.99",
+          "downloads": 321,
+          "type": "bullish_strategy"
+        },
+        {
+          "name": "Bitcoin devil - Bull rider",
+          "price": "$99.99",
+          "downloads": 293,
+          "type": "btc_bull"
+        },
+        {
+          "name": "HIT AND RUN Premium Strategy - Wolf AI",
+          "creator": "Wolf AI",
+          "price": "$49.99",
+          "downloads": 240,
+          "type": "scalping"
+        },
+        {
+          "name": "AI Scalping Premium Strategy - Wolf AI",
+          "creator": "Wolf AI",
+          "price": "$59.99",
+          "downloads": 210,
+          "type": "ai_scalping"
+        },
+        {
+          "name": "Bitcoin devil - Bear trader",
+          "price": "$99.99",
+          "downloads": 196,
+          "type": "btc_bear"
+        },
+        {
+          "name": "Dip Raider | Pullback PREMIUM Strategy",
+          "creator": "RyzeX",
+          "price": "$29.99",
+          "downloads": 169,
+          "type": "pullback"
+        },
+        {
+          "name": "Big Whale Profit - Wolf AI",
+          "creator": "Wolf AI",
+          "price": "$49.99",
+          "downloads": 168,
+          "type": "whale_trading"
+        }
+      ]
+    },
+    "shrimpy": {
+      "name": "Shrimpy",
+      "type": "portfolio_management_social",
+      "url": "https://www.shrimpy.io",
+      "description": "Portfolio management with social trading. Copy leader strategies with automated rebalancing. Developer API for building custom tools.",
+      "verification_level": "platform_verified",
+      "verification_method": "Social leaders have transparent portfolio allocations. Automated rebalancing is verifiable via exchange connection.",
+      "data_quality": 6,
+      "has_public_api": true,
+      "api_docs": "https://developers.shrimpy.io",
+      "api_features": ["unified_exchange_api", "portfolio_rebalancing", "social_trading", "limit_orders", "market_orders", "smart_order_routing"],
+      "supported_exchanges_count": 16,
+      "supported_exchanges": ["Binance", "Coinbase Pro", "Kraken", "Bitfinex", "Poloniex", "KuCoin", "Huobi", "Bitstamp", "Bittrex", "Gemini", "OKX", "HitBTC"],
+      "metrics_tracked": ["portfolio_roi", "rebalance_frequency", "follower_count", "asset_allocation"],
+      "fee_model": "subscription",
+      "pricing": {"free": "$0/mo", "premium": "$19/mo"},
+      "security": "non_custodial",
+      "focus": "long_term_portfolio_management",
+      "risk_note": "Better for DCA/rebalancing than active signal trading"
+    },
+    "wundertrading": {
+      "name": "WunderTrading",
+      "type": "copy_trading_aggregator",
+      "url": "https://wundertrading.com",
+      "marketplace_url": "https://wundertrading.com/en/copy-trading",
+      "description": "Copy trading aggregator with scrutinized trader marketplace. Only traders with 6+ months impeccable consistency are listed.",
+      "verification_level": "platform_verified",
+      "verification_method": "Trading histories carefully scrutinized. Only traders with consistent performance over 6+ months allowed. Fully transparent trade records.",
+      "data_quality": 8,
+      "has_public_api": false,
+      "api_notes": "No public API for marketplace data. Supports exchange API connections.",
+      "supported_exchanges": ["Binance", "Bybit", "OKX", "KuCoin", "Coinbase", "Gate.io", "Bitget", "Kraken"],
+      "metrics_tracked": ["profit_volume_pct", "profit_factor", "percent_profitable", "roi", "followers", "trades", "last_trade_time"],
+      "fee_model": "subscription",
+      "pricing": {"free": "$0/mo", "basic": "$7.95/mo", "pro": "$13.95/mo", "premium": "$24.95/mo"},
+      "typical_returns": "5-20% annually (realistic expectation)",
+      "bot_returns": "12-25% annualized for top bots",
+      "selection_criteria": "6+ months consistent track record required"
+    },
+    "gate_io": {
+      "name": "Gate.io",
+      "type": "exchange_copy_trading",
+      "url": "https://www.gate.io",
+      "copy_trading_url": "https://www.gate.io/copytrading",
+      "leaderboard_url": "https://www.gate.io/copytrading/trader/s",
+      "description": "Exchange-native futures copy trading with searchable leaderboard. Traders ranked by ROI, risk score, strategy history.",
+      "verification_level": "exchange_verified",
+      "verification_method": "All trades executed on-exchange. Performance metrics derived from actual trade data. Rankings include Sharpe ratio and drawdown.",
+      "data_quality": 9,
+      "has_public_api": true,
+      "api_docs": "https://www.gate.com/docs/developers/apiv4/en/",
+      "api_notes": "REST API v4 with spot, margin, futures endpoints. Copy trading specific endpoints may require authentication. WebSocket support available.",
+      "api_base": "https://api.gateio.ws/api/v4",
+      "metrics_tracked": ["roi", "pnl", "sharpe_ratio", "max_drawdown", "risk_score", "strategy_history", "follower_count", "aum"],
+      "fee_model": "profit_share",
+      "annualized_return_claims": "Up to 3144.65% (7-day annualized, top strategy)",
+      "features": ["one_click_copy", "real_time_mirroring", "futures_copy_trading", "strategy_bot_marketplace"],
+      "strategy_bots": {
+        "url": "https://www.gate.com/strategybot",
+        "types": ["grid_bot", "smart_rebalance", "dca_bot"]
+      }
+    },
+    "bingx": {
+      "name": "BingX",
+      "type": "exchange_copy_trading",
+      "url": "https://bingx.com",
+      "leaderboard_url": "https://bingx.com/en/CopyTrading/leaderBoard",
+      "description": "Popular exchange with advanced copy trading. Features AI Arena where LLM models trade with real money. Copy Trading 2.0 launched June 2025.",
+      "verification_level": "exchange_verified",
+      "verification_method": "All trades on-exchange. Performance automatically tracked. Elite Copy Traders program with additional vetting.",
+      "data_quality": 9,
+      "has_public_api": true,
+      "api_docs": "https://bingx-api.github.io/docs/",
+      "api_features": ["perpetual_futures", "spot", "copy_trading", "account_management"],
+      "api_skill_modules": 15,
+      "metrics_tracked": ["30d_roi", "account_assets", "cumulative_pnl", "copier_profit", "risk_rating", "win_rate", "follower_count"],
+      "trader_categories": ["trending_traders", "conservative_traders", "rising_stars", "all_traders"],
+      "fee_model": "profit_share",
+      "notable_traders": [
+        {
+          "name": "LiN 0423",
+          "style": "high_roi_30d",
+          "category": "trending"
+        },
+        {
+          "name": "H&H UAE",
+          "style": "consistent_win_rate",
+          "category": "conservative"
+        },
+        {
+          "name": "favote",
+          "style": "aggressive_high_pnl",
+          "category": "trending"
+        }
+      ],
+      "ai_arena": {
+        "launched": "2025-11",
+        "description": "Live real-money battles between LLM AI trading models on copy trading",
+        "starting_capital": 10000,
+        "models": ["Claude 4.5 Sonnet", "DeepSeek V3.1 Chat", "Gemini 2.5 Pro", "GPT-5", "Grok 4", "Qwen 3 Max"],
+        "copy_enabled": true
+      },
+      "copy_trading_2_0": {
+        "launched": "2025-06",
+        "features": ["improved_risk_management", "enhanced_data_transparency", "flexible_allocation"]
+      }
+    },
+    "htx": {
+      "name": "HTX (Huobi)",
+      "type": "exchange_copy_trading",
+      "url": "https://www.htx.com",
+      "description": "Exchange with Copy Trading 4.0 (late 2025). Elite trader sentiment API provides institutional-grade data. New matching engine Q1 2026.",
+      "verification_level": "exchange_verified",
+      "verification_method": "On-exchange trade verification. Elite account/position ratios from API are real aggregated data. Copy Trading 4.0 is benchmark for human-centric trading.",
+      "data_quality": 8,
+      "has_public_api": true,
+      "api_docs": "https://huobiapi.github.io/docs/spot/v1/en",
+      "api_base": "https://api.hbdm.com",
+      "elite_sentiment_endpoints": {
+        "elite_account_ratio": "/api/v1/contract_elite_account_ratio",
+        "elite_position_ratio": "/api/v1/contract_elite_position_ratio",
+        "funding_rate": "/linear-swap-api/v1/swap_batch_funding_rate",
+        "open_interest": "/linear-swap-api/v1/swap_open_interest"
+      },
+      "metrics_tracked": ["elite_buy_ratio", "elite_sell_ratio", "locked_ratio", "trend_4h", "funding_rate", "open_interest", "roi", "total_profits", "followers_pnl"],
+      "fee_model": "profit_share",
+      "copy_trading_version": "4.0",
+      "copy_trading_4_features": ["breakout_growth", "human_centric_design", "advanced_matching_engine"],
+      "elite_data_coins": ["BTC", "ETH", "SOL", "DOGE", "XRP", "AVAX", "LINK", "ADA", "DOT", "MATIC", "NEAR", "APT", "ARB", "OP", "FIL", "LTC", "UNI", "AAVE", "INJ", "SUI"]
+    },
+    "mexc": {
+      "name": "MEXC",
+      "type": "exchange_copy_trading",
+      "url": "https://www.mexc.com",
+      "leaderboard_url": "https://www.mexc.com/futures-activity/ranking",
+      "description": "Largest copy trading pool with 21,000+ verified traders and 4,000+ markets. Over 2M positions for 50K+ investors.",
+      "verification_level": "exchange_verified",
+      "verification_method": "On-exchange trade data. ROI, PnL, win rate, drawdown displayed. Facilitates 2M+ positions.",
+      "data_quality": 8,
+      "has_public_api": true,
+      "api_docs": "https://www.mexc.com/api-docs/spot-v3/introduction",
+      "api_sdk": "https://github.com/mexcdevelop/mexc-api-sdk",
+      "api_languages": ["Python", "Java", "Node.js", "Go", ".NET"],
+      "api_notes": "No dedicated public copy trading API endpoints found. Spot/Futures API available. Broker API for institutional integration.",
+      "metrics_tracked": ["roi", "pnl", "win_rate", "max_drawdown", "follower_count", "total_trades"],
+      "trader_count": 21000,
+      "market_count": 4000,
+      "total_positions_facilitated": 2000000,
+      "total_investors": 50000,
+      "fee_model": "profit_share",
+      "profit_share_avg": 0.10,
+      "minimum_copy_amount": 10,
+      "leaderboard_categories": ["overall_ranking", "highest_roi", "highest_pnl", "most_followers"]
+    },
+    "phemex": {
+      "name": "Phemex",
+      "type": "exchange_copy_trading",
+      "url": "https://phemex.com",
+      "leaderboard_url": "https://phemex.com/copy-trading/leaderboard",
+      "description": "Advanced copy trading with risk-isolated account structure. Supports copying up to 20 traders simultaneously. Rankings updated every 5 minutes.",
+      "verification_level": "exchange_verified",
+      "verification_method": "Rankings by Realized P&L and ROI. Updated every 5 minutes. Independent account-style allocation isolates risk between copied traders.",
+      "data_quality": 8,
+      "has_public_api": true,
+      "api_docs": "https://phemex-docs.github.io/",
+      "api_github": "https://github.com/phemex/phemex-api-docs",
+      "api_base": "https://api.phemex.com",
+      "api_base_high_rate": "https://vapi.phemex.com",
+      "api_testnet": "https://testnet-api.phemex.com",
+      "api_notes": "REST + WebSocket. No dedicated copy trading leaderboard API found in public docs.",
+      "metrics_tracked": ["realized_pnl", "roi_pct", "weekly_roi", "monthly_roi", "quarterly_roi", "follower_count"],
+      "leaderboard_timeframes": ["daily", "weekly", "monthly", "quarterly"],
+      "max_simultaneous_copies": 20,
+      "fee_model": "profit_share",
+      "features": ["risk_isolated_accounts", "independent_allocation", "multi_trader_copy", "lead_trader_rewards"],
+      "lead_trader_reward": "Up to 20,000 USDT"
+    }
+  },
+  "signal_providers": [
+    {
+      "name": "CryptoNinjas Trading",
+      "type": "telegram_signal",
+      "url": "https://t.me/cryptoninjas",
+      "win_rate": 0.91,
+      "win_rate_peak": 0.9426,
+      "win_rate_note": "94.26% on 35 signals July 2025; 89% on 1200+ signals Aug 2025 - Jan 2026",
+      "roi_peak": "19,516% (July 2025)",
+      "signals_per_day": "5-10",
+      "focus": "Futures trading",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "exchange_focus": "Bitget",
+      "automation": "Bitget bot integration",
+      "cornix_support": false,
+      "pricing": {"free": true, "vip": "$99/mo"},
+      "verification": "public_pnl_sheet",
+      "verification_detail": "Public weekly P&L sheets on Telegram and X (Twitter)",
+      "data_quality": 8,
+      "active_since": "2024"
+    },
+    {
+      "name": "Evening Trader",
+      "type": "telegram_signal",
+      "win_rate": 0.92,
+      "win_rate_note": "92%+ historical, verified editorially",
+      "roi_peak": "13,000%+ P&L (Sept-Oct 2025)",
+      "signals_per_week": "40+",
+      "focus": "Spot and Futures",
+      "preferred_pairs": ["BTC", "ETH", "majors"],
+      "automation": "Manual + educational",
+      "cornix_support": false,
+      "pricing": {"free": true, "paid": "129-899 USDT"},
+      "verification": "editorial_verified",
+      "verification_detail": "NFTEvening media backing, on-chain data integration",
+      "data_quality": 7,
+      "active_since": "2024"
+    },
+    {
+      "name": "Binance Killers",
+      "type": "telegram_signal",
+      "win_rate": 0.92,
+      "roi_claim": "10,000% (2020), 900% (Aug 2023)",
+      "signals_per_day": "1-3",
+      "focus": "High-volume trading, token alerts",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "cornix_support": false,
+      "pricing": {"free": true, "vip": "$290/mo", "lifetime": "$700-$2700"},
+      "members": 250000,
+      "verification": "unverified_claim",
+      "data_quality": 5,
+      "risk_note": "Very high pricing, ROI claims unverified"
+    },
+    {
+      "name": "Fat Pig Signals",
+      "type": "telegram_signal",
+      "win_rate": 0.9170,
+      "focus": "Altcoins, DeFi",
+      "preferred_pairs": ["alts", "DeFi tokens"],
+      "analysis_type": "Volume flows, order book depth",
+      "cornix_support": false,
+      "pricing": {"quarterly": "~0.5 ETH", "range": "$1880-$4702"},
+      "members": 50000,
+      "verification": "long_term_tracking",
+      "active_since": "2017",
+      "data_quality": 7
+    },
+    {
+      "name": "Wolf of Trading",
+      "type": "telegram_signal",
+      "win_rate": 0.8125,
+      "signals_per_day": "1-3",
+      "focus": "BTC, ETH",
+      "preferred_pairs": ["BTC", "ETH"],
+      "exchange_focus": ["Binance", "Bybit"],
+      "cornix_support": false,
+      "pricing": {"free_version": true, "paid": "$149/mo", "lifetime": "$499"},
+      "members": 200000,
+      "verification": "community_based",
+      "data_quality": 5
+    },
+    {
+      "name": "WolfX Signals",
+      "type": "telegram_signal",
+      "win_rate": 0.9337,
+      "signals_per_week": "5-10",
+      "focus": "Crypto, Forex, Gold",
+      "preferred_pairs": ["BTC", "ETH", "XAU/USD", "EUR/USD"],
+      "cornix_support": true,
+      "pricing": "$97/mo",
+      "members": 15000,
+      "verification": "cornix_logged",
+      "data_quality": 7,
+      "multi_asset": true
+    },
+    {
+      "name": "Crypto Signal Farmers",
+      "type": "telegram_signal",
+      "win_rate": 0.95,
+      "signals_per_week": 30,
+      "focus": "Multi-exchange",
+      "preferred_pairs": ["BTC", "alts"],
+      "exchange_focus": ["Binance", "MEXC", "OKX", "BingX"],
+      "cornix_support": false,
+      "pricing": "Free",
+      "verification": "community_backed",
+      "data_quality": 4,
+      "risk_note": "95% claim unverified"
+    },
+    {
+      "name": "MyCryptoParadise",
+      "type": "telegram_signal",
+      "win_rate": 0.96,
+      "focus": "Multiple pairs",
+      "cornix_support": false,
+      "pricing": {"free": true, "vip": "Paid"},
+      "verification": "unverified_claim",
+      "active_since": "2016",
+      "data_quality": 4,
+      "risk_note": "96% claim unverified, active since 2016"
+    },
+    {
+      "name": "Fed Russian Insiders",
+      "type": "telegram_signal",
+      "win_rate": 0.90,
+      "signals_per_month": 250,
+      "focus": "BTC, Alts",
+      "preferred_pairs": ["BTC", "alts"],
+      "exchange_focus": ["Binance", "Bybit"],
+      "cornix_support": false,
+      "pricing": {"monthly": "$750", "lifetime": "$2200"},
+      "members": 189000,
+      "verification": "unverified_claim",
+      "data_quality": 3,
+      "risk_note": "Very high pricing, unverified claims"
+    },
+    {
+      "name": "Crypto Inner Circle",
+      "type": "telegram_signal",
+      "win_rate": 0.92,
+      "signals_per_day": "6-10",
+      "focus": "Binance Futures",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "exchange_focus": ["Binance", "Bybit", "KuCoin"],
+      "cornix_support": true,
+      "pricing": {"monthly": "$70", "lifetime": "$500"},
+      "members": 57000,
+      "verification": "unverified_claim",
+      "data_quality": 5
+    },
+    {
+      "name": "Rocket Wallet Signals",
+      "type": "telegram_signal",
+      "win_rate": 0.71,
+      "focus": "Spot and Futures",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "exchange_focus": ["Binance", "Bybit"],
+      "cornix_support": false,
+      "pricing": "$150/mo",
+      "members": 40000,
+      "verification": "honest_reporting",
+      "verification_detail": "Known for transparent win/loss reporting including losses",
+      "data_quality": 7,
+      "risk_note": "Lower claimed win rate but more honest reporting"
+    },
+    {
+      "name": "Dash 2 Trade",
+      "type": "platform_signal",
+      "url": "https://dash2trade.com",
+      "win_rate_range": [0.76, 0.82],
+      "focus": "Multi-exchange analytics",
+      "preferred_pairs": ["BTC", "ETH"],
+      "exchange_support": 6,
+      "cornix_support": true,
+      "automation": "Grid/DCA bots, TradingView integration",
+      "pricing": "$120/year",
+      "verification": "platform_analytics",
+      "data_quality": 7,
+      "features": ["backtester", "social_sentiment", "on_chain_analytics"]
+    },
+    {
+      "name": "Learn2Trade",
+      "type": "telegram_signal",
+      "win_rate": 0.79,
+      "signals_per_day": 5,
+      "focus": "Crypto, Forex",
+      "preferred_pairs": ["BTC", "ETH", "EUR/USD", "GBP/USD"],
+      "automation": "AI-driven",
+      "cornix_support": true,
+      "pricing": {"monthly": "£39", "lifetime": "£399"},
+      "members": 40000,
+      "verification": "educational_credentials",
+      "data_quality": 6,
+      "multi_asset": true
+    },
+    {
+      "name": "Signals Blue",
+      "type": "telegram_signal",
+      "win_rate": 0.81,
+      "win_rate_peak": 0.9426,
+      "win_rate_note": "94.26% accuracy on 35 signals (July 2025)",
+      "focus": "Multi-exchange",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "exchange_focus": ["Binance", "KuCoin", "Huobi"],
+      "cornix_support": true,
+      "api_available": true,
+      "api_note": "Sends signals via API to advanced users",
+      "pricing": {"monthly": "£229.99", "lifetime": "£899.99"},
+      "members": 25000,
+      "verification": "cornix_logged",
+      "data_quality": 7,
+      "active_since": "2018"
+    },
+    {
+      "name": "Crypto Rand",
+      "type": "discord_signal",
+      "win_rate": 0.78,
+      "signals_per_day": "7-10",
+      "focus": "Discord-based",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "cornix_support": false,
+      "pricing": "$200/mo",
+      "members": 30000,
+      "verification": "community_based",
+      "data_quality": 5
+    },
+    {
+      "name": "3Commas Marketplace",
+      "type": "bot_marketplace",
+      "url": "https://3commas.io/crypto-signals",
+      "win_rate": 0.78,
+      "focus": "Multi-exchange automated",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "exchange_support": 14,
+      "cornix_support": true,
+      "automation": "DCA bots, Grid bots, Signal bots",
+      "pricing": "$32/mo+",
+      "verification": "platform_verified",
+      "verification_detail": "Automatic P&L gathering by platform, not self-reported",
+      "data_quality": 8
+    },
+    {
+      "name": "Raven (Cornix Pro)",
+      "type": "cornix_ai",
+      "win_rate_note": "Feb 2026: 33 wins, 10 breakeven, 11 losses (crypto side)",
+      "calculated_win_rate": 0.61,
+      "calculated_non_loss_rate": 0.80,
+      "focus": "Multi-channel AI aggregation",
+      "preferred_pairs": ["BTC", "ETH", "alts"],
+      "cornix_support": true,
+      "verification": "cornix_verified",
+      "data_quality": 8,
+      "notes": "Consolidates multiple elite channels with AI predictions"
+    },
+    {
+      "name": "Token Metrics",
+      "type": "ai_analytics_platform",
+      "url": "https://tokenmetrics.com",
+      "focus": "AI-powered crypto signals and analytics",
+      "preferred_pairs": ["BTC", "ETH", "top 100"],
+      "automation": "API integrations",
+      "verification": "platform_analytics",
+      "data_quality": 7,
+      "features": ["ai_price_predictions", "portfolio_optimization", "trader_grades"]
+    },
+    {
+      "name": "SYGNAL.ai",
+      "type": "quant_platform",
+      "url": "https://sygnal.ai",
+      "focus": "Quant strategies with blockchain-logged track records",
+      "verification": "blockchain_verified",
+      "verification_detail": "Track records logged on blockchain for immutability",
+      "data_quality": 9,
+      "features": ["blockchain_logged_signals", "quant_strategies", "signal_packages"]
+    },
+    {
+      "name": "Onward BTC",
+      "type": "telegram_signal",
+      "win_rate_range": [0.80, 0.85],
+      "focus": "Spot and Futures",
+      "preferred_pairs": ["BTC", "ETH"],
+      "automation": "Bot included",
+      "cornix_support": false,
+      "verification": "public_performance_sheet",
+      "data_quality": 7
+    }
+  ],
+  "api_integration_summary": {
+    "fully_public_apis": [
+      {
+        "platform": "Gate.io",
+        "api_base": "https://api.gateio.ws/api/v4",
+        "docs": "https://www.gate.com/docs/developers/apiv4/en/",
+        "copy_trading_api": "requires_auth",
+        "market_data_api": "public"
+      },
+      {
+        "platform": "BingX",
+        "api_base": "https://open-api.bingx.com",
+        "docs": "https://bingx-api.github.io/docs/",
+        "copy_trading_api": "requires_auth",
+        "market_data_api": "public"
+      },
+      {
+        "platform": "HTX",
+        "api_base": "https://api.hbdm.com",
+        "docs": "https://huobiapi.github.io/docs/spot/v1/en",
+        "elite_sentiment_api": "public",
+        "elite_endpoints": [
+          "GET /api/v1/contract_elite_account_ratio",
+          "GET /api/v1/contract_elite_position_ratio"
+        ]
+      },
+      {
+        "platform": "MEXC",
+        "api_base": "https://api.mexc.com",
+        "docs": "https://www.mexc.com/api-docs/spot-v3/introduction",
+        "copy_trading_api": "not_public",
+        "market_data_api": "public"
+      },
+      {
+        "platform": "Phemex",
+        "api_base": "https://api.phemex.com",
+        "docs": "https://phemex-docs.github.io/",
+        "copy_trading_api": "not_public",
+        "market_data_api": "public"
+      },
+      {
+        "platform": "3Commas",
+        "api_base": "https://api.3commas.io",
+        "docs": "https://github.com/3commas-io/3commas-official-api-docs",
+        "marketplace_api": "requires_auth",
+        "bot_api": "requires_auth"
+      },
+      {
+        "platform": "Shrimpy",
+        "api_base": "https://dev-api.shrimpy.io",
+        "docs": "https://developers.shrimpy.io",
+        "social_trading_api": "requires_auth",
+        "unified_exchange_api": "requires_auth"
+      },
+      {
+        "platform": "CryptoHopper",
+        "api_base": "https://api.cryptohopper.com",
+        "docs": "https://docs.cryptohopper.com",
+        "marketplace_api": "partial_public"
+      }
+    ],
+    "signal_apis": [
+      {
+        "provider": "Signals Blue",
+        "type": "signal_delivery_api",
+        "description": "Sends signals via API to advanced users"
+      },
+      {
+        "provider": "Dash 2 Trade",
+        "type": "analytics_api",
+        "description": "TradingView integration, backtester API"
+      },
+      {
+        "provider": "Token Metrics",
+        "type": "analytics_api",
+        "description": "AI predictions and portfolio optimization API"
+      },
+      {
+        "provider": "SYGNAL.ai",
+        "type": "signal_api",
+        "description": "Blockchain-logged quant signals"
+      }
+    ]
+  },
+  "platform_rankings": {
+    "by_data_quality": [
+      {"platform": "Gate.io", "score": 9, "reason": "On-exchange verified, Sharpe + drawdown metrics"},
+      {"platform": "BingX", "score": 9, "reason": "On-exchange verified, AI Arena innovation"},
+      {"platform": "MEXC", "score": 8, "reason": "21K traders, 2M positions, on-exchange"},
+      {"platform": "Phemex", "score": 8, "reason": "5-min updates, risk-isolated accounts"},
+      {"platform": "HTX", "score": 8, "reason": "Elite sentiment API is institutional-grade"},
+      {"platform": "WunderTrading", "score": 8, "reason": "6-month vetting, transparent records"},
+      {"platform": "3Commas", "score": 8, "reason": "Auto P&L tracking, Sharpe classification"},
+      {"platform": "CryptoHopper", "score": 7, "reason": "AI backtesting, marketplace vetting"},
+      {"platform": "Cornix", "score": 7, "reason": "Log-verified Telegram signals"},
+      {"platform": "Shrimpy", "score": 6, "reason": "Portfolio-focused, less active signal data"}
+    ],
+    "by_api_accessibility": [
+      {"platform": "HTX", "score": 10, "reason": "Public elite sentiment endpoints, no auth needed"},
+      {"platform": "Gate.io", "score": 8, "reason": "Full REST + WebSocket API v4"},
+      {"platform": "BingX", "score": 8, "reason": "15 API skill modules"},
+      {"platform": "MEXC", "score": 7, "reason": "SDK in 5 languages"},
+      {"platform": "Phemex", "score": 7, "reason": "REST + WebSocket + testnet"},
+      {"platform": "Shrimpy", "score": 7, "reason": "Unified exchange API"},
+      {"platform": "3Commas", "score": 6, "reason": "Auth required for marketplace"},
+      {"platform": "CryptoHopper", "score": 5, "reason": "Partial public marketplace"}
+    ],
+    "by_trader_pool_size": [
+      {"platform": "MEXC", "count": 21000},
+      {"platform": "Bitget", "count": 100000, "note": "already in existing system"},
+      {"platform": "BingX", "count": "thousands", "note": "exact count not disclosed"},
+      {"platform": "Gate.io", "count": "thousands"},
+      {"platform": "Phemex", "count": "thousands"},
+      {"platform": "HTX", "count": "thousands"}
+    ]
+  },
+  "verification_tiers": {
+    "tier_1_blockchain_verified": {
+      "description": "Track records immutably logged on blockchain",
+      "providers": ["SYGNAL.ai"]
+    },
+    "tier_2_exchange_verified": {
+      "description": "All trades on-exchange, metrics from actual trade data",
+      "platforms": ["Gate.io", "BingX", "MEXC", "Phemex", "HTX", "Bitget", "Bybit", "Binance", "OKX"]
+    },
+    "tier_3_platform_verified": {
+      "description": "Platform automatically tracks P&L, providers cannot self-report",
+      "platforms": ["3Commas", "WunderTrading", "CryptoHopper", "Shrimpy"]
+    },
+    "tier_4_log_verified": {
+      "description": "Trade logs via automation tools like Cornix",
+      "platforms": ["Cornix"],
+      "providers": ["WolfX Signals", "Signals Blue", "Crypto Whale Pumps", "CoinCodeCap", "Sublime Traders"]
+    },
+    "tier_5_public_sheet": {
+      "description": "Public P&L sheets/spreadsheets, self-reported but transparent",
+      "providers": ["CryptoNinjas Trading", "Onward BTC", "Rocket Wallet Signals"]
+    },
+    "tier_6_unverified_claims": {
+      "description": "Self-reported win rates with no independent verification",
+      "providers": ["Binance Killers", "Fed Russian Insiders", "MyCryptoParadise", "Crypto Signal Farmers"],
+      "warning": "Roughly one-third of all signal groups are unreliable or fraudulent"
+    }
+  },
+  "industry_insights": {
+    "fraud_warning": "Roughly 1/3 of all signal groups are unreliable or fraudulent. Coordinated market manipulation and malware through Telegram have escalated since 2024.",
+    "realistic_returns": "5-20% annually for copy trading; 12-25% for top automated bots. Claims above 100% monthly should be viewed with extreme skepticism.",
+    "key_evaluation_criteria": [
+      "Maximum drawdown (more important than ROI)",
+      "Average position duration",
+      "Risk-reward ratio",
+      "Track record length (minimum 6 months)",
+      "Independent verification method",
+      "Number of trades (statistical significance)"
+    ],
+    "automation_trend": "35% of reviewed providers offer Cornix/bot connectivity. BingX AI Arena represents frontier of AI-powered copy trading.",
+    "data_freshness": "Most leaderboards update in real-time or every 5 minutes. Historical data typically available for 30/90/180/365 day periods."
+  }
+}

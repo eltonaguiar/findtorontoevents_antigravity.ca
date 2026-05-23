@@ -1,0 +1,35 @@
+{
+  "name": "inverse_earnings_drift",
+  "description": "Inverse of 'Earnings Drift' equity strategy. Parent has 15.8% WR, PF 0.30 on n=19. Inverse confirmed at PF 2.07 (PR #189). SHORTs speculative names (MARA, PLTR) after earnings instead of going LONG.",
+  "parent_strategy": "Earnings Drift",
+  "mutation_type": "inverse",
+  "asset_class": "EQUITY",
+  "wired_in_scanner": false,
+  "status": "awaiting_forward_test",
+  "created": "2026-04-14T07:41:00-04:00",
+  "evidence": {
+    "parent_wr": 15.8,
+    "parent_pf": 0.30,
+    "parent_n": 19,
+    "parent_sl_hit_pct": 79,
+    "inverse_theoretical_wr": 84.2,
+    "inverse_confirmed_pf": 2.07,
+    "investigation_doc": "docs/TP_POSTPROCESSOR_AND_EARNINGS_AUDIT_2026-04-14.md"
+  },
+  "config": {
+    "source_strategy_substring": "Earnings Drift",
+    "flip_direction": true,
+    "symbol_filter": {
+      "prefer_short": ["MARA", "PLTR", "OPEN", "MSTR", "CVX", "SOXX"],
+      "keep_long": ["AMD", "GOOGL", "NVDA", "MSFT"]
+    },
+    "tp_sl_from_parent": true
+  },
+  "validation_checklist": {
+    "layer_1_backtest": false,
+    "layer_2_oos": false,
+    "layer_2_5_quality_gates": false,
+    "layer_6_forward_test_n20": false,
+    "layer_6_forward_test_pf_1_5": false
+  }
+}

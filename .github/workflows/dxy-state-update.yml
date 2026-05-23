@@ -1,0 +1,88 @@
+# .github/workflows/dxy-state-update.yml
+#
+# Fetches DXY (US Dollar Index) daily and writes alpha_engine/data/dxy_state.json.
+# Used by alpha_engine/dxy_booster.py to apply USD-inverse score adjustments to
+# COMMODITY picks (M-074: WEAK=+6 LONG, STRONG=-3 LONG/+4 SHORT).
+#
+# Source: tools/dxy_state_updater.py
+# State file: alpha_engine/data/dxy_state.json
+# Consumer: alpha_engine/dxy_booster.py (called from score_booster.run_score_booster)
+#
+# Schedule: 13:30 UTC = 9:30 AM ET Mon-Fri (before NY market open).
+# Stale threshold in dxy_booster: 26h — one missed daily run is tolerated.
+
+name: DXY State Update
+
+on:
+  schedule:
+    - cron: '30 13 * * 1-5'   # 9:30 AM ET Mon-Fri
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (print state without writing file)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dxy-state-update
+  cancel-in-progress: true
+
+jobs:
+  dxy-update:
+    name: Fetch DXY and write state
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas
+
+      - name: Run DXY state updater
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python tools/dxy_state_updater.py $ARGS
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit DXY state file
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/dxy_state.json || true
+          if git diff --staged --quiet; then
+            echo "No DXY state changes to commit"
+          else
+            git commit -m "chore: dxy-state-update [skip ci]"
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash origin main \
+                && git push origin HEAD:main && break
+              echo "push retry $i failed — re-fetching"
+              sleep 7
+            done
+          fi
+
+      - name: Upload state artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dxy-state-${{ github.run_number }}
+          path: alpha_engine/data/dxy_state.json
+          if-no-files-found: warn

@@ -1,0 +1,54 @@
+[
+  {
+    "spec_id": "bond_curve_momentum_v1",
+    "asset_class": "BOND",
+    "entry": "long when 12m change in (10y - 2y) slope > 0 AND 12m realized term-premium positive",
+    "exit": "reverse on slope sign flip OR 6m hold",
+    "sizing": "risk-parity to 10% annualized vol",
+    "universe": [
+      "IEF",
+      "TLT",
+      "SHY",
+      "IEI"
+    ],
+    "regime_filter": "exclude QE/QT transition windows (Fed minutes flag)",
+    "source_refs": [
+      "https://www.aeaweb.org/articles?id=10.1257/0002828053828581"
+    ],
+    "proposed_by_engine": "textbook_seed"
+  },
+  {
+    "spec_id": "bond_tips_breakeven_mr_v1",
+    "asset_class": "BOND",
+    "entry": "long TIP / short IEF when 10y breakeven inflation < 5y rolling mean - 1\u03c3",
+    "exit": "exit when breakeven crosses 5y rolling mean OR 90d hold",
+    "sizing": "duration-neutral pair, 5% portfolio risk",
+    "universe": [
+      "TIP",
+      "IEF"
+    ],
+    "regime_filter": "skip when MOVE index > 130 (high-vol regimes break mean reversion)",
+    "source_refs": [
+      "https://doi.org/10.1111/jofi.12188"
+    ],
+    "proposed_by_engine": "textbook_seed"
+  },
+  {
+    "spec_id": "bond_ig_carry_low_vol_v1",
+    "asset_class": "BOND",
+    "entry": "long bottom-quartile 60d-vol IG bonds, short top-quartile, rebalanced monthly",
+    "exit": "monthly rebalance OR vol-quartile flip",
+    "sizing": "dollar-neutral, leverage to 8% portfolio vol",
+    "universe": [
+      "LQD",
+      "VCIT",
+      "VCSH",
+      "HYG"
+    ],
+    "regime_filter": "reduce leverage 50% when VIX > 25",
+    "source_refs": [
+      "https://doi.org/10.1016/j.jfineco.2013.10.005"
+    ],
+    "proposed_by_engine": "textbook_seed"
+  }
+]

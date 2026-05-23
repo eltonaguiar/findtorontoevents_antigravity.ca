@@ -1,0 +1,496 @@
+{
+  "research_date": "2026-03-21",
+  "purpose": "External open-source projects and APIs that produce JSON feeds of copy trader/leaderboard data on a recurring schedule. Goal: leverage these instead of building our own scrapers for hard-to-scrape platforms.",
+
+  "tier1_high_value_repos": [
+    {
+      "name": "binance-copy-trade-bot",
+      "url": "https://github.com/tpmmthomas/binance-copy-trade-bot",
+      "stars": 142,
+      "language": "Python",
+      "license": "No license (all rights reserved)",
+      "last_updated": "2026-03-20",
+      "data_provided": "Scrapes Binance Futures Leaderboard trader positions in real-time via undocumented bapi endpoints. Monitors position opens/closes for followed traders. Stores in MongoDB.",
+      "update_frequency": "Real-time (web scraping on loop)",
+      "integration_approach": "Reference their API endpoint documentation. They reverse-engineered the Binance bapi/ endpoints. Use their endpoint patterns in our own scanner. Key endpoints: /bapi/futures/v2/public/future/leaderboard/getOtherPosition, /bapi/futures/v1/public/future/leaderboard/searchLeaderboard",
+      "notes": "Most popular Binance leaderboard project. Actively maintained as of Mar 2026. Requires cookie refresh every 2-3 days for Binance API access."
+    },
+    {
+      "name": "binance-futures-bapi",
+      "url": "https://github.com/theoelsti/binance-futures-bapi",
+      "stars": 12,
+      "language": "Documentation",
+      "license": "GPL-3.0",
+      "last_updated": "2025-09-25",
+      "data_provided": "Complete API documentation for Binance Futures Leaderboard undocumented endpoints. Trader search, rankings, positions, PNL history.",
+      "update_frequency": "Documentation (not a data feed)",
+      "integration_approach": "USE AS REFERENCE for our Binance scraper. Documents all bapi endpoints that people charge $30/month for. Free documentation of the full API surface.",
+      "notes": "Pure gold — free API docs that commercial services sell. GPL-3.0 licensed."
+    },
+    {
+      "name": "hyperliquid-python-sdk (Official)",
+      "url": "https://github.com/hyperliquid-dex/hyperliquid-python-sdk",
+      "stars": 1469,
+      "language": "Python",
+      "license": "MIT",
+      "last_updated": "2026-03-21",
+      "data_provided": "Official SDK. clearinghouseState endpoint gives any user's open positions by wallet address. No auth required for read-only info endpoints. POST to https://api.hyperliquid.xyz/info with type=clearinghouseState.",
+      "update_frequency": "Real-time API (no auth needed for reads)",
+      "integration_approach": "pip install hyperliquid-python-sdk. Query top leaderboard wallets' positions directly. Combine with our _hl_deep_research.json wallet list. FREE, NO API KEY NEEDED for info endpoints.",
+      "notes": "Best data source for DeFi perp positions. Official, well-maintained, MIT licensed. 1469 stars."
+    },
+    {
+      "name": "ok24601/etoro-api",
+      "url": "https://github.com/ok24601/etoro-api",
+      "stars": 107,
+      "language": "Kotlin",
+      "license": "ISC",
+      "last_updated": "2026-02-24",
+      "data_provided": "Full eToro REST API wrapper. Can query Popular Investor portfolios, positions, watchlists. Supports IsPopularInvestor=true filter.",
+      "update_frequency": "On-demand API calls",
+      "integration_approach": "Could call from our scanner to get eToro Popular Investor positions. Requires eToro account credentials. Selenium-based auth.",
+      "notes": "Most starred eToro API project. ISC license (permissive). Requires Chrome/Selenium for auth."
+    },
+    {
+      "name": "mkhaled87/etoro-api",
+      "url": "https://github.com/mkhaled87/etoro-api",
+      "stars": 64,
+      "language": "Python",
+      "license": "No license",
+      "last_updated": "2026-02-10",
+      "data_provided": "Python API auto-generated from eToro OpenAPI specs. Access to discovery endpoint (Popular Investors), portfolio data, user trades.",
+      "update_frequency": "On-demand API calls",
+      "integration_approach": "pip install. Query Popular Investor discovery endpoint for top trader portfolios. More Pythonic than the Kotlin version.",
+      "notes": "Auto-generated from official OpenAPI spec — comprehensive coverage."
+    }
+  ],
+
+  "tier2_useful_repos": [
+    {
+      "name": "bukowa/binance-leaderboard",
+      "url": "https://github.com/bukowa/binance-leaderboard",
+      "stars": 5,
+      "language": "Python",
+      "license": "No license",
+      "last_updated": "2025-06-06",
+      "data_provided": "Was producing daily JSON dump of Binance leaderboard traders at raw.githubusercontent.com URL. Contains encryptedUid, PNL, ROI, followerCount, positionShared flag.",
+      "update_frequency": "STALE — GitHub Actions cron disabled March 2024. Last data update Jan 2024.",
+      "integration_approach": "Fork and re-enable the cron workflow. The scraping code still works. Or use their approach in our own scanner.",
+      "raw_data_url": "https://raw.githubusercontent.com/bukowa/binance-leaderboard/main/binance/traders.json (STALE - Jan 2024 data)",
+      "notes": "Good template for GitHub Actions-based leaderboard scraping. Data format matches Binance API exactly."
+    },
+    {
+      "name": "Archento/Binance-Leaderboard-Scraper",
+      "url": "https://github.com/Archento/Binance-Leaderboard-Scraper",
+      "stars": 10,
+      "language": "JavaScript",
+      "license": "Unlicense (public domain)",
+      "last_updated": "2025-03-14",
+      "data_provided": "Template bot that checks predefined traders for open positions on Binance leaderboard.",
+      "update_frequency": "On-demand",
+      "integration_approach": "Reference code for Binance leaderboard position scraping. Unlicense = free to use.",
+      "notes": "Public domain — can freely copy code."
+    },
+    {
+      "name": "Nunnito/Binance-Futures-Leaderboard-API",
+      "url": "https://github.com/Nunnito/Binance-Futures-Leaderboard-API",
+      "stars": 9,
+      "language": "Python (FastAPI)",
+      "license": "No license",
+      "last_updated": "2024-05-13",
+      "data_provided": "FastAPI wrapper around Binance leaderboard. Advanced search with filters: symbols, period, sort by PNL/ROI, USDM/COINM. Hosted on RapidAPI.",
+      "update_frequency": "API service",
+      "integration_approach": "Reference their FastAPI endpoint patterns. Or use RapidAPI if still active.",
+      "notes": "Good FastAPI reference implementation."
+    },
+    {
+      "name": "GTedZ/binance-leaderboard",
+      "url": "https://github.com/GTedZ/binance-leaderboard",
+      "stars": 3,
+      "language": "JavaScript",
+      "license": "No license",
+      "last_updated": "2025-12-24",
+      "data_provided": "JavaScript library for Binance Leaderboard API. Methods for search, positions, rankings.",
+      "update_frequency": "Library (on-demand)",
+      "integration_approach": "Reference their API method implementations.",
+      "notes": "Clean JS library. Could port to Python."
+    },
+    {
+      "name": "Leo4815162342/myfxbook-api-client",
+      "url": "https://github.com/Leo4815162342/myfxbook-api-client",
+      "stars": 20,
+      "language": "TypeScript",
+      "license": "No license",
+      "last_updated": "2025-09-21",
+      "data_provided": "MyFxBook API client. Access to: daily gains, trade history, open positions, community outlook, data-daily for any public MyFxBook account.",
+      "update_frequency": "On-demand API calls",
+      "integration_approach": "MyFxBook API is FREE and returns JSON. Endpoints: /api/get-daily-gain.json, /api/get-history.json, /api/get-community-outlook.json. No scraping needed — official API.",
+      "notes": "MyFxBook has an official free JSON API at myfxbook.com/api. Can get any public account's full trade history."
+    },
+    {
+      "name": "weirdapps/etorotrade",
+      "url": "https://github.com/weirdapps/etorotrade",
+      "stars": 30,
+      "language": "Python",
+      "license": "MIT",
+      "last_updated": "2026-03-21",
+      "data_provided": "Portfolio screener/tracker by an eToro Popular Investor. Provides BUY/SELL/HOLD analysis for positions.",
+      "update_frequency": "Active development (updated today)",
+      "integration_approach": "MIT licensed. Reference their eToro data extraction approach.",
+      "notes": "Built by an actual eToro Popular Investor. Very actively maintained."
+    },
+    {
+      "name": "hyperliquid-leaderboard-backtest",
+      "url": "https://github.com/fishmarketacad/hyperliquid-leaderboard-backtest",
+      "stars": 1,
+      "language": "Python + Node.js",
+      "license": "No license",
+      "last_updated": "2025-08-15",
+      "data_provided": "Queries top 100 Hyperliquid traders by PNL every 5 minutes. Tracks BTC/ETH positions. Includes correlation analysis of positions vs price movements.",
+      "update_frequency": "Every 5 minutes when running",
+      "integration_approach": "Reference their leaderboard query approach. They use the official Hyperliquid API. Could adapt their position tracking logic.",
+      "notes": "Interesting backtesting angle — proves whether top trader positions predict price moves."
+    },
+    {
+      "name": "penguinsolver/hyperliquid_leaderboard_tracker",
+      "url": "https://github.com/penguinsolver/hyperliquid_leaderboard_tracker",
+      "stars": 0,
+      "language": "TypeScript",
+      "license": "No license",
+      "last_updated": "2025-11-20",
+      "data_provided": "Identifies profitable traders and tracks their positions on Hyperliquid.",
+      "update_frequency": "On-demand",
+      "integration_approach": "Reference implementation for HL leaderboard tracking.",
+      "notes": "Focused specifically on identifying and tracking profitable traders."
+    }
+  ],
+
+  "tier3_official_apis_no_scraping_needed": [
+    {
+      "platform": "Hyperliquid",
+      "api_url": "https://api.hyperliquid.xyz/info",
+      "auth_required": false,
+      "documentation": "https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint",
+      "key_endpoints": [
+        "clearinghouseState — any wallet's open positions (NO AUTH)",
+        "leaderboard — top traders by PNL",
+        "userFills — trade history for any wallet"
+      ],
+      "data_format": "JSON POST requests",
+      "notes": "BEST free API. No auth, no rate limit issues reported. Can query any wallet's positions. Official SDK: hyperliquid-python-sdk (1469 stars, MIT)."
+    },
+    {
+      "platform": "MyFxBook",
+      "api_url": "https://www.myfxbook.com/api",
+      "auth_required": true,
+      "documentation": "https://www.myfxbook.com/api",
+      "key_endpoints": [
+        "/api/get-daily-gain.json — daily performance",
+        "/api/get-gain.json — overall gain",
+        "/api/get-history.json — full trade history",
+        "/api/get-community-outlook.json — community sentiment",
+        "/api/get-data-daily.json — daily stats"
+      ],
+      "data_format": "JSON (also XML available)",
+      "notes": "FREE official API. Returns JSON. Requires login (email/password), then session token. Any public account's data accessible."
+    },
+    {
+      "platform": "Bitget Copy Trading",
+      "api_url": "https://api.bitget.com",
+      "auth_required": true,
+      "documentation": "https://bitgetlimited.github.io/apidoc/en/copyTrade/",
+      "key_endpoints": [
+        "/api/mix/v1/trace/traderList — list of top traders",
+        "/api/mix/v1/trace/followerOrder — follower orders",
+        "Leaderboard updates hourly with 7d/30d/90d returns"
+      ],
+      "data_format": "JSON REST API",
+      "notes": "Official API with copy trading endpoints. Requires API key. Note: Follower API temporarily restricted per recent announcement."
+    },
+    {
+      "platform": "Bybit Copy Trading",
+      "api_url": "https://api.bybit.com",
+      "auth_required": true,
+      "documentation": "https://bybit-exchange.github.io/docs/v5/copytrade",
+      "key_endpoints": [
+        "V5 Copy Trading API — place/manage copy trades",
+        "No documented public leaderboard API (web scraping needed)"
+      ],
+      "data_format": "JSON REST API",
+      "notes": "Official API for copy trading execution, but NO public leaderboard API. Leaderboard data requires web scraping."
+    },
+    {
+      "platform": "OKX Copy Trading",
+      "api_url": "https://www.okx.com/api/v5",
+      "auth_required": true,
+      "documentation": "https://www.okx.com/docs-v5/en/",
+      "key_endpoints": [
+        "Copy trading endpoints in Broker Program API",
+        "Web3 leaderboard at web3.okx.com/copy-trade/leaderboard"
+      ],
+      "data_format": "JSON REST API",
+      "notes": "Official API mainly for execution. Leaderboard accessible via Apify scraper (epctex/okx-copytrading-scraper). OKX Broker API requires partnership."
+    },
+    {
+      "platform": "Copin.io",
+      "api_url": "https://api.copin.io",
+      "auth_required": true,
+      "documentation": "https://api-docs.copin.io/",
+      "key_endpoints": [
+        "Trader profiles across 20+ perp DEXs",
+        "Position data from GMX, dYdX, Drift, Gains, etc.",
+        "Copy trade management endpoints"
+      ],
+      "data_format": "JSON REST API",
+      "notes": "2M+ trader profiles from perpetual DEXs. Cleaned and normalized data. API key required. Best aggregator for DeFi perp trader data."
+    },
+    {
+      "platform": "ZuluTrade",
+      "api_url": "https://www.zulutrade.com/restapi-reference",
+      "auth_required": true,
+      "documentation": "https://www.zulutrade.com/restapi-reference",
+      "key_endpoints": [
+        "Account statistics for Trader accounts",
+        "Trading configuration retrieval",
+        "Strategy performance data"
+      ],
+      "data_format": "JSON REST API",
+      "notes": "Official REST API. Python wrapper: webfarmer/python-zulu-trader (2 stars). MQL5 wrapper: ZeroBetaTR/mt5-zulu-integration (12 stars)."
+    },
+    {
+      "platform": "Nansen (Hyperliquid analytics)",
+      "api_url": "https://api.nansen.ai",
+      "auth_required": true,
+      "documentation": "https://docs.nansen.ai/api/hyperliquid",
+      "key_endpoints": [
+        "/api/v1/perp-leaderboard — top traders by PNL/ROI",
+        "/api/v1/tgm/perp-pnl-leaderboard — per-contract leaderboard",
+        "Address positions with leverage and liquidation data"
+      ],
+      "data_format": "JSON REST API",
+      "notes": "Premium service. Provides enriched Hyperliquid leaderboard data with labels and analytics. Paid API key required."
+    }
+  ],
+
+  "tier4_apify_scrapers": [
+    {
+      "name": "Binance Futures Leaderboard Scraper (epctex)",
+      "url": "https://apify.com/epctex/binance-futures-leaderboard",
+      "status": "DEPRECATED",
+      "data_provided": "Trader ROI, PNL, followers, positions",
+      "notes": "Deprecated on Apify. Code still on GitHub: epctex-support/binance-futures-leaderboard-scraper"
+    },
+    {
+      "name": "Binance Futures Leaderboard Scraper (easyapi)",
+      "url": "https://apify.com/easyapi/binance-futures-leaderboard-scraper",
+      "status": "Active",
+      "data_provided": "Trader ROI, PNL, followers, social links. JSON/CSV/Excel output.",
+      "notes": "Active Apify actor. Pay-per-use Apify pricing."
+    },
+    {
+      "name": "Hyperliquid Leaderboard & Vaults Scraper",
+      "url": "https://apify.com/saswave/hyperliquid-leaderboard-vaults-scraper",
+      "status": "Active",
+      "data_provided": "Hyperliquid leaderboard + vault data",
+      "notes": "Active Apify actor. Alternative to direct API if Hyperliquid adds rate limits."
+    },
+    {
+      "name": "OKX Copytrading Scraper",
+      "url": "https://apify.com/epctex/okx-copytrading-scraper",
+      "status": "Active",
+      "data_provided": "OKX top copy trading positions with filtering",
+      "notes": "Active Apify actor for OKX leaderboard data."
+    }
+  ],
+
+  "awesome_lists_and_aggregators": [
+    {
+      "name": "Awesome-Crypto-Trading",
+      "url": "https://github.com/SpiralDevelopment/Awesome-Crypto-Trading",
+      "description": "Curated list of crypto trading resources. Includes social trading tools like Shrimpy and Cryptohopper."
+    },
+    {
+      "name": "awesome-systematic-trading",
+      "url": "https://github.com/wangzhe3224/awesome-systematic-trading",
+      "description": "Comprehensive list of systematic trading libraries. Includes Freqtrade, OctoBot (social trading), and many backtesting tools."
+    },
+    {
+      "name": "Awesome-Prediction-Market-Tools",
+      "url": "https://github.com/aarora4/Awesome-Prediction-Market-Tools",
+      "description": "Prediction market tools including copy trading aggregators for Polymarket."
+    },
+    {
+      "name": "awesome-crypto-trading-bots",
+      "url": "https://github.com/botcrypto-io/awesome-crypto-trading-bots",
+      "description": "Curated list of crypto trading bots."
+    }
+  ],
+
+  "kaggle_datasets": {
+    "status": "No specific copy trading/leaderboard datasets found on Kaggle",
+    "related_datasets": [
+      "Crypto Trading and Technical Indicators — price data with TA indicators",
+      "Top 100 Cryptocurrencies Historical Dataset — price history",
+      "BTC Trading Bot Dataset with Advanced Indicators — bot training data",
+      "Binance Cryptocurrency Trading Data — raw Binance data"
+    ],
+    "notes": "Kaggle has price/indicator data but NO trader leaderboard or copy trading performance datasets. This is a gap we could fill by publishing our own dataset."
+  },
+
+  "our_repo_data_freshness_audit": {
+    "audit_date": "2026-03-21",
+    "workflows_active": {
+      "copy-trader-intelligence.yml": {
+        "schedule": "Every 10 minutes",
+        "status": "ACTIVE (in_progress as of audit)",
+        "files_produced": "Most copy_trader_intel/data/*.json files",
+        "notes": "Recently had cancellations but is running"
+      },
+      "copytrader-tracker.yml": {
+        "schedule": "Every 30 minutes",
+        "status": "FAILING",
+        "files_produced": "Portfolio tracking data",
+        "notes": "Last 2 runs FAILED. Needs investigation."
+      },
+      "cross-aggregator.yml": {
+        "schedule": "Every ~20 minutes",
+        "status": "ACTIVE (success)",
+        "files_produced": "Cross-system consensus picks",
+        "notes": "Running successfully every cycle"
+      },
+      "multi-asset-scanner.yml": {
+        "schedule": "Every 30 minutes",
+        "status": "ACTIVE (success)",
+        "files_produced": "multi_asset_picks.json, forex/futures/stocks/commodity picks",
+        "notes": "v2 rebuild — working well"
+      }
+    },
+    "empty_data_files_need_fixing": [
+      {
+        "file": "bingx_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "BingX scraper producing no data. Platform may have changed API or blocked scraping.",
+        "recommendation": "BingX has no official copy trading API. Consider removing or using Apify scraper."
+      },
+      {
+        "file": "copin_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "Copin scraper producing no picks. Copin.io has an official API now.",
+        "recommendation": "Switch to Copin.io official API (api-docs.copin.io). They have 2M+ trader profiles."
+      },
+      {
+        "file": "dydx_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "dYdX scraper producing no data. dYdX v4 moved to Cosmos chain.",
+        "recommendation": "Use Copin.io API which aggregates dYdX data, or query dYdX v4 indexer API directly."
+      },
+      {
+        "file": "gains_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "Gains Network scraper producing no data.",
+        "recommendation": "Use Copin.io API which aggregates Gains Network data."
+      },
+      {
+        "file": "gate_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "Gate.io scraper producing no data.",
+        "recommendation": "Gate.io has limited copy trading API. Low priority — focus on bigger platforms."
+      },
+      {
+        "file": "nansen_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "Nansen scraper producing no data. Nansen requires paid API key.",
+        "recommendation": "Skip unless we get Nansen API key. Use free Hyperliquid API instead for similar data."
+      },
+      {
+        "file": "variation_active_picks.json",
+        "size_bytes": 2,
+        "content": "[]",
+        "problem": "Variation strategy producing no active picks currently.",
+        "recommendation": "Normal — may just have no qualifying picks right now."
+      }
+    ],
+    "healthy_data_files": [
+      "active_picks.json (124KB, updated 05:55 UTC)",
+      "binance_picks.json (24KB, updated 05:55 UTC)",
+      "bitget_picks.json (30KB, updated 05:55 UTC)",
+      "bybit_picks.json (15KB, updated 05:55 UTC)",
+      "okx_picks.json (200KB, updated 05:55 UTC — LARGEST)",
+      "drift_picks.json (21KB, updated 05:55 UTC)",
+      "dune_picks.json (36KB, updated 05:55 UTC)",
+      "coinglass_picks.json (15KB, updated 05:55 UTC)",
+      "gmx_picks.json (4KB, updated 05:55 UTC)",
+      "htx_picks.json (18KB, updated 05:55 UTC)",
+      "dex_picks.json (3KB, updated 05:55 UTC)",
+      "okx_futures_picks.json (8KB, updated 05:55 UTC)",
+      "multi_asset_picks.json (84KB, updated 10:07 UTC)",
+      "leaderboard.json (62KB, updated 05:56 UTC)",
+      "trader_profiles.json (522KB, updated 05:55 UTC)"
+    ]
+  },
+
+  "recommendations": {
+    "immediate_wins": [
+      {
+        "action": "Integrate Hyperliquid official API (NO AUTH NEEDED)",
+        "effort": "Low",
+        "value": "High",
+        "details": "Use hyperliquid-python-sdk to query top leaderboard wallet positions. No API key needed. Free and official. We already have _hl_deep_research.json with wallet addresses."
+      },
+      {
+        "action": "Use binance-futures-bapi documentation to fix/enhance our Binance scraper",
+        "effort": "Low",
+        "value": "High",
+        "details": "theoelsti/binance-futures-bapi has complete docs for all undocumented Binance leaderboard endpoints. Reference: GET /bapi/futures/v2/public/future/leaderboard/getOtherPosition"
+      },
+      {
+        "action": "Add MyFxBook API for forex trader data",
+        "effort": "Low",
+        "value": "Medium",
+        "details": "MyFxBook has a FREE official JSON API. Can get any public account's full trade history, daily gains, community outlook. No scraping needed."
+      }
+    ],
+    "medium_term": [
+      {
+        "action": "Integrate Copin.io API for DeFi perp data (dYdX, Gains, GMX, etc.)",
+        "effort": "Medium",
+        "value": "High",
+        "details": "Would fix 3 empty data files (copin_picks, dydx_picks, gains_picks). Copin has 2M+ trader profiles from 20+ perp DEXs. Requires API key."
+      },
+      {
+        "action": "Add eToro Popular Investor data via mkhaled87/etoro-api",
+        "effort": "Medium",
+        "value": "Medium",
+        "details": "Python API for eToro. Could add a new asset class (stock/ETF copy traders) to our multi-asset scanner."
+      },
+      {
+        "action": "Fix copytrader-tracker.yml failures",
+        "effort": "Low",
+        "value": "Medium",
+        "details": "Workflow is failing consistently. Investigate and fix — it's supposed to track portfolio performance."
+      }
+    ],
+    "low_priority": [
+      {
+        "action": "ZuluTrade API integration for forex signals",
+        "effort": "Medium",
+        "value": "Low",
+        "details": "Official REST API available. Python wrapper exists but dated."
+      },
+      {
+        "action": "Publish our trader leaderboard data as a Kaggle dataset",
+        "effort": "Low",
+        "value": "Low (community building)",
+        "details": "No copy trading datasets exist on Kaggle. We could be the first to publish one."
+      }
+    ]
+  },
+
+  "key_finding": "The biggest gap in the ecosystem is that NO open-source project produces a regularly-updated JSON feed of multi-exchange copy trader data. Individual platform scrapers exist but are fragmented. Our copy_trader_intel system is actually one of the most comprehensive aggregators — the main improvement opportunity is (1) using official free APIs where available (Hyperliquid, MyFxBook) instead of fragile scraping, and (2) integrating Copin.io API to fix 3 empty data sources."
+}

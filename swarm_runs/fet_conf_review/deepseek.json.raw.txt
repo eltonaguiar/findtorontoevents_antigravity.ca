@@ -1,0 +1,29 @@
+```json
+{
+  "engine": "second_opinion_engine_4",
+  "finding_1_verdict": "caveats",
+  "finding_1_concerns": [
+    "Dedup-by-exit-date is a valid correction for daily-firing strategies where multiple positions share the same exit event, but it may over-correct if the strategy intentionally uses multiple entries at different times that happen to exit on the same day (e.g., scaling in/out). The 10 identical pnl_pct values on 2026-03-25 strongly suggest a single market event, so dedup is appropriate there.",
+    "However, the dedup reduces n from 44 to 20, which is a 55% reduction. This is extreme and suggests the raw stats were heavily inflated by repeated entries. The cross-check on INJUSDT and DYDXUSDT shows smaller reductions (still strong PF), which supports that FETUSDT is uniquely degenerate.",
+    "Alternative: dedup by (symbol, exit_date, pnl_pct) triple to catch only identical returns, but the current method is reasonable for this case. Recommend also checking entry_date clustering to confirm the 10 identical exits came from distinct entry dates (if they were all entered same day, it's even worse).",
+    "The claim that FETUSDT is 'NOT a buried elite' is supported by the dedup, but the dedup methodology should be documented as a standard filter for daily-firing strategies to avoid cherry-picking."
+  ],
+  "finding_1_recommended_action": "retract_promotion",
+  "finding_2_verdict": "agree",
+  "finding_2_concerns": [
+    "The +18 bonus on [0.75, 0.80) is clearly harmful: 38.7% WR and negative avg PnL. The evidence from closed_picks.json (n=93) is statistically significant and contradicts the claimed '~86% WR' from Perplexity Comet.",
+    "The inversion (higher bonus for worse band) is a systematic error that will degrade portfolio performance by overweighting losing picks.",
+    "The bonus is isolated to score computation in template.html:9239 and the breakdown.conf_sweet_spot variable. No evidence of other code paths depending on this bonus (e.g., strategy gates use raw confidence, not score). However, check if any downstream ranking or allocation logic uses the score directly—if so, removal will shift rankings.",
+    "The +12 bonus on [0.80, 0.85) at line 9241 is correct and should remain."
+  ],
+  "finding_2_recommended_action": "remove_+18_bonus",
+  "regression_risks": [
+    "Removing the +18 bonus may cause picks in [0.75, 0.80) to drop in score relative to other bands, potentially changing which picks get executed if there's a score threshold for trading. Verify that no strategy gate uses a score cutoff that would exclude picks that were previously boosted into range.",
+    "The breakdown.conf_sweet_spot variable (likely in a JavaScript or Python scoring module) may need to be zeroed or removed to avoid stale references. Check for any unit tests or assertions that expect the old bonus value.",
+    "If the +18 bonus was also applied in any backtesting or simulation code (not just the dashboard), those paths must be updated too. Search for 'conf_sweet_spot' or '0.75' in all source files.",
+    "No other regression risks identified—this is a localized score adjustment."
+  ],
+  "confidence": 0.92,
+  "notes": "Finding 1: The dedup methodology is sound for this specific case, but I recommend adding a concentration-weighting alternative (e.g., weight each pick by 1/(number of same-exit-date picks)) to preserve sample size while correcting for event duplication. This would give n=44 but with weights summing to 20, yielding a more nuanced PF. Finding 2: The +18 bonus is a clear bug. Remove it immediately. The 0/11 prior verification record makes me trust your evidence more, but I still double-checked the closed_picks.json numbers against the band definitions—they match. The only caveat is whether the 93 picks in [0.75, 0.80) include any from the degenerate 1-pick [0.90, 1.0) band misclassified; but that's unlikely given the sample size."
+}
+```

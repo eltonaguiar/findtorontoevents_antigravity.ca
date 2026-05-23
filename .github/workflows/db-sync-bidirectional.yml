@@ -1,0 +1,522 @@
+# Bi-directional sync of USER-DATA tables between findtorontoevents.ca and torontoevent.net.
+# Content/system tables (events, news, deals, etc.) stay on the existing one-way sync.
+#
+# Flow:
+#   1. Deploy sync scripts to both sites
+#   2. Run ensure_sync_tables on both (create changelog/conflicts/config tables)
+#   3. Export unsynced changelog from Site A, apply to Site B
+#   4. Export unsynced changelog from Site B, apply to Site A
+#   5. Mark applied entries as synced on both sides
+#   6. Prune old synced entries
+#   7. Report & clean up temp scripts
+name: "DB Sync: Bi-directional User Data"
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # Daily at 8:00 AM UTC (2 hours after mirror sync at 6 AM)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual changes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: read
+
+env:
+  SYNC_SCRIPT_DIR: "_sync_tmp"
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+jobs:
+  bidirectional-sync:
+    name: "Bi-directional user data sync"
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: sudo apt-get install -y lftp
+
+      #  Deploy sync scripts to SOURCE (findtorontoevents.ca) 
+      - name: Deploy sync scripts to findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          DB_CREDENTIALS_JSON: ${{ secrets.FINDTORONTOEVENTS_DB_CREDENTIALS }}
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          mkdir -p /tmp/sync_deploy_src
+
+          # Prepare scripts with credentials injected
+          python3 - <<'PYEOF'
+          import os, glob, json
+
+          token = os.environ.get('DB_SCRIPT_TOKEN', '')
+          db_creds = os.environ.get('DB_CREDENTIALS_JSON', '{}')
+
+          try:
+              creds = json.loads(db_creds)
+          except:
+              creds = {}
+
+          # Use favcreators credentials as default
+          fc_creds = creds.get('ejaguiar1_favcreators', ['ejaguiar1_favcreators', ''])
+          db_user = fc_creds[0]
+          db_pass = fc_creds[1]
+
+          # Build PHP array literal for per-DB credential map
+          cred_map_parts = []
+          for dbname, dbcreds in creds.items():
+              u = dbcreds[0].replace("'", "\\'")
+              p = dbcreds[1].replace("'", "\\'")
+              cred_map_parts.append(f"'{dbname}' => array('{u}', '{p}')")
+          cred_map_php = 'array(' + ', '.join(cred_map_parts) + ')' if cred_map_parts else 'array()'
+
+          src_dir = 'scripts/sync'
+          dst_dir = '/tmp/sync_deploy_src'
+
+          for php_file in glob.glob(f'{src_dir}/*.php'):
+              with open(php_file, 'r') as f:
+                  content = f.read()
+
+              content = content.replace('SYNC_TOKEN_PLACEHOLDER', token)
+              content = content.replace('DB_USER_PLACEHOLDER', db_user)
+              content = content.replace('DB_PASS_PLACEHOLDER', db_pass)
+              content = content.replace('array(); // SYNC_DB_CRED_MAP', cred_map_php + '; // SYNC_DB_CRED_MAP')
+
+              basename = os.path.basename(php_file)
+              out_path = f'{dst_dir}/{basename}'
+              with open(out_path, 'w') as f:
+                  f.write(content)
+              print(f"  Prepared: {basename}")
+
+          print(f" {len(glob.glob(f'{dst_dir}/*.php'))} scripts prepared for source")
+          PYEOF
+
+          # Upload to source server
+          cat > /tmp/lftp_src.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd /findtorontoevents.ca
+          mkdir -p $SYNC_SCRIPT_DIR
+          lcd /tmp/sync_deploy_src
+          mput -O $SYNC_SCRIPT_DIR *.php
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_src.script
+          echo " Sync scripts deployed to findtorontoevents.ca/$SYNC_SCRIPT_DIR/"
+
+      #  Deploy sync scripts to TARGET (torontoevent.net) 
+      - name: Deploy sync scripts to torontoevent.net
+        env:
+          DST_FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+          DST_DB_USER: ${{ secrets.TORONTOEVENT_DB_USER }}
+          DST_DB_PASS: ${{ secrets.TORONTOEVENT_DB_PASS }}
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          mkdir -p /tmp/sync_deploy_dst
+
+          python3 - <<'PYEOF'
+          import os, glob
+
+          token   = os.environ.get('DB_SCRIPT_TOKEN', '')
+          db_user = os.environ.get('DST_DB_USER', 'admin')
+          db_pass = os.environ.get('DST_DB_PASS', '')
+
+          # GoDaddy uses a single admin user for all DBs -- cred map stays empty
+          src_dir = 'scripts/sync'
+          dst_dir = '/tmp/sync_deploy_dst'
+
+          for php_file in glob.glob(f'{src_dir}/*.php'):
+              with open(php_file, 'r') as f:
+                  content = f.read()
+
+              content = content.replace('SYNC_TOKEN_PLACEHOLDER', token)
+              content = content.replace('DB_USER_PLACEHOLDER', db_user)
+              content = content.replace('DB_PASS_PLACEHOLDER', db_pass)
+
+              basename = os.path.basename(php_file)
+              out_path = f'{dst_dir}/{basename}'
+              with open(out_path, 'w') as f:
+                  f.write(content)
+              print(f"  Prepared: {basename}")
+
+          print(f" {len(glob.glob(f'{dst_dir}/*.php'))} scripts prepared for target")
+          PYEOF
+
+          cat > /tmp/lftp_dst.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$DST_FTP_USER","$DST_FTP_PASS" "$DST_FTP_HOST"
+          mkdir -p $SYNC_SCRIPT_DIR
+          lcd /tmp/sync_deploy_dst
+          mput -O $SYNC_SCRIPT_DIR *.php
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_dst.script
+          echo " Sync scripts deployed to torontoevent.net/$SYNC_SCRIPT_DIR/"
+
+      #  Ensure sync tables exist on both sites 
+      - name: Ensure sync tables on both sites
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          echo " Setting up sync tables..."
+
+          python3 - <<'PYEOF'
+          import urllib.request, json, time
+
+          token = __import__('os').environ.get('DB_SCRIPT_TOKEN', '')
+          dry = '1' if __import__('os').environ.get('DRY_RUN', 'false') == 'true' else '0'
+
+          sites = [
+              ('findtorontoevents.ca', f'https://findtorontoevents.ca/_sync_tmp/ensure_sync_tables.php?token={token}&db=ALL&dry_run={dry}'),
+              ('torontoevent.net', f'https://torontoevent.net/_sync_tmp/ensure_sync_tables.php?token={token}&db=ALL&dry_run={dry}'),
+          ]
+
+          for name, url in sites:
+              print(f"\n {name}:")
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(url)
+                      req.add_header('User-Agent', 'GitHub-Actions-BiSync/1.0')
+                      with urllib.request.urlopen(req, timeout=60) as resp:
+                          data = json.loads(resp.read())
+                      print(json.dumps(data, indent=2))
+                      break
+                  except Exception as e:
+                      print(f"  Attempt {attempt+1} failed: {e}")
+                      if attempt == 2:
+                          print(f"   Could not set up tables on {name}")
+                      else:
+                          time.sleep(5)
+          PYEOF
+
+      #  Bi-directional sync: A  B 
+      - name: Sync findtorontoevents.ca  torontoevent.net
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import urllib.request, json, os, time
+
+          token = os.environ.get('DB_SCRIPT_TOKEN', '')
+          dry = os.environ.get('DRY_RUN', 'false') == 'true'
+          dry_param = '1' if dry else '0'
+
+          databases = ['ejaguiar1_favcreators', 'ejaguiar1_tvmoviestrailers']
+          source_base = 'https://findtorontoevents.ca/_sync_tmp'
+          dest_base   = 'https://torontoevent.net/_sync_tmp'
+
+          for dbname in databases:
+              print(f"\n{'='*60}")
+              print(f"Syncing {dbname}: findtorontoevents.ca  torontoevent.net")
+              print(f"{'='*60}")
+
+              # Step 1: Export unsynced from source
+              export_url = f'{source_base}/db_sync_export.php?token={token}&db={dbname}&dest=torontoevent.net&limit=1000&dry_run={dry_param}'
+              entries = []
+              source_row_counts = {}
+
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(export_url)
+                      req.add_header('User-Agent', 'GitHub-Actions-BiSync/1.0')
+                      with urllib.request.urlopen(req, timeout=120) as resp:
+                          export_data = json.loads(resp.read())
+                      entries = export_data.get('entries', [])
+                      source_row_counts = export_data.get('row_counts', {})
+                      print(f"  Exported: {len(entries)} entries (total unsynced: {export_data.get('total_unsynced', 0)})")
+                      break
+                  except Exception as e:
+                      print(f"  Export attempt {attempt+1} failed: {e}")
+                      if attempt < 2:
+                          time.sleep(10)
+
+              if len(entries) == 0:
+                  print(f"  No entries to sync for {dbname}")
+                  continue
+
+              # Step 2: Apply to destination in chunks (GoDaddy has ~1MB POST limit)
+              CHUNK_SIZE = 25
+              apply_url = f'{dest_base}/db_sync_apply.php'
+              applied_ids = []
+              total_applied = 0
+              total_skipped = 0
+              total_conflicts = 0
+              total_errors = 0
+
+              chunks = [entries[i:i+CHUNK_SIZE] for i in range(0, len(entries), CHUNK_SIZE)]
+              print(f"  Applying in {len(chunks)} chunk(s) of up to {CHUNK_SIZE} entries each...")
+
+              for ci, chunk in enumerate(chunks):
+                  apply_payload = json.dumps({
+                      'token': token,
+                      'db': dbname,
+                      'source_site': 'findtorontoevents.ca',
+                      'source_row_counts': source_row_counts,
+                      'entries': chunk,
+                      'dry_run': dry,
+                  }).encode('utf-8')
+
+                  for attempt in range(3):
+                      try:
+                          req = urllib.request.Request(apply_url, data=apply_payload, headers={
+                              'Content-Type': 'application/json',
+                              'User-Agent': 'GitHub-Actions-BiSync/1.0',
+                          })
+                          with urllib.request.urlopen(req, timeout=120) as resp:
+                              apply_data = json.loads(resp.read())
+                          stats = apply_data.get('stats', {})
+                          chunk_ids = apply_data.get('applied_ids', [])
+                          applied_ids.extend(chunk_ids)
+                          total_applied += stats.get('applied', 0)
+                          total_skipped += stats.get('skipped', 0)
+                          total_conflicts += stats.get('conflicts', 0)
+                          total_errors += stats.get('errors', 0)
+                          if apply_data.get('safeguard_warnings'):
+                              for w in apply_data['safeguard_warnings']:
+                                  print(f"   SAFEGUARD: {w}")
+                          if apply_data.get('conflict_details'):
+                              for c in apply_data['conflict_details']:
+                                  print(f"   CONFLICT: {c}")
+                          break
+                      except Exception as e:
+                          print(f"  Chunk {ci+1}/{len(chunks)} attempt {attempt+1} failed: {e}")
+                          if attempt < 2:
+                              time.sleep(10)
+
+              print(f"  Applied: {total_applied}, Skipped: {total_skipped}, "
+                    f"Conflicts: {total_conflicts}, Errors: {total_errors}")
+
+              # Step 3: Mark as synced on source
+              if len(applied_ids) > 0 and not dry:
+                  mark_payload = json.dumps({
+                      'token': token,
+                      'db': dbname,
+                      'dest': 'torontoevent.net',
+                      'entry_ids': applied_ids,
+                  }).encode('utf-8')
+
+                  mark_url = f'{source_base}/db_sync_mark.php'
+                  try:
+                      req = urllib.request.Request(mark_url, data=mark_payload, headers={
+                          'Content-Type': 'application/json',
+                          'User-Agent': 'GitHub-Actions-BiSync/1.0',
+                      })
+                      with urllib.request.urlopen(req, timeout=60) as resp:
+                          mark_data = json.loads(resp.read())
+                      print(f"  Marked {mark_data.get('marked', 0)} entries as synced on source")
+                  except Exception as e:
+                      print(f"   Mark-synced failed: {e}")
+
+          print("\n A  B sync complete")
+          PYEOF
+
+      #  Bi-directional sync: B  A 
+      - name: Sync torontoevent.net  findtorontoevents.ca
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import urllib.request, json, os, time
+
+          token = os.environ.get('DB_SCRIPT_TOKEN', '')
+          dry = os.environ.get('DRY_RUN', 'false') == 'true'
+          dry_param = '1' if dry else '0'
+
+          databases = ['ejaguiar1_favcreators', 'ejaguiar1_tvmoviestrailers']
+          source_base = 'https://torontoevent.net/_sync_tmp'
+          dest_base   = 'https://findtorontoevents.ca/_sync_tmp'
+
+          for dbname in databases:
+              print(f"\n{'='*60}")
+              print(f"Syncing {dbname}: torontoevent.net  findtorontoevents.ca")
+              print(f"{'='*60}")
+
+              export_url = f'{source_base}/db_sync_export.php?token={token}&db={dbname}&dest=findtorontoevents.ca&limit=1000&dry_run={dry_param}'
+              entries = []
+              source_row_counts = {}
+
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(export_url)
+                      req.add_header('User-Agent', 'GitHub-Actions-BiSync/1.0')
+                      with urllib.request.urlopen(req, timeout=120) as resp:
+                          export_data = json.loads(resp.read())
+                      entries = export_data.get('entries', [])
+                      source_row_counts = export_data.get('row_counts', {})
+                      print(f"  Exported: {len(entries)} entries (total unsynced: {export_data.get('total_unsynced', 0)})")
+                      break
+                  except Exception as e:
+                      print(f"  Export attempt {attempt+1} failed: {e}")
+                      if attempt < 2:
+                          time.sleep(10)
+
+              if len(entries) == 0:
+                  print(f"  No entries to sync for {dbname}")
+                  continue
+
+              # Step 2: Apply to destination in chunks (avoid POST size limits)
+              CHUNK_SIZE = 25
+              apply_url = f'{dest_base}/db_sync_apply.php'
+              applied_ids = []
+              total_applied = 0
+              total_skipped = 0
+              total_conflicts = 0
+              total_errors = 0
+
+              chunks = [entries[i:i+CHUNK_SIZE] for i in range(0, len(entries), CHUNK_SIZE)]
+              print(f"  Applying in {len(chunks)} chunk(s) of up to {CHUNK_SIZE} entries each...")
+
+              for ci, chunk in enumerate(chunks):
+                  apply_payload = json.dumps({
+                      'token': token,
+                      'db': dbname,
+                      'source_site': 'torontoevent.net',
+                      'source_row_counts': source_row_counts,
+                      'entries': chunk,
+                      'dry_run': dry,
+                  }).encode('utf-8')
+
+                  for attempt in range(3):
+                      try:
+                          req = urllib.request.Request(apply_url, data=apply_payload, headers={
+                              'Content-Type': 'application/json',
+                              'User-Agent': 'GitHub-Actions-BiSync/1.0',
+                          })
+                          with urllib.request.urlopen(req, timeout=120) as resp:
+                              apply_data = json.loads(resp.read())
+                          stats = apply_data.get('stats', {})
+                          chunk_ids = apply_data.get('applied_ids', [])
+                          applied_ids.extend(chunk_ids)
+                          total_applied += stats.get('applied', 0)
+                          total_skipped += stats.get('skipped', 0)
+                          total_conflicts += stats.get('conflicts', 0)
+                          total_errors += stats.get('errors', 0)
+                          if apply_data.get('safeguard_warnings'):
+                              for w in apply_data['safeguard_warnings']:
+                                  print(f"   SAFEGUARD: {w}")
+                          if apply_data.get('conflict_details'):
+                              for c in apply_data['conflict_details']:
+                                  print(f"   CONFLICT: {c}")
+                          break
+                      except Exception as e:
+                          print(f"  Chunk {ci+1}/{len(chunks)} attempt {attempt+1} failed: {e}")
+                          if attempt < 2:
+                              time.sleep(10)
+
+              print(f"  Applied: {total_applied}, Skipped: {total_skipped}, "
+                    f"Conflicts: {total_conflicts}, Errors: {total_errors}")
+
+              if len(applied_ids) > 0 and not dry:
+                  mark_payload = json.dumps({
+                      'token': token,
+                      'db': dbname,
+                      'dest': 'findtorontoevents.ca',
+                      'entry_ids': applied_ids,
+                  }).encode('utf-8')
+
+                  mark_url = f'{source_base}/db_sync_mark.php'
+                  try:
+                      req = urllib.request.Request(mark_url, data=mark_payload, headers={
+                          'Content-Type': 'application/json',
+                          'User-Agent': 'GitHub-Actions-BiSync/1.0',
+                      })
+                      with urllib.request.urlopen(req, timeout=60) as resp:
+                          mark_data = json.loads(resp.read())
+                      print(f"  Marked {mark_data.get('marked', 0)} entries as synced on source")
+                  except Exception as e:
+                      print(f"   Mark-synced failed: {e}")
+
+          print("\n B  A sync complete")
+          PYEOF
+
+      #  Prune old changelog entries 
+      - name: Prune old changelog entries
+        env:
+          DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import urllib.request, json, os
+
+          token = os.environ.get('DB_SCRIPT_TOKEN', '')
+          dry = '1' if os.environ.get('DRY_RUN', 'false') == 'true' else '0'
+
+          sites = [
+              ('findtorontoevents.ca', f'https://findtorontoevents.ca/_sync_tmp/db_sync_prune.php?token={token}&db=ALL&dry_run={dry}'),
+              ('torontoevent.net', f'https://torontoevent.net/_sync_tmp/db_sync_prune.php?token={token}&db=ALL&dry_run={dry}'),
+          ]
+
+          for name, url in sites:
+              try:
+                  req = urllib.request.Request(url, headers={'User-Agent': 'GitHub-Actions-BiSync/1.0'})
+                  with urllib.request.urlopen(req, timeout=60) as resp:
+                      data = json.loads(resp.read())
+                  for r in data.get('results', []):
+                      print(f"  {name}/{r.get('db')}: total={r.get('total')}, pruned={r.get('deleted')}")
+              except Exception as e:
+                  print(f"   Prune {name} failed: {e}")
+          PYEOF
+
+      #  Clean up temp sync scripts 
+      - name: Clean up temp scripts
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          DST_FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          echo " Cleaning up sync scripts..."
+
+          cat > /tmp/lftp_clean_src.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          cd /findtorontoevents.ca
+          rm -rf $SYNC_SCRIPT_DIR
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_clean_src.script 2>/dev/null || echo " Source cleanup attempted"
+
+          cat > /tmp/lftp_clean_dst.script << LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          open -u "$DST_FTP_USER","$DST_FTP_PASS" "$DST_FTP_HOST"
+          rm -rf $SYNC_SCRIPT_DIR
+          quit
+          LFTPEOF
+          lftp -f /tmp/lftp_clean_dst.script 2>/dev/null || echo " Target cleanup attempted"
+
+          echo " Cleanup complete"
+
+      #  Summary 
+      - name: Summary
+        if: always()
+        run: |
+          echo "##  Bi-directional User Data Sync" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Sites** | findtorontoevents.ca  torontoevent.net |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Databases** | ejaguiar1_favcreators, ejaguiar1_tvmoviestrailers |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Mode** | ${{ env.DRY_RUN == 'true' && 'DRY RUN' || 'LIVE' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Run time** | $(date -u '+%Y-%m-%d %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Sync covers user tables only. Content tables use the existing one-way sync (db-sync-to-mirror.yml)." >> $GITHUB_STEP_SUMMARY
+

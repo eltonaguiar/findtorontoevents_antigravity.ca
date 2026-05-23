@@ -1,0 +1,15 @@
+# Fast-cheap preset: cerebras + deepseek. Sub-cent per run for quick
+# checks where you don't need cross-vendor diversity. No red-team
+# (it'd cost more than the swarm itself).
+#
+# Run:
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/preset_fast_cheap.yaml
+
+name: fast-cheap-quickcheck
+prompt_file: swarm_runs/briefing_asset_class_audit.md
+preset: fast-cheap
+out_dir: swarm_runs/fastcheap_${TS}
+max_parallel: 2
+json_strict: false
+red_team: false
+cost_cap_usd: 0.25

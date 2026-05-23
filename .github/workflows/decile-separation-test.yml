@@ -1,0 +1,50 @@
+name: Decile Separation Test
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: decile-separation-test
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  decile-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run decile separation test
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python alpha_engine/decile_separation_test.py alpha_engine/data/closed_picks.json
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          cd alpha_engine
+          if git diff --quiet data/decile_test.json 2>/dev/null; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/decile_test.json
+          git commit -m "Auto-update decile separation test $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+          cd ..
+          bash .github/scripts/safe_push.sh
+

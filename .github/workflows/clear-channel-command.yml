@@ -1,0 +1,62 @@
+name: Clear Channel Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Channel to clear (master_picks, freshpicks, etc.)'
+        required: true
+        default: 'freshpicks'
+        type: choice
+        options:
+          - master_picks
+          - freshpicks
+          - general
+          - notifications
+          - sandbox
+      limit:
+        description: 'Max messages to delete (1-100)'
+        required: false
+        default: '100'
+        type: string
+
+env:
+  PYTHONUNBUFFERED: 1
+  SKIP_CONFIRM: true
+
+jobs:
+  clear-channel:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests
+      
+      - name: Clear Channel
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
+          DISCORD_FRESHPICKS: ${{ secrets.DISCORD_FRESHPICKS }}
+          DISCORD_GENERAL: ${{ secrets.DISCORD_GENERAL }}
+          DISCORD_NOTIFICATIONS: ${{ secrets.DISCORD_NOTIFICATIONS }}
+          DISCORD_SANDBOX: ${{ secrets.DISCORD_SANDBOX }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python signal_aggregator/clear_channel_command.py ${{ github.event.inputs.channel }} ${{ github.event.inputs.limit || '100' }}
+      
+      - name: Log result
+        if: always()
+        run: |
+          echo "Clear channel command completed at $(date -u +"%Y-%m-%d %H:%M UTC")"
+

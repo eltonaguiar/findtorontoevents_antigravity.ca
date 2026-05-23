@@ -1,0 +1,58 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "EURGBP_Carry",
+      "thesis": "Exploiting interest rate differentials between EUR and GBP to generate positive edge",
+      "signal_construction": "Long EURGBP when 10-year EUR bond yield is greater than 10-year GBP bond yield, short otherwise",
+      "universe": ["EURGBP=X"],
+      "expected_pf": 2.2,
+      "expected_sharpe": 1.5,
+      "expected_mdd_pct": 10,
+      "differentiation_from_existing": "Uses interest rate differentials to inform trading decisions, unlike multi_asset_copytrader",
+      "implementation_hours": 20,
+      "wire_target": "alpha_engine/strategy.py",
+      "data_source": "FRED",
+      "fail_mode": "Overfitting to historical interest rate differentials"
+    },
+    {
+      "name": "GBPUSD_Momentum",
+      "thesis": "Capturing momentum in GBPUSD to generate positive returns",
+      "signal_construction": "Long GBPUSD when 50-day moving average is greater than 200-day moving average, short otherwise",
+      "universe": ["GBPUSD=X"],
+      "expected_pf": 1.8,
+      "expected_sharpe": 1.2,
+      "expected_mdd_pct": 12,
+      "differentiation_from_existing": "Focuses on momentum rather than mean-reversion, unlike multi_asset_copytrader",
+      "implementation_hours": 15,
+      "wire_target": "alpha_engine/strategy.py",
+      "data_source": "yfinance",
+      "fail_mode": "Decaying momentum due to changing market conditions"
+    },
+    {
+      "name": "AUDUSD_CarryMomentum",
+      "thesis": "Combining interest rate differentials and momentum to generate positive edge in AUDUSD",
+      "signal_construction": "Long AUDUSD when 10-year AUD bond yield is greater than 10-year USD bond yield and 50-day moving average is greater than 200-day moving average, short otherwise",
+      "universe": ["AUDUSD=X"],
+      "expected_pf": 2.5,
+      "expected_sharpe": 1.8,
+      "expected_mdd_pct": 9,
+      "differentiation_from_existing": "Combines interest rate differentials and momentum, unlike multi_asset_copytrader",
+      "implementation_hours": 25,
+      "wire_target": "alpha_engine/strategy.py",
+      "data_source": "FRED, yfinance",
+      "fail_mode": "Overfitting to historical interest rate differentials and momentum"
+    }
+  ],
+  "killers": ["multi_asset_copytrader"],
+  "block_proposals": [
+    ["FOREX", "multi_asset_copytrader", "EURJPY=X"],
+    ["FOREX", "multi_asset_copytrader", "USDJPY=X"],
+    ["FOREX", "multi_asset_copytrader", "GBPJPY=X"],
+    ["FOREX", "multi_asset_copytrader", "AUDJPY=X"],
+    ["FOREX", "multi_asset_copytrader", "CADJPY=X"]
+  ],
+  "tier2_attainability_pct": 80,
+  "single_most_important_finding": "The JPY-cross pairs are experiencing catastrophic losses due to the BoJ tightening in 2024-2025, which has inverted the prior LONG-USD-vs-JPY carry bias without a corresponding strategy update."
+}
+```

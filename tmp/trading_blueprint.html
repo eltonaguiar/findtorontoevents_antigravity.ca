@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Trading Blueprint — System Analysis for Review</title>
+<style>
+  :root { --bg: #0a0a12; --card: #12122a; --border: #1e1e3a; --text: #e0e0f0; --dim: #8888aa; --green: #22c55e; --red: #ef4444; --yellow: #f59e0b; --cyan: #06b6d4; --purple: #a78bfa; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter','Segoe UI',system-ui,sans-serif; font-size:14px; line-height:1.6; padding:20px; max-width:1400px; margin:0 auto; }
+  h1 { font-size:28px; margin-bottom:8px; background:linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  h2 { font-size:20px; color:var(--cyan); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h3 { font-size:16px; color:var(--purple); margin:16px 0 8px; }
+  h4 { font-size:14px; color:var(--yellow); margin-bottom:4px; }
+  .dim { color:var(--dim); font-size:12px; }
+  .section { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:20px; }
+  .card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; margin:12px 0; }
+  .card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 14px; text-align:center; }
+  .card-label { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; }
+  .card-val { font-size:20px; font-weight:700; margin-top:4px; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin:8px 0; }
+  th { background:#0f1628; color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:0.3px; padding:8px 6px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td { padding:6px; border-bottom:1px solid #1a1a30; }
+  .num { text-align:right; font-family:'Consolas','Fira Code',monospace; }
+  tr:hover { background:rgba(255,255,255,0.03); }
+  .verdict-box { padding:14px 18px; border-radius:8px; margin:12px 0; font-size:13px; line-height:1.6; }
+  .verdict-box.bad { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); }
+  .verdict-box.good { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.3); }
+  .verdict-box.neutral { background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); }
+  .sim-summary { display:flex; flex-wrap:wrap; gap:16px; padding:10px 14px; background:var(--bg); border-radius:8px; margin:8px 0; font-size:13px; }
+  .code-block { background:#0a0a16; border:1px solid var(--border); border-radius:6px; padding:12px 16px; font-family:'Consolas','Fira Code',monospace; font-size:12px; white-space:pre-wrap; margin:8px 0; color:var(--cyan); }
+  .review-questions { display:grid; gap:12px; }
+  .q { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px 16px; }
+  .q p { color:var(--dim); font-size:13px; margin-top:4px; }
+  .header-meta { color:var(--dim); font-size:12px; margin-bottom:20px; }
+  .toc { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 24px; margin-bottom:20px; }
+  .toc a { color:var(--cyan); text-decoration:none; }
+  .toc a:hover { text-decoration:underline; }
+  .toc ol { padding-left:20px; }
+  .toc li { margin:4px 0; }
+  @media(max-width:768px) { body { padding:10px; } .card-grid { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<h1>Crypto Trading Blueprint</h1>
+<div class="header-meta">
+  <p>Comprehensive analysis of our algorithmic crypto trading systems for external review.</p>
+  <p>Generated: 2026-03-09 19:46 EST | Data snapshot: 2026-03-10T00:38:34 UTC | 77 systems | 1,406 active crypto picks</p>
+  <p><b>Purpose:</b> Provide enough context for another AI or human trader to evaluate our system, identify weaknesses, and suggest improvements.</p>
+</div>
+
+<div class="toc">
+  <b>Table of Contents</b>
+  <ol>
+    <li><a href="#s0">Glossary & Architecture</a> — Key terms, system design, fee assumptions, lifecycle rules</li>
+    <li><a href="#s1">Executive Summary</a> — Overall crypto performance (honest assessment)</li>
+    <li><a href="#s2">System Breakdown</a> — Per-system stats, grades, descriptions</li>
+    <li><a href="#s3">Strategy Detail</a> — Top 30 strategies with BT/FWD metrics</li>
+    <li><a href="#s4">Backtest vs Forward</a> — Decay analysis (overfitting detection)</li>
+    <li><a href="#s5">Daily Volume</a> — Signal generation rate, last 7 days</li>
+    <li><a href="#s6">Optimal Picks Simulation</a> — What if we only traded top-scored picks?</li>
+    <li><a href="#s7">Strategy Leaderboard</a> — Top 30 by forward PnL</li>
+    <li><a href="#s8">Questions for Reviewers</a> — Specific feedback requested</li>
+  </ol>
+</div>
+
+<div id="s0">
+    <div class="section">
+      <h2>0. Glossary, Architecture & Assumptions</h2>
+
+      <h3>Key Terms</h3>
+      <table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>
+        <tr><td><b>WR</b> (Win Rate)</td><td>% of closed trades that were profitable (hit TP or closed in profit)</td></tr>
+        <tr><td><b>PF</b> (Profit Factor)</td><td>Gross wins / Gross losses. PF &gt; 1.0 = profitable. PF &gt; 1.5 = strong edge.</td></tr>
+        <tr><td><b>R:R</b> (Risk:Reward)</td><td>Distance to take-profit / distance to stop-loss. R:R of 2.0 means TP is 2x further than SL.</td></tr>
+        <tr><td><b>Expectancy</b></td><td>(WR × Avg Win) − ((1−WR) × Avg Loss). Expected PnL per trade. Must be positive for profitability.</td></tr>
+        <tr><td><b>Confidence</b></td><td>Strategy-specific score 0.0−1.0 generated by each system based on its internal signal strength assessment. NOT calibrated (0.8 confidence ≠ 80% probability).</td></tr>
+        <tr><td><b>BT</b> (Backtest)</td><td>Performance on historical data. Subject to look-ahead bias, curve-fitting, and survivorship bias.</td></tr>
+        <tr><td><b>FWD</b> (Forward Test)</td><td>Performance on live market data after the strategy was deployed. The gold standard for validation.</td></tr>
+        <tr><td><b>Decay</b></td><td>BT WR − FWD WR. Positive = strategy performs worse live (likely overfitted). Negative = improved or BT data missing.</td></tr>
+        <tr><td><b>Health</b></td><td>Strategy status: <b>healthy</b> = performing within expected parameters. <b>degrading</b> = recent drawdown or declining WR. <b>watch</b> = under observation. <b>None</b> = status not yet classified.</td></tr>
+        <tr><td><b>Agreement</b></td><td>Number of independent system groups flagging the same symbol+direction. Higher = more consensus. Capped at system group level (deduplicated).</td></tr>
+        <tr><td><b>Trust Tier</b></td><td>PROVEN (1.0x weight) → SANDBOX (0.25x, default for new systems) → PROBATION (0.10−0.15x) → DEMOTED (0.25x, asset-specific failures)</td></tr>
+      </tbody></table>
+
+      <h3>System Architecture</h3>
+      <div class="code-block">
+75 CRYPTO SYSTEMS generate signals every 15-30 min via GitHub Actions
+  │
+  ├── PROVEN: battleground, alpha_engine (forward-validated, full trust)
+  ├── GENETIC: genome_gp, DARWIN variants (GP expression trees evolving buy/sell formulas)
+  │     └── Function set: RSI, MACD, EMA, Volume, ATR, Bollinger — standard TA indicators
+  │     └── Fitness: Sharpe ratio on 6-month rolling window, penalized by trade count
+  │     └── Population: 500 individuals, 100 generations, tournament selection
+  ├── ML: mercury2 (XGBoost), ml_bg_system_a-f (various ML ensembles), crypto_ml_edge
+  ├── REVIVAL: Auto-mutates dormant strategies when stale &gt;2 days (parameter ±10-30%)
+  │     └── ⚠ Known risk: creates untested variants. Safeguard: enters as SANDBOX tier (0.25x weight)
+  ├── KIMI: 81-algorithm scanner (fear/greed, order book, funding rate, whale detection)
+  └── AGGREGATORS: super_signals, aggregated_picks (consensus from multiple systems)
+  │
+  ▼
+SCORING ENGINE: ranks each pick 0-100 based on weighted formula
+  │
+  ▼
+AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performance
+      </div>
+
+      <h3>Fee & Execution Assumptions</h3>
+      <table><thead><tr><th>Parameter</th><th>Value</th><th>Notes</th></tr></thead><tbody>
+        <tr><td>Exchange fees</td><td>0.10% taker per side</td><td>Binance standard. Round-trip cost = 0.20%</td></tr>
+        <tr><td>Slippage</td><td>~0.05% estimated</td><td>For liquid pairs (BTC, ETH). Small-cap may be higher.</td></tr>
+        <tr><td>Funding rate</td><td>Not included</td><td>Perpetual swap funding can be +/- 0.01-0.10% per 8h. Material for holds &gt;24h.</td></tr>
+        <tr><td>PnL calculation</td><td>Entry vs TP/SL hit</td><td>Does NOT include fees. Actual returns ~0.20-0.40% worse than shown per trade.</td></tr>
+        <tr><td>Price source</td><td>Binance spot API</td><td>Live prices fetched on page load. During outages, falls back to CoinGecko.</td></tr>
+        <tr><td>Avg hold time</td><td>7h (0.3 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
+      </tbody></table>
+
+      <h3>System Lifecycle</h3>
+      <table><thead><tr><th>Stage</th><th>Criteria</th><th>Trust Weight</th></tr></thead><tbody>
+        <tr><td>New / SANDBOX</td><td>Default for all new systems. &lt;50 closed trades.</td><td>0.25x</td></tr>
+        <tr><td>Under Review</td><td>10-50 closed trades. Performance monitored.</td><td>0.25x</td></tr>
+        <tr><td>PROVEN</td><td>50+ closed trades, WR ≥ 50%, PF ≥ 1.0, documented forward results.</td><td>0.8−1.0x</td></tr>
+        <tr><td>PROBATION</td><td>Documented poor performance: broken risk mgmt, consistently losing, or system errors.</td><td>0.10−0.15x</td></tr>
+        <tr><td>DEMOTED</td><td>Strategy works on some assets but fails on others (asset-specific demotion).</td><td>0.25x</td></tr>
+        <tr><td>Killed</td><td>Not currently implemented. 36 of 60 systems are grade F with insufficient data.</td><td>N/A</td></tr>
+      </tbody></table>
+      <div class="verdict-box neutral">
+        <b>Known gap:</b> There is no automatic kill mechanism for consistently failing systems. Grade F systems (36/60)
+        remain active indefinitely, generating noise. This is a major contributor to the poor aggregate performance.
+      </div>
+    </div></div>
+<div id="s1">
+    <div class="section">
+      <h2>1. Executive Summary — Crypto Portfolio</h2>
+      <p class="dim">Generated 2026-03-09 19:46 EST from 77 crypto systems producing 1,406 active picks.</p>
+      <div class="card-grid">
+        <div class="card"><div class="card-label">Active Picks</div><div class="card-val">1,406</div></div>
+        <div class="card"><div class="card-label">Closed Picks</div><div class="card-val">5,769</div></div>
+        <div class="card"><div class="card-label">Win Rate</div><div class="card-val" style="color:#ef4444">44.2%</div></div>
+        <div class="card"><div class="card-label">Total PnL (Realized)</div><div class="card-val" style="color:#ef4444">-11529.94%</div></div>
+        <div class="card"><div class="card-label">Profit Factor</div><div class="card-val" style="color:#ef4444">0.71</div></div>
+        <div class="card"><div class="card-label">Expectancy / Trade</div><div class="card-val" style="color:#ef4444">-3.23%</div></div>
+        <div class="card"><div class="card-label">Avg Win</div><div class="card-val" style="color:#22c55e">+17.78%</div></div>
+        <div class="card"><div class="card-label">Avg Loss</div><div class="card-val" style="color:#ef4444">-19.88%</div></div>
+      </div>
+      <div class="verdict-box bad">
+        <b>Honest Assessment:</b> The overall crypto portfolio is <b>unprofitable</b> with a 44.2% win rate and 0.71 profit factor.
+        Expectancy is -3.23% per trade — meaning every trade loses on average.
+        The system generates too many low-quality signals from unproven strategies. However, a subset of proven strategies shows strong positive results (see Section 4).
+        <br><br><b>Key Problem:</b> Avg loss (19.88%) exceeds avg win (17.78%), AND win rate is below 50%.
+        A profitable system needs EITHER a high WR with reasonable R:R, OR a low WR with high R:R. We have neither in aggregate.
+      </div>
+    </div></div>
+<div id="s2">
+    <div class="section">
+      <h2>2. System-by-System Breakdown (60 crypto systems with data)</h2>
+      <p class="dim">Grade: A = proven profitable (WR≥55, PF≥1.5, 20+ trades), B = positive edge, C = marginal, D = insufficient data, F = unprofitable</p>
+      <div class="table-wrap">
+      <table><thead><tr>
+        <th style="min-width:200px">System</th><th>Grade</th><th>Active</th><th>Closed</th><th>W</th><th>L</th>
+        <th>WR</th><th>Total PnL</th><th>PF</th><th>Expect.</th><th>Avg W</th><th>Avg L</th>
+      </tr></thead><tbody><tr>
+          <td><b>battleground</b><br><span class="dim" style="font-size:11px">Forward-testing arena. Runs proven winners (VWAP Deviation +332%, RSI ETH +291%) against live market. Gold standard for </span></td>
+          <td style="text-align:center;color:#22c55e;font-weight:700;font-size:18px">A</td>
+          <td class="num">10</td>
+          <td class="num">373</td>
+          <td class="num">234</td><td class="num">139</td>
+          <td class="num" style="color:#22c55e">62.7%</td>
+          <td class="num" style="color:#22c55e">+2208.36%</td>
+          <td class="num" style="color:#22c55e">1.73</td>
+          <td class="num" style="color:#22c55e">+5.92%</td>
+          <td class="num">+22.4%</td>
+          <td class="num">-21.8%</td>
+        </tr><tr>
+          <td><b>kimi signal tracking</b><br><span class="dim" style="font-size:11px">KIMI historical signal audit log. Tracks TP/SL validation against real Binance prices via signal_tracker.py.</span></td>
+          <td style="text-align:center;color:#22c55e;font-weight:700;font-size:18px">A</td>
+          <td class="num">0</td>
+          <td class="num">1028</td>
+          <td class="num">16</td><td class="num">9</td>
+          <td class="num" style="color:#22c55e">64.0%</td>
+          <td class="num" style="color:#22c55e">+267.78%</td>
+          <td class="num" style="color:#22c55e">2.11</td>
+          <td class="num" style="color:#22c55e">+10.71%</td>
+          <td class="num">+31.9%</td>
+          <td class="num">-26.9%</td>
+        </tr><tr>
+          <td><b>claude gainer</b><br><span class="dim" style="font-size:11px">Antigravity ML Gainer. Claude-powered ML model identifying top crypto gainers using momentum + volume + social signals.</span></td>
+          <td style="text-align:center;color:#22c55e;font-weight:700;font-size:18px">A</td>
+          <td class="num">0</td>
+          <td class="num">32</td>
+          <td class="num">18</td><td class="num">14</td>
+          <td class="num" style="color:#22c55e">56.2%</td>
+          <td class="num" style="color:#22c55e">+194.57%</td>
+          <td class="num" style="color:#22c55e">2.37</td>
+          <td class="num" style="color:#22c55e">+6.08%</td>
+          <td class="num">+18.7%</td>
+          <td class="num">-10.2%</td>
+        </tr><tr>
+          <td><b>claude gainer ml perf</b><br><span class="dim" style="font-size:11px">Claude Gainer ML Performance tracker. Monitors and scores ML gainer predictions against actual outcomes.</span></td>
+          <td style="text-align:center;color:#86efac;font-weight:700;font-size:18px">B</td>
+          <td class="num">0</td>
+          <td class="num">10</td>
+          <td class="num">7</td><td class="num">3</td>
+          <td class="num" style="color:#22c55e">70.0%</td>
+          <td class="num" style="color:#22c55e">+120.44%</td>
+          <td class="num" style="color:#22c55e">2.80</td>
+          <td class="num" style="color:#22c55e">+12.04%</td>
+          <td class="num">+26.8%</td>
+          <td class="num">-22.3%</td>
+        </tr><tr>
+          <td><b>crypto winners</b><br><span class="dim" style="font-size:11px">Crypto Winners. Top momentum crypto picks based on 24h/7d performance rankings.</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">0</td>
+          <td class="num">50</td>
+          <td class="num">23</td><td class="num">27</td>
+          <td class="num" style="color:#ef4444">46.0%</td>
+          <td class="num" style="color:#22c55e">+55.92%</td>
+          <td class="num" style="color:#22c55e">1.09</td>
+          <td class="num" style="color:#22c55e">+1.12%</td>
+          <td class="num">+28.6%</td>
+          <td class="num">-22.3%</td>
+        </tr><tr>
+          <td><b>ml bg system f</b><br><span class="dim" style="font-size:11px">ML Battleground System F — Claws of Doom. Proprietary multi-factor ML combining KIMI signals with battleground validatio</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">4</td>
+          <td class="num">56</td>
+          <td class="num">25</td><td class="num">30</td>
+          <td class="num" style="color:#ef4444">45.5%</td>
+          <td class="num" style="color:#22c55e">+16.91%</td>
+          <td class="num" style="color:#22c55e">1.07</td>
+          <td class="num" style="color:#22c55e">+0.31%</td>
+          <td class="num">+10.4%</td>
+          <td class="num">-8.1%</td>
+        </tr><tr>
+          <td><b>crypto signal engine</b><br><span class="dim" style="font-size:11px">Multi-model crypto signal engine. Combines XGBoost day-trade, LightGBM top-gainer, and ML ensemble models.</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">0</td>
+          <td class="num">2</td>
+          <td class="num">2</td><td class="num">0</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num" style="color:#22c55e">+7.18%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#22c55e">+3.59%</td>
+          <td class="num">+3.6%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>aggregated picks</b><br><span class="dim" style="font-size:11px">Cross-system aggregated picks. Merges picks from all systems with symbol normalization and deduplication.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">3</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>audit ensemble</b><br><span class="dim" style="font-size:11px">DARWIN Audit Ensemble (NEXUS). Evolves meta-weights for combining audit scores across systems. Optimizes how much to tru</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">4</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>battleground mutations</b><br><span class="dim" style="font-size:11px">Battleground Mutations. DNA mutations of proven battleground winners (VWAP, RSI) with parameter variations.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">63</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>breakout b ml</b><br><span class="dim" style="font-size:11px">Breakout Arena B — ML Breakout Detection. Uses machine learning to score breakout probability at S/R levels. Combines fr</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">7</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>claude gainer st</b><br><span class="dim" style="font-size:11px">Claude Gainer Short-Term. 1h/4h variant of ML Gainer for faster trades. Tighter TP/SL for intraday holds.</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">6</td>
+          <td class="num">500</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>coinglass</b><br><span class="dim" style="font-size:11px">CoinGlass data strategies. Uses open interest, liquidation, and funding rate data from CoinGlass API for trade signals.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">3</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>contrarian evolver</b><br><span class="dim" style="font-size:11px">DARWIN Contrarian Evolver. GP evolved for mean-reversion/contrarian signals. Optimized for oversold bounces and overboug</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">5</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>ensemble evolver</b><br><span class="dim" style="font-size:11px">DARWIN Ensemble Coevolution (LEGION). Co-evolves teams of strategies that complement each other. Optimizes portfolio-lev</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">25</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>failure evolver</b><br><span class="dim" style="font-size:11px">DARWIN Failure Evolver. Learns specifically from LOSING picks. Mutates failed strategies to find what went wrong and evo</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">3</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>fc crypto pro</b><br><span class="dim" style="font-size:11px">FC Crypto Pro. Professional crypto signal feed with curated picks.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">1</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>genetic programmer</b><br><span class="dim" style="font-size:11px">DARWIN GP Engine (GENESIS). Evolves trading strategies using genetic programming — buy/sell formulas are expression tree</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">50</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>hyperparam dna</b><br><span class="dim" style="font-size:11px">DARWIN Hyperparameter DNA. Evolves optimal indicator parameters (RSI period, EMA length, ATR multiplier) using genetic a</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">8</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>incubator forward</b><br><span class="dim" style="font-size:11px">No description available</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">10</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>incubator gainer</b><br><span class="dim" style="font-size:11px">Incubator Gainer. Early-stage gainer detection model in testing phase.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">12</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>kimi live signals</b><br><span class="dim" style="font-size:11px">KIMI real-time signal feed. Raw live_signals_now.json output from the 81-algorithm scanner. May overlap with kimi_riseof</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">16</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>kimi riseoftheclaw</b><br><span class="dim" style="font-size:11px">KIMI v11.0 — 81 algorithm scanner. Includes crypto acceleration, proven research-backed strategies, ML signal ranking, a</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">8</td>
+          <td class="num">168</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>macd dna mutations</b><br><span class="dim" style="font-size:11px">MACD DNA Mutations. Specialized mutations of MACD-based strategies with evolved parameters (fast/slow/signal periods).</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">5</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>mape evolver</b><br><span class="dim" style="font-size:11px">DARWIN MAP-Elites (ATLAS). Quality-Diversity evolution — fills a grid of (volatility x trend) niches with the best strat</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">27</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>mercury2 fast</b><br><span class="dim" style="font-size:11px">Mercury2 fast variant with shorter timeframes. WARNING: Has shown broken entry prices ($1M+) — on probation.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">32</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>ml crypto pred</b><br><span class="dim" style="font-size:11px">ML Crypto Predictor (enhanced models). LSTM/XGBoost predictions with live picks output.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">28</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>ml crypto predictor</b><br><span class="dim" style="font-size:11px">No description available</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">98</td>
+          <td class="num">289</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>momentum evolver</b><br><span class="dim" style="font-size:11px">DARWIN Momentum Evolver. Specialized GP focused on momentum/trend signals. Evolves buy/sell rules optimized for trending</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">8</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>multitf evolver</b><br><span class="dim" style="font-size:11px">DARWIN Multi-Timeframe Evolver. Evolves strategies that combine signals across 1h, 4h, 1d timeframes. Higher timeframe c</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">5</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>neat neural</b><br><span class="dim" style="font-size:11px">DARWIN NEAT Neural Evolution. NeuroEvolution of Augmenting Topologies — evolves neural network topology AND weights simu</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">8</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>predictions</b><br><span class="dim" style="font-size:11px">ML Crypto Predictor. Enhanced ML models for price direction prediction using technical + sentiment features.</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">324</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>prop firm strategies</b><br><span class="dim" style="font-size:11px">Prop Firm Strategies. Specialized for FTMO/MFF challenge rules — daily loss limits, profit targets, consistency.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">10</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>pumpwatch mutations</b><br><span class="dim" style="font-size:11px">PumpWatch Mutations. Mutations targeting pump/acceleration patterns with evolved detection parameters.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">2</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>quan engine</b><br><span class="dim" style="font-size:11px">QuanEngine Prop Firm. Quant strategies designed for prop firm challenges — strict risk management, max drawdown limits.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">3</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>rapid fire</b><br><span class="dim" style="font-size:11px">Rapid Fire 1h Scanner (NOW.py). High-frequency crypto scanner on 1h timeframe. WARNING: High-frequency noise, limited pr</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">570</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival all</b><br><span class="dim" style="font-size:11px">Revival Engine — ALL systems. Consolidated picks from the stale system reviver. Mutates dormant strategies using DNA eng</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">185</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival battleground</b><br><span class="dim" style="font-size:11px">Revival: Battleground. DNA mutations of battleground strategies for when the main system is stale (2+ days without picks</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">20</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival breakout a</b><br><span class="dim" style="font-size:11px">Revival: Breakout A. Mutations of S/R breakout strategies during dormancy.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">19</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival breakout b</b><br><span class="dim" style="font-size:11px">Revival: Breakout B. Mutations of ML breakout strategies during dormancy.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">20</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival kimi</b><br><span class="dim" style="font-size:11px">Revival: KIMI. Mutations of KIMI strategies generated when KIMI scanner is dormant.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">19</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival mercury2</b><br><span class="dim" style="font-size:11px">Revival: Mercury2. Mutations of Mercury2 XGBoost strategies for dormant periods.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">12</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival paper trading</b><br><span class="dim" style="font-size:11px">Revival: Paper Trading. Mutations of paper trading strategies during stale periods.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">19</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>revival signal engine</b><br><span class="dim" style="font-size:11px">Revival: Signal Engine. Mutations of crypto signal engine strategies during dormancy.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">9</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>rl agent</b><br><span class="dim" style="font-size:11px">Reinforcement Learning Agent. Uses deep Q-learning to learn optimal trade entry/exit timing from market state observatio</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">3</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>signal aggregator</b><br><span class="dim" style="font-size:11px">Signal Aggregator master tracker. Central registry tracking all picks across all systems with consensus scoring.</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">5</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>super signals</b><br><span class="dim" style="font-size:11px">Cross-system consensus super signals. Only fires when multiple independent systems agree on direction + symbol. High-con</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">14</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>universal picks</b><br><span class="dim" style="font-size:11px">Universal Picks. Cross-strategy consensus picks that appear across multiple DNA evolution systems.</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">4</td>
+          <td class="num">0</td>
+          <td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-0.0%</td>
+        </tr><tr>
+          <td><b>alpha engine fast</b><br><span class="dim" style="font-size:11px">Alpha Engine with tighter TP/SL and shorter hold periods for more frequent signals. Same proven strategies, faster exits</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">45</td>
+          <td class="num">16</td>
+          <td class="num">5</td><td class="num">11</td>
+          <td class="num" style="color:#ef4444">31.2%</td>
+          <td class="num" style="color:#ef4444">-7.14%</td>
+          <td class="num" style="color:#ef4444">0.61</td>
+          <td class="num" style="color:#ef4444">-0.45%</td>
+          <td class="num">+2.2%</td>
+          <td class="num">-1.6%</td>
+        </tr><tr>
+          <td><b>crypto ml edge</b><br><span class="dim" style="font-size:11px">Crypto ML Edge. Specialized ML model for identifying statistical edges in crypto price action using feature engineering.</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">2</td>
+          <td class="num">8</td>
+          <td class="num">1</td><td class="num">4</td>
+          <td class="num" style="color:#ef4444">20.0%</td>
+          <td class="num" style="color:#ef4444">-7.31%</td>
+          <td class="num" style="color:#ef4444">0.74</td>
+          <td class="num" style="color:#ef4444">-1.46%</td>
+          <td class="num">+20.4%</td>
+          <td class="num">-6.9%</td>
+        </tr><tr>
+          <td><b>breakout c spike</b><br><span class="dim" style="font-size:11px">Breakout Arena C — Spike Reverse. Detects price spikes using cosine similarity to historical spike archetypes, then trad</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">0</td>
+          <td class="num">3</td>
+          <td class="num">0</td><td class="num">3</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#ef4444">-11.86%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#ef4444">-3.95%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-4.0%</td>
+        </tr><tr>
+          <td><b>ml bg ensemble</b><br><span class="dim" style="font-size:11px">ML Battleground Ensemble — combines predictions from Systems A-F using weighted voting. Only fires when multiple ML syst</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">8</td>
+          <td class="num">0</td><td class="num">8</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#ef4444">-20.91%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#ef4444">-2.61%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-2.6%</td>
+        </tr><tr>
+          <td><b>mercury2</b><br><span class="dim" style="font-size:11px">Mercury2 XGBoost ML ensemble. Gradient-boosted tree model trained on 100+ technical features. Targets crypto momentum wi</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">0</td>
+          <td class="num">48</td>
+          <td class="num">20</td><td class="num">28</td>
+          <td class="num" style="color:#ef4444">41.7%</td>
+          <td class="num" style="color:#ef4444">-21.66%</td>
+          <td class="num" style="color:#ef4444">0.80</td>
+          <td class="num" style="color:#ef4444">-0.45%</td>
+          <td class="num">+4.3%</td>
+          <td class="num">-3.9%</td>
+        </tr><tr>
+          <td><b>ml bg system a</b><br><span class="dim" style="font-size:11px">ML Battleground System A — Filter-based ML. Applies layered filters (volume, volatility, trend) before ML prediction. Mo</span></td>
+          <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
+          <td class="num">7</td>
+          <td class="num">4</td>
+          <td class="num">1</td><td class="num">3</td>
+          <td class="num" style="color:#ef4444">25.0%</td>
+          <td class="num" style="color:#ef4444">-21.81%</td>
+          <td class="num" style="color:#ef4444">0.27</td>
+          <td class="num" style="color:#ef4444">-5.46%</td>
+          <td class="num">+8.0%</td>
+          <td class="num">-9.9%</td>
+        </tr><tr>
+          <td><b>ml bg system b</b><br><span class="dim" style="font-size:11px">ML Battleground System B — Regime Detection. Uses Hidden Markov Model to detect market regimes (trending/ranging/volatil</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">13</td>
+          <td class="num">2</td><td class="num">10</td>
+          <td class="num" style="color:#ef4444">16.7%</td>
+          <td class="num" style="color:#ef4444">-85.51%</td>
+          <td class="num" style="color:#ef4444">0.38</td>
+          <td class="num" style="color:#ef4444">-7.13%</td>
+          <td class="num">+26.1%</td>
+          <td class="num">-13.8%</td>
+        </tr><tr>
+          <td><b>ml bg system c</b><br><span class="dim" style="font-size:11px">ML Battleground System C — Deep Learning. LSTM + attention-based neural network for sequence prediction. WARNING: 0% WR </span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">5</td>
+          <td class="num">0</td><td class="num">5</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num" style="color:#ef4444">-146.97%</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num" style="color:#ef4444">-29.39%</td>
+          <td class="num">+0.0%</td>
+          <td class="num">-29.4%</td>
+        </tr><tr>
+          <td><b>stocks competition</b><br><span class="dim" style="font-size:11px">Stocks Competition. Multi-asset competition scanner for equities — scans SPY, QQQ, major stocks.</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">102</td>
+          <td class="num">30</td><td class="num">46</td>
+          <td class="num" style="color:#ef4444">39.5%</td>
+          <td class="num" style="color:#ef4444">-233.48%</td>
+          <td class="num" style="color:#ef4444">0.53</td>
+          <td class="num" style="color:#ef4444">-3.07%</td>
+          <td class="num">+8.8%</td>
+          <td class="num">-10.8%</td>
+        </tr><tr>
+          <td><b>alpha engine</b><br><span class="dim" style="font-size:11px">Proven Underdog Portfolio. 100 statistically-validated strategies (Connors RSI-2 75% WR, VIX Spike 72% WR). Scans crypto</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">26</td>
+          <td class="num">220</td>
+          <td class="num">92</td><td class="num">126</td>
+          <td class="num" style="color:#ef4444">42.2%</td>
+          <td class="num" style="color:#ef4444">-320.60%</td>
+          <td class="num" style="color:#ef4444">0.61</td>
+          <td class="num" style="color:#ef4444">-1.47%</td>
+          <td class="num">+5.4%</td>
+          <td class="num">-6.5%</td>
+        </tr><tr>
+          <td><b>paper trading</b><br><span class="dim" style="font-size:11px">Paper trading portfolio manager. Simulates real trades with virtual capital, tracks equity curves and drawdowns.</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">0</td>
+          <td class="num">95</td>
+          <td class="num">47</td><td class="num">48</td>
+          <td class="num" style="color:#ef4444">49.5%</td>
+          <td class="num" style="color:#ef4444">-428.63%</td>
+          <td class="num" style="color:#ef4444">0.46</td>
+          <td class="num" style="color:#ef4444">-4.51%</td>
+          <td class="num">+7.8%</td>
+          <td class="num">-16.6%</td>
+        </tr><tr>
+          <td><b>baby strats forward</b><br><span class="dim" style="font-size:11px">No description available</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">0</td>
+          <td class="num">2728</td>
+          <td class="num">1118</td><td class="num">1544</td>
+          <td class="num" style="color:#ef4444">42.0%</td>
+          <td class="num" style="color:#ef4444">-13229.20%</td>
+          <td class="num" style="color:#ef4444">0.61</td>
+          <td class="num" style="color:#ef4444">-4.97%</td>
+          <td class="num">+18.1%</td>
+          <td class="num">-21.7%</td>
+        </tr></tbody></table>
+      </div>
+    </div></div>
+<div id="s3">
+    <div class="section">
+      <h2>3. Strategy Breakdown — Top 30 by Active Picks</h2>
+      <p class="dim">Each strategy may run across multiple systems. Forward WR/PF/Trades reflect live forward-testing performance. BT = backtest.</p>
+      <div class="table-wrap">
+      <table><thead><tr>
+        <th>Strategy</th><th>Active</th><th>Directions</th><th>Symbols</th>
+        <th>BT WR</th><th>FWD WR</th><th>FWD Trades</th><th>FWD PF</th>
+        <th>Conf</th><th>R:R</th><th>Avg PnL</th><th>Health</th>
+      </tr></thead><tbody><tr>
+          <td><b>ema_stack</b></td>
+          <td class="num">158</td>
+          <td class="num">LONG:153, SHORT:5</td>
+          <td class="num" style="font-size:11px">AAVE, ADA, APT, ASTER, AVAX, BCH, BNB, BTC +36 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">2</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.53</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#ef4444">-0.09%</td>
+          <td class="num">watch:158</td>
+        </tr><tr>
+          <td><b>macd_crossover</b></td>
+          <td class="num">156</td>
+          <td class="num">LONG:108, SHORT:48</td>
+          <td class="num" style="font-size:11px">AAVE, ADA, ASTER, AVAX, BANANAS31, BCH, BNB, BTC +42 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.58</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+0.04%</td>
+          <td class="num">None:156</td>
+        </tr><tr>
+          <td><b>bollinger_squeeze</b></td>
+          <td class="num">118</td>
+          <td class="num">LONG:118</td>
+          <td class="num" style="font-size:11px">AAVE, ADA, ASTER, AVAX, BCH, BNB, BTC, DEGO +32 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.45</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+0.11%</td>
+          <td class="num">None:118</td>
+        </tr><tr>
+          <td><b>stochrsi_macd_combo</b></td>
+          <td class="num">113</td>
+          <td class="num">LONG:113</td>
+          <td class="num" style="font-size:11px">AAVE, ADA, ASTER, AVAX, BANANAS31, BCH, BNB, BTC +41 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.73</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+0.34%</td>
+          <td class="num">None:113</td>
+        </tr><tr>
+          <td><b>unknown</b></td>
+          <td class="num">105</td>
+          <td class="num">LONG:58, SHORT:47</td>
+          <td class="num" style="font-size:11px">ADA, BNB, BTC, DOT, FET, MATIC, RENDER, SOL</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.73</td>
+          <td class="num">1.4</td>
+          <td class="num" style="color:#ef4444">-0.43%</td>
+          <td class="num">None:105</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_irb_hoffman</b></td>
+          <td class="num">38</td>
+          <td class="num">LONG:38</td>
+          <td class="num" style="font-size:11px">ADA, BNB</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.62</td>
+          <td class="num">1.8</td>
+          <td class="num" style="color:#22c55e">+0.73%</td>
+          <td class="num">None:38</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_unknown</b></td>
+          <td class="num">30</td>
+          <td class="num">LONG:30</td>
+          <td class="num" style="font-size:11px">BNB, BTC</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">1.3</td>
+          <td class="num" style="color:#22c55e">+0.66%</td>
+          <td class="num">None:30</td>
+        </tr><tr>
+          <td><b>enhanced_ml_A_xgboost</b></td>
+          <td class="num">27</td>
+          <td class="num">LONG:27</td>
+          <td class="num" style="font-size:11px">AAVE, ADA, ALGO, APE, ARB, ATOM, BNB, BTC +19 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.73</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+2.45%</td>
+          <td class="num">None:27</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_crypto_keltner_compressi</b></td>
+          <td class="num">24</td>
+          <td class="num">LONG:24</td>
+          <td class="num" style="font-size:11px">BTC</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.69</td>
+          <td class="num">1.9</td>
+          <td class="num" style="color:#22c55e">+0.85%</td>
+          <td class="num">None:24</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_ensemble</b></td>
+          <td class="num">24</td>
+          <td class="num">LONG:24</td>
+          <td class="num" style="font-size:11px">ADA, DOT</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">1.7</td>
+          <td class="num" style="color:#22c55e">+1.23%</td>
+          <td class="num">None:24</td>
+        </tr><tr>
+          <td><b>Mercury2 Fast</b></td>
+          <td class="num">22</td>
+          <td class="num">LONG:22</td>
+          <td class="num" style="font-size:11px">ADA, AVAX, BNB, BTC, DOGE, DOT, ETH, SOL +2 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">1.7</td>
+          <td class="num" style="color:#ef4444">-97.40%</td>
+          <td class="num">None:22</td>
+        </tr><tr>
+          <td><b>macd_rsi_confluence</b></td>
+          <td class="num">17</td>
+          <td class="num">LONG:15, SHORT:2</td>
+          <td class="num" style="font-size:11px">ADA, ASTER, AVAX, BNB, DENT, LTC, RESOLV, SIGN +4 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.64</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+0.39%</td>
+          <td class="num">None:17</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_keltner_compression_expa</b></td>
+          <td class="num">16</td>
+          <td class="num">LONG:16</td>
+          <td class="num" style="font-size:11px">SOL</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.65</td>
+          <td class="num">2.6</td>
+          <td class="num" style="color:#22c55e">+0.37%</td>
+          <td class="num">None:16</td>
+        </tr><tr>
+          <td><b>M_claw_fear_deep</b></td>
+          <td class="num">15</td>
+          <td class="num">LONG:15</td>
+          <td class="num" style="font-size:11px">ADA, APT, AVAX, BNB, BTC, DOGE, DOT, ETH +7 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.52</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+0.87%</td>
+          <td class="num">None:15</td>
+        </tr><tr>
+          <td><b>M_claw_fear_contrarian</b></td>
+          <td class="num">15</td>
+          <td class="num">LONG:15</td>
+          <td class="num" style="font-size:11px">ADA, APT, AVAX, BNB, BTC, DOGE, DOT, ETH +7 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.62</td>
+          <td class="num">1.2</td>
+          <td class="num" style="color:#22c55e">+0.87%</td>
+          <td class="num">None:15</td>
+        </tr><tr>
+          <td><b>M_fear_buy_relaxed</b></td>
+          <td class="num">15</td>
+          <td class="num">LONG:15</td>
+          <td class="num" style="font-size:11px">ADA, APT, AVAX, BNB, BTC, DOGE, DOT, ETH +7 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.67</td>
+          <td class="num">2.0</td>
+          <td class="num" style="color:#22c55e">+0.87%</td>
+          <td class="num">None:15</td>
+        </tr><tr>
+          <td><b>incubator_gainer_composite</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">DEGO, DOT, EUR, KITE, PENGU, RESOLV, ROBO, SAHARA +4 more</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.76</td>
+          <td class="num">2.9</td>
+          <td class="num" style="color:#ef4444">-0.09%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>volume_spike_breakout</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">EUR, FDUSD, RESOLV, SAHARA, TAO, USD1, USDC, U</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.71</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+0.19%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_pure_sr_breakout_BTCUSDT</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">BTC</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">2.6</td>
+          <td class="num" style="color:#22c55e">+0.85%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_pure_sr_breakout_SOLUSDT</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">SOL</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">1.9</td>
+          <td class="num" style="color:#22c55e">+0.35%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_sr_breakout_ml_BTCUSDT</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">BTC</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">1.9</td>
+          <td class="num" style="color:#22c55e">+0.84%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_sr_breakout_ml_ETHUSDT</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">ETH</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">2.3</td>
+          <td class="num" style="color:#22c55e">+0.91%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_sr_breakout_ml_SOLUSDT</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">SOL</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">2.5</td>
+          <td class="num" style="color:#22c55e">+0.36%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_funding_rate_carry_BTCUS</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">BTC</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">2.9</td>
+          <td class="num" style="color:#22c55e">+0.84%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_funding_rate_carry_SOLUS</b></td>
+          <td class="num">12</td>
+          <td class="num">LONG:12</td>
+          <td class="num" style="font-size:11px">SOL</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">2.1</td>
+          <td class="num" style="color:#22c55e">+0.35%</td>
+          <td class="num">None:12</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_pure_sr_breakout_ETHUSDT</b></td>
+          <td class="num">10</td>
+          <td class="num">LONG:10</td>
+          <td class="num" style="font-size:11px">ETH</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">1.9</td>
+          <td class="num" style="color:#22c55e">+0.92%</td>
+          <td class="num">None:10</td>
+        </tr><tr>
+          <td><b>Revival_Mutated_funding_rate_carry_ETHUS</b></td>
+          <td class="num">10</td>
+          <td class="num">LONG:10</td>
+          <td class="num" style="font-size:11px">ETH</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.60</td>
+          <td class="num">2.6</td>
+          <td class="num" style="color:#22c55e">+0.91%</td>
+          <td class="num">None:10</td>
+        </tr><tr>
+          <td><b>GPX_Gen10_2a4b0b</b></td>
+          <td class="num">8</td>
+          <td class="num">SHORT:8</td>
+          <td class="num" style="font-size:11px">DOT, ETH, INJ, NEAR, OP, SEI, SOL, SUI</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.62</td>
+          <td class="num">0.0</td>
+          <td class="num" style="color:#ef4444">-1.90%</td>
+          <td class="num">None:8</td>
+        </tr><tr>
+          <td><b>AuditEnsemble_LONG</b></td>
+          <td class="num">8</td>
+          <td class="num">LONG:8</td>
+          <td class="num" style="font-size:11px">BTC, DOGE, ETH, SOL</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.81</td>
+          <td class="num">0.0</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">None:8</td>
+        </tr><tr>
+          <td><b>EMA 9/21 momentum widening, Price above </b></td>
+          <td class="num">7</td>
+          <td class="num">LONG:5, SHORT:2</td>
+          <td class="num" style="font-size:11px">FIL, OP, SUI, TRX, XRP</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.55</td>
+          <td class="num">1.5</td>
+          <td class="num" style="color:#22c55e">+139.63%</td>
+          <td class="num">None:7</td>
+        </tr></tbody></table>
+      </div>
+    </div></div>
+<div id="s4">
+    <div class="section">
+      <h2>4. Backtest vs Forward-Test Performance</h2>
+      <p class="dim">Decay = BT WR − FWD WR. Positive decay means strategy performs <b>worse</b> live than in backtest (overfitting). Negative means it improved.</p>
+      <div class="verdict-box neutral">
+        <b>What to look for:</b> Strategies with low decay AND sufficient forward trades (≥10) are the most trustworthy.
+        High decay (>15%) suggests curve-fitting. Negative decay with few trades may be luck.
+      </div>
+      <div class="table-wrap">
+      <table><thead><tr>
+        <th>Strategy</th><th>System</th>
+        <th>BT WR</th><th>BT Trades</th><th>FWD WR</th><th>FWD Trades</th><th>Decay</th>
+      </tr></thead><tbody><tr>
+          <td>connors_rsi2</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">68.0%</td><td class="num">891</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>vwap_mean_reversion</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">64.3%</td><td class="num">734</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>rsi_extreme_reversal</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">58.5%</td><td class="num">118</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>ema_crossover_trend</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">42.3%</td><td class="num">336</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>macd_divergence</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">68.9%</td><td class="num">517</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>supertrend</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">52.9%</td><td class="num">34</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>connors_r3</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">71.0%</td><td class="num">793</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>double_seven</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">62.0%</td><td class="num">842</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>three_day_low</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">64.1%</td><td class="num">1083</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>williams_r_oversold</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">59.3%</td><td class="num">469</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>volatility_scaled</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">65.8%</td><td class="num">565</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>dual_momentum</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">48.3%</td><td class="num">667</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>kama_adaptive_trend</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">26.2%</td><td class="num">2642</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>kama_adx_trend</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">47.9%</td><td class="num">622</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>volatility_anchor_fade</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">48.2%</td><td class="num">498</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>kama_pullback_continuation</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">33.5%</td><td class="num">418</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>williams_pr_trend_mr</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">51.9%</td><td class="num">702</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>cci_exhaustion_reversal</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">53.7%</td><td class="num">162</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>donchian_adx_breakout</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">41.5%</td><td class="num">1225</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>kama_slope_reversal</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">62.2%</td><td class="num">45</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>volume_dryup_fade</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">3</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>short_term_return_reversal</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">45.6%</td><td class="num">1004</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>vwap_volume_mean_reversion</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">44.2%</td><td class="num">1381</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>donchian_turtle_breakout</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">46.4%</td><td class="num">1378</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>triple_ma_trend</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">49.2%</td><td class="num">956</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>autocorr_reversion</td>
+          <td class="dim">alpha_engine</td>
+          <td class="num">63.9%</td><td class="num">1042</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>coinglass_extreme_reversion</td>
+          <td class="dim">coinglass</td>
+          <td class="num">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>coinglass_funding_confluence</td>
+          <td class="dim">coinglass</td>
+          <td class="num">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>coinglass_leverage_squeeze</td>
+          <td class="dim">coinglass</td>
+          <td class="num">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>coinglass_ratio_momentum</td>
+          <td class="dim">coinglass</td>
+          <td class="num">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr><tr>
+          <td>coinglass_sentiment_composite</td>
+          <td class="dim">coinglass</td>
+          <td class="num">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.0%</td><td class="num">0</td>
+          <td class="num" style="color:#f59e0b">+0.0%</td>
+        </tr></tbody></table>
+      </div>
+    </div></div>
+<div id="s5">
+    <div class="section">
+      <h2>5. Daily Pick Volume — Last 7 Days</h2>
+      <p class="dim">How many crypto signals are being generated each day? Is the system too aggressive or too conservative?</p>
+      <table><thead><tr>
+        <th>Date</th><th>Picks</th><th>Directions</th><th>Top Symbols</th><th>Top Systems</th>
+      </tr></thead><tbody><tr>
+          <td>2026-03-10</td><td class="num">206</td>
+          <td class="dim">LONG:190, SHORT:16</td>
+          <td style="font-size:11px">BTC(12), ETH(10), SOL(10), XRP(9), PENGU(7)</td>
+          <td style="font-size:11px">rapid_fire(140), kimi_live_signals(14), super_signals(14)</td>
+        </tr><tr>
+          <td>2026-03-09</td><td class="num">1069</td>
+          <td class="dim">LONG:861, SHORT:208</td>
+          <td style="font-size:11px">BTC(154), SOL(116), ETH(88), BNB(70), AVAX(40)</td>
+          <td style="font-size:11px">rapid_fire(430), revival_all(185), battleground_mutations(63)</td>
+        </tr><tr>
+          <td>2026-03-08</td><td class="num">114</td>
+          <td class="dim">LONG:76, SHORT:38</td>
+          <td style="font-size:11px">BTC(22), ADA(20), BNB(11), XRP(6), RENDER(6)</td>
+          <td style="font-size:11px">ml_crypto_predictor(50), ml_crypto_pred(28), mercury2_fast(22)</td>
+        </tr><tr>
+          <td>2026-03-07</td><td class="num">16</td>
+          <td class="dim">SHORT:9, LONG:7</td>
+          <td style="font-size:11px">BTC(4), ADA(4), BTC-USD(2), ETH(1), GALA-USD(1)</td>
+          <td style="font-size:11px">ml_crypto_predictor(8), alpha_engine(6), ml_bg_system_f(2)</td>
+        </tr></tbody></table>
+      <div class="verdict-box neutral">
+        <b>Volume Analysis:</b> The system generates 1,405 crypto picks over 7 days
+        (avg 351/day).
+        This is extremely high — most picks are noise. A narrower filter would improve signal quality.
+      </div>
+    </div></div>
+<div id="s6">
+    <div class="section">
+      <h2>6. Optimal Pick Selection — Simulated Results</h2>
+      <p class="dim">If we only traded the top-scoring picks, what would performance look like? All PnL values are <b>unrealized</b> (positions still open).</p>
+
+      <h3>Scoring Formula</h3>
+      <div class="code-block">
+score = (0.25 × confidence + 0.20 × min(R:R/5, 1) + 0.25 × fwd_wr + 0.15 × min(fwd_pf/3, 1) + 0.10 × min(fwd_trades/50, 1) + 0.05 × min(agreement/3, 1)) × health_multiplier
+
+health_multiplier: healthy=1.0, degrading=0.7, other=0.5
+      </div>
+
+      <h3>A) Top 10 by Score</h3>
+      
+        <div class="sim-summary">
+          <span><b>10</b> picks</span>
+          <span>WR: <b style="color:#22c55e">70.0%</b></span>
+          <span>Total PnL: <b style="color:#22c55e">+4.25%</b></span>
+          <span>PF: <b style="color:#22c55e">2.64</b></span>
+          <span>Avg PnL: <b style="color:#22c55e">+0.43%</b></span>
+          <span>6 symbols</span>
+          <span>{'SHORT': 9, 'LONG': 1}</span>
+        </div>
+        <table><thead><tr>
+          <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL</th>
+          <th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
+        </tr></thead><tbody><tr>
+              <td>TRX-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.289566</td><td class="num">0.2672</td><td class="num">0.292921</td>
+              <td class="num" style="color:#22c55e">+1.41%</td>
+              <td class="num">0.85</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">58%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">hurst_regime_adaptive</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>NOT-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.0003904759</td><td class="num">0.0002483493</td><td class="num">0.00041179490000000003</td>
+              <td class="num" style="color:#22c55e">+1.85%</td>
+              <td class="num">0.82</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">58%</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">hurst_regime_adaptive</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68965.02</td><td class="num">52216.44</td><td class="num">71477.31</td>
+              <td class="num" style="color:#22c55e">+0.72%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">67236.86</td><td class="num">50990.520000000004</td><td class="num">69673.81</td>
+              <td class="num" style="color:#ef4444">-1.94%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68362.75</td><td class="num">69292.36</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.73</td><td class="num">1.4</td>
+              <td class="num" style="color:#22c55e">73%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_keltner_compressio</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>XRP</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1.37</td><td class="num">1.4</td><td class="num">1.35</td>
+              <td class="num" style="color:#22c55e">+0.18%</td>
+              <td class="num">0.64</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">64%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68916.1</td><td class="num">68068.47</td><td class="num">69852.6</td>
+              <td class="num" style="color:#ef4444">-0.32%</td>
+              <td class="num">0.68</td><td class="num">0.9</td>
+              <td class="num" style="color:#22c55e">68%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_rsi_whaleconfirmed</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BNB-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">639.54</td><td class="num">508.34000000000015</td><td class="num">659.22</td>
+              <td class="num" style="color:#22c55e">+0.78%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BNB-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">637.71</td><td class="num">506.51</td><td class="num">657.3900000000001</td>
+              <td class="num" style="color:#22c55e">+0.50%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>TRX-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.289566</td><td class="num">0.2672</td><td class="num">0.292921</td>
+              <td class="num" style="color:#22c55e">+1.41%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr></tbody></table>
+
+      <h3>B) Top 20 by Score</h3>
+      
+        <div class="sim-summary">
+          <span><b>20</b> picks</span>
+          <span>WR: <b style="color:#22c55e">60.0%</b></span>
+          <span>Total PnL: <b style="color:#22c55e">+2.08%</b></span>
+          <span>PF: <b style="color:#22c55e">1.21</b></span>
+          <span>Avg PnL: <b style="color:#22c55e">+0.10%</b></span>
+          <span>9 symbols</span>
+          <span>{'SHORT': 11, 'LONG': 9}</span>
+        </div>
+        <table><thead><tr>
+          <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL</th>
+          <th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
+        </tr></thead><tbody><tr>
+              <td>TRX-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.289566</td><td class="num">0.2672</td><td class="num">0.292921</td>
+              <td class="num" style="color:#22c55e">+1.41%</td>
+              <td class="num">0.85</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">58%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">hurst_regime_adaptive</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>NOT-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.0003904759</td><td class="num">0.0002483493</td><td class="num">0.00041179490000000003</td>
+              <td class="num" style="color:#22c55e">+1.85%</td>
+              <td class="num">0.82</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">58%</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">hurst_regime_adaptive</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68965.02</td><td class="num">52216.44</td><td class="num">71477.31</td>
+              <td class="num" style="color:#22c55e">+0.72%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">67236.86</td><td class="num">50990.520000000004</td><td class="num">69673.81</td>
+              <td class="num" style="color:#ef4444">-1.94%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68362.75</td><td class="num">69292.36</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.73</td><td class="num">1.4</td>
+              <td class="num" style="color:#22c55e">73%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_keltner_compressio</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>XRP</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1.37</td><td class="num">1.4</td><td class="num">1.35</td>
+              <td class="num" style="color:#22c55e">+0.18%</td>
+              <td class="num">0.64</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">64%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68916.1</td><td class="num">68068.47</td><td class="num">69852.6</td>
+              <td class="num" style="color:#ef4444">-0.32%</td>
+              <td class="num">0.68</td><td class="num">0.9</td>
+              <td class="num" style="color:#22c55e">68%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_rsi_whaleconfirmed</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BNB-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">639.54</td><td class="num">508.34000000000015</td><td class="num">659.22</td>
+              <td class="num" style="color:#22c55e">+0.78%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BNB-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">637.71</td><td class="num">506.51</td><td class="num">657.3900000000001</td>
+              <td class="num" style="color:#22c55e">+0.50%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>TRX-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.289566</td><td class="num">0.2672</td><td class="num">0.292921</td>
+              <td class="num" style="color:#22c55e">+1.41%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68147.09</td><td class="num">69629.33</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.62</td><td class="num">1.0</td>
+              <td class="num" style="color:#22c55e">62%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_vwap_deviation_rev</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2014.19</td><td class="num">2044.92</td><td class="num">1993.7</td>
+              <td class="num" style="color:#22c55e">+0.15%</td>
+              <td class="num">0.61</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">60%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">66374.7</td><td class="num">76137.63</td><td class="num">61493.23</td>
+              <td class="num" style="color:#22c55e">+3.26%</td>
+              <td class="num">0.90</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68917.0</td><td class="num">68097.52</td><td class="num">69724.0</td>
+              <td class="num" style="color:#ef4444">-0.31%</td>
+              <td class="num">0.56</td><td class="num">1.0</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_kalman_trend_resid</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2014.19</td><td class="num">2041.42</td><td class="num">1996.94</td>
+              <td class="num" style="color:#22c55e">+0.15%</td>
+              <td class="num">0.62</td><td class="num">1.6</td>
+              <td class="num" style="color:#22c55e">62%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">drawdown_recovery_rsi_eth</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>WIF-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">0.176705</td><td class="num">0.21391</td><td class="num">0.142926</td>
+              <td class="num" style="color:#ef4444">-2.84%</td>
+              <td class="num">0.66</td><td class="num">1.1</td>
+              <td class="num" style="color:#22c55e">75%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">volume_profile_poc_revers</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>ETH-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2025.35</td><td class="num">2407.5</td><td class="num">1834.27</td>
+              <td class="num" style="color:#ef4444">-1.50%</td>
+              <td class="num">0.81</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">68916.1</td><td class="num">70029.13</td><td class="num">68589.25</td>
+              <td class="num" style="color:#22c55e">+0.32%</td>
+              <td class="num">0.56</td><td class="num">3.4</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">drawdown_recovery_rsi</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>WIF-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">0.177326</td><td class="num">0.21391</td><td class="num">0.143547</td>
+              <td class="num" style="color:#ef4444">-2.42%</td>
+              <td class="num">0.65</td><td class="num">1.1</td>
+              <td class="num" style="color:#22c55e">75%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">volume_profile_poc_revers</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">67566.55</td><td class="num">77665.71</td><td class="num">62516.98</td>
+              <td class="num" style="color:#22c55e">+1.34%</td>
+              <td class="num">0.80</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr></tbody></table>
+
+      <h3>C) Top 20 Vetted Only (Forward WR ≥ 55%, Forward Trades ≥ 10)</h3>
+      
+        <div class="sim-summary">
+          <span><b>12</b> picks</span>
+          <span>WR: <b style="color:#888">50.0%</b></span>
+          <span>Total PnL: <b style="color:#22c55e">+2.38%</b></span>
+          <span>PF: <b style="color:#22c55e">2.42</b></span>
+          <span>Avg PnL: <b style="color:#22c55e">+0.20%</b></span>
+          <span>6 symbols</span>
+          <span>{'SHORT': 8, 'LONG': 4}</span>
+        </div>
+        <table><thead><tr>
+          <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL</th>
+          <th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
+        </tr></thead><tbody><tr>
+              <td>TRX-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.289566</td><td class="num">0.2672</td><td class="num">0.292921</td>
+              <td class="num" style="color:#22c55e">+1.41%</td>
+              <td class="num">0.85</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">58%</td>
+              <td class="num">1</td>
+              <td class="dim" style="font-size:11px">hurst_regime_adaptive</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>NOT-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.0003904759</td><td class="num">0.0002483493</td><td class="num">0.00041179490000000003</td>
+              <td class="num" style="color:#22c55e">+1.85%</td>
+              <td class="num">0.82</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">58%</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">hurst_regime_adaptive</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68362.75</td><td class="num">69292.36</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.73</td><td class="num">1.4</td>
+              <td class="num" style="color:#22c55e">73%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_keltner_compressio</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>XRP</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1.37</td><td class="num">1.4</td><td class="num">1.35</td>
+              <td class="num" style="color:#22c55e">+0.18%</td>
+              <td class="num">0.64</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">64%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68916.1</td><td class="num">68068.47</td><td class="num">69852.6</td>
+              <td class="num" style="color:#ef4444">-0.32%</td>
+              <td class="num">0.68</td><td class="num">0.9</td>
+              <td class="num" style="color:#22c55e">68%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_rsi_whaleconfirmed</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68147.09</td><td class="num">69629.33</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.62</td><td class="num">1.0</td>
+              <td class="num" style="color:#22c55e">62%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_vwap_deviation_rev</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2014.19</td><td class="num">2044.92</td><td class="num">1993.7</td>
+              <td class="num" style="color:#22c55e">+0.15%</td>
+              <td class="num">0.61</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">60%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68917.0</td><td class="num">68097.52</td><td class="num">69724.0</td>
+              <td class="num" style="color:#ef4444">-0.31%</td>
+              <td class="num">0.56</td><td class="num">1.0</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_kalman_trend_resid</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2014.19</td><td class="num">2041.42</td><td class="num">1996.94</td>
+              <td class="num" style="color:#22c55e">+0.15%</td>
+              <td class="num">0.62</td><td class="num">1.6</td>
+              <td class="num" style="color:#22c55e">62%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">drawdown_recovery_rsi_eth</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">68916.1</td><td class="num">70029.13</td><td class="num">68589.25</td>
+              <td class="num" style="color:#22c55e">+0.32%</td>
+              <td class="num">0.56</td><td class="num">3.4</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">drawdown_recovery_rsi</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">2013.85</td><td class="num">1983.37</td><td class="num">2023.66</td>
+              <td class="num" style="color:#ef4444">-0.16%</td>
+              <td class="num">0.56</td><td class="num">3.1</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">keltner_compression_expan</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>SOL</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">85.54</td><td class="num">84.7</td><td class="num">86.14</td>
+              <td class="num" style="color:#ef4444">-0.23%</td>
+              <td class="num">0.67</td><td class="num">1.4</td>
+              <td class="num" style="color:#22c55e">67%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">keltner_compression_expan</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr></tbody></table>
+
+      <h3>D) Top 20 High Agreement (≥3 systems agree)</h3>
+      
+        <div class="sim-summary">
+          <span><b>20</b> picks</span>
+          <span>WR: <b style="color:#22c55e">55.0%</b></span>
+          <span>Total PnL: <b style="color:#22c55e">+9.17%</b></span>
+          <span>PF: <b style="color:#22c55e">2.57</b></span>
+          <span>Avg PnL: <b style="color:#22c55e">+0.46%</b></span>
+          <span>7 symbols</span>
+          <span>{'SHORT': 9, 'LONG': 11}</span>
+        </div>
+        <table><thead><tr>
+          <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL</th>
+          <th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
+        </tr></thead><tbody><tr>
+              <td>BTC-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68965.02</td><td class="num">52216.44</td><td class="num">71477.31</td>
+              <td class="num" style="color:#22c55e">+0.72%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">67236.86</td><td class="num">50990.520000000004</td><td class="num">69673.81</td>
+              <td class="num" style="color:#ef4444">-1.94%</td>
+              <td class="num">0.75</td><td class="num">6.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">autocorrelation_exploiter</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68362.75</td><td class="num">69292.36</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.73</td><td class="num">1.4</td>
+              <td class="num" style="color:#22c55e">73%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_keltner_compressio</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>XRP</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1.37</td><td class="num">1.4</td><td class="num">1.35</td>
+              <td class="num" style="color:#22c55e">+0.18%</td>
+              <td class="num">0.64</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">64%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68916.1</td><td class="num">68068.47</td><td class="num">69852.6</td>
+              <td class="num" style="color:#ef4444">-0.32%</td>
+              <td class="num">0.68</td><td class="num">0.9</td>
+              <td class="num" style="color:#22c55e">68%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_rsi_whaleconfirmed</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68903.2</td><td class="num">68147.09</td><td class="num">69629.33</td>
+              <td class="num" style="color:#ef4444">-0.33%</td>
+              <td class="num">0.62</td><td class="num">1.0</td>
+              <td class="num" style="color:#22c55e">62%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_vwap_deviation_rev</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2014.19</td><td class="num">2044.92</td><td class="num">1993.7</td>
+              <td class="num" style="color:#22c55e">+0.15%</td>
+              <td class="num">0.61</td><td class="num">1.5</td>
+              <td class="num" style="color:#22c55e">60%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">multi_period_rsi_confluen</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">66374.7</td><td class="num">76137.63</td><td class="num">61493.23</td>
+              <td class="num" style="color:#22c55e">+3.26%</td>
+              <td class="num">0.90</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">68917.0</td><td class="num">68097.52</td><td class="num">69724.0</td>
+              <td class="num" style="color:#ef4444">-0.31%</td>
+              <td class="num">0.56</td><td class="num">1.0</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">13</td>
+              <td class="dim" style="font-size:11px">crypto_kalman_trend_resid</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2014.19</td><td class="num">2041.42</td><td class="num">1996.94</td>
+              <td class="num" style="color:#22c55e">+0.15%</td>
+              <td class="num">0.62</td><td class="num">1.6</td>
+              <td class="num" style="color:#22c55e">62%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">drawdown_recovery_rsi_eth</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">2025.35</td><td class="num">2407.5</td><td class="num">1834.27</td>
+              <td class="num" style="color:#ef4444">-1.50%</td>
+              <td class="num">0.81</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">68916.1</td><td class="num">70029.13</td><td class="num">68589.25</td>
+              <td class="num" style="color:#22c55e">+0.32%</td>
+              <td class="num">0.56</td><td class="num">3.4</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">drawdown_recovery_rsi</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">67566.55</td><td class="num">77665.71</td><td class="num">62516.98</td>
+              <td class="num" style="color:#22c55e">+1.34%</td>
+              <td class="num">0.80</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">2013.85</td><td class="num">1983.37</td><td class="num">2023.66</td>
+              <td class="num" style="color:#ef4444">-0.16%</td>
+              <td class="num">0.56</td><td class="num">3.1</td>
+              <td class="num" style="color:#22c55e">56%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">keltner_compression_expan</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>SOL</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">85.54</td><td class="num">84.7</td><td class="num">86.14</td>
+              <td class="num" style="color:#ef4444">-0.23%</td>
+              <td class="num">0.67</td><td class="num">1.4</td>
+              <td class="num" style="color:#22c55e">67%</td>
+              <td class="num">10</td>
+              <td class="dim" style="font-size:11px">keltner_compression_expan</td>
+              <td class="dim" style="font-size:11px">battleground</td>
+            </tr><tr>
+              <td>ETH-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1950.86</td><td class="num">2330.23</td><td class="num">1761.18</td>
+              <td class="num" style="color:#22c55e">+2.30%</td>
+              <td class="num">0.71</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">mvrv_contrarian_dip</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>ETH-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1974.63</td><td class="num">2389.04</td><td class="num">1767.43</td>
+              <td class="num" style="color:#22c55e">+1.03%</td>
+              <td class="num">0.71</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">mvrv_contrarian_dip</td>
+              <td class="dim" style="font-size:11px">alpha_engine</td>
+            </tr><tr>
+              <td>ETH-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">1950.86</td><td class="num">2330.23</td><td class="num">1761.18</td>
+              <td class="num" style="color:#22c55e">+2.30%</td>
+              <td class="num">0.69</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">21</td>
+              <td class="dim" style="font-size:11px">options_25delta_skew</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>NEAR-USD</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">1.22</td><td class="num">0.7323</td><td class="num">1.4578</td>
+              <td class="num" style="color:#ef4444">-0.73%</td>
+              <td class="num">0.66</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">3</td>
+              <td class="dim" style="font-size:11px">profit_taking_reentry</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr><tr>
+              <td>BTC-USD</td>
+              <td style="color:#22c55e">LONG</td>
+              <td class="num">66374.7</td><td class="num">76137.63</td><td class="num">61493.23</td>
+              <td class="num" style="color:#22c55e">+3.26%</td>
+              <td class="num">0.66</td><td class="num">2.0</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">23</td>
+              <td class="dim" style="font-size:11px">mvrv_contrarian_dip</td>
+              <td class="dim" style="font-size:11px">alpha_engine_fast</td>
+            </tr></tbody></table>
+
+      <div class="verdict-box neutral">
+        <b>Recommendation for reviewers:</b> Compare portfolios A-D. Which filtering criteria produces the best risk-adjusted returns?
+        If vetted picks (C) outperform raw score (A), the system should raise minimum forward-trade thresholds.
+        If agreement picks (D) outperform, cross-system consensus is more valuable than individual strategy metrics.
+      </div>
+    </div></div>
+<div id="s7">
+    <div class="section">
+      <h2>7. Strategy Leaderboard — Top 30 by Forward PnL</h2>
+      <p class="dim">Strategies ranked by actual forward-testing profit. Only strategies with ≥3 forward trades shown.</p>
+      <div class="table-wrap">
+      <table><thead><tr>
+        <th>Strategy</th><th>Systems</th>
+        <th>BT WR</th><th>BT Trades</th><th>BT PF</th>
+        <th>FWD WR</th><th>FWD Trades</th><th>FWD PnL</th><th>Decay</th>
+      </tr></thead><tbody><tr>
+          <td><b>crypto_rsi_whaleconfirmed_v1</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, cursor_ai</td>
+          <td class="num">44.9%</td><td class="num">127</td><td class="num">1.46</td>
+          <td class="num" style="color:#22c55e">67.9%</td>
+          <td class="num">106</td>
+          <td class="num" style="color:#22c55e">+2281.71%</td>
+          <td class="num" style="color:#ef4444">-23.0%</td>
+        </tr><tr>
+          <td><b>funding_momentum</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, cursor_ai</td>
+          <td class="num">46.9%</td><td class="num">864</td><td class="num">1.40</td>
+          <td class="num" style="color:#22c55e">53.8%</td>
+          <td class="num">329</td>
+          <td class="num" style="color:#22c55e">+2168.50%</td>
+          <td class="num" style="color:#22c55e">-6.9%</td>
+        </tr><tr>
+          <td><b>crypto_keltner_compression_expansio</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, codex_gpt5</td>
+          <td class="num">53.7%</td><td class="num">67</td><td class="num">2.21</td>
+          <td class="num" style="color:#22c55e">72.9%</td>
+          <td class="num">96</td>
+          <td class="num" style="color:#22c55e">+1345.32%</td>
+          <td class="num" style="color:#ef4444">-19.2%</td>
+        </tr><tr>
+          <td><b>crypto_vwap_deviation_reversion_vol</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, codex_gpt5</td>
+          <td class="num">41.1%</td><td class="num">73</td><td class="num">1.63</td>
+          <td class="num" style="color:#22c55e">62.1%</td>
+          <td class="num">58</td>
+          <td class="num" style="color:#22c55e">+946.76%</td>
+          <td class="num" style="color:#ef4444">-21.0%</td>
+        </tr><tr>
+          <td><b>crypto_kalman_trend_residual_revers</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, codex_gpt5</td>
+          <td class="num">44.5%</td><td class="num">110</td><td class="num">1.46</td>
+          <td class="num" style="color:#22c55e">55.6%</td>
+          <td class="num">90</td>
+          <td class="num" style="color:#22c55e">+748.68%</td>
+          <td class="num" style="color:#ef4444">-11.1%</td>
+        </tr><tr>
+          <td><b>vwap_deviation_reversion_eth_v1</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, codex_gpt5</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">53.3%</td>
+          <td class="num">30</td>
+          <td class="num" style="color:#22c55e">+323.81%</td>
+          <td class="num" style="color:#ef4444">-53.3%</td>
+        </tr><tr>
+          <td><b>multi_period_rsi_confluence_eth</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, web_ai</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">60.5%</td>
+          <td class="num">76</td>
+          <td class="num" style="color:#22c55e">+231.44%</td>
+          <td class="num" style="color:#ef4444">-60.5%</td>
+        </tr><tr>
+          <td><b>multi_period_rsi_confluence_xrp</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, web_ai</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">64.0%</td>
+          <td class="num">50</td>
+          <td class="num" style="color:#22c55e">+186.97%</td>
+          <td class="num" style="color:#ef4444">-64.0%</td>
+        </tr><tr>
+          <td><b>drawdown_recovery_rsi_eth</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, battleground, web_ai</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">61.5%</td>
+          <td class="num">52</td>
+          <td class="num" style="color:#22c55e">+153.32%</td>
+          <td class="num" style="color:#ef4444">-61.5%</td>
+        </tr><tr>
+          <td><b>crypto_drawdown_convexity_recovery_</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, codex_gpt5</td>
+          <td class="num">36.7%</td><td class="num">49</td><td class="num">1.44</td>
+          <td class="num" style="color:#22c55e">75.0%</td>
+          <td class="num">8</td>
+          <td class="num" style="color:#22c55e">+124.73%</td>
+          <td class="num" style="color:#ef4444">-38.3%</td>
+        </tr><tr>
+          <td><b>crypto_soc_orderflow_absorption_a10</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, web_ai</td>
+          <td class="num">62.9%</td><td class="num">70</td><td class="num">1.23</td>
+          <td class="num" style="color:#ef4444">45.8%</td>
+          <td class="num">24</td>
+          <td class="num" style="color:#22c55e">+121.78%</td>
+          <td class="num" style="color:#ef4444">+17.1%</td>
+        </tr><tr>
+          <td><b>claude_gainer_ml</b></td>
+          <td class="dim" style="font-size:11px">claude_gainer_ml_perf</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">70.0%</td>
+          <td class="num">10</td>
+          <td class="num" style="color:#22c55e">+120.44%</td>
+          <td class="num" style="color:#ef4444">-70.0%</td>
+        </tr><tr>
+          <td><b>ML Ranker</b></td>
+          <td class="dim" style="font-size:11px">stocks_competition</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">66.7%</td>
+          <td class="num">12</td>
+          <td class="num" style="color:#22c55e">+112.34%</td>
+          <td class="num" style="color:#ef4444">-66.7%</td>
+        </tr><tr>
+          <td><b>corr_kama_adaptive</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, paper_trading</td>
+          <td class="num">52.2%</td><td class="num">485</td><td class="num">0.80</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num">5</td>
+          <td class="num" style="color:#22c55e">+92.71%</td>
+          <td class="num" style="color:#ef4444">-47.8%</td>
+        </tr><tr>
+          <td><b>autocorrelation_exploiter</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num">7</td>
+          <td class="num" style="color:#22c55e">+84.29%</td>
+          <td class="num" style="color:#ef4444">-100.0%</td>
+        </tr><tr>
+          <td><b>crypto_winners</b></td>
+          <td class="dim" style="font-size:11px">crypto_winners</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#ef4444">46.0%</td>
+          <td class="num">50</td>
+          <td class="num" style="color:#22c55e">+55.92%</td>
+          <td class="num" style="color:#ef4444">-46.0%</td>
+        </tr><tr>
+          <td><b>volume_profile_value_area</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num">6</td>
+          <td class="num" style="color:#22c55e">+53.69%</td>
+          <td class="num" style="color:#ef4444">-100.0%</td>
+        </tr><tr>
+          <td><b>crypto_soc_mtf_orb_pivots_a09_v1</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, web_ai</td>
+          <td class="num">57.1%</td><td class="num">14</td><td class="num">3.50</td>
+          <td class="num" style="color:#ef4444">40.0%</td>
+          <td class="num">5</td>
+          <td class="num" style="color:#22c55e">+47.99%</td>
+          <td class="num" style="color:#ef4444">+17.1%</td>
+        </tr><tr>
+          <td><b>multi_sigma_reversal</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num">5</td>
+          <td class="num" style="color:#22c55e">+47.65%</td>
+          <td class="num" style="color:#ef4444">-100.0%</td>
+        </tr><tr>
+          <td><b>hurst_regime_adaptive</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">58.3%</td>
+          <td class="num">12</td>
+          <td class="num" style="color:#22c55e">+45.22%</td>
+          <td class="num" style="color:#ef4444">-58.3%</td>
+        </tr><tr>
+          <td><b>volume_profile_poc_reversion</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">75.0%</td>
+          <td class="num">4</td>
+          <td class="num" style="color:#22c55e">+32.94%</td>
+          <td class="num" style="color:#ef4444">-75.0%</td>
+        </tr><tr>
+          <td><b>adaptive_vr_confluence</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">62.5%</td>
+          <td class="num">8</td>
+          <td class="num" style="color:#22c55e">+28.04%</td>
+          <td class="num" style="color:#ef4444">-62.5%</td>
+        </tr><tr>
+          <td><b>crypto_liquidity_wick_reversal_v1</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, codex_gpt5, cursor_ai</td>
+          <td class="num">50.0%</td><td class="num">20</td><td class="num">1.20</td>
+          <td class="num" style="color:#ef4444">37.5%</td>
+          <td class="num">8</td>
+          <td class="num" style="color:#22c55e">+27.14%</td>
+          <td class="num" style="color:#ef4444">+12.5%</td>
+        </tr><tr>
+          <td><b>crypto_soc_mtf_orb_pivots_a03_v1</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, web_ai</td>
+          <td class="num">50.0%</td><td class="num">24</td><td class="num">1.14</td>
+          <td class="num" style="color:#ef4444">42.9%</td>
+          <td class="num">7</td>
+          <td class="num" style="color:#22c55e">+23.38%</td>
+          <td class="num" style="color:#22c55e">+7.1%</td>
+        </tr><tr>
+          <td><b>corr_vwap_reversion</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, paper_trading</td>
+          <td class="num">51.2%</td><td class="num">473</td><td class="num">1.18</td>
+          <td class="num" style="color:#22c55e">71.4%</td>
+          <td class="num">7</td>
+          <td class="num" style="color:#22c55e">+23.11%</td>
+          <td class="num" style="color:#ef4444">-20.2%</td>
+        </tr><tr>
+          <td><b>drawdown_recovery_rsi_sol</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, web_ai</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num">7</td>
+          <td class="num" style="color:#22c55e">+20.43%</td>
+          <td class="num" style="color:#ef4444">-100.0%</td>
+        </tr><tr>
+          <td><b>crypto_soc_delta_divergence_a10_v1</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, web_ai</td>
+          <td class="num">66.7%</td><td class="num">36</td><td class="num">1.70</td>
+          <td class="num" style="color:#ef4444">36.4%</td>
+          <td class="num">11</td>
+          <td class="num" style="color:#22c55e">+18.56%</td>
+          <td class="num" style="color:#ef4444">+30.3%</td>
+        </tr><tr>
+          <td><b>fear_greed_extreme_dca</b></td>
+          <td class="dim" style="font-size:11px">alpha_engine</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">100.0%</td>
+          <td class="num">3</td>
+          <td class="num" style="color:#22c55e">+18.00%</td>
+          <td class="num" style="color:#ef4444">-100.0%</td>
+        </tr><tr>
+          <td><b>leap_elliott_impulse</b></td>
+          <td class="dim" style="font-size:11px">baby_strats_forward, paper_trading</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">64.3%</td>
+          <td class="num">14</td>
+          <td class="num" style="color:#22c55e">+17.72%</td>
+          <td class="num" style="color:#ef4444">-64.3%</td>
+        </tr><tr>
+          <td><b>extreme_fear</b></td>
+          <td class="dim" style="font-size:11px">ml_bg_system_f</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#ef4444">45.5%</td>
+          <td class="num">56</td>
+          <td class="num" style="color:#22c55e">+16.91%</td>
+          <td class="num" style="color:#ef4444">-45.5%</td>
+        </tr></tbody></table>
+      </div>
+    </div></div>
+<div id="s8">
+    <div class="section">
+      <h2>8. Questions for AI / Human Reviewers</h2>
+      <div class="review-questions">
+        <div class="q">
+          <h4>Q1: Signal Volume</h4>
+          <p>We generate 100-1000+ crypto signals per day across 75 systems. Is this creating too much noise?
+          Should we enforce a hard cap (e.g., max 20 picks/day) based on score ranking?</p>
+        </div>
+        <div class="q">
+          <h4>Q2: Entry Quality</h4>
+          <p>Our avg loss (-19.88%) exceeds avg win (+17.78%). Should we tighten stop-losses, widen take-profits,
+          or implement trailing stops to improve the win/loss ratio?</p>
+        </div>
+        <div class="q">
+          <h4>Q3: Strategy Pruning</h4>
+          <p>Many strategies have &lt;5 forward trades. Should we require a minimum forward trade count (e.g., 20)
+          before allowing a strategy to generate live signals?</p>
+        </div>
+        <div class="q">
+          <h4>Q4: Backtest Decay</h4>
+          <p>Several strategies show 30-50% decay from backtest to forward test. At what decay threshold
+          should we auto-demote or disable a strategy?</p>
+        </div>
+        <div class="q">
+          <h4>Q5: Optimal Filtering</h4>
+          <p>Based on the simulated portfolios in Section 6, which selection criteria (score, vetted, agreement)
+          produces the best risk-adjusted outcome? What filter thresholds would you recommend?</p>
+        </div>
+        <div class="q">
+          <h4>Q6: Position Sizing</h4>
+          <p>Currently all picks are equal-weighted. Should we size positions based on confidence score, R:R ratio,
+          system trust tier, or forward validation strength?</p>
+        </div>
+        <div class="q">
+          <h4>Q7: What's Actually Working?</h4>
+          <p>Looking at the leaderboard (Section 7) and system grades (Section 2), which 3-5 strategies or systems
+          show genuine edge that we should double down on?</p>
+        </div>
+      </div>
+    </div></div>
+
+<div class="section" style="text-align:center; padding:30px;">
+  <p class="dim">Trading Blueprint v1.0 — Auto-generated from live audit data</p>
+  <p class="dim">Data freshness: updates every 15 minutes via GitHub Actions</p>
+  <p class="dim">Source: <a href="https://findtorontoevents.ca/audit/" style="color:var(--cyan)">Audit Dashboard</a></p>
+</div>
+</body>
+</html>

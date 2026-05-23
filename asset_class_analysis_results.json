@@ -1,0 +1,158 @@
+{
+  "total_trades": 1986,
+  "by_asset_class": {
+    "CRYPTO": {
+      "count": 1956,
+      "avg_pnl": 0.09076687116564418,
+      "median_pnl": -0.01,
+      "win_rate": 49.79550102249489,
+      "profit_factor": 1.0680506259247051,
+      "total_pnl": 177.54000000000002,
+      "std_dev": 13.404642629148618,
+      "max_win": 500.0,
+      "max_loss": -78.81,
+      "avg_win": 2.8608624229979465,
+      "avg_loss": -2.6621836734693876,
+      "long_wr": 45.643153526970956,
+      "long_avg": -0.026244813278008285,
+      "short_wr": 61.568627450980394,
+      "short_avg": 0.4225294117647059,
+      "score_correlation": {
+        "40-59": {
+          "count": 790,
+          "avg_pnl": 0.07464556962025318,
+          "wr": 56.20253164556962
+        },
+        "60-79": {
+          "count": 191,
+          "avg_pnl": -0.10858638743455497,
+          "wr": 39.79057591623037
+        },
+        "0-39": {
+          "count": 950,
+          "avg_pnl": 0.10625263157894736,
+          "wr": 45.68421052631579
+        },
+        "80-100": {
+          "count": 25,
+          "avg_pnl": 1.5348,
+          "wr": 80.0
+        }
+      },
+      "high_trust_avg": 0.4457798165137615,
+      "high_trust_wr": 58.71559633027523,
+      "low_trust_avg": 0.6939634941329856,
+      "low_trust_wr": 48.109517601043024
+    },
+    "FOREX": {
+      "count": 5,
+      "avg_pnl": -0.104,
+      "median_pnl": -0.03,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "total_pnl": -0.52,
+      "std_dev": 0.17314733610425542,
+      "max_win": 0.0,
+      "max_loss": -0.41,
+      "avg_win": 0,
+      "avg_loss": -0.13,
+      "long_wr": 0.0,
+      "long_avg": -0.104,
+      "score_correlation": {
+        "0-39": {
+          "count": 5,
+          "avg_pnl": -0.104,
+          "wr": 0.0
+        }
+      },
+      "low_trust_avg": -0.0275,
+      "low_trust_wr": 0.0
+    },
+    "EQUITY": {
+      "count": 20,
+      "avg_pnl": -2.2845,
+      "median_pnl": -3.76,
+      "win_rate": 20.0,
+      "profit_factor": 0.25924124513618674,
+      "total_pnl": -45.690000000000005,
+      "std_dev": 4.034825340249041,
+      "max_win": 8.19,
+      "max_loss": -8.07,
+      "avg_win": 3.9974999999999996,
+      "avg_loss": -3.855,
+      "long_wr": 20.0,
+      "long_avg": -2.2845,
+      "score_correlation": {
+        "0-39": {
+          "count": 17,
+          "avg_pnl": -2.8876470588235295,
+          "wr": 11.76470588235294
+        },
+        "40-59": {
+          "count": 1,
+          "avg_pnl": 3.84,
+          "wr": 100.0
+        },
+        "60-79": {
+          "count": 2,
+          "avg_pnl": -0.22,
+          "wr": 50.0
+        }
+      },
+      "low_trust_avg": -2.9093750000000003,
+      "low_trust_wr": 12.5
+    }
+  },
+  "scoring_analysis": {},
+  "edges": [
+    {
+      "type": "direction_bias",
+      "asset": "CRYPTO",
+      "edge": "SHORT 61.6% WR vs LONG 45.6%",
+      "action": "Favor SHORT in CRYPTO"
+    },
+    {
+      "type": "trust_validation",
+      "asset": "CRYPTO",
+      "edge": "High trust outperforms: +0.45% vs +0.09%",
+      "action": "Trust scores WORK for CRYPTO - maintain system"
+    }
+  ],
+  "flaws": [
+    {
+      "type": "trust_failure",
+      "asset": "CRYPTO",
+      "flaw": "High trust +0.45% <= Low trust +0.69%",
+      "severity": "MEDIUM",
+      "action": "Recalibrate trust scoring for CRYPTO"
+    },
+    {
+      "type": "asset_underperformance",
+      "asset": "FOREX",
+      "flaw": "0.0% WR, -0.10% avg",
+      "severity": "HIGH",
+      "action": "Reduce FOREX exposure or improve filtering"
+    },
+    {
+      "type": "asset_underperformance",
+      "asset": "EQUITY",
+      "flaw": "20.0% WR, -2.28% avg",
+      "severity": "HIGH",
+      "action": "Reduce EQUITY exposure or improve filtering"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "P0",
+      "category": "asset_allocation",
+      "recommendation": "Increase CRYPTO to 60% of portfolio (best performer: +0.09%)",
+      "rationale": "Top asset class outperforms by +2.38%"
+    },
+    {
+      "priority": "P0",
+      "category": "asset_blacklist",
+      "recommendation": "Reduce EQUITY to <10% or blacklist",
+      "rationale": "Severe underperformance: -2.28% avg, 20.0% WR"
+    }
+  ]
+}

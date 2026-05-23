@@ -1,0 +1,56 @@
+name: Consensus Outcome Tracker
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:
+
+concurrency:
+  group: consensus-outcome-tracker
+  cancel-in-progress: false  # was true — caused 100% cancellation: next scheduled run killed the still-pushing one (423s push step)
+
+permissions:
+  contents: write
+
+jobs:
+  track-outcomes:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15  # was 10 — too tight: checkout(82s) + script(104s) + push can exceed 10min when runs queue
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run Consensus Outcome Tracker
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_PORT: '3306'
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+        run: python -m cross_aggregation.consensus_outcome_tracker
+
+      - name: Commit outcome updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TARGET="cross_aggregation/data/consensus_outcomes.json"
+          git add "$TARGET"
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: update consensus outcomes [skip ci]" --quiet
+          # Use safe_push.sh (15 retries, exponential backoff, timeout guards)
+          # Replaced inline push loop that was slow (423s) and got killed by cancel-in-progress
+          bash .github/scripts/safe_push.sh
+

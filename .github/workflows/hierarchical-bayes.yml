@@ -1,0 +1,45 @@
+# Hierarchical Bayesian Edge Update — nightly pipeline
+name: Hierarchical Bayesian Edge Update
+
+on:
+  schedule:
+    # Run at 02:30 UTC daily (after daily batch cutoff at 02:00 UTC)
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-bayes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r alpha_engine/validation/requirements-bayes.txt
+
+      - name: Run hierarchical Bayesian model
+        env:
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_HOST: mysql.50webs.com
+          MYSQL_DB: ${{ secrets.MYSQL_DB }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          # Run for known production/forward-pass strategies
+          for strategy in ema_crossover bollinger_bounce crypto_momentum_trend rsi_mean_reversion; do
+            echo "=== Running Bayesian model for $strategy ==="
+            python -m alpha_engine.validation.hierarchical_sharpe \
+              --strategy-id "$strategy" \
+              --test-layer walk_forward \
+              --target-sharpe 0.0 \
+              --draws 3000 || echo "::warning::Bayesian model failed for $strategy"
+          done
+
+      - name: Alert on failure
+        if: failure()
+        run: echo "::error::Hierarchical Bayesian pipeline failed — check logs"

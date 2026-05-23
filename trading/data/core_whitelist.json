@@ -1,0 +1,81 @@
+{
+  "core_strategies": [
+    "funding_carry",
+    "autocorrelation_exploiter",
+    "hurst_regime_adaptive",
+    "volume_profile_value_area",
+    "adaptive_vr_confluence",
+    "multi_sigma_reversal",
+    "fear_greed_extreme_dca",
+    "spike_macd_divergence"
+  ],
+  "incubator_strategies": [
+    "ema_crossover",
+    "bollinger_squeeze",
+    "atr_regime_rsi",
+    "connors_rsi2",
+    "contrarian_predictions"
+  ],
+  "kill_list": [
+    "smart_money_fvg",
+    "m2_liquidity_lag",
+    "monthly_seasonality",
+    "community_ict_fvg_selective",
+    "fourier_cycle_detector",
+    "exchange_netflow_reversal",
+    "price_touch_recurrence",
+    "halloween_effect",
+    "altcoin_season_rotation",
+    "momentum_mean_rev_blend",
+    "cross_sectional_momentum"
+  ],
+  "metadata": {
+    "created_at": "2026-03-03",
+    "rationale": "Based on forward-test performance across Alpha Engine (165 trades), ATM Challenge (852 trades), Mercury2 (46 trades), Baby Battleground (117 trades). Core = positive expectancy + statistical significance. Kill = 0-25% WR with negative PnL.",
+    "review_frequency": "weekly",
+    "promotion_criteria": {
+      "min_trades": 30,
+      "min_win_rate": 0.50,
+      "min_expectancy_pct": 0.5,
+      "min_sharpe": 1.0
+    },
+    "demotion_criteria": {
+      "max_drawdown_pct": 5.0,
+      "min_win_rate": 0.30,
+      "max_consecutive_losses": 5
+    },
+    "data_quality_audit": {
+      "audited_at": "2026-03-03",
+      "dataset": "alpha_engine/data/closed_picks.json (165 picks)",
+      "pnl_format": "All pnl_pct values are decimals (e.g., 0.05 = 5%), range -0.05 to +0.12. Consistent format, no mixed percentage values found.",
+      "status_values": ["WON", "LOST", "CLOSED"],
+      "exit_reason_values": ["TP_HIT", "SL_HIT", "TRAILING_STOP", "TIME_EXPIRY", "STRATEGY_KILLED", "BAD_TICKER_DATA"],
+      "conflicts_found": [
+        {
+          "id": "double_top_bottom_detector::ETH-USD::2026-02-*",
+          "issue": "status=LOST but exit_reason=TP_HIT, pnl_pct=-0.204 (TP_HIT should imply WON)",
+          "likely_cause": "TP was hit but at a loss due to partial fill or price gap"
+        },
+        {
+          "id": "double_top_bottom_detector::SOL-USD::2026-02-*",
+          "issue": "status=LOST but exit_reason=TP_HIT, pnl_pct=-0.383 (TP set below entry?)",
+          "likely_cause": "SHORT trade where TP direction was inverted in exit logic"
+        },
+        {
+          "id": "fractal_sr_bounce::PEPE24478-USD::2026-02-*",
+          "issue": "status=WON but exit_reason=SL_HIT, pnl_pct=+0.023 (SL_HIT should imply LOST)",
+          "likely_cause": "Trailing stop moved above entry, SL hit was actually profitable"
+        },
+        {
+          "id": "failed_breakout_reversal::BNB-USD::2026-*",
+          "issue": "status=WON but exit_reason=SL_HIT, pnl_pct=+0.000002 (near-zero profit)",
+          "likely_cause": "Breakeven stop triggered, classified as WON due to positive pnl"
+        }
+      ],
+      "normalization_rules": {
+        "status_canonical": "WON if pnl_pct > 0, LOST if pnl_pct < 0, CLOSED if pnl_pct == 0",
+        "note": "Consumers should use pnl_pct sign as ground truth for win/loss, not status or exit_reason. The 4 conflicts above are edge cases in the exit logic where trailing stops or TP direction for SHORTs produces mismatched status/exit_reason."
+      }
+    }
+  }
+}

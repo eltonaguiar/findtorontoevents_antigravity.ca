@@ -1,0 +1,162 @@
+name: Optimize Score Thresholds
+
+on:
+  schedule:
+    - cron: '30 3 * * *'  # Daily at 03:30 UTC (after audit-dashboard.yml completes)
+  workflow_dispatch:
+    inputs:
+      half_life:
+        description: 'Decay half-life in days'
+        required: false
+        default: '30'
+      lookback:
+        description: 'Max lookback window in days'
+        required: false
+        default: '90'
+
+concurrency:
+  group: optimize-scores
+  cancel-in-progress: true
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Check dashboard data exists
+        id: check-data
+        run: |
+          if [ -f "audit_dashboard/data/dashboard_data.json" ]; then
+            echo "has_data=true" >> "$GITHUB_OUTPUT"
+            PICKS=$(python3 -c "
+          import json
+          with open('audit_dashboard/data/dashboard_data.json') as f:
+              d = json.load(f)
+          rc = d.get('picks', d).get('recent_closed', [])
+          print(len(rc))
+          ")
+            echo "pick_count=$PICKS" >> "$GITHUB_OUTPUT"
+            echo "Dashboard data found: $PICKS closed picks"
+          else
+            echo "has_data=false" >> "$GITHUB_OUTPUT"
+            echo "No dashboard data found — skipping optimization"
+          fi
+
+      - name: Run context-aware calibration
+        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100
+        run: |
+          python analysis/score_calibration.py \
+            --payload audit_dashboard/data/dashboard_data.json \
+            --output data/context_rankings.json \
+            --verbose
+
+      - name: Run walk-forward validation
+        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100
+        run: |
+          python analysis/walkforward_optimizer.py \
+            --payload audit_dashboard/data/dashboard_data.json \
+            --output data/walkforward_results.json \
+            --train-days 60 --test-days 14 --step-days 7
+
+      - name: Run dynamic threshold optimizer
+        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100
+        run: |
+          HALF_LIFE="${{ github.event.inputs.half_life || '30' }}"
+          LOOKBACK="${{ github.event.inputs.lookback || '90' }}"
+          python engine/dynamic_threshold.py \
+            --payload audit_dashboard/data/dashboard_data.json \
+            --output data/score_thresholds.json \
+            --half-life "$HALF_LIFE" \
+            --lookback "$LOOKBACK"
+
+      - name: Rank active picks with context engine
+        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100
+        continue-on-error: true
+        run: |
+          python engine/context_ranking.py \
+            --rankings data/context_rankings.json \
+            --payload audit_dashboard/data/dashboard_data.json
+
+      - name: Commit updates
+        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100 && steps.validate-thresholds.outcome == 'success'
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/context_rankings.json data/walkforward_results.json data/score_thresholds.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "auto: update context rankings and score thresholds [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
+
+      - name: Generate summary
+        if: steps.check-data.outputs.has_data == 'true'
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+
+          summary_path = os.getenv("GITHUB_STEP_SUMMARY")
+          lines = ["## Context-Aware Score Optimization", ""]
+
+          # Context rankings summary
+          if os.path.isfile("data/context_rankings.json"):
+              with open("data/context_rankings.json") as f:
+                  cr = json.load(f)
+              lines.append(f"### Context Rankings ({cr.get('total_closed_picks', '?')} picks)")
+              lines.append("")
+              lines.append("| Asset Class | WR | PF | Expectancy | Action | Trend |")
+              lines.append("|---|---|---|---|---|---|")
+              for ac, ad in sorted(cr.get("asset_classes", {}).items()):
+                  lines.append(f"| {ac} | {ad.get('win_rate', 0):.1f}% | "
+                      f"{ad.get('profit_factor', 0):.2f} | "
+                      f"{ad.get('expectancy', 0):+.3f} | "
+                      f"**{ad.get('action', '?')}** | "
+                      f"{ad.get('pf_trend', 0):+.2f} |")
+              lines.append("")
+
+              # Promoted/suppressed contexts
+              promoted = []
+              suppressed = []
+              for ac, ad in cr.get("asset_classes", {}).items():
+                  for ctx in ad.get("contexts", []):
+                      if ctx.get("action") == "promote":
+                          promoted.append(f"{ac}+{ctx['setup_type']} (PF={ctx.get('profit_factor', 0):.2f})")
+                      elif ctx.get("action") == "suppress":
+                          suppressed.append(f"{ac}+{ctx['setup_type']} (PF={ctx.get('profit_factor', 0):.2f})")
+              if promoted:
+                  lines.append("**Promoted:** " + ", ".join(promoted[:10]))
+              if suppressed:
+                  lines.append("**Suppressed:** " + ", ".join(suppressed[:10]))
+              lines.append("")
+
+          # Walk-forward summary
+          if os.path.isfile("data/walkforward_results.json"):
+              with open("data/walkforward_results.json") as f:
+                  wf = json.load(f)
+              n_win = len(wf.get("windows", []))
+              lines.append(f"### Walk-Forward Validation ({n_win} windows)")
+              improvements = [w["improvement"] for w in wf.get("windows", []) if w.get("improvement") is not None]
+              if improvements:
+                  import statistics
+                  lines.append(f"- Avg PF improvement: {statistics.mean(improvements):+.2f}")
+                  lines.append(f"- Windows where promoted > all: {sum(1 for i in improvements if i > 0)}/{len(improvements)}")
+              lines.append("")
+
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as f:
+                  f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          PYEOF

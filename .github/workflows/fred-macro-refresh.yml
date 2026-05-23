@@ -1,0 +1,42 @@
+name: FRED Macro Refresh
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # every 6 hours
+  workflow_dispatch:
+
+# The default GITHUB_TOKEN is read-only without this, so the "Commit if
+# changed" git push fails 403. (The FRED API 400s in the fetch step are
+# non-fatal warnings the sidecar tolerates — the push was the real failure.)
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch FRED macro indicators
+        run: python tools/fred_macro_sidecar.py
+
+      - name: Commit if changed
+        run: |
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh "auto: FRED macro context refresh $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]" tools/data/fred_macro_context.json
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add tools/data/fred_macro_context.json
+            git diff --cached --quiet || git commit -m "auto: FRED macro context refresh $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

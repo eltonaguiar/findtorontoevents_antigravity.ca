@@ -1,0 +1,28 @@
+---
+description: When deploying and testing locally, use "Deploy and Fix Local" skill—run local server (serve_local.py), Playwright verify:local; if events fail use fix-toronto-events, if nav fails use fix-nav-menu; worst case refer to E:\findtorontoevents.ca.
+globs: 
+alwaysApply: false
+---
+
+# Deploy and Fix Local (Cursor action)
+
+When the user asks to **deploy and test locally**, **verify localhost**, **ensure no JavaScript errors after changes**, or **check Toronto Events load on localhost**:
+
+## What to do
+
+1. **Use the skill:** `.cursor/skills/deploy-and-fix-local/SKILL.md`
+2. **Run local verification:** `npm run verify:local`
+   - Starts local server via Playwright (or ensure `python tools/serve_local.py` is running).
+   - Runs events-loading and no_js_errors specs against http://localhost:9000.
+3. **If events do not load** (skeleton only, SyntaxError, no filter bar): use **fix-toronto-events** skill, apply fixes, then re-run `npm run verify:local`.
+4. **If nav menu is wrong:** use **fix-nav-menu** skill; after edits re-run local verification (nav changes can break events).
+5. **Worst case:** If events still fail, refer to sister project **E:\findtorontoevents.ca** for working events patterns.
+
+## Commands
+
+| Command | Purpose |
+|--------|--------|
+| `python tools/serve_local.py` | Start local server (required; do not use `python -m http.server`). |
+| `npm run verify:local` | Full local verification (events + no JS errors). |
+
+Report: **PASS** (events load, no JS errors) or **FAIL** with first failing check and which skill to apply (fix-toronto-events or fix-nav-menu).

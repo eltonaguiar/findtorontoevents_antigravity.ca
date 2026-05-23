@@ -1,0 +1,177 @@
+name: Deploy findtorontoevents.ca next/events.json
+# Uploads next/events.json (the event feed consumed by the live React bundle)
+# to the 50webs FTP host whenever it changes on main. Without this, the live
+# site stays stuck on whatever events.json was last manually uploaded — which
+# is why it had no April 17 events visible even after the scraper committed
+# fresh data to main.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'next/events.json'
+      - 'last_update.json'
+      - 'metadata.json'
+      - 'next/metadata.json'
+      - 'data/metadata.json'
+      - 'TORONTOEVENTS_ANTIGRAVITY/metadata.json'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    # Same concurrency key as index deploy — serialize FTP writes.
+    concurrency:
+      group: fte-ftp-deploy
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: false
+
+      - name: Fix orphan submodule gitlinks (openclaude post-checkout noise)
+        run: bash .github/scripts/fix_orphan_submodules.sh
+
+      - name: Upload next/events.json to findtorontoevents.ca (50webs FTP)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys, time
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+          local_path = 'next/events.json'
+          if not os.path.exists(local_path):
+              print(f'File not found: {local_path}'); sys.exit(1)
+          size = os.path.getsize(local_path)
+          print(f'Connecting to {host}...')
+          ftp = ftplib.FTP(host, timeout=120)
+          ftp.login(user, pw)
+          ftp.cwd('/findtorontoevents.ca')
+          # Ensure next/ dir exists on the remote host.
+          try:
+              ftp.cwd('next')
+          except ftplib.error_perm:
+              ftp.mkd('next')
+              ftp.cwd('next')
+          # Backup previous events.json in-place.
+          try:
+              with open('/tmp/events_bak.json', 'wb') as f:
+                  ftp.retrbinary('RETR events.json', f.write)
+              with open('/tmp/events_bak.json', 'rb') as f:
+                  ftp.storbinary('STOR events.json.bak', f)
+              print('Backup created: next/events.json.bak')
+          except Exception as e:
+              print(f'Backup skipped: {e}')
+          # Upload fresh events.json.
+          with open(local_path, 'rb') as f:
+              ftp.storbinary('STOR events.json', f)
+          ftp.quit()
+          print(f'Deployed next/events.json ({size} bytes) to findtorontoevents.ca')
+          "
+
+      - name: Upload last_update.json (if present)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          test -f last_update.json || { echo 'last_update.json missing — skipping'; exit 0; }
+          python3 -c "
+          import ftplib, os
+          host, user, pw = os.environ['FTP_HOST'], os.environ['FTP_USER'], os.environ['FTP_PASS']
+          ftp = ftplib.FTP(host, timeout=60); ftp.login(user, pw)
+          ftp.cwd('/findtorontoevents.ca')
+          with open('last_update.json', 'rb') as f:
+              ftp.storbinary('STOR last_update.json', f)
+          ftp.quit()
+          print('Deployed last_update.json')
+          "
+
+      - name: Upload metadata.json (homepage Last updated header)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          test -f metadata.json || { echo 'metadata.json missing — skipping'; exit 0; }
+          test -f next/metadata.json || cp metadata.json next/metadata.json
+          python3 -c "
+          import ftplib, os
+          host, user, pw = os.environ['FTP_HOST'], os.environ['FTP_USER'], os.environ['FTP_PASS']
+          ftp = ftplib.FTP(host, timeout=120); ftp.login(user, pw)
+          ftp.cwd('/findtorontoevents.ca')
+          with open('metadata.json', 'rb') as f:
+              ftp.storbinary('STOR metadata.json', f)
+          try:
+              ftp.cwd('next')
+          except ftplib.error_perm:
+              ftp.mkd('next')
+              ftp.cwd('next')
+          with open('next/metadata.json', 'rb') as f:
+              ftp.storbinary('STOR metadata.json', f)
+          for subdir in ('data', 'TORONTOEVENTS_ANTIGRAVITY'):
+              ftp.cwd('/findtorontoevents.ca')
+              try:
+                  ftp.cwd(subdir)
+              except ftplib.error_perm:
+                  ftp.mkd(subdir)
+                  ftp.cwd(subdir)
+              with open('metadata.json', 'rb') as f:
+                  ftp.storbinary('STOR metadata.json', f)
+              print(f'Deployed metadata.json to /findtorontoevents.ca/{subdir}/')
+          ftp.quit()
+          print('Deployed metadata.json to /, /next/, /data/, /TORONTOEVENTS_ANTIGRAVITY/')
+          "
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          echo "Checking live /next/events.json..."
+          LIVE_COUNT=$(curl -sL "https://findtorontoevents.ca/next/events.json?t=$(date +%s)" | python3 -c "import json, sys; print(len(json.load(sys.stdin)))")
+          REPO_COUNT=$(python3 -c "import json; print(len(json.load(open('next/events.json'))))")
+          echo "Live events count:  $LIVE_COUNT"
+          echo "Repo events count:  $REPO_COUNT"
+          if [ "$LIVE_COUNT" = "$REPO_COUNT" ]; then
+            echo "✓ Live matches repo"
+          else
+            echo "::warning::Live count ($LIVE_COUNT) != repo count ($REPO_COUNT) — CDN or server-side cache may need a moment"
+          fi
+          if [ -f metadata.json ]; then
+            echo "Checking live metadata.json..."
+            curl -sL "https://findtorontoevents.ca/metadata.json?t=$(date +%s)" | python3 -c "
+          import json, sys
+          live = json.load(sys.stdin)
+          repo = json.load(open('metadata.json'))
+          print('Live totalEvents:', live.get('totalEvents'), 'lastUpdated:', live.get('lastUpdated'))
+          print('Repo totalEvents:', repo.get('totalEvents'), 'lastUpdated:', repo.get('lastUpdated'))
+          if live.get('totalEvents') != repo.get('totalEvents'):
+              print('::warning::metadata totalEvents mismatch (cache may lag)')
+          "
+          fi
+          for path in data/metadata.json TORONTOEVENTS_ANTIGRAVITY/metadata.json; do
+            echo "Checking live /$path ..."
+            curl -sL "https://findtorontoevents.ca/$path?t=$(date +%s)" | python3 -c "
+          import json, sys
+          live = json.load(sys.stdin)
+          repo = json.load(open('metadata.json'))
+          if live.get('lastUpdated') != repo.get('lastUpdated'):
+              print('::warning::', '$path', 'lastUpdated', live.get('lastUpdated'), '!=', repo.get('lastUpdated'))
+          else:
+              print('✓', '$path', 'lastUpdated', live.get('lastUpdated'))
+          " || echo "::warning:: could not verify $path"
+          done
+
+      - name: Restore workspace (prevent post-checkout submodule exit 128)
+        if: always()
+        run: bash .github/scripts/fix_orphan_submodules.sh

@@ -1,0 +1,33 @@
+{
+  "strategy_name": "echo_forecast",
+  "class_name": "EchoForecastStrategy",
+  "agent_id": "claude_code_01",
+  "version": "1.0.0",
+  "source": "LuxAlgo Echo Forecast [Pine Script v5] — adapted to Python",
+  "category": "pattern_matching",
+  "description": "Sliding-window correlation finds the most similar historical price pattern to the current window, then projects forward using the subsequent price action of top-K matches. Ensemble weighted by correlation strength.",
+  "indicators": ["Pearson Correlation (sliding window)", "ATR-14", "Z-score normalization"],
+  "entry_conditions": [
+    "Best historical match correlation >= 0.80",
+    "Weighted forecast exceeds 1.0x ATR threshold",
+    "At least 60% of top-K matches agree on direction"
+  ],
+  "exit_conditions": {
+    "take_profit": "entry ± 2.5x ATR-14",
+    "stop_loss": "entry ∓ 1.5x ATR-14"
+  },
+  "parameters": {
+    "window_size": 50,
+    "forecast_horizon": 12,
+    "min_correlation": 0.80,
+    "signal_threshold_atr": 1.0,
+    "tp_atr_mult": 2.5,
+    "sl_atr_mult": 1.5,
+    "top_k": 3
+  },
+  "expected_regime": "any — pattern matching adapts to current structure",
+  "direction": "long_and_short",
+  "academic_reference": "Time series pattern matching via correlation (Berndt & Clifford 1994)",
+  "status": "validating",
+  "created_at": "2026-02-27"
+}

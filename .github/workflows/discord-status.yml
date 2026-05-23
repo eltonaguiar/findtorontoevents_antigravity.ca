@@ -1,0 +1,28 @@
+name: Discord ML Status Report
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Hourly
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  send-status:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: pip install requests
+      
+      - name: Generate and send Discord status
+        # DISABLED: hourly status spam  use Hub page instead
+        # env:
+        #   DISCORD_STATUS_WEBHOOK: ${{ secrets.DISCORD_STATUS_WEBHOOK }}
+        run: echo "Discord status disabled  see Hub at https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/hub/"
+

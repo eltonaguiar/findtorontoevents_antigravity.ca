@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PENNY / MEME — 90-Day Plan — findtorontoevents.ca</title>
+<style>:root{--accent:#ef4444}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>Asset Class 90-Day Plan — PENNY_MEME (Low-Quality Equities: Penny Stocks + Meme Coins) — 2026-05-15</h1>
+<p><strong>Senior Quant Audit</strong> using <code>money-maker-continual-improve</code> skill (brutal skeptical deep-dive on high-risk bucket).<br />
+<strong>Focus</strong>: Dedicated high-risk category (Penny Stocks + Meme Coins) performing far below coin toss (MEMECOIN PF 0.499 / WR 15.7% n=1869; PENNY_STOCK WR 6.76% / PF 0.19 n=148); symbol universe small but illiquid/low-float (8 equity names + ~9-11 crypto memes + dynamic low-cap emissions); primary drag on EQUITY (8/18 speculative tickers) and CRYPTO (volume king but quality disaster); extreme risk management failures (gap risk, manipulation, loose CATEGORY_RISK, no ADV gate); <strong>Recommendation: Full quarantine (0% risk allocation), research-only, NO dedicated high-volatility sleeve</strong>. Already partially enforced in quarantine_manifest + quality_gates but leaks persist. Not investable; toxic to "phenomenal performance" Goal #1.</p>
+<p><strong>Data sources</strong>: <code>audit_dashboard/data/quarantine_manifest.json</code> (MEMECOIN/PENNY_STOCK size_caps max_risk=0, PF 0.499 / WR 6.76%), <code>audit_trail/quality_gates.py:1919-1974</code> (MEMECOIN class-wide block details), <code>reports/kimi_edge_audit_2026-05-11/metrics_by_asset_class.csv</code> (exact stats + rolling_PENNY_STOCK.png / rolling_MEMECOIN.png), <code>audit_dashboard/data/dashboard_data.json</code> (2026-05-15T02:28Z: symbol_performance small-n meme winners, recent_closed 150 lowq/3500 total, WIFUSDT 2799 occ, DOGE failing sym_track_wr 29.6%, smart_picks excluded_reasons.meme_long_bear), <code>alpha_engine/config.py</code> (CATEGORY_RISK "meme"/"penny" looser SL/TP/hold, EQUITY_SYMBOLS:6 penny+2 meme, CRYPTO_SYMBOLS ~11 meme, SECTOR_MAP, TRAILING_STOP), <code>alpha_engine/equity_strategies.py:160</code> (penny_volume_breakout), <code>alpha_engine/community_strategies.py:631</code> (community_penny_volume_surge), <code>alpha_engine/ml_ranker.py:420</code> (CATEGORY_MAP penny=3/meme=4), <code>alpha_engine/scanner.py</code>, <code>reports/asset_class_90day_plan_EQUITY_2026-05-15.md</code> (P0 universe split, 8 speculative drag), <code>reports/asset_class_90day_plan_CRYPTO_2026-05-15.md</code> (M-038 MEMECOIN quarantine pending, shrink to 25 liquid), <code>reports/SUPREME_PLAN_90days.md</code>, <code>reports/grok_money_maker_audit_transcript_2026-05-15.md</code> (explicitly queued as "worst categories"), <code>reports/kimi_edge_audit_2026-05-11/raw_picks_clean.csv</code> + comprehensive_analysis_report.md.</p>
+<p><strong>Current Charter context</strong> (from CLAUDE.md / master plan / dashboard): No dedicated "PENNY_MEME" in asset_class_health dropdown (mixed into EQUITY PF 1.57/51.9%/n=420 T2-candidate and CRYPTO 1.36/46.7%/n=8011 sub-T2); but quarantine_manifest + quality_gates treat as separate classes with 0% risk cap ("Class quarantined"). EQUITY concentration on AMD (11.65%) but 8/18 tickers speculative pennies/memes (NIO/LCID/RIVN gaps-to-zero, GME/AMC sentiment); CRYPTO heavy WIF/DOGE/PEPE emissions (high occ in dashboard_data). Master plan / SUPREME_PLAN queues this deep-dive + M-038. Kimi F13/F14 + 5-agent swarm 2026-05-12 flagged as structurally broken (synthetic fixtures, kimi_tracker leaks). Sizing_allowed false for these buckets by design. "Penny / Meme" called out by user as worst in /audit dropdown — worse than FOREX (PF 0.81).</p>
+<hr />
+<h2>Step 1: Establish Brutal Baseline (PENNY_MEME as standalone high-risk bucket)</h2>
+<p><strong>Live / Historical performance</strong> (quarantine_manifest.json + kimi_edge_audit_2026-05-11/metrics_by_asset_class.csv + dashboard_data.json + quality_gates.py):</p>
+<ul>
+<li><strong>MEMECOIN class</strong> (crypto memes: DOGEUSDT, SHIBUSDT, PEPEUSDT, WIFUSDT, FARTCOINUSDT, BONKUSDT, BRETTUSDT, TRUMPUSDT, POPCATUSDT + dynamic): </li>
+<li>Kimi audit resolved n=1869: WR 15.73%, n_wins=294 / n_losses=1575, avg_return_pct=-3.5784%, median=0, std=24.52%, cumulative_pnl_pct=-6688.05%, Sharpe_annualized=-2.7877, Sortino=-2.36, MaxDD=-6688%, Calmar=-0.195, <strong>PF=0.499</strong>, expectancy=-3.5784%, long_WR 15.24%, short 16.81%. </li>
+<li>Quarantine_manifest: PF 0.499 on n=1869 (matches), max_pct_of_risk=0 ("Class quarantined").</li>
+<li>Production emissions volume even higher (raw_picks_clean n=123k+ for related) but still negative edge (PF~0.58 in some slices).</li>
+<li>Dashboard 2026-05-15 symbol_performance (small-n survivors only): PNUTUSDT 7/7 100% +23.5, POPCATUSDT 5/5 100%, BRETTUSDT 5/5 100%, TRUMPUSDT 8/5 62.5% +8 — <strong>illusory</strong> (n&lt;=9, selection bias in consensus list of 50; real forward WR on strats ~30-40%).</li>
+<li>
+<p>Recent_closed sample (DOGEUSDT): LOST, SL_HIT, quan_engine (blocked for MEMECOIN), grade D, trust WATCH, sym_track_wr 29.6%, wf_verdict FAILING, ml_composite_grade D, high concentration penalties.</p>
+</li>
+<li>
+<p><strong>PENNY_STOCK class</strong> (equity: PLTR, SOFI, RIVN, LCID, NIO, SNDL + GME, AMC memes):</p>
+</li>
+<li>Kimi resolved n=148: WR 6.76% (10 wins / 138 losses), avg_return=-0.8659%, std=4.07%, cum_pnl=-128.15%, Sharpe=-3.3786, Sortino=-1.80, <strong>PF=0.1939</strong> (catastrophic), expectancy=-0.8659%, long_WR 3.76% (short 33% on tiny 15 trades), MaxDD=-129%.</li>
+<li>Quarantine_manifest: WR 6.76% on n=148 ("noise"), max_risk=0.</li>
+<li>
+<p>In EQUITY live: 8/18 tickers (per EQUITY 90d plan); contributes to narrow speculative universe, gap risk (NIO/LCID/RIVN can gap -30-80% on delisting/news), but some AMD/PLTR/SOFI momentum lift hides it. Recent symbol_perf shows AMC 9 trades 8 wins 88.9% +46.99 (again small-n cherry).</p>
+</li>
+<li>
+<p><strong>Overall bucket</strong>: Sub-coin-toss across thousands of trades. Negative expectancy, extreme negative Sharpe, massive drawdowns. High kurtosis/skew (fat tails from gaps/pumps). Dashboard asset_class_health has no entry (intentionally hidden/mixed); effective contribution to EQUITY/CRYPTO realized PnL is drag (inflates vol, eats edge on liquid names via concentration penalties in ml_composite). 150 lowq picks in 3500 recent_closed (~4% but high-impact on quality perception). Meme_long_bear gate exists but 0 triggers (insufficient filter).</p>
+</li>
+</ul>
+<p><strong>Symbol universe size, liquidity, concentration risk</strong>:
+- Static: EQUITY 8 names (6 penny high-beta EV/tech/spec: NIO/LCID/RIVN/SNDL/PLTR/SOFI; 2 meme: GME/AMC). CRYPTO ~9-11 meme (DOGE/SHIB/PEPE/FARTCOIN/BONK/FLOKI/WIF/BRETT/TRUMP + POPCAT/MEW/NEIRO variants in SECTOR_MAP).
+- Dynamic: Scanners (volume_surge, community_penny, goldmine_meme, incubator, kimi_tracker, quan_engine) + new launches emit far more (WIF 2799 dashboard occ, DOGE 466; PNUT/POPCAT fresh memes). Total unique lowq &gt;&gt;20.
+- Liquidity: <strong>Poor/illiquid by design</strong>. Legacy config comments: "Low liquidity (&lt;$1M vol), prone to pump/dump", "Sub-$1M volume... illiquid". No runtime ADV gate (unlike crypto research proposals). Low float (pennies), thin orderbooks (memes), high slippage on entry/exit. Data fragility (yfinance/stooq fails more on micro-caps; equity_price_failover.py).
+- Concentration: In CRYPTO top counts include multiple memes; EQUITY AMD dominates but speculative names add idiosyncratic risk. Violates diversification (one tweet = -50% gap).</p>
+<p><strong>Why this bucket drags EQUITY / CRYPTO / overall stats</strong>:
+- Volume illusion: Volatile names = easy "signals" for vol/breakout/volume_surge strats → high emission count → inflates n in CRYPTO (8011) and pollutes EQUITY (420 from 18 narrow). But realized edge negative.
+- Hidden in aggregates: Main class PF/WR improved post-resolver-v2 / quality_gates (EQUITY T2-candidate, CRYPTO 1.36), but sub-bucket PF&lt;0.5 drags the "elite" strategies (e.g. in ml_composite source_concentration_penalty, strat_concentration). Kimi/quan/goldmine (historical 18%/7% vol @ PF 0.35-0.70 in CRYPTO autopsy) specialized in memes/pennies.
+- Sentiment vs factor: GME/AMC retail frenzy, meme coins twitter/cex pumps — not persistent academic edge (contrast VIX-regime momentum on LC or COT on CT=F). Correlated to noise, not macro/regime.
+- From EQUITY 90d: "pennies/memes inflate vol, gaps, correlation to retail sentiment"; research backtests use clean 30 LC (no overlap), live on mixed 18.
+- From CRYPTO 90d: ~15% memes in counts, "high % low-liquidity / meme / new alts dilute edge"; M-038 pending.
+- System-wide: Contributes to "sub-T2" labels, high MDD tail risk, poor DSR/Wilson on affected strats, leaks past smart_picks (meme_long_bear 0 despite gate).</p>
+<p><strong>Earnings/SEC/fundamentals or on-chain usage</strong>: None meaningful. Pennies: yf wrapper only (no EDGAR 10-K depth, no float/insider for low-cap). Meme coins: on-chain (coinglass funding, dune?) used in some strats but overwhelmed by hype noise; no real "value" factors. Pure technical/sentiment/vol — fails forward (wf_p_value high, failing verdicts).</p>
+<p><strong>Outcome tracking / DB reality</strong>: 3500 recent_closed includes 150 lowq; many WATCH tier, paper_trade=False, after_cost_net missing (slippage not modeled). Quarantine_manifest is source of truth but enforcement in quality_gates.py (BLOCKED_ASSET_STRATEGY_PAIRS etc) + scanner may have gaps (DOGE from quan_engine still in sample). Ghost rows=0 system-wide but lowq historical polluted by kimi synthetic fixtures (1.6M backtest rows fake).</p>
+<p><strong>GitHub Actions / Data flow + recent activity</strong>: Scanners emit → score_booster (ml_ranker uses CATEGORY_MAP penny/meme) → quality_gates (passes_active_gate checks? but class-level blocks in BLOCKED_*) → dashboard. Recent: kimi_edge_audit_2026-05-11 swarm, 5-agent synthesis 2026-05-12, quarantine_manifest 2026-05-12, EQUITY/CRYPTO 90d plans flag it, SUPREME_PLAN queues this. No dedicated sleeve wired.</p>
+<p><strong>Summary baseline</strong>: Far worse than coin toss (PF 0.2-0.5, WR 7-16%, negative Sharpe -2.8 to -3.4, thousands of trades negative expectancy). Small-n "winners" in symbol_perf are survivors bias / noise. Drags main classes via volume bloat + tail risk. Universe illiquid/speculative. Risk params deliberately looser (failure). Already quarantined on paper (0% risk) but needs ruthless enforcement + removal from emitters. Matches "worst categories" user callout. Not Tier anything — Graveyard candidate.</p>
+<hr />
+<h2>Step 2: Identify the Single Best Pilot Candidate (within PENNY_MEME)</h2>
+<p><strong>Filters</strong>: Any sub with PF&gt;1.0 / WR&gt;50% / n≥30 sustained post-noise + explainable non-manipulated edge + liquidity? <strong>None exist</strong>.</p>
+<ul>
+<li><strong>No pilot recommended</strong>. All evidence (kimi n=1869+148, dashboard recent, quarantine rationale) shows structural negative alpha. "High-vol sleeve" would be pure speculation/gambling, not quant edge (contrast COMMODITY COT real factor or EQUITY VIX-regime on liquid).</li>
+<li>Justification for none: External replication (e.g. meme coin indices, penny ETF backtests, Hyperliquid low-cap, MyFXBook retail meme) also show negative long-term (retail favorite = smart money exit). Academic: low-float anomalies decay fast post-publication; manipulation (wash trading, twitter pumps) not replicable in size. Building sleeve violates "size up where edge best worth the risk" + "institutional/hedge-fund-grade" (Tier 2 min PF&gt;1.5/WR&gt;50/MDD&lt;20).</li>
+<li>Secondary: Research-only hypothesis testing (e.g. extreme vol mean-reversion on &gt;5x ADV spikes with hard 0.5% micro-size + 1d hold max, strict liquidity gate) <strong>only</strong> after 6m+ paper on clean data, DSR&gt;0.95, no leaks. But expectation: still fails (data snooping on noise).</li>
+<li>Gap vs current: EQUITY/CRYPTO still emit via volume/breakout strats on these names (community_penny_volume_surge, penny_volume_breakout, goldmine_meme etc); CATEGORY_RISK allows -15% SL / +35% TP on meme (vs equity -1.5%/+2.5%); no ADV/float/gap circuit breaker.</li>
+</ul>
+<hr />
+<h2>Step 3: Gap Analysis (PENNY_MEME)</h2>
+<table>
+<thead>
+<tr>
+<th>Gap Type</th>
+<th>Diagnostic (data-backed)</th>
+<th>Severity</th>
+<th>Typical Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Performance (sub-coin-toss, negative expectancy)</td>
+<td>MEMECOIN PF 0.499 / WR 15.7% n=1869 (kimi + manifest); PENNY_STOCK WR 6.76% / PF 0.1939 n=148; Sharpe -2.8 to -3.4; cum_pnl -6.7k / -128%; recent DOGE sym_track_wr 29.6% failing. Small-n 100% WR illusions in symbol_perf.</td>
+<td><strong>P0 Critical</strong></td>
+<td>Full class quarantine (already in manifest/gates for MEMECOIN 20+ strats + PENNY deep_oversold); enforce 0% in position_sizer / risk; delete or research-only all emitters.</td>
+</tr>
+<tr>
+<td>Symbol universe / liquidity (illiquid + low-float manipulation)</td>
+<td>8 equity (PLTR/SOFI/RIVN/LCID/NIO/SNDL/GME/AMC) + 9-11 crypto memes (DOGE/WIF/PEPE etc) + dynamic; low ADV (&lt;$1M comments); no runtime is_liquid() gate (scanner.py:877 loose); WIF 2799 occ, high slippage/gap risk (NIO to zero).</td>
+<td><strong>P0</strong></td>
+<td>Split in config.py: LARGE_CAP_EQUITY (20-30 ADV&gt;$5M) + SPECULATIVE_RESEARCH_ONLY (move 8); CRYPTO LIQUID_25 (exclude memes per M-038); add ADV + float + min_volume gate in production_scanner.py + equity_strategies + crypto paths before emit. Deprecate penny/meme cats.</td>
+</tr>
+<tr>
+<td>Risk management failures (loose params + no gap/ADV model)</td>
+<td>CATEGORY_RISK "meme" (-15% SL / +35% TP / hold 3d), "penny" (-12%/25%/5d) vs "equity" (-1.5%/2.5%/7d); TRAILING_STOP looser; no overnight gap circuit, no low-float ban, no slippage_validator wired (PR#1026 scaffold); CATEGORY_RISK_FAST even tighter but still permissive.</td>
+<td><strong>P0</strong></td>
+<td>Remove or map penny/meme to ultra-tight or BLOCK in CATEGORY_RISK / risk.py; add gap_risk_filter (e.g. no hold if float&lt;10M or ADV&lt;2M or earnings proximity); wire vol-target + ADV-based sizer; hard max 0.1% risk per name.</td>
+</tr>
+<tr>
+<td>Strategy bloat / toxic emitters</td>
+<td>penny_volume_breakout, community_penny_volume_surge (equity_strategies/community_strategies); goldmine_meme, incubator_gainer, meme_signals, kimi_tracker, quan_engine on MEMECOIN (20+ blocked in quality_gates:1919); ml_ranker CATEGORY_MAP treats as distinct but leaks.</td>
+<td><strong>P0</strong></td>
+<td>Block all in BLOCKED_ASSET_STRATEGY_PAIRS + strategy_blocklist.py; prune from _RAW_EQUITY_STRATEGIES / COMMUNITY / baby_strategies; research-only dir for vol_surge ideas.</td>
+</tr>
+<tr>
+<td>Data quality / synthetic leaks / tracking</td>
+<td>Kimi synthetic fixtures (PEPE training leak, 1.6M fake backtest rows); yf/stooq fragile on micro; no PIT for low-cap; resolver noise (similar COT over-emission); at_signal_outcomes incomplete for lowq.</td>
+<td><strong>P1</strong></td>
+<td>Ghost sweep + kimi_tracker full block (already partial); strict data source whitelist for research; DB Freshness + outcome coverage for MEMECOIN/PENNY tables; no synthetic in prod.</td>
+</tr>
+<tr>
+<td>Hidden regime / factor not applicable</td>
+<td>No persistent factor (VIX hurts pennies more per equity_strategies:169 "VIX&gt;30: penny crushed"); sentiment-driven dies in risk-off. Research on clean LC + regime succeeds; here opposite.</td>
+<td><strong>P2</strong></td>
+<td>None for prod; if research, test only VIX&gt;30 short-bias or extreme vol-reversion (paper first).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why PF &lt;&lt;1 and WR&lt;&lt;30%?</strong> Scanners exploit vol (easy breakouts on low-float pumps) but no edge persistence; manipulation + gaps create asymmetric losses (big losers, capped winners); loose risk params designed for "high vol" amplify; historical sources (kimi/goldmine/quan) were synthetic/noisy on this exact bucket; forward tests fail (wf_verdict FAILING, low sym_track_wr); research backtests avoid these names entirely. Data quality &gt; model: noise floor dominates. Matches "data quality &gt; model sophistication" + "prune &gt; add".</p>
+<hr />
+<h2>Step 4: Decision Framework for Strategies (live &gt;60d)</h2>
+<ul>
+<li><strong>Statistically significant negative alpha (PF&lt;1.0 or WR&lt;40% sustained, n&gt;30 on sub)</strong>: <strong>Delete or hard quarantine</strong> (BLOCKED_ + probation + 0 sizing). <strong>All</strong> penny/meme dedicated or heavy emitters qualify (penny_volume_breakout if low realized; community_penny_volume_surge; goldmine_meme, incubator_gainer, meme_signals, kimi_tracker, quan_engine on MEMECOIN, many more per quality_gates 20+ list).</li>
+<li><strong>Only keep if survives walk-forward + live paper with real costs + ADV gate</strong>: None currently. Move entire bucket to research-only (hypothesis: "does extreme vol surge + ADX filter work on $10M+ ADV subset?"). No production emissions.</li>
+<li><strong>Per master (M-038 + EQUITY P0 split + CRYPTO shrink)</strong>: Enforce class-level quarantine; deprecate from EQUITY_SYMBOLS/CRYPTO_SYMBOLS; update size_caps to formal 0%; add to dashboard as QUARANTINED.</li>
+<li><strong>Strategies to delete/invert/promote (file paths)</strong>:</li>
+<li><strong>Quarantine/delete (P0)</strong>: All MEMECOIN/PENNY emitters → <code>audit_trail/quality_gates.py</code> (expand BLOCKED_ASSET_STRATEGY_PAIRS + class-wide), <code>alpha_engine/strategy_blocklist.py</code>, <code>config.py</code> (remove or isolate to RESEARCH_SPECULATIVE_SYMBOLS), <code>alpha_engine/equity_strategies.py</code> (deprecate penny_volume_breakout + community_penny), <code>community_strategies.py</code>, <code>ml_ranker.py</code> (remove or hard-block penny/meme categories in live path), <code>scanner.py</code> + <code>production_scanner.py</code> (add is_high_risk_low_quality() gate returning []).</li>
+<li><strong>Research-only</strong>: Vol surge / breakout ideas in separate baby/research dir; test with strict filters (ADV&gt;$10M, no overnight for pennies, 0.5% micro size).</li>
+<li><strong>Promote (in clean classes only)</strong>: VIX/liquidity gates, trust_score, ADV filters from EQUITY/CRYPTO plans.</li>
+<li>Reference: <code>quality_gates.py:1919</code> (MEMECOIN block), <code>quarantine_manifest.json:9-10</code> (size_caps 0), <code>config.py:173</code> (CATEGORY_RISK), <code>equity_strategies.py:172</code> (penny_symbols filter), <code>non_crypto_quality_gate.py:115</code>.</li>
+</ul>
+<hr />
+<h2>Step 5: Leverage AI Keys Intelligently (High-ROI Prompts)</h2>
+<p>(Per skill: ideation / literature / deconstruction — not prod code.)</p>
+<p><strong>Feature Ideation (PENNY_MEME)</strong>: </p>
+<pre><code>Given kimi_edge_audit metrics (MEMECOIN n=1869 PF=0.499 WR=15.7% Sharpe=-2.79; PENNY_STOCK n=148 WR=6.76% PF=0.19) + dashboard recent_closed (150 lowq picks, DOGE sym_track_wr=29.6% failing from quan_engine) + config CATEGORY_RISK looser for meme/penny + community_penny_volume_surge emitting on GME/NIO/WIF + no ADV gate: design 3 concrete production gates (1. liquidity/ADV + float filter, 2. gap_risk overnight ban for &lt;X float, 3. category risk hard map to BLOCK) with pseudocode for scanner.py / quality_gates.py / position_sizer. Quantify expected volume reduction (target -95% lowq emissions) and PF lift on parent EQUITY/CRYPTO (0.1-0.2). Include test against 2026-05-15 dashboard_data recent_closed distribution.
+</code></pre>
+<p>(Use for research only; verify with CPCV/DSR on liquid subsets.)</p>
+<p><strong>Deconstruction</strong>: "Why do volume surge strats 'work' in backtest but fail live on pennies/memes?" → Pump/dump + lookahead in low-float data + no slippage model + retail herding decay.</p>
+<hr />
+<h2>Step 6: 30/60/90 Day Execution Plan (Quarantine &amp; Cleanup)</h2>
+<p><strong>30 Days (P0 — Enforce zero-risk quarantine + stop leaks)</strong>:
+- Formalize PENNY_STOCK / MEMECOIN as first-class in BLOCKED_ASSET_STRATEGY_PAIRS + BLOCKED_SOURCE_SYSTEMS (expand from quality_gates.py:1919 list of 20+ + penny_deep_oversold); update quarantine_manifest.json with current date + full rationale + rolling stats from kimi.
+- In <code>alpha_engine/config.py</code>: Create RESEARCH_ONLY_SPECULATIVE_SYMBOLS (move 8 equity penny/meme + all meme coins); add <code>is_low_quality_or_meme(symbol)</code> returning True for them + dynamic low-cap heuristic (e.g. yf market_cap &lt; $2B or binance ADV &lt; $5M). Gate in scanner.py:877, production_scanner, equity_strategies (remove penny_symbols loop or return []), community_strategies, ml_ranker live path.
+- Wire hard block in <code>audit_trail/quality_gates.py</code> + <code>non_crypto_quality_gate.py</code> / crypto equivalent (class == "MEMECOIN" or "PENNY_STOCK" or cat in ("penny","meme") → fail gate, 0 conf).
+- Update CATEGORY_RISK / TRAILING_STOP: map "penny"/"meme" to BLOCK or ultra-micro (0.1% max, 1d hold, tight 0.5% SL).
+- Add ADV + gap filter (e.g. using cached CoinGecko/Binance or yf volume; ban if &lt; threshold or pre-earnings low-float).
+- Success: 0 new emissions of lowq symbols in next 30d dashboard recent_closed; quarantine_manifest size_caps enforced in live risk; EQUITY/CRYPTO concentration shifts fully to liquid (AMD/BTC + LC/L1); no "meme_long_bear" needed because upstream block.
+- Files: config.py, quality_gates.py, scanner.py, equity_strategies.py, community_strategies.py, production_scanner.py. Small PRs, Wire-Up, swarm review.</p>
+<p><strong>60 Days (P1 — Quantify hidden drag + research hygiene)</strong>:
+- Run full autopsy on 2026-02 to 2026-05 lowq emissions: PnL attribution, slippage estimate (5-50bp+ on illiquids), gap loss % (overnight/weekend), source breakdown (kimi/quan/goldmine share of negative).
+- Backtest liquidation cost model + realistic fill on these names (use tick data if avail or conservative 0.5-2% roundtrip); re-compute EQUITY/CRYPTO PF with/without lowq volume (expect +0.1-0.25 PF lift, -30-50% vol).
+- Prune all lowq strats from baby_strategies / incubator / goldmine families; move vol_surge logic to research/ with strict ADV gate + paper-only.
+- Update edge_stability reports, health/ daily, dashboard_generator to tag or exclude PENNY_MEME from asset_class_health (or show as QUARANTINED with red "0 risk" pill).
+- 30d paper on any research hypothesis (extreme vol mean-rev on filtered &gt;$10M ADV subset only): target DSR&gt;0.9, no MDD breach, n&gt;50. Expect failure.
+- Success: Documented drag quantification (e.g. "PENNY_MEME contributed -X% to EQUITY MDD, Y% volume for -Z% PnL"); zero leaks; master plan M-038 closed as "quarantined, no sleeve".</p>
+<p><strong>90 Days (P2 — Permanent deprecation + dashboard hygiene)</strong>:
+- If research paper fails (expected): Delete lowq-specific strats (or archive with "graveyard" tag); remove penny/meme cats from CATEGORY_MAP / SECTOR_MAP; deprecate from any live scanners. Update SUPREME_PLAN / MASTER_ACTION_PLAN_2026-05-15.md Section 21 (mark complete, no future M-0xx for sleeve).
+- Dashboard: Add /audit note "PENNY_MEME / MEMECOIN / PENNY_STOCK: Quarantined (research-only, 0% allocation). Historical PF&lt;0.5 / WR&lt;16%. See quarantine_manifest.json." Remove from any dropdown or mark red.
+- External validation: Compare to public (e.g. MEME index performance, penny stock survivorship studies, Hyperliquid low-cap books) — confirm no scalable edge.
+- If miraculously research succeeds (unlikely, require CPCV + live paper + costs + DSR + corr&lt;0.3 to main + swarm consensus): Propose 0.05-0.1% micro sleeve with draconian rules (max 2 names, 0.5% risk total, 1d max hold, ADV gate, VIX&gt;25 only, full costs model). But bar is Tier-1 on paper first.
+- Overall: Bucket contributes 0 to live PnL / risk; EQUITY becomes clean LC + VIX (path to T2+), CRYPTO focused liquid + onchain (T2 lift); system-wide "phenomenal across ALL" advanced by removing toxic waste. No more "Futures / Penny / Meme worse than coin toss".
+- Risks avoided: No "high-vol sleeve" gambling; no mutation of dead edge (per MUTATION_THREE_AXIS_PROTOCOL.md — class-level PF&lt;0.5 is kill, not drift); no silent leaks; evidence-first (kimi + manifest + dashboard + code).</p>
+<p><strong>Risks / Anti-patterns avoided</strong>: No revival of negative-alpha bucket via "high vol" story; no new complex ML on noise; no production sizing without 6m+ clean paper + external replication; prune/delete &gt; "fix"; protect main EQUITY/CRYPTO stats; follow AGENTS.md (no auto heavy scripts, swarm for changes, small PRs); respects "mutate-before-kill" (already past kill threshold via data).</p>
+<p><strong>Files to touch (Wire-Up compliant, small focused PRs)</strong>: <code>audit_dashboard/data/quarantine_manifest.json</code> (update date/rationale), <code>audit_trail/quality_gates.py</code> (expand blocks + class gates), <code>alpha_engine/config.py</code> (RESEARCH_ONLY lists + is_low_quality gate + CATEGORY_RISK BLOCK), <code>alpha_engine/equity_strategies.py</code> + <code>community_strategies.py</code> (deprecate emitters or hard return []), <code>alpha_engine/scanner.py</code> + <code>production_scanner.py</code> (upstream gate), <code>alpha_engine/ml_ranker.py</code> (block categories), <code>reports/MASTER_ACTION_PLAN_2026-05-15.md</code> + <code>SUPREME_PLAN_90days.md</code> (status close M-038), dashboard_generator / template.html (quarantine pill). Reference kimi_edge_audit_2026-05-11/ for evidence. All via clean branches + peer/swarm review per AGENTS.md.</p>
+<p><strong>Expected impact</strong>: -100% PnL/risk from bucket (was negative); +0.1-0.25 PF / lower MDD/vol on EQUITY (clean 15-20 LC) and CRYPTO (25 liquid); reduced false signals / concentration penalties; cleaner n in dashboard (less 150 lowq noise); institutional-grade hygiene (no sub-7% WR buckets). Positions system for Tier-2+ across classes without toxic drag. Avoids FOREX/PENNY trap of slow bleed.</p>
+<p><strong>Next</strong>: No deep-dive subagent for "sleeve design" (edge falsified). If user requests external replication (e.g. specific meme mean-rev paper), spawn then. Update links in updates/index.html + findtorontoevents.ca/audit after PR. Prioritize COMMODITY real-money + EQUITY VIX wire + ETF sector rotation.</p>
+<p><strong>References</strong> (absolute paths):
+- Data: <code>/mnt/e/findtorontoevents_antigravity.ca/audit_dashboard/data/quarantine_manifest.json</code>, <code>/mnt/e/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json</code> (symbol_performance, recent_closed, smart_picks_feed), <code>/mnt/e/findtorontoevents_antigravity.ca/reports/kimi_edge_audit_2026-05-11/metrics_by_asset_class.csv</code> (MEMECOIN/PENNY_STOCK rows), <code>/mnt/e/findtorontoevents_antigravity.ca/reports/kimi_edge_audit_2026-05-11/raw_picks_clean.csv</code>, rolling_MEMECOIN.png, rolling_PENNY_STOCK.png
+- Master/Code: <code>/mnt/e/findtorontoevents_antigravity.ca/audit_trail/quality_gates.py:1919</code> (MEMECOIN class-wide + 20+ blocks), <code>alpha_engine/config.py:173</code> (CATEGORY_RISK meme/penny), <code>587</code> (EQUITY_SYMBOLS), <code>alpha_engine/equity_strategies.py:160</code> (penny_volume_breakout + penny_symbols), <code>alpha_engine/community_strategies.py:631</code> (community_penny_volume_surge), <code>ml_ranker.py:420</code>, <code>scanner.py</code>
+- Reports: <code>/mnt/e/findtorontoevents_antigravity.ca/reports/asset_class_90day_plan_EQUITY_2026-05-15.md</code> (universe quality + P0 split), <code>/mnt/e/findtorontoevents_antigravity.ca/reports/asset_class_90day_plan_CRYPTO_2026-05-15.md</code> (M-038 + liquidity), <code>SUPREME_PLAN_90days.md</code>, <code>grok_money_maker_audit_transcript_2026-05-15.md</code> (queued + "worse than coin toss")
+- Other: <code>reports/kimi_edge_audit_2026-05-11/comprehensive_analysis_report.md</code>, <code>audit_dashboard/data/edge_stability/edge_stability_EQUITY.json</code>, <code>edge_stability_CRYPTO.json</code></p>
+<p>This plan is ruthless, data-driven, and decisive: the PENNY_MEME bucket is not "high-risk high-reward" — it is high-risk negative-reward noise that has no place in production. Quarantine permanently. Quality (liquid, factor-driven, evidence-backed) over quantity (vol on memes/pennies). One class (or bucket) done right advances Goal #1 phenomenal /audit performance across ALL assets. Follows AGENTS.md / CLAUDE.md / SOUL.md / every-session reads + money-maker-continual-improve.</p>
+<hr />
+<p><em>Generated 2026-05-15 per money-maker-continual-improve skill invocation on Low-Quality Equities (Penny Stocks + Meme Coins) audit. System pilot remains COMMODITY (COT real edge); this is high-risk bucket quarantine plan (no sleeve). Follows AGENTS.md / CLAUDE.md / SOUL.md / memory/2026-05-15.md + skill.</em></p>
+<div class="src">Source: <code>reports/asset_class_90day_plan_PENNY_MEME_2026-05-15.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

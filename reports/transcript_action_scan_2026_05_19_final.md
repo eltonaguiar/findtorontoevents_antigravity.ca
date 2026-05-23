@@ -1,0 +1,117 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\e--findtorontoevents-antigravity-ca\a3d9b9cd-6c0a-452a-af39-c604cdd3212e.jsonl`
+- turns: 18 · chunks: 9 · provider: deepseek
+- deduped action items: 63
+
+## Action items (deduped across chunks)
+
+- [DONE] User asked if assistant has an "ask grok" skill; assistant confirmed `consult-grok` exists.
+- [OPEN] User invoked `/consult-ofox` with request: "give me strategies for all our asset classes that institutional grade top-notch strategies" — not shown as completed.
+- [UNCLEAR] Assistant surfaced a note: if OFOX base URL returns 404, update `tools/swarm/api_consult.py::PROVIDERS["ofox"]["url"]` — unclear if this was needed or done.
+- [DONE] Run cross-engine consensus with `python tools/swarm/swarm_run.py --prompt-file tools/swarm/prompts/ofox_institutional_strategies.md --engines ofox,deepseek`
+- [OPEN] Commit to GitHub
+- [OPEN] Run `/dropchat-multipc`
+- [DONE] Run `python tools/swarm/swarm_run.py --list-engines`
+- [DONE] Run `python tools/swarm/config_loader.py`
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii` binary is on PATH and version 0.11.2 (Windows: check `%USERPROFILE%\.local\bin\iii.exe`)
+- [OPEN] If `iii.exe` is missing, download and extract it from GitHub releases
+- [OPEN] Store an asset edge finding (EQUITY edge example)
+- [OPEN] Store a bug/fix (asset_class casing example)
+- [OPEN] Search for CRYPTO edge knowledge
+- [OPEN] Search for FOREX investigation history
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a specific memory by ID (via `/agentmemory forget` or DELETE endpoint)
+- [OPEN] Store what was learned about EQUITY edge after an audit run
+- [OPEN] Search for everything known about FOREX before taking action
+- [OPEN] Import recent Claude Code session transcripts (`agentmemory import-jsonl --max-files 50`)
+- [OPEN] Check if server is up before starting a long audit run
+- [OPEN] Write decision "Multi-engine institutional strategy consensus committed 2026-05-19" to holographic memory
+- [OPEN] Verify tool exists: `python tools/holographic_memory.py dump 2>&1 | head -5`
+- [OPEN] After writing, git add/commit/push `agent_shared_memory.json`
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll
+- [OPEN] Drain broadcasts via freebuff_adapter poll with peer-id=all
+- [OPEN] Triage each peer message by topic and act accordingly
+- [DONE] Multi-engine consult with ~10 engines on strategy prompt
+- [DONE] Generate consensus report `reports/multi_engine_institutional_strategies_2026_05_19.md`
+- [DONE] Commit + push commits `6b9c704dd66`, `07e643ab125`, `e0ddcf5d6eb`
+- [DONE] Store agentmemory and write MEMORY.md + project memory file
+- [DONE] Broadcast SESSION_SUMMARY to 8 dropchat-multipc peers
+- [OPEN] Settle 2 open questions via swarm_v2 (expectancy-gate vs flat WR>50%; where to compute class-level MDD)
+- [OPEN] Run dedicated `/consult-grok` pass
+- [OPEN] Use subagents/agent swarm to wrap up remaining items
+- [OPEN] Set or replace the active goal via `/goal <text>` and begin work
+- [OPEN] Show current goal, state, and turns used via `/goal` or `/goal status`
+- [OPEN] Halt auto-continuation without clearing the goal via `/goal pause`
+- [OPEN] Resume the loop via `/goal resume` (turn counter resets to 0)
+- [OPEN] Remove the goal entirely via `/goal clear`
+- [OPEN] Manage state via `python .claude/skills/goal/goal_state.py <action> --session <SID> [...]`
+- [OPEN] Use a stable session ID for all calls within one goal loop
+- [OPEN] When invoked as `/goal <text>`: set goal, work one turn, tick counter, judge work, decide next action
+- [OPEN] When invoked as `/goal continue`: skip step 1, re-read state, resume from step 2
+- [OPEN] Self-evaluate work with structured judge output `{"done": <bool>, "reason": "<one-sentence rationale>"}`
+- [OPEN] Schedule wakeup with `ScheduleWakeup` if `done=false` and budget remains
+- [OPEN] Use subagents and wrap up remaining items
+- [OPEN] Use agent swarm to figure out more details on action items
+- [OPEN] Proceed till all action items are done
+- [DONE] consult-ofox answered
+- [DONE] run ~13 engines (free + paid + CLI + Codex)
+- [DONE] write 3 reports (`multi_engine_institutional_strategies`, `transcript_action_scan`, `free_model_sweep`)
+- [DONE] review transcript (8 items, 0 dropped)
+- [DONE] replace flat WR>50% with low per-class WR sanity floor + net-of-slip expectancy gate E>0 (Q1)
+- [DONE] compute+persist `max_drawdown_pct` in `build_pf_registry.py` → `pf_registry.json` → `asset_class_health` (Q2)
+- [DONE] run free-model sweep (8 calls, 6 OK)
+- [DONE] update agentmemory + holographic memory
+- [DONE] broadcast to 8 peers (dropchat-multipc)
+- [DONE] verify commits `6b9c704` / `07e643a` / `e0ddcf5` / `8d9de9e` on `origin/main`
+- [OPEN] implement the expectancy gate + MDD persistence per swarm-settled targets (next concrete PR)
+
+## OPEN (43)
+
+- [OPEN] User invoked `/consult-ofox` with request: "give me strategies for all our asset classes that institutional grade top-notch strategies" — not shown as completed.
+- [OPEN] Commit to GitHub
+- [OPEN] Run `/dropchat-multipc`
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii` binary is on PATH and version 0.11.2 (Windows: check `%USERPROFILE%\.local\bin\iii.exe`)
+- [OPEN] If `iii.exe` is missing, download and extract it from GitHub releases
+- [OPEN] Store an asset edge finding (EQUITY edge example)
+- [OPEN] Store a bug/fix (asset_class casing example)
+- [OPEN] Search for CRYPTO edge knowledge
+- [OPEN] Search for FOREX investigation history
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a specific memory by ID (via `/agentmemory forget` or DELETE endpoint)
+- [OPEN] Store what was learned about EQUITY edge after an audit run
+- [OPEN] Search for everything known about FOREX before taking action
+- [OPEN] Import recent Claude Code session transcripts (`agentmemory import-jsonl --max-files 50`)
+- [OPEN] Check if server is up before starting a long audit run
+- [OPEN] Write decision "Multi-engine institutional strategy consensus committed 2026-05-19" to holographic memory
+- [OPEN] Verify tool exists: `python tools/holographic_memory.py dump 2>&1 | head -5`
+- [OPEN] After writing, git add/commit/push `agent_shared_memory.json`
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll
+- [OPEN] Drain broadcasts via freebuff_adapter poll with peer-id=all
+- [OPEN] Triage each peer message by topic and act accordingly
+- [OPEN] Settle 2 open questions via swarm_v2 (expectancy-gate vs flat WR>50%; where to compute class-level MDD)
+- [OPEN] Run dedicated `/consult-grok` pass
+- [OPEN] Use subagents/agent swarm to wrap up remaining items
+- [OPEN] Set or replace the active goal via `/goal <text>` and begin work
+- [OPEN] Show current goal, state, and turns used via `/goal` or `/goal status`
+- [OPEN] Halt auto-continuation without clearing the goal via `/goal pause`
+- [OPEN] Resume the loop via `/goal resume` (turn counter resets to 0)
+- [OPEN] Remove the goal entirely via `/goal clear`
+- [OPEN] Manage state via `python .claude/skills/goal/goal_state.py <action> --session <SID> [...]`
+- [OPEN] Use a stable session ID for all calls within one goal loop
+- [OPEN] When invoked as `/goal <text>`: set goal, work one turn, tick counter, judge work, decide next action
+- [OPEN] When invoked as `/goal continue`: skip step 1, re-read state, resume from step 2
+- [OPEN] Self-evaluate work with structured judge output `{"done": <bool>, "reason": "<one-sentence rationale>"}`
+- [OPEN] Schedule wakeup with `ScheduleWakeup` if `done=false` and budget remains
+- [OPEN] Use subagents and wrap up remaining items
+- [OPEN] Use agent swarm to figure out more details on action items
+- [OPEN] Proceed till all action items are done
+- [OPEN] implement the expectancy gate + MDD persistence per swarm-settled targets (next concrete PR)

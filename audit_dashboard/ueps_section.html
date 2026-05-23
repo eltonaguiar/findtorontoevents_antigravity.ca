@@ -1,0 +1,433 @@
+<!--
+  UEPS dashboard section partial - Phases 10-11
+
+  Opt-in sidecar (per CLAUDE.md Wire-Up Rule). This file is intentionally
+  self-contained so it can be {% include %}'d into audit_dashboard/template.html
+  later - currently NOT wired in (Copilot is editing template.html
+  concurrently for the BLOCKED_SYMBOLS purge; touching it here would
+  produce merge conflicts). Wiring plan: post-Copilot-merge PR will add
+  one  {% include "audit_dashboard/ueps_section.html" %}  directive in the
+  "main-content" region of template.html and inject the rendered pick HTML
+  via a server-side hook to {{ ueps_picks_html }}.
+
+  Until that wiring lands, this partial can be exercised standalone via:
+
+      from audit_dashboard.ueps_section_renderer import render_ueps_section
+      open("ueps_preview.html", "w").write(render_ueps_section(picks))
+
+  CSS deliberately scoped to .ueps-* classnames so it can co-exist with
+  template.html's stylesheet without selector collisions.
+  Color palette mirrors template.html's --bg / --card / --green / --red /
+  --blue / --yellow / --purple custom-property scheme; we re-declare local
+  fallbacks so the partial renders correctly even when included in a page
+  that doesn't define those variables.
+
+  No external dependencies - vanilla JS + inline CSS only, per the
+  audit dashboard convention.
+-->
+<style>
+.ueps-section {
+  --ueps-bg: var(--bg, #0a0a12);
+  --ueps-card: var(--card, #1a1a2e);
+  --ueps-card-hover: var(--card-hover, #1f1f3a);
+  --ueps-border: var(--border, #2a2a4a);
+  --ueps-text: var(--text, #e0e0e0);
+  --ueps-text-dim: var(--text-dim, #888);
+  --ueps-green: var(--green, #4caf50);
+  --ueps-red: var(--red, #f44336);
+  --ueps-blue: var(--blue, #60a5fa);
+  --ueps-purple: var(--purple, #a78bfa);
+  --ueps-yellow: var(--yellow, #f59e0b);
+  background: var(--ueps-bg);
+  color: var(--ueps-text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  padding: 20px 16px;
+  margin-top: 24px;
+  border-top: 1px solid var(--ueps-border);
+}
+.ueps-section-heading {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.ueps-tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--ueps-border);
+}
+.ueps-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  color: var(--ueps-text-dim);
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+}
+.ueps-tab:hover { color: var(--ueps-text); }
+.ueps-tab.active {
+  color: var(--ueps-text);
+  border-color: var(--ueps-border);
+  background: var(--ueps-card);
+}
+.ueps-tab-panel { display: none; padding-top: 12px; }
+.ueps-tab-panel.active { display: block; }
+.ueps-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 14px;
+}
+.ueps-pick-card {
+  background: var(--ueps-card);
+  border: 1px solid var(--ueps-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background 0.15s;
+}
+.ueps-pick-card:hover { background: var(--ueps-card-hover); }
+.ueps-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--ueps-border);
+  padding-bottom: 8px;
+}
+.ueps-ticker {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ueps-blue);
+  letter-spacing: 0.5px;
+}
+.ueps-asset-class,
+.ueps-pick-type,
+.ueps-horizon,
+.ueps-days-held {
+  font-size: 11px;
+  text-transform: uppercase;
+  background: rgba(96, 165, 250, 0.10);
+  color: var(--ueps-blue);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+}
+.ueps-pick-type { color: var(--ueps-purple); border-color: rgba(167, 139, 250, 0.35); background: rgba(167, 139, 250, 0.10); }
+.ueps-horizon { color: var(--ueps-yellow); border-color: rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.10); }
+.ueps-days-held { color: var(--ueps-text-dim); border-color: var(--ueps-border); background: transparent; }
+
+.ueps-section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ueps-text-dim);
+  margin-bottom: 6px;
+}
+
+/* Thesis */
+.ueps-thesis-block { line-height: 1.45; font-size: 13px; }
+.ueps-thesis-body strong { color: var(--ueps-text); }
+.ueps-thesis-body em { color: var(--ueps-text-dim); }
+.ueps-thesis-body code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.ueps-md-list { padding-left: 18px; margin: 4px 0; }
+
+/* Fundamental snapshot */
+.ueps-fund-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+.ueps-fund-row {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ueps-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.ueps-fund-row .ueps-fund-label { color: var(--ueps-text-dim); }
+.ueps-fund-row .ueps-fund-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ueps-fund-row.green .ueps-fund-value { color: var(--ueps-green); }
+.ueps-fund-row.yellow .ueps-fund-value { color: var(--ueps-yellow); }
+.ueps-fund-row.red .ueps-fund-value { color: var(--ueps-red); }
+.ueps-fund-row.unknown .ueps-fund-value { color: var(--ueps-text-dim); }
+
+/* Earnings table */
+.ueps-earnings-table,
+.ueps-thesis-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.ueps-earnings-table th,
+.ueps-earnings-table td,
+.ueps-thesis-table th,
+.ueps-thesis-table td {
+  padding: 4px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--ueps-border);
+}
+.ueps-earnings-table th,
+.ueps-thesis-table th {
+  color: var(--ueps-text-dim);
+  font-weight: 600;
+}
+.ueps-earnings-table tr.beat td:last-child { color: var(--ueps-green); }
+.ueps-earnings-table tr.miss td:last-child { color: var(--ueps-red); }
+
+/* Next earnings + tax banner */
+.ueps-next-earnings {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+.ueps-next-date { font-weight: 600; }
+.ueps-countdown { color: var(--ueps-text-dim); font-size: 11px; }
+
+.ueps-tax-banner {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid;
+}
+.ueps-tax-warn {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: var(--ueps-yellow);
+}
+.ueps-tax-ok {
+  background: rgba(76, 175, 80, 0.12);
+  border-color: rgba(76, 175, 80, 0.45);
+  color: var(--ueps-green);
+}
+
+/* Dividends */
+.ueps-div-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.ueps-div-cell {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+.ueps-div-cell span { color: var(--ueps-text-dim); font-size: 10px; text-transform: uppercase; }
+.ueps-div-cell strong { font-variant-numeric: tabular-nums; }
+.ueps-div-sparkline { display: block; margin-top: 4px; }
+
+/* Technical */
+.ueps-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 6px;
+  font-size: 12px;
+}
+.ueps-tech-grid div { display: flex; flex-direction: column; }
+.ueps-tech-grid span { color: var(--ueps-text-dim); font-size: 10px; text-transform: uppercase; }
+.ueps-tech-grid strong { font-variant-numeric: tabular-nums; }
+
+/* Thesis-break status */
+.ueps-thesis-table tr.pass td:last-child { color: var(--ueps-green); }
+.ueps-thesis-table tr.fail td:last-child { color: var(--ueps-red); font-weight: 600; }
+.ueps-rule-state.pass { color: var(--ueps-green); }
+.ueps-rule-state.fail { color: var(--ueps-red); }
+
+/* IV progress */
+.ueps-iv-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.ueps-iv-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ueps-blue), var(--ueps-purple));
+  transition: width 0.3s ease;
+}
+.ueps-iv-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ueps-text-dim);
+}
+
+/* Position breadcrumb */
+.ueps-position {
+  font-size: 12px;
+  color: var(--ueps-text-dim);
+  border-top: 1px dashed var(--ueps-border);
+  padding-top: 8px;
+}
+.ueps-position-current { color: var(--ueps-text); font-weight: 600; }
+.ueps-position-target { color: var(--ueps-text-dim); }
+
+/* Aggregate stats / tier badges */
+.ueps-agg-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  align-items: center;
+  border-top: 1px dashed var(--ueps-border);
+  padding-top: 8px;
+}
+.ueps-strategy-name { color: var(--ueps-text-dim); font-weight: 600; }
+.ueps-stat { font-variant-numeric: tabular-nums; }
+.ueps-stat em { color: var(--ueps-text-dim); font-style: normal; }
+
+.ueps-tier-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.6px;
+  border: 1px solid;
+}
+.ueps-tier-badge.tier1 {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--ueps-green);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+.ueps-tier-badge.tier2 {
+  background: rgba(96, 165, 250, 0.15);
+  color: var(--ueps-blue);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+.ueps-tier-badge.pretier {
+  background: rgba(244, 67, 54, 0.10);
+  color: var(--ueps-red);
+  border-color: rgba(244, 67, 54, 0.40);
+}
+.ueps-tier-badge.building {
+  background: rgba(167, 139, 250, 0.12);
+  color: var(--ueps-purple);
+  border-color: rgba(167, 139, 250, 0.45);
+}
+
+/* Swing-only targets row */
+.ueps-swing-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 6px;
+  font-size: 12px;
+}
+.ueps-swing-targets div { display: flex; flex-direction: column; }
+.ueps-swing-targets span { color: var(--ueps-text-dim); font-size: 10px; text-transform: uppercase; }
+.ueps-swing-targets strong { font-variant-numeric: tabular-nums; }
+
+/* Empty state */
+.ueps-empty-state {
+  background: rgba(255,255,255,0.02);
+  border: 1px dashed var(--ueps-border);
+  border-radius: 10px;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--ueps-text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ueps-empty-state code {
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+</style>
+
+<!--
+  Pick HTML is injected here by audit_dashboard.ueps_section_renderer.
+  When this partial is included via {% include %}, the host template should
+  replace the marker below with the result of:
+      render_ueps_section(picks=picks, aggregate_stats_by_strategy=stats)
+-->
+<div id="ueps-section-mount" data-empty="true">
+  <div class="ueps-empty-state">
+    <p>UEPS section not yet rendered. Mount point reserved for
+    <code>render_ueps_section()</code>. See
+    <code>audit_dashboard/ueps_section_renderer.py</code>.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // Tab switching
+  function activateTab(panel) {
+    if (!panel) return;
+    var section = panel.closest('.ueps-section');
+    if (!section) return;
+    var tabs = section.querySelectorAll('.ueps-tab');
+    var panels = section.querySelectorAll('.ueps-tab-panel');
+    var target = panel.getAttribute('data-tab');
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-tab') === target;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    panels.forEach(function (p) {
+      var on = p.getAttribute('data-panel') === target;
+      p.classList.toggle('active', on);
+      if (on) { p.removeAttribute('hidden'); } else { p.setAttribute('hidden', ''); }
+    });
+  }
+
+  function bindTabs(root) {
+    var tabs = (root || document).querySelectorAll('.ueps-tab');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () { activateTab(tab); });
+    });
+  }
+
+  // Earnings countdown
+  // We compute days-until purely client-side. Inputs come from data-attributes
+  // which are HTML-escaped server-side, so untrusted strings cannot inject.
+  function updateCountdowns(root) {
+    var nodes = (root || document).querySelectorAll('.ueps-countdown');
+    var now = new Date();
+    nodes.forEach(function (node) {
+      var raw = node.getAttribute('data-countdown-target') || '';
+      // Parse YYYY-MM-DD strictly. Bail out on anything else - never trust.
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+      if (!m) {
+        node.textContent = '';
+        return;
+      }
+      var target = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+      var diffMs = target.getTime() - now.getTime();
+      var diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        node.textContent = '(' + diffDays + ' days)';
+      } else if (diffDays === 1) {
+        node.textContent = '(tomorrow)';
+      } else if (diffDays === 0) {
+        node.textContent = '(today)';
+      } else {
+        node.textContent = '(' + Math.abs(diffDays) + 'd ago)';
+      }
+    });
+  }
+
+  function init() {
+    bindTabs();
+    updateCountdowns();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>COT Paper Pilot — cot_positioning + CT=F</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg: #0b1020; --card: #111a33; --border: #1f2a4a;
+    --text: #e7ecff; --muted: #94a3b8;
+    --green: #22c55e; --red: #ef4444; --amber: #facc15; --cyan: #06b6d4; --violet: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 0; }
+  header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #111a33, #0b1020); position: sticky; top: 0; z-index: 10; }
+  header h1 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  nav { padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--card); display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+  nav a { color: var(--cyan); text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+  main { padding: 16px 20px; max-width: 1400px; margin: 0 auto; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat { font-size: 22px; font-weight: 600; line-height: 1.1; }
+  .stat.green { color: var(--green); }
+  .stat.red { color: var(--red); }
+  .stat.amber { color: var(--amber); }
+  .stat.cyan { color: var(--cyan); }
+  .stat-sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.t1 { background: rgba(167,139,250,0.15); color: var(--violet); }
+  .badge.green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge.red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge.amber { background: rgba(250,204,21,0.15); color: var(--amber); }
+  section { margin: 20px 0; }
+  section h2 { font-size: 14px; margin: 0 0 10px; color: var(--text); border-left: 3px solid var(--cyan); padding-left: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; background: var(--card); position: sticky; top: 0; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.won td.status { color: var(--green); }
+  tr.lost td.status { color: var(--red); }
+  .equity-curve { width: 100%; height: 180px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+  .nfa-banner { background: linear-gradient(90deg, rgba(250,204,21,0.10), rgba(167,139,250,0.10)); border: 1px solid rgba(250,204,21,0.4); padding: 8px 12px; border-radius: 6px; color: var(--amber); font-size: 12px; margin-bottom: 12px; }
+  .blockers { font-size: 12px; color: var(--muted); }
+  .blockers li { margin: 4px 0; }
+  .loading { padding: 40px; text-align: center; color: var(--muted); }
+  .err { padding: 12px; background: rgba(239,68,68,0.10); border: 1px solid var(--red); color: #fca5a5; border-radius: 6px; }
+  details { margin: 8px 0; }
+  summary { cursor: pointer; color: var(--cyan); font-size: 12px; padding: 4px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>COT Paper Pilot — <code style="color:var(--violet)">cot_positioning</code> + <code style="color:var(--cyan)">CT=F</code></h1>
+  <div class="sub">SHADOW state tracker · DSR=1.0000 verified edge · 1-contract paper sizing · <strong style="color:var(--amber)">NFA</strong></div>
+</header>
+<nav>
+  <a href="/audit/">&larr; /audit dashboard</a>
+  <a href="/audit/anti_overfit.html">DSR audit</a>
+  <a href="/audit/research_sidecars.html">Research sidecars</a>
+  <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity/blob/main/reports/cot_paper_pilot_testing_plan_2026-05-12.md" target="_blank" rel="noopener">7-step testing plan</a>
+  <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity/blob/main/reports/cotton_cot_real_money_sizing_2026-05-12.md" target="_blank" rel="noopener">Sizing brief</a>
+</nav>
+<main id="root">
+  <div class="loading">Loading paper-pilot status&hellip;</div>
+</main>
+<script>
+'use strict';
+
+const DATA_URL = 'data/cot_paper_pilot_status.json';
+
+function fmtUsd(v) {
+  if (v == null || isNaN(v)) return '—';
+  const sign = v < 0 ? '-' : '';
+  return sign + '$' + Math.abs(v).toFixed(2);
+}
+function fmtPct(v) {
+  if (v == null || isNaN(v)) return '—';
+  return v.toFixed(2) + '%';
+}
+function gateBadge(verdict) {
+  if (verdict === 'READY_FOR_LIVE') return '<span class="badge green">READY</span>';
+  if (verdict === 'BELOW_EXPECTED') return '<span class="badge amber">BELOW EXPECTED</span>';
+  if (verdict === 'ABOVE_EXPECTED') return '<span class="badge amber">ABOVE EXPECTED</span>';
+  if (verdict === 'INSUFFICIENT_DATA') return '<span class="badge amber">INSUFFICIENT DATA</span>';
+  return '<span class="badge red">' + (verdict || 'UNKNOWN') + '</span>';
+}
+
+function renderEquityCurve(trades) {
+  if (!trades || trades.length < 2) return '';
+  const reversed = trades.slice().reverse(); // oldest-first for left-to-right plot
+  const ys = reversed.map(t => Number(t.cum_pnl_net) || 0);
+  const w = 1200, h = 160, pad = 8;
+  const yMin = Math.min(0, ...ys), yMax = Math.max(0, ...ys);
+  const yRange = (yMax - yMin) || 1;
+  const stepX = (w - 2 * pad) / Math.max(1, ys.length - 1);
+  const pts = ys.map((y, i) => {
+    const x = pad + i * stepX;
+    const py = h - pad - ((y - yMin) / yRange) * (h - 2 * pad);
+    return x.toFixed(1) + ',' + py.toFixed(1);
+  }).join(' ');
+  const zeroY = h - pad - ((0 - yMin) / yRange) * (h - 2 * pad);
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="equity-curve">' +
+    '<line x1="' + pad + '" x2="' + (w - pad) + '" y1="' + zeroY.toFixed(1) + '" y2="' + zeroY.toFixed(1) + '" stroke="#334155" stroke-dasharray="4 4"/>' +
+    '<polyline fill="none" stroke="#22c55e" stroke-width="1.8" points="' + pts + '"/>' +
+    '<text x="' + (w - pad - 4) + '" y="14" text-anchor="end" fill="#94a3b8" font-size="11">cum_pnl_net ' + fmtUsd(ys[ys.length - 1]) + '</text>' +
+    '<text x="' + (pad + 4) + '" y="14" fill="#94a3b8" font-size="11">' + ys.length + ' closed trades</text>' +
+    '</svg>';
+}
+
+function renderTradesTable(trades) {
+  if (!trades || !trades.length) return '<div class="loading">No closed trades in window.</div>';
+  const rows = trades.slice(0, 200).map(t => {
+    const cls = (t.status === 'WON' || t.status === 'WIN' || t.status === 'TP_HIT') ? 'won' : 'lost';
+    return '<tr class="' + cls + '">' +
+      '<td>' + (t.created_at || '').slice(0, 16) + '</td>' +
+      '<td class="status">' + t.status + '</td>' +
+      '<td>' + (t.direction || '') + '</td>' +
+      '<td class="num">' + (Number(t.entry_price) || 0).toFixed(4) + '</td>' +
+      '<td class="num">' + (Number(t.exit_price) || 0).toFixed(4) + '</td>' +
+      '<td class="num">' + (Number(t.pnl_pct) || 0).toFixed(4) + '</td>' +
+      '<td class="num">' + fmtUsd(t.pnl_usd_gross) + '</td>' +
+      '<td class="num">' + fmtUsd(t.pnl_usd_net) + '</td>' +
+      '<td class="num">' + fmtUsd(t.cum_pnl_net) + '</td>' +
+      '</tr>';
+  }).join('');
+  return '<div style="overflow-x:auto;max-height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:6px"><table>' +
+    '<thead><tr><th>created_at</th><th>status</th><th>dir</th><th>entry</th><th>exit</th><th>pnl_pct</th><th>gross$</th><th>net$</th><th>cum$</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+
+function render(p) {
+  const root = document.getElementById('root');
+  const s = p.stats || {};
+  const g = p.graduation_gate || {};
+  const sm = p.codex_state_machine || {};
+  const cs = p.contract_spec || {};
+  const tierClass = (p.tier || '').startsWith('TIER_1') ? 't1' : 'amber';
+  const wrColor = s.wr_pct >= 75 ? 'green' : (s.wr_pct >= 50 ? 'amber' : 'red');
+  const cumColor = (s.cum_pnl_usd || 0) >= 0 ? 'green' : 'red';
+  const avgColor = (s.avg_pnl_per_trade_usd || 0) >= (s.expected_per_trade_low_usd || 0) ? 'green' : 'amber';
+
+  root.innerHTML =
+    '<div class="nfa-banner">⚠ ' + (p.nfa || 'NFA — research surface only.') + '</div>' +
+    '<section><h2>Edge identity</h2>' +
+      '<div class="grid">' +
+        '<div class="card"><h3>Strategy</h3><div class="stat cyan">' + (p.strategy_name || '?') + '</div><div class="stat-sub">' + (p.symbol || '?') + ' · ' + (p.asset_class || '?') + '</div></div>' +
+        '<div class="card"><h3>Tier</h3><div class="stat"><span class="badge ' + tierClass + '">' + (p.tier || '?') + '</span></div><div class="stat-sub">DSR ' + (p.dsr != null ? p.dsr.toFixed(4) : '?') + ' (Lopez de Prado AFML 14.5)</div></div>' +
+        '<div class="card"><h3>Window</h3><div class="stat">' + (p.window_days || 0) + 'd</div><div class="stat-sub">generated ' + (p.generated_at || '').slice(0, 19).replace('T', ' ') + 'Z</div></div>' +
+        '<div class="card"><h3>Graduation gate</h3><div class="stat">' + gateBadge(g.verdict) + '</div><div class="stat-sub">' + (g.detail || '') + '</div></div>' +
+      '</div></section>' +
+    '<section><h2>Paper P&amp;L (1-contract notional)</h2>' +
+      '<div class="grid">' +
+        '<div class="card"><h3>Trades closed</h3><div class="stat">' + (s.n_total || 0) + '</div><div class="stat-sub">' + (s.n_wins || 0) + ' won · ' + (s.n_losses || 0) + ' lost</div></div>' +
+        '<div class="card"><h3>Win rate</h3><div class="stat ' + wrColor + '">' + fmtPct(s.wr_pct) + '</div><div class="stat-sub">target ≥75% OOS</div></div>' +
+        '<div class="card"><h3>Cumulative net</h3><div class="stat ' + cumColor + '">' + fmtUsd(s.cum_pnl_usd) + '</div><div class="stat-sub">after $' + (cs.round_trip_cost_usd || 10).toFixed(0) + '/trade round-trip cost</div></div>' +
+        '<div class="card"><h3>Avg net / trade</h3><div class="stat ' + avgColor + '">' + fmtUsd(s.avg_pnl_per_trade_usd) + '</div><div class="stat-sub">expected band $' + (s.expected_per_trade_low_usd || 0).toFixed(2) + '–$' + (s.expected_per_trade_high_usd || 0).toFixed(2) + '</div></div>' +
+      '</div>' +
+      '<div style="margin-top:12px">' + renderEquityCurve(s.trades) + '</div>' +
+    '</section>' +
+    '<section><h2>Contract spec</h2>' +
+      '<div class="grid">' +
+        '<div class="card"><h3>Exchange</h3><div class="stat cyan">' + (cs.exchange || '?') + '</div><div class="stat-sub">no micro contract available</div></div>' +
+        '<div class="card"><h3>Contract size</h3><div class="stat">' + (cs.size_lbs || 0).toLocaleString() + ' lbs</div><div class="stat-sub">$' + (cs.tick_usd || 5) + '/tick</div></div>' +
+        '<div class="card"><h3>Notional</h3><div class="stat">' + fmtUsd(cs.notional_usd) + '</div><div class="stat-sub">@ $' + (cs.base_price_usd_per_lb || 0.70) + '/lb reference</div></div>' +
+        '<div class="card"><h3>Round-trip cost</h3><div class="stat">' + fmtUsd(cs.round_trip_cost_usd) + '</div><div class="stat-sub">$5 commission + $5 slippage</div></div>' +
+      '</div></section>' +
+    '<section><h2>Codex state machine</h2>' +
+      '<div class="card">' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">' +
+          '<span class="badge t1">' + (sm.current_state || '?') + '</span>' +
+          '<span style="color:var(--muted)">→</span>' +
+          '<span class="badge amber">' + (sm.next_state || '?') + '</span>' +
+          '<span style="color:var(--muted)">→</span>' +
+          '<span class="badge green">' + (sm.target_state || '?') + '</span>' +
+        '</div>' +
+        '<div class="blockers"><strong>Global blockers:</strong><ul>' +
+          (sm.global_blockers || []).map(b => '<li>' + b + '</li>').join('') +
+        '</ul></div>' +
+      '</div></section>' +
+    '<section><h2>Closed trades</h2>' +
+      '<details><summary>Show full ledger (' + (s.trades || []).length + ' rows)</summary>' +
+        renderTradesTable(s.trades) +
+      '</details></section>' +
+    '<section><h2>Evidence source</h2>' +
+      '<div class="card"><div class="stat-sub" style="font-size:12px;color:var(--text)">' + (p.evidence_source || '?') + '</div></div>' +
+    '</section>';
+}
+
+fetch(DATA_URL + '?t=' + Date.now())
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(render)
+  .catch(e => {
+    document.getElementById('root').innerHTML = '<div class="err">Failed to load <code>' + DATA_URL + '</code>: ' + e.message + '</div>';
+  });
+</script>
+</body>
+</html>

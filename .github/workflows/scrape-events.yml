@@ -1,0 +1,213 @@
+# Scrape Toronto events and update events.json + last_update.json
+# Runs on schedule and manual trigger; commits and pushes so the core-site deploy
+# workflow can publish the new payload to findtorontoevents.ca.
+name: Scrape events
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *'   # daily 12:00 UTC
+
+permissions:
+  contents: write   # read + push for events.json and last_update.json
+
+jobs:
+  scrape:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      # Orphan gitlinks (openclaude*) and broken STOCKSUNIFY .gitmodules break checkout post-step.
+      - name: Fix orphan submodule gitlinks
+        run: bash .github/scripts/fix_orphan_submodules.sh
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml scrapling
+
+      - name: Verify scraper imports
+        run: python -c "import sys; sys.path.insert(0, 'tools'); from scrapers.unified_scraper import UnifiedTorontoScraper; print('imports OK')"
+
+      - name: Ensure next/ exists
+        run: mkdir -p next
+
+      - name: Run scraper and sync to database
+        env:
+          EVENTS_UPDATE_SOURCE: github_actions
+        run: python tools/scrape_and_sync_events.py --sync
+
+      - name: Apply manual event overrides
+        run: python add_missing_events.py
+
+      - name: Verify next/events.json is in sync with events.json
+        run: |
+          python -c "
+          import json, sys, shutil
+          # Load both files
+          with open('events.json', encoding='utf-8') as f:
+              root = json.load(f)
+          root_events = root if isinstance(root, list) else root.get('events', [])
+
+          try:
+              with open('next/events.json', encoding='utf-8') as f:
+                  next_data = json.load(f)
+              next_events = next_data if isinstance(next_data, list) else next_data.get('events', [])
+          except Exception:
+              next_events = []
+
+          print(f'events.json: {len(root_events)} events')
+          print(f'next/events.json: {len(next_events)} events')
+
+          # If next/events.json is missing events or significantly smaller, re-sync
+          if len(next_events) < len(root_events) * 0.9 or len(next_events) < 100:
+              print(f'⚠️ next/events.json is out of sync ({len(next_events)} vs {len(root_events)}). Re-syncing...')
+              import shutil
+              shutil.copy2('events.json', 'next/events.json')
+              print('✅ next/events.json re-synced from events.json')
+          else:
+              print('✅ next/events.json is in sync')
+          "
+
+      - name: Verify calendar source (sofiaadelgiudice) in events.json
+        run: |
+          count=$(python -c "
+          import json
+          with open('events.json') as f:
+              data = json.load(f)
+          events = data if isinstance(data, list) else data.get('events', [])
+          n = sum(1 for e in events if (e.get('source') or '').strip() == 'sofiaadelgiudice')
+          print(n)
+          ")
+          echo "sofiaadelgiudice events in events.json: $count"
+          if [ "$count" -lt 1 ]; then
+            echo "::error::events.json has no sofiaadelgiudice events; scraper or merge may have failed."
+            exit 1
+          fi
+
+      - name: Validate JSON outputs before commit
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root_events = json.loads(Path("events.json").read_text(encoding="utf-8"))
+          next_events = json.loads(Path("next/events.json").read_text(encoding="utf-8"))
+          if len(root_events) != len(next_events):
+              raise SystemExit(
+                  f"events.json ({len(root_events)}) and next/events.json ({len(next_events)}) differ"
+              )
+
+          last_update = Path("last_update.json")
+          if last_update.is_file():
+              json.loads(last_update.read_text(encoding="utf-8"))
+
+          for meta_path in ("metadata.json", "next/metadata.json"):
+              meta = json.loads(Path(meta_path).read_text(encoding="utf-8"))
+              assert meta.get("totalEvents") == len(root_events), meta_path
+              assert meta.get("lastUpdated"), meta_path
+
+          print(f"Validated scrape outputs: {len(root_events)} events mirrored to next/events.json")
+          PY
+
+      - name: Cull events with invalid dates (outlier guard)
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from datetime import datetime, timedelta
+
+          MIN_DATE = datetime(2020, 1, 1)
+          MAX_DATE = datetime.now() + timedelta(days=730)
+
+          def is_valid_date(d: str) -> bool:
+              try:
+                  dt = datetime.strptime(d[:10], "%Y-%m-%d")
+                  return MIN_DATE <= dt <= MAX_DATE
+              except (ValueError, IndexError):
+                  return True
+
+          for path in ("events.json", "next/events.json"):
+              p = Path(path)
+              data = json.loads(p.read_text(encoding="utf-8"))
+              events = data if isinstance(data, list) else data.get("events", [])
+              before = len(events)
+              culled = []
+              kept = []
+              for e in events:
+                  d = e.get("date", "")
+                  if d and not is_valid_date(d):
+                      culled.append((e.get("title", d), d))
+                  else:
+                      kept.append(e)
+              if culled:
+                  for title, d in culled[:30]:
+                      print(f"  CULLED: {d} - {title}")
+                  if len(culled) > 30:
+                      print(f"  ... and {len(culled) - 30} more")
+                  if isinstance(data, dict):
+                      data["events"] = kept
+                  else:
+                      data = kept
+                  p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+                  print(f"  {path}: {before} -> {len(kept)} events ({len(culled)} date outliers removed)")
+              else:
+                  print(f"  {path}: {before} events, no date outliers")
+          PY
+
+      - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add events.json last_update.json metadata.json
+          [ -f next/events.json ] && git add next/events.json
+          [ -f next/metadata.json ] && git add next/metadata.json
+          [ -f data/metadata.json ] && git add data/metadata.json
+          [ -f TORONTOEVENTS_ANTIGRAVITY/metadata.json ] && git add TORONTOEVENTS_ANTIGRAVITY/metadata.json
+          bash .github/scripts/assert_no_conflict_markers.sh
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update events from scraper (GitHub Actions) [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" main 2>/dev/null || true
+              bash .github/scripts/safe_push.sh "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+              echo "Push attempt $i failed, retrying..."
+              sleep 3
+            done
+          fi
+
+      # Trigger the server to re-sync its database from its own events.json
+      # This is a fallback in case the --sync POST was blocked by ModSecurity (412)
+      - name: Trigger database sync via GET
+        run: |
+          echo "Triggering server-side database sync..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Sync/1.0)" \
+            "https://findtorontoevents.ca/fc/api/events_sync.php" \
+            --max-time 120)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY" | python -m json.tool 2>/dev/null || echo "$BODY"
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Database sync triggered successfully"
+          else
+            echo "::warning::Database sync returned HTTP $HTTP_CODE (non-fatal)"
+          fi
+
+      # Reset workspace so checkout action's post step doesn't fail with git 128
+      - name: Restore workspace for checkout post
+        if: always()
+        run: |
+          git checkout --detach ${{ github.sha }}
+          git reset --hard ${{ github.sha }}

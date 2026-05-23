@@ -1,0 +1,60 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "DirectionAwareGating",
+      "thesis": "Implementing direction-aware gating based on LONG vs SHORT asymmetry will improve performance.",
+      "signal_construction": "Use separate LONG and SHORT models with asymmetric thresholds (e.g., LONG threshold = 0.6, SHORT threshold = 0.4).",
+      "universe_or_filter": "Liquid USDT pairs (BTC/ETH/SOL/BNB/XRP/DOGE/LINK/AVAX/ADA/MATIC)",
+      "expected_pf": 1.55,
+      "expected_wr_pct": 55,
+      "differentiation_from_existing": "Current live gates do not account for direction asymmetry.",
+      "implementation_hours": 40,
+      "wire_target": "alpha_engine/direction_aware_gating.py",
+      "data_source": "Binance",
+      "fail_mode": "Inadequate model training data"
+    },
+    {
+      "name": "HourOfDayFilter",
+      "thesis": "Excluding 6 UTC entries will improve performance.",
+      "signal_construction": "Exclude entries between 6:00-6:59 UTC.",
+      "universe_or_filter": "Liquid USDT pairs (BTC/ETH/SOL/BNB/XRP/DOGE/LINK/AVAX/ADA/MATIC)",
+      "expected_pf": 1.52,
+      "expected_wr_pct": 52,
+      "differentiation_from_existing": "Current live gates do not account for hour-of-day filter.",
+      "implementation_hours": 20,
+      "wire_target": "alpha_engine/hour_of_day_filter.py",
+      "data_source": "Binance",
+      "fail_mode": "Inadequate filter optimization"
+    },
+    {
+      "name": "BTC4hRegimeFilter",
+      "thesis": "Rejecting LONG-only emitter LONGs when BTC 4h is red will improve performance.",
+      "signal_construction": "Use a 10MA and 20MA crossover strategy to determine BTC 4h regime (e.g., LONG when 10MA > 20MA, SHORT when 10MA < 20MA).",
+      "universe_or_filter": "Liquid USDT pairs (BTC/ETH/SOL/BNB/XRP/DOGE/LINK/AVAX/ADA/MATIC)",
+      "expected_pf": 1.58,
+      "expected_wr_pct": 58,
+      "differentiation_from_existing": "Current live gates do not account for BTC 4h regime filter.",
+      "implementation_hours": 30,
+      "wire_target": "alpha_engine/btc_4h_regime_filter.py",
+      "data_source": "Binance",
+      "fail_mode": "Inadequate regime definition"
+    }
+  ],
+  "edge10_corrections": [
+    "Exclude entries between 6:00-6:59 UTC to improve performance."
+  ],
+  "edge11_proposals": [
+    "Use a 10MA and 20MA crossover strategy to determine BTC 4h regime (e.g., LONG when 10MA > 20MA, SHORT when 10MA < 20MA).",
+    "Use a volatility band (e.g., 2% above/below 10MA) to filter out noise."
+  ],
+  "direction_gates": [
+    "Use separate LONG and SHORT models with asymmetric thresholds (e.g., LONG threshold = 0.6, SHORT threshold = 0.4)."
+  ],
+  "killers": [
+    "Retire the existing live CRYPTO emitter that does not account for direction asymmetry and hour-of-day filter."
+  ],
+  "tier2_attainability_pct": 80,
+  "single_most_important_finding": "Implementing direction-aware gating and hour-of-day filter can significantly improve performance."
+}
+```

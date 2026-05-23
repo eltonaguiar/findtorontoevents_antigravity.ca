@@ -1,0 +1,539 @@
+{
+  "research_date": "2026-03-21",
+  "title": "Public Forex Copy Trading & Sentiment Data Sources",
+  "summary": "Actionable endpoints for forex copy trading intelligence - no paid API keys required for most sources",
+
+  "sources": {
+    "1_myfxbook": {
+      "name": "Myfxbook",
+      "category": "copy_trading_sentiment",
+      "auth_required": true,
+      "auth_type": "free_account_login",
+      "auth_notes": "Free Myfxbook account needed. Login returns session ID (IP-bound, 1-month TTL). No paid plan required for basic access.",
+      "base_url": "https://www.myfxbook.com/api",
+
+      "endpoints": {
+        "login": {
+          "url": "https://www.myfxbook.com/api/login.json",
+          "method": "GET",
+          "params": {"email": "your_email", "password": "your_password"},
+          "returns": "session ID string",
+          "notes": "Session is IP-bound, valid 1 month"
+        },
+        "community_outlook": {
+          "url": "https://www.myfxbook.com/api/get-community-outlook.json",
+          "method": "GET",
+          "params": {"session": "SESSION_ID"},
+          "returns": "JSON with forex sentiment for all pairs",
+          "fields": ["symbol", "shortPercentage", "longPercentage", "shortVolume", "longVolume", "longPositions", "shortPositions"],
+          "rate_limit": "100 requests/24h (free), 2880/24h (paid)",
+          "value": "HIGH - retail positioning data across all major forex pairs"
+        },
+        "community_outlook_by_country": {
+          "url": "https://www.myfxbook.com/api/get-community-outlook-by-country.json",
+          "method": "GET",
+          "params": {"session": "SESSION_ID", "symbol": "EURUSD"},
+          "returns": "Sentiment breakdown by country",
+          "fields": ["country", "longPercentage", "shortPercentage", "longVolume", "shortVolume"]
+        }
+      },
+
+      "scraping_alternative": {
+        "url": "https://www.myfxbook.com/community/outlook",
+        "method": "HTML scrape with BeautifulSoup",
+        "notes": "Public page shows sentiment for all pairs without login. Can scrape as fallback.",
+        "per_symbol_url": "https://www.myfxbook.com/community/outlook/EURUSD",
+        "data_available": ["long%", "short%", "volume", "positions count"]
+      },
+
+      "autotrade_systems": {
+        "url": "https://www.myfxbook.com/autotrade",
+        "scraping_notes": "Public page listing strategy providers. API only provides data for YOUR accounts, NOT other traders. Must scrape HTML to get public system data.",
+        "data_available": ["gain%", "monthly_gain%", "drawdown%", "subscribers", "days_trading"],
+        "limitation": "No API endpoint for browsing other traders' systems - HTML scraping only"
+      },
+
+      "python_example": "import requests\n\n# Step 1: Login\nlogin_url = 'https://www.myfxbook.com/api/login.json'\nresp = requests.get(login_url, params={'email': EMAIL, 'password': PASSWORD})\nsession_id = resp.json().get('session')\n\n# Step 2: Get community sentiment\noutlook_url = 'https://www.myfxbook.com/api/get-community-outlook.json'\nresp = requests.get(outlook_url, params={'session': session_id})\nsentiment = resp.json()\n# Returns: {symbols: [{name: 'EURUSD', shortPercentage: 45.2, longPercentage: 54.8, ...}]}",
+
+      "confidence": "HIGH",
+      "priority": "P0 - Implement first. Best free forex sentiment source."
+    },
+
+    "2_gains_network_gtrade": {
+      "name": "Gains Network (gTrade) - Forex Positions",
+      "category": "defi_copy_trading",
+      "auth_required": false,
+      "auth_notes": "Fully public REST API. No API key needed.",
+      "base_url": "https://backend-arbitrum.gains.trade",
+
+      "endpoints": {
+        "trading_variables": {
+          "url": "https://backend-arbitrum.gains.trade/trading-variables",
+          "method": "GET",
+          "returns": "All pair definitions including forex pairs with indices",
+          "fields": ["pairs (array with from/to)", "groups", "fees", "isForexOpen", "isCommoditiesOpen"],
+          "notes": "Use this to build pair_index -> symbol map. Forex pairs are in group indices around 32-45."
+        },
+        "open_trades_by_address": {
+          "url": "https://backend-arbitrum.gains.trade/open-trades/{address}",
+          "method": "GET",
+          "returns": "Array of open trade objects for specific trader",
+          "fields": ["pairIndex", "buy (bool=long)", "openPrice", "tp", "sl", "collateral", "leverage", "trader"]
+        },
+        "trading_history_24h": {
+          "url": "https://backend-arbitrum.gains.trade/trading-history-24h",
+          "method": "GET",
+          "returns": "All trades from last 24 hours across all traders",
+          "fields": ["trader", "pairIndex", "action", "price", "leverage", "pnl_net", "collateralIndex"],
+          "notes": "Use to discover active forex traders by filtering pairIndex 32-45"
+        },
+        "personal_history": {
+          "url": "https://backend-arbitrum.gains.trade/personal-trading-history-table/{address}",
+          "method": "GET",
+          "returns": "Full trade history for a trader"
+        }
+      },
+
+      "forex_pair_indices": {
+        "32": "EURUSD", "33": "GBPUSD", "34": "USDJPY", "35": "USDCHF",
+        "36": "AUDUSD", "37": "USDCAD", "38": "NZDUSD", "39": "EURGBP",
+        "40": "EURJPY", "41": "GBPJPY",
+        "notes": "Full list from /trading-variables. Group type indicated by isForexOpen flag."
+      },
+
+      "forex_filtering_strategy": "Fetch /trading-history-24h, filter trades where pairIndex is in [32-45] range. These are the forex traders. Then fetch their full history and open positions.",
+
+      "rate_limit": "No documented limit but use 0.5-1s delay between requests. 429 responses possible.",
+
+      "python_example": "import requests\n\nBASE = 'https://backend-arbitrum.gains.trade'\nFOREX_PAIRS = range(32, 46)  # Forex pair indices\n\n# Get 24h trades, filter forex\nhistory = requests.get(f'{BASE}/trading-history-24h').json()\nforex_trades = [t for t in history if int(t.get('pairIndex', -1)) in FOREX_PAIRS]\n\n# Find active forex traders\nfrom collections import Counter\ntrader_counts = Counter(t.get('trader', '') for t in forex_trades)\ntop_forex_traders = trader_counts.most_common(20)\n\n# Get their open positions\nfor addr, count in top_forex_traders:\n    trades = requests.get(f'{BASE}/open-trades/{addr}').json()\n    forex_open = [t for t in trades if int(t.get('pairIndex', -1)) in FOREX_PAIRS]",
+
+      "existing_scraper": "E:/findtorontoevents_antigravity.ca/copy_trader_intel/gains_scraper.py",
+      "enhancement_needed": "Add forex-specific filtering. Current scraper handles all pairs but doesn't filter by asset class.",
+
+      "confidence": "HIGH",
+      "priority": "P0 - Already have scraper. Just add forex pair filter."
+    },
+
+    "3_dailyfx_ig_sentiment": {
+      "name": "DailyFX / IG Client Sentiment",
+      "category": "retail_sentiment",
+      "auth_required": false,
+      "auth_notes": "Web page is public. No documented JSON API.",
+
+      "endpoints": {
+        "sentiment_page": {
+          "url": "https://www.dailyfx.com/sentiment",
+          "method": "HTML scrape",
+          "notes": "Redirects to ig.com. Shows long/short % for major forex pairs, gold, indices.",
+          "redirect_url": "https://www.ig.com/uk/trading-strategies/_how-to-trade-using-ig-client-sentiment-240912",
+          "data_rendered_via": "JavaScript (dynamic content, needs Selenium or browser automation)"
+        },
+        "individual_pair_pages": {
+          "url_pattern": "https://www.dailyfx.com/sentiment-report/{pair}",
+          "example": "https://www.dailyfx.com/sentiment-report/eur-usd",
+          "method": "HTML scrape",
+          "notes": "Per-pair sentiment pages with detailed positioning data"
+        }
+      },
+
+      "data_available": ["long_pct", "short_pct", "daily_change_longs", "daily_change_shorts", "weekly_change", "open_interest_change"],
+
+      "scraping_challenge": "Content is JavaScript-rendered. Basic requests.get() returns empty data. Need Selenium/Playwright or find underlying XHR endpoint.",
+
+      "alternative_approach": "Use Myfxbook community outlook instead - same type of data, easier to scrape via JSON API.",
+
+      "python_example": "# DailyFX requires browser automation due to JS rendering\nfrom playwright.sync_api import sync_playwright\n\nwith sync_playwright() as p:\n    browser = p.chromium.launch(headless=True)\n    page = browser.new_page()\n    page.goto('https://www.dailyfx.com/sentiment')\n    page.wait_for_selector('.dfx-sentiment-table')  # Wait for data to load\n    # Extract sentiment data from rendered HTML\n    rows = page.query_selector_all('.dfx-sentiment-row')\n    for row in rows:\n        pair = row.query_selector('.pair-name').inner_text()\n        long_pct = row.query_selector('.long-pct').inner_text()\n        short_pct = row.query_selector('.short-pct').inner_text()",
+
+      "confidence": "MEDIUM",
+      "priority": "P2 - Use Myfxbook instead. Only pursue if you need IG-specific data."
+    },
+
+    "4_oanda_order_book": {
+      "name": "OANDA Order Book / Position Book",
+      "category": "retail_positioning",
+      "auth_required": true,
+      "auth_notes": "V20 API OrderBook/PositionBook endpoints DISCONTINUED as of late 2024. Paid data service ($1850/mo) or OANDA Japan API only.",
+
+      "status": "DEPRECATED",
+      "deprecation_source": "https://dekalogblog.blogspot.com/2024/09/discontinuation-of-oandas-orderbook-and.html",
+
+      "web_tool": {
+        "url": "https://www.oanda.com/bvi-en/cfds/tools/orderbook/",
+        "method": "Web-based only, JavaScript rendered",
+        "notes": "Visual tool on OANDA website still shows order/position book. Would need Selenium to scrape."
+      },
+
+      "alternative": "Use Myfxbook community outlook or FXSSI for similar retail positioning data.",
+
+      "confidence": "HIGH (confirmed discontinued)",
+      "priority": "P3 - Skip. Use Myfxbook/FXSSI instead."
+    },
+
+    "5_forexfactory_calendar": {
+      "name": "ForexFactory Economic Calendar",
+      "category": "economic_events",
+      "auth_required": false,
+      "auth_notes": "Public page but Cloudflare-protected. No official API.",
+
+      "endpoints": {
+        "calendar_page": {
+          "url_today": "https://www.forexfactory.com/calendar?day=today",
+          "url_week": "https://www.forexfactory.com/calendar?week=this",
+          "url_by_date": "https://www.forexfactory.com/calendar?day=mar21.2026",
+          "url_range": "https://www.forexfactory.com/calendar.php?week=jan7.2026",
+          "method": "HTML scrape",
+          "cloudflare": true
+        }
+      },
+
+      "html_structure": {
+        "table_selector": "table.calendar__table",
+        "row_selector": "tr.calendar__row.calendar_row",
+        "cells": {
+          "date": "td.calendar__cell.calendar__date",
+          "time": "td.calendar__cell.calendar__time",
+          "currency": "td.calendar__cell.calendar__currency",
+          "impact": "td.calendar__cell.calendar__impact span[title]",
+          "event": "td.calendar__cell.calendar__event span.calendar__event-title",
+          "actual": "td.calendar__cell.calendar__actual",
+          "forecast": "td.calendar__cell.calendar__forecast",
+          "previous": "td.calendar__cell.calendar__previous"
+        },
+        "impact_levels": {
+          "title_attribute": "span[title] contains 'High Impact Expected', 'Medium Impact Expected', 'Low Impact Expected', 'Non-Economic'"
+        }
+      },
+
+      "data_fields": ["date", "time", "currency", "impact (High/Medium/Low)", "event_name", "actual_value", "forecast_value", "previous_value"],
+
+      "scraping_challenges": [
+        "Cloudflare bot protection - basic requests may get 503 Service Unavailable",
+        "Need User-Agent header and possibly cookies",
+        "Selenium/Playwright recommended for reliability",
+        "Date cells span multiple rows (shared across events on same day)"
+      ],
+
+      "python_packages": {
+        "market-calendar-tool": {
+          "install": "pip install market-calendar-tool",
+          "usage": "from market_calendar_tool import scrape_calendar; df = scrape_calendar()",
+          "notes": "Pre-built scraper that returns pandas DataFrame. May handle Cloudflare."
+        }
+      },
+
+      "python_example": "import requests\nfrom bs4 import BeautifulSoup\n\nurl = 'https://www.forexfactory.com/calendar?day=today'\nheaders = {\n    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',\n    'Accept': 'text/html,application/xhtml+xml'\n}\nresp = requests.get(url, headers=headers)\nsoup = BeautifulSoup(resp.text, 'lxml')\ntable = soup.find('table', class_='calendar__table')\nrows = table.select('tr.calendar__row.calendar_row') if table else []\n\nevents = []\nfor row in rows:\n    currency = row.select_one('td.calendar__currency')\n    event = row.select_one('span.calendar__event-title')\n    impact_span = row.select_one('td.calendar__impact span')\n    actual = row.select_one('td.calendar__actual')\n    forecast = row.select_one('td.calendar__forecast')\n    previous = row.select_one('td.calendar__previous')\n    \n    events.append({\n        'currency': currency.text.strip() if currency else '',\n        'event': event.text.strip() if event else '',\n        'impact': impact_span.get('title', '') if impact_span else '',\n        'actual': actual.text.strip() if actual else '',\n        'forecast': forecast.text.strip() if forecast else '',\n        'previous': previous.text.strip() if previous else '',\n    })",
+
+      "confidence": "HIGH",
+      "priority": "P1 - Valuable for event-driven forex strategy. Calendar events cause volatility."
+    },
+
+    "6_tradingview_forex_ideas": {
+      "name": "TradingView Forex Ideas",
+      "category": "social_trading_ideas",
+      "auth_required": false,
+      "auth_notes": "Public pages. No official API. Use tradingview-scraper package.",
+
+      "package": {
+        "name": "tradingview-scraper",
+        "install": "pip install tradingview-scraper",
+        "version_note": "Check PyPI for latest version"
+      },
+
+      "scraping_approach": {
+        "url_pattern": "https://www.tradingview.com/symbols/{symbol}/ideas/",
+        "forex_symbols": ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "NZDUSD", "GBPJPY", "EURJPY", "XAUUSD"],
+        "sort_options": ["popular", "recent"]
+      },
+
+      "data_fields": ["title", "description", "author", "likes_count", "comments_count", "views_count", "timestamp", "symbol", "chart_url", "preview_image"],
+
+      "python_example": "from tradingview_scraper.symbols.ideas import Ideas\n\nideas_scraper = Ideas(export_result=False)\n\nforex_pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD']\nfor pair in forex_pairs:\n    ideas = ideas_scraper.scrape(\n        symbol=pair,\n        startPage=1,\n        endPage=2,\n        sort='recent'\n    )\n    # Process ideas - extract direction/bias from titles\n    for idea in ideas:\n        title = idea.get('title', '').lower()\n        if 'long' in title or 'buy' in title or 'bullish' in title:\n            bias = 'LONG'\n        elif 'short' in title or 'sell' in title or 'bearish' in title:\n            bias = 'SHORT'\n        else:\n            bias = 'NEUTRAL'",
+
+      "value_proposition": "Aggregate bias from popular TradingView analysts. High engagement ideas often move markets.",
+      "limitation": "Ideas are opinions not trades. Need NLP to extract direction/targets. No entry/exit prices in structured format.",
+
+      "confidence": "MEDIUM",
+      "priority": "P2 - Supplementary signal. Harder to extract actionable data than sentiment percentages."
+    },
+
+    "7_fxssi": {
+      "name": "FXSSI - Forex Sentiment Board",
+      "category": "retail_sentiment",
+      "auth_required": false,
+      "auth_notes": "Web tools are free. No documented public JSON API.",
+
+      "web_tools": {
+        "current_ratio": {
+          "url": "https://fxssi.com/tools/current-ratio",
+          "data": "Long/short ratios for major forex pairs from multiple brokers",
+          "refresh": "Every 10 minutes",
+          "method": "JavaScript-rendered. Need Selenium/Playwright."
+        },
+        "order_book": {
+          "url": "https://fxssi.com/tools/order-book",
+          "data": "Pending order book showing buy/sell orders at price levels",
+          "refresh": "Every 20 minutes"
+        },
+        "profit_ratio": {
+          "url": "https://fxssi.com/tools/profit-ratio",
+          "data": "% of traders in profit vs loss per pair",
+          "refresh": "Every 20 minutes"
+        }
+      },
+
+      "data_fields": ["pair", "long_percentage", "short_percentage", "source_brokers"],
+      "pairs_covered": "Major and minor forex pairs (EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD, EUR/GBP, EUR/JPY, GBP/JPY)",
+
+      "scraping_challenge": "All data loaded via JavaScript/AJAX. requests.get() returns empty page. Must use Selenium/Playwright.",
+
+      "python_example": "# FXSSI requires browser automation\nfrom playwright.sync_api import sync_playwright\nimport json\n\nwith sync_playwright() as p:\n    browser = p.chromium.launch(headless=True)\n    page = browser.new_page()\n    page.goto('https://fxssi.com/tools/current-ratio')\n    page.wait_for_timeout(5000)  # Wait for data to load via JS\n    \n    # Try to intercept the XHR call that loads sentiment data\n    # OR scrape from rendered DOM\n    rows = page.query_selector_all('.instrument-row')  # Selector may vary\n    for row in rows:\n        pair = row.query_selector('.pair-name').inner_text()\n        long_pct = row.query_selector('.long-bar').get_attribute('style')  # width: XX%\n        # Parse percentage from style attribute",
+
+      "confidence": "MEDIUM",
+      "priority": "P2 - Good multi-broker sentiment but requires browser automation."
+    },
+
+    "8_mql5_signals": {
+      "name": "MQL5 Signal Marketplace (MetaTrader)",
+      "category": "copy_trading_leaderboard",
+      "auth_required": false,
+      "auth_notes": "Public leaderboard pages. No official API for signal data.",
+
+      "endpoints": {
+        "signal_list": {
+          "url": "https://www.mql5.com/en/signals/mt5/list",
+          "forex_filter": "https://www.mql5.com/en/signals/mt5/list?type=forex",
+          "sort_options": "?sort=gain (default), ?sort=subscribers, ?sort=reliability",
+          "method": "HTML scrape",
+          "notes": "JavaScript-rendered page. Basic requests returns incomplete data."
+        },
+        "signal_detail": {
+          "url_pattern": "https://www.mql5.com/en/signals/{signal_id}",
+          "tabs": ["trading", "statistics", "risks", "reviews"],
+          "statistics_url": "https://www.mql5.com/en/signals/{signal_id}?tab=statistics"
+        }
+      },
+
+      "data_fields": ["signal_name", "gain_pct", "drawdown_pct", "subscribers", "weeks_trading", "reliability", "pips", "trades_count", "win_rate", "profit_factor", "monthly_gain"],
+
+      "scraping_challenges": [
+        "Dynamic content - needs Selenium or Playwright",
+        "Rate limiting - 403 errors if too many requests per second",
+        "Signal data in 'signals-table' div",
+        "Recommend 2-3 second delay between requests"
+      ],
+
+      "python_example": "from playwright.sync_api import sync_playwright\nimport time\n\nwith sync_playwright() as p:\n    browser = p.chromium.launch(headless=True)\n    page = browser.new_page()\n    page.goto('https://www.mql5.com/en/signals/mt5/list?type=forex&sort=gain')\n    page.wait_for_selector('.signals-table')\n    \n    rows = page.query_selector_all('.signals-table tr')\n    signals = []\n    for row in rows[1:]:  # Skip header\n        cells = row.query_selector_all('td')\n        if len(cells) >= 6:\n            signals.append({\n                'name': cells[0].inner_text().strip(),\n                'gain': cells[1].inner_text().strip(),\n                'subscribers': cells[2].inner_text().strip(),\n                'drawdown': cells[3].inner_text().strip(),\n                'weeks': cells[4].inner_text().strip(),\n            })",
+
+      "github_scrapers": [
+        "https://github.com/matheusvds/mql5-signal-scraper",
+        "https://github.com/hammadfozi/Mql5-Signals-Scraper",
+        "https://github.com/shahriyear/mql5-signals-scraper"
+      ],
+
+      "confidence": "HIGH",
+      "priority": "P1 - Rich forex strategy performance data. Proven scrapers exist."
+    },
+
+    "9_zulutrade": {
+      "name": "ZuluTrade",
+      "category": "copy_trading_leaderboard",
+      "auth_required": "partial",
+      "auth_notes": "Public trader pages viewable without login. REST API requires trader account for trade execution. Leaderboard browsing may work without auth.",
+
+      "endpoints": {
+        "public_leaderboard": {
+          "url": "https://www.zulutrade.com/traders",
+          "method": "HTML scrape or potential API endpoint",
+          "data": "Ranked list of traders with ZuluRank, profit, drawdown, followers"
+        },
+        "trader_profile": {
+          "url_pattern": "https://www.zulutrade.com/trader/{trader_id}/trading",
+          "data": "Full trade history, performance stats, open positions"
+        },
+        "rest_api_base": {
+          "url": "https://api.zulutrade.com",
+          "docs": "https://us.zulutrade.com/restapi-reference",
+          "notes": "REST API mainly for trade execution. Account statistics retrievable for Trader accounts."
+        }
+      },
+
+      "ranking_factors": ["maturity (time trading)", "exposure (max concurrent positions)", "drawdown", "performance (pips, avg pips/trade)"],
+
+      "data_fields": ["trader_name", "zulurank", "total_pips", "avg_pips_per_trade", "drawdown_pips", "followers_count", "weeks_trading", "win_rate", "open_trades"],
+
+      "scraping_approach": "HTML scrape of public leaderboard and trader profiles. JavaScript-rendered content likely requires Selenium/Playwright.",
+
+      "python_example": "from playwright.sync_api import sync_playwright\n\nwith sync_playwright() as p:\n    browser = p.chromium.launch(headless=True)\n    page = browser.new_page()\n    page.goto('https://www.zulutrade.com/traders')\n    page.wait_for_timeout(5000)\n    \n    # Scrape trader cards from leaderboard\n    traders = page.query_selector_all('.trader-card')  # Selector may vary\n    for trader in traders:\n        name = trader.query_selector('.trader-name').inner_text()\n        pips = trader.query_selector('.trader-pips').inner_text()\n        followers = trader.query_selector('.trader-followers').inner_text()",
+
+      "confidence": "MEDIUM",
+      "priority": "P2 - Good forex-specific copy trading data but requires browser automation."
+    },
+
+    "10_etoro": {
+      "name": "eToro Discovery API",
+      "category": "copy_trading_leaderboard",
+      "auth_required": false,
+      "auth_notes": "Discovery/rankings endpoint appears to work without authentication based on OpenAPI spec. No API key documented.",
+
+      "endpoints": {
+        "rankings_discovery": {
+          "url": "https://www.etoro.com/sapi/rankings/rankings/",
+          "method": "GET",
+          "params": {
+            "period": "CurrYear|LastTwoYears|CurrQuarter|CurrMonth",
+            "gainmin": "10",
+            "gainmax": "500",
+            "riskscore": "1-7",
+            "copiersmin": "10",
+            "winratiomin": "50",
+            "sort": "-gain",
+            "verified": "true",
+            "popularinvestor": "true"
+          },
+          "returns": "JSON array of investor profiles with performance stats",
+          "notes": "Extremely powerful discovery endpoint. Filter by gain, risk, copiers, win rate."
+        },
+        "investor_stats": {
+          "url_pattern": "https://www.etoro.com/sapi/rankings/cid/{userCid}/rankings",
+          "method": "GET",
+          "returns": "Detailed stats for specific investor"
+        },
+        "search_users": {
+          "url": "https://www.etoro.com/api/search/v1/users",
+          "params": {"prefix": "search_term", "usersCount": 20},
+          "returns": "User profiles matching search"
+        }
+      },
+
+      "data_fields": ["username", "gain_pct", "risk_score", "copiers_count", "win_ratio", "trades_count", "daily_gain", "monthly_gain", "yearly_gain", "max_drawdown"],
+
+      "third_party_api": {
+        "bullaware": {
+          "base_url": "https://bullaware.com/api",
+          "endpoints": [
+            "/v1/investors/{username}/portfolio",
+            "/v1/investors/{username}/trades",
+            "/v1/investors/{username}/metrics",
+            "/v1/rankings/{key}"
+          ],
+          "auth": "API key from bullaware.com/api (free tier available)",
+          "notes": "Covers ~10,000 eToro portfolios. Easier than scraping eToro directly."
+        }
+      },
+
+      "python_example": "import requests\n\n# eToro discovery - find profitable forex traders\nurl = 'https://www.etoro.com/sapi/rankings/rankings/'\nparams = {\n    'period': 'CurrYear',\n    'gainmin': 15,\n    'riskscore': 4,\n    'copiersmin': 50,\n    'winratiomin': 55,\n    'sort': '-gain',\n    'pagesize': 50\n}\nheaders = {'User-Agent': 'Mozilla/5.0'}\nresp = requests.get(url, params=params, headers=headers)\nif resp.status_code == 200:\n    traders = resp.json()\n    for t in traders.get('Items', []):\n        print(f\"{t.get('UserName')}: Gain={t.get('Gain')}% Risk={t.get('RiskScore')} Copiers={t.get('Copiers')}\")",
+
+      "confidence": "MEDIUM",
+      "priority": "P1 - JSON API, no auth documented, rich filtering. Verify the endpoint still works without auth."
+    },
+
+    "11_bonus_sources": {
+      "name": "Additional Forex Sentiment Sources",
+      "sources": {
+        "forexclientsentiment_com": {
+          "url": "https://forexclientsentiment.com/",
+          "data": "AI-aggregated sentiment from multiple brokers for 35+ forex pairs",
+          "method": "HTML scrape (JS-rendered)",
+          "value": "Multi-broker aggregation is more reliable than single-broker data",
+          "confidence": "LOW - needs investigation"
+        },
+        "dukascopy_swfx": {
+          "url": "https://www.dukascopy.com/swiss/english/marketwatch/sentiment/",
+          "data": "SWFX Sentiment Index - long/short ratios from Dukascopy clients",
+          "method": "Widget embed or HTML scrape",
+          "update_frequency": "Every 30 minutes",
+          "api": "Only available via JForex Java API or MetaTrader indicator. No public REST API.",
+          "widget_url": "https://www.dukascopy.com/plugins/fxMarketWatch/?swfx_index=",
+          "confidence": "MEDIUM"
+        },
+        "forex_com_sentiment": {
+          "url": "https://www.forex.com/en-us/trading-tools/client-sentiment/",
+          "data": "Real-time long/short positions and volume by product",
+          "method": "HTML scrape (JS-rendered)",
+          "confidence": "LOW - no API documented"
+        },
+        "a1trading_sentiment": {
+          "url": "https://www.a1trading.com/retail-sentiment/",
+          "data": "Free retail sentiment dashboard aggregating multiple sources",
+          "method": "HTML scrape",
+          "confidence": "LOW"
+        }
+      }
+    }
+  },
+
+  "implementation_priority": {
+    "P0_immediate": [
+      {
+        "source": "Myfxbook Community Outlook API",
+        "effort": "LOW - JSON API with free account",
+        "value": "HIGH - retail sentiment for all forex pairs",
+        "action": "Create myfxbook_sentiment.py with login + get-community-outlook"
+      },
+      {
+        "source": "Gains Network gTrade (forex filter)",
+        "effort": "LOW - already have gains_scraper.py",
+        "value": "HIGH - actual leveraged forex positions from DEX traders",
+        "action": "Add forex pair filtering (pairIndex 32-45) to existing gains_scraper.py"
+      }
+    ],
+    "P1_next_sprint": [
+      {
+        "source": "ForexFactory Calendar",
+        "effort": "MEDIUM - HTML scrape with Cloudflare handling",
+        "value": "HIGH - economic events drive forex volatility",
+        "action": "Create forexfactory_scraper.py. Consider market-calendar-tool package."
+      },
+      {
+        "source": "MQL5 Signals (forex filter)",
+        "effort": "MEDIUM - needs Playwright for JS rendering",
+        "value": "HIGH - professional signal provider performance data",
+        "action": "Create mql5_scraper.py using Playwright"
+      },
+      {
+        "source": "eToro Discovery",
+        "effort": "LOW - JSON API if endpoint works",
+        "value": "HIGH - filtered trader discovery with rich stats",
+        "action": "Create etoro_scraper.py using /sapi/rankings/rankings/"
+      }
+    ],
+    "P2_later": [
+      {
+        "source": "TradingView Forex Ideas",
+        "effort": "LOW - pip install tradingview-scraper",
+        "value": "MEDIUM - opinions not trades, need NLP for direction extraction",
+        "action": "Add to sentiment_signals.py as supplementary bias indicator"
+      },
+      {
+        "source": "ZuluTrade Leaderboard",
+        "effort": "MEDIUM - Playwright required",
+        "value": "MEDIUM - good forex copy trading data",
+        "action": "Create zulutrade_scraper.py"
+      },
+      {
+        "source": "FXSSI Current Ratio",
+        "effort": "MEDIUM - Playwright required",
+        "value": "MEDIUM - multi-broker aggregation",
+        "action": "Create fxssi_scraper.py"
+      }
+    ],
+    "P3_skip": [
+      {
+        "source": "OANDA Order Book",
+        "reason": "V20 API endpoints DISCONTINUED. Web tool requires Selenium. Use Myfxbook instead."
+      },
+      {
+        "source": "DailyFX/IG Sentiment",
+        "reason": "Redirects to IG, JS-rendered, no JSON API. Myfxbook provides equivalent data easier."
+      }
+    ]
+  },
+
+  "technical_notes": {
+    "browser_automation": "Several sources (FXSSI, MQL5, ZuluTrade, ForexFactory) require Playwright or Selenium for JavaScript-rendered content. Playwright is recommended over Selenium for headless scraping - lighter weight and faster.",
+    "playwright_install": "pip install playwright && playwright install chromium",
+    "rate_limiting": "All sources should use 1-3 second delays between requests. Myfxbook has explicit 100 req/day limit on free tier.",
+    "user_agent": "Always set realistic User-Agent header. Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "data_normalization": "All sentiment data should be normalized to: {pair, long_pct, short_pct, source, timestamp} for cross-source aggregation"
+  }
+}

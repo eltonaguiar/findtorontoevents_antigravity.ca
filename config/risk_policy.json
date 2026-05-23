@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "_v2_changelog": "2026-05-09: tighten crypto per-symbol cap 10→5 + per-trade cap 5→3 per swarm 4-engine consensus + cycle-4 TON disaster (7 open shorts on 40% pump). See swarm_runs/next_steps_perf_2026-05-09/ + reports/portfolio_lessons_2026-05-08.md.",
+  "crypto": {
+    "max_equity_pct_per_symbol": 5,
+    "max_equity_pct_per_direction": 20,
+    "max_portfolios_same_symbol_direction": 2,
+    "per_trade_cap_pct": 3
+  },
+  "commodity": {
+    "max_equity_pct_per_symbol": 5,
+    "max_equity_pct_per_direction": 15,
+    "max_portfolios_same_symbol_direction": 1,
+    "per_trade_cap_pct": 3
+  },
+  "asset_class_budget_pct": {
+    "CRYPTO": 0.70,
+    "EQUITY": 0.18,
+    "FOREX": 0.05,
+    "COMMODITY": 0.05,
+    "ETF": 0.02
+  },
+  "non_crypto_absolute_caps": {
+    "EQUITY": 2,
+    "FOREX": 2,
+    "COMMODITY": 1,
+    "ETF": 1,
+    "FUTURES": 1
+  },
+  "trust_tier_policy": {
+    "conviction_blacklist": ["SANDBOX", "PROBATION", "UNPROVEN", "DEMOTED"],
+    "conviction_min_score": 50,
+    "testing_allowlist": ["WATCH", "DEVELOPING", "PROVEN"]
+  },
+  "equity": {
+    "max_single_system_picks": 2,
+    "max_single_system_share_pct": 0.60
+  },
+  "forex": {
+    "max_active_picks": 2
+  },
+  "non_crypto": {
+    "max_total_picks": 3,
+    "min_trades_overrides": {
+      "FOREX": 10,
+      "FUTURES": 5
+    },
+    "goldmine_min_score": 25,
+    "goldmine_min_conf": 0.6,
+    "goldmine_min_trades_to_relax": 30,
+    "last_policy_change_at": "2026-04-09T00:00:00Z"
+  },
+  "policy_flags": {
+    "enable_non_crypto_throughput_v2": false,
+    "enable_direction_aware_conviction_v2": false,
+    "enable_asset_class_ml_composite_v2": false,
+    "enable_goldmine_floor_v2": false,
+    "disable_non_crypto_ml_null_penalty_v2": false,
+    "enable_concentration_probation_v2": false
+  },
+  "concentration_controls": {
+    "mode": "tag",
+    "max_symbol_strategy_exposure": 2,
+    "max_strategy_system_exposure": 3
+  },
+  "sports": {
+    "max_stake_pct_bankroll": 5,
+    "note": "Align with HF threshold B; live-monitor PHP consumers optional"
+  },
+  "disclaimer": "Policy numbers reference docs/HEDGE_FUND_QUALITY_NEXT_STEPS.md; change via bus RFC."
+}

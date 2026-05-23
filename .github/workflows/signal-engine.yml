@@ -1,0 +1,92 @@
+name: Crypto Signal Engine
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes (scan)
+    - cron: '0 2 * * *' # Daily 02:00 UTC (retrain)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'scan'
+        type: choice
+        options: [scan, retrain]
+
+concurrency:
+  group: crypto-signal-engine-writer
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  signal-engine:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r crypto_signal_engine/requirements.txt
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%H)" = "02" ] && [ "$(date -u +%M)" -lt "5" ]; then
+            echo "mode=retrain" >> $GITHUB_OUTPUT
+          else
+            echo "mode=scan" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Signal Engine
+        run: python -m crypto_signal_engine --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Push Signal Engine picks to Audit Trail
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python crypto_signal_engine/audit_push.py 2>&1 || echo "Signal Engine audit push failed (non-fatal)"
+
+      - name: Commit data files
+        run: |
+          git config user.name "Signal Engine Bot"
+          git config user.email "bot@findtorontoevents.ca"
+          git add -f crypto_signal_engine/data/*.json 2>/dev/null || true
+          git add data/audit_trail.db 2>/dev/null || true
+          git add -f crypto_signal_engine/data/models/*.json 2>/dev/null || true
+          git add -f crypto_signal_engine/data/models/*.txt 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            ACTIVE=$(python3 -c "
+          import json, os
+          p = 'crypto_signal_engine/data/active_picks.json'
+          d = json.load(open(p)) if os.path.exists(p) else []
+          print(len(d))
+          " 2>/dev/null || echo "0")
+            git commit -m "Signal Engine ${{ steps.mode.outputs.mode }} [$(date -u '+%Y-%m-%d %H:%M UTC')] ${ACTIVE} active picks [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+          fi
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Crypto Signal Engine" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+
+      # Dashboard deployed via deploy-riseoftheclaw.yml (unified GitHub Pages)
+

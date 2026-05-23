@@ -1,0 +1,34 @@
+# Weekly forensics snapshot (read-only JSON) for sports betting metrics.
+name: Sports Forensics Weekly
+
+on:
+  schedule:
+    - cron: '30 6 * * 1' # Mondays 06:30 UTC
+  workflow_dispatch:
+
+jobs:
+  forensics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Fetch forensics segments
+        run: |
+          curl -sS --max-time 60 "https://findtorontoevents.ca/live-monitor/api/sports_forensics.php?action=segments" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          print('ok:', d.get('ok'), 'segments:', d.get('segment_count', 0))
+          if not d.get('ok'):
+              sys.exit(1)
+          "
+      - name: Fetch daily returns (correlation feed)
+        run: |
+          curl -sS --max-time 60 "https://findtorontoevents.ca/live-monitor/api/sports_forensics.php?action=daily_returns" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          print('ok:', d.get('ok'), 'daily_rows:', len(d.get('daily_rows') or []))
+          if not d.get('ok'):
+              sys.exit(1)
+          "
+      - name: Validate sports API schema (remote)
+        run: python3 tools/validate_sports_api_schema.py https://findtorontoevents.ca/live-monitor/api/

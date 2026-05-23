@@ -1,0 +1,73 @@
+name: Data Pipeline Reliability Test
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  test-data-sources:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install pandas numpy requests yfinance "ccxt>=4.3.80,<4.4"
+
+    - name: Test data fetcher
+      env:
+        ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+        PYTHONPATH: ${{ github.workspace }}
+      run: python tools/data_pipeline_healthcheck.py
+
+    - name: Commit health report
+      if: always() && !cancelled()
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        if [ ! -f data_source_health.json ]; then
+          echo "No health report file"
+          exit 0
+        fi
+        git add data_source_health.json
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+          exit 0
+        fi
+        git commit -m "chore: update data source health report [skip ci]"
+        git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+        bash .github/scripts/safe_push.sh
+
+    - name: Alert on failures
+      if: failure()
+      continue-on-error: true
+      uses: actions/github-script@v7
+      with:
+        script: |
+          try {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Data Pipeline Failure Detected',
+              body: `Data pipeline test failed at ${new Date().toISOString()}. [Workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              labels: ['data-pipeline', 'alert']
+            });
+          } catch (e) {
+            console.log('Could not open issue (permissions or API): ' + e.message);
+          }

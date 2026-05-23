@@ -1,0 +1,63 @@
+name: MOMENTUM SCALP SCANNER - Dynamic Universe Expansion
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Every 4 hours
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Scan mode'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - gainers-only
+
+permissions:
+  contents: write
+
+jobs:
+  momentum-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install pandas numpy requests
+
+      - name: Run Momentum Scalp Scanner
+        run: python genome/mutation_lab/momentum_scalp_scanner.py
+
+      - name: Run Tracked Picks Generator
+        run: python genome/mutation_lab/generate_tracked_picks.py
+
+      - name: Check Outcomes (24h TP/SL/Expiry tracker)
+        run: python audit_dashboard/check_top_picks_outcome.py
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add genome/data/momentum_scalp_picks.json genome/data/top_gainers_scan.json genome/data/tracked_live_picks.json genome/data/tracked_picks_chatwithit_entry.md genome/data/momentum_scalp_chatwithit_entry.md audit_dashboard/data/claude_top_picks.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Momentum scan + outcome check: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            git pull --rebase origin main || true
+            bash .github/scripts/safe_push.sh
+          fi
+

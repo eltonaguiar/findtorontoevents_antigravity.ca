@@ -1,0 +1,249 @@
+name: Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+
+      #  findtorontoevents.ca (50webs) 
+      - name: Deploy to findtorontoevents.ca (50webs FTP)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+
+          files = [
+              # MOVIESHOWS (MS1  upgrade toast)
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/.htaccess',              'findtorontoevents.ca/MOVIESHOWS',      '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/index.php',              'findtorontoevents.ca/MOVIESHOWS',      'index.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/ms1-upgrade-toast.js',   'findtorontoevents.ca/MOVIESHOWS',      'ms1-upgrade-toast.js'),
+              # MOVIESHOWS2
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/.htaccess',             'findtorontoevents.ca/MOVIESHOWS2',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/app.html',              'findtorontoevents.ca/MOVIESHOWS2',     'app.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/index.html',            'findtorontoevents.ca/MOVIESHOWS2',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/script.js',             'findtorontoevents.ca/MOVIESHOWS2',     'script.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/db-connector.js',       'findtorontoevents.ca/MOVIESHOWS2',     'db-connector.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ui-minimal.js',         'findtorontoevents.ca/MOVIESHOWS2',     'ui-minimal.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/features.js',           'findtorontoevents.ca/MOVIESHOWS2',     'features.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/scroll-fix.js',         'findtorontoevents.ca/MOVIESHOWS2',     'scroll-fix.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ui-cleanup.js',         'findtorontoevents.ca/MOVIESHOWS2',     'ui-cleanup.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/styles.css',            'findtorontoevents.ca/MOVIESHOWS2',     'styles.css'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/motivation.js',          'findtorontoevents.ca/MOVIESHOWS2',     'motivation.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/freestyle.js',           'findtorontoevents.ca/MOVIESHOWS2',     'freestyle.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/categories.js',          'findtorontoevents.ca/MOVIESHOWS2',     'categories.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ms2-enhancer.js',       'findtorontoevents.ca/MOVIESHOWS2',     'ms2-enhancer.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/.htaccess',         'findtorontoevents.ca/MOVIESHOWS2/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/movies.php',        'findtorontoevents.ca/MOVIESHOWS2/api', 'movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/get-movies.php',    'findtorontoevents.ca/MOVIESHOWS2/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/db-config.php',     'findtorontoevents.ca/MOVIESHOWS2/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/freestyle-search.php', 'findtorontoevents.ca/MOVIESHOWS2/api', 'freestyle-search.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/test-db.php',     'findtorontoevents.ca/MOVIESHOWS2/api', 'test-db.php'),
+              # MOVIESHOWS3
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/index.html',            'findtorontoevents.ca/MOVIESHOWS3',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/.htaccess',             'findtorontoevents.ca/MOVIESHOWS3',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/get-movies.php',    'findtorontoevents.ca/MOVIESHOWS3/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/check-session.php', 'findtorontoevents.ca/MOVIESHOWS3/api', 'check-session.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/.htaccess',         'findtorontoevents.ca/MOVIESHOWS3/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/db-config.php',     'findtorontoevents.ca/MOVIESHOWS3/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/test-db.php',       'findtorontoevents.ca/MOVIESHOWS3/api', 'test-db.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/freestyle-search.php', 'findtorontoevents.ca/MOVIESHOWS3/api', 'freestyle-search.php'),
+          ]
+          print(f'Connecting to {host} (findtorontoevents.ca)...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          for local, remote_dir, fname in files:
+              ftp.cwd('/')
+              for part in remote_dir.split('/'):
+                  try: ftp.cwd(part)
+                  except: ftp.mkd(part); ftp.cwd(part)
+              with open(local, 'rb') as f:
+                  ftp.storbinary('STOR ' + fname, f)
+              print(f'   {fname}  findtorontoevents.ca/{remote_dir.split(\"/\",1)[1] if \"/\" in remote_dir else remote_dir}')
+          ftp.quit()
+          print(' findtorontoevents.ca deploy complete')
+          "
+
+      #  tdotevent.ca (50webs  same host, /tdotevent.ca/ root) 
+      - name: Deploy to tdotevent.ca (50webs FTP)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+
+          files = [
+              # MOVIESHOWS (MS1  upgrade toast)
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/.htaccess',              'tdotevent.ca/MOVIESHOWS',      '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/index.php',              'tdotevent.ca/MOVIESHOWS',      'index.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/ms1-upgrade-toast.js',   'tdotevent.ca/MOVIESHOWS',      'ms1-upgrade-toast.js'),
+              # MOVIESHOWS2
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/.htaccess',             'tdotevent.ca/MOVIESHOWS2',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/app.html',              'tdotevent.ca/MOVIESHOWS2',     'app.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/index.html',            'tdotevent.ca/MOVIESHOWS2',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/script.js',             'tdotevent.ca/MOVIESHOWS2',     'script.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/db-connector.js',       'tdotevent.ca/MOVIESHOWS2',     'db-connector.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ui-minimal.js',         'tdotevent.ca/MOVIESHOWS2',     'ui-minimal.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/features.js',           'tdotevent.ca/MOVIESHOWS2',     'features.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/scroll-fix.js',         'tdotevent.ca/MOVIESHOWS2',     'scroll-fix.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ui-cleanup.js',         'tdotevent.ca/MOVIESHOWS2',     'ui-cleanup.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/styles.css',            'tdotevent.ca/MOVIESHOWS2',     'styles.css'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/motivation.js',          'tdotevent.ca/MOVIESHOWS2',     'motivation.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/freestyle.js',           'tdotevent.ca/MOVIESHOWS2',     'freestyle.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/categories.js',          'tdotevent.ca/MOVIESHOWS2',     'categories.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ms2-enhancer.js',       'tdotevent.ca/MOVIESHOWS2',     'ms2-enhancer.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/.htaccess',         'tdotevent.ca/MOVIESHOWS2/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/movies.php',        'tdotevent.ca/MOVIESHOWS2/api', 'movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/get-movies.php',    'tdotevent.ca/MOVIESHOWS2/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/db-config.php',     'tdotevent.ca/MOVIESHOWS2/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/freestyle-search.php', 'tdotevent.ca/MOVIESHOWS2/api', 'freestyle-search.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/test-db.php',     'tdotevent.ca/MOVIESHOWS2/api', 'test-db.php'),
+              # MOVIESHOWS3
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/index.html',            'tdotevent.ca/MOVIESHOWS3',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/.htaccess',             'tdotevent.ca/MOVIESHOWS3',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/get-movies.php',    'tdotevent.ca/MOVIESHOWS3/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/check-session.php', 'tdotevent.ca/MOVIESHOWS3/api', 'check-session.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/.htaccess',         'tdotevent.ca/MOVIESHOWS3/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/db-config.php',     'tdotevent.ca/MOVIESHOWS3/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/test-db.php',       'tdotevent.ca/MOVIESHOWS3/api', 'test-db.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/freestyle-search.php', 'tdotevent.ca/MOVIESHOWS3/api', 'freestyle-search.php'),
+          ]
+          print(f'Connecting to {host} (tdotevent.ca)...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          for local, remote_dir, fname in files:
+              ftp.cwd('/')
+              for part in remote_dir.split('/'):
+                  try: ftp.cwd(part)
+                  except: ftp.mkd(part); ftp.cwd(part)
+              with open(local, 'rb') as f:
+                  ftp.storbinary('STOR ' + fname, f)
+              print(f'   {fname}  tdotevent.ca/{remote_dir.split(\"/\",1)[1] if \"/\" in remote_dir else remote_dir}')
+          ftp.quit()
+          print(' tdotevent.ca deploy complete')
+          "
+
+      #  torontoevent.net (GoDaddy FTP) 
+      - name: Deploy to torontoevent.net (GoDaddy FTP)
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing GoDaddy FTP credentials'); sys.exit(1)
+
+          files = [
+              # MOVIESHOWS (MS1  upgrade toast)
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/.htaccess',              'MOVIESHOWS',      '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/index.php',              'MOVIESHOWS',      'index.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/ms1-upgrade-toast.js',   'MOVIESHOWS',      'ms1-upgrade-toast.js'),
+              # MOVIESHOWS2
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/.htaccess',             'MOVIESHOWS2',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/app.html',              'MOVIESHOWS2',     'app.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/index.html',            'MOVIESHOWS2',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/script.js',             'MOVIESHOWS2',     'script.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/db-connector.js',       'MOVIESHOWS2',     'db-connector.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ui-minimal.js',         'MOVIESHOWS2',     'ui-minimal.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/features.js',           'MOVIESHOWS2',     'features.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/scroll-fix.js',         'MOVIESHOWS2',     'scroll-fix.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ui-cleanup.js',         'MOVIESHOWS2',     'ui-cleanup.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/styles.css',            'MOVIESHOWS2',     'styles.css'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/motivation.js',          'MOVIESHOWS2',     'motivation.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/freestyle.js',           'MOVIESHOWS2',     'freestyle.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/categories.js',          'MOVIESHOWS2',     'categories.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/ms2-enhancer.js',       'MOVIESHOWS2',     'ms2-enhancer.js'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/.htaccess',         'MOVIESHOWS2/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/movies.php',        'MOVIESHOWS2/api', 'movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/get-movies.php',    'MOVIESHOWS2/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/db-config.php',     'MOVIESHOWS2/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/freestyle-search.php', 'MOVIESHOWS2/api', 'freestyle-search.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/test-db.php',     'MOVIESHOWS2/api', 'test-db.php'),
+              # MOVIESHOWS3
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/index.html',            'MOVIESHOWS3',     'index.html'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/.htaccess',             'MOVIESHOWS3',     '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/get-movies.php',    'MOVIESHOWS3/api', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/check-session.php', 'MOVIESHOWS3/api', 'check-session.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/.htaccess',         'MOVIESHOWS3/api', '.htaccess'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/db-config.php',     'MOVIESHOWS3/api', 'db-config.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/test-db.php',       'MOVIESHOWS3/api', 'test-db.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/freestyle-search.php', 'MOVIESHOWS3/api', 'freestyle-search.php'),
+          ]
+          print(f'Connecting to {host} (torontoevent.net)...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          for local, remote_dir, fname in files:
+              ftp.cwd('/')
+              for part in remote_dir.split('/'):
+                  try: ftp.cwd(part)
+                  except: ftp.mkd(part); ftp.cwd(part)
+              with open(local, 'rb') as f:
+                  ftp.storbinary('STOR ' + fname, f)
+              print(f'   {fname}  torontoevent.net/{remote_dir}')
+          ftp.quit()
+          print(' torontoevent.net deploy complete')
+          "
+
+      #  Verify all 6 endpoints 
+      - name: Verify all sites respond
+        run: |
+          echo " Checking all endpoints..."
+          FAIL=0
+          for URL in \
+            "https://findtorontoevents.ca/MOVIESHOWS2/" \
+            "https://findtorontoevents.ca/MOVIESHOWS3/" \
+            "https://tdotevent.ca/MOVIESHOWS2/" \
+            "https://tdotevent.ca/MOVIESHOWS3/" \
+            "https://torontoevent.net/MOVIESHOWS2/" \
+            "https://torontoevent.net/MOVIESHOWS3/"; do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$URL" || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "   $URL  HTTP $STATUS"
+            else
+              echo "   $URL  HTTP $STATUS"
+              FAIL=1
+            fi
+          done
+
+          echo ""
+          echo " Checking API endpoints..."
+          for URL in \
+            "https://findtorontoevents.ca/MOVIESHOWS2/api/movies.php?action=stats" \
+            "https://findtorontoevents.ca/MOVIESHOWS3/api/get-movies.php" \
+            "https://findtorontoevents.ca/MOVIESHOWS3/api/test-db.php" \
+            "https://torontoevent.net/MOVIESHOWS2/api/test-db.php"; do
+            BODY=$(curl -s --max-time 15 "$URL" 2>/dev/null | head -c 200)
+            echo "  $URL  $BODY"
+          done
+
+          if [ "$FAIL" -eq 1 ]; then
+            echo " Some endpoints returned non-200 status"
+          else
+            echo " All endpoints healthy"
+          fi
+

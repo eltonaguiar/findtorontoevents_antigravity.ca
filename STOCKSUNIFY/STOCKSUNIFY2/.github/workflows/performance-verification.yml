@@ -1,0 +1,36 @@
+name: STOCKSUNIFY2 Performance Verification
+
+on:
+  schedule:
+    - cron: '0 23 * * 0' # 11:00 PM UTC every Sunday
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Truth Engine
+        run: npm run verify
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+
+      - name: Commit and Push Performance Results
+        run: |
+          git config --global user.name "STOCKSUNIFY2-TRUTH-BOT"
+          git config --global user.email "truth@stocksunify.com"
+          git add data/v2/performance/
+          git commit -m "📊 Audit: Performance Verification for $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git push origin main

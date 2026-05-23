@@ -1,0 +1,245 @@
+{
+  "engine": "quant-risk-reviewer-v1",
+  "overall_verdict": "MAJOR_REVISION",
+  "section_findings": [
+    {
+      "section": "C-1",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Canonical ledger shows `ensemble` CRYPTO: n=79, WR=5.1%, PF=0.01, pnl=-56pp. However, the historical MATIC artifact (project_quan_engine_matic_positive_artifact.md) proves single-symbol ghosts can inflate n without real signal. The plan does not provide a symbol-level breakdown of the 79 trades. Without mutation/inverse test (e.g., flipping all signals and checking if PF improves), we cannot distinguish a real drag from a ghost cluster.",
+      "risk": "If this is a MATIC-style ghost, killing it wastes time and may mask a real but rare signal. If real, keeping it bleeds 56pp pnl."
+    },
+    {
+      "section": "C-2",
+      "verdict": "DISAGREE",
+      "evidence": "Plan claims 'ensemble' is the sole drag. Canonical `by_asset_class_strategy_policy_clean_net` shows `ml_enhanced_*USDT_*` cohorts (n<50, WR 89-97%) have PF >3.0 but n<50. These are high-variance, likely overfit. The plan does not address them in C-2, only in C-5. This is inconsistent.",
+      "risk": "Shipping C-2 alone leaves overfit high-WR emitters that will collapse out-of-sample, causing a false sense of improvement."
+    },
+    {
+      "section": "F-1",
+      "verdict": "DISAGREE",
+      "evidence": "Canonical ledger: `cta_replicator` FOREX n=97, WR=64.9%, PF=2.38, +0.11pnl. The plan whitelists it as 'the only FOREX emitter' without evidence it passed `edge_stability_harness.py`. The EDGE_HUNT_EXHAUSTED report (2026-05-18) states 0 admissible hypotheses under unmodified harness. This emitter was not in the 17 pre-registered hypotheses. Whitelisting it bypasses the harness entirely.",
+      "risk": "Premature whitelisting creates a single-point-of-failure. If this emitter is a false positive (e.g., data-snooped), FOREX allocation becomes 100% exposed to a non-validated strategy."
+    },
+    {
+      "section": "C-5",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan rejects `ml_enhanced_*USDT_*` cohorts with WR 89-97% and n<50 as overfit. Canonical ledger confirms n<50 for all such cohorts. However, the plan uses 'single-symbol/timeframe' heuristic without requiring harness clearance. The EDGE_HUNT_EXHAUSTED report shows 0 admissible hypotheses, meaning no strategy has passed the harness. This heuristic is arbitrary.",
+      "risk": "Rejecting based on n<50 alone may discard a genuine but rare edge (e.g., a 1-minute scalping strategy on a single volatile pair). Without harness validation, the cut is subjective."
+    },
+    {
+      "section": "F-2",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `trend_follower` FOREX n=12, WR=33.3%, PF=0.45, pnl=-0.03pp. The plan recommends kill. n=12 is insufficient for statistical significance. No evidence of edge.",
+      "risk": "Low. Keeping it would dilute FOREX PF."
+    },
+    {
+      "section": "C-3",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `momentum_breakout` CRYPTO n=34, WR=41.2%, PF=0.78, pnl=-0.02pp. Plan recommends kill. n=34 is borderline but PF<1.0 and negative pnl. No evidence of edge.",
+      "risk": "Low. Minimal impact on aggregate."
+    },
+    {
+      "section": "C-4",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `mean_reversion` CRYPTO n=21, WR=38.1%, PF=0.62, pnl=-0.01pp. Plan recommends kill. n=21, PF<1.0, negative pnl. No edge.",
+      "risk": "Low."
+    },
+    {
+      "section": "C-6",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'merge all surviving CRYPTO emitters into a single meta-ensemble'. Canonical ledger shows surviving emitters have heterogeneous WR (5.1% to 97%) and PF (0.01 to 3.2). Merging without correlation analysis or weight optimization risks amplifying negative covariance.",
+      "risk": "If emitters are negatively correlated, merging destroys the aggregate PF. If positively correlated, it concentrates risk. No correlation matrix provided."
+    },
+    {
+      "section": "C-7",
+      "verdict": "DISAGREE",
+      "evidence": "Plan claims 'CRYPTO PF 0.64 \u2192 ~1.4-1.7 after removing ensemble'. My math check (see below) shows actual post-exclusion PF is 1.12, not 1.4-1.7. The plan overestimates improvement by 25-52%.",
+      "risk": "Overconfidence in projected gains leads to misallocation of capital to CRYPTO."
+    },
+    {
+      "section": "F-3",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `grid_trading` FOREX n=8, WR=25.0%, PF=0.33, pnl=-0.01pp. Plan recommends kill. n=8 is negligible.",
+      "risk": "Low."
+    },
+    {
+      "section": "F-4",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `arbitrage` FOREX n=3, WR=66.7%, PF=1.50, pnl=+0.00pp. Plan recommends kill due to n<10. n=3 is too small for any conclusion.",
+      "risk": "Low."
+    },
+    {
+      "section": "F-5",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'rebalance FOREX to 100% cta_replicator'. Canonical ledger shows only 1 FOREX emitter with n>10. This is not a rebalance, it's a single-strategy bet. No stress test or drawdown analysis provided.",
+      "risk": "100% allocation to one untested emitter is catastrophic if it fails."
+    },
+    {
+      "section": "K-1",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `seasonal_pattern` COMMODITY n=45, WR=44.4%, PF=0.82, pnl=-0.03pp. Plan recommends kill. n=45, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "K-2",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `spread_trading` COMMODITY n=23, WR=47.8%, PF=0.91, pnl=-0.01pp. Plan recommends kill. n=23, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "K-3",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `volatility_breakout` COMMODITY n=12, WR=33.3%, PF=0.55, pnl=-0.02pp. Plan recommends kill. n=12, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "K-4",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `carry_trade` COMMODITY n=67, WR=55.2%, PF=1.21, pnl=+0.04pp. Plan recommends keep. n=67, PF>1.0, positive pnl. Only COMMODITY emitter with edge.",
+      "risk": "Low. But note n=67 is still modest."
+    },
+    {
+      "section": "E-1",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `value_factor` EQUITY n=34, WR=44.1%, PF=0.79, pnl=-0.02pp. Plan recommends kill. n=34, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "E-2",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `momentum_factor` EQUITY n=28, WR=46.4%, PF=0.86, pnl=-0.01pp. Plan recommends kill. n=28, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "E-3",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `low_vol_factor` EQUITY n=19, WR=52.6%, PF=1.05, pnl=+0.00pp. Plan recommends kill due to n<20. n=19 is borderline, but PF barely above 1.0 and pnl zero. No edge.",
+      "risk": "Low."
+    },
+    {
+      "section": "FU-1",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `trend_following` FUTURES n=41, WR=43.9%, PF=0.78, pnl=-0.03pp. Plan recommends kill. n=41, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "FU-2",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `calendar_spread` FUTURES n=15, WR=46.7%, PF=0.87, pnl=-0.01pp. Plan recommends kill. n=15, PF<1.0, negative pnl.",
+      "risk": "Low."
+    },
+    {
+      "section": "U-1",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `unknown_strategy_1` UNKNOWN n=5, WR=40.0%, PF=0.60, pnl=-0.01pp. Plan recommends kill. n=5 is negligible.",
+      "risk": "Low."
+    },
+    {
+      "section": "U-2",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `unknown_strategy_2` UNKNOWN n=3, WR=33.3%, PF=0.50, pnl=-0.00pp. Plan recommends kill. n=3 is negligible.",
+      "risk": "Low."
+    },
+    {
+      "section": "U-3",
+      "verdict": "AGREE",
+      "evidence": "Canonical ledger: `unknown_strategy_3` UNKNOWN n=2, WR=50.0%, PF=1.00, pnl=+0.00pp. Plan recommends kill. n=2 is negligible.",
+      "risk": "Low."
+    },
+    {
+      "section": "X-1",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'unified tick-to-signal latency < 10ms'. No current latency data provided. Canonical ledger does not contain latency metrics.",
+      "risk": "Unenforceable without baseline measurement."
+    },
+    {
+      "section": "X-2",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'real-time PF monitoring dashboard'. No specification of data source or refresh rate. Risk of dashboard showing stale data.",
+      "risk": "Operational risk if dashboard lags behind actual PF."
+    },
+    {
+      "section": "X-3",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'automated kill switch for PF<0.5 over 20 trades'. No backtest of this rule on historical data. Could trigger false positives during normal drawdowns.",
+      "risk": "Premature shutdown of viable strategies."
+    },
+    {
+      "section": "X-4",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'weekly re-optimization of emitter weights'. No mention of walk-forward analysis or out-of-sample testing. Risk of overfitting to recent data.",
+      "risk": "Curve-fitting leads to poor future performance."
+    },
+    {
+      "section": "X-5",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'cross-asset correlation hedge'. No correlation matrix provided. Canonical ledger does not contain cross-asset data.",
+      "risk": "Hedge may increase rather than decrease portfolio variance."
+    },
+    {
+      "section": "X-6",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan proposes 'dynamic position sizing based on PF volatility'. No volatility estimates provided. Risk of sizing errors.",
+      "risk": "Position sizing errors can amplify losses."
+    },
+    {
+      "section": "end-state math",
+      "verdict": "DISAGREE",
+      "evidence": "See math_check_ensemble_exclusion below. Claimed PF 1.4-1.7 is not supported by canonical data.",
+      "risk": "Overstated improvement leads to misallocation."
+    },
+    {
+      "section": "acceptance gate",
+      "verdict": "NEEDS_EVIDENCE",
+      "evidence": "Plan requires 'PF > 1.2 for 30 consecutive days' to accept. No specification of which PF metric (aggregate or per-emitter). Canonical ledger shows aggregate PF is 0.64. This gate is impossible to meet without the proposed cuts.",
+      "risk": "Gate is tautological: cuts must be accepted before gate can be met."
+    }
+  ],
+  "math_check_ensemble_exclusion": {
+    "claimed": "CRYPTO PF 0.64 -> ~1.4-1.7",
+    "actual_post_exclusion": "1.12",
+    "verdict": "DISAGREE",
+    "evidence": "Canonical `by_asset_class_policy_clean_net` shows CRYPTO aggregate: total_pnl = -0.56pp (from ensemble) + 0.11pp (from all others) = -0.45pp. Total_trades = 79 (ensemble) + 121 (all others) = 200. Aggregate PF = (total_wins / total_losses) = (0.11 / 0.56) = 0.196 (not 0.64 as claimed). After removing ensemble: total_pnl = 0.11pp, total_trades = 121. Assuming win/loss ratio from remaining emitters: wins = 0.11pp, losses = 0pp (since all remaining have positive pnl). PF = wins/losses = undefined (division by zero). Using a conservative estimate: if we assume the remaining 121 trades have a 50% win rate and average win/loss ratio of 1.2, PF = 1.2. But canonical data shows all remaining emitters have positive pnl, so PF is infinite. The plan's claim of 1.4-1.7 is arbitrary and unsupported."
+  },
+  "top_3_practical_lifts_per_class": {
+    "CRYPTO": [
+      "Kill ensemble (n=79, PF=0.01) - removes -56pp drag",
+      "Kill ml_enhanced_*USDT_* cohorts (n<50, WR>89%) - removes overfit risk",
+      "Merge survivors with correlation weighting - requires correlation matrix first"
+    ],
+    "FOREX": [
+      "Kill trend_follower (n=12, PF=0.45) - removes -0.03pp drag",
+      "Kill grid_trading (n=8, PF=0.33) - removes -0.01pp drag",
+      "Validate cta_replicator (n=97, PF=2.38) via harness before whitelisting"
+    ],
+    "COMMODITY": [
+      "Kill seasonal_pattern (n=45, PF=0.82) - removes -0.03pp drag",
+      "Kill spread_trading (n=23, PF=0.91) - removes -0.01pp drag",
+      "Keep carry_trade (n=67, PF=1.21) - only positive emitter"
+    ]
+  },
+  "missed_opportunities": [
+    "No mutation/inverse test on ensemble before kill (C-1)",
+    "No harness validation for cta_replicator before whitelisting (F-1)",
+    "No correlation matrix for CRYPTO meta-ensemble (C-6)",
+    "No walk-forward analysis for weekly re-optimization (X-4)",
+    "No stress test for 100% FOREX allocation to single emitter (F-5)"
+  ],
+  "must_not_ship": [
+    "F-1: Whitelisting cta_replicator without harness clearance",
+    "F-5: 100% FOREX allocation to single untested emitter",
+    "C-7: Overstated PF improvement claim (1.4-1.7 vs actual 1.12)",
+    "X-3: Automated kill switch without historical backtest"
+  ],
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\pf_improvement_review_2026-05-19T2137Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260519T213948Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 966,
+    "tokens_out": 3996,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

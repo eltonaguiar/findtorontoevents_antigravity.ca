@@ -1,0 +1,77 @@
+```json
+{
+  "strategies": [
+    {
+      "name": "HYG_LQD_CREDIT_SPREAD_MOMENTUM",
+      "thesis": "Credit spread widening predicts HYG underperformance vs LQD; use HYG-LQD yield spread z-score as regime filter to avoid drawdowns.",
+      "signal_construction": "Monthly: if HYG-LQD spread z-score (12m rolling) < 0.5 → go HYG; else → go LQD. Rebalance monthly.",
+      "universe": ["HYG", "LQD"],
+      "expected_pf": 1.75,
+      "expected_sharpe": 1.05,
+      "expected_mdd_pct": 15,
+      "differentiation_from_existing": "Replaces raw 6m momentum with credit-cycle regime filter; avoids HYG during spread widening (2008, 2020).",
+      "implementation_hours": 4,
+      "wire_target": "tools/backtest_bond_credit_spread.py",
+      "data_source": "yfinance (HYG, LQD prices) + FRED (BAMLH0A0HYM2, BAMLC0A0CM)",
+      "fail_mode": "Spread data stale or HYG/LQD tracking error vs index"
+    },
+    {
+      "name": "DURATION_ROTATION_TLT_IEF",
+      "thesis": "Rotate between long-duration (TLT) and intermediate-duration (IEF) based on 10y-2y Treasury spread slope to capture duration premium.",
+      "signal_construction": "Monthly: if 10y-2y spread > 0 (positive slope) → go TLT; else → go IEF. Rebalance monthly.",
+      "universe": ["TLT", "IEF"],
+      "expected_pf": 1.55,
+      "expected_sharpe": 0.95,
+      "expected_mdd_pct": 18,
+      "differentiation_from_existing": "Pure duration rotation vs HYG/LQD credit play; uses FRED yield curve data.",
+      "implementation_hours": 3,
+      "wire_target": "tools/backtest_bond_duration_rotation.py",
+      "data_source": "yfinance (TLT, IEF prices) + FRED (DGS10, DGS2)",
+      "fail_mode": "Flat/inverted curve persists long periods, whipsaw signals"
+    },
+    {
+      "name": "HYG_LQD_TED_SPREAD_FILTER",
+      "thesis": "TED spread (LIBOR - T-bill) signals systemic stress; only hold HYG when TED < 50bp, else rotate to LQD or cash.",
+      "signal_construction": "Monthly: if TED spread < 0.50% → go HYG; else if TED 0.50-1.0% → go LQD; else → go BIL (cash). Rebalance monthly.",
+      "universe": ["HYG", "LQD", "BIL"],
+      "expected_pf": 1.65,
+      "expected_sharpe": 1.10,
+      "expected_mdd_pct": 12,
+      "differentiation_from_existing": "Adds cash escape hatch during extreme stress; TED spread is leading indicator vs lagging momentum.",
+      "implementation_hours": 5,
+      "wire_target": "tools/backtest_bond_ted_filter.py",
+      "data_source": "yfinance (HYG, LQD, BIL) + FRED (TEDRATE, DGS3MO)",
+      "fail_mode": "TED spread discontinued (post-LIBOR transition); need SOFR alternative"
+    },
+    {
+      "name": "EMB_TIP_INFLATION_HEDGE",
+      "thesis": "Rotate between EM bonds (EMB) and TIPS based on breakeven inflation rate to capture real yield premium.",
+      "signal_construction": "Monthly: if 10y breakeven inflation > 2.5% → go TIP; else → go EMB. Rebalance monthly.",
+      "universe": ["EMB", "TIP"],
+      "expected_pf": 1.50,
+      "expected_sharpe": 0.90,
+      "expected_mdd_pct": 20,
+      "differentiation_from_existing": "Adds EM credit + inflation protection; diversifies from HYG/LQD credit-only focus.",
+      "implementation_hours": 4,
+      "wire_target": "tools/backtest_bond_inflation_rotation.py",
+      "data_source": "yfinance (EMB, TIP) + FRED (T10YIE)",
+      "fail_mode": "EMB has currency risk; breakeven inflation noisy in low-vol regimes"
+    }
+  ],
+  "credit_spread_signals": [
+    "HYG-LQD option-adjusted spread (BAMLH0A0HYM2 - BAMLC0A0CM)",
+    "AAA-BAA corporate spread (BAMLC0A1CAAA - BAMLC0A4BBB)",
+    "TED spread (TEDRATE)",
+    "10y-2y Treasury slope (DGS10 - DGS2)",
+    "High-yield default rate (FRED: DRALACBN)"
+  ],
+  "duration_overlay_proposals": [
+    "Short-duration (SHY/BIL) when 10y-2y < 0 (inverted curve predicts recession)",
+    "Long-duration (TLT) when 10y-2y > 0.5% (steepener signals growth)",
+    "Barbell: 50% TLT + 50% BIL when VIX > 25 (flight-to-safety)"
+  ],
+  "killers": ["BOND_12_1M_MOMENTUM", "BOND_TLT_IEF_6M_MOMENTUM"],
+  "tier1_attainability_pct": 35,
+  "single_most_important_finding": "HYG/LQD 6m momentum's 0.57 Sharpe is driven by high win rate but low reward-per-win; adding credit spread regime filter can double Sharpe by avoiding catastrophic drawdowns."
+}
+```

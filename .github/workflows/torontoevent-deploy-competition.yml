@@ -1,0 +1,129 @@
+# Deploy Algorithm Competition Arena to torontoevent.net via FTP
+name: "[torontoevent.net] Deploy Competition to Live Site"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'STOCKS/competition/**'
+      - 'STOCKS/algorithm-competition.html'
+      - 'updates/index.html'
+      - 'updates/antigravity-ml-gainer.html'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Algorithm Competition Refresh", "Forward Test Daily"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy competition files to torontoevent.net via FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          echo "=== Deploying Algorithm Competition Arena to torontoevent.net ==="
+
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::warning::FTP credentials not configured. Skipping deploy."
+            exit 0
+          fi
+
+          # 2026-04-17 host-guard: high blast radius (many .pine/.html files to root).
+          bash .github/scripts/assert_ftp_host.sh "$FTP_SERVER" reject 50webs
+          bash .github/scripts/assert_ftp_host.sh "$FTP_SERVER" reject ejaguiar
+
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+
+          # torontoevent.net root is / (no subdirectory)
+          REMOTE_BASE=""
+
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+          set ssl:verify-certificate no
+          set net:timeout 30
+          set net:max-retries 3
+
+          # Create directories
+          mkdir -p /STOCKS/competition
+          mkdir -p /STOCKS
+          mkdir -p /updates
+
+          # Upload competition dashboard and data
+          cd /STOCKS/competition
+          put STOCKS/competition/index.html
+          put STOCKS/competition/competition-slim.json
+          put STOCKS/competition/competition-stocks.json
+          put STOCKS/competition/competition-crypto.json
+          put STOCKS/competition/competition-forex.json
+          put STOCKS/competition/competition-penny_stocks.json
+          put STOCKS/competition/competition-meme_coins.json
+          put STOCKS/competition/forward_picks.json
+
+          # Upload simulation mode page
+          cd /STOCKS
+          put STOCKS/algorithm-competition.html
+
+          # Upload consensus dashboard
+          mkdir /cross_aggregation
+          mkdir /cross_aggregation/data
+          cd /cross_aggregation
+          put cross_aggregation/consensus_dashboard.html
+          cd /cross_aggregation/data
+          put cross_aggregation/data/consensus_outcomes.json
+          put cross_aggregation/data/super_signals.json
+
+          # Upload updated updates page and subpages
+          cd /updates
+          mkdir styles
+          cd /updates/styles
+          put updates/styles/updates.css
+          cd /updates
+          put updates/index.html
+          put updates/simpleton-grok-v0-01-quickstart.html
+          put updates/simpleton-cursor-quickstart.html
+          put updates/antigravity-ml-gainer.html
+          put updates/antigravity-pinescript-guide.html
+          put updates/claude-ml-gainer.html
+
+          # Upload Simpleton Pine Scripts and docs to site root
+          cd /
+          put Simpletonv001_ANTIGRAVITY.pine
+          put SignalEngine_ANTIGRAVITY.pine
+          put Simpletonv0.01_CURSOR.pine
+          put Simpletonv0.01_KIMI.pine
+          put SimpletonSignals_KIMI.pine
+          put Simpletonv0.01_GROK_Documentation.html
+          put simpleton_kimi_guide.html
+          put simpleton_backtest.py
+          put simpleton_backtester.py
+          put backtest_cursor.py
+          put pine_generator/output/simpleton_v001_claude.pine
+
+          # Upload GROK pine from pine_scripts/
+          lcd pine_scripts
+          cd /pine_scripts
+          put Simpletonv0.01_GROK.pine
+          lcd ..
+
+          echo "Upload complete"
+          bye
+          FTPEOF
+
+          if [ $? -eq 0 ]; then
+            echo "=== Deployed successfully to torontoevent.net ==="
+            echo "Dashboard:  https://torontoevent.net/STOCKS/competition/"
+            echo "Simulation: https://torontoevent.net/STOCKS/algorithm-competition.html"
+            echo "Updates:    https://torontoevent.net/updates/"
+          else
+            echo "::warning::FTP upload to torontoevent.net failed"
+          fi
+

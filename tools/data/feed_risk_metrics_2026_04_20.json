@@ -1,0 +1,931 @@
+{
+  "schema_version": "1.0.0",
+  "pipeline_version": "phase4.m1.2026-04-20",
+  "as_of": "2026-04-22T00:56:11.690657+00:00",
+  "n_total_closed": 3500,
+  "config": {
+    "n_resamples_bca": 2000,
+    "min_n_banner": 50,
+    "cost_assumptions": {
+      "CRYPTO": {
+        "fee_rt_pct": 0.001,
+        "slip_pct": 0.0005,
+        "note": "spot 0.10% RT + 0.05% slip"
+      },
+      "CRYPTO_PERP": {
+        "fee_rt_pct": 0.0006,
+        "slip_pct": 0.001,
+        "note": "perp 0.06% RT + 0.10% slip"
+      },
+      "FOREX": {
+        "fee_rt_pct": 5e-05,
+        "slip_pct": 1e-05,
+        "note": "major 0.5 pip + 0.1 pip"
+      },
+      "EQUITY": {
+        "fee_rt_pct": 0.0,
+        "slip_pct": 0.0005,
+        "note": "$0 + 0.05% slip"
+      },
+      "ETF": {
+        "fee_rt_pct": 0.0,
+        "slip_pct": 0.0005,
+        "note": "$0 + 0.05% slip"
+      },
+      "BOND": {
+        "fee_rt_pct": 0.0,
+        "slip_pct": 0.001,
+        "note": "bond ETF $0 + 0.10% slip"
+      },
+      "COMMODITY": {
+        "fee_rt_pct": 0.0015,
+        "slip_pct": 0.001,
+        "note": "commodity 0.15% RT + 0.10% slip"
+      }
+    },
+    "banner_gate_rule": "PF_BCa_lower>1.0 AND DSR_p<=0.05 AND PBO<=0.5 (if available) AND n>=50"
+  },
+  "feeds": {
+    "All": {
+      "feed": "All",
+      "n": 3500,
+      "n_strategies": 189,
+      "block_size": 16,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 3500,
+        "pf": 0.7320934736285324,
+        "sharpe": -1.1258388591582356,
+        "wr": 0.4037142857142857,
+        "mean_pnl_pct": -0.3076013714285715,
+        "expectancy_R": -0.3076013714285715,
+        "sortino": -1.2136701235639882,
+        "maxdd_pct": -1438.8990000000013,
+        "calmar": -0.053871429196906774
+      },
+      "point_metrics_net": {
+        "n": 3500,
+        "pf": 0.6541535134221246,
+        "sharpe": -1.5626413224883726,
+        "wr": 0.2842857142857143,
+        "mean_pnl_pct": -0.4273528,
+        "expectancy_R": -0.4273528,
+        "sortino": -1.8310642333196627,
+        "maxdd_pct": -1644.3928000000028,
+        "calmar": -0.06549098585204205
+      },
+      "bca_95_gross": {
+        "pf": [
+          0.5743750517384817,
+          0.9360515233611864
+        ],
+        "sharpe": [
+          -1.9067429224655044,
+          -0.22417061895616186
+        ],
+        "wr": [
+          0.3649137716529219,
+          0.4386245245636078
+        ],
+        "maxdd": [
+          -2649.2899422836977,
+          -846.6079401383838
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          0.5140150720471655,
+          0.8285111249088862
+        ],
+        "sharpe": [
+          -2.331033647082945,
+          -0.7009907391377916
+        ],
+        "wr": [
+          0.24542857142857144,
+          0.3211428571428571
+        ],
+        "maxdd": [
+          -2676.2809934469865,
+          -853.0271061437427
+        ]
+      },
+      "psr_vs_sr0": 4.8831283339063296e-06,
+      "psr_vs_sr1": 3.4051856908040796e-17,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": -1.1258388591582353,
+      "pbo": {
+        "pbo": 0.2714285714285714,
+        "n_splits": 70,
+        "n_strategies": 51,
+        "T": 8,
+        "S": 8,
+        "logits_mean": 0.668384099595293,
+        "logits_median": 0.6061358035703157
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 3500,
+          "pf": 0.7320934736285324,
+          "sharpe": -1.1258388591582356,
+          "wr": 0.4037142857142857,
+          "mean_pnl_pct": -0.3076013714285715,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "HC": {
+      "feed": "HC",
+      "n": 237,
+      "n_strategies": 29,
+      "block_size": 7,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 237,
+        "pf": 2.5989603686939886,
+        "sharpe": 4.562735925406694,
+        "wr": 0.5991561181434599,
+        "mean_pnl_pct": 0.818323628691983,
+        "expectancy_R": 0.818323628691983,
+        "sortino": 7.899267285937804,
+        "maxdd_pct": -14.419999999999987,
+        "calmar": 14.300801278112337
+      },
+      "point_metrics_net": {
+        "n": 237,
+        "pf": 2.4023108417120174,
+        "sharpe": 4.240719909928437,
+        "wr": 0.3881856540084388,
+        "mean_pnl_pct": 0.7594459915611814,
+        "expectancy_R": 0.7594459915611814,
+        "sortino": 8.142709689456929,
+        "maxdd_pct": -14.57,
+        "calmar": 13.135236092890715
+      },
+      "bca_95_gross": {
+        "pf": [
+          1.7918451965738285,
+          3.699526301684031
+        ],
+        "sharpe": [
+          2.777165664735113,
+          6.175416439889121
+        ],
+        "wr": [
+          0.5285851731627266,
+          0.6582278481012658
+        ],
+        "maxdd": [
+          -24.036435078198295,
+          -8.5522
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          1.6763856659480185,
+          3.440052180010012
+        ],
+        "sharpe": [
+          2.418910057868367,
+          5.873151600135426
+        ],
+        "wr": [
+          0.2616033755274262,
+          0.48945147679324896
+        ],
+        "maxdd": [
+          -23.262411881295282,
+          -8.7522
+        ]
+      },
+      "psr_vs_sr0": 0.9999994954393941,
+      "psr_vs_sr1": 0.9999327742517694,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": 4.5627359254066935,
+      "pbo": {
+        "pbo": 0.0,
+        "n_splits": 70,
+        "n_strategies": 10,
+        "T": 8,
+        "S": 8,
+        "logits_mean": 2.197224577336219,
+        "logits_median": 2.1972245773362196
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 237,
+          "pf": 2.5989603686939886,
+          "sharpe": 4.562735925406694,
+          "wr": 0.5991561181434599,
+          "mean_pnl_pct": 0.818323628691983,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": true,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "Smart Picks": {
+      "feed": "Smart Picks",
+      "n": 7,
+      "n_strategies": 3,
+      "block_size": 3,
+      "insufficient_sample": true,
+      "point_metrics_gross": {
+        "n": 7,
+        "pf": 37.49720930232558,
+        "sharpe": 24.50134869257539,
+        "wr": 0.8571428571428571,
+        "mean_pnl_pct": 4.483942857142857,
+        "expectancy_R": 4.483942857142857,
+        "sortino": null,
+        "maxdd_pct": -0.8600000000000003,
+        "calmar": 1313.8995348837204
+      },
+      "point_metrics_net": {
+        "n": 7,
+        "pf": 31.03722772277228,
+        "sharpe": 23.681712399032588,
+        "wr": 0.8571428571428571,
+        "mean_pnl_pct": 4.3339428571428575,
+        "expectancy_R": 4.3339428571428575,
+        "sortino": null,
+        "maxdd_pct": -1.0099999999999998,
+        "calmar": 1081.3401980198023
+      },
+      "bca_95_gross": {
+        "pf": [
+          NaN,
+          NaN
+        ],
+        "sharpe": [
+          NaN,
+          NaN
+        ],
+        "wr": [
+          NaN,
+          NaN
+        ],
+        "maxdd": [
+          NaN,
+          NaN
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          NaN,
+          NaN
+        ],
+        "sharpe": [
+          NaN,
+          NaN
+        ],
+        "wr": [
+          NaN,
+          NaN
+        ],
+        "maxdd": [
+          NaN,
+          NaN
+        ]
+      },
+      "psr_vs_sr0": 0.995767790099783,
+      "psr_vs_sr1": 0.9942232881108423,
+      "dsr": 0.9944782052767407,
+      "dsr_p_value": 0.00552179472325931,
+      "sharpe_annualised": 24.50134869257539,
+      "pbo": {
+        "pbo": null,
+        "note": "insufficient strategies/series for CSCV"
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 7,
+          "pf": 37.49720930232558,
+          "sharpe": 24.50134869257539,
+          "wr": 0.8571428571428571,
+          "mean_pnl_pct": 4.483942857142857,
+          "amber_low_sample": true
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": true,
+        "pbo_le_0_5": true,
+        "pbo_available": false,
+        "sample_ok": false,
+        "banner_eligible": false
+      }
+    },
+    "Verified Alpha": {
+      "feed": "Verified Alpha",
+      "n": 1190,
+      "n_strategies": 49,
+      "block_size": 11,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 1190,
+        "pf": 0.8564692691437782,
+        "sharpe": -0.8400230999105153,
+        "wr": 0.3915966386554622,
+        "mean_pnl_pct": -0.10929436974789919,
+        "expectancy_R": -0.10929436974789919,
+        "sortino": -1.7563325935281755,
+        "maxdd_pct": -597.8976000000005,
+        "calmar": -0.046065047219575016
+      },
+      "point_metrics_net": {
+        "n": 1190,
+        "pf": 0.7288541443982504,
+        "sharpe": -1.7473883759531905,
+        "wr": 0.29747899159663865,
+        "mean_pnl_pct": -0.22851789915966383,
+        "expectancy_R": -0.22851789915966383,
+        "sortino": -3.482481983317354,
+        "maxdd_pct": -703.0255999999995,
+        "calmar": -0.08191239492308008
+      },
+      "bca_95_gross": {
+        "pf": [
+          0.5667351772455034,
+          1.2991289846609047
+        ],
+        "sharpe": [
+          -3.1796705374366425,
+          1.369507995178233
+        ],
+        "wr": [
+          0.3176470588235294,
+          0.473109243697479
+        ],
+        "maxdd": [
+          -638.9688999958043,
+          -630.204427877104
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          0.4795585558384104,
+          1.1139825882414722
+        ],
+        "sharpe": [
+          -4.214734185785433,
+          0.5847602098810462
+        ],
+        "wr": [
+          0.22581025486831485,
+          0.3739495798319328
+        ],
+        "maxdd": [
+          -785.1468997474111,
+          -738.2979872397837
+        ]
+      },
+      "psr_vs_sr0": 0.04018278277121594,
+      "psr_vs_sr1": 6.403484679590548e-05,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": -0.8400230999105148,
+      "pbo": {
+        "pbo": 0.4142857142857143,
+        "n_splits": 70,
+        "n_strategies": 22,
+        "T": 8,
+        "S": 8,
+        "logits_mean": 0.27931032754529234,
+        "logits_median": 0.3677247801253175
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 1190,
+          "pf": 0.8564692691437782,
+          "sharpe": -0.8400230999105153,
+          "wr": 0.3915966386554622,
+          "mean_pnl_pct": -0.10929436974789919,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "AC:CRYPTO": {
+      "feed": "AC:CRYPTO",
+      "n": 1659,
+      "n_strategies": 99,
+      "block_size": 12,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 1659,
+        "pf": 0.5924443668681877,
+        "sharpe": -2.1814817075878423,
+        "wr": 0.33152501506931886,
+        "mean_pnl_pct": -0.7698684147076551,
+        "expectancy_R": -0.7698684147076551,
+        "sortino": -2.4758474092552314,
+        "maxdd_pct": -1432.9705000000013,
+        "calmar": -0.13538788168097593
+      },
+      "point_metrics_net": {
+        "n": 1659,
+        "pf": 0.5378910813344524,
+        "sharpe": -2.6065183110994097,
+        "wr": 0.31103074141048825,
+        "mean_pnl_pct": -0.9198684147076552,
+        "expectancy_R": -0.9198684147076552,
+        "sortino": -2.989644111653964,
+        "maxdd_pct": -1622.0789999999988,
+        "calmar": -0.14290724465721416
+      },
+      "bca_95_gross": {
+        "pf": [
+          0.44111806378012136,
+          0.7999496566213922
+        ],
+        "sharpe": [
+          -3.228243346203742,
+          -0.9509894636153856
+        ],
+        "wr": [
+          0.27787823990355637,
+          0.39119951778179624
+        ],
+        "maxdd": [
+          -2345.788286367793,
+          -808.6927144118512
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          0.4002429994291242,
+          0.7228791373619058
+        ],
+        "sharpe": [
+          -3.646984882878741,
+          -1.376523490919514
+        ],
+        "wr": [
+          0.25678119349005424,
+          0.3689137791134067
+        ],
+        "maxdd": [
+          -2482.7131324121665,
+          -971.6150906341769
+        ]
+      },
+      "psr_vs_sr0": 3.506069873448873e-10,
+      "psr_vs_sr1": 1.2111196877897432e-19,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": -2.1814817075878428,
+      "pbo": {
+        "pbo": 0.15714285714285714,
+        "n_splits": 70,
+        "n_strategies": 19,
+        "T": 8,
+        "S": 8,
+        "logits_mean": 0.9106808884744748,
+        "logits_median": 1.0296194171811581
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 1659,
+          "pf": 0.5924443668681877,
+          "sharpe": -2.1814817075878423,
+          "wr": 0.33152501506931886,
+          "mean_pnl_pct": -0.7698684147076551,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "AC:EQUITY": {
+      "feed": "AC:EQUITY",
+      "n": 348,
+      "n_strategies": 57,
+      "block_size": 8,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 348,
+        "pf": 1.4037693939103164,
+        "sharpe": 2.0692149252485152,
+        "wr": 0.5258620689655172,
+        "mean_pnl_pct": 0.6275505747126436,
+        "expectancy_R": 0.6275505747126436,
+        "sortino": 4.087499124985516,
+        "maxdd_pct": -71.36969999999991,
+        "calmar": 2.2158247103124493
+      },
+      "point_metrics_net": {
+        "n": 348,
+        "pf": 1.3656647622422928,
+        "sharpe": 1.9043505295624787,
+        "wr": 0.47701149425287354,
+        "mean_pnl_pct": 0.5775505747126439,
+        "expectancy_R": 0.5775505747126439,
+        "sortino": 3.6357745742310796,
+        "maxdd_pct": -73.71970000000002,
+        "calmar": 1.9742720714759587
+      },
+      "bca_95_gross": {
+        "pf": [
+          1.038757917018908,
+          1.8875957977830609
+        ],
+        "sharpe": [
+          0.16151209396289876,
+          3.9408425465440393
+        ],
+        "wr": [
+          0.45689655172413796,
+          0.5804597701149425
+        ],
+        "maxdd": [
+          -161.25339668730626,
+          -42.74260143412774
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          1.0065000539380502,
+          1.8320553246605353
+        ],
+        "sharpe": [
+          -0.0025707825124422767,
+          3.776797195177276
+        ],
+        "wr": [
+          0.4051724137931034,
+          0.5344827586206896
+        ],
+        "maxdd": [
+          -168.28379572558293,
+          -43.09687479745878
+        ]
+      },
+      "psr_vs_sr0": 0.9935805982389204,
+      "psr_vs_sr1": 0.9007295877788374,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": 2.0692149252485157,
+      "pbo": {
+        "pbo": 0.35714285714285715,
+        "n_splits": 70,
+        "n_strategies": 12,
+        "T": 8,
+        "S": 8,
+        "logits_mean": -1.379419836575936,
+        "logits_median": 0.6931471805599452
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 348,
+          "pf": 1.4037693939103164,
+          "sharpe": 2.0692149252485152,
+          "wr": 0.5258620689655172,
+          "mean_pnl_pct": 0.6275505747126436,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": true,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "AC:FOREX": {
+      "feed": "AC:FOREX",
+      "n": 830,
+      "n_strategies": 32,
+      "block_size": 10,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 830,
+        "pf": 0.8570334120105835,
+        "sharpe": -0.20912787609437364,
+        "wr": 0.472289156626506,
+        "mean_pnl_pct": -0.028351566265060246,
+        "expectancy_R": -0.028351566265060246,
+        "sortino": -0.22478736116912904,
+        "maxdd_pct": -71.84989999999999,
+        "calmar": -0.09943778208174518
+      },
+      "point_metrics_net": {
+        "n": 830,
+        "pf": 0.8303535515809263,
+        "sharpe": -0.25338529894132883,
+        "wr": 0.25903614457831325,
+        "mean_pnl_pct": -0.034351566265060245,
+        "expectancy_R": -0.034351566265060245,
+        "sortino": -0.3353762525120266,
+        "maxdd_pct": -72.17389999999999,
+        "calmar": -0.11994079159911246
+      },
+      "bca_95_gross": {
+        "pf": [
+          0.42239756407575085,
+          1.8784851092754022
+        ],
+        "sharpe": [
+          -1.2608910240236335,
+          0.7891567423276034
+        ],
+        "wr": [
+          0.42048192771084336,
+          0.5180722891566265
+        ],
+        "maxdd": [
+          -155.13804965452235,
+          -21.620990415750782
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          0.4044953589825939,
+          1.7888848334289449
+        ],
+        "sharpe": [
+          -1.33848109179869,
+          0.7477273681144243
+        ],
+        "wr": [
+          0.18313253012048192,
+          0.327710843373494
+        ],
+        "maxdd": [
+          -150.963299990508,
+          -21.24965752379387
+        ]
+      },
+      "psr_vs_sr0": 0.35721506988648066,
+      "psr_vs_sr1": 0.017188517318620002,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": -0.2091278760943736,
+      "pbo": {
+        "pbo": 0.24285714285714285,
+        "n_splits": 70,
+        "n_strategies": 13,
+        "T": 8,
+        "S": 8,
+        "logits_mean": 0.30116207057901107,
+        "logits_median": 0.47000362924573574
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 830,
+          "pf": 0.8570334120105835,
+          "sharpe": -0.20912787609437364,
+          "wr": 0.472289156626506,
+          "mean_pnl_pct": -0.028351566265060246,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "AC:ETF": {
+      "feed": "AC:ETF",
+      "n": 75,
+      "n_strategies": 27,
+      "block_size": 5,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 75,
+        "pf": 1.0065258732641669,
+        "sharpe": 0.04224687093347041,
+        "wr": 0.5066666666666667,
+        "mean_pnl_pct": 0.007993333333333392,
+        "expectancy_R": 0.007993333333333392,
+        "sortino": 0.09683221957817839,
+        "maxdd_pct": -46.938200000000016,
+        "calmar": 0.042914300079679536
+      },
+      "point_metrics_net": {
+        "n": 75,
+        "pf": 0.9664140121956419,
+        "sharpe": -0.22201629170291404,
+        "wr": 0.4666666666666667,
+        "mean_pnl_pct": -0.04200666666666648,
+        "expectancy_R": -0.04200666666666648,
+        "sortino": -0.4419027518067001,
+        "maxdd_pct": -48.988200000000006,
+        "calmar": -0.21608632282876183
+      },
+      "bca_95_gross": {
+        "pf": [
+          0.4402883716546228,
+          2.0727928988071027
+        ],
+        "sharpe": [
+          -5.195774390680812,
+          4.870038267011879
+        ],
+        "wr": [
+          0.3466666666666667,
+          0.64
+        ],
+        "maxdd": [
+          -96.28173138537052,
+          -27.105754724183015
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          0.42030197353448084,
+          1.9860270687335042
+        ],
+        "sharpe": [
+          -5.4737960184598204,
+          4.621912604642393
+        ],
+        "wr": [
+          0.30666666666666664,
+          0.6133333333333333
+        ],
+        "maxdd": [
+          -99.47247336566463,
+          -28.125193646016726
+        ]
+      },
+      "psr_vs_sr0": 0.5091381076228204,
+      "psr_vs_sr1": 0.3017653990529335,
+      "dsr": 0.0,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": 0.04224687093346995,
+      "pbo": {
+        "pbo": null,
+        "note": "insufficient strategies/series for CSCV"
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 75,
+          "pf": 1.0065258732641669,
+          "sharpe": 0.04224687093347041,
+          "wr": 0.5066666666666667,
+          "mean_pnl_pct": 0.007993333333333392,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": false,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    },
+    "AC:COMMODITY": {
+      "feed": "AC:COMMODITY",
+      "n": 568,
+      "n_strategies": 11,
+      "block_size": 9,
+      "insufficient_sample": false,
+      "point_metrics_gross": {
+        "n": 568,
+        "pf": 1.0251849594159672,
+        "sharpe": 0.06817540756859082,
+        "wr": 0.42077464788732394,
+        "mean_pnl_pct": 0.003666021126760556,
+        "expectancy_R": 0.003666021126760556,
+        "sortino": 0.08736415013785923,
+        "maxdd_pct": -25.557,
+        "calmar": 0.036148113000104086
+      },
+      "point_metrics_net": {
+        "n": 568,
+        "pf": 0.3172331678276463,
+        "sharpe": -4.580966346616646,
+        "wr": 0.10211267605633803,
+        "mean_pnl_pct": -0.2463339788732395,
+        "expectancy_R": -0.2463339788732395,
+        "sortino": -7.239815132453434,
+        "maxdd_pct": -157.20399999999998,
+        "calmar": -0.3948764832705043
+      },
+      "bca_95_gross": {
+        "pf": [
+          0.5989909675785381,
+          1.700677033262208
+        ],
+        "sharpe": [
+          -1.4149768418804651,
+          1.4069617981854712
+        ],
+        "wr": [
+          0.3591549295774648,
+          0.4753521126760563
+        ],
+        "maxdd": [
+          -56.480636356165036,
+          -13.279932515069179
+        ]
+      },
+      "bca_95_net": {
+        "pf": [
+          0.15215504004976246,
+          0.542907415734318
+        ],
+        "sharpe": [
+          -8.285706362874668,
+          -2.389253550508059
+        ],
+        "wr": [
+          0.04929577464788732,
+          0.15669014084507044
+        ],
+        "maxdd": [
+          -202.13918384416098,
+          -131.57993294828216
+        ]
+      },
+      "psr_vs_sr0": 0.5409086262579165,
+      "psr_vs_sr1": 0.0801558668661172,
+      "dsr": 8.703071114091974e-25,
+      "dsr_p_value": 1.0,
+      "sharpe_annualised": 0.06817540756859101,
+      "pbo": {
+        "pbo": 0.3793706293706294,
+        "n_splits": 3432,
+        "n_strategies": 4,
+        "T": 15,
+        "S": 14,
+        "logits_mean": -3.1667132637787776,
+        "logits_median": 0.0
+      },
+      "regime_decomposition": {
+        "unknown|unknown": {
+          "fng": "unknown",
+          "trend": "unknown",
+          "n": 568,
+          "pf": 1.0251849594159672,
+          "sharpe": 0.06817540756859082,
+          "wr": 0.42077464788732394,
+          "mean_pnl_pct": 0.003666021126760556,
+          "amber_low_sample": false
+        }
+      },
+      "banner_gate": {
+        "pf_bca_lower_gt_1": false,
+        "dsr_p_le_0_05": false,
+        "pbo_le_0_5": true,
+        "pbo_available": true,
+        "sample_ok": true,
+        "banner_eligible": false
+      }
+    }
+  }
+}

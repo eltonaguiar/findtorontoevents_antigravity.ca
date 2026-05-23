@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pump Watch - Volume Spike Monitor</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0f0; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2a3a; }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { margin-bottom: 15px; color: #aaa; }
+        .status-bar { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; border-radius: 8px; padding: 10px 16px; text-align: center; font-size: 0.85rem; color: #f87171; margin-bottom: 20px; }
+        .status-bar.ok { background: rgba(34,197,94,0.1); border-color: #22c55e; color: #4ade80; }
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: #12121c; border: 1px solid #2a2a3a; border-radius: 10px; padding: 18px; text-align: center; }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+        .stat-value { font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
+        .stat-value.green { color: #22c55e; }
+        .stat-value.red { color: #ef4444; }
+        .stat-value.orange { color: #f59e0b; }
+        .stat-value.blue { color: #3b82f6; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; background: transparent; color: #888; border: 1px solid #2a2a3a; transition: all 0.2s; }
+        .tab:hover { color: #e0e0f0; border-color: #555; }
+        .tab.active { background: #ef4444; color: white; border-color: #ef4444; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .btn { padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; border: none; color: white; transition: all 0.2s; }
+        .btn-red { background: #ef4444; }
+        .btn-green { background: #22c55e; }
+        .btn-blue { background: #3b82f6; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .buttons-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .info-text { font-size: 0.8rem; color: #666; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; padding: 10px 12px; background: #1a1a25; color: #888; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; cursor: pointer; user-select: none; }
+        th:hover { color: #e0e0f0; }
+        th.sort-asc::after { content: ' ▲'; color: #22c55e; }
+        th.sort-desc::after { content: ' ▼'; color: #ef4444; }
+        td { padding: 10px 12px; border-bottom: 1px solid #1a1a2a; }
+        tr:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
+        .symbol { font-weight: bold; color: #22c55e; }
+        .pnl-pos { color: #22c55e; font-weight: 600; }
+        .pnl-neg { color: #ef4444; font-weight: 600; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .badge-high { background: #22c55e; color: white; }
+        .badge-medium { background: #f59e0b; color: black; }
+        .badge-low { background: #6b7280; color: white; }
+        .badge-closed { background: #374151; color: #9ca3af; }
+        .badge-active { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid #22c55e; }
+        .badge-eliminated { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-long { background: rgba(34,197,94,0.25); color: #4ade80; font-weight: 700; }
+        .badge-short { background: rgba(239,68,68,0.25); color: #f87171; font-weight: 700; }
+        .badge-crypto { background: rgba(59,130,246,0.2); color: #60a5fa; }
+        .badge-stock { background: rgba(34,197,94,0.2); color: #4ade80; }
+        .badge-forex { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .badge-meme { background: rgba(239,68,68,0.2); color: #f87171; }
+        .badge-penny { background: rgba(168,85,247,0.2); color: #c084fc; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .filter-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: 600; border: 1px solid #2a2a3a; background: transparent; color: #888; transition: all 0.2s; }
+        .filter-btn:hover { border-color: #555; color: #e0e0f0; }
+        .filter-btn.active { background: #ef4444; color: white; border-color: #ef4444; }
+        .filter-btn.active-green { background: #22c55e; color: white; border-color: #22c55e; }
+        .filter-label { font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+        .perf-box { background: #12121c; border: 1px solid #2a2a3a; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .perf-box h3 { color: #ef4444; margin-bottom: 15px; }
+        .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+        .perf-item { text-align: center; }
+        .perf-item .label { font-size: 0.75rem; color: #888; }
+        .perf-item .value { font-size: 1.4rem; font-weight: 700; }
+        .algo-row { display: flex; align-items: center; gap: 8px; }
+        .algo-icon { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .last-updated { text-align: center; color: #888; font-size: 0.85rem; margin-top: 30px; padding: 20px; border-top: 1px solid #2a2a3a; }
+        .volatility-card { background: #12121c; border: 1px solid #2a2a3a; border-radius: 10px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .vol-symbol { font-size: 1.1rem; font-weight: 700; color: #f59e0b; }
+        .vol-metric { text-align: center; }
+        .vol-metric .label { font-size: 0.7rem; color: #888; }
+        .vol-metric .value { font-size: 1rem; font-weight: 600; }
+        .rug-warning { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .rug-warning .title { color: #ef4444; font-weight: 700; font-size: 0.9rem; }
+        .rug-warning .detail { color: #888; font-size: 0.8rem; margin-top: 4px; }
+        @media (max-width: 768px) {
+            .stats-bar { grid-template-columns: repeat(3, 1fr); }
+            .perf-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .tooltip {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dashed #666;
+        }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: #222;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            z-index: 10;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pump Watch</h1>
+            <p>Monitors 91 algorithms across crypto, stocks, forex, and meme coins for volume spikes, pump patterns, and trading signals. Data from KIMI Rise of the Claw competition engine.</p>
+            <details style="margin-top:12px;cursor:pointer">
+                <summary style="color:#22c55e;font-weight:600;font-size:14px">How It Works — Algorithm Battle Royale</summary>
+                <div style="margin-top:10px;color:#ccc;font-size:13px;line-height:1.6">
+                    <p><strong>91 Competing Algorithms:</strong> Including MACD, RSI, Bollinger, StochRSI, EMA crossovers, volume spike detectors, Deribit options flow (PCR), crypto funding rate sentiment, Fear &amp; Greed Index, and on-chain signals.</p>
+                    <p><strong>Elimination Engine:</strong> Algorithms that underperform enter a danger zone, then probation, then elimination. Top 20 challengers compete for the eliminated slots — only the fittest survive.</p>
+                    <p><strong>Pump Detection:</strong> Volume spike analysis identifies unusual buying activity. Candidates are scored by magnitude, consistency, and alignment with technical signals across multiple timeframes.</p>
+                    <p><strong>Self-Adjusting ML Ranker:</strong> A heuristic ranker scores algorithms by win rate, profit factor, and consistency. At 50+ resolved picks, it auto-trains a Random Forest model to rank algorithms by expected performance.</p>
+                    <p><strong>Rug Pull Guard:</strong> Volatility analysis flags tokens with abnormal price/volume patterns that may indicate manipulation, protecting against pump-and-dump schemes.</p>
+                </div>
+            </details>
+        </div>
+        <div id="status-bar" class="status-bar">Loading data... (fetching from 7 sources)</div>
+        <div id="error-banner" style="display:none;background:rgba(239,68,68,0.15);border:1px solid #ef4444;border-radius:8px;padding:12px 16px;margin-bottom:12px;color:#f87171;font-size:0.85rem;"></div>
+        <div class="stats-bar" id="stats-bar"></div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="candidates">Pump Candidates</div>
+            <div class="tab" data-tab="movers">Score Movers</div>
+            <div class="tab" data-tab="performance">Performance</div>
+            <div class="tab" data-tab="volatility">Volatility / Rug Pull</div>
+            <div class="tab" data-tab="audit">Audit Log</div>
+        </div>
+
+        <div class="buttons-row">
+            <button class="btn btn-red" onclick="loadData()">Scan Top Pairs</button>
+            <button class="btn btn-green" onclick="loadData()">Scan ORDI + Extras</button>
+            <button class="btn btn-blue" onclick="loadData()">Monitor</button>
+            <span class="info-text" id="candidate-count"></span>
+        </div>
+
+        <!-- Pump Candidates Tab -->
+        <div class="tab-content active" id="tab-candidates">
+            <div class="filter-bar" id="filter-bar">
+                <span class="filter-label">Show:</span>
+                <button class="filter-btn" id="filter-48h" onclick="toggleFilter('48h')">Last 48h Only</button>
+                <button class="filter-btn" id="filter-hide-closed" onclick="toggleFilter('closed')">Hide Closed</button>
+                <button class="filter-btn" id="filter-long" onclick="toggleFilter('long')">LONG Only</button>
+                <button class="filter-btn" id="filter-short" onclick="toggleFilter('short')">SHORT Only</button>
+                <span style="margin-left:auto;font-size:0.75rem;color:#666;" id="filter-count"></span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Coin</th>
+                        <th>Type</th>
+                        <th>Dir</th>
+                        <th>Algorithm</th>
+                        <th>Entry → Current</th>
+                        <th>PnL</th>
+                        <th>Confidence</th>
+                        <th>TP / SL</th>
+                        <th>Signal Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="picks-body">
+                    <tr><td colspan="10" style="text-align:center; color:#888;">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Score Movers Tab -->
+        <div class="tab-content" id="tab-movers">
+            <div id="movers-header" style="margin-bottom:12px;font-size:0.85rem;color:#888;"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Algorithm</th>
+                        <th>Category</th>
+                        <th>Active</th>
+                        <th>Closed</th>
+                        <th>Win Rate</th>
+                        <th>Avg PnL</th>
+                        <th>Last Pick (EST)</th>
+                        <th>Drought</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="movers-body">
+                    <tr><td colspan="10" style="text-align:center; color:#888;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Performance Tab -->
+        <div class="tab-content" id="tab-performance">
+            <div class="perf-box" id="perf-overall"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Algorithm</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Win %</th>
+                        <th>Avg PnL</th>
+                        <th>PF</th>
+                        <th>Best</th>
+                        <th>Worst</th>
+                        <th>Total PnL</th>
+                        <th>$100/Pick</th>
+                    </tr>
+                </thead>
+                <tbody id="perf-body">
+                    <tr><td colspan="9" style="text-align:center; color:#888;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Volatility / Rug Pull Tab -->
+        <div class="tab-content" id="tab-volatility">
+            <div id="rug-warnings"></div>
+            <div id="volatility-list"></div>
+        </div>
+
+        <!-- Audit Log Tab -->
+        <div class="tab-content" id="tab-audit">
+            <table>
+                <thead>
+                    <tr><th>Time</th><th>Algorithm</th><th>Symbol</th><th>Action</th><th>Details</th></tr>
+                </thead>
+                <tbody id="audit-body">
+                    <tr><td colspan="5" style="text-align:center; color:#888;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="last-updated" id="last-updated"></div>
+    </div>
+    <script>
+    // === Tab switching ===
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Pump/volume algorithms get priority display
+    const PUMP_ALGOS = ['volume-spike-scout', 'pump-detector', 'pump-watch-live', 'meme-velocity',
+                        'volume-anomaly-scout', 'flash-crash-reversal', 'meme-bollinger-mean-rev',
+                        'meme-scanner-live', 'bollinger-squeeze'];
+
+    // Category mapping for display
+    const ALGO_CATEGORIES = {
+        'crypto': '#3b82f6', 'stock': '#22c55e', 'forex': '#f59e0b',
+        'meme': '#ef4444', 'penny': '#a855f7', 'scout': '#06b6d4'
+    };
+
+    function classifyAlgo(id) {
+        if (id.includes('meme') || id.includes('pump')) return 'meme';
+        if (id.includes('stock') || id.includes('golden') || id.includes('sector') || id.includes('quality') || id.includes('betting') || id.includes('momentum-factor') || id.includes('ema-ribbon')) return 'stock';
+        if (id.includes('forex') || id.includes('carry') || id.includes('london') || id.includes('dxy')) return 'forex';
+        if (id.includes('penny') || id.includes('gap-and-go') || id.includes('short-squeeze')) return 'penny';
+        if (id.includes('scout')) return 'scout';
+        return 'crypto';
+    }
+
+    // Compute PnL from entry/exit when pnlPct field is empty
+    function computePnl(p) {
+        const stored = parseFloat(p.pnlPct || p.pnl_pct || p.realized_pnl_pct || 0);
+        if (stored !== 0) return stored;
+        const entry = parseFloat(p.entryPrice || p.entry_price || 0);
+        const exit_ = parseFloat(p.exitPrice || p.exit_price || p.currentPrice || p.current_price || 0);
+        if (entry <= 0 || exit_ <= 0) return 0;
+        const dir = (p.signal || p.direction || p.signal_type || 'BUY').toUpperCase();
+        if (dir === 'SELL' || dir === 'SHORT') return ((entry - exit_) / entry) * 100;
+        return ((exit_ - entry) / entry) * 100;
+    }
+
+    function fmtPrice(p) {
+        p = parseFloat(p) || 0;
+        if (p === 0) return '--';
+        if (p < 0.001) return '$' + p.toFixed(8);
+        if (p < 1) return '$' + p.toFixed(6);
+        if (p < 100) return '$' + p.toFixed(4);
+        return '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    async function loadData() {
+        try {
+            // Fetch from multiple live sources and merge into a composite view
+            const liveSourceUrls = [
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/live_competition.json', id: 'kimi' },
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json', id: 'alpha' },
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_f_clawsofdoom/data/active_picks.json', id: 'claws' },
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data/active_picks.json', id: 'mercury2' },
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_f_clawsofdoom/data/closed_picks.json', id: 'claws_closed' },
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/mercury2/data/closed_picks.json', id: 'mercury2_closed' },
+                { url: 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/closed_picks.json', id: 'alpha_closed' },
+            ];
+
+            // Fetch all sources in parallel with per-source error tracking
+            const fetchErrors = [];
+            const fetchResults = await Promise.allSettled(
+                liveSourceUrls.map(s => fetch(s.url, {cache: 'no-store'})
+                    .then(r => {
+                        if (!r.ok) { fetchErrors.push(s.id + ': HTTP ' + r.status); return null; }
+                        return r.json();
+                    })
+                    .catch(e => { fetchErrors.push(s.id + ': ' + e.message); return null; })
+                )
+            );
+
+            const sourceData = {};
+            let loadedCount = 0;
+            fetchResults.forEach((r, i) => {
+                if (r.status === 'fulfilled' && r.value) {
+                    sourceData[liveSourceUrls[i].id] = r.value;
+                    loadedCount++;
+                } else if (r.status === 'rejected') {
+                    fetchErrors.push(liveSourceUrls[i].id + ': ' + (r.reason || 'rejected'));
+                }
+            });
+
+            // Show fetch diagnostics
+            console.log('Pump Watch: loaded ' + loadedCount + '/' + liveSourceUrls.length + ' sources', Object.keys(sourceData));
+            if (fetchErrors.length > 0) {
+                console.warn('Pump Watch fetch errors:', fetchErrors);
+                const errBanner = document.getElementById('error-banner');
+                if (errBanner && loadedCount === 0) {
+                    errBanner.style.display = 'block';
+                    errBanner.innerHTML = '<strong>All data sources failed to load.</strong> This may be a network/CORS issue.<br>' +
+                        '<span style="font-size:0.75rem;color:#888">Errors: ' + fetchErrors.join(', ') + '<br>Try the <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/findcryptopairs/pump-watch.html" style="color:#60a5fa">GitHub Pages mirror</a></span>';
+                }
+            }
+
+            // Build composite compData from whatever sources loaded
+            let compData = null;
+            const kimiData = sourceData.kimi;
+            if (kimiData && (kimiData.algorithms || kimiData.activePicks)) {
+                compData = kimiData;
+            }
+
+            // If KIMI didn't load or has stale data, build synthetic algorithms from other sources
+            if (!compData || !compData.algorithms) {
+                compData = { algorithms: [], competition: { lastUpdated: new Date().toISOString() } };
+            }
+
+            // Ensure algorithms is an array
+            if (compData.algorithms && !Array.isArray(compData.algorithms)) {
+                compData.algorithms = Object.entries(compData.algorithms).map(([k,v]) => ({...v, id: k}));
+            }
+
+            // Inject picks from other live sources as synthetic "algorithms"
+            const now = new Date().toISOString();
+            function injectSource(data, systemName, isClosedSource) {
+                if (!data) return;
+                const picks = Array.isArray(data) ? data : (data.activePicks || data.active_picks || data.picks || []);
+                if (picks.length === 0) return;
+
+                // Group by strategy
+                const byStrat = {};
+                for (const p of picks) {
+                    const strat = p.strategy || p.algorithm || systemName;
+                    if (!byStrat[strat]) byStrat[strat] = { active: [], closed: [] };
+                    const pick = {
+                        symbol: (p.symbol || p.pair || '').replace(/-/g,'').replace(/USD$/,'USDT'),
+                        entryPrice: p.entry_price || p.entryPrice || p.price || 0,
+                        currentPrice: p.current_price || p.currentPrice || p.exit_price || p.exitPrice || 0,
+                        peakPrice: p.peak_price || p.peakPrice || 0,
+                        entryDate: p.timestamp || p.timestamp_est || p.entry_date || p.created_at || now,
+                        direction: (p.direction || p.signal_type || 'LONG').toUpperCase(),
+                        takeProfit: p.take_profit || p.tp_price || p.targetPrice || 0,
+                        stopLoss: p.stop_loss || p.sl_price || p.stopPrice || 0,
+                        takeProfitPct: p.takeProfitPct || p.tp_pct || 0,
+                        stopLossPct: p.stopLossPct || p.sl_pct || 0,
+                        pnlPct: p.realized_pnl_pct || p.pnl_pct || p.unrealized_pnl_pct || 0,
+                        confidence: p.confidence || p.signal_strength || 0,
+                        status: p.status || (isClosedSource ? 'CLOSED' : 'ACTIVE'),
+                    };
+                    if (isClosedSource || (p.status || '').toLowerCase().includes('closed')) {
+                        byStrat[strat].closed.push(pick);
+                    } else {
+                        byStrat[strat].active.push(pick);
+                    }
+                }
+
+                for (const [strat, picks] of Object.entries(byStrat)) {
+                    const existing = compData.algorithms.find(a => (a.id || a.name) === strat);
+                    if (existing) {
+                        existing.activePicks = (existing.activePicks || []).concat(picks.active);
+                        existing.closedPicks = (existing.closedPicks || []).concat(picks.closed);
+                    } else {
+                        const wins = picks.closed.filter(p => p.pnlPct > 0).length;
+                        const losses = picks.closed.filter(p => p.pnlPct < 0).length;
+                        const totalPnl = picks.closed.reduce((s,p) => s + (p.pnlPct || 0), 0);
+                        compData.algorithms.push({
+                            id: strat,
+                            name: `${systemName}: ${strat}`,
+                            category: 'crypto',
+                            tier: picks.active.length >= 3 ? 'TIER_1' : 'SCOUT',
+                            startingValue: 10000,
+                            currentValue: 10000 + (totalPnl * 100),
+                            totalReturn: totalPnl,
+                            activePicks: picks.active,
+                            closedPicks: picks.closed,
+                        });
+                    }
+                }
+
+                // Update timestamp to most recent
+                const latest = picks.reduce((best, p) => {
+                    const t = p.timestamp || p.entry_date || '';
+                    return t > best ? t : best;
+                }, '');
+                if (latest > (compData.competition?.lastUpdated || '')) {
+                    if (!compData.competition) compData.competition = {};
+                    compData.competition.lastUpdated = latest;
+                }
+            }
+
+            injectSource(sourceData.alpha, 'Alpha Engine', false);
+            injectSource(sourceData.claws, 'Claws of Doom', false);
+            injectSource(sourceData.mercury2, 'Mercury 2', false);
+            injectSource(sourceData.alpha_closed, 'Alpha Engine', true);
+            injectSource(sourceData.claws_closed, 'Claws of Doom', true);
+            injectSource(sourceData.mercury2_closed, 'Mercury 2', true);
+
+            if (compData.algorithms.length === 0) {
+                document.getElementById('status-bar').textContent = 'Failed to load data from all sources.';
+                return;
+            }
+
+            // Normalize algorithms to array
+            let algos = [];
+            if (compData.algorithms) {
+                algos = Array.isArray(compData.algorithms) ? compData.algorithms :
+                        Object.entries(compData.algorithms).map(([k,v]) => ({...v, id: k}));
+            }
+
+            const lastUpdated = compData.competition?.lastUpdated || compData.lastUpdated || '';
+            const updatedDate = lastUpdated ? new Date(lastUpdated) : null;
+            const ageMinutes = updatedDate ? Math.round((Date.now() - updatedDate.getTime()) / 60000) : 999;
+            const ageText = ageMinutes < 60 ? `${ageMinutes}m ago` : ageMinutes < 1440 ? `${Math.round(ageMinutes/60)}h ago` : `${Math.round(ageMinutes/1440)}d ago`;
+
+            // Collect all active + closed picks
+            let allActive = [];
+            let allClosed = [];
+            let totalScanned = 0;
+            let algoStats = [];
+
+            for (const algo of algos) {
+                const id = algo.id || algo.name || 'unknown';
+                const ap = algo.activePicks || [];
+                const cp = algo.closedPicks || algo.closedTrades || [];
+                const drought = algo.droughtScans || 0;
+                const cat = classifyAlgo(id);
+
+                // Stats per algorithm — compute PnL from entry/exit when pnlPct is empty
+                let wins = 0, losses = 0, totalPnl = 0, bestTrade = -999, worstTrade = 999;
+                let grossWin = 0, grossLoss = 0;
+                let lastPickTime = '';
+                for (const t of cp) {
+                    const pnl = computePnl(t);
+                    if (pnl > 0) { wins++; grossWin += pnl; }
+                    else if (pnl < 0) { losses++; grossLoss += Math.abs(pnl); }
+                    totalPnl += pnl;
+                    if (pnl > bestTrade) bestTrade = pnl;
+                    if (pnl < worstTrade) worstTrade = pnl;
+                    const ts = t.entryDate || t.timestamp || t.created_at || '';
+                    if (ts > lastPickTime) lastPickTime = ts;
+                }
+                for (const p of ap) {
+                    const ts = p.entryDate || p.timestamp || p.created_at || '';
+                    if (ts > lastPickTime) lastPickTime = ts;
+                }
+                const wr = (wins + losses) > 0 ? (wins / (wins + losses) * 100) : 0;
+                const avgPnl = cp.length > 0 ? totalPnl / cp.length : 0;
+                const profitFactor = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? Infinity : 0);
+                // $100-per-trade simulation
+                const dollarResult = cp.reduce((sum, t) => sum + 100 * (1 + computePnl(t)/100), 0);
+                const dollarInvested = cp.length * 100;
+                const dollarNet = dollarResult - dollarInvested;
+
+                algoStats.push({
+                    id, cat, active: ap.length, closed: cp.length,
+                    wins, losses, wr, avgPnl, totalPnl, bestTrade, worstTrade,
+                    grossWin, grossLoss, profitFactor, dollarNet, dollarInvested, dollarResult,
+                    drought, isPump: PUMP_ALGOS.includes(id), lastPickTime,
+                });
+
+                totalScanned += drought + ap.length + cp.length;
+
+                for (const p of ap) {
+                    allActive.push({...p, algo: id, cat});
+                }
+                for (const t of cp) {
+                    allClosed.push({...t, algo: id, cat, closed: true});
+                }
+            }
+
+            // Sort ALL picks by date descending (newest first)
+            const getTime = p => new Date(p.timestamp || p.entryDate || p.created_at || p.exitDate || '1970-01-01').getTime();
+            allActive.sort((a,b) => getTime(b) - getTime(a));
+            allClosed.sort((a,b) => getTime(b) - getTime(a));
+
+            // === STATS BAR ===
+            const totalActive = allActive.length;
+            const totalClosed = allClosed.length;
+            const overallWins = algoStats.reduce((s,a) => s + a.wins, 0);
+            const overallLosses = algoStats.reduce((s,a) => s + a.losses, 0);
+            const overallWR = (overallWins + overallLosses) > 0 ? (overallWins / (overallWins + overallLosses) * 100) : 0;
+            const overallPnl = algoStats.reduce((s,a) => s + a.totalPnl, 0);
+            const highDrought = algoStats.filter(a => a.drought >= 200).length;
+            const extremeVol = allActive.filter(p => {
+                const entry = parseFloat(p.entryPrice || p.entry_price || 0);
+                const cur = parseFloat(p.currentPrice || p.current_price || 0);
+                return entry && cur && Math.abs((cur - entry) / entry) > 0.1;
+            }).length;
+
+            document.getElementById('stats-bar').innerHTML = [
+                {label: 'Total Scanned', value: totalScanned.toLocaleString(), cls: 'blue'},
+                {label: 'High (45+)', value: algoStats.filter(a => a.closed >= 5 && a.wr >= 45).length, cls: 'orange'},
+                {label: 'Extreme (60+)', value: algoStats.filter(a => a.closed >= 5 && a.wr >= 60).length, cls: 'orange'},
+                {label: 'Win Rate', value: overallWR.toFixed(1) + '%', cls: overallWR >= 50 ? 'green' : 'red'},
+                {label: 'Avg P&L', value: (overallPnl / Math.max(totalClosed,1) > 0 ? '+' : '') + (overallPnl / Math.max(totalClosed,1)).toFixed(2) + '%', cls: overallPnl >= 0 ? 'green' : 'red'},
+                {label: 'Resolved', value: totalClosed, cls: 'blue'},
+            ].map(s => `<div class="stat-card"><div class="stat-label">${s.label}</div><div class="stat-value ${s.cls}">${s.value}</div></div>`).join('');
+
+            // === STATUS BAR ===
+            const isOk = ageMinutes < 60;
+            const statusBar = document.getElementById('status-bar');
+            statusBar.className = 'status-bar' + (isOk ? ' ok' : '');
+            statusBar.innerHTML = `Data as of: ${updatedDate ? updatedDate.toLocaleString('en-US', {timeZone: 'America/New_York'}) : 'Unknown'} EST &mdash; ${isOk ? 'auto-refreshes every 5 min' : 'STALE DATA (' + ageText + ')'}`;
+
+            document.getElementById('candidate-count').textContent = `${totalActive} candidates loaded. Auto-refreshes via GitHub Actions.`;
+
+            // === PUMP CANDIDATES TAB ===
+            // Store globally for filtering
+            window._allActive = allActive;
+            window._allClosed = allClosed;
+            renderCandidates();
+            // Store algoStats globally for drill-down
+            window._algoStats = algoStats;
+            window._allPicks = [...allActive, ...allClosed];
+
+            // === SCORE MOVERS TAB ===
+            const scanTimeEST = updatedDate
+                ? updatedDate.toLocaleString('en-US', {timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                : 'Unknown';
+            document.getElementById('movers-header').innerHTML =
+                `<strong>Last scan:</strong> ${scanTimeEST} EST &mdash; ${algos.length} algorithms tracked across crypto, stocks, forex &amp; meme coins`;
+
+            algoStats.sort((a,b) => b.closed - a.closed || b.wr - a.wr);
+            document.getElementById('movers-body').innerHTML = algoStats.map((a, i) => {
+                const catColor = ALGO_CATEGORIES[a.cat] || '#888';
+                const droughtCls = a.drought >= 200 ? 'color:#ef4444' : a.drought >= 100 ? 'color:#f59e0b' : '';
+                const wrCls = a.wr >= 55 ? 'pnl-pos' : a.wr > 0 && a.wr < 45 ? 'pnl-neg' : '';
+                const status = a.drought >= 229 ? '<span class="badge badge-eliminated">DORMANT</span>' :
+                               a.drought >= 100 ? '<span class="badge badge-low">DROUGHT</span>' :
+                               a.active > 0 ? '<span class="badge badge-active">ACTIVE</span>' :
+                               '<span class="badge badge-closed">IDLE</span>';
+                let lastPickEST = '--';
+                if (a.lastPickTime) {
+                    try {
+                        lastPickEST = new Date(a.lastPickTime).toLocaleString('en-US', {timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+                    } catch(e) { lastPickEST = a.lastPickTime; }
+                }
+                return `<tr style="cursor:pointer" data-algo="${a.id}" onclick="showPickDetail(this)">
+                    <td>${i+1}</td>
+                    <td><div class="algo-row"><span class="algo-icon" style="background:${catColor}"></span>${a.id}</div></td>
+                    <td style="color:${catColor}">${a.cat}</td>
+                    <td>${a.active}</td>
+                    <td>${a.closed}</td>
+                    <td class="${wrCls}">${a.closed > 0 ? a.wr.toFixed(1) + '%' : '--'}</td>
+                    <td class="${a.avgPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${a.closed > 0 ? (a.avgPnl >= 0 ? '+' : '') + a.avgPnl.toFixed(2) + '%' : '--'}</td>
+                    <td style="font-size:0.8rem;color:#aaa">${lastPickEST}</td>
+                    <td style="${droughtCls}">${a.drought}</td>
+                    <td>${status}</td>
+                </tr>`;
+            }).join('');
+
+            // === PERFORMANCE TAB ===
+            const withTrades = algoStats.filter(a => a.closed > 0);
+            withTrades.sort((a,b) => b.wr - a.wr || b.totalPnl - a.totalPnl);
+
+            const bestTradeAll = allClosed.reduce((best, t) => {
+                const pnl = computePnl(t);
+                return pnl > best.pnl ? {sym: t.symbol || t.pair, pnl, algo: t.algo} : best;
+            }, {sym: '--', pnl: -999, algo: ''});
+            const worstTradeAll = allClosed.reduce((worst, t) => {
+                const pnl = computePnl(t);
+                return pnl < worst.pnl ? {sym: t.symbol || t.pair, pnl, algo: t.algo} : worst;
+            }, {sym: '--', pnl: 999, algo: ''});
+
+            document.getElementById('perf-overall').innerHTML = `
+                <h3>TRACK RECORD <span style="font-weight:400;font-size:0.8rem;color:#888">How picks performed after being flagged.</span></h3>
+                <div class="perf-box" style="border:none;padding:0;margin-top:10px;">
+                    <h4 style="color:#ef4444;margin-bottom:12px;">Overall Performance</h4>
+                    <div class="perf-grid">
+                        <div class="perf-item"><div class="label">Win Rate</div><div class="value ${overallWR >= 50 ? 'green' : 'red'}">${overallWR.toFixed(1)}%</div></div>
+                        <div class="perf-item"><div class="label">Wins</div><div class="value green">${overallWins}</div></div>
+                        <div class="perf-item"><div class="label">Losses</div><div class="value red">${overallLosses}</div></div>
+                        <div class="perf-item"><div class="label">Profit Factor</div><div class="value ${(() => { const gp = allClosed.reduce((s,t) => { const p = computePnl(t); return p > 0 ? s + p : s; }, 0); const gl = Math.abs(allClosed.reduce((s,t) => { const p = computePnl(t); return p < 0 ? s + p : s; }, 0)); return gp / Math.max(gl, 0.01) >= 1 ? 'green' : 'red'; })()}">${(() => { const gp = allClosed.reduce((s,t) => { const p = computePnl(t); return p > 0 ? s + p : s; }, 0); const gl = Math.abs(allClosed.reduce((s,t) => { const p = computePnl(t); return p < 0 ? s + p : s; }, 0)); return (gp / Math.max(gl, 0.01)).toFixed(2); })()}</div></div>
+                        <div class="perf-item"><div class="label">Avg PnL</div><div class="value ${overallPnl >= 0 ? 'green' : 'red'}">${overallPnl >= 0 ? '+' : ''}${(overallPnl / Math.max(totalClosed,1)).toFixed(2)}%</div></div>
+                        <div class="perf-item"><div class="label">$100/trade</div><div class="value ${(() => { const d = algoStats.reduce((s,a) => s + a.dollarNet, 0); return d >= 0 ? 'green' : 'red'; })()}">${(() => { const d = algoStats.reduce((s,a) => s + a.dollarNet, 0); return (d >= 0 ? '+' : '') + '$' + d.toFixed(0); })()}</div></div>
+                        <div class="perf-item"><div class="label">Active Picks</div><div class="value blue">${totalActive}</div></div>
+                    </div>
+                    <div style="margin-top:12px;font-size:0.8rem;color:#888;">
+                        Best trade: ${bestTradeAll.sym} <span class="pnl-pos">+${bestTradeAll.pnl !== -999 ? bestTradeAll.pnl.toFixed(4) : 0}%</span><br>
+                        Worst trade: ${worstTradeAll.sym} <span class="pnl-neg">${worstTradeAll.pnl !== 999 ? worstTradeAll.pnl.toFixed(4) : 0}%</span>
+                    </div>
+                </div>`;
+
+            document.getElementById('perf-body').innerHTML = withTrades.map((a, i) => {
+                const avgPnl = a.totalPnl / a.closed;
+                const pfStr = a.profitFactor === Infinity ? '∞' : a.profitFactor.toFixed(2);
+                return `<tr style="cursor:pointer;${a.dollarNet > 0 ? 'background:rgba(34,197,94,0.05);' : ''}" data-algo="${a.id}" onclick="showPickDetail(this)">
+                    <td>${i+1}</td>
+                    <td>${a.id}</td>
+                    <td class="pnl-pos">${a.wins}</td>
+                    <td class="pnl-neg">${a.losses}</td>
+                    <td class="${a.wr >= 50 ? 'pnl-pos' : 'pnl-neg'}">${a.wr.toFixed(1)}%</td>
+                    <td class="${avgPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${avgPnl >= 0 ? '+' : ''}${avgPnl.toFixed(2)}%</td>
+                    <td class="${a.profitFactor >= 1 ? 'pnl-pos' : 'pnl-neg'}" style="font-weight:600" title="Profit Factor">${pfStr}</td>
+                    <td class="pnl-pos">${a.bestTrade !== -999 ? '+' + a.bestTrade.toFixed(2) + '%' : '--'}</td>
+                    <td class="pnl-neg">${a.worstTrade !== 999 ? a.worstTrade.toFixed(2) + '%' : '--'}</td>
+                    <td class="${a.totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${a.totalPnl >= 0 ? '+' : ''}${a.totalPnl.toFixed(2)}%</td>
+                    <td class="${a.dollarNet >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-weight:600">${a.dollarNet >= 0 ? '+' : ''}$${a.dollarNet.toFixed(0)}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="11" style="text-align:center;color:#888">No closed trades yet</td></tr>';
+
+            // === VOLATILITY / RUG PULL TAB ===
+            // Detect potential rug pulls: huge pump (>30%) then reversal, or meme coins with extreme moves
+            const rugWarnings = [];
+            const volatileCoins = [];
+
+            for (const p of [...allActive, ...allClosed]) {
+                const sym = p.symbol || p.pair || '';
+                const entry = parseFloat(p.entryPrice || p.entry_price || 0);
+                const cur = parseFloat(p.currentPrice || p.current_price || p.exitPrice || 0);
+                if (!entry || !cur) continue;
+                const change = ((cur - entry) / entry) * 100;
+                const absChange = Math.abs(change);
+
+                if (absChange > 5) {
+                    volatileCoins.push({sym, change, entry, cur, algo: p.algo, closed: !!p.closed});
+                }
+                // Rug pull warning: meme coin dropped >20% after entry
+                if (change < -20 && (p.algo || '').match(/meme|pump|velocity/)) {
+                    rugWarnings.push({sym, change, algo: p.algo, entry, cur});
+                }
+                // Extreme pump warning: >50% gain could be manipulation
+                if (change > 50) {
+                    rugWarnings.push({sym, change, algo: p.algo, entry, cur, type: 'PUMP'});
+                }
+            }
+
+            volatileCoins.sort((a,b) => Math.abs(b.change) - Math.abs(a.change));
+
+            const rugHtml = rugWarnings.length > 0
+                ? rugWarnings.map(r => `<div class="rug-warning">
+                    <div class="title">${r.type === 'PUMP' ? '⚠️ EXTREME PUMP' : '🔴 POTENTIAL RUG PULL'}: ${r.sym}</div>
+                    <div class="detail">Algorithm: ${r.algo} | Entry: ${fmtPrice(r.entry)} → ${fmtPrice(r.cur)} (${r.change >= 0 ? '+' : ''}${r.change.toFixed(2)}%)</div>
+                </div>`).join('')
+                : '<div style="text-align:center;color:#888;padding:30px;">No rug pull warnings at this time. Monitoring active picks for extreme drops.</div>';
+            document.getElementById('rug-warnings').innerHTML = `<h3 style="color:#ef4444;margin-bottom:12px;">⚠️ Rug Pull / Manipulation Alerts</h3>${rugHtml}`;
+
+            const volHtml = volatileCoins.length > 0
+                ? volatileCoins.slice(0, 30).map(v => `<div class="volatility-card" style="cursor:pointer" data-algo="${v.algo}" onclick="showPickDetail(this)">
+                    <div>
+                        <div class="vol-symbol">${v.sym}</div>
+                        <div style="font-size:0.75rem;color:#888">${v.algo} ${v.closed ? '(closed)' : '(active)'}</div>
+                    </div>
+                    <div class="vol-metric"><div class="label">Change</div><div class="value ${v.change >= 0 ? 'pnl-pos' : 'pnl-neg'}">${v.change >= 0 ? '+' : ''}${v.change.toFixed(2)}%</div></div>
+                    <div class="vol-metric"><div class="label">Entry</div><div class="value">${fmtPrice(v.entry)}</div></div>
+                    <div class="vol-metric"><div class="label">Current</div><div class="value">${fmtPrice(v.cur)}</div></div>
+                </div>`).join('')
+                : '<div style="text-align:center;color:#888;padding:30px;">No extreme movers detected.</div>';
+            document.getElementById('volatility-list').innerHTML = `<h3 style="color:#f59e0b;margin:20px 0 12px;">📊 Top Volatile Movers (>5% move)</h3>${volHtml}`;
+
+            // === AUDIT LOG TAB ===
+            const auditEntries = [];
+            for (const p of allClosed.slice(0, 30)) {
+                auditEntries.push({
+                    time: p.exitDate || p.entryDate || p.timestamp || '',
+                    algo: p.algo,
+                    sym: p.symbol || p.pair || '',
+                    action: (parseFloat(p.pnlPct || p.pnl_pct || 0)) >= 0 ? 'TP HIT' : 'SL HIT',
+                    detail: `PnL: ${(parseFloat(p.pnlPct || p.pnl_pct || 0)).toFixed(2)}% | ${p.outcome || p.exitReason || 'resolved'}`
+                });
+            }
+            auditEntries.sort((a,b) => (b.time || '').localeCompare(a.time || ''));
+            document.getElementById('audit-body').innerHTML = auditEntries.length > 0
+                ? auditEntries.map(a => {
+                    let dt = '';
+                    try { dt = new Date(a.time).toLocaleString('en-US', {timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}); } catch(e) { dt = a.time; }
+                    return `<tr data-algo="${a.algo}" onclick="showPickDetail(this)"><td style="font-size:0.8rem">${dt}</td><td>${a.algo}</td><td class="symbol">${a.sym}</td><td>${a.action}</td><td style="font-size:0.8rem;color:#888">${a.detail}</td></tr>`;
+                }).join('')
+                : '<tr><td colspan="5" style="text-align:center;color:#888">No audit entries yet</td></tr>';
+
+            // Update timestamp
+            document.getElementById('last-updated').textContent =
+                `Data as of: ${updatedDate ? updatedDate.toLocaleString('en-US', {timeZone: 'America/New_York'}) : 'Unknown'} EST — auto-refreshes every 5 min`;
+
+        } catch (e) {
+            console.error('Pump Watch loadData error:', e);
+            const errBanner = document.getElementById('error-banner');
+            if (errBanner) {
+                errBanner.style.display = 'block';
+                errBanner.innerHTML = '<strong>Error loading data:</strong> ' + e.message + '<br><span style="font-size:0.75rem;color:#888">Check browser console (F12) for details. If this persists, try the <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/findcryptopairs/pump-watch.html" style="color:#60a5fa">GitHub Pages mirror</a>.</span>';
+            }
+            document.getElementById('status-bar').textContent = 'Error: ' + e.message;
+            document.getElementById('status-bar').className = 'status-bar';
+            document.getElementById('picks-body').innerHTML = '<tr><td colspan="10" style="text-align:center;color:#ef4444;">Error loading data: ' + e.message + '</td></tr>';
+        }
+    }
+
+    // === FILTERS ===
+    const filters = { '48h': false, closed: false, long: false, short: false };
+    function toggleFilter(key) {
+        if (key === 'long' && !filters.long) { filters.long = true; filters.short = false; }
+        else if (key === 'short' && !filters.short) { filters.short = true; filters.long = false; }
+        else if (key === 'long' || key === 'short') { filters[key] = false; }
+        else { filters[key] = !filters[key]; }
+        document.getElementById('filter-48h').className = 'filter-btn' + (filters['48h'] ? ' active' : '');
+        document.getElementById('filter-hide-closed').className = 'filter-btn' + (filters.closed ? ' active' : '');
+        document.getElementById('filter-long').className = 'filter-btn' + (filters.long ? ' active-green filter-btn' : '');
+        document.getElementById('filter-short').className = 'filter-btn' + (filters.short ? ' active filter-btn' : '');
+        renderCandidates();
+    }
+
+    function detectDirection(p) {
+        // Explicit direction field
+        const dir = (p.direction || p.signal_type || '').toUpperCase();
+        if (dir === 'SHORT' || dir === 'SELL') return 'SHORT';
+        if (dir === 'LONG' || dir === 'BUY') return 'LONG';
+        // Infer from TP/SL: if TP < entry, it's a SHORT
+        const entry = parseFloat(p.entryPrice || p.entry_price || 0);
+        const tp = parseFloat(p.takeProfit || p.take_profit || p.targetPrice || p.target_price || 0);
+        const sl = parseFloat(p.stopLoss || p.stop_loss || p.stopPrice || p.stop_price || 0);
+        if (tp && entry && tp < entry * 0.97) return 'SHORT';
+        if (sl && entry && sl > entry * 1.03) return 'SHORT';
+        return 'LONG';
+    }
+
+    function getAssetClass(sym, cat) {
+        const s = (sym || '').toUpperCase();
+        if (cat === 'stock' || cat === 'penny') return 'stock';
+        if (cat === 'forex') return 'forex';
+        if (cat === 'meme') return 'meme';
+        // Common stocks/ETFs
+        if (['SPY','QQQ','AAPL','MSFT','AMZN','GOOG','TSLA','NVDA','META','GLD','TLT','IWM','COPX','SLV','VDE','COIN'].includes(s.replace(/USDT$/,''))) return 'stock';
+        // Forex pairs
+        if (s.match(/^(EUR|GBP|USD|JPY|AUD|CAD|CHF|NZD)/i) && s.includes('=')) return 'forex';
+        return 'crypto';
+    }
+
+    function progressBar(entry, current, tp, sl, direction) {
+        // Compute how far price has moved toward TP vs SL
+        if (!entry || !tp || !sl || tp === sl) return '<span style="color:#666">--</span>';
+        const isShort = direction === 'SHORT';
+        // Normalize: for LONG, profit = price going up; for SHORT, profit = price going down
+        let progress;
+        if (isShort) {
+            // SHORT: entry is top, TP is below, SL is above
+            const totalRange = sl - tp; // full range from TP to SL
+            const curPos = sl - current; // how far from SL toward TP
+            progress = totalRange > 0 ? (curPos / totalRange) * 100 : 0;
+        } else {
+            // LONG: entry is bottom, TP is above, SL is below
+            const totalRange = tp - sl;
+            const curPos = current - sl;
+            progress = totalRange > 0 ? (curPos / totalRange) * 100 : 0;
+        }
+        progress = Math.max(0, Math.min(100, progress));
+        const entryPct = isShort
+            ? ((sl - entry) / (sl - tp) * 100)
+            : ((entry - sl) / (tp - sl) * 100);
+        const entryPos = Math.max(0, Math.min(100, entryPct));
+        // Color: green if above entry progress, red if below
+        const inProfit = progress > entryPos;
+        const barColor = inProfit ? '#22c55e' : '#ef4444';
+        const bgColor = '#1a1a2a';
+        return `<div style="position:relative;width:100px;height:14px;background:${bgColor};border-radius:7px;overflow:hidden;display:inline-block;vertical-align:middle;" title="Progress: ${progress.toFixed(0)}% toward TP">
+            <div style="width:${progress}%;height:100%;background:${barColor};border-radius:7px;transition:width 0.3s;"></div>
+            <div style="position:absolute;top:0;left:${entryPos}%;width:2px;height:100%;background:#fff;opacity:0.5;" title="Entry"></div>
+            <span style="position:absolute;top:0;left:4px;font-size:9px;line-height:14px;color:#fff;font-weight:600;">${progress.toFixed(0)}%</span>
+        </div>`;
+    }
+
+    function renderCandidates() {
+        const allActive = window._allActive || [];
+        const allClosed = window._allClosed || [];
+        const tbody = document.getElementById('picks-body');
+        const now48h = Date.now() - (48 * 60 * 60 * 1000);
+
+        if (allActive.length === 0 && allClosed.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#888;">No active picks. 91 algorithms scanning every 20 min.</td></tr>';
+            return;
+        }
+
+        let allPicks = [...allActive, ...allClosed];
+        // Apply filters
+        allPicks = allPicks.filter(p => {
+            const isClosed = !!p.closed;
+            if (filters.closed && isClosed) return false;
+            if (filters['48h']) {
+                const t = new Date(p.timestamp || p.entryDate || p.created_at || '1970-01-01').getTime();
+                if (t < now48h) return false;
+            }
+            const dir = detectDirection(p);
+            if (filters.long && dir !== 'LONG') return false;
+            if (filters.short && dir !== 'SHORT') return false;
+            return true;
+        });
+
+        // Sort by date descending (newest first)
+        allPicks.sort((a, b) => {
+            const tA = new Date(a.timestamp || a.entryDate || a.created_at || '1970-01-01').getTime();
+            const tB = new Date(b.timestamp || b.entryDate || b.created_at || '1970-01-01').getTime();
+            return tB - tA;
+        });
+
+        document.getElementById('filter-count').textContent = `${allPicks.length} signals shown`;
+
+        if (allPicks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#888;">No signals match filters. Try adjusting above.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = allPicks.map(p => {
+            const sym = p.symbol || p.pair || '??';
+            const entry = parseFloat(p.entryPrice || p.entry_price || 0);
+            const cur = parseFloat(p.currentPrice || p.current_price || p.exitPrice || entry);
+            const pnl = parseFloat(p.pnlPct || p.pnl_pct || (entry ? ((cur - entry) / entry * 100) : 0));
+            const conf = (p.confidence || p.signal_strength || 60);
+            const confLabel = conf >= 70 ? 'HIGH' : conf >= 50 ? 'MEDIUM' : 'LOW';
+            const confCls = conf >= 70 ? 'badge-high' : conf >= 50 ? 'badge-medium' : 'badge-low';
+            const direction = detectDirection(p);
+            const cat = p.cat || 'crypto';
+            const assetClass = getAssetClass(sym, cat);
+            const isClosed = !!p.closed;
+
+            // TP/SL with direction awareness
+            const tpPrice = parseFloat(p.takeProfit || p.take_profit || p.tp_price || p.targetPrice || p.target_price || 0);
+            const slPrice = parseFloat(p.stopLoss || p.stop_loss || p.sl_price || p.stopPrice || p.stop_price || 0);
+            let tpPct = parseFloat(p.takeProfitPct || p.tpPct || p.tp_pct || p.tp || 0);
+            let slPct = parseFloat(p.stopLossPct || p.slPct || p.sl_pct || p.sl || 0);
+            if (!tpPct && tpPrice && entry) tpPct = ((tpPrice - entry) / entry * 100);
+            if (!slPct && slPrice && entry) slPct = ((slPrice - entry) / entry * 100);
+            // For display: show absolute distance for clarity
+            const tpAbs = Math.abs(tpPct);
+            const slAbs = Math.abs(slPct);
+            const tpStr = tpPct ? '+' + tpAbs.toFixed(1) : '--';
+            const slStr = slPct ? '-' + slAbs.toFixed(1) : '--';
+
+            // Progress bar
+            const bar = progressBar(entry, cur, tpPrice || (entry * (1 + tpPct/100)), slPrice || (entry * (1 + slPct/100)), direction);
+
+            // Signal age
+            const sigTime = new Date(p.timestamp || p.entryDate || p.created_at || '').getTime();
+            const ageHrs = sigTime ? Math.round((Date.now() - sigTime) / 3600000) : null;
+            const ageLabel = ageHrs !== null ? (ageHrs < 1 ? '<1h' : ageHrs < 24 ? ageHrs + 'h' : Math.round(ageHrs/24) + 'd') : '';
+            let dt = '';
+            try { dt = new Date(p.timestamp || p.entryDate || p.created_at || '').toLocaleString('en-US', {timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}); } catch(e) {}
+
+            const staleStyle = ageHrs > 48 ? 'opacity:0.5;' : '';
+            const catColor = ALGO_CATEGORIES[assetClass] || '#888';
+
+            return `<tr style="${isClosed ? 'opacity:0.5;' : ''}${staleStyle}" data-algo="${p.algo}" onclick="showPickDetail(this)" class="pick-row">
+                <td><span class="symbol">${sym}</span></td>
+                <td><span class="badge badge-${assetClass}">${assetClass.toUpperCase()}</span></td>
+                <td><span class="badge badge-${direction.toLowerCase()}">${direction}</span></td>
+                <td><div class="algo-row"><span class="algo-icon" style="background:${catColor}"></span>${p.algo}</div></td>
+                <td>${fmtPrice(entry)} → ${fmtPrice(cur)} ${bar}</td>
+                <td class="${pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+                <td><span class="badge ${confCls}">${confLabel}</span></td>
+                <td class="${tpStr === '--' || slStr === '--' ? 'tooltip' : ''}" data-tooltip="${tpStr === '--' && slStr === '--' ? 'TP/SL not provided for this pick' : tpStr === '--' ? 'TP not provided' : slStr === '--' ? 'SL not provided' : ''}"><span style="color:#22c55e">${tpStr}%</span> / <span style="color:#ef4444">${slStr}%</span></td>
+                <td style="font-size:0.8rem;color:#888;">${dt}${ageLabel ? ' <span style="color:'+(ageHrs>48?'#ef4444':'#666')+';font-size:0.7rem">('+ageLabel+' ago)</span>' : ''}</td>
+                <td>${isClosed ? '<span class="badge badge-closed">Closed</span>' : '<span class="badge badge-active">Active</span>'}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // === DRILL-DOWN: click any row for detail ===
+    function showPickDetail(row) {
+        const algo = row.dataset.algo;
+        if (!algo) return;
+        // Find all picks for this algorithm
+        const stats = (window._algoStats || []).find(a => a.id === algo);
+        const picks = (window._allPicks || []).filter(p => p.algo === algo);
+        const active = picks.filter(p => !p.closed);
+        const closed = picks.filter(p => p.closed);
+        const wins = closed.filter(p => computePnl(p) > 0).length;
+        const losses = closed.filter(p => computePnl(p) < 0).length;
+        const wr = closed.length > 0 ? (wins / closed.length * 100).toFixed(1) : '--';
+        const totalPnl = closed.reduce((s, p) => s + computePnl(p), 0);
+        const grossW = closed.reduce((s, p) => { const x = computePnl(p); return s + (x > 0 ? x : 0); }, 0);
+        const grossL = closed.reduce((s, p) => { const x = computePnl(p); return s + (x < 0 ? Math.abs(x) : 0); }, 0);
+        const pf = grossL > 0 ? (grossW / grossL).toFixed(2) : (grossW > 0 ? '∞' : '--');
+        const dolNet = closed.reduce((s, p) => s + 100 * (1 + computePnl(p)/100), 0) - closed.length * 100;
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;';
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
+
+        let picksHtml = picks.slice(0, 20).map(p => {
+            const sym = p.symbol || p.pair || '';
+            const pnl = computePnl(p);
+            const dir = detectDirection(p);
+            let dt = '';
+            try { dt = new Date(p.timestamp || p.entryDate || p.created_at || '').toLocaleString('en-US', {timeZone:'America/New_York', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}); } catch(e) {}
+            return `<tr>
+                <td class="symbol">${sym}</td>
+                <td><span class="badge badge-${dir.toLowerCase()}">${dir}</span></td>
+                <td>${fmtPrice(parseFloat(p.entryPrice || p.entry_price || 0))}</td>
+                <td class="${pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+                <td style="font-size:0.8rem">${dt}</td>
+                <td>${p.closed ? '<span class="badge badge-closed">Closed</span>' : '<span class="badge badge-active">Active</span>'}</td>
+            </tr>`;
+        }).join('');
+
+        modal.innerHTML = `<div style="background:#12121c;border:1px solid #2a2a3a;border-radius:12px;padding:24px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3 style="color:#ef4444;">${algo}</h3>
+                <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;">&times;</button>
+            </div>
+            <div class="perf-grid" style="margin-bottom:16px;">
+                <div class="perf-item"><div class="label">Win Rate</div><div class="value ${parseFloat(wr)>=50?'green':'red'}">${wr}%</div></div>
+                <div class="perf-item"><div class="label">Wins</div><div class="value green">${wins}</div></div>
+                <div class="perf-item"><div class="label">Losses</div><div class="value red">${losses}</div></div>
+                <div class="perf-item"><div class="label">Profit Factor</div><div class="value ${parseFloat(pf)>=1?'green':'red'}">${pf}</div></div>
+                <div class="perf-item"><div class="label">Total PnL</div><div class="value ${totalPnl>=0?'green':'red'}">${totalPnl>=0?'+':''}${totalPnl.toFixed(2)}%</div></div>
+                <div class="perf-item"><div class="label">$100/trade</div><div class="value ${dolNet>=0?'green':'red'}">${dolNet>=0?'+':''}$${dolNet.toFixed(0)}</div></div>
+                <div class="perf-item"><div class="label">Active</div><div class="value blue">${active.length}</div></div>
+                <div class="perf-item"><div class="label">Closed</div><div class="value">${closed.length}</div></div>
+            </div>
+            <table style="width:100%;font-size:0.8rem;">
+                <thead><tr><th>Symbol</th><th>Dir</th><th>Entry</th><th>PnL</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody>${picksHtml || '<tr><td colspan="6" style="text-align:center;color:#888">No picks</td></tr>'}</tbody>
+            </table>
+        </div>`;
+        document.body.appendChild(modal);
+    }
+
+    // === SORTABLE TABLES ===
+    function makeSortable(table) {
+        const headers = table.querySelectorAll('th');
+        headers.forEach((th, colIdx) => {
+            th.addEventListener('click', () => {
+                const tbody = table.querySelector('tbody');
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAsc = th.classList.contains('sort-asc');
+                // Clear all sort indicators
+                headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+                th.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+                const dir = isAsc ? -1 : 1;
+                rows.sort((a, b) => {
+                    const aCell = a.cells[colIdx];
+                    const bCell = b.cells[colIdx];
+                    if (!aCell || !bCell) return 0;
+                    const aText = aCell.textContent.trim();
+                    const bText = bCell.textContent.trim();
+                    // Try numeric sort (strip $, %, +, commas)
+                    const aNum = parseFloat(aText.replace(/[$,%+,]/g, ''));
+                    const bNum = parseFloat(bText.replace(/[$,%+,]/g, ''));
+                    if (!isNaN(aNum) && !isNaN(bNum)) return (aNum - bNum) * dir;
+                    return aText.localeCompare(bText) * dir;
+                });
+                rows.forEach(r => tbody.appendChild(r));
+            });
+        });
+    }
+    // Apply sortable to all tables after data loads
+    const _origLoadData = loadData;
+    loadData = async function() {
+        await _origLoadData();
+        document.querySelectorAll('table').forEach(makeSortable);
+    };
+
+    // Loading timeout - if loadData hasn't updated status-bar in 15s, show diagnostic
+    const _loadTimeout = setTimeout(() => {
+        const sb = document.getElementById('status-bar');
+        if (sb && sb.textContent.includes('Loading data')) {
+            sb.innerHTML = 'Data sources timed out. <a href="javascript:loadData()" style="color:#60a5fa">Retry</a> or try the <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/findcryptopairs/pump-watch.html" style="color:#60a5fa">GitHub Pages mirror</a>.';
+            sb.className = 'status-bar';
+        }
+    }, 15000);
+
+    loadData().finally(() => clearTimeout(_loadTimeout));
+    setInterval(loadData, 300000); // 5 min refresh
+    </script>
+</body>
+</html>

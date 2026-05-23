@@ -1,0 +1,97 @@
+# Swarm file manifest — regenerated 2026-05-03.
+# Authoritative list of every file the swarm depends on. Group order:
+# core / drivers / parsers / safety / sessions / dispatchers / inspectors
+# / prompts / fixtures / examples / personas / claude-agents / claude-commands
+# / docs / external-consult helpers.
+
+# --- core engine adapter + JSON-Schema gate -----------------------------
+tools/swarm/api_consult.py
+tools/swarm/schema_review.json
+tools/swarm/schema_validate.py
+tools/swarm/worker_runner.py
+
+# --- TUI / PTY driver — REMOVED 2026-05-04 alongside freebuff. -----------
+#     (was: tools/swarm/_freebuff_test_ladder.py, tools/swarm/pty_driver.py)
+
+# --- output cleaners + safety env isolation -----------------------------
+tools/swarm/output_parsers.py
+tools/swarm/safety.py
+
+# --- config loader (.env + ${VAR} substitution) -------------------------
+tools/swarm/config_loader.py
+
+# --- session sidecar (sqlite) -------------------------------------------
+tools/swarm/session_manager.py
+tools/swarm/swarm_janitor.py
+
+# --- one-shot fan-out + multi-turn chain --------------------------------
+tools/swarm/swarm_followup.py
+tools/swarm/swarm_run.py
+
+# --- PR-review pipeline (PowerShell orchestrator + only-writer) ---------
+tools/swarm/comment_poster.ps1
+tools/swarm/swarm_dispatch.ps1
+
+# --- per-run stats + audit ----------------------------------------------
+tools/swarm/swarm_inspect.py
+tools/swarm/swarm_log.py
+tools/swarm/swarm_stats.py
+
+# --- prompts (PR review + merge + redteam) ------------------------------
+tools/swarm/prompts/merge_reviews.md
+tools/swarm/prompts/pr_review.md
+tools/swarm/prompts/redteam.md
+
+# --- fixtures -----------------------------------------------------------
+tools/swarm/fixtures/bad.json
+tools/swarm/fixtures/good.json
+
+# --- YAML config examples -----------------------------------------------
+tools/swarm/examples/asset_class_audit.yaml
+tools/swarm/examples/forex_deep_dive.yaml
+tools/swarm/examples/multi_model_qa.yaml
+
+# --- asset-class personas -----------------------------------------------
+tools/swarm/agent_personas/INDEX.md
+tools/swarm/agent_personas/bond_specialist.md
+tools/swarm/agent_personas/commodity_specialist.md
+tools/swarm/agent_personas/crypto_specialist.md
+tools/swarm/agent_personas/equity_specialist.md
+tools/swarm/agent_personas/etf_specialist.md
+tools/swarm/agent_personas/forex_specialist.md
+tools/swarm/agent_personas/ml-validation-specialist.md
+tools/swarm/agent_personas/regime-specialist.md
+
+# --- .claude subagents (Claude Code Task tool / /agents) ----------------
+.claude/agents/dashboard-contract-reviewer.md
+.claude/agents/fabrication-red-team.md
+.claude/agents/merge-captain.md
+.claude/agents/pr-reviewer.md
+.claude/agents/quant-performance-auditor.md
+
+# --- .claude slash commands (9 files) -----------------------------------
+.claude/commands/swarm-engines.md
+.claude/commands/swarm-followup.md
+.claude/commands/swarm-help.md
+.claude/commands/swarm-inspect.md
+.claude/commands/swarm-resume.md
+.claude/commands/swarm-run.md
+.claude/commands/swarm-sessions.md
+.claude/commands/swarm-stats.md
+.claude/commands/swarm.md
+
+# --- docs ---------------------------------------------------------------
+tools/swarm/CHANGELOG.md
+tools/swarm/MANIFEST.txt
+tools/swarm/PORTING.md
+tools/swarm/README.md
+tools/swarm/SPEC.md
+tools/swarm/SWARM_DESIGN_NOTES.md
+tools/swarm/requirements.txt
+tools/swarm/swarm.config.example.json
+
+# --- external-API consultant helpers (NOT used by swarm; kept stable for
+#     other peer agents — swarm uses tools/swarm/api_consult.py instead) -
+tools/consult_cerebras.py
+tools/consult_deepseek.py
+tools/consult_xai.py

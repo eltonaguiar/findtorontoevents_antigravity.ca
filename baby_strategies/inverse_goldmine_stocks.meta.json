@@ -1,0 +1,66 @@
+{
+  "name": "inverse_goldmine_stocks",
+  "description": "Inverse of all goldmine_stocks consensus tiers (goldmine_1x_consensus through goldmine_5x_consensus). Parent has 21.2% WR (18W/67L) and PF 0.38 on n=85 closed equity trades. 71.8% of exits are sl_hit (61/85), with only 21.2% tp_hit (18/85). Goldmine consensus is consistently picking equities that fall — fading the consensus (SHORT what goldmine longs) should symmetrically capture the 78.8% downside outcomes. Per TESTING_PROTOCOL.md \u00a77 + STRATEGY_INVESTIGATION_BEFORE_KILL.md \u00a73 mutation-before-kill rule. Exposed by 2026-04-14 forward-tracking fix in audit_trail/dashboard_generator.py (PR #207) which revealed goldmine's true performance after the loader bug was patched.",
+  "parent_strategy": "goldmine_stocks",
+  "mutation_type": "inverse",
+  "asset_class": "EQUITY",
+  "wired_in_scanner": false,
+  "status": "awaiting_forward_test",
+  "created": "2026-04-14T12:02:00-04:00",
+  "evidence": {
+    "parent_wr": 21.2,
+    "parent_pf": 0.38,
+    "parent_n": 85,
+    "parent_wins": 18,
+    "parent_losses": 67,
+    "parent_sum_return_pct": -217.74,
+    "parent_avg_return_pct": -2.56,
+    "parent_sl_hit_count": 61,
+    "parent_sl_hit_pct": 71.8,
+    "parent_tp_hit_count": 18,
+    "parent_tp_hit_pct": 21.2,
+    "parent_removed_from_consensus_count": 6,
+    "parent_assets": ["EQUITY"],
+    "parent_strategies": [
+      "goldmine_1x_consensus",
+      "goldmine_2x_consensus",
+      "goldmine_3x_consensus",
+      "goldmine_5x_consensus"
+    ],
+    "inverse_theoretical_wr": 78.8,
+    "inverse_theoretical_pf": 2.61,
+    "inverse_confirmed_pf": null,
+    "investigation_doc": "docs/HC_EQUITY_INVESTIGATION_2026-04-14.md",
+    "exposure_pr": 207,
+    "exposure_commit": null,
+    "data_source": "data/goldmine/closed_trades.json (85 trades, updated 2026-04-14T13:45:10Z)"
+  },
+  "config": {
+    "source_strategy_substring": "goldmine_",
+    "source_system_substring": "goldmine_stocks",
+    "flip_direction": true,
+    "symbol_filter": null,
+    "confidence_band": null,
+    "tp_sl_from_parent": true,
+    "max_concurrent": 5,
+    "size_multiplier": 0.5,
+    "_size_note": "Half-size during forward validation per STRATEGY_INVESTIGATION_BEFORE_KILL.md \u00a74 (small position until n>=20 confirms inverse symmetry)"
+  },
+  "validation_checklist": {
+    "layer_1_backtest": false,
+    "layer_2_oos": false,
+    "layer_2_5_quality_gates": false,
+    "layer_6_forward_test_n20": false,
+    "layer_6_forward_test_pf_1_5": false
+  },
+  "promotion_criteria": {
+    "n_min": 20,
+    "wr_min_pct": 60,
+    "pf_min": 1.5,
+    "max_dd_pct": 25,
+    "_note": "Promotion to wired_in_scanner=true requires forward results meeting ALL criteria. If wr<60% on n>=20, retire (inverse hypothesis falsified). If wr 50-60%, hold for n=50 confirmation."
+  },
+  "kill_criteria": {
+    "_note": "Per STRATEGY_INVESTIGATION_BEFORE_KILL.md \u00a75: kill if forward wr<40% on n>=20 (inverse failed AND parent failed = symmetrically dead, meaning random direction). At that point goldmine_stocks should be added to BLOCKED_SOURCE_SYSTEMS instead."
+  }
+}

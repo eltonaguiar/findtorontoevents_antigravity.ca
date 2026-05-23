@@ -1,0 +1,184 @@
+
+================================================================================
+ANTIGRAVITY TRADING SYSTEM - PERFORMANCE ANALYSIS REPORT
+================================================================================
+
+EXECUTIVE SUMMARY:
+The Antigravity system shows significant performance issues that prevent it from
+delivering "hedge fund level quality" picks. Key findings:
+
+- Only 45.6% of picks are profitable (should be >55% for quality)
+- 64.8% of picks come from PROBATION-tier strategies with poor track records
+- Score-PnL correlation is weak (0.19) - scores don't reliably predict success
+- Major systems (alpha_engine, claude_gainer_st) have Profit Factor < 1.0
+
+================================================================================
+TOP 5 CRITICAL PERFORMANCE ISSUES (with specific data)
+================================================================================
+
+ISSUE #1: Core Systems Have NO EDGE (Profit Factor < 1.1)
+----------------------------------------------------------
+  • alpha_engine: PF=0.88, WR=38.1%, 3,375 trades, 1,126 picks
+  • claude_gainer_st: PF=0.82, WR=47.7%, 1,574 trades, 809 picks  
+  • stocks_competition: PF=0.56, WR=33.1%, 559 trades, 291 picks
+  • kimi_riseoftheclaw: PF=0.67, WR=38.3%, 451 trades, 240 picks
+
+  IMPACT: These 4 systems generate 2,466 picks (69% of all picks) with NEGATIVE
+  expected value. Every trade loses money on average.
+
+ISSUE #2: PROBATION Strategies Dominate (64.8% of picks)
+---------------------------------------------------------
+  • 2,308 picks from PROBATION tier with avg PnL of -0.12%
+  • Worst offender: "v99 ADJUSTED: 58 trades, 27.6% WR, -2.64% avg - net loser"
+    → 1,171 picks from this failing strategy
+  • PROBATION trust multiplier: 0.50x-0.55x (severely penalized but still active)
+
+  IMPACT: Nearly 2/3 of all picks come from strategies on probation for poor
+  performance. System continues to trade them despite known losses.
+
+ISSUE #3: Goldmine Stock Picks Catastrophically Bad
+----------------------------------------------------
+  • Worst tier: -46.92% on 17 picks, avg -2.76% per pick
+  • Weak tier: -17.33% on 8 picks, avg -2.17% per pick
+  • 20 of 47 Goldmine picks are DEMOTED (42.6%)
+
+  IMPACT: Stock picks from Goldmine scanner are destroying capital. A $100K
+  allocation to worst tier would be worth $53,080 - a $46,920 loss.
+
+ISSUE #4: Score-PnL Correlation is Weak
+----------------------------------------
+  • Pearson correlation: 0.1923 (weak positive)
+  • High-score picks (70+): 67% win rate, 0.67% avg PnL
+  • Low-score picks (<40): 36% win rate, -0.66% avg PnL
+
+  IMPACT: Scores provide only marginal predictive value. A 30-point score 
+  difference only improves win rate by 31 percentage points.
+
+ISSUE #5: Equity/Commodity Asset Classes Are Losers
+----------------------------------------------------
+  • EQUITY: -0.58% avg PnL, 39.8% win rate (512 picks)
+  • COMMODITY: -0.70% avg PnL, 8.3% win rate (12 picks)
+  • ETF: -0.95% avg PnL, 41.7% win rate (12 picks)
+  • CRYPTO: +0.19% avg PnL, 47.7% win rate (2,878 picks)
+
+  IMPACT: Non-crypto assets are consistently losing. System should focus on
+  crypto where it has slight positive expectancy.
+
+================================================================================
+PROFITABILITY THRESHOLD CALCULATIONS
+================================================================================
+
+REQUIRED WIN RATE BY R:R RATIO:
+  R:R = 1.0: Required WR = 50.0%
+  R:R = 1.5: Required WR = 40.0%
+  R:R = 2.0: Required WR = 33.3%
+  R:R = 2.5: Required WR = 28.6%
+  R:R = 3.0: Required WR = 25.0%
+
+PROFIT FACTOR BENCHMARKS:
+  PF < 1.0: Losing strategy (current: alpha_engine, claude_gainer_st, etc.)
+  PF = 1.0: Breakeven before costs
+  PF = 1.1: Minimum edge after costs (current threshold - TOO LOW)
+  PF = 1.5: Decent edge (RECOMMENDED MINIMUM)
+  PF > 2.0: Strong edge
+
+CURRENT SYSTEM GAP ANALYSIS:
+  System                    Current PF  Gap to 1.1  Gap to 1.5
+  ------------------------  ----------  ----------  ----------
+  alpha_engine              0.88        +0.22       +0.62
+  claude_gainer_st          0.82        +0.28       +0.68
+  stocks_competition        0.56        +0.54       +0.94
+  kimi_riseoftheclaw        0.67        +0.43       +0.83
+  rapid_fire                0.74        +0.36       +0.76
+
+================================================================================
+SCORE vs PnL CORRELATION ANALYSIS
+================================================================================
+
+STATISTICAL FINDINGS:
+  • Sample size: 3,561 picks
+  • Pearson correlation: 0.1923 (p < 0.0001) - statistically significant but weak
+  • Spearman correlation: 0.2259 (p < 0.0001) - slightly stronger rank correlation
+
+SCORE BUCKET PERFORMANCE:
+  Score Range    Count    Avg PnL    Median PnL    Win Rate
+  -----------    -----    -------    ----------    --------
+  0-30           229      -0.89%     -0.72%        ~35%
+  30-40          667      -0.78%     -0.61%        ~38%
+  40-50         1,123     +0.07%     -0.33%        ~48%
+  50-60         1,194     +0.51%     +0.35%        ~52%
+  60-70           277     +0.69%     +0.56%        ~55%
+  70-80            49     +0.49%     +0.57%        ~67%
+  80-100            4     +1.11%     +2.02%        ~75%
+
+KEY INSIGHT: Scores above 60 show positive expectancy, but the relationship
+is non-linear. The jump from 60-70 to 70-80 doesn't improve performance much.
+
+================================================================================
+ASSET CLASS PERFORMANCE RANKING
+================================================================================
+
+RANKING (by average PnL):
+  #1  CRYPTO:     +0.19% avg, 47.7% WR, 2,878 picks  ✓ BEST
+  #2  SPORTS:      0.00% avg,  0.0% WR,     1 pick
+  #3  FOREX:      -0.32% avg, 29.4% WR,   143 picks
+  #4  FUTURES:    -0.45% avg,  0.0% WR,     3 picks
+  #5  EQUITY:     -0.58% avg, 39.8% WR,   512 picks  ✗ AVOID
+  #6  COMMODITY:  -0.70% avg,  8.3% WR,    12 picks  ✗ AVOID
+  #7  ETF:        -0.95% avg, 41.7% WR,    12 picks  ✗ AVOID
+
+RECOMMENDATION: Focus exclusively on CRYPTO. All other asset classes show
+negative expectancy. Goldmine stocks (EQUITY) are particularly destructive.
+
+================================================================================
+ACTIONABLE RECOMMENDATIONS
+================================================================================
+
+IMMEDIATE ACTIONS (High Priority):
+----------------------------------
+1. HALT all Goldmine stock picks (EQUITY class)
+   - Currently DEMOTED with -46.92% cumulative loss
+   - 20 of 47 picks in worst/weak tiers
+
+2. SUSPEND strategies with PF < 1.0:
+   - alpha_engine/quan_engine (PF 0.88, 1003 picks)
+   - claude_gainer_st/* (PF 0.82, 809 picks)
+   - stocks_competition/* (PF 0.56, 291 picks)
+
+3. RAISE Profit Factor threshold from 1.1 to 1.5
+   - Current 1.1 threshold allows strategies with no real edge
+   - 1.5 ensures minimum profitability after transaction costs
+
+MEDIUM-TERM IMPROVEMENTS:
+-------------------------
+4. RESTRICT PROBATION tier from live trading
+   - 64.8% of picks come from failing strategies
+   - Move to paper trading only until PF > 1.5 achieved
+
+5. IMPLEMENT minimum forward trade requirement: 30+ trades
+   - Many strategies with <20 trades are statistical noise
+   - Require 30+ for validation
+
+6. FOCUS on CRYPTO asset class only
+   - Only asset with positive expectancy (+0.19% avg)
+   - 47.7% win rate vs <40% for other assets
+
+PERFORMANCE THRESHOLDS FOR "HIGH-SCORE" PICKS:
+----------------------------------------------
+To achieve "hedge fund level quality", implement these filters:
+
+  ✓ Score: 65+ (captures top 15% with positive expectancy)
+  ✓ Trust Tier: PROVEN or WATCH only
+  ✓ Profit Factor: 1.5+ (not 1.1)
+  ✓ Forward Win Rate: 55%+ (not 38%)
+  ✓ Forward Trades: 30+ (statistical significance)
+  ✓ Asset Class: CRYPTO only
+  ✓ System Exclusions: alpha_engine, claude_gainer_st, stocks_competition
+
+EXPECTED IMPACT:
+  Current system: 45.6% win rate, -0.12% avg PnL (PROBATION tier)
+  With filters:  ~67% win rate, +0.67% avg PnL (high-score picks)
+
+  Improvement: +21% win rate, +0.79% avg PnL per trade
+
+================================================================================

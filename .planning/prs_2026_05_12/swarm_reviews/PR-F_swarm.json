@@ -1,0 +1,70 @@
+{
+  "pr_id": "PR-F",
+  "reviews": {
+    "qwen2.5-coder:14b": {
+      "role": "code-specialist (Alibaba)",
+      "elapsed_s": 8.5,
+      "parsed": {
+        "verdict": "needs_changes",
+        "must_fix": [
+          "audit_trail/dashboard_generator.py: filter blacklisted from leaderboard render"
+        ],
+        "should_fix": [
+          "tools/audit_blacklist_consistency.py: add logging for better traceability"
+        ],
+        "questions": [
+          "What is the expected behavior if a strategy is added to the blacklist after it has been active?"
+        ],
+        "risk_score_0_10": 6,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "deepseek-r1:14b": {
+      "role": "reasoning (DeepSeek)",
+      "elapsed_s": 13.9,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Ensure `aggregated_picks` doesn't reintroduce blacklisted strategies"
+        ],
+        "questions": [
+          "Does filtering blacklist from leaderboard affect other sections?"
+        ],
+        "risk_score_0_10": 5,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "devstral-small-2": {
+      "role": "code-patches (Mistral)",
+      "elapsed_s": 20.9,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Verify hypothesis (a) by checking if blacklist filtering is applied during leaderboard generation in `audit_trail/dashboard_generator.py`"
+        ],
+        "questions": [
+          "Is there a specific reason `claude_gainer_st` was blacklisted despite its strong performance metrics?"
+        ],
+        "risk_score_0_10": 4,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "ernie:latest": {
+      "role": "thinking (Baidu)",
+      "elapsed_s": 17.1,
+      "parsed": null,
+      "raw_tail": "<role>\nThe role is an assistant.\n</role>\n<language>\nEnglish.\n</language>\n<tone>\nSupportive.\n</tone>\n<completion>\nThe completion should be in the supportive tone.\n</completion>\n"
+    },
+    "glm-4.7-flash": {
+      "role": "alt-lineage (Zhipu)",
+      "elapsed_s": 85.6,
+      "parsed": null,
+      "raw_tail": ""
+    }
+  }
+}

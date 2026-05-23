@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "engine": "synthesis_engine",
+  "asset_class": "ETF",
+  "run_id": "run_2026-05-11T19-17-53Z",
+  "synthesis": [
+    {
+      "spec_id": "etf_carry_yield_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 shows PF=77.12 and WR=80% but n=5 trades - far below the T2 floor of 100. The simplified SMA-crossover proxy means the actual carry-yield signal was never tested. Cross-test independence is irrelevant with such tiny sample size.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_spread_arbitrage_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 n=13 trades is well under T2 floor of 100. PF=1.97 and WR=61.5% are promising but unreliable with this sample. The simplified SMA-crossover proxy does not reflect the actual spread-arbitrage logic. Needs faithful-signal re-run with longer history.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_cross_asset_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 n=5 trades is critically low. PF=77.12 and WR=80% are artifacts of the simplified SMA-crossover proxy, not the actual cross-asset momentum signal. Cross-test independence is irrelevant. Cannot justify GO with n<100.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_value_momentum_combo_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 n=5 trades fails T2 floor by a wide margin. The simplified SMA-crossover proxy does not represent the value-momentum combo logic. High PF and WR are misleading given the tiny sample and proxy signal.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "etf_diagnostic_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "P3 n=5 trades is insufficient for any reliable verdict. The simplified SMA-crossover proxy replaces the intended 60-day momentum signal. Cross-test independence is moot. Needs faithful-signal translation and longer backtest window.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "All five candidates fail the T2 floor on trade count (n=5-13 vs required 100+). The high P3 Sharpe and win rates are artifacts of the simplified SMA-crossover proxy that replaced each candidate's actual entry logic. Cross-test independence is irrelevant when sample sizes are too small to estimate performance reliably. The run cannot produce a GO verdict until the faithful-signal translator (queued for v3) is applied and backtest windows are extended to generate at least 100 trades per candidate. Retry conditions: re-run with faithful spec.entry parsing, extend history beyond 5 years if available, and re-evaluate against T2 floor.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_etf_p5_20260511T193153Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260511T193202Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 2097,
+    "tokens_out": 712,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,482 @@
+{
+  "timestamp": "2026-03-31T11:40:16.444165+00:00",
+  "topic_sentiments": {
+    "bitcoin": {
+      "avg": 0.0,
+      "pos": 2,
+      "neg": 3,
+      "neutral": 15,
+      "total": 20
+    },
+    "ethereum": {
+      "avg": 0.0,
+      "pos": 3,
+      "neg": 2,
+      "neutral": 15,
+      "total": 20
+    },
+    "altcoins": {
+      "avg": 0.15,
+      "pos": 4,
+      "neg": 1,
+      "neutral": 15,
+      "total": 20
+    },
+    "defi": {
+      "avg": 0.05555555555555555,
+      "pos": 3,
+      "neg": 1,
+      "neutral": 14,
+      "total": 18
+    },
+    "fed_rates": {
+      "avg": 0.05555555555555555,
+      "pos": 2,
+      "neg": 2,
+      "neutral": 14,
+      "total": 18
+    },
+    "inflation": {
+      "avg": 0.3684210526315789,
+      "pos": 5,
+      "neg": 1,
+      "neutral": 13,
+      "total": 19
+    },
+    "crypto_regulation": {
+      "avg": -0.15,
+      "pos": 0,
+      "neg": 3,
+      "neutral": 17,
+      "total": 20
+    },
+    "ai_tech": {
+      "avg": -0.05,
+      "pos": 2,
+      "neg": 3,
+      "neutral": 15,
+      "total": 20
+    },
+    "forex": {
+      "avg": 0.25,
+      "pos": 4,
+      "neg": 2,
+      "neutral": 14,
+      "total": 20
+    },
+    "market_fear": {
+      "avg": 0.21052631578947367,
+      "pos": 4,
+      "neg": 2,
+      "neutral": 13,
+      "total": 19
+    }
+  },
+  "theories": [
+    {
+      "name": "1. FEAR CONTRARIAN",
+      "thesis": "When market_fear sentiment is extremely negative, go LONG on quality assets",
+      "trigger": "market_fear avg sentiment < -0.5",
+      "assets": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "Equal weight, 20% each"
+    },
+    {
+      "name": "2. MOMENTUM FOLLOW",
+      "thesis": "When bitcoin news is bullish, ride the momentum across top alts",
+      "trigger": "bitcoin sentiment > +0.3 AND ethereum sentiment > 0",
+      "assets": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "AVAXUSDT",
+        "LINKUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "BTC 40%, ETH 30%, rest 10% each"
+    },
+    {
+      "name": "3. REGULATION HEDGE",
+      "thesis": "Negative crypto regulation news = SHORT altcoins, LONG BTC (flight to safety)",
+      "trigger": "crypto_regulation sentiment < -0.3",
+      "assets": [
+        "BTCUSDT LONG",
+        "SOLUSDT SHORT",
+        "AVAXUSDT SHORT",
+        "DOTUSDT SHORT"
+      ],
+      "direction": "Mixed",
+      "sizing": "BTC 50% LONG, each alt 16.7% SHORT"
+    },
+    {
+      "name": "4. AI NARRATIVE PLAY",
+      "thesis": "Positive AI news benefits AI-adjacent crypto tokens",
+      "trigger": "ai_tech sentiment > +0.3",
+      "assets": [
+        "FETUSDT",
+        "RENDERUSDT",
+        "NEARUSDT",
+        "TAOUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "Equal weight 25% each"
+    },
+    {
+      "name": "5. FED RATE SENSITIVITY",
+      "thesis": "Hawkish Fed news = SHORT crypto, Dovish = LONG crypto",
+      "trigger": "fed_rates sentiment < -0.3 = SHORT, > +0.3 = LONG",
+      "assets": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT"
+      ],
+      "direction": "Conditional on sentiment",
+      "sizing": "Equal weight"
+    },
+    {
+      "name": "6. DEFI MOMENTUM",
+      "thesis": "Positive DeFi news = LONG DeFi blue chips",
+      "trigger": "defi sentiment > +0.2",
+      "assets": [
+        "AAVEUSDT",
+        "UNIUSDT",
+        "LINKUSDT",
+        "MKRUSDT",
+        "COMPUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "AAVE/UNI 30% each, rest 13% each"
+    },
+    {
+      "name": "7. INFLATION HEDGE",
+      "thesis": "High inflation news = LONG BTC + GOLD equivalent crypto",
+      "trigger": "inflation sentiment < -0.3 (negative = inflation is high)",
+      "assets": [
+        "BTCUSDT",
+        "PAXGUSDT",
+        "ETHUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "BTC 50%, PAXG 30%, ETH 20%"
+    },
+    {
+      "name": "8. ALTCOIN ROTATION",
+      "thesis": "When altcoin news is bullish but BTC neutral, alts outperform",
+      "trigger": "altcoins sentiment > +0.3 AND bitcoin sentiment < +0.2",
+      "assets": [
+        "SOLUSDT",
+        "ADAUSDT",
+        "AVAXUSDT",
+        "DOTUSDT",
+        "NEARUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "Equal weight 20% each"
+    },
+    {
+      "name": "9. FEAR+FOREX CARRY",
+      "thesis": "Dollar weakness (negative forex USD news) = LONG crypto",
+      "trigger": "forex sentiment < -0.2 (negative = dollar weakness)",
+      "assets": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "BNBUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "BTC 40%, rest 20% each"
+    },
+    {
+      "name": "10. NEWS REVERSAL (Contrarian)",
+      "thesis": "Extreme negative ALL topics = maximum contrarian LONG",
+      "trigger": "Average across ALL topics < -0.5",
+      "assets": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "SOLUSDT",
+        "FETUSDT",
+        "RENDERUSDT"
+      ],
+      "direction": "LONG",
+      "sizing": "BTC/ETH 30% each, SOL 20%, FET/RENDER 10% each"
+    }
+  ],
+  "articles_by_topic": {
+    "bitcoin": [
+      {
+        "title": "Bitcoin ETFs See Nearly $300 Million in Outflows for the Week",
+        "source": "Bitcoinfoundation.org",
+        "sentiment": 0
+      },
+      {
+        "title": "The API economy may soon grow by tens of millions of customers\u2014here\u2019s why",
+        "source": "Fortune",
+        "sentiment": 0
+      },
+      {
+        "title": "Why Does Saylor Always Buy The Bitcoin Top? Expert Explains",
+        "source": "Bitcoinist",
+        "sentiment": 1
+      },
+      {
+        "title": "Naver delays deal with Upbit operator Dunamu as review drags on",
+        "source": "Cointelegraph",
+        "sentiment": 0
+      },
+      {
+        "title": "1 Sign Bitcoin Could Be Poised for a Comeback in 2026",
+        "source": "Yahoo Entertainment",
+        "sentiment": 0
+      }
+    ],
+    "ethereum": [
+      {
+        "title": "The API economy may soon grow by tens of millions of customers\u2014here\u2019s why",
+        "source": "Fortune",
+        "sentiment": 0
+      },
+      {
+        "title": "Naver delays deal with Upbit operator Dunamu as review drags on",
+        "source": "Cointelegraph",
+        "sentiment": 0
+      },
+      {
+        "title": "Bitcoin, ether bounce is running low on fuel",
+        "source": "CoinDesk",
+        "sentiment": 0
+      },
+      {
+        "title": "Ethereum Foundation stakes over 22,500 ETH in largest single deployment",
+        "source": "Crypto Briefing",
+        "sentiment": 0
+      },
+      {
+        "title": "Hyperliquid\u2019s Tokyo Edge Exposed \u2014 Secret Time Gap Is Tilting The Market",
+        "source": "newsBTC",
+        "sentiment": 0
+      }
+    ],
+    "altcoins": [
+      {
+        "title": "The API economy may soon grow by tens of millions of customers\u2014here\u2019s why",
+        "source": "Fortune",
+        "sentiment": 0
+      },
+      {
+        "title": "Human in the Loop",
+        "source": "Marketoonist.com",
+        "sentiment": 0
+      },
+      {
+        "title": "Naver delays deal with Upbit operator Dunamu as review drags on",
+        "source": "Cointelegraph",
+        "sentiment": 0
+      },
+      {
+        "title": "Bitcoin, ether bounce is running low on fuel",
+        "source": "CoinDesk",
+        "sentiment": 0
+      },
+      {
+        "title": "Hyperliquid Goes To University \u2014 This Study Is Now Required Reading For Traders",
+        "source": "Bitcoinist",
+        "sentiment": 1
+      }
+    ],
+    "defi": [
+      {
+        "title": "Bonaccord\u2019s minority stake in Prime Finance underscores interest in multi-asset class strategies",
+        "source": "Pehub.com",
+        "sentiment": 0
+      },
+      {
+        "title": "Palvella Therapeutics Announces Scientific Publication in Journal of Vascular Anomalies Highlighting the Infiltrative Growth and Therapeutic Challenges of Microcystic Lymphatic Malformations",
+        "source": "GlobeNewswire",
+        "sentiment": 1
+      },
+      {
+        "title": "Achieve FY27 personal finance goals: Here's a month-by-month guide to beat deadlines, manage taxes and investments",
+        "source": "Livemint",
+        "sentiment": 0
+      },
+      {
+        "title": "Naver delays deal with Upbit operator Dunamu as review drags on",
+        "source": "Cointelegraph",
+        "sentiment": 0
+      },
+      {
+        "title": "double-quant 0.0.1a2",
+        "source": "Pypi.org",
+        "sentiment": 0
+      }
+    ],
+    "fed_rates": [
+      {
+        "title": "Transcript: Trump Allies Shiv Stephen Miller as Midterm Panic Grows",
+        "source": "The New Republic",
+        "sentiment": 0
+      },
+      {
+        "title": "LVH-Cedar Crest cited for using pepper spray to restrain patient, other issues",
+        "source": "Morning Call",
+        "sentiment": 1
+      },
+      {
+        "title": "Stalled, strained and losing faith: Germany grapples with decline fears",
+        "source": "The Irish Times",
+        "sentiment": -2
+      },
+      {
+        "title": "Supreme Court Will Soon Decide The Fate Of A Top Trump Priority",
+        "source": "HuffPost",
+        "sentiment": 0
+      },
+      {
+        "title": "Calgary for-profit plasma clinic rated 'non-compliant' during Health Canada inspection",
+        "source": "CBC News",
+        "sentiment": 0
+      }
+    ],
+    "inflation": [
+      {
+        "title": "\u2018Hot\u2019 property: Azzurri Group\u2019s chicken chain and the greenfield tech opportunity",
+        "source": "ComputerWeekly.com",
+        "sentiment": 0
+      },
+      {
+        "title": "Morningstar DBRS, Autonomous: Middle East affects Greek economy and banks due to oil and tourism",
+        "source": "Protothema.gr",
+        "sentiment": -1
+      },
+      {
+        "title": "Surge in energy prices pushes Irish inflation rate to 3.6%",
+        "source": "TheJournal.ie",
+        "sentiment": 1
+      },
+      {
+        "title": "Bitcoin ETFs See Nearly $300 Million in Outflows for the Week",
+        "source": "Bitcoinfoundation.org",
+        "sentiment": 0
+      },
+      {
+        "title": "Why are US stock market futures up, and will Dow Jones, S&P 500 and Nasdaq stay green or turn red again? Wall Street futures rise, stocks to watch out for, analysts insights, market outlook and what should investors do now",
+        "source": "The Times of India",
+        "sentiment": 3
+      }
+    ],
+    "crypto_regulation": [
+      {
+        "title": "Bitcoin, ether bounce is running low on fuel",
+        "source": "CoinDesk",
+        "sentiment": 0
+      },
+      {
+        "title": "CoinDCX sets up Rs 100 crore fund for fraud prevention & awareness following founders' arrest",
+        "source": "The Times of India",
+        "sentiment": 0
+      },
+      {
+        "title": "TeamPCP Uses Fake Ringtone File in Tainted Telnyx SDK to Steal Credentials",
+        "source": "HackRead",
+        "sentiment": 0
+      },
+      {
+        "title": "Coinbase survey finds over half of customers don\u2019t understand crypto tax",
+        "source": "CoinDesk",
+        "sentiment": 0
+      },
+      {
+        "title": "MEXC Lists 20 New Ondo Tokenized Stocks with Zero-Fee Trading",
+        "source": "GlobeNewswire",
+        "sentiment": 0
+      }
+    ],
+    "ai_tech": [
+      {
+        "title": "\u2018Hot\u2019 property: Azzurri Group\u2019s chicken chain and the greenfield tech opportunity",
+        "source": "ComputerWeekly.com",
+        "sentiment": 0
+      },
+      {
+        "title": "BullFrog AI Announces Commercial Agreement with Top 5 Global Pharmaceutical Company to Identify and Prioritize Therapeutic Target in Major Depressive Disorder",
+        "source": "GlobeNewswire",
+        "sentiment": 0
+      },
+      {
+        "title": "Bitfarms to Participate in Jefferies Fireside Chat",
+        "source": "GlobeNewswire",
+        "sentiment": 0
+      },
+      {
+        "title": "Quote of the Day: Wisdom from Zhuangzi - 'The right way to go easy is to forget the right way, and forget that the going is easy.\u201d",
+        "source": "The Times of India",
+        "sentiment": 0
+      },
+      {
+        "title": "What Oxford University ejaculation study means for your masturbation habits",
+        "source": "LADbible",
+        "sentiment": 0
+      }
+    ],
+    "forex": [
+      {
+        "title": "Surge in energy prices pushes Irish inflation rate to 3.6%",
+        "source": "TheJournal.ie",
+        "sentiment": 1
+      },
+      {
+        "title": "Top 10 Most Sold PS5 Games March 2026: Resident Evil Requiem Dominates Charts",
+        "source": "Ibtimes.com.au",
+        "sentiment": -1
+      },
+      {
+        "title": "Why are US stock market futures up, and will Dow Jones, S&P 500 and Nasdaq stay green or turn red again? Wall Street futures rise, stocks to watch out for, analysts insights, market outlook and what should investors do now",
+        "source": "The Times of India",
+        "sentiment": 3
+      },
+      {
+        "title": "5 of tech's biggest names have together seen nearly $200 billion wiped off their fortunes this year as AI fever cools",
+        "source": "Business Insider",
+        "sentiment": 0
+      },
+      {
+        "title": "The API economy may soon grow by tens of millions of customers\u2014here\u2019s why",
+        "source": "Fortune",
+        "sentiment": 0
+      }
+    ],
+    "market_fear": [
+      {
+        "title": "Surge Energy just upgraded at Raymond James, here's why",
+        "source": "Thefly.com",
+        "sentiment": 1
+      },
+      {
+        "title": "ARC Resources price target raised by C$2 at Raymond James",
+        "source": "Thefly.com",
+        "sentiment": 0
+      },
+      {
+        "title": "Advantage Energy price target raised by C$1 at Raymond James",
+        "source": "Thefly.com",
+        "sentiment": 0
+      },
+      {
+        "title": "Ashwagandha Market Set to Surpass USD 1.75 Billion by 2035 \u2013 SNS Insider",
+        "source": "GlobeNewswire",
+        "sentiment": 0
+      },
+      {
+        "title": "Top 10 Most Sold PS5 Games March 2026: Resident Evil Requiem Dominates Charts",
+        "source": "Ibtimes.com.au",
+        "sentiment": -1
+      }
+    ]
+  }
+}

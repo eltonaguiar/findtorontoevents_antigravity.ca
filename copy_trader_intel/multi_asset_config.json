@@ -1,0 +1,115 @@
+{
+  "_description": "Centralized configuration for multi-asset copytrader pipeline. All thresholds, TP/SL ranges, and scoring weights in one place.",
+  "_updated": "2026-03-21",
+
+  "forex": {
+    "symbols": ["EURUSD=X", "USDJPY=X", "GBPUSD=X", "AUDUSD=X", "NZDUSD=X", "USDCAD=X", "USDCHF=X", "EURJPY=X", "GBPJPY=X", "AUDJPY=X"],
+    "min_confidence": 0.55,
+    "max_picks_per_pair": 2,
+    "tp_sl_variations": {
+      "conservative": {"tp_mult": 0.8, "sl_mult": 1.5, "label": "Tight TP, wide SL"},
+      "moderate": {"tp_mult": 1.2, "sl_mult": 1.0, "label": "Standard"},
+      "aggressive": {"tp_mult": 2.0, "sl_mult": 0.8, "label": "Wide TP, tight SL"},
+      "scalper": {"tp_mult": 0.5, "sl_mult": 0.5, "label": "Fast in/out"},
+      "swing": {"tp_mult": 3.0, "sl_mult": 1.5, "label": "Multi-day hold"}
+    },
+    "tp_cap_pct": 0.008,
+    "sl_cap_pct": 0.005,
+    "max_hold_bars": {"scalper": 5, "conservative": 20, "moderate": 20, "aggressive": 30, "swing": 60},
+    "session_filters": {
+      "london_open": {"start_utc": 7, "end_utc": 12},
+      "ny_open": {"start_utc": 13, "end_utc": 20},
+      "asian": {"start_utc": 23, "end_utc": 7}
+    },
+    "yield_diffs": {
+      "USDJPY=X": 4.5, "AUDJPY=X": 3.8, "GBPJPY=X": 4.8,
+      "NZDUSD=X": 1.2, "AUDUSD=X": 0.8, "USDCHF=X": 3.0
+    }
+  },
+
+  "futures": {
+    "symbols": ["ES=F", "NQ=F", "YM=F", "CL=F", "GC=F", "SI=F", "ZN=F", "NG=F", "HG=F", "ZW=F", "ZC=F", "ZS=F"],
+    "index_symbols": ["ES=F", "NQ=F", "YM=F"],
+    "commodity_symbols": ["CL=F", "GC=F", "SI=F", "NG=F", "HG=F", "ZW=F", "ZC=F", "ZS=F"],
+    "min_confidence": 0.60,
+    "tp_sl_variations": {
+      "conservative": {"tp_mult": 1.5, "sl_mult": 2.0},
+      "moderate": {"tp_mult": 3.0, "sl_mult": 1.5},
+      "aggressive": {"tp_mult": 5.0, "sl_mult": 2.5},
+      "scalper": {"tp_mult": 1.0, "sl_mult": 0.8},
+      "swing": {"tp_mult": 7.0, "sl_mult": 3.0}
+    },
+    "max_hold_bars": {"scalper": 3, "conservative": 10, "moderate": 10, "aggressive": 20, "swing": 40}
+  },
+
+  "stocks": {
+    "symbols_top30": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "JPM", "V", "JNJ", "WMT", "PG", "MA", "HD", "BAC", "XOM", "CVX", "PFE", "ABBV", "KO", "PEP", "COST", "AVGO", "MRK", "TMO", "LLY", "ORCL", "CRM", "AMD", "NFLX"],
+    "min_confidence": 0.58,
+    "tp_sl_variations": {
+      "conservative": {"tp_mult": 1.5, "sl_mult": 2.0},
+      "moderate": {"tp_mult": 2.0, "sl_mult": 1.5},
+      "aggressive": {"tp_mult": 3.0, "sl_mult": 1.5},
+      "scalper": {"tp_mult": 1.0, "sl_mult": 1.0},
+      "swing": {"tp_mult": 5.0, "sl_mult": 2.5}
+    },
+    "only_long": true,
+    "require_above_200sma": true
+  },
+
+  "backtester": {
+    "train_pct": 0.70,
+    "test_pct": 0.30,
+    "min_trades_for_significance": 30,
+    "tp_sl_grid": {
+      "tp_multipliers": [0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0],
+      "sl_multipliers": [0.5, 0.8, 1.0, 1.2, 1.5, 2.0]
+    },
+    "data_period": "2y",
+    "data_interval": "1d"
+  },
+
+  "scoring": {
+    "weights": {
+      "win_rate": 0.30,
+      "profit_factor": 0.25,
+      "sharpe_ratio": 0.25,
+      "max_drawdown_inverse": 0.20
+    },
+    "min_trades_for_ranking": 15,
+    "grade_thresholds": {
+      "A": 80,
+      "B": 60,
+      "C": 40,
+      "D": 20,
+      "F": 0
+    }
+  },
+
+  "portfolio_variants": {
+    "conservative": {
+      "confidence_gate": 0.70,
+      "max_positions": 5,
+      "risk_per_trade_pct": 0.01,
+      "description": "Low risk, high conviction only"
+    },
+    "moderate": {
+      "confidence_gate": 0.60,
+      "max_positions": 10,
+      "risk_per_trade_pct": 0.02,
+      "description": "Balanced risk/reward"
+    },
+    "aggressive": {
+      "confidence_gate": 0.50,
+      "max_positions": 15,
+      "risk_per_trade_pct": 0.03,
+      "description": "Higher risk, more signals"
+    },
+    "multi_asset_balanced": {
+      "confidence_gate": 0.60,
+      "max_positions": 12,
+      "max_per_asset_class": 4,
+      "risk_per_trade_pct": 0.02,
+      "description": "Equal allocation across forex/futures/stocks"
+    }
+  }
+}

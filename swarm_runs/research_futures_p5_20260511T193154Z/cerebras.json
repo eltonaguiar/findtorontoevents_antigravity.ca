@@ -1,0 +1,81 @@
+{
+  "schema_version": "v1",
+  "engine": "ChatGPT",
+  "asset_class": "FUTURES",
+  "run_id": "run_2026-05-11T19-17-56Z",
+  "synthesis": [
+    {
+      "spec_id": "futures_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 3.5 meets the floor but WR 40% < 50%, MDD 33.5% > 20% and only 10 trades were observed; the simplified signal translation further reduces confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_carry_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 3.5 passes, yet WR 40% and MDD 33.5% violate Tier-2 thresholds and the backtest contains only 10 trades; signal parsing is still approximate.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_regime_switch_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "Despite PF 3.5, WR 40% and MDD 33.5% fall short, and the sample size is only 10 trades; the regime-switch logic relies on a simplified entry spec.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_vol_target_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 3.5 is adequate but WR 40% and MDD 33.5% breach Tier-2 limits; only 10 trades were recorded, and the entry rule is a proxy rather than a faithful translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_pair_trend_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 3.5 meets the floor, yet WR 40% and MDD 33.5% are outside acceptable ranges; the backtest contains just 10 trades and uses a simplified momentum proxy.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_carry_vol_dbc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 3.5 passes, but WR 40% and MDD 33.5% violate Tier-2 criteria; only 10 trades were generated and the carry signal is approximated via SMA crossovers.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_momentum_pdbc_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 1.89 is below the 1.5 floor, WR 46.7% < 50%, MDD 35% > 20% and only 15 trades; the entry logic is a simplified momentum filter.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_regime_dba_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 2.66 meets the PF threshold, but WR 64.7% is acceptable while MDD 15.9% is below 20%; however, the trade count is only 17 (<100) and the regime filter uses a coarse ISM PMI proxy, so evidence is insufficient.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_vol_target_uso_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 1.67 meets PF floor, yet WR 14.3% is far below 50% and MDD 54.8% exceeds 20%; only 7 trades were observed, and the signal is a simplified momentum proxy.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "futures_diagnostic_noedge_gsg_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF 2.22 passes, but WR 66.7% is acceptable while MDD 37.4% > 20% and trade count is 15; the entry rule is a simplified momentum/volatility filter, so no reliable edge is demonstrated.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "Across all candidates, none satisfy the Tier-2 floor because each backtest exhibits insufficient trade frequency (all <100 trades) and either low win-rate, high drawdown, or both. Moreover, the entry signals are currently approximated via SMA crossovers rather than faithful spec parsing, limiting confidence in the observed performance. Additional historical data and a faithful signal translator are required before any edge can be confirmed.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_futures_p5_20260511T193154Z\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260511T193156Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 3143,
+    "tokens_out": 1493,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

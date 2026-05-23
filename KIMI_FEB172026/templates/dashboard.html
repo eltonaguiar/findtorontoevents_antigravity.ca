@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMI_FEB172026 - Institutional Trading System</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --accent-green: #00ff88;
+            --accent-red: #ff4757;
+            --accent-blue: #00d4ff;
+            --accent-gold: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: #2a2a3a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-text p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .header-stat {
+            text-align: right;
+        }
+        
+        .header-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+        
+        .header-stat-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+        
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .icon-green { background: rgba(0, 255, 136, 0.1); color: var(--accent-green); }
+        .icon-blue { background: rgba(0, 212, 255, 0.1); color: var(--accent-blue); }
+        .icon-gold { background: rgba(255, 215, 0, 0.1); color: var(--accent-gold); }
+        .icon-red { background: rgba(255, 71, 87, 0.1); color: var(--accent-red); }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-live {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .stat-item {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 12px;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        
+        .positive { color: var(--accent-green); }
+        .negative { color: var(--accent-red); }
+        
+        .signals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .signals-table th {
+            text-align: left;
+            padding: 12px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .signals-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .signals-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .signal-symbol {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .symbol-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .symbol-info h4 {
+            font-weight: 600;
+        }
+        
+        .symbol-info p {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .direction-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .direction-long {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .direction-short {
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .confidence-bar {
+            width: 100px;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .price-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        .tp-cell { color: var(--accent-green); }
+        .sl-cell { color: var(--accent-red); }
+        
+        .scan-button {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            color: #000;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .scan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+        
+        .scan-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .algo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .algo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+        }
+        
+        .algo-info h4 {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .algo-info p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .algo-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .header-stat {
+                text-align: center;
+            }
+            
+            .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .signals-table {
+                font-size: 0.85rem;
+            }
+            
+            .signals-table th,
+            .signals-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">K</div>
+                <div class="logo-text">
+                    <h1>KIMI_FEB172026</h1>
+                    <p>Institutional-Grade Trading System v11.0</p>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value" id="totalSignals">0</div>
+                    <div class="header-stat-label">Signals Today</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="winRate">0%</div>
+                    <div class="header-stat-label">Win Rate</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="activePicks">0</div>
+                    <div class="header-stat-label">Active Picks</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Stats Row -->
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-title-icon icon-green">📈</div>
+                        Performance
+                    </div>
+                    <span class="status-badge status-live">Live</span>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value positive" id="totalReturn">+0%</div>
+                        <div class="stat-label">Total Return</div>
+                        <div class="stat-change positive">+0% vs last month</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="sharpeRatio">0.00</div>
+                        <div class="stat-label">Sharpe Ratio</div>
+                        <div class="stat-change">Risk-adjusted</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPicks">0</div>
+                        <div class="stat-label">Total Picks</div>
+                        <div class="stat-change">30 days</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgPnL">0%</div>
+                        <div class="stat-label">Avg P&L</div>
+                        <div class="stat-change">Per trade</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-title-icon icon-blue">🤖</div>
+                        ML Model
+                    </div>
+                    <span class="status-badge" id="modelStatus">Training</span>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="modelAccuracy">0%</div>
+                        <div class="stat-label">Accuracy</div>
+                        <div class="stat-change">Cross-validated</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="modelROC">0.00</div>
+                        <div class="stat-label">ROC-AUC</div>
+                        <div class="stat-change">Classification</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="trainingSamples">0</div>
+                        <div class="stat-label">Training Samples</div>
+                        <div class="stat-change">Closed picks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="featuresUsed">24</div>
+                        <div class="stat-label">Features</div>
+                        <div class="stat-change">Random Forest</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-title-icon icon-gold">🏆</div>
+                        Tournament
+                    </div>
+                </div>
+                <div class="algo-list" id="topAlgos">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏆</div>
+                        <p>No rankings yet. Run a scan to populate.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Signals Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <div class="card-title-icon icon-green">🎯</div>
+                    Live Signals
+                </div>
+                <button class="scan-button" onclick="runScan()" id="scanBtn">
+                    🚀 Run Live Scan
+                </button>
+            </div>
+            
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Scanning markets with 68 algorithms...</p>
+            </div>
+
+            <div id="signalsContainer">
+                <table class="signals-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Direction</th>
+                            <th>Win Prob</th>
+                            <th>Entry</th>
+                            <th>Take Profit</th>
+                            <th>Stop Loss</th>
+                            <th>Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signalsTableBody">
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <div class="empty-state-icon">📊</div>
+                                <p>No signals yet. Click "Run Live Scan" to detect opportunities.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Algorithm Rankings -->
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-title-icon icon-blue">📋</div>
+                        Algorithm Performance
+                    </div>
+                </div>
+                <div id="algoPerformance">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>Run a scan to see algorithm rankings</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-title-icon icon-red">⚠️</div>
+                        Risk Management
+                    </div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="maxDrawdown">0%</div>
+                        <div class="stat-label">Max Drawdown</div>
+                        <div class="stat-change">Peak to trough</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="riskPerTrade">1%</div>
+                        <div class="stat-label">Risk Per Trade</div>
+                        <div class="stat-change">Kelly adjusted</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="activeAlgos">0</div>
+                        <div class="stat-label">Active Algos</div>
+                        <div class="stat-change">Of 68 total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgRR">1:2</div>
+                        <div class="stat-label">Avg R:R Ratio</div>
+                        <div class="stat-change">Risk to reward</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>KIMI_FEB172026 Trading System | Institutional-Grade Signal Detection</p>
+        <p>Crypto • Forex • Stocks • Meme Coins | Built for Live Market Conditions</p>
+    </footer>
+
+    <script>
+        // Global state
+        let isScanning = false;
+        let signals = [];
+        let performance = {};
+        let rankings = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        // Load initial data
+        async function loadData() {
+            try {
+                await Promise.all([
+                    fetchSignals(),
+                    fetchPerformance(),
+                    fetchRankings()
+                ]);
+            } catch (e) {
+                console.error('Error loading data:', e);
+            }
+        }
+
+        // Fetch signals
+        async function fetchSignals() {
+            try {
+                const response = await fetch('/api/signals');
+                const data = await response.json();
+                signals = data.signals || [];
+                renderSignals();
+                updateHeaderStats();
+            } catch (e) {
+                console.error('Error fetching signals:', e);
+            }
+        }
+
+        // Fetch performance
+        async function fetchPerformance() {
+            try {
+                const response = await fetch('/api/performance');
+                performance = await response.json();
+                renderPerformance();
+            } catch (e) {
+                console.error('Error fetching performance:', e);
+            }
+        }
+
+        // Fetch rankings
+        async function fetchRankings() {
+            try {
+                const response = await fetch('/api/rankings');
+                const data = await response.json();
+                rankings = data.rankings || [];
+                renderRankings();
+            } catch (e) {
+                console.error('Error fetching rankings:', e);
+            }
+        }
+
+        // Run live scan
+        async function runScan() {
+            if (isScanning) return;
+            
+            isScanning = true;
+            document.getElementById('scanBtn').disabled = true;
+            document.getElementById('loadingIndicator').classList.add('active');
+            
+            try {
+                const response = await fetch('/api/scan');
+                const result = await response.json();
+                
+                // Refresh data
+                await loadData();
+                
+                alert(`Scan complete! Generated ${result.signals_generated} signals, ${result.high_confidence_signals} high confidence.`);
+            } catch (e) {
+                console.error('Error running scan:', e);
+                alert('Scan failed. Check console for details.');
+            } finally {
+                isScanning = false;
+                document.getElementById('scanBtn').disabled = false;
+                document.getElementById('loadingIndicator').classList.remove('active');
+            }
+        }
+
+        // Render signals table
+        function renderSignals() {
+            const tbody = document.getElementById('signalsTableBody');
+            
+            if (signals.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <p>No signals yet. Click "Run Live Scan" to detect opportunities.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = signals.map(sig => `
+                <tr>
+                    <td>
+                        <div class="signal-symbol">
+                            <div class="symbol-icon" style="background: ${getSymbolColor(sig.symbol)}">
+                                ${sig.symbol.slice(0, 2)}
+                            </div>
+                            <div class="symbol-info">
+                                <h4>${sig.symbol}</h4>
+                                <p>${sig.algorithm}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${sig.algorithm}</td>
+                    <td>
+                        <span class="direction-badge direction-${sig.direction.toLowerCase()}">
+                            ${sig.direction}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: ${(sig.win_probability * 100)}%; background: ${getConfidenceColor(sig.win_probability)}"></div>
+                            </div>
+                            <span>${(sig.win_probability * 100).toFixed(0)}%</span>
+                        </div>
+                    </td>
+                    <td class="price-cell">$${formatPrice(sig.entry)}</td>
+                    <td class="price-cell tp-cell">$${formatPrice(sig.take_profit)}</td>
+                    <td class="price-cell sl-cell">$${formatPrice(sig.stop_loss)}</td>
+                    <td>
+                        <span class="status-badge" style="background: ${getSignalColor(sig.confidence)}">
+                            ${getSignalLabel(sig.confidence)}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render performance
+        function renderPerformance() {
+            if (!performance || Object.keys(performance).length === 0) return;
+            
+            document.getElementById('totalReturn').textContent = 
+                (performance.total_pnl_pct >= 0 ? '+' : '') + performance.total_pnl_pct.toFixed(2) + '%';
+            document.getElementById('totalReturn').className = 
+                'stat-value ' + (performance.total_pnl_pct >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById('totalPicks').textContent = performance.total_picks || 0;
+            document.getElementById('winRate').textContent = 
+                ((performance.win_rate || 0) * 100).toFixed(1) + '%';
+            document.getElementById('avgPnL').textContent = 
+                (performance.avg_pnl_pct || 0).toFixed(2) + '%';
+        }
+
+        // Render rankings
+        function renderRankings() {
+            if (rankings.length === 0) return;
+            
+            const container = document.getElementById('topAlgos');
+            container.innerHTML = rankings.slice(0, 5).map((r, i) => `
+                <div class="algo-item">
+                    <div class="algo-info">
+                        <h4>${i + 1}. ${r.algorithm}</h4>
+                        <p>WR: ${(r.current_win_rate * 100).toFixed(1)}% | Sharpe: ${r.sharpe.toFixed(2)} | Picks: ${r.total_picks}</p>
+                    </div>
+                    <div class="algo-score">${(r.expected_win_prob * 100).toFixed(0)}%</div>
+                </div>
+            `).join('');
+        }
+
+        // Update header stats
+        function updateHeaderStats() {
+            document.getElementById('totalSignals').textContent = signals.length;
+            document.getElementById('activePicks').textContent = 
+                signals.filter(s => s.direction === 'LONG' || s.direction === 'SHORT').length;
+        }
+
+        // Helper functions
+        function getSymbolColor(symbol) {
+            const colors = ['#00ff88', '#00d4ff', '#ffd700', '#ff6b6b', '#a855f7'];
+            let hash = 0;
+            for (let i = 0; i < symbol.length; i++) {
+                hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length] + '20';
+        }
+
+        function getConfidenceColor(prob) {
+            if (prob >= 0.8) return '#00ff88';
+            if (prob >= 0.65) return '#00d4ff';
+            if (prob >= 0.5) return '#ffd700';
+            return '#ff4757';
+        }
+
+        function getSignalColor(conf) {
+            if (conf >= 0.8) return 'rgba(0, 255, 136, 0.2)';
+            if (conf >= 0.6) return 'rgba(0, 212, 255, 0.2)';
+            return 'rgba(255, 215, 0, 0.2)';
+        }
+
+        function getSignalLabel(conf) {
+            if (conf >= 0.8) return 'STRONG';
+            if (conf >= 0.6) return 'MODERATE';
+            return 'WEAK';
+        }
+
+        function formatPrice(price) {
+            if (!price) return '-';
+            if (price >= 1000) return price.toLocaleString('en-US', {maximumFractionDigits: 0});
+            if (price >= 1) return price.toFixed(2);
+            return price.toFixed(6);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (!isScanning) {
+                loadData();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

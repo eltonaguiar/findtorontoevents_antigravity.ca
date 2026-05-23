@@ -1,0 +1,20 @@
+# Dockerfile for hierarchical Bayesian edge-sharing pipeline
+# Build: docker build -f alpha_engine/validation/Dockerfile.bayes -t edge-bayes .
+# Run:   docker run --rm -e MYSQL_USER -e MYSQL_PASSWORD -e MYSQL_HOST -e MYSQL_DB edge-bayes --strategy-id ema_crossover_v3
+
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential gcc gfortran libopenblas-dev liblapack-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m appuser
+WORKDIR /app
+
+COPY alpha_engine/validation/requirements-bayes.txt .
+RUN pip install --no-cache-dir -r requirements-bayes.txt
+
+COPY alpha_engine/ /app/alpha_engine/
+
+USER appuser
+ENTRYPOINT ["python", "-m", "alpha_engine.validation.hierarchical_sharpe"]

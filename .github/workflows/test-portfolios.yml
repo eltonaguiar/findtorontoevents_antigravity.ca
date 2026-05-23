@@ -1,0 +1,40 @@
+name: "Test Portfolios  Hourly Strategy Validation"
+
+on:
+  schedule:
+    - cron: "22 * * * *"  # Staggered from :10 (audit-dashboard + 40 others)
+  workflow_dispatch:
+
+concurrency:
+  group: test-portfolios
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.10"
+
+      - name: Run test portfolio tracker
+        run: python battleground/test_portfolios.py
+        env:
+          PYTHONIOENCODING: utf-8
+
+      - name: Commit results
+        run: |
+          bash .github/scripts/safe_commit_push.sh \
+            "Portfolio tracker update $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" \
+            battleground/data/test_portfolios.json
+

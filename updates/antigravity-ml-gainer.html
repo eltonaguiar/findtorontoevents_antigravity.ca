@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity AI — Live Crypto Gainer ML Predictions</title>
+    <meta name="description"
+        content="Live ML-powered crypto gainer predictions with tracked TP/SL outcomes. Full transparency on patterns, backtests, and confidence levels.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #06060e;
+            --bg2: #0c0c1a;
+            --card: #0f0f20;
+            --border: rgba(255, 255, 255, 0.06);
+            --border2: rgba(255, 255, 255, 0.1);
+            --text: #c8c8d8;
+            --text2: #8890a8;
+            --text3: #556;
+            --green: #22c55e;
+            --green-bg: rgba(34, 197, 94, 0.1);
+            --green-b: rgba(34, 197, 94, 0.25);
+            --red: #ef4444;
+            --red-bg: rgba(239, 68, 68, 0.1);
+            --red-b: rgba(239, 68, 68, 0.25);
+            --blue: #3b82f6;
+            --blue-bg: rgba(59, 130, 246, 0.1);
+            --purple: #a855f7;
+            --purple-bg: rgba(168, 85, 247, 0.1);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.1);
+            --cyan: #06b6d4
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6
+        }
+
+        a {
+            color: var(--blue);
+            text-decoration: none
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .hero {
+            text-align: center;
+            padding: 48px 20px 32px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 50% 0%, rgba(34, 197, 94, 0.06) 0%, transparent 60%);
+            pointer-events: none
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+            margin-bottom: 6px
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--green), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .hero .sub {
+            color: var(--text2);
+            font-size: 14px;
+            max-width: 700px;
+            margin: 0 auto 12px
+        }
+
+        .hero .meta {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--text3)
+        }
+
+        .hero .meta .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: middle
+        }
+
+        .hero .meta .live {
+            animation: pulse 2s infinite
+        }
+
+        .dash-url {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--blue);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--text3)
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 24px
+        }
+
+        .kpi {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 16px;
+            text-align: center;
+            transition: border-color .2s
+        }
+
+        .kpi:hover {
+            border-color: var(--border2)
+        }
+
+        .kpi .label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text3);
+            margin-bottom: 6px
+        }
+
+        .kpi .value {
+            font-size: 26px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .kpi .detail {
+            font-size: 11px;
+            color: var(--text3);
+            margin-top: 4px
+        }
+
+        .kpi.green .value {
+            color: var(--green)
+        }
+
+        .kpi.red .value {
+            color: var(--red)
+        }
+
+        .kpi.blue .value {
+            color: var(--blue)
+        }
+
+        .kpi.amber .value {
+            color: var(--amber)
+        }
+
+        .kpi.purple .value {
+            color: var(--purple)
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 60px
+        }
+
+        .section {
+            margin-bottom: 32px
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .section-title .icon {
+            font-size: 20px
+        }
+
+        .section-title .count {
+            background: var(--blue-bg);
+            color: var(--blue);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card)
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text3);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle
+        }
+
+        tr:last-child td {
+            border-bottom: none
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02)
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px
+        }
+
+        .pnl-pos {
+            color: var(--green);
+            font-weight: 600
+        }
+
+        .pnl-neg {
+            color: var(--red);
+            font-weight: 600
+        }
+
+        .signal {
+            display: inline-block;
+            font-size: 9px;
+            letter-spacing: 0.5px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin: 1px 2px;
+            font-weight: 600;
+            text-transform: uppercase
+        }
+
+        .signal.vol {
+            background: var(--blue-bg);
+            color: var(--blue);
+            border: 1px solid rgba(59, 130, 246, 0.2)
+        }
+
+        .signal.mom {
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid var(--green-b)
+        }
+
+        .signal.brk {
+            background: var(--amber-bg);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, 0.2)
+        }
+
+        .signal.rev {
+            background: var(--purple-bg);
+            color: var(--purple);
+            border: 1px solid rgba(168, 85, 247, 0.2)
+        }
+
+        .signal.sq {
+            background: var(--red-bg);
+            color: var(--red);
+            border: 1px solid var(--red-b)
+        }
+
+        .score-bar {
+            width: 60px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 6px
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 3px
+        }
+
+        .outcome {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px
+        }
+
+        .outcome.tp {
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid var(--green-b)
+        }
+
+        .outcome.sl {
+            background: var(--red-bg);
+            color: var(--red);
+            border: 1px solid var(--red-b)
+        }
+
+        .outcome.exp {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text3);
+            border: 1px solid var(--border)
+        }
+
+        .conf-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px
+        }
+
+        .conf-low {
+            background: var(--red-bg);
+            color: var(--red);
+            border: 1px solid var(--red-b)
+        }
+
+        .conf-med {
+            background: var(--amber-bg);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, 0.2)
+        }
+
+        .conf-high {
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid var(--green-b)
+        }
+
+        .perf-score-wrap {
+            text-align: center;
+            padding: 24px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 24px
+        }
+
+        .perf-score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 12px 0
+        }
+
+        .perf-score-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text3);
+            margin-bottom: 4px
+        }
+
+        .perf-score-sub {
+            font-size: 13px;
+            color: var(--text2);
+            margin-top: 8px
+        }
+
+        .wlp-row {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 16px;
+            flex-wrap: wrap
+        }
+
+        .wlp-item {
+            text-align: center
+        }
+
+        .wlp-item .num {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .wlp-item .lbl {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text3);
+            margin-top: 2px
+        }
+
+        .transparency-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(239, 68, 68, 0.04));
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px
+        }
+
+        .transparency-box h3 {
+            color: var(--amber);
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .transparency-box h4 {
+            color: #fff;
+            font-size: 13px;
+            margin: 16px 0 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px
+        }
+
+        .transparency-box p,
+        .transparency-box li {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.7
+        }
+
+        .transparency-box ul {
+            margin: 6px 0 0 20px;
+            list-style: disc
+        }
+
+        .transparency-box .honest {
+            color: var(--red);
+            font-weight: 600
+        }
+
+        .transparency-box .good {
+            color: var(--green);
+            font-weight: 600
+        }
+
+        .strat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 14px
+        }
+
+        .strat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: border-color .2s
+        }
+
+        .strat-card:hover {
+            border-color: var(--border2)
+        }
+
+        .strat-card h4 {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .strat-card .pct {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .strat-card p,
+        .strat-card li {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.5
+        }
+
+        .strat-card ul {
+            margin: 8px 0 0 18px;
+            list-style: disc
+        }
+
+        .pine-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        .pine-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: border-color .2s
+        }
+
+        .pine-card:hover {
+            border-color: var(--border2)
+        }
+
+        .pine-card h4 {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 4px
+        }
+
+        .pine-card .badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 10px
+        }
+
+        .pine-card .stats {
+            font-size: 11px;
+            color: var(--text3);
+            margin-bottom: 10px
+        }
+
+        .pine-card p,
+        .pine-card li {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.5
+        }
+
+        .pine-card ul {
+            margin: 6px 0 0 16px;
+            list-style: disc
+        }
+
+        .verdict-box {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(6, 182, 212, 0.06));
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 14px
+        }
+
+        .verdict-box h4 {
+            color: var(--green);
+            font-size: 14px;
+            margin-bottom: 6px
+        }
+
+        .verdict-box p {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.6
+        }
+
+        .footer {
+            text-align: center;
+            padding: 32px 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text3);
+            font-size: 11px;
+            letter-spacing: 1px
+        }
+
+        .footer a {
+            color: var(--text2)
+        }
+
+        /* Refresh Controls */
+        .refresh-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(6, 182, 212, 0.12));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 10px;
+            color: var(--green);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .refresh-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(6, 182, 212, 0.2));
+            border-color: rgba(34, 197, 94, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.15);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            color: var(--text3);
+            border-color: var(--border);
+        }
+
+        .refresh-btn .spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .refresh-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .refresh-btn.loading .btn-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pill.idle {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+
+        .status-pill.scanning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: var(--amber);
+        }
+
+        .status-pill.error {
+            background: var(--red-bg);
+            border: 1px solid var(--red-b);
+            color: var(--red);
+        }
+
+        .eta-countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--amber);
+            font-weight: 600;
+        }
+
+        .next-scan-info {
+            font-size: 11px;
+            color: var(--text3);
+            margin-top: 6px;
+        }
+
+        @media(max-width:700px) {
+            .hero h1 {
+                font-size: 22px
+            }
+
+            .kpi-row {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .kpi .value {
+                font-size: 20px
+            }
+
+            .strat-grid,
+            .pine-compare {
+                grid-template-columns: 1fr
+            }
+
+            table {
+                font-size: 11px
+            }
+
+            th,
+            td {
+                padding: 7px 8px
+            }
+        }
+
+        @media(max-width:480px) {
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, var(--card) 25%, rgba(255, 255, 255, 0.04) 50%, var(--card) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0
+            }
+
+            100% {
+                background-position: -200% 0
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero">
+        <h1>Antigravity <span>ML Predictions</span></h1>
+        <div class="sub">Reverse-engineered 5 years of daily crypto gainers. ML ensemble now predicting live with
+            tracked TP/SL outcomes. <strong>Full transparency below.</strong></div>
+        <div class="meta">
+            <span><span class="dot live" style="background:var(--green)"></span>Live Tracking</span>
+            <span>Agent: Google Gemini (Antigravity)</span>
+            <span id="modelVer">v2.5</span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text3)">Last Updated: <strong id="lastUpdate"
+                style="color:var(--text)">Loading...</strong></div>
+
+        <!-- Refresh Controls -->
+        <div class="refresh-bar">
+            <button class="refresh-btn" id="refreshBtn" onclick="requestRefresh()">
+                <span class="btn-icon">&#128260;</span>
+                <span class="spinner"></span>
+                <span id="refreshBtnText">Refresh Picks</span>
+            </button>
+            <div class="status-pill idle" id="statusPill">
+                <span class="dot live"
+                    style="background:var(--green);width:6px;height:6px;border-radius:50%;display:inline-block"></span>
+                <span id="statusText">Idle</span>
+            </div>
+        </div>
+        <div class="eta-countdown" id="etaCountdown" style="display:none"></div>
+        <div class="next-scan-info" id="nextScanInfo">Next scheduled scan: calculating...</div>
+
+        <div class="dash-url">&#128279; https://findtorontoevents.ca/updates/antigravity-ml-gainer.html</div>
+        <br><a href="/updates/" class="back">&larr; Back to Updates</a>
+    </div>
+
+    <!-- System Performance Score -->
+    <div style="max-width:1100px;margin:0 auto;padding:0 20px">
+        <div class="perf-score-wrap" id="perfScoreWrap">
+            <div class="perf-score-label">Live System Performance</div>
+            <div class="perf-score-circle" id="perfCircle" style="border:4px solid var(--red);color:var(--red)">0%</div>
+            <div class="perf-score-sub" id="perfVerdict">Insufficient data &mdash; system just launched</div>
+            <div class="wlp-row">
+                <div class="wlp-item">
+                    <div class="num pnl-pos" id="wlpWins">0</div>
+                    <div class="lbl">Winners (TP Hit)</div>
+                </div>
+                <div class="wlp-item">
+                    <div class="num pnl-neg" id="wlpLosses">0</div>
+                    <div class="lbl">Losers (SL Hit)</div>
+                </div>
+                <div class="wlp-item">
+                    <div class="num" style="color:var(--text3)" id="wlpExpired">0</div>
+                    <div class="lbl">Expired</div>
+                </div>
+                <div class="wlp-item">
+                    <div class="num" style="color:var(--amber)" id="wlpPending">0</div>
+                    <div class="lbl">Pending</div>
+                </div>
+            </div>
+            <div
+                style="margin-top:16px;padding:12px;background:var(--red-bg);border:1px solid var(--red-b);border-radius:8px;font-size:12px;color:var(--text)">
+                <strong style="color:var(--red)">&#128196; PAPER TRADE ONLY</strong> &mdash; This system has
+                <strong>zero proven wins</strong> on the live market. Do NOT use real money until we see a statistically
+                meaningful win rate across 50+ resolved picks.
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-row" id="kpiRow">
+        <div class="kpi blue">
+            <div class="label">Active Picks</div>
+            <div class="value" id="kpiActive">&mdash;</div>
+            <div class="detail">max 10 concurrent</div>
+        </div>
+        <div class="kpi purple">
+            <div class="label">Resolved</div>
+            <div class="value" id="kpiResolved">&mdash;</div>
+            <div class="detail" id="kpiResolvedDetail">&mdash;</div>
+        </div>
+        <div class="kpi">
+            <div class="label">Win Rate</div>
+            <div class="value" id="kpiWinRate">&mdash;</div>
+            <div class="detail">TP hits / total</div>
+        </div>
+        <div class="kpi">
+            <div class="label">Total P/L</div>
+            <div class="value" id="kpiPnl">&mdash;</div>
+            <div class="detail">cumulative %</div>
+        </div>
+        <div class="kpi">
+            <div class="label">Profit Factor</div>
+            <div class="value" id="kpiPF">&mdash;</div>
+            <div class="detail">gross win / loss</div>
+        </div>
+        <div class="kpi">
+            <div class="label">R:R Ratio</div>
+            <div class="value" id="kpiRR">2.5:1</div>
+            <div class="detail">reward / risk</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Active Picks -->
+        <div class="section">
+            <div class="section-title"><span class="icon">&#128225;</span> Active Predictions <span class="count"
+                    id="activeCount">0</span></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Confidence</th>
+                            <th>Score</th>
+                            <th>Entry</th>
+                            <th>Take Profit</th>
+                            <th>Stop Loss</th>
+                            <th>Unrealized</th>
+                            <th>Signals</th>
+                            <th>Picked (EST)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeBody">
+                        <tr>
+                            <td colspan="9" class="shimmer" style="text-align:center;color:var(--text3);height:40px">
+                                Loading live data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Alpha Engine Picks -->
+        <div class="section" id="alphaSection" style="display:none">
+            <div class="section-title"><span class="icon">&#9889;</span> Alpha Engine Picks <span class="count"
+                    id="alphaCount">0</span>
+                <span style="font-size:11px;color:var(--text3);margin-left:8px">from <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/" style="color:var(--green);text-decoration:none" target="_blank">Alpha Engine</a></span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Direction</th>
+                            <th>Strategy</th>
+                            <th>Entry</th>
+                            <th>TP</th>
+                            <th>SL</th>
+                            <th>P/L %</th>
+                            <th>Grade</th>
+                            <th>Entry Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alphaBody">
+                        <tr>
+                            <td colspan="9" class="shimmer" style="text-align:center;color:var(--text3);height:40px">
+                                Loading Alpha Engine data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Crypto Gainer ML -->
+        <div class="section" id="cryptoGainerSection" style="display:none">
+            <div class="section-title"><span class="icon">&#128293;</span> Crypto Gainer ML <span class="count"
+                    id="cryptoGainerCount">0</span>
+                <span style="font-size:11px;color:var(--text3);margin-left:8px">from <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/crypto_gainer_ml" style="color:var(--cyan);text-decoration:none" target="_blank">Crypto Gainer ML</a></span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Score</th>
+                            <th>Entry</th>
+                            <th>TP</th>
+                            <th>SL</th>
+                            <th>P/L %</th>
+                            <th>Picked (EST)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cryptoGainerBody">
+                        <tr>
+                            <td colspan="7" style="text-align:center;color:var(--text3);padding:20px">No crypto gainer signals yet...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Resolved Picks -->
+        <div class="section">
+            <div class="section-title"><span class="icon">&#128203;</span> Resolved Trade Log <span class="count"
+                    id="resolvedCount">0</span></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Outcome</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>P/L %</th>
+                            <th>Score</th>
+                            <th>Picked (EST)</th>
+                            <th>Resolved (EST)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resolvedBody">
+                        <tr>
+                            <td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Picks appear here
+                                as they resolve...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- LOSS FORENSICS — Why Did 24 Picks Lose? -->
+        <div class="section" id="lossForensics">
+            <div class="section-title"><span class="icon">&#128300;</span> Loss Forensics &mdash; Why 24 Picks Lost <span class="count" style="background:var(--red-bg);color:var(--red)">Deep Analysis</span></div>
+            <div style="background:linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.04));border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:24px;margin-bottom:16px">
+                <h3 style="color:var(--red);font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px">&#128270; Root Cause Analysis: 34 Picks, 23.5% Win Rate, -28.49% P/L</h3>
+                <p style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:12px">
+                    <strong style="color:var(--green)">Key Finding:</strong> SELL signals on 15m were <strong style="color:var(--green)">85.7% accurate</strong> (6/7 TP hits). BUY signals on 1h were <strong style="color:var(--red)">8.3% accurate</strong> (1/12). The model predicts drops better than rallies in bearish conditions.
+                </p>
+                <div id="forensicsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+                    <!-- Populated by JS from loss_forensics.json -->
+                </div>
+            </div>
+
+            <!-- Direction + Timeframe Breakdown -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
+                    <h4 style="color:#fff;font-size:14px;margin-bottom:12px">&#128205; By Direction</h4>
+                    <table style="width:100%;font-size:12px">
+                        <tr><th style="text-align:left;padding:4px 8px">Direction</th><th>Picks</th><th>Wins</th><th>WR</th><th>Avg P/L</th></tr>
+                        <tr><td style="padding:4px 8px"><strong style="color:var(--green)">BUY</strong></td><td class="mono" style="text-align:center">27</td><td class="mono" style="text-align:center">1</td><td class="mono pnl-neg" style="text-align:center">3.7%</td><td class="mono pnl-neg" style="text-align:center">-1.14%</td></tr>
+                        <tr><td style="padding:4px 8px"><strong style="color:var(--red)">SELL</strong></td><td class="mono" style="text-align:center">7</td><td class="mono" style="text-align:center">6</td><td class="mono pnl-pos" style="text-align:center">85.7%</td><td class="mono pnl-pos" style="text-align:center">+0.73%</td></tr>
+                    </table>
+                </div>
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
+                    <h4 style="color:#fff;font-size:14px;margin-bottom:12px">&#9200; By Timeframe</h4>
+                    <table style="width:100%;font-size:12px">
+                        <tr><th style="text-align:left;padding:4px 8px">Timeframe</th><th>Picks</th><th>Wins</th><th>WR</th><th>Avg P/L</th></tr>
+                        <tr><td style="padding:4px 8px"><strong>15m</strong></td><td class="mono" style="text-align:center">22</td><td class="mono" style="text-align:center">7</td><td class="mono" style="text-align:center;color:var(--amber)">31.8%</td><td class="mono pnl-neg" style="text-align:center">-0.46%</td></tr>
+                        <tr><td style="padding:4px 8px"><strong>1h</strong></td><td class="mono" style="text-align:center">12</td><td class="mono" style="text-align:center">1</td><td class="mono pnl-neg" style="text-align:center">8.3%</td><td class="mono pnl-neg" style="text-align:center">-1.78%</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- v1.4 Fixes Applied -->
+            <div style="background:linear-gradient(135deg, rgba(34,197,94,0.08), rgba(6,182,212,0.06));border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:20px;margin-bottom:16px">
+                <h4 style="color:var(--green);font-size:14px;margin-bottom:10px">&#9989; v1.4 Model Tweaks Applied Based on This Analysis</h4>
+                <table style="width:100%;font-size:12px;border-collapse:collapse">
+                    <thead>
+                        <tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">Fix</th><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">Before</th><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">After</th><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">Impact</th></tr>
+                    </thead>
+                    <tbody style="color:var(--text)">
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Confidence gate</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">0.60</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">0.65 (0.70 for 1h)</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Blocks 19 coin-flip picks</td></tr>
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Model selection</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">max prob (overfit)</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">C_random_forest</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Stops rewarding overconfident models</td></tr>
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">BTC regime</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">4h candle only</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">4h OR 12h OR EMA</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Catches slow BTC bleeds</td></tr>
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Per-symbol dedup</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">unlimited</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">max 1 per coin</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Prevents BNB x3 / ZRO x2 disasters</td></tr>
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">TF conflict check</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">none</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">block opposite signals</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Stops LINK SELL+BUY contradictions</td></tr>
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Trend alignment</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">none</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">EMA20 vs EMA50</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">BUY must agree with trend (or 0.75+ conf)</td></tr>
+                        <tr><td style="padding:6px 8px;border-bottom:1px solid var(--border)">SL distance</td><td class="mono pnl-neg" style="padding:6px 8px;border-bottom:1px solid var(--border)">0.5% min</td><td class="mono pnl-pos" style="padding:6px 8px;border-bottom:1px solid var(--border)">0.8% min</td><td style="padding:6px 8px;border-bottom:1px solid var(--border)">Prevents ZRO-style -6.73% gap-through</td></tr>
+                        <tr><td style="padding:6px 8px">TP/SL ratios (scalp)</td><td class="mono pnl-neg" style="padding:6px 8px">3.0/1.5 ATR</td><td class="mono pnl-pos" style="padding:6px 8px">2.5/2.0 ATR</td><td style="padding:6px 8px">More achievable TP, fewer noise SL exits</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:12px;color:var(--text2);margin-top:10px"><strong>Estimated impact:</strong> Of the original 34 picks, only 9 would pass v1.4 gates. Projected win rate: <strong style="color:var(--green)">45-55%</strong> (vs 23.5% actual).</p>
+            </div>
+        </div>
+
+        <!-- REAL BACKTEST RESULTS -->
+        <div class="section" id="backtestSection">
+            <div class="section-title"><span class="icon">&#128202;</span> Backtest &mdash; Real Binance Kline Data <span class="count" id="backtestStatus" style="background:var(--blue-bg);color:var(--blue)">Loading...</span></div>
+            <div id="backtestContent" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
+                <p style="color:var(--text2);font-size:13px">Loading real backtest results from walk-forward validation on actual Binance kline data...</p>
+            </div>
+        </div>
+
+        <!-- TRANSPARENCY REPORT -->
+        <div class="section">
+            <div class="section-title"><span class="icon">&#128269;</span> Transparency Report &mdash; Honest Assessment
+            </div>
+            <div class="transparency-box">
+                <h3>&#9888;&#65039; What You Need To Know Before Following These Picks</h3>
+                <h4>&#9989; What IS Proven (Pattern Discovery)</h4>
+                <p>We analyzed <strong>182,500 data points</strong> across 100 coins over ~5 years and found <strong>30
+                        statistically significant pre-pump precursor conditions</strong>:</p>
+                <ul>
+                    <li><strong class="good">Williams %R Oversold</strong> (significance: 245.7) &mdash; price near
+                        bottom of range before explosion</li>
+                    <li><strong class="good">Doji Candle Formation</strong> (significance: 238.3) &mdash; indecision =
+                        coiled spring</li>
+                    <li><strong class="good">Low Range Position</strong> (significance: 226.8) &mdash; price compressed
+                        near lows</li>
+                    <li><strong class="good">Elevated MFI</strong> (significance: 211.8) &mdash; smart money flowing in
+                        while price flat</li>
+                    <li><strong class="good">TTM Squeeze Active</strong> (significance: 144.6) &mdash; BB inside KC,
+                        volatility compression</li>
+                    <li><strong class="good">EMA 9/21 Cross</strong> (significance: 157.7) &mdash; short-term trend
+                        shifting bullish</li>
+                </ul>
+                <p style="margin-top:8px">These are <strong>well-known institutional patterns</strong>. The discovery is
+                    legitimate.</p>
+
+                <h4>&#10060; What IS NOT Proven (Backtest)</h4>
+                <p>The real walk-forward backtest on Binance klines shows <span class="honest">aggregate Sharpe of -10.44 and 35.4% win rate across 4,031 trades</span>.
+                    The models are not yet profitable in backtesting. Training data quality needs improvement &mdash; <a href="#backtestSection" style="color:var(--blue)">see real backtest results</a>.</p>
+
+                <h4>&#128202; ML Model Metrics</h4>
+                <ul>
+                    <li><strong>AUC-ROC: 0.667</strong> &mdash; above random (0.50) but below production-grade (0.75+)
+                    </li>
+                    <li><strong>F1 Score: 0.319</strong> &mdash; low, high false positive rate</li>
+                    <li><strong>Training:</strong> 182,500 synthetic samples, NOT real candles</li>
+                </ul>
+
+                <h4>&#128176; Should You Trade With Real Money?</h4>
+                <p style="font-size:14px"><strong class="honest">NO. Absolutely not.</strong></p>
+                <ul>
+                    <li>System live since <strong>Feb 23, 2026</strong> (~2 weeks)</li>
+                    <li><strong id="resolvedTotal">32</strong> resolved picks (18 TP / 14 SL)</li>
+                    <li>Current live win rate: <strong id="liveWR">56.2%</strong></li>
+                    <li>Need <strong>50+ resolved picks</strong> for statistical significance</li>
+                </ul>
+                <p style="margin-top:10px"><strong style="color:var(--amber)">Recommendation:</strong> Paper trade for
+                    2&ndash;4 weeks. If win rate &gt; 40% across 50+ picks with positive P/L, then consider small
+                    positions.</p>
+            </div>
+        </div>
+
+        <!-- Strategy Architecture -->
+        <div class="section">
+            <div class="section-title"><span class="icon">&#129504;</span> ML Strategy Architecture</div>
+            <div class="strat-grid">
+                <div class="strat-card">
+                    <h4>&#128202; Volume Accumulation</h4>
+                    <div class="pct" style="color:var(--blue)">30%</div>
+                    <p>RVOL &gt; 2x average with small bodies = smart money loading.</p>
+                </div>
+                <div class="strat-card">
+                    <h4>&#128274; Volatility Compression</h4>
+                    <div class="pct" style="color:var(--amber)">25%</div>
+                    <p>ATR below 80% of 50d avg, BB squeeze. Tight ranges precede breakouts.</p>
+                </div>
+                <div class="strat-card">
+                    <h4>&#128640; Momentum Building</h4>
+                    <div class="pct" style="color:var(--green)">20%</div>
+                    <p>MACD histogram rising, RSI 40-65 sweet spot.</p>
+                </div>
+                <div class="strat-card">
+                    <h4>&#128165; Breakout Proximity</h4>
+                    <div class="pct" style="color:var(--red)">15%</div>
+                    <p>Price within 2% of 20d high with bullish EMA alignment.</p>
+                </div>
+                <div class="strat-card">
+                    <h4>&#128200; OBV Divergence</h4>
+                    <div class="pct" style="color:var(--purple)">10%</div>
+                    <p>OBV accumulating while price flat &mdash; institutional accumulation.</p>
+                </div>
+                <div class="strat-card">
+                    <h4>&#9881;&#65039; Risk Management</h4>
+                    <div class="pct" style="color:var(--cyan)">2.5:1</div>
+                    <p>TP = 2.5x ATR proxy, SL = 1x ATR. 48h expiry. Max 10 concurrent.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Architecture -->
+        <div class="section">
+            <div class="section-title"><span class="icon">&#129302;</span> Model Architecture</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ensemble</strong></td>
+                            <td>XGBoost + LightGBM + Random Forest + Logistic Regression</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Features</strong></td>
+                            <td>139 features: momentum, volume, volatility, price structure, trend, temporal</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Training</strong></td>
+                            <td>Real Binance klines, 36 pair/TF combos retrained with v1.5 research overhaul</td>
+                        </tr>
+                        <tr>
+                            <td><strong>v1.5 Enhancements</strong></td>
+                            <td class="mono" style="font-size:11px">Isotonic calibration &bull; Purged walk-forward CV (75/25 + 20-bar gap) &bull; Early stopping (50 rounds) &bull; Meta-labeling filter (M2 trade/no-trade) &bull; SMOTE disabled &bull; Reduced complexity (300 trees, depth 4-5)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Backtest</strong></td>
+                            <td class="mono" id="backtestArchLabel" style="color:var(--amber)">Walk-forward on real Binance klines &mdash; <a href="#backtestSection" style="color:var(--blue)">see results below</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Automation</strong></td>
+                            <td>GitHub Actions every 4h &rarr; CoinGecko &rarr; score &rarr; pick &rarr; TP/SL &rarr;
+                                Discord</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Discord</strong></td>
+                            <td>GOOGLE GEMINI &mdash; REVERSE ENGINEERED DAILY TOP GAINERS STRAT</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div
+            style="background:var(--red-bg);border:1px solid var(--red-b);border-radius:10px;padding:16px 20px;margin-top:20px;font-size:12px;color:var(--text2)">
+            <strong style="color:var(--red)">&#9888;&#65039; NOT FINANCIAL ADVICE.</strong> Experimental ML
+            paper-trading system. Do not trade with real money. Always DYOR.
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Antigravity AI &mdash; Crypto Gainer ML v1.5 &mdash; <a href="/updates/">Updates</a> | <a
+                href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/claude_gainer_ml">GitHub</a>
+        </p>
+        <p style="margin-top:6px">Discord: <code>!refresh</code> <code>!dashboard</code> <code>!status</code>
+            <code>/fc-crypto</code></p>
+        <p style="margin-top:4px">&copy; 2026 findtorontoevents.ca</p>
+    </div>
+
+    <script>
+        var DATA_BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/updates/data/';
+
+        function fmt(n, d) {
+            if (d === undefined) d = 2;
+            return (n == null || isNaN(n)) ? '\u2014' : Number(n).toFixed(d);
+        }
+
+        function fmtPrice(n) {
+            if (n == null || n === 0) return '\u2014';
+            if (n >= 100) return '$' + n.toFixed(2);
+            if (n >= 1) return '$' + n.toFixed(4);
+            if (n >= 0.01) return '$' + n.toFixed(6);
+            if (n >= 0.0001) return '$' + n.toFixed(8);
+            return '$' + n.toFixed(10);
+        }
+
+        function fmtEST(iso) {
+            if (!iso) return '\u2014';
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '\u2014';
+            return d.toLocaleString('en-US', {
+                timeZone: 'America/New_York',
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: 'numeric', minute: '2-digit', hour12: true
+            }) + ' EST';
+        }
+
+        function sigCls(s) {
+            if (s.indexOf('VOLUME') >= 0 || s.indexOf('ELEVATED') >= 0) return 'vol';
+            if (s.indexOf('MOMENTUM') >= 0 || s.indexOf('EARLY') >= 0) return 'mom';
+            if (s.indexOf('BREAKOUT') >= 0 || s.indexOf('HIGH') >= 0) return 'brk';
+            if (s.indexOf('REVERSAL') >= 0 || s.indexOf('RECOVERY') >= 0) return 'rev';
+            if (s.indexOf('SQUEEZE') >= 0 || s.indexOf('COMPRESS') >= 0) return 'sq';
+            return 'vol';
+        }
+
+        function scColor(s) {
+            return s >= 45 ? 'var(--green)' : s >= 30 ? 'var(--amber)' : 'var(--text2)';
+        }
+
+        function getConfidence(score, sigCount) {
+            // Composite: score contributes 70%, signal diversity 30%
+            var sigBoost = Math.min(sigCount * 8, 30);
+            var composite = score * 0.7 + sigBoost;
+            if (composite >= 50 || (score >= 55 && sigCount >= 2)) return { label: 'HIGH', cls: 'conf-high', pct: Math.min(92, 55 + composite * 0.5) };
+            if (composite >= 35 || (score >= 40 && sigCount >= 1)) return { label: 'MEDIUM', cls: 'conf-med', pct: Math.min(72, 35 + composite * 0.5) };
+            return { label: 'LOW', cls: 'conf-low', pct: Math.min(40, 10 + composite * 0.4) };
+        }
+
+        function calcPerfScore(sc) {
+            if (!sc || !sc.total_picks) return { score: 0, verdict: 'Insufficient data \u2014 system just launched, no proven edge yet', color: 'var(--text3)' };
+            var wr = sc.win_rate || 0;
+            var pf = sc.profit_factor || 0;
+            var n = sc.total_picks;
+            var wrScore = Math.min(100, wr * 2);
+            var pfScore = Math.min(100, pf * 50);
+            var nScore = Math.min(100, n * 2);
+            var overall = Math.round(wrScore * 0.5 + pfScore * 0.3 + nScore * 0.2);
+            var verdict, color;
+            if (n < 10) {
+                verdict = 'Too few resolved picks (' + n + ') \u2014 need 50+ for statistical significance. Paper trade only.';
+                color = 'var(--red)';
+            } else if (overall >= 70) {
+                verdict = 'System showing positive edge \u2014 consider careful paper trading';
+                color = 'var(--green)';
+            } else if (overall >= 40) {
+                verdict = 'Mixed results \u2014 continue paper trading, do not use real money';
+                color = 'var(--amber)';
+            } else {
+                verdict = 'System not yet profitable \u2014 paper trade only';
+                color = 'var(--red)';
+            }
+            return { score: overall, verdict: verdict, color: color };
+        }
+
+        function loadData() {
+            var perfData = null;
+            var historyData = [];
+
+            fetch(DATA_BASE + 'antigravity_ml_performance.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .catch(function () { return null; })
+                .then(function (data) {
+                    perfData = data;
+                    return fetch(DATA_BASE + 'antigravity_ml_pick_history.json?t=' + Date.now())
+                        .then(function (r) { return r.ok ? r.json() : []; })
+                        .catch(function () { return []; });
+                })
+                .then(function (hist) {
+                    historyData = hist || [];
+                    if (!perfData) {
+                        // No hardcoded fallback - show error state and auto-retry
+                        document.getElementById('lastUpdate').textContent = 'Data unavailable';
+                        document.getElementById('modelVer').textContent = '\u2014';
+                        var statusEl = document.querySelector('.status-banner') || document.body;
+                        var retryBanner = document.createElement('div');
+                        retryBanner.style.cssText = 'background:#1a1a2e;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin:16px auto;max-width:600px;text-align:center;color:#f59e0b;';
+                        retryBanner.innerHTML = '<p style="margin:0 0 8px">\u23f3 Live data unavailable \u2014 retrying in 10s...</p><button onclick="location.reload()" style="background:#f59e0b;color:#000;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-weight:600">Refresh Now</button>';
+                        statusEl.parentNode.insertBefore(retryBanner, statusEl);
+                        setTimeout(function() { location.reload(); }, 10000);
+                        return;
+                    }
+                    // historyData can be empty - that's fine, just show "No history yet"
+                    render(perfData, historyData);
+                });
+        }
+
+        function render(d, history) {
+            var sc = d.scorecard || {};
+            var picks = d.active_picks || [];
+
+            document.getElementById('lastUpdate').textContent = fmtEST(d.last_run);
+            document.getElementById('modelVer').textContent = d.model_version || 'v1.0';
+
+            // Performance score
+            var perf = calcPerfScore(sc);
+            var circle = document.getElementById('perfCircle');
+            circle.textContent = perf.score + '%';
+            circle.style.borderColor = perf.color;
+            circle.style.color = perf.color;
+            document.getElementById('perfVerdict').textContent = perf.verdict;
+
+            // Win/Loss/Pending
+            document.getElementById('wlpWins').textContent = sc.wins || sc.tp_hits || 0;
+            document.getElementById('wlpLosses').textContent = sc.losses || sc.sl_hits || 0;
+            document.getElementById('wlpExpired').textContent = sc.expired || 0;
+            document.getElementById('wlpPending').textContent = picks.length;
+
+            // KPIs
+            document.getElementById('kpiActive').textContent = picks.length;
+            document.getElementById('kpiResolved').textContent = sc.total_picks || 0;
+            var tpLabel = (sc.tp_hits || 0) + ' Win / ' + (sc.sl_hits || 0) + ' Loss / ' + (sc.expired || 0) + ' Exp';
+            document.getElementById('kpiResolvedDetail').textContent = tpLabel;
+            var wr = sc.win_rate;
+            var wrEl = document.getElementById('kpiWinRate');
+            wrEl.textContent = wr != null ? fmt(wr, 1) + '%' : '\u2014';
+            wrEl.parentElement.className = 'kpi ' + (wr > 50 ? 'green' : wr > 0 ? 'amber' : '');
+            var pnl = sc.total_pnl_pct;
+            var pnlEl = document.getElementById('kpiPnl');
+            pnlEl.textContent = pnl != null ? (pnl >= 0 ? '+' : '') + fmt(pnl) + '%' : '\u2014';
+            pnlEl.parentElement.className = 'kpi ' + (pnl > 0 ? 'green' : pnl < 0 ? 'red' : '');
+            document.getElementById('kpiPF').textContent = sc.profit_factor != null ? fmt(sc.profit_factor) : '\u2014';
+            var avgW = sc.avg_win_pct || 0;
+            var avgL = Math.abs(sc.avg_loss_pct || 0);
+            document.getElementById('kpiRR').textContent = avgL > 0 ? fmt(avgW / avgL, 1) + ':1' : '2.5:1';
+
+            // Transparency
+            var rt = document.getElementById('resolvedTotal');
+            if (rt) rt.textContent = sc.total_picks || 0;
+            var lwr = document.getElementById('liveWR');
+            if (lwr) lwr.textContent = fmt(sc.win_rate || 0, 1) + '%';
+
+            document.getElementById('activeCount').textContent = picks.length;
+
+            // Active table
+            var ab = document.getElementById('activeBody');
+            if (!picks.length) {
+                ab.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">No active picks. Next scan in &lt; 4h.</td></tr>';
+            } else {
+                var rows = [];
+                function extractScore(p) {
+                    if (p.score) return p.score;
+                    if (p.gainer_score) return p.gainer_score;
+                    if (p.pump_probability) return Math.round(p.pump_probability * 100);
+                    if (p.confidence_score) return Math.round(p.confidence_score * 100);
+                    if (p.ml_probability) return Math.round(p.ml_probability * 100);
+                    return 0;
+                }
+                picks.sort(function (a, b) { return extractScore(b) - extractScore(a); });
+                for (var i = 0; i < picks.length; i++) {
+                    var p = picks[i];
+                    var score = extractScore(p);
+                    var sigs = (p.signals || []).slice();
+                    // Enrich signal count from structured data fields
+                    var bv = p.backtest_validation;
+                    if (bv && bv.backtest_win_rate > 0.5 && bv.backtest_n_trades >= 30) sigs.push('BACKTEST_VALIDATED');
+                    if (bv && bv.backtest_sharpe > 1.0) sigs.push('HIGH_SHARPE');
+                    if (bv && bv.backtest_profit_factor > 1.5) sigs.push('PROFIT_FACTOR_STRONG');
+                    if (p.htf_alignment >= 3) sigs.push('HTF_ALIGNED');
+                    if (p.rr_ratio >= 2.0) sigs.push('GOOD_RR');
+                    if (p.fear_greed && p.fear_greed <= 25) sigs.push('EXTREME_FEAR_BUY');
+                    if (p.safety_score >= 80) sigs.push('SAFETY_PASS');
+                    if (p.pump_probability > 0.4) sigs.push('PUMP_PROB_ELEVATED');
+                    var conf = getConfidence(score, sigs.length);
+                    var u = p.unrealized_pnl || p.unrealized || 0;
+                    // If we have live price from CoinGecko, recalculate
+                    var entryForPnl = p.entry || p.price || p.entry_price || 0;
+                    if (p._live_price && entryForPnl > 0) {
+                        u = (p._live_price - entryForPnl) / entryForPnl * 100;
+                    }
+                    var cls = u > 0 ? 'pnl-pos' : u < 0 ? 'pnl-neg' : '';
+                    var sigHtml = '';
+                    for (var j = 0; j < sigs.length; j++) {
+                        sigHtml += '<span class="signal ' + sigCls(sigs[j]) + '">' + sigs[j].replace(/_/g, ' ') + '</span>';
+                    }
+                    var entry = p.entry || p.price || 0;
+                    var tp = p.tp || p.tp_price || 0;
+                    var sl = p.sl || p.sl_price || 0;
+                    var tpPct = entry > 0 ? ((tp - entry) / entry * 100).toFixed(1) : '?';
+                    var slPct = entry > 0 ? ((sl - entry) / entry * 100).toFixed(1) : '?';
+                    rows.push('<tr>' +
+                        '<td><strong style="color:#fff">' + (p.symbol || p.coin_id || p.coin) + '</strong></td>' +
+                        '<td><span class="conf-badge ' + conf.cls + '">' + conf.label + '</span><br><span style="font-size:10px;color:var(--text3)">' + conf.pct.toFixed(0) + '%</span></td>' +
+                        '<td><span class="mono" style="color:' + scColor(score) + '">' + score + '</span><div class="score-bar"><div class="score-fill" style="width:' + Math.min(100, score) + '%;background:' + scColor(score) + '"></div></div></td>' +
+                        '<td class="mono">' + fmtPrice(entry) + '</td>' +
+                        '<td class="mono" style="color:var(--green)">' + fmtPrice(tp) + '<br><span style="font-size:10px;color:var(--text3)">+' + tpPct + '%</span></td>' +
+                        '<td class="mono" style="color:var(--red)">' + fmtPrice(sl) + '<br><span style="font-size:10px;color:var(--text3)">' + slPct + '%</span></td>' +
+                        '<td class="mono ' + cls + '">' + (u >= 0 ? '+' : '') + fmt(u) + '%</td>' +
+                        '<td>' + sigHtml + '</td>' +
+                        '<td style="color:var(--text3);font-size:11px">' + fmtEST(p.picked_at || p.predicted_at || p.entry_time || p.timestamp) + '</td>' +
+                        '</tr>');
+                }
+                ab.innerHTML = rows.join('');
+            }
+
+            // Resolved table
+            document.getElementById('resolvedCount').textContent = history.length;
+            var rb = document.getElementById('resolvedBody');
+            if (!history.length) {
+                rb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">Picks appear here as they resolve.</td></tr>';
+            } else {
+                var rrows = [];
+                history.sort(function (a, b) { return new Date(b.resolved_at || b.exit_time || b.entry_time || 0) - new Date(a.resolved_at || a.exit_time || a.entry_time || 0); });
+                for (var k = 0; k < history.length; k++) {
+                    var h = history[k];
+                    var oc = h.outcome || h.exit_reason || '';
+                    if (/STOP_LOSS/i.test(oc)) oc = 'SL_HIT';
+                    else if (/TAKE_PROFIT/i.test(oc)) oc = 'TP_HIT';
+                    else if (/EXPIRE/i.test(oc)) oc = 'EXPIRED';
+                    var ocCls = oc === 'TP_HIT' ? 'tp' : oc === 'SL_HIT' ? 'sl' : 'exp';
+                    var hpnl = h.pnl_pct || 0;
+                    var entryP = h.price || h.entry_price || 0;
+                    var exitP = h.exit_price || (entryP && hpnl ? entryP * (1 + hpnl / 100) : 0);
+                    var pickedAt = h.predicted_at || h.entry_time || h.picked_at || '';
+                    var resolvedAt = h.resolved_at || h.exit_time || '';
+                    rrows.push('<tr>' +
+                        '<td><strong style="color:#fff">' + (h.symbol || h.coin_id) + '</strong></td>' +
+                        '<td><span class="outcome ' + ocCls + '">' + oc.replace('_', ' ') + '</span></td>' +
+                        '<td class="mono">' + fmtPrice(entryP) + '</td>' +
+                        '<td class="mono">' + fmtPrice(exitP) + '</td>' +
+                        '<td class="mono ' + (hpnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (hpnl >= 0 ? '+' : '') + fmt(hpnl) + '%</td>' +
+                        '<td class="mono" style="color:' + scColor(extractScore(h)) + '">' + (extractScore(h) || '\u2014') + '</td>' +
+                        '<td style="color:var(--text3);font-size:11px">' + fmtEST(pickedAt) + '</td>' +
+                        '<td style="color:var(--text3);font-size:11px">' + fmtEST(resolvedAt) + '</td>' +
+                        '</tr>');
+                }
+                rb.innerHTML = rrows.join('');
+            }
+        }
+
+        var _lastPerfData = null;
+        var _lastHistData = [];
+
+        // Live price enrichment via CryptoCompare (CORS-friendly)
+        function refreshLivePrices() {
+            if (!_lastPerfData) return;
+            var picks = _lastPerfData.active_picks || [];
+            if (!picks.length) return;
+            var syms = picks.map(function(p) {
+                var s = (p.symbol || p.coin || '').toUpperCase();
+                return s.replace(/[-\/].*/, '').replace(/USDT$/, '');
+            }).filter(Boolean);
+            var unique = syms.filter(function(v, i, a) { return a.indexOf(v) === i; });
+            if (!unique.length) return;
+            fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=' + unique.join(',') + '&tsyms=USD')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.Response === 'Error') return;
+                    for (var i = 0; i < picks.length; i++) {
+                        var sym = (picks[i].symbol || picks[i].coin || '').toUpperCase().replace(/[-\/].*/, '').replace(/USDT$/, '');
+                        if (data[sym] && data[sym].USD) {
+                            picks[i]._live_price = data[sym].USD;
+                        }
+                    }
+                    render(_lastPerfData, _lastHistData);
+                })
+                .catch(function() {});
+        }
+
+        // Wrap loadData to store data for live price refresh
+        var _origRender = render;
+        render = function(d, h) {
+            _lastPerfData = d;
+            _lastHistData = h;
+            _origRender(d, h);
+        };
+
+        loadData();
+        setInterval(loadData, 5 * 60 * 1000);
+        // Fetch live prices 3s after load, then every 30s
+        setTimeout(refreshLivePrices, 3000);
+        setInterval(refreshLivePrices, 30000);
+
+        // ═══════════════════════════════════════════════════════════════
+        //  ALPHA ENGINE INTEGRATION
+        // ═══════════════════════════════════════════════════════════════
+        var ALPHA_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json';
+
+        function loadAlphaPicks() {
+            fetch(ALPHA_URL + '?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .catch(function () { return []; })
+                .then(function (allPicks) {
+                    // Filter to crypto picks only (the gainer page focuses on crypto)
+                    var picks = allPicks.filter(function (p) {
+                        return p.category === 'crypto' || p.category === 'meme';
+                    });
+                    var section = document.getElementById('alphaSection');
+                    if (!picks.length) {
+                        section.style.display = 'none';
+                        return;
+                    }
+                    section.style.display = '';
+                    document.getElementById('alphaCount').textContent = picks.length;
+
+                    // Sort by elite_score descending
+                    picks.sort(function (a, b) { return (b.elite_score || 0) - (a.elite_score || 0); });
+
+                    var rows = [];
+                    for (var i = 0; i < picks.length; i++) {
+                        var p = picks[i];
+                        var dir = (p.direction || '').toUpperCase();
+                        var dirCls = dir === 'LONG' ? 'color:var(--green)' : 'color:var(--red)';
+                        var u = (p.unrealized_pnl_pct || 0) * 100;
+                        var pnlCls = u > 0 ? 'pnl-pos' : u < 0 ? 'pnl-neg' : '';
+                        var grade = p.elite_grade || '?';
+                        var gradeColor = grade === 'A' ? 'var(--green)' : grade === 'B' ? '#3b82f6' : grade === 'C' ? 'var(--amber)' : 'var(--text3)';
+                        var entry = p.entry_price || 0;
+                        var tp = p.take_profit || 0;
+                        var sl = p.stop_loss || 0;
+                        var tpPct = entry > 0 ? ((tp - entry) / entry * 100).toFixed(1) : '?';
+                        var slPct = entry > 0 ? ((sl - entry) / entry * 100).toFixed(1) : '?';
+                        var strat = (p.strategy || '').replace(/_/g, ' ');
+                        if (strat.length > 25) strat = strat.substring(0, 22) + '...';
+
+                        rows.push('<tr>' +
+                            '<td><strong style="color:#fff">' + (p.symbol || '') + '</strong></td>' +
+                            '<td style="' + dirCls + ';font-weight:600">' + dir + '</td>' +
+                            '<td style="font-size:11px;color:var(--text2)" title="' + (p.strategy || '') + '">' + strat + '</td>' +
+                            '<td class="mono">' + fmtPrice(entry) + '</td>' +
+                            '<td class="mono" style="color:var(--green)">' + fmtPrice(tp) + '<br><span style="font-size:10px;color:var(--text3)">+' + tpPct + '%</span></td>' +
+                            '<td class="mono" style="color:var(--red)">' + fmtPrice(sl) + '<br><span style="font-size:10px;color:var(--text3)">' + slPct + '%</span></td>' +
+                            '<td class="mono ' + pnlCls + '">' + (u >= 0 ? '+' : '') + fmt(u) + '%</td>' +
+                            '<td style="color:' + gradeColor + ';font-weight:700;font-size:16px">' + grade + '<br><span style="font-size:10px;color:var(--text3)">' + (p.elite_score || 0) + '</span></td>' +
+                            '<td style="color:var(--text3);font-size:11px">' + fmtEST(p.entry_date || p.timestamp) + '</td>' +
+                            '</tr>');
+                    }
+                    document.getElementById('alphaBody').innerHTML = rows.join('');
+                });
+        }
+
+        loadAlphaPicks();
+        setInterval(loadAlphaPicks, 5 * 60 * 1000);
+
+        // ═══════════════════════════════════════════════════════════════
+        //  CRYPTO GAINER ML INTEGRATION (additional crypto source)
+        // ═══════════════════════════════════════════════════════════════
+        var CRYPTO_GAINER_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/crypto_gainer_ml/tracker/live_picks.json';
+
+        function loadCryptoGainerPicks() {
+            fetch(CRYPTO_GAINER_URL + '?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .catch(function () { return []; })
+                .then(function (picks) {
+                    if (!Array.isArray(picks)) picks = picks.active_picks || picks.picks || [];
+                    var section = document.getElementById('cryptoGainerSection');
+                    if (!section) return;
+                    if (!picks.length) {
+                        section.style.display = 'none';
+                        return;
+                    }
+                    section.style.display = '';
+                    document.getElementById('cryptoGainerCount').textContent = picks.length;
+
+                    picks.sort(function (a, b) {
+                        return (b.score || b.gainer_score || 0) - (a.score || a.gainer_score || 0);
+                    });
+
+                    var rows = [];
+                    for (var i = 0; i < picks.length; i++) {
+                        var p = picks[i];
+                        var sym = p.symbol || p.coin_id || '';
+                        var score = p.score || p.gainer_score || p.pump_probability || 0;
+                        if (score < 1) score = Math.round(score * 100);
+                        var entry = p.entry_price || p.price || 0;
+                        var tp = p.take_profit || p.tp || 0;
+                        var sl = p.stop_loss || p.sl || 0;
+                        var u = p.unrealized_pnl_pct || 0;
+                        if (Math.abs(u) < 1 && entry > 0 && p.current_price) u = ((p.current_price - entry) / entry * 100);
+                        var pnlCls = u > 0 ? 'pnl-pos' : u < 0 ? 'pnl-neg' : '';
+                        rows.push('<tr>' +
+                            '<td><strong style="color:#fff">' + sym + '</strong></td>' +
+                            '<td class="mono" style="color:' + scColor(score) + '">' + score + '</td>' +
+                            '<td class="mono">' + fmtPrice(entry) + '</td>' +
+                            '<td class="mono" style="color:var(--green)">' + fmtPrice(tp) + '</td>' +
+                            '<td class="mono" style="color:var(--red)">' + fmtPrice(sl) + '</td>' +
+                            '<td class="mono ' + pnlCls + '">' + (u >= 0 ? '+' : '') + fmt(u) + '%</td>' +
+                            '<td style="color:var(--text3);font-size:11px">' + fmtEST(p.timestamp || p.picked_at) + '</td>' +
+                            '</tr>');
+                    }
+                    document.getElementById('cryptoGainerBody').innerHTML = rows.join('');
+                });
+        }
+
+        loadCryptoGainerPicks();
+        setInterval(loadCryptoGainerPicks, 5 * 60 * 1000);
+
+        // ═══════════════════════════════════════════════════════════════
+        //  REFRESH ON DEMAND + STATUS POLLING
+        // ═══════════════════════════════════════════════════════════════
+
+        var refreshInProgress = false;
+        var etaInterval = null;
+        var etaEndTime = null;
+
+        function requestRefresh() {
+            if (refreshInProgress) return;
+            refreshInProgress = true;
+
+            var btn = document.getElementById('refreshBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            document.getElementById('refreshBtnText').textContent = 'Info';
+
+            updateStatusPill('idle', 'Auto-refreshes every 30 min via GitHub Actions');
+
+            // Show informational message instead of unauthorized API call
+            var msg = document.createElement('div');
+            msg.style.cssText = 'background:#1a1a2e;border:1px solid #38bdf8;border-radius:8px;padding:16px;margin:16px auto;max-width:600px;text-align:center;color:#e0e0e0;position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+            msg.innerHTML = '<p style="margin:0 0 8px;font-weight:600;color:#38bdf8;">Data refreshes automatically every 30 minutes</p>' +
+                '<p style="margin:0 0 12px;font-size:0.9em;">The ML scanner runs via GitHub Actions on a schedule. No manual trigger needed.</p>' +
+                '<p style="margin:0 0 12px;font-size:0.85em;color:#94a3b8;">To trigger manually, visit <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/claude-gainer-tracker.yml" target="_blank" style="color:#38bdf8;">GitHub Actions</a> and click "Run workflow".</p>' +
+                '<button onclick="this.parentElement.remove()" style="background:#38bdf8;color:#000;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-weight:600;">Got it</button>';
+            document.body.appendChild(msg);
+
+            // Auto-dismiss after 8 seconds and reset button
+            setTimeout(function() {
+                if (msg.parentElement) msg.remove();
+                resetRefreshState();
+            }, 8000);
+        }
+
+        function updateStatusPill(status, text) {
+            var pill = document.getElementById('statusPill');
+            pill.className = 'status-pill ' + status;
+            document.getElementById('statusText').textContent = text || status;
+
+            var dot = pill.querySelector('.dot');
+            if (dot) {
+                if (status === 'scanning') {
+                    dot.style.background = 'var(--amber)';
+                } else if (status === 'error') {
+                    dot.style.background = 'var(--red)';
+                } else {
+                    dot.style.background = 'var(--green)';
+                }
+            }
+        }
+
+        function startEtaCountdown(seconds) {
+            etaEndTime = Date.now() + seconds * 1000;
+            var el = document.getElementById('etaCountdown');
+            el.style.display = 'block';
+
+            if (etaInterval) clearInterval(etaInterval);
+            etaInterval = setInterval(function () {
+                var remaining = Math.max(0, Math.floor((etaEndTime - Date.now()) / 1000));
+                if (remaining <= 0) {
+                    el.textContent = 'ETA: completing any moment...';
+                    return;
+                }
+                var m = Math.floor(remaining / 60);
+                var s = remaining % 60;
+                el.textContent = '\u23F1 ETA: ' + m + 'm ' + (s < 10 ? '0' : '') + s + 's';
+            }, 1000);
+        }
+
+        function stopEtaCountdown() {
+            if (etaInterval) clearInterval(etaInterval);
+            document.getElementById('etaCountdown').style.display = 'none';
+        }
+
+        function resetRefreshState() {
+            refreshInProgress = false;
+            var btn = document.getElementById('refreshBtn');
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            document.getElementById('refreshBtnText').textContent = 'Refresh Picks';
+            stopEtaCountdown();
+        }
+
+        function pollForCompletion() {
+            var startTime = Date.now();
+            var pollInterval = setInterval(function () {
+                // Check if dashboard status file has been updated
+                fetch(DATA_BASE + 'dashboard_status.json?t=' + Date.now())
+                    .then(function (r) { return r.ok ? r.json() : null; })
+                    .catch(function () { return null; })
+                    .then(function (status) {
+                        if (status && status.status === 'idle' && new Date(status.timestamp) > new Date(startTime)) {
+                            // Scan completed after our request
+                            clearInterval(pollInterval);
+                            updateStatusPill('idle', status.message || 'Scan complete!');
+                            resetRefreshState();
+                            loadData(); // Reload dashboard data
+                        }
+                    });
+
+                // Timeout after 30 minutes
+                if (Date.now() - startTime > 1800000) {
+                    clearInterval(pollInterval);
+                    updateStatusPill('idle', 'Scan may have completed — refreshing data...');
+                    resetRefreshState();
+                    loadData();
+                }
+            }, 30000); // Check every 30s
+        }
+
+        function calcNextScheduledRun() {
+            var now = new Date();
+            var utcH = now.getUTCHours();
+            var hours = [1, 5, 9, 13, 17, 21];
+            var next = null;
+            for (var i = 0; i < hours.length; i++) {
+                var candidate = new Date(now);
+                candidate.setUTCHours(hours[i], 15, 0, 0);
+                if (candidate > now) {
+                    next = candidate;
+                    break;
+                }
+            }
+            if (!next) {
+                next = new Date(now);
+                next.setUTCDate(next.getUTCDate() + 1);
+                next.setUTCHours(1, 15, 0, 0);
+            }
+            return next;
+        }
+
+        function updateNextScanInfo() {
+            var next = calcNextScheduledRun();
+            var diff = Math.max(0, Math.floor((next - Date.now()) / 60000));
+            var h = Math.floor(diff / 60);
+            var m = diff % 60;
+            var el = document.getElementById('nextScanInfo');
+            el.textContent = 'Next scheduled scan: ' + next.toUTCString().slice(0, 22) + ' UTC (' + h + 'h ' + m + 'm)';
+        }
+
+        // Check initial status
+        fetch(DATA_BASE + 'dashboard_status.json?t=' + Date.now())
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; })
+            .then(function (status) {
+                if (status) {
+                    if (status.status === 'scanning') {
+                        refreshInProgress = true;
+                        var btn = document.getElementById('refreshBtn');
+                        btn.classList.add('loading');
+                        btn.disabled = true;
+                        document.getElementById('refreshBtnText').textContent = 'Scanning...';
+                        updateStatusPill('scanning', status.message || 'Scan in progress...');
+                        if (status.eta_seconds > 0) {
+                            var elapsed = (Date.now() - new Date(status.timestamp).getTime()) / 1000;
+                            var remaining = Math.max(30, status.eta_seconds - elapsed);
+                            startEtaCountdown(remaining);
+                        }
+                        pollForCompletion();
+                    } else {
+                        updateStatusPill('idle', status.message || 'Ready');
+                    }
+                }
+            });
+
+        updateNextScanInfo();
+        setInterval(updateNextScanInfo, 60000);
+
+        // ═══════════════════════════════════════════════════════════════
+        //  LOSS FORENSICS + REAL BACKTEST LOADER
+        // ═══════════════════════════════════════════════════════════════
+
+        function loadForensics() {
+            fetch(DATA_BASE + 'antigravity_ml_loss_forensics.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .catch(function () { return null; })
+                .then(function (data) {
+                    if (!data || !data.root_causes) return;
+                    var grid = document.getElementById('forensicsGrid');
+                    if (!grid) return;
+                    var html = '';
+                    for (var i = 0; i < data.root_causes.length; i++) {
+                        var rc = data.root_causes[i];
+                        var sevColor = rc.severity === 'critical' ? 'var(--red)' : rc.severity === 'high' ? 'var(--amber)' : 'var(--blue)';
+                        var sevLabel = rc.severity.toUpperCase();
+                        html += '<div style="background:var(--bg2);border:1px solid ' + rc.color + '33;border-radius:10px;padding:16px">' +
+                            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+                            '<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:' + rc.color + '20;color:' + rc.color + ';border:1px solid ' + rc.color + '40;letter-spacing:0.5px">' + sevLabel + '</span>' +
+                            '<strong style="color:#fff;font-size:13px">' + rc.title + '</strong>' +
+                            '</div>' +
+                            '<p style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px">' + rc.description + '</p>' +
+                            '<div style="display:flex;gap:12px;font-size:11px;color:var(--text3);margin-bottom:6px">' +
+                            '<span>' + rc.affected_picks + ' picks affected</span>' +
+                            '<span>' + rc.pct_of_losses.toFixed(0) + '% of losses</span>' +
+                            '</div>' +
+                            '<div style="font-size:11px;padding:6px 10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:6px;color:var(--green)">' +
+                            '<strong>Fix:</strong> ' + rc.fix +
+                            '</div>' +
+                            '</div>';
+                    }
+                    grid.innerHTML = html;
+                });
+        }
+
+        function loadBacktestResults() {
+            fetch(DATA_BASE + 'antigravity_ml_backtest_results.json?t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .catch(function () { return null; })
+                .then(function (data) {
+                    var status = document.getElementById('backtestStatus');
+                    var content = document.getElementById('backtestContent');
+                    var archLabel = document.getElementById('backtestArchLabel');
+
+                    if (!data || !data.summary) {
+                        if (status) status.textContent = 'Pending';
+                        if (content) content.innerHTML = '<p style="color:var(--text2);font-size:13px">Real backtest has not been run yet. The next scheduled run will generate walk-forward results using actual Binance kline data with realistic fees and slippage.</p>' +
+                            '<p style="font-size:12px;color:var(--text3);margin-top:8px"><strong>Method:</strong> 70% train / 30% out-of-sample test | Binance spot fees (0.1%) + per-pair slippage | ATR-14 TP/SL | Bar-by-bar high/low checking</p>';
+                        return;
+                    }
+
+                    var s = data.summary;
+                    var wr = s.aggregate_win_rate || 0;
+                    var sharpe = s.aggregate_sharpe || 0;
+                    var pf = s.aggregate_pf || 0;
+                    var wrColor = wr > 0.5 ? 'var(--green)' : wr > 0.35 ? 'var(--amber)' : 'var(--red)';
+                    var sharpeColor = sharpe > 0.8 ? 'var(--green)' : sharpe > 0 ? 'var(--amber)' : 'var(--red)';
+
+                    if (status) {
+                        status.textContent = 'Real Data';
+                        status.style.background = 'var(--green-bg)';
+                        status.style.color = 'var(--green)';
+                    }
+                    if (archLabel) {
+                        archLabel.style.color = sharpe > 0 ? 'var(--green)' : 'var(--red)';
+                        archLabel.innerHTML = 'Walk-forward on real klines: Sharpe=' + sharpe.toFixed(2) + ' WR=' + (wr * 100).toFixed(1) + '% &mdash; <a href="#backtestSection" style="color:var(--blue)">details below</a>';
+                    }
+
+                    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:16px">' +
+                        '<div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">' +
+                        '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Pairs Tested</div>' +
+                        '<div class="mono" style="font-size:22px;font-weight:700;color:var(--blue)">' + (s.total_pairs_tested || 0) + '</div></div>' +
+                        '<div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">' +
+                        '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Total Trades</div>' +
+                        '<div class="mono" style="font-size:22px;font-weight:700;color:#fff">' + (s.total_trades || 0) + '</div></div>' +
+                        '<div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">' +
+                        '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Win Rate</div>' +
+                        '<div class="mono" style="font-size:22px;font-weight:700;color:' + wrColor + '">' + (wr * 100).toFixed(1) + '%</div></div>' +
+                        '<div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">' +
+                        '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Sharpe</div>' +
+                        '<div class="mono" style="font-size:22px;font-weight:700;color:' + sharpeColor + '">' + sharpe.toFixed(2) + '</div></div>' +
+                        '<div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">' +
+                        '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Profit Factor</div>' +
+                        '<div class="mono" style="font-size:22px;font-weight:700;color:' + (pf > 1 ? 'var(--green)' : 'var(--red)') + '">' + pf.toFixed(2) + '</div></div>' +
+                        '</div>';
+
+                    html += '<p style="font-size:12px;color:var(--text3);margin-bottom:12px"><strong>Method:</strong> ' + (data.method || 'Walk-forward validation') + ' | <strong>Costs:</strong> ' + (data.cost_model || 'Binance fees + slippage') + '</p>';
+
+                    // Per-pair results table (top 10 by Sharpe)
+                    var pairs = data.pair_results || [];
+                    var rows = [];
+                    for (var i = 0; i < pairs.length; i++) {
+                        var p = pairs[i];
+                        for (var side of ['buy', 'sell']) {
+                            var r = p[side];
+                            if (r && r.total_trades > 0) {
+                                rows.push({pair: p.pair, tf: p.timeframe, side: side, r: r});
+                            }
+                        }
+                    }
+                    rows.sort(function(a, b) { return (b.r.sharpe_ratio || 0) - (a.r.sharpe_ratio || 0); });
+
+                    if (rows.length > 0) {
+                        html += '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--bg)">' +
+                            '<table style="width:100%;font-size:11px"><thead><tr>' +
+                            '<th>Pair</th><th>TF</th><th>Side</th><th>Trades</th><th>Win Rate</th><th>Sharpe</th><th>PF</th><th>Max DD</th><th>Return</th>' +
+                            '</tr></thead><tbody>';
+                        var shown = Math.min(rows.length, 15);
+                        for (var j = 0; j < shown; j++) {
+                            var row = rows[j];
+                            var r = row.r;
+                            var wrC = r.win_rate > 0.5 ? 'pnl-pos' : r.win_rate > 0.35 ? '' : 'pnl-neg';
+                            var srC = r.sharpe_ratio > 0 ? 'pnl-pos' : 'pnl-neg';
+                            var retC = r.total_return_pct > 0 ? 'pnl-pos' : 'pnl-neg';
+                            html += '<tr>' +
+                                '<td style="padding:6px 8px"><strong style="color:#fff">' + row.pair.replace('USDT','') + '</strong></td>' +
+                                '<td style="padding:6px 8px">' + row.tf + '</td>' +
+                                '<td style="padding:6px 8px"><span style="color:' + (row.side === 'buy' ? 'var(--green)' : 'var(--red)') + ';font-weight:600;text-transform:uppercase;font-size:10px">' + row.side + '</span></td>' +
+                                '<td class="mono" style="padding:6px 8px;text-align:center">' + r.total_trades + '</td>' +
+                                '<td class="mono ' + wrC + '" style="padding:6px 8px;text-align:center">' + (r.win_rate * 100).toFixed(1) + '%</td>' +
+                                '<td class="mono ' + srC + '" style="padding:6px 8px;text-align:center">' + r.sharpe_ratio.toFixed(2) + '</td>' +
+                                '<td class="mono" style="padding:6px 8px;text-align:center">' + r.profit_factor.toFixed(2) + '</td>' +
+                                '<td class="mono pnl-neg" style="padding:6px 8px;text-align:center">-' + r.max_drawdown_pct.toFixed(1) + '%</td>' +
+                                '<td class="mono ' + retC + '" style="padding:6px 8px;text-align:center">' + (r.total_return_pct > 0 ? '+' : '') + r.total_return_pct.toFixed(2) + '%</td>' +
+                                '</tr>';
+                        }
+                        html += '</tbody></table></div>';
+                        if (s.best_pair) {
+                            html += '<p style="font-size:11px;color:var(--text3);margin-top:8px">Best: <strong style="color:var(--green)">' + s.best_pair + '</strong> | Worst: <strong style="color:var(--red)">' + s.worst_pair + '</strong></p>';
+                        }
+                    }
+
+                    if (content) content.innerHTML = html;
+                });
+        }
+
+        loadForensics();
+        loadBacktestResults();
+    </script>
+</body>
+
+</html>

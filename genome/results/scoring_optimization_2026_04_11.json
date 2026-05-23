@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-04-11T14:20:31.478778+00:00",
+  "description": "New DNA mutation strategies from 2026-04-11 scoring optimization audit",
+  "strategies": [
+    {
+      "name": "regime_filtered_obv_divergence",
+      "parents": [
+        "st_obv_support_divergence (61.5% WR, PF 2.10, +202% PnL)",
+        "regime_detector"
+      ],
+      "mutation": "Add ADX>20 regime filter + EMA50 slope downtrend filter to skip ranging/bear",
+      "expected_wr": "68%+",
+      "risk_reward": "2.0:1",
+      "status": "forward_testing",
+      "signal_generation_test": "15 signals across BTC/ETH/SOL/BNB/FET at all FGI levels"
+    },
+    {
+      "name": "fear_greed_obv_confluence",
+      "parents": [
+        "st_fear_greed_contrarian (81.4% WR, PF 6.91, +1249% PnL)",
+        "st_obv_support_divergence (61.5% WR)"
+      ],
+      "mutation": "F&G extreme fear (<30) + OBV accumulation (smart money buying while price drops) + RSI<35 + BB lower touch",
+      "expected_wr": "75%+",
+      "risk_reward": "1.8-2.5:1 (adaptive by fear level)",
+      "status": "forward_testing",
+      "signal_generation_test": "4 signals on BTC/ETH/BNB/FET at FGI=15 only (correct: only fires in extreme fear)"
+    },
+    {
+      "name": "drawdown_keltner_recovery",
+      "parents": [
+        "drawdown_recovery_rsi_eth (65.2% WR, PF 3.20)",
+        "crypto_keltner_compression_expansion_v1 (57.9% WR, PF 2.77)"
+      ],
+      "mutation": "Keltner squeeze during >8% drawdown + RSI recovering from oversold (25-55, rising) + price above KC mid",
+      "expected_wr": "65%+",
+      "risk_reward": "2.0-2.5:1 (adaptive by drawdown depth)",
+      "status": "forward_testing",
+      "signal_generation_test": "3 signals on SOL at all FGI levels (correct: SOL currently in drawdown with squeeze)"
+    }
+  ],
+  "scoring_changes": {
+    "banned_strategies_added": 10,
+    "proven_winners_promoted": 9,
+    "regime_penalty": "LONG in BEAR: -20pts, NEUTRAL: -8pts (exempt: PROVEN_WINNERS, fear_greed, drawdown_recovery, contrarian)",
+    "equity_allowlist_expanded": "+9 proven equity strategies added to NON_CRYPTO_POLICY allowlist",
+    "bug_fixes": [
+      "explanation_parts used before initialization (institutional sweet spot)",
+      "Dividend Aristocrats added to ban (0% WR)"
+    ]
+  }
+}

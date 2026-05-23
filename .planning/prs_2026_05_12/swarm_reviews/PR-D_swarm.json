@@ -1,0 +1,77 @@
+{
+  "pr_id": "PR-D",
+  "reviews": {
+    "qwen2.5-coder:14b": {
+      "role": "code-specialist (Alibaba)",
+      "elapsed_s": 8.3,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [
+          "Clarify the impact of setting FOREX_SIZING_HARD_CAP_USD to 0 on existing trades."
+        ],
+        "questions": [
+          "What is the expected behavior if asset_class_health.FOREX.profit_factor fluctuates above and below 0.8 during runtime?"
+        ],
+        "risk_score_0_10": 2,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "deepseek-r1:14b": {
+      "role": "reasoning (DeepSeek)",
+      "elapsed_s": 12.1,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [
+          "dependency on unmerged PR #876 could delay testing"
+        ],
+        "should_fix": [
+          "vague file path: specify exact location in `risk_policy.py`"
+        ],
+        "questions": [
+          "Why not set hard-cap to zero immediately instead of waiting for PF>=0.8?"
+        ]
+      },
+      "raw_tail": null
+    },
+    "devstral-small-2": {
+      "role": "code-patches (Mistral)",
+      "elapsed_s": 22.3,
+      "parsed": {
+        "verdict": "needs_changes",
+        "must_fix": [
+          "PR #876 must merge first (dependency)"
+        ],
+        "should_fix": [
+          "Clarify if FOREX_SIZING_HARD_CAP_USD=0 is the correct value or if it should be a dynamic threshold"
+        ],
+        "questions": [
+          "Is the profit_factor threshold of 0.8 validated against historical data?"
+        ],
+        "risk_score_0_10": 2,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    },
+    "ernie:latest": {
+      "role": "thinking (Baidu)",
+      "elapsed_s": 41.8,
+      "parsed": null,
+      "raw_tail": "<p>The problem involves finding the length of a curve defined by the parametric equations \\( x = 3\\cos(t) \\), \\( y = 3\\sin(t) \\) for one full traversal, which is a circle centered at the origin with radius 3. The arc length formula for a parametric curve from t=a to t=b is given by:\n\n\\[ L = \\int_{a}^{b} \\sqrt{ \\left( \\frac{dx}{dt} \\right)^2 + \\left( \\frac{dy}{dt} \\right)^2 }  dt \\]\n\nFirst, compute the derivatives:</p>\n<p>\\[ \\frac{dx}{dt} = -3\\sin(t) \\]</p>\n<p>\\[ \\frac{dy}{dt} = 3\\cos(t) \\]</p>\n<p>Then, the expression under the square root becomes:\n\n\\[ \\left( \\frac{dx}{dt} \\right)^2 + \\left( \\frac{dy}{dt} \\right)^2 = (-3\\sin(t))^2 + (3\\cos(t))^2 = 9\\sin^2(t) + 9\\cos^2(t) = 9(\\sin^2(t) + \\cos^2(t)) = 9 \\cdot 1 = 9 \\]</p>\n\nSo, the square root simplifies to \\( \\sqrt{9} = 3 \\).</p>\n\n<p>The arc length is then:\n\n\\[ L = \\int_{0}^{2\\pi} 3  dt = 3 \\int_{0}^{2\\pi} dt = 3 [t]_{0}^{2\\pi} = 3(2\\pi - 0) = 6\\pi </p>\n\nTherefore, the length of the curve is \\( 6\\pi \\).</response>\n\n<reasoning>\n- The parametric equations describe a circle of radius r=3.\n- The circumference of a circle is given by \\( 2\\pi r \\), so for r=3, it should be \\( 2\\pi \\times 3 = 6\\pi \\).\n- This matches the integral result.</reasoning>\n</think>\n\n"
+    },
+    "glm-4.7-flash": {
+      "role": "alt-lineage (Zhipu)",
+      "elapsed_s": 48.2,
+      "parsed": {
+        "verdict": "approve",
+        "must_fix": [],
+        "should_fix": [],
+        "questions": [],
+        "risk_score_0_10": 1,
+        "frontend_impact": true
+      },
+      "raw_tail": null
+    }
+  }
+}

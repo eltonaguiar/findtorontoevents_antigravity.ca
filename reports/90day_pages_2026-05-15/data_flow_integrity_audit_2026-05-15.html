@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Flow Integrity Audit — findtorontoevents.ca</title>
+<style>:root{--accent:#ef4444}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>Data Flow Integrity Audit — May 2026</h1>
+<p><strong>Date:</strong> 2026-05-15<br />
+<strong>Scope:</strong> Cross-asset-class review of outcome resolution, stat updates (trust_score, forward_wr, symbol/strategy win rates), GitHub Actions coverage, and classification correctness.<br />
+<strong>Goal:</strong> Identify zero/blank fields, misrouting, and broken feedback loops that prevent accurate per-asset-class and per-strategy performance measurement.</p>
+<hr />
+<h2>1. Outcome Resolution &amp; Stat Update Flow</h2>
+<h3>Core Path</h3>
+<ol>
+<li>Pick emitted → stored in <code>at_raw_picks</code></li>
+<li><code>universal_pick_resolver.py</code> (or equivalent) detects close → writes to <code>at_signal_outcomes</code></li>
+<li><code>dashboard_generator.py</code> + <code>strategy_health</code> logic updates:
+   - <code>strategy_health</code> table / JSON (per-strategy WR, PF, forward_wr, etc.)
+   - Symbol-level tracking (symbol_track_wr, FWD WR%)
+   - <code>asset_class_health</code> aggregate
+   - <code>trust_score</code> / <code>at_issue_trust_score</code> enrichment</li>
+</ol>
+<h3>Known Issues (Evidence-Based)</h3>
+<ul>
+<li><strong>Low <code>at_signal_outcomes</code> coverage</strong>: Historically ~0.08% (121 resolved out of 145k+). Even after resolver-v2 improvements, many asset classes still have thin resolved samples (BOND n=11 total, FUTURES effectively 0 in its own tile).</li>
+<li><strong>Forward_wr and trust_score enrichment is fragile</strong>: <code>dashboard_generator.py</code> has multiple fallback paths (<code>at_issue_trust_score</code>, <code>forward_wr</code> from pick metadata). When the resolver does not write these fields, downstream calculations fall back to defaults or stale values.</li>
+<li><strong>Strategy_health and symbol win-rate updates are not uniformly populated</strong> across all classes. Some strategies (especially older or low-volume ones in BOND/FUTURES/PENNY) have blank or zeroed <code>forward_wr</code> / <code>trust_score</code> fields in the live payload.</li>
+<li><strong>Penny/Meme and low-quality symbols</strong> frequently appear with missing or zero <code>symbol_track_wr</code> because they are emitted by many different scanners without consistent tracking.</li>
+</ul>
+<p><strong>Verdict</strong>: The feedback loop (close → update strategy/symbol stats → influence future scoring) is <strong>partially broken</strong> for thin or noisy asset classes. This directly contributes to the "why aren't win rates higher?" problem when good signals (Polymarket, Kalshi, CopyTrader) exist but the system cannot reliably measure or promote them.</p>
+<hr />
+<h2>2. Asset Class Classification Correctness</h2>
+<h3>Current Logic (<code>dashboard_generator.py:_derive_asset_class</code>)</h3>
+<ul>
+<li>Strong crypto lock-in first (good).</li>
+<li>Explicit =F handling with <code>_COMMODITY_ROOTS</code> vs <code>_INDEX_FUTURES_ROOTS</code> (improved after historical ZN=F → BOND bugs).</li>
+<li>Hard overrides for known BOND symbols.</li>
+</ul>
+<h3>Remaining / Historical Flaws</h3>
+<ul>
+<li><strong>FUTURES tile is starved</strong>: Commodity futures (CT=F, GC=F, HG=F, NG=F, etc.) are correctly routed to COMMODITY. This leaves the FUTURES tile with almost only financial futures (ES, NQ, ZN, 6E, etc.), which have near-zero activity and no strong edge. The classification is <em>correct</em> but the <strong>business split</strong> creates a misleading "FUTURES" asset class with n≈0.</li>
+<li><strong>Penny/Meme leakage</strong>: Low-quality equities are still emitted into both EQUITY and CRYPTO tiles by multiple scanners (community_penny_volume_surge, goldmine_meme, etc.). This pollutes parent-class stats.</li>
+<li><strong>No runtime liquidity/ADV gate</strong> at emission time for many low-quality symbols → bad data enters the system and only gets partially filtered later.</li>
+</ul>
+<p><strong>Verdict</strong>: Classification has improved, but the <strong>downstream effect</strong> (FUTURES appearing dead, Penny/Meme dragging EQUITY/CRYPTO) is still present because the routing + emitter logic was never fully cleaned up after the big triage.</p>
+<hr />
+<h2>3. GitHub Actions Coverage per Asset Class</h2>
+<ul>
+<li><strong>COMMODITY</strong>: Dedicated <code>bond-agent.yml</code> style jobs + COT-specific workflows. Relatively good coverage.</li>
+<li><strong>EQUITY</strong>: <code>non_crypto_agent</code> + equity-specific scanners. Decent.</li>
+<li><strong>ETF</strong>: Relies on generic non-crypto + <code>etf_sector_emitter.py</code>. Coverage is lighter.</li>
+<li><strong>CRYPTO</strong>: Heavy (many scanners), but noisy.</li>
+<li><strong>FOREX / BOND / FUTURES</strong>: Very thin dedicated GHA jobs. Most rely on generic non-crypto paths that have lower priority and fewer validation steps.</li>
+<li><strong>Penny/Meme</strong>: Almost no dedicated validation jobs — they ride along with whatever scanner emits them.</li>
+</ul>
+<p><strong>Missing</strong>: Systematic per-asset-class "health check" jobs that verify <code>at_signal_outcomes</code> population, forward_wr freshness, and trust_score distribution for that class.</p>
+<hr />
+<h2>4. Zero / Blank Data Points by Asset Class</h2>
+<p>From <code>dashboard_data.json</code> (2026-05-15) and subagent reports:
+- <strong>BOND</strong>: n=11 resolved (extremely low). Many strategy-level forward_wr / trust fields blank or defaulted.
+- <strong>FUTURES</strong>: n=0 in its own tile (misleading).
+- <strong>PENNY/MEME</strong>: High volume of emissions but very low resolved outcomes with usable forward_wr / symbol_track_wr. Many "0/0" or blank win-rate entries.
+- <strong>FOREX</strong>: Thin resolved sample; several strategies show blank or near-zero forward metrics.
+- <strong>COMMODITY</strong>: Surface numbers look good, but after COT deduplication the effective independent n for the flagship strategy collapses dramatically.</p>
+<hr />
+<h2>5. Recommendations (Actionable)</h2>
+<ol>
+<li><strong>Strengthen the resolver → stats update path</strong> so that every resolved outcome reliably writes <code>forward_wr</code>, <code>trust_score</code>, and per-symbol/per-strategy win rates (even for low-volume classes).</li>
+<li><strong>Add per-asset-class data quality GHA jobs</strong> that alert on blank forward_wr % or trust_score distribution anomalies.</li>
+<li><strong>Fix emitter leakage for Penny/Meme</strong> (hard upstream filter + CATEGORY_RISK enforcement) so they stop polluting EQUITY and CRYPTO stats.</li>
+<li><strong>Reconsider the FUTURES vs COMMODITY split</strong> — either merge financial futures into a unified "Futures CTA" tile or clearly label the current FUTURES tile as "Financial Futures (low activity)".</li>
+<li><strong>Make HyroTrader, Polymarket, and Kalshi</strong> first-class citizens in the outcome tracking and trust scoring pipeline (currently they are scoring add-ons, not primary measured strategies).</li>
+</ol>
+<hr />
+<h2>6. Impact on Win-Rate Visibility</h2>
+<p>Because of the above gaps, even when good external signals (top Polymarket/Kalshi traders, quality CopyTraders) are present, the system often cannot:
+- Accurately measure their forward performance (low resolved n + blank forward_wr).
+- Promote them with proper trust_score.
+- Show clean per-asset-class statistics in <code>/audit</code>.</p>
+<p>This is one of the structural reasons win rates per asset class appear lower than the "smart money" data would suggest.</p>
+<hr />
+<p><strong>This report should be read alongside the 8 asset-class 90-day plans and the 4 strategy-type assessments.</strong> It explains <em>why</em> some of the recommended fixes (especially for BOND, FUTURES, PENNY_MEME, and the prediction-market layers) are necessary before those classes can contribute real, measurable edge.</p>
+<div class="src">Source: <code>reports/data_flow_integrity_audit_2026-05-15.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

@@ -1,0 +1,46 @@
+function loadMovies() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load movies');
+                }
+
+                if (!data.movies || data.movies.length === 0) {
+                    throw new Error('No movies with trailers found');
+                }
+
+                allMovies = data.movies;
+
+                // Trailer overrides: replace geo-restricted or broken YouTube IDs
+                // with working alternatives (avoids DB update for quick fixes).
+                var TRAILER_OVERRIDES = {
+                    'JUADqWkJiiE': '7H7Djx17l8Y' // Mercy (2026): UK-only Sony trailer â US Trailer 2
+                };
+                allMovies.forEach(function(m) {
+                    if (m.trailer_id && TRAILER_OVERRIDES[m.trailer_id]) {
+                        m.trailer_id = TRAILER_OVERRIDES[m.trailer_id];
+                    }
+                });
+
+                // Build motivational videos, now playing, and coming soon lists
+                loadMotivationSettings();
+                buildMotivationalVideos();
+                buildNowPlayingList();
+                buildComingSoonList();
+
+                // Determine what goes in the "All" feed
+                if (motivationSettings.showInAll) {
+                    filteredMovies = [...allMovies, ...allMotivationalVideos];
+                } else {
+                    filteredMovies = [...allMovies];
+                }
+
+                // Update counts
+                const movieCount = allMovies.filter(m => m.type === 'movie').length;
+                const tvCount = allMovies.filter(m => m.type === 'tv').length;
+
+                document.getElementById('countAll').textContent = allMovies.length;
+                document.getElementById('countMovies').textContent = movieCount;
+                document.getElementById('countTV').textContent 

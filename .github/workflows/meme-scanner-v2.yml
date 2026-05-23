@@ -1,0 +1,223 @@
+name: Meme Coin Scanner v2  Fixed & Monitored
+
+on:
+  schedule:
+    # Scan every 10 minutes to maintain data freshness (Resolved 4-day staleness)
+    - cron: '*/10 * * * *'
+    # Resolve past signals every 3 hours (2h window + buffer)
+    - cron: '0 */3 * * *'
+    # Health check every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        default: 'scan'
+        type: choice
+        options:
+          - scan
+          - resolve
+          - health_check
+          - full
+
+jobs:
+  meme-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    # Step 0: Deploy PHP file to server (ensures server has latest version)
+    - name: Deploy meme_scanner_fixed.php to server
+      if: github.event.schedule == '0 * * * *' || inputs.action == 'full'
+      continue-on-error: true
+      env:
+        FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        FTP_USER: ${{ secrets.FTP_USER }}
+        FTP_PASS: ${{ secrets.FTP_PASS }}
+      run: |
+        if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+          echo "::warning::FTP credentials not configured. Skipping FTP deploy."
+          exit 0
+        fi
+        sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+        lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+        set ssl:verify-certificate no
+        cd /findtorontoevents.ca/findcryptopairs/api/
+        put findcryptopairs/api/meme_scanner_fixed.php
+        quit
+        FTPEOF
+        echo " Deployed meme_scanner_fixed.php to server"
+
+    # Step 1: Health Check (runs on hourly schedule)
+    - name: Health Check
+      if: github.event.schedule == '0 * * * *' || inputs.action == 'health_check' || inputs.action == 'full'
+      continue-on-error: true
+      run: |
+        echo "=== Running Health Check ==="
+        pip install requests -q
+        python scripts/meme_scanner_monitor.py || true
+    
+    # Step 2: Scan meme coins
+    - name: Scan meme coins
+      if: github.event.schedule == '*/10 * * * *' || inputs.action == 'scan' || inputs.action == 'full'
+      continue-on-error: true
+      run: |
+        echo "=== Meme Coin Scanner v2 (Fixed) ==="
+        echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        echo ""
+        
+        # Try the fixed endpoint first, fall back to original
+        ENDPOINTS=(
+          "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner_fixed.php"
+          "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php"
+        )
+        
+        for ENDPOINT in "${ENDPOINTS[@]}"; do
+          echo "Trying: $ENDPOINT"
+          RESULT=$(curl -s --max-time 60 "${ENDPOINT}?action=scan&key=memescan2026" 2>&1) && break
+          echo "Failed, trying fallback..."
+        done
+        
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(' Scan successful')
+                print(f\"Version: {d.get('version', 'unknown')}\")
+                print(f\"Tier 1 found: {d.get('tier1_found',0)}/7\")
+                print(f\"Tier 2 discovered: {d.get('tier2_found',0)}\")
+                print(f\"Deep analyzed: {d.get('deep_analyzed',0)}\")
+                print(f\"Winners found: {d.get('winners_found',0)}\")
+                print(f\"BTC Regime: {d.get('btc_regime',{}).get('regime','unknown')}\")
+                print(f\"Elapsed: {d.get('elapsed_sec',0)}s\")
+                
+                fixes = d.get('fixes_applied', {})
+                if fixes:
+                    print('\\n Fixes Applied:')
+                    for fix, status in fixes.items():
+                        print(f\"  {'' if status else ''} {fix}\")
+                
+                print('\\n Top Winners:')
+                for w in d.get('winners', [])[:5]:
+                    pair = w.get('pair','?').replace('_USDT','/USDT')
+                    old_label = w.get('old_verdict', '?')
+                    new_label = w.get('verdict', '?')
+                    print(f\"  {pair:12s} Score:{w.get('score',0)} {new_label} (was: {old_label})\")
+            else:
+                print(f\" Error: {d.get('error','unknown error')}\")
+                sys.exit(1)
+        except Exception as e:
+            print(f\" Parse error: {e}\")
+            print(f\"Raw: {sys.stdin.read()[:200]}\")
+            sys.exit(1)
+        " || echo "Scan output: $RESULT"
+    
+    # Step 3: Resolve past signals (runs on the 3-hourly schedule)
+    - name: Resolve past signals
+      if: github.event.schedule == '0 */3 * * *' || inputs.action == 'resolve' || inputs.action == 'full'
+      continue-on-error: true
+      run: |
+        echo "=== Resolving meme signals (2h window) ==="
+        
+        RESULT=$(curl -s --max-time 45 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=resolve&key=memescan2026" 2>&1)
+        
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                resolved = d.get('resolved',0)
+                wins = d.get('wins',0)
+                losses = d.get('losses',0)
+                win_rate = d.get('win_rate',0)
+                
+                print(f\" Resolved: {resolved} signals\")
+                print(f\" Wins: {wins} | Losses: {losses} | Win Rate: {win_rate}%\")
+                
+                # Performance indicator
+                if win_rate >= 40:
+                    print(' Win rate meets target (40%+)')
+                elif win_rate >= 20:
+                    print('  Win rate below target but improving')
+                elif resolved > 0:
+                    print(' Win rate critically low - see research report')
+                
+                print('\\nRecent outcomes:')
+                for det in d.get('details', [])[:5]:
+                    pnl = det.get('pnl_pct',0)
+                    icon = '' if pnl > 0 else '' if pnl < 0 else ''
+                    print(f\"  {icon} {det.get('pair','?'):12s} PnL:{pnl:+.2f}% {det.get('outcome','?')}\")
+            else:
+                print(f\"  {d.get('error','no signals to resolve')}\")
+        except Exception as e:
+            print(f\"Parse error: {e}\")
+        " || echo "Resolve output: $RESULT"
+    
+    # Step 4: Record daily snapshot
+    - name: Record daily snapshot
+      if: github.event.schedule == '0 */3 * * *' || inputs.action == 'resolve'
+      continue-on-error: true
+      run: |
+        curl -s --max-time 10 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=snapshot&key=memescan2026" > /dev/null 2>&1 || true
+    
+    # Step 5: Print stats with enhanced formatting
+    - name: Print stats
+      continue-on-error: true
+      run: |
+        echo ""
+        echo "=== Meme Scanner Statistics ==="
+        
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=stats" 2>&1)
+        
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        from datetime import datetime
+        
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                s = d.get('stats', {})
+                
+                print(f\" Total Signals: {s.get('total_signals',0)}\")
+                print(f\" Win Rate: {s.get('overall_win_rate','--')}%\")
+                print(f\" Avg P&L: {s.get('avg_pnl','--')}%\")
+                print(f\" Unique Pairs: {s.get('unique_pairs',0)}\")
+                print(f\" Total Scans: {s.get('total_scans',0)}\")
+                print(f\" Version: {s.get('scanner_version','unknown')}\")
+                
+                # Data freshness indicator
+                freshness = s.get('data_freshness','unknown')
+                if freshness == 'fresh':
+                    print(' Data Freshness: FRESH')
+                elif freshness == 'stale':
+                    print('  Data Freshness: STALE')
+                else:
+                    print(' Data Freshness: CRITICAL')
+                
+                if s.get('last_scan'):
+                    print(f\" Last Scan: {s.get('last_scan')}\")
+            else:
+                print(f\"Error: {d.get('error','unknown')}\")
+        except Exception as e:
+            print(f\"Parse error: {e}\")
+        " || echo "Stats output: $RESULT"
+    
+    # Step 6: Alert on critical issues
+    - name: Alert on issues
+      if: failure()
+      continue-on-error: true
+      run: |
+        echo " WORKFLOW FAILED - Scanner may be down"
+        # Could add Discord webhook alert here
+

@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Redis-bus pre-push hook — checks file edit locks before allowing push.
+#
+# Install:
+#   git config core.hooksPath .githooks
+#   # OR: ln -s ../../.githooks/pre-push .git/hooks/pre-push
+#
+# Enforcement:
+#   - Reads lock:file:<path> keys from localhost:6379
+#   - For each staged file in outgoing commits, checks for conflicting lock
+#   - BLOCKS push if another agent holds a lock on any file being pushed
+#   - Sets AGENT_ID env var to identify yourself (otherwise uses "$USER-local")
+#
+# Skip mechanisms:
+#   - Set BUS_HOOK_SKIP=1 to bypass (use responsibly)
+#   - Hook silently exits 0 if Redis is unreachable (non-blocking)
+#
+set -euo pipefail
+
+# --- config ---------------------------------------------------------------
+REDIS_CLI="${REDIS_CLI:-C:/Users/zerou/redis-bus/redis-cli.exe}"
+REDIS_HOST="${REDIS_HOST:-localhost}"
+REDIS_PORT="${REDIS_PORT:-6379}"
+ME="${AGENT_ID:-${USER:-unknown}-local}"
+
+# --- opt-out --------------------------------------------------------------
+if [ "${BUS_HOOK_SKIP:-0}" = "1" ]; then
+    echo "[bus-lock-hook] BUS_HOOK_SKIP=1 — bypassing lock check"
+    exit 0
+fi
+
+# --- redis availability check ---------------------------------------------
+# If redis-cli missing or server unreachable, don't block the push.
+if [ ! -x "$REDIS_CLI" ] && ! command -v "$REDIS_CLI" >/dev/null 2>&1; then
+    # Silent: redis-cli not installed locally — skip check.
+    exit 0
+fi
+
+PING=$("$REDIS_CLI" -h "$REDIS_HOST" -p "$REDIS_PORT" PING 2>/dev/null || echo "FAIL")
+if [ "$PING" != "PONG" ]; then
+    # Silent: Redis bus not running.
+    exit 0
+fi
+
+# --- figure out which commits are being pushed ----------------------------
+# git passes <local-ref> <local-sha> <remote-ref> <remote-sha> on stdin.
+# For new branches remote-sha is 40 zeros.
+ZERO="0000000000000000000000000000000000000000"
+
+CHANGED_FILES=""
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+    if [ "$LOCAL_SHA" = "$ZERO" ]; then
+        # Branch deletion — nothing to check.
+        continue
+    fi
+
+    if [ "$REMOTE_SHA" = "$ZERO" ]; then
+        # New branch — check recent history (last 20 commits).
+        RANGE="$LOCAL_SHA -20"
+        FILES=$(git log --pretty=format: --name-only -20 "$LOCAL_SHA" 2>/dev/null | sort -u)
+    else
+        # Updates — check all commits between remote and local.
+        RANGE="$REMOTE_SHA..$LOCAL_SHA"
+        FILES=$(git diff --name-only "$REMOTE_SHA".."$LOCAL_SHA" 2>/dev/null | sort -u)
+    fi
+
+    CHANGED_FILES="$CHANGED_FILES"$'\n'"$FILES"
+done
+
+# Deduplicate
+CHANGED_FILES=$(echo "$CHANGED_FILES" | sort -u | grep -v '^$' || true)
+
+if [ -z "$CHANGED_FILES" ]; then
+    exit 0
+fi
+
+# --- check each file against redis locks ----------------------------------
+CONFLICTS=""
+CONFLICT_COUNT=0
+
+while IFS= read -r FILE; do
+    [ -z "$FILE" ] && continue
+    LOCK_KEY="lock:file:$FILE"
+    OWNER=$("$REDIS_CLI" -h "$REDIS_HOST" -p "$REDIS_PORT" GET "$LOCK_KEY" 2>/dev/null || echo "")
+    if [ -n "$OWNER" ] && [ "$OWNER" != "$ME" ]; then
+        TTL=$("$REDIS_CLI" -h "$REDIS_HOST" -p "$REDIS_PORT" TTL "$LOCK_KEY" 2>/dev/null || echo "?")
+        CONFLICTS="$CONFLICTS"$'\n'"  $FILE -> held by $OWNER (TTL: ${TTL}s)"
+        CONFLICT_COUNT=$((CONFLICT_COUNT + 1))
+    fi
+done <<< "$CHANGED_FILES"
+
+if [ "$CONFLICT_COUNT" -gt 0 ]; then
+    echo ""
+    echo "============================================================="
+    echo "  REDIS BUS LOCK CONFLICT — push blocked"
+    echo "============================================================="
+    echo "  You ($ME) are trying to push files locked by other agents:"
+    echo "$CONFLICTS"
+    echo ""
+    echo "  Options:"
+    echo "    1. Wait for the lock to expire or be released"
+    echo "    2. DM the lock holder via Redis bus:"
+    echo "       \$PY \$BUS send $ME <holder> 'can I push my $CONFLICT_COUNT edit(s)?'"
+    echo "    3. Bypass with BUS_HOOK_SKIP=1 git push (use responsibly)"
+    echo ""
+    echo "  Check lock status:"
+    echo "    $REDIS_CLI -p $REDIS_PORT KEYS 'lock:file:*'"
+    echo "============================================================="
+    echo ""
+    exit 1
+fi
+
+echo "[bus-lock-hook] ok — no lock conflicts on $(echo "$CHANGED_FILES" | grep -c . || echo 0) changed files"
+exit 0

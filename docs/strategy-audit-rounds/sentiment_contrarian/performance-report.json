@@ -1,0 +1,72 @@
+{
+  "strategy": "sentiment_macro_contrarian",
+  "module": "alpha_engine/sentiment_macro_contrarian.py",
+  "status": "opt-in_sidecar",
+  "wired_into_production": false,
+  "baseline_reference": {
+    "name": "st_fear_greed_contrarian",
+    "source": "reports/forward_edge_audit_2026-05-02.json",
+    "pf": 4.22,
+    "wr": 0.75,
+    "n": 96
+  },
+  "live_trades": {
+    "total": null,
+    "wins": null,
+    "losses": null,
+    "wr": null,
+    "pf": null,
+    "max_drawdown_pct": null,
+    "sharpe": null,
+    "first_trade_at": null,
+    "last_trade_at": null,
+    "comment": "No live trades yet — sidecar module, not wired into scanner."
+  },
+  "by_asset_class": {
+    "CRYPTO": {"n": null, "wr": null, "pf": null},
+    "EQUITY": {"n": null, "wr": null, "pf": null},
+    "ETF":    {"n": null, "wr": null, "pf": null}
+  },
+  "by_branch": {
+    "crypto_fear_buy":         {"n": null, "wr_target_low": 0.75, "wr_target_high": 0.82},
+    "equity_vix_spike_buy":    {"n": null, "wr_target_low": 0.65, "wr_target_high": 0.72},
+    "equity_complacency_sell": {"n": null, "wr_target_low": 0.70, "wr_target_high": 0.80,
+                                 "fires_per_decade_estimate": 4}
+  },
+  "backtest_synthetic": {
+    "method": "200-day random-walk OHLCV (seed=42, mu=0.001, sigma=0.02)",
+    "events": [
+      {"name": "extreme_fear",  "fgi": 15, "macro": {"usd": "weak", "curve": "steep", "vol": "elevated"}},
+      {"name": "extreme_greed", "fgi": 82, "macro": {"usd": "neutral", "curve": "flat", "vol": "low"}},
+      {"name": "complacency",   "vix": 11, "macro": {"usd": "neutral", "curve": "inverted", "vol": "low"}}
+    ],
+    "results": {
+      "n_signals": 3,
+      "fear_event_signals": 2,
+      "greed_event_signals": 0,
+      "complacency_short_signals": 1,
+      "wr_estimate_random_walk": 0.381,
+      "sample_signal_confidence": 0.70,
+      "sample_signal_macro_aligned": true
+    },
+    "interpretation": "Random-walk WR estimate (~38%) reflects the SL/(TP+SL) hit probability for a driftless price process — it is the FLOOR, not a forecast. Real fear-extreme periods have positive forward drift (Daniel & Hirshleifer 1998 overreaction reversal); the gap between random-walk floor (~38%) and the st_fear_greed_contrarian baseline (75%) is the inherited edge.",
+    "notes": [
+      "FRED_API_KEY absent during backtest run -> macro is provided via kwarg, not live.",
+      "Greed-extreme path correctly emits 0 signals (CRYPTO greed-shorts intentionally not exposed in v1).",
+      "Synthetic OHLCV is identical for BTC-USDT and SPY -> backtest is structural, not directional."
+    ]
+  },
+  "promotion_gates": {
+    "live_n_minimum": 40,
+    "wr_minimum": 0.55,
+    "macro_aligned_pf_premium_required": 0.5,
+    "max_single_symbol_share": 0.25
+  },
+  "rollback": {
+    "env_var": "SENTIMENT_MACRO_DISABLED",
+    "set_to": "1",
+    "effect": "Module returns [] — no signals emitted."
+  },
+  "as_of": "2026-05-09",
+  "version": "0.1.0-sidecar"
+}

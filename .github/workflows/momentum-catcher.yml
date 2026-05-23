@@ -1,0 +1,136 @@
+name: MOMENTUM CATCHER - Real-time Pump Detector
+
+on:
+  schedule:
+    # Every 30 minutes catch pumps (was */10, reduced to ease queue pressure)
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: momentum-catcher-writer
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  momentum-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas
+
+      - name: Run Momentum Catcher
+        run: python -m alpha_engine.momentum_catcher
+
+      - name: Merge momentum picks into active_picks.json
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          import json, os
+
+          momentum_path = 'data/momentum_picks.json'
+          active_path = 'data/active_picks.json'
+
+          # Load momentum picks
+          if not os.path.exists(momentum_path):
+              print('No momentum picks file')
+              exit(0)
+
+          momentum = json.load(open(momentum_path))
+          if not momentum:
+              print('No momentum picks this cycle')
+              exit(0)
+
+          # Load active picks
+          active = []
+          if os.path.exists(active_path):
+              try:
+                  active = json.load(open(active_path))
+              except (json.JSONDecodeError, ValueError):
+                  active = []
+
+          # Build set of existing IDs and symbol+direction combos
+          existing_ids = {p.get('id', '') for p in active}
+          existing_combos = set()
+          for p in active:
+              if p.get('status') == 'OPEN':
+                  combo = f\"{p.get('symbol')}_{p.get('signal_type', 'BUY')}\"
+                  existing_combos.add(combo)
+
+          # Append new picks (skip duplicates)
+          added = 0
+          for pick in momentum:
+              pid = pick.get('id', '')
+              combo = f\"{pick.get('symbol')}_{pick.get('signal_type', 'BUY')}\"
+
+              if pid in existing_ids:
+                  print(f' Skip {pick[\"symbol\"]} ID already exists')
+                  continue
+              if combo in existing_combos:
+                  print(f' Skip {pick[\"symbol\"]} already has open {pick.get(\"signal_type\", \"BUY\")} position')
+                  continue
+
+              active.append(pick)
+              existing_ids.add(pid)
+              existing_combos.add(combo)
+              added += 1
+              print(f' Added {pick[\"symbol\"]} (score={pick.get(\"momentum_score\", \"?\")})')
+
+          # Save merged active picks
+          json.dump(active, open(active_path, 'w'), indent=2, default=str)
+          print(f'Merged {added} momentum picks into active_picks.json ({len(active)} total)')
+          "
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add alpha_engine/data/momentum_picks.json
+          git add alpha_engine/data/active_picks.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            PICKS=$(python -c "
+          import json
+          try:
+              m = json.load(open('alpha_engine/data/momentum_picks.json'))
+              if m:
+                  syms = ', '.join(p['symbol'].replace('USDT','') for p in m[:5])
+                  print(f'{len(m)} picks: {syms}')
+              else:
+                  print('no pumps detected')
+          except: print('scan complete')
+          " 2>/dev/null || echo "scan complete")
+
+            git commit -m "MOMENTUM CATCHER [$(date -u '+%Y-%m-%d %H:%M UTC')] - $PICKS [skip ci]"
+
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "MOMENTUM CATCHER" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+

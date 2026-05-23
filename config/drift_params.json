@@ -1,0 +1,37 @@
+{
+  "ema_hours": 8,
+  "sigma_threshold": 2.0,
+  "probation_consecutive_hours": 2,
+  "asset_class_baselines": {
+    "CRYPTO": {"win_rate": 48.0, "expectancy": 0.0},
+    "FOREX": {"win_rate": 45.0, "expectancy": 0.0},
+    "EQUITY": {"win_rate": 50.0, "expectancy": 0.0},
+    "ETF": {"win_rate": 50.0, "expectancy": 0.0},
+    "COMMODITY": {"win_rate": 48.0, "expectancy": 0.0},
+    "FUTURES": {"win_rate": 48.0, "expectancy": 0.0},
+    "BOND": {"win_rate": 52.0, "expectancy": 0.0},
+    "UNKNOWN": {"win_rate": 50.0, "expectancy": 0.0}
+  },
+  "weights": {
+    "default": {"w": 0.6, "b": 0.25, "c": 0.15},
+    "CRYPTO": {"w": 0.65, "b": 0.25, "c": 0.10},
+    "EQUITY": {"w": 0.45, "b": 0.40, "c": 0.15},
+    "FOREX": {"w": 0.55, "b": 0.25, "c": 0.20}
+  },
+  "regime_windows": {
+    "CRYPTO": {
+      "night_window": "00:00-03:00",
+      "weight_multiplier": 1.5,
+      "components": {"win_rate": 1.5, "pf": 1.5, "expectancy": 1.2}
+    }
+  },
+  "equity_pf_gate": {
+    "enabled": true,
+    "min_pf": 1.2,
+    "window_resolved": 20
+  },
+  "allocation_caps": {
+    "enabled": true,
+    "max_pct_per_asset_class": 30
+  }
+}

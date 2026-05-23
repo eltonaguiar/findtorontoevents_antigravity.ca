@@ -1,0 +1,181 @@
+{
+  "audit_timestamp": "2026-04-10 10:45:00",
+  "subagent_reports": [
+    {
+      "agent_name": "Code Quality Agent",
+      "status": "WARNING",
+      "findings": [
+        {
+          "category": "Architecture Drift",
+          "issue": "Recent additions introduce canonical TP/SL and asset-class modules, but trading logic remains duplicated across resolver, dashboard, recorder, and backfill paths, increasing the risk of inconsistent trade classification and exit handling.",
+          "severity": "HIGH",
+          "asset_class": null,
+          "recommended_action": "Route asset classification and TP/SL derivation through the canonical modules in every execution and audit path, then add one regression test per path to prove identical output for the same pick payload."
+        },
+        {
+          "category": "Validation Environment",
+          "issue": "Targeted TP/SL and asset-pipeline test files are syntax-clean, but the local Python runtime used for this audit does not have pytest installed, so claimed pass status could not be re-run from this environment.",
+          "severity": "MEDIUM",
+          "asset_class": null,
+          "recommended_action": "Add an explicit test environment bootstrap and ensure the new test files are executed in CI before merge gates are considered authoritative."
+        },
+        {
+          "category": "Fallback Pricing",
+          "issue": "Commodity fallback pricing is hardcoded in dashboard generation without freshness metadata or an expiry guard, which can silently degrade TP/SL accuracy when live quotes are stale or unavailable.",
+          "severity": "MEDIUM",
+          "asset_class": "COMMODITY",
+          "recommended_action": "Attach last-verified timestamps to fallback prices and fail closed or visibly flag stale commodity pricing in downstream dashboards and audit exports."
+        }
+      ],
+      "summary": "Recent changes move the repo toward cleaner TP/SL and asset-class governance, but the execution surface is still split across multiple modules. The main code-quality risk is not obvious syntax breakage; it is duplicated decision logic that can diverge silently under live trading and audit replay."
+    },
+    {
+      "agent_name": "Documentation Agent",
+      "status": "WARNING",
+      "findings": [
+        {
+          "category": "Test Claim Drift",
+          "issue": "Documentation states that the copytrader E2E suite passed, but this audit did not find a matching local execution artifact and could not re-run the suite because pytest is absent from the active environment.",
+          "severity": "HIGH",
+          "asset_class": null,
+          "recommended_action": "Only publish pass/fail claims alongside a reproducible command, commit SHA, and CI artifact or log reference."
+        },
+        {
+          "category": "Governance Conflict",
+          "issue": "Futures and micro-futures documentation mixes 'infrastructure complete' and 'not ready for high conviction' messaging, which can cause operational teams to misread implementation progress as live-trading readiness.",
+          "severity": "HIGH",
+          "asset_class": "FUTURES",
+          "recommended_action": "Separate implementation status from validation status in all futures-facing docs and standardize one canonical readiness table referenced by bus messages and PR notes."
+        },
+        {
+          "category": "Generated Snapshot Staleness",
+          "issue": "Feature-gap and governance markdown files read like generated snapshots, but no evidence was found that they are rebuilt on every relevant dashboard or scoring update.",
+          "severity": "MEDIUM",
+          "asset_class": null,
+          "recommended_action": "Mark generated documents with source artifact timestamps and regenerate them inside CI so stale observations are not treated as current policy."
+        }
+      ],
+      "summary": "The documentation set is rich but not fully self-verifying. The highest documentation risk is operational ambiguity: policy, readiness, and validation are documented in multiple places without a single authoritative, timestamped source."
+    },
+    {
+      "agent_name": "Performance Tracking Agent",
+      "status": "CRITICAL",
+      "findings": [
+        {
+          "category": "Closed-Pick Coverage Imbalance",
+          "issue": "Closed-pick history is overwhelmingly crypto-weighted, while forex, commodities, futures, micro futures, and ETF/equity cohorts remain too sparse to support confident assertions about TP/SL effectiveness or prediction quality outside crypto.",
+          "severity": "HIGH",
+          "asset_class": null,
+          "recommended_action": "Publish per-asset-class minimum sample thresholds and suppress strategy-quality claims for non-crypto cohorts until those thresholds are met."
+        },
+        {
+          "category": "Outcome Resolution Scheduling",
+          "issue": "Outcome resolution for non-crypto instruments appears to rely on manual or ad hoc execution rather than a guaranteed scheduled path, creating a risk of missing exit_price, stale status, or delayed TP/SL resolution.",
+          "severity": "HIGH",
+          "asset_class": "FOREX",
+          "recommended_action": "Schedule outcome resolution as a first-class daily job, export unresolved counts by asset class, and gate dashboards on unresolved-age thresholds."
+        },
+        {
+          "category": "Contract Semantics",
+          "issue": "Micro-futures support has expanded, but the audit found no clear closed-book reconciliation proving that contract size, tick size, and PnL scaling are consistently validated against standard futures equivalents.",
+          "severity": "MEDIUM",
+          "asset_class": "MICRO FUTURES",
+          "recommended_action": "Add a micro-futures ledger audit that validates quantity increments, point values, and realized PnL scaling before positions are marked as trusted closed outcomes."
+        }
+      ],
+      "summary": "Crypto tracking is materially stronger than the rest of the stack. The main performance risk is not that TP/SL policy is absent; it is that non-crypto cohorts remain under-observed and can therefore look healthy or unhealthy for the wrong reasons."
+    },
+    {
+      "agent_name": "Database Integrity Agent",
+      "status": "WARNING",
+      "findings": [
+        {
+          "category": "Mirror Topology",
+          "issue": "Workflow inspection shows a destructive full-dump 50webs-to-GoDaddy mirror followed by a narrower bidirectional user-data sync, which means mirror correctness depends on two distinct jobs succeeding in sequence.",
+          "severity": "HIGH",
+          "asset_class": null,
+          "recommended_action": "Add a post-sync verification step that compares row counts and sync lag for core trading tables before the mirror is treated as current."
+        },
+        {
+          "category": "Live Verification Gap",
+          "issue": "This audit could not complete a live read-only MySQL probe because direct DB environment variables were absent and the active Python runtime lacked pymysql, so current database state could not be proven from the local environment.",
+          "severity": "MEDIUM",
+          "asset_class": null,
+          "recommended_action": "Provide a small audited read-only DB client path in the repo toolchain so environment verification does not depend on undeclared local packages."
+        },
+        {
+          "category": "Tracking Blind Spot",
+          "issue": "Forward-test and some per-asset outputs still appear to stop at JSON artifacts rather than guaranteed insertion into the primary MySQL audit tables, creating incomplete historical coverage.",
+          "severity": "HIGH",
+          "asset_class": null,
+          "recommended_action": "Trace every forward-test and per-asset output to a concrete MySQL table and fail the pipeline when a tracked source does not land in the primary audit schema."
+        }
+      ],
+      "summary": "The repo contains serious sync infrastructure, not just placeholder docs. The main integrity problem is observability: the intended mirror path is visible, but current freshness and end-to-end completeness could not be proven from this local environment."
+    },
+    {
+      "agent_name": "Infrastructure Optimization Agent",
+      "status": "WARNING",
+      "findings": [
+        {
+          "category": "Operational Observability",
+          "issue": "The repo now contains multiple audit and KPI builders, but there is no single continuously updated health view that combines source freshness, unresolved trades, DB mirror freshness, and TP/SL integrity by asset class.",
+          "severity": "MEDIUM",
+          "asset_class": null,
+          "recommended_action": "Publish one consolidated operations artifact per run that includes freshness SLA breaches, unresolved counts, closed-book integrity failures, and mirror lag."
+        },
+        {
+          "category": "Prediction System Readiness",
+          "issue": "New futures, ETF, and copytrader infrastructure has outpaced proven performance evidence, so the system is at risk of over-promoting new pipelines before they accumulate adequate forward sample depth.",
+          "severity": "HIGH",
+          "asset_class": "FUTURES",
+          "recommended_action": "Bind promotion to asset-specific forward-evidence thresholds and block high-conviction or live rollout when those thresholds are not met."
+        },
+        {
+          "category": "Source Integration Governance",
+          "issue": "Non-crypto and copytrader sources are spread across multiple workflows and JSON outputs, which increases latency and makes stale or missing source ingestion harder to detect quickly.",
+          "severity": "MEDIUM",
+          "asset_class": null,
+          "recommended_action": "Create a single source manifest with freshness expectations, landing tables, and ownership so missing feeds are surfaced as pipeline failures rather than silent gaps."
+        }
+      ],
+      "summary": "The repo is actively building better governance around TP/SL, scoring, and multi-asset pipelines, but operational confidence still depends too much on manual interpretation. The next optimization step is not another isolated script; it is tighter runtime observability and promotion gating."
+    }
+  ],
+  "database_sync_status": {
+    "mysql_50webs_ejaguiar1_stocks": "ERROR",
+    "godaddy_mirror": "ERROR",
+    "last_sync_time": null,
+    "details": "Code inspection verified the intended mirror path: db-sync-to-mirror.yml performs a scheduled full 50webs-to-GoDaddy sync, and db-sync-bidirectional.yml performs a later user-data merge sync. Current runtime sync state could not be proven in this session because direct MySQL environment variables were absent locally and the active Python environment did not include pymysql for a read-only probe. GoDaddy FTP mirror credentials were present locally, but no live freshness check was completed."
+  },
+  "backdated_fixes_applied": [
+    {
+      "asset_class": "FOREX",
+      "fix_description": "FOREX TP/SL policy was tightened back toward 0.3% take profit and 0.2% stop loss after prior wider targets failed to hit take profit reliably in historical closed trades.",
+      "date_range_affected": "Historical forex trades prior to the April 2026 strategy reset",
+      "applied_by": "repo_history",
+      "timestamp": "2026-04-07 00:00:00"
+    },
+    {
+      "asset_class": "EQUITY",
+      "fix_description": "Non-crypto macro gates were hardened so missing macro inputs no longer silently pass equity and forex trades, and VIX handling was aligned with stricter confidence controls.",
+      "date_range_affected": "Historical non-crypto scoring and gate behavior prior to 2026-04-07",
+      "applied_by": "repo_history",
+      "timestamp": "2026-04-07 00:00:00"
+    },
+    {
+      "asset_class": "ETF",
+      "fix_description": "Dedicated ETF strategy and TP/SL handling was introduced to replace generic stock-style handling that previously distorted basket-level exits and performance attribution.",
+      "date_range_affected": "ETF picks generated before dedicated ETF strategy support was added",
+      "applied_by": "repo_history",
+      "timestamp": "2026-04-07 00:00:00"
+    },
+    {
+      "asset_class": "FUTURES",
+      "fix_description": "Dedicated futures strategy support and volatility-aware TP/SL policy were added to replace sparse, previously under-tracked futures handling and improve consistency for futures and micro-futures picks.",
+      "date_range_affected": "Futures and micro-futures tracking prior to the April 2026 futures pipeline expansion",
+      "applied_by": "repo_history",
+      "timestamp": "2026-04-09 00:00:00"
+    }
+  ]
+}

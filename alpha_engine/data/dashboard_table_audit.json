@@ -1,0 +1,167 @@
+{
+  "audit_date": "2026-03-21",
+  "dashboard_file": "audit_dashboard/index.html",
+  "total_sections": 20,
+  "sections": [
+    {
+      "name": "Summary Cards (renderSummary)",
+      "location": "Top of page, always visible",
+      "data": "Active picks count, closed count, win rate, total PnL, profit factor, expectancy, avg win/loss, proven vs probation breakdown. Includes live PnL cards when Binance API is reachable.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Core KPIs at a glance. Already filters by score tier and proven-only toggles. Could add Sharpe ratio card."
+    },
+    {
+      "name": "Cross-System Agreement Matrix (renderAgreementMatrix)",
+      "location": "Below summary, above tabs",
+      "data": "Grid of 23 tracked symbols x all systems. Shows LONG/SHORT arrows per system per symbol. Deduped by system groups. Includes credibility ranking, performance tooltips, forward validation.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Shows system-level consensus. Credibility-weighted ranking is good. The AGREE row at bottom provides actionable direction consensus. Strategy-level detail now in the new Strategy Consensus Matrix below it."
+    },
+    {
+      "name": "Strategy Consensus Matrix (renderStrategyConsensus) -- NEW",
+      "location": "Below agreement matrix, above tabs",
+      "data": "Groups active picks by symbol+direction, classifies each strategy as winner/loser/untracked based on closed trade WR. Shows conviction level (VERY_HIGH/HIGH/MEDIUM/LOW/NONE). Entries with 0 winners collapsed.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Strategy-level consensus is the real signal. Shows which specific strategies with proven track records agree on a trade. Recency of last closed trade shown to detect stale strategies. Directly actionable for trade decisions."
+    },
+    {
+      "name": "Overview Tab (renderOverview)",
+      "location": "Tab: Overview",
+      "data": "Performance Breakdown (Proven/Sandbox/Probation/Demoted tiers), Asset Class Breakdown (Crypto/Forex/Equity), System Leaderboard (composite score ranking), Systems with Active Picks AND Positive History, Open Forward-Trades Live P/L by System.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "The tier breakdown is critical -- shows proven systems at 50%+ WR vs sandbox dragging averages down. Composite ranking is modeled after CTA fund methodology. The 'Active + Positive History' table is immediately actionable."
+    },
+    {
+      "name": "Active Picks Tab (renderPicks -- active)",
+      "location": "Tab: Active Picks",
+      "data": "Full table of all currently open positions with symbol, direction, entry/TP/SL, PnL, score, confidence, strategy, system, trust tier, age. Filterable by system, asset class, direction, score tier.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Core trading view. Score column already uses composite scoring. Trust tier badges visible. Could add a 'strategy WR on this symbol' column to match SCM data."
+    },
+    {
+      "name": "Closed Picks Tab (renderPicks -- closed)",
+      "location": "Tab: Closed Picks",
+      "data": "Recent closed trades with outcome, PnL, duration, strategy, system. Same filters as active.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Essential for tracking what worked. Duration data helps optimize hold times. Could add 'would this still be winning if held longer' analysis."
+    },
+    {
+      "name": "Portfolios Tab (renderPortfolios + renderClaudePortfolios)",
+      "location": "Tab: Portfolios",
+      "data": "Paper trading portfolios with equity curves, P/L, win rates, drawdowns. Claude's AI Portfolios with 4-AI consensus firewall. 12+ simulated portfolios including Prop Firm challenges.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Shows real-world portfolio impact of different strategy selections. Prop firm challenge tracking validates whether the system can pass funded account rules. Commission and slippage modeled."
+    },
+    {
+      "name": "Dashboards Tab (renderDashboards)",
+      "location": "Tab: Dashboards",
+      "data": "Links to all live dashboards (Audit, Alpha, KIMI, Monitor, Paper Trading, etc.). Discord channel configuration. Discord alert history.",
+      "assessment": "POTENTIAL -- needs link health checks",
+      "reasoning": "Navigation hub. Useful for discovery but doesn't directly improve trade quality. Could add uptime monitoring for each dashboard URL."
+    },
+    {
+      "name": "Systems Tab (renderSystems)",
+      "location": "Tab: Systems",
+      "data": "Card grid of all trading systems with status, win rate, PnL, active/closed counts, probation status.",
+      "assessment": "POTENTIAL -- needs strategy-level drill-down",
+      "reasoning": "Gives system overview but doesn't break down to individual strategy performance within each system. The Leaderboard tab has more detail. Could merge or add strategy breakdown on click."
+    },
+    {
+      "name": "BT vs Forward Tab (renderBtVsFwd)",
+      "location": "Tab: BT vs Forward",
+      "data": "Table comparing backtest WR vs forward-test WR per strategy. Shows decay (FWD WR - BT WR). Sortable by any column.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Critical for detecting overfitting. Negative decay = strategy is overfit to historical data. This data should feed into the scoring formula to penalize strategies with large negative decay."
+    },
+    {
+      "name": "Leaderboard Tab (renderLeaderboard)",
+      "location": "Tab: Leaderboard",
+      "data": "Strategy-level leaderboard with WR, PnL, trade count, profit factor. Filterable by system, sortable by any column.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Strategy-level granularity is exactly what's needed. Shows which specific algorithms perform best. Could add per-symbol breakdown and regime-specific performance."
+    },
+    {
+      "name": "Bundles Tab (renderBundles)",
+      "location": "Tab: Bundles",
+      "data": "Strategy bundles (groups of strategies) with blended WR, total return, quality score. Forward-confirmed vs backtest-projected confidence levels.",
+      "assessment": "POTENTIAL -- needs live tracking",
+      "reasoning": "Shows which strategy combinations work together. Quality score is useful but needs live paper-trading validation. Currently mostly backtest-projected."
+    },
+    {
+      "name": "Permutations Tab (renderPermutations)",
+      "location": "Tab: Permutations",
+      "data": "System permutations and strategy permutations with trust levels, composite scores. Portfolio optimization via exhaustive combination testing. Best/worst system pairs.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Identifies best system pairs (e.g., momentum+trend+volume = 64% WR). The pair affinity data directly improves consensus scoring. Trust levels (highly_trusted, trusted) are actionable filters."
+    },
+    {
+      "name": "Performance Tab (renderPerformance)",
+      "location": "Tab: Performance",
+      "data": "6 sections: (1) Score Band Analysis, (2) Confidence/Direction/Asset breakdowns, (3) Strategy-level P/L table with Sharpe estimates, (4) Cumulative PnL over time chart, (5) Score Accuracy Analysis (validates scoring formula), (6) Super Parameter Analysis with interactive filters, (7) Regime Validation (Mercury's Checklist).",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "The Score Accuracy Analysis is critical -- it validates whether the scoring formula actually predicts winners. The regime validation checks whether the regime meta-router improves trade selection. Mercury's 3-check framework (signal-to-trade ratio, regime-specific WR, max DD reduction) is rigorous."
+    },
+    {
+      "name": "Warnings Tab (renderPicks -- warnings)",
+      "location": "Tab: Warnings (hidden if no warnings)",
+      "data": "Picks with warning flags (stale, conflicting signals, etc.)",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Surfaces problematic picks that need attention. Should be more prominent when warnings exist."
+    },
+    {
+      "name": "Audit Log Tab (renderAuditLog)",
+      "location": "Tab: Audit Log",
+      "data": "Recent audit events (picks posted, TP/SL hits, reversals) and filter decisions (why picks were blocked/passed).",
+      "assessment": "POTENTIAL -- needs pattern analysis",
+      "reasoning": "Raw event log is useful for debugging but not directly actionable for trading. Could aggregate: 'filter X blocked Y picks that would have been winners' to tune filters."
+    },
+    {
+      "name": "Score Tracker Tab (renderScoreTracker)",
+      "location": "Tab: Score Tracker",
+      "data": "Snapshots top 10 scored picks every 10 minutes to localStorage. Tracks what-if P/L of high-scored picks over time.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Validates scoring in real-time. If high-score picks consistently move favorably, the scoring formula is working. Critical feedback loop for score tuning."
+    },
+    {
+      "name": "ML Health Tab (renderMLHealth)",
+      "location": "Tab: ML Health",
+      "data": "ML system status cards showing model type, mode (active/heuristic/disabled), CV AUC, staleness, version.",
+      "assessment": "USEFUL -- feeds scoring",
+      "reasoning": "Shows which ML models are functioning vs stale/disabled. AUC < 0.50 = anti-predictive and should be disabled. Staleness alerts prevent trading on outdated models."
+    },
+    {
+      "name": "Claude Top Picks Tab (renderClaudeTopPicks)",
+      "location": "Tab: Claude Top Picks",
+      "data": "Claude's AI-selected top 3 picks with reasoning, live P/L tracking.",
+      "assessment": "POTENTIAL -- needs longer track record",
+      "reasoning": "Interesting AI-curated view but needs 50+ closed picks to validate whether Claude's selection adds alpha over the scoring formula."
+    },
+    {
+      "name": "4-AI Battle Tab (renderAIBattle)",
+      "location": "Tab: 4-AI Battle",
+      "data": "Head-to-head comparison of 4 AI agents (Claude, Grok, Mercury, Codex) with independent picks and P/L tracking across multiple phases.",
+      "assessment": "POTENTIAL -- needs more phases",
+      "reasoning": "Novel approach to AI evaluation. Phase 1 showed all-SHORT bias. Phase 2 picks are fresh. Need 3+ phases with 50+ picks each to draw statistically significant conclusions about which AI is best at pick selection."
+    }
+  ],
+  "missing_sections": [
+    "Symbol-level heat map (which symbols are most profitable across all strategies)",
+    "Time-of-day analysis (when do winning trades cluster)",
+    "Correlation matrix between strategy signals (are they truly independent or just echoing?)",
+    "Drawdown waterfall chart (max consecutive losses per strategy)",
+    "Risk-adjusted return comparison (Sharpe/Sortino/Calmar per strategy)",
+    "Strategy family clustering (momentum vs trend vs volume vs on-chain groups)"
+  ],
+  "key_findings": {
+    "feeds_scoring": 12,
+    "potential": 5,
+    "noise": 0,
+    "all_sections_have_value": true,
+    "top_priority_improvements": [
+      "BT vs Forward decay should penalize scoring for overfit strategies",
+      "Permutations pair affinity data should boost consensus scoring when best pairs agree",
+      "Score Accuracy Analysis verdict should auto-adjust scoring weights if score is not predictive",
+      "Strategy Consensus Matrix recency data should deprioritize stale strategies (>7d since last close)"
+    ]
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "last_updated": "2026-03-13T14:30:00Z",
+  "purpose": "Historical lessons for resolving conflicts between trading systems. Updated as contested picks resolve.",
+
+  "trust_hierarchy": [
+    {
+      "rank": 1,
+      "system": "Battleground DNA (6 forward strategies)",
+      "win_rate": 0.652,
+      "total_pnl_pct": 105.30,
+      "closed_trades": 210,
+      "statistically_significant_alpha": ["multi_period_rsi_confluence_eth (p=0.0006)", "drawdown_recovery_rsi_eth (p=0.004)", "keltner_compression_expansion_sol (p=0.022)"],
+      "when_to_trust": "Always. When Battleground disagrees with any other system, trust Battleground."
+    },
+    {
+      "rank": 2,
+      "system": "Cross-Aggregation SUPER (4+ systems agree)",
+      "win_rate": 0.575,
+      "total_pnl_pct": 64.28,
+      "closed_trades": 40,
+      "best_trade": "+8.74% ADAUSDT",
+      "when_to_trust": "When 4+ systems agree on same symbol+direction. No single system has overridden a SUPER signal correctly in our dataset."
+    },
+    {
+      "rank": 3,
+      "system": "Mega Mutation MACD_RSI",
+      "win_rate": 0.833,
+      "sharpe_range": "4.79-8.38",
+      "closed_trades": 7,
+      "when_to_trust": "On small/mid-cap altcoins (ENA, JUP, STX, WIF). Overrides LuxAlgo SELL on alts. EXCEPTION: EMA_CROSS picks (AVAX, DOT) are less reliable — there LuxAlgo was right."
+    },
+    {
+      "rank": 4,
+      "system": "System F Claws of Doom (Fear Contrarian)",
+      "win_rate": 0.525,
+      "total_pnl_pct": 41.01,
+      "closed_trades": 59,
+      "when_to_trust": "ONLY at initial F&G extreme (<15). First bounce = edge. Second bounce at same F&G level = no edge. Feb 24-25 first bounce worked (+6% ETH, +6.8% SOL). Feb 26-28 second bounce at same F&G=11 failed."
+    },
+    {
+      "rank": 5,
+      "system": "LuxAlgo SELL (RSI overbought)",
+      "win_rate": null,
+      "closed_trades": 15,
+      "when_to_trust": "Valid SHORT-TERM (24-48h) on LARGE-CAPS (BTC, ETH, SOL) when RSI>70 and RSI prediction shows drop to <40. Do NOT use to override Mega Mutation on altcoins."
+    },
+    {
+      "rank": 6,
+      "system": "Alpha Engine SHORT signals",
+      "win_rate": 0.667,
+      "total_pnl_pct": 18.40,
+      "closed_trades": 6,
+      "best_strategies": ["multi_timeframe_ema_stack SHORT (FIL +6%)", "volume_profile_poc_reversion SHORT (COIN +7%)", "widened_tp_momentum_carry (NEAR +6%)"],
+      "when_to_trust": "Alpha Engine SHORT signals outperform its LONG signals. When Alpha LONG conflicts with Alpha SHORT on same asset, lean SHORT."
+    }
+  ],
+
+  "never_trust_in_conflicts": [
+    {
+      "system": "System A/B (ml_battleground)",
+      "win_rate": 0.053,
+      "total_pnl_pct": -63.0,
+      "reason": "Fired SELL at F&G=11 (extreme fear). Market always bounces from F&G<15. 19 trades, 1 win."
+    },
+    {
+      "system": "Stale predictions system",
+      "reason": "324 old picks from weeks ago. ADAUSDT -71%, LTCUSDT -46%, SOLUSDT -35%. Inflates BUY consensus counts artificially."
+    },
+    {
+      "system": "KIMI standalone",
+      "win_rate": 0.200,
+      "total_pnl_pct": -125.38,
+      "reason": "20% WR as solo signal. BUT: as a confirmer (inside SUPER consensus with 3+ systems), KIMI-containing signals are profitable. Value = confirmer, not initiator."
+    },
+    {
+      "system": "Paper Trading",
+      "win_rate": 0.382,
+      "total_pnl_pct": -124.45,
+      "reason": "Heavy losses across 34 trades."
+    }
+  ],
+
+  "conflict_resolution_rules": [
+    {
+      "rule_id": 1,
+      "rule": "Recency beats count",
+      "detail": "A fresh 2-system SELL > a 42-system stale BUY. Apply 48h half-life decay before comparing signal counts.",
+      "evidence": "Mar 13 scan: 42 stale BUY vs 23 fresh SELL on BTCUSDT. The stale BUYs were from predictions system (weeks old). After recency decay, all 25 conflicted symbols leaned SELL."
+    },
+    {
+      "rule_id": 2,
+      "rule": "SUPER consensus (4+ systems) beats any individual signal",
+      "detail": "57.5% WR, +64.28% cumulative. No individual system has correctly overridden a SUPER signal in our dataset.",
+      "evidence": "ADAUSDT SUPER (4 systems) won +8.74%. ETHUSDT SUPER (7 systems) won +6.0%. BTCUSDT SUPER (8 systems) has +8.81% unrealized."
+    },
+    {
+      "rule_id": 3,
+      "rule": "Mega Mutation MACD_RSI > LuxAlgo SELL on altcoins",
+      "detail": "Tournament-proven WR 77-88% override short-term RSI overbought signals on ENA/JUP/STX/WIF.",
+      "evidence": "WIF +9.58%, JUP +1.59%, STX +1.28% — all LONG despite LuxAlgo SELL. Exception: AVAX (EMA_CROSS, not MACD_RSI) where LuxAlgo SELL was right.",
+      "exception": "EMA_CROSS picks (AVAX, DOT) have worse outcomes than MACD_RSI picks. On EMA_CROSS conflicts, defer to LuxAlgo."
+    },
+    {
+      "rule_id": 4,
+      "rule": "Hayes Liquidity Index = direction only, NOT entry signal",
+      "detail": "Macro direction (Fed BS expansion) was correct (BTC $67.5K→$73.5K = +8.8%) but specific ETH entry at $2,111 hit SL (-4%).",
+      "evidence": "Use Hayes for LONG/SHORT bias. Wait for RSI to cool below 50 before entering. Don't enter on the Hayes signal alone."
+    },
+    {
+      "rule_id": 5,
+      "rule": "Extreme Fear (F&G<15) invalidates SELL signals",
+      "detail": "The market always bounces from F&G<15. System A fired 19 SELLs at F&G=11, lost -62.49%.",
+      "evidence": "Feb 25 F&G=11: System A SELL lost, System F BUY won. The fear itself signals smart money entry."
+    },
+    {
+      "rule_id": 6,
+      "rule": "Entry timing matters more than direction",
+      "detail": "SUPER picks at lower prices (Mar 9-10, BTC $66-67K) all won. STRONG picks at higher prices (Mar 10, ETH $2,050-$2,080) all lost. Same direction, different outcome.",
+      "evidence": "The line between winning and losing was price level, not signal quality. Systems that entered 2-3% lower won; those that entered at resistance lost."
+    },
+    {
+      "rule_id": 7,
+      "rule": "RSI>70 multi-asset reversal overrides LONG consensus",
+      "detail": "When RSI>70 on 3+ large-caps (BTC, ETH, SOL) simultaneously, it signals a broad market reversal. LONG consensus becomes unreliable regardless of system count or trust hierarchy. Even Battleground DNA and SUPER consensus lose in this regime.",
+      "evidence": "2026-03-13: RSI>70 on BTC (73), ETH (76), SOL (71), AVAX (77), XRP (est). All 5 LONG calls lost 3-4% within 5h. Antigravity's fresh SELL calls were correct. Claude's 7/11 system LONG consensus + Hayes macro bullish were both wrong."
+    },
+    {
+      "rule_id": 8,
+      "rule": "Cross-timeframe signals are NOT conflicts",
+      "detail": "A SCALP SHORT (<4h hold) and a SWING LONG (1-7d hold) on the same symbol are NOT contradictory — they can BOTH be correct. Only flag conflicts between picks on the same or adjacent timeframe tiers. Tiers: SCALP (<4h), INTRADAY (4-24h), SWING (1-7d), POSITION (7d+). Same-tier or adjacent-tier = real conflict. 2+ tiers apart = compatible trades on different horizons.",
+      "evidence": "2026-03-15: Battleground keltner_compression_expansion_sol_v1 fired SOL SHORT (INTRADAY, 12-bar hold on 1H) while 5 AI Challenge curators picked SOL LONG (SWING, multi-day hold). The SHORT was a valid 1H pullback scalp within a larger uptrend. Both could profit — SHORT captures the dip, LONG captures the recovery. Flagging this as a 'conflict' was incorrect and would have led to suppressing the SHORT signal, which had 64.1% WR across 38 trades."
+    }
+  ],
+
+  "resolution_history": [
+    {
+      "date": "2026-03-13",
+      "batch": "v70_contested_picks",
+      "elapsed_hours": 4.6,
+      "symbols": ["ETHUSDT", "BTCUSDT", "SOLUSDT", "XRPUSDT", "AVAXUSDT"],
+      "overall_winner": "ANTIGRAVITY (fresh SELL signals)",
+      "overall_loser": "CLAUDE (stale LONG consensus + Hayes macro bias)",
+      "price_changes": {
+        "ETHUSDT": -4.12,
+        "BTCUSDT": -3.39,
+        "SOLUSDT": -3.54,
+        "XRPUSDT": -3.29,
+        "AVAXUSDT": -4.21
+      },
+      "rules_validated": [
+        "RULE1: Recency beats count — 23 fresh SELL > 42 stale BUY. ALL 5 symbols dropped >3%.",
+        "RULE2: LuxAlgo SELL valid 24-48h — RSI overbought signals on BTC/ETH/SOL all correct within 5h.",
+        "RULE6: Entry timing > direction — Hayes macro LONG was directionally right medium-term but entering at RSI>70 was too high."
+      ],
+      "rules_busted": [
+        "RULE2 partially: SUPER consensus (4+ systems LONG) did NOT beat fresh SELL signals this time. 6-7 system LONG consensus on ETH/BTC was wrong.",
+        "RULE3: Mega Mutation override was wrong for AVAX (EMA_CROSS, -4.21%). Exception already documented but this confirms it."
+      ],
+      "new_lessons": [
+        "When RSI>70 across multiple large-caps simultaneously, it indicates a broader market reversal — individual system LONG consensus becomes unreliable.",
+        "Stale signal count inflation can make even SUPER consensus (4+ systems) misleading if most of those systems are stale.",
+        "Mega Mutation 0% WR on 7 recent picks (all SLs hit) — historical Sharpe 5-8 from 7 trades was insufficient sample size. Demote to WATCH."
+      ]
+    }
+  ],
+  "notes": "This file is updated by contested_pick_checker.py as picks resolve. Each resolution adds to resolution_history with the outcome and which rules were validated or busted. Also updated manually during quant reviews."
+}

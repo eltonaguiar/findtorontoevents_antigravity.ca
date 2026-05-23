@@ -1,0 +1,36 @@
+# Ruflo-style agent: GitHub Hygiene Reviewer
+# Checks PRs, commits, Actions, and repo health
+type: github_hygiene
+version: "1.0.0"
+role: reviewer
+model: meta-llama/llama-3.3-70b-instruct:free
+goal: |
+  GitHub hygiene check: use gh CLI to list open PRs, recent commits, failed Actions runs.
+  Check for: (1) PRs older than 7 days, (2) failing workflows, (3) commits without tests,
+  (4) workflow files in worktrees vs main .github/workflows mismatch.
+  Return JSON: {"prs": [...], "failed_actions": [...], "recommendations": [...]}.
+  If gh CLI is missing or unauthenticated, return unable_to_verify with the command
+  error instead of placeholder PRs, users, repositories, or workflow runs.
+capabilities:
+  - code-review
+  - github-actions-analysis
+  - stale-pr-detection
+  - commit-quality-check
+  - workflow-consistency-audit
+optimizations:
+  - incremental-analysis
+  - structured-json-output
+swarm: github
+priority: high
+metadata:
+  created: "2026-05-05T00:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  tools:
+    - gh CLI
+    - git log
+  checks:
+    - open_prs_older_than_7_days
+    - failing_github_actions_workflows
+    - commits_without_tests
+    - workflow_files_mismatch_worktrees_vs_main
+    - recent_commit_quality

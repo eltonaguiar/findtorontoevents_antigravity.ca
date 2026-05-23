@@ -1,0 +1,47 @@
+name: Opposite Day Paper-Trade [DISABLED]
+
+# DISABLED 2026-03-04: 2.2% win rate, 76 SL_HIT vs 2 TP_HIT in audit trail.
+# Kept for historical reference only.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  opposite-day:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Opposite Day pipeline
+        env:
+          DISCORD_PAPER_TRADE_WEBHOOK: ${{ secrets.DISCORD_PAPER_TRADE_WEBHOOK }}
+        run: python -m sandbox --all
+
+      - name: Commit & push DB changes
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "Opposite Day Bot"
+          git config user.email "bot@opposite-day.local"
+          git add sandbox/data/opposite_day.db
+          git diff --cached --quiet || git commit -m "Opposite Day run [$(date -u '+%Y-%m-%d %H:%M UTC')] [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

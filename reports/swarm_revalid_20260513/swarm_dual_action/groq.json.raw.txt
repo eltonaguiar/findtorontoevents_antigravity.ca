@@ -1,0 +1,24 @@
+```json
+{
+  "item_1_vix_yc_wire_up": {
+    "verdict": "PROCEED",
+    "merge_safety": "safe",
+    "function_name_concern": "add_new_function",
+    "default_state": "OFF",
+    "biggest_risk": "Two yfinance fetches now in hot path may cause performance issues.",
+    "concrete_changes_recommended": [
+      "Add _fetch_yc_now() function to fetch (^TNX - ^FVX) spread",
+      "Add get_cached_yc() function with 4h TTL",
+      "Modify should_reject_equity_pick() to check YC when YC_REGIME_GATE_ENABLED=1"
+    ]
+  },
+  "item_2_ns_a_db_verify": {
+    "recommended_option": "C",
+    "rationale": "A new standalone verifier script is the most efficient way to verify the DB without affecting existing cron jobs or workflows.",
+    "expected_outcome": "verifies edge",
+    "blocking_for_real_money_sizing": "yes"
+  },
+  "priority_order": ["item_2_first"],
+  "single_most_important_consideration_across_both": "Verify the accuracy of the multi_asset_cot performance metrics before proceeding with real-money sizing."
+}
+```

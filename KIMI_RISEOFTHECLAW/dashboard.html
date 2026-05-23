@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alpha — Live Trading Dashboard</title>
+    <meta name="description"
+        content="Live paper trading dashboard: 10 strategies × 12 assets. Real market data. Real signals. Track record built in public.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a28;
+            --border: #2a2a3a;
+            --text: #e8e8f0;
+            --text2: #8888aa;
+            --green: #00ff88;
+            --green-dim: #00cc6a;
+            --red: #ff4466;
+            --red-dim: #cc3355;
+            --blue: #4488ff;
+            --gold: #ffaa00;
+            --purple: #aa66ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(68, 136, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(68, 136, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, rgba(68, 136, 255, 0.1), rgba(170, 102, 255, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--blue), var(--purple));
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .sub {
+            color: var(--text2);
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        .header .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 12px;
+        }
+
+        .badge-live {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .badge-method {
+            background: rgba(68, 136, 255, 0.15);
+            color: var(--blue);
+            border: 1px solid rgba(68, 136, 255, 0.3);
+        }
+
+        /* Stats row */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 0.7rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-card .value.green {
+            color: var(--green);
+        }
+
+        .stat-card .value.red {
+            color: var(--red);
+        }
+
+        .stat-card .value.blue {
+            color: var(--blue);
+        }
+
+        .stat-card .value.gold {
+            color: var(--gold);
+        }
+
+        /* Position cards */
+        .positions {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .position {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .position:hover {
+            border-color: var(--blue);
+        }
+
+        .position.winning {
+            border-left: 3px solid var(--green);
+        }
+
+        .position.losing {
+            border-left: 3px solid var(--red);
+        }
+
+        .position.flat {
+            border-left: 3px solid var(--text2);
+        }
+
+        .pos-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .pos-icon {
+            font-size: 1.5rem;
+        }
+
+        .pos-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .pos-symbol {
+            color: var(--text2);
+            font-size: 0.85rem;
+            margin-left: 8px;
+        }
+
+        .pos-reason {
+            color: var(--text2);
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .pos-strategies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .pos-strat-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(68, 136, 255, 0.1);
+            color: var(--blue);
+            border: 1px solid rgba(68, 136, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pos-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .level {
+            text-align: center;
+        }
+
+        .level .lbl {
+            font-size: 0.65rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .level .val {
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .level .val.entry {
+            color: var(--text);
+        }
+
+        .level .val.tp {
+            color: var(--green);
+        }
+
+        .level .val.sl {
+            color: var(--red);
+        }
+
+        .level .val.current {
+            color: var(--gold);
+        }
+
+        /* PnL display */
+        .pnl-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .pnl-pct {
+            font-size: 1.8rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pnl-dollar {
+            font-size: 0.9rem;
+            color: var(--text2);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pnl-status {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* Progress bar (TP/SL tracker) */
+        .tp-sl-bar {
+            margin-top: 10px;
+            position: relative;
+            height: 8px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: visible;
+        }
+
+        .tp-sl-bar .fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .tp-sl-bar .marker {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 16px;
+            border-radius: 1px;
+        }
+
+        .tp-sl-bar .marker.entry {
+            background: var(--text2);
+        }
+
+        .tp-sl-bar .marker.current {
+            background: var(--gold);
+            width: 4px;
+            top: -6px;
+            height: 20px;
+        }
+
+        /* Methodology section */
+        .methodology {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .methodology h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: var(--blue);
+        }
+
+        .strat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .strat-item {
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .strat-item .strat-name {
+            font-weight: 700;
+            color: var(--green);
+            font-size: 0.75rem;
+        }
+
+        .strat-item .strat-src {
+            color: var(--text2);
+            font-size: 0.7rem;
+            margin-top: 4px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text2);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading skeleton */
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Live dot */
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            bg: var(--green);
+            border-radius: 50%;
+            display: inline-block;
+            background: var(--green);
+            animation: blink 1.5s infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .pos-levels {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .position {
+                grid-template-columns: 1fr;
+            }
+
+            .pnl-cell {
+                align-items: flex-start;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+
+        <div class="header">
+            <h1>ANTIGRAVITY ALPHA ENGINE</h1>
+            <div class="sub">10 Strategies × 12 Assets — Forward-Looking Signal System</div>
+            <div style="margin-top: 12px">
+                <span class="badge badge-live"><span class="live-dot"></span> Paper Trading Live</span>
+                <span class="badge badge-method">$0 Data Budget</span>
+            </div>
+        </div>
+
+        <!-- Stats populated by JS -->
+        <div class="stats" id="stats-row"></div>
+
+        <!-- Positions -->
+        <div class="positions" id="positions"></div>
+
+        <!-- Methodology -->
+        <div class="methodology">
+            <h2>📊 Strategy Arsenal — 10 Signals Scanned Per Asset</h2>
+            <div class="strat-grid">
+                <div class="strat-item">
+                    <div class="strat-name">1. RSI(2) Mean Reversion</div>
+                    <div class="strat-src">Connors & Alvarez 2004 — 77% WR proven on SPY</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">2. Fear & Greed Contrarian</div>
+                    <div class="strat-src">Baker & Wurgler 2006 — alternative.me API</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">3. Funding Rates</div>
+                    <div class="strat-src">Binance fapi — perpetual futures sentiment</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">4. BTC Dominance Rotation</div>
+                    <div class="strat-src">Liu & Tsyvinski 2021 — relative strength</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">5. MACD Crossover</div>
+                    <div class="strat-src">Gerald Appel 1979 — momentum</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">6. Stochastic Oscillator</div>
+                    <div class="strat-src">George Lane — oversold/overbought</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">7. Bollinger Squeeze</div>
+                    <div class="strat-src">John Bollinger 2001 — volatility breakout</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">8. Volume Spike</div>
+                    <div class="strat-src">Wyckoff Method — institutional flow</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">9. Golden/Death Cross</div>
+                    <div class="strat-src">Brock et al. 1992 — SMA50 vs SMA200</div>
+                </div>
+                <div class="strat-item">
+                    <div class="strat-name">10. OBV Divergence</div>
+                    <div class="strat-src">Joe Granville 1963 — smart money flow</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Built by <strong>Antigravity</strong> — $0 budget, public APIs only</p>
+            <p style="margin-top:6px">
+                <a href="/updates/">← Updates</a> ·
+                <a href="/KIMI_RISEOFTHECLAW/METHODOLOGY_AUDIT_TRAIL.md">Audit Trail</a> ·
+                <a href="/KIMI_RISEOFTHECLAW/data/forward_signals_current.json">Raw Signals JSON</a> ·
+                <a href="/KIMI_RISEOFTHECLAW/data/paper_portfolio.json">Portfolio JSON</a>
+            </p>
+            <p style="margin-top:8px;font-size:0.7rem;color:#555">
+                Disclaimer: Paper trading simulation only. Not financial advice. Past performance ≠ future results.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Portfolio data embedded at build time — updated by Python script
+        const PORTFOLIO = PORTFOLIO_DATA_PLACEHOLDER;
+
+        function formatPrice(p) {
+            if (p >= 1000) return '$' + p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (p >= 1) return '$' + p.toFixed(2);
+            return '$' + p.toFixed(6);
+        }
+
+        function renderDashboard(portfolio) {
+            const positions = portfolio.positions || [];
+            const closed = portfolio.closed_positions || [];
+            const all = [...positions, ...closed];
+
+            // Calculate stats
+            let totalPnl = 0, wins = 0, losses = 0;
+            const posData = [];
+
+            for (const pos of all) {
+                const current = pos.exit_price || pos.current_price || pos.entry_price;
+                const pnlPct = ((current - pos.entry_price) / pos.entry_price * 100);
+                const pnlDollar = pos.invested * pnlPct / 100;
+                totalPnl += pnlDollar;
+                if (pnlPct > 0) wins++; else losses++;
+
+                const tpDist = ((pos.tp - current) / current * 100);
+                const slDist = ((pos.sl - current) / current * 100);
+                let status = 'OPEN';
+                if (pos.status === 'CLOSED_TP') status = '🏆 TP HIT';
+                else if (pos.status === 'CLOSED_SL') status = '💀 SL HIT';
+                else if (pnlPct > 1) status = '🟢 WINNING';
+                else if (pnlPct < -1) status = '🔴 BEHIND';
+                else status = '⚪ FLAT';
+
+                posData.push({ ...pos, current, pnlPct, pnlDollar, tpDist, slDist, status });
+            }
+
+            const portfolioReturn = (totalPnl / portfolio.starting_capital * 100);
+
+            // Stats row
+            const statsHtml = `
+            <div class="stat-card"><div class="label">Portfolio Value</div><div class="value blue">$${(portfolio.starting_capital + totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div></div>
+            <div class="stat-card"><div class="label">Total P&L</div><div class="value ${totalPnl >= 0 ? 'green' : 'red'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div></div>
+            <div class="stat-card"><div class="label">Return</div><div class="value ${portfolioReturn >= 0 ? 'green' : 'red'}">${portfolioReturn >= 0 ? '+' : ''}${portfolioReturn.toFixed(2)}%</div></div>
+            <div class="stat-card"><div class="label">Active</div><div class="value blue">${positions.length}</div></div>
+            <div class="stat-card"><div class="label">Strategies</div><div class="value gold">10</div></div>
+            <div class="stat-card"><div class="label">Assets Scanned</div><div class="value gold">12</div></div>
+        `;
+            document.getElementById('stats-row').innerHTML = statsHtml;
+
+            // Position cards
+            const icons = { 'AVAX-USD': '🔺', 'BTC-USD': '₿', 'TSLA': '⚡', 'QQQ': '📈', 'DOGE-USD': '🐕' };
+
+            let posHtml = '';
+            for (const p of posData.sort((a, b) => b.pnlPct - a.pnlPct)) {
+                const cls = p.pnlPct > 0.5 ? 'winning' : (p.pnlPct < -0.5 ? 'losing' : 'flat');
+                const pnlColor = p.pnlPct >= 0 ? 'var(--green)' : 'var(--red)';
+
+                // TP/SL progress: map SL=0%, Entry=50%, TP=100%
+                const range = p.tp - p.sl;
+                const currentPct = Math.max(0, Math.min(100, ((p.current - p.sl) / range) * 100));
+                const entryPct = ((p.entry_price - p.sl) / range) * 100;
+                const barColor = p.pnlPct >= 0
+                    ? `linear-gradient(90deg, var(--red-dim) 0%, var(--surface2) ${entryPct}%, var(--green-dim) 100%)`
+                    : `linear-gradient(90deg, var(--red-dim) 0%, var(--surface2) ${entryPct}%, var(--green-dim) 100%)`;
+
+                const stratTags = (p.strategies || []).map(s => `<span class="pos-strat-tag">${s}</span>`).join('');
+
+                posHtml += `
+            <div class="position ${cls}">
+                <div>
+                    <div class="pos-header">
+                        <span class="pos-icon">${icons[p.symbol] || '📊'}</span>
+                        <span class="pos-name">${p.name}</span>
+                        <span class="pos-symbol">${p.symbol}</span>
+                    </div>
+                    <div class="pos-reason">${p.reason}</div>
+                    <div class="pos-strategies">${stratTags}</div>
+                    <div class="pos-levels">
+                        <div class="level"><div class="lbl">Entry</div><div class="val entry">${formatPrice(p.entry_price)}</div></div>
+                        <div class="level"><div class="lbl">Current</div><div class="val current">${formatPrice(p.current)}</div></div>
+                        <div class="level"><div class="lbl">Take Profit</div><div class="val tp">${formatPrice(p.tp)} (+${p.tp_pct}%)</div></div>
+                        <div class="level"><div class="lbl">Stop Loss</div><div class="val sl">${formatPrice(p.sl)} (-${p.sl_pct}%)</div></div>
+                    </div>
+                    <div class="tp-sl-bar">
+                        <div class="fill" style="width:${currentPct}%;background:${barColor}"></div>
+                        <div class="marker entry" style="left:${entryPct}%" title="Entry"></div>
+                        <div class="marker current" style="left:${currentPct}%" title="Current"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.65rem;color:var(--text2)">
+                        <span>SL ${formatPrice(p.sl)}</span>
+                        <span>TP ${formatPrice(p.tp)} (${p.tpDist >= 0 ? '+' : ''}${p.tpDist.toFixed(1)}% away)</span>
+                    </div>
+                </div>
+                <div class="pnl-cell">
+                    <div class="pnl-pct" style="color:${pnlColor}">${p.pnlPct >= 0 ? '+' : ''}${p.pnlPct.toFixed(2)}%</div>
+                    <div class="pnl-dollar" style="color:${pnlColor}">${p.pnlDollar >= 0 ? '+' : ''}$${p.pnlDollar.toFixed(2)}</div>
+                    <div class="pnl-status">${p.status}</div>
+                </div>
+            </div>`;
+            }
+            document.getElementById('positions').innerHTML = posHtml;
+        }
+
+        renderDashboard(PORTFOLIO);
+    </script>
+</body>
+
+</html>

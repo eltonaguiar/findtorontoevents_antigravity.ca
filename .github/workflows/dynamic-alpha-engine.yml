@@ -1,0 +1,230 @@
+name: ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+
+# Concurrency group serializes dynamic-alpha-engine against itself. Runs can
+# take 45+ min while cron fires every 30 min, so without this a new run can
+# start before the prior one finishes its push, guaranteeing lock contention.
+# cancel-in-progress: false keeps queued runs intact (data is always welcome).
+concurrency:
+  group: dynamic-alpha-engine-push
+  cancel-in-progress: false
+
+on:
+  schedule:
+    # Staggered from :00/:45 to reduce push storms with other hourly workflows
+    - cron: '18,48 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'full-cycle'
+        type: choice
+        options:
+          - full-cycle
+          - validate-only
+          - generate-only
+          - report
+          - train-ml
+      runner:
+        description: 'Runner to use'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+      use_wsl_direct:
+        description: 'Bypass GitHub Actions and run directly in WSL (fastest)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  # Job 1: Run directly in WSL (bypasses GitHub Actions queue entirely)
+  wsl-direct:
+    runs-on: windows-latest
+    if: github.event.inputs.use_wsl_direct == 'true'
+    
+    steps:
+      - name: Run Alpha Engine directly in WSL
+        shell: powershell
+        run: |
+          Write-Host " Running Alpha Engine directly in WSL (bypassing GitHub Actions)..." -ForegroundColor Cyan
+          
+          $mode = "${{ github.event.inputs.mode || 'full-cycle' }}"
+          $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
+          
+          # Run the full pipeline in WSL
+          wsl -d UbuntuRecovered -- bash -c "`
+            set -e
+            echo '========================================'
+            echo '  ALPHA ENGINE - Direct WSL Execution'
+            echo '  Mode: $mode'
+            echo '  Time: $timestamp'
+            echo '========================================'
+            
+            # Navigate to repo
+            cd /mnt/e/findtorontoevents_antigravity.ca || cd ~/repo
+            
+            # Pull latest
+            git pull origin main
+            
+            # Run scanner
+            cd alpha_engine
+            python3 production_scanner.py
+            
+            # Commit results
+            cd ..
+            git add alpha_engine/data/
+            git diff --cached --quiet || git commit -m 'ALPHA ENGINE [WSL Direct] - $timestamp [skip ci]'
+            # Commit-first-then-rebase pattern (replaces naive commit→push)
+            for i in 1 2 3 4 5; do
+              git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
+                echo "Rebase failed on attempt $i"
+                git rebase --abort 2>/dev/null || true
+                sleep $((i * 5))
+                continue
+              }
+              if git push origin main 2>&1; then
+                echo "Pushed successfully on attempt $i"
+                break
+              fi
+              sleep $((i * 5))
+            done
+            
+            echo '========================================'
+            echo '  Complete!'
+            echo '========================================'
+          "
+          
+          Write-Host " WSL Direct execution complete" -ForegroundColor Green
+
+  # Job 2: Standard GitHub Actions with dynamic runner selection
+  alpha-engine:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    if: github.event.inputs.use_wsl_direct != 'true'
+    defaults:
+      run:
+        shell: bash
+    timeout-minutes: 120
+
+    steps:
+      - name: Runner Info
+        run: |
+          echo "============================================"
+          echo "  Alpha Engine - Dynamic Runner"
+          echo "============================================"
+          echo "Runner: ${{ runner.name }}"
+          echo "OS: ${{ runner.os }}"
+          echo "Selected: ${{ inputs.runner || 'ubuntu-latest' }}"
+          echo "============================================"
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+
+      - name: Set up Python (cloud)
+        if: runner.os != 'Windows'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Set up Python (self-hosted Windows with WSL)
+        if: runner.os == 'Windows'
+        run: |
+          echo "Running on Windows self-hosted runner"
+          echo "Python should be pre-installed in WSL"
+          wsl python3 --version
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            wsl pip3 install yfinance pandas numpy scikit-learn joblib requests pymysql
+          else
+            pip install yfinance pandas numpy scikit-learn joblib requests pymysql ccxt xgboost lightgbm pyarrow pytz
+            pip install catboost 2>/dev/null || echo "catboost optional"
+          fi
+        env:
+          PIP_BREAK_SYSTEM_PACKAGES: "1"
+
+      - name: Run Alpha Engine
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          ALPHA_CONFLUENCE: "1"
+          ALPHA_TOURNAMENT: "1"
+          ALPHA_MIN_FAMILIES: "2"
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            wsl bash -c "cd /mnt/e/findtorontoevents_antigravity.ca && PYTHONPATH=/mnt/e/findtorontoevents_antigravity.ca python3 alpha_engine/production_scanner.py"
+          else
+            python alpha_engine/production_scanner.py
+          fi
+
+      - name: Commit results
+        if: success()
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "ALPHA ENGINE [$(date -u '+%Y-%m-%d %H:%M UTC')] [skip ci]"
+          # safe_push.sh handles shallow repos via --deepen=150 internally;
+          # workflow-level `git fetch --unshallow` was blowing up disk on
+          # ubuntu-latest runners (.git is 37GB). See PR for chronic-failure
+          # context.
+          # Commit-first-then-rebase pattern (replaces safe_push.sh nested retry).
+          # 2026-04-20: bumped retries 5→10 and widened exponential backoff from
+          # `i*5 + RANDOM%10` (max ~35s per attempt, ~2 min total) to
+          # `min(i*i*3, 90) + RANDOM%15` (caps at 90s per attempt, ~6-8 min total)
+          # after observing repeated "Commit results" failures in
+          # ALPHA ENGINE - Dynamic Runner. 40+ workflows all push main at
+          # overlapping cadences; short backoff exhausts while the contention
+          # window is still active. Keeps the job well within GHA time limits.
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            delay=$((i * i * 3 + RANDOM % 15))
+            [ $delay -gt 90 ] && delay=$((90 + RANDOM % 15))
+            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
+              echo "Rebase failed on attempt $i (next delay ${delay}s)"
+              git rebase --abort 2>/dev/null || true
+              sleep "$delay"
+              continue
+            }
+            # `set -e` (GHA default) exits the step on a failed `$(...)` assignment
+            # BEFORE `push_rc=$?` runs, making the retry loop dead code on push failure.
+            # Same shape fix as audit-dashboard.yml in PR #440.
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed successfully on attempt $i"
+              push_ok=true
+              break
+            fi
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "WARNING: All 10 push attempts failed — another workflow may have held the lock longer than ~8 min. Data was generated successfully; next cycle will self-heal."
+            # Non-fatal: data was generated and committed locally. The next
+            # scheduled cycle will fully re-generate the data and push it.
+            # This is safe ONLY because each cycle re-generates from scratch
+            # (fetch-depth:1 shallow clone means unpushed commits are lost on
+            # the next checkout). Do NOT change to incremental generation
+            # without also making push failures fatal again.
+            # Making this fatal caused ~85% of Alpha Engine runs to fail
+            # (26 failures + 19 cancellations in last 50 runs), wasting
+            # compute and masking real errors in noise.
+            echo "::warning::Alpha Engine push failed after 10 retries — data self-heals next cycle"
+          fi

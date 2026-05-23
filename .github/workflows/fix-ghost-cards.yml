@@ -1,0 +1,227 @@
+name: "Fix Ghost Cards & Thumbnails  All Sites"
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  patch:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download index.html from findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+          print(f'Downloading index.html from {host}...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          ftp.cwd('/findtorontoevents.ca')
+          with open('/tmp/fte_index.html', 'wb') as f:
+              ftp.retrbinary('RETR index.html', f.write)
+          ftp.quit()
+          size = os.path.getsize('/tmp/fte_index.html')
+          print(f'Downloaded findtorontoevents.ca index.html ({size} bytes)')
+          "
+
+      - name: Download index.html from torontoevent.net
+        env:
+          DST_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+          host = os.environ.get('DST_HOST', '')
+          user = os.environ.get('DST_USER', '')
+          pw   = os.environ.get('DST_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing mirror FTP credentials, will skip'); sys.exit(0)
+          print(f'Downloading index.html from {host}...')
+          try:
+              ftp = ftplib.FTP(host)
+              ftp.login(user, pw)
+              ftp.cwd('/')
+              with open('/tmp/tnet_index.html', 'wb') as f:
+                  ftp.retrbinary('RETR index.html', f.write)
+              ftp.quit()
+              size = os.path.getsize('/tmp/tnet_index.html')
+              print(f'Downloaded torontoevent.net index.html ({size} bytes)')
+          except Exception as e:
+              print(f'Download from mirror failed: {e}')
+          "
+
+      - name: Download index.html from tdotevent.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+          print(f'Downloading index.html from {host} (tdotevent.ca)...')
+          try:
+              ftp = ftplib.FTP(host)
+              ftp.login(user, pw)
+              ftp.cwd('/tdotevent.ca')
+              with open('/tmp/tdot_index.html', 'wb') as f:
+                  ftp.retrbinary('RETR index.html', f.write)
+              ftp.quit()
+              size = os.path.getsize('/tmp/tdot_index.html')
+              print(f'Downloaded tdotevent.ca index.html ({size} bytes)')
+          except Exception as e:
+              print(f'Download from tdotevent.ca failed: {e}')
+          "
+
+      - name: Patch all sites (thumbnails + ghost fix)
+        run: python3 tools/patch_thumbnails.py
+
+      - name: Upload patched index.html to findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+          filepath = '/tmp/fte_index.html'
+          if not os.path.exists(filepath):
+              print('No patched file for findtorontoevents.ca'); sys.exit(0)
+          print(f'Uploading patched index.html to {host}...')
+          ftp = ftplib.FTP(host)
+          ftp.login(user, pw)
+          ftp.cwd('/findtorontoevents.ca')
+          try:
+              with open('/tmp/fte_backup.html', 'wb') as f:
+                  ftp.retrbinary('RETR index.html', f.write)
+              with open('/tmp/fte_backup.html', 'rb') as f:
+                  ftp.storbinary('STOR index.html.bak2', f)
+              print('Created backup: index.html.bak2')
+          except Exception as e:
+              print(f'Backup failed: {e}')
+          with open(filepath, 'rb') as f:
+              ftp.storbinary('STOR index.html', f)
+          ftp.quit()
+          print('Deployed patched index.html to findtorontoevents.ca')
+          "
+
+      - name: Upload patched index.html to torontoevent.net
+        env:
+          DST_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+          host = os.environ.get('DST_HOST', '')
+          user = os.environ.get('DST_USER', '')
+          pw   = os.environ.get('DST_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing mirror FTP credentials, skipping'); sys.exit(0)
+          filepath = '/tmp/tnet_index.html'
+          if not os.path.exists(filepath):
+              print('No patched file for torontoevent.net'); sys.exit(0)
+          print(f'Uploading patched index.html to {host}...')
+          try:
+              ftp = ftplib.FTP(host)
+              ftp.login(user, pw)
+              ftp.cwd('/')
+              try:
+                  with open('/tmp/tnet_backup.html', 'wb') as f:
+                      ftp.retrbinary('RETR index.html', f.write)
+                  with open('/tmp/tnet_backup.html', 'rb') as f:
+                      ftp.storbinary('STOR index.html.bak2', f)
+                  print('Created backup: index.html.bak2')
+              except Exception as e:
+                  print(f'Backup failed: {e}')
+              with open(filepath, 'rb') as f:
+                  ftp.storbinary('STOR index.html', f)
+              ftp.quit()
+              print('Deployed patched index.html to torontoevent.net')
+          except Exception as e:
+              print(f'Mirror deploy failed: {e}')
+          "
+
+      - name: Upload patched index.html to tdotevent.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+          import ftplib, os, sys
+          host = os.environ.get('FTP_HOST', '')
+          user = os.environ.get('FTP_USER', '')
+          pw   = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('Missing FTP credentials'); sys.exit(1)
+          filepath = '/tmp/tdot_index.html'
+          if not os.path.exists(filepath):
+              print('No patched file for tdotevent.ca, skipping'); sys.exit(0)
+          print(f'Uploading patched index.html to {host} (tdotevent.ca)...')
+          try:
+              ftp = ftplib.FTP(host)
+              ftp.login(user, pw)
+              ftp.cwd('/tdotevent.ca')
+              try:
+                  with open('/tmp/tdot_backup.html', 'wb') as f:
+                      ftp.retrbinary('RETR index.html', f.write)
+                  with open('/tmp/tdot_backup.html', 'rb') as f:
+                      ftp.storbinary('STOR index.html.bak2', f)
+                  print('Created backup: index.html.bak2')
+              except Exception as e:
+                  print(f'Backup failed: {e}')
+              with open(filepath, 'rb') as f:
+                  ftp.storbinary('STOR index.html', f)
+              ftp.quit()
+              print('Deployed patched index.html to tdotevent.ca')
+          except Exception as e:
+              print(f'tdotevent.ca deploy failed: {e}')
+          "
+
+      - name: Verify fixes are live
+        run: |
+          echo "Verifying fixes..."
+          sleep 5
+
+          for SITE in "https://findtorontoevents.ca" "https://torontoevent.net" "https://tdotevent.ca"; do
+            echo ""
+            echo "=== $SITE ==="
+            curl -sL "$SITE/index.html" > /tmp/verify_tmp.html
+            echo "  GHOST CARD FIX CSS:     $(grep -c 'GHOST CARD FIX' /tmp/verify_tmp.html || echo 0) (want 0)"
+            echo "  card-thumb-placeholder: $(grep -c 'card-thumb-placeholder' /tmp/verify_tmp.html || echo 0) (want 0)"
+            echo "  width 100%:             $(grep -c 'width: 100%' /tmp/verify_tmp.html || echo 0) (want >0)"
+            echo "  height: 160px:          $(grep -c 'height: 160px' /tmp/verify_tmp.html || echo 0) (want >0)"
+            echo "  parentGridItem fix:     $(grep -c 'parentGridItem' /tmp/verify_tmp.html || echo 0) (want >0)"
+            echo "  old fixGhostCards:      $(grep -c 'fixGhostCards' /tmp/verify_tmp.html || echo 0) (want 0)"
+          done
+
+          echo ""
+          echo "Done. Check all three sites:"
+          echo "  https://findtorontoevents.ca/"
+          echo "  https://torontoevent.net/"
+          echo "  https://tdotevent.ca/"
+

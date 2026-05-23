@@ -1,0 +1,1441 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\e--findtorontoevents-antigravity-ca\47ad4b04-a7a2-40b9-8473-a85e091ed0d0.jsonl`
+- turns: 605 · chunks: 134 · provider: deepseek
+- deduped action items: 1021
+
+## Action items (deduped across chunks)
+
+- [OPEN] Review Kimi's swarm roles/templates and integrate into tools/swarm or ruflo swarm
+- [OPEN] Revise coding swarms to produce multiple opinions on task implementation, testing steps, and impacts
+- [OPEN] Create specialized swarm for reviewing open PRs and checking their impacts
+- [OPEN] Create specialized swarm for checking GitHub Actions for failed jobs (intermittent failures, cancellations, stale jobs)
+- [OPEN] Create specialized swarm for research
+- [OPEN] Add memory to swarms for faster searching and avoiding reinvention
+- [OPEN] Add ability to convert swarm results or searching swarms as a skill (e.g., for Claude)
+- [OPEN] Ensure all revised swarms are fully unit tested and ready to go
+- [DONE] Integrate Kimi's enhanced swarm package as `tools/swarm_v2/` (59 files, 12,379 lines, 6 engines, 6 slash commands)
+- [DONE] Fix safety.py for Windows path handling (raw + abspath, slash-normalised)
+- [DONE] Make chromadb + sentence-transformers optional with fallback (in-memory collection + deterministic hash embedding)
+- [DONE] Add pytest.ini (asyncio_mode=auto) + .gitignore
+- [DONE] Run tests: 312 passed (swarms/tests, 13 files)
+- [DONE] CLI smoke test: `python -m swarms.cli.main coding` runs end-to-end
+- [DONE] Recover commit object `46b4b12` onto fresh branch `swarmv2-integration-2026-05-15-opus`
+- [DONE] Create PR #1063: https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/1063
+- [DONE] Notify peer `mkhs169g` about the integration
+- [OPEN] Merge PR #1063 — operator decision
+- [OPEN] Install chromadb/sentence-transformers for cross-run memory persistence + real semantic ranking (optional; fallback works)
+- [OPEN] Wire engine models to actual API keys (DEEPSEEK, CEREBRAS_API, etc.) for real "3 models code → reviewer picks" behavior
+- [OPEN] Research/proposal comparing existing vs proposed swarms (scoped out of this turn; user asked to proceed on next steps)
+- [UNCLEAR] Evaluate Kimi's swarm vs existing swarms and make a detailed recommendation (user's earlier prompt requested this, but assistant deferred it)
+- [UNCLEAR] Investigate integration of kimik2ai.com agent swarm features
+- [UNCLEAR] Consider using GIT branches/worktrees for swarm tasks
+- [UNCLEAR] Design ideal swarm workflow: multiple agents take tasks, code, test, review, etc.
+- [DONE] PR #1063 merge (operator decision) — shown as shipped with 5 commits
+- [OPEN] Wire remaining workers (code_reviewer, test_writer, researcher, impact_analyzer) + 5 other engines to real LLMs
+- [OPEN] Quality-tuning for LLM-generated code's failing tests (revise loop)
+- [OPEN] Write original swarm comparison/recommendation proposal doc
+- [DONE] Deploy HTML guide to live site via FTP — verified HTTP 200 at live URL
+- [OPEN] Run `/swarm-pr-review` — started but not shown completed
+- [DONE] User invoked `/swarm pr-review` command
+- [DONE] Assistant checked for open PRs — none found
+- [DONE] Assistant identified that PR #1063 was closed and replaced by PR #1075
+- [DONE] Assistant determined that PR #1075 only includes work up to commit `c6683169`
+- [OPEN] Create follow-up PR for the missing delta (chromadb fix, reviewer/test_writer/researcher/impact wiring, engine plumbing, 4 test files)
+- [DONE] FTP deploy updates/index.html and swarm-systems-guide.html
+- [DONE] Verify live URL returns HTTP 200
+- [DONE] Scan open PRs via gh pr list
+- [DONE] Cherry-pick missing commit and open PR #1078
+- [DONE] Merge PR #1078 to main
+- [DONE] Validate end-to-end on merged main (376 tests pass, all 3 workers hit real LLM)
+- [DONE] Update docs to clarify old-vs-new (template stub vs real LLM)
+- [DONE] Redeploy docs after update
+- [DONE] Commit doc clarification to main (commit 7e039aae8c5)
+- [DONE] Update documentation with a use case for each swarm type
+- [DONE] Commit use cases to main (commit 7464c6cf300)
+- [DONE] Deploy updated docs live
+- [DONE] Fix GitHub Actions mass outage (dead `GH_PAT` secret) — deleted secret, workflows fall back to `github.token`
+- [DONE] Fix `swarm-sync-v2` workflow (dead `GH_PAT_AGENTS` secret) — deleted secret, added fallback
+- [DONE] Fix `etf_risk_on_off` ImportError in ETF & Bond Scanner workflows — aliased function in `etf_scanner.py`
+- [DONE] Create `reports/asset_class_data_supplements_2026-05-15.md` — per-asset-class free APIs / prediction-market feeds / copytrader sources
+- [OPEN] Enhance 90-day master plan per asset class supplementing with free APIs / more prediction market data / copy trader picks (requested by user, not shown done)
+- [UNCLEAR] Use new swarm for PR review or any (requested by user, not shown done)
+- [UNCLEAR] Check GitHub Actions (requested by user, shown done but unclear if this was the intended check)
+- [OPEN] Create a fresh valid PAT and re-add it if any future workflow needs cross-repo or private-submodule access (assistant surfaced as next step)
+- [DONE] Wire FRED yield curve into live bond picks (PR #1080)
+- [OPEN] Set FRED_API_KEY env/secret
+- [OPEN] Wire Kalshi (kalshi_signals.py)
+- [OPEN] Add is_liquid_crypto() ADV gate (CRYPTO)
+- [OPEN] Add is_low_quality_or_meme() quarantine gate (PENNY_MEME)
+- [OPEN] Implement VIX-regime FRED swap (EQUITY)
+- [OPEN] Verify + wire real gh/API fetch for swarm_v2 pr-review/actions engines
+- [OPEN] Build swarm bulk-review <glob> mode
+- [OPEN] Monitor next cron cycle for CI green
+- [OPEN] Generate fresh classic PAT if needed
+- [OPEN] Drop SKIP_FRED=1 in bond-agent.yml (partially done via PR #1080)
+- [OPEN] Merge PR #1080
+- [OPEN] Fix PENNY_MEME delisting gate (is_low_quality_or_meme())
+- [UNCLEAR] Handle 429 rate-limit error and LLM invalid JSON (user selected error lines)
+- [DONE] Parse arguments for `/swarm pr-review` command (empty/open, all, <number>, --consensus)
+- [DONE] Define workflow: list PRs → swarm review → consensus report → smart agent decision
+- [DONE] Specify `gh pr list` command for Step 1
+- [DONE] Define 3 specialist agents (Mercury, Grok, Claude) with prompts and JSON output format
+- [DONE] Specify batch processing: groups of 3 PRs with 3 concurrent `delegate_task` calls
+- [DONE] Define consensus report format with example output
+- [DONE] Specify smart agent invocation command (`swarm_run.py`) and instructions
+- [DONE] Define output sections: consensus table, smart agent decisions, action items, commands to run
+- [DONE] Note persistence locations: `swarm_runs/pr-decision-<timestamp>/` and SQLite session history
+- [OPEN] Verify reviewer claims on PR #1080 before acting
+- [DONE] Review PR #1080 (bond FRED wire-in) — review done, bugs found and fixed
+- [DONE] Fix PR #1080 blocking bug #1 (cache-hit path missing return) — fixed in commit 7a790feb
+- [DONE] Fix PR #1080 blocking bug #2 (bond_yield_curve_slope always fell back to proxy) — fixed in commit 7a790feb
+- [DONE] Fix PR #1080 major bug #3 (missing fredapi/pandas-datareader dependency) — fixed in commit 7a790feb
+- [DONE] Verify PR #1080 fix locally — verified: fetch_fred_series returns 274 obs, strategy produces NEUTRAL
+- [DONE] Post review-addressed comment on PR #1080
+- [DONE] Take ownership of PR #1079 (peer's React #418 hydration fix)
+- [DONE] Fix PR #1079 blocking finding (refactor __whenReactHydrated__ to multi-subscriber hub) — commit 47c7f03
+- [DONE] Fix PR #1079 major finding (gate sign-in modal behind hydration) — commit 47c7f03
+- [DONE] Run PR #1079 through swarm pr-reviewer — second pass done
+- [DONE] Fix PR #1079 3rd ungated path (setInterval ensureSignInIsland) — commit d1f295c
+- [DONE] Verify PR #1079 fixes (hub drain logic, idempotency, var scoping, late-caller fast-path, load-listener dedup, node --check) — all correct
+- [DONE] Comment on PR #1079 with status
+- [OPEN] Merge PR #1080 — recommended but not shown merged
+- [OPEN] Merge PR #1079 — recommended but not shown merged
+- [DONE] PR #1079 — React #418 hydration fix merged
+- [DONE] PR #1080 — BOND FRED wire-in merged
+- [DONE] Investigate remaining CI issues (Penny Skyrocket root cause)
+- [DONE] PR #1082 — Penny Skyrocket 0-pick fix (verified locally)
+- [OPEN] Fix walkforward-gate backlog (10 strategies missing walkforward verdicts)
+- [OPEN] Fix walkforward-gate design flaw (diff-aware gating) — user said "proceed", assistant started drafting
+- [OPEN] PENNY_MEME `is_low_quality_or_meme()` delisting/liquidity gate (supplement doc P0)
+- [OPEN] CRYPTO `is_liquid_crypto()` ADV gate (supplement doc P0)
+- [DONE] Fix edge_stability.html page (deploy missing JSON files, verify 200)
+- [DONE] Fix research_index.html broken links (deploy full research/asset_class/ tree, verify 200)
+- [DONE] Merge PR #1088 (walkforward-gate diff-aware)
+- [DONE] Merge PR #1082 (penny-skyrocket 0-pick crash fix)
+- [DONE] Log per-AI pick-attribution idea in DAILY_IDEAS.MD
+- [DONE] Design per-AI pick-attribution feature via 3-agent swarm
+- [DONE] Implement Phase 1 of per-AI pick-attribution (PR #1089: build script, dashboard page, tests, design doc)
+- [DONE] Deploy ai_leaderboard.html and data JSON live
+- [OPEN] Merge PR #1089 (AI leaderboard Phase 1)
+- [OPEN] Wire build_ai_leaderboard.py into swarm-pick-review.yml (Phase 2)
+- [OPEN] Add nav link in template.html (Phase 2)
+- [OPEN] Backfill research-run data (Phase 2)
+- [OPEN] Implement multi-AI convergence guard (Phase 3)
+- [OPEN] Implement rationale-theme analysis (Phase 3)
+- [OPEN] Refresh edge_stability data via `python -m tools.edge.edge_stability --all` (optional)
+- [DONE] PR #1089 (AI leaderboard Phase 1) merged to main
+- [DONE] PR #1091 (Phase 2 wire-in) opened with swarm-pick-review.yml and template.html changes
+- [OPEN] M-051 multi-model swarm: route swarm personas to real different models
+- [OPEN] Research-run backfill: add engine names to research specs
+- [OPEN] Mainline rule_engine adapter: stamp production picks for leaderboard comparability
+- [OPEN] Convergence guard / rationale-theme analysis (Phase 3, after ≥100 resolved picks/engine)
+- [OPEN] User requested /loop: proceed on next steps every 10 minutes for 2 hours, then every 2 hours
+- [UNCLEAR] Parse input into `[interval] <prompt…>` and schedule it (no input provided in excerpt)
+- [UNCLEAR] Check cloud-first conditions (interval ≥60 min or daily phrasing) and ask user question if applicable
+- [UNCLEAR] If cloud schedule chosen: invoke `schedule` skill with original input verbatim, then stop
+- [UNCLEAR] If "This session only" with ≥60-min interval: continue to fixed-interval mode
+- [UNCLEAR] If "This session only" with daily phrasing only: explain limitation and suggest alternatives, then stop
+- [UNCLEAR] If neither trigger: continue to fixed-interval mode
+- [UNCLEAR] Convert interval to cron expression (fixed-interval mode)
+- [UNCLEAR] If interval doesn't divide cleanly: round to nearest clean interval and notify user
+- [UNCLEAR] Call CronCreate with cron expression, prompt, recurring: true
+- [UNCLEAR] Confirm schedule details with user (including 7-day expiry, cancel instructions, and session vs cloud note if applicable)
+- [UNCLEAR] Execute parsed prompt immediately after scheduling (fixed-interval mode)
+- [UNCLEAR] Run parsed prompt now (dynamic mode)
+- [UNCLEAR] If next run gated on event and no Monitor running: arm Monitor with persistent: true
+- [UNCLEAR] Confirm self-pacing details before calling ScheduleWakeup (dynamic mode)
+- [UNCLEAR] Call ScheduleWakeup with delaySeconds as last action (dynamic mode)
+- [DONE] Merge PR #1091 (AI leaderboard Phase 2 — workflow auto-refresh + nav link)
+- [DONE] Build `tools/ai_attribution/multi_model_vote.py` (multi-model swarm vote primitive)
+- [DONE] Open PR #1092 (multi-model vote sidecar)
+- [DONE] Fix broken test `test_concentration_cap_flag_on_allows_diversified` (time-bomb dates)
+- [DONE] Extend `build_ai_leaderboard.py` with `mine_research_proposers()` and new leaderboard panel
+- [DONE] Open PR #1093 (research-proposer roster)
+- [DONE] Deploy PR #1093 live
+- [OPEN] Wire `gather_votes()` into swarm pick-generation path (M-051 completion)
+- [OPEN] Mainline `rule_engine` adapter for leaderboard comparability
+- [OPEN] Refresh `walkforward_results.json` (10 unproven strategies)
+- [OPEN] Switch loop `65f7a6bb` from 10m to 2h cadence after ~2h elapsed
+- [DONE] Merge PR #1093 (research-proposer roster) — verified live
+- [DONE] Build M-051 pick-candidate generator → PR #1094 — merged
+- [DONE] Investigate 2 CI test failures — diagnosed as transient, main healthy
+- [DONE] Verify current main health — 24/24 tests pass
+- [OPEN] Promote M-051 candidates into live pick book via `append_picks()` — needs operator decision
+- [OPEN] Build `rule_engine` adapter — needs design decision
+- [OPEN] Walkforward refresh — needs design decision
+- [OPEN] Verify swarm-pick-review.yml leaderboard step outcome — CI still in_progress
+- [DONE] Switch loop cadence from 10m to 2h (commit `ec67050f` created)
+- [DONE] Verify CI state on main (5 consecutive green runs confirmed; 2 failures are stale)
+- [DONE] Verify swarm_v2 tests pass (376 tests pass on current main)
+- [OPEN] Check if AI Leaderboard nav pill appears on live `/audit/` index after next regeneration
+- [OPEN] Next loop fire: re-verify CI + swarm-pick-review leaderboard step
+- [UNCLEAR] Proceed on next steps (user said "proceed on next steps" but no specific next step is defined)
+- [DONE] Reviewed Grok's notes and identified conflicts with merged work (M-051 already shipped)
+- [DONE] Messaged live peers (`0ycmsutz`, `q1avkw7i`) flagging M-051 is merged
+- [OPEN] Drop the M-051 task from Grok's plan (it's already merged)
+- [OPEN] Narrow the stash to `.agent` only, not `.claude/`
+- [OPEN] Verify branch against `origin/main` before committing
+- [OPEN] Proceed with FOREX edge gates work
+- [OPEN] Proceed with FUTURES `contract_type` tile work
+- [OPEN] Proceed with inbox_drain enforcement
+- [DONE] Root-cause nav-pill gap (template change not reflected in generated index.html due to stale regeneration)
+- [DONE] Message peers re: M-051 duplication
+- [OPEN] Fix `audit-dashboard.yml` concurrency (user declined; assistant flagged as needing deliberate review)
+- [DONE] Verify `audit-dashboard.yml` health (cron path solid, push cancellations by design)
+- [DONE] Confirm AI Leaderboard nav pill is live on site
+- [DONE] Code audit of 3 merged `tools/ai_attribution/` modules (no real bugs found)
+- [OPEN] Promote M-051 candidates to live paper trades (operator-gated; needs user decision)
+- [OPEN] `rule_engine` adapter design call (needs user decision)
+- [OPEN] `walkforward_results.json` refresh design call (needs user decision)
+- [DONE] Stop loop via `CronDelete ec67050f` (user proceeded on recommendation)
+- [DONE] Fix swarm_v2 coding swarm 0-artifact bug (PR #1111)
+- [DONE] Implement rule_engine adapter (PR #1112)
+- [DONE] Merge PRs #1111 and #1112
+- [OPEN] Refresh walkforward_results.json (backtest data run)
+- [OPEN] Promote M-051 candidates to live paper trades (operator-gated)
+- [OPEN] Investigate remaining items and ask for user opinion as needed
+- [DONE] Merge PR #1111 (swarm_v2 artifact fix)
+- [DONE] Merge PR #1112 (rule_engine attribution adapter)
+- [DONE] Verify CI clean (0 failures / 30 runs)
+- [DONE] Decide to leave 10 unproven strategies gated
+- [OPEN] Log the walkforward file split fragility (non-urgent, flagged for later consolidation)
+- [OPEN] Decide M-051 last mile: who sizes/places trade and whether candidates auto-flow into tv_pick_capture
+- [OPEN] Build tv_pick_capture enhancement (accept --candidate-id, pull models_consulted) once placement flow confirmed
+- [DONE] Use TradingView portfolio "realpretend" with $1000 budget (user request)
+- [DONE] Generate 5 M-051 candidates (saved to swarm_pick_candidates.json)
+- [OPEN] Place paper trades on "realpretend" (invoked paper-trade skill, not shown completed)
+- [OPEN] Create skill file `tv-paper-trade` in `e:\findtorontoevents_antigravity.ca\.claude\skills\` with the provided content (portfolios, account switching, trade placement, PCG-5 gates, TP/SL logic)
+- [DONE] Verify account "realpretend" is active (confirmed already active)
+- [DONE] Generate 5 M-051 candidates via multi-engine consensus (saved to `audit_dashboard/data/ai_leaderboard/swarm_pick_candidates.json`)
+- [DONE] Configure BTCUSDT order ticket (Market, Buy, qty 20, TP 81131, SL 76733)
+- [OPEN] Place BTCUSDT order successfully (execute click failed, order did not land)
+- [OPEN] Place remaining 4 trades (SOLUSDT, BNBUSDT, XRPUSDT, ETHUSDT)
+- [OPEN] User manually verify `realpretend` paper account works (place test buy in TV Desktop)
+- [OPEN] Save top accomplishments and remaining action items to agentmemory + holographic memory
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii` binary is on PATH and version 0.11.2 (Windows: check `%USERPROFILE%\.local\bin\iii.exe`)
+- [OPEN] Reinstall `iii.exe` if missing (download from GitHub, extract to `%USERPROFILE%\.local\bin\`)
+- [OPEN] Store an asset edge finding via `/agentmemory remember` (example: EQUITY edge)
+- [OPEN] Store a bug/fix via `/agentmemory remember` (example: asset_class casing fix)
+- [OPEN] Search for CRYPTO edge knowledge via `/agentmemory search`
+- [OPEN] Search for FOREX investigation history via `/agentmemory search`
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a specific memory by ID via `/agentmemory forget`
+- [OPEN] Store EQUITY T2 candidate finding (common workflow example)
+- [OPEN] Search for everything known about FOREX before taking action (common workflow example)
+- [OPEN] Import recent Claude Code session transcripts (`agentmemory import-jsonl --max-files 50`)
+- [OPEN] Check if server is up before starting a long audit run (`curl ... /agentmemory/health`)
+- [DONE] Save holographic memory (agent_shared_memory.json committed + pushed)
+- [OPEN] Re-target M-051 candidate generator at micro-futures / budget-appropriate symbols
+- [OPEN] Wire tv_pick_capture --candidate-id to flow models_consulted into swarm_picks.json
+- [DONE] walkforward 2-file split — operator chose leave-gated
+- [OPEN] Fix audit-dashboard.yml push-run cancellations (cosmetic)
+- [OPEN] Install @agentmemory/agentmemory for semantic-memory server
+- [DONE] Complete remaining autonomous items using tools/swarm_v2
+- [DONE] Stop the recurring loop (CronDelete ec67050f)
+- [DONE] Merge PRs and look into backtests
+- [DONE] Place multi-model swarm picks on TradingView paper portfolio "realpretend" with $1000 budget
+- [DONE] Save top accomplishments and remaining action items to agentmemory and holographic memory
+- [OPEN] Build tv_pick_capture --candidate-id wiring so M-051 picks land in swarm_picks.json with multi-model attribution
+- [OPEN] Add --candidates argument to main() in tv_pick_capture.py
+- [OPEN] Load candidate_map from args.candidates after parse_args()
+- [OPEN] Pass candidate_map to normalize_tv_fill() in the loop call
+- [OPEN] Create test file tests/test_tv_pick_capture_candidates.py
+- [OPEN] Create a PR for the tv_pick_capture changes
+- [DONE] Commit and open PR (PR #1113) for M-051 capture wiring
+- [DONE] Place 5 M-051 picks (BTC, ETH, SOL, BNB, XRP) on realpretend with TP/SL
+- [DONE] Save 3 agentmemory entries + holographic memory note (pushed `d50e2df60de`)
+- [DONE] Review freebuff analysis and correct two claims
+- [OPEN] Proceed on next steps (Coinglass wiring or ETF emitter promotion) using tools\swarm_v2 as needed
+- [DONE] Fix ETF emitter 0→10 picks (two bugs: 6mo history + lowercased columns)
+- [DONE] Open PR #1114 (ETF emitter fix)
+- [DONE] Open PR #1113 (M-051 capture wiring)
+- [DONE] Consolidate verdict on three crypto-predictor code dumps — integrate none
+- [OPEN] Take ETF production-promotion follow-up (normalize direction, risk policy, quality gates, dashboard ingestion)
+- [DONE] Provide Python baseline predictor for crypto next-day direction (code block included)
+- [OPEN] Replace `yfinance` with `ccxt` for exchange data
+- [OPEN] Add walk-forward retraining every N bars
+- [OPEN] Calibrate probabilities
+- [OPEN] Include stop-loss / take-profit logic
+- [OPEN] Compare against a simple buy-and-hold benchmark
+- [OPEN] Turn into a Binance live-trading bot
+- [OPEN] Turn into a deep learning LSTM version
+- [OPEN] Turn into a backtesting framework
+- [DONE] Proceed on next steps (ETF production-promotion follow-up)
+- [DONE] Add commit+push step to etf-bond-scanner.yml workflow (PR #1115)
+- [DONE] Merge PR #1113
+- [DONE] Merge PR #1114
+- [DONE] Merge PR #1115
+- [DONE] Close PR #1116 (broken Grok stub)
+- [OPEN] Report when verification run #25978129715 completes
+- [DONE] Fix `fetch-depth: 0` to `fetch-depth: 100` in workflow
+- [DONE] Investigate commit step failure (pathspec error for gitignored file)
+- [DONE] Commit only `active_picks.json` instead of gitignored output
+- [DONE] Re-trigger workflow after PR #1118 merged
+- [DONE] Verify picks persisted after successful workflow run
+- [DONE] Investigate 0 signals in CI (yfinance rate-limited on runner)
+- [DONE] Check for existing fallback loader for ETF data
+- [DONE] Identify `equity_price_failover.py` and `equity_data_stooq.py` exist for equities but not used by `etf_scanner.py`
+- [DONE] Check failover API (Stooq now requires API key)
+- [DONE] Implement chunking + retry for ETF data fetch reliability
+- [DONE] Commit chunked fetch fix (works locally 84/84, 8 signals)
+- [DONE] Place 5 multi-model swarm picks on TradingView paper portfolio "realpretend" ($3000) — BTC/ETH/SOL/BNB/XRP all LONG with TP/SL (PR #1113 merged)
+- [DONE] Fix etf_emitter_spike.py — fetch 6mo history, lowercase OHLCV columns (PR #1114 merged)
+- [DONE] Add git commit/push step to etf-bond-scanner.yml (PR #1115 merged)
+- [DONE] Fix git add (tolerant) and fetch-depth:100 in etf-bond-scanner.yml (PR #1118 merged)
+- [OPEN] Fix chunked-retry yfinance fetch in etf-bond-scanner.yml (PR #1119 — verification run still 0 picks)
+- [DONE] Review 4 LLM-generated crypto-predictor code dumps + Grok's Phase 2 report — integrate none
+- [DONE] Close PR #1116 (Grok stub that would regress a report)
+- [OPEN] Check bond_scanner.py for same batch-fetch CI bug (assistant surfaced this as a missed item)
+- [DONE] Update PR #1119 to cover both etf_scanner + bond_scanner chunked-retry fetch (pushed commits, CI re-run)
+- [DONE] Wait for #1119 CI gate to pass and merge PR #1119
+- [OPEN] Re-trigger etf-bond-scanner workflow for final end-to-end verification
+- [DONE] Test mlvoca.com (no-key AI) — dead (502)
+- [DONE] Test LLM7.io (no-key AI) — works
+- [OPEN] Wire LLM7.io into swarms/core/llm_client.py as keyless fallback
+- [DONE] Test Pollinations (no-key AI) — works (use POST endpoint)
+- [DONE] Capture LLM7 second opinion on daily_ideas files
+- [DONE] Read LLM Arena zip files (both)
+- [DONE] Build consult prompt for Grok + Cerebras on 5 gaps
+- [DONE] Get Cerebras verdict on gaps
+- [OPEN] Get Grok verdict on gaps
+- [OPEN] Wire existing `oi_change_24h` into `ml_ranker` FEATURE_LIST (or hard-gate OI extremes in `quality_gates`)
+- [DONE] Review LLM-Arena 5-gap audit against actual repo
+- [DONE] Grok repo-grep audit
+- [DONE] Cerebras gap analysis
+- [DONE] Evaluate whether to run agent swarm (recommended skip)
+- [UNCLEAR] Run the agent swarm (user said "proceed on next steps" but assistant recommended skipping; unclear if user overrides)
+- [DONE] Wire and verify LLM7 keyless provider (`complete()` → `PONG`, keyed providers still win auto-detect)
+- [DONE] Commit the LLM7 keyless provider change
+- [OPEN] Proceed on next steps / keep going till all action items are complete (user request, no further items shown)
+- [UNCLEAR] Address `ml_ranker.py:417` feature-count alignment issue with `oi_change_24h` (assistant surfaced as a concern, but no explicit request or action taken)
+- [DONE] PR #1121: LLM7.io keyless provider wired and verified
+- [OPEN] Item A: Add `oi_change_24h` to FEATURE_LIST + full ml_ranker retrain (blocked, needs operator decision)
+- [OPEN] Item A alternative: Specify OI-extreme gate threshold for quality_gates shadow rule (blocked, needs operator decision)
+- [OPEN] ETF/Bond CI pipeline: Resolve yfinance GHA block (needs stock-data API key or committed OHLCV snapshot — infra decision)
+- [DONE] Check env for Finnhub, AlphaVantage, other API keys
+- [DONE] Scan env for usable stock-history keys (Finnhub, FMP, FRED, Tiingo, Polygon, AlphaVantage, TwelveData)
+- [DONE] Test FMP free tier ETF coverage (SPY only)
+- [DONE] Investigate yfinance curl_cffi bypass (IP-level blocking confirmed)
+- [DONE] Pivot to Tiingo solution (code shipped)
+- [DONE] Discover existing Polygon key (MASSIVE_API_KEY)
+- [DONE] Build failover chain: yfinance → Tiingo → Polygon
+- [DONE] Add TIINGO_API_KEY to env
+- [DONE] Diagnose missing .github/workflows/ (gitignored, absent from disk)
+- [DONE] Commit 3 Python files (failover module + scanner wire-ups) avoiding .github/
+- [OPEN] PR #1124: Open (failover chain PR)
+- [DONE] Set repo secrets (API-level)
+- [DONE] Verify PR diffs for phantom .github/ deletions (local base stale)
+- [OPEN] Double-check chat for remaining action items, consult swarm/other AIs if unclear
+- [OPEN] Set active goal: "keep going till all todos are handled.. and then double-check chat for any remaining action items you can handle.. if unclear ask our agent swarm or ask another set of AIs for a second or third .. and so on opinion.."
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via goal_state.py tick
+- [OPEN] Judge own work against the goal text and record verdict via goal_state.py judge
+- [OPEN] If not done and budget remains, schedule a wakeup for auto-continuation
+- [OPEN] If done, report goal achieved; if budget exhausted, report pause; if paused/achieved/exhausted on continue, do nothing and report why
+- [DONE] Create `/goal` skill documentation file (written to `e:\findtorontoevents_antigravity.ca\.claude\skills\goal\`).
+- [DONE] Create `goal_state.py` helper script (referenced in documentation).
+- [UNCLEAR] Handle all TODOs across the codebase (user requested `/handlealltodos`; no evidence of completion).
+- [UNCLEAR] Double-check chat for remaining action items (user requested; not shown done).
+- [UNCLEAR] Consult agent swarm or other AIs for second/third opinions if unclear (user requested; not shown done).
+- [OPEN] Investigate PR #1121 CI status (assistant said "checking CI" but no result shown).
+- [OPEN] Root-cause `test_code_review_apr22_bugfixes.py` test failures (assistant delegated to Grok; no resolution shown).
+- [DONE] Assemble action-item list from TodoWrite, conversation, reports/docs, and TODO/FIXME items (skill definition executed)
+- [DONE] Invoke goal skill with enumerated action items (skill definition executed)
+- [DONE] Diagnose 7 archive-dedup CI failures (determined pre-existing main breakage)
+- [DONE] Merge PR #1124 (6 checks green)
+- [DONE] Merge PR #1121 (3 checks green)
+- [DONE] Merge PR #1128 (all checks pass)
+- [DONE] Handle TASK-G2 (workflow env keys already wired on main; verification run triggered)
+- [DONE] PR #1121 LLM7 keyless provider merged
+- [DONE] PR #1124 Tiingo/Polygon failover merged
+- [DONE] PR #1128 archive-dedup stale test merged
+- [DONE] TASK-G2 workflow env vars verified on main
+- [DONE] PR #1131 (real CI root cause fix) merged
+- [DONE] TASKSFORGROK1.MD committed to GitHub
+- [DONE] 4 achievements/lessons saved to agentmemory
+- [OPEN] Final verification run 25983068148 — confirm ETF/Bond picks generated via Tiingo/Polygon
+- [OPEN] Fix ETF/Bond parallel job conflict (active_picks.json lost on ETF side)
+- [OPEN] OI→ml_ranker FEATURE_LIST — needs coordinated full model retrain (operator-gated, not mine to action)
+- [OPEN] Investigate .github/ gitignored + absent in local checkout (cosmetic anomaly, operator-gated)
+- [DONE] Parse the user's prompt (first word = file path, remainder = optional engine list)
+- [DONE] Run `python tools/swarm/swarm_run.py --prompt-file <prompt> --engines <engines> --max-parallel 4`
+- [DONE] Run `python tools/swarm/swarm_inspect.py --latest`
+- [DONE] Show inspector table verbatim
+- [DONE] Surface NEXT STEPS reminder from swarm_run.py
+- [OPEN] Re-run any engine returning ZERO or TINY with `python tools/swarm/worker_runner.py --engine <eng> --prompt-file <prompt> --out-file swarm_runs/_retry/<eng>.json`
+- [DONE] Vet the two swarm plans (xai + deepseek converge)
+- [DONE] Determine that `oi_change_24h` is not persisted on pick records (zero of 6884 closed picks carry it)
+- [DONE] Locate `compute_ml_features_at_entry` (scanner.py:1712) as the insertion point for persisting OI data
+- [OPEN] Merge PR #1136 (oi_change_24h persistence) — CI running, not yet merged
+- [OPEN] Merge PR #1137 (yfinance in requirements.txt) — CI running, not yet merged
+- [OPEN] Expand PR #1137 to cover 4 additional undeclared dependencies found by subagent audit
+- [DONE] Sweep all jobs for yfinance API issues/errors
+- [DONE] Verify requirements.txt + yfinance count (background task completed)
+- [DONE] Review all 5 open PRs (#1132, #1134, #1125, #1136, #1137)
+- [DONE] Spawn dependency-audit subagent for yfinance-class bugs
+- [DONE] Review PRs #1132, #1134, #1125 and flag blocking issues
+- [DONE] Audit undeclared dependencies (5 more found, added to #1137)
+- [DONE] Check PR #1136 CI status
+- [DONE] Merge PR #1136 (all 6 checks green)
+- [OPEN] Re-scan all session todos and report closed list or re-schedule checkin
+- [DONE] Merge PR #1136 (OI→ml_ranker)
+- [OPEN] Merge PR #1137 (6 undeclared-deps fix) — CI pending, re-scheduled checkin
+- [OPEN] Run `/swarm pr-review` (user invoked, no output shown)
+- [DONE] PR #1137 CI check and merge (user explicitly requested, assistant executed via /handlealltodos)
+- [DONE] Post review comments to PR #1132 (assistant offered, user's /handlealltodos implies completion of all session todos)
+- [DONE] Post review comments to PR #1134 (assistant offered, user's /handlealltodos implies completion of all session todos)
+- [DONE] Report final closed list and stop (user requested as part of /handlealltodos)
+- [DONE] Close #1134 (already merged by peer)
+- [DONE] Fix D2 dedup ordering bug in #1132
+- [DONE] Post ownership comment on #1132
+- [DONE] Merge #1132 when CI green (auto-merge scheduled)
+- [DONE] Build transcript-chunking scanner for swarm
+- [DONE] Chunk 4.4MB transcript into 27 chunks
+- [DONE] Scan all chunks via deepseek for action items
+- [OPEN] Fix console encoding crash in scanner tool
+- [OPEN] Fix dedupe status priority bug (OPEN shouldn't override DONE)
+- [OPEN] Evaluate effectiveness of swarm-chunking concept for finding missed action items
+- [OPEN] Provide suggestions on swarm-chunking concept
+- [UNCLEAR] Revisit OI ML feature vs gate in 30-60 days
+- [UNCLEAR] Declare remaining ~30 undeclared single-file dependencies
+- [UNCLEAR] Investigate why `.github/` is gitignored locally
+- [DONE] Build transcript-chunking scanner (tools/swarm/transcript_action_scan.py)
+- [DONE] Run scanner on 4.4 MB transcript → 181 deduped items, report written (reports/transcript_scan_852ce641.md)
+- [OPEN] Add two-pass reconcile to scanner (suggested by assistant, user deferred)
+- [OPEN] Check PR #1132 CI status; merge if green; report final closed list and stop
+- [DONE] Check PR #1132 CI status and merge if green
+- [DONE] Merge PR #1132
+- [DONE] Re-schedule checkin for #1141
+- [DONE] Update agentmemory with findings/accomplishments
+- [DONE] Monitor PR #1141 CI and merge
+- [DONE] Update holographic memory
+- [OPEN] Update findtorontoevents.ca/updates/index.html with findings entry (scheduled in ~20 min)
+- [OPEN] Make a backup of remote updates/index.html before editing
+- [OPEN] Append update entry to whatever state the file is in after peer finishes
+- [DONE] Back up remote `updates/index.html` to timestamped file
+- [DONE] Append new `<div class="update-entry">` card at top of `#updatesContainer`
+- [DONE] Open PR #1145 for updates card
+- [DONE] Run transcript scanner on this session (47ad4b04)
+- [DONE] Notify peers via claude-peers with session ledger + drift warning
+- [DONE] Check for inbound messages from peers
+- [DONE] Merge PR #1145
+- [DONE] Review and merge PR #1146 (hourly audit doc)
+- [DONE] Review and merge PR #1147 (loop-status log)
+- [OPEN] Update agentmemory /holographic memory
+- [OPEN] Make `/swarm-transcript-scan` slash command/skill wrapping `tools/swarm/transcript_action_scan.py`
+- [DONE] Create `/swarm-transcript-scan` skill (PR #1149 merged)
+- [DONE] Review last open PR (none open, #1149 already merged)
+- [DONE] Check GitHub Actions for failures/cancelled jobs
+- [DONE] Run `/swarm-transcript-scan` on a sibling session
+- [DONE] Investigate `Unified Audit Dashboard` cancel-storm
+- [OPEN] Apply optional cleanup: drop `push` trigger from `audit-dashboard.yml` (user's call)
+- [DONE] Translate Ernie's notes from Chinese to English and review attachments (12 .docx files)
+- [DONE] Use subagents/agent swarm to review each attachment
+- [DONE] Search for best crypto broker APIs and real-time data sources
+- [DONE] Generate detailed answer with integration code for crypto broker API/data feed
+- [DONE] Search for position sizing and risk budget best practices
+- [DONE] Generate specific examples with formulas for multi-asset portfolio risk budgeting/position sizing
+- [DONE] Search for trading system security best practices
+- [DONE] Generate specific implementation suggestions for kill-switch and auto safety checks
+- [DONE] Deeply analyze findtorontoevents_antigravity.ca repository and provide roadmap from backtest-only to live-ready
+- [DONE] Generate 4 detailed reports (Architecture, Data Layer, Signal & Model Robustness, Execution & Risk)
+- [DONE] Analyze and answer asset class priority question (Crypto/Equities/FX)
+- [DONE] Generate priority recommendation and 30-day implementation roadmap
+- [DONE] Deliver 8 analysis reports covering all dimensions
+- [OPEN] Further refine code implementation for specific modules (Binance WebSocket connector, kill-switch code, weekly plan for 30-day roadmap) — offered but not requested
+- [DONE] Integrate nothing from Ernie audit (same flaw as LMArena audit)
+- [DONE] Skip per-file subagent fan-out (multi-AI-convergence trap)
+- [DONE] No PR created
+- [DONE] Wire DSR + PBO/CPCV gates into money_ready_verdict() (already built)
+- [DONE] Enable confidence calibration per-class via allowlist (already built)
+- [OPEN] Build COT timing-leakage publication-time gate
+- [OPEN] Audit kill-switch RED state → physical halt
+- [DONE] Use paper-trading pipeline (already works)
+- [DONE] Use existing feature store (already exists)
+- [OPEN] Complete MLflow model governance (ml_ops/)
+- [OPEN] Build cotton-style live proof per class (M-050)
+- [OPEN] Build multi-model swarm ensemble (M-051)
+- [OPEN] Build PBO/CPCV harness per López de Prado (M-052)
+- [OPEN] Build 4-AI cross-validation of PF/WR (M-053)
+- [OPEN] Run tools/verify_resolver.py to verify 3,500 picks resolved
+- [OPEN] Build DB Freshness Guardian workflow (M-002)
+- [OPEN] Verify PR #1030 CI is green and merge
+- [OPEN] Audit kill-switch RED → physical halt (reproduce alert)
+- [OPEN] Audit frontend Binance API ban (grep for binance.com)
+- [OPEN] Run verify_citations.py before swarm rounds
+- [DONE] Fact-check plan's "already built" claims against actual filesystem
+- [DONE] Verify resolver/unresolved-picks status from `closed_picks.json`
+- [OPEN] Pick one of plan items #1/#2/#3/#10 for implementation
+- [OPEN] Ask agent swarm and/or other AIs for more ideas
+- [OPEN] Look into Ernie's "Bridge the 5 Real Gaps" code (GAP 1: Verify Resolver v2, GAP 2: Complete ML Ops Wiring)
+- [UNCLEAR] Run `python tools/resolver_verification.py` (script provided but not shown executed)
+- [DONE] Review Ernie's 5 paste-ready files against real modules
+- [DONE] Verify resolver (8,421/8,421 closed_picks resolved, 0 open)
+- [DONE] Check if `money_ready_verdict` already exists (found on GitHub)
+- [DONE] Check if Ernie's 4 new "build-not-wire" files should be integrated (none integrated)
+- [DONE] Verify project is synced to GitHub (all 16 PRs merged)
+- [OPEN] Build `money_ready_verdict()` properly wiring real modules (cancelled — already exists)
+- [UNCLEAR] Fresh clone in separate dir when peers are idle
+- [DONE] Run /swarm-transcript-scan
+- [DONE] Update agentmemory
+- [DONE] Amend entry under findtorontoevents.ca/updates/index.html (PR #1155)
+- [DONE] Amend entry in DAILY_IDEAS.MD (PR #1155)
+- [OPEN] Report OPEN-item count from transcript scan (reported as 191, but no further action taken)
+- [UNCLEAR] Convert 191 OPEN items to real action via v2 two-pass reconcile
+- [OPEN] Create a patch for money_ready_verdict to determine how to bridge the gap for failing asset classes
+- [OPEN] Run the patch and take a baseline
+- [OPEN] Check if the advice from the patch is practical by doing deep extensive research using swarms tools, swarms_v2, local ollama models, huggingface models, and transformers
+- [OPEN] Start with cloud models (Cerebras, Inception/Mercury, XAI/Grok) then move to local AIs
+- [OPEN] Get an extensive consensus and idea harvesting of what could be done to bridge the gap
+- [OPEN] Ensure the "preamble" context is set so that if asked "what do I need to do to make findtorontoevents.ca/audit profitable per asset class", a SQL query is ready to find overall performance per asset class, best possible statistical edge, most reliable/consistent statistical edge
+- [OPEN] Check if any strategy was accidentally banned
+- [OPEN] Check if any top-notch strategies have few picks for some reason (e.g., something broke, or they aren't relevant in certain market types like ranging markets)
+- [DONE] Archive `money_ready_verdict.py` (17 KB + test)
+- [DONE] Write methodology doc (`reports/MONEY_READY_METHODOLOGY.md`)
+- [DONE] PR #1157 (edge-report tool + baseline)
+- [DONE] PR #1160 (methodology doc + archive)
+- [OPEN] Fix `_dsr_gate() nb_trials=1` bug (deferred to peer-merge)
+- [OPEN] Build /audit tab + 24h update + version archive for money_ready_verdict (deferred, user said "continue with your edits")
+- [UNCLEAR] Continue with edits (user said "nah you can continue with your edits for now" — unclear which specific edits are intended)
+- [DONE] Complete `tv_pick_capture.py --candidates` wiring; place M-051 picks on TV "realpretend" portfolio.
+- [DONE] Fix ETF/Bond scanners emitting 0 picks in CI; merge PRs; verify end-to-end.
+- [UNCLEAR] Review freebuff/LMArena/crypto-predictor/ERNIE external-AI deliverables — "check if anything worth integrating."
+- [UNCLEAR] `/handlealltodos`, `/goal` — autonomously complete all action items.
+- [DONE] OI→ml_ranker: design plan for approach and validation, vet plan then execute; later confirmed not-an-ML-feature, executed data-persistence.
+- [UNCLEAR] Use subagents and/or agent swarm to review each attachment (ERNIE docx).
+- [DONE] Build `/swarm-transcript-scan` slash command wrapping the transcript scanner.
+- [UNCLEAR] `/swarm-pr-review`, `/swarmv2-actions` — review PRs, check GHA health.
+- [UNCLEAR] Notify peers via claude-peers; update agentmemory + holographic memory; amend `updates/index.html` + `DAILY_IDEAS.MD`.
+- [DONE] Create a patch for money_ready_verdict to bridge the gap for failing asset classes; do deep extensive research using all swarms and cloud/local models.
+- [UNCLEAR] Bake the results of enhanced money_ready_verdict into a tab under findtorontoevents.ca/audit, with updates every 24 hours and archives.
+- [DONE] For a newcomer, determine how they can assess "money ready" — produce money_ready_verdict section answering that, showing methodology, enabling critique.
+- [DONE] Archive money-ready-verdict feature (backups created).
+- [UNCLEAR] Merge with another agent's work on other PC (user said "nah you can continue with your edits for now" — deferred).
+- [DONE] Build Money-Ready /audit tab (PR #1163)
+- [DONE] Resolve PR #1155 conflict (rebuilt branch on fresh main)
+- [DONE] Fix /fix-gh-actions claw deploy exit-28 (PR #1165)
+- [DONE] Run /swarm-transcript-review (report generated)
+- [DONE] Update agentmemory (money-ready feature + CI fix facts)
+- [OPEN] Merge PRs #1155, #1163, #1165 (blocked on CI)
+- [OPEN] Rebuild peer's PR #1164 on settled main after merges
+- [OPEN] Holographic memory + updates/index.html card as one final commit
+- [OPEN] Proceed on next steps using agent swarm / subagents / AI consult as needed
+- [DONE] Merge Money Ready /audit tab PR (#1163)
+- [DONE] Re-apply Money Ready tab after concurrent peer commit clobbered template.html
+- [DONE] Merge CI fix PR #1165 (claw deploy curl timeout)
+- [DONE] Merge CI fix PR #1168 (gitleaks partial-clone checkout)
+- [DONE] Merge peer PR #1164 (M-069 slippage card)
+- [DONE] Close PR #1155 (external-AI audit) — content shipped via direct commit
+- [DONE] Merge PR #1161 (hourly snapshot)
+- [DONE] Push 2 cards live on main (updates/index.html)
+- [DONE] Append 2 entries to DAILY_IDEAS.MD
+- [DONE] Store 2 facts in agentmemory
+- [DONE] Commit 2 learnings to holographic memory
+- [DONE] Run /swarm-transcript-review (2 runs)
+- [DONE] Confirm /swarm-transcript-scan skill present
+- [DONE] Verify GH Actions health (0 failures last 40 runs)
+- [DONE] Wait for PR 1168 non-gitleaks checks to complete
+- [DONE] Merge PR #1168 after checks passed
+- [OPEN] Deferred: fix `_dsr_gate() nb_trials=1` bug (flagged for peer-merge on money_ready_verdict.py)
+- [DONE] Document work under findtorontoevents.ca/updates/index.html (amend latest relevant entry if any)
+- [DONE] Amend Money-Ready card on `updates/index.html` (commit `2764ee4`)
+- [DONE] Add CI fix — secret scan list item (PR #1168)
+- [DONE] Update PR list to `#1163, #1165, #1168`
+- [DONE] Add storm-commit note
+- [DONE] Re-use existing entry instead of duplicate card
+- [DONE] Review open PRs (`/swarm-pr-review`)
+- [OPEN] Look into `/swarm-actions-audit`
+- [OPEN] Run `/swarm actions-audit` to execute the full audit pipeline (Step 1–3)
+- [OPEN] If `--fix` flag used, generate YAML diffs and create a branch with optimizations (Step 4)
+- [OPEN] Check GitHub repos for ability to improve money-ready predictions per asset class (link provided)
+- [DONE] Commit report: TRENDING_FINANCE_REPOS_2026_05_17.md
+- [DONE] Ship qlib alpha factors (PR #1178): add vol_ratio, pv_corr30, realized_vol30 to technical_features.py, wire into compute_technical_features/compute_all_from_klines, 16 tests pass
+- [DONE] Commit report: TBOT_AUGUSTWHEEL_LESSONS_2026-05-17.md
+- [DONE] Merge PR #1178 (CI green, all 6 checks pass)
+- [OPEN] Run OHLCV backfill to populate pick dicts with new factors
+- [OPEN] Compute forward-window IC per factor
+- [OPEN] If IC validates, wire new factors into calculate_smart_score
+- [DONE] Close background watcher PR (#1178 merged)
+- [OPEN] Review /money-maker-readyv2 and recent .MDs (past 2 weeks)
+- [OPEN] Identify ideas for statistical edge per asset class
+- [OPEN] Run freshness preflight (Step 1)
+- [OPEN] Read per-class baseline from asset_class_health (Step 2)
+- [OPEN] Identify proven filter per class with resolved_n≥50 (Step 3)
+- [OPEN] Compute Kelly sizing for each proven filter (Step 4)
+- [OPEN] Write weekly filter report to `reports/weekly_filter_<UTC>.md` (Step 5)
+- [OPEN] Verify current OPEN picks match the filter (Step 6)
+- [OPEN] Commit report with `git add` + `git commit` (Step 7)
+- [OPEN] Confirm all 7 success criteria are satisfied (Final Deliverable)
+- [DONE] Confirm `cot_positioning` emitter is still live (user said "proceed on next steps", assistant re-ran analysis and found concentration issue)
+- [DONE] Run `money_ready_verdict.py` on `cot_positioning` in isolation (same as above)
+- [DONE] PR #1183 merged — `edge_filter_engine_v3.py` now excludes blocked strategies
+- [DONE] Write `reports/money_maker_readyv2_2026-05-17.md` (full audit + correction)
+- [DONE] Update agentmemory with correction
+- [OPEN] Build trace-back of all active/closed picks (past 2 weeks): why each was picked, why symbols were not picked, what top gainers were missed
+- [OPEN] Create summarized blueprint document per pick, categorized as "high-conviction picks" vs "smart picks"
+- [OPEN] Run AI consults and/or agent swarm consults using cloud Model AIs/API keys to find a proven edge
+- [DONE] Build `tools/pick_traceback.py` — discrimination test on 976 resolved picks
+- [DONE] Write `reports/pick_traceback_2026-05-17.md`
+- [DONE] Write `reports/PATH_TO_PROVEN_EDGE_2026-05-17.md`
+- [DONE] Open PR #1186 (pick_traceback + reports)
+- [DONE] Merge PR #1186
+- [OPEN] Build walk-forward eff-stability harness (eff ≥ 0.30, same sign, ≥3 consecutive windows)
+- [OPEN] Build cost model (PF 0.74 is pre-cost)
+- [OPEN] Build regime filter (grades non-monotonic = regime-blind)
+- [OPEN] Signal hunt under the harness (qlib factors from #1178)
+- [OPEN] Isolate ONE class (post-cost PF ≥ 1.15 / n ≥ 200 / concentration < 30%)
+- [OPEN] 30-day paper-forward before capital
+- [UNCLEAR] Cross-reference "top gainers not in our DB" (needs MySQL `at_filter_log` + external movers API) — deferred to Phase 2
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh sources
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll
+- [OPEN] Drain broadcasts via freebuff_adapter poll with peer-id all
+- [OPEN] Triage each peer message by topic and act accordingly
+- [DONE] Investigate the gateway (user request)
+- [DONE] Send SESSION_SUMMARY broadcast
+- [DONE] Drain inbox
+- [DONE] Correct CHATBIBLE_FAILURE.MD (commit 12a86c4)
+- [DONE] Check multipc chat (user request)
+- [OPEN] Restart cross-PC gateway on desktop (operator action needed, not shown done)
+- [DONE] Review notes from FreeBuff files (7 files listed, plus 14 worktree dups)
+- [DONE] Audit 5 Beta-distribution code paths for param-swap bug (none found)
+- [OPEN] Investigate 11 active picks on blacklisted symbols (FreeBuff #2 lead)
+- [OPEN] Build post-cost expectancy gate (FreeBuff #3, ~4h)
+- [OPEN] Verify non-crypto liquidity penalty (FreeBuff #4)
+- [OPEN] Build per-class confirmation gates (FreeBuff #5, ~12h)
+- [OPEN] Build "missed top gainers not in DB" Phase 2 (needs MySQL + external movers API)
+- [OPEN] Build walk-forward efficiency-stability harness (#1 path-to-edge action)
+- [OPEN] Create /swarm-transcript-scan slash command if not already existing
+- [DONE] Create skill file for /swarm-transcript-scan (already existed)
+- [DONE] Create alias skill file for /swarm-transcript-review (already existed)
+- [OPEN] Run transcript scan on live session 47ad4b04...jsonl (started, not shown completed)
+- [DONE] Check for multi-PC messages (checked, none actionable)
+- [DONE] Execute /dropchat-multipc command
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [DONE] Run `git push origin edge/2026-05-17-grok-14d-picks-autopsy-path --force-with-lease` (user stated "After this succeeds")
+- [OPEN] Re-broadcast SESSION_SUMMARY payload when gateway is back up (user's assistant listed as "Next")
+- [OPEN] Use prompt inside postmortem blueprint to drive next paid-cloud AI swarm round (assistant listed as "Next")
+- [DONE] Build and attempt SESSION_SUMMARY broadcast via dropchat-multipc adapter (attempted, gateway unreachable)
+- [DONE] Append failure entry to CHATBIBLE_FAILURE.MD (assistant states done)
+- [DONE] Save structured payload to /tmp/grok_session_summary_20260517.json (assistant states done)
+- [DONE] Build edge stability harness (PR #1191 merged)
+- [DONE] Merge PR #1191
+- [OPEN] Pull thread #1: decompose risk_reward (why low-R:R picks win)
+- [OPEN] Fetch real CFTC COT data (replace RSI proxy)
+- [OPEN] Backfill qlib factors (pv_corr30/vol_ratio/realized_vol30) into picks
+- [OPEN] Test regime-conditioned scores (does method_a_score stabilize within a single regime?)
+- [OPEN] Investigate 11 blacklisted-symbol active picks
+- [OPEN] Post-cost expectancy gate
+- [OPEN] Walk-forward eff-stability harness (30-day OOS re-test gate)
+- [DONE] Run leakage-controlled test on `risk_reward` (collapsed, edge killed)
+- [DONE] Run walk-forward test on `risk_reward` (flips sign, avg ≈ 0)
+- [OPEN] Build real CFTC COT fetcher + signal and run through harness
+- [OPEN] Write message "hey its CLAUDE 1 from eltons desktop" via dropchat-multipc
+- [DONE] Send `/dropchat-multipc` message confirming codebuff + Grok findings converged independently
+- [DONE] Broadcast agreement with codebuff's P0 list (retire cot_positioning, retire quan_engine_scalp, PnL outlier cap, revert M-076)
+- [DONE] Post P0 follow-up: use edge_stability_harness gate
+- [DONE] Post P1 follow-up: real CFTC COT data as next shot
+- [DONE] Investigate COT path (verified tools/cftc_cot_fetcher.py works, fetched real data)
+- [OPEN] Decide between option (A) full COT build or (B) clean COT strategy rebuild (user did not answer; sent command-message instead)
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter poll
+- [OPEN] Triage peer messages from inbox
+- [DONE] Revert M-076: Remove ASSET_CLASS_SOURCE_SYSTEMS dict and nb_trials plumbing from money_ready_verdict.py
+- [DONE] Revert M-076: Remove test_m076_* tests from test_money_ready_verdict.py
+- [DONE] Verify M-077 (COT dedup) remains intact in dashboard_generator.py
+- [DONE] Run syntax check and related tests
+- [DONE] Code review with code-reviewer-deepseek
+- [DONE] Commit and push to branch
+- [DONE] Create SESSION_TRANSCRIPT_2026-05-17.MD
+- [OPEN] Build the COT backtest (assistant started this, not shown complete)
+- [DONE] Run COT backtest (cot_edge_research.py built, 13 years CFTC data, result: COT killed)
+- [DONE] Merge PR #1195 (merged)
+- [DONE] Execute /dropchat-multipc (broadcast sent, session closed)
+- [DONE] Execute /swarm-transcript-review (scan completed)
+- [OPEN] Proceed on next steps (user requested after the two commands finished)
+- [DONE] Review swarm transcript for completeness (314 turns, 76 chunks, 243 OPEN — nothing silently dropped)
+- [DONE] Write authoritative edge verdict report (`reports/EDGE_VERDICT_2026-05-18.md`, commit `c278bc7`)
+- [DONE] Store edge verdict in agentmemory
+- [DONE] Run `/dropchat`
+- [DONE] Run `/swarm-transcript-review`
+- [DONE] Test qlib factors directly (mirror COT backtest structure)
+- [OPEN] Decide strategic fork: feature-backfill / new signal sources / paper-only
+- [DONE] Merge PR #1198
+- [DONE] Test 7 edge candidates (6 killed, 1 survivor: `realized_vol30`)
+- [DONE] Document findings in `EDGE_VERDICT_2026-05-18.md`
+- [OPEN] Run cost-adjusted deep-dive on `realized_vol30` (timing signal, ETF costs)
+- [OPEN] Decide strategic fork (chase +0.6% pre-cost lead vs. new signal sources / paper-only)
+- [UNCLEAR] Consult agent swarm as needed (user requested, no evidence of execution)
+- [DONE] Set up `/goal` skill documentation in `e:\findtorontoevents_antigravity.ca\.claude\skills\goal` (file written with full spec)
+- [DONE] Kill candidate `realized_vol30` — cost-adjusted analysis completed, 7th candidate killed
+- [DONE] Open PR #1200
+- [DONE] Analyze `MASTER_ACTION_PLAN_2026-05-17.md` — found impactful stale item
+- [UNCLEAR] "Keep proceeding on next tasks, consult our agent swarm as needed" — user requested continuation, but excerpt does not show what next task is or whether it was executed
+- [DONE] Merge PR #1200 (background command completed, confirmed merged)
+- [DONE] Fix MASTER_ACTION_PLAN COMMODITY section with ⛔ CORRECTION banner (commit `d70fda4`)
+- [DONE] Achieve `/goal rvol-deepdive` (realized_vol30 killed, built+run+committed+PR'd)
+- [OPEN] User decision: new signal sources vs paper-only (strategic fork, user said "we do want more signal sources")
+- [OPEN] Map existing incubator / baby-strategy pipeline (assistant said "mapping what's there first")
+- [UNCLEAR] Run backtests for baby strategies if needed (user mentioned "if any need backtests you would need to run")
+- [UNCLEAR] Add extra filter under findtorontoevents.ca/audit for system readiness / trust score / testing flag (user suggested)
+- [DONE] Review /audit and /audit/hyrotrader pages (verdict: structurally credible but verdict-contaminated; hyrotrader broken)
+- [OPEN] Fix hyrotrader trading_days_logged aggregation (AHF-01)
+- [OPEN] Refresh hyro_quan_bridge.json symbol list (AHF-02)
+- [OPEN] Populate hyrotrader pick entry/stop/target prices (AHF-03)
+- [OPEN] Add concentration gate at verdict time for COMMODITY KC=F (AHF-04)
+- [OPEN] Apply ±100% PnL outlier cap to EQUITY (AHF-05)
+- [OPEN] Label each CRYPTO PF with its window on dashboard (AHF-06)
+- [OPEN] Split realized-MDD vs MtM-MDD in dashboard (AHF-07)
+- [OPEN] Wire shadow_probation flag on (AHF-08)
+- [OPEN] Add hard concentration gate before DSR/SPA for COMMODITY (AHF-09)
+- [DONE] Check Kimi Claw's analysis of the repo
+- [DONE] Cross-verify Kimi's claims against actual repo files
+- [DONE] Confirm MLKellySizer is orphaned (0 callers)
+- [DONE] Write analysis to research/findtorontoevents_analysis.md
+- [DONE] Merge PR #1203 (incubator stability gate)
+- [DONE] Merge PR #1203 (incubator walk-forward stability gate)
+- [DONE] Deliver HYPERFOCUS /audit JSON (9 P0 findings)
+- [DONE] Check Kimi claw analysis (EDGE_VERDICT unchanged)
+- [OPEN] Proceed on next steps (user requested via /goal)
+- [DONE] Build bridge tool `tools/incubator_graduation_check.py`
+- [DONE] Run graduation gate against all 189 live forward-tested strategies
+- [OPEN] Proceed on next steps (user requested "proceed on next steps")
+- [DONE] Build incubator graduation bridge to run against live data
+- [DONE] Merge PR #1210 (incubator graduation bridge)
+- [OPEN] Source new external signal inputs (user's decision)
+- [DONE] Read and analyze the attached Kimi agent swarm enhancement files (plan.md, SPEC.md, swarm-enhancements-5-prs.tar.gz, prs)
+- [DONE] Explore current swarm architecture (tools/swarm/, tools/swarm_v2/, .ruflo/)
+- [DONE] Create an execution plan for implementing the enhancements
+- [DONE] Generate all 5 PRs of enhancement code (17 files, 7,848 lines)
+- [DONE] Validate all generated code for syntax correctness (all 17 files pass)
+- [DONE] Write PR description files and package everything
+- [OPEN] Commit the generated enhancements to GitHub
+- [OPEN] Run the improved swarm analysis to look for areas to find/improve statistical edge per asset class
+- [OPEN] Evaluate the results of the swarm analysis
+- [OPEN] Ask agent swarm for ideas if needed
+- [DONE] Security scan of 17-file external-AI package (no hardcoded secrets found)
+- [DONE] Compile check of 16 files (all pass py_compile)
+- [DONE] Collision check (config_loader.py skipped, 15/16 committed)
+- [DONE] Commit 15 net-new files as opt-in sidecar PR
+- [DONE] Redact and commit plan.md/SPEC.md (plaintext credentials removed)
+- [DONE] Run Kimi's statistical_edge_engine on 8,421 real picks (NO_EDGE confirmed)
+- [DONE] Open PR #1211
+- [OPEN] Merge PR #1211 (waiting on CI)
+- [OPEN] Process next steps, run multiple rounds as needed, use agent swarm for ideas, prioritize/plan
+- [DONE] User requested processing of next steps, unclear if agent swarm ideas needed, and running multiple rounds as needed for prioritization/planning.
+- [DONE] Assistant checked prerequisites for Option A (EQUITY MySQL data-sync + harness re-test).
+- [DONE] Assistant verified prerequisites (pymysql, DB_PASS_STOCKS, DB_NAME_STOCKS, MySQL reachable).
+- [DONE] Assistant executed Option A — building the EQUITY MySQL edge test.
+- [DONE] Assistant found 0 EQUITY rows in `at_signal_outcomes` (CRYPTO-only table).
+- [DONE] Assistant found `at_local_picks` has 4,180 EQUITY picks (vs 44 in JSON ledger).
+- [DONE] Assistant re-pointed test to `at_local_picks`.
+- [DONE] Assistant found `at_consensus_picks` has 738 resolved EQUITY picks (vs 44 in JSON ledger).
+- [DONE] Assistant re-pointed test to `at_consensus_picks`.
+- [DONE] Fix display bug in report (pnl_pct double-counting percentage points)
+- [DONE] Execute prioritized swarm action (Option A)
+- [DONE] Commit `tools/equity_mysql_edge_test.py` + report (PR #1213)
+- [DONE] Merge PR #1213 and PR #1211
+- [DONE] Build and run reconciliation tool comparing EQUITY data sources
+- [DONE] Commit reconciliation tool
+- [OPEN] Fix non-crypto resolver bug in `outcome_resolver.py` (requires coordination with codebuff owner)
+- [OPEN] Reconcile `at_consensus_picks` MySQL table (1.2% WR) with dashboard data (53.3% WR)
+- [OPEN] Write validation script to compare two EQUITY tables (drafted by Mercury, not shown executed)
+- [OPEN] Add new tests covering reconciled data paths
+- [OPEN] Document fix and update audit logs
+- [DONE] Merge PR #1215 (confirmed merged, exit code 0)
+- [DONE] Ship `equity_mysql_edge_test.py` (#1213)
+- [DONE] Ship `equity_source_reconcile.py` (#1215)
+- [DONE] Fix non-crypto resolver (already fixed in v2/v2.1/v2.2 — investigator corrected assistant's claim)
+- [OPEN] Designate one canonical EQUITY resolved-pick source (pf_registry.json identified as intended canonical source, but designation not shown finalized)
+- [OPEN] Make `asset_class_health` / `hf_stats` / `by_asset_class` all read the same canonical source with identical window
+- [OPEN] Re-run `equity_mysql_edge_test.py` after canonical source fix
+- [OPEN] Write definitive EQUITY verdict (assistant states "Writing the definitive verdict" but no completion shown)
+- [UNCLEAR] Use subagents & proceed (user requested, no evidence of execution in excerpt)
+- [DONE] Resolve EQUITY contradiction (canonical source: `pf_registry.json`, no edge)
+- [DONE] Commit `reports/EQUITY_VERDICT_FINAL_2026-05-18.md` (commit `de937a0`)
+- [DONE] Update agentmemory with EQUITY verdict
+- [OPEN] Flip dashboard default to canonical `pf_registry.json` (edit `dashboard_generator.py`)
+- [OPEN] Run `/swarm-transcript-review`
+- [OPEN] Run `/swarm-pr-review`
+- [OPEN] Run `/swarm-actions-audit`
+- [OPEN] Implement `/swarm pr-review` command with the described workflow (PR listing, swarm review, consensus report, smart agent decision)
+- [OPEN] Implement `/swarm-actions-audit` command (mentioned but not defined)
+- [OPEN] Create `tools/swarm/prompts/pr_review_batch.md` prompt file
+- [OPEN] Ensure `tools/swarm/session_manager.py` SQLite session history exists and is used for persistence
+- [OPEN] Ensure `swarm_runs/` directory exists for storing raw engine responses
+- [OPEN] Handle argument parsing for `open`, `all`, `<number>`, and `--consensus` flags
+- [OPEN] Implement batch processing of PRs in groups of 3 with concurrent `delegate_task` calls
+- [OPEN] Implement consensus table generation after specialist reports
+- [OPEN] Implement smart agent decision step using `swarm_run.py` with Claude engine
+- [OPEN] Output consensus table, smart agent decisions, action items, and commands to run
+- [DONE] Build a Money-Ready Verdict tab on /audit with 24h updates + version archives
+- [DONE] Review/fix GH Actions and PRs via /swarm-transcript-review, /fix-gh-actions, /swarm-pr-review, /swarm-actions-audit
+- [DONE] Broadcast session summary to cross-PC peers via /dropchat-multipc
+- [DONE] Find/prove a statistical edge per asset class
+- [DONE] Leverage incubator/baby-strategy forward-test pipeline for more signal sources
+- [DONE] Check Kimi-claw analysis, trending-finance-repos tweet, FreeBuff notes, Ernie notes
+- [DONE] Process, implement, commit, and run the Kimi agent-swarm enhancement package
+- [DONE] Set persistent objectives via /goal
+- [DONE] Review /audit and /audit/hyrotrader JSON envelope via HYPERFOCUS
+- [DONE] Review ~26 swarm prompt files for /money-maker-readyv2 contribution; run useful ones
+- [DONE] Use subagents and proceed
+- [DONE] Produce summary via /swarm-pr-review and /swarm-actions-audit
+- [DONE] Verify main CI health — was broken 03:20–03:37 UTC, now green on HEAD `f3b8495a`
+- [DONE] Root-cause CI break: stale test fixture collided with quarantined strategy
+- [DONE] Save fixture-collision lesson to agentmemory (tag `ci_audit`)
+- [DONE] Save learning to holographic memory (`agent_shared_memory.json`)
+- [DONE] Index feedback note `feedback_test_fixtures_vs_quarantine_data.md` in MEMORY.md
+- [DONE] Review transcript scan (`bvprxtzp9`) — 3 open items pre-triaged
+- [DONE] File issue #1221 — dashboard tiles show inflated per-class WR/PF; default `/audit` to canonical `pf_registry.json`
+- [OPEN] Push holographic memory commit for cross-PC peers (user must say the word)
+- [UNCLEAR] Proceed on next steps / "whats next?" — user asked twice, assistant gave landscape but no explicit action taken
+- [DONE] Identify root cause of git push rejection (commit-contention race, no pull-rebase-retry)
+- [DONE] Deploy 3-specialist swarm for full breadth audit
+- [DONE] Fix Gate Config Emit race (PR #1225 merged)
+- [DONE] Fix 10 race-vulnerable workflows via safe_commit_push.sh (PR #1228 merged)
+- [DONE] Commit actions audit report to main (0bcf4b6)
+- [DONE] Add cancel-in-progress concurrency on 4 push gates (PR #1231 merged)
+- [DONE] File FTP-TLS security P0 issue (#1233)
+- [DONE] File dashboard pf_registry canonical flip issue (#1221)
+- [OPEN] Fix 11 remaining race-vulnerable workflows (batchable, flagged)
+- [OPEN] Fix FTP-TLS security P0 (17 deploys with ssl:verify-certificate no) — needs host-cert verification first
+- [OPEN] Fix cost concurrency issues (storm-commit push fan-out) — needs coordination
+- [OPEN] Address low-priority hygiene items (cron staggering, */10 removal, pip caching, SHA-pinning, CodeQL/Dependabot)
+- [DONE] Fix syntax bug in options_flow.py (line 390: `currency.lower()_usd` → `currency.lower() + "_usd"`)
+- [OPEN] Fix syntax bug in onchain_crypto.py (line 41: `sys` used before import)
+- [OPEN] Py_compile-check both modules after fixes
+- [OPEN] Write unit tests for options_flow.py and onchain_crypto.py
+- [OPEN] Wire both modules into scanner.py
+- [OPEN] Write comprehensive roadmap document (from no edge to money-ready trustworthy system with profitable picks per asset class)
+- [OPEN] Update rules to prevent future edit tool parameter errors (user requested this)
+- [DONE] Verify ring AI's claims (options_flow.py, onchain_crypto.py, ROADMAP_TO_PROFIT.md, pf_registry.json)
+- [DONE] Consult AI swarm (Grok + DeepSeek) on roadmap
+- [DONE] Write revised, swarm-reviewed roadmap
+- [DONE] Commit `reports/ROADMAP_TO_EDGE_2026-05-18.md` to main (commit `73ac85c`)
+- [DONE] Drop file `CLAUDE_DESKTOP1_2026-05-18_0154EST.MD` at repo root
+- [OPEN] Commit `CLAUDE_DESKTOP1_2026-05-18_0154EST.MD` to main branch
+- [OPEN] Broadcast file via `/dropchat-multipc`
+- [DONE] Commit `CLAUDE_DESKTOP1_2026-05-18_0154EST.MD` to main (`5292c48`)
+- [DONE] Broadcast SESSION_SUMMARY (3 merged PRs, roadmap, issues #1221/#1233)
+- [DONE] Drain inbox (empty, nothing to triage)
+- [DONE] Take ownership of 3-way collision and decide
+- [DONE] Commit ownership decision (`ee7e71e`)
+- [DONE] Broadcast SESSION_CLOSED with collision alert
+- [OPEN] Backfill `regime` onto the ledger (regime backfill PR)
+- [OPEN] Build regime-conditional harness (`evaluate_by_regime()`)
+- [OPEN] Re-test parked signals after harness change
+- [OPEN] Conduct deep analysis: trace each pick + methodology, critique, check missed top crypto gainers, assess "real money ready" status, investigate improvements per asset class, query databases (mysql.50webs.com), review GitHub Actions jobs, identify mistakes/filters/datasets
+- [DONE] Commit deep real-money-ready audit prompt to DAILY_IDEAS.MD (7ee8ad0)
+- [DONE] Store session summary in agentmemory with tag `session_summary`
+- [DONE] Append holographic memory learning to agent_shared_memory.json
+- [DONE] Commit reports/EDGE_HARVEST_2026-05-18.md (58f3a0c) — multi-AI harvest
+- [DONE] Commit DAILY_IDEAS.MD (4609a13) — 4 reusable prompts logged
+- [DONE] Commit CLAUDE_DESKTOP1_TRANSCRIPT_* and CLAUDE_DESKTOP1_ROADMAP_FORWARD_* files
+- [DONE] Broadcast CHATBIBLE final SESSION_SUMMARY to peers
+- [OPEN] Summarize changes using CHATBIBLE.MD protocol
+- [OPEN] Drop chat transcript summary to a .MD file
+- [OPEN] Drop accomplishments/future steps .MD file covering findtorontoevents.ca/audit world-class prediction system timeline and speed-up plan
+- [OPEN] Summarize action plan, accomplishments, files generated/modified and why, next steps, and contribution to PnL/profit factor/sharpe ratio per asset class
+- [DONE] Fix Gate Config Emit push-race (PR #1225 merged)
+- [DONE] Harden 10 race-vulnerable workflows with safe_commit_push.sh (PR #1228 merged)
+- [DONE] Add concurrency: cancel-in-progress to 4 push gates (PR #1231 merged)
+- [DONE] Fix all 11 race-vulnerable workflows
+- [DONE] Generate reports/ACTIONS_AUDIT_2026-05-18.md
+- [DONE] Generate reports/ROADMAP_TO_EDGE_2026-05-18.md
+- [DONE] Generate reports/OWNERSHIP_DECISION_2026-05-18.md
+- [DONE] Generate reports/EDGE_HARVEST_2026-05-18.md
+- [DONE] Generate CLAUDE_DESKTOP1_* transcripts
+- [DONE] Append to DAILY_IDEAS.MD
+- [DONE] Modify 14 workflow YAMLs via PRs
+- [DONE] Create issue #1221 (dashboard-canonical flip)
+- [DONE] Create issue #1233 (FTP-TLS security P0)
+- [OPEN] Build regime-conditional harness (roadmap Phase 1)
+- [OPEN] Backfill regime onto closed_picks.json
+- [OPEN] Fix duplicate-re-emission bug at crypto tick pipeline (dedup keys + 60-day clean backfill + REST reconciliation)
+- [OPEN] Run /money-maker-readyv2 deep audit
+- [OPEN] Magic-filter hunt (prompt C)
+- [OPEN] Pick-traceability (prompt D)
+- [DONE] Read recent git log (30 commits)
+- [DONE] Attempt to read recent .MD files (ASSET_CLASS_DEEP_DIVE.md, CLOSED_PICKS_LESSONS.md, etc.) — all not found
+- [OPEN] Conduct deep research per strategy/asset class comparing plan to industry standards / top hedge funds/quants
+- [OPEN] Review every recent .MD for concepts implemented or not implemented
+- [OPEN] Check recent commits to see if changes are getting closer to winners
+- [OPEN] Assess if a modified plan is needed vs ROADMAP_TO_PROFIT.md
+- [DONE] Read Kilo status (assistant read it)
+- [OPEN] Relay to kilo: commit as opt-in sidecar PRs, do not merge to scanner production path
+- [OPEN] Relay to kilo: coordinate with STRAND B so onchain artifacts don't diverge on data sources
+- [OPEN] Relay to kilo: no money-ready claim pre-harness
+- [OPEN] Update `reports/OWNERSHIP_DECISION_2026-05-18.md` with softened version + re-broadcast (assistant asked if user wants this)
+- [DONE] Read and analyzed all 8 rules and kill history
+- [DONE] Mapped full repo architecture
+- [DONE] Reviewed existing signal families
+- [DONE] Reviewed tools/edge_stability_harness.py
+- [DONE] Reviewed tools/edge_stability_harness_enriched.py
+- [DONE] Reviewed tools/backfill_pick_features.py
+- [DONE] Reviewed tools/glassnode_data_fetcher.py
+- [DONE] Reviewed alpha_engine/scanner.py
+- [DONE] Reviewed alpha_engine/config.py
+- [DONE] Reviewed git history, verified HEAD
+- [DONE] Created git worktree on branch feat/fork2-new-signals
+- [DONE] Rewrote alpha_engine/options_flow.py (complete implementation)
+- [DONE] Rewrote alpha_engine/onchain_crypto.py (complete implementation)
+- [DONE] Both modules compile clean (py_compile passed)
+- [DONE] Pre-registered hypotheses H-009, H-010, H-011 in reports/hypothesis_registry.json
+- [DONE] Ran full per-asset-class performance analysis
+- [DONE] Reviewed 12+ recent .md reports
+- [DONE] Added 14 new tool call rules
+- [DONE] Created tests/test_options_flow_signals.py (44 tests)
+- [DONE] Created tests/test_onchain_crypto_signals.py
+- [DONE] Diagnosed and fixed 4 test failures
+- [DONE] Fixed test file import paths
+- [OPEN] Resolve final import error in test_options_flow_signals.py
+- [OPEN] Wire both modules into scanner.py strategy registry with opt-in env gates and STRATEGY_REGIME_MAP entries
+- [OPEN] Run full test suite clean
+- [UNCLEAR] Submit for review (mentioned in user's summary but not explicitly requested as action item)
+- [DONE] Add `evaluate_by_regime()` to `edge_stability_harness.py` (PR #1237 opened)
+- [DONE] Merge PR #1237 to main branch
+- [DONE] Drop CHATBIBLE protocol message summarizing the work
+- [OPEN] Regime backfill onto `closed_picks.json` (dependency to activate PR #1237)
+- [OPEN] Re-run magic-filter (RR ≥1.5 + conf ≥0.65) against canonical `pf_registry.json` to verify CRYPTO WR lift
+- [OPEN] Fix forward resolution bug (P0 blocker for 5/6 classes)
+- [OPEN] Fix NULL strategy gate
+- [OPEN] Fix confidence recalibration
+- [OPEN] Enforce RR+conf gate in DB filtering immediately
+- [OPEN] Expand symbols (top-50 crypto gainers daily)
+- [OPEN] Add more strategies (30+ engines + consensus)
+- [OPEN] Weekly swarm research + obsidian vault per-asset-class notes
+- [DONE] Merge PR #1225 (Gate Config Emit push-race fix)
+- [DONE] Merge PR #1228 (10 workflows → safe_commit_push.sh)
+- [DONE] Merge PR #1231 (concurrency: cancel-in-progress cost leak)
+- [DONE] Merge PR #1237 (regime-conditional harness — evaluate_by_regime())
+- [DONE] Commit docs (ACTIONS_AUDIT, ROADMAP_TO_EDGE, EDGE_HARVEST, OWNERSHIP_DECISION + 3 CLAUDE_DESKTOP1 handoff MDs)
+- [DONE] File issues #1221 and #1233
+- [OPEN] Regime backfill onto closed_picks.json via regime_terminal HMM
+- [OPEN] Assign owner for non-crypto outcome resolver fix (P0)
+- [OPEN] Grok retry commit of updates/2026-05-18-*.md files with git add -f
+- [DONE] Log giant-file .MD code-review consult in DAILY_IDEAS.MD for future run
+- [OPEN] Wire both modules (options_flow.py, onchain_crypto.py) into scanner.py strategy registry with opt-in env gates
+- [OPEN] Submit for review
+- [DONE] PR #1237 (regime-conditional harness) merged to main
+- [DONE] 4 PRs merged this session, 4 reports + handoff docs on main, 2 issues filed
+- [DONE] Final CHATBIBLE broadcast sent
+- [OPEN] Kilo: Resolve H-010 ID collision before committing
+- [OPEN] Kilo: Commit options_flow.py / onchain_crypto.py + tests as opt-in sidecar PRs
+- [OPEN] Kilo: Include "## Wiring Plan" section in PR body
+- [OPEN] Kilo: No "Money Ready" claim — keep at RESEARCH tier
+- [UNCLEAR] Grok: Find where it actually wrote the 3 audit files or re-write them to the real path
+- [OPEN] Assistant: Commit the 3 audit files via gh API once content exists at readable path
+- [DONE] Read CHATBIBLE.MD and check multi-PC bridge protocol
+- [DONE] Read kilo status (kilo proceeding with options_flow.py + onchain_crypto.py, ~44 unit tests, about to commit)
+- [OPEN] Relay to kilo: coordinate with STRAND B so the two onchain artifacts don't diverge on data sources
+- [UNCLEAR] Update reports/OWNERSHIP_DECISION_2026-05-18.md with softened version + re-broadcast (user asked "Want me to update...?" — no explicit yes/no shown)
+- [DONE] Search disk for grok audit files (task completed, exit code 0)
+- [OPEN] kilo: point `options_flow.py` docstring at H-015, `onchain_crypto.py` at H-016
+- [OPEN] kilo: commit untracked files via gh API PUT, opt-in sidecar PR with Wiring Plan in body
+- [OPEN] grok: re-write 3 audit files to `e:/findtorontoevents_antigravity.ca/updates/` (or paste content)
+- [DONE] Use subagents and review the system (analysis completed and presented)
+- [OPEN] Turn analysis into a concrete implementation plan / code spec
+- [OPEN] Write SQL + Python filter for the "Top-Notch Picks" engine
+- [OPEN] Create Obsidian vault notes
+- [DONE] Check existence of grok's 3 files on disk and in git (files not found, branch exists but empty)
+- [OPEN] grok must regenerate the 3 files from its own session memory and write them to `e:/findtorontoevents_antigravity.ca/updates/`
+- [OPEN] grok (or Claude) commits the regenerated files via `gh` API
+- [OPEN] Proceed with regime filter, risk-adjusted sizing ≤1.5%/trade, and forward-resolution fix as standalone hygiene PRs
+- [OPEN] Kill or prove the cohort engine + WR projection via `edge_stability_harness.py` before any code spec
+- [OPEN] Pre-register a causal hypothesis before any real test (no re-slicing the same ledger)
+- [DONE] Verify existence of files in /mnt/e/findtorontoevents_antigravity.ca/updates/
+- [OPEN] Implement "Cohort + Disagreement + Regime" engine (Tier 1 filters)
+- [OPEN] Add Disagreement Gate (≥3 independent sources)
+- [OPEN] Add Regime Gate (pause/halve on VIX>25 or BTC dominance spike)
+- [OPEN] Recalibrate confidence (invert CRYPTO, keep EQUITY)
+- [OPEN] Implement edge-based position sizing
+- [OPEN] Add kill-switch per cohort (auto-disable if 7-day WR<48% or PF<1.2)
+- [OPEN] Write SQL + Python implementation of "Cohort + Disagreement" filter (Option A)
+- [OPEN] Update real-money-readiness audit with new filters and phased rollout plan (Option B)
+- [OPEN] Create Obsidian vault notes + HTML dashboard version (Option C)
+- [DONE] Verify existence of `edge_analysis_2026-05-17.md` (user provided paths, assistant confirmed file exists at `updates/edge_analysis_2026-05-17.md`)
+- [OPEN] Read `updates/edge_analysis_2026-05-17.md` (assistant stated "Reading it now")
+- [OPEN] Run each claimed cohort (7 CRYPTO families, EQUITY elite≥60, COMMODITY SHORT, FOREX scout) through `edge_stability_harness.is_admissible()` on canonical deduped `pf_registry` ledger (assistant recommended this as next step)
+- [DONE] Correct factual error about file existence (file confirmed real at `updates/edge_analysis_2026-05-17.md`)
+- [OPEN] Run each cohort through `edge_stability_harness.is_admissible()` on canonical `pf_registry.json` ledger
+- [DONE] Check kilo's compliance with adapted ownership decision (env gates, pre-registered hypotheses, tests, bug fix, wiring pattern)
+- [DONE] Verify env gate defaults OFF for OPTIONS_FLOW_ENABLED/ONCHAIN_CRYPTO_ENABLED
+- [DONE] Confirm PR body has ## Wiring Plan section (Wire-Up Rule)
+- [DONE] Confirm no "Money Ready" claim — modules are RESEARCH tier
+- [DONE] Assess full state of changes between worktree and main (git diff --stat, git status, git ls-files, git log)
+- [OPEN] Create comprehensive .MD documentation file of plan, accomplishments, and future steps
+- [OPEN] Commit documentation and source code changes to GitHub main branch
+- [DONE] Commit grok's 3 `updates/2026-05-18-*.md` files to main via gh API
+- [DONE] Run /swarm-transcript-review (alias for swarm-transcript-scan)
+- [OPEN] Run /dropchat-multipc
+- [DONE] Run /swarm-transcript-review on transcript ec2159f2
+- [DONE] Cross-check OPEN items against own lane (regime harness PR #1237)
+- [OPEN] Paste Kilo redirect prompt to kilo / OpenRouter ring2.6IT
+- [OPEN] Task A — Run is_admissible() on canonical ledger for each of 4 cohorts (CRYPTO 7-family LONG, EQUITY elite>=60, COMMODITY SHORT, FOREX rsi-ema-scout)
+- [OPEN] Task B — Find verifiable copytrader edge (full survivorship-free history, OOS forward period, net of execution lag + fees)
+- [OPEN] Pre-register every hypothesis in reports/hypothesis_registry.json (H-017+)
+- [OPEN] Deliverable: reports/cohort_harness_verdict_<date>.md with per-cohort PASS/KILL and copytrader-data-availability finding
+- [DONE] Run all 5 cohorts through `edge_stability_harness.is_admissible()` + `evaluate_by_regime()` (option A)
+- [DONE] Commit 3 audit `.md` files (2 done: `a1ece17`, `101e7d1`; 1 open: `chat-transcript-summary.md`)
+- [OPEN] Write `chat-transcript-summary.md`
+- [DONE] Merge 4 PRs (#1225/#1228/#1231/#1237)
+- [DONE] Commit 8 reports/docs + 2 grok audit files
+- [DONE] File 2 issues (#1221, #1233)
+- [OPEN] Regime backfill onto `closed_picks.json` (open follow-up in assistant's lane)
+- [DONE] Verify existence of files in updates/ directory (USER requested check, assistant confirmed files exist)
+- [DONE] Confirm content matches cited numbers (USER requested verification, assistant confirmed match)
+- [DONE] Determine system real-money readiness (USER requested assessment, assistant concluded NOT ready)
+- [OPEN] Run all 5 cohorts through edge_stability_harness.is_admissible() on canonical pf_registry (USER requested via option A, assistant planned but did not show execution)
+- [OPEN] Implement Cohort + Disagreement filter (SQL + Python) for surviving CRYPTO families (USER requested via option B, assistant planned but did not show execution)
+- [OPEN] Update real-money-readiness-audit.md with phased paper-trading rollout + kill-switch (USER requested via option C, assistant planned but did not show execution)
+- [OPEN] Create Obsidian vault notes + single-file HTML dashboard (USER requested via option D, assistant planned but did not show execution)
+- [OPEN] Define quickest path document (USER requested via option E, assistant planned but did not show execution)
+- [OPEN] Commit 3 existing 2026-05-18-*.md files to main via gh API (USER requested via option F, assistant planned but did not show execution)
+- [OPEN] Create set of TODOs and get them done (USER requested combination of options, assistant created plan but did not show completion)
+- [OPEN] Run tasks in parallel with subagents (USER requested, assistant acknowledged but did not show execution)
+- [OPEN] Produce updates/2026-05-18-stability-harness-verdict.md with pass/fail + eff numbers (assistant surfaced as Phase 0 action item, not shown done)
+- [OPEN] Fix forward resolution for non-crypto (assistant surfaced as Phase 1 action item, not shown done)
+- [OPEN] Implement regime filter + risk-adjusted sizing ≤1.5% (assistant surfaced as Phase 1 action item, not shown done)
+- [DONE] Synthesize and commit cohort harness verdict (`reports/COHORT_HARNESS_VERDICT_2026-05-18.md`)
+- [DONE] Run /swarm-transcript-review → `transcript_scan_2026-05-18e.md`
+- [DONE] Send /dropchat-multipc broadcast
+- [OPEN] Fix non-crypto forward-resolution pipeline
+- [OPEN] Expand traded universe
+- [OPEN] Find genuinely new data source surviving dedup at n≥400/class
+- [OPEN] Gate any production code on `is_admissible()` on canonical `pf_registry`
+- [DONE] Correct 3 canonical MASTER_ACTION_PLAN_2026-05-18 files with correction banner
+- [DONE] Create/update `updates/index.html` with edge-verdict card
+- [DONE] Commit corrected MASTER_ACTION_PLAN files to git main
+- [DONE] Commit `updates/index.html` to git main
+- [OPEN] FTP upload `updates/index.html` to 50webs using env vars FTP_PASS, FTP_SERVER, FTP_USER
+- [DONE] Check peer protocol (CHATBIBLE) — 0 DMs, 0 broadcasts, gateway up
+- [DONE] Schedule 5-minute peer recheck
+- [DONE] Verify kilo is executing cohort harness work
+- [DONE] Deploy updates/index.html to 50webs and GoDaddy via FTPS
+- [DONE] Commit MASTER_ACTION_PLAN correction banner (CRYPTO=MONEY_READY is stale/wrong) — 3 commits
+- [DONE] Commit updates/index.html edge-verdict card — commit d1ee658
+- [DONE] Execute kilo cohort harness verification — 0 cohorts admissible
+- [DONE] Perform peer protocol inbox check — 0 messages
+- [DONE] Re-check cross-PC protocol peer inbox per CHATBIBLE.MD — DMs and broadcasts both 0
+- [DONE] Verify remote FTP sites have the updates — confirmed byte-identical on both mirrors
+- [OPEN] Check all links from updates page for being alive
+- [OPEN] Check specific links (Before You Trade checklist, Tools, Dashboards, Investment Hub links) for useful data and buried winners
+- [OPEN] Use subagents to crawl links under findtorontoevents.ca/updates/index.html and findtorontoevents.ca/ (Investment Hub section)
+- [DONE] Commit buried-winner hunt report (`reports/BURIED_WINNER_HUNT_2026-05-18.md`)
+- [OPEN] Verify or strip `_100WR_COMBOS` score boosts in `quality_gates.py:4862-4869`
+- [OPEN] Run `swarm-transcript-scan` on the most recent session JSONL
+- [UNCLEAR] Handle "the rest of the action items" (user request is vague; no further items enumerated in excerpt)
+
+## OPEN (409)
+
+- [OPEN] Review Kimi's swarm roles/templates and integrate into tools/swarm or ruflo swarm
+- [OPEN] Revise coding swarms to produce multiple opinions on task implementation, testing steps, and impacts
+- [OPEN] Create specialized swarm for reviewing open PRs and checking their impacts
+- [OPEN] Create specialized swarm for checking GitHub Actions for failed jobs (intermittent failures, cancellations, stale jobs)
+- [OPEN] Create specialized swarm for research
+- [OPEN] Add memory to swarms for faster searching and avoiding reinvention
+- [OPEN] Add ability to convert swarm results or searching swarms as a skill (e.g., for Claude)
+- [OPEN] Ensure all revised swarms are fully unit tested and ready to go
+- [OPEN] Merge PR #1063 — operator decision
+- [OPEN] Install chromadb/sentence-transformers for cross-run memory persistence + real semantic ranking (optional; fallback works)
+- [OPEN] Wire engine models to actual API keys (DEEPSEEK, CEREBRAS_API, etc.) for real "3 models code → reviewer picks" behavior
+- [OPEN] Research/proposal comparing existing vs proposed swarms (scoped out of this turn; user asked to proceed on next steps)
+- [OPEN] Wire remaining workers (code_reviewer, test_writer, researcher, impact_analyzer) + 5 other engines to real LLMs
+- [OPEN] Quality-tuning for LLM-generated code's failing tests (revise loop)
+- [OPEN] Write original swarm comparison/recommendation proposal doc
+- [OPEN] Run `/swarm-pr-review` — started but not shown completed
+- [OPEN] Create follow-up PR for the missing delta (chromadb fix, reviewer/test_writer/researcher/impact wiring, engine plumbing, 4 test files)
+- [OPEN] Enhance 90-day master plan per asset class supplementing with free APIs / more prediction market data / copy trader picks (requested by user, not shown done)
+- [OPEN] Create a fresh valid PAT and re-add it if any future workflow needs cross-repo or private-submodule access (assistant surfaced as next step)
+- [OPEN] Set FRED_API_KEY env/secret
+- [OPEN] Wire Kalshi (kalshi_signals.py)
+- [OPEN] Add is_liquid_crypto() ADV gate (CRYPTO)
+- [OPEN] Add is_low_quality_or_meme() quarantine gate (PENNY_MEME)
+- [OPEN] Implement VIX-regime FRED swap (EQUITY)
+- [OPEN] Verify + wire real gh/API fetch for swarm_v2 pr-review/actions engines
+- [OPEN] Build swarm bulk-review <glob> mode
+- [OPEN] Monitor next cron cycle for CI green
+- [OPEN] Generate fresh classic PAT if needed
+- [OPEN] Drop SKIP_FRED=1 in bond-agent.yml (partially done via PR #1080)
+- [OPEN] Merge PR #1080
+- [OPEN] Fix PENNY_MEME delisting gate (is_low_quality_or_meme())
+- [OPEN] Verify reviewer claims on PR #1080 before acting
+- [OPEN] Merge PR #1080 — recommended but not shown merged
+- [OPEN] Merge PR #1079 — recommended but not shown merged
+- [OPEN] Fix walkforward-gate backlog (10 strategies missing walkforward verdicts)
+- [OPEN] Fix walkforward-gate design flaw (diff-aware gating) — user said "proceed", assistant started drafting
+- [OPEN] PENNY_MEME `is_low_quality_or_meme()` delisting/liquidity gate (supplement doc P0)
+- [OPEN] CRYPTO `is_liquid_crypto()` ADV gate (supplement doc P0)
+- [OPEN] Merge PR #1089 (AI leaderboard Phase 1)
+- [OPEN] Wire build_ai_leaderboard.py into swarm-pick-review.yml (Phase 2)
+- [OPEN] Add nav link in template.html (Phase 2)
+- [OPEN] Backfill research-run data (Phase 2)
+- [OPEN] Implement multi-AI convergence guard (Phase 3)
+- [OPEN] Implement rationale-theme analysis (Phase 3)
+- [OPEN] Refresh edge_stability data via `python -m tools.edge.edge_stability --all` (optional)
+- [OPEN] M-051 multi-model swarm: route swarm personas to real different models
+- [OPEN] Research-run backfill: add engine names to research specs
+- [OPEN] Mainline rule_engine adapter: stamp production picks for leaderboard comparability
+- [OPEN] Convergence guard / rationale-theme analysis (Phase 3, after ≥100 resolved picks/engine)
+- [OPEN] User requested /loop: proceed on next steps every 10 minutes for 2 hours, then every 2 hours
+- [OPEN] Wire `gather_votes()` into swarm pick-generation path (M-051 completion)
+- [OPEN] Mainline `rule_engine` adapter for leaderboard comparability
+- [OPEN] Refresh `walkforward_results.json` (10 unproven strategies)
+- [OPEN] Switch loop `65f7a6bb` from 10m to 2h cadence after ~2h elapsed
+- [OPEN] Promote M-051 candidates into live pick book via `append_picks()` — needs operator decision
+- [OPEN] Build `rule_engine` adapter — needs design decision
+- [OPEN] Walkforward refresh — needs design decision
+- [OPEN] Verify swarm-pick-review.yml leaderboard step outcome — CI still in_progress
+- [OPEN] Check if AI Leaderboard nav pill appears on live `/audit/` index after next regeneration
+- [OPEN] Next loop fire: re-verify CI + swarm-pick-review leaderboard step
+- [OPEN] Drop the M-051 task from Grok's plan (it's already merged)
+- [OPEN] Narrow the stash to `.agent` only, not `.claude/`
+- [OPEN] Verify branch against `origin/main` before committing
+- [OPEN] Proceed with FOREX edge gates work
+- [OPEN] Proceed with FUTURES `contract_type` tile work
+- [OPEN] Proceed with inbox_drain enforcement
+- [OPEN] Fix `audit-dashboard.yml` concurrency (user declined; assistant flagged as needing deliberate review)
+- [OPEN] Promote M-051 candidates to live paper trades (operator-gated; needs user decision)
+- [OPEN] `rule_engine` adapter design call (needs user decision)
+- [OPEN] `walkforward_results.json` refresh design call (needs user decision)
+- [OPEN] Refresh walkforward_results.json (backtest data run)
+- [OPEN] Promote M-051 candidates to live paper trades (operator-gated)
+- [OPEN] Investigate remaining items and ask for user opinion as needed
+- [OPEN] Log the walkforward file split fragility (non-urgent, flagged for later consolidation)
+- [OPEN] Decide M-051 last mile: who sizes/places trade and whether candidates auto-flow into tv_pick_capture
+- [OPEN] Build tv_pick_capture enhancement (accept --candidate-id, pull models_consulted) once placement flow confirmed
+- [OPEN] Place paper trades on "realpretend" (invoked paper-trade skill, not shown completed)
+- [OPEN] Create skill file `tv-paper-trade` in `e:\findtorontoevents_antigravity.ca\.claude\skills\` with the provided content (portfolios, account switching, trade placement, PCG-5 gates, TP/SL logic)
+- [OPEN] Place BTCUSDT order successfully (execute click failed, order did not land)
+- [OPEN] Place remaining 4 trades (SOLUSDT, BNBUSDT, XRPUSDT, ETHUSDT)
+- [OPEN] User manually verify `realpretend` paper account works (place test buy in TV Desktop)
+- [OPEN] Save top accomplishments and remaining action items to agentmemory + holographic memory
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii` binary is on PATH and version 0.11.2 (Windows: check `%USERPROFILE%\.local\bin\iii.exe`)
+- [OPEN] Reinstall `iii.exe` if missing (download from GitHub, extract to `%USERPROFILE%\.local\bin\`)
+- [OPEN] Store an asset edge finding via `/agentmemory remember` (example: EQUITY edge)
+- [OPEN] Store a bug/fix via `/agentmemory remember` (example: asset_class casing fix)
+- [OPEN] Search for CRYPTO edge knowledge via `/agentmemory search`
+- [OPEN] Search for FOREX investigation history via `/agentmemory search`
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a specific memory by ID via `/agentmemory forget`
+- [OPEN] Store EQUITY T2 candidate finding (common workflow example)
+- [OPEN] Search for everything known about FOREX before taking action (common workflow example)
+- [OPEN] Import recent Claude Code session transcripts (`agentmemory import-jsonl --max-files 50`)
+- [OPEN] Check if server is up before starting a long audit run (`curl ... /agentmemory/health`)
+- [OPEN] Re-target M-051 candidate generator at micro-futures / budget-appropriate symbols
+- [OPEN] Wire tv_pick_capture --candidate-id to flow models_consulted into swarm_picks.json
+- [OPEN] Fix audit-dashboard.yml push-run cancellations (cosmetic)
+- [OPEN] Install @agentmemory/agentmemory for semantic-memory server
+- [OPEN] Build tv_pick_capture --candidate-id wiring so M-051 picks land in swarm_picks.json with multi-model attribution
+- [OPEN] Add --candidates argument to main() in tv_pick_capture.py
+- [OPEN] Load candidate_map from args.candidates after parse_args()
+- [OPEN] Pass candidate_map to normalize_tv_fill() in the loop call
+- [OPEN] Create test file tests/test_tv_pick_capture_candidates.py
+- [OPEN] Create a PR for the tv_pick_capture changes
+- [OPEN] Proceed on next steps (Coinglass wiring or ETF emitter promotion) using tools\swarm_v2 as needed
+- [OPEN] Take ETF production-promotion follow-up (normalize direction, risk policy, quality gates, dashboard ingestion)
+- [OPEN] Replace `yfinance` with `ccxt` for exchange data
+- [OPEN] Add walk-forward retraining every N bars
+- [OPEN] Calibrate probabilities
+- [OPEN] Include stop-loss / take-profit logic
+- [OPEN] Compare against a simple buy-and-hold benchmark
+- [OPEN] Turn into a Binance live-trading bot
+- [OPEN] Turn into a deep learning LSTM version
+- [OPEN] Turn into a backtesting framework
+- [OPEN] Report when verification run #25978129715 completes
+- [OPEN] Fix chunked-retry yfinance fetch in etf-bond-scanner.yml (PR #1119 — verification run still 0 picks)
+- [OPEN] Check bond_scanner.py for same batch-fetch CI bug (assistant surfaced this as a missed item)
+- [OPEN] Re-trigger etf-bond-scanner workflow for final end-to-end verification
+- [OPEN] Wire LLM7.io into swarms/core/llm_client.py as keyless fallback
+- [OPEN] Get Grok verdict on gaps
+- [OPEN] Wire existing `oi_change_24h` into `ml_ranker` FEATURE_LIST (or hard-gate OI extremes in `quality_gates`)
+- [OPEN] Proceed on next steps / keep going till all action items are complete (user request, no further items shown)
+- [OPEN] Item A: Add `oi_change_24h` to FEATURE_LIST + full ml_ranker retrain (blocked, needs operator decision)
+- [OPEN] Item A alternative: Specify OI-extreme gate threshold for quality_gates shadow rule (blocked, needs operator decision)
+- [OPEN] ETF/Bond CI pipeline: Resolve yfinance GHA block (needs stock-data API key or committed OHLCV snapshot — infra decision)
+- [OPEN] PR #1124: Open (failover chain PR)
+- [OPEN] Double-check chat for remaining action items, consult swarm/other AIs if unclear
+- [OPEN] Set active goal: "keep going till all todos are handled.. and then double-check chat for any remaining action items you can handle.. if unclear ask our agent swarm or ask another set of AIs for a second or third .. and so on opinion.."
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via goal_state.py tick
+- [OPEN] Judge own work against the goal text and record verdict via goal_state.py judge
+- [OPEN] If not done and budget remains, schedule a wakeup for auto-continuation
+- [OPEN] If done, report goal achieved; if budget exhausted, report pause; if paused/achieved/exhausted on continue, do nothing and report why
+- [OPEN] Investigate PR #1121 CI status (assistant said "checking CI" but no result shown).
+- [OPEN] Root-cause `test_code_review_apr22_bugfixes.py` test failures (assistant delegated to Grok; no resolution shown).
+- [OPEN] Final verification run 25983068148 — confirm ETF/Bond picks generated via Tiingo/Polygon
+- [OPEN] Fix ETF/Bond parallel job conflict (active_picks.json lost on ETF side)
+- [OPEN] OI→ml_ranker FEATURE_LIST — needs coordinated full model retrain (operator-gated, not mine to action)
+- [OPEN] Investigate .github/ gitignored + absent in local checkout (cosmetic anomaly, operator-gated)
+- [OPEN] Re-run any engine returning ZERO or TINY with `python tools/swarm/worker_runner.py --engine <eng> --prompt-file <prompt> --out-file swarm_runs/_retry/<eng>.json`
+- [OPEN] Merge PR #1136 (oi_change_24h persistence) — CI running, not yet merged
+- [OPEN] Merge PR #1137 (yfinance in requirements.txt) — CI running, not yet merged
+- [OPEN] Expand PR #1137 to cover 4 additional undeclared dependencies found by subagent audit
+- [OPEN] Re-scan all session todos and report closed list or re-schedule checkin
+- [OPEN] Merge PR #1137 (6 undeclared-deps fix) — CI pending, re-scheduled checkin
+- [OPEN] Run `/swarm pr-review` (user invoked, no output shown)
+- [OPEN] Fix console encoding crash in scanner tool
+- [OPEN] Fix dedupe status priority bug (OPEN shouldn't override DONE)
+- [OPEN] Evaluate effectiveness of swarm-chunking concept for finding missed action items
+- [OPEN] Provide suggestions on swarm-chunking concept
+- [OPEN] Add two-pass reconcile to scanner (suggested by assistant, user deferred)
+- [OPEN] Check PR #1132 CI status; merge if green; report final closed list and stop
+- [OPEN] Update findtorontoevents.ca/updates/index.html with findings entry (scheduled in ~20 min)
+- [OPEN] Make a backup of remote updates/index.html before editing
+- [OPEN] Append update entry to whatever state the file is in after peer finishes
+- [OPEN] Update agentmemory /holographic memory
+- [OPEN] Make `/swarm-transcript-scan` slash command/skill wrapping `tools/swarm/transcript_action_scan.py`
+- [OPEN] Apply optional cleanup: drop `push` trigger from `audit-dashboard.yml` (user's call)
+- [OPEN] Further refine code implementation for specific modules (Binance WebSocket connector, kill-switch code, weekly plan for 30-day roadmap) — offered but not requested
+- [OPEN] Build COT timing-leakage publication-time gate
+- [OPEN] Audit kill-switch RED state → physical halt
+- [OPEN] Complete MLflow model governance (ml_ops/)
+- [OPEN] Build cotton-style live proof per class (M-050)
+- [OPEN] Build multi-model swarm ensemble (M-051)
+- [OPEN] Build PBO/CPCV harness per López de Prado (M-052)
+- [OPEN] Build 4-AI cross-validation of PF/WR (M-053)
+- [OPEN] Run tools/verify_resolver.py to verify 3,500 picks resolved
+- [OPEN] Build DB Freshness Guardian workflow (M-002)
+- [OPEN] Verify PR #1030 CI is green and merge
+- [OPEN] Audit kill-switch RED → physical halt (reproduce alert)
+- [OPEN] Audit frontend Binance API ban (grep for binance.com)
+- [OPEN] Run verify_citations.py before swarm rounds
+- [OPEN] Pick one of plan items #1/#2/#3/#10 for implementation
+- [OPEN] Ask agent swarm and/or other AIs for more ideas
+- [OPEN] Look into Ernie's "Bridge the 5 Real Gaps" code (GAP 1: Verify Resolver v2, GAP 2: Complete ML Ops Wiring)
+- [OPEN] Build `money_ready_verdict()` properly wiring real modules (cancelled — already exists)
+- [OPEN] Report OPEN-item count from transcript scan (reported as 191, but no further action taken)
+- [OPEN] Create a patch for money_ready_verdict to determine how to bridge the gap for failing asset classes
+- [OPEN] Run the patch and take a baseline
+- [OPEN] Check if the advice from the patch is practical by doing deep extensive research using swarms tools, swarms_v2, local ollama models, huggingface models, and transformers
+- [OPEN] Start with cloud models (Cerebras, Inception/Mercury, XAI/Grok) then move to local AIs
+- [OPEN] Get an extensive consensus and idea harvesting of what could be done to bridge the gap
+- [OPEN] Ensure the "preamble" context is set so that if asked "what do I need to do to make findtorontoevents.ca/audit profitable per asset class", a SQL query is ready to find overall performance per asset class, best possible statistical edge, most reliable/consistent statistical edge
+- [OPEN] Check if any strategy was accidentally banned
+- [OPEN] Check if any top-notch strategies have few picks for some reason (e.g., something broke, or they aren't relevant in certain market types like ranging markets)
+- [OPEN] Fix `_dsr_gate() nb_trials=1` bug (deferred to peer-merge)
+- [OPEN] Build /audit tab + 24h update + version archive for money_ready_verdict (deferred, user said "continue with your edits")
+- [OPEN] Merge PRs #1155, #1163, #1165 (blocked on CI)
+- [OPEN] Rebuild peer's PR #1164 on settled main after merges
+- [OPEN] Holographic memory + updates/index.html card as one final commit
+- [OPEN] Proceed on next steps using agent swarm / subagents / AI consult as needed
+- [OPEN] Deferred: fix `_dsr_gate() nb_trials=1` bug (flagged for peer-merge on money_ready_verdict.py)
+- [OPEN] Look into `/swarm-actions-audit`
+- [OPEN] Run `/swarm actions-audit` to execute the full audit pipeline (Step 1–3)
+- [OPEN] If `--fix` flag used, generate YAML diffs and create a branch with optimizations (Step 4)
+- [OPEN] Check GitHub repos for ability to improve money-ready predictions per asset class (link provided)
+- [OPEN] Run OHLCV backfill to populate pick dicts with new factors
+- [OPEN] Compute forward-window IC per factor
+- [OPEN] If IC validates, wire new factors into calculate_smart_score
+- [OPEN] Review /money-maker-readyv2 and recent .MDs (past 2 weeks)
+- [OPEN] Identify ideas for statistical edge per asset class
+- [OPEN] Run freshness preflight (Step 1)
+- [OPEN] Read per-class baseline from asset_class_health (Step 2)
+- [OPEN] Identify proven filter per class with resolved_n≥50 (Step 3)
+- [OPEN] Compute Kelly sizing for each proven filter (Step 4)
+- [OPEN] Write weekly filter report to `reports/weekly_filter_<UTC>.md` (Step 5)
+- [OPEN] Verify current OPEN picks match the filter (Step 6)
+- [OPEN] Commit report with `git add` + `git commit` (Step 7)
+- [OPEN] Confirm all 7 success criteria are satisfied (Final Deliverable)
+- [OPEN] Build trace-back of all active/closed picks (past 2 weeks): why each was picked, why symbols were not picked, what top gainers were missed
+- [OPEN] Create summarized blueprint document per pick, categorized as "high-conviction picks" vs "smart picks"
+- [OPEN] Run AI consults and/or agent swarm consults using cloud Model AIs/API keys to find a proven edge
+- [OPEN] Build walk-forward eff-stability harness (eff ≥ 0.30, same sign, ≥3 consecutive windows)
+- [OPEN] Build cost model (PF 0.74 is pre-cost)
+- [OPEN] Build regime filter (grades non-monotonic = regime-blind)
+- [OPEN] Signal hunt under the harness (qlib factors from #1178)
+- [OPEN] Isolate ONE class (post-cost PF ≥ 1.15 / n ≥ 200 / concentration < 30%)
+- [OPEN] 30-day paper-forward before capital
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh sources
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll
+- [OPEN] Drain broadcasts via freebuff_adapter poll with peer-id all
+- [OPEN] Triage each peer message by topic and act accordingly
+- [OPEN] Restart cross-PC gateway on desktop (operator action needed, not shown done)
+- [OPEN] Investigate 11 active picks on blacklisted symbols (FreeBuff #2 lead)
+- [OPEN] Build post-cost expectancy gate (FreeBuff #3, ~4h)
+- [OPEN] Verify non-crypto liquidity penalty (FreeBuff #4)
+- [OPEN] Build per-class confirmation gates (FreeBuff #5, ~12h)
+- [OPEN] Build "missed top gainers not in DB" Phase 2 (needs MySQL + external movers API)
+- [OPEN] Build walk-forward efficiency-stability harness (#1 path-to-edge action)
+- [OPEN] Create /swarm-transcript-scan slash command if not already existing
+- [OPEN] Run transcript scan on live session 47ad4b04...jsonl (started, not shown completed)
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Re-broadcast SESSION_SUMMARY payload when gateway is back up (user's assistant listed as "Next")
+- [OPEN] Use prompt inside postmortem blueprint to drive next paid-cloud AI swarm round (assistant listed as "Next")
+- [OPEN] Pull thread #1: decompose risk_reward (why low-R:R picks win)
+- [OPEN] Fetch real CFTC COT data (replace RSI proxy)
+- [OPEN] Backfill qlib factors (pv_corr30/vol_ratio/realized_vol30) into picks
+- [OPEN] Test regime-conditioned scores (does method_a_score stabilize within a single regime?)
+- [OPEN] Investigate 11 blacklisted-symbol active picks
+- [OPEN] Post-cost expectancy gate
+- [OPEN] Walk-forward eff-stability harness (30-day OOS re-test gate)
+- [OPEN] Build real CFTC COT fetcher + signal and run through harness
+- [OPEN] Write message "hey its CLAUDE 1 from eltons desktop" via dropchat-multipc
+- [OPEN] Decide between option (A) full COT build or (B) clean COT strategy rebuild (user did not answer; sent command-message instead)
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter poll
+- [OPEN] Triage peer messages from inbox
+- [OPEN] Build the COT backtest (assistant started this, not shown complete)
+- [OPEN] Proceed on next steps (user requested after the two commands finished)
+- [OPEN] Decide strategic fork: feature-backfill / new signal sources / paper-only
+- [OPEN] Run cost-adjusted deep-dive on `realized_vol30` (timing signal, ETF costs)
+- [OPEN] Decide strategic fork (chase +0.6% pre-cost lead vs. new signal sources / paper-only)
+- [OPEN] User decision: new signal sources vs paper-only (strategic fork, user said "we do want more signal sources")
+- [OPEN] Map existing incubator / baby-strategy pipeline (assistant said "mapping what's there first")
+- [OPEN] Fix hyrotrader trading_days_logged aggregation (AHF-01)
+- [OPEN] Refresh hyro_quan_bridge.json symbol list (AHF-02)
+- [OPEN] Populate hyrotrader pick entry/stop/target prices (AHF-03)
+- [OPEN] Add concentration gate at verdict time for COMMODITY KC=F (AHF-04)
+- [OPEN] Apply ±100% PnL outlier cap to EQUITY (AHF-05)
+- [OPEN] Label each CRYPTO PF with its window on dashboard (AHF-06)
+- [OPEN] Split realized-MDD vs MtM-MDD in dashboard (AHF-07)
+- [OPEN] Wire shadow_probation flag on (AHF-08)
+- [OPEN] Add hard concentration gate before DSR/SPA for COMMODITY (AHF-09)
+- [OPEN] Proceed on next steps (user requested via /goal)
+- [OPEN] Proceed on next steps (user requested "proceed on next steps")
+- [OPEN] Source new external signal inputs (user's decision)
+- [OPEN] Commit the generated enhancements to GitHub
+- [OPEN] Run the improved swarm analysis to look for areas to find/improve statistical edge per asset class
+- [OPEN] Evaluate the results of the swarm analysis
+- [OPEN] Ask agent swarm for ideas if needed
+- [OPEN] Merge PR #1211 (waiting on CI)
+- [OPEN] Process next steps, run multiple rounds as needed, use agent swarm for ideas, prioritize/plan
+- [OPEN] Fix non-crypto resolver bug in `outcome_resolver.py` (requires coordination with codebuff owner)
+- [OPEN] Reconcile `at_consensus_picks` MySQL table (1.2% WR) with dashboard data (53.3% WR)
+- [OPEN] Write validation script to compare two EQUITY tables (drafted by Mercury, not shown executed)
+- [OPEN] Add new tests covering reconciled data paths
+- [OPEN] Document fix and update audit logs
+- [OPEN] Designate one canonical EQUITY resolved-pick source (pf_registry.json identified as intended canonical source, but designation not shown finalized)
+- [OPEN] Make `asset_class_health` / `hf_stats` / `by_asset_class` all read the same canonical source with identical window
+- [OPEN] Re-run `equity_mysql_edge_test.py` after canonical source fix
+- [OPEN] Write definitive EQUITY verdict (assistant states "Writing the definitive verdict" but no completion shown)
+- [OPEN] Flip dashboard default to canonical `pf_registry.json` (edit `dashboard_generator.py`)
+- [OPEN] Run `/swarm-transcript-review`
+- [OPEN] Run `/swarm-pr-review`
+- [OPEN] Run `/swarm-actions-audit`
+- [OPEN] Implement `/swarm pr-review` command with the described workflow (PR listing, swarm review, consensus report, smart agent decision)
+- [OPEN] Implement `/swarm-actions-audit` command (mentioned but not defined)
+- [OPEN] Create `tools/swarm/prompts/pr_review_batch.md` prompt file
+- [OPEN] Ensure `tools/swarm/session_manager.py` SQLite session history exists and is used for persistence
+- [OPEN] Ensure `swarm_runs/` directory exists for storing raw engine responses
+- [OPEN] Handle argument parsing for `open`, `all`, `<number>`, and `--consensus` flags
+- [OPEN] Implement batch processing of PRs in groups of 3 with concurrent `delegate_task` calls
+- [OPEN] Implement consensus table generation after specialist reports
+- [OPEN] Implement smart agent decision step using `swarm_run.py` with Claude engine
+- [OPEN] Output consensus table, smart agent decisions, action items, and commands to run
+- [OPEN] Push holographic memory commit for cross-PC peers (user must say the word)
+- [OPEN] Fix 11 remaining race-vulnerable workflows (batchable, flagged)
+- [OPEN] Fix FTP-TLS security P0 (17 deploys with ssl:verify-certificate no) — needs host-cert verification first
+- [OPEN] Fix cost concurrency issues (storm-commit push fan-out) — needs coordination
+- [OPEN] Address low-priority hygiene items (cron staggering, */10 removal, pip caching, SHA-pinning, CodeQL/Dependabot)
+- [OPEN] Fix syntax bug in onchain_crypto.py (line 41: `sys` used before import)
+- [OPEN] Py_compile-check both modules after fixes
+- [OPEN] Write unit tests for options_flow.py and onchain_crypto.py
+- [OPEN] Wire both modules into scanner.py
+- [OPEN] Write comprehensive roadmap document (from no edge to money-ready trustworthy system with profitable picks per asset class)
+- [OPEN] Update rules to prevent future edit tool parameter errors (user requested this)
+- [OPEN] Commit `CLAUDE_DESKTOP1_2026-05-18_0154EST.MD` to main branch
+- [OPEN] Broadcast file via `/dropchat-multipc`
+- [OPEN] Backfill `regime` onto the ledger (regime backfill PR)
+- [OPEN] Build regime-conditional harness (`evaluate_by_regime()`)
+- [OPEN] Re-test parked signals after harness change
+- [OPEN] Conduct deep analysis: trace each pick + methodology, critique, check missed top crypto gainers, assess "real money ready" status, investigate improvements per asset class, query databases (mysql.50webs.com), review GitHub Actions jobs, identify mistakes/filters/datasets
+- [OPEN] Summarize changes using CHATBIBLE.MD protocol
+- [OPEN] Drop chat transcript summary to a .MD file
+- [OPEN] Drop accomplishments/future steps .MD file covering findtorontoevents.ca/audit world-class prediction system timeline and speed-up plan
+- [OPEN] Summarize action plan, accomplishments, files generated/modified and why, next steps, and contribution to PnL/profit factor/sharpe ratio per asset class
+- [OPEN] Build regime-conditional harness (roadmap Phase 1)
+- [OPEN] Backfill regime onto closed_picks.json
+- [OPEN] Fix duplicate-re-emission bug at crypto tick pipeline (dedup keys + 60-day clean backfill + REST reconciliation)
+- [OPEN] Run /money-maker-readyv2 deep audit
+- [OPEN] Magic-filter hunt (prompt C)
+- [OPEN] Pick-traceability (prompt D)
+- [OPEN] Conduct deep research per strategy/asset class comparing plan to industry standards / top hedge funds/quants
+- [OPEN] Review every recent .MD for concepts implemented or not implemented
+- [OPEN] Check recent commits to see if changes are getting closer to winners
+- [OPEN] Assess if a modified plan is needed vs ROADMAP_TO_PROFIT.md
+- [OPEN] Relay to kilo: commit as opt-in sidecar PRs, do not merge to scanner production path
+- [OPEN] Relay to kilo: coordinate with STRAND B so onchain artifacts don't diverge on data sources
+- [OPEN] Relay to kilo: no money-ready claim pre-harness
+- [OPEN] Update `reports/OWNERSHIP_DECISION_2026-05-18.md` with softened version + re-broadcast (assistant asked if user wants this)
+- [OPEN] Resolve final import error in test_options_flow_signals.py
+- [OPEN] Wire both modules into scanner.py strategy registry with opt-in env gates and STRATEGY_REGIME_MAP entries
+- [OPEN] Run full test suite clean
+- [OPEN] Regime backfill onto `closed_picks.json` (dependency to activate PR #1237)
+- [OPEN] Re-run magic-filter (RR ≥1.5 + conf ≥0.65) against canonical `pf_registry.json` to verify CRYPTO WR lift
+- [OPEN] Fix forward resolution bug (P0 blocker for 5/6 classes)
+- [OPEN] Fix NULL strategy gate
+- [OPEN] Fix confidence recalibration
+- [OPEN] Enforce RR+conf gate in DB filtering immediately
+- [OPEN] Expand symbols (top-50 crypto gainers daily)
+- [OPEN] Add more strategies (30+ engines + consensus)
+- [OPEN] Weekly swarm research + obsidian vault per-asset-class notes
+- [OPEN] Regime backfill onto closed_picks.json via regime_terminal HMM
+- [OPEN] Assign owner for non-crypto outcome resolver fix (P0)
+- [OPEN] Grok retry commit of updates/2026-05-18-*.md files with git add -f
+- [OPEN] Wire both modules (options_flow.py, onchain_crypto.py) into scanner.py strategy registry with opt-in env gates
+- [OPEN] Submit for review
+- [OPEN] Kilo: Resolve H-010 ID collision before committing
+- [OPEN] Kilo: Commit options_flow.py / onchain_crypto.py + tests as opt-in sidecar PRs
+- [OPEN] Kilo: Include "## Wiring Plan" section in PR body
+- [OPEN] Kilo: No "Money Ready" claim — keep at RESEARCH tier
+- [OPEN] Assistant: Commit the 3 audit files via gh API once content exists at readable path
+- [OPEN] Relay to kilo: coordinate with STRAND B so the two onchain artifacts don't diverge on data sources
+- [OPEN] kilo: point `options_flow.py` docstring at H-015, `onchain_crypto.py` at H-016
+- [OPEN] kilo: commit untracked files via gh API PUT, opt-in sidecar PR with Wiring Plan in body
+- [OPEN] grok: re-write 3 audit files to `e:/findtorontoevents_antigravity.ca/updates/` (or paste content)
+- [OPEN] Turn analysis into a concrete implementation plan / code spec
+- [OPEN] Write SQL + Python filter for the "Top-Notch Picks" engine
+- [OPEN] Create Obsidian vault notes
+- [OPEN] grok must regenerate the 3 files from its own session memory and write them to `e:/findtorontoevents_antigravity.ca/updates/`
+- [OPEN] grok (or Claude) commits the regenerated files via `gh` API
+- [OPEN] Proceed with regime filter, risk-adjusted sizing ≤1.5%/trade, and forward-resolution fix as standalone hygiene PRs
+- [OPEN] Kill or prove the cohort engine + WR projection via `edge_stability_harness.py` before any code spec
+- [OPEN] Pre-register a causal hypothesis before any real test (no re-slicing the same ledger)
+- [OPEN] Implement "Cohort + Disagreement + Regime" engine (Tier 1 filters)
+- [OPEN] Add Disagreement Gate (≥3 independent sources)
+- [OPEN] Add Regime Gate (pause/halve on VIX>25 or BTC dominance spike)
+- [OPEN] Recalibrate confidence (invert CRYPTO, keep EQUITY)
+- [OPEN] Implement edge-based position sizing
+- [OPEN] Add kill-switch per cohort (auto-disable if 7-day WR<48% or PF<1.2)
+- [OPEN] Write SQL + Python implementation of "Cohort + Disagreement" filter (Option A)
+- [OPEN] Update real-money-readiness audit with new filters and phased rollout plan (Option B)
+- [OPEN] Create Obsidian vault notes + HTML dashboard version (Option C)
+- [OPEN] Read `updates/edge_analysis_2026-05-17.md` (assistant stated "Reading it now")
+- [OPEN] Run each claimed cohort (7 CRYPTO families, EQUITY elite≥60, COMMODITY SHORT, FOREX scout) through `edge_stability_harness.is_admissible()` on canonical deduped `pf_registry` ledger (assistant recommended this as next step)
+- [OPEN] Run each cohort through `edge_stability_harness.is_admissible()` on canonical `pf_registry.json` ledger
+- [OPEN] Create comprehensive .MD documentation file of plan, accomplishments, and future steps
+- [OPEN] Commit documentation and source code changes to GitHub main branch
+- [OPEN] Run /dropchat-multipc
+- [OPEN] Paste Kilo redirect prompt to kilo / OpenRouter ring2.6IT
+- [OPEN] Task A — Run is_admissible() on canonical ledger for each of 4 cohorts (CRYPTO 7-family LONG, EQUITY elite>=60, COMMODITY SHORT, FOREX rsi-ema-scout)
+- [OPEN] Task B — Find verifiable copytrader edge (full survivorship-free history, OOS forward period, net of execution lag + fees)
+- [OPEN] Pre-register every hypothesis in reports/hypothesis_registry.json (H-017+)
+- [OPEN] Deliverable: reports/cohort_harness_verdict_<date>.md with per-cohort PASS/KILL and copytrader-data-availability finding
+- [OPEN] Write `chat-transcript-summary.md`
+- [OPEN] Regime backfill onto `closed_picks.json` (open follow-up in assistant's lane)
+- [OPEN] Run all 5 cohorts through edge_stability_harness.is_admissible() on canonical pf_registry (USER requested via option A, assistant planned but did not show execution)
+- [OPEN] Implement Cohort + Disagreement filter (SQL + Python) for surviving CRYPTO families (USER requested via option B, assistant planned but did not show execution)
+- [OPEN] Update real-money-readiness-audit.md with phased paper-trading rollout + kill-switch (USER requested via option C, assistant planned but did not show execution)
+- [OPEN] Create Obsidian vault notes + single-file HTML dashboard (USER requested via option D, assistant planned but did not show execution)
+- [OPEN] Define quickest path document (USER requested via option E, assistant planned but did not show execution)
+- [OPEN] Commit 3 existing 2026-05-18-*.md files to main via gh API (USER requested via option F, assistant planned but did not show execution)
+- [OPEN] Create set of TODOs and get them done (USER requested combination of options, assistant created plan but did not show completion)
+- [OPEN] Run tasks in parallel with subagents (USER requested, assistant acknowledged but did not show execution)
+- [OPEN] Produce updates/2026-05-18-stability-harness-verdict.md with pass/fail + eff numbers (assistant surfaced as Phase 0 action item, not shown done)
+- [OPEN] Fix forward resolution for non-crypto (assistant surfaced as Phase 1 action item, not shown done)
+- [OPEN] Implement regime filter + risk-adjusted sizing ≤1.5% (assistant surfaced as Phase 1 action item, not shown done)
+- [OPEN] Fix non-crypto forward-resolution pipeline
+- [OPEN] Expand traded universe
+- [OPEN] Find genuinely new data source surviving dedup at n≥400/class
+- [OPEN] Gate any production code on `is_admissible()` on canonical `pf_registry`
+- [OPEN] FTP upload `updates/index.html` to 50webs using env vars FTP_PASS, FTP_SERVER, FTP_USER
+- [OPEN] Check all links from updates page for being alive
+- [OPEN] Check specific links (Before You Trade checklist, Tools, Dashboards, Investment Hub links) for useful data and buried winners
+- [OPEN] Use subagents to crawl links under findtorontoevents.ca/updates/index.html and findtorontoevents.ca/ (Investment Hub section)
+- [OPEN] Verify or strip `_100WR_COMBOS` score boosts in `quality_gates.py:4862-4869`
+- [OPEN] Run `swarm-transcript-scan` on the most recent session JSONL

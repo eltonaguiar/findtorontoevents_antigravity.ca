@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FUTURES — 90-Day Plan — findtorontoevents.ca</title>
+<style>:root{--accent:#fb923c}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>Asset Class 90-Day Plan: FUTURES (Financial / Index / Rates / FX Futures — Separate from COMMODITY) — 2026-05-15</h1>
+<p><strong>Author:</strong> Senior Quant (Grok "money-maker-continual-improve" mode)<br />
+<strong>Date:</strong> 2026-05-15<br />
+<strong>Scope:</strong> Deep skeptical audit of the <em>separate</em> FUTURES asset class (financial futures: equity index, interest rates, FX; distinct from physical-commodity futures in COMMODITY). Covers symbol coverage (15 tickers), why n≈0 activity, data quality (yfinance continuous contracts, roll mechanics, gaps), relationship/misclassification with COMMODITY, 4 academic strategies in <code>alpha_engine/futures_strategies.py</code>, quality gates, and concrete recommendation (revive / merge / deprecate).<br />
+<strong>References (concrete citations):</strong> <code>audit_dashboard/data/dashboard_data.json</code> (2026-05-15T02:06Z: FUTURES "insufficient_data" n=0 / resolved_n=0 / sizing_allowed=false), <code>non_crypto_agent/data/futures_picks.json</code> (2026-05-14: total_raw=3, quality=0, picks=[], live WR 0.0% 0/3), <code>alpha_engine/futures_strategies.py:457</code> (FUTURES_STRATEGIES registry: futures_tsmom, futures_connors_rsi2, futures_cross_asset_momentum, futures_vol_regime_breakout), <code>alpha_engine/config.py:649-668</code> (FUTURES_SYMBOLS + overlap GC/SI/HG with COMMODITY), <code>audit_trail/dashboard_generator.py:3344-3350</code> (_COMMODITY_ROOTS vs _INDEX_FUTURES_ROOTS classification; 70%+ =F activity routed to COMMODITY), <code>audit_trail/quality_gates.py:1317</code> (BLOCKED_ASSET_CLASSES removed FUTURES 2026-04-16 but -60 penalty + BLOCKED_ASSET_STRATEGY_PAIRS kills old variants; SMART_PICKS_MIN_SCORE_FUTURES=45), <code>reports/{asset_class_deep_dive_FUTURES_2026-05-12.md, futures_deep_dive_round2_2026-05-13.md, audit_asset_feedback_2026-05-05T0121Z_FUTURES.md, fix_FUTURES_20260505T005402Z.md, MASTER_ACTION_PLAN_2026-05-15.md (M-027)}</code>, <code>reports/asset_class_90day_plan_COMMODITY_2026-05-15.md</code> (notes 73% CT=F concentration + overlap), <code>non_crypto_agent/main.py:388-391</code> (strategy calls + curate_quality_picks futures conf≥0.50 / elite≥55 / rr≥1.15 / vix/mtf/sl gates).</p>
+<p><strong>Core Verdict (lead with the answer):</strong><br />
+<strong>FUTURES is genuinely dead / has almost no activity (n=0 in 2026-05-15 dashboard, 0 quality picks from 3 raw signals). It is not a viable standalone asset class today.</strong> The tile shows "insufficient_data" / sizing_allowed=false because (1) 70%+ of all =F futures contract activity is deliberately misclassified into the COMMODITY bucket via root-symbol logic (CT=F, GC=F, HG=F, NG=F, KC=F etc. → COMMODITY; only ES/NQ/ZN/6E etc. → FUTURES), so the "COMMODITY" T2-beating numbers (PF 2.49/61.5% but COT-overemission polluted per today's COMMODITY audit) are actually commodity-<em>futures</em> CTA performance; (2) the 4 academic strategies wired for the true FUTURES symbols (TSMOM Moskowitz 2012, ConnorsRSI2, cross-asset mom Gargano 2019, vol-regime Donchian+ATR) produce almost zero signals that survive curation in the current regime (sideways/low-vol/no-breakout markets) and fail elite_score / rr / vix / mtf gates; (3) historical baggage: old futures variants killed for 0-6.3% WR (n=2-56), quarantined, blocklist pairs, data-starvation catch-22 even after unblock. Symbol universe exists on paper (15 tickers) but data quality is yfinance-continuous only (synthetic rolls distort levels, volume unreliable, no OI/term structure, Globex 24h vs daily bar gaps). <strong>No independent edge proven for financial futures here</strong> (unlike commodity futures COT/carry sleeve). <strong>Recommendation: MERGE (reclassify all =F contracts under a unified FUTURES / COMMODITY_FUTURES tile) + deprecate the empty separate FUTURES bucket.</strong> Redirect financial-futures research (index overnight drift, rates carry, FX macro) as OPT_IN sleeve inside the existing COMMODITY CTA framework (or rename COMMODITY → FUTURES_CTA). Do NOT revive standalone — it would duplicate COMMODITY's futures plumbing and split already-thin n. Prioritize only after COMMODITY COT hygiene + classification fix; otherwise fold into EQUITY macro or research-only. This advances Goal #1 (phenomenal performance visibility across classes on /audit) without creating a zombie tile.</p>
+<hr />
+<h2>1. Latest Performance from dashboard_data.json + Recent Reports (2026-05-15 snapshot)</h2>
+<p><strong>From <code>audit_dashboard/data/dashboard_data.json</code> (generated 2026-05-15T02:06:57Z, repo_sha 35d3e77):</strong>
+- <strong>FUTURES asset_class_health:</strong>
+  - status: "insufficient_data", sample_tier: "insufficient", sizing_allowed: false
+  - n=0, resolved_n=0, win_rate=0.0, total_pnl_pct=0.0, profit_factor=null
+  - circuit_breaker: {breached: false, reason: "no_backtest", realized_n_30d: 0}
+  - min_display_n:10, min_candidate_n:50, min_stable_n:100</p>
+<ul>
+<li><strong>by_asset_class / concentration:</strong> empty for FUTURES (no entries). Compare COMMODITY: n=322 resolved, WR 61.5%, PF 2.49, 73.36% PnL mass on CT=F via cot_positioning (but post-forensic COT over-emission collapses real n≈5, WR40%, PF0.17 per <code>cot_paper_pilot_overemission_falsified_20260513.md</code> + <code>cot_pipeline_audit_20260514.md</code>).</li>
+</ul>
+<p><strong>Historical snapshots (pre-2026-05-15):</strong>
+- <code>non_crypto_agent/data/futures_picks.json</code> (2026-05-14T22:31): total_raw=3, quality=0, picks=[], symbols_tracked=15, strategies_run=4, "Live WR: 0.0% (0/3 closed) — CRITICAL: no dedicated futures strategies existed [pre-2026-04]. 4 new strategies deployed..."
+- <code>edge_stability_FUTURES.json</code> (2026-05-12): n_total=0 across all windows (7d/30d/90d/all); wilson_ci [0,0]
+- <code>asset_class_deep_dive_FUTURES_2026-05-12.md</code>: 6 paper-only strategies in blocklist (futures_rsi_divergence etc.), BLOCKED in hedge_fund_sprint, 5.9% WR residual n=2, zero /audit tile picks.
+- <code>futures_deep_dive_round2_2026-05-13.md</code> + <code>fix_FUTURES_20260505</code>: n=0 (or historical n=2/17 at 6.3% WR / 100% on n=2), "mostly real but COMMODITY is hidden FUTURES bucket", old strats 0% WR.
+- <code>audit_asset_feedback_2026-05-05T0121Z_FUTURES.md</code>: n=2, 100% WR (noise), "not analyzable... do not report until n&gt;=100".
+- <code>MASTER_ACTION_PLAN_2026-05-15.md</code>: M-027 "FUTURES Thursday short momentum (+2.56% n=9)" PENDING (DOW gate; require n&gt;30); table notes "FUTURES | n=2 | needs accumulation 90d | Donchian breakout system".</p>
+<p><strong>Brutal observation:</strong> The class has been in "insufficient" / zombie state for months. Any quoted WR (5.9-100%) is n&lt;20 noise. The 3 raw signals on 2026-05-14 were generated by the 4 new strategies but 100% rejected in <code>curate_quality_picks</code> (likely low_confidence &lt;0.50 or elite&lt;55 or rr&lt;1.15 or vix_hard_block or mtf_rsi or sl_distance_floor). No active picks, no smart_picks, no shadow/live emission.</p>
+<hr />
+<h2>2. Symbol Universe Size, Liquidity &amp; Concentration Risk</h2>
+<p><strong>Defined universe (<code>alpha_engine/config.py:649-668</code> FUTURES_SYMBOLS):</strong>
+- 15 entries (plus 3 commented/removed like CL=F):
+  - Equity index futures (CME/CBOT): ES=F (S&amp;P 500 E-mini), NQ=F (Nasdaq 100 E-mini), YM=F (Dow E-mini), RTY=F (Russell 2000 E-mini)
+  - Metals (overlaps COMMODITY): GC=F (Gold, COMEX), SI=F (Silver), HG=F (Copper)
+  - Rates / bonds (CBOT): ZN=F (10Y T-Note), ZT=F (2Y T-Note), ZB=F (30Y T-Bond)
+  - FX futures (CME): 6E=F (Euro), 6B=F (GBP), 6J=F (JPY), 6A=F (AUD), 6C=F (CAD)
+- Note: <strong>CL=F explicitly removed</strong> from both FUTURES and COMMODITY ("26 futures trades, 3.8% WR, -29.82% PnL — worse than random").
+- COMMODITY_SYMBOLS (config:615-646) has ~25 largely overlapping =F: GC/SI/HG/NG/PL/PA + full ags (CT=F cotton flagship, KC/SB/CC/ZC/ZS/ZW/LE/GF/HE/OJ) + energy proxies (BZ/RB/HO) + ETFs (USO/UNG/DBA). CT=F classified COMMODITY despite being ICE futures contract.
+- <strong>Overlap verdict:</strong> GC=F, SI=F, HG=F appear in <em>both</em> dicts (cat="futures" vs "commodity"). Classification root-prefix decides tile (<code>dashboard_generator.py:3344</code>: _COMMODITY_ROOTS = {CL,GC,HG,NG,SI,...CT,...} → COMMODITY; _INDEX_FUTURES_ROOTS={ES,NQ,YM,RTY,ZN,ZB,ZT,6E,...} → FUTURES). Result: ~70% of real futures PnL mass (per round2 report) lands in COMMODITY tile.</p>
+<p><strong>Liquidity realities (contract specs + known yf behavior):</strong>
+- ES/F NQ etc: Excellent (Globex, deep books, micros MES/MNQ/MYM/M2K exist but <em>not used</em> in FUTURES_SYMBOLS or strategies — high notional risk for full-size).
+- GC/SI/HG: Excellent (COMEX), but already "owned" by COMMODITY COT/carry.
+- ZN/ZT/ZB: Good but lower vol; term-structure / curve trades ignored.
+- 6E/6B etc: Liquid G10 FX futures, but carry/interest-rate diff edge (Lustig et al) not implemented beyond one proposed pilot.
+- <strong>Concentration risk:</strong> Zero in FUTURES (n=0). In COMMODITY: 73% on single CT=F (high unit risk ~$35k notional, $1500 daily limit move, no micro, ICE physical delivery basis risk).
+- <strong>Gap:</strong> No micro-contract mapping (MES etc), no per-symbol liquidity/position-size matrix in quality_gates or data_quality_gates.yaml (only generic commodity: symbols_min:5, roll_yield_check).</p>
+<p><strong>Verdict:</strong> Universe exists but split artificially; financial futures side has no volume/activity while commodity futures side (mislabelled) carries the class "edge".</p>
+<hr />
+<h2>3. Data Quality &amp; Outcome Tracking for (Financial) Futures</h2>
+<p><strong>Strengths:</strong>
+- yfinance provides free daily continuous OHLCV for all =F (used in futures_strategies + non_crypto fetch).
+- Strategies implement solid academic logic (inverse-vol sizing, ATR TP/SL capped 8%/5%, rr floors 1.2-1.5, ADX&gt;20 + ATR expansion for breakouts, SMA200 filter for Connors).
+- outcome_resolver.py aware of class-FUTURES (5bp PNL_WIN_THRESHOLD).
+- Some historical backtests referenced (e.g. M-027 Thursday short momentum n=9 +2.56%).</p>
+<p><strong>Major Weaknesses (brutally documented):</strong>
+- <strong>yfinance continuous =F series quality issues (same as COMMODITY report flags):</strong> 
+  - Synthetic roll adjustment (ratio or additive) distorts absolute price levels used for entry/TP/SL in _futures_tp_sl — realistic live fills on front-month contract differ.
+  - Volume: often summed across contracts or front-month only; unreliable for liquidity filters.
+  - No open interest, no exact first_notice/expiration dates → poor roll-yield or basis modeling (critical for rates/FX, less for pure mom).
+  - Gaps / settlement artifacts around quarterly rolls (Mar/Jun/Sep/Dec for index; monthly for some FX).
+  - 24h Globex trading vs single daily bar (yf default 00:00-23:59 or exchange tz) misses overnight session edges (e.g. proposed mes_overnight_drift in round2).
+- <strong>No dedicated futures data feed:</strong> Unlike potential CQG/IBKR/Refinitiv for accurate front-month + continuous unadjusted + OI. Same yf used for COMMODITY (where COT + carry_momo.json are the real differentiators, not price series).
+- <strong>Outcome tracking gaps:</strong> 
+  - Historical closed_picks for FUTURES predate the 4 new strategies (old variants 0% WR killed).
+  - dashboard_generator / MySQL still reflect pre-unblock starvation (n=0 today).
+  - No CPCV/DSR/PSR on the 4 strats (unlike COT pilot's attempted but falsified DSR=1.0).
+  - <code>futures_picks.json</code> explicitly calls out "no dedicated futures strategies existed" until Apr 2026 deployment; 0/3 closed since.
+- <strong>Regime mismatch:</strong> TSMOM (trend-following) fails in low-vol/chop (common 2026 regime per EQUITY/CRYPTO audits); ConnorsRSI2 requires deep RSI(2)&lt;5 + SMA200 + not crash (rare in current data); vol-breakout requires ADX expansion (false breakouts filtered but also kills signals); cross-asset requires ZN momentum alignment (may not fire).
+- <strong>Gates too strict for thin class:</strong> In <code>non_crypto_agent/main.py:431</code> futures conf_floor=0.50 (same as commodity), but strategies cap confidence ~0.55-0.83; elite_score &gt;=55 hard (no symbol_pf_boost for most financial futures?); rr&gt;=1.15; + vix_hard_block (LONGs blocked VIX&gt;30), mtf_rsi_confluence, sl_distance_floor. 3 raw signals failed all → quality=0.
+- <strong>Roll mechanics absent:</strong> No explicit front-month roll logic or contango/backwardation adjustment in any futures_strat (unlike academic CTA or Miffre carry in commodity_carry_momo.json).</p>
+<p><strong>Verdict on data quality:</strong> Sub-institutional for financial futures. yf continuous is "good enough" for sign-of-momentum research but insufficient for production TP/SL, sizing, or roll-sensitive strategies. COMMODITY benefits from CFTC COT ground-truth + seasonal (not available for ES/ZN/6E). Explains zero activity.</p>
+<hr />
+<h2>4. Relationship to COMMODITY Strategies &amp; Broader System</h2>
+<ul>
+<li><strong>Misclassification is the dominant reason FUTURES appears dead:</strong> Per <code>futures_deep_dive_round2_2026-05-13.md</code>: "COMMODITY is a hidden FUTURES bucket". All CT=F (73% COMMODITY PnL), GC=F, HG=F, NG=F, KC=F etc. picks are =F contracts but tagged COMMODITY. The FUTURES tile only ever sees the financial subset (index/rates/FX), which has zero proven production edge.</li>
+<li><strong>COMMODITY's "edge" is futures:</strong> COT on CT=F (over-emitted historically), carry_momo on 18 ag/energy/metals futures, seasonal. The 4 futures_strategies are <em>not</em> used for COMMODITY symbols (COMMODITY uses separate commodities_strategies + cot_paper_pilot + carry).</li>
+<li><strong>Strategy split:</strong> futures_strategies.py (4 academic, financial-focused, safe_contracts subset for vol-breakout) vs multi_asset/commodity_futures_strategies.py (separate for COMMODITY).</li>
+<li><strong>Gates / blocklist history:</strong> FUTURES had dedicated BLOCKED_ASSET_STRATEGY_PAIRS kills ("futures_momentum", "futures_ema_stack_momentum", "futures_mean_reversion", "connors_rsi2" variants) + old paper-only strats in strategy_blocklist. New 4 are clean but unproven in live (0 closed).</li>
+<li><strong>Non-crypto agent unifies fetch</strong> (NON_CRYPTO_SYMBOLS includes both dicts) but classification downstream splits tiles.</li>
+<li><strong>Master plan / audit:</strong> M-027 pending for FUTURES specifically; COMMODITY has M-008/021/022/050 (COT lag/dedup + carry wire). No cross-reference wiring between the two futures books.</li>
+<li><strong>/audit surface:</strong> Separate tiles hide that "phenomenal COMMODITY" = mostly futures contracts. Violates transparent per-class visibility (Claude.md Goal #1).</li>
+</ul>
+<p><strong>Hidden insight:</strong> The system already <em>has</em> a working futures engine (commodity side via COT/carry + yf), but the label "FUTURES" was reserved for the underperforming financial side. This is backwards — financial futures (equity index overnight, rates, FX carry) have extensive literature (Asness, Lustig, Donchian) but zero realized sample here.</p>
+<hr />
+<h2>5. Why This Class Is Performing Poorly / Has Almost No Activity — Root Causes</h2>
+<ol>
+<li><strong>Classification tax (70%+ effect):</strong> Real futures volume/PnL hidden in COMMODITY → FUTURES tile starved of data → appears n=0 → further deprioritized.</li>
+<li><strong>Strategies not firing in regime + fail gates:</strong> 4 strats academic but rigid; current market (per other class audits) lacks strong multi-horizon trends, deep RSI2 oversolds on index, or ADX+ATR breakouts. The 3 raw on 2026-05-14 all rejected (curate_quality_picks + vix/mtf/sl).</li>
+<li><strong>Historical self-fulfilling kill loop:</strong> Pre-2026-04 only 3 trades total → variants killed for low WR → blocklist/penalty → data starvation → n remains 0 even after 4 new strats deployed Apr 2026.</li>
+<li><strong>Data feed inadequate for the class:</strong> yf continuous sufficient for COMMODITY COT overlay but poor for financial futures (no curve, no session breakdown for overnight drift, roll artifacts).</li>
+<li><strong>No micro / realistic sizing:</strong> Full-size ES/ZN notional too large for safe paper-to-live; micros (MES etc) proposed in round2 but never added to config/FUTURES_SYMBOLS or wired.</li>
+<li><strong>Missing drivers for financial futures:</strong> No policy-rate, yield-curve, risk-parity, or COT-for-FX (TFF reports exist but unused). COMMODITY has COT + carry + seasonal; FUTURES has only price mom/meanrev.</li>
+<li><strong>Wiring gaps:</strong> Strategies wired only in non_crypto_agent (paper-only path?) and alpha_engine/scanner; no dedicated futures agent like quan_engine or cot pilot; not in hedge_fund_sprint set without unblocks.</li>
+<li><strong>Small true N + no validation:</strong> n=0-9 historical; no CPCV/DSR on the 4 strats; graduation gates never reached.</li>
+</ol>
+<p><strong>Not "revivable with minor param tweak"</strong> — structural (classification + data + missing micro + regime-inappropriate rigid academic rules without adaptation).</p>
+<hr />
+<h2>6. 90-Day Plan — Concrete, Phased, Measurable (Success = Merge or T2-Eligible Sleeve)</h2>
+<p><strong>Primary Recommendation: MERGE + deprecate separate FUTURES class (P0).</strong> Re-route all =F contracts (COMMODITY_ROOTS + INDEX_FUTURES_ROOTS) to a single "FUTURES" or "COMMODITY_FUTURES" asset_class label (update dashboard_generator.py + asset_class_health + tiles + MASTER_ACTION_PLAN). Keep COMMODITY for any non-futures commodity exposure (ETFs USO etc as proxy only). This gives /audit one honest "futures CTA" tile with real n≈322+ (post COT clean) + financial sleeve pilots. Financial futures research (overnight drift, Asia MR on MGC, FX carry) becomes OPT_IN sub-strategies inside the unified futures book. Deprecate empty "FUTURES" bucket to avoid zombie class. If separate kept (not recommended), treat as research-only, no sizing.</p>
+<p><strong>Phase 1 — Hygiene + Classification Fix + Micro Add (Days 0-14, P0)</strong>
+- Patch <code>audit_trail/dashboard_generator.py:3344</code> (add env MAP_ALL_FUTURES_TO_FUTURES=1 or contract_type tag) so all =F → FUTURES tile (or unified name). Update _derive_asset_class, by_asset_class aggregation, concentration. Expected: FUTURES n jumps to ~440 closed (carry-over from COMMODITY), PF~2+ (post COT dedup).
+- Add micros to config.py FUTURES_SYMBOLS + COMMODITY if merged: "MES=F", "MNQ=F", "MGC=F", "MYM=F" (lower notional, realistic sizing for paper).
+- Update quality_gates.py: remove any lingering FUTURES penalties for new strats; set min_trades=0 for new pilots; wire futures_tsmom etc to SMART_PICKS if desired.
+- Seed dedup / freshness for any new financial COT (TFF reports) if pursued.
+- Update MASTER_ACTION_PLAN_2026-05-15.md Section 21 + M-027 to reference merge.
+- Success metric: dashboard FUTURES n_resolved ≥50 (post re-agg), tile visible with real history; 0 "insufficient_data".</p>
+<p><strong>Phase 2 — Wire 3 Targeted Pilots + Shadow Emission (Days 14-45)</strong>
+- Implement (or revive from round2 proposals) in alpha_engine/futures_strategies.py or new pilots:
+  1. mes_overnight_drift (ES proxy): LONG 16:00 ET exit 09:30 next (Asness overnight edge), VIX&lt;25 filter, TP0.4% SL0.5%. Expected 60%+ WR, n≥80/mo.
+  2. mgc_asia_mean_reversion (GC/MGC): 18:00 ET RSI(14)&lt;35 LONG to 03:00 London (Asia overshoot lit), TP0.3% SL0.45%.
+  3. m6a_carry_sign (6A=F or AUD): LONG when 3M rate diff &gt;0 + 20d SMA slope &gt;0 (Lustig carry), weekly update.
+- Use micro contracts in paper sim (theswarm account style).
+- Wire to non_crypto_agent + scanner + shadow via quality_gates (new BLOCKED_ASSET_STRATEGY_PAIRS only if fails).
+- Add to commodity_carry_momo.json style or new futures_carry if merged.
+- Success: ≥30 independent resolved paper trades across pilots, PF≥1.4, WR≥52% on 30d rolling; DSR &gt;0.5 on CPCV walk-forward (use existing anti_overfit tools).</p>
+<p><strong>Phase 3 — Validation, CPCV/DSR, Graduation Gate (Days 45-75)</strong>
+- Run 30d+ paper pilot + forward_test (like COT pilot_status.json).
+- Full Lopez de Prado CPCV + DSR/PSR on combined sleeve (target DSR≥0.8 for T2 candidate).
+- Cross-asset corr check vs EQUITY/CRYPTO &lt;0.6.
+- Update edge_stability_FUTURES.json + dashboard health.
+- If merged: integrate with existing COT/carry on CT/GC so unified futures n≥200, PF≥1.6, WR≥52%, MDD&lt;18%, concentration ≤30% per symbol/strategy (fix COMMODITY 73% CT risk as byproduct).
+- Success: graduation_gate = "LIVE_ELIGIBLE" or "T2-candidate" (PF&gt;1.5/WR&gt;50/MDD&lt;20/n&gt;100) <em>and</em> beats EQUITY T2-candidate on risk-adjusted basis; else archive pilots.</p>
+<p><strong>Phase 4 — Gate or Deprecate (Days 75-90)</strong>
+- If Phase 3 passes + COMMODITY COT cleaned: size micro (0.25-0.5% risk/unit) in shadow then micro-live (user approval per NFA).
+- Else: deprecate financial futures sleeve (keep only commodity futures in unified class); redirect capital to ETF/BOND expansion (n→100 charter floor) or EQUITY vix-regime.
+- Update /audit template, reports/hedge_fund_performance_review, data_quality_gates.yaml (add futures_roll_check, micro_notional_cap).
+- Document in updates/ + findtorontoevents.ca/audit notes.</p>
+<p><strong>Risks / NFA:</strong> 
+- Merge has low blast radius (label change + 1 PR) but requires dashboard re-gen + historical re-class (pollutes old COMMODITY stats temporarily — use as-of flag).
+- New pilots unproven; yf data artifacts can inflate backtests (use anti_overfit_audit_sidecar.py + real fills verification).
+- Single-symbol concentration (CT or ES) remains system risk — enforce ≤25-30% per future.
+- Research surface only. No real-money on FUTURES or merged sleeve without explicit graduation + user sign-off + 6-stage rehab per institutional policy (TESTING_PROTOCOL.MD).</p>
+<p><strong>Expected Impact on /audit (Goal #1):</strong> Eliminates zombie "FUTURES insufficient" tile; unifies ~all futures activity into one honest CTA/FUTURES bucket with visible n/PF/WR (post COT fix); surfaces whether financial futures add orthogonal edge or are noise. Aligns with SUPREME_PLAN per-asset diversification. If edge survives merge + pilots better than EQUITY T2-candidate (PF 1.41+), size; else de-risk and note "futures edge = commodity contracts only (COT/carry)".</p>
+<p><strong>Next immediate actions (no auto-run):</strong> 
+- Open focused PR for classification patch (Wire-Up compliant, small blast radius).
+- Swarm review of this 90day + round2 pilots.
+- Update MASTER_ACTION_PLAN M-027/M-0xx with merge decision.
+- Re-gen dashboard after patch to confirm n lift.</p>
+<p>This plan is brutally honest, evidence-based (file:line + report citations), and executable in 90d without scope creep. Prioritize only if it advances phenomenal performance; otherwise merge-and-archive is the cleanest path.</p>
+<hr />
+<p><strong>NFA / Disclaimer:</strong> All analysis research-grade. Past (polluted) performance no guarantee. Contract specs, yf data, and live slippage not stress-tested at scale. Consult risk/compliance before any sizing. Report produced 2026-05-15 per "money-maker-continual-improve" skill without running forbidden heavy scripts (check_active_picks / smart_picks_engine).</p>
+<p><strong>Refs for follow-up:</strong> All cited files + <code>reports/asset_class_90day_plan_COMMODITY_2026-05-15.md</code> (COT falsification details), <code>futures_deep_dive_round2_2026-05-13.md</code> (pilot specs), <code>alpha_engine/futures_strategies.py:74-462</code> (full strategy code).</p>
+<div class="src">Source: <code>reports/asset_class_90day_plan_FUTURES_2026-05-15.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

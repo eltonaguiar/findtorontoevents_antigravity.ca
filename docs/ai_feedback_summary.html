@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Picks System — AI Review Summary</title>
+<style>
+:root {
+  --bg: #0a0a12;
+  --card: #1a1a2e;
+  --card-hover: #1f1f3a;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --green: #4caf50;
+  --red: #f44336;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --yellow: #f59e0b;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Navigation */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 18, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+}
+.navbar .brand {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--purple);
+  letter-spacing: 0.5px;
+}
+.navbar nav { display: flex; gap: 6px; }
+.navbar nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.navbar nav a:hover {
+  color: var(--text);
+  background: var(--card);
+}
+
+/* Main content */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* Header */
+.page-header {
+  text-align: center;
+  padding: 40px 0 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-header .subtitle {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 8px;
+}
+.page-header .date {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 4px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Reviewer badges row */
+.reviewer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.reviewer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.reviewer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Section titles */
+.section {
+  margin-bottom: 48px;
+}
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.section-desc {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table thead th {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.data-table tbody td {
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  vertical-align: top;
+}
+.data-table tbody tr { background: rgba(26, 26, 46, 0.3); }
+.data-table tbody tr:nth-child(even) { background: rgba(26, 26, 46, 0.6); }
+.data-table tbody tr:hover { background: var(--card-hover); }
+
+.severity-critical {
+  color: var(--red);
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.metric-bad { color: var(--red); font-weight: 600; }
+.metric-good { color: var(--green); font-weight: 600; }
+.metric-warn { color: var(--yellow); font-weight: 600; }
+
+/* Reviewer cards grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+.reviewer-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.reviewer-card:hover {
+  border-color: var(--purple);
+  transform: translateY(-2px);
+}
+.reviewer-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.reviewer-card .card-header .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.reviewer-card .card-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.reviewer-card .card-header .card-role {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.reviewer-card ul {
+  list-style: none;
+  padding: 0;
+}
+.reviewer-card ul li {
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+  display: flex;
+  gap: 8px;
+}
+.reviewer-card ul li:last-child { border-bottom: none; }
+.reviewer-card ul li::before {
+  content: "\25B8";
+  color: var(--purple);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.reviewer-card .card-quote {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(167, 139, 250, 0.06);
+  border-left: 3px solid var(--purple);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Roadmap */
+.roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.roadmap-phase {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.phase-label {
+  flex-shrink: 0;
+  width: 80px;
+  text-align: center;
+}
+.phase-label .phase-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.phase-label .phase-tag.week1 { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+.phase-label .phase-tag.week2 { background: rgba(249, 115, 22, 0.12); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.4); }
+.phase-label .phase-tag.week3 { background: rgba(234, 179, 8, 0.10); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+.phase-label .phase-tag.ongoing { background: rgba(59, 130, 246, 0.10); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+.phase-content h4 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.phase-content ul {
+  list-style: none;
+  padding: 0;
+}
+.phase-content ul li {
+  font-size: 13px;
+  padding: 3px 0;
+  color: var(--text-dim);
+}
+.phase-content ul li::before {
+  content: "\2022 ";
+  color: var(--purple);
+}
+
+/* Checklist */
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 8px;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.check-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.check-done {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--green);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+.check-done::after { content: "\2713"; }
+
+/* Footer */
+.page-footer {
+  margin-top: 48px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.footer-links a {
+  color: var(--purple);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.footer-links a:hover {
+  background: var(--card);
+  border-color: var(--purple);
+}
+.footer-note {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 16px 12px 48px; }
+  .page-header h1 { font-size: 22px; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .checklist { grid-template-columns: 1fr; }
+  .roadmap-phase { flex-direction: column; gap: 10px; }
+  .phase-label { width: auto; text-align: left; }
+  .navbar nav { display: none; }
+  .data-table { font-size: 11px; }
+  .data-table thead th, .data-table tbody td { padding: 6px 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="brand">Antigravity Systems</div>
+    <nav>
+      <a href="#consensus">Consensus</a>
+      <a href="#targets">Targets</a>
+      <a href="#insights">Insights</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#deployed">Deployed</a>
+    </nav>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Smart Picks System &mdash; AI Review Summary</h1>
+    <div class="subtitle">Feedback from 6 AI systems: Claude Opus, Google Gemini, Grok, Mercury 2, Kimi, ChatGPT Codex</div>
+    <div class="date">March 23, 2026</div>
+    <div class="reviewer-badges">
+      <div class="reviewer-badge"><span class="reviewer-dot" style="background: #a78bfa;"></span> Claude Opus</div>
+      <div class="reviewer-badge"><span class="reviewer-dot" style="background: #4285f4;"></span> Google Gemini</div>
+      <div class="reviewer-badge"><span class="reviewer-dot" style="background: #f44336;"></span> Grok</div>
+      <div class="reviewer-badge"><span class="reviewer-dot" style="background: #fb923c;"></span> Mercury 2</div>
+      <div class="reviewer-badge"><span class="reviewer-dot" style="background: #22d3ee;"></span> Kimi</div>
+      <div class="reviewer-badge"><span class="reviewer-dot" style="background: #4caf50;"></span> ChatGPT Codex</div>
+    </div>
+  </div>
+
+  <!-- Section 1: Cross-AI Consensus -->
+  <div class="section" id="consensus">
+    <div class="section-title"><span class="num">1</span> Cross-AI Consensus</div>
+    <div class="section-desc">Issues flagged by ALL six AI reviewers &mdash; the highest-confidence problems in the system.</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;">#</th>
+          <th>Issue</th>
+          <th>Finding</th>
+          <th>Required Fix</th>
+          <th>Severity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>ML Scoring Broken</strong></td>
+          <td>AUC 0.51 &mdash; no better than coin-flip. Model is not learning useful signal from current features.</td>
+          <td>Retrain with XGBoost/LightGBM on properly-labeled data with walk-forward validation</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>Consensus is Anti-Predictive</strong></td>
+          <td>18&ndash;34% win rate &mdash; consensus agreement <em>negatively</em> correlates with outcomes.</td>
+          <td>Flip to contrarian signal: high consensus = reduce position or fade</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>Latency Too High</strong></td>
+          <td>30-minute regime detection lag. By the time regime is identified, the optimal entry is long gone.</td>
+          <td>Sub-minute regime detection via streaming data + HMM/online model</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>Stop-Loss Too Tight</strong></td>
+          <td>Fixed 1.5% SL gets stopped out by normal volatility in crypto. Causes unnecessary losses.</td>
+          <td>ATR-based or GARCH dynamic stops calibrated per asset and regime</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong>FET Concentration Risk</strong></td>
+          <td>149% portfolio concentration in single symbol. A single asset failure would be catastrophic.</td>
+          <td>Hard cap at 15% per symbol with automatic rebalancing</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><strong>No Portfolio Construction</strong></td>
+          <td>Picks selected independently without considering correlations, total risk, or sizing.</td>
+          <td>Implement portfolio optimizer: correlation caps, Kelly sizing, convex optimization</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 2: Performance Targets -->
+  <div class="section" id="targets">
+    <div class="section-title"><span class="num">2</span> Performance Targets</div>
+    <div class="section-desc">Current state vs. targets derived from cross-AI recommendations.</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Current</th>
+          <th>Target</th>
+          <th>Gap</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Score-PnL Correlation (r)</strong></td>
+          <td class="metric-bad">0.05</td>
+          <td class="metric-good">&gt; 0.25</td>
+          <td class="metric-bad">5x improvement needed</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td><strong>ML AUC</strong></td>
+          <td class="metric-bad">0.51</td>
+          <td class="metric-good">&gt; 0.65</td>
+          <td class="metric-bad">Coin-flip level</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td><strong>Smart Picks Win Rate</strong></td>
+          <td class="metric-warn">64%</td>
+          <td class="metric-good">&gt; 70% all regimes</td>
+          <td class="metric-warn">Regime-dependent</td>
+          <td class="metric-warn">High</td>
+        </tr>
+        <tr>
+          <td><strong>Profit Factor</strong></td>
+          <td class="metric-warn">1.19</td>
+          <td class="metric-good">&gt; 1.80</td>
+          <td class="metric-bad">51% improvement needed</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td><strong>Max Concentration</strong></td>
+          <td class="metric-bad">149%</td>
+          <td class="metric-good">&lt; 15%</td>
+          <td class="metric-bad">10x reduction needed</td>
+          <td><span class="severity-critical">Critical</span></td>
+        </tr>
+        <tr>
+          <td><strong>Regime Latency</strong></td>
+          <td class="metric-bad">30 min</td>
+          <td class="metric-good">&lt; 2 min</td>
+          <td class="metric-bad">15x faster required</td>
+          <td class="metric-warn">High</td>
+        </tr>
+        <tr>
+          <td><strong>Max Drawdown</strong></td>
+          <td class="metric-bad">Unknown</td>
+          <td class="metric-good">&lt; 15%</td>
+          <td class="metric-bad">Not even tracked</td>
+          <td class="metric-warn">High</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 3: Unique Insights Per Reviewer -->
+  <div class="section" id="insights">
+    <div class="section-title"><span class="num">3</span> Unique Insights Per Reviewer</div>
+    <div class="section-desc">Each AI reviewer brought distinct domain expertise. These are their standout contributions.</div>
+    <div class="cards-grid">
+
+      <!-- Gemini -->
+      <div class="reviewer-card">
+        <div class="card-header">
+          <div class="avatar" style="background: #4285f4;">G</div>
+          <div>
+            <h3>Google Gemini</h3>
+            <div class="card-role">Market Microstructure Specialist</div>
+          </div>
+        </div>
+        <ul>
+          <li>Contrarian "Liquidity Grab" module &mdash; detect false breakouts at key levels</li>
+          <li>CVD (Cumulative Volume Delta) and liquidation heatmap features for ML</li>
+          <li>Flash-crash circuit breaker &mdash; halt new entries during extreme volatility</li>
+          <li>Order flow imbalance signals as primary alpha source</li>
+        </ul>
+        <div class="card-quote">"The consensus signal being anti-predictive is actually a feature, not a bug &mdash; it reveals crowded positioning you can fade."</div>
+      </div>
+
+      <!-- Grok -->
+      <div class="reviewer-card">
+        <div class="card-header">
+          <div class="avatar" style="background: #f44336;">X</div>
+          <div>
+            <h3>Grok</h3>
+            <div class="card-role">Quantitative Architecture Reviewer</div>
+          </div>
+        </div>
+        <ul>
+          <li>Regime-specialist ML models &mdash; separate model per market state (trending, mean-reverting, volatile)</li>
+          <li>Portfolio convex optimizer with transaction cost penalties</li>
+          <li>Reinforcement Learning agent overlay for dynamic position management</li>
+          <li>SHAP explainability layer for every pick decision</li>
+        </ul>
+        <div class="card-quote">"One model for all regimes is like wearing the same shoes for swimming, hiking, and dancing."</div>
+      </div>
+
+      <!-- Kimi -->
+      <div class="reviewer-card">
+        <div class="card-header">
+          <div class="avatar" style="background: #22d3ee;">K</div>
+          <div>
+            <h3>Kimi</h3>
+            <div class="card-role">Signal Quality &amp; Labeling Critic</div>
+          </div>
+        </div>
+        <ul>
+          <li>MFE/MAE labeling instead of binary TP/SL &mdash; captures how much profit was available</li>
+          <li>Strategy correlation matrix to avoid redundant signals in consensus</li>
+          <li>Identified over-engineering in scoring vs. under-engineering in speed</li>
+          <li>Proposed signal decay curves for time-sensitive opportunities</li>
+        </ul>
+        <div class="card-quote">"Over-engineered scoring, under-engineered speed. The system thinks deeply about what to trade, then acts too slowly to capture it."</div>
+      </div>
+
+      <!-- ChatGPT -->
+      <div class="reviewer-card">
+        <div class="card-header">
+          <div class="avatar" style="background: #4caf50;">C</div>
+          <div>
+            <h3>ChatGPT Codex</h3>
+            <div class="card-role">System Design Architect</div>
+          </div>
+        </div>
+        <ul>
+          <li>Filter &rarr; Rank &rarr; Size separation &mdash; clean pipeline instead of monolithic scoring</li>
+          <li>Calibrated probability outputs instead of raw scores (Platt scaling)</li>
+          <li>Latent bucket portfolio construction &mdash; group correlated picks, allocate per bucket</li>
+          <li>Walk-forward validation framework with purged cross-validation</li>
+        </ul>
+        <div class="card-quote">"Scoring, filtering, ranking, and sizing are four distinct problems. Solving them with one function guarantees mediocre results at all four."</div>
+      </div>
+
+      <!-- Mercury 2 -->
+      <div class="reviewer-card">
+        <div class="card-header">
+          <div class="avatar" style="background: #fb923c;">M</div>
+          <div>
+            <h3>Mercury 2</h3>
+            <div class="card-role">Infrastructure &amp; Data Pipeline Auditor</div>
+          </div>
+        </div>
+        <ul>
+          <li>Data refresh frequency audit &mdash; stale data causing phantom signals</li>
+          <li>Streaming architecture proposal (WebSocket) to replace polling</li>
+          <li>Redis caching layer for sub-second feature computation</li>
+          <li>Liquidity-aware execution penalties &mdash; discount illiquid assets</li>
+        </ul>
+        <div class="card-quote">"Your pipeline is fast enough for daily rebalancing but too slow for the intraday signals your strategies generate."</div>
+      </div>
+
+      <!-- Claude Opus -->
+      <div class="reviewer-card">
+        <div class="card-header">
+          <div class="avatar" style="background: #a78bfa;">A</div>
+          <div>
+            <h3>Claude Opus</h3>
+            <div class="card-role">Strategy Auditor &amp; System Architect</div>
+          </div>
+        </div>
+        <ul>
+          <li>Momentum-confirmed regime detector using multi-timeframe agreement</li>
+          <li>Strategy elimination engine &mdash; 391 underperformers killed, challenger pool system</li>
+          <li>TSMOM (Time-Series Momentum), BB-KC squeeze, and CBC strategies added</li>
+          <li>DNA mutation system for strategy evolution before elimination</li>
+        </ul>
+        <div class="card-quote">"Don't kill strategies &mdash; mutate them first. A strategy that fails in one configuration may thrive in another."</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 4: Implementation Roadmap -->
+  <div class="section" id="roadmap">
+    <div class="section-title"><span class="num">4</span> Implementation Roadmap</div>
+    <div class="section-desc">Phased plan prioritized by expected impact and dependency order.</div>
+    <div class="roadmap">
+
+      <div class="roadmap-phase">
+        <div class="phase-label">
+          <div class="phase-tag week1">Week 1</div>
+        </div>
+        <div class="phase-content">
+          <h4>Foundation Fixes &mdash; Highest Impact</h4>
+          <ul>
+            <li>ML retrain with XGBoost/LightGBM, walk-forward validation, MFE/MAE labels</li>
+            <li>Flip consensus to contrarian signal with strength weighting</li>
+            <li>ATR-based dynamic stop-losses calibrated per asset volatility</li>
+            <li>Add GARCH volatility forecasting for regime-aware position sizing</li>
+            <li>Implement drawdown tracking and max drawdown circuit breaker</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="roadmap-phase">
+        <div class="phase-label">
+          <div class="phase-tag week2">Week 2</div>
+        </div>
+        <div class="phase-content">
+          <h4>Portfolio Construction &mdash; Risk Management</h4>
+          <ul>
+            <li>Portfolio convex optimizer with correlation constraints</li>
+            <li>Kelly criterion sizing with half-Kelly conservative default</li>
+            <li>Symbol concentration caps (max 15%) with automatic rebalancing</li>
+            <li>Latent bucket grouping for correlated assets</li>
+            <li>Filter &rarr; Rank &rarr; Size pipeline separation</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="roadmap-phase">
+        <div class="phase-label">
+          <div class="phase-tag week3">Week 3</div>
+        </div>
+        <div class="phase-content">
+          <h4>Advanced Intelligence &mdash; Regime Adaptation</h4>
+          <ul>
+            <li>Regime-specialist ML models (one per market state)</li>
+            <li>Online learning with incremental model updates</li>
+            <li>Streaming data architecture (WebSocket + Redis cache)</li>
+            <li>Execution model with slippage estimation</li>
+            <li>SHAP explainability layer for pick decisions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="roadmap-phase">
+        <div class="phase-label">
+          <div class="phase-tag ongoing">Ongoing</div>
+        </div>
+        <div class="phase-content">
+          <h4>Continuous Improvement &mdash; Long-Term Edge</h4>
+          <ul>
+            <li>Reinforcement Learning agent for dynamic position management</li>
+            <li>Adversarial testing framework (synthetic market scenarios)</li>
+            <li>Model drift monitoring with automatic retraining triggers</li>
+            <li>Liquidity grab / flash-crash detection module</li>
+            <li>Strategy correlation matrix with redundancy pruning</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 5: What's Already Been Done -->
+  <div class="section" id="deployed">
+    <div class="section-title"><span class="num">5</span> What's Already Been Done (This Session)</div>
+    <div class="section-desc">Items implemented and deployed on March 23, 2026.</div>
+    <div class="checklist">
+      <div class="check-item"><span class="check-icon check-done"></span> Regime detection engine with HMM + momentum confirmation</div>
+      <div class="check-item"><span class="check-icon check-done"></span> ATR-based dynamic stop-losses replacing fixed 1.5% SL</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Contrarian consensus signal (flipped from agreement to fade)</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Symbol concentration hard cap at 15%</div>
+      <div class="check-item"><span class="check-icon check-done"></span> ML blueprint document with full retraining plan</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Walk-forward validation framework design</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Strategy elimination engine (391 strategies killed)</div>
+      <div class="check-item"><span class="check-icon check-done"></span> DNA mutation system for strategy evolution</div>
+      <div class="check-item"><span class="check-icon check-done"></span> TSMOM time-series momentum strategy added</div>
+      <div class="check-item"><span class="check-icon check-done"></span> BB-KC squeeze strategy added</div>
+      <div class="check-item"><span class="check-icon check-done"></span> CBC (Crypto Breakout Continuation) strategy added</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Regime-aware gates configuration</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Regime report JSON data pipeline</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Production playbook for regime detection deployment</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Cross-AI feedback synthesis and documentation</div>
+      <div class="check-item"><span class="check-icon check-done"></span> Per-strategy trust scoring in audit dashboard</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    <div class="footer-links">
+      <a href="SMARTPICKS.MD">Smart Picks Documentation</a>
+      <a href="ML_BLUEPRINT_2026-03-23.md">ML Blueprint</a>
+      <a href="CHATWITHIT.md">Chat With It (Full AI Conversations)</a>
+      <a href="../REGIME_DETECTION_PRODUCTION_PLAYBOOK.md">Regime Detection Playbook</a>
+    </div>
+    <div class="footer-note">
+      For the full system documentation, see <code>docs/</code> &mdash; Antigravity Trading Systems &copy; 2026
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

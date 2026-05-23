@@ -1,0 +1,72 @@
+name: Signal Recorder
+
+on:
+  schedule:
+    - cron: '48 * * * *'  # Every hour (offset to avoid collision)
+  workflow_dispatch:
+
+concurrency:
+  group: signal-recorder-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  record-signals:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      # signal_recorder scripts pull alpha_engine.utils.storage indirectly,
+      # which needs pandas + pyarrow. Belt-and-suspenders numpy too in case
+      # decay_tracker is exercised at runtime (the PEP 562 lazy export from
+      # PR #801 keeps it off the import-time path).
+      # 2026-05-04 GHA failure history: ModuleNotFoundError numpy → pandas.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy pandas pyarrow requests tradingview-ta
+
+      - name: Record all system signals
+        run: PYTHONPATH=. python signal_recorder/system_scanner.py
+
+      - name: Fetch TradingView technicals
+        run: PYTHONPATH=. python signal_recorder/tv_technicals.py
+
+      - name: Track signal outcomes
+        run: PYTHONPATH=. python signal_recorder/outcome_tracker.py
+
+      - name: Forward-test tracker (Keltner + RSI-2 recommendation)
+        run: PYTHONPATH=. python signal_recorder/forward_test_picks.py
+
+      - name: Run combo engine (nightly at 4:03 UTC or manual)
+        if: contains(github.event.schedule, '3 4') || github.event_name == 'workflow_dispatch'
+        run: PYTHONPATH=. python signal_recorder/combo_engine.py
+
+      - name: Export combos to Hub
+        if: contains(github.event.schedule, '3 4') || github.event_name == 'workflow_dispatch'
+        run: PYTHONPATH=. python signal_recorder/export_hub_combos.py
+
+      - name: Post combo findings to Discord
+        if: contains(github.event.schedule, '3 4') || github.event_name == 'workflow_dispatch'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: PYTHONPATH=. python -c "from cross_aggregation.discord_notify import send_combo_findings; send_combo_findings()"
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add signal_recorder/data/ hub/data/ || true
+          git diff --staged --quiet || git commit -m "Signal recorder update $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git pull --rebase origin main || true
+          bash .github/scripts/safe_push.sh
+

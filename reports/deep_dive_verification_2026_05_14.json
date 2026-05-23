@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-05-14T04:04:00Z",
+  "source_refs": [
+    "reports/audit_enhancements_2026-05-13/FINAL_SESSION_LEDGER.md",
+    "reports/real_money_plan_review_synthesis_20260513.md",
+    "updates/2026-05-13-money-maker-action-plan.md",
+    "reports/supreme_edge_plan_next_2026-05-12.md"
+  ],
+  "items": [
+    {
+      "item_id": "cot_verification_and_lag_fix_readiness",
+      "status": "PARTIAL",
+      "evidence_found": [
+        "tools/verify_multi_asset_cot_db.py exists",
+        "alpha_engine/cot_positioning.py has COT_PUBLICATION_LAG_DAYS=3",
+        "tests/test_cot_timing_lag.py exists"
+      ],
+      "verification_command": "python tools/verify_multi_asset_cot_db.py --dry-run; pytest tests/test_cot_timing_lag.py -q",
+      "blocker": "DB_PASS_STOCKS required for live DB verification"
+    },
+    {
+      "item_id": "vix_yc_shadow_gate_enablement_readiness",
+      "status": "COMPLETE",
+      "evidence_found": [
+        "audit_trail/quality_gates.py combined VIX+YC gate path present",
+        "environment gate notes present"
+      ],
+      "verification_command": "python -c \"import audit_trail.quality_gates\"",
+      "blocker": ""
+    },
+    {
+      "item_id": "smart_score_v2_shadow_payload_presence",
+      "status": "COMPLETE",
+      "evidence_found": [
+        "quality_gates writes smart_score_v2_shadow",
+        "dashboard_generator closed-pick keep-field list includes smart_score_v2_shadow"
+      ],
+      "verification_command": "python -m pytest tests/test_deep_dive_verification_2026_05_14.py -q",
+      "blocker": ""
+    },
+    {
+      "item_id": "dsr_browser_gate_parity",
+      "status": "COMPLETE",
+      "evidence_found": [
+        "hc_filter includes dsrMin config",
+        "hc_filter now includes _passesDsrGate in shared gates"
+      ],
+      "verification_command": "python -m pytest tests/test_deep_dive_verification_2026_05_14.py -q",
+      "blocker": ""
+    },
+    {
+      "item_id": "systems_grid_staleness_inactive_handling",
+      "status": "COMPLETE",
+      "evidence_found": [
+        "dashboard_generator computes system status from last_signal_at",
+        "systems feed now includes explicit is_stale/stale_days metadata"
+      ],
+      "verification_command": "python -m pytest tests/test_deep_dive_verification_2026_05_14.py -q",
+      "blocker": ""
+    },
+    {
+      "item_id": "bond_fred_unblock_path",
+      "status": "PARTIAL",
+      "evidence_found": [
+        "FRED-related codepaths present"
+      ],
+      "verification_command": "rg \"FRED|fred\" alpha_engine/*.py",
+      "blocker": "runtime secret/state not verifiable here"
+    },
+    {
+      "item_id": "etf_universe_expansion_readiness",
+      "status": "PARTIAL",
+      "evidence_found": [
+        "ETF-related strategy codepaths exist"
+      ],
+      "verification_command": "rg \"XLF|XLE|XLK\" alpha_engine -g \"*.py\"",
+      "blocker": "no explicit emit-path proof in this run"
+    },
+    {
+      "item_id": "drift_alert_enforcement_and_visibility",
+      "status": "PARTIAL",
+      "evidence_found": [
+        "concept_drift visible in template",
+        "advisory-only drift behavior in generator"
+      ],
+      "verification_command": "rg \"concept_drift|drift_alert\" audit_dashboard/template.html audit_trail/dashboard_generator.py",
+      "blocker": "hard enforcement not proven"
+    },
+    {
+      "item_id": "concentration_cap_activation_readiness",
+      "status": "COMPLETE",
+      "evidence_found": [
+        "CONCENTRATION_CAP_ENABLED gate path exists with cache/fallback"
+      ],
+      "verification_command": "rg \"CONCENTRATION_CAP_ENABLED|_cached_active_picks_snapshot\" audit_trail/quality_gates.py",
+      "blocker": ""
+    }
+  ]
+}

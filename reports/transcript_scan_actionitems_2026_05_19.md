@@ -1,0 +1,756 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\e--findtorontoevents-antigravity-ca\ec2159f2-ce56-40a5-b9d1-c8a0fd4714ff.jsonl`
+- turns: 243 · chunks: 64 · provider: deepseek
+- deduped action items: 499
+
+## Action items (deduped across chunks)
+
+- [OPEN] Create a skill to trace the full flow for each active/closed pick under findtorontoevents.ca/audit (from database/JSON to active picks, including gates/filters, which picks made it/didn't)
+- [OPEN] Do a case study of picks over the past week per asset class (opened and closed picks)
+- [OPEN] Leverage the skill to educate someone on which database tables under ejaguiar1_stocks, ejaguiar1_backtests on mysql.50webs.com they need to worry about
+- [OPEN] Provide a constructive plan to go from no statistical edge per asset class to a money-ready, trustworthy system with hedge-fund-worthy picks per asset class (stocks/crypto/forex/bonds/commodities/futures), including a roadmap to success
+- [OPEN] Check and ensure we are on track to have profitable picks per asset class
+- [OPEN] Consider user experience on findtorontoevents.ca/audit (smart picks button/tab, high-conviction picks, "money ready" picks — currently not working well)
+- [DONE] Provided base directory for the skill: `C:\Users\zerou\.claude\plugins\cache\claude-plugins-official\superpowers\5.0.6\skills\writing-skills`
+- [OPEN] Understand `superpowers:test-driven-development` before using this skill (required background)
+- [OPEN] Write test cases (pressure scenarios with subagents)
+- [OPEN] Watch tests fail (baseline behavior)
+- [OPEN] Write the skill (documentation)
+- [OPEN] Watch tests pass (agents comply)
+- [OPEN] Refactor (close loopholes)
+- [OPEN] Run baseline scenario BEFORE writing skill
+- [OPEN] Document exact rationalizations agent uses
+- [OPEN] Write skill addressing those specific violations
+- [OPEN] Verify agent now complies
+- [OPEN] Find new rationalizations → plug → re-verify
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter
+- [OPEN] Triage peer messages from inbox
+- [DONE] Review recent .MD files for critical info (listed as done in "Already done this session")
+- [DONE] Summarize consolidated master plan into one report (listed as done)
+- [DONE] Update findtorontoevents.ca/updates/index.html for all agents (listed as done)
+- [DONE] Audit-pick-flow skill (listed as done)
+- [DONE] 3 reports (listed as done)
+- [DONE] DB audit-trail tables (listed as done)
+- [DONE] Kilo Fork-2 vetting (listed as done)
+- [DONE] Grok consult (listed as done)
+- [DONE] Commit + push to main (listed as done)
+- [DONE] Dropchat broadcast (listed as done)
+- [OPEN] Validate each commit/code change before crediting it (user requested validation; not shown as completed in excerpt)
+- [DONE] Update agent memory
+- [DONE] Update holographic memory
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii.exe` is on PATH and version 0.11.2 if server fails to start
+- [OPEN] Reinstall `iii.exe` if missing (download zip, extract to `%USERPROFILE%\.local\bin\`)
+- [OPEN] Store an asset edge finding via `/agentmemory remember`
+- [OPEN] Store a bug/fix via `/agentmemory remember`
+- [OPEN] Search for CRYPTO edge knowledge via `/agentmemory search`
+- [OPEN] Search for FOREX investigation history via `/agentmemory search`
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a specific memory by ID via `/agentmemory forget`
+- [OPEN] Store what was learned about EQUITY edge after an audit run
+- [OPEN] Search for everything known about FOREX before taking action
+- [OPEN] Import recent Claude Code session transcripts (`agentmemory import-jsonl --max-files 50`)
+- [OPEN] Check if server is up before starting a long audit run
+- [DONE] Verify tool exists (`python tools/holographic_memory.py dump 2>&1 | head -5`)
+- [OPEN] Write learning about shipped audit-pick-flow skill + DB tables + MASTER_ENHANCEMENT_PLAN
+- [OPEN] Write decision about Fork-2 (options_flow.py/onchain_crypto.py) DO NOT MERGE
+- [OPEN] Set fact about swarm phase (e.g., "post-audit-pick-flow-ship")
+- [OPEN] Git add/commit/push `agent_shared_memory.json` after writes
+- [DONE] Verify DB event chain (event_scheduler ON, ev_pick_flow_daily_rollup enabled, proc chain proven)
+- [DONE] Reschedule event to fire in 3 minutes for immediate verification (then restore official schedule)
+- [OPEN] Confirm event-triggered row in at_job_log after 06:18:58 fire
+- [OPEN] Restore official daily 06:10 schedule after verification
+- [OPEN] Summarize action plan, accomplishments, files generated/modified, next steps, and contribution to PnL/profit factor/Sharpe ratio per asset class
+- [DONE] Build audit-pick-flow skill (traces pick emitter→7-gate-stack→active/closed)
+- [DONE] Create 3 new MySQL tables + nightly rollup event (applied to `ejaguiar1_stocks`, verified)
+- [DONE] Produce past-week per-class case study from live DB
+- [DONE] Produce 6-phase measurement-first roadmap
+- [DONE] Vet kilo Fork-2 (6-agent) → DO NOT MERGE verdict
+- [DONE] Get Grok second-opinion consult (caught modal-reason bug)
+- [DONE] Consolidate ~20 conflicting plan docs into one master plan
+- [DONE] Push 3 commits to `main`
+- [DONE] Broadcast dropchat; update agentmemory + holographic memory
+- [DONE] Generate files: `.claude/skills/audit-pick-flow/SKILL.md`, references, scripts
+- [DONE] Generate file: `audit_integration/05_pick_audit_trail_schema.sql`
+- [DONE] Generate file: `reports/audit_pick_flow_case_study_2026_05_18.md`
+- [DONE] Generate file: `reports/roadmap_no_edge_to_money_ready_2026_05_18.md`
+- [DONE] Generate file: `reports/kilo_fork2_vetting_2026_05_18.md`
+- [DONE] Generate file: `reports/MASTER_ENHANCEMENT_PLAN_2026_05_18.md`
+- [DONE] Generate file: `updates/index.html` (2 changelog cards)
+- [DONE] Update cross-agent/cross-session handoff files
+- [DONE] Apply 3 DB tables, proc `sp_rebuild_pick_flow_daily`, event `ev_pick_flow_daily_rollup` to live DB
+- [DONE] Verify event-check `b8e34mlxu` (event fired on schedule, schedule restored)
+- [OPEN] Fix non-crypto outcome resolver (P0)
+- [OPEN] Populate `closed_at` on terminal rows; normalize `status` enum (P0)
+- [OPEN] Cut CRYPTO sub-PF-1 source volume (P0)
+- [OPEN] Wire `at_pick_audit_trail` writer into `quality_gates.py` (P1)
+- [OPEN] Fix plumbing (staleness / no_consensus losses) (P1)
+- [OPEN] Fix honest dashboard (orphaned Money Ready button; truthful empty state) (P0)
+- [OPEN] Make one new-input edge bet: CRYPTO funding-rate/basis arbitrage, harness-gated (P3)
+- [DONE] Save content under DAILY_IDEAS.MD (append)
+- [DONE] Write self-contained prerequisite briefing (`reports/PLAN_VET_PREREQ_2026_05_18.md`)
+- [OPEN] Vet suggested action plan via multi-AI debate (Grok, DeepSeek, kilo)
+- [OPEN] Run multi-phase debate where AIs double-check the plan
+- [OPEN] Codify/log all paths under findtorontoevents.ca/audit frontend (buttons, tabs, filters, ?Guide concepts)
+- [OPEN] Fact-check all frontend paths and ensure auto-updated at least every 24 hours
+- [OPEN] Double-check performance per asset class when applying buttons and ?Guide concepts
+- [DONE] Run agent "Per-button per-class performance" (completed, output shown)
+- [UNCLEAR] Compare Smart Picks, High Conviction, Money Ready performance per asset class against baseline (analysis provided, but no explicit user request to act on findings)
+- [DONE] Per-button performance analysis (commit `a6fcb9193706e4ce4`)
+- [OPEN] Fix `config/hc_gate_params.json` FOREX score floor (50→70)
+- [OPEN] Fix FOREX `pnl_pct` unit-scale bug
+- [OPEN] Synthesize results from frontend manifest agent + 3 AI consults (grok/opencode/kilo)
+- [DONE] Grok consult completed
+- [DONE] Kilo consult completed
+- [OPEN] OpenCode/DeepSeek consult (still waiting)
+- [OPEN] Frontend manifest agent (still running)
+- [DONE] Write 4 deliverables for audit frontend manifest (JSON, MD, Python script, GitHub workflow) — shown completed with file paths and validation.
+- [DONE] Push changes to `main` (`332b66367a5`).
+- [DONE] Create self-contained briefing (`reports/PLAN_VET_PREREQ_2026_05_18.md`) — referenced as existing.
+- [DONE] Run multi-AI debate (3 reviewers) and produce synthesis (`reports/PLAN_VET_DEBATE_2026_05_18.md`).
+- [DONE] Fold 3 gaps / 8 amendments into `MASTER_ENHANCEMENT_PLAN` §6.
+- [OPEN] Clarify "loss→profit" claim for Smart Picks — user asked "what do you mean loss→profit."
+- [DONE] Review Cerebras qwen-3-235b model for giant-file handling (saved report to `reports/cerebras_md_review_2026_05_18.md`)
+- [DONE] Apply `at_pick_surface_eval` table live (4 `at_pick*` tables created, frozen gate-input snapshot + 4 surface-qualification flags)
+- [OPEN] Enhance database to track picks for tracing High Conviction vs Smart Picks (tab) vs Smart Picks (button click) vs Money Ready vs other dashboard filters
+- [OPEN] Build "edge finder" code (`tools/edge_finder.py` + `tools/pick_surface_snapshot.py`) — builder agent still running
+- [OPEN] Commit DB-enhancement + edge-finder bundle once builder agent lands
+- [OPEN] Fix non-crypto outcome resolver (5/6 classes statistically invisible; blocks downstream measurement)
+- [OPEN] Wire VIX<25 gate for ETF class (PF 2.05 when VIX<25 vs 0.72 otherwise)
+- [UNCLEAR] Rotate Inception API key (user says rotated in Windows env vars, but assistant reported key dead — unclear if rotation is now complete)
+- [DONE] Wire `pick_surface_snapshot` writer (opt-in, committed `9adf2715749`)
+- [OPEN] Wire `at_pick_audit_trail` writer (roadmap P1, not yet done)
+- [OPEN] Run `/swarm-transcript-review` on this session's transcript
+- [OPEN] Run `/dropchat-multipc`
+- [OPEN] Fix FOREX `pnl_pct` unit-scale bug (Phase 0 resolver work)
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh sources
+- [OPEN] Drain DMs inbox (freebuff_adapter poll --peer-id claude-desktop)
+- [OPEN] Drain broadcasts inbox (freebuff_adapter poll --peer-id all)
+- [OPEN] Triage each peer message by topic and act accordingly
+- [DONE] Build + wire `at_pick_audit_trail` writer (new file + dashboard_generator.py hook, verified via selftest and py_compile, committed to main)
+- [DONE] `/dropchat-multipc` — broadcast SESSION_SUMMARY to all peers (verified in event log)
+- [DONE] `/swarm-transcript-review` — flagged 2 quick-wins (`hc_gate_params.json` FOREX floor, FOREX pnl_pct bug)
+- [OPEN] Look into `/swarm-pr-review` (review open PRs)
+- [OPEN] Look into `/swarm-actions-audit` (review GitHub Actions for failures)
+- [DONE] Run swarm-transcript-scan on most recent transcript
+- [DONE] Write scan report to reports/transcript_scan_ec2159f2_r2_2026_05_18.md
+- [DONE] Report OPEN items and chunk/turn/provider counts
+- [DONE] Parse arguments for `/swarm pr-review` (empty/open/all/<number>/--consensus)
+- [DONE] List open PRs via `gh pr list --state open --json number,title,author,url,headRefName --limit 20`
+- [DONE] Swarm review each PR with 3 specialists (Mercury, Grok, Claude)
+- [DONE] Build consensus report table
+- [DONE] Invoke smart agent for final decision via `swarm_run.py`
+- [DONE] Output consensus table, smart agent decisions, action items, commands to run
+- [DONE] Review PR #1238
+- [DONE] Merge PR #1238 (`gh pr merge 1238 --squash --delete-branch`)
+- [OPEN] Proceed to `/swarm-actions-audit`
+- [UNCLEAR] Run `/swarm actions-audit` to execute the full audit pipeline (gather data, deploy 3 specialist agents, synthesize report, optionally apply fixes)
+- [DONE] Audit GitHub Actions failures (Gate Config Emit, CI Tests, Secret Scan, actions-failure-guardian)
+- [DONE] Inspect yfinance-related jobs and their latest runs
+- [OPEN] Fix penny-stock-picks.yml (missing/expired GitHub token)
+- [OPEN] Fix dxy-state-update.yml (cron defined but never executed)
+- [OPEN] Make asset-class agents fail/alert when raw-pick count = 0 or yfinance error-rate exceeds threshold
+- [OPEN] Route fetches through alpha_engine/ohlcv_failover.py instead of bare yf.download
+- [OPEN] Quarantine 15 futures_momentum_v* variants (investigate before kill)
+- [OPEN] Gate on method_a_score + risk_reward, drop ml_score/elite_score weighting
+- [OPEN] Wire sector_dual_momentum into ETF production
+- [OPEN] Add daily top-gainers ingestion to fix 0% mover recall
+- [OPEN] Report on extended audit (fragile deps, single-API-no-failover violations, stale-data artifacts)
+- [DONE] Agent "Audit deps + single-API + stale data" completed (status: completed, result provided)
+- [DONE] Fix 4 dead links in `updates/index.html` (missing `.ca`)
+- [DONE] HTTP-verify the 4 fixed links return 200
+- [DONE] Push fix to `main` (`23ff7767e96`)
+- [DONE] Write extended fragility audit to `reports/infra_fragility_audit_2026_05_18.md`
+- [DONE] Run 5-min peer-protocol recheck (completed, 0 DMs)
+- [OPEN] Link-liveness sweep agent (`a0aff552b2301e539`) — HTTP-check every link in past-7-day cards, rewrite dead github.io subdir links, commit + push, report
+- [OPEN] Look into recent .MDs that publish performance of active/closed picks per asset class under output site findtorontoevents.ca/audit
+- [OPEN] Find baseline data stored at mysql.50webs.com (ejaguiar1_stocks / pw:stocks123 and ejaguiar_backtests / pw:backtests123)
+- [OPEN] Investigate GitHub Actions related to the above data
+- [DONE] Revived all recent-card links (47 URLs, 7 dead fixed, pushed b674086a4c4)
+- [DONE] Pushed `real-money-readiness-audit.md` to origin/main
+- [DONE] Pushed `accomplishments-future-roadmap.md` to origin/main
+- [OPEN] Push `chat-transcript-summary.md` in a quiet window (git add/commit/push)
+- [OPEN] Update `fetch_commodity_top_movers()` via yfinance futures + COT extremes (FreeBuff's task)
+- [OPEN] Update `build_pick_lookup()` and `classify_movers()` for asset-class filtering
+- [OPEN] Update `build_report()` for per-asset-class breakdowns
+- [OPEN] Update `main()` for multi-class orchestration
+- [OPEN] Investigate each portfolio in TradingView (remote-debugging-port=9223) for swarm-consensus picks vs findtorontoevents.ca/audit usage, then derive lessons learned
+- [DONE] Write skill definition file for tv-portfolio-review
+- [DONE] Identify origin of `realpretend USD` and `theswarm USD` portfolios (both swarm-consensus origin A)
+- [DONE] Analyze `HIGHFWWRABV55_SCOREABOVE50_V4` portfolio profitability (verdict: artifact, not edge)
+- [OPEN] Run full multi-portfolio extract+review in fresh session: `/tv-cdp-launch` → `/tv-portfolio-extract` → `/tv-portfolio-review`
+- [OPEN] Investigate remaining accounts (SCALPER, TESTER, TRUSTOURSCORE, zerounderscore, BROKIE)
+- [OPEN] Diagnose the −840 realized loss in `theswarm` via closed-trade history
+- [OPEN] Fix non-crypto resolver gap (Phase-0 blocker)
+- [DONE] Review per-asset-class performance across 3 portfolios (realpretend, theswarm, HIGHFWWRABV55_SCOREABOVE50_V4)
+- [DONE] Extract lessons learned from portfolio performance
+- [OPEN] Run full all-account extract in fresh session: `/tv-cdp-launch` → `/tv-portfolio-extract` → `/tv-portfolio-review`
+- [UNCLEAR] Include "theswarm" portfolio in review (user noted screenshot missed it; assistant already included it)
+- [DONE] Map origin attribution for 12 portfolios (table provided)
+- [DONE] Identify 9 un-scraped portfolios needing TV MCP extraction
+- [OPEN] Run `/tv-portfolio-extract` in fresh session with TV MCP loaded for un-scraped portfolios
+- [DONE] CDP scrape of live Paper Trading panel (11 portfolios scraped, 1 from screenshot = 12/13 total)
+- [DONE] Scrape all 12 portfolios live via CDP (TradingView debug port 9223)
+- [DONE] Save raw portfolio data to `reports/_tv_portfolios_raw.json`
+- [OPEN] Save working scraper as `tools/tv_portfolio_scrape.py` (offered, user did not say the word)
+- [DONE] Trace each open position back to origin (swarm, /audit, hyrotrader)
+- [OPEN] Apply lessons learned from origin trace (user requested, not shown executed)
+- [DONE] Design and apply `at_tv_position_attribution` table to live MySQL
+- [DONE] Create schema file `audit_integration/07_tv_position_attribution_schema.sql`
+- [DONE] Apply table live and verify on `ejaguiar1_stocks @ mysql.50webs.com`
+- [DONE] Create doc `reports/tv_attribution_gap_2026_05_18.md`
+- [OPEN] Wire a writer to populate the table (future `tv-portfolio-extract` run)
+- [OPEN] Run filter-permutation edge search and produce `reports/filter_permutation_edge_search_2026_05_18.md`
+- [DONE] Commit `audit_integration/07_tv_position_attribution_schema.sql` and `reports/tv_attribution_gap_2026_05_18.md` to `main`
+- [DONE] Run filter-permutation edge search (task `a981043560e186f6b`)
+- [DONE] Write `reports/filter_permutation_edge_search_2026_05_18.md`
+- [OPEN] Wire up opt-in writers for the four audit-trail tables
+- [OPEN] Wire `tools/pick_surface_snapshot.py` to populate `at_pick_surface_eval`
+- [DONE] Wire `PICK_SURFACE_SNAPSHOT_ENABLED=1` and `PICK_AUDIT_TRAIL_ENABLED=1` to `.github/workflows/audit-dashboard.yml` (pushed to main)
+- [OPEN] Route `mega_mutation` through `tools/edge_stability_harness.py` for rigorous testing
+- [OPEN] Fix `cot_*` NULL `closed_at` so those strategies can be evaluated
+- [OPEN] Correct filter-search report to note `source_system` grouping
+- [OPEN] Consult external AI (Grok/DeepSeek) on methodology
+- [DONE] Run `/swarm-transcript-review` — report written to `reports/transcript_scan_ec2159f2_r3_2026_05_18.md`
+- [DONE] Run `mega_mutation` harness test — verdict report written to `reports/mega_mutation_harness_verdict_2026_05_18.md`
+- [OPEN] Correct `filter_permutation_edge_search` report (note source_system grouping gap + mega_mutation candidate)
+- [OPEN] Fix `cot_positioning`/`multi_asset_cot` NULL `closed_at` (blocks harness-evaluating PF-4 strategies)
+- [OPEN] Commit `chat-transcript-summary.md` (recoverable from disk)
+- [OPEN] Wire `at_tv_position_attribution` writer (needs tv-portfolio-extract run, opt-in)
+- [UNCLEAR] Save working CDP scraper as `tools/tv_portfolio_scrape.py` (user-gated — awaiting user go)
+- [DONE] Run `mega_mutation` harness verdict (killed, report written)
+- [DONE] Ship `audit-pick-flow` skill + 4 DB audit-trail tables + nightly rollup event
+- [DONE] Wire and activate writers in `audit-dashboard.yml`
+- [DONE] Write `edge_finder.py`, `audit_frontend_manifest`, daily workflow, `MASTER_ENHANCEMENT_PLAN`, case study, roadmap, kilo-Fork-2 vetting, infra-fragility audit, TV portfolio review, filter-permutation search, mega_mutation harness verdict
+- [OPEN] Fix non-crypto resolver (Phase 0 — 5/6 asset classes unmeasurable)
+- [OPEN] Conduct genuine new-input edge hunt, harness-gated
+- [OPEN] Build truthful "not ready" dashboard
+- [OPEN] Run swarm-transcript-scan on the session transcript
+- [OPEN] Act on any action items found by the swarm scan
+- [DONE] Push filter-search correction to `main` (post-vet: source_system gap + mega_mutation KILL)
+- [UNCLEAR] Commit `mega_mutation_harness_verdict` report (missed due to pathspec race)
+- [OPEN] Fix `penny-stock-picks.yml` (missing/expired checkout token)
+- [OPEN] Re-enable `dxy-state-update.yml` (cron auto-disabled by GitHub)
+- [OPEN] Fix `sports-betting-refresh` / `custom-sports-update` (leg cancelled at checkout)
+- [OPEN] Fix `ci-tests.yml` (concurrency cascade cancellations)
+- [OPEN] Fail/alert on 0 raw picks in equities/etf/commodities/bond-agent
+- [OPEN] Run `/swarmv2-actions` fresh in new session for full enhanced re-scan
+- [OPEN] Fix `cot_*` `closed_at` field
+- [OPEN] Push `mega_mutation` report
+- [OPEN] Roadmap Phase 0
+- [DONE] Dispatch agent `a199f3213af0563ef` to produce `reports/strategy_catalog_pick_audit_2026_05_18.md`
+- [DONE] Dispatch agent `ab434ed42ef790db1` to produce `reports/new_strategy_proposals_2026_05_18.md`
+- [UNCLEAR] Relay catalog + top proposals from the two strategy agents (awaiting completion)
+- [DONE] Create audit-pick-flow skill (SKILL.md, pipeline-map.md, db-tables.md, trace_pick.py, pick_flow_funnel.py)
+- [DONE] Apply at_pick_audit_trail schema (05_pick_audit_trail_schema.sql)
+- [DONE] Apply at_pick_surface_eval schema (06_pick_surface_eval_schema.sql)
+- [DONE] Apply at_tv_position_attribution schema (07_tv_position_attribution_schema.sql)
+- [DONE] Create edge_finder.py tool
+- [DONE] Create pick_surface_snapshot.py writer
+- [DONE] Create pick_audit_trail_writer.py writer
+- [DONE] Wire writers into dashboard_generator.py
+- [DONE] Enable writers in audit-dashboard.yml workflow
+- [DONE] Create audit_frontend_manifest.py + manifest.json + AUDIT_FRONTEND_MANIFEST.md with daily cron
+- [DONE] Add 2 update cards to updates/index.html
+- [DONE] Fix 4 dead repo-name links in updates/index.html
+- [DONE] Write reports/audit_pick_flow_case_study_2026_05_18.md
+- [DONE] Write reports/roadmap_no_edge_to_money_ready_2026_05_18.md
+- [DONE] Write reports/kilo_fork2_vetting_2026_05_18.md
+- [DONE] Write reports/MASTER_ENHANCEMENT_PLAN_2026_05_18.md
+- [UNCLEAR] Deploy subagent to document strategies per asset class + full audit trail for each active/closed pick over past month; make summary/detailed .MD; have agent swarm review and propose non-duplicate strategies
+- [UNCLEAR] Figure out the remaining action items (user said "you can figure out the remaining action items instead" but no follow-up or completion is shown)
+- [DONE] Dispatch 2 agents to write strategy catalog audit (reports/strategy_catalog_pick_audit_2026_05_18.md) and new strategy proposals (reports/new_strategy_proposals_2026_05_18.md)
+- [DONE] Write handoff MD: reports/SESSION_HANDOFF_INFRA_STRATEGY_2026_05_18.md
+- [DONE] Run /dropchat-multipc skill (health check, git state, adapter check)
+- [OPEN] Relay catalog + top proposals when the 2 strategy agents land
+- [OPEN] Fix 4 broken workflows (penny-stock-picks token, dxy-state-update cron, sports-refresh leg, ci-tests cascade) — documented in reports/infra_fragility_audit_2026_05_18.md for fresh-session fix
+- [DONE] Agent 1 (`a199f3213af0563ef`) writes `reports/strategy_catalog_pick_audit_2026_05_18.md`
+- [OPEN] Agent 2 (`ab434ed42ef790db1`) writes `reports/new_strategy_proposals_2026_05_18.md`
+- [OPEN] Relay strategy catalog + ranked new-strategy proposals per asset class (after Agent 2 lands)
+- [DONE] Review ~80 strategy files + 130+ crypto docstring + M-107 ban registry to confirm non-duplicate territory
+- [DONE] Write report `reports/new_strategy_proposals_2026_05_18.md` with 14 proposals
+- [DONE] Write report `reports/strategy_catalog_pick_audit_2026_05_18.md` with catalog + audit trail
+- [OPEN] Commit both reports to main (user said "proceed on next steps if any", assistant asked "Want these committed to main?" — no confirmation shown)
+- [DONE] Commit and push strategy catalog + new proposals reports
+- [DONE] Commit and push updates/index.html Session CT card
+- [DONE] Broadcast SESSION_SUMMARY via dropchat-multipc
+- [DONE] Fix penny-stock-picks.yml workflow (safe_json guard)
+- [DONE] Fix sports-betting-refresh.yml workflow (warning annotation for silent failure)
+- [DONE] Broadcast infra audit staleness correction to peers
+- [DONE] Drain DMs and broadcasts via dropchat-multipc
+- [OPEN] Verify sports-betting-refresh leg (Goal #2) — deferred to fresh session
+- [OPEN] Address Phase-0 non-crypto resolver gap — deferred to fresh session
+- [DONE] Commit chat-transcript-summary.md (c9524e75d62)
+- [DONE] Resolve 4 broken workflows (all resolved this session)
+- [DONE] Push 4 commits to main (67f3c2e0b1f, 6dfd10fdfe4, 52e911d21b7, 28dba3fc1ba)
+- [DONE] Run swarm-transcript-scan (report committed 03dfa679371)
+- [DONE] Check /dropchat-multipc (gateway ok, peers 8, inbox clean)
+- [OPEN] Phase 0: non-crypto resolver fix (pnl_pct=0.0 placeholders)
+- [OPEN] cot_* NULL closed_at correction (live MySQL data write)
+- [OPEN] Fail-open masking on equity/etf/commodity/bond agents
+- [OPEN] Build ET-1 / CO-1 / E-1 (top new-strategy proposals)
+- [OPEN] Create a set of todos and use agent swarm as needed to work
+- [DONE] Fix fail-open in etf_scanner.py and bond_scanner.py (commit 72b59bf624e)
+- [DONE] Create ET-1 sidecar tool (commit c0597994dc3)
+- [DONE] Write Phase-0 resolver fix plan (commit 8b634e9089e)
+- [DONE] Validate, commit, and push all 3 agents (commit 29669a51733)
+- [OPEN] Reconcile the two Phase-0 resolver fix plans before executing PR-A
+- [OPEN] Execute resolver PR-A (populate closed_at + nullable column migration)
+- [OPEN] Execute resolver PR-B (class-conditional symbol normalizer)
+- [UNCLEAR] Run /swarm-transcript-scan on the session transcript
+- [OPEN] Reconcile or pick between two resolver fix plans (phase0_resolver_fix_plan vs RESOLUTION_PIPELINE_FIX_PLAN)
+- [OPEN] Approve live `ALTER TABLE at_pick_outcomes ADD COLUMN closed_at` on production DB
+- [OPEN] Approve live `UPDATE` on production rows for cot_* NULL `closed_at` correction
+- [OPEN] Greenlight CO-1 (commodity physical-inventory surprise) strategy build
+- [OPEN] Decide on E-1 (insider Form-4 cluster buys): greenlight small-cap-only or skip
+- [OPEN] Decide on B-2 (TIPS breakeven): explicit sign-off or skip (default: skip)
+- [OPEN] Decide whether to enforce shadow gates (ML_ENHANCED_CRYPTO_QUARANTINE, MDD_GATE_ENFORCE) or leave in shadow mode
+- [OPEN] Decide strategic fork: keep funding new-signal research track or call existing-ledger edge hunt closed
+- [DONE] Scan session ec2159f2 — report written and committed (4e468ae5f3c)
+- [DONE] Cross-check OPEN items from scan (fail-open masking, ET-1 scaffold, todos+swarm verified done)
+- [OPEN] Proceed autonomously on next steps (per user /goal command)
+- [OPEN] Set or replace the active goal via `/goal <text>` and begin work loop
+- [OPEN] Work one turn toward the goal with real tool calls/edits/commits
+- [OPEN] Tick the counter via `goal_state.py tick --session <SID>`
+- [OPEN] Judge own work and record verdict via `goal_state.py judge --session <SID> --done <bool> --reason "<reason>"`
+- [OPEN] If goal not done and budget remains, call `ScheduleWakeup` with appropriate delay and prompt `/goal continue`
+- [OPEN] If goal not done and budget exhausted, report pause and ask user to resume/refine
+- [OPEN] If goal achieved, report with reason
+- [OPEN] Handle `/goal continue` invocations by re-reading state and resuming from step 2
+- [OPEN] Handle `/goal status`, `/goal pause`, `/goal resume`, `/goal clear` subcommands
+- [OPEN] Ensure session ID is stable and reused across all calls in one goal loop
+- [OPEN] Avoid common mistakes: narrating instead of working, optimistic judging, forgetting wakeup, drifting session IDs, ignoring pause, infinite goals
+- [DONE] Reconcile 2 resolver plans (committed `RESOLVER_PLAN_RECONCILED_2026_05_18.md`)
+- [DONE] Resolver Stage-A core fixes + dry-run loop (committed, 20 pytest passed)
+- [DONE] Build CO-1 sidecar (`tools/co1_commodity_inventory_surprise_research.py`, committed)
+- [OPEN] Resolver step 3: live MySQL symbol normalization UPDATE (operator-gated)
+- [OPEN] Resolver Stage B: `active_picks_sync --apply` flip (operator-gated)
+- [OPEN] CO-1/ET-1 wire-up (gated on harness stability)
+- [OPEN] E-1 small-cap-scoping build (operator-gated)
+- [OPEN] B-2 banned-adjacent sign-off (operator-gated)
+- [DONE] Broadcast session deliverables to peers via `/dropchat-multipc` (×3 across session)
+- [DONE] Commit two completed strategy-agent reports
+- [DONE] Commit strategy reports, verify benefits honestly, add update card to updates/index.html
+- [DONE] Fix the sports-betting-refresh workflow leg
+- [DONE] Fix the 4 broken CI workflows (chosen as next bounded work)
+- [DONE] Scan session JSONL transcript for action items via `/swarm-transcript-review` (×2)
+- [DONE] Check `/dropchat-multipc` to drain inbox / verify bus state
+- [DONE] Dispatch agents on genuine open items via `/goal` autonomous loop
+- [DONE] Produce an operator decision brief for remaining human-intervention items
+- [DONE] Run `/goal` autonomous loop on remaining next-steps
+- [DONE] Write-time symbol fix (canonicalize_symbol + build_pf_registry._norm suffix fix) — shipped by peer, verified live, tests passing.
+- [DONE] Swarm review of write-time fix — completed by caveman:cavecrew-reviewer.
+- [DONE] Clean up accidental stash-pop conflict (hypothesis_registry.json) — restored from HEAD.
+- [OPEN] Resolver step 3 — ~2,086-row live MySQL symbol-normalization UPDATE (backup + user confirm required).
+- [OPEN] active_picks_sync `--apply` flip after 3-5 clean dry-run cycles.
+- [OPEN] `cot_*` NULL `closed_at` correction (live DB write).
+- [OPEN] ET-1/CO-1 wire-up — gated on edge-stability harness.
+- [OPEN] E-1 build scoping decision.
+- [OPEN] Shadow gates enforcement (downgrades CRYPTO from MONEY_READY).
+- [OPEN] Strategic fork decision.
+- [OPEN] Proceed on items 1-7 at assistant's discretion, then run agent swarm with 3-round debate for next steps.
+- [DONE] 3-round swarm debate completed and ratified (E-1 sidecar `685a4a1063d`, debate report `394b9ee1dce`)
+- [DONE] Pre-step-1 check run and failed (no `alpha_engine_unified` in SYSTEM_SOURCES or pick JSON)
+- [OPEN] Step 2: Kill scanner fail-open (min_expected_picks floor + fail-closed)
+- [OPEN] Step 3: Enforce 2 monotone shadow gates + tiered label schema (pending user OK on product change)
+- [OPEN] Step 4: Resolution-coverage dashboard panel
+- [OPEN] Step 5: Symbol-format DB backfill UPDATE (~2,086 rows)
+- [OPEN] Step 6: Re-resolve pass
+- [OPEN] Step 7: Flip `active_picks_sync --apply`
+- [OPEN] Step 8: Re-derive all verdicts; re-litigate 9 kills; freeze sidecars
+- [OPEN] Step 9: Strategic-fork decision memo
+- [OPEN] Backup table + snapshot before step 5 (recommended rollback)
+- [OPEN] Per-class deep-dive trigger if a class never reaches 80% post-fix
+- [UNCLEAR] Proceed on steps 2 + 4 (user sent `/dropchat-multipc` command instead of answering)
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll
+- [OPEN] Drain broadcasts via freebuff_adapter poll --peer-id all
+- [DONE] Proceed on resolver steps 2 + 4 (safe-auto)
+- [DONE] Push steps 2 + 4 (commits `27620a2b020` + `ea5b39339a7`)
+- [OPEN] Proceed on next steps (step 3 tiered label, steps 5-9)
+- [DONE] Push fix commit `b863dc392f7` and trigger workflow run `26076021330`
+- [OPEN] Verify live page after workflow completes (dashboard freshness + all 6 404s resolved)
+- [OPEN] Monitor workflow run `26076021330`, check once complete, debug if needed
+- [OPEN] Loop for 1h, keep checking and ensure all action items completed (GitHub Actions task)
+- [DONE] Parse input into `[interval] <prompt>` using priority rules (1, 2, 3)
+- [OPEN] Check cloud-first conditions (interval ≥60m or daily phrasing) and ask user if applicable
+- [OPEN] If cloud schedule chosen: invoke `schedule` skill with original input verbatim, then stop
+- [OPEN] If "This session only" with ≥60m interval: continue to fixed-interval mode
+- [OPEN] If "This session only" with daily phrasing only: explain limitation and stop
+- [OPEN] If neither trigger: continue to fixed-interval or dynamic mode
+- [OPEN] Convert interval to cron expression (fixed-interval mode)
+- [OPEN] Round uneven intervals and notify user
+- [OPEN] Call CronCreate with cron expression, prompt, recurring: true
+- [OPEN] Confirm schedule details with user (including 7-day expiry, job ID, and optional italic line)
+- [OPEN] Execute parsed prompt immediately after scheduling (fixed-interval mode)
+- [OPEN] Run parsed prompt now (dynamic mode)
+- [OPEN] If next run gated on event and no Monitor running: arm Monitor with persistent: true
+- [OPEN] Confirm self-pacing details (monitor, fallback delay) before calling ScheduleWakeup
+- [OPEN] Call ScheduleWakeup with delaySeconds as last action (dynamic mode)
+- [DONE] Set up hourly cron loop to verify dashboard deploy (job `d66f1f19`)
+- [DONE] Run initial check of workflow `26076021330` (in_progress)
+- [DONE] Continue loop until tasks completed (user directive)
+- [DONE] Verify audit-dashboard deploy fix: check GH run conclusion, fetch dashboard_data.json freshness, confirm 7 resources return 200
+- [DONE] Terminate loop upon successful verification
+- [DONE] Fix dashboard 404s and staleness (verified live, all 200)
+- [DONE] Fix CI geo-block false-trip on Binance breaker (unblocks 7 zero tiles)
+- [DONE] Fix etf-bond-scanner bond commit path + conflict-safe push
+- [DONE] Implement scanner fail-loud guards (resolver step 2)
+- [DONE] Implement resolution-coverage panel (resolver step 4)
+- [DONE] Implement E-1 insider Form-4 sidecar (H-028)
+- [DONE] Run 3-round swarm debate + 9-step plan
+- [DONE] Push dashboard diagnosis report
+- [DONE] Delete stale Codex branch `copilot/fix-dashboard-data-staleness`
+- [DONE] Update holographic memory + agentmemory
+- [DONE] Run `/dropchat-multipc` broadcast to 9 peers
+- [DONE] Preserve peer WIP uncommitted, flag to peers
+- [DONE] Run transcript scan (foreground)
+- [OPEN] Track down real shadow-gate names for resolver step 3
+- [OPEN] Resolver step 3 — enforce shadow gates + tiered label
+- [OPEN] Resolver steps 5-7 — DB symbol backfill (~2,086 rows), re-resolve, `active_picks_sync --apply`
+- [OPEN] Resolver step 8 — re-derive verdicts, re-litigate 9 kills
+- [OPEN] Resolver step 9 — strategic-fork memo
+- [OPEN] Fix `MDD_GATE_ENFORCE` wiring bug (1-line fix, gated on step-3 decision)
+- [OPEN] Fix `active_raw` post-expiry snapshot bug (non-crypto picks vanish)
+- [OPEN] Fix FUTURES under-generation (empty emitter)
+- [OPEN] Wire up ET-1/CO-1/E-1 (harness-gated)
+- [OPEN] Use subagents/swarm to wrap up remaining items
+- [DONE] Ship 3 builder fixes to main (active_raw snapshot, MDD_GATE_ENFORCE wiring, futures fail-loud)
+- [DONE] Document all work in `reports/AUDIT_DASHBOARD_DIAGNOSIS_2026-05-19.md`
+- [OPEN] Flip on MDD enforce mode (operator decision)
+- [OPEN] Wire up ET-1/CO-1/E-1 sidecars (harness-gated)
+- [OPEN] Tune FUTURES curation gate vs new scanner (operator decision)
+- [OPEN] Execute resolver steps 3, 5-9 (shadow-gate enforce decision, live MySQL writes, fork memo)
+- [UNCLEAR] "do it. set goal and proceed, and continue to proced till all tasks and follow-up tasks are completed" — user requests infinite continuation, but assistant responds with wrap-up close-out sequence; unclear if any further work was actually done.
+- [DONE] Wrap up session (5 close-out steps completed)
+- [DONE] Fix /audit dashboard (stale data, 404s, zero tiles — verified live)
+- [DONE] Implement resolver steps 2-4 (scanner fail-loud, shadow gates, coverage panel)
+- [DONE] Fix active_raw snapshot bug and MDD_GATE_ENFORCE dead-wiring (28 tests pass)
+- [DONE] Build and harness-test ET-1/CO-1/E-1 sidecars (all REJECTED, none wired)
+- [DONE] Build E-1 sidecar with swarm debate and 9-step plan
+- [DONE] Store 2 agentmemory facts and 2 holographic learnings
+- [DONE] Update and commit updates card (7f5b2d7af69) and FTP-deploy live to 50webs
+- [DONE] Broadcast dropchat SESSION_SUMMARY to all peers
+- [OPEN] Answer what DB password was tried (USER asked; assistant answered but did not resolve the DB access)
+- [OPEN] Ask swarm about remaining tasks and proceed (assistant asked swarm and built workflows; USER must dispatch)
+- [DONE] Build resolver-step5-6-backfill.yml workflow (shipped to main)
+- [DONE] Build resolver-step7-apply.yml workflow (shipped to main)
+- [OPEN] Dispatch resolver-step5-6-backfill.yml from Actions tab (operator-gated)
+- [OPEN] Dispatch resolver-step7-apply.yml from Actions tab (operator-gated)
+- [OPEN] Run resolver steps 8-9 (re-derive verdicts, fork memo) — depends on steps 5-7 completing
+- [DONE] Perform swarm-transcript-review (command executed)
+- [DONE] Pick transcript (defaulted to most recent session JSONL)
+- [DONE] Run scanner on transcript (237 OPEN items found)
+- [DONE] Report OPEN section + chunk/turn/provider counts
+- [DONE] Cross-check OPEN items against git log, merged PRs, live TodoWrite
+- [DONE] Determine 237 OPEN items are ~100% false-OPEN inflation
+- [DONE] Verify 6 genuine session items all show DONE
+- [DONE] Attempt to dispatch resolver workflows from desktop (blocked by DB ACL)
+- [DONE] Verify IP block is per-USER, not per-IP; confirm `ejaguiar1_backups` user cannot SELECT from `ejaguiar1_stocks`
+- [DONE] Trigger resolver workflows via `gh workflow run` (GHA runner has access)
+- [DONE] Dry-run resolver step5-6-backfill (run 26126209814) — clean
+- [DONE] Dispatch APPLY run (26126486726) — backup, preflight, normalize, verify SUCCEEDED
+- [DONE] Dispatch resolver-step7-apply (run 26127173274) in parallel
+- [DONE] Check both resolver run conclusions — both GREEN
+- [DONE] Read verification log sections of both runs
+- [DONE] /dropchat-multipc (broadcast SESSION_SUMMARY, drain inboxes)
+- [DONE] APPLY steps 5-6: 1,634 rows committed to live `at_raw_picks` (1,628 bare→=X FOREX + 6 junk→QUARANTINE)
+- [DONE] Step 7 PYTHONPATH fix pushed (commit `d5cdb3a9a98` → `e341bf99352`)
+- [DONE] Step 7 re-dispatched (run `26128372217`)
+- [DONE] Verify step 7 re-dispatch run `26128372217`: 482 LIVE writes confirmed, outcome stats reported, findings saved to agentmemory, broadcast via /dropchat-multipc
+- [DONE] Broadcast SESSION_SUMMARY update via /dropchat-multipc (msg `987cd2ac-314b-4f8b-9fff-1d721f4293af`)
+- [OPEN] Proceed on next steps (multi-class step 7 re-dispatches — 4 cancelled by concurrency, need serial retry)
+- [OPEN] Look into TradingView portfolios (except "the leap"), add fresh picks, close picks, etc.
+- [OPEN] Summarize TradingView activities under file `TV_<YYYY-MM-DD>.MD`
+- [OPEN] Double-check commands against TradingView skill
+- [OPEN] Ensure skills state use of `https://github.com/tradesdontlie/tradingview-mcp`
+- [DONE] Push TV skills (`975d4dbc926`)
+- [DONE] Launch background loop dispatching remaining 4 classes serially
+- [DONE] Commit executive summary report (`6b35a594b29`)
+- [DONE] Normalize 1,634 rows symbol-format on `at_raw_picks` (steps 5-6)
+- [DONE] Transition 482 CRYPTO picks to terminal status (step 7)
+- [DONE] Complete step 7 for EQUITY, ETF, FOREX, COMMODITY, FUTURES
+- [DONE] Save final stats + BOND finding to memories
+- [DONE] Update memories + dropchat
+- [OPEN] Run TV live-trade activity from IDE with tradingview-mcp connected
+- [OPEN] Make strategic fork decision (capital-direction call)
+- [OPEN] Cleanup dry-run backup `at_raw_picks_bak_26126209814` (optional)
+- [OPEN] Investigate BOND mis-tagging bug (500 crypto rows tagged as BOND)
+- [OPEN] Unlock steps 8-9 (verdict re-derive + fork memo) after step 7 drains all classes
+- [DONE] Repair /audit dashboard (FTP-deploy syntax error, 6 resource 404s, CI breaker false-trip fixed, verified live)
+- [DONE] Add scanner fail-loud guards (Resolver step 2, 3 scanners)
+- [DONE] Enforce shadow gates `MDD_GATE_ENFORCE` + `ML_ENHANCED_CRYPTO_QUARANTINE` across 3 workflows (Resolver step 3)
+- [DONE] Add resolution-coverage dashboard panel (Resolver step 4)
+- [DONE] Backfill symbol format on `at_raw_picks` (1,634 production-DB row UPDATEs, Resolver steps 5-6)
+- [DONE] Write 482 CRYPTO terminal-status writes; dispatch multi-class (EQUITY/FOREX/COMMODITY/FUTURES/BOND/ETF) (Resolver step 7)
+- [DONE] Fix `active_raw` pre-expiry snapshot in dashboard_generator
+- [DONE] Fix `MDD_GATE_ENFORCE` dead-wiring in money_ready_verdict.py (28 tests pass)
+- [DONE] Add Futures emitter fail-loud guard
+- [DONE] Build E-1 sidecar
+- [DONE] Update 10 tv-* skills to cite tradingview-mcp URL
+- [DONE] Run 3-round swarm debate → unified 9-step plan
+- [DONE] Update memories (agentmemory + holographic)
+- [OPEN] Fix BOND asset_class mis-tagging emitter bug
+- [OPEN] Fix FOREX yfinance CI gap (use real FX API)
+- [OPEN] Run fresh per-class edge audit on corrected ledger
+- [OPEN] Create new M-107 pre-registered hypotheses (multi-AI consult or external research)
+- [UNCLEAR] Strategic fork decision (keep hunting edge on this infra vs rebuild)
+- [OPEN] Look into whether the provided market info can help find more edge or new strategies for top-notch performance per asset class.
+- [DONE] Assess blob for tradeable edge (concluded zero edge, but identified 4 pre-registration candidates)
+- [OPEN] Build thin sidecar per candidate (H-029, H-030, H-031, H-032)
+- [OPEN] Run each candidate through `edge_stability_harness.is_admissible()`
+- [OPEN] Forward-test admissible candidates for 90 days paper
+- [OPEN] Deploy real money only after forward-test confirmation
+- [DONE] Save assessment to memory
+
+## OPEN (246)
+
+- [OPEN] Create a skill to trace the full flow for each active/closed pick under findtorontoevents.ca/audit (from database/JSON to active picks, including gates/filters, which picks made it/didn't)
+- [OPEN] Do a case study of picks over the past week per asset class (opened and closed picks)
+- [OPEN] Leverage the skill to educate someone on which database tables under ejaguiar1_stocks, ejaguiar1_backtests on mysql.50webs.com they need to worry about
+- [OPEN] Provide a constructive plan to go from no statistical edge per asset class to a money-ready, trustworthy system with hedge-fund-worthy picks per asset class (stocks/crypto/forex/bonds/commodities/futures), including a roadmap to success
+- [OPEN] Check and ensure we are on track to have profitable picks per asset class
+- [OPEN] Consider user experience on findtorontoevents.ca/audit (smart picks button/tab, high-conviction picks, "money ready" picks — currently not working well)
+- [OPEN] Understand `superpowers:test-driven-development` before using this skill (required background)
+- [OPEN] Write test cases (pressure scenarios with subagents)
+- [OPEN] Watch tests fail (baseline behavior)
+- [OPEN] Write the skill (documentation)
+- [OPEN] Watch tests pass (agents comply)
+- [OPEN] Refactor (close loopholes)
+- [OPEN] Run baseline scenario BEFORE writing skill
+- [OPEN] Document exact rationalizations agent uses
+- [OPEN] Write skill addressing those specific violations
+- [OPEN] Verify agent now complies
+- [OPEN] Find new rationalizations → plug → re-verify
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh data
+- [OPEN] Send SESSION_SUMMARY broadcast via adapter to 192.168.2.32:8788
+- [OPEN] Verify send landed using protocol_inspect tail
+- [OPEN] Drain inbox (DMs + broadcasts) via freebuff_adapter
+- [OPEN] Triage peer messages from inbox
+- [OPEN] Validate each commit/code change before crediting it (user requested validation; not shown as completed in excerpt)
+- [OPEN] Start the agentmemory server (`CI=true agentmemory &` then `sleep 8` then `agentmemory status`)
+- [OPEN] Verify `iii.exe` is on PATH and version 0.11.2 if server fails to start
+- [OPEN] Reinstall `iii.exe` if missing (download zip, extract to `%USERPROFILE%\.local\bin\`)
+- [OPEN] Store an asset edge finding via `/agentmemory remember`
+- [OPEN] Store a bug/fix via `/agentmemory remember`
+- [OPEN] Search for CRYPTO edge knowledge via `/agentmemory search`
+- [OPEN] Search for FOREX investigation history via `/agentmemory search`
+- [OPEN] Get current agent context via `/agentmemory context`
+- [OPEN] Delete a specific memory by ID via `/agentmemory forget`
+- [OPEN] Store what was learned about EQUITY edge after an audit run
+- [OPEN] Search for everything known about FOREX before taking action
+- [OPEN] Import recent Claude Code session transcripts (`agentmemory import-jsonl --max-files 50`)
+- [OPEN] Check if server is up before starting a long audit run
+- [OPEN] Write learning about shipped audit-pick-flow skill + DB tables + MASTER_ENHANCEMENT_PLAN
+- [OPEN] Write decision about Fork-2 (options_flow.py/onchain_crypto.py) DO NOT MERGE
+- [OPEN] Set fact about swarm phase (e.g., "post-audit-pick-flow-ship")
+- [OPEN] Git add/commit/push `agent_shared_memory.json` after writes
+- [OPEN] Confirm event-triggered row in at_job_log after 06:18:58 fire
+- [OPEN] Restore official daily 06:10 schedule after verification
+- [OPEN] Summarize action plan, accomplishments, files generated/modified, next steps, and contribution to PnL/profit factor/Sharpe ratio per asset class
+- [OPEN] Fix non-crypto outcome resolver (P0)
+- [OPEN] Populate `closed_at` on terminal rows; normalize `status` enum (P0)
+- [OPEN] Cut CRYPTO sub-PF-1 source volume (P0)
+- [OPEN] Wire `at_pick_audit_trail` writer into `quality_gates.py` (P1)
+- [OPEN] Fix plumbing (staleness / no_consensus losses) (P1)
+- [OPEN] Fix honest dashboard (orphaned Money Ready button; truthful empty state) (P0)
+- [OPEN] Make one new-input edge bet: CRYPTO funding-rate/basis arbitrage, harness-gated (P3)
+- [OPEN] Vet suggested action plan via multi-AI debate (Grok, DeepSeek, kilo)
+- [OPEN] Run multi-phase debate where AIs double-check the plan
+- [OPEN] Codify/log all paths under findtorontoevents.ca/audit frontend (buttons, tabs, filters, ?Guide concepts)
+- [OPEN] Fact-check all frontend paths and ensure auto-updated at least every 24 hours
+- [OPEN] Double-check performance per asset class when applying buttons and ?Guide concepts
+- [OPEN] Fix `config/hc_gate_params.json` FOREX score floor (50→70)
+- [OPEN] Fix FOREX `pnl_pct` unit-scale bug
+- [OPEN] Synthesize results from frontend manifest agent + 3 AI consults (grok/opencode/kilo)
+- [OPEN] OpenCode/DeepSeek consult (still waiting)
+- [OPEN] Frontend manifest agent (still running)
+- [OPEN] Clarify "loss→profit" claim for Smart Picks — user asked "what do you mean loss→profit."
+- [OPEN] Enhance database to track picks for tracing High Conviction vs Smart Picks (tab) vs Smart Picks (button click) vs Money Ready vs other dashboard filters
+- [OPEN] Build "edge finder" code (`tools/edge_finder.py` + `tools/pick_surface_snapshot.py`) — builder agent still running
+- [OPEN] Commit DB-enhancement + edge-finder bundle once builder agent lands
+- [OPEN] Fix non-crypto outcome resolver (5/6 classes statistically invisible; blocks downstream measurement)
+- [OPEN] Wire VIX<25 gate for ETF class (PF 2.05 when VIX<25 vs 0.72 otherwise)
+- [OPEN] Wire `at_pick_audit_trail` writer (roadmap P1, not yet done)
+- [OPEN] Run `/swarm-transcript-review` on this session's transcript
+- [OPEN] Run `/dropchat-multipc`
+- [OPEN] Fix FOREX `pnl_pct` unit-scale bug (Phase 0 resolver work)
+- [OPEN] Build structured session-summary/v1 JSON payload from real git/gh sources
+- [OPEN] Drain DMs inbox (freebuff_adapter poll --peer-id claude-desktop)
+- [OPEN] Drain broadcasts inbox (freebuff_adapter poll --peer-id all)
+- [OPEN] Triage each peer message by topic and act accordingly
+- [OPEN] Look into `/swarm-pr-review` (review open PRs)
+- [OPEN] Look into `/swarm-actions-audit` (review GitHub Actions for failures)
+- [OPEN] Proceed to `/swarm-actions-audit`
+- [OPEN] Fix penny-stock-picks.yml (missing/expired GitHub token)
+- [OPEN] Fix dxy-state-update.yml (cron defined but never executed)
+- [OPEN] Make asset-class agents fail/alert when raw-pick count = 0 or yfinance error-rate exceeds threshold
+- [OPEN] Route fetches through alpha_engine/ohlcv_failover.py instead of bare yf.download
+- [OPEN] Quarantine 15 futures_momentum_v* variants (investigate before kill)
+- [OPEN] Gate on method_a_score + risk_reward, drop ml_score/elite_score weighting
+- [OPEN] Wire sector_dual_momentum into ETF production
+- [OPEN] Add daily top-gainers ingestion to fix 0% mover recall
+- [OPEN] Report on extended audit (fragile deps, single-API-no-failover violations, stale-data artifacts)
+- [OPEN] Link-liveness sweep agent (`a0aff552b2301e539`) — HTTP-check every link in past-7-day cards, rewrite dead github.io subdir links, commit + push, report
+- [OPEN] Look into recent .MDs that publish performance of active/closed picks per asset class under output site findtorontoevents.ca/audit
+- [OPEN] Find baseline data stored at mysql.50webs.com (ejaguiar1_stocks / pw:stocks123 and ejaguiar_backtests / pw:backtests123)
+- [OPEN] Investigate GitHub Actions related to the above data
+- [OPEN] Push `chat-transcript-summary.md` in a quiet window (git add/commit/push)
+- [OPEN] Update `fetch_commodity_top_movers()` via yfinance futures + COT extremes (FreeBuff's task)
+- [OPEN] Update `build_pick_lookup()` and `classify_movers()` for asset-class filtering
+- [OPEN] Update `build_report()` for per-asset-class breakdowns
+- [OPEN] Update `main()` for multi-class orchestration
+- [OPEN] Investigate each portfolio in TradingView (remote-debugging-port=9223) for swarm-consensus picks vs findtorontoevents.ca/audit usage, then derive lessons learned
+- [OPEN] Run full multi-portfolio extract+review in fresh session: `/tv-cdp-launch` → `/tv-portfolio-extract` → `/tv-portfolio-review`
+- [OPEN] Investigate remaining accounts (SCALPER, TESTER, TRUSTOURSCORE, zerounderscore, BROKIE)
+- [OPEN] Diagnose the −840 realized loss in `theswarm` via closed-trade history
+- [OPEN] Fix non-crypto resolver gap (Phase-0 blocker)
+- [OPEN] Run full all-account extract in fresh session: `/tv-cdp-launch` → `/tv-portfolio-extract` → `/tv-portfolio-review`
+- [OPEN] Run `/tv-portfolio-extract` in fresh session with TV MCP loaded for un-scraped portfolios
+- [OPEN] Save working scraper as `tools/tv_portfolio_scrape.py` (offered, user did not say the word)
+- [OPEN] Apply lessons learned from origin trace (user requested, not shown executed)
+- [OPEN] Wire a writer to populate the table (future `tv-portfolio-extract` run)
+- [OPEN] Run filter-permutation edge search and produce `reports/filter_permutation_edge_search_2026_05_18.md`
+- [OPEN] Wire up opt-in writers for the four audit-trail tables
+- [OPEN] Wire `tools/pick_surface_snapshot.py` to populate `at_pick_surface_eval`
+- [OPEN] Route `mega_mutation` through `tools/edge_stability_harness.py` for rigorous testing
+- [OPEN] Fix `cot_*` NULL `closed_at` so those strategies can be evaluated
+- [OPEN] Correct filter-search report to note `source_system` grouping
+- [OPEN] Consult external AI (Grok/DeepSeek) on methodology
+- [OPEN] Correct `filter_permutation_edge_search` report (note source_system grouping gap + mega_mutation candidate)
+- [OPEN] Fix `cot_positioning`/`multi_asset_cot` NULL `closed_at` (blocks harness-evaluating PF-4 strategies)
+- [OPEN] Commit `chat-transcript-summary.md` (recoverable from disk)
+- [OPEN] Wire `at_tv_position_attribution` writer (needs tv-portfolio-extract run, opt-in)
+- [OPEN] Fix non-crypto resolver (Phase 0 — 5/6 asset classes unmeasurable)
+- [OPEN] Conduct genuine new-input edge hunt, harness-gated
+- [OPEN] Build truthful "not ready" dashboard
+- [OPEN] Run swarm-transcript-scan on the session transcript
+- [OPEN] Act on any action items found by the swarm scan
+- [OPEN] Fix `penny-stock-picks.yml` (missing/expired checkout token)
+- [OPEN] Re-enable `dxy-state-update.yml` (cron auto-disabled by GitHub)
+- [OPEN] Fix `sports-betting-refresh` / `custom-sports-update` (leg cancelled at checkout)
+- [OPEN] Fix `ci-tests.yml` (concurrency cascade cancellations)
+- [OPEN] Fail/alert on 0 raw picks in equities/etf/commodities/bond-agent
+- [OPEN] Run `/swarmv2-actions` fresh in new session for full enhanced re-scan
+- [OPEN] Fix `cot_*` `closed_at` field
+- [OPEN] Push `mega_mutation` report
+- [OPEN] Roadmap Phase 0
+- [OPEN] Relay catalog + top proposals when the 2 strategy agents land
+- [OPEN] Fix 4 broken workflows (penny-stock-picks token, dxy-state-update cron, sports-refresh leg, ci-tests cascade) — documented in reports/infra_fragility_audit_2026_05_18.md for fresh-session fix
+- [OPEN] Agent 2 (`ab434ed42ef790db1`) writes `reports/new_strategy_proposals_2026_05_18.md`
+- [OPEN] Relay strategy catalog + ranked new-strategy proposals per asset class (after Agent 2 lands)
+- [OPEN] Commit both reports to main (user said "proceed on next steps if any", assistant asked "Want these committed to main?" — no confirmation shown)
+- [OPEN] Verify sports-betting-refresh leg (Goal #2) — deferred to fresh session
+- [OPEN] Address Phase-0 non-crypto resolver gap — deferred to fresh session
+- [OPEN] Phase 0: non-crypto resolver fix (pnl_pct=0.0 placeholders)
+- [OPEN] cot_* NULL closed_at correction (live MySQL data write)
+- [OPEN] Fail-open masking on equity/etf/commodity/bond agents
+- [OPEN] Build ET-1 / CO-1 / E-1 (top new-strategy proposals)
+- [OPEN] Create a set of todos and use agent swarm as needed to work
+- [OPEN] Reconcile the two Phase-0 resolver fix plans before executing PR-A
+- [OPEN] Execute resolver PR-A (populate closed_at + nullable column migration)
+- [OPEN] Execute resolver PR-B (class-conditional symbol normalizer)
+- [OPEN] Reconcile or pick between two resolver fix plans (phase0_resolver_fix_plan vs RESOLUTION_PIPELINE_FIX_PLAN)
+- [OPEN] Approve live `ALTER TABLE at_pick_outcomes ADD COLUMN closed_at` on production DB
+- [OPEN] Approve live `UPDATE` on production rows for cot_* NULL `closed_at` correction
+- [OPEN] Greenlight CO-1 (commodity physical-inventory surprise) strategy build
+- [OPEN] Decide on E-1 (insider Form-4 cluster buys): greenlight small-cap-only or skip
+- [OPEN] Decide on B-2 (TIPS breakeven): explicit sign-off or skip (default: skip)
+- [OPEN] Decide whether to enforce shadow gates (ML_ENHANCED_CRYPTO_QUARANTINE, MDD_GATE_ENFORCE) or leave in shadow mode
+- [OPEN] Decide strategic fork: keep funding new-signal research track or call existing-ledger edge hunt closed
+- [OPEN] Proceed autonomously on next steps (per user /goal command)
+- [OPEN] Set or replace the active goal via `/goal <text>` and begin work loop
+- [OPEN] Work one turn toward the goal with real tool calls/edits/commits
+- [OPEN] Tick the counter via `goal_state.py tick --session <SID>`
+- [OPEN] Judge own work and record verdict via `goal_state.py judge --session <SID> --done <bool> --reason "<reason>"`
+- [OPEN] If goal not done and budget remains, call `ScheduleWakeup` with appropriate delay and prompt `/goal continue`
+- [OPEN] If goal not done and budget exhausted, report pause and ask user to resume/refine
+- [OPEN] If goal achieved, report with reason
+- [OPEN] Handle `/goal continue` invocations by re-reading state and resuming from step 2
+- [OPEN] Handle `/goal status`, `/goal pause`, `/goal resume`, `/goal clear` subcommands
+- [OPEN] Ensure session ID is stable and reused across all calls in one goal loop
+- [OPEN] Avoid common mistakes: narrating instead of working, optimistic judging, forgetting wakeup, drifting session IDs, ignoring pause, infinite goals
+- [OPEN] Resolver step 3: live MySQL symbol normalization UPDATE (operator-gated)
+- [OPEN] Resolver Stage B: `active_picks_sync --apply` flip (operator-gated)
+- [OPEN] CO-1/ET-1 wire-up (gated on harness stability)
+- [OPEN] E-1 small-cap-scoping build (operator-gated)
+- [OPEN] B-2 banned-adjacent sign-off (operator-gated)
+- [OPEN] Resolver step 3 — ~2,086-row live MySQL symbol-normalization UPDATE (backup + user confirm required).
+- [OPEN] active_picks_sync `--apply` flip after 3-5 clean dry-run cycles.
+- [OPEN] `cot_*` NULL `closed_at` correction (live DB write).
+- [OPEN] ET-1/CO-1 wire-up — gated on edge-stability harness.
+- [OPEN] E-1 build scoping decision.
+- [OPEN] Shadow gates enforcement (downgrades CRYPTO from MONEY_READY).
+- [OPEN] Strategic fork decision.
+- [OPEN] Proceed on items 1-7 at assistant's discretion, then run agent swarm with 3-round debate for next steps.
+- [OPEN] Step 2: Kill scanner fail-open (min_expected_picks floor + fail-closed)
+- [OPEN] Step 3: Enforce 2 monotone shadow gates + tiered label schema (pending user OK on product change)
+- [OPEN] Step 4: Resolution-coverage dashboard panel
+- [OPEN] Step 5: Symbol-format DB backfill UPDATE (~2,086 rows)
+- [OPEN] Step 6: Re-resolve pass
+- [OPEN] Step 7: Flip `active_picks_sync --apply`
+- [OPEN] Step 8: Re-derive all verdicts; re-litigate 9 kills; freeze sidecars
+- [OPEN] Step 9: Strategic-fork decision memo
+- [OPEN] Backup table + snapshot before step 5 (recommended rollback)
+- [OPEN] Per-class deep-dive trigger if a class never reaches 80% post-fix
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll
+- [OPEN] Drain broadcasts via freebuff_adapter poll --peer-id all
+- [OPEN] Proceed on next steps (step 3 tiered label, steps 5-9)
+- [OPEN] Verify live page after workflow completes (dashboard freshness + all 6 404s resolved)
+- [OPEN] Monitor workflow run `26076021330`, check once complete, debug if needed
+- [OPEN] Loop for 1h, keep checking and ensure all action items completed (GitHub Actions task)
+- [OPEN] Check cloud-first conditions (interval ≥60m or daily phrasing) and ask user if applicable
+- [OPEN] If cloud schedule chosen: invoke `schedule` skill with original input verbatim, then stop
+- [OPEN] If "This session only" with ≥60m interval: continue to fixed-interval mode
+- [OPEN] If "This session only" with daily phrasing only: explain limitation and stop
+- [OPEN] If neither trigger: continue to fixed-interval or dynamic mode
+- [OPEN] Convert interval to cron expression (fixed-interval mode)
+- [OPEN] Round uneven intervals and notify user
+- [OPEN] Call CronCreate with cron expression, prompt, recurring: true
+- [OPEN] Confirm schedule details with user (including 7-day expiry, job ID, and optional italic line)
+- [OPEN] Execute parsed prompt immediately after scheduling (fixed-interval mode)
+- [OPEN] Run parsed prompt now (dynamic mode)
+- [OPEN] If next run gated on event and no Monitor running: arm Monitor with persistent: true
+- [OPEN] Confirm self-pacing details (monitor, fallback delay) before calling ScheduleWakeup
+- [OPEN] Call ScheduleWakeup with delaySeconds as last action (dynamic mode)
+- [OPEN] Track down real shadow-gate names for resolver step 3
+- [OPEN] Resolver step 3 — enforce shadow gates + tiered label
+- [OPEN] Resolver steps 5-7 — DB symbol backfill (~2,086 rows), re-resolve, `active_picks_sync --apply`
+- [OPEN] Resolver step 8 — re-derive verdicts, re-litigate 9 kills
+- [OPEN] Resolver step 9 — strategic-fork memo
+- [OPEN] Fix `MDD_GATE_ENFORCE` wiring bug (1-line fix, gated on step-3 decision)
+- [OPEN] Fix `active_raw` post-expiry snapshot bug (non-crypto picks vanish)
+- [OPEN] Fix FUTURES under-generation (empty emitter)
+- [OPEN] Wire up ET-1/CO-1/E-1 (harness-gated)
+- [OPEN] Use subagents/swarm to wrap up remaining items
+- [OPEN] Flip on MDD enforce mode (operator decision)
+- [OPEN] Wire up ET-1/CO-1/E-1 sidecars (harness-gated)
+- [OPEN] Tune FUTURES curation gate vs new scanner (operator decision)
+- [OPEN] Execute resolver steps 3, 5-9 (shadow-gate enforce decision, live MySQL writes, fork memo)
+- [OPEN] Answer what DB password was tried (USER asked; assistant answered but did not resolve the DB access)
+- [OPEN] Ask swarm about remaining tasks and proceed (assistant asked swarm and built workflows; USER must dispatch)
+- [OPEN] Dispatch resolver-step5-6-backfill.yml from Actions tab (operator-gated)
+- [OPEN] Dispatch resolver-step7-apply.yml from Actions tab (operator-gated)
+- [OPEN] Run resolver steps 8-9 (re-derive verdicts, fork memo) — depends on steps 5-7 completing
+- [OPEN] Proceed on next steps (multi-class step 7 re-dispatches — 4 cancelled by concurrency, need serial retry)
+- [OPEN] Look into TradingView portfolios (except "the leap"), add fresh picks, close picks, etc.
+- [OPEN] Summarize TradingView activities under file `TV_<YYYY-MM-DD>.MD`
+- [OPEN] Double-check commands against TradingView skill
+- [OPEN] Ensure skills state use of `https://github.com/tradesdontlie/tradingview-mcp`
+- [OPEN] Run TV live-trade activity from IDE with tradingview-mcp connected
+- [OPEN] Make strategic fork decision (capital-direction call)
+- [OPEN] Cleanup dry-run backup `at_raw_picks_bak_26126209814` (optional)
+- [OPEN] Investigate BOND mis-tagging bug (500 crypto rows tagged as BOND)
+- [OPEN] Unlock steps 8-9 (verdict re-derive + fork memo) after step 7 drains all classes
+- [OPEN] Fix BOND asset_class mis-tagging emitter bug
+- [OPEN] Fix FOREX yfinance CI gap (use real FX API)
+- [OPEN] Run fresh per-class edge audit on corrected ledger
+- [OPEN] Create new M-107 pre-registered hypotheses (multi-AI consult or external research)
+- [OPEN] Look into whether the provided market info can help find more edge or new strategies for top-notch performance per asset class.
+- [OPEN] Build thin sidecar per candidate (H-029, H-030, H-031, H-032)
+- [OPEN] Run each candidate through `edge_stability_harness.is_admissible()`
+- [OPEN] Forward-test admissible candidates for 90 days paper
+- [OPEN] Deploy real money only after forward-test confirmation

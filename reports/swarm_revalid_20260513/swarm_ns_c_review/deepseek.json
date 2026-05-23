@@ -1,0 +1,31 @@
+{
+  "verdict": "APPROVE_WITH_CAVEATS",
+  "evidence_quality": "thin",
+  "confounders_identified": [
+    "single-engine backtest may not generalize across all CRYPTO symbols",
+    "6 UTC may correlate with weekend sessions or low-liquidity periods that independently degrade performance",
+    "sample size (N) not specified - small N could produce unreliable WR estimates",
+    "backtest may not account for regime changes (e.g., market structure shifts since data was collected)"
+  ],
+  "recommendation_on_filter_scope": "ADD_6_TO_(8,9)",
+  "default_behavior_recommendation": "DEFAULT_ON",
+  "additional_test_cases_needed": [
+    "multi-engine backtest across all CRYPTO terminals with N > 1000 per hour bucket",
+    "stratified analysis: separate 6 UTC performance by weekday vs weekend",
+    "liquidity proxy check (spread/volume) at 6 UTC vs 8-9 UTC",
+    "out-of-sample test on recent 3 months of data not used in original backtest"
+  ],
+  "merge_decision": "HOLD",
+  "engine": "deepseek",
+  "_swarm_meta": {
+    "raw_path": "reports\\swarm_revalid_20260513\\swarm_ns_c_review\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260513T053059Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 801,
+    "tokens_out": 257,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

@@ -1,0 +1,71 @@
+name: Crypto Gainer ML Live Tracker
+# Runs every 4 hours to predict top crypto gainers and track TP/SL outcomes
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Hourly at :00
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  predict-and-track:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            crypto_gainer_ml
+            shared
+            alpha_engine
+            updates/data
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy scikit-learn xgboost lightgbm joblib scipy pyarrow
+
+      - name: Run live predictor
+        env:
+          PYTHONIOENCODING: utf-8
+          ASTERDEX_API_KEY: ${{ secrets.ASTERDEX_API_KEY }}
+          ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_ML_CHANNEL_ID: '1469431505439948920'
+        run: |
+          cd crypto_gainer_ml
+          python live_predictor.py
+        
+      - name: Copy results to updates page data
+        run: |
+          mkdir -p updates/data
+          cp -f crypto_gainer_ml/tracker/performance_summary.json updates/data/cursor_ml_performance.json 2>/dev/null || true
+          cp -f crypto_gainer_ml/tracker/pick_history.json        updates/data/cursor_ml_history.json      2>/dev/null || true
+          cp -f crypto_gainer_ml/tracker/scorecard.json           updates/data/cursor_ml_scorecard.json    2>/dev/null || true
+          cp -f crypto_gainer_ml/tracker/live_picks.json          updates/data/cursor_ml_picks.json        2>/dev/null || true
+
+      - name: Commit and push results
+        run: |
+          git config user.name "Cursor ML Bot"
+          git config user.email "cursor-bot@findtorontoevents.ca"
+          git add -A crypto_gainer_ml/tracker/ updates/data/ || true
+          
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
+          PICKS=$(python3 -c "import json; print(len(json.load(open('crypto_gainer_ml/tracker/live_picks.json'))))" 2>/dev/null || echo "0")
+          RESOLVED=$(python3 -c "import json,os; f='crypto_gainer_ml/tracker/pick_history.json'; print(len(json.load(open(f))) if os.path.exists(f) else 0)" 2>/dev/null || echo "0")
+          
+          git diff --staged --quiet || git commit -m "ML Tracker: ${PICKS} active, ${RESOLVED} resolved @ ${TIMESTAMP} [skip ci]"
+          bash .github/scripts/safe_push.sh
+

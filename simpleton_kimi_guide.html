@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpleton KIMI - User Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a12;
+            color: #c8c8d8;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+            border-bottom: 1px solid #333;
+        }
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .hero .version {
+            display: inline-block;
+            background: rgba(0, 212, 170, 0.1);
+            color: #00d4aa;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            letter-spacing: 2px;
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+        h2 {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 300;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        h3 {
+            color: #00d4aa;
+            font-size: 20px;
+            font-weight: 400;
+            margin: 30px 0 15px;
+        }
+        h4 {
+            color: #88aaff;
+            font-size: 16px;
+            margin: 20px 0 10px;
+        }
+        p { margin-bottom: 15px; }
+        ul, ol { margin: 15px 0 15px 30px; }
+        li { margin-bottom: 8px; }
+        code {
+            background: rgba(255,255,255,0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #00d4aa;
+        }
+        pre {
+            background: #111118;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: #c8c8d8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+            font-weight: 500;
+        }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .badge-green { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .badge-yellow { background: rgba(234,179,8,0.2); color: #eab308; }
+        .badge-red { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-blue { background: rgba(59,130,246,0.2); color: #3b82f6; }
+        .highlight-box {
+            background: rgba(0,212,170,0.05);
+            border-left: 3px solid #00d4aa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .warning-box {
+            background: rgba(234,179,8,0.05);
+            border-left: 3px solid #eab308;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .toc {
+            background: #111118;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .toc h3 { margin-top: 0; }
+        .toc ul { list-style: none; margin-left: 0; }
+        .toc li { margin-bottom: 5px; }
+        .toc a { color: #88aaff; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        .file-card {
+            background: #111118;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .file-card h4 { margin-top: 0; color: #fff; }
+        .file-card code { font-size: 12px; }
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00d4aa;
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.8;
+        }
+        .back-to-top:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>Simpleton KIMI</h1>
+        <div class="version">v0.01 — Trading System Guide</div>
+        <p style="margin-top: 20px; color: #667; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Professional-grade crypto trading tools for TradingView. 
+            Multi-strategy backtesting with signal strength levels.
+        </p>
+    </div>
+
+    <div class="container">
+        <div class="toc">
+            <h3>📑 Table of Contents</h3>
+            <ul>
+                <li><a href="#files">📦 Files Overview</a></li>
+                <li><a href="#quickstart">🚀 Quick Start</a></li>
+                <li><a href="#strategies">📊 Strategy Guide</a></li>
+                <li><a href="#signals">🔔 Signal Strength</a></li>
+                <li><a href="#parameters">⚙️ Parameters</a></li>
+                <li><a href="#backtesting">📈 Backtesting</a></li>
+                <li><a href="#crypto">💎 Crypto Pair Recommendations</a></li>
+                <li><a href="#faq">❓ FAQ</a></li>
+            </ul>
+        </div>
+
+        <h2 id="files">📦 Files Overview</h2>
+        
+        <div class="file-card">
+            <h4><span class="badge badge-green">Strategy</span> Simpletonv0.01_KIMI.pine</h4>
+            <p>Multi-strategy backtesting tool for TradingView. Includes 6 built-in strategies with TP/SL, position sizing, and performance tracking.</p>
+            <code>Copy → TradingView Pine Editor → Add to Chart → Strategy Tester</code>
+        </div>
+
+        <div class="file-card">
+            <h4><span class="badge badge-blue">Indicator</span> SimpletonSignals_KIMI.pine</h4>
+            <p>Clean Buy/Sell signal indicator with strength levels 1-4. Visual arrows, background coloring, and info table.</p>
+            <code>Copy → TradingView Pine Editor → Add to Chart</code>
+        </div>
+
+        <div class="file-card">
+            <h4><span class="badge badge-yellow">Python</span> simpleton_backtest.py</h4>
+            <p>Command-line backtesting tool. Test strategies against any symbol, optimize parameters, generate reports.</p>
+            <code>python simpleton_backtest.py --symbol BTCUSD --strategy all</code>
+        </div>
+
+        <h2 id="quickstart">🚀 Quick Start</h2>
+        
+        <h3>Step 1: Add to TradingView</h3>
+        <ol>
+            <li>Open TradingView and select a chart (recommended: BTCUSD 4H)</li>
+            <li>Click <strong>Pine Editor</strong> at the bottom</li>
+            <li>Copy the contents of <code>Simpletonv0.01_KIMI.pine</code></li>
+            <li>Paste into the editor and click <strong>Save</strong></li>
+            <li>Click <strong>Add to Chart</strong></li>
+        </ol>
+
+        <h3>Step 2: Configure Settings</h3>
+        <ol>
+            <li>Right-click the indicator on chart → <strong>Settings</strong></li>
+            <li>Select your preferred <strong>Strategy Mode</strong></li>
+            <li>Adjust <strong>TP/SL percentages</strong> (default: 3% / 2%)</li>
+            <li>Enable/Disable <strong>Repainting</strong> (keep OFF for accuracy)</li>
+        </ol>
+
+        <h3>Step 3: Run Backtest</h3>
+        <ol>
+            <li>Click <strong>Strategy Tester</strong> tab</li>
+            <li>View performance metrics: Net Profit, Sharpe, Win Rate</li>
+            <li>Click <strong>List of Trades</strong> to see individual results</li>
+        </ol>
+
+        <div class="highlight-box">
+            <strong>💡 Pro Tip:</strong> Start with "Multi-Indicator" mode on BTCUSD 4H. 
+            This combines 4 strategies and requires at least 2 confirmations for signals.
+        </div>
+
+        <h2 id="strategies">📊 Strategy Guide</h2>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th>Type</th>
+                <th>Best Timeframe</th>
+                <th>Win Rate*</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><strong>RSI-2</strong></td>
+                <td>Mean Reversion</td>
+                <td>Daily</td>
+                <td>~75%</td>
+                <td>Larry Williams' RSI-2 system. Buys oversold, sells overbought.</td>
+            </tr>
+            <tr>
+                <td><strong>SuperTrend</strong></td>
+                <td>Trend Following</td>
+                <td>1H - 4H</td>
+                <td>~55%</td>
+                <td>ATR-based trend indicator. Follows the trend direction.</td>
+            </tr>
+            <tr>
+                <td><strong>MACD</strong></td>
+                <td>Momentum</td>
+                <td>1H - Daily</td>
+                <td>~52%</td>
+                <td>Classic momentum crossover. Good for trending markets.</td>
+            </tr>
+            <tr>
+                <td><strong>Triple EMA</strong></td>
+                <td>Trend Confirmation</td>
+                <td>4H - Daily</td>
+                <td>~58%</td>
+                <td>9/21/50 EMA alignment. Confirms trend strength.</td>
+            </tr>
+            <tr>
+                <td><strong>Bollinger Bands</strong></td>
+                <td>Volatility</td>
+                <td>15m - 1H</td>
+                <td>~48%</td>
+                <td>Mean reversion to moving average. Best in ranging markets.</td>
+            </tr>
+            <tr>
+                <td><strong>Multi-Indicator</strong></td>
+                <td>Consensus</td>
+                <td>1H - Daily</td>
+                <td>~65%</td>
+                <td>Combines 4 strategies. Requires 2+ confirmations.</td>
+            </tr>
+        </table>
+        <p style="font-size: 12px; color: #556;">*Historical backtest results. Past performance does not guarantee future results.</p>
+
+        <h2 id="signals">🔔 Signal Strength Levels</h2>
+
+        <p>The Multi-Indicator strategy uses a voting system with 4 indicators:</p>
+        <ul>
+            <li>RSI-2 (oversold/overbought)</li>
+            <li>SuperTrend (direction)</li>
+            <li>MACD (momentum)</li>
+            <li>Triple EMA (trend alignment)</li>
+        </ul>
+
+        <table>
+            <tr>
+                <th>Level</th>
+                <th>Indicators</th>
+                <th>Strength</th>
+                <th>Recommendation</th>
+            </tr>
+            <tr>
+                <td><span class="badge badge-red">L1</span></td>
+                <td>1</td>
+                <td>Weak</td>
+                <td>Paper trade only</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-yellow">L2</span></td>
+                <td>2</td>
+                <td>Moderate</td>
+                <td>Small position size</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-blue">L3</span></td>
+                <td>3</td>
+                <td>Strong</td>
+                <td>Normal position size</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-green">L4</span></td>
+                <td>4</td>
+                <td>Maximum</td>
+                <td>Full position size</td>
+            </tr>
+        </table>
+
+        <h2 id="parameters">⚙️ Parameter Reference</h2>
+
+        <h3>Core Settings</h3>
+        <table>
+            <tr><th>Parameter</th><th>Default</th><th>Range</th><th>Description</th></tr>
+            <tr><td>Strategy Mode</td><td>Multi-Indicator</td><td>6 options</td><td>Select trading strategy</td></tr>
+            <tr><td>Position Size</td><td>10%</td><td>1-100%</td><td>Equity allocated per trade</td></tr>
+            <tr><td>Use TP/SL</td><td>true</td><td>on/off</td><td>Enable take profit/stop loss</td></tr>
+            <tr><td>Take Profit %</td><td>3%</td><td>0.1-50%</td><td>Profit target</td></tr>
+            <tr><td>Stop Loss %</td><td>2%</td><td>0.1-50%</td><td>Maximum loss</td></tr>
+        </table>
+
+        <h3>Strategy-Specific Settings</h3>
+        <table>
+            <tr><th>Strategy</th><th>Parameter</th><th>Default</th><th>Description</th></tr>
+            <tr><td>RSI-2</td><td>RSI Length</td><td>2</td><td>Lookback period</td></tr>
+            <tr><td>RSI-2</td><td>Oversold</td><td>30</td><td>Buy threshold</td></tr>
+            <tr><td>RSI-2</td><td>Overbought</td><td>70</td><td>Sell threshold</td></tr>
+            <tr><td>SuperTrend</td><td>Factor</td><td>3.0</td><td>ATR multiplier</td></tr>
+            <tr><td>SuperTrend</td><td>ATR Period</td><td>10</td><td>ATR lookback</td></tr>
+            <tr><td>MACD</td><td>Fast/Slow/Signal</td><td>12/26/9</td><td>Standard MACD</td></tr>
+            <tr><td>Triple EMA</td><td>Fast/Medium/Slow</td><td>9/21/50</td><td>EMA periods</td></tr>
+        </table>
+
+        <h2 id="backtesting">📈 Backtesting with Python</h2>
+
+        <h3>Installation</h3>
+        <pre><code>pip install yfinance pandas numpy</code></pre>
+
+        <h3>Basic Usage</h3>
+        <pre><code># Test all strategies on BTCUSD
+python simpleton_backtest.py --symbol BTCUSD --strategy all --timeframe 4h
+
+# Optimize parameters
+python simpleton_backtest.py --symbol ETHUSD --strategy RSI-2 --optimize
+
+# Test multiple symbols
+python simpleton_backtest.py --symbol all --timeframe 1d --report</code></pre>
+
+        <h3>Command Line Options</h3>
+        <table>
+            <tr><th>Option</th><th>Description</th><th>Example</th></tr>
+            <tr><td>--symbol</td><td>Trading pair</td><td>BTCUSD, ETHUSD, or "all"</td></tr>
+            <tr><td>--strategy</td><td>Strategy to test</td><td>RSI-2, MACD, or "all"</td></tr>
+            <tr><td>--timeframe</td><td>Chart timeframe</td><td>1h, 4h, 1d</td></tr>
+            <tr><td>--optimize</td><td>Find best parameters</td><td>Flag</td></tr>
+            <tr><td>--report</td><td>Save to JSON</td><td>Flag</td></tr>
+            <tr><td>--days</td><td>History to fetch</td><td>365 (default)</td></tr>
+        </table>
+
+        <h2 id="crypto">💎 Crypto Pair Recommendations</h2>
+
+        <table>
+            <tr>
+                <th>Pair</th>
+                <th>Best Strategy</th>
+                <th>Timeframe</th>
+                <th>Signal Level</th>
+                <th>Volatility</th>
+            </tr>
+            <tr>
+                <td>BTCUSD</td>
+                <td>Multi-Indicator</td>
+                <td>4H</td>
+                <td>≥3</td>
+                <td>Medium</td>
+            </tr>
+            <tr>
+                <td>ETHUSD</td>
+                <td>SuperTrend</td>
+                <td>4H</td>
+                <td>≥2</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>SOLUSD</td>
+                <td>RSI-2</td>
+                <td>Daily</td>
+                <td>≥2</td>
+                <td>Very High</td>
+            </tr>
+            <tr>
+                <td>AVAXUSD</td>
+                <td>MACD</td>
+                <td>1H</td>
+                <td>≥3</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>MATICUSD</td>
+                <td>Triple EMA</td>
+                <td>4H</td>
+                <td>≥2</td>
+                <td>Medium</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <strong>⚠️ Risk Warning:</strong> High volatility pairs (SOL, AVAX) require stricter stop losses. 
+            Consider using 4% SL instead of 2% for these assets.
+        </div>
+
+        <h2 id="faq">❓ Frequently Asked Questions</h2>
+
+        <h3>What is repainting and why is it off by default?</h3>
+        <p>Repainting happens when an indicator changes its signal after the candle closes. This creates unrealistic backtests. 
+        We disable it by default to ensure signals only appear on confirmed candles.</p>
+
+        <h3>Can I use this for stocks or forex?</h3>
+        <p>Yes! While optimized for crypto, all strategies work on any TradingView symbol. 
+        For stocks, we recommend RSI-2 on daily timeframe. For forex, try SuperTrend on 1H.</p>
+
+        <h3>What's the difference between the Strategy and Indicator?</h3>
+        <ul>
+            <li><strong>Strategy</strong> (Simpletonv0.01_KIMI): Has built-in backtesting, position sizing, TP/SL</li>
+            <li><strong>Indicator</strong> (SimpletonSignals): Just shows signals on chart, no automated trading</li>
+        </ul>
+
+        <h3>How often should I change settings?</h3>
+        <p>We recommend:</p>
+        <ul>
+            <li>Daily timeframe: Review monthly</li>
+            <li>4H timeframe: Review weekly</li>
+            <li>1H timeframe: Review every few days</li>
+        </ul>
+
+        <h3>Why are my results different from the table?</h3>
+        <p>Markets change. The win rates shown are historical averages. Always do your own backtesting 
+        on recent data before trading with real money.</p>
+
+        <div class="highlight-box">
+            <strong>🎯 Remember:</strong> No strategy wins 100% of the time. Risk management (position sizing, TP/SL) 
+            is more important than finding the "perfect" strategy.
+        </div>
+
+        <p style="text-align: center; margin-top: 60px; padding-top: 30px; border-top: 1px solid #333; color: #556;">
+            Simpleton KIMI v0.01 | Built with 💚 for traders<br>
+            <em>Not financial advice. Trade at your own risk.</em>
+        </p>
+    </div>
+
+    <a href="#" class="back-to-top">↑ Top</a>
+</body>
+</html>

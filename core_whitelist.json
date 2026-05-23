@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-03-03",
+  "description": "Core Book - Proven strategies with positive expectancy and robust risk/reward",
+  "inclusion_criteria": {
+    "min_win_rate": 0.50,
+    "min_expectancy_percent": 0.30,
+    "min_risk_reward": 1.4,
+    "min_sample_size": 20,
+    "max_drawdown_percent": 5.0
+  },
+  "core_strategies": [
+    {
+      "id": "funding_carry",
+      "name": "Funding Rate Carry",
+      "family": "ATM Challenge",
+      "win_rate": 0.74,
+      "expectancy_percent": 1.61,
+      "avg_rr": 1.8,
+      "direction": "both",
+      "frequency": "high",
+      "status": "active",
+      "weight": 0.25
+    },
+    {
+      "id": "funding_carry_elite",
+      "name": "Funding Rate Carry ELITE",
+      "family": "ATM Challenge", 
+      "win_rate": 0.95,
+      "expectancy_percent": 1.61,
+      "avg_rr": 2.1,
+      "direction": "both",
+      "frequency": "high",
+      "status": "active",
+      "weight": 0.20
+    },
+    {
+      "id": "autocorrelation_exploiter",
+      "name": "Autocorrelation Exploiter",
+      "family": "Alpha Engine",
+      "win_rate": 0.65,
+      "expectancy_percent": 1.20,
+      "avg_rr": 1.6,
+      "direction": "both",
+      "frequency": "medium",
+      "status": "active",
+      "weight": 0.15,
+      "regime_sensitive": true,
+      "preferred_regime": "mean_reverting"
+    },
+    {
+      "id": "hurst_regime_adaptive",
+      "name": "Hurst Regime Adaptive",
+      "family": "Alpha Engine",
+      "win_rate": 0.62,
+      "expectancy_percent": 0.95,
+      "avg_rr": 1.5,
+      "direction": "both",
+      "frequency": "medium",
+      "status": "active",
+      "weight": 0.15,
+      "regime_sensitive": true,
+      "preferred_regime": "trending"
+    },
+    {
+      "id": "volume_profile_value_area",
+      "name": "Volume Profile Value Area",
+      "family": "Alpha Engine",
+      "win_rate": 0.58,
+      "expectancy_percent": 0.85,
+      "avg_rr": 1.6,
+      "direction": "both",
+      "frequency": "medium",
+      "status": "active",
+      "weight": 0.10
+    },
+    {
+      "id": "adaptive_vr_confluence",
+      "name": "Adaptive VR Confluence",
+      "family": "Alpha Engine",
+      "win_rate": 0.60,
+      "expectancy_percent": 0.90,
+      "avg_rr": 1.5,
+      "direction": "both",
+      "frequency": "medium",
+      "status": "active",
+      "weight": 0.10
+    },
+    {
+      "id": "baby_battleground",
+      "name": "Baby Battleground",
+      "family": "Baby Strategies",
+      "win_rate": 0.65,
+      "expectancy_percent": 0.53,
+      "avg_rr": 1.4,
+      "direction": "both",
+      "frequency": "high",
+      "status": "active",
+      "weight": 0.03
+    },
+    {
+      "id": "claws_of_doom",
+      "name": "Claws of Doom",
+      "family": "Baby Strategies",
+      "win_rate": 0.56,
+      "expectancy_percent": 0.78,
+      "avg_rr": 1.5,
+      "direction": "both",
+      "frequency": "medium",
+      "status": "active",
+      "weight": 0.02
+    }
+  ],
+  "composite_weights": {
+    "description": "When multiple core strategies fire simultaneously",
+    "funding_carry_dominant": 0.50,
+    "alpha_strategies_combined": 0.35,
+    "baby_strategies_combined": 0.15
+  },
+  "risk_budget_allocation": {
+    "funding_family": 0.45,
+    "alpha_family": 0.40,
+    "baby_family": 0.15
+  },
+  "notes": [
+    "All Alpha Engine strategies have short-only override for long signals due to negative long expectancy",
+    "Funding carry family gets highest allocation due to highest win rate and expectancy",
+    "Baby strategies provide diversification but limited by lower frequency",
+    "Regime-sensitive strategies only fire when market regime matches preference"
+  ]
+}

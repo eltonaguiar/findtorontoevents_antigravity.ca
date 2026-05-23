@@ -1,0 +1,81 @@
+{
+  "schema_version": "v1",
+  "engine": "synthesis_engine",
+  "asset_class": "COMMODITY",
+  "run_id": "run_2026-05-11T19-18-00Z",
+  "synthesis": [
+    {
+      "spec_id": "commodity_ts_momentum_gold_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68 and Sharpe=0.96 look strong but n=4 trades is far below the T2 floor of 100; MDD=20.3% also exceeds the 20% threshold. Cross-test shows independence but sample is too small for any reliable inference. Simplified signal caveat further undermines confidence.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_cross_sectional_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68, WR=25.0%, MDD=20.3%, n=4 - identical to the gold TS momentum candidate. n=4 is far too small; WR below 50% and MDD at the boundary. Cross-test independence is irrelevant with such limited data.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_carry_value_gold_silver_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68, WR=25.0%, MDD=20.3%, n=4 - same pattern. WR is well below 50% threshold, n is negligible. Cross-test independence noted but insufficient to overcome sample size and WR deficiencies.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_energy_momentum_carry_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=2.25 and WR=58.3% meet T2 floor thresholds, MDD=24.9% exceeds 20% limit, n=12 far below 100. Cross-test shows independence. Promising but needs longer history and better MDD control before wiring.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_agri_momentum_value_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=2.66 and WR=64.7% meet T2 floor, MDD=15.9% is acceptable, but n=17 is well below the 100-trade minimum. Cross-test independence is positive. Needs longer history and faithful signal translation before GO.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_ts_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68, WR=25.0%, MDD=20.3%, n=4 - identical to other GLD candidates. WR far below 50%, n negligible. Cross-test independence irrelevant at this sample size.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_carry_gold_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68, WR=25.0%, MDD=20.3%, n=4 - same pattern. WR below 50%, n far below 100. Cross-test independence noted but insufficient.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_value_agriculture_v1",
+      "verdict": "MIXED",
+      "rationale": "PF=2.66 and WR=64.7% meet T2 floor, MDD=15.9% is acceptable, but n=17 is well below 100. Cross-test independence positive. Needs longer history and faithful signal translation.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_momentum_cross_sectional_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68, WR=25.0%, MDD=20.3%, n=4 - same as other candidates. WR below 50%, n negligible. Cross-test independence irrelevant.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "commodity_carry_momentum_combined_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "PF=10.68, WR=25.0%, MDD=20.3%, n=4 - identical pattern. WR far below 50%, n far below 100. Cross-test independence noted but insufficient.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "All 11 candidates fail the T2 floor (PF\u22651.5, WR\u226550%, MDD<20%, n\u2265100) primarily due to insufficient trade count (n ranges from 4 to 17, all far below 100). While some candidates show promising PF and WR metrics (commodity_agri_momentum_value_v1: PF=2.66, WR=64.7%, MDD=15.9%; commodity_energy_momentum_carry_v1: PF=2.25, WR=58.3%), the tiny sample sizes make these results unreliable. The simplified signal translation (SMA crossover proxy for all spec.entry text) further degrades confidence. Cross-test independence is consistently observed but irrelevant with such limited data. Retry conditions: (1) extend backtest window to generate \u2265100 trades per candidate, (2) implement faithful signal translator (queued for v3), (3) re-evaluate MDD for energy candidate which exceeds 20% threshold.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_commodity_p5_20260511T193155Z\\deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260511T193208Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 2898,
+    "tokens_out": 1280,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}

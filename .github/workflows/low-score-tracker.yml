@@ -1,0 +1,50 @@
+name: Low-Score Winner Tracker
+
+on:
+  schedule:
+    - cron: '5 * * * *'  # Every hour at :05
+  workflow_dispatch:
+
+concurrency:
+  group: low-score-tracker
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: python -m pip install numpy pandas requests
+
+      - name: Fetch dashboard payload (FTP — file is gitignored, regenerated hourly)
+        run: |
+          mkdir -p audit_trail/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
+            -o audit_trail/data/dashboard_payload.json || echo "::warning::dashboard_payload.json fetch failed — downstream step may degrade"
+
+      - name: Run low-score tracker
+        run: python -m alpha_engine.low_score_tracker
+
+      - name: Commit tracking data
+        run: |
+          bash .github/scripts/safe_commit_push.sh \
+            "chore(low-score-tracker): hourly snapshot [skip ci]" \
+            alpha_engine/data/low_score_tracking.json \
+            docs/CHATWITHIT.md
+

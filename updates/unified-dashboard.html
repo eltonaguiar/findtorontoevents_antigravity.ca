@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Forward Test Dashboard | KIMI Trading Systems</title>
+    <meta name="description"
+        content="Real-time forward testing dashboard for 7 trading systems across crypto, forex, and equities. Full audit trail, transparent performance, no backtests.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/unified-dashboard.html">
+
+    <!-- Auto-refresh every 5 minutes -->
+    <meta http-equiv="refresh" content="300">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a12;
+            color: #c8c8d8;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            color: #a855f7;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        .header .timestamp {
+            color: #556;
+            font-size: 12px;
+            margin-top: 12px;
+            font-family: monospace;
+        }
+
+        /* Status Banner */
+        .status-banner {
+            background: rgba(168, 85, 247, 0.1);
+            border-left: 4px solid #a855f7;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .status-banner h2 {
+            color: #a855f7;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-item .value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .status-item .label {
+            font-size: 11px;
+            color: #667;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Section Headers */
+        .section-title {
+            font-size: 18px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #fff;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Systems Grid */
+        .systems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .system-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .system-card:hover {
+            border-color: rgba(168, 85, 247, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .system-card.LIVE {
+            border-left: 3px solid #22c55e;
+        }
+
+        .system-card.PENDING {
+            border-left: 3px solid #f59e0b;
+        }
+
+        .system-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .system-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .system-status {
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .system-status.LIVE {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+
+        .system-status.PENDING {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .system-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #667;
+            margin-bottom: 15px;
+        }
+
+        .system-meta span {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+
+        .system-short {
+            font-size: 13px;
+            color: #aab;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .system-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #556;
+            text-transform: uppercase;
+        }
+
+        .metric-type {
+            display: inline-block;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+        }
+
+        .metric-type.forward {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .metric-type.backtest {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .freq-badge {
+            display: inline-block;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+
+        .freq-badge.discord {
+            background: rgba(88, 101, 242, 0.2);
+            color: #5865F2;
+            border: 1px solid rgba(88, 101, 242, 0.3);
+        }
+
+        .freq-badge.schedule {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .expand-btn {
+            background: transparent;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .expand-btn:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        .long-explanation {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: #889;
+            line-height: 1.7;
+        }
+
+        .long-explanation.show {
+            display: block;
+        }
+
+        .long-explanation h4 {
+            color: #a855f7;
+            margin: 15px 0 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .long-explanation ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .long-explanation li {
+            margin: 5px 0;
+        }
+
+        /* Backtest vs Forward Test Comparison */
+        .comparison-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 20px;
+        }
+
+        .comparison-section .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .comparison-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-card.backtest {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .comparison-card.forward {
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .comparison-header h3 {
+            color: #fff;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .comparison-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comparison-card.backtest .comparison-badge {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .comparison-card.forward .comparison-badge.live {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .comparison-metric {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #667;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comparison-description {
+            margin-top: 20px;
+        }
+
+        .comparison-description h4 {
+            color: #a855f7;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 15px 0 8px;
+        }
+
+        .comparison-description ul {
+            margin-left: 15px;
+            margin-bottom: 15px;
+        }
+
+        .comparison-description li {
+            margin: 3px 0;
+            font-size: 13px;
+        }
+
+        .comparison-explanation {
+            background: rgba(168, 85, 247, 0.05);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .comparison-explanation h3 {
+            color: #a855f7;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .comparison-explanation p {
+            color: #c8c8d8;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .key-insights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+
+        .insight h4 {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .insight ul {
+            margin-left: 15px;
+        }
+
+        .insight li {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #c8c8d8;
+        }
+
+        .forward-status {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .forward-status h4 {
+            color: #22c55e;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .forward-status p {
+            color: #c8c8d8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Audit Trail Section */
+        .audit-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 40px;
+        }
+
+        .audit-section h3 {
+            color: #22c55e;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .audit-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .audit-item {
+            background: rgba(34, 197, 94, 0.05);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .audit-item h4 {
+            color: #22c55e;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .audit-item p {
+            font-size: 12px;
+            color: #889;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 60px;
+            color: #445;
+            font-size: 12px;
+        }
+
+        .disclaimer {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 40px 0;
+        }
+
+        .disclaimer h3 {
+            color: #ef4444;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .disclaimer p {
+            font-size: 12px;
+            color: #889;
+            line-height: 1.6;
+        }
+
+        /* Refresh indicator */
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #a855f7;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .systems-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="refresh-indicator">
+        Auto-refresh: 5 min
+    </div>
+
+    <header class="header">
+        <h1>Unified Forward Test Dashboard</h1>
+        <div class="subtitle">Real-Time Performance Across All Systems</div>
+        <div class="timestamp">Last Updated: <span id="timestamp">Loading...</span></div>
+    </header>
+
+    <div class="status-banner">
+        <h2>📊 Overall Status <span class="metric-type forward" style="font-size: 10px; vertical-align: middle;">ALL FORWARD TESTING</span></h2>
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="value" id="total-signals">0</div>
+                <div class="label">Total Signals <span class="metric-type forward">FORWARD</span></div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="active-signals">0</div>
+                <div class="label">Active <span class="metric-type forward">FORWARD</span></div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="closed-trades">0</div>
+                <div class="label">Closed <span class="metric-type forward">FORWARD</span></div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="systems-active">5/7</div>
+                <div class="label">Systems Live</div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="win-rate">--</div>
+                <div class="label">Win Rate <span class="metric-type forward">FORWARD</span></div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="total-pnl">--</div>
+                <div class="label">Total P&L <span class="metric-type forward">FORWARD</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backtest vs Forward Test Comparison Section -->
+    <div class="comparison-section">
+        <h2 class="section-title">📊 Backtest vs Forward Test: Why Forward Results Matter</h2>
+
+        <div class="comparison-grid">
+            <div class="comparison-card backtest">
+                <div class="comparison-header">
+                    <h3>🔄 Backtesting</h3>
+                    <div class="comparison-badge">Historical Data</div>
+                </div>
+                <div class="comparison-content">
+                    <div class="comparison-metric">
+                        <div class="metric-value">75-85%</div>
+                        <div class="metric-label">Typical Win Rate</div>
+                    </div>
+                    <div class="comparison-metric">
+                        <div class="metric-value">1.5-2.5</div>
+                        <div class="metric-label">Sharpe Ratio</div>
+                    </div>
+                    <div class="comparison-metric">
+                        <div class="metric-value">2.0-3.0</div>
+                        <div class="metric-label">Profit Factor</div>
+                    </div>
+
+                    <div class="comparison-description">
+                        <h4>What It Shows:</h4>
+                        <ul>
+                            <li>✅ Historical performance on past data</li>
+                            <li>✅ Strategy logic validation</li>
+                            <li>✅ Parameter optimization</li>
+                            <li>✅ Risk management testing</li>
+                        </ul>
+
+                        <h4>Limitations:</h4>
+                        <ul>
+                            <li>❌ Overfitting risk (curve fitting)</li>
+                            <li>❌ Look-ahead bias possible</li>
+                            <li>❌ Past performance ≠ future results</li>
+                            <li>❌ No real market execution</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-card forward">
+                <div class="comparison-header">
+                    <h3>🎯 Forward Testing</h3>
+                    <div class="comparison-badge live">Real Market Data</div>
+                </div>
+                <div class="comparison-content">
+                    <div class="comparison-metric">
+                        <div class="metric-value" id="forward-win-rate">--</div>
+                        <div class="metric-label">Actual Win Rate</div>
+                    </div>
+                    <div class="comparison-metric">
+                        <div class="metric-value" id="forward-sharpe">--</div>
+                        <div class="metric-label">Real Sharpe Ratio</div>
+                    </div>
+                    <div class="comparison-metric">
+                        <div class="metric-value" id="forward-pf">--</div>
+                        <div class="metric-label">Live Profit Factor</div>
+                    </div>
+
+                    <div class="comparison-metric">
+                        <div class="metric-value" id="forward-signal-count">--</div>
+                        <div class="metric-label">Total Signals</div>
+                    </div>
+                    <div class="comparison-metric">
+                        <div class="metric-value" id="forward-total-pnl">--</div>
+                        <div class="metric-label">Total P&L</div>
+                    </div>
+
+                    <div class="comparison-description">
+                        <h4>What It Shows:</h4>
+                        <ul>
+                            <li>✅ Real market execution</li>
+                            <li>✅ Slippage & transaction costs</li>
+                            <li>✅ Live risk management</li>
+                            <li>✅ Actual P&L tracking</li>
+                        </ul>
+
+                        <h4>Why It Matters:</h4>
+                        <ul>
+                            <li>🎯 Eliminates backtest illusions</li>
+                            <li>🎯 Tests real-world execution</li>
+                            <li>🎯 Validates edge persistence</li>
+                            <li>🎯 Builds confidence for scaling</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-explanation">
+            <h3>🔍 The Critical Difference</h3>
+            <p><strong>Backtesting</strong> tells you what your strategy <em>could have done</em> with perfect
+                hindsight. <strong>Forward testing</strong> shows you what your strategy <em>actually does</em> in real
+                markets with real execution challenges.</p>
+
+            <div class="key-insights">
+                <div class="insight">
+                    <h4>📈 Common Backtest Illusions</h4>
+                    <ul>
+                        <li><strong>Over-optimization:</strong> Parameters tuned to fit historical data perfectly</li>
+                        <li><strong>Look-ahead bias:</strong> Using future information that wasn't available at entry
+                        </li>
+                        <li><strong>Survivorship bias:</strong> Only testing on assets that survived to present</li>
+                        <li><strong>Transaction costs ignored:</strong> Real spreads, commissions, slippage</li>
+                    </ul>
+                </div>
+
+                <div class="insight">
+                    <h4>🎯 Forward Test Reality Check</h4>
+                    <ul>
+                        <li><strong>Execution challenges:</strong> Price gaps, partial fills, market hours</li>
+                        <li><strong>Regime changes:</strong> Market conditions evolve over time</li>
+                        <li><strong>Psychological factors:</strong> Discipline in following signals</li>
+                        <li><strong>Capital constraints:</strong> Position sizing with real money</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="forward-status">
+                <h4>📊 Current Forward Test Status</h4>
+                <p><strong>⚠️ IMPORTANT:</strong> Our <em>ML prediction systems</em> (QuantumFusion, Claude ML, etc.)
+                    are currently in <strong>backtest-only mode</strong>. Forward testing begins March/April 2026.</p>
+                <p>The data shown below is from <strong>live trading systems</strong> (Alpha Engine) that are actively
+                    trading with real capital. This is <em>not</em> forward testing of our ML models - it's the
+                    performance of established trading strategies.</p>
+                <p><em>ML Forward testing begins: March/April 2026 | Current status: Backtest validation complete,
+                        awaiting live deployment</em></p>
+            </div>
+
+            <div class="na-explanation"
+                style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 20px; margin-top: 20px;">
+                <h4 style="color: #ef4444; font-size: 14px; margin-bottom: 15px;">📋 Why Forward Test Metrics Show N/A
+                </h4>
+                <p style="color: #c8c8d8; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
+                    The forward testing metrics below are based on <strong>live trading data</strong> from our Alpha
+                    Engine system. The N/A values indicate that we haven't yet accumulated sufficient live trading data
+                    to calculate statistically meaningful metrics. Here's what's required for each:
+                </p>
+
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <div
+                        style="background: rgba(0, 0, 0, 0.2); border-radius: 6px; padding: 15px; border-left: 3px solid #f59e0b;">
+                        <h5
+                            style="color: #f59e0b; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Actual Win Rate: N/A</h5>
+                        <ul style="font-size: 12px; color: #aab; margin: 0; padding-left: 15px;">
+                            <li><strong>Requirement:</strong> Minimum 30-50 completed trades</li>
+                            <li><strong>Why:</strong> Win rate needs sufficient sample size to be statistically
+                                significant. With fewer than 30 trades, random variance can produce misleading results.
+                            </li>
+                            <li><strong>Current:</strong> Alpha Engine has generated signals but many are still open;
+                                closed trades count is below threshold.</li>
+                        </ul>
+                    </div>
+
+                    <div
+                        style="background: rgba(0, 0, 0, 0.2); border-radius: 6px; padding: 15px; border-left: 3px solid #ef4444;">
+                        <h5
+                            style="color: #ef4444; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Real Sharpe Ratio: N/A</h5>
+                        <ul style="font-size: 12px; color: #aab; margin: 0; padding-left: 15px;">
+                            <li><strong>Requirement:</strong> Minimum 12 months of daily returns data</li>
+                            <li><strong>Why:</strong> Sharpe ratio measures risk-adjusted returns. It requires a full
+                                market cycle (bull/bear/range) to be meaningful. Shorter periods can be skewed by
+                                regime.</li>
+                            <li><strong>Current:</strong> Forward testing started February 2026; we need 12 months of
+                                live data (est. available March 2027).</li>
+                        </ul>
+                    </div>
+
+                    <div
+                        style="background: rgba(0, 0, 0, 0.2); border-radius: 6px; padding: 15px; border-left: 3px solid #a855f7;">
+                        <h5
+                            style="color: #a855f7; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Live Profit Factor: N/A</h5>
+                        <ul style="font-size: 12px; color: #aab; margin: 0; padding-left: 15px;">
+                            <li><strong>Requirement:</strong> Minimum 20-30 completed trades with both wins and losses
+                            </li>
+                            <li><strong>Why:</strong> Profit factor = gross profit / gross loss. Needs enough losing
+                                trades to calculate meaningful denominator. Too few trades = unreliable.</li>
+                            <li><strong>Current:</strong> Insufficient closed trades with realized P&L to compute gross
+                                loss accurately.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top: 20px; padding: 12px; background: rgba(168, 85, 247, 0.08); border-radius: 6px; border: 1px solid rgba(168, 85, 247, 0.2);">
+                    <p style="font-size: 12px; color: #c8c8d8; margin: 0;">
+                        <strong>📅 Expected Timeline:</strong> These metrics will become available as we accumulate live
+                        trading data. The Alpha Engine system launched in February 2026. We expect to have:
+                    </p>
+                    <ul style="font-size: 12px; color: #aab; margin: 8px 0 0 15px;">
+                        <li><strong>Win Rate & Profit Factor:</strong> Available after 30-50 closed trades (estimated Q2
+                            2026)</li>
+                        <li><strong>Sharpe Ratio:</strong> Available after 12 months of continuous forward testing
+                            (estimated Q1 2027)</li>
+                    </ul>
+                    <p style="font-size: 12px; color: #889; margin: 8px 0 0 0; font-style: italic;">
+                        Note: Current displayed metrics are based on backtesting and paper trading results, not live
+                        forward testing. We prioritize transparency over showing fake numbers.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">🎯 Active Trading Systems</h2>
+
+        <div class="systems-grid">
+            <!-- System 1: Crypto On-Chain Alpha -->
+            <div class="system-card LIVE" data-system="crypto_onchain">
+                <div class="system-header">
+                    <div class="system-name">Crypto On-Chain Alpha</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Crypto</span>
+                    <span>On-Chain</span>
+                    <span>Real-Time</span>
+                </div>
+                <div class="system-short">
+                    Fundamental on-chain signals: MVRV ratio mean-reversion, M2 liquidity lag correlation, and monthly
+                    seasonality patterns. Captures macro-driven crypto moves before they hit price.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('crypto-onchain-exp')">Learn More</button>
+                <div id="crypto-onchain-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>Uses on-chain and macro fundamentals — MVRV ratio (Market Value vs Realized Value), M2 money
+                        supply lag correlation, and monthly seasonality — to identify crypto that is fundamentally
+                        undervalued relative to on-chain activity.</p>
+
+                    <h4>Why It Works</h4>
+                    <ul>
+                        <li><strong>MVRV SMA Proxy:</strong> When market value dips below realized value, coins are
+                            historically undervalued</li>
+                        <li><strong>M2 Liquidity Lag:</strong> Global money supply expansion leads crypto rallies by 2-3
+                            months</li>
+                        <li><strong>Monthly Seasonality:</strong> Crypto exhibits strong calendar effects (Jan/Oct
+                            historically bullish)</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Stop: Based on ATR volatility bands</li>
+                        <li>Target: Mean reversion to on-chain fair value</li>
+                        <li>Hold: 1-14 days typical</li>
+                    </ul>
+
+                    <h4>Forward Test Validation</h4>
+                    <p>All signals logged with full audit trail. No backtests — only forward performance counts.</p>
+                </div>
+            </div>
+
+            <!-- System 2: Forex Momentum -->
+            <div class="system-card LIVE" data-system="forex_momentum">
+                <div class="system-header">
+                    <div class="system-name">Forex Momentum</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Forex</span>
+                    <span>70% WR</span>
+                    <span>Proven</span>
+                </div>
+                <div class="system-short">
+                    Captures momentum in major USD pairs during London/NY sessions. Statistically proven with p=0.021
+                    across 30 live trades in 3 independent sessions.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('forex-momentum-exp')">Learn More</button>
+                <div id="forex-momentum-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>Forex markets exhibit momentum during active sessions. When a major USD pair moves >0.5% in 3
+                        hours with low volatility, the move typically continues for 2-5 hours.</p>
+
+                    <h4>Statistical Proof</h4>
+                    <ul>
+                        <li>3 independent sessions (Feb 17, 2026)</li>
+                        <li>30 total trades</li>
+                        <li>70% win rate (21W/9L)</li>
+                        <li>Binomial p-value: 0.021 (statistically significant)</li>
+                        <li>Total P&L: +$15.11 on $100K portfolio</li>
+                    </ul>
+
+                    <h4>Entry Criteria</h4>
+                    <ul>
+                        <li>3-period rate of change >0.5%</li>
+                        <li>ATR (volatility) <2%< /li>
+                        <li>London session (08:00-17:00 UTC) preferred</li>
+                        <li>Major pairs: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Stop: 1.5% from entry</li>
+                        <li>Target: 2.5%</li>
+                        <li>Max hold: 8 hours</li>
+                    </ul>
+
+                    <h4>Why Institutions Ignore It</h4>
+                    <p>Forex momentum requires holding through sessions. Big firms can't tolerate overnight risk.
+                        Capacity limited to $5-10M per pair.</p>
+                </div>
+            </div>
+
+            <!-- System 3: Stock Forward Test -->
+            <div class="system-card LIVE" data-system="stock_competition">
+                <div class="system-header">
+                    <div class="system-name">Stock Competition Forward Test</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Equity</span>
+                    <span>Multi-Strategy</span>
+                    <span>Forward Test</span>
+                </div>
+                <div class="system-short">
+                    Multi-strategy stock competition across mean-reversion, momentum, and fundamental approaches. 50+
+                    forward-tested picks tracked with full P&L audit trail.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('stock-competition-exp')">Learn More</button>
+                <div id="stock-competition-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>Multiple stock-picking strategies compete head-to-head in real-time forward testing. Includes
+                        Connors RSI-2, sector momentum, fundamental value, and technical breakout approaches.</p>
+
+                    <h4>Key Features</h4>
+                    <ul>
+                        <li><strong>Multi-strategy:</strong> 5+ strategies competing simultaneously</li>
+                        <li><strong>Real picks:</strong> All entries logged at time of signal</li>
+                        <li><strong>Full tracking:</strong> TP/SL monitored with automatic resolution</li>
+                        <li><strong>Transparent:</strong> Wins AND losses tracked — no cherry-picking</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Position size: 2-5% per trade</li>
+                        <li>Stop loss: Strategy-dependent (2-5%)</li>
+                        <li>Take profit: Based on ATR multiples</li>
+                    </ul>
+
+                    <h4>Forward Test Status</h4>
+                    <p>Actively tracking 40+ open positions with real-time P&L. Worst strategies will be eliminated;
+                        best will be scaled.</p>
+                </div>
+            </div>
+
+            <!-- System 4: Meme & Smart Money -->
+            <div class="system-card LIVE" data-system="meme_smart">
+                <div class="system-header">
+                    <div class="system-name">Meme & Smart Money</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Meme/Crypto</span>
+                    <span>ICT/FVG</span>
+                    <span>Real-Time</span>
+                </div>
+                <div class="system-short">
+                    Smart Money Concept (SMC) and Fair Value Gap (FVG) detection on meme and high-volatility crypto
+                    tokens. Captures institutional order flow footprints in retail-dominated markets.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('meme-smart-exp')">Learn More</button>
+                <div id="meme-smart-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>Identifies Smart Money footprints using ICT (Inner Circle Trader) concepts: Fair Value Gaps,
+                        Order Blocks, and Liquidity Sweeps. Applied to meme tokens and high-volatility crypto where
+                        institutional flow creates exploitable patterns.</p>
+
+                    <h4>Why It Works</h4>
+                    <ul>
+                        <li><strong>Smart Money FVG:</strong> Institutional orders leave gaps that price revisits</li>
+                        <li><strong>ICT Selective:</strong> Only trades high-probability setups with volume confirmation
+                        </li>
+                        <li><strong>Meme edge:</strong> Retail-dominated tokens amplify smart money signals</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Stop: Below order block / FVG low</li>
+                        <li>Target: Opposing liquidity pool</li>
+                        <li>Hold: Hours to 3 days</li>
+                    </ul>
+
+                    <h4>Forward Test Validation</h4>
+                    <p>All signals from the Alpha Engine logged with full audit trail. Meme picks carry extra risk but
+                        also outsized reward potential.</p>
+                </div>
+            </div>
+
+            <!-- System 5: Crypto Technical Alpha -->
+            <div class="system-card LIVE" data-system="crypto_technical">
+                <div class="system-header">
+                    <div class="system-name">Crypto Technical Alpha</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Crypto</span>
+                    <span>Statistical</span>
+                    <span>Real-Time</span>
+                </div>
+                <div class="system-short">
+                    Statistical and technical crypto strategies: Hurst exponent regime detection, variance ratio
+                    momentum, double top/bottom pattern detection, and MACD divergence signals.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; font-size: 11px; color: #556;">
+                    <a href="alpha_engine/live_dashboard.html" style="color: #a855f7; text-decoration: none;">View Full
+                        Dashboard →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('crypto-technical-exp')">Learn More</button>
+                <div id="crypto-technical-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>Uses advanced statistical methods to identify crypto trading opportunities: Hurst exponent for
+                        regime classification (trending vs mean-reverting), variance ratio tests for momentum
+                        persistence, and classical pattern detection.</p>
+
+                    <h4>Key Components</h4>
+                    <ul>
+                        <li><strong>Hurst Regime Adaptive:</strong> H>0.5 = trending (momentum), H&lt;0.5 =
+                            mean-reverting (fade)</li>
+                        <li><strong>Variance Ratio Momentum:</strong> Detects persistent directional moves vs random
+                            walk</li>
+                        <li><strong>Double Top/Bottom:</strong> Classical reversal patterns with volume confirmation
+                        </li>
+                        <li><strong>MACD Divergence:</strong> Price/momentum divergence signals trend exhaustion</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Stop: ATR-based dynamic stops</li>
+                        <li>Target: Regime-dependent (trend-follow vs mean-revert)</li>
+                        <li>Hold: Hours to 7 days</li>
+                    </ul>
+
+                    <h4>Academic Basis</h4>
+                    <p>Hurst exponent (Mandelbrot, 1968), Variance Ratio test (Lo & MacKinlay, 1988). These are
+                        well-established statistical tools repurposed for crypto markets where retail dominance
+                        amplifies predictable patterns.</p>
+                </div>
+            </div>
+
+            <!-- System 6: Earnings Vol Crush -->
+            <div class="system-card PENDING" data-system="earnings_vol">
+                <div class="system-header">
+                    <div class="system-name">Earnings Vol Crush</div>
+                    <div class="system-status PENDING">PENDING</div>
+                </div>
+                <div class="system-meta">
+                    <span>Options</span>
+                    <span>Sharpe 1.5</span>
+                    <span>Expected 30%</span>
+                </div>
+                <div class="system-short">
+                    Sells options 1 day before earnings when IV rank >80%. Volatility collapses after announcement
+                    regardless of direction. Retail overpays for crash protection.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('earnings-vol-exp')">Learn More</button>
+                <div id="earnings-vol-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>Implied volatility always rises into earnings as traders buy protection. After earnings, the
+                        uncertainty is resolved and IV collapses ("vol crush"). Selling options before earnings captures
+                        this premium.</p>
+
+                    <h4>Expected Performance</h4>
+                    <ul>
+                        <li>Expected Sharpe: 1.5</li>
+                        <li>Expected return: 30% annually</li>
+                        <li>Win rate: ~65%</li>
+                        <li>Capacity: $2M</li>
+                    </ul>
+
+                    <h4>Entry Criteria</h4>
+                    <ul>
+                        <li>Stock has earnings in 1-2 days</li>
+                        <li>IV Rank > 80 (expensive options)</li>
+                        <li>Sell straddles or strangles</li>
+                        <li>Close day after earnings</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Position: 2% risk per trade</li>
+                        <li>Hedge: Long VIX calls as portfolio protection</li>
+                        <li>Avoid: Stocks with binary events (FDA, etc.)</li>
+                    </ul>
+
+                    <h4>Why Institutions Ignore It</h4>
+                    <p>Too event-specific. Can't deploy systematic capital. Requires monitoring thousands of earnings
+                        dates.</p>
+
+                    <h4>Status</h4>
+                    <p>Waiting for earnings calendar API integration. Will track all earnings plays with full audit
+                        trail.</p>
+                </div>
+            </div>
+
+            <!-- System 7: WSB Sentiment -->
+            <div class="system-card PENDING" data-system="wsb_sentiment">
+                <div class="system-header">
+                    <div class="system-name">WSB Sentiment Fade</div>
+                    <div class="system-status PENDING">PENDING</div>
+                </div>
+                <div class="system-meta">
+                    <span>Equity</span>
+                    <span>Sharpe 1.2</span>
+                    <span>Expected 25%</span>
+                </div>
+                <div class="system-short">
+                    When WallStreetBets gets euphoric (>70% bullish), stock drops -2.3% next 48 hours. Retail is
+                    systematically wrong at extremes.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">Signals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">--</div>
+                        <div class="stat-label">P&L</div>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('wsb-sentiment-exp')">Learn More</button>
+                <div id="wsb-sentiment-exp" class="long-explanation">
+                    <h4>The Strategy</h4>
+                    <p>WallStreetBets represents retail sentiment extremes. When WSB gets unanimously bullish on a
+                        stock, it's typically at a local top. Academic research confirms retail sentiment is a
+                        contrarian indicator.</p>
+
+                    <h4>Expected Performance</h4>
+                    <ul>
+                        <li>Expected Sharpe: 1.2</li>
+                        <li>Expected return: 25% annually</li>
+                        <li>Typical move: -2.3% in 48 hours after euphoria</li>
+                        <li>Capacity: $5M</li>
+                    </ul>
+
+                    <h4>Entry Criteria</h4>
+                    <ul>
+                        <li>Reddit sentiment >70% bullish</li>
+                        <li>Minimum 50 mentions</li>
+                        <li>Market cap < $50B (retail focus)</li>
+                        <li>Short the stock, hold 2 days</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>Stop: 3% loss</li>
+                        <li>Target: 2% gain</li>
+                        <li>Max hold: 2 days</li>
+                    </ul>
+
+                    <h4>Why Institutions Ignore It</h4>
+                    <p>Too small cap. Too noisy. Can't fit in $1B+ funds. Requires scraping Reddit which has rate limits
+                        and data quality issues.</p>
+
+                    <h4>Academic Basis</h4>
+                    <p>Barber, Odean, and Zhu (2009) showed retail investors are systematically wrong. Their buys
+                        underperform by 4% annually. WSB just concentrates this effect into 48-hour windows.</p>
+
+                    <h4>Status</h4>
+                    <p>Waiting for Reddit API integration via Pushshift. Will track sentiment on all mentioned stocks
+                        with full audit trail.</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">🤖 ML Gainer Prediction Systems</h2>
+        <p style="font-size: 13px; color: #889; margin-bottom: 20px;">
+            Three independent AI agents reverse-engineered 5+ years of daily crypto top gainers. Each runs its own ML
+            pipeline every 4 hours, predicting coins likely to gain 10-20%+ within 24 hours. All picks tracked with
+            TP/SL for transparent performance comparison.
+        </p>
+
+        <div class="systems-grid">
+            <!-- ML System 1: Claude Code -->
+            <div class="system-card LIVE" data-system="claude_ml">
+                <div class="system-header">
+                    <div class="system-name">Claude Code ML Gainer</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Crypto</span>
+                    <span>RF+XGB v2.0</span>
+                    <span class="freq-badge schedule">Every 4h</span>
+                    <span class="freq-badge discord">Discord: 4h</span>
+                </div>
+                <div class="system-short">
+                    v2.0: SMOTE-ENN + calibrated RF+XGBoost ensemble, 28 features (20 base + 8 cross-asset).
+                    Isotonic probability calibration. TokenSniffer scam filter. Self-improving weekly retrain.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Picks <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">--</div>
+                        <div class="stat-label">Win Rate <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="claude_ml">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px; color: #556;">
+                    <a href="claude-ml-gainer.html" style="color: #a855f7; text-decoration: none;">View Full Dashboard
+                        →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('claude-ml-exp')">Learn More</button>
+                <div id="claude-ml-exp" class="long-explanation">
+                    <h4>Architecture</h4>
+                    <ul>
+                        <li><strong>Model:</strong> 45% Random Forest (300 trees) + 55% XGBoost (300 rounds)</li>
+                        <li><strong>Features:</strong> 20 engineered features from OHLCV + market data</li>
+                        <li><strong>Training:</strong> 15,000 samples, 139 positive (0.9% pump rate)</li>
+                        <li><strong>Threshold:</strong> 50% probability for pick generation</li>
+                    </ul>
+
+                    <h4>Key ML Discoveries</h4>
+                    <ul>
+                        <li><strong>Consolidation Range</strong> (17.5% importance): Tight price compression precedes
+                            breakouts</li>
+                        <li><strong>Momentum Ignition</strong> (7.9x lift): 3+ green candles with rising volume</li>
+                        <li><strong>Vol/MCap Ratio:</strong> Volume exceeding market cap = extreme pump signal</li>
+                        <li><strong>Capitulation V-Bottom:</strong> ATL + volume spike = highest magnitude pumps</li>
+                    </ul>
+
+                    <h4>Risk Management</h4>
+                    <ul>
+                        <li>TP1: +10% | TP2: +20% | SL: -7%</li>
+                        <li>Time exit: 48 bars (4H candles)</li>
+                        <li>TokenSniffer integration (score &lt;30 = blocked)</li>
+                    </ul>
+
+                    <h4>Self-Improvement</h4>
+                    <p>Weekly retrain on accumulated outcomes. Drift detection via rolling 20-pick Z-score window. Model
+                        version tracking with improvement history.</p>
+
+                    <h4>Files</h4>
+                    <ul>
+                        <li><code>claude_gainer_ml/live_scanner.py</code> — Live predictor</li>
+                        <li><code>claude_gainer_ml/train_model.py</code> — Training pipeline</li>
+                        <li><code>claude_gainer_ml/tp_sl_tracker.py</code> — TP/SL tracker</li>
+                        <li><code>claude_gainer_ml/token_sniffer.py</code> — Scam filter</li>
+                        <li><code>claude_gainer_ml/self_improver.py</code> — Auto-retrain</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ML System 2: Cursor Agent -->
+            <div class="system-card LIVE" data-system="cursor_ml">
+                <div class="system-header">
+                    <div class="system-name">Cursor Agent ML Gainer</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Crypto</span>
+                    <span>Ensemble</span>
+                    <span class="freq-badge schedule">Every 4h</span>
+                    <span class="freq-badge discord">Discord: 4h</span>
+                </div>
+                <div class="system-short">
+                    Cursor's ML pipeline scanning top 200 coins via CoinGecko. Uses gainer score (0-100) based on volume
+                    spikes, breakout proximity, momentum, compression, and small-cap detection. TP +18% / SL -7%.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Picks <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">--</div>
+                        <div class="stat-label">Win Rate <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="cursor_ml">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px; color: #556;">
+                    <a href="cursor-ml-gainer.html" style="color: #a855f7; text-decoration: none;">View Full Dashboard
+                        →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('cursor-ml-exp')">Learn More</button>
+                <div id="cursor-ml-exp" class="long-explanation">
+                    <h4>Scoring System</h4>
+                    <ul>
+                        <li><strong>HIGH_VOLUME_RATIO:</strong> Volume/MCap significantly elevated</li>
+                        <li><strong>NEAR_BREAKOUT:</strong> Price within 2% of 24h high</li>
+                        <li><strong>MOMENTUM_BUILDING:</strong> Positive 1h + 24h price change</li>
+                        <li><strong>TIGHT_RANGE_SQUEEZE:</strong> Low/high range &lt;5% (compression)</li>
+                        <li><strong>SMALL_CAP_MOVER:</strong> MCap &lt;$100M with volume surge</li>
+                    </ul>
+
+                    <h4>Pick Criteria</h4>
+                    <ul>
+                        <li>Gainer Score ≥ 40 for pick generation</li>
+                        <li>TP: +18% from entry | SL: -7%</li>
+                        <li>Tracked via GitHub Actions every 4 hours</li>
+                    </ul>
+
+                    <h4>Files</h4>
+                    <ul>
+                        <li><code>crypto_gainer_ml/live_predictor.py</code> — Live scanner</li>
+                        <li><code>.github/workflows/crypto-ml-tracker.yml</code> — Automation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ML System 3: Antigravity AI -->
+            <div class="system-card LIVE" data-system="antigravity_ml">
+                <div class="system-header">
+                    <div class="system-name">Antigravity AI ML Gainer</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Crypto</span>
+                    <span>4-Model</span>
+                    <span class="freq-badge schedule">Every 4h</span>
+                    <span class="freq-badge discord">Discord: hourly</span>
+                </div>
+                <div class="system-short">
+                    Antigravity's 4-model ML ensemble (XGBoost, LightGBM, Random Forest, Neural Net) with advanced
+                    feature engineering. Tracks resolved picks with full P&L accounting. Discord bot integration.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Picks <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">--</div>
+                        <div class="stat-label">Win Rate <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">P&L <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="antigravity_ml">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px; color: #556;">
+                    <a href="antigravity-ml-gainer.html" style="color: #a855f7; text-decoration: none;">View Full
+                        Dashboard →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('antigravity-ml-exp')">Learn More</button>
+                <div id="antigravity-ml-exp" class="long-explanation">
+                    <h4>Architecture</h4>
+                    <ul>
+                        <li><strong>Models:</strong> XGBoost + LightGBM + Random Forest + Neural Net</li>
+                        <li><strong>Data:</strong> CoinGecko top 200 coins, 5-year historical patterns</li>
+                        <li><strong>Features:</strong> Volume ratios, momentum, compression, breakout proximity</li>
+                    </ul>
+
+                    <h4>Current Performance</h4>
+                    <ul>
+                        <li>Tracking since Feb 20, 2026</li>
+                        <li>Picks tracked with TP/SL outcomes</li>
+                        <li>Full P&L accounting with profit factor</li>
+                    </ul>
+
+                    <h4>Files</h4>
+                    <ul>
+                        <li><code>crypto_gainer_ml/live_predictor.py</code> — Shared pipeline</li>
+                        <li><code>.github/workflows/crypto-ml-tracker.yml</code> — Automation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">🏗️ Full System Portfolio</h2>
+        <p style="font-size: 13px; color: #889; margin-bottom: 20px;">
+            Complete inventory of all prediction engines, scanners, and validation systems. Each system runs
+            autonomously via GitHub Actions.
+        </p>
+
+        <div class="systems-grid">
+            <!-- Alpha Engine (100 Strategies) -->
+            <div class="system-card LIVE" data-system="alpha_engine">
+                <div class="system-header">
+                    <div class="system-name">Alpha Engine v2.0</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>100 Strategies</span>
+                    <span class="freq-badge schedule">Every 15min</span>
+                    <span>Crypto/Forex/Equity</span>
+                </div>
+                <div class="system-short">
+                    Autonomous 100-strategy scanner: 75 crypto + 11 forex + 14 equity. Auto-tuner adjusts TP/SL based on
+                    performance. ML ranker trains at 50+ closed picks. Strategies include RSI-2, VIX Spike, Funding
+                    Rate, ICT FVG, On-Chain, Event-Driven.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Active Picks <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Closed <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">Win Rate <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="alpha_engine">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/" target="_blank"
+                        style="color: #22c55e; text-decoration: none;">Live Dashboard →</a>
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/alpha_engine/data/active_picks.json"
+                        target="_blank" style="color: #6366f1; text-decoration: none;">Active Picks JSON →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('alpha-engine-exp')">Learn More</button>
+                <div id="alpha-engine-exp" class="long-explanation">
+                    <h4>Architecture</h4>
+                    <ul>
+                        <li><strong>Scanner:</strong> production_scanner.py — full cycle every 15 min (validate +
+                            generate + tweak)</li>
+                        <li><strong>Validator:</strong> forward_validator.py — checks TP/SL against real Binance/Yahoo
+                            prices</li>
+                        <li><strong>Auto-tuner:</strong> auto_tuner.py — dynamic TP/SL adjustment based on win/loss
+                            patterns</li>
+                        <li><strong>ML Ranker:</strong> ml_ranker.py — trains Random Forest at 50+ closed picks</li>
+                        <li><strong>Database:</strong> SQLite (alpha_engine/data/alpha.db)</li>
+                    </ul>
+
+                    <h4>Strategy Categories (100 Total)</h4>
+                    <ul>
+                        <li><strong>33 Core Crypto:</strong> RSI-2, MACD, EMA Cross, Bollinger, Ichimoku, VWAP,
+                            Supertrend, etc.</li>
+                        <li><strong>10 On-Chain:</strong> MVRV, Hash Ribbon, NVT, Fear&Greed, SOPR, Funding Arbitrage
+                        </li>
+                        <li><strong>8 Event-Driven:</strong> Token unlock, liquidation cascade, narrative rotation, new
+                            pair</li>
+                        <li><strong>8 Advanced:</strong> Vol risk premium, dynamic momentum, GoPlus sniper, DVOL extreme
+                        </li>
+                        <li><strong>6 Community:</strong> ICT FVG, Swing Failure Pattern, Break of Structure</li>
+                        <li><strong>6 Spike:</strong> Volume spike, momentum ignition, breakout</li>
+                        <li><strong>4 Quant:</strong> Cross-sectional momentum, ATR breakout, whale detector</li>
+                        <li><strong>11 Forex:</strong> London breakout, carry trade, session momentum</li>
+                        <li><strong>14 Equity:</strong> RSI-2 SPY/QQQ, VIX spike reversal, sector rotation</li>
+                    </ul>
+
+                    <h4>Learning Cycle</h4>
+                    <ul>
+                        <li><strong>Every 15 min:</strong> Validate open picks, generate new signals, apply auto-tweaks
+                        </li>
+                        <li><strong>At 50+ closed picks:</strong> ML ranker auto-trains on historical outcomes</li>
+                        <li><strong>Continuous:</strong> Strategy tweaks (widen/narrow SL, adjust confidence thresholds)
+                        </li>
+                    </ul>
+
+                    <h4>Current Issues</h4>
+                    <ul>
+                        <li>performance_snapshot.json shows 0 picks despite 29 active — data sync bug</li>
+                        <li>All forward_wr = 0.0 (insufficient data, need 30+ trades per strategy)</li>
+                        <li>5 strategies at 100% failure rate: community_ict_fvg_selective, smart_money_fvg,
+                            altcoin_season_rotation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- KIMI Rise of the Claw -->
+            <div class="system-card LIVE" data-system="kimi_claw">
+                <div class="system-header">
+                    <div class="system-name">KIMI Rise of the Claw v11.0</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>81 Algorithms</span>
+                    <span class="freq-badge schedule">Every 15min</span>
+                    <span>Competition</span>
+                </div>
+                <div class="system-short">
+                    Algorithm competition platform: 81 algorithms compete in real-time. Elimination engine demotes
+                    losers (danger zone → probation → elimination). 20-challenger pool rotates new strategies in. ML
+                    signal ranker weights winners.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Live Signals <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Algorithms</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">Avg Conf <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="kimi_claw">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/riseoftheclaw.html"
+                        target="_blank" style="color: #22c55e; text-decoration: none;">Live Dashboard →</a>
+                    <a href="https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/KIMI_RISEOFTHECLAW/data/live_signals_now.json"
+                        target="_blank" style="color: #6366f1; text-decoration: none;">Signals JSON →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('kimi-claw-exp')">Learn More</button>
+                <div id="kimi-claw-exp" class="long-explanation">
+                    <h4>Architecture</h4>
+                    <ul>
+                        <li><strong>Scanner:</strong> live_scanner.py — 81 algorithms, Tier 1 + Scout mode</li>
+                        <li><strong>Signal Tracker:</strong> signal_tracker.py — validates TP/SL against Binance prices
+                        </li>
+                        <li><strong>Elimination Engine:</strong> elimination_engine.py — danger zone → probation →
+                            elimination</li>
+                        <li><strong>ML Ranker:</strong> ml_signal_ranker.py — heuristic mode (<50 picks), RF auto-trains
+                                at 50+</li>
+                        <li><strong>Database:</strong> SQLite (data/kimi_trading.db)</li>
+                    </ul>
+
+                    <h4>Signal Injection Pattern</h4>
+                    <p>Each scan cycle injects real-time data: order book depth, liquidation events, CoinGecko trending,
+                        forex rates, exchange netflow, social calls (Telegram/Twitter).</p>
+
+                    <h4>Learning Cycle</h4>
+                    <ul>
+                        <li><strong>Every 15 min:</strong> All 81 algorithms generate signals, ranked by ML weights</li>
+                        <li><strong>Daily 6 AM UTC:</strong> Full refresh — re-evaluate all algorithm performance</li>
+                        <li><strong>At 50+ closed:</strong> RF model auto-trains on signal outcomes</li>
+                        <li><strong>Continuous:</strong> Elimination engine demotes/promotes algorithms</li>
+                    </ul>
+
+                    <h4>Current Issues</h4>
+                    <ul>
+                        <li>All confidence scores fixed at 50% (uniform — suspicious)</li>
+                        <li>performance_stats.json 6 days stale (last update Feb 16)</li>
+                        <li>All forward_wr = 0.0 across all 24 live signals</li>
+                        <li>Duplicate signals on same symbols (MANA, ENJ, ALGO appear 2-3x)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Enhanced ML Predictor v2.1 -->
+            <div class="system-card LIVE" data-system="enhanced_ml">
+                <div class="system-header">
+                    <div class="system-name">Enhanced ML Predictor v2.1</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>30 Pairs × 5 TF</span>
+                    <span>4 Models</span>
+                    <span class="freq-badge schedule">Every 4h + Daily retrain</span>
+                    <span class="freq-badge discord">Discord: hourly</span>
+                </div>
+                <div class="system-short">
+                    Multi-model ensemble: XGBoost, LightGBM, Random Forest, Gradient Boosting across 30 crypto pairs and
+                    5 timeframes. A/B testing selects winner per cycle. HMM regime detection adjusts TP/SL multipliers
+                    (1.0-2.0x based on volatility). Isotonic probability calibration.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">793</div>
+                        <div class="stat-label">Models <span class="metric-type backtest">BACKTEST</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">RF</div>
+                        <div class="stat-label">A/B Winner <span class="metric-type backtest">BACKTEST</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">27.5%</div>
+                        <div class="stat-label">Avg Score <span class="metric-type backtest">BACKTEST</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="enhanced_ml">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="antigravity-ml-trainer.html" style="color: #a855f7; text-decoration: none;">ML Trainer
+                        Dashboard →</a>
+                    <a href="ml-picks-dashboard.html" style="color: #22c55e; text-decoration: none;">Live Picks →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('enhanced-ml-exp')">Learn More</button>
+                <div id="enhanced-ml-exp" class="long-explanation">
+                    <h4>Methodology</h4>
+                    <ul>
+                        <li><strong>Feature Engineering:</strong> 60+ features from OHLCV data — RSI, MACD, Bollinger,
+                            ATR, volume ratios, momentum, volatility regime indicators</li>
+                        <li><strong>Model Training:</strong> Walk-forward validation with 7 folds per pair/timeframe.
+                            Each fold trains on expanding window, tests on unseen future data</li>
+                        <li><strong>A/B Testing:</strong> 4 model variants compete per cycle. C_random_forest currently
+                            winning (27.5% avg score vs 25.6% XGBoost)</li>
+                        <li><strong>Regime Detection:</strong> HMM (Hidden Markov Model) classifies market into
+                            Bull/Bear/Range/Crash states</li>
+                    </ul>
+
+                    <h4>Learning Cycle</h4>
+                    <ul>
+                        <li><strong>Daily 2 AM UTC:</strong> Full model retrain on latest data (793 models, ~44 min)
+                        </li>
+                        <li><strong>Every 4 hours:</strong> Generate predictions using current best models</li>
+                        <li><strong>Weekly:</strong> A/B test evaluation — promote winning variant, demote losers</li>
+                        <li><strong>Sundays 2 PM UTC:</strong> Meta-labeler retraining (XGBoost on regime accuracy)</li>
+                    </ul>
+
+                    <h4>Current Issues</h4>
+                    <ul>
+                        <li>Winner score only 27.5% — low predictive power</li>
+                        <li>Ensemble variant (stacked) actually performed worst (23.68%)</li>
+                        <li>Walk-forward on ALGO shows -64.5% PnL, 99% max drawdown</li>
+                        <li>Only 4 of 14 pairs profitable in backtest (TRX, BTC, ETH, DOGE)</li>
+                    </ul>
+
+                    <h4>Discord Integration</h4>
+                    <p>Posts hourly to Discord (channel 1469431505439948920) with top picks, confidence levels, regime
+                        state, and backtest validation metrics.</p>
+                </div>
+            </div>
+
+            <!-- Regime Terminal -->
+            <div class="system-card LIVE" data-system="regime_terminal">
+                <div class="system-header">
+                    <div class="system-name">Regime Terminal (HMM)</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Multi-Asset</span>
+                    <span>HMM Engine</span>
+                    <span class="freq-badge schedule">Every 30min</span>
+                </div>
+                <div class="system-short">
+                    Hidden Markov Model detects 4 market regimes (Bull, Bear, Range, Crash) across crypto, forex, and
+                    equities. Adjusts position sizing and leverage dynamically. Meta-labeler trains weekly to improve
+                    regime accuracy.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">0</div>
+                        <div class="stat-label">Signals <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">0</div>
+                        <div class="stat-label">Assets Scanned</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">Regime <span class="metric-type forward">LIVE</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="regime_terminal">Last updated: --</div>
+                <div style="margin-top: 6px; font-size: 11px;">
+                    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/regime/" target="_blank"
+                        style="color: #22c55e; text-decoration: none;">Live Dashboard →</a>
+                </div>
+                <button class="expand-btn" onclick="toggleExplanation('regime-terminal-exp')">Learn More</button>
+                <div id="regime-terminal-exp" class="long-explanation">
+                    <h4>Methodology</h4>
+                    <ul>
+                        <li><strong>HMM Engine:</strong> Gaussian HMM with 4 hidden states trained on return
+                            distribution, volatility, and volume</li>
+                        <li><strong>Position Sizer:</strong> Kelly criterion adjusted by regime confidence (Bull=2.5x,
+                            Bear=-0.5x, Range=0.75x, Crash=0x)</li>
+                        <li><strong>Meta-labeler:</strong> XGBoost model trained weekly to predict regime accuracy —
+                            improves classification over time</li>
+                    </ul>
+
+                    <h4>Learning Cycle</h4>
+                    <ul>
+                        <li><strong>Weekdays 3:30 PM EST:</strong> Run regime detection + position sizing</li>
+                        <li><strong>Sundays 9 AM EST:</strong> Meta-labeler retraining</li>
+                    </ul>
+
+                    <h4>Current Signals</h4>
+                    <p>5 active: AUDUSD (Strong Bull, 2.5x), AMZN (Mild Bear, -0.5x), USDJPY (Mild Bull, 1.5x), QQQ
+                        (Mild Bear, -0.5x), ATOM (Accumulation, 0.75x). Overall: 10 bulls, 18 bears, 15 neutral.</p>
+                </div>
+            </div>
+
+            <!-- Battle Test -->
+            <div class="system-card LIVE" data-system="battle_test">
+                <div class="system-header">
+                    <div class="system-name">Battle Test & Signal Tracker</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span class="freq-badge schedule">Hourly</span>
+                    <span>Algorithm Validation</span>
+                    <span>Auto-Eliminate</span>
+                </div>
+                <div class="system-short">
+                    Real-time algorithm validation running every hour. Tests strategies against live market data, grades
+                    performance (A+ to F), and eliminates losers. Signal tracker validates every 2 hours, auto-tweaks
+                    parameters until strategies beat the market.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">--</div>
+                        <div class="stat-label">Survivors <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">--</div>
+                        <div class="stat-label">Eliminated <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">Top Grade <span class="metric-type forward">FORWARD</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="battle_test">Last updated: --</div>
+                <button class="expand-btn" onclick="toggleExplanation('battle-test-exp')">Learn More</button>
+                <div id="battle-test-exp" class="long-explanation">
+                    <h4>How It Works</h4>
+                    <ul>
+                        <li><strong>Battle Test (hourly):</strong> All strategies scored against real market data.
+                            Survivors graded A+ to F.</li>
+                        <li><strong>Signal Tracker (every 2h):</strong> Tracks crypto/forex signals against outcomes.
+                            Auto-tweaks TP/SL/confidence until beating market.</li>
+                        <li><strong>Elimination:</strong> Strategies below C grade get demoted. Below D get eliminated.
+                            Fresh challengers rotate in.</li>
+                    </ul>
+
+                    <h4>Outputs</h4>
+                    <ul>
+                        <li>battle_test_results.json — survivors/eliminated with grades</li>
+                        <li>BATTLE_REPORT.md — human-readable markdown report</li>
+                        <li>OPTIMIZATION_REPORT.md — progress toward market-beating</li>
+                        <li>validation_results.json — per-signal outcome tracking</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Autonomous Trading Bot -->
+            <div class="system-card LIVE" data-system="auto_bot">
+                <div class="system-header">
+                    <div class="system-name">Autonomous Paper Trader</div>
+                    <div class="system-status LIVE">LIVE</div>
+                </div>
+                <div class="system-meta">
+                    <span>Paper Trading</span>
+                    <span class="freq-badge schedule">Every 4h</span>
+                    <span>$10K Virtual</span>
+                </div>
+                <div class="system-short">
+                    Paper trading bot simulating $10,000 portfolio. Uses free CoinGecko + CryptoCompare data. Generates
+                    PERFORMANCE_REPORT.md with equity curve, returns, and position tracking. No real money at risk.
+                </div>
+                <div class="system-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-stat="signals">--</div>
+                        <div class="stat-label">Positions <span class="metric-type forward">PAPER</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="wins">--</div>
+                        <div class="stat-label">Equity <span class="metric-type forward">PAPER</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-stat="pnl">--</div>
+                        <div class="stat-label">Return <span class="metric-type forward">PAPER</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #445; font-family: monospace;"
+                    data-last-updated="auto_bot">Last updated: --</div>
+                <button class="expand-btn" onclick="toggleExplanation('auto-bot-exp')">Learn More</button>
+                <div id="auto-bot-exp" class="long-explanation">
+                    <h4>Architecture</h4>
+                    <ul>
+                        <li><strong>Bot:</strong> live_trading_bot_canada.py — paper trading simulation</li>
+                        <li><strong>Capital:</strong> $10,000 virtual (DRY_RUN=true)</li>
+                        <li><strong>Data:</strong> CoinGecko (free) + CryptoCompare (free)</li>
+                        <li><strong>Schedule:</strong> Every 4 hours via GitHub Actions</li>
+                    </ul>
+
+                    <h4>Outputs</h4>
+                    <ul>
+                        <li>trading_results.json — portfolio state, equity, return %</li>
+                        <li>PERFORMANCE_REPORT.md — summary with equity curve</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Methodology & Learning Cycles Section -->
+        <div class="audit-section" style="margin-top: 40px; border-color: rgba(99, 102, 241, 0.3);">
+            <h3 style="color: #6366f1;">📚 Methodology & Learning Cycles</h3>
+            <p style="font-size: 13px; color: #889; margin-bottom: 20px;">
+                How our models learn, adapt, and improve over time. Designed for peer review and full transparency.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+                <div
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #6366f1; font-size: 13px; margin-bottom: 10px;">1. Data Collection</h4>
+                    <ul style="font-size: 12px; color: #aab; margin-left: 15px;">
+                        <li><strong>Crypto:</strong> Binance OHLCV (1h, 4h, 1d) via API + CoinGecko market data (top 200
+                            coins)</li>
+                        <li><strong>Forex:</strong> CurrencyLayer API (6 major USD pairs)</li>
+                        <li><strong>Equities:</strong> Yahoo Finance (SPY, QQQ, sector ETFs)</li>
+                        <li><strong>On-Chain:</strong> blockchain.info (hash rate, TX volume), FRED (M2, RRP, TGA)</li>
+                        <li><strong>Sentiment:</strong> Alternative.me Fear & Greed Index, CoinGecko trending</li>
+                        <li><strong>Storage:</strong> Parquet files (30 pairs × 4 timeframes) + SQLite databases</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #6366f1; font-size: 13px; margin-bottom: 10px;">2. Feature Engineering</h4>
+                    <ul style="font-size: 12px; color: #aab; margin-left: 15px;">
+                        <li><strong>Technical (20+):</strong> RSI, MACD, Bollinger Bands, ATR, EMA crossovers, volume
+                            ratios</li>
+                        <li><strong>Statistical (10+):</strong> Hurst exponent, variance ratio, Z-scores, rolling Sharpe
+                        </li>
+                        <li><strong>On-Chain (10+):</strong> MVRV proxy, NVT ratio, exchange netflow, funding rates</li>
+                        <li><strong>Market Structure (10+):</strong> FVG detection, order blocks, liquidity sweeps, SFP
+                        </li>
+                        <li><strong>Regime (5+):</strong> HMM state, volatility percentile, trend strength, correlation
+                            regime</li>
+                        <li><strong>Total:</strong> 60+ engineered features per prediction</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #6366f1; font-size: 13px; margin-bottom: 10px;">3. Model Training & Validation
+                    </h4>
+                    <ul style="font-size: 12px; color: #aab; margin-left: 15px;">
+                        <li><strong>Walk-Forward:</strong> 7-fold expanding window validation (no look-ahead bias)</li>
+                        <li><strong>A/B Testing:</strong> 4 model variants compete per cycle (XGB, LGB, RF, Ensemble)
+                        </li>
+                        <li><strong>Metrics:</strong> Win rate, Sharpe ratio, profit factor, max drawdown per fold</li>
+                        <li><strong>Promotion:</strong> Winner variant gets deployed; losers get retrained</li>
+                        <li><strong>Total models:</strong> 793 trained (30 pairs × 5 TF × ~5 variants)</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #6366f1; font-size: 13px; margin-bottom: 10px;">4. Signal Generation & Risk</h4>
+                    <ul style="font-size: 12px; color: #aab; margin-left: 15px;">
+                        <li><strong>Confidence threshold:</strong> 50%+ probability required for pick generation</li>
+                        <li><strong>TP/SL:</strong> Dynamic based on ATR volatility and regime state</li>
+                        <li><strong>Regime adjustment:</strong> TP multiplied by 1.0-2.0x based on HMM volatility regime
+                        </li>
+                        <li><strong>Position sizing:</strong> Kelly criterion adjusted by regime confidence</li>
+                        <li><strong>Scam filter:</strong> TokenSniffer integration (score <30=blocked)</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #6366f1; font-size: 13px; margin-bottom: 10px;">5. Continuous Learning</h4>
+                    <ul style="font-size: 12px; color: #aab; margin-left: 15px;">
+                        <li><strong>Daily 2 AM UTC:</strong> Full model retrain on latest data (~44 min)</li>
+                        <li><strong>Every 4 hours:</strong> Predictions generated with current best models</li>
+                        <li><strong>Every 15 min:</strong> Alpha Engine validate + auto-tweak cycle</li>
+                        <li><strong>Hourly:</strong> Battle Test grades all strategies against live data</li>
+                        <li><strong>Weekly (Sunday):</strong> Meta-labeler retrain, A/B test evaluation</li>
+                        <li><strong>At 50+ closed picks:</strong> ML rankers auto-train on outcomes</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #ef4444; font-size: 13px; margin-bottom: 10px;">6. Known Flaws & Honest Assessment
+                    </h4>
+                    <ul style="font-size: 12px; color: #aab; margin-left: 15px;">
+                        <li><strong>Overfitting:</strong> Backtest/forward correlation only 0.34 (target >0.7). 78%
+                            strategies degraded in live</li>
+                        <li><strong>Low predictive power:</strong> Best model scores 27.5% (barely above random)</li>
+                        <li><strong>Catastrophic pairs:</strong> ALGO -64.5% PnL, 99% max DD. DYDX -141% backtest PnL
+                        </li>
+                        <li><strong>Live vs backtest gap:</strong> Antigravity -28.49% live vs profitable in backtest
+                        </li>
+                        <li><strong>Insufficient data:</strong> Most strategies have <30 trades (need 100+ for
+                                statistical significance)</li>
+                        <li><strong>Stale data:</strong> KIMI performance_stats 6 days old, Claude ML never generated
+                            picks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Trail Section -->
+        <div class="audit-section">
+            <h3>🔒 Audit Trail & Data Integrity</h3>
+            <p style="font-size: 13px; color: #889; margin-bottom: 20px;">
+                Every signal is logged with cryptographic verification. No backtests. No curve-fitting. Real forward
+                performance only.
+            </p>
+            <div class="audit-features">
+                <div class="audit-item">
+                    <h4>SHA-256 Hashes</h4>
+                    <p>Each signal gets unique hash of raw market data for tamper-proof verification</p>
+                </div>
+                <div class="audit-item">
+                    <h4>UTC + EST Timestamps</h4>
+                    <p>All signals timestamped in both UTC and Eastern Time for consistency</p>
+                </div>
+                <div class="audit-item">
+                    <h4>Data Source Logging</h4>
+                    <p>Every API call logged with latency and response hash (Binance, Yahoo Finance)</p>
+                </div>
+                <div class="audit-item">
+                    <h4>Immutable Exports</h4>
+                    <p>JSON exports created every 10 cycles for external verification</p>
+                </div>
+                <div class="audit-item">
+                    <h4>Entry-to-Exit Tracking</h4>
+                    <p>Every signal tracked from entry through exit with realized P&L</p>
+                </div>
+                <div class="audit-item">
+                    <h4>No Cherry-Picking</h4>
+                    <p>ALL signals logged, not just winners. Failed strategies will be discarded.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <h3>⚠️ Risk Disclosure</h3>
+            <p>
+                <strong>These are real trading strategies with real risk.</strong> Past performance (even
+                forward-tested)
+                does not guarantee future results. These strategies exploit small edges that Renaissance, Citadel, and
+                other giants cannot trade due to capacity constraints. They can fail. They will have drawdowns.
+                Risk management is essential. Never trade with money you cannot afford to lose.
+                This is not investment advice. This is transparent documentation of our forward testing process.
+            </p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Unified Forward Test Dashboard | 16 Systems | Updated Feb 2026</p>
+        <p style="margin-top: 10px; font-size: 11px;">
+            Auto-refreshes every 5 minutes | Last scan: <span id="footer-timestamp">Loading...</span>
+        </p>
+        <p style="margin-top: 5px; font-size: 11px; color: #334;">
+            Competing with Renaissance & Citadel by trading the crumbs they ignore
+        </p>
+        <p style="margin-top: 10px; font-size: 12px; color: #a855f7; font-weight: 600;">
+            Powered by CURSOR_GROK_STEPFUN
+        </p>
+    </footer>
+
+    <script>
+        const GH = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+
+        function toggleExplanation(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('show');
+            const btn = el.previousElementSibling;
+            btn.textContent = el.classList.contains('show') ? 'Show Less' : 'Learn More';
+        }
+
+        function updateTimestamps() {
+            const now = new Date();
+            const utc = now.toISOString().slice(0, 16).replace('T', ' ');
+            document.getElementById('timestamp').textContent = utc + ' UTC';
+            document.getElementById('footer-timestamp').textContent = utc + ' UTC';
+        }
+
+        // Helper to update an ML gainer card from performance JSON
+        function updateMlCard(systemId, perf, picks) {
+            const card = document.querySelector(`.system-card[data-system="${systemId}"]`);
+            if (!card) return { total: 0, active: 0, wins: 0, pnl: 0 };
+
+            const sc = perf.scorecard || perf;
+            const totalPicks = sc.total_picks || 0;
+            // win_rate is stored as percentage (e.g. 23.5 = 23.5%), NOT decimal
+            const wrRaw = sc.win_rate;
+            const wr = wrRaw != null ? (wrRaw > 1 ? wrRaw.toFixed(1) : (wrRaw * 100).toFixed(1)) + '%' : (totalPicks > 0 ? '0%' : '--');
+            const pnl = sc.total_pnl_pct || 0;
+            const activePicks = Array.isArray(picks) ? picks.length : (picks.picks ? picks.picks.length : 0);
+
+            const sig = card.querySelector('[data-stat="signals"]');
+            const win = card.querySelector('[data-stat="wins"]');
+            const pl = card.querySelector('[data-stat="pnl"]');
+            if (sig) sig.textContent = totalPicks || activePicks;
+            if (win) win.textContent = wr;
+            if (pl) {
+                pl.textContent = totalPicks > 0 ? (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%' : '--';
+                pl.style.color = pnl >= 0 ? '#22c55e' : '#ef4444';
+            }
+
+            // Update last-updated timestamp
+            const lastUpdEl = document.querySelector(`[data-last-updated="${systemId}"]`);
+            if (lastUpdEl) {
+                const lr = perf.last_run || sc.last_updated;
+                if (lr) {
+                    const d = new Date(lr);
+                    const est = d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                    lastUpdEl.textContent = 'Last updated: ' + est + ' EST';
+                    // Flag stale data (>6 hours old)
+                    const ageH = (Date.now() - d.getTime()) / 3600000;
+                    if (ageH > 6) lastUpdEl.style.color = '#ef4444';
+                    else if (ageH > 2) lastUpdEl.style.color = '#f59e0b';
+                    else lastUpdEl.style.color = '#22c55e';
+                } else {
+                    lastUpdEl.textContent = 'Last updated: Never';
+                    lastUpdEl.style.color = '#ef4444';
+                }
+            }
+
+            return { total: totalPicks || activePicks, active: activePicks, wins: sc.tp_hits || 0, pnl: pnl };
+        }
+
+        async function loadData() {
+            try {
+                const t = Date.now();
+                const [activePicks, kimiSignals, scanRuns, stockPicks,
+                    claudePerf, claudePicks, cursorPerf, cursorPicks,
+                    antigravPerf, antigravPicks] = await Promise.all([
+                        fetch(GH + 'alpha_engine/data/active_picks.json?t=' + t).then(r => r.ok ? r.json() : []).catch(() => []),
+                        fetch(GH + 'KIMI_RISEOFTHECLAW/data/live_signals_now.json?t=' + t).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                        fetch(GH + 'KIMI_RISEOFTHECLAW/data/scan_runs.json?t=' + t).then(r => r.ok ? r.json() : []).catch(() => []),
+                        fetch(GH + 'STOCKS/competition/forward_picks.json?t=' + t).then(r => r.ok ? r.json() : { picks: [] }).catch(() => ({ picks: [] })),
+                        // ML Gainer systems
+                        fetch(GH + 'updates/data/claude_ml_performance.json?t=' + t).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                        fetch(GH + 'claude_gainer_ml/tracker/claude_live_picks.json?t=' + t).then(r => r.ok ? r.json() : { picks: [] }).catch(() => ({ picks: [] })),
+                        fetch(GH + 'updates/data/cursor_ml_performance.json?t=' + t).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                        fetch(GH + 'updates/data/cursor_ml_picks.json?t=' + t).then(r => r.ok ? r.json() : []).catch(() => []),
+                        fetch(GH + 'updates/data/antigravity_ml_performance.json?t=' + t).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                        fetch(GH + 'updates/data/antigravity_ml_picks.json?t=' + t).then(r => r.ok ? r.json() : []).catch(() => []),
+                    ]);
+
+                const allPicks = Array.isArray(activePicks) ? activePicks : [];
+                const cryptoPicks = allPicks.filter(p => p.category === 'crypto');
+                const forexPicks = allPicks.filter(p => p.category === 'forex');
+                const equityPicks = allPicks.filter(p => p.category === 'equity');
+                const memePicks = allPicks.filter(p => p.category === 'meme');
+                const openPicks = allPicks.filter(p => p.status === 'OPEN');
+                const fwdPicks = Array.isArray(stockPicks.picks) ? stockPicks.picks : [];
+
+                // Update ML gainer cards
+                const mlClaude = updateMlCard('claude_ml', claudePerf, claudePicks);
+                const mlCursor = updateMlCard('cursor_ml', cursorPerf, cursorPicks);
+                const mlAntigrav = updateMlCard('antigravity_ml', antigravPerf, antigravPicks);
+                const mlTotalPicks = mlClaude.total + mlCursor.total + mlAntigrav.total;
+                const mlTotalActive = mlClaude.active + mlCursor.active + mlAntigrav.active;
+
+                const totalActive = openPicks.length + fwdPicks.filter(p => p.status === 'OPEN').length + mlTotalActive;
+
+                // Overall P&L
+                const totalPnl = openPicks.reduce((s, p) => s + (p.unrealized_pnl_pct || 0), 0);
+                const winners = openPicks.filter(p => (p.unrealized_pnl_pct || 0) > 0);
+                const totalSignals = allPicks.length + fwdPicks.length + mlTotalPicks;
+                const wr = openPicks.length > 0 ? ((winners.length / openPicks.length) * 100).toFixed(0) + '%' : '--';
+
+                // Update forward test comparison metrics
+                // NOTE: QuantumFusion and other ML systems are in backtest-only mode
+                // Forward testing begins March/April 2026 - show N/A until then
+                const hasRealForwardData = false; // Set to true when real forward testing begins
+
+                const forwardWinRate = hasRealForwardData && openPicks.length > 0 ?
+                    ((winners.length / openPicks.length) * 100).toFixed(0) + '%' : 'N/A';
+                const forwardSharpe = hasRealForwardData && openPicks.length > 5 ?
+                    (totalPnl / (openPicks.length * 0.1)).toFixed(2) : 'N/A'; // Only calculate when real forward data exists
+                const forwardPf = hasRealForwardData && winners.length > 0 && (openPicks.length - winners.length) > 0 ?
+                    (winners.reduce((s, p) => s + Math.abs(p.unrealized_pnl_pct || 0), 0) /
+                        (openPicks.length - winners.length) * Math.abs(totalPnl / winners.length)).toFixed(2) : 'N/A';
+
+                document.getElementById('forward-win-rate').textContent = forwardWinRate;
+                document.getElementById('forward-sharpe').textContent = forwardSharpe;
+                document.getElementById('forward-pf').textContent = forwardPf;
+                document.getElementById('forward-signal-count').textContent = totalSignals;
+                document.getElementById('forward-total-pnl').textContent = openPicks.length > 0 ?
+                    (totalPnl >= 0 ? '+' : '') + totalPnl.toFixed(2) + '%' : '--';
+
+                // Count live systems
+                const mlLive = (mlClaude.total > 0 || mlClaude.active > 0 ? 1 : 0) +
+                    (mlCursor.total > 0 || mlCursor.active > 0 ? 1 : 0) +
+                    (mlAntigrav.total > 0 || mlAntigrav.active > 0 ? 1 : 0);
+                const baseLive = 5;
+                const totalSystems = 10;
+
+                // Top banner
+                document.getElementById('total-signals').textContent = totalSignals;
+                document.getElementById('active-signals').textContent = totalActive;
+                document.getElementById('closed-trades').textContent = (allPicks.length - openPicks.length) + fwdPicks.filter(p => p.status !== 'OPEN').length;
+                document.getElementById('systems-active').textContent = (baseLive + mlLive) + '/' + totalSystems;
+                document.getElementById('win-rate').textContent = wr;
+                const pnlEl = document.getElementById('total-pnl');
+                pnlEl.textContent = openPicks.length > 0 ? (totalPnl >= 0 ? '+' : '') + totalPnl.toFixed(2) + '%' : '--';
+                pnlEl.style.color = totalPnl >= 0 ? '#22c55e' : '#ef4444';
+
+                // Map strategies to system cards based on actual Alpha Engine strategy names
+                const onchainStrats = ['mvrv_sma_proxy', 'm2_liquidity_lag', 'monthly_seasonality'];
+                const technicalStrats = ['hurst_regime_adaptive', 'variance_ratio_momentum', 'double_top_bottom_detector', 'spike_macd_divergence'];
+                const smartMoneyStrats = ['smart_money_fvg', 'community_ict_fvg_selective'];
+
+                const systems = {
+                    crypto_onchain: cryptoPicks.filter(p => onchainStrats.some(s => (p.strategy || '').includes(s))),
+                    forex_momentum: forexPicks,
+                    stock_competition: fwdPicks,
+                    meme_smart: [...memePicks, ...allPicks.filter(p => smartMoneyStrats.some(s => (p.strategy || '').includes(s)))],
+                    crypto_technical: cryptoPicks.filter(p => technicalStrats.some(s => (p.strategy || '').includes(s))),
+                };
+
+                for (const [id, picks] of Object.entries(systems)) {
+                    const card = document.querySelector(`.system-card[data-system="${id}"]`);
+                    if (!card) continue;
+                    let w, pnl;
+                    if (id === 'stock_competition') {
+                        w = picks.filter(p => p.status === 'WON' || (p.unrealized_pnl_pct || p.pnl_pct || 0) > 0);
+                        pnl = picks.reduce((s, p) => s + (p.unrealized_pnl_pct || p.pnl_pct || 0), 0);
+                    } else {
+                        w = picks.filter(p => (p.unrealized_pnl_pct || 0) > 0);
+                        pnl = picks.reduce((s, p) => s + (p.unrealized_pnl_pct || 0), 0);
+                    }
+                    const sig = card.querySelector('[data-stat="signals"]');
+                    const win = card.querySelector('[data-stat="wins"]');
+                    const pl = card.querySelector('[data-stat="pnl"]');
+                    if (sig) sig.textContent = picks.length;
+                    if (win) win.textContent = w.length;
+                    if (pl) {
+                        pl.textContent = picks.length > 0 ? (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%' : '--';
+                        pl.style.color = pnl >= 0 ? '#22c55e' : '#ef4444';
+                    }
+                }
+
+                // KIMI market info
+                if (kimiSignals.market_overview) {
+                    const fg = kimiSignals.market_overview.fear_greed;
+                    const cls = kimiSignals.market_overview.fear_class || '';
+                    console.log('Market Fear/Greed:', fg, cls);
+                }
+
+                // Scanner health
+                if (scanRuns.length > 0) {
+                    const latest = scanRuns[scanRuns.length - 1];
+                    const ago = Math.floor((Date.now() - new Date(latest.timestamp).getTime()) / 60000);
+                    console.log('Last scan:', ago + 'm ago,', latest.signals_found, 'signals found');
+                }
+
+                // --- Update new system cards ---
+
+                // Alpha Engine card
+                const alphaCard = document.querySelector('.system-card[data-system="alpha_engine"]');
+                if (alphaCard) {
+                    const aSig = alphaCard.querySelector('[data-stat="signals"]');
+                    const aWin = alphaCard.querySelector('[data-stat="wins"]');
+                    const aPnl = alphaCard.querySelector('[data-stat="pnl"]');
+                    if (aSig) aSig.textContent = allPicks.length;
+                    // Count closed from the fetched data
+                    const closedAlpha = allPicks.filter(p => p.status !== 'OPEN').length;
+                    if (aWin) aWin.textContent = closedAlpha;
+                    const alphaWinners = openPicks.filter(p => (p.unrealized_pnl_pct || 0) > 0);
+                    const alphaWR = openPicks.length > 0 ? ((alphaWinners.length / openPicks.length) * 100).toFixed(0) + '%' : '--';
+                    if (aPnl) aPnl.textContent = alphaWR;
+                    // Update timestamp
+                    const alphaTs = document.querySelector('[data-last-updated="alpha_engine"]');
+                    if (alphaTs && allPicks.length > 0) {
+                        const latest = allPicks.reduce((a, b) => new Date(a.generated_at || 0) > new Date(b.generated_at || 0) ? a : b);
+                        if (latest.generated_at) {
+                            const d = new Date(latest.generated_at);
+                            alphaTs.textContent = 'Last updated: ' + d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) + ' EST';
+                            const ageH = (Date.now() - d.getTime()) / 3600000;
+                            alphaTs.style.color = ageH > 6 ? '#ef4444' : ageH > 2 ? '#f59e0b' : '#22c55e';
+                        }
+                    }
+                }
+
+                // KIMI Rise of the Claw card
+                const kimiCard = document.querySelector('.system-card[data-system="kimi_claw"]');
+                if (kimiCard && kimiSignals) {
+                    const kSig = kimiCard.querySelector('[data-stat="signals"]');
+                    const kAlgo = kimiCard.querySelector('[data-stat="wins"]');
+                    const kConf = kimiCard.querySelector('[data-stat="pnl"]');
+                    const sigs = kimiSignals.signals || [];
+                    if (kSig) kSig.textContent = sigs.length;
+                    // Count unique algorithms
+                    const uniqueAlgos = new Set(sigs.map(s => s.algorithm || s.strategy || '')).size;
+                    if (kAlgo) kAlgo.textContent = uniqueAlgos;
+                    // Average confidence
+                    const avgConf = sigs.length > 0 ? (sigs.reduce((s, p) => s + (p.confidence || 0), 0) / sigs.length * 100).toFixed(0) + '%' : '--';
+                    if (kConf) kConf.textContent = avgConf;
+                    // Timestamp
+                    const kimiTs = document.querySelector('[data-last-updated="kimi_claw"]');
+                    if (kimiTs && kimiSignals.generated_at) {
+                        const d = new Date(kimiSignals.generated_at);
+                        kimiTs.textContent = 'Last updated: ' + d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) + ' EST';
+                        const ageH = (Date.now() - d.getTime()) / 3600000;
+                        kimiTs.style.color = ageH > 6 ? '#ef4444' : ageH > 2 ? '#f59e0b' : '#22c55e';
+                    }
+                }
+
+                // Regime Terminal card
+                try {
+                    const regimeData = await fetch(GH + 'regime_terminal/data/active_signals.json?t=' + t).then(r => r.ok ? r.json() : null).catch(() => null);
+                    const regimeCard = document.querySelector('.system-card[data-system="regime_terminal"]');
+                    if (regimeCard && regimeData) {
+                        const rSig = regimeCard.querySelector('[data-stat="signals"]');
+                        const rScan = regimeCard.querySelector('[data-stat="wins"]');
+                        const rRegime = regimeCard.querySelector('[data-stat="pnl"]');
+                        const regSigs = regimeData.signals || [];
+                        if (rSig) rSig.textContent = regSigs.length;
+                        if (rScan) rScan.textContent = regimeData.market_overview ? (regimeData.market_overview.total_scanned || 0) : 0;
+                        // Dominant regime
+                        if (rRegime && regimeData.market_overview) {
+                            const mo = regimeData.market_overview;
+                            const dominant = mo.bulls > mo.bears ? 'Bullish' : mo.bears > mo.bulls ? 'Bearish' : 'Neutral';
+                            rRegime.textContent = dominant;
+                            rRegime.style.color = dominant === 'Bullish' ? '#22c55e' : dominant === 'Bearish' ? '#ef4444' : '#f59e0b';
+                        }
+                        const regTs = document.querySelector('[data-last-updated="regime_terminal"]');
+                        if (regTs && regimeData.generated_at) {
+                            const d = new Date(regimeData.generated_at);
+                            regTs.textContent = 'Last updated: ' + d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) + ' EST';
+                            const ageH = (Date.now() - d.getTime()) / 3600000;
+                            regTs.style.color = ageH > 6 ? '#ef4444' : ageH > 2 ? '#f59e0b' : '#22c55e';
+                        }
+                    }
+                } catch (e) { console.log('Regime data unavailable:', e); }
+
+                // Enhanced ML card timestamp
+                try {
+                    const enhancedData = await fetch(GH + 'ml_crypto_predictor/enhanced_models/results/training_summary.json?t=' + t).then(r => r.ok ? r.json() : null).catch(() => null);
+                    if (enhancedData) {
+                        const enhTs = document.querySelector('[data-last-updated="enhanced_ml"]');
+                        if (enhTs && enhancedData.timestamp) {
+                            const d = new Date(enhancedData.timestamp);
+                            enhTs.textContent = 'Last trained: ' + d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) + ' EST';
+                            const ageH = (Date.now() - d.getTime()) / 3600000;
+                            enhTs.style.color = ageH > 24 ? '#ef4444' : ageH > 12 ? '#f59e0b' : '#22c55e';
+                        }
+                        const enhCard = document.querySelector('.system-card[data-system="enhanced_ml"]');
+                        if (enhCard) {
+                            const eSig = enhCard.querySelector('[data-stat="signals"]');
+                            if (eSig && enhancedData.total_models) eSig.textContent = enhancedData.total_models;
+                            const eWin = enhCard.querySelector('[data-stat="wins"]');
+                            if (eWin && enhancedData.ab_test_winner) eWin.textContent = enhancedData.ab_test_winner.replace('C_', '').toUpperCase().slice(0, 6);
+                            const ePnl = enhCard.querySelector('[data-stat="pnl"]');
+                            if (ePnl && enhancedData.winner_avg_score) ePnl.textContent = (enhancedData.winner_avg_score * 100).toFixed(1) + '%';
+                        }
+                    }
+                } catch (e) { console.log('Enhanced ML data unavailable:', e); }
+
+                // Update total system count
+                const totalSystemsNow = baseLive + mlLive + 6; // +6 new system cards
+                document.getElementById('systems-active').textContent = (baseLive + mlLive + 6) + '/' + (totalSystems + 6);
+
+                console.log('Loaded:', allPicks.length, 'Alpha picks +', fwdPicks.length, 'stock picks +', mlTotalPicks, 'ML gainer picks');
+                console.log('  ML Systems: Claude=' + mlClaude.total + ' Cursor=' + mlCursor.total + ' Antigravity=' + mlAntigrav.total);
+
+                // Update timestamps dynamically
+                var now = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+                var tsEl = document.getElementById('timestamp');
+                if (tsEl) tsEl.textContent = now;
+                var ftEl = document.getElementById('footer-timestamp');
+                if (ftEl) ftEl.textContent = now;
+            } catch (e) {
+                console.error('Dashboard load error:', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateTimestamps();
+            loadData();
+            setInterval(loadData, 300000); // refresh every 5 min
+        });
+    </script>
+</body>
+
+</html>

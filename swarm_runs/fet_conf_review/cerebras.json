@@ -1,0 +1,33 @@
+{
+  "engine": "Atlas",
+  "finding_1_verdict": "caveats",
+  "finding_1_concerns": [
+    "Deduplication by exit_date removes *all* trades that close on the same calendar day, even when they originated from distinct entry signals. This can under-state the true edge of a strategy that intentionally layers multiple entries and exits on the same market move.",
+    "The daily-firing nature of the model means that multiple signals are correlated, but they are not strict duplicates; they differ by entry_date, entry_price, and risk allocation. A pure exit-date dedup may be over-correcting.",
+    "Alternative approaches (e.g., clustering by exit_date+direction, weighting by distinct entry dates, or reporting both raw and de-correlated metrics) would give a more nuanced picture."
+  ],
+  "finding_1_recommended_action": "investigate_further",
+  "finding_2_verdict": "agree",
+  "finding_2_concerns": [
+    "The +18 score bonus for confidence band [0.75,0.80) is applied in `audit_dashboard/template.html:9239` and propagates to the overall pick score used for UI ranking. No other code path (strategy gating, position sizing) reads this bonus; the scoring logic lives solely in the template and the helper `alpha_engine/scoring.py` which references `breakdown.conf_sweet_spot`.",
+    "Removing the bonus will lower the displayed score of picks in this band, aligning the UI with the empirical edge (WR 38.7%, PF 0.69)."
+  ],
+  "finding_2_recommended_action": "remove_+18_bonus",
+  "regression_risks": [
+    "Only the visual ranking / score display will change; the underlying execution engine does not depend on the bonus value.",
+    "If any downstream analytics dashboards copy the rendered score without recomputing it, they may see a shift in historical comparisons. This is a cosmetic regression, not a functional one."
+  ],
+  "confidence": 0.86,
+  "notes": "For Finding\u202f1, keep the raw trade-level metrics but add a de-correlated summary (e.g., cluster-based PF) to avoid double-counting while preserving the strategy's multi-entry behavior. For Finding\u202f2, edit `audit_dashboard/template.html` line 9239 to set the bonus to 0 (or remove the line) and ensure `alpha_engine/scoring.py` does not reference a non-existent bonus constant.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\fet_conf_review\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260504T154441Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 1152,
+    "tokens_out": 1011,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

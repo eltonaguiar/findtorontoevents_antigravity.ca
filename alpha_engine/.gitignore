@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+# ML model files: excluded from git because they're binary and re-trained
+# each CI run from closed_picks.json (which IS committed). The MLSignalRanker
+# auto-trains on init when no model file exists on disk.
+*.pkl
+# Exception: commit the trained RF model so CI can load it immediately
+# instead of re-training every run (saves ~30s startup time)
+!data/rf_model.pkl
+data/alpha.db

@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Strategy DNA Genome — Unified Catalog & Evolution Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a12;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            background: linear-gradient(135deg, #a855f7, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+        .status-bar {
+            display: flex; justify-content: center; align-items: center;
+            gap: 12px; margin-bottom: 24px; font-size: 0.75rem; color: #666;
+            flex-wrap: wrap;
+        }
+        .status-bar .live-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: #a855f7;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .stat-pill {
+            background: #1a1a2e; border: 1px solid #2b2b54; border-radius: 8px;
+            padding: 4px 10px; font-size: 0.78rem; color: #ccc;
+        }
+        .stat-pill strong { color: #a855f7; }
+        .stat-pill.edge strong { color: #22c55e; }
+        .stat-pill.trap strong { color: #ef4444; }
+        .stat-pill.asym strong { color: #06b6d4; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .filter-btn {
+            background: #1a1a2e; border: 1px solid #2b2b54; color: #aaa;
+            padding: 5px 12px; border-radius: 16px; font-size: 0.78rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: #a855f7; color: #fff; }
+        .filter-btn.active { background: #a855f7; color: #fff; border-color: #a855f7; }
+
+        /* Cards grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 12px; margin-bottom: 24px;
+        }
+        .card {
+            background: #111122; border: 1px solid #1e1e3a; border-radius: 10px;
+            padding: 14px; position: relative; transition: border-color 0.2s;
+        }
+        .card:hover { border-color: #a855f7; }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+        .card-name {
+            font-weight: 700; font-size: 0.88rem; color: #e2e8f0;
+            max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .verdict-badge {
+            padding: 2px 8px; border-radius: 6px; font-size: 0.72rem;
+            font-weight: 700; text-transform: uppercase;
+        }
+        .verdict-EDGE { background: #052e16; color: #22c55e; border: 1px solid #22c55e44; }
+        .verdict-EDGE\* { background: #052e16; color: #22c55e; border: 1px solid #22c55e44; }
+        .verdict-ASYMMETRIC { background: #083344; color: #06b6d4; border: 1px solid #06b6d444; }
+        .verdict-MARGINAL { background: #422006; color: #eab308; border: 1px solid #eab30844; }
+        .verdict-TRAP { background: #350a0a; color: #ef4444; border: 1px solid #ef444444; }
+        .verdict-DEAD { background: #1c0404; color: #991b1b; border: 1px solid #991b1b44; }
+        .verdict-INSUFFICIENT { background: #1a1a2e; color: #666; border: 1px solid #33335544; }
+        .verdict-PHOENIX { background: #f0fdf4; color: #16a34a; border: 1px solid #16a34a44; animation: phoenix-glow 2s infinite; }
+        @keyframes phoenix-glow { 0%, 100% { box-shadow: 0 0 5px #16a34a22; } 50% { box-shadow: 0 0 15px #16a34a55; } }
+
+        .card-source {
+            font-size: 0.72rem; color: #666; margin-bottom: 6px;
+        }
+        .card-source span { color: #a855f7; }
+
+        .dna-sequence {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.65rem;
+            color: #06b6d4;
+            background: #0d0d1a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-metrics {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+        }
+        .metric {
+            background: #0d0d1a; border-radius: 6px; padding: 6px 8px; text-align: center;
+        }
+        .metric-label { font-size: 0.65rem; color: #666; text-transform: uppercase; }
+        .metric-value { font-size: 0.85rem; font-weight: 700; color: #ccc; }
+        .metric-value.positive { color: #22c55e; }
+        .metric-value.negative { color: #ef4444; }
+        .metric-value.neutral { color: #888; }
+
+        .card-footer {
+            margin-top: 8px; font-size: 0.7rem; color: #555;
+            display: flex; justify-content: space-between;
+        }
+        .confidence-bar {
+            height: 3px; background: #1a1a2e; border-radius: 2px; margin-top: 6px;
+        }
+        .confidence-fill {
+            height: 100%; border-radius: 2px; transition: width 0.3s;
+        }
+
+        /* Genealogy tree */
+        .genealogy-panel {
+            background: #111122; border: 1px solid #1e1e3a; border-radius: 10px;
+            padding: 16px; margin-bottom: 24px;
+        }
+        .genealogy-panel h3 {
+            color: #a855f7; font-size: 1rem; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .genealogy-tree {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .genealogy-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 12px;
+            background: #0d0d1a;
+            border-radius: 6px;
+        }
+        .genealogy-gen {
+            font-size: 0.65rem; color: #666;
+            min-width: 60px;
+        }
+        .genealogy-strat {
+            flex: 1;
+            font-size: 0.8rem;
+        }
+        .genealogy-parent {
+            font-size: 0.7rem; color: #888;
+        }
+        .genealogy-arrow {
+            color: #a855f7;
+            font-size: 0.9rem;
+        }
+
+        /* Phoenix revivals */
+        .phoenix-panel {
+            background: linear-gradient(135deg, #052e16 0%, #0d0d1a 100%);
+            border: 1px solid #22c55e44;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .phoenix-panel h3 {
+            color: #22c55e; font-size: 1rem; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .phoenix-icon {
+            animation: phoenix-rise 2s ease-in-out infinite;
+        }
+        @keyframes phoenix-rise {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* Summary panels */
+        .summary-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px; margin-bottom: 24px;
+        }
+        .summary-card {
+            background: #111122; border: 1px solid #1e1e3a; border-radius: 10px;
+            padding: 14px; text-align: center;
+        }
+        .summary-card .big-number {
+            font-size: 2rem; font-weight: 800;
+        }
+        .summary-card .big-label { font-size: 0.78rem; color: #888; margin-top: 2px; }
+        .green { color: #22c55e; }
+        .cyan { color: #06b6d4; }
+        .yellow { color: #eab308; }
+        .red { color: #ef4444; }
+        .purple { color: #a855f7; }
+
+        /* Table view */
+        .table-container { overflow-x: auto; margin-bottom: 24px; }
+        table {
+            width: 100%; border-collapse: collapse; font-size: 0.78rem;
+        }
+        th {
+            background: #1a1a2e; color: #888; padding: 8px 10px; text-align: left;
+            position: sticky; top: 0; cursor: pointer; user-select: none;
+        }
+        th:hover { color: #a855f7; }
+        th.sorted-asc::after { content: " ▲"; color: #a855f7; }
+        th.sorted-desc::after { content: " ▼"; color: #a855f7; }
+        td { padding: 6px 10px; border-bottom: 1px solid #1e1e3a; }
+        tr:hover { background: #1a1a2e33; }
+
+        /* View toggle */
+        .view-toggle {
+            display: flex; justify-content: center; gap: 6px; margin-bottom: 16px;
+        }
+
+        /* Search */
+        .search-box {
+            display: flex; justify-content: center; margin-bottom: 12px;
+        }
+        .search-box input {
+            background: #111122; border: 1px solid #2b2b54; color: #e0e0e0;
+            padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+            width: 300px; outline: none;
+        }
+        .search-box input:focus { border-color: #a855f7; }
+        .search-box input::placeholder { color: #555; }
+
+        /* Nav links */
+        .nav-links {
+            display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .nav-links a {
+            background: #1a1a2e; border: 1px solid #2b2b54; color: #aaa;
+            padding: 5px 12px; border-radius: 16px; font-size: 0.75rem;
+            text-decoration: none; transition: all 0.2s;
+        }
+        .nav-links a:hover { border-color: #a855f7; color: #fff; }
+        .nav-links a.highlight {
+            background: linear-gradient(135deg, #a855f722, #06b6d422);
+            border-color: #a855f7;
+            color: #fff;
+        }
+
+        .loading { text-align: center; color: #666; padding: 40px; font-size: 1rem; }
+        .timestamp { text-align: center; font-size: 0.72rem; color: #555; margin-bottom: 16px; }
+
+        /* Explainer */
+        .explainer {
+            background: #111122; border: 1px solid #1e1e3a; border-radius: 10px;
+            padding: 16px; margin-bottom: 24px; font-size: 0.82rem; color: #999;
+            line-height: 1.6;
+        }
+        .explainer h3 { color: #a855f7; margin-bottom: 8px; font-size: 1rem; }
+        .explainer code { color: #06b6d4; background: #0d0d1a; padding: 1px 5px; border-radius: 3px; }
+        .legend {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+        /* DNA Metrics Panel */
+        .dna-metrics-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .dna-metric-card {
+            background: linear-gradient(135deg, #111122, #1a1a2e);
+            border: 1px solid #2b2b54;
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .dna-metric-card h4 {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .dna-metric-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #06b6d4;
+        }
+        .dna-metric-sub {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Strategy DNA Genome</h1>
+    <div class="subtitle">Unified Catalog — Every Strategy Across All Systems, Measured by Real Edge</div>
+
+    <div class="nav-links">
+        <a href="../hub/" class="highlight">Trading Systems Hub</a>
+        <a href="../battleground/">Battleground Arena</a>
+        <a href="../predictions/dashboard/">Predictions</a>
+        <a href="../alpha/">Alpha Engine</a>
+        <a href="../monitor/">Cross-Aggregation</a>
+        <a href="../updates/">Updates Log</a>
+    </div>
+
+    <div class="status-bar">
+        <div class="live-dot"></div>
+        <span id="status-text">Loading unified catalog...</span>
+    </div>
+
+    <!-- DNA-Specific Metrics -->
+    <div class="dna-metrics-panel" id="dna-metrics">
+        <div class="dna-metric-card">
+            <h4>Active DNA Sequences</h4>
+            <div class="dna-metric-value" id="dna-active-count">--</div>
+            <div class="dna-metric-sub">Genetically evolved strategies</div>
+        </div>
+        <div class="dna-metric-card">
+            <h4>Evolution Generation</h4>
+            <div class="dna-metric-value" id="dna-generation">--</div>
+            <div class="dna-metric-sub">Current algorithm generation</div>
+        </div>
+        <div class="dna-metric-card">
+            <h4>Phoenix Revivals</h4>
+            <div class="dna-metric-value" id="dna-phoenix-count">--</div>
+            <div class="dna-metric-sub">Strategies that recovered from DEAD</div>
+        </div>
+        <div class="dna-metric-card">
+            <h4>Genetic Diversity</h4>
+            <div class="dna-metric-value" id="dna-diversity">--</div>
+            <div class="dna-metric-sub">Unique chromosome patterns</div>
+        </div>
+    </div>
+
+    <div class="summary-grid" id="summary-grid"></div>
+
+    <!-- Phoenix Revivals Panel -->
+    <div class="phoenix-panel" id="phoenix-panel" style="display: none;">
+        <h3><span class="phoenix-icon">🔥</span> Phoenix Revivals — Recovered from DEAD</h3>
+        <div id="phoenix-list"></div>
+    </div>
+
+    <!-- Strategy Genealogy Panel -->
+    <div class="genealogy-panel" id="genealogy-panel" style="display: none;">
+        <h3><span>🧬</span> Strategy Genealogy — Parent/Child Relationships</h3>
+        <div class="genealogy-tree" id="genealogy-tree"></div>
+    </div>
+
+    <div class="explainer">
+        <h3>What is the DNA Genome?</h3>
+        <p>The <strong>DNA Genome Engine</strong> uses genetic algorithms to evolve trading strategies. Each strategy is encoded as a 64-gene "DNA chromosome" that determines entry timing, exit rules, position sizing, and risk management.</p>
+        <p style="margin-top:6px"><strong>Evolution Process:</strong> Strategies compete in the battleground arena. Winners are selected for "breeding" — their DNA is combined through crossover and mutation to create offspring strategies.</p>
+        <p style="margin-top:6px"><strong>Phoenix Detection:</strong> Strategies that fall to DEAD status (no edge detected) can sometimes recover through parameter mutation. These "Phoenix" strategies are flagged as they often have unique adaptive capabilities.</p>
+        <p style="margin-top:6px"><code>DNA Sequence = EntryGene(12) + ExitGene(12) + SizingGene(16) + RiskGene(16) + FilterGene(8)</code></p>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> EDGE — Proven positive expectancy</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div> ASYMMETRIC — Low WR, high payoff ratio</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div> MARGINAL — Thin edge, needs more data</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> TRAP — High WR masks negative expectancy</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#991b1b"></div> DEAD — No statistical edge found</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#16a34a;animation:phoenix-glow 2s infinite"></div> PHOENIX — Recovered from DEAD</div>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Search strategies..." oninput="filterStrategies()">
+    </div>
+
+    <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" data-filter="EDGE" onclick="setFilter('EDGE')">EDGE</button>
+        <button class="filter-btn" data-filter="ASYMMETRIC" onclick="setFilter('ASYMMETRIC')">Asymmetric</button>
+        <button class="filter-btn" data-filter="MARGINAL" onclick="setFilter('MARGINAL')">Marginal</button>
+        <button class="filter-btn" data-filter="TRAP" onclick="setFilter('TRAP')">TRAP</button>
+        <button class="filter-btn" data-filter="DEAD" onclick="setFilter('DEAD')">DEAD</button>
+        <button class="filter-btn" data-filter="PHOENIX" onclick="setFilter('PHOENIX')" style="border-color:#22c55e44;color:#22c55e">🔥 Phoenix</button>
+        <span style="color:#333">|</span>
+        <button class="filter-btn" data-filter="src:alpha_engine" onclick="setFilter('src:alpha_engine')">Alpha Engine</button>
+        <button class="filter-btn" data-filter="src:baby_strategies" onclick="setFilter('src:baby_strategies')">Baby Strats</button>
+        <button class="filter-btn" data-filter="src:incubator" onclick="setFilter('src:incubator')">Incubator</button>
+        <button class="filter-btn" data-filter="src:kimi_rotc" onclick="setFilter('src:kimi_rotc')">KIMI</button>
+        <button class="filter-btn" data-filter="src:dna_genome" onclick="setFilter('src:dna_genome')" style="background:#a855f722;border-color:#a855f7">DNA Genome</button>
+        <button class="filter-btn" data-filter="src:meta_combos" onclick="setFilter('src:meta_combos')">Meta Combos</button>
+        <button class="filter-btn" data-filter="src:quant_lab_combos" onclick="setFilter('src:quant_lab_combos')">Quant Lab</button>
+    </div>
+
+    <div class="view-toggle">
+        <button class="filter-btn active" id="btn-cards" onclick="setView('cards')">Cards</button>
+        <button class="filter-btn" id="btn-table" onclick="setView('table')">Table</button>
+        <button class="filter-btn" id="btn-dna" onclick="setView('dna')">DNA View</button>
+    </div>
+
+    <div id="cards-view" class="grid"></div>
+    <div id="table-view" class="table-container" style="display:none"></div>
+    <div id="dna-view" style="display:none">
+        <div class="explainer">
+            <h3>DNA Sequence Visualization</h3>
+            <p>Each strategy's DNA is displayed as a 64-character sequence. Positions 0-11: Entry logic. 12-23: Exit logic. 24-39: Position sizing. 40-55: Risk management. 56-63: Filters.</p>
+        </div>
+        <div id="dna-sequences" class="grid"></div>
+    </div>
+
+    <div class="timestamp" id="timestamp"></div>
+
+    <script>
+    let catalog = null;
+    let genealogy = null;
+    let revivals = null;
+    let currentFilter = 'all';
+    let currentView = 'cards';
+    let sortCol = 'trades';
+    let sortDir = 'desc';
+
+    const PAGES = 'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/';
+    const SOURCE_DASHBOARDS = {
+      'alpha_engine': PAGES + 'alpha/',
+      'dna_genome': PAGES + 'genome/',
+      'incubator': PAGES + 'battleground/',
+      'baby_strats': PAGES + 'battleground/',
+      'meta_combos': PAGES + 'battleground/#panel-combos',
+      'kimi': 'https://findtorontoevents.ca/riseoftheclaw.html',
+      'KIMI_RISEOFTHECLAW': 'https://findtorontoevents.ca/riseoftheclaw.html',
+      'quant_lab': PAGES + 'genome/',
+      'crypto_ml_edge': PAGES + 'hub/',
+      'mercury2': PAGES + 'hub/',
+      'claude_gainer': PAGES + 'hub/',
+    };
+
+    function getDashboardUrl(source) {
+      if (!source) return null;
+      for (const [key, url] of Object.entries(SOURCE_DASHBOARDS)) {
+        if (source.includes(key) || source.startsWith(key)) return url;
+      }
+      return null;
+    }
+
+    const DATA_URLS = [
+        'data/unified_strategy_catalog.json',
+        '../meta_strategy/data/unified_strategy_catalog.json',
+        'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/meta_strategy/data/unified_strategy_catalog.json'
+    ];
+
+    const GENEALOGY_URLS = [
+        'data/strategy_genealogy.json',
+        '../genome/data/strategy_genealogy.json',
+        'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/strategy_genealogy.json'
+    ];
+
+    const REVIVALS_URLS = [
+        'data/phoenix_revivals.json',
+        '../genome/data/phoenix_revivals.json',
+        'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/genome/data/phoenix_revivals.json'
+    ];
+
+    async function loadData() {
+        // Load main catalog
+        for (const url of DATA_URLS) {
+            try {
+                const resp = await fetch(url, { cache: 'no-store' });
+                if (resp.ok) {
+                    catalog = await resp.json();
+                    break;
+                }
+            } catch (e) { continue; }
+        }
+
+        // Load genealogy
+        for (const url of GENEALOGY_URLS) {
+            try {
+                const resp = await fetch(url, { cache: 'no-store' });
+                if (resp.ok) {
+                    genealogy = await resp.json();
+                    break;
+                }
+            } catch (e) { continue; }
+        }
+
+        // Load phoenix revivals
+        for (const url of REVIVALS_URLS) {
+            try {
+                const resp = await fetch(url, { cache: 'no-store' });
+                if (resp.ok) {
+                    revivals = await resp.json();
+                    break;
+                }
+            } catch (e) { continue; }
+        }
+
+        if (catalog) {
+            render();
+        } else {
+            document.getElementById('status-text').textContent =
+                'No unified catalog found. Run: py -m meta_strategy.unified_performance_loader';
+            document.getElementById('cards-view').innerHTML =
+                '<div class="loading">Unified catalog not generated yet.<br>Run <code>py -m meta_strategy.unified_performance_loader</code> to build it.</div>';
+        }
+    }
+
+    function render() {
+        if (!catalog) return;
+        renderDNAMetrics();
+        renderSummary();
+        renderPhoenixRevivals();
+        renderGenealogy();
+        renderCards();
+        renderTable();
+        renderDNAView();
+        document.getElementById('status-text').textContent =
+            `${catalog.total_strategies} strategies from ${catalog.summary?.sources_loaded || '?'} sources | ` +
+            `${catalog.summary?.total_trades_tracked?.toLocaleString() || '?'} total trades tracked`;
+        const genAt = catalog.generated_at ? new Date(catalog.generated_at) : null;
+        const hoursOld = genAt ? (Date.now() - genAt.getTime()) / 3600000 : null;
+        let tsText = genAt ? `Catalog generated: ${genAt.toLocaleString('en-US', {timeZone:'America/New_York'})} EST` : '';
+        if (hoursOld && hoursOld > 24) {
+            tsText += ` — ⚠ ${Math.floor(hoursOld / 24)}d ${Math.floor(hoursOld % 24)}h stale (updates daily at 5 AM UTC)`;
+        }
+        document.getElementById('timestamp').textContent = tsText;
+        document.getElementById('timestamp').style.color = hoursOld > 24 ? '#f59e0b' : '#666';
+    }
+
+    function renderDNAMetrics() {
+        // Calculate DNA-specific metrics
+        const dnaStrategies = (catalog.strategies || []).filter(s => 
+            s.source === 'dna_genome' || s.dna_sequence || s.genetic_generation
+        );
+        
+        document.getElementById('dna-active-count').textContent = dnaStrategies.length;
+        
+        // Get max generation
+        const maxGen = dnaStrategies.reduce((max, s) => 
+            Math.max(max, s.genetic_generation || s.generation || 0), 0
+        );
+        document.getElementById('dna-generation').textContent = maxGen || 'G-?';
+        
+        // Phoenix count
+        const phoenixCount = (catalog.strategies || []).filter(s => 
+            s.is_phoenix || s.was_revived || s.verdict === 'PHOENIX'
+        ).length;
+        document.getElementById('dna-phoenix-count').textContent = phoenixCount;
+        
+        // Calculate diversity (unique DNA patterns)
+        const uniqueDNA = new Set(dnaStrategies.map(s => s.dna_sequence?.substring(0, 16)).filter(Boolean));
+        const diversity = uniqueDNA.size > 0 ? uniqueDNA.size : dnaStrategies.length;
+        document.getElementById('dna-diversity').textContent = diversity;
+    }
+
+    function renderPhoenixRevivals() {
+        const panel = document.getElementById('phoenix-panel');
+        const list = document.getElementById('phoenix-list');
+        
+        const phoenixStrategies = (catalog.strategies || []).filter(s => 
+            s.is_phoenix || s.was_revived || s.verdict === 'PHOENIX'
+        );
+        
+        if (phoenixStrategies.length === 0) {
+            panel.style.display = 'none';
+            return;
+        }
+        
+        panel.style.display = 'block';
+        let html = '<div class="grid">';
+        
+        phoenixStrategies.slice(0, 4).forEach(s => {
+            const wr = s.win_rate || 0;
+            const trades = s.trades || 0;
+            html += `
+                <div class="card" style="border-color:#22c55e44">
+                    <div class="card-header">
+                        <div class="card-name" title="${s.name}">${s.name}</div>
+                        <span class="verdict-badge verdict-PHOENIX">PHOENIX</span>
+                    </div>
+                    <div class="card-source">Revived from: <span style="color:#ef4444">${s.previous_verdict || 'DEAD'}</span></div>
+                    <div class="card-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Trades</div>
+                            <div class="metric-value">${trades}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Win Rate</div>
+                            <div class="metric-value ${wr>=0.5?'positive':wr<0.35?'negative':'neutral'}">${(wr*100).toFixed(1)}%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Sharpe</div>
+                            <div class="metric-value">${(s.sharpe||0).toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Recovery</div>
+                            <div class="metric-value positive">+${(s.recovery_pnl||0).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        list.innerHTML = html;
+    }
+
+    function renderGenealogy() {
+        const panel = document.getElementById('genealogy-panel');
+        const tree = document.getElementById('genealogy-tree');
+        
+        if (!genealogy || !genealogy.generations || genealogy.generations.length === 0) {
+            panel.style.display = 'none';
+            return;
+        }
+        
+        panel.style.display = 'block';
+        let html = '';
+        
+        genealogy.generations.forEach((gen, idx) => {
+            html += `
+                <div class="genealogy-row">
+                    <div class="genealogy-gen">Gen ${gen.generation}</div>
+                    <div class="genealogy-strat">
+                        <span style="color:#06b6d4;font-weight:600">${gen.strategy_name}</span>
+                        <span style="color:#666;margin-left:8px">${gen.metrics?.trades || 0} trades</span>
+                    </div>
+                    <div class="genealogy-parent">
+                        ${gen.parents ? gen.parents.map(p => p.name).join(' + ') : 'Founder'}
+                    </div>
+                    ${gen.parents ? '<span class="genealogy-arrow">→</span>' : ''}
+                </div>
+            `;
+        });
+        
+        tree.innerHTML = html;
+    }
+
+    function renderSummary() {
+        const s = catalog.summary || {};
+        const v = catalog.verdicts || {};
+        const html = `
+            <div class="summary-card"><div class="big-number purple">${catalog.total_strategies || 0}</div><div class="big-label">Total Strategies</div></div>
+            <div class="summary-card"><div class="big-number green">${(v.EDGE||0) + (v['EDGE*']||0)}</div><div class="big-label">EDGE (Proven)</div></div>
+            <div class="summary-card"><div class="big-number cyan">${v.ASYMMETRIC||0}</div><div class="big-label">Asymmetric Alpha</div></div>
+            <div class="summary-card"><div class="big-number yellow">${v.MARGINAL||0}</div><div class="big-label">Marginal</div></div>
+            <div class="summary-card"><div class="big-number red">${(v.TRAP||0) + (v.DEAD||0)}</div><div class="big-label">TRAP / DEAD</div></div>
+            <div class="summary-card"><div class="big-number" style="color:#888">${s.total_trades_tracked?.toLocaleString() || 0}</div><div class="big-label">Total Trades</div></div>
+            <div class="summary-card"><div class="big-number purple">${s.sources_loaded||0}</div><div class="big-label">Data Sources</div></div>
+            <div class="summary-card"><div class="big-number ${(s.avg_win_rate||0)>0.5?'green':'red'}">${((s.avg_win_rate||0)*100).toFixed(1)}%</div><div class="big-label">Avg Win Rate</div></div>
+        `;
+        document.getElementById('summary-grid').innerHTML = html;
+    }
+
+    function getFiltered() {
+        let strats = catalog.strategies || [];
+        const search = (document.getElementById('search')?.value || '').toLowerCase();
+        if (search) strats = strats.filter(s => (s.name||'').toLowerCase().includes(search) || (s.source||'').toLowerCase().includes(search));
+        if (currentFilter === 'all') return strats;
+        if (currentFilter === 'PHOENIX') return strats.filter(s => s.is_phoenix || s.was_revived || s.verdict === 'PHOENIX');
+        if (currentFilter.startsWith('src:')) {
+            const src = currentFilter.slice(4);
+            return strats.filter(s => s.source === src || s.source?.startsWith(src));
+        }
+        return strats.filter(s => s.verdict === currentFilter || s.verdict === currentFilter + '*');
+    }
+
+    function renderCards() {
+        const strats = getFiltered();
+        const sorted = [...strats].sort((a,b) => {
+            const av = a[sortCol]||0, bv = b[sortCol]||0;
+            return sortDir === 'desc' ? bv - av : av - bv;
+        });
+        let html = '';
+        for (const s of sorted.slice(0, 200)) {
+            const wr = s.win_rate || 0;
+            const sharpe = s.sharpe || 0;
+            const trades = s.trades || 0;
+            const pnl = s.avg_pnl_pct || s.total_pnl_pct || 0;
+            const v = s.verdict || 'INSUFFICIENT';
+            const isPhoenix = s.is_phoenix || s.was_revived || v === 'PHOENIX';
+            const verdictClass = isPhoenix ? 'PHOENIX' : v.replace('*','\\*');
+            const unconfirmed = trades < 10 ? ' (unconfirmed)' : '';
+            const confidencePct = Math.min(100, trades * 5);
+            const confColor = isPhoenix ? '#16a34a' :
+                              v === 'EDGE' || v === 'EDGE*' ? '#22c55e' :
+                              v === 'ASYMMETRIC' ? '#06b6d4' :
+                              v === 'MARGINAL' ? '#eab308' : '#ef4444';
+
+            const dnaSeq = s.dna_sequence || s.genetic_code;
+            const dnaHtml = dnaSeq ? `<div class="dna-sequence" title="DNA: ${dnaSeq}">${dnaSeq.substring(0, 32)}...</div>` : '';
+
+            html += `
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-name" title="${s.name}">${s.name}</div>
+                    <span class="verdict-badge verdict-${verdictClass}">${isPhoenix ? 'PHOENIX' : v}${unconfirmed}</span>
+                </div>
+                <div class="card-source">Source: <span>${s.source}</span> · ${s.source_type||''}</div>
+                ${dnaHtml}
+                <div class="card-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Trades</div>
+                        <div class="metric-value ${trades<10?'neutral':''}">${trades}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Win Rate</div>
+                        <div class="metric-value ${wr>=0.5?'positive':wr<0.35?'negative':'neutral'}">${(wr*100).toFixed(1)}%</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Sharpe</div>
+                        <div class="metric-value ${sharpe>0.5?'positive':sharpe<0?'negative':'neutral'}">${sharpe.toFixed(2)}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Avg P/L</div>
+                        <div class="metric-value ${pnl>0?'positive':pnl<0?'negative':'neutral'}">${pnl>0?'+':''}${pnl.toFixed(2)}%</div>
+                    </div>
+                </div>
+                <div class="confidence-bar"><div class="confidence-fill" style="width:${confidencePct}%;background:${confColor}"></div></div>
+                <div class="card-footer">
+                    <span>${s.kelly_fraction||s.kelly_pct ? 'Kelly: '+(s.kelly_fraction||s.kelly_pct).toFixed?.(1)+'%' : ''}</span>
+                    <span>${trades<10?'⚠ Low sample':(isPhoenix?'🔥 Phoenix ✓':'✓ '+trades+' trades')}</span>
+                    ${getDashboardUrl(s.source) ? '<a href="'+getDashboardUrl(s.source)+'" target="_blank" style="color:#60a5fa;font-size:11px;text-decoration:none">Dashboard →</a>' : ''}
+                </div>
+            </div>`;
+        }
+        if (!html) html = '<div class="loading">No strategies match this filter.</div>';
+        document.getElementById('cards-view').innerHTML = html;
+    }
+
+    function renderTable() {
+        const strats = getFiltered();
+        const sorted = [...strats].sort((a,b) => {
+            const av = a[sortCol]||0, bv = b[sortCol]||0;
+            return sortDir === 'desc' ? bv - av : av - bv;
+        });
+        const cols = [
+            {key:'name',label:'Strategy',align:'left'},
+            {key:'source',label:'Source',align:'left'},
+            {key:'verdict',label:'Verdict',align:'left'},
+            {key:'trades',label:'Trades',align:'right'},
+            {key:'win_rate',label:'WR%',align:'right',fmt:v=>(v*100).toFixed(1)+'%'},
+            {key:'sharpe',label:'Sharpe',align:'right',fmt:v=>v.toFixed(2)},
+            {key:'avg_pnl_pct',label:'Avg P/L',align:'right',fmt:v=>(v>0?'+':'')+v.toFixed(2)+'%'},
+            {key:'profit_factor',label:'PF',align:'right',fmt:v=>v?v.toFixed(2):'-'},
+            {key:'max_drawdown',label:'MaxDD',align:'right',fmt:v=>v?v.toFixed(1)+'%':'-'},
+        ];
+        let html = '<table><thead><tr>';
+        for (const c of cols) {
+            const cls = sortCol===c.key ? (sortDir==='asc'?'sorted-asc':'sorted-desc') : '';
+            html += `<th class="${cls}" style="text-align:${c.align}" onclick="sortTable('${c.key}')">${c.label}</th>`;
+        }
+        html += '</tr></thead><tbody>';
+        for (const s of sorted.slice(0, 500)) {
+            const isPhoenix = s.is_phoenix || s.was_revived || s.verdict === 'PHOENIX';
+            html += '<tr>';
+            for (const c of cols) {
+                let val = s[c.key] || (c.key==='avg_pnl_pct' ? s.total_pnl_pct : 0) || 0;
+                let display = c.fmt ? c.fmt(val) : val;
+                let color = '';
+                if (c.key === 'verdict') {
+                    const colors = {
+                        EDGE:'#22c55e','EDGE*':'#22c55e',ASYMMETRIC:'#06b6d4',
+                        MARGINAL:'#eab308',TRAP:'#ef4444',DEAD:'#991b1b',PHOENIX:'#16a34a'
+                    };
+                    color = colors[val] || (isPhoenix ? '#16a34a' : '#666');
+                    if (isPhoenix) display = 'PHOENIX';
+                }
+                if (c.key === 'win_rate') color = val >= 0.5 ? '#22c55e' : val < 0.35 ? '#ef4444' : '';
+                if (c.key === 'sharpe') color = val > 0.5 ? '#22c55e' : val < 0 ? '#ef4444' : '';
+                if (c.key === 'avg_pnl_pct') color = val > 0 ? '#22c55e' : val < 0 ? '#ef4444' : '';
+                html += `<td style="text-align:${c.align};${color?'color:'+color+';font-weight:700':''}">${display}</td>`;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        document.getElementById('table-view').innerHTML = html;
+    }
+
+    function renderDNAView() {
+        const strats = getFiltered().filter(s => s.dna_sequence || s.genetic_code);
+        const sorted = strats.slice(0, 50);
+        
+        let html = '';
+        for (const s of sorted) {
+            const dna = s.dna_sequence || s.genetic_code || 'N/A';
+            const gen = s.genetic_generation || s.generation || '?';
+            html += `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-name">${s.name}</div>
+                        <span style="font-size:0.7rem;color:#06b6d4">Gen ${gen}</span>
+                    </div>
+                    <div class="dna-sequence" style="font-size:0.75rem;word-break:break-all;white-space:normal">${dna}</div>
+                    <div style="display:flex;gap:8px;margin-top:8px;font-size:0.65rem;color:#888">
+                        <span style="color:#a855f7">Entry: ${dna.substring(0,12)}</span>
+                        <span style="color:#06b6d4">Exit: ${dna.substring(12,24)}</span>
+                        <span style="color:#22c55e">Size: ${dna.substring(24,32)}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        document.getElementById('dna-sequences').innerHTML = html || '<div class="loading">No DNA sequences available</div>';
+    }
+
+    function setFilter(f) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.filter-btn[data-filter="${f}"]`)?.classList.add('active');
+        renderCards();
+        renderTable();
+        renderDNAView();
+    }
+
+    function setView(v) {
+        currentView = v;
+        document.getElementById('cards-view').style.display = v === 'cards' ? 'grid' : 'none';
+        document.getElementById('table-view').style.display = v === 'table' ? 'block' : 'none';
+        document.getElementById('dna-view').style.display = v === 'dna' ? 'block' : 'none';
+        document.getElementById('btn-cards').classList.toggle('active', v === 'cards');
+        document.getElementById('btn-table').classList.toggle('active', v === 'table');
+        document.getElementById('btn-dna').classList.toggle('active', v === 'dna');
+    }
+
+    function sortTable(col) {
+        if (sortCol === col) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+        else { sortCol = col; sortDir = 'desc'; }
+        renderCards();
+        renderTable();
+    }
+
+    function filterStrategies() { renderCards(); renderTable(); renderDNAView(); }
+
+    loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+{
+  "strategy_name": "crypto_soc_trend_filtered_meanrev_a10_v1",
+  "agent_id": "web_ai",
+  "agent_type": "local_ai",
+  "created_at": "2026-02-26T21:30:00Z",
+  "status": "paper_trading",
+  "strategy_type": "social_inspired_trend_filtered_meanrev",
+  "unique_value": "Social-theme composite (trend_filtered_meanrev) with regime/VEI/orderflow/session confluence.",
+  "asset_class": "crypto",
+  "timeframe": "4h",
+  "expected_regime": "adaptive",
+  "backtest_metrics": {
+    "sharpe": 4.57,
+    "win_rate": 0.45,
+    "max_drawdown": 0.0253,
+    "total_trades": 11,
+    "profit_factor": 1.9,
+    "total_return": 0.0295,
+    "timestamp": "2026-02-27T00:00:00Z",
+    "data_source": "real_crypto_db"
+  },
+  "indicators": [
+    "EMA(18/52)",
+    "ZScore(18)",
+    "Breakout(27)",
+    "ATRshort/ATRlong (10/46)",
+    "DeltaProxyFlow",
+    "SessionConfluence"
+  ],
+  "entry_conditions": [
+    "Composite exceeds directional threshold",
+    "VEI regime gate passes",
+    "Micro-noise filter passes"
+  ],
+  "exit_conditions": [
+    "Take profit: 1.90x ATR",
+    "Stop loss: 1.50x ATR"
+  ],
+  "parameters": {
+    "fast_ema": 18,
+    "slow_ema": 52,
+    "z_window": 18,
+    "breakout_window": 27,
+    "vol_window": 18,
+    "atr_short": 10,
+    "atr_long": 46,
+    "atr_gate": 1.16,
+    "vol_ratio_gate": 1.0,
+    "trend_w": 0.2944,
+    "meanrev_w": 0.3108,
+    "breakout_w": 0.0685,
+    "volstate_w": 0.1482,
+    "flow_w": 0.1052,
+    "session_w": 0.0729,
+    "long_threshold": 0.46,
+    "short_threshold": 0.46,
+    "tp_atr": 1.9,
+    "sl_atr": 1.5,
+    "cooldown": 2
+  },
+  "validation_history": [],
+  "paper_trading": {
+    "started_at": "2026-02-24T05:53:08.916001+00:00",
+    "end_date": "2026-03-29T05:53:08.916001+00:00",
+    "days_remaining": 0,
+    "days_elapsed": 87,
+    "trades_count": 8,
+    "current_pnl": -1.3489,
+    "progress_pct": 100.0,
+    "daily_pnl": [
+      {
+        "date": "2026-03-05",
+        "pnl": -126.52335,
+        "pnl_pct": -1.7723,
+        "trades": 2,
+        "wins": 0,
+        "losses": 2
+      },
+      {
+        "date": "2026-03-08",
+        "pnl": 77.40252,
+        "pnl_pct": 1.141,
+        "trades": 1,
+        "wins": 1,
+        "losses": 0
+      },
+      {
+        "date": "2026-04-07",
+        "pnl": -125.89398,
+        "pnl_pct": -1.8323,
+        "trades": 3,
+        "wins": 0,
+        "losses": 3
+      },
+      {
+        "date": "2026-04-08",
+        "pnl": 97.977924,
+        "pnl_pct": 1.3833,
+        "trades": 1,
+        "wins": 1,
+        "losses": 0
+      },
+      {
+        "date": "2026-04-15",
+        "pnl": -19.8801,
+        "pnl_pct": -0.2686,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1
+      }
+    ],
+    "last_updated": "2026-05-22T19:58:27.730254+00:00"
+  },
+  "forward_metrics": {
+    "win_rate": 0.25,
+    "sharpe": -3.098327,
+    "max_drawdown": 0.024541,
+    "total_trades": 8
+  },
+  "deployment_status": "not_deployed",
+  "credits": {
+    "concept_by": "user",
+    "implemented_by": "web_ai",
+    "verified_by": null
+  },
+  "forward_daily_pnl": [
+    {
+      "date": "2026-03-05",
+      "pnl": -126.52335,
+      "pnl_pct": -1.7723,
+      "trades": 2,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "date": "2026-03-08",
+      "pnl": 77.40252,
+      "pnl_pct": 1.141,
+      "trades": 1,
+      "wins": 1,
+      "losses": 0
+    },
+    {
+      "date": "2026-04-07",
+      "pnl": -125.89398,
+      "pnl_pct": -1.8323,
+      "trades": 3,
+      "wins": 0,
+      "losses": 3
+    },
+    {
+      "date": "2026-04-08",
+      "pnl": 97.977924,
+      "pnl_pct": 1.3833,
+      "trades": 1,
+      "wins": 1,
+      "losses": 0
+    },
+    {
+      "date": "2026-04-15",
+      "pnl": -19.8801,
+      "pnl_pct": -0.2686,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1
+    }
+  ],
+  "forward_last_updated": "2026-05-22T19:58:27.730254+00:00",
+  "forward_data_source": "real_market_data_crypto_db",
+  "forward_live_picks": [],
+  "forward_live_pick_count": 0,
+  "forward_trades": [
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-03-05T15:00:00+00:00",
+      "exit_time": "2026-03-06T03:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 71646.9,
+      "exit_price": 71075.8,
+      "pnl_pct": -0.7971,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-03-05T16:00:00+00:00",
+      "exit_time": "2026-03-06T04:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 71308.5,
+      "exit_price": 70613.1,
+      "pnl_pct": -0.9752,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-03-08T10:00:00+00:00",
+      "exit_time": "2026-03-08T16:00:00+00:00",
+      "direction": "SHORT",
+      "entry_price": 67903.3,
+      "exit_price": 67128.5,
+      "pnl_pct": 1.141,
+      "exit_reason": "TP",
+      "bars_held": 6
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-04-06T22:00:00+00:00",
+      "exit_time": "2026-04-07T10:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 68817.9,
+      "exit_price": 68232.4,
+      "pnl_pct": -0.8508,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-04-06T23:00:00+00:00",
+      "exit_time": "2026-04-07T11:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 68851.0,
+      "exit_price": 68345.7,
+      "pnl_pct": -0.7339,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-04-07T01:00:00+00:00",
+      "exit_time": "2026-04-07T13:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 68406.7,
+      "exit_price": 68237.3,
+      "pnl_pct": -0.2476,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-04-08T14:00:00+00:00",
+      "exit_time": "2026-04-08T17:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 70900.1,
+      "exit_price": 71880.86,
+      "pnl_pct": 1.3833,
+      "exit_reason": "TP",
+      "bars_held": 3
+    },
+    {
+      "symbol": "BTCUSDT",
+      "entry_time": "2026-04-14T18:00:00+00:00",
+      "exit_time": "2026-04-15T06:00:00+00:00",
+      "direction": "LONG",
+      "entry_price": 74096.3,
+      "exit_price": 73897.3,
+      "pnl_pct": -0.2686,
+      "exit_reason": "TIME",
+      "bars_held": 12
+    }
+  ]
+}

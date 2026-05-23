@@ -1,0 +1,791 @@
+//@version=5
+indicator("Crypto_Pair_Selector_v2_STEPFUN", overlay=false, max_labels_count=50)
+
+// ============================================
+// LIVE STRATEGY SCANNER v0.02 — SIMPLETON ENGINE
+// Runs 6 strategies against YOUR chart, tracks real wins/losses,
+// and tells you which strategy works best for THIS pair + timeframe.
+// Works on ANY pair — no hardcoded data.
+//
+// v0.02 enhancements:
+//   - ATR-based TP/SL (adapts to volatility)
+//   - Timeframe-aware auto-scaling (scales TP/SL/hold per TF)
+//   - ADX regime gating (blocks wrong strategy types)
+//   - Timeout P&L check (profitable timeout = win)
+// ============================================
+
+// ——— USER INPUTS ———
+use_auto = input.bool(true, "Auto-adjust for timeframe", tooltip="Scales TP/SL/hold bars by chart timeframe. Disable to use manual values below.")
+tp_mult_in = input.float(2.0, "TP = ATR x (manual)", minval=0.5, maxval=6.0, step=0.25, tooltip="Take profit in ATR multiples (when auto is off)")
+sl_mult_in = input.float(1.0, "SL = ATR x (manual)", minval=0.3, maxval=4.0, step=0.25, tooltip="Stop loss in ATR multiples (when auto is off)")
+max_bars_in = input.int(15, "Max Bars (manual)", minval=3, maxval=50, tooltip="Max holding period (when auto is off)")
+min_signals = input.int(20, "Min Signals for Rating", minval=2, maxval=50)
+rsi2_oversold = input.int(30, "RSI-2 Oversold", minval=10, maxval=45)
+vol_mult = input.float(2.0, "Vol Spike Multiplier", minval=1.5, maxval=4.0, step=0.1)
+bb_squeeze_thr = input.float(0.05, "BB Squeeze Threshold", minval=0.01, maxval=0.15, step=0.01)
+use_regime_gate = input.bool(true, "ADX Regime Gating", tooltip="Block mean-reversion in trends and trend-following in ranges")
+adx_trend_thr = input.int(25, "ADX Trend Threshold", minval=15, maxval=40, tooltip="ADX above this = trending")
+adx_range_thr = input.int(15, "ADX Range Threshold", minval=5, maxval=30, tooltip="ADX below this = ranging")
+
+// ============================================
+// TIMEFRAME AUTO-SCALING
+// ============================================
+tf_secs = timeframe.in_seconds()
+float auto_tp = tf_secs <= 300 ? 1.25 : tf_secs <= 900 ? 1.5 : tf_secs <= 3600 ? 2.0 : tf_secs <= 14400 ? 2.5 : tf_secs <= 86400 ? 3.5 : 4.5
+float auto_sl = tf_secs <= 300 ? 0.75 : tf_secs <= 900 ? 0.75 : tf_secs <= 3600 ? 1.0 : tf_secs <= 14400 ? 1.25 : tf_secs <= 86400 ? 1.75 : 2.0
+int auto_max = tf_secs <= 300 ? 8 : tf_secs <= 900 ? 12 : tf_secs <= 3600 ? 15 : tf_secs <= 14400 ? 20 : tf_secs <= 86400 ? 12 : 8
+string tf_profile = tf_secs <= 300 ? "SCALP" : tf_secs <= 900 ? "INTRADAY" : tf_secs <= 3600 ? "SWING-ID" : tf_secs <= 14400 ? "SWING" : tf_secs <= 86400 ? "POSITION" : "MACRO"
+
+float tp_mult = use_auto ? auto_tp : tp_mult_in
+float sl_mult = use_auto ? auto_sl : sl_mult_in
+int max_bars_hold = use_auto ? auto_max : max_bars_in
+
+// ============================================
+// SHARED INDICATORS (computed once, reused)
+// ============================================
+vol_ma20 = ta.sma(volume, 20)
+sma200 = ta.sma(close, 200)
+sma50 = ta.sma(close, 50)
+atr_val = ta.atr(14)
+float tp_dist = atr_val * tp_mult
+float sl_dist = atr_val * sl_mult
+[di_plus, di_minus, adx_val] = ta.dmi(14, 14)
+volatility_pct = ta.stdev(close, 20) / ta.sma(close, 20) * 100.0
+
+// ============================================
+// ADX REGIME CLASSIFICATION
+// ============================================
+string regime = adx_val >= adx_trend_thr ? "TREND" : adx_val >= adx_range_thr ? "MIXED" : "RANGE"
+color reg_col = adx_val >= adx_trend_thr ? #cc3333 : adx_val >= adx_range_thr ? #cc8800 : #229922
+
+// ============================================
+// STRATEGY 1: RSI-2 MEAN REVERSION
+// ============================================
+rsi2_val = ta.rsi(close, 2)
+rsi2_long = rsi2_val[1] <= rsi2_oversold and rsi2_val > rsi2_oversold and close > sma200 and volume > vol_ma20 * 1.5
+
+// ============================================
+// STRATEGY 2: MACD CROSSOVER
+// ============================================
+[macd_l, sig_l, macd_hist] = ta.macd(close, 12, 26, 9)
+macd_long = ta.crossover(macd_l, sig_l) and macd_hist > 0 and close > sma50
+
+// ============================================
+// STRATEGY 3: BOLLINGER SQUEEZE BREAKOUT
+// ============================================
+bb_basis = ta.sma(close, 20)
+bb_dev = ta.stdev(close, 20)
+bb_upper = bb_basis + 2.0 * bb_dev
+bb_lower = bb_basis - 2.0 * bb_dev
+bb_width = (bb_upper - bb_lower) / bb_basis
+is_squeeze = bb_width < bb_squeeze_thr
+vol_confirm = volume > vol_ma20 * 1.5
+
+var bool sq_active = false
+if is_squeeze and not sq_active
+    sq_active := true
+bb_long = false
+if sq_active and close > bb_upper and vol_confirm
+    bb_long := true
+    sq_active := false
+else if sq_active and close < bb_lower
+    sq_active := false
+
+// ============================================
+// STRATEGY 4: VOLUME SPIKE
+// ============================================
+price_chg_pct = (close - close[1]) / close[1] * 100
+vol_spike = volume > vol_ma20 * vol_mult
+vol_long = vol_spike and close > open and close > close[1] and math.abs(price_chg_pct) >= 1.0 and close > sma50
+
+// ============================================
+// STRATEGY 5: TRIPLE EMA
+// ============================================
+ema5 = ta.ema(close, 5)
+ema10 = ta.ema(close, 10)
+ema20_val = ta.ema(close, 20)
+rsi14 = ta.rsi(close, 14)
+ema_stack_now = ema5 > ema10 and ema10 > ema20_val and close > ema5 and rsi14 > 50
+ema_stack_prev = ema5[1] > ema10[1] and ema10[1] > ema20_val[1] and close[1] > ema5[1] and rsi14[1] > 50
+ema_long = ema_stack_now and not ema_stack_prev
+
+// ============================================
+// STRATEGY 6: ICHIMOKU CLOUD
+// ============================================
+ich_tenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+ich_kijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+ich_span_a = (ich_tenkan + ich_kijun) / 2
+ich_span_b = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+ich_cloud_top = math.max(ich_span_a, ich_span_b)
+ichi_long = close > ich_cloud_top and ta.crossover(ich_tenkan, ich_kijun) and ich_span_a > ich_span_b
+
+// ============================================
+// REGIME GATING
+// Mean-reversion (RSI-2) blocked in TREND regime
+// Trend-following (MACD, BB Squeeze, EMA, Ichimoku) blocked in RANGE regime
+// Neutral (Vol Spike) always active
+// ============================================
+bool s1_ok = use_regime_gate ? regime != "TREND" : true
+bool s2_ok = use_regime_gate ? regime != "RANGE" : true
+bool s3_ok = use_regime_gate ? regime != "RANGE" : true
+bool s4_ok = true
+bool s5_ok = use_regime_gate ? regime != "RANGE" : true
+bool s6_ok = use_regime_gate ? regime != "RANGE" : true
+
+int active_count = 0
+if s1_ok
+    active_count += 1
+if s2_ok
+    active_count += 1
+if s3_ok
+    active_count += 1
+if s4_ok
+    active_count += 1
+if s5_ok
+    active_count += 1
+if s6_ok
+    active_count += 1
+
+// ============================================
+// WIN/LOSS STATE MACHINES (6 strategies x 8 vars each)
+// Now includes frozen TP/SL at entry + loss tracking
+// ============================================
+
+// Strategy 1: RSI-2
+var float s1_entry = na
+var int s1_entry_b = na
+var float s1_tp_lv = na
+var float s1_sl_lv = na
+var int s1_wins = 0
+var int s1_losses = 0
+var float s1_sum_win = 0.0
+var float s1_sum_loss = 0.0
+var bool s1_in_trade = false
+
+// Strategy 2: MACD
+var float s2_entry = na
+var int s2_entry_b = na
+var float s2_tp_lv = na
+var float s2_sl_lv = na
+var int s2_wins = 0
+var int s2_losses = 0
+var float s2_sum_win = 0.0
+var float s2_sum_loss = 0.0
+var bool s2_in_trade = false
+
+// Strategy 3: BB Squeeze
+var float s3_entry = na
+var int s3_entry_b = na
+var float s3_tp_lv = na
+var float s3_sl_lv = na
+var int s3_wins = 0
+var int s3_losses = 0
+var float s3_sum_win = 0.0
+var float s3_sum_loss = 0.0
+var bool s3_in_trade = false
+
+// Strategy 4: Volume Spike
+var float s4_entry = na
+var int s4_entry_b = na
+var float s4_tp_lv = na
+var float s4_sl_lv = na
+var int s4_wins = 0
+var int s4_losses = 0
+var float s4_sum_win = 0.0
+var float s4_sum_loss = 0.0
+var bool s4_in_trade = false
+
+// Strategy 5: Triple EMA
+var float s5_entry = na
+var int s5_entry_b = na
+var float s5_tp_lv = na
+var float s5_sl_lv = na
+var int s5_wins = 0
+var int s5_losses = 0
+var float s5_sum_win = 0.0
+var float s5_sum_loss = 0.0
+var bool s5_in_trade = false
+
+// Strategy 6: Ichimoku
+var float s6_entry = na
+var int s6_entry_b = na
+var float s6_tp_lv = na
+var float s6_sl_lv = na
+var int s6_wins = 0
+var int s6_losses = 0
+var float s6_sum_win = 0.0
+var float s6_sum_loss = 0.0
+var bool s6_in_trade = false
+
+// ============================================
+// TRADE TRACKING — RSI-2
+// ============================================
+if rsi2_long and s1_ok and not s1_in_trade
+    s1_entry := close
+    s1_entry_b := bar_index
+    s1_tp_lv := close + tp_dist
+    s1_sl_lv := close - sl_dist
+    s1_in_trade := true
+
+if s1_in_trade and not na(s1_entry)
+    bool s1_tp_hit = high >= s1_tp_lv
+    bool s1_sl_hit = low <= s1_sl_lv
+    int s1_held = bar_index - s1_entry_b
+    if s1_tp_hit and s1_sl_hit
+        s1_losses := s1_losses + 1
+        s1_sum_loss += (s1_entry - s1_sl_lv) / s1_entry * 100.0
+        s1_entry := na
+        s1_in_trade := false
+    else if s1_tp_hit
+        s1_wins := s1_wins + 1
+        s1_sum_win += (s1_tp_lv - s1_entry) / s1_entry * 100.0
+        s1_entry := na
+        s1_in_trade := false
+    else if s1_sl_hit
+        s1_losses := s1_losses + 1
+        s1_sum_loss += (s1_entry - s1_sl_lv) / s1_entry * 100.0
+        s1_entry := na
+        s1_in_trade := false
+    else if s1_held >= max_bars_hold
+        float s1_pnl = (close - s1_entry) / s1_entry * 100.0
+        if s1_pnl > 0.1
+            s1_wins := s1_wins + 1
+            s1_sum_win += s1_pnl
+        else if s1_pnl < -0.1
+            s1_losses := s1_losses + 1
+            s1_sum_loss += math.abs(s1_pnl)
+        s1_entry := na
+        s1_in_trade := false
+
+// ============================================
+// TRADE TRACKING — MACD
+// ============================================
+if macd_long and s2_ok and not s2_in_trade
+    s2_entry := close
+    s2_entry_b := bar_index
+    s2_tp_lv := close + tp_dist
+    s2_sl_lv := close - sl_dist
+    s2_in_trade := true
+
+if s2_in_trade and not na(s2_entry)
+    bool s2_tp_hit = high >= s2_tp_lv
+    bool s2_sl_hit = low <= s2_sl_lv
+    int s2_held = bar_index - s2_entry_b
+    if s2_tp_hit and s2_sl_hit
+        s2_losses := s2_losses + 1
+        s2_sum_loss += (s2_entry - s2_sl_lv) / s2_entry * 100.0
+        s2_entry := na
+        s2_in_trade := false
+    else if s2_tp_hit
+        s2_wins := s2_wins + 1
+        s2_sum_win += (s2_tp_lv - s2_entry) / s2_entry * 100.0
+        s2_entry := na
+        s2_in_trade := false
+    else if s2_sl_hit
+        s2_losses := s2_losses + 1
+        s2_sum_loss += (s2_entry - s2_sl_lv) / s2_entry * 100.0
+        s2_entry := na
+        s2_in_trade := false
+    else if s2_held >= max_bars_hold
+        float s2_pnl = (close - s2_entry) / s2_entry * 100.0
+        if s2_pnl > 0.1
+            s2_wins := s2_wins + 1
+            s2_sum_win += s2_pnl
+        else if s2_pnl < -0.1
+            s2_losses := s2_losses + 1
+            s2_sum_loss += math.abs(s2_pnl)
+        s2_entry := na
+        s2_in_trade := false
+
+// ============================================
+// TRADE TRACKING — BB SQUEEZE
+// ============================================
+if bb_long and s3_ok and not s3_in_trade
+    s3_entry := close
+    s3_entry_b := bar_index
+    s3_tp_lv := close + tp_dist
+    s3_sl_lv := close - sl_dist
+    s3_in_trade := true
+
+if s3_in_trade and not na(s3_entry)
+    bool s3_tp_hit = high >= s3_tp_lv
+    bool s3_sl_hit = low <= s3_sl_lv
+    int s3_held = bar_index - s3_entry_b
+    if s3_tp_hit and s3_sl_hit
+        s3_losses := s3_losses + 1
+        s3_sum_loss += (s3_entry - s3_sl_lv) / s3_entry * 100.0
+        s3_entry := na
+        s3_in_trade := false
+    else if s3_tp_hit
+        s3_wins := s3_wins + 1
+        s3_sum_win += (s3_tp_lv - s3_entry) / s3_entry * 100.0
+        s3_entry := na
+        s3_in_trade := false
+    else if s3_sl_hit
+        s3_losses := s3_losses + 1
+        s3_sum_loss += (s3_entry - s3_sl_lv) / s3_entry * 100.0
+        s3_entry := na
+        s3_in_trade := false
+    else if s3_held >= max_bars_hold
+        float s3_pnl = (close - s3_entry) / s3_entry * 100.0
+        if s3_pnl > 0.1
+            s3_wins := s3_wins + 1
+            s3_sum_win += s3_pnl
+        else if s3_pnl < -0.1
+            s3_losses := s3_losses + 1
+            s3_sum_loss += math.abs(s3_pnl)
+        s3_entry := na
+        s3_in_trade := false
+
+// ============================================
+// TRADE TRACKING — VOLUME SPIKE
+// ============================================
+if vol_long and s4_ok and not s4_in_trade
+    s4_entry := close
+    s4_entry_b := bar_index
+    s4_tp_lv := close + tp_dist
+    s4_sl_lv := close - sl_dist
+    s4_in_trade := true
+
+if s4_in_trade and not na(s4_entry)
+    bool s4_tp_hit = high >= s4_tp_lv
+    bool s4_sl_hit = low <= s4_sl_lv
+    int s4_held = bar_index - s4_entry_b
+    if s4_tp_hit and s4_sl_hit
+        s4_losses := s4_losses + 1
+        s4_sum_loss += (s4_entry - s4_sl_lv) / s4_entry * 100.0
+        s4_entry := na
+        s4_in_trade := false
+    else if s4_tp_hit
+        s4_wins := s4_wins + 1
+        s4_sum_win += (s4_tp_lv - s4_entry) / s4_entry * 100.0
+        s4_entry := na
+        s4_in_trade := false
+    else if s4_sl_hit
+        s4_losses := s4_losses + 1
+        s4_sum_loss += (s4_entry - s4_sl_lv) / s4_entry * 100.0
+        s4_entry := na
+        s4_in_trade := false
+    else if s4_held >= max_bars_hold
+        float s4_pnl = (close - s4_entry) / s4_entry * 100.0
+        if s4_pnl > 0.1
+            s4_wins := s4_wins + 1
+            s4_sum_win += s4_pnl
+        else if s4_pnl < -0.1
+            s4_losses := s4_losses + 1
+            s4_sum_loss += math.abs(s4_pnl)
+        s4_entry := na
+        s4_in_trade := false
+
+// ============================================
+// TRADE TRACKING — TRIPLE EMA
+// ============================================
+if ema_long and s5_ok and not s5_in_trade
+    s5_entry := close
+    s5_entry_b := bar_index
+    s5_tp_lv := close + tp_dist
+    s5_sl_lv := close - sl_dist
+    s5_in_trade := true
+
+if s5_in_trade and not na(s5_entry)
+    bool s5_tp_hit = high >= s5_tp_lv
+    bool s5_sl_hit = low <= s5_sl_lv
+    int s5_held = bar_index - s5_entry_b
+    if s5_tp_hit and s5_sl_hit
+        s5_losses := s5_losses + 1
+        s5_sum_loss += (s5_entry - s5_sl_lv) / s5_entry * 100.0
+        s5_entry := na
+        s5_in_trade := false
+    else if s5_tp_hit
+        s5_wins := s5_wins + 1
+        s5_sum_win += (s5_tp_lv - s5_entry) / s5_entry * 100.0
+        s5_entry := na
+        s5_in_trade := false
+    else if s5_sl_hit
+        s5_losses := s5_losses + 1
+        s5_sum_loss += (s5_entry - s5_sl_lv) / s5_entry * 100.0
+        s5_entry := na
+        s5_in_trade := false
+    else if s5_held >= max_bars_hold
+        float s5_pnl = (close - s5_entry) / s5_entry * 100.0
+        if s5_pnl > 0.1
+            s5_wins := s5_wins + 1
+            s5_sum_win += s5_pnl
+        else if s5_pnl < -0.1
+            s5_losses := s5_losses + 1
+            s5_sum_loss += math.abs(s5_pnl)
+        s5_entry := na
+        s5_in_trade := false
+
+// ============================================
+// TRADE TRACKING — ICHIMOKU
+// ============================================
+if ichi_long and s6_ok and not s6_in_trade
+    s6_entry := close
+    s6_entry_b := bar_index
+    s6_tp_lv := close + tp_dist
+    s6_sl_lv := close - sl_dist
+    s6_in_trade := true
+
+if s6_in_trade and not na(s6_entry)
+    bool s6_tp_hit = high >= s6_tp_lv
+    bool s6_sl_hit = low <= s6_sl_lv
+    int s6_held = bar_index - s6_entry_b
+    if s6_tp_hit and s6_sl_hit
+        s6_losses := s6_losses + 1
+        s6_sum_loss += (s6_entry - s6_sl_lv) / s6_entry * 100.0
+        s6_entry := na
+        s6_in_trade := false
+    else if s6_tp_hit
+        s6_wins := s6_wins + 1
+        s6_sum_win += (s6_tp_lv - s6_entry) / s6_entry * 100.0
+        s6_entry := na
+        s6_in_trade := false
+    else if s6_sl_hit
+        s6_losses := s6_losses + 1
+        s6_sum_loss += (s6_entry - s6_sl_lv) / s6_entry * 100.0
+        s6_entry := na
+        s6_in_trade := false
+    else if s6_held >= max_bars_hold
+        float s6_pnl = (close - s6_entry) / s6_entry * 100.0
+        if s6_pnl > 0.1
+            s6_wins := s6_wins + 1
+            s6_sum_win += s6_pnl
+        else if s6_pnl < -0.1
+            s6_losses := s6_losses + 1
+            s6_sum_loss += math.abs(s6_pnl)
+        s6_entry := na
+        s6_in_trade := false
+
+// ============================================
+// DERIVED METRICS
+// ============================================
+s1_total = s1_wins + s1_losses
+s2_total = s2_wins + s2_losses
+s3_total = s3_wins + s3_losses
+s4_total = s4_wins + s4_losses
+s5_total = s5_wins + s5_losses
+s6_total = s6_wins + s6_losses
+
+s1_wr = s1_total > 0 ? (s1_wins * 1.0 / s1_total) * 100.0 : 0.0
+s2_wr = s2_total > 0 ? (s2_wins * 1.0 / s2_total) * 100.0 : 0.0
+s3_wr = s3_total > 0 ? (s3_wins * 1.0 / s3_total) * 100.0 : 0.0
+s4_wr = s4_total > 0 ? (s4_wins * 1.0 / s4_total) * 100.0 : 0.0
+s5_wr = s5_total > 0 ? (s5_wins * 1.0 / s5_total) * 100.0 : 0.0
+s6_wr = s6_total > 0 ? (s6_wins * 1.0 / s6_total) * 100.0 : 0.0
+
+s1_avg = s1_wins > 0 ? s1_sum_win / s1_wins : 0.0
+s2_avg = s2_wins > 0 ? s2_sum_win / s2_wins : 0.0
+s3_avg = s3_wins > 0 ? s3_sum_win / s3_wins : 0.0
+s4_avg = s4_wins > 0 ? s4_sum_win / s4_wins : 0.0
+s5_avg = s5_wins > 0 ? s5_sum_win / s5_wins : 0.0
+s6_avg = s6_wins > 0 ? s6_sum_win / s6_wins : 0.0
+
+// Profit Factor = gross_win / gross_loss (>1.0 = profitable)
+s1_pf = s1_sum_loss > 0.0 ? s1_sum_win / s1_sum_loss : s1_sum_win > 0 ? 99.9 : 0.0
+s2_pf = s2_sum_loss > 0.0 ? s2_sum_win / s2_sum_loss : s2_sum_win > 0 ? 99.9 : 0.0
+s3_pf = s3_sum_loss > 0.0 ? s3_sum_win / s3_sum_loss : s3_sum_win > 0 ? 99.9 : 0.0
+s4_pf = s4_sum_loss > 0.0 ? s4_sum_win / s4_sum_loss : s4_sum_win > 0 ? 99.9 : 0.0
+s5_pf = s5_sum_loss > 0.0 ? s5_sum_win / s5_sum_loss : s5_sum_win > 0 ? 99.9 : 0.0
+s6_pf = s6_sum_loss > 0.0 ? s6_sum_win / s6_sum_loss : s6_sum_win > 0 ? 99.9 : 0.0
+
+// ============================================
+// BEST / WORST STRATEGY DETECTION
+// (only considers strategies that are currently allowed by regime)
+// ============================================
+float best_wr = 0.0
+int best_idx = 0
+float worst_wr = 101.0
+int worst_idx = 0
+
+if s1_total >= min_signals and s1_ok
+    if s1_wr > best_wr
+        best_wr := s1_wr
+        best_idx := 1
+    if s1_wr < worst_wr
+        worst_wr := s1_wr
+        worst_idx := 1
+if s2_total >= min_signals and s2_ok
+    if s2_wr > best_wr
+        best_wr := s2_wr
+        best_idx := 2
+    if s2_wr < worst_wr
+        worst_wr := s2_wr
+        worst_idx := 2
+if s3_total >= min_signals and s3_ok
+    if s3_wr > best_wr
+        best_wr := s3_wr
+        best_idx := 3
+    if s3_wr < worst_wr
+        worst_wr := s3_wr
+        worst_idx := 3
+if s4_total >= min_signals and s4_ok
+    if s4_wr > best_wr
+        best_wr := s4_wr
+        best_idx := 4
+    if s4_wr < worst_wr
+        worst_wr := s4_wr
+        worst_idx := 4
+if s5_total >= min_signals and s5_ok
+    if s5_wr > best_wr
+        best_wr := s5_wr
+        best_idx := 5
+    if s5_wr < worst_wr
+        worst_wr := s5_wr
+        worst_idx := 5
+if s6_total >= min_signals and s6_ok
+    if s6_wr > best_wr
+        best_wr := s6_wr
+        best_idx := 6
+    if s6_wr < worst_wr
+        worst_wr := s6_wr
+        worst_idx := 6
+
+string best_name = best_idx == 1 ? "RSI-2" : best_idx == 2 ? "MACD" : best_idx == 3 ? "BB Squeeze" : best_idx == 4 ? "Vol Spike" : best_idx == 5 ? "Triple EMA" : best_idx == 6 ? "Ichimoku" : "N/A"
+string worst_name = worst_idx == 1 ? "RSI-2" : worst_idx == 2 ? "MACD" : worst_idx == 3 ? "BB Squeeze" : worst_idx == 4 ? "Vol Spike" : worst_idx == 5 ? "Triple EMA" : worst_idx == 6 ? "Ichimoku" : "N/A"
+
+// ============================================
+// DATA WINDOW PLOTS (hidden from chart)
+// ============================================
+plot(s1_wr, "WR RSI-2", color=color.new(#00ff88, 100), display=display.data_window)
+plot(s2_wr, "WR MACD", color=color.new(#00ff88, 100), display=display.data_window)
+plot(s3_wr, "WR BB Squeeze", color=color.new(#00ff88, 100), display=display.data_window)
+plot(s4_wr, "WR Vol Spike", color=color.new(#00ff88, 100), display=display.data_window)
+plot(s5_wr, "WR Triple EMA", color=color.new(#00ff88, 100), display=display.data_window)
+plot(s6_wr, "WR Ichimoku", color=color.new(#00ff88, 100), display=display.data_window)
+plot(s1_total, "Signals RSI-2", color=color.new(#8888ff, 100), display=display.data_window)
+plot(s2_total, "Signals MACD", color=color.new(#8888ff, 100), display=display.data_window)
+plot(s3_total, "Signals BB", color=color.new(#8888ff, 100), display=display.data_window)
+plot(s4_total, "Signals Vol", color=color.new(#8888ff, 100), display=display.data_window)
+plot(s5_total, "Signals EMA", color=color.new(#8888ff, 100), display=display.data_window)
+plot(s6_total, "Signals Ichi", color=color.new(#8888ff, 100), display=display.data_window)
+plot(best_wr, "Best WR%", color=color.new(#ffff00, 100), display=display.data_window)
+plot(adx_val, "ADX", color=color.new(#ff8800, 100), display=display.data_window)
+plot(volatility_pct, "Volatility %", color=color.new(#ff8800, 100), display=display.data_window)
+plot(tp_mult, "TP Mult", color=color.new(#aaaaff, 100), display=display.data_window)
+plot(sl_mult, "SL Mult", color=color.new(#aaaaff, 100), display=display.data_window)
+plot(active_count, "Active Strategies", color=color.new(#ffaa00, 100), display=display.data_window)
+
+// ============================================
+// MAIN TABLE (top-right, dark theme)
+// ============================================
+var table mt = table.new(position.top_right, 7, 14, border_width=1, border_color=#333355, frame_width=2, frame_color=#5555aa)
+
+if barstate.islast
+    // Row 0: Header
+    string auto_tag = use_auto ? tf_profile : "MANUAL"
+    table.cell(mt, 0, 0, "SIMPLETON v0.02", bgcolor=#0d0d1e, text_color=#8888ff, text_size=size.small)
+    table.cell(mt, 1, 0, auto_tag, bgcolor=#0d0d1e, text_color=#aaaaff, text_size=size.tiny)
+    table.cell(mt, 2, 0, "", bgcolor=#0d0d1e)
+    table.cell(mt, 3, 0, "", bgcolor=#0d0d1e)
+    table.cell(mt, 4, 0, "", bgcolor=#0d0d1e)
+    table.cell(mt, 5, 0, "", bgcolor=#0d0d1e)
+    table.cell(mt, 6, 0, syminfo.ticker, bgcolor=#0d0d1e, text_color=#ffffff, text_size=size.small)
+
+    // Row 1: Column headers
+    table.cell(mt, 0, 1, "Strategy", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 1, 1, "Signals", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 2, 1, "W", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 3, 1, "L", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 4, 1, "Win Rate", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 5, 1, "PF", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 6, 1, "Status", bgcolor=#252545, text_color=#8888aa, text_size=size.small)
+
+    // Row 2: RSI-2
+    color s1_wr_c = s1_wr >= 70 ? #1a5c2e : s1_wr >= 55 ? #5c4a1a : #5c1a1a
+    string s1_st = not s1_ok ? "GATED" : s1_total >= min_signals ? (s1_wr >= 60 ? "GOOD" : "WEAK") : "FEW"
+    color s1_st_c = not s1_ok ? #553300 : s1_total >= min_signals ? (s1_wr >= 60 ? #0d5e2e : #5c4a1a) : #333344
+    bool s1_best = best_idx == 1
+    color s1_name_c = not s1_ok ? #666666 : s1_best ? #00ff88 : color.white
+    table.cell(mt, 0, 2, s1_best ? "* RSI-2" : "RSI-2", bgcolor=#1a1a2e, text_color=s1_name_c, text_size=size.small)
+    table.cell(mt, 1, 2, str.tostring(s1_total), bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 2, str.tostring(s1_wins), bgcolor=#1a1a2e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 3, 2, str.tostring(s1_losses), bgcolor=#1a1a2e, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 4, 2, str.tostring(s1_wr, "#.#") + "%", bgcolor=s1_wr_c, text_color=color.white, text_size=size.small)
+    color s1_pf_c = s1_pf >= 2.0 ? #00ff88 : s1_pf >= 1.0 ? #aaaaff : #ff4444
+    table.cell(mt, 5, 2, str.tostring(s1_pf, "#.##"), bgcolor=#1a1a2e, text_color=s1_pf_c, text_size=size.small)
+    table.cell(mt, 6, 2, s1_st, bgcolor=s1_st_c, text_color=color.white, text_size=size.small)
+
+    // Row 3: MACD
+    color s2_wr_c = s2_wr >= 70 ? #1a5c2e : s2_wr >= 55 ? #5c4a1a : #5c1a1a
+    string s2_st = not s2_ok ? "GATED" : s2_total >= min_signals ? (s2_wr >= 60 ? "GOOD" : "WEAK") : "FEW"
+    color s2_st_c = not s2_ok ? #553300 : s2_total >= min_signals ? (s2_wr >= 60 ? #0d5e2e : #5c4a1a) : #333344
+    bool s2_best = best_idx == 2
+    color s2_name_c = not s2_ok ? #666666 : s2_best ? #00ff88 : color.white
+    table.cell(mt, 0, 3, s2_best ? "* MACD" : "MACD", bgcolor=#1a1a2e, text_color=s2_name_c, text_size=size.small)
+    table.cell(mt, 1, 3, str.tostring(s2_total), bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 3, str.tostring(s2_wins), bgcolor=#1a1a2e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 3, 3, str.tostring(s2_losses), bgcolor=#1a1a2e, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 4, 3, str.tostring(s2_wr, "#.#") + "%", bgcolor=s2_wr_c, text_color=color.white, text_size=size.small)
+    color s2_pf_c = s2_pf >= 2.0 ? #00ff88 : s2_pf >= 1.0 ? #aaaaff : #ff4444
+    table.cell(mt, 5, 3, str.tostring(s2_pf, "#.##"), bgcolor=#1a1a2e, text_color=s2_pf_c, text_size=size.small)
+    table.cell(mt, 6, 3, s2_st, bgcolor=s2_st_c, text_color=color.white, text_size=size.small)
+
+    // Row 4: BB Squeeze
+    color s3_wr_c = s3_wr >= 70 ? #1a5c2e : s3_wr >= 55 ? #5c4a1a : #5c1a1a
+    string s3_st = not s3_ok ? "GATED" : s3_total >= min_signals ? (s3_wr >= 60 ? "GOOD" : "WEAK") : "FEW"
+    color s3_st_c = not s3_ok ? #553300 : s3_total >= min_signals ? (s3_wr >= 60 ? #0d5e2e : #5c4a1a) : #333344
+    bool s3_best = best_idx == 3
+    color s3_name_c = not s3_ok ? #666666 : s3_best ? #00ff88 : color.white
+    table.cell(mt, 0, 4, s3_best ? "* BB Squeeze" : "BB Squeeze", bgcolor=#1a1a2e, text_color=s3_name_c, text_size=size.small)
+    table.cell(mt, 1, 4, str.tostring(s3_total), bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 4, str.tostring(s3_wins), bgcolor=#1a1a2e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 3, 4, str.tostring(s3_losses), bgcolor=#1a1a2e, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 4, 4, str.tostring(s3_wr, "#.#") + "%", bgcolor=s3_wr_c, text_color=color.white, text_size=size.small)
+    color s3_pf_c = s3_pf >= 2.0 ? #00ff88 : s3_pf >= 1.0 ? #aaaaff : #ff4444
+    table.cell(mt, 5, 4, str.tostring(s3_pf, "#.##"), bgcolor=#1a1a2e, text_color=s3_pf_c, text_size=size.small)
+    table.cell(mt, 6, 4, s3_st, bgcolor=s3_st_c, text_color=color.white, text_size=size.small)
+
+    // Row 5: Volume Spike
+    color s4_wr_c = s4_wr >= 70 ? #1a5c2e : s4_wr >= 55 ? #5c4a1a : #5c1a1a
+    string s4_st = not s4_ok ? "GATED" : s4_total >= min_signals ? (s4_wr >= 60 ? "GOOD" : "WEAK") : "FEW"
+    color s4_st_c = not s4_ok ? #553300 : s4_total >= min_signals ? (s4_wr >= 60 ? #0d5e2e : #5c4a1a) : #333344
+    bool s4_best = best_idx == 4
+    color s4_name_c = not s4_ok ? #666666 : s4_best ? #00ff88 : color.white
+    table.cell(mt, 0, 5, s4_best ? "* Vol Spike" : "Vol Spike", bgcolor=#1a1a2e, text_color=s4_name_c, text_size=size.small)
+    table.cell(mt, 1, 5, str.tostring(s4_total), bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 5, str.tostring(s4_wins), bgcolor=#1a1a2e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 3, 5, str.tostring(s4_losses), bgcolor=#1a1a2e, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 4, 5, str.tostring(s4_wr, "#.#") + "%", bgcolor=s4_wr_c, text_color=color.white, text_size=size.small)
+    color s4_pf_c = s4_pf >= 2.0 ? #00ff88 : s4_pf >= 1.0 ? #aaaaff : #ff4444
+    table.cell(mt, 5, 5, str.tostring(s4_pf, "#.##"), bgcolor=#1a1a2e, text_color=s4_pf_c, text_size=size.small)
+    table.cell(mt, 6, 5, s4_st, bgcolor=s4_st_c, text_color=color.white, text_size=size.small)
+
+    // Row 6: Triple EMA
+    color s5_wr_c = s5_wr >= 70 ? #1a5c2e : s5_wr >= 55 ? #5c4a1a : #5c1a1a
+    string s5_st = not s5_ok ? "GATED" : s5_total >= min_signals ? (s5_wr >= 60 ? "GOOD" : "WEAK") : "FEW"
+    color s5_st_c = not s5_ok ? #553300 : s5_total >= min_signals ? (s5_wr >= 60 ? #0d5e2e : #5c4a1a) : #333344
+    bool s5_best = best_idx == 5
+    color s5_name_c = not s5_ok ? #666666 : s5_best ? #00ff88 : color.white
+    table.cell(mt, 0, 6, s5_best ? "* Triple EMA" : "Triple EMA", bgcolor=#1a1a2e, text_color=s5_name_c, text_size=size.small)
+    table.cell(mt, 1, 6, str.tostring(s5_total), bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 6, str.tostring(s5_wins), bgcolor=#1a1a2e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 3, 6, str.tostring(s5_losses), bgcolor=#1a1a2e, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 4, 6, str.tostring(s5_wr, "#.#") + "%", bgcolor=s5_wr_c, text_color=color.white, text_size=size.small)
+    color s5_pf_c = s5_pf >= 2.0 ? #00ff88 : s5_pf >= 1.0 ? #aaaaff : #ff4444
+    table.cell(mt, 5, 6, str.tostring(s5_pf, "#.##"), bgcolor=#1a1a2e, text_color=s5_pf_c, text_size=size.small)
+    table.cell(mt, 6, 6, s5_st, bgcolor=s5_st_c, text_color=color.white, text_size=size.small)
+
+    // Row 7: Ichimoku
+    color s6_wr_c = s6_wr >= 70 ? #1a5c2e : s6_wr >= 55 ? #5c4a1a : #5c1a1a
+    string s6_st = not s6_ok ? "GATED" : s6_total >= min_signals ? (s6_wr >= 60 ? "GOOD" : "WEAK") : "FEW"
+    color s6_st_c = not s6_ok ? #553300 : s6_total >= min_signals ? (s6_wr >= 60 ? #0d5e2e : #5c4a1a) : #333344
+    bool s6_best = best_idx == 6
+    color s6_name_c = not s6_ok ? #666666 : s6_best ? #00ff88 : color.white
+    table.cell(mt, 0, 7, s6_best ? "* Ichimoku" : "Ichimoku", bgcolor=#1a1a2e, text_color=s6_name_c, text_size=size.small)
+    table.cell(mt, 1, 7, str.tostring(s6_total), bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 7, str.tostring(s6_wins), bgcolor=#1a1a2e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 3, 7, str.tostring(s6_losses), bgcolor=#1a1a2e, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 4, 7, str.tostring(s6_wr, "#.#") + "%", bgcolor=s6_wr_c, text_color=color.white, text_size=size.small)
+    color s6_pf_c = s6_pf >= 2.0 ? #00ff88 : s6_pf >= 1.0 ? #aaaaff : #ff4444
+    table.cell(mt, 5, 7, str.tostring(s6_pf, "#.##"), bgcolor=#1a1a2e, text_color=s6_pf_c, text_size=size.small)
+    table.cell(mt, 6, 7, s6_st, bgcolor=s6_st_c, text_color=color.white, text_size=size.small)
+
+    // Row 8: Separator
+    table.cell(mt, 0, 8, "", bgcolor=#0d0d1e)
+    table.cell(mt, 1, 8, "", bgcolor=#0d0d1e)
+    table.cell(mt, 2, 8, "", bgcolor=#0d0d1e)
+    table.cell(mt, 3, 8, "", bgcolor=#0d0d1e)
+    table.cell(mt, 4, 8, "", bgcolor=#0d0d1e)
+    table.cell(mt, 5, 8, "", bgcolor=#0d0d1e)
+    table.cell(mt, 6, 8, "", bgcolor=#0d0d1e)
+
+    // Row 9: Best strategy
+    table.cell(mt, 0, 9, "BEST", bgcolor=#0d3d1e, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 1, 9, best_name, bgcolor=#0d3d1e, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 9, "", bgcolor=#0d3d1e)
+    table.cell(mt, 3, 9, "", bgcolor=#0d3d1e)
+    color best_wr_c = best_wr >= 70 ? #1a5c2e : best_wr >= 55 ? #5c4a1a : #333344
+    table.cell(mt, 4, 9, best_idx > 0 ? str.tostring(best_wr, "#.#") + "%" : "-", bgcolor=best_wr_c, text_color=color.white, text_size=size.small)
+    table.cell(mt, 5, 9, "", bgcolor=#0d3d1e)
+    table.cell(mt, 6, 9, best_idx > 0 ? "TOP" : "N/A", bgcolor=#0d3d1e, text_color=#00ff88, text_size=size.small)
+
+    // Row 10: Worst strategy
+    float worst_display = worst_wr >= 101 ? 0.0 : worst_wr
+    table.cell(mt, 0, 10, "WORST", bgcolor=#3d0d0d, text_color=#ff4444, text_size=size.small)
+    table.cell(mt, 1, 10, worst_name, bgcolor=#3d0d0d, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 10, "", bgcolor=#3d0d0d)
+    table.cell(mt, 3, 10, "", bgcolor=#3d0d0d)
+    table.cell(mt, 4, 10, worst_idx > 0 ? str.tostring(worst_display, "#.#") + "%" : "-", bgcolor=#5c1a1a, text_color=color.white, text_size=size.small)
+    table.cell(mt, 5, 10, "", bgcolor=#3d0d0d)
+    table.cell(mt, 6, 10, worst_idx > 0 ? "AVOID" : "N/A", bgcolor=#3d0d0d, text_color=#ff4444, text_size=size.small)
+
+    // Row 11: Regime + ADX
+    string adx_txt = "ADX " + str.tostring(adx_val, "#.#")
+    string gate_txt = str.tostring(active_count) + "/6 active"
+    table.cell(mt, 0, 11, "REGIME", bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 1, 11, regime, bgcolor=reg_col, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 11, adx_txt, bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.small)
+    table.cell(mt, 3, 11, gate_txt, bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.small)
+    table.cell(mt, 4, 11, str.tostring(volatility_pct, "#.##") + "%", bgcolor=#1a1a2e, text_color=#888888, text_size=size.tiny)
+    table.cell(mt, 5, 11, "", bgcolor=#1a1a2e)
+    table.cell(mt, 6, 11, timeframe.period, bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+
+    // Row 12: Auto-scaling info
+    string tp_sl_txt = str.tostring(tp_mult, "#.##") + "x/" + str.tostring(sl_mult, "#.##") + "x ATR"
+    string hold_txt = str.tostring(max_bars_hold) + " bars"
+    table.cell(mt, 0, 12, "TP/SL", bgcolor=#1a1a2e, text_color=#8888aa, text_size=size.small)
+    table.cell(mt, 1, 12, tp_sl_txt, bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.small)
+    table.cell(mt, 2, 12, hold_txt, bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.small)
+    table.cell(mt, 3, 12, "", bgcolor=#1a1a2e)
+    table.cell(mt, 4, 12, "", bgcolor=#1a1a2e)
+    table.cell(mt, 5, 12, "", bgcolor=#1a1a2e)
+    table.cell(mt, 6, 12, use_auto ? "AUTO" : "MANUAL", bgcolor=use_auto ? #1a3a1a : #3a3a1a, text_color=color.white, text_size=size.small)
+
+    // Row 13: Recommendation
+    string rec_txt = best_idx > 0 ? "Use " + best_name + " on " + syminfo.ticker : "Need " + str.tostring(min_signals) + "+ signals to rank"
+    color rec_bg = best_idx > 0 ? #0d3d1e : #1a1a2e
+    table.cell(mt, 0, 13, "REC", bgcolor=rec_bg, text_color=#00ff88, text_size=size.small)
+    table.cell(mt, 1, 13, rec_txt, bgcolor=rec_bg, text_color=color.white, text_size=size.small)
+    table.cell(mt, 2, 13, "", bgcolor=rec_bg)
+    table.cell(mt, 3, 13, "", bgcolor=rec_bg)
+    table.cell(mt, 4, 13, "", bgcolor=rec_bg)
+    table.cell(mt, 5, 13, "", bgcolor=rec_bg)
+    table.cell(mt, 6, 13, "", bgcolor=rec_bg)
+
+// ============================================
+// SUMMARY BOX (bottom-right, plain English)
+// ============================================
+var table sb = table.new(position.bottom_right, 1, 9, border_width=1, border_color=#333355, frame_width=1, frame_color=#5555aa)
+
+if barstate.islast
+    int total_all = s1_total + s2_total + s3_total + s4_total + s5_total + s6_total
+
+    table.cell(sb, 0, 0, "SIMPLETON v0.02 SUMMARY", bgcolor=#1a1a2e, text_color=#8888ff, text_size=size.small)
+    table.cell(sb, 0, 1, syminfo.ticker + " | " + timeframe.period + " | " + tf_profile, bgcolor=#1a1a2e, text_color=color.white, text_size=size.small)
+    table.cell(sb, 0, 2, "Signals tested: " + str.tostring(total_all), bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.small)
+
+    string regime_line = "Regime: " + regime + " (ADX " + str.tostring(adx_val, "#.#") + ")"
+    color regime_line_bg = adx_val >= adx_trend_thr ? #2a1a1a : adx_val >= adx_range_thr ? #2a2a0d : #1a2a1a
+    table.cell(sb, 0, 3, regime_line, bgcolor=regime_line_bg, text_color=color.white, text_size=size.small)
+
+    string gate_line = str.tostring(active_count) + " of 6 strategies active in this regime"
+    table.cell(sb, 0, 4, gate_line, bgcolor=#1a1a2e, text_color=#aaaaff, text_size=size.small)
+
+    string winner_line = best_idx > 0 ? "Best: " + best_name + " (" + str.tostring(best_wr, "#.#") + "% WR)" : "Need more signals to rank"
+    color winner_bg = best_idx > 0 ? #0d3d1e : #1a1a2e
+    table.cell(sb, 0, 5, winner_line, bgcolor=winner_bg, text_color=#00ff88, text_size=size.small)
+
+    string advice = "Let more bars accumulate for reliable stats."
+    if best_idx > 0 and best_wr >= 65.0
+        advice := "Trade " + best_name + " signals. Avoid " + worst_name + "."
+    else if best_idx > 0 and best_wr >= 55.0
+        advice := best_name + " leads but not dominant. Use confirmation."
+    color adv_bg = best_wr >= 65.0 and best_idx > 0 ? #0d3d1e : best_wr >= 55.0 and best_idx > 0 ? #2a2a0d : #1a1a2e
+    table.cell(sb, 0, 6, advice, bgcolor=adv_bg, text_color=color.white, text_size=size.small)
+
+    string auto_line = use_auto ? "Auto: TP " + str.tostring(tp_mult, "#.##") + "x SL " + str.tostring(sl_mult, "#.##") + "x Hold " + str.tostring(max_bars_hold) + "b" : "Manual mode"
+    table.cell(sb, 0, 7, auto_line, bgcolor=#0d0d1e, text_color=#777799, text_size=size.tiny)
+
+    string atr_line = "ATR(14): " + str.tostring(atr_val, "#.##") + " | Vol: " + str.tostring(volatility_pct, "#.##") + "%"
+    table.cell(sb, 0, 8, atr_line, bgcolor=#0d0d1e, text_color=#555577, text_size=size.tiny)
+
+// ============================================
+// ALERTS (ungated — fires even when regime-blocked)
+// ============================================
+alertcondition(rsi2_long, "RSI-2 Signal", "RSI-2 Long | {{ticker}} @ {{close}}")
+alertcondition(macd_long, "MACD Signal", "MACD Long | {{ticker}} @ {{close}}")
+alertcondition(bb_long, "BB Squeeze Signal", "BB Squeeze Long | {{ticker}} @ {{close}}")
+alertcondition(vol_long, "Vol Spike Signal", "Vol Spike Long | {{ticker}} @ {{close}}")
+alertcondition(ema_long, "Triple EMA Signal", "Triple EMA Long | {{ticker}} @ {{close}}")
+alertcondition(ichi_long, "Ichimoku Signal", "Ichimoku Long | {{ticker}} @ {{close}}")

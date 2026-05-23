@@ -1,0 +1,47 @@
+name: MySQL Dedup Fix
+
+# Manual trigger only — NOT on push or schedule.
+# This workflow deduplicates trading_picks, fixes confidence scale issues,
+# and (optionally) adds a UNIQUE index to prevent future duplicates.
+#
+# Usage:
+#   1. Go to Actions → MySQL Dedup Fix → Run workflow
+#   2. Leave dry_run = true to preview what would change (safe, read-mostly)
+#   3. Set dry_run = false to actually apply the changes
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run only (true = report changes without writing, false = apply)"
+        required: false
+        default: "true"
+        type: boolean
+
+jobs:
+  dedup:
+    name: Dedup trading_picks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      AUDIT_DB_HOST: mysql.50webs.com
+      AUDIT_DB_USER: ejaguiar1_stocks
+      AUDIT_DB_NAME: ejaguiar1_stocks
+      AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pymysql
+        run: pip install pymysql
+
+      - name: Run mysql_dedup_fix
+        run: |
+          python tools/mysql_dedup_fix.py ${{ inputs.dry_run == 'false' && '--apply' || '' }}

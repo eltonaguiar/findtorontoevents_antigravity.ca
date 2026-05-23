@@ -1,0 +1,3480 @@
+{
+  "generated_at": "2026-05-21T18:09:30.740871+00:00",
+  "scenario_definitions": [
+    {
+      "name": "Flash_Crash",
+      "vol_mult": 5.0,
+      "gap_pct": -0.15,
+      "duration_bars": 48
+    },
+    {
+      "name": "Infinite_Pump",
+      "trend_pct": 0.03,
+      "duration_bars": 720,
+      "vol_mult": 0.5
+    },
+    {
+      "name": "Correlation_One",
+      "all_corr": 0.95,
+      "trend_pct": -0.02,
+      "duration_bars": 168
+    },
+    {
+      "name": "Liquidity_Void",
+      "vol_mult": 3.0,
+      "spread_mult": 5.0,
+      "duration_bars": 48
+    },
+    {
+      "name": "Regime_Flipper",
+      "regime_changes": 20,
+      "duration_bars": 336
+    },
+    {
+      "name": "Funding_Rate_Spiral",
+      "funding_mult": 10.0,
+      "vol_mult": 2.0,
+      "duration_bars": 168,
+      "desc": "Funding rates spike to 0.1%+ per 8h \u2014 kills carry trades and funding-dependent signals"
+    },
+    {
+      "name": "Low_Volume_Grind",
+      "vol_mult": 0.3,
+      "volume_mult": 0.2,
+      "duration_bars": 336,
+      "desc": "2-week period with 80% below-average volume \u2014 tests volume_confirm entry genes"
+    },
+    {
+      "name": "BTC_Dominance_Surge",
+      "dom_shift": 15.0,
+      "trend_pct": 0.01,
+      "duration_bars": 504,
+      "desc": "BTC dominance rises 50\u219265% \u2014 all altcoin signals fail, tests cross-asset gene"
+    }
+  ],
+  "total_combos_tested": 20,
+  "total_passed": 2,
+  "total_failed": 18,
+  "results": [
+    {
+      "combo_id": "UNI:meta_combos:UNI:alpha_engine:fx_smart_forex_rsi2_mean_reversion",
+      "base_win_rate": 1.0,
+      "base_sharpe": 145732.416,
+      "scenarios_passed": 8,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 15.01,
+          "sharpe": -0.5719,
+          "trade_count": 5,
+          "final_portfolio": 972.13,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.16,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1221,
+            "vol_clustering": true,
+            "mean_return": 0.003264,
+            "std_return": 0.049645
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 53.6115,
+          "trade_count": 4,
+          "final_portfolio": 1105.79,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.91,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0796,
+            "vol_clustering": true,
+            "mean_return": 0.029643,
+            "std_return": 0.007597
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 1.63,
+          "sharpe": 11.0214,
+          "trade_count": 4,
+          "final_portfolio": 1044.24,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.93,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.048,
+            "vol_clustering": false,
+            "mean_return": -0.019808,
+            "std_return": 0.014197
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 21.93,
+          "sharpe": -6.2694,
+          "trade_count": 5,
+          "final_portfolio": 828.78,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.67,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1972,
+            "vol_clustering": false,
+            "mean_return": -0.000345,
+            "std_return": 0.043188
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 3.15,
+          "sharpe": 7.0661,
+          "trade_count": 3,
+          "final_portfolio": 1043.14,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.22,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.164,
+            "vol_clustering": true,
+            "mean_return": -0.000428,
+            "std_return": 0.021774
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 11.77,
+          "sharpe": -2.9447,
+          "trade_count": 4,
+          "final_portfolio": 956.05,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.74,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0051,
+            "vol_clustering": false,
+            "mean_return": -0.001482,
+            "std_return": 0.02742
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 3.38,
+          "sharpe": -5.6868,
+          "trade_count": 4,
+          "final_portfolio": 982.3,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.74,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0969,
+            "vol_clustering": false,
+            "mean_return": 0.000347,
+            "std_return": 0.004675
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 2.37,
+          "sharpe": 0.3718,
+          "trade_count": 5,
+          "final_portfolio": 1001.38,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.06,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0564,
+            "vol_clustering": false,
+            "mean_return": -0.000738,
+            "std_return": 0.007402
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.107558+00:00"
+    },
+    {
+      "combo_id": "UNI:alpha_engine:fx_smart_forex_rsi2_mean_reversion",
+      "base_win_rate": 0.4286,
+      "base_sharpe": 0.0,
+      "scenarios_passed": 8,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 34.21,
+          "sharpe": -16.2868,
+          "trade_count": 3,
+          "final_portfolio": 685.44,
+          "stressed_win_rate": 0.2572,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.14,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0922,
+            "vol_clustering": true,
+            "mean_return": -0.010323,
+            "std_return": 0.068249
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 2.06,
+          "sharpe": 3.4901,
+          "trade_count": 4,
+          "final_portfolio": 1020.19,
+          "stressed_win_rate": 0.3215,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.99,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0042,
+            "vol_clustering": false,
+            "mean_return": 0.029612,
+            "std_return": 0.007658
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 1.79,
+          "sharpe": 14.6071,
+          "trade_count": 4,
+          "final_portfolio": 1088.55,
+          "stressed_win_rate": 0.3,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.17,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0236,
+            "vol_clustering": false,
+            "mean_return": -0.018922,
+            "std_return": 0.015759
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 37.68,
+          "sharpe": -16.5315,
+          "trade_count": 3,
+          "final_portfolio": 650.02,
+          "stressed_win_rate": 0.2357,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.6,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1397,
+            "vol_clustering": false,
+            "mean_return": -0.007858,
+            "std_return": 0.04797
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 10.72,
+          "sharpe": -7.6465,
+          "trade_count": 4,
+          "final_portfolio": 931.88,
+          "stressed_win_rate": 0.2786,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.03,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2257,
+            "vol_clustering": true,
+            "mean_return": 0.001093,
+            "std_return": 0.023783
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 11.86,
+          "sharpe": -111.6684,
+          "trade_count": 3,
+          "final_portfolio": 881.44,
+          "stressed_win_rate": 0.2143,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.64,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.059,
+            "vol_clustering": true,
+            "mean_return": -0.002985,
+            "std_return": 0.030306
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 3.41,
+          "sharpe": -60.5782,
+          "trade_count": 4,
+          "final_portfolio": 965.89,
+          "stressed_win_rate": 0.3,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.71,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0246,
+            "vol_clustering": false,
+            "mean_return": 0.000128,
+            "std_return": 0.004507
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 8.66,
+          "sharpe": -42.3063,
+          "trade_count": 3,
+          "final_portfolio": 913.41,
+          "stressed_win_rate": 0.2572,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.1,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0337,
+            "vol_clustering": false,
+            "mean_return": 0.000703,
+            "std_return": 0.007535
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.141133+00:00"
+    },
+    {
+      "combo_id": "UNI:alpha_engine:ml_enhanced_FETUSDT_1d_B_lightgbm",
+      "base_win_rate": 0.5556,
+      "base_sharpe": 0.0,
+      "scenarios_passed": 8,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 24.03,
+          "sharpe": -7.6102,
+          "trade_count": 5,
+          "final_portfolio": 802.16,
+          "stressed_win_rate": 0.3334,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.46,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.3866,
+            "vol_clustering": true,
+            "mean_return": 0.000986,
+            "std_return": 0.053969
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 86.2648,
+          "trade_count": 4,
+          "final_portfolio": 1150.64,
+          "stressed_win_rate": 0.4167,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.96,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0119,
+            "vol_clustering": false,
+            "mean_return": 0.030642,
+            "std_return": 0.007896
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 9.61,
+          "sharpe": -61.5723,
+          "trade_count": 4,
+          "final_portfolio": 903.87,
+          "stressed_win_rate": 0.3889,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.32,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0486,
+            "vol_clustering": false,
+            "mean_return": -0.020571,
+            "std_return": 0.013711
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 14.49,
+          "sharpe": -8.663,
+          "trade_count": 4,
+          "final_portfolio": 855.07,
+          "stressed_win_rate": 0.3056,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.59,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0911,
+            "vol_clustering": false,
+            "mean_return": -0.000475,
+            "std_return": 0.040212
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 2.35,
+          "sharpe": 6.6971,
+          "trade_count": 3,
+          "final_portfolio": 1032.41,
+          "stressed_win_rate": 0.3611,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.44,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0949,
+            "vol_clustering": true,
+            "mean_return": 0.00139,
+            "std_return": 0.020831
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 19.84,
+          "sharpe": -62.7628,
+          "trade_count": 4,
+          "final_portfolio": 801.58,
+          "stressed_win_rate": 0.2778,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.13,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0329,
+            "vol_clustering": false,
+            "mean_return": 0.001624,
+            "std_return": 0.02886
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 1.64,
+          "sharpe": 4.607,
+          "trade_count": 5,
+          "final_portfolio": 1025.81,
+          "stressed_win_rate": 0.3889,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.18,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0076,
+            "vol_clustering": false,
+            "mean_return": -0.000183,
+            "std_return": 0.004468
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 8.97,
+          "sharpe": -58.39,
+          "trade_count": 3,
+          "final_portfolio": 910.26,
+          "stressed_win_rate": 0.3334,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.87,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0882,
+            "vol_clustering": false,
+            "mean_return": 0.000166,
+            "std_return": 0.00805
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.174391+00:00"
+    },
+    {
+      "combo_id": "UNI:baby_strategies:sma50_regime_filter",
+      "base_win_rate": 1.0,
+      "base_sharpe": 84.2953,
+      "scenarios_passed": 7,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 58.7,
+          "sharpe": -22.2858,
+          "trade_count": 5,
+          "final_portfolio": 412.98,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 5.5,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.1446,
+            "vol_clustering": false,
+            "mean_return": -0.001015,
+            "std_return": 0.07416
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 94.7296,
+          "trade_count": 4,
+          "final_portfolio": 1194.54,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.71,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0294,
+            "vol_clustering": false,
+            "mean_return": 0.029756,
+            "std_return": 0.007293
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 9.52,
+          "sharpe": -8.6232,
+          "trade_count": 4,
+          "final_portfolio": 934.68,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.56,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0077,
+            "vol_clustering": false,
+            "mean_return": -0.01943,
+            "std_return": 0.013925
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 49.49,
+          "sharpe": -12.01,
+          "trade_count": 5,
+          "final_portfolio": 531.63,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.35,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.2328,
+            "vol_clustering": false,
+            "mean_return": -0.015047,
+            "std_return": 0.039193
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 1.89,
+          "sharpe": 13.8182,
+          "trade_count": 4,
+          "final_portfolio": 1096.97,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.28,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1708,
+            "vol_clustering": true,
+            "mean_return": -0.000572,
+            "std_return": 0.022705
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 6.11,
+          "sharpe": -1.7103,
+          "trade_count": 4,
+          "final_portfolio": 975.14,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.9,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0595,
+            "vol_clustering": false,
+            "mean_return": -0.001006,
+            "std_return": 0.027116
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 1.65,
+          "sharpe": 8.0368,
+          "trade_count": 3,
+          "final_portfolio": 1027.57,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.97,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0539,
+            "vol_clustering": false,
+            "mean_return": -4.9e-05,
+            "std_return": 0.004349
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 4.16,
+          "sharpe": 8.9097,
+          "trade_count": 4,
+          "final_portfolio": 1079.96,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.2,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0429,
+            "vol_clustering": false,
+            "mean_return": 0.000602,
+            "std_return": 0.007529
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.207914+00:00"
+    },
+    {
+      "combo_id": "UNI:baby_strategies:sma50_regime_filter",
+      "base_win_rate": 1.0,
+      "base_sharpe": 84.2953,
+      "scenarios_passed": 8,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 39.54,
+          "sharpe": -15.4066,
+          "trade_count": 3,
+          "final_portfolio": 636.02,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.12,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1346,
+            "vol_clustering": true,
+            "mean_return": -0.014522,
+            "std_return": 0.061186
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 2.58,
+          "sharpe": 1.6889,
+          "trade_count": 4,
+          "final_portfolio": 1009.73,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.14,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0043,
+            "vol_clustering": false,
+            "mean_return": 0.029654,
+            "std_return": 0.007995
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 4.12,
+          "sharpe": 5.8481,
+          "trade_count": 4,
+          "final_portfolio": 1045.59,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.84,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0609,
+            "vol_clustering": false,
+            "mean_return": -0.020442,
+            "std_return": 0.01509
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 18.97,
+          "sharpe": -10.6638,
+          "trade_count": 2,
+          "final_portfolio": 840.49,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.57,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0458,
+            "vol_clustering": false,
+            "mean_return": 0.001738,
+            "std_return": 0.040665
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 8.53,
+          "sharpe": 0.2506,
+          "trade_count": 4,
+          "final_portfolio": 998.85,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.33,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1132,
+            "vol_clustering": true,
+            "mean_return": -0.001216,
+            "std_return": 0.021976
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 18.4,
+          "sharpe": -34.4219,
+          "trade_count": 3,
+          "final_portfolio": 816.04,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.73,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0023,
+            "vol_clustering": false,
+            "mean_return": 0.002531,
+            "std_return": 0.028427
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.7,
+          "sharpe": 9.5028,
+          "trade_count": 4,
+          "final_portfolio": 1052.26,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.91,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0386,
+            "vol_clustering": false,
+            "mean_return": 0.000204,
+            "std_return": 0.004234
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 7.45,
+          "sharpe": -2.9341,
+          "trade_count": 4,
+          "final_portfolio": 974.44,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.95,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0471,
+            "vol_clustering": false,
+            "mean_return": -0.00026,
+            "std_return": 0.007409
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.241200+00:00"
+    },
+    {
+      "combo_id": "UNI:alpha_engine:ml_enhanced_FETUSDT_1d_B_lightgbm",
+      "base_win_rate": 0.5556,
+      "base_sharpe": 0.0,
+      "scenarios_passed": 7,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 54.82,
+          "sharpe": -26.6585,
+          "trade_count": 5,
+          "final_portfolio": 462.14,
+          "stressed_win_rate": 0.3334,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.43,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.6164,
+            "vol_clustering": true,
+            "mean_return": -0.005816,
+            "std_return": 0.061698
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 2.11,
+          "sharpe": 11.0739,
+          "trade_count": 4,
+          "final_portfolio": 1065.95,
+          "stressed_win_rate": 0.4167,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.09,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0292,
+            "vol_clustering": false,
+            "mean_return": 0.029613,
+            "std_return": 0.007534
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 1.98,
+          "sharpe": 9.1177,
+          "trade_count": 3,
+          "final_portfolio": 1040.91,
+          "stressed_win_rate": 0.3889,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.96,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0729,
+            "vol_clustering": true,
+            "mean_return": -0.018333,
+            "std_return": 0.014911
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 49.94,
+          "sharpe": -21.2497,
+          "trade_count": 4,
+          "final_portfolio": 500.62,
+          "stressed_win_rate": 0.3056,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.21,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.1593,
+            "vol_clustering": false,
+            "mean_return": 0.000333,
+            "std_return": 0.042477
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 11.32,
+          "sharpe": -12.202,
+          "trade_count": 4,
+          "final_portfolio": 910.86,
+          "stressed_win_rate": 0.3611,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 7.42,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2139,
+            "vol_clustering": true,
+            "mean_return": 0.00116,
+            "std_return": 0.020634
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 13.22,
+          "sharpe": -11.6399,
+          "trade_count": 3,
+          "final_portfolio": 894.73,
+          "stressed_win_rate": 0.2778,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.95,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0335,
+            "vol_clustering": false,
+            "mean_return": 0.001957,
+            "std_return": 0.028642
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 2.55,
+          "sharpe": 2.2433,
+          "trade_count": 4,
+          "final_portfolio": 1010.5,
+          "stressed_win_rate": 0.3889,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.84,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0431,
+            "vol_clustering": false,
+            "mean_return": -0.000183,
+            "std_return": 0.004497
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 6.1,
+          "sharpe": -3.6147,
+          "trade_count": 4,
+          "final_portfolio": 974.7,
+          "stressed_win_rate": 0.3334,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.2,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.032,
+            "vol_clustering": false,
+            "mean_return": -0.000176,
+            "std_return": 0.007794
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.274321+00:00"
+    },
+    {
+      "combo_id": "alpha_engine+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": true,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 78.13,
+          "sharpe": -18.6007,
+          "trade_count": 4,
+          "final_portfolio": 218.72,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.02,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.4227,
+            "vol_clustering": true,
+            "mean_return": -0.00805,
+            "std_return": 0.056114
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 10.95,
+          "sharpe": 5.6595,
+          "trade_count": 4,
+          "final_portfolio": 1114.78,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.32,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0312,
+            "vol_clustering": false,
+            "mean_return": 0.03007,
+            "std_return": 0.007457
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 37.6649,
+          "trade_count": 3,
+          "final_portfolio": 1264.37,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.87,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0448,
+            "vol_clustering": false,
+            "mean_return": -0.020152,
+            "std_return": 0.014525
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 99.35,
+          "sharpe": -24.758,
+          "trade_count": 5,
+          "final_portfolio": 7.21,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.02,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.2117,
+            "vol_clustering": false,
+            "mean_return": 0.000372,
+            "std_return": 0.040006
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 56.9956,
+          "trade_count": 4,
+          "final_portfolio": 1349.65,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.29,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1442,
+            "vol_clustering": true,
+            "mean_return": -0.000639,
+            "std_return": 0.023552
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 49.3615,
+          "trade_count": 3,
+          "final_portfolio": 1210.03,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.61,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0683,
+            "vol_clustering": false,
+            "mean_return": -0.002278,
+            "std_return": 0.031381
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 4.92,
+          "sharpe": 5.6252,
+          "trade_count": 3,
+          "final_portfolio": 1069.86,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.3,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0011,
+            "vol_clustering": false,
+            "mean_return": 0.000327,
+            "std_return": 0.004608
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 66.5525,
+          "trade_count": 2,
+          "final_portfolio": 1141.21,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.84,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.002,
+            "vol_clustering": false,
+            "mean_return": 0.000125,
+            "std_return": 0.007785
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.307719+00:00"
+    },
+    {
+      "combo_id": "alpha_engine+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 8,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 531.6739,
+          "trade_count": 3,
+          "final_portfolio": 1402.33,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.9,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2625,
+            "vol_clustering": true,
+            "mean_return": 0.001498,
+            "std_return": 0.057455
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 2.51,
+          "sharpe": 14.801,
+          "trade_count": 3,
+          "final_portfolio": 1152.57,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.97,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.045,
+            "vol_clustering": false,
+            "mean_return": 0.030418,
+            "std_return": 0.007488
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 13.45,
+          "sharpe": -9.203,
+          "trade_count": 3,
+          "final_portfolio": 865.54,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.08,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0299,
+            "vol_clustering": false,
+            "mean_return": -0.019918,
+            "std_return": 0.013429
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 48.95,
+          "sharpe": -6.9361,
+          "trade_count": 3,
+          "final_portfolio": 585.2,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.56,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.2522,
+            "vol_clustering": false,
+            "mean_return": 0.008104,
+            "std_return": 0.041689
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 8.06,
+          "sharpe": 7.5522,
+          "trade_count": 3,
+          "final_portfolio": 1115.89,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.85,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2225,
+            "vol_clustering": true,
+            "mean_return": -0.00308,
+            "std_return": 0.023422
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 45.29,
+          "sharpe": -14.1483,
+          "trade_count": 4,
+          "final_portfolio": 547.08,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.04,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.049,
+            "vol_clustering": false,
+            "mean_return": -0.001711,
+            "std_return": 0.029234
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 70.2484,
+          "trade_count": 4,
+          "final_portfolio": 1367.65,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.78,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0303,
+            "vol_clustering": false,
+            "mean_return": 4e-05,
+            "std_return": 0.004448
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 147.9848,
+          "trade_count": 4,
+          "final_portfolio": 1358.91,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.22,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0051,
+            "vol_clustering": false,
+            "mean_return": 0.000119,
+            "std_return": 0.006977
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.340906+00:00"
+    },
+    {
+      "combo_id": "alpha_engine+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 63.48,
+          "sharpe": -7.6631,
+          "trade_count": 5,
+          "final_portfolio": 409.19,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 5.38,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2543,
+            "vol_clustering": true,
+            "mean_return": -0.003011,
+            "std_return": 0.05658
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 45.5657,
+          "trade_count": 4,
+          "final_portfolio": 1311.34,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.32,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0171,
+            "vol_clustering": false,
+            "mean_return": 0.030113,
+            "std_return": 0.007496
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 9.39,
+          "sharpe": 10.0393,
+          "trade_count": 4,
+          "final_portfolio": 1220.77,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.04,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0585,
+            "vol_clustering": false,
+            "mean_return": -0.020764,
+            "std_return": 0.015635
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 95.66,
+          "sharpe": -13.8724,
+          "trade_count": 5,
+          "final_portfolio": 43.4,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.92,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1417,
+            "vol_clustering": false,
+            "mean_return": -0.008555,
+            "std_return": 0.054645
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 4.38,
+          "sharpe": 15.3302,
+          "trade_count": 4,
+          "final_portfolio": 1233.42,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.11,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1164,
+            "vol_clustering": true,
+            "mean_return": 0.001316,
+            "std_return": 0.023707
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 43.18,
+          "sharpe": -9.2281,
+          "trade_count": 5,
+          "final_portfolio": 608.01,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.44,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0399,
+            "vol_clustering": false,
+            "mean_return": -0.002017,
+            "std_return": 0.029372
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 3.84,
+          "sharpe": 9.635,
+          "trade_count": 4,
+          "final_portfolio": 1144.46,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.4,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0426,
+            "vol_clustering": false,
+            "mean_return": 5.7e-05,
+            "std_return": 0.004572
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 10.59,
+          "sharpe": 3.5407,
+          "trade_count": 3,
+          "final_portfolio": 1048.15,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.02,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0121,
+            "vol_clustering": false,
+            "mean_return": 0.000427,
+            "std_return": 0.007961
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.374061+00:00"
+    },
+    {
+      "combo_id": "alpha_engine+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 8,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 30.07,
+          "sharpe": -1.8168,
+          "trade_count": 4,
+          "final_portfolio": 869.24,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 7.02,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.4518,
+            "vol_clustering": true,
+            "mean_return": -0.000312,
+            "std_return": 0.052408
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 75.3968,
+          "trade_count": 3,
+          "final_portfolio": 1256.34,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.87,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0167,
+            "vol_clustering": false,
+            "mean_return": 0.029684,
+            "std_return": 0.007726
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 101.0221,
+          "trade_count": 4,
+          "final_portfolio": 1283.05,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.27,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0886,
+            "vol_clustering": true,
+            "mean_return": -0.020868,
+            "std_return": 0.01478
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": true,
+          "max_drawdown_pct": 42.26,
+          "sharpe": -2.7309,
+          "trade_count": 4,
+          "final_portfolio": 747.1,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.66,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0198,
+            "vol_clustering": false,
+            "mean_return": -0.005347,
+            "std_return": 0.044556
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 70.1778,
+          "trade_count": 4,
+          "final_portfolio": 1426.3,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.86,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1051,
+            "vol_clustering": true,
+            "mean_return": -0.000617,
+            "std_return": 0.020689
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 20.72,
+          "sharpe": 1.2598,
+          "trade_count": 3,
+          "final_portfolio": 998.17,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.82,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0562,
+            "vol_clustering": true,
+            "mean_return": -0.004435,
+            "std_return": 0.029262
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 6.91,
+          "sharpe": 5.0944,
+          "trade_count": 4,
+          "final_portfolio": 1064.29,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.83,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0044,
+            "vol_clustering": false,
+            "mean_return": -0.00038,
+            "std_return": 0.00438
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 15.01,
+          "sharpe": -5.1096,
+          "trade_count": 3,
+          "final_portfolio": 919.48,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.66,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0183,
+            "vol_clustering": false,
+            "mean_return": -0.000561,
+            "std_return": 0.007338
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.407388+00:00"
+    },
+    {
+      "combo_id": "alpha_engine+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 5,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 51.69,
+          "sharpe": -5.7357,
+          "trade_count": 3,
+          "final_portfolio": 585.0,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 6.12,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1272,
+            "vol_clustering": true,
+            "mean_return": -0.003483,
+            "std_return": 0.055485
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 66.4754,
+          "trade_count": 5,
+          "final_portfolio": 1517.95,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.07,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0124,
+            "vol_clustering": false,
+            "mean_return": 0.03019,
+            "std_return": 0.007753
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 35.0522,
+          "trade_count": 4,
+          "final_portfolio": 1326.4,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.87,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0725,
+            "vol_clustering": true,
+            "mean_return": -0.021011,
+            "std_return": 0.014626
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 65.08,
+          "sharpe": -4.0437,
+          "trade_count": 4,
+          "final_portfolio": 471.77,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.86,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1047,
+            "vol_clustering": false,
+            "mean_return": -0.00251,
+            "std_return": 0.050293
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 9.99,
+          "sharpe": 4.3589,
+          "trade_count": 3,
+          "final_portfolio": 1061.76,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.66,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0082,
+            "vol_clustering": false,
+            "mean_return": -0.000655,
+            "std_return": 0.018586
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": false,
+          "max_drawdown_pct": 55.48,
+          "sharpe": -16.0624,
+          "trade_count": 5,
+          "final_portfolio": 495.45,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.34,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0102,
+            "vol_clustering": false,
+            "mean_return": -0.00119,
+            "std_return": 0.032612
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 3.72,
+          "sharpe": 16.3056,
+          "trade_count": 4,
+          "final_portfolio": 1260.05,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.02,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1332,
+            "vol_clustering": true,
+            "mean_return": -9.7e-05,
+            "std_return": 0.004557
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 11.64,
+          "sharpe": -0.5388,
+          "trade_count": 4,
+          "final_portfolio": 967.29,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.71,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0716,
+            "vol_clustering": false,
+            "mean_return": -7.5e-05,
+            "std_return": 0.00747
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.440620+00:00"
+    },
+    {
+      "combo_id": "claws_of_doom+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 7,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 49.59,
+          "sharpe": -6.324,
+          "trade_count": 3,
+          "final_portfolio": 592.28,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.3,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.3076,
+            "vol_clustering": true,
+            "mean_return": -0.007043,
+            "std_return": 0.06393
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 342.5262,
+          "trade_count": 2,
+          "final_portfolio": 1131.66,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.91,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0277,
+            "vol_clustering": false,
+            "mean_return": 0.030011,
+            "std_return": 0.007405
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 99.7993,
+          "trade_count": 3,
+          "final_portfolio": 1241.58,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.97,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0668,
+            "vol_clustering": false,
+            "mean_return": -0.022452,
+            "std_return": 0.01499
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 93.73,
+          "sharpe": -9.1613,
+          "trade_count": 5,
+          "final_portfolio": 83.15,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.39,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0238,
+            "vol_clustering": false,
+            "mean_return": -0.003447,
+            "std_return": 0.044951
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 14.74,
+          "sharpe": -2.46,
+          "trade_count": 4,
+          "final_portfolio": 950.33,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.27,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0326,
+            "vol_clustering": false,
+            "mean_return": 0.001814,
+            "std_return": 0.018249
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 32.45,
+          "sharpe": -12.7439,
+          "trade_count": 4,
+          "final_portfolio": 675.53,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.4,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0144,
+            "vol_clustering": false,
+            "mean_return": 0.004157,
+            "std_return": 0.030203
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 1.39,
+          "sharpe": 18.7321,
+          "trade_count": 3,
+          "final_portfolio": 1221.48,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.76,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0109,
+            "vol_clustering": false,
+            "mean_return": -0.000131,
+            "std_return": 0.004502
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 22.03,
+          "sharpe": -6.7961,
+          "trade_count": 4,
+          "final_portfolio": 857.26,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.7,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0318,
+            "vol_clustering": false,
+            "mean_return": 0.000297,
+            "std_return": 0.007493
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.474527+00:00"
+    },
+    {
+      "combo_id": "claws_of_doom+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 61.65,
+          "sharpe": -10.2472,
+          "trade_count": 4,
+          "final_portfolio": 443.31,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.66,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0581,
+            "vol_clustering": true,
+            "mean_return": -0.016816,
+            "std_return": 0.080737
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 73.0591,
+          "trade_count": 3,
+          "final_portfolio": 1299.6,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.93,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0066,
+            "vol_clustering": false,
+            "mean_return": 0.029731,
+            "std_return": 0.007557
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 17.96,
+          "sharpe": -4.9453,
+          "trade_count": 5,
+          "final_portfolio": 878.28,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.17,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0573,
+            "vol_clustering": false,
+            "mean_return": -0.020977,
+            "std_return": 0.014802
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 80.38,
+          "sharpe": -9.9338,
+          "trade_count": 4,
+          "final_portfolio": 218.32,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.28,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.1191,
+            "vol_clustering": false,
+            "mean_return": 0.006146,
+            "std_return": 0.036153
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 12.95,
+          "sharpe": -6.0844,
+          "trade_count": 3,
+          "final_portfolio": 925.64,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.8,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0773,
+            "vol_clustering": true,
+            "mean_return": -0.002498,
+            "std_return": 0.023011
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 23.88,
+          "sharpe": -5.0057,
+          "trade_count": 2,
+          "final_portfolio": 855.84,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.84,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0125,
+            "vol_clustering": false,
+            "mean_return": -5.4e-05,
+            "std_return": 0.030535
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 60.4958,
+          "trade_count": 5,
+          "final_portfolio": 1442.8,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.92,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0006,
+            "vol_clustering": false,
+            "mean_return": 0.00026,
+            "std_return": 0.004372
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 4.65,
+          "sharpe": 10.5058,
+          "trade_count": 3,
+          "final_portfolio": 1129.65,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.9,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0627,
+            "vol_clustering": true,
+            "mean_return": 0.000342,
+            "std_return": 0.007826
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.507942+00:00"
+    },
+    {
+      "combo_id": "claws_of_doom+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": true,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 76.52,
+          "sharpe": -11.7402,
+          "trade_count": 4,
+          "final_portfolio": 264.95,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.21,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.3538,
+            "vol_clustering": true,
+            "mean_return": -0.008785,
+            "std_return": 0.07386
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 4.97,
+          "sharpe": 9.6209,
+          "trade_count": 5,
+          "final_portfolio": 1206.78,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.13,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0091,
+            "vol_clustering": false,
+            "mean_return": 0.029835,
+            "std_return": 0.007519
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 9.17,
+          "sharpe": 6.8445,
+          "trade_count": 4,
+          "final_portfolio": 1119.82,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.03,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0793,
+            "vol_clustering": false,
+            "mean_return": -0.020312,
+            "std_return": 0.01437
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 83.83,
+          "sharpe": -5.6972,
+          "trade_count": 4,
+          "final_portfolio": 207.72,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.28,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.1718,
+            "vol_clustering": true,
+            "mean_return": -0.007505,
+            "std_return": 0.037938
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 13.06,
+          "sharpe": 3.9771,
+          "trade_count": 3,
+          "final_portfolio": 1066.31,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 5.84,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.156,
+            "vol_clustering": true,
+            "mean_return": -0.001708,
+            "std_return": 0.021355
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 63.3576,
+          "trade_count": 2,
+          "final_portfolio": 1190.37,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 4.17,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0319,
+            "vol_clustering": false,
+            "mean_return": 0.002104,
+            "std_return": 0.029575
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 58.7201,
+          "trade_count": 4,
+          "final_portfolio": 1459.49,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.03,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0676,
+            "vol_clustering": true,
+            "mean_return": -2.7e-05,
+            "std_return": 0.00429
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 13.0,
+          "sharpe": 4.6009,
+          "trade_count": 4,
+          "final_portfolio": 1090.64,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.92,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0332,
+            "vol_clustering": false,
+            "mean_return": -0.000122,
+            "std_return": 0.007705
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.540983+00:00"
+    },
+    {
+      "combo_id": "claws_of_doom+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 70.49,
+          "sharpe": -15.0191,
+          "trade_count": 3,
+          "final_portfolio": 295.06,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 5.47,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.3799,
+            "vol_clustering": true,
+            "mean_return": 0.000266,
+            "std_return": 0.046861
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 10.13,
+          "sharpe": -0.9281,
+          "trade_count": 3,
+          "final_portfolio": 981.46,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.99,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0424,
+            "vol_clustering": false,
+            "mean_return": 0.030355,
+            "std_return": 0.007361
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 49.9228,
+          "trade_count": 3,
+          "final_portfolio": 1324.08,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.91,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0899,
+            "vol_clustering": true,
+            "mean_return": -0.019772,
+            "std_return": 0.016417
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 70.5,
+          "sharpe": -10.9774,
+          "trade_count": 4,
+          "final_portfolio": 336.74,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.59,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1151,
+            "vol_clustering": false,
+            "mean_return": 0.000704,
+            "std_return": 0.048306
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 8.67,
+          "sharpe": 3.7808,
+          "trade_count": 3,
+          "final_portfolio": 1045.03,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 5.95,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1018,
+            "vol_clustering": true,
+            "mean_return": -0.002054,
+            "std_return": 0.022762
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 33.1,
+          "sharpe": -9.3216,
+          "trade_count": 3,
+          "final_portfolio": 741.26,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.38,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0736,
+            "vol_clustering": false,
+            "mean_return": -0.0043,
+            "std_return": 0.033108
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 74.4211,
+          "trade_count": 3,
+          "final_portfolio": 1336.86,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.0,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0624,
+            "vol_clustering": false,
+            "mean_return": 0.000182,
+            "std_return": 0.004566
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 22.39,
+          "sharpe": -8.2378,
+          "trade_count": 3,
+          "final_portfolio": 843.51,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.96,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0607,
+            "vol_clustering": true,
+            "mean_return": -1e-06,
+            "std_return": 0.007394
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.574132+00:00"
+    },
+    {
+      "combo_id": "claws_of_doom+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 91.43,
+          "sharpe": -15.0097,
+          "trade_count": 5,
+          "final_portfolio": 85.72,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.27,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1806,
+            "vol_clustering": true,
+            "mean_return": 0.00565,
+            "std_return": 0.067849
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 49.2174,
+          "trade_count": 4,
+          "final_portfolio": 1392.8,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.18,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0456,
+            "vol_clustering": false,
+            "mean_return": 0.030134,
+            "std_return": 0.00771
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 8.36,
+          "sharpe": 12.0854,
+          "trade_count": 5,
+          "final_portfolio": 1281.25,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.22,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0947,
+            "vol_clustering": false,
+            "mean_return": -0.021074,
+            "std_return": 0.014603
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 94.13,
+          "sharpe": -11.989,
+          "trade_count": 4,
+          "final_portfolio": 70.58,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.52,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.093,
+            "vol_clustering": false,
+            "mean_return": 0.007075,
+            "std_return": 0.047978
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 6.37,
+          "sharpe": 12.6417,
+          "trade_count": 4,
+          "final_portfolio": 1237.52,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.98,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1179,
+            "vol_clustering": true,
+            "mean_return": 0.001383,
+            "std_return": 0.0212
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 18.26,
+          "sharpe": -5.9598,
+          "trade_count": 2,
+          "final_portfolio": 885.14,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.92,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0441,
+            "vol_clustering": false,
+            "mean_return": -3.3e-05,
+            "std_return": 0.029715
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 3.64,
+          "sharpe": 10.9128,
+          "trade_count": 4,
+          "final_portfolio": 1174.75,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.99,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1307,
+            "vol_clustering": false,
+            "mean_return": -2.6e-05,
+            "std_return": 0.004479
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 18.58,
+          "sharpe": -3.7597,
+          "trade_count": 4,
+          "final_portfolio": 914.54,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.59,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0425,
+            "vol_clustering": false,
+            "mean_return": 0.000227,
+            "std_return": 0.007511
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.607391+00:00"
+    },
+    {
+      "combo_id": "crypto_ml_edge+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 7,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 47.6373,
+          "trade_count": 4,
+          "final_portfolio": 1404.51,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 6.4,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1493,
+            "vol_clustering": true,
+            "mean_return": -0.009056,
+            "std_return": 0.064038
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 5.01,
+          "sharpe": 16.0495,
+          "trade_count": 4,
+          "final_portfolio": 1303.65,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.06,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0504,
+            "vol_clustering": true,
+            "mean_return": 0.029871,
+            "std_return": 0.007411
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 5.47,
+          "sharpe": 15.305,
+          "trade_count": 5,
+          "final_portfolio": 1298.39,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.04,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1211,
+            "vol_clustering": true,
+            "mean_return": -0.021795,
+            "std_return": 0.014335
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 71.49,
+          "sharpe": -16.4963,
+          "trade_count": 3,
+          "final_portfolio": 285.07,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 2.46,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.073,
+            "vol_clustering": false,
+            "mean_return": -0.00415,
+            "std_return": 0.043941
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 54.2441,
+          "trade_count": 3,
+          "final_portfolio": 1242.85,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 6.42,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1886,
+            "vol_clustering": true,
+            "mean_return": -0.000478,
+            "std_return": 0.019579
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 21.66,
+          "sharpe": -5.5915,
+          "trade_count": 3,
+          "final_portfolio": 873.06,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.67,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1211,
+            "vol_clustering": false,
+            "mean_return": -0.001448,
+            "std_return": 0.030709
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 4.53,
+          "sharpe": 1.0363,
+          "trade_count": 4,
+          "final_portfolio": 1008.45,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.07,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0194,
+            "vol_clustering": false,
+            "mean_return": -4.9e-05,
+            "std_return": 0.004475
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 5.5,
+          "sharpe": 18.3576,
+          "trade_count": 5,
+          "final_portfolio": 1447.37,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.93,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0435,
+            "vol_clustering": false,
+            "mean_return": 0.000605,
+            "std_return": 0.007546
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.640698+00:00"
+    },
+    {
+      "combo_id": "crypto_ml_edge+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 61.35,
+          "sharpe": -6.2619,
+          "trade_count": 3,
+          "final_portfolio": 472.82,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.96,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2171,
+            "vol_clustering": true,
+            "mean_return": -0.003743,
+            "std_return": 0.052301
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 275.3158,
+          "trade_count": 3,
+          "final_portfolio": 1339.71,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.26,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.028,
+            "vol_clustering": false,
+            "mean_return": 0.030259,
+            "std_return": 0.007334
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 23.97,
+          "sharpe": -7.2258,
+          "trade_count": 4,
+          "final_portfolio": 840.21,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.12,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0135,
+            "vol_clustering": false,
+            "mean_return": -0.019871,
+            "std_return": 0.014998
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 87.77,
+          "sharpe": -20.4471,
+          "trade_count": 4,
+          "final_portfolio": 122.27,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.17,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0703,
+            "vol_clustering": true,
+            "mean_return": 0.007958,
+            "std_return": 0.046195
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 21.45,
+          "sharpe": -11.1263,
+          "trade_count": 3,
+          "final_portfolio": 830.36,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 4.9,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.114,
+            "vol_clustering": true,
+            "mean_return": 0.001338,
+            "std_return": 0.019679
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 13.12,
+          "sharpe": -1.8092,
+          "trade_count": 4,
+          "final_portfolio": 938.68,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.51,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0497,
+            "vol_clustering": false,
+            "mean_return": 0.004254,
+            "std_return": 0.02875
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 3.72,
+          "sharpe": 9.7644,
+          "trade_count": 5,
+          "final_portfolio": 1159.13,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.38,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0512,
+            "vol_clustering": true,
+            "mean_return": 0.00027,
+            "std_return": 0.004591
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 4.74,
+          "sharpe": 14.259,
+          "trade_count": 4,
+          "final_portfolio": 1245.82,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 2.85,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0183,
+            "vol_clustering": false,
+            "mean_return": 7.8e-05,
+            "std_return": 0.007596
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.673941+00:00"
+    },
+    {
+      "combo_id": "crypto_ml_edge+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 69.01,
+          "sharpe": -7.256,
+          "trade_count": 5,
+          "final_portfolio": 343.66,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 4.84,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2229,
+            "vol_clustering": true,
+            "mean_return": -0.009353,
+            "std_return": 0.057927
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 171.9799,
+          "trade_count": 3,
+          "final_portfolio": 1392.51,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 3.27,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0001,
+            "vol_clustering": false,
+            "mean_return": 0.029806,
+            "std_return": 0.007442
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 29.31,
+          "sharpe": -9.2277,
+          "trade_count": 4,
+          "final_portfolio": 782.41,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 2.75,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.1251,
+            "vol_clustering": false,
+            "mean_return": -0.018856,
+            "std_return": 0.014843
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 86.55,
+          "sharpe": -8.0733,
+          "trade_count": 5,
+          "final_portfolio": 170.8,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.03,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1113,
+            "vol_clustering": true,
+            "mean_return": -0.006404,
+            "std_return": 0.049359
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 5.28,
+          "sharpe": 6.6753,
+          "trade_count": 3,
+          "final_portfolio": 1066.13,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.33,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.1827,
+            "vol_clustering": true,
+            "mean_return": -0.001199,
+            "std_return": 0.023649
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 13.22,
+          "sharpe": -5.2601,
+          "trade_count": 4,
+          "final_portfolio": 874.59,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.17,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0027,
+            "vol_clustering": false,
+            "mean_return": 0.002271,
+            "std_return": 0.030755
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 83.2254,
+          "trade_count": 4,
+          "final_portfolio": 1309.58,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 3.08,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0317,
+            "vol_clustering": false,
+            "mean_return": 0.00034,
+            "std_return": 0.004808
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 9.81,
+          "sharpe": -4.2673,
+          "trade_count": 4,
+          "final_portfolio": 913.33,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.33,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0017,
+            "vol_clustering": false,
+            "mean_return": 0.000413,
+            "std_return": 0.007081
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.707059+00:00"
+    },
+    {
+      "combo_id": "crypto_ml_edge+tv_tech_1h+tv_tech_4h|regime_aware",
+      "base_win_rate": 1.0,
+      "base_sharpe": 51.2258,
+      "scenarios_passed": 6,
+      "scenarios_total": 8,
+      "overall_pass": false,
+      "scenarios": [
+        {
+          "scenario": "Flash_Crash",
+          "survived": false,
+          "max_drawdown_pct": 58.86,
+          "sharpe": -4.4029,
+          "trade_count": 4,
+          "final_portfolio": 528.5,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.63,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2101,
+            "vol_clustering": true,
+            "mean_return": 0.006536,
+            "std_return": 0.051669
+          }
+        },
+        {
+          "scenario": "Infinite_Pump",
+          "survived": true,
+          "max_drawdown_pct": 5.54,
+          "sharpe": 4.2141,
+          "trade_count": 3,
+          "final_portfolio": 1035.31,
+          "stressed_win_rate": 0.75,
+          "scenario_bars": 720,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 720,
+            "kurtosis": 2.78,
+            "fat_tails": false,
+            "vol_clustering_autocorr": -0.0353,
+            "vol_clustering": false,
+            "mean_return": 0.03003,
+            "std_return": 0.007452
+          }
+        },
+        {
+          "scenario": "Correlation_One",
+          "survived": true,
+          "max_drawdown_pct": 10.73,
+          "sharpe": 6.5462,
+          "trade_count": 4,
+          "final_portfolio": 1131.49,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.26,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0049,
+            "vol_clustering": false,
+            "mean_return": -0.019016,
+            "std_return": 0.014833
+          }
+        },
+        {
+          "scenario": "Liquidity_Void",
+          "survived": false,
+          "max_drawdown_pct": 81.1,
+          "sharpe": -11.9955,
+          "trade_count": 4,
+          "final_portfolio": 217.95,
+          "stressed_win_rate": 0.55,
+          "scenario_bars": 48,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 48,
+            "kurtosis": 3.22,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0432,
+            "vol_clustering": false,
+            "mean_return": 0.00783,
+            "std_return": 0.040849
+          }
+        },
+        {
+          "scenario": "Regime_Flipper",
+          "survived": true,
+          "max_drawdown_pct": 5.44,
+          "sharpe": 7.242,
+          "trade_count": 3,
+          "final_portfolio": 1076.67,
+          "stressed_win_rate": 0.65,
+          "scenario_bars": 320,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 320,
+            "kurtosis": 3.49,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.2545,
+            "vol_clustering": true,
+            "mean_return": -0.000201,
+            "std_return": 0.0231
+          }
+        },
+        {
+          "scenario": "Funding_Rate_Spiral",
+          "survived": true,
+          "max_drawdown_pct": 34.65,
+          "sharpe": -1.3077,
+          "trade_count": 5,
+          "final_portfolio": 887.42,
+          "stressed_win_rate": 0.5,
+          "scenario_bars": 168,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 168,
+            "kurtosis": 3.15,
+            "fat_tails": true,
+            "vol_clustering_autocorr": -0.0006,
+            "vol_clustering": false,
+            "mean_return": -0.000277,
+            "std_return": 0.030871
+          }
+        },
+        {
+          "scenario": "Low_Volume_Grind",
+          "survived": true,
+          "max_drawdown_pct": 0.0,
+          "sharpe": 52.7184,
+          "trade_count": 4,
+          "final_portfolio": 1426.71,
+          "stressed_win_rate": 0.7,
+          "scenario_bars": 336,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 336,
+            "kurtosis": 2.91,
+            "fat_tails": false,
+            "vol_clustering_autocorr": 0.0666,
+            "vol_clustering": true,
+            "mean_return": 6.3e-05,
+            "std_return": 0.004372
+          }
+        },
+        {
+          "scenario": "BTC_Dominance_Surge",
+          "survived": true,
+          "max_drawdown_pct": 6.15,
+          "sharpe": 9.8803,
+          "trade_count": 3,
+          "final_portfolio": 1147.66,
+          "stressed_win_rate": 0.6,
+          "scenario_bars": 504,
+          "realism_check": {
+            "valid": true,
+            "n_bars": 504,
+            "kurtosis": 3.02,
+            "fat_tails": true,
+            "vol_clustering_autocorr": 0.0475,
+            "vol_clustering": false,
+            "mean_return": -8.9e-05,
+            "std_return": 0.007836
+          }
+        }
+      ],
+      "tested_at": "2026-05-21T18:09:30.740482+00:00"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "wire_up_targets": {
+    "per_asset_class_predictor": {
+      "best_call_site_file": "not found - no production file imports per_asset_class_predictor",
+      "best_call_site_function": "not found",
+      "rationale": "The module lives in src/predictors/per_asset_class_predictor.py but no production code currently calls it; a typical entry point would be the scoring engine (e.g. score_engine.run) which does not import it yet.",
+      "downside": "Wiring it into the live scoring loop without a feature-flag would make the new logic immutable and hard to roll back."
+    },
+    "concentration_enhancer": {
+      "best_call_site_file": "not found - no production caller discovered",
+      "best_call_site_function": "not found",
+      "rationale": "The enhancer is defined in src/risk/concentration_enhancer.py; the only references are unit-test fixtures, not any runtime service.",
+      "downside": "Adding a direct call could create a circular import with src/risk/__init__.py which already pulls in the scoring pipeline."
+    },
+    "drift_circuit_breaker": {
+      "best_call_site_file": "not found - the only reference is in docs/DRIFT_BREAKER.md, no code imports it",
+      "best_call_site_function": "not found",
+      "rationale": "The breaker lives in src/circuit_breaker/drift_circuit_breaker.py but the production engine (src/engine/monitor.py) currently reads circuit_breaker_state.json without invoking the breaker logic.",
+      "downside": "If wired to the fast-path monitor it would write to the stale-state file on every tick, re-triggering the known 115-hour leak."
+    },
+    "risk_adjusted_metrics": {
+      "best_call_site_file": "src/dashboard/widgets/risk_metrics_widget.py",
+      "best_call_site_function": "render_risk_metrics",
+      "is_truly_sidecar": "true"
+    },
+    "edge_decay_heatmap": {
+      "best_call_site_file": "src/dashboard/heatmaps/edge_decay_heatmap.py",
+      "best_call_site_function": "draw_heatmap",
+      "is_truly_sidecar": "true"
+    }
+  },
+  "circuit_breaker_namespace_plan": {
+    "current_state_file_path": "state/circuit_breaker_state.json",
+    "current_top_level_keys": [
+      "last_update_ts",
+      "active_breakers",
+      "metadata",
+      "drift_detection"
+    ],
+    "recommended_new_key_name_for_drift_breaker": "drift_breaker_state",
+    "stale_state_leak_prevention_rule": "ttl_seconds=3600 on each top-level namespace; entries older than TTL are ignored and purged on load."
+  },
+  "ic_reproducer_plan": {
+    "closed_pick_dataset_path": "audit_trail/data/dashboard_payload.json :: recent_closed[]",
+    "ghost_cleanup_required": "true",
+    "minimum_python_snippet_to_compute_ic": "```python\nimport pandas as pd\ndf = pd.read_json('audit_trail/data/dashboard_payload.json')\n# isolate the closed-pick rows\nclosed = df[df['status'] == 'CLOSED']\n# compute IC (Pearson) for each feature against the target metric\nic = closed.corr()['target_metric'].drop('target_metric')\nprint(ic)\n```",
+    "feature_names_to_compute_ic_for": [
+      "elite_score",
+      "regime_bonus",
+      "trust_score",
+      "confidence",
+      "ml_replacement_score",
+      "source_system_tier"
+    ]
+  },
+  "scoring_change_attribution_plan": {
+    "merge_order_recommendation": "#942, #961, then MIMO's PR #945",
+    "minimum_quarantine_period_days": 7,
+    "rollback_criterion": "if the combined daily P&L deviation exceeds 2\u202f% of the baseline after the quarantine window."
+  },
+  "highest_risk_one_thing_if_we_ship_as_proposed": "The stale-state leak in circuit_breaker_state.json will cause the drift breaker to fire repeatedly, unintentionally halting the entire trading engine.",
+  "smallest_safe_pilot_action": "Enable the per-asset-class predictor behind a feature flag in a sandbox environment and verify that no writes occur to circuit_breaker_state.json.",
+  "engine": "cerebras",
+  "_swarm_meta": {
+    "raw_path": "reports\\audit_enhancements_2026-05-13\\swarm_dig\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260513T215954Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 1120,
+    "tokens_out": 1524,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

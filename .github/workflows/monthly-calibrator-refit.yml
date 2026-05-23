@@ -1,0 +1,63 @@
+name: Monthly Confidence Calibrator Refit (M-060)
+
+on:
+  schedule:
+    # 1st of each month at 07:00 UTC — after monthly-tournament (06:00 UTC)
+    - cron: "0 7 1 * *"
+  workflow_dispatch:
+    inputs:
+      asset_class:
+        description: "Asset class to refit (or 'all')"
+        required: false
+        default: "all"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  refit-calibrators:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -q numpy scipy scikit-learn
+
+      - name: Refit isotonic calibrators (M-060)
+        run: |
+          python -m alpha_engine.confidence_calibrator fit 2>&1 \
+            | tee /tmp/calibrator_output.txt \
+            || echo "WARNING: calibrator refit failed — check alpha_engine/confidence_calibrator.py"
+          # Capture output as a dated report
+          MONTH=$(date -u +%Y-%m)
+          echo "# Confidence Calibrator Refit — ${MONTH}" > reports/calibrator_refit_${MONTH}.md
+          echo "" >> reports/calibrator_refit_${MONTH}.md
+          cat /tmp/calibrator_output.txt >> reports/calibrator_refit_${MONTH}.md
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit calibrator update
+        run: |
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh "chore(M-060): monthly confidence calibrator refit $(date -u +%Y-%m) [skip ci]" alpha_engine/data/confidence_calibrators.json reports/calibrator_refit_*.md
+          else
+            git config --global user.name "Hermes Agent"
+            git config --global user.email "hermes@findtorontoevents.ca"
+            git add alpha_engine/data/confidence_calibrators.json || true
+            git add reports/calibrator_refit_*.md || true
+            git diff --staged --quiet && echo "No calibrator changes" && exit 0
+            git commit -m "chore(M-060): monthly confidence calibrator refit $(date -u +%Y-%m) [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

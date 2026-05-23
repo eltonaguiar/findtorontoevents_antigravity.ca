@@ -1,0 +1,299 @@
+name: DNA Genome Daily Pipeline
+
+on:
+  push:
+    branches: [main]
+    # NOTE: GitHub Actions rejects workflows that use both `paths` and
+    # `paths-ignore` on the same trigger. Use negation patterns in `paths`
+    # instead to exclude output files written by this workflow (prevents
+    # self-trigger loop).
+    paths:
+      - 'genome/**'
+      - '.github/workflows/genome-daily-pipeline.yml'
+      - '!genome/active_picks.json'
+      - '!genome/data/**'
+      - '!genome/results/**'
+  schedule:
+    - cron: '0 */3 * * *'  # Every 3 hours
+  workflow_dispatch:
+
+concurrency:
+  group: genome-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  data-collection:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy "ccxt>=4.3.80,<4.4" ta
+
+      - name: Fetch Market Data
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+        run: |
+          python << 'PYEOF'
+          import ccxt
+          import json
+          import os
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          symbols = ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
+          timeframes = ["1h", "4h", "1d"]
+          out_dir = Path("genome/data/market")
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          # Try multiple exchanges  Binance blocks US-based GitHub runners (HTTP 451)
+          exchanges = []
+          try:
+              exchanges.append(("bybit", ccxt.bybit({"enableRateLimit": True})))
+          except Exception:
+              pass
+          try:
+              exchanges.append(("binanceus", ccxt.binanceus({"enableRateLimit": True})))
+          except Exception:
+              pass
+          try:
+              exchanges.append(("binance", ccxt.binance({"enableRateLimit": True, "options": {"defaultType": "spot"}})))
+          except Exception:
+              pass
+
+          if not exchanges:
+              raise SystemExit("No exchanges available")
+
+          success = 0
+          for sym in symbols:
+              for tf in timeframes:
+                  fetched = False
+                  for ex_name, exchange in exchanges:
+                      try:
+                          candles = exchange.fetch_ohlcv(sym, timeframe=tf, limit=300)
+                          payload = {
+                              "symbol": sym,
+                              "timeframe": tf,
+                              "exchange": ex_name,
+                              "fetched_at": datetime.now(timezone.utc).isoformat(),
+                              "count": len(candles),
+                              "candles": candles,
+                          }
+                          fname = f"{sym.replace('/','_')}_{tf}.json"
+                          (out_dir / fname).write_text(json.dumps(payload))
+                          success += 1
+                          print(f"[OK] {sym} {tf} via {ex_name}: {len(candles)} candles")
+                          fetched = True
+                          break
+                      except Exception as exc:
+                          print(f"[WARN] {sym} {tf} via {ex_name} failed: {exc}")
+                  if not fetched:
+                      print(f"[FAIL] {sym} {tf}: all exchanges failed")
+
+          if success == 0:
+              raise SystemExit("No market data downloaded")
+          print(f"Downloaded datasets: {success}")
+          PYEOF
+
+      - name: Upload data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-data
+          path: genome/data/market/
+          if-no-files-found: warn
+
+  strategy-permutation:
+    needs: data-collection
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Download market data
+        uses: actions/download-artifact@v4
+        with:
+          name: market-data
+          path: genome/data/market/
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r genome/requirements.txt
+
+      - name: Create required directories
+        run: |
+          mkdir -p genome/logs genome/results genome/data/market
+
+      - name: Run DNA Permutations
+        working-directory: genome
+        run: |
+          python dna_engine.py --mode permute --max-combo-size 4
+
+      - name: Backtest New Combinations
+        working-directory: genome
+        run: |
+          python dna_backtester.py --lookback 90d --symbols BTC,ETH,SOL
+
+      - name: Update Strategy Registry
+        working-directory: genome
+        run: |
+          python strategy_registry.py --update-performance
+
+      - name: Upload results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: genome-results
+          path: |
+            genome/results/
+            genome/*.db
+          if-no-files-found: warn
+
+  quality-scoring:
+    needs: strategy-permutation
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Download results artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: genome-results
+          path: genome/
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r genome/requirements.txt
+
+      - name: Create required directories
+        run: |
+          mkdir -p genome/logs genome/results
+
+      - name: Calculate Quality Scores
+        working-directory: genome
+        run: |
+          python quality_engine.py --score-all
+
+      - name: Generate Daily Picks
+        working-directory: genome
+        run: |
+          python picks_generator.py --min-quality 70 --output active_picks.json
+
+      - name: Run DNA Winner Mutations
+        run: |
+          pip install yfinance 2>/dev/null || true
+          python genome/dna_winner_mutations.py --interval 1h --output genome/data/dna_winner_picks.json || echo "::warning::DNA winner mutations failed"
+
+      - name: Run MACD DNA Mutations
+        run: |
+          python genome/dna_macd_mutations.py --interval 1h --output genome/data/macd_mutation_picks.json || echo "::warning::MACD mutations failed"
+
+      - name: Run DNA Pumpwatch Mutations
+        run: |
+          python genome/dna_pumpwatch_mutations.py --interval 1h --output genome/data/pumpwatch_mutation_picks.json || echo "::warning::Pumpwatch mutations failed"
+
+      - name: Run DNA Signal Engine Mutations
+        run: |
+          python genome/dna_signal_engine_mutations.py --interval 1h --output genome/data/signal_engine_mutation_picks.json || echo "::warning::Signal engine mutations failed"
+
+      - name: Run DNA Pumpwatch V2 Mutations
+        run: |
+          python genome/dna_pumpwatch_v2_mutations.py --interval 1h --output genome/data/pumpwatch_v2_picks.json || echo "::warning::Pumpwatch V2 mutations failed"
+
+      - name: Run DNA Rapid Fire Mutations
+        run: |
+          python genome/dna_rapid_fire_mutations.py --interval 1h --output genome/data/rapid_fire_mutation_picks.json || echo "::warning::Rapid Fire mutations failed"
+
+      - name: Run DNA Confluence Mutations
+        run: |
+          python genome/dna_confluence_mutations.py --interval 1h --output genome/data/confluence_mutation_picks.json || echo "::warning::Confluence mutations failed"
+
+      - name: Run Battleground Strategy Mutations
+        run: |
+          python ml_battleground/battleground_mutations.py || echo "::warning::Battleground mutations failed"
+
+      - name: Run promotion gate check
+        if: success()
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m alpha_engine.validation.promotion_gate 2>&1 || echo "::warning::Promotion gate check encountered issues"
+
+      - name: Commit picks
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add genome/active_picks.json genome/data/ genome/data/dna_winner_picks.json genome/data/macd_mutation_picks.json genome/data/pumpwatch_mutation_picks.json genome/data/signal_engine_mutation_picks.json genome/data/pumpwatch_v2_picks.json genome/data/rapid_fire_mutation_picks.json genome/data/confluence_mutation_picks.json genome/data/battleground_mutation_picks.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          # issue #141: block conflict-marker commits
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "Update DNA picks $(date +%Y-%m-%d-%H:%M) [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked 2>/dev/null || true
+            if bash .github/scripts/safe_push.sh; then
+              git stash pop 2>/dev/null || true
+              echo "Push succeeded on retry $i"
+              exit 0
+            fi
+            git stash pop 2>/dev/null || true
+            echo "Push retry $i failed, retrying..."
+            sleep $((i * 4))
+          done
+          echo "::error::Failed to push DNA picks after retries"
+          exit 1
+
+  deploy-to-ftp:
+    needs: quality-scoring
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Deploy to findtorontoevents.ca
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER_50WEBS }}
+          username: ${{ secrets.FTP_USERNAME_50WEBS }}
+          password: ${{ secrets.FTP_PASSWORD_50WEBS }}
+          local-dir: ./genome/
+          server-dir: /findtorontoevents.ca/genome/
+          protocol: ftps
+
+      - name: Deploy to tdotevent.ca
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER_TDOTEVENT }}
+          username: ${{ secrets.FTP_USERNAME_TDOTEVENT }}
+          password: ${{ secrets.FTP_PASSWORD_TDOTEVENT }}
+          local-dir: ./genome/
+          server-dir: /findtorontoevents.ca/genome/
+          protocol: ftps
+

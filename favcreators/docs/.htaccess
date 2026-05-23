@@ -1,0 +1,19 @@
+# FavCreators SPA - serve index.html for all non-file requests
+Options -Indexes
+
+# Enable rewrite engine for SPA routing
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /fc/
+
+    # If the request is not a real file or directory, serve index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /fc/index.html [L]
+</IfModule>
+
+# Proper MIME types
+AddType text/html .html
+AddType text/css .css
+AddType application/javascript .js
+AddType image/svg+xml .svg

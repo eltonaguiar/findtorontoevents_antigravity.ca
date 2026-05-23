@@ -1,0 +1,80 @@
+---
+description: Before and after deploying any page, test it for JavaScript errors and console errors using Playwright. Zero JS/console errors is a hard requirement—never deploy or declare done if errors exist.
+alwaysApply: true
+---
+
+# Test for JS and Console Errors on Every Deploy
+
+When deploying **any** page (index.html, VR pages, FavCreators, stats, etc.):
+
+## 0. Pre-deploy: Static syntax check (required for HTML files)
+
+Before even starting the local server, run the **acorn-based syntax validator** on any HTML file you edited that contains inline `<script>` blocks:
+
+```bash
+node tools/check_syntax.js path/to/changed-file.html
+```
+
+Or check an entire directory (e.g. all game pages):
+
+```bash
+node tools/check_syntax.js vr/game-arena/
+```
+
+This catches missing method declarations, unclosed braces, and stray tokens **statically** — before any browser is involved. Must exit 0. See rule `js-syntax-check-html.mdc` for full details.
+
+## 1. Pre-deploy: Local Playwright test (required)
+
+Start the local server and run the JS error check:
+
+```bash
+python tools/serve_local.py
+npx playwright test tests/no_js_errors.spec.ts
+```
+
+The test captures:
+- **`pageerror` events** — uncaught exceptions (SyntaxError, ReferenceError, TypeError, ChunkLoadError).
+- **`console.error` messages** — any `console.error()` matching critical patterns (SyntaxError, Unexpected token, denied by modsecurity, Uncaught, etc.).
+
+**Zero errors required.** If the test reports any JS or console error, **stop and fix** before deploying.
+
+## 2. What to listen for in Playwright
+
+When writing or extending tests, always attach **both** listeners before navigating:
+
+```typescript
+const errors: string[] = [];
+page.on('pageerror', (err) => {
+  errors.push(`PageError: ${err.message}`);
+});
+page.on('console', (msg) => {
+  if (msg.type() === 'error') {
+    errors.push(`ConsoleError: ${msg.text()}`);
+  }
+});
+await page.goto(url, { waitUntil: 'networkidle' });
+await page.waitForTimeout(2000);
+expect(errors).toHaveLength(0);
+```
+
+- Use `waitUntil: 'networkidle'` + a short timeout to catch late-firing errors.
+- Filter out known non-critical noise (e.g. React hydration #418) but **never** filter SyntaxError, ChunkLoadError, or modsecurity blocks.
+
+## 3. Post-deploy: Remote verification
+
+After deploying, run the remote verification to catch server-specific issues (ModSecurity blocks, wrong MIME types, missing files):
+
+```bash
+npm run verify:remote
+```
+
+This runs Playwright against the live site and checks the same JS/console error conditions. If the remote test fails but local passed, the issue is likely a server-side block or missing upload — redeploy and retest.
+
+## 4. Quick checklist
+
+- [ ] `node tools/check_syntax.js <changed-file.html>` exits 0 (static syntax — no missing braces/methods)
+- [ ] `npx playwright test tests/no_js_errors.spec.ts` passes locally (0 JS errors, 0 critical console errors)
+- [ ] Deploy via `python tools/deploy_to_ftp.py`
+- [ ] `npm run verify:remote` passes (0 JS errors on live site)
+
+**Never skip the JS error test.** A single uncaught error can break the entire page for users.

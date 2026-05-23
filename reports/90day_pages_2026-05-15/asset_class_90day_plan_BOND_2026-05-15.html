@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOND — 90-Day Plan — findtorontoevents.ca</title>
+<style>:root{--accent:#60a5fa}
+  body{background:#0b0f17;color:#d1d5db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       line-height:1.65;margin:0;padding:0}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 22px 80px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  h1,h2,h3,h4{color:#f3f4f6;line-height:1.3;margin:1.6em 0 .5em}
+  h1{font-size:1.7em;border-bottom:2px solid var(--accent);padding-bottom:.3em;margin-top:0}
+  h2{font-size:1.3em;border-bottom:1px solid #1f2937;padding-bottom:.2em}
+  h3{font-size:1.08em;color:#cbd5e1}
+  code{background:#1f2937;color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:14px;overflow-x:auto}
+  pre code{background:none;color:#d1d5db;padding:0}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+  th,td{border:1px solid #1f2937;padding:7px 11px;text-align:left}
+  th{background:#1f2937;color:#f3f4f6}
+  tr:nth-child(even){background:#0f1623}
+  blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.3em 1em;color:#9ca3af;background:#0f1623}
+  ul,ol{padding-left:24px}
+  hr{border:none;border-top:1px solid #1f2937;margin:2em 0}
+  .nav{font-size:.85em;color:#9ca3af;margin-bottom:24px}
+  .src{font-size:.8em;color:#6b7280;margin-top:40px;border-top:1px solid #1f2937;padding-top:12px}
+</style>
+</head><body><div class="wrap">
+<div class="nav"><a href="../90day_plan_2026-05-15.html">&larr; 90-Day Plan landing</a> &nbsp;|&nbsp;
+<a href="/updates/">Updates feed</a></div>
+<h1>Asset Class 90-Day Plan — BOND — 2026-05-15</h1>
+<p><strong>Senior Quant Audit</strong> using the "money-maker-continual-improve" skill (brutally skeptical, citation-driven, hedge-fund-grade lens per <code>reports/hedge_fund_performance_review_*.md</code> tier table).<br />
+<strong>Focus areas</strong> (per task): tiny sample (n=11 vs charter floor 100), extreme concentration (TLT/HYG), data sources (FRED availability + corporate bond proxies), root causes of weak performance, feasibility of universe expansion (14 symbols on paper), realistic 90-day plan or explicit de-prioritize recommendation.<br />
+<strong>Data sources (all concrete citations)</strong>: <code>audit_dashboard/data/dashboard_data.json</code> (2026-05-15T02:06:57Z, sha 35d3e77), <code>reports/{asset_class_deep_dive_BOND_2026-05-12.md, bond_root_cause_2026-05-12.md, bond_deep_dive_round2_2026-05-13.md, bond_regression_deep_dive_2026-05-15.md, bond_overlay_attempts_20260513.md, commodity_bond_forensic_2026-05-13.md, MASTER_ACTION_PLAN_2026-05-15.md (M-020/M-024/M-032), audit_asset_feedback_2026-05-05T0121Z_BOND.md}</code>, <code>alpha_engine/{config.py:781 (BOND_SYMBOLS 14 entries), bond_strategies.py (6 strategies + BOND_STRATEGIES dict), bond_data_fred.py, bond_scanner.py, forward_validator.py:397 (FORWARD_GATE_OVERRIDES), production_scanner.py}</code>, <code>.github/workflows/{bond-agent.yml (BOND_ELITE_FLOOR, SKIP_FRED=1, BR-3 merge), alpha-engine-bond.yml}</code>, <code>non_crypto_agent/data/bond_picks.json</code> (2026-05-14T15:20), <code>alpha_engine/data/active_picks.json</code> (0 BOND), <code>baby_strategies/bond_yield_curve_momentum.py</code>, <code>audit_trail/dashboard_generator.py:3925+</code>.</p>
+<p><strong>Core Verdict (lead answer, no hedge):</strong><br />
+<strong>BOND is not a money-maker and should be de-prioritized for any real-money sizing (shadow or live) for the full 90 days.</strong> Current metrics (n=11 resolved, PF 0.66, WR 54.5%, total_pnl_pct −1.53%, thin_sample, sizing_allowed=false, tier=WARN) are statistically meaningless noise from a 2-symbol (TLT 79% share) concentration that has already regressed from the prior legacy-inflated snapshot (n=18 / PF 1.72 / WR 55.6% on 2026-05-03). The 11 closed picks are dominated by TLT LONG duration bets in an adverse rate regime; the dedicated bond emitter (bond-agent.yml) produces ~10 raw signals/day but 0 quality because the elite_score floor (default 40) is unreachable for structurally low-vol bond ETFs. Legacy ZN=F futures_momentum mis-classifications (per <code>commodity_bond_forensic_2026-05-13.md</code> and <code>bond_root_cause_2026-05-12.md</code>) have rolled off, exposing the true desert. 14-symbol universe exists in <code>config.py</code> since 2026-04-17 expansion but effective coverage is 2 ETFs. Three research-backed pilots (Fleckenstein-Longstaff-Lustig TIPS MR, Cochrane-Piazzesi curve carry + MOVE gate, Frazzini-Pedersen HYG-LQD credit MR) are fully specified in <code>bond_deep_dive_round2_2026-05-13.md</code> but unwired. Forward gate override ("bond":10) and merge step (BR-3) are now in code; elite floor reduction and pilot implementation have not shipped. BOND violates charter floor by 9×, shows no path to Tier-2 (PF&gt;1.5/WR&gt;50/MDD&lt;20/n≥100) without 60-90 days of disciplined sidecar work that yields lower ROI than COMMODITY (CT=F PF 2.49 post-COT fixes) or EQUITY (T2-candidate PF 1.41-1.57). <strong>Recommendation: treat as pure research / opt-in sidecar only (Wire-Up compliant, zero blast radius). Freeze dedicated emitter sizing path. Revisit only after n≥50 clean post-expansion + per-pilot DSR/CPCV validation. Do not update /audit banner or master-plan institutional timeline for BOND.</strong></p>
+<hr />
+<h2>1. Brutal Baseline — Live Performance (2026-05-15T02:06Z snapshot)</h2>
+<p><strong>From <code>dashboard_data.json::performance.asset_class_health.BOND</code> + <code>by_asset_class.BOND</code> + <code>asset_class_concentration.BOND</code>:</strong>
+- status: "thin_sample", sample_tier: "thin", sizing_allowed: false
+- n=11 (resolved_n=11), closed=13 (by_asset_class), wins=6, losses=5, win_rate=54.5%
+- profit_factor=0.66, total_pnl_pct=−1.53, expectancy=−0.14, avg_win=0.5, avg_loss=0.91
+- circuit_breaker: breached=false but "cold_start (n=0&lt;30)" on 30d realized
+- Concentration (WARN tier): top_symbol="TLT" 78.92% share / 5.95% PnL mass; top_strategy="betting-against-beta" (kimi_riseoftheclaw) 55.59% share; honest_label="BOND edge = betting-against-beta on TLT (79% of class PnL)"; is_concentrated_warn=true, is_concentrated_block=false
+- active: 0 (confirmed via <code>active_picks.json</code> scan: zero BOND-tagged or TLT/HYG/IEF/LQD entries)
+- <code>non_crypto_agent/data/bond_picks.json</code> (latest 2026-05-14T15:20): total_raw=10, quality=0, picks=[], symbols_tracked=14, strategies_run=5 (note: yml now lists 6)</p>
+<p><strong>vs prior snapshots (regression documented in <code>bond_regression_deep_dive_2026-05-15.md</code>):</strong>
+- ~2026-05-03 / May-5 feedback: n=18, PF 1.72, WR 55.6% (legacy ZN=F futures_momentum on ZN=F/ZB=F mis-tagged as "bond" per <code>commodity_bond_forensic_2026-05-13.md</code> and <code>bond_root_cause_2026-05-12.md</code> Layer 0). Those 7+ rows have since rolled out of the window.
+- Current clean 12-pick list (from regression autopsy, excluding 1 UNRESOLVED): 6 wins (+3.005 gross) / 5 losses (−4.537 gross) on TLT (8 entries) + HYG (4 entries). PF math verified 0.66. Cosmetic bug: pick #9 TLT SL_HIT but +0.13% pnl labeled LOST (resolver status vs sign mismatch, non-metric impact).
+- <code>edge_stability_BOND.json</code> (cited in round-2): n≈12, all strategies INSUFFICIENT_DATA (n≤5), top drag "betting-against-beta" PF 0.37 on TLT LONG.</p>
+<p><strong>Comparison to charter / other classes (from same dashboard + MASTER_ACTION_PLAN_2026-05-15.md):</strong>
+- T2 minimum: PF&gt;1.5 / WR&gt;50 / MDD&lt;20 / n≥100. BOND fails every dimension.
+- COMMODITY: PF 2.49 / 61.5% / n=322 (but COT over-emission falsified, real post-dedup sub-floor).
+- EQUITY: PF 1.41-1.57 / 52.7% / n=421 (T2-candidate).
+- ETF: PF 1.48 / 58.5% / n=106 (just crossed floor, improving).
+- FOREX: PF 0.27 (sub-floor, mutate-before-kill).
+- BOND: lowest priority per supreme plan; tertiary track only.</p>
+<hr />
+<h2>2. Symbol Universe, Liquidity &amp; Concentration Risk</h2>
+<p><strong>Defined in <code>alpha_engine/config.py:781-798</code> (BOND_SYMBOLS, 2026-04-17 expansion from 8→14 per supply-pipeline Step 5):</strong>
+- Treasury duration ladder: TLT (20+ Y long), IEF (7-10Y), SHY (1-3Y short), TLH (10-20Y), GOVT
+- Credit: LQD (IG corp), HYG (HY corp), JNK (HY), EMB (EM)
+- Broad/others: AGG, BND (total bond), MUB (muni), TIP (TIPS), BNDX (intl)</p>
+<p><strong>CATEGORY_RISK["bond"] = (−0.04, 0.06, 15)</strong> — 4% SL / 6% TP / 15d max hold (lowest vol bucket, correct). TRAILING_STOP["bond"]=0.04.</p>
+<p><strong>Reality on the ground (effective universe):</strong>
+- 80%+ of historical + current closed picks on TLT alone; HYG secondary. Zero resolved history on IEF/SHY/TIP/LQD/MUB/BNDX/EMB per <code>bond_deep_dive_round2_2026-05-13.md</code> and regression list.
+- Liquidity: All 14 are liquid US ETFs (daily volume &gt;$100M for TLT/HYG/LQD/AGG; lower for MUB/TLH/BNDX). yfinance OHLCV daily is high-quality for these. Wider spreads vs equities (10-30bp round-trip typical for TLT).
+- Concentration risk: top_symbol 79% share violates diversification (CLAUDE.md + concentration_cap.py). Single-strategy 55% PnL mass. TLT is long-duration (high beta to 10Y/30Y yields and MOVE vol); current tape (losses −1.28, −1.07, −0.97, −0.82 on TLT) consistent with "higher-for-longer" or sticky rates regime. HYG (credit) 2W/1L positive but tiny weight.
+- Futures overlap note: ZN=F/ZB=F (10Y/30Y bond futures) intentionally routed to FUTURES/COMMODITY (not BOND) to avoid mis-tag; legacy ZN=F rows were the source of the old "n=18 PF 1.72" fiction.</p>
+<p><strong>Verdict on universe:</strong> On-paper 14-symbol coverage is excellent (duration + credit + intl + TIPS buckets). In-practice 2-symbol desert. Expansion requires strategy changes, not ticker list changes.</p>
+<hr />
+<h2>3. Data Sources — FRED, yfinance, Corporate Proxies, Gaps</h2>
+<p><strong>Primary for live emitter (<code>bond-agent.yml</code> + <code>bond_strategies.py</code>):</strong>
+- yfinance daily OHLCV (2y history) on all 14 BOND_SYMBOLS + extras (ZN=F, ZB=F, ^TNX, ^IRX, TLT/IEF). Reliable for ETF price action, volume, ATR. NYSE-hours only for realistic execution.
+- <code>SKIP_FRED='1'</code> in bond-agent.yml env — main daily emitter deliberately avoids FRED (no timeout risk).</p>
+<p><strong>FRED integration (<code>alpha_engine/bond_data_fred.py</code> + <code>fetch_fred_series</code> / <code>fetch_bond_bundle</code>):</strong>
+- Series: DGS2/DGS10/DGS30 (par yields), T10Y2Y/T10Y3M (curve), T10YIE/T5YIE (breakevens), BAMLH0A0HYM2 (HY OAS), BAMLC0A0CM (IG OAS).
+- Used in: <code>etf-bond-scanner.yml</code>, <code>worldclass-pipeline.yml</code>, <code>bond_yield_curve_slope</code> (optional fred_data param), some baby/overlay attempts.
+- Availability: Public FRED (pandas_datareader fallback) or fredapi with key. Rate-limited; cache in <code>alpha_engine/data/fred_cache/</code>. Earlier "FRED timeout kills emission" diagnosis (<code>asset_class_deep_dive_BOND_2026-05-12.md</code>) was <strong>falsified</strong> for the live bond-agent (it never called FRED); conflated with etf-bond-scanner. <code>bond_yield_curve_slope</code> can consume it when wired.
+- Corporate bond reality: No free high-frequency TRACE or single-name corporate data. HYG/LQD/EMB/JNK serve as liquid ETF proxies for credit-spread MR (OAS via FRED BAML series). Acceptable for systematic but not fundamental credit selection.</p>
+<p><strong>Other sources:</strong>
+- Cboe MOVE (^MOVE) for vol regime (proposed in pilots).
+- No on-chain, alt-data, or earnings for pure bonds.
+- <code>bond_pricer.py</code> / <code>bond_yield_curve_inversion.py</code> exist for research.</p>
+<p><strong>Data quality verdict:</strong> yfinance sufficient and stable for price/volume/ATR strategies. FRED adds macro alpha (breakeven, OAS, curve slope) at low cost but optional (SKIP_FRED works). Gap: no high-frequency or single-name corp bond depth. Resolver exits must be time+level (not yf spot) to avoid the known non-crypto live-close bug cited in round-2.</p>
+<hr />
+<h2>4. Why Performance Has Been Weak — Root Cause Autopsy</h2>
+<ol>
+<li>
+<p><strong>Legacy pollution + sample turnover (primary explanation for "PF 1.72 → 0.66" headline regression):</strong> Old n=18 included ZN=F futures_momentum (mis-classified "bond"). Rolled off → true BOND n=11 exposed as noise. See <code>bond_regression_deep_dive_2026-05-15.md</code> + <code>commodity_bond_forensic_2026-05-13.md</code>.</p>
+</li>
+<li>
+<p><strong>Emitter alive but completely gated (quality=0 daily):</strong> <code>bond-agent.yml</code> (cron 14:32 UTC weekdays) + 6 strategies in <code>bond_strategies.py</code> (yield_momentum SMA/RSI, duration_rotation TLT SMA50/200, mean_reversion BB, connors_rsi2, credit_spread_mean_reversion LQD/HYG, yield_curve_slope) produce ~7-10 raw signals but 0 pass curation:
+   - confidence ≥0.50
+   - risk_reward ≥1.10 (reasonable for low-vol)
+   - elite_score ≥ _elite_floor (default 40 via BOND_ELITE_FLOOR var or hardcode)
+   Low-vol bond signals compress elite_score magnitudes (calibrated on crypto/equity vol). <code>non_crypto_agent/data/bond_picks.json</code> consistently quality=0. BR-1 (lower floor to 32-35) never shipped.</p>
+</li>
+<li>
+<p><strong>Forward gate + integration (now partially fixed):</strong> FORWARD_GATE_MIN_TRADES=50 global (no BOND override until post-root-cause); bond_picks.json never merged to active_picks.json until BR-3 added to workflow. Forward override "bond":10 now lives in <code>forward_validator.py:397-400</code> and test. Merge step present in yml (lines 156-207) and <code>bond_scanner.py:_merge_into_active_picks</code>. Still 0 BOND in active_picks because quality=0 upstream.</p>
+</li>
+<li>
+<p><strong>Concentration + regime mismatch:</strong> 79% TLT LONG (duration bet) during tape that produced 4 material losses. "betting-against-beta" (kimi_riseoftheclaw, not pure bond-agent) dominates. No duration rotation or credit MR firing in volume.</p>
+</li>
+<li>
+<p><strong>Missing proven academic edges:</strong> <code>bond_deep_dive_round2_2026-05-13.md</code> specifies 3 code-ready pilots with expected 114 events/yr:
+   - Pilot A: TIPS-Treasury breakeven MR (Fleckenstein-Longstaff-Lustig 2014) using FRED T10YIE + yf TIP/IEF.
+   - Pilot B: Cochrane-Piazzesi (2005) curve-carry momentum (rank IEF/TLH/TLT by 3m return, MOVE&lt;20d MA gate).
+   - Pilot C: HYG-LQD credit-spread 2σ MR (Frazzini-Pedersen style, SPY regime filter).
+   None wired to BOND_STRATEGIES or emitter. <code>baby_strategies/bond_yield_curve_momentum.py</code> exists but low contribution. <code>proven_research_strategies.py</code> grep returns 0 for bond priors.</p>
+</li>
+<li>
+<p><strong>Structural low edge density + resolver cosmetics:</strong> Bonds have tight ranges; 4%/6% caps appropriate but hard to clear high bars. Resolver SL_HIT vs pnl sign mismatch (cosmetic, fixed in recommendation of regression doc).</p>
+</li>
+</ol>
+<p>No evidence of data corruption or resolver-v2 systemic bias against BOND.</p>
+<hr />
+<h2>5. Hidden Drags, Missed Insights &amp; External Options</h2>
+<p><strong>Drags:</strong>
+- <code>production_scanner.py</code> normalizes bond → equity post-admission (affects score_booster keying, erases bond-specific floors).
+- Baby/kimi generic strategies (betting-against-beta, vwap etc.) tagging TLT/HYG without bond-aware TP/SL or duration metadata.
+- No per-class elite_score or risk_reward override in main quality_gates.py for bond.
+- FRED key not in bond-agent (but not needed for core yf path).</p>
+<p><strong>Missed (in code but not live):</strong>
+- <code>bond_yield_curve_inversion.py</code>, <code>bond_pricer.py</code>.
+- Academic citations in deep-dive docs but zero production modules (contrast COMMODITY <code>commodity_carry_momo.json</code> sidecar).
+- Cross-asset (BOND + EQUITY VIX or YC regime) already partially in <code>vix_regime_gate.py</code> but not BOND-specific.</p>
+<p><strong>External replication options (low priority):</strong>
+- PIMCO / iShares bond factor ETFs + duration/credit rotation.
+- QuantConnect Lean yield-curve slope algorithms (steepener/flattener).
+- DBMF/KMLM-style managed futures (but those route to COMMODITY/FUTURES).
+- Hyperliquid or futures basis for bond futures (again, not BOND ETF class).</p>
+<hr />
+<h2>6. Feasibility of Expanding the Universe</h2>
+<p><strong>High on paper, medium execution risk:</strong>
+- Tickers: already 14 in config.py (no new symbols needed; just use IEF/SHY/TIP/LQD/AGG/EMB/MUB in new spread logic).
+- Strategies: 6 conventional + 3 research pilots fully specced (150 LoC total). Signature matches existing <code>(data: dict[str,DataFrame]) -&gt; list[pick]</code>. Opt-in via env flags or BOND_STRATEGIES dict.
+- Data: yfinance free + sufficient. FRED optional (add secret for M-032 if richer breakeven/OAS desired; public fallback exists).
+- Emission path: bond-agent.yml + bond_scanner.py + merge + forward override (10) + dashboard_generator registry all present or recently added. One-line floor change + pilot registration = emission unblock.
+- Expected volume: pilots + fixed emitter → 70-95 closed picks in 90 days (conservative, accounting overlap + regime skips). Combined with legacy ~12/quarter → n≥80-100 feasible.
+- Risk: low notional (bond vol &lt;&lt; equity/crypto; CATEGORY_RISK already tuned). NYSE hours limit (after-hours spreads bad for TLT). Need rigorous per-pilot backtest (CPCV, slippage 5-15bp stress, DSR) before shadow.
+- Blockers: GitHub var BOND_ELITE_FLOOR still defaults 40 (not lowered); no pilot code on disk; master plan M-020/M-024/M-032 still PENDING.
+- Wire-Up compliance: all proposed changes are opt-in sidecars (env flags, new modules under proven_ or bond_*, no core mutation). Fits CLAUDE.md.</p>
+<p><strong>Challenges:</strong> Stat power at n&lt;30 per pilot remains weak; single-name corporate depth impossible without paid data; duration timing requires accurate yield data (FRED helps).</p>
+<p><strong>Conclusion on feasibility:</strong> Trivial to unblock current emitter (1 PR: lower floor + confirm). Meaningful expansion (n≥100, diversified) requires 2-3 PRs for pilots + backtest harness + 30-60d paper validation. Low cost, high optionality, but ROI lower than COMMODITY COT hygiene or EQUITY factor sleeves.</p>
+<hr />
+<h2>7. Realistic 90-Day Plan (or Explicit De-Prioritize)</h2>
+<p><strong>Guiding principle (per CLAUDE.md Goal #1 + master plan):</strong> Only invest dev time where edge is "best worth the risk." BOND currently fails. Plan below is minimal-effort research track only; success metrics are conservative. Parallel to (never ahead of) COMMODITY M-021, EQUITY, ETF M-036.</p>
+<p><strong>Phase 1: Hygiene &amp; Unblock (Days 0-14) — P0, low LOC</strong>
+- Set <code>BOND_ELITE_FLOOR=32</code> (or 35) default in <code>bond-agent.yml:53</code> and GitHub repo var (BR-1). Add comment citing <code>bond_root_cause_2026-05-12.md</code>.
+- Verify daily runs produce quality ≥3-5 (monitor bond_picks.json + commit logs).
+- Confirm merge (BR-3) lands BOND in active_picks.json and forward_validator accepts with n≥10 override.
+- Minor: fix resolver cosmetic (SL_HIT status derive from pnl_pct sign) in <code>outcome_resolver.py</code> (one function).
+- Wire basic <code>bond_scanner.py</code> call in shadow if not already.
+- Success metrics: bond_picks quality&gt;0 consistently, <code>edge_stability_BOND.json</code> n≥20-25, 0 active sizing, no new legacy mis-tags.
+- Deliverable: small PR "bond: lower elite floor + emission telemetry" (Wire-Up section).</p>
+<p><strong>Phase 2: Research Pilots + Paper (Days 15-60)</strong>
+- Implement 3 pilots from <code>bond_deep_dive_round2_2026-05-13.md</code> as new functions in <code>bond_strategies.py</code> (or <code>alpha_engine/proven_research_strategies.py</code> under BOND_BREAKEVEN_MR / CURVE_CARRY / CREDIT_SPREAD_MR) — ~150 LoC + unit tests. Opt-in via <code>BOND_ENABLE_PILOTS=1</code> or strategy registry flag.
+- Add FRED consumption to <code>bond_yield_curve_slope</code> / new pilots (M-032) if secret available; else pure yf+^MOVE.
+- Rigorous backtest harness (CPCV, 5-15bp slippage, regime splits, DSR per Lopez de Prado) for each pilot individually (target n≥30 closed per pilot in walk-forward).
+- Shadow paper-trade (tv-paper-trade or TESTER account, 0.25% risk, time+level exits) starting ~Day 20. Track per-pilot rolling 30d metrics.
+- Update <code>quality_gates.py</code>, <code>data_quality_gates.yaml</code>, dashboard_generator for bond-specific floors.
+- Success metrics (per pilot, not aggregate): n≥20 closed shadow, PF≥1.40, WR≥48%, MDD≤8% (bond-adjusted), CLV ≤2bp, no single-symbol &gt;35% of pilot PnL. Class-level: n≥40, no WARN concentration.
+- Deliverable: 1-2 PRs "BOND pilots: TIPS MR + curve carry + credit MR (opt-in sidecar)" with full Wiring Plan.</p>
+<p><strong>Phase 3: Validation Gate &amp; Decision (Days 61-90)</strong>
+- Promote: any pilot meeting 5-gate (n≥30 per-pilot closed, PF≥1.5/WR≥50 sustained rolling, MDD≤8%, execution audit, resolver clean) gets micro 0.1% live sizing via <code>passes_active_gate</code> + <code>charter_position_sizer</code>.
+- Class gate: aggregate n≥70-80, PF≥1.35 stable 30d, concentration &lt;40% top symbol, at least 2 independent strategies contributing &gt;15% each.
+- If metrics fail (most likely): freeze emitter to research-only, deprecate dedicated daily cron or reduce frequency, fold any surviving logic into EQUITY/ETF multi-asset or FUTURES bond-futures. Update MASTER_ACTION_PLAN drop BOND institutional timeline.
+- Parallel: implement M-024 <code>ust_tsmom_level</code> TSMOM on TLT/IEF/SHY as sidecar if pilots succeed.
+- Success metrics for "continue": 2 pilots promoted or class PF&gt;1.4 / n&gt;80 / diversified. Else: permanent de-prioritize.
+- Deliverable: decision memo + (optional) micro-PR for live gate.</p>
+<p><strong>Resource estimate:</strong> 4-6 PRs total (mostly small), &lt;300 new LOC. Fits existing workflows. No core engine mutation. Cost: 1-2 sessions + backtest CPU.</p>
+<p><strong>Stop-loss:</strong> If after Phase 1 any 14-day window shows PF&lt;1.0 on new emissions, raise floor back to 40 and abandon dedicated emitter.</p>
+<p><strong>External validation:</strong> After 30 clean shadow picks, replicate one pilot on QuantConnect Lean or public bond ETF backtest (PIMCO research) for sanity.</p>
+<hr />
+<h2>8. Final Verdict &amp; Recommendations</h2>
+<p><strong>BOND fails the "phenomenal performance" north star and the "edge best worth the risk" filter.</strong> Tiny noisy sample + 79% TLT concentration + gated emitter + missing academic edges = not investable. The regression from legacy-inflated 1.72 to real 0.66 is the honest signal: there was never a robust BOND edge in production.</p>
+<p><strong>Recommendation:</strong> 
+- <strong>De-prioritize</strong> for real capital (0.0% allocation) for 90 days.
+- <strong>Pursue expansion</strong> as pure low-priority research / opt-in sidecar (M-020/024/032) only after higher-ROI items (COMMODITY COT dedup hygiene M-021, EQUITY T2 maturation, ETF sector-rotation pilot) land. One small PR for floor + telemetry in Phase 1 is acceptable hygiene; full pilot wire-up only if dev capacity after those.
+- Update <code>MASTER_ACTION_PLAN_2026-05-15.md</code> Section 21 + Antigravity schedule: BOND institutional date → "RESEARCH ONLY / post n=50 validation".
+- Add frozen snapshot mechanism (as recommended in regression doc) so future verdicts are reproducible.
+- If after 90 days Phase 3 metrics clear on 2+ pilots: reconsider 0.1% micro-pilot. Otherwise, archive dedicated BOND agent or merge survivors into multi-asset.</p>
+<p>This aligns with Goal #1 (phenomenal /audit across classes), Wire-Up Rule, MUTATION_THREE_AXIS_PROTOCOL (mutate-before-kill not applicable yet — no live strategies to kill), and "prioritize where the edge is best worth the risk."</p>
+<p><strong>References for follow-up (exact):</strong>
+- All cited reports + <code>alpha_engine/bond_strategies.py:58-651</code>, <code>bond-agent.yml:77-207</code>, <code>config.py:781-808</code>, <code>forward_validator.py:392-400</code>, <code>non_crypto_agent/data/bond_picks.json</code>.
+- Next action owner: BOND expansion author per 11-PR list in 2026-05-15 memory.</p>
+<p><strong>NFA.</strong> Research surface only. No live recommendations.</p>
+<hr />
+<p><em>Generated 2026-05-15 by senior quant "money-maker-continual-improve" audit. Brutal honesty over optimism. Update only after Phase 1 telemetry.</em></p>
+<div class="src">Source: <code>reports/asset_class_90day_plan_BOND_2026-05-15.md</code> &middot;
+90-Day Plan — May 15 2026 Edition &middot; generated by tools/generate_90day_plan_pages.py</div>
+</div></body></html>

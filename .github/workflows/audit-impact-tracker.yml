@@ -1,0 +1,58 @@
+name: Audit Impact Tracker
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit-impact:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install yfinance scipy numpy
+
+      - name: Run audit impact tracker
+        run: python battleground/audit_impact_tracker.py
+
+      - name: Run alpha vs beta benchmark
+        run: python battleground/alpha_vs_beta_benchmark.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add battleground/data/audit_baseline_20260313.json 2>/dev/null || true
+          git add battleground/data/audit_impact_results.json 2>/dev/null || true
+          git add battleground/data/alpha_benchmark_report.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Audit impact tracker update $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
+

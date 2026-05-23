@@ -1,0 +1,46 @@
+name: Fix Battleground Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'battleground/**'
+      - '.github/workflows/fix-battleground.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-battleground:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Copy battleground from main
+        run: |
+          git fetch origin main
+          git checkout origin/main -- battleground/
+          ls -la battleground/
+
+      - name: Commit and push
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add battleground/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update battleground from main"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          # Force push to gh-pages (deployment branch - always overwrite with latest)
+          git push origin HEAD:gh-pages --force
+

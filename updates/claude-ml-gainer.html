@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code — Reverse Engineered Crypto Gainer ML</title>
+    <meta name="description"
+        content="Claude Code: Live ML-powered crypto gainer predictions. RF+XGB ensemble with 20 features trained on 15K samples. Tracked TP/SL with autonomous self-improvement.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06060e;
+            --card: #0d0d1a;
+            --border: rgba(255, 255, 255, 0.06);
+            --accent: #22c55e;
+            --accent-bg: rgba(34, 197, 94, 0.08);
+            --accent-b: rgba(34, 197, 94, 0.25);
+            --red: #ef4444;
+            --red-bg: rgba(239, 68, 68, 0.08);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.08);
+            --blue: #3b82f6;
+            --blue-bg: rgba(59, 130, 246, 0.15);
+            --purple: #a855f7;
+            --purple-bg: rgba(168, 85, 247, 0.15);
+            --cyan: #06b6d4;
+            --cyan-bg: rgba(6, 182, 212, 0.15);
+            --text: #c8c8d8;
+            --text2: #8890a8;
+            --text3: #556;
+            --white: #f0f6fc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: 1px;
+        }
+
+        .hero h1 span { color: var(--accent); }
+
+        .hero .sub {
+            color: var(--text2);
+            font-size: 14px;
+            margin-top: 8px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero .meta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--text3);
+        }
+
+        .hero .meta span { display: flex; align-items: center; gap: 5px; }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .back {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .back:hover { text-decoration: underline; }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .nav-links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 24px 0;
+        }
+
+        .kpi {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .kpi .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Inter', sans-serif; }
+        .kpi .value { font-size: 26px; font-weight: 700; color: var(--white); margin: 4px 0; font-family: 'JetBrains Mono', monospace; }
+        .kpi .detail { font-size: 11px; color: var(--text3); }
+        .kpi.green .value { color: var(--accent); }
+        .kpi.red .value { color: var(--red); }
+        .kpi.amber .value { color: var(--amber); }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card h2 {
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            color: var(--white);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card h2 .count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            margin-left: 6px;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; padding: 8px 6px; color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(34, 197, 94, 0.04); font-family: 'Inter', sans-serif; }
+        td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .pnl-pos { color: var(--accent); }
+        .pnl-neg { color: var(--red); }
+
+        .signal {
+            display: inline-block;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+            margin: 1px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .signal.vol { background: var(--blue-bg); color: var(--blue); }
+        .signal.mom { background: var(--purple-bg); color: var(--purple); }
+        .signal.brk { background: var(--accent-bg); color: var(--accent); }
+        .signal.rev { background: var(--amber-bg); color: var(--amber); }
+        .signal.sq { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+        .signal.sc { background: var(--cyan-bg); color: var(--cyan); }
+
+        .outcome { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .outcome.tp { background: var(--accent-bg); color: var(--accent); }
+        .outcome.sl { background: var(--red-bg); color: var(--red); }
+        .outcome.exp { background: var(--amber-bg); color: var(--amber); }
+
+        .score-bar { height: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 2px; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .strat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .strat-grid { grid-template-columns: 1fr; } }
+
+        .strat-item {
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .strat-item strong { color: var(--white); font-size: 13px; }
+        .strat-item p { color: var(--text2); font-size: 12px; margin-top: 4px; }
+        .strat-item .weight { float: right; color: var(--accent); font-weight: 700; font-size: 14px; font-family: 'JetBrains Mono', monospace; }
+
+        .arch-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .arch-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(34, 197, 94, 0.06);
+            border: 1px solid var(--accent-b);
+            color: var(--accent);
+        }
+
+        .pipeline-flow {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .pipeline-step {
+            padding: 6px 12px;
+            background: rgba(34, 197, 94, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+        }
+
+        .pipeline-arrow {
+            color: var(--accent);
+            font-size: 14px;
+            padding: 0 4px;
+        }
+
+        .feature-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .feature-bar .fname {
+            width: 180px;
+            color: var(--text2);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .feature-bar .fbar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+
+        .feature-bar .fbar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--accent);
+        }
+
+        .feature-bar .fpct {
+            width: 50px;
+            text-align: right;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .warn-box {
+            background: var(--red-bg);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 12px;
+            color: var(--text2);
+            margin-top: 16px;
+        }
+
+        .warn-box strong { color: var(--red); }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 12px;
+            color: var(--text3);
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        .footer a { color: var(--accent); }
+
+        .refresh-bar {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: var(--text3);
+        }
+
+        .refresh-bar button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .refresh-bar button:hover { opacity: 0.85; }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text3);
+            padding: 24px;
+            font-size: 13px;
+        }
+
+        .empty-state .icon { font-size: 28px; margin-bottom: 8px; display: block; }
+
+        .scan-row { display: flex; align-items: center; gap: 8px; }
+        .scan-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+        .agent-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--accent-b);
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero">
+        <h1>Claude Code <span>ML Predictions</span></h1>
+        <div class="sub">CLAUDE CODE - REVERSE ENGINEERED DAILY TOP GAINERS STRAT</div>
+        <p style="color:var(--text2);font-size:13px;margin-top:6px;max-width:650px;margin-left:auto;margin-right:auto;">
+            RF+XGB ensemble trained on 15K samples with 20 features. Autonomous pipeline: CoinGecko scan, feature engineering, ensemble prediction, TP/SL tracking, self-improvement.
+        </p>
+        <div class="meta">
+            <span><span class="dot" style="background:var(--accent)"></span> Live Tracking</span>
+            <span><span class="agent-badge">CLAUDE CODE</span></span>
+            <span id="modelVer">v1.0</span>
+            <span id="lastUpdate">Loading...</span>
+        </div>
+        <div class="nav-links">
+            <a href="/updates/" class="back">&larr; Back to Updates</a>
+            <a href="/updates/unified-dashboard.html" class="back">Unified Dashboard</a>
+        </div>
+    </div>
+
+    <div class="wrap">
+
+        <!-- KPI Row -->
+        <div class="kpi-row" id="kpiRow">
+            <div class="kpi">
+                <div class="label">Total Picks</div>
+                <div class="value" id="kpiTotal">&mdash;</div>
+                <div class="detail">all time</div>
+            </div>
+            <div class="kpi">
+                <div class="label">Win Rate</div>
+                <div class="value" id="kpiWinRate">&mdash;</div>
+                <div class="detail" id="kpiWinDetail">TP hits / total</div>
+            </div>
+            <div class="kpi">
+                <div class="label">Total P/L</div>
+                <div class="value" id="kpiPnl">&mdash;</div>
+                <div class="detail">cumulative %</div>
+            </div>
+            <div class="kpi">
+                <div class="label">Active Picks</div>
+                <div class="value" id="kpiActive">&mdash;</div>
+                <div class="detail">currently tracked</div>
+            </div>
+            <div class="kpi">
+                <div class="label">Last Scan</div>
+                <div class="value" id="kpiLastScan" style="font-size:16px">&mdash;</div>
+                <div class="detail" id="kpiScanDetail">awaiting scan</div>
+            </div>
+            <div class="kpi">
+                <div class="label">Top Coin</div>
+                <div class="value" id="kpiTopCoin" style="font-size:20px">&mdash;</div>
+                <div class="detail" id="kpiTopProb">&mdash;</div>
+            </div>
+        </div>
+
+        <!-- Active Picks Table -->
+        <div class="card">
+            <h2>Active Predictions <span class="count" id="activeCount">0</span></h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Probability</th>
+                            <th>Entry</th>
+                            <th>TP</th>
+                            <th>SL</th>
+                            <th>Signals</th>
+                            <th>Time Active</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeBody">
+                        <tr><td colspan="7" class="empty-state"><span class="icon">&#x1F50D;</span>Awaiting first picks... Scanner will populate this table.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scan History + Pick History side by side -->
+        <div class="two-col">
+            <!-- Scan History -->
+            <div class="card" style="margin-bottom:0">
+                <h2>Scan History <span class="count" id="scanCount">0</span></h2>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Scanned</th>
+                                <th>Picks</th>
+                                <th>Top Coin</th>
+                                <th>Prob</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scanBody">
+                            <tr><td colspan="5" class="empty-state">Awaiting first scan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pick History -->
+            <div class="card" style="margin-bottom:0">
+                <h2>Resolved Picks <span class="count" id="resolvedCount">0</span></h2>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Coin</th>
+                                <th>Outcome</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th>P/L %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resolvedBody">
+                            <tr><td colspan="5" class="empty-state">Picks appear here as they resolve.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ML Architecture Card -->
+        <div class="card">
+            <h2>ML Architecture</h2>
+            <table style="margin-bottom:14px;">
+                <tr><td style="width:28%"><strong>Ensemble</strong></td><td>Random Forest + XGBoost (RF+XGB)</td></tr>
+                <tr><td><strong>Features</strong></td><td>20 engineered features: momentum, volume, volatility, market cap, consolidation range</td></tr>
+                <tr><td><strong>Training Data</strong></td><td>15,000 samples from historical daily top gainers</td></tr>
+                <tr><td><strong>Live Data</strong></td><td>CoinGecko API &mdash; top 250 coins scored per scan</td></tr>
+                <tr><td><strong>Self-Improve</strong></td><td>Automatic model retrain when 50+ resolved picks accumulate</td></tr>
+                <tr><td><strong>Scam Filter</strong></td><td>TokenSniffer integration &mdash; rug-pull / honeypot detection</td></tr>
+            </table>
+
+            <h3 style="font-size:13px;color:var(--white);margin-bottom:10px;">Top Features (Importance)</h3>
+            <div class="feature-bar">
+                <div class="fname">consolidation_range</div>
+                <div class="fbar"><div class="fbar-fill" style="width:100%"></div></div>
+                <div class="fpct">17.5%</div>
+            </div>
+            <div class="feature-bar">
+                <div class="fname">price_momentum_3d</div>
+                <div class="fbar"><div class="fbar-fill" style="width:82%"></div></div>
+                <div class="fpct">14.4%</div>
+            </div>
+            <div class="feature-bar">
+                <div class="fname">vol_change_12h</div>
+                <div class="fbar"><div class="fbar-fill" style="width:57%"></div></div>
+                <div class="fpct">9.9%</div>
+            </div>
+            <div class="feature-bar">
+                <div class="fname">rsi_14</div>
+                <div class="fbar"><div class="fbar-fill" style="width:48%;background:var(--blue)"></div></div>
+                <div class="fpct">8.4%</div>
+            </div>
+            <div class="feature-bar">
+                <div class="fname">market_cap_rank</div>
+                <div class="fbar"><div class="fbar-fill" style="width:40%;background:var(--purple)"></div></div>
+                <div class="fpct">7.0%</div>
+            </div>
+
+            <h3 style="font-size:13px;color:var(--white);margin:14px 0 10px;">Pipeline</h3>
+            <div class="pipeline-flow">
+                <div class="pipeline-step">CoinGecko</div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step">Feature Eng</div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step">RF+XGB Ensemble</div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step">TP/SL Calc</div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step">Track</div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step">Self-Improve</div>
+            </div>
+        </div>
+
+        <!-- Strategy Details Card -->
+        <div class="card">
+            <h2>Strategy Signals</h2>
+            <div class="strat-grid">
+                <div class="strat-item">
+                    <strong>Momentum Ignition</strong><span class="weight">7.9x</span>
+                    <p>Historical lift factor. Detects early momentum before price breakout using 3d/7d price acceleration and RSI divergence.</p>
+                </div>
+                <div class="strat-item">
+                    <strong>Vol/MCap Ratio</strong><span class="weight">HIGH</span>
+                    <p>Volume relative to market cap identifies unusual accumulation. Spikes &gt;3x baseline trigger alerts.</p>
+                </div>
+                <div class="strat-item">
+                    <strong>Consolidation Breakout</strong><span class="weight">17.5%</span>
+                    <p>Top feature by importance. Tight consolidation ranges precede explosive moves. ATR compression + BB squeeze.</p>
+                </div>
+                <div class="strat-item">
+                    <strong>Capitulation V-Bottom</strong><span class="weight">REV</span>
+                    <p>Detects sharp selloff exhaustion followed by volume surge reversal. 60-65% win rate historically.</p>
+                </div>
+                <div class="strat-item">
+                    <strong>TokenSniffer Filter</strong><span class="weight">SAFE</span>
+                    <p>Automated scam detection. Checks for honeypot contracts, rug-pull patterns, and locked liquidity before pick entry.</p>
+                </div>
+                <div class="strat-item">
+                    <strong>Risk Management</strong><span class="weight">2.5:1</span>
+                    <p>TP = 2.5x ATR above entry. SL = 1x ATR below. 48h max hold time. Max 10 concurrent positions.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="warn-box">
+            <strong>NOT FINANCIAL ADVICE.</strong> Experimental ML paper-trading system. Do not trade with real money. Always DYOR.
+            This system has limited live history. Need 50+ resolved picks for statistical significance.
+        </div>
+
+        <div class="refresh-bar">
+            Auto-refreshes every 5 minutes. Data updates via GitHub Actions.
+            <button onclick="loadAll()">Refresh Now</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Claude Code &mdash; Crypto Gainer ML &mdash;
+            <a href="/updates/">Updates</a> |
+            <a href="/updates/unified-dashboard.html">Unified Dashboard</a> |
+            <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/claude_gainer_ml">GitHub</a>
+        </p>
+        <p style="margin-top:6px">&copy; 2026 findtorontoevents.ca</p>
+    </div>
+
+    <script>
+        var GH = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/';
+
+        var URLS = {
+            performance: GH + 'updates/data/claude_ml_performance.json',
+            activePicks: GH + 'claude_gainer_ml/tracker/claude_live_picks.json',
+            scanLog:     GH + 'claude_gainer_ml/tracker/claude_scan_log.json',
+            history:     GH + 'updates/data/claude_ml_history.json'
+        };
+
+        /* ---- helpers ---- */
+        function fmt(n, d) {
+            if (d === undefined) d = 2;
+            return (n == null || isNaN(n)) ? '\u2014' : Number(n).toFixed(d);
+        }
+
+        function fmtPrice(n) {
+            if (n == null) return '\u2014';
+            if (n >= 100) return '$' + n.toFixed(2);
+            if (n >= 1) return '$' + n.toFixed(4);
+            if (n >= 0.001) return '$' + n.toFixed(6);
+            return '$' + n.toExponential(3);
+        }
+
+        function timeAgo(iso) {
+            if (!iso) return '\u2014';
+            var s = (Date.now() - new Date(iso).getTime()) / 1000;
+            if (s < 0) return 'just now';
+            if (s < 60) return Math.floor(s) + 's ago';
+            if (s < 3600) return Math.floor(s / 60) + 'm ago';
+            if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+            return Math.floor(s / 86400) + 'd ago';
+        }
+
+        function fmtEST(iso) {
+            if (!iso) return '\u2014';
+            try {
+                return new Date(iso).toLocaleString('en-US', {
+                    timeZone: 'America/New_York',
+                    month: 'short', day: 'numeric',
+                    hour: 'numeric', minute: '2-digit', hour12: true
+                }) + ' EST';
+            } catch (e) { return timeAgo(iso); }
+        }
+
+        function fmtShortTime(iso) {
+            if (!iso) return '\u2014';
+            try {
+                return new Date(iso).toLocaleString('en-US', {
+                    timeZone: 'America/New_York',
+                    month: 'short', day: 'numeric',
+                    hour: 'numeric', minute: '2-digit', hour12: true
+                });
+            } catch (e) { return timeAgo(iso); }
+        }
+
+        function sigCls(s) {
+            var u = (s || '').toUpperCase();
+            if (u.indexOf('VOL') >= 0 || u.indexOf('ELEVATED') >= 0) return 'vol';
+            if (u.indexOf('MOM') >= 0 || u.indexOf('EARLY') >= 0) return 'mom';
+            if (u.indexOf('BREAKOUT') >= 0 || u.indexOf('HIGH') >= 0) return 'brk';
+            if (u.indexOf('REVERSAL') >= 0 || u.indexOf('RECOVERY') >= 0 || u.indexOf('V_BOTTOM') >= 0 || u.indexOf('CAPITULATION') >= 0) return 'rev';
+            if (u.indexOf('SQUEEZE') >= 0 || u.indexOf('COMPRESS') >= 0) return 'sq';
+            if (u.indexOf('SMALL_CAP') >= 0 || u.indexOf('MICRO') >= 0) return 'sc';
+            return 'vol';
+        }
+
+        function scColor(s) {
+            return s >= 0.7 ? 'var(--accent)' : s >= 0.5 ? 'var(--amber)' : 'var(--text2)';
+        }
+
+        function pctColor(v) { return v > 0 ? 'var(--accent)' : v < 0 ? 'var(--red)' : 'var(--text2)'; }
+
+        function safeFetch(url) {
+            return fetch(url + '?t=' + Date.now())
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .catch(function() { return null; });
+        }
+
+        /* ---- main load ---- */
+        function loadAll() {
+            Promise.all([
+                safeFetch(URLS.performance),
+                safeFetch(URLS.activePicks),
+                safeFetch(URLS.scanLog),
+                safeFetch(URLS.history)
+            ]).then(function(results) {
+                var perf = results[0];
+                var active = results[1];
+                var scanLog = results[2];
+                var history = results[3];
+                render(perf, active, scanLog, history);
+            });
+        }
+
+        function render(perf, activeData, scanLog, history) {
+            var sc = (perf && perf.scorecard) ? perf.scorecard : {};
+            var picks = [];
+
+            /* active picks: support both wrapper object and raw array */
+            if (activeData) {
+                if (Array.isArray(activeData)) {
+                    picks = activeData;
+                } else if (activeData.picks && Array.isArray(activeData.picks)) {
+                    picks = activeData.picks;
+                } else if (activeData.active_picks && Array.isArray(activeData.active_picks)) {
+                    picks = activeData.active_picks;
+                }
+            }
+
+            var scans = Array.isArray(scanLog) ? scanLog : [];
+            var hist = Array.isArray(history) ? history : [];
+
+            /* ---- header meta ---- */
+            var lastRun = (perf && perf.last_run) ? perf.last_run : (scans.length ? scans[scans.length - 1].scan_time : null);
+            document.getElementById('lastUpdate').textContent = lastRun ? 'Updated: ' + timeAgo(lastRun) : 'Awaiting data...';
+            document.getElementById('modelVer').textContent = (perf && perf.model_version) ? perf.model_version : 'v1.0';
+
+            /* ---- KPI row ---- */
+            document.getElementById('kpiTotal').textContent = sc.total_picks != null ? sc.total_picks : '\u2014';
+            document.getElementById('kpiActive').textContent = picks.length;
+
+            var wr = sc.win_rate;
+            var wrEl = document.getElementById('kpiWinRate');
+            wrEl.textContent = wr != null && sc.total_picks > 0 ? fmt(wr, 1) + '%' : '\u2014';
+            wrEl.parentElement.className = 'kpi ' + (wr > 50 ? 'green' : wr > 0 ? 'amber' : '');
+            document.getElementById('kpiWinDetail').textContent = (sc.tp_hits || 0) + ' TP / ' + (sc.sl_hits || 0) + ' SL';
+
+            var pnl = sc.total_pnl_pct;
+            var pnlEl = document.getElementById('kpiPnl');
+            pnlEl.textContent = pnl != null && sc.total_picks > 0 ? (pnl >= 0 ? '+' : '') + fmt(pnl) + '%' : '\u2014';
+            pnlEl.parentElement.className = 'kpi ' + (pnl > 0 ? 'green' : pnl < 0 ? 'red' : '');
+
+            /* last scan */
+            var lastScanEl = document.getElementById('kpiLastScan');
+            var scanDetailEl = document.getElementById('kpiScanDetail');
+            if (scans.length) {
+                var ls = scans[scans.length - 1];
+                lastScanEl.textContent = timeAgo(ls.scan_time);
+                scanDetailEl.textContent = (ls.coins_scanned || 0) + ' coins scanned';
+            } else if (lastRun) {
+                lastScanEl.textContent = timeAgo(lastRun);
+                scanDetailEl.textContent = 'last run';
+            } else {
+                lastScanEl.textContent = '\u2014';
+                scanDetailEl.textContent = 'awaiting scan';
+            }
+
+            /* top coin */
+            var topCoinEl = document.getElementById('kpiTopCoin');
+            var topProbEl = document.getElementById('kpiTopProb');
+            if (picks.length) {
+                var best = picks.reduce(function(a, b) { return (b.pump_probability || 0) > (a.pump_probability || 0) ? b : a; }, picks[0]);
+                topCoinEl.textContent = (best.symbol || best.coin_id || '\u2014').toUpperCase();
+                topProbEl.textContent = best.pump_probability != null ? (best.pump_probability * 100).toFixed(1) + '% prob' : '\u2014';
+            } else if (scans.length) {
+                var lastScan = scans[scans.length - 1];
+                topCoinEl.textContent = (lastScan.top_coin || '\u2014').toUpperCase();
+                topProbEl.textContent = lastScan.top_probability != null ? (lastScan.top_probability * 100).toFixed(1) + '% prob' : '\u2014';
+            } else {
+                topCoinEl.textContent = '\u2014';
+                topProbEl.textContent = '\u2014';
+            }
+
+            /* ---- Active picks table ---- */
+            document.getElementById('activeCount').textContent = picks.length;
+            var ab = document.getElementById('activeBody');
+            if (!picks.length) {
+                ab.innerHTML = '<tr><td colspan="7" class="empty-state"><span class="icon">&#x1F50D;</span>Awaiting first picks... Scanner will populate this table.</td></tr>';
+            } else {
+                ab.innerHTML = picks.sort(function(a, b) {
+                    return (b.pump_probability || 0) - (a.pump_probability || 0);
+                }).map(function(p) {
+                    var prob = p.pump_probability || 0;
+                    var probPct = (prob * 100).toFixed(1);
+                    var sigs = p.signals || [];
+                    var sigHtml = sigs.map(function(s) {
+                        return '<span class="signal ' + sigCls(s) + '">' + s.replace(/_/g, ' ') + '</span>';
+                    }).join('');
+
+                    var entry = p.price || 0;
+                    var tp = p.tp_price || 0;
+                    var sl = p.sl_price || 0;
+
+                    var pickedAt = p.picked_at || p.predicted_at || p.timestamp || '';
+                    var elapsed = pickedAt ? timeAgo(pickedAt) : '\u2014';
+
+                    return '<tr>'
+                        + '<td><strong style="color:var(--white)">' + (p.symbol || p.coin_id || '').toUpperCase() + '</strong></td>'
+                        + '<td><span class="mono" style="color:' + scColor(prob) + '">' + probPct + '%</span>'
+                        + '<div class="score-bar"><div class="score-fill" style="width:' + Math.min(100, prob * 100) + '%;background:' + scColor(prob) + '"></div></div></td>'
+                        + '<td class="mono">' + fmtPrice(entry) + '</td>'
+                        + '<td class="mono" style="color:var(--accent)">' + fmtPrice(tp) + '</td>'
+                        + '<td class="mono" style="color:var(--red)">' + fmtPrice(sl) + '</td>'
+                        + '<td>' + (sigHtml || '<span style="color:var(--text3)">--</span>') + '</td>'
+                        + '<td style="color:var(--text3);font-size:11px">' + elapsed + '</td>'
+                        + '</tr>';
+                }).join('');
+            }
+
+            /* ---- Scan history ---- */
+            document.getElementById('scanCount').textContent = scans.length;
+            var sb = document.getElementById('scanBody');
+            if (!scans.length) {
+                sb.innerHTML = '<tr><td colspan="5" class="empty-state">Awaiting first scan...</td></tr>';
+            } else {
+                sb.innerHTML = scans.slice(-10).reverse().map(function(s) {
+                    return '<tr>'
+                        + '<td style="font-size:11px;color:var(--text2)">' + fmtShortTime(s.scan_time) + '</td>'
+                        + '<td class="mono">' + (s.coins_scanned || 0) + '</td>'
+                        + '<td class="mono" style="color:var(--accent)">' + (s.picks_generated || 0) + '</td>'
+                        + '<td><strong style="color:var(--white)">' + (s.top_coin || '\u2014').toUpperCase() + '</strong></td>'
+                        + '<td class="mono" style="color:' + scColor(s.top_probability || 0) + '">'
+                        + (s.top_probability != null ? (s.top_probability * 100).toFixed(1) + '%' : '\u2014') + '</td>'
+                        + '</tr>';
+                }).join('');
+            }
+
+            /* ---- Resolved picks ---- */
+            document.getElementById('resolvedCount').textContent = hist.length;
+            var rb = document.getElementById('resolvedBody');
+            if (!hist.length) {
+                rb.innerHTML = '<tr><td colspan="5" class="empty-state">Picks appear here as they resolve (TP/SL/48h expiry).</td></tr>';
+            } else {
+                rb.innerHTML = hist.sort(function(a, b) {
+                    return new Date(b.resolved_at || 0) - new Date(a.resolved_at || 0);
+                }).slice(0, 20).map(function(p) {
+                    var oc = p.outcome || '';
+                    var cls = oc.indexOf('TP') >= 0 ? 'tp' : oc.indexOf('SL') >= 0 ? 'sl' : 'exp';
+                    var pnlV = p.pnl_pct || 0;
+                    return '<tr>'
+                        + '<td><strong style="color:var(--white)">' + (p.symbol || p.coin_id || '').toUpperCase() + '</strong></td>'
+                        + '<td><span class="outcome ' + cls + '">' + oc.replace(/_/g, ' ') + '</span></td>'
+                        + '<td class="mono">' + fmtPrice(p.entry_price || p.price) + '</td>'
+                        + '<td class="mono">' + fmtPrice(p.exit_price) + '</td>'
+                        + '<td class="mono ' + (pnlV >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (pnlV >= 0 ? '+' : '') + fmt(pnlV) + '%</td>'
+                        + '</tr>';
+                }).join('');
+            }
+        }
+
+        /* ---- init ---- */
+        loadAll();
+        setInterval(loadAll, 5 * 60 * 1000);
+    </script>
+</body>
+
+</html>

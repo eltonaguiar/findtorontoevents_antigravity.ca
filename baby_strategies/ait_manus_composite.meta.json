@@ -1,0 +1,38 @@
+{
+  "name": "ait_manus_composite",
+  "category": "composite",
+  "source": {
+    "platform": "ai4trade.ai",
+    "agent_id": 1563,
+    "agent_name": "raftapart",
+    "product_name": "Manus AI Combined Analysis",
+    "method": "reverse-engineered",
+    "extracted_from": "public /api/signals/{1563} feed — message_type='strategy' markdown posts",
+    "research_note": ".tmp-ai4trade/FINDINGS.md"
+  },
+  "architecture": {
+    "type": "4-factor weighted composite",
+    "formula": "score = w_ta*TA + w_news*News + w_macro*Macro + w_community*Community",
+    "factors": {
+      "TA": "RSI(14) bucket, {-3, -1, 0, +1, +3}",
+      "News": "CryptoPanic sentiment classifier, {-2, 0, +2}",
+      "Macro": "regime_terminal HMM market_overview bull vs bear count, {-2, 0, +2}",
+      "Community": "LunarCrush galaxy score bucketed, {-2, -1, 0, +1, +2}"
+    },
+    "thresholds": {
+      "BUY": "score >= 4.0",
+      "SELL": "score <= -2.0"
+    },
+    "weights": "uniform 1.0 — matches observed Manus state (Total evaluations: 0)"
+  },
+  "status": "draft — not wired into scanner; requires forward-validation before promotion",
+  "created": "2026-04-14",
+  "design_doc": "docs/superpowers/specs/2026-04-14-ait-manus-composite-design.md",
+  "wired_in_scanner": false,
+  "forward_test_started": null,
+  "runtime": {
+    "weights": {"ta": 1.0, "news": 1.0, "macro": 1.0, "community": 1.0},
+    "buy_threshold": 4.0,
+    "sell_threshold": -2.0
+  }
+}

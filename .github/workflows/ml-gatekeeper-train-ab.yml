@@ -1,0 +1,118 @@
+name: ML Gatekeeper Train A/B (Phase D)
+
+# Trains a SINGLE gatekeeper bundle per dispatch, selected by `drop_leakage`:
+#   drop_leakage=false -> ml_gatekeeper/models/gatekeeper_old.joblib
+#   drop_leakage=true  -> ml_gatekeeper/models/gatekeeper_new.joblib
+#
+# Both bundles together feed the A/B router (PR #921) wired into
+# score_active_picks via PR #924. Run this workflow TWICE (once per arm) to
+# bootstrap the sleeve, then re-run periodically to refresh.
+#
+# Trigger:
+#   gh workflow run ml-gatekeeper-train-ab.yml -f drop_leakage=false
+#   gh workflow run ml-gatekeeper-train-ab.yml -f drop_leakage=true
+
+on:
+  workflow_dispatch:
+    inputs:
+      drop_leakage:
+        description: "Mask leakage feature indices (false=OLD bundle, true=NEW bundle)"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # 2026-05-12: prev 30min hit timeout during commit-step git-fetch-unshallow
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full clone avoids `git fetch --unshallow` (16+ min on this repo) in commit step
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install 'scikit-learn==1.3.2' 'scipy>=1.10.0,<1.14' joblib numpy
+
+      - name: Resolve arm name
+        id: arm
+        run: |
+          if [ "${{ inputs.drop_leakage }}" = "true" ]; then
+            echo "bundle=gatekeeper_new.joblib" >> "$GITHUB_OUTPUT"
+            echo "label=NEW (leakage-purged)" >> "$GITHUB_OUTPUT"
+          else
+            echo "bundle=gatekeeper_old.joblib" >> "$GITHUB_OUTPUT"
+            echo "label=OLD (leakage features present)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Train bundle (${{ steps.arm.outputs.label }})
+        env:
+          PYTHONUTF8: "1"
+          PYTHONPATH: ${{ github.workspace }}
+          ML_GATE_DROP_LEAKAGE: ${{ inputs.drop_leakage == 'true' && '1' || '' }}
+        run: |
+          python -m ml_gatekeeper.train_gatekeeper
+          ls -la ml_gatekeeper/models/
+
+      - name: Verify bundle stamping
+        env:
+          EXPECTED_DROPPED: ${{ inputs.drop_leakage }}
+          BUNDLE_NAME: ${{ steps.arm.outputs.bundle }}
+        run: |
+          python - <<'PY'
+          import os, joblib
+          from pathlib import Path
+          name = os.environ["BUNDLE_NAME"]
+          expected = os.environ["EXPECTED_DROPPED"] == "true"
+          path = Path("ml_gatekeeper/models") / name
+          assert path.exists(), f"missing {path}"
+          bundle = joblib.load(path)
+          got = bool(bundle.get("leakage_dropped"))
+          print(f"{name}: leakage_dropped={got} expected={expected} "
+                f"trained_at={bundle.get('trained_at_iso')} "
+                f"n_features={bundle.get('n_features')}")
+          assert got == expected, f"leakage_dropped mismatch on {name}"
+          if expected:
+              assert bundle.get("dropped_feature_names"), "NEW bundle must list dropped features"
+          print("OK bundle validated")
+          PY
+
+      - name: Upload bundle artifact (fallback if commit oversized)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.arm.outputs.bundle }}
+          path: ml_gatekeeper/models/${{ steps.arm.outputs.bundle }}
+          retention-days: 30
+
+      - name: Commit bundle to ml_gatekeeper/models/
+        env:
+          BUNDLE_NAME: ${{ steps.arm.outputs.bundle }}
+        run: |
+          git add "ml_gatekeeper/models/${BUNDLE_NAME}"
+          if git diff --cached --quiet; then
+            echo "No bundle changes to commit"
+          else
+            if [ -f .github/scripts/safe_commit_push.sh ]; then
+              bash .github/scripts/safe_commit_push.sh "feat(ml-gate-ab): refresh ${BUNDLE_NAME} via Phase D train workflow [skip ci]" "ml_gatekeeper/models/${BUNDLE_NAME}" || echo "push failed (non-fatal; artifact uploaded)"
+            else
+              # Full clone (fetch-depth: 0 above) means no --unshallow needed.
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git commit -m "feat(ml-gate-ab): refresh ${BUNDLE_NAME} via Phase D train workflow [skip ci]"
+              git pull --rebase origin main || true
+              git push origin HEAD:main || echo "push failed (non-fatal; artifact uploaded)"
+            fi
+          fi

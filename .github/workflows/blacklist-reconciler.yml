@@ -1,0 +1,62 @@
+name: Blacklist Reconciler (cross-check vs live systems)
+
+on:
+  schedule:
+    # 04:00 UTC daily = 23:00/00:00 EST. After overnight resolver passes
+    # so live systems[name].profit_factor reflects latest closures.
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: blacklist-reconciler
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Reconcile blacklist vs live systems
+        run: python tools/blacklist_reconciler.py
+
+      - name: Print summary to step log
+        run: |
+          python -c "
+          import json
+          d = json.load(open('audit_dashboard/data/blacklist_reconciliation.json'))
+          print('Summary:')
+          for k, v in d['summary'].items():
+              print(f'  {k}: {v}')
+          print()
+          for r in d['rows']:
+              if r['verdict'] in ('RESURRECTION_CANDIDATE', 'MUTATE_FIRST'):
+                  print(f\"  REVERSAL: {r['name']:30} blacklist_PF={r['blacklist_pf']} live_PF={r['live_pf']} live_WR={r['live_wr']} live_n={r['live_n']}\")
+          "
+
+      - name: Commit reconciliation snapshot if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/blacklist_reconciliation.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(blacklist): nightly reconciler snapshot [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase --autostash origin main || break
+              git push origin HEAD:main && break
+              sleep $((i * 5))
+            done
+          else
+            echo "No changes to commit."
+          fi

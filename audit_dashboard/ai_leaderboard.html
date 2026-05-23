@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI Leaderboard · findtorontoevents.ca/audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1280px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { margin-bottom: 4px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; }
+  header { padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 16px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 11px; }
+  .b-classified { background:#22c55e; color:#0a0a0f; }
+  .b-building { background:#fbbf24; color:#0a0a0f; }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  table.data th, table.data td { padding: 6px 9px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  table.data th { background: rgba(255,255,255,0.04); font-weight: 700; }
+  tr.eng { cursor: pointer; transition: background .12s; }
+  tr.eng:hover { background: rgba(96,165,250,0.12); }
+  tr.building td { color: #8a8a98; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .pnl-pos { color: #22c55e; } .pnl-neg { color: #ef4444; } .pnl-neu { color: #a0a0b0; }
+  details { margin: 14px 0; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 6px; }
+  details summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+  a { color: #60a5fa; }
+  .small { font-size: 11px; color: #a0a0b0; }
+  .nav { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .nav a { background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+  .nav a:hover { background: rgba(96,165,250,0.12); text-decoration: none; }
+  .nav a.active { background: rgba(96,165,250,0.2); border-color: #60a5fa; color: #93c5fd; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Leaderboard — which engine picks best, per asset class</h1>
+  <div style="color:#a0a0b0;font-size:13px;margin-top:6px">
+    Per-AI pick attribution: every swarm pick is fanned to the engine(s) that
+    produced it (<code>models_consulted[].underlying_model</code>), joined to
+    its realized outcome, and ranked. Click an engine row to drill into its
+    per-asset-class and per-horizon breakdown.
+    Built by <code>tools/ai_attribution/build_ai_leaderboard.py</code>;
+    design: <code>reports/design_per_ai_pick_attribution_2026-05-15.md</code>.
+  </div>
+  <div id="meta" class="small" style="margin-top:8px"></div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/audit/">← Main Audit</a>
+  <a href="/audit/ai-tournament.html">🏆 AI Tournament</a>
+  <a href="/audit/ai_leaderboard.html" class="active">AI Leaderboard (internal)</a>
+  <a href="/audit/research_index.html">Research Index</a>
+</nav>
+
+<div id="board"></div>
+<div id="research" style="margin-top:24px"></div>
+<div id="drill" style="margin-top:24px"></div>
+
+<footer style="margin-top:32px;color:#a0a0b0;font-size:12px">
+  Rank score shrinks win-rate toward the asset-class prior and penalises a wide
+  Wilson interval — so a handful of lucky picks cannot top the board. Engines
+  below the n-floor render greyed and are rank-ineligible (<span class="badge b-building">building</span>).
+  Goal #1 (CLAUDE.md): hedge-fund-grade edge per asset class.
+</footer>
+
+<script>
+const fmt = (v, d=1) => v == null ? '—' : Number(v).toFixed(d);
+const esc = (v) => {
+  if (v == null) return '—';
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+};
+const pnlCls = (v) => v > 0 ? 'pnl-pos' : (v < 0 ? 'pnl-neg' : 'pnl-neu');
+
+function metricsRow(label, m) {
+  const cls = m.classification === 'classified' ? 'classified' : 'building';
+  return `<tr class="${cls}">
+    <td><code>${esc(label)}</code></td>
+    <td class="num">${esc(m.n)}</td>
+    <td class="num ${pnlCls(m.wr - 50)}">${fmt(m.wr)}</td>
+    <td class="num">${fmt(m.pf, 2)}</td>
+    <td class="num ${pnlCls(m.expectancy)}">${fmt(m.expectancy, 3)}</td>
+    <td>[${(m.wilson_ci || []).map(esc).join(', ')}]</td>
+    <td class="num">${fmt(m.rank_score, 1)}</td>
+  </tr>`;
+}
+
+fetch('data/ai_leaderboard/ai_leaderboard_index.json?cb=' + Date.now())
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(idx => {
+    const t = idx.totals || {};
+    document.getElementById('meta').textContent =
+      `As of: ${idx.as_of} · schema ${idx.schema_version} · ` +
+      `${t.engines} engine(s) · ${t.resolved}/${t.picks} resolved picks · ` +
+      `n-floor ${idx.min_n_ranked}`;
+    const engines = idx.engines || [];
+    if (!engines.length) {
+      document.getElementById('board').innerHTML =
+        '<div class="small" style="padding:16px">No attributed picks yet.</div>';
+      return;
+    }
+    let html = `<table class="data"><thead><tr>
+      <th>#</th><th>AI engine</th><th class="num">n</th><th class="num">WR%</th>
+      <th class="num">PF</th><th class="num">Expectancy</th><th>Wilson CI</th>
+      <th class="num">Rank score</th><th>Best class</th><th>Status</th>
+    </tr></thead><tbody>`;
+    engines.forEach((e, i) => {
+      const o = e.overall;
+      const cls = o.classification === 'classified' ? 'classified' : 'building';
+      html += `<tr class="eng ${cls}" data-engine="${esc(e.engine)}">
+        <td class="num">${i + 1}</td>
+        <td><strong>${esc(e.engine)}</strong></td>
+        <td class="num">${esc(o.n)}</td>
+        <td class="num ${pnlCls(o.wr - 50)}">${fmt(o.wr)}</td>
+        <td class="num">${fmt(o.pf, 2)}</td>
+        <td class="num ${pnlCls(o.expectancy)}">${fmt(o.expectancy, 3)}</td>
+        <td>[${(o.wilson_ci || []).map(esc).join(', ')}]</td>
+        <td class="num">${fmt(o.rank_score, 1)}</td>
+        <td>${esc(e.best_asset_class)}</td>
+        <td><span class="badge b-${cls}">${cls}</span></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('board').innerHTML = html;
+    window.__ENGINES__ = {};
+    engines.forEach(e => { window.__ENGINES__[e.engine] = e; });
+    document.querySelectorAll('tr.eng').forEach(row => {
+      row.addEventListener('click', () => drill(row.dataset.engine));
+    });
+    renderResearch(idx.research_proposers || {});
+  })
+  .catch(err => {
+    document.getElementById('meta').textContent = 'AI leaderboard unavailable.';
+    document.getElementById('board').innerHTML =
+      '<div class="small" style="padding:16px;color:#94a3b8">Leaderboard not yet ' +
+      'generated. Run <code>python tools/ai_attribution/build_ai_leaderboard.py</code>.</div>';
+    console.error('ai_leaderboard fetch failed:', err);
+  });
+
+function renderResearch(proposers) {
+  // Research candidates proposed per engine — strategy specs from
+  // research/asset_class/*/run_*/p2_candidates.json. NOT realized
+  // performance (no outcomes) — a contribution roster, shown separately.
+  const rows = Object.entries(proposers || {})
+    .sort((a, b) => (b[1].total || 0) - (a[1].total || 0));
+  if (!rows.length) { document.getElementById('research').innerHTML = ''; return; }
+  let html = '<h2>Research candidates proposed (specs — not realized WR)</h2>' +
+    '<table class="data"><thead><tr><th>AI engine</th>' +
+    '<th class="num">Candidates</th><th>By asset class</th></tr></thead><tbody>';
+  rows.forEach(([eng, d]) => {
+    const cls = Object.entries(d.by_asset_class || {})
+      .sort((a, b) => b[1] - a[1])
+      .map(([c, n]) => `${esc(c)}:${esc(n)}`).join(' · ');
+    html += `<tr><td><strong>${esc(eng)}</strong></td>` +
+      `<td class="num">${esc(d.total)}</td><td class="small">${cls}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('research').innerHTML = html;
+}
+
+function drill(engine) {
+  const e = (window.__ENGINES__ || {})[engine];
+  if (!e) return;
+  const byClass = Object.entries(e.by_asset_class || {}).sort();
+  const byHz = Object.entries(e.by_horizon || {}).sort();
+  document.getElementById('drill').innerHTML = `
+    <h2>${esc(engine)} — drill-in</h2>
+    <details open><summary>By asset class</summary>
+      <table class="data"><thead><tr>
+        <th>Asset class</th><th class="num">n</th><th class="num">WR%</th>
+        <th class="num">PF</th><th class="num">Expectancy</th><th>Wilson CI</th>
+        <th class="num">Rank score</th></tr></thead>
+        <tbody>${byClass.map(([c, m]) => metricsRow(c, m)).join('')}</tbody>
+      </table>
+    </details>
+    <details open><summary>By horizon (intended hold)</summary>
+      <table class="data"><thead><tr>
+        <th>Horizon</th><th class="num">n</th><th class="num">WR%</th>
+        <th class="num">PF</th><th class="num">Expectancy</th><th>Wilson CI</th>
+        <th class="num">Rank score</th></tr></thead>
+        <tbody>${byHz.map(([h, m]) => metricsRow(h, m)).join('')}</tbody>
+      </table>
+    </details>`;
+  document.getElementById('drill').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

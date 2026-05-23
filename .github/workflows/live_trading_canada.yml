@@ -1,0 +1,94 @@
+name: Live Trading Bot - Canada Edition
+
+on:
+  schedule:
+    # Run every 4 hours
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      exchange:
+        description: 'Exchange to use (COINBASE, KRAKEN, KUCOIN)'
+        required: true
+        default: 'COINBASE'
+      dry_run:
+        description: 'Run in dry-run mode (no real trades)'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  trade:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || github.token }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        update-environment: false
+        python-version: '3.11'
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run trading bot (Canada Edition)
+      env:
+        # Set primary exchange (COINBASE, KRAKEN, or KUCOIN)
+        PRIMARY_EXCHANGE: ${{ github.event.inputs.exchange || 'COINBASE' }}
+        
+        # Coinbase API (Recommended for Canada)
+        COINBASE_API_KEY: ${{ secrets.COINBASE_API_KEY }}
+        COINBASE_SECRET: ${{ secrets.COINBASE_SECRET }}
+        
+        # Kraken API (Alternative for Canada)
+        KRAKEN_API_KEY: ${{ secrets.KRAKEN_API_KEY }}
+        KRAKEN_SECRET: ${{ secrets.KRAKEN_SECRET }}
+        
+        # KuCoin API (Another alternative)
+        KUCOIN_API_KEY: ${{ secrets.KUCOIN_API_KEY }}
+        KUCOIN_SECRET: ${{ secrets.KUCOIN_SECRET }}
+        KUCOIN_PASSPHRASE: ${{ secrets.KUCOIN_PASSPHRASE }}
+        
+        DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+      run: |
+        python live_trading_bot_canada.py
+        
+    - name: Upload trading results
+      uses: actions/upload-artifact@v4
+      with:
+        name: trading-results-${{ github.run_id }}-${{ github.event.inputs.exchange || 'COINBASE' }}
+        path: |
+          trading_results.json
+          trading_bot.log
+        retention-days: 30
+        
+    - name: Commit results to repo
+      env:
+        TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add trading_results.json trading_bot.log performance_history.json 2>/dev/null || true
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+          exit 0
+        fi
+        git commit -m "Update trading results - ${{ github.event.inputs.exchange || 'COINBASE' }} - $(date -u +%Y-%m-%d_%H:%M) [skip ci]" || true
+        git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+        bash .github/scripts/safe_push.sh
+

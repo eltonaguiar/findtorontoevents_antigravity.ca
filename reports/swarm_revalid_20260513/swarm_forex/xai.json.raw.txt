@@ -1,0 +1,58 @@
+{
+  "strategies": [
+    {
+      "name": "Majors_RateDiff_Filtered",
+      "thesis": "Capture edge in non-JPY majors by filtering trades based on interest rate differentials favoring carry.",
+      "signal_construction": "Enter LONG on non-JPY major pairs (e.g., EURGBP, GBPUSD) if 2Y yield differential (FRED: DGS2 for US, UK, EU minus Japan) is positive by >50bps AND 14-day RSI < 30; exit if differential < 25bps OR RSI > 70; max hold 14 days.",
+      "universe": ["EURGBP=X", "GBPUSD=X", "AUDUSD=X", "USDCHF=X", "USDCAD=X", "NZDUSD=X"],
+      "expected_pf": 2.0,
+      "expected_sharpe": 1.5,
+      "expected_mdd_pct": 5.0,
+      "differentiation_from_existing": "Unlike multi_asset_copytrader, incorporates explicit interest rate differential filter to avoid adverse carry regimes and focuses only on non-JPY majors.",
+      "implementation_hours": 24,
+      "wire_target": "alpha_engine/forex_rate_diff_strat.py",
+      "data_source": "yfinance for price, FRED for 2Y yields (DGS2 series)",
+      "fail_mode": "Overfit to current rate differential thresholds if central bank policy shifts unexpectedly."
+    },
+    {
+      "name": "Majors_Trend_Reversal",
+      "thesis": "Exploit mean-reversion in non-JPY majors during overextended moves without carry bias interference.",
+      "signal_construction": "Enter SHORT on non-JPY majors if 20-day SMA > price by >2% AND Bollinger Band (2 std) upper breached; exit if price crosses 20-day SMA OR max hold 10 days.",
+      "universe": ["EURGBP=X", "GBPUSD=X", "AUDUSD=X", "USDCHF=X", "USDCAD=X", "NZDUSD=X"],
+      "expected_pf": 1.8,
+      "expected_sharpe": 1.2,
+      "expected_mdd_pct": 6.0,
+      "differentiation_from_existing": "Focuses on short-term reversals in non-JPY pairs, avoiding multi_asset_copytrader's broad trend-following bias that fails on JPY crosses.",
+      "implementation_hours": 16,
+      "wire_target": "alpha_engine/forex_trend_reversal.py",
+      "data_source": "yfinance for price and volume",
+      "fail_mode": "Decay if volatility spikes render Bollinger thresholds ineffective."
+    },
+    {
+      "name": "JPY_Carry_Regime_Adjust",
+      "thesis": "Adapt to JPY carry regime changes by trading JPY crosses only when rate differentials explicitly favor carry.",
+      "signal_construction": "Enter LONG on JPY crosses only if Japan 2Y yield (FRED: JPGS2) is >100bps below counter-currency 2Y yield AND 5-day price trend is up; exit if differential <50bps OR max hold 7 days.",
+      "universe": ["USDJPY=X", "EURJPY=X", "GBPJPY=X", "AUDJPY=X", "CADJPY=X"],
+      "expected_pf": 1.6,
+      "expected_sharpe": 1.0,
+      "expected_mdd_pct": 8.0,
+      "differentiation_from_existing": "Explicitly conditions JPY-cross trades on rate differentials, unlike multi_asset_copytrader's agnostic trend-following approach.",
+      "implementation_hours": 30,
+      "wire_target": "alpha_engine/forex_jpy_carry_adjust.py",
+      "data_source": "yfinance for price, FRED for 2Y yields (JPGS2, DGS2 series)",
+      "fail_mode": "Overfit to specific rate differential thresholds if BoJ policy volatility increases."
+    }
+  ],
+  "killers": [
+    "multi_asset_copytrader for FOREX: Retire due to catastrophic performance on JPY crosses (WR ~4%) and inability to adapt to carry regime changes."
+  ],
+  "block_proposals": [
+    "(FOREX, multi_asset_copytrader, EURJPY=X): Block due to extreme bleed (-0.77% PnL, 1.9% WR).",
+    "(FOREX, multi_asset_copytrader, USDJPY=X): Block due to extreme bleed (-0.66% PnL, 3.0% WR).",
+    "(FOREX, multi_asset_copytrader, GBPJPY=X): Block due to extreme bleed (-0.35% PnL, 7.1% WR).",
+    "(FOREX, multi_asset_copytrader, AUDJPY=X): Block due to extreme bleed (-0.35% PnL, 3.9% WR).",
+    "(FOREX, multi_asset_copytrader, CADJPY=X): Block due to extreme bleed (-0.14% PnL, 10.8% WR)."
+  ],
+  "tier2_attainability_pct": 75,
+  "single_most_important_finding": "JPY-cross bleed is a carry-regime issue fixable with rate-differential filters, while non-JPY majors retain strong edge."
+}

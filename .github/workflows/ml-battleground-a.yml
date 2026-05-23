@@ -1,0 +1,76 @@
+name: "Superpowers - System A (The Filter)"
+
+on:
+  # DISABLED 2026-03-16: System A blocked (10.5% WR, 19 trades, -50% PnL, PF 0.14). Wasting CI minutes.
+  # schedule:
+  # - cron: "2 */2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: superpowers-a-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ml_battleground/requirements.txt
+
+      - name: Run System A scanner
+        run: |
+          cd ml_battleground
+          python -m system_a_filter.scanner
+        # env DISABLED: system underperforming DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Push Battleground A picks to Audit Trail
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python ml_battleground/audit_push.py 2>&1 || echo "Battleground audit push failed (non-fatal)"
+
+      - name: Commit results
+        run: |
+          git config user.name "Superpowers Bot"
+          git config user.email "superpowers@findtorontoevents.ca"
+          git add ml_battleground/system_a_filter/data/ || true
+          git add data/audit_trail.db 2>/dev/null || true
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m " Superpowers A scan $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying in ${i}0s..."
+            sleep ${i}0
+            git rebase --abort 2>/dev/null || true
+            git pull --rebase origin main || true
+          done
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: bash .github/notify-failure.sh "Superpowers - System A (The Filter)" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+
+      - name: Notify ML channel on failure
+        if: failure()
+        env:
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\": [{\"title\": \"\\u274c ML Job FAILED: ${{ github.workflow }}\", \"description\": \"Job: ${{ github.job }}\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nBranch: ${{ github.ref_name }}\", \"color\": 15158332, \"timestamp\": \"$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}]}" \
+            "$DISCORD_ML_CHANNEL" || true
+

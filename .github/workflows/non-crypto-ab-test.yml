@@ -1,0 +1,68 @@
+name: Non-Crypto A/B Portfolio Tracker
+
+on:
+  schedule:
+    # Every 6 hours: 09:30, 15:30 ET (roughly market hours) + 2 off-hours
+    - cron: '30 13 * * 1-5' # 09:30 ET (13:30 UTC)
+    - cron: '30 19 * * 1-5' # 15:30 ET (19:30 UTC)
+    - cron: '30 1 * * 1-5' # 21:30 ET prev day (01:30 UTC) off-hours, skipped by code
+    - cron: '30 7 * * 1-5' # 03:30 ET (07:30 UTC) off-hours, skipped by code
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force snapshot even outside market hours'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: non-crypto-ab-test
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  ab-test:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance requests
+
+      - name: Run A/B Portfolio Tracker
+        env:
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          FORCE_INPUT: ${{ inputs.force }}
+        run: |
+          ARGS="--report"
+          if [ "$FORCE_INPUT" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          python -m alpha_engine.non_crypto_ab_tester $ARGS
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/non_crypto_ab_history.json alpha_engine/data/non_crypto_ab_report.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update non-crypto A/B test $(date -u +%Y-%m-%d\ %H:%M) UTC [skip ci]"
+            git pull --rebase origin main
+            bash .github/scripts/safe_push.sh
+          fi
+

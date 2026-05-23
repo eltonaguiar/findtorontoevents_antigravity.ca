@@ -1,0 +1,26 @@
+name: Weekly Real-Money Filter
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  run-filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install -r requirements.txt || pip install yfinance pandas numpy requests
+      - name: Run weekly filter
+        run: python tools/edge_filter_engine_v3.py
+        continue-on-error: true
+      - name: Commit filter report
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'auto: weekly real-money filter [skip ci]'
+          file_pattern: 'reports/weekly_filter_*.md reports/weekly_filter_*.json'

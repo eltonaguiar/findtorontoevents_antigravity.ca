@@ -1,0 +1,15 @@
+# Consensus-3 preset: deepseek + xai + kilo. Cross-vendor consensus
+# (DeepSeek API + xAI/Grok + Anthropic-via-Kilo CLI) at moderate cost.
+# Adds the claude-opus red-team pass after engines complete and runs
+# swarm_inspect.py on the output dir as a post-hook.
+#
+# Run:
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/preset_consensus_3.yaml
+
+name: consensus-3-asset-class
+prompt_file: swarm_runs/briefing_asset_class_audit.md
+preset: consensus-3
+out_dir: swarm_runs/consensus3_${TS}
+json_strict: true
+red_team: true
+post_hook: "python tools/swarm/swarm_inspect.py ${SWARM_OUT_DIR}"

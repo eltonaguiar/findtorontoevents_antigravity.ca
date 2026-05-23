@@ -1,0 +1,91 @@
+name: Alpha Engine v2 — Multi-Agent Signal Scanner
+
+on:
+  schedule:
+    # Every 30 minutes for crypto (24/7)
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  alpha-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: KIMI_RISEOFTHECLAW
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install yfinance requests pandas numpy
+
+      - name: 🔍 Run Alpha Engine v2
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          cd KIMI_RISEOFTHECLAW
+          python alpha_engine_v2.py
+          echo "✅ Alpha scan complete"
+          echo ""
+          echo "=== TOP PICKS ==="
+          python3 -c "
+          import json
+          with open('data/active_picks_v2.json') as f:
+              data = json.load(f)
+          picks = data.get('activePicks', [])
+          print(f'Total picks: {len(picks)}')
+          print(f'Fear & Greed: {data[\"sentiment\"][\"fear_greed\"]}')
+          for p in picks:
+              print(f'  {p[\"direction\"]} {p[\"symbol\"]} @ \${p[\"entry_price\"]:.4f} | TP: \${p[\"take_profit\"]:.4f} | SL: \${p[\"stop_loss\"]:.4f} | R:R={p[\"risk_reward\"]} | Score: {p[\"composite_score\"]}')
+          "
+
+      - name: 📡 Deploy to live site
+        env:
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 << 'PYEOF'
+          import ftplib
+          import os
+          import json
+
+          ftp_pass = os.environ.get('FTP_PASS', '')
+          if not ftp_pass:
+              print("⚠ No FTP_PASS — skipping live deploy")
+              exit(0)
+
+          files_to_upload = [
+              ('KIMI_RISEOFTHECLAW/data/forward_signals_current.json', 'forward_signals_current.json'),
+              ('KIMI_RISEOFTHECLAW/data/active_picks_v2.json', 'active_picks_v2.json'),
+              ('KIMI_RISEOFTHECLAW/data/alpha_v2_latest.json', 'alpha_v2_latest.json'),
+              ('KIMI_RISEOFTHECLAW/data/live_signals_now.json', 'live_signals_now.json'),
+          ]
+
+          try:
+              ftp = ftplib.FTP('ftps2.50webs.com', timeout=60)
+              ftp.login('ejaguiar1', ftp_pass)
+              ftp.cwd('findtorontoevents.ca/KIMI_RISEOFTHECLAW/data')
+
+              for local_path, remote_name in files_to_upload:
+                  if os.path.exists(local_path):
+                      with open(local_path, 'rb') as f:
+                          ftp.storbinary(f'STOR {remote_name}', f)
+                      print(f'  ✔ Uploaded {remote_name}')
+
+              ftp.quit()
+              print('✅ Live deploy complete')
+          except Exception as e:
+              print(f'⚠ FTP deploy failed: {e}')
+          PYEOF
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add KIMI_RISEOFTHECLAW/data/
+          git diff --cached --quiet || (git commit -m "🔍 Alpha v2 scan [$(date -u '+%H:%M UTC')] — Multi-agent confluence" && git push origin KIMI_RISEOFTHECLAW)

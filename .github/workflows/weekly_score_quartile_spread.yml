@@ -1,0 +1,25 @@
+# Weekly guardrail: score ranking signal on recent_closed (top vs bottom quartile WR spread).
+# Uses committed tools/data/score_pnl_analysis.json — refresh via analyze_audit_scores_vs_pnl.py in CI or locally.
+name: Weekly score quartile spread
+
+'on':
+  schedule:
+    - cron: '15 14 * * 1' # Mondays 14:15 UTC
+  workflow_dispatch:
+
+jobs:
+  quartile-spread:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        # 2026-04-20: run 24673337770 failed with ModuleNotFoundError: numpy.
+        # Script chain imports analyze_audit_scores_vs_pnl.py which needs numpy.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy
+      - name: Check spread vs floor
+        run: python tools/weekly_score_quartile_regression.py

@@ -1,0 +1,167 @@
+name: "Copy Trader Intelligence  Scrape + Analyze + Track"
+
+on:
+  schedule:
+    # Every 45 minutes — runs take ~35min, 15min cron caused cancellation cascade
+    - cron: '7,52 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: copy-trader-intel
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  copy-trader-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 50  # Was 30→runs take 28-43min; 30min killed 60% at commit step
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pymysql
+
+      - name: "Step 1: Track performance of existing picks (resolve TP/SL/expiry)"
+        run: python copy_trader_intel/performance_tracker.py
+        continue-on-error: true
+        timeout-minutes: 10
+
+      - name: "Step 2: Run ALL copy trader scrapers (OKX+HL+Polymarket+Bitget+Bybit+BingX+DEX)"
+        run: python copy_trader_intel/main.py
+        continue-on-error: true
+        timeout-minutes: 35
+
+      - name: "Step 2b: Refresh highscore + clone picks (auto-generates from trader databases)"
+        run: python copy_trader_intel/generate_dashboard_data.py
+        continue-on-error: true
+        timeout-minutes: 10
+
+      - name: "Step 3: Merge copy trader picks into alpha engine"
+        run: |
+          python -c "
+          import json, os
+
+          # Load copy trader picks
+          ct_file = 'copy_trader_intel/data/active_picks.json'
+          ct_picks = []
+          if os.path.exists(ct_file):
+              with open(ct_file, encoding='utf-8') as f:
+                  ct_picks = json.load(f)
+
+          if not ct_picks:
+              print('No copy trader picks to merge')
+              exit(0)
+
+          # Load existing alpha engine picks
+          ae_file = 'alpha_engine/data/active_picks.json'
+          existing = []
+          if os.path.exists(ae_file):
+              with open(ae_file, encoding='utf-8') as f:
+                  existing = json.load(f)
+
+          # Remove old copy trader picks from ALL sources (refresh each run)
+          ct_sources = ('copy_trader_okx', 'copy_trader_intel', 'copy_trader_hyperliquid',
+                        'copy_trader_bitget', 'copy_trader_bybit', 'copy_trader_bingx',
+                        'copy_trader_dex_gmx_v2', 'copy_trader_dex_dydx',
+                        'copy_trader_dex_kwenta', 'copy_trader_dex_polynomial')
+          existing = [p for p in existing if isinstance(p, dict)
+                      and not p.get('source_system', '').startswith('copy_trader_')]
+
+          # Add new copy trader picks
+          existing.extend(ct_picks)
+
+          with open(ae_file, 'w', encoding='utf-8') as f:
+              json.dump(existing, f, indent=2)
+          print(f'Merged {len(ct_picks)} copy trader picks into alpha engine ({len(existing)} total)')
+          "
+        continue-on-error: true
+
+      - name: "Step 4: Update portfolios"
+        run: |
+          python alpha_engine/portfolio_tracker_copytrader.py || true
+          python alpha_engine/portfolio_tracker_1x.py || true
+          python alpha_engine/portfolio_tracker_20x.py || true
+        continue-on-error: true
+        timeout-minutes: 5
+
+      - name: Run technical analysis on active picks
+        run: python copy_trader_intel/technical_analyzer.py || echo "Technical analyzer warning (non-fatal)"
+        continue-on-error: true
+        timeout-minutes: 5
+
+      - name: Commit all data changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add copy trader intel data
+          git add -f copy_trader_intel/data/active_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/okx_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/okx_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/qualified_traders.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/scan_metadata.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/bitget_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/bitget_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/bybit_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/bybit_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/bingx_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/bingx_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/dex_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/dex_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/gate_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/gate_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/polymarket_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/copin_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/copin_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/dydx_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/dydx_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/gmx_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/gmx_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/gains_trader_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/gains_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/portfolio_tracker.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/strategy_profiles.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/extracted_strategies.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/unified_trader_research.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/dex_whale_picks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/closed_trades.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/trader_performance.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/trader_trust.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/high_water_marks.json 2>/dev/null || true
+          git add -f copy_trader_intel/data/technical_analysis.json 2>/dev/null || true
+
+          # Add alpha engine data files
+          git add -f alpha_engine/data/active_picks.json 2>/dev/null || true
+          git add -f alpha_engine/data/portfolio_copytrader.json 2>/dev/null || true
+          git add -f alpha_engine/data/portfolio_copytrader_dashboard.json 2>/dev/null || true
+          git add -f alpha_engine/data/copy_trader_patterns.json 2>/dev/null || true
+          git add -f alpha_engine/data/portfolio_1x.json 2>/dev/null || true
+          git add -f alpha_engine/data/portfolio_20x.json 2>/dev/null || true
+
+          # Reset staging so safe_commit_push.sh can handle it
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          git reset HEAD
+          bash .github/scripts/safe_commit_push.sh \
+            "Copy trader intelligence scan $(date -u +'%Y-%m-%d %H:%M') UTC [skip ci]" \
+            copy_trader_intel/data/ \
+            alpha_engine/data/active_picks.json \
+            alpha_engine/data/portfolio_copytrader.json \
+            alpha_engine/data/portfolio_copytrader_dashboard.json \
+            alpha_engine/data/copy_trader_patterns.json \
+            alpha_engine/data/portfolio_1x.json \
+            alpha_engine/data/portfolio_20x.json
+

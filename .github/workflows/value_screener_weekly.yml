@@ -1,0 +1,151 @@
+# Opt-in sidecar workflow. Runner module is created in a future PR. Safe to run on workflow_dispatch — runner step is no-op if module missing.
+#
+# UEPS Phase 14: Value Screener Weekly
+#
+# Runs the long-term value screener once per week (Monday 06:00 UTC = 02:00 EDT).
+# Emits long-term value picks via alpha_engine.value_screener_runner.
+#
+# Wiring plan: alpha_engine/value_screener_runner.py is added in a future PR
+# alongside the screener wiring into production. Until then the runner step is
+# wrapped with `continue-on-error: true` and a module-existence guard so the
+# workflow itself remains green on workflow_dispatch.
+#
+# Patterns adopted from .github/workflows/audit-dashboard.yml:
+#   - fetch-depth: 0 to avoid the slow `git fetch --unshallow` cost (PR #436)
+#   - concurrency split by event type so push/manual runs auto-supersede each
+#     other but cron runs queue normally (eliminates manual-cancel toil)
+#   - `if: always()` on the artifact upload step so picks reach the artifact
+#     store even when the screener step fails
+#
+# CLAUDE.md Wire-Up Rule: opt-in sidecar — does NOT change production picks
+# until the runner module is wired in a follow-up PR.
+
+name: UEPS Value Screener Weekly
+
+'on':
+  schedule:
+    - cron: '0 6 * * 1'  # Monday 06:00 UTC (02:00 EDT, pre-market)
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner (ubuntu-latest or self-hosted)'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+
+concurrency:
+  # Mirrors the PR #436 split-concurrency pattern from audit-dashboard.yml.
+  # Push events (none expected here, but defensive) auto-cancel; cron queues.
+  group: ueps-value-screener-${{ github.event_name == 'push' && 'push' || 'cron' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: read
+
+jobs:
+  run-value-screener:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # fetch-depth: 0 — full clone. Per PR #436 investigation: shallow clones
+          # force `git fetch --unshallow` (16-18min on 5GB repo) which exhausts
+          # the push-retry budget. Full clone adds ~2min but saves much more
+          # downstream. Cost on cloud runners is acceptable.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install UEPS hard deps FIRST — yfinance MUST be present for the
+          # tier-5 fallback inside alpha_engine/equity_price_failover.py
+          # even though the failover normally serves quotes from Stooq
+          # (tier-1). The conditional below was previously skipping this
+          # line because requirements.txt exists but doesn't pin yfinance.
+          pip install pandas pyarrow yfinance
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Check for runner module (opt-in sidecar guard)
+        id: runner_check
+        run: |
+          if python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('alpha_engine.value_screener_runner') else 1)" 2>/dev/null; then
+            echo "module_exists=true" >> "$GITHUB_OUTPUT"
+            echo "alpha_engine.value_screener_runner found — running"
+          else
+            echo "module_exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::alpha_engine.value_screener_runner not found — skipping (opt-in sidecar, runner module ships in a future PR)"
+          fi
+
+      - name: Run value screener
+        id: run_screener
+        if: steps.runner_check.outputs.module_exists == 'true'
+        continue-on-error: true
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.value_screener_runner
+
+      - name: Locate emitted picks JSON
+        id: locate_picks
+        if: always()
+        run: |
+          # Try the canonical emit path used by other alpha_engine runners.
+          # Fall back gracefully if the screener has not yet been wired.
+          for candidate in \
+            alpha_engine/data/value_screener_picks.json \
+            alpha_engine/data/long_term_value_picks.json \
+            audit_dashboard/data/value_screener_picks.json; do
+            if [ -f "$candidate" ]; then
+              echo "picks_path=$candidate" >> "$GITHUB_OUTPUT"
+              echo "Picks file: $candidate"
+              break
+            fi
+          done
+          if [ -z "$(grep '^picks_path=' "$GITHUB_OUTPUT" 2>/dev/null || true)" ]; then
+            echo "::warning::No value screener picks JSON found at any expected path"
+          fi
+
+      - name: Upload value screener picks artifact
+        # `if: always()` ensures the upload step runs even if the screener
+        # step failed, mirroring the audit-dashboard.yml FTP-deploy pattern
+        # introduced in PR #436. We still need to know what (if anything) the
+        # screener emitted before crashing.
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: value_screener_picks_${{ github.run_id }}
+          path: |
+            alpha_engine/data/value_screener_picks.json
+            alpha_engine/data/long_term_value_picks.json
+            audit_dashboard/data/value_screener_picks.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## UEPS Value Screener Weekly"
+            echo ""
+            echo "- runner_module_present: ${{ steps.runner_check.outputs.module_exists }}"
+            echo "- screener_outcome: ${{ steps.run_screener.outcome || 'skipped' }}"
+            echo "- picks_path: ${{ steps.locate_picks.outputs.picks_path || 'not-found' }}"
+            echo ""
+            if [ "${{ steps.runner_check.outputs.module_exists }}" != "true" ]; then
+              echo "**Note:** alpha_engine.value_screener_runner is not yet present."
+              echo "This is the expected opt-in sidecar state until the runner is wired."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

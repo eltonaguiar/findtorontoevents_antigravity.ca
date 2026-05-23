@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incubator — Strategy Discovery Pipeline</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0f0;
+            line-height: 1.6;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #2a2a3a;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 6px; }
+        .header h1 span { color: #a78bfa; }
+        .header .subtitle { color: #888; font-size: 0.95rem; }
+        .header .refresh-info { color: #555; font-size: 0.8rem; margin-top: 8px; }
+        .header .refresh-info span { color: #a78bfa; }
+
+        /* Summary Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #12121a;
+            border: 1px solid #2a2a3a;
+            border-radius: 10px;
+            padding: 22px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+        .stat-card:hover { border-color: #a78bfa; }
+        .stat-card .label { color: #777; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .stat-card .value { font-size: 2rem; font-weight: 700; }
+        .stat-card .detail { color: #888; font-size: 0.82rem; margin-top: 4px; }
+        .val-green { color: #4caf50; }
+        .val-purple { color: #a78bfa; }
+        .val-yellow { color: #f59e0b; }
+        .val-red { color: #f44336; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 10px 22px;
+            background: #12121a;
+            border: 1px solid #2a2a3a;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .tab:hover { color: #e0e0f0; background: #1a1a25; }
+        .tab.active { color: #a78bfa; background: #1a1a2e; border-color: #a78bfa; border-bottom: 1px solid #1a1a2e; }
+        .tab-content {
+            display: none;
+            background: #12121a;
+            border: 1px solid #2a2a3a;
+            border-radius: 0 8px 8px 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .tab-content.active { display: block; }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+        .data-table th {
+            background: #1a1a25;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: #888;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #2a2a3a;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: color 0.15s;
+        }
+        .data-table th:hover { color: #a78bfa; }
+        .data-table th .sort-icon { margin-left: 4px; font-size: 0.7rem; color: #555; }
+        .data-table th.sorted-asc .sort-icon,
+        .data-table th.sorted-desc .sort-icon { color: #a78bfa; }
+        .data-table td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #1e1e2e;
+        }
+        .data-table tr:hover { background: rgba(167, 139, 250, 0.04); }
+        .data-table tr:nth-child(even) { background: rgba(255,255,255, 0.01); }
+        .data-table tr:nth-child(even):hover { background: rgba(167, 139, 250, 0.04); }
+
+        .rank-cell { font-weight: 700; color: #a78bfa; text-align: center; }
+        .rank-1 { color: #ffd700; font-size: 1.1rem; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-ready { background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); }
+        .badge-incubator { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-rejected { background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); }
+
+        /* Archetype badges */
+        .archetype-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .arch-momentum { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .arch-mean-reversion { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+        .arch-breakout { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .arch-volatility { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+        .arch-trend { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .arch-default { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+
+        /* Collapsible sections */
+        .collapse-section {
+            margin-bottom: 16px;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .collapse-header {
+            background: #1a1a25;
+            padding: 14px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s;
+        }
+        .collapse-header:hover { background: #1e1e30; }
+        .collapse-header h3 { font-size: 0.95rem; }
+        .collapse-header .arrow { transition: transform 0.2s; color: #a78bfa; }
+        .collapse-header.open .arrow { transform: rotate(180deg); }
+        .collapse-body { display: none; padding: 10px; }
+        .collapse-body.open { display: block; }
+
+        /* Loading / Error */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #555;
+        }
+        .loading .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #2a2a3a;
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-msg { color: #f44336; background: rgba(244,67,54,0.1); padding: 16px; border-radius: 8px; margin: 20px 0; }
+        .info-msg { color: #f59e0b; background: rgba(245,158,11,0.1); padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 0.85rem; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container { padding: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 1.4rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .data-table { font-size: 0.78rem; }
+            .data-table th, .data-table td { padding: 8px 6px; }
+            .tab { padding: 8px 14px; font-size: 0.8rem; }
+        }
+        @media (max-width: 500px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Scrollable table wrapper */
+        .table-wrap { overflow-x: auto; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <h1><span>Incubator</span> — Strategy Discovery Pipeline</h1>
+        <div class="subtitle">Automated archetype permutation engine. Strategies are scored, ranked, and promoted to paper trading.</div>
+        <div class="refresh-info">Auto-refreshes every 5 min &middot; Last updated: <span id="lastUpdated">—</span></div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="label">Total Permutations</div>
+            <div class="value val-purple" id="statTotal">—</div>
+            <div class="detail">strategies evaluated</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Paper-Ready</div>
+            <div class="value val-green" id="statReady">—</div>
+            <div class="detail">promoted to paper trading</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Best Sharpe</div>
+            <div class="value val-yellow" id="statSharpe">—</div>
+            <div class="detail" id="statSharpeDetail">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Best Archetype</div>
+            <div class="value val-purple" id="statArchetype">—</div>
+            <div class="detail" id="statArchetypeDetail">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Incubating</div>
+            <div class="value val-yellow" id="statIncubating">—</div>
+            <div class="detail">under observation</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Rejected</div>
+            <div class="value val-red" id="statRejected">—</div>
+            <div class="detail">below threshold</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabBar">
+        <div class="tab active" data-tab="combined">Combined Top 15</div>
+        <div class="tab" data-tab="BTC-USD">BTC-USD</div>
+        <div class="tab" data-tab="ETH-USD">ETH-USD</div>
+        <div class="tab" data-tab="archetypes">By Archetype</div>
+    </div>
+
+    <!-- Combined Tab -->
+    <div class="tab-content active" id="tab-combined">
+        <div id="combinedContent"><div class="loading"><div class="spinner"></div>Loading incubator data&hellip;</div></div>
+    </div>
+
+    <!-- BTC Tab -->
+    <div class="tab-content" id="tab-BTC-USD">
+        <div id="btcContent"><div class="loading"><div class="spinner"></div>Loading&hellip;</div></div>
+    </div>
+
+    <!-- ETH Tab -->
+    <div class="tab-content" id="tab-ETH-USD">
+        <div id="ethContent"><div class="loading"><div class="spinner"></div>Loading&hellip;</div></div>
+    </div>
+
+    <!-- Archetypes Tab -->
+    <div class="tab-content" id="tab-archetypes">
+        <div id="archetypeContent"><div class="loading"><div class="spinner"></div>Loading&hellip;</div></div>
+    </div>
+
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    const PRIMARY_URL = '../alpha_engine/data/incubator_report.json';
+    const FALLBACK_URL = '../alpha_engine/data/incubator_paper_ready.json';
+    const REFRESH_MS = 5 * 60 * 1000;
+
+    let rawData = null;
+    let allStrategies = [];
+
+    // ── Helpers ──
+    function fmt(n, d) { return n == null || isNaN(n) ? '—' : Number(n).toFixed(d != null ? d : 2); }
+    function pct(n) { return n == null || isNaN(n) ? '—' : (Number(n) * 100).toFixed(1) + '%'; }
+
+    function statusBadge(s) {
+        if (!s) return '';
+        const sl = String(s).toLowerCase();
+        if (sl === 'paper-ready' || sl === 'paper_ready' || sl === 'ready') return '<span class="badge badge-ready">Paper-Ready</span>';
+        if (sl === 'rejected' || sl === 'failed') return '<span class="badge badge-rejected">Rejected</span>';
+        return '<span class="badge badge-incubator">Incubator</span>';
+    }
+
+    function archetypeBadge(a) {
+        if (!a) return '<span class="archetype-badge arch-default">unknown</span>';
+        const al = a.toLowerCase();
+        let cls = 'arch-default';
+        if (al.includes('momentum')) cls = 'arch-momentum';
+        else if (al.includes('mean') || al.includes('reversion')) cls = 'arch-mean-reversion';
+        else if (al.includes('breakout')) cls = 'arch-breakout';
+        else if (al.includes('volatil')) cls = 'arch-volatility';
+        else if (al.includes('trend')) cls = 'arch-trend';
+        return '<span class="archetype-badge ' + cls + '">' + a + '</span>';
+    }
+
+    function rankClass(r) {
+        if (r === 1) return 'rank-cell rank-1';
+        if (r === 2) return 'rank-cell rank-2';
+        if (r === 3) return 'rank-cell rank-3';
+        return 'rank-cell';
+    }
+
+    // ── Normalise data ──
+    function normalise(data) {
+        // Accept various shapes: { strategies: [...] }, { rankings: [...] }, [ ... ], { combined: [...] }
+        let items = [];
+        if (Array.isArray(data)) {
+            items = data;
+        } else if (data.strategies) {
+            items = data.strategies;
+        } else if (data.rankings) {
+            items = data.rankings;
+        } else if (data.combined) {
+            items = data.combined;
+        } else if (data.results) {
+            items = data.results;
+        } else {
+            // Try to collect from per-symbol keys
+            for (const key of Object.keys(data)) {
+                if (Array.isArray(data[key])) items = items.concat(data[key]);
+            }
+        }
+        return items.map(function(s, i) {
+            return {
+                rank: s.rank || s.Rank || i + 1,
+                archetype: s.archetype || s.Archetype || s.arch || 'unknown',
+                seed: s.seed_strategy || s.seed || s.strategy || s.Strategy || s.name || '—',
+                symbol: s.symbol || s.Symbol || s.ticker || '—',
+                sharpe: s.sharpe || s.Sharpe || s.sharpe_ratio || null,
+                sortino: s.sortino || s.Sortino || s.sortino_ratio || null,
+                winRate: s.win_rate || s.winRate || s.WinRate || s.wr || null,
+                maxDD: s.max_dd || s.maxDD || s.MaxDD || s.max_drawdown || null,
+                profitFactor: s.profit_factor || s.profitFactor || s.ProfitFactor || s.pf || null,
+                compositeScore: s.composite_score || s.compositeScore || s.CompositeScore || s.score || null,
+                status: s.status || s.Status || 'incubator'
+            };
+        });
+    }
+
+    // ── Build table ──
+    function buildTable(items, limit) {
+        if (!items || items.length === 0) return '<div class="info-msg">No strategies found for this view.</div>';
+        var list = limit ? items.slice(0, limit) : items;
+
+        var html = '<div class="table-wrap"><table class="data-table sortable-table">';
+        html += '<thead><tr>';
+        var cols = [
+            { key: 'rank', label: 'Rank' },
+            { key: 'archetype', label: 'Archetype' },
+            { key: 'seed', label: 'Seed Strategy' },
+            { key: 'symbol', label: 'Symbol' },
+            { key: 'sharpe', label: 'Sharpe' },
+            { key: 'sortino', label: 'Sortino' },
+            { key: 'winRate', label: 'Win Rate' },
+            { key: 'maxDD', label: 'Max DD' },
+            { key: 'profitFactor', label: 'Profit Factor' },
+            { key: 'compositeScore', label: 'Composite' },
+            { key: 'status', label: 'Status' }
+        ];
+        cols.forEach(function(c) {
+            html += '<th data-sort-key="' + c.key + '">' + c.label + ' <span class="sort-icon">&#9650;&#9660;</span></th>';
+        });
+        html += '</tr></thead><tbody>';
+
+        list.forEach(function(s, i) {
+            var r = i + 1;
+            html += '<tr>';
+            html += '<td class="' + rankClass(r) + '">' + r + '</td>';
+            html += '<td>' + archetypeBadge(s.archetype) + '</td>';
+            html += '<td>' + s.seed + '</td>';
+            html += '<td style="font-weight:600;color:#22c55e">' + s.symbol + '</td>';
+            html += '<td>' + fmt(s.sharpe) + '</td>';
+            html += '<td>' + fmt(s.sortino) + '</td>';
+            html += '<td>' + pct(s.winRate) + '</td>';
+            html += '<td style="color:#f44336">' + pct(s.maxDD) + '</td>';
+            html += '<td>' + fmt(s.profitFactor) + '</td>';
+            html += '<td style="font-weight:700;color:#a78bfa">' + fmt(s.compositeScore) + '</td>';
+            html += '<td>' + statusBadge(s.status) + '</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        return html;
+    }
+
+    // ── Render ──
+    function render() {
+        if (!allStrategies.length) {
+            document.getElementById('combinedContent').innerHTML = '<div class="info-msg">No incubator data available. Waiting for first pipeline run.</div>';
+            return;
+        }
+
+        // Sort by composite score desc
+        var sorted = allStrategies.slice().sort(function(a, b) {
+            return (b.compositeScore || 0) - (a.compositeScore || 0);
+        });
+
+        // Stats
+        var total = sorted.length;
+        var ready = sorted.filter(function(s) { var st = String(s.status).toLowerCase(); return st === 'paper-ready' || st === 'paper_ready' || st === 'ready'; });
+        var incubating = sorted.filter(function(s) { var st = String(s.status).toLowerCase(); return st === 'incubator' || st === 'incubating'; });
+        var rejected = sorted.filter(function(s) { var st = String(s.status).toLowerCase(); return st === 'rejected' || st === 'failed'; });
+        var bestSharpe = sorted.reduce(function(best, s) { return (s.sharpe || 0) > (best.sharpe || 0) ? s : best; }, sorted[0]);
+
+        // Best archetype by average composite
+        var archMap = {};
+        sorted.forEach(function(s) {
+            var a = s.archetype || 'unknown';
+            if (!archMap[a]) archMap[a] = { sum: 0, count: 0, items: [] };
+            archMap[a].sum += (s.compositeScore || 0);
+            archMap[a].count++;
+            archMap[a].items.push(s);
+        });
+        var bestArch = null;
+        var bestArchAvg = -Infinity;
+        for (var a in archMap) {
+            var avg = archMap[a].sum / archMap[a].count;
+            if (avg > bestArchAvg) { bestArchAvg = avg; bestArch = a; }
+        }
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statReady').textContent = ready.length;
+        document.getElementById('statSharpe').textContent = fmt(bestSharpe.sharpe);
+        document.getElementById('statSharpeDetail').textContent = bestSharpe.seed + ' (' + bestSharpe.symbol + ')';
+        document.getElementById('statArchetype').textContent = bestArch || '—';
+        document.getElementById('statArchetypeDetail').textContent = 'avg score ' + fmt(bestArchAvg);
+        document.getElementById('statIncubating').textContent = incubating.length;
+        document.getElementById('statRejected').textContent = rejected.length;
+
+        // Combined top 15
+        document.getElementById('combinedContent').innerHTML = buildTable(sorted, 15);
+
+        // Per-symbol
+        var btcItems = sorted.filter(function(s) { return s.symbol && s.symbol.toUpperCase().indexOf('BTC') >= 0; });
+        var ethItems = sorted.filter(function(s) { return s.symbol && s.symbol.toUpperCase().indexOf('ETH') >= 0; });
+        document.getElementById('btcContent').innerHTML = btcItems.length ? buildTable(btcItems) : '<div class="info-msg">No BTC strategies found.</div>';
+        document.getElementById('ethContent').innerHTML = ethItems.length ? buildTable(ethItems) : '<div class="info-msg">No ETH strategies found.</div>';
+
+        // Per-archetype collapsible
+        var archHtml = '';
+        var archKeys = Object.keys(archMap).sort(function(a, b) {
+            return (archMap[b].sum / archMap[b].count) - (archMap[a].sum / archMap[a].count);
+        });
+        archKeys.forEach(function(archName) {
+            var items = archMap[archName].items.sort(function(a, b) { return (b.compositeScore || 0) - (a.compositeScore || 0); });
+            var avg = archMap[archName].sum / archMap[archName].count;
+            var readyCount = items.filter(function(s) { var st = String(s.status).toLowerCase(); return st === 'paper-ready' || st === 'paper_ready' || st === 'ready'; }).length;
+            archHtml += '<div class="collapse-section">';
+            archHtml += '<div class="collapse-header" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')">';
+            archHtml += '<h3>' + archetypeBadge(archName) + '  &mdash; ' + items.length + ' strategies &middot; avg score ' + fmt(avg) + (readyCount ? ' &middot; <span style="color:#4caf50">' + readyCount + ' paper-ready</span>' : '') + '</h3>';
+            archHtml += '<span class="arrow">&#9660;</span>';
+            archHtml += '</div>';
+            archHtml += '<div class="collapse-body">' + buildTable(items) + '</div>';
+            archHtml += '</div>';
+        });
+        document.getElementById('archetypeContent').innerHTML = archHtml || '<div class="info-msg">No archetype data.</div>';
+
+        // Attach sort listeners
+        attachSortListeners();
+    }
+
+    // ── Sorting ──
+    function attachSortListeners() {
+        document.querySelectorAll('.sortable-table th[data-sort-key]').forEach(function(th) {
+            th.addEventListener('click', function() {
+                var table = th.closest('table');
+                var tbody = table.querySelector('tbody');
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                var key = th.getAttribute('data-sort-key');
+                var colIndex = Array.from(th.parentNode.children).indexOf(th);
+                var isAsc = th.classList.contains('sorted-asc');
+
+                // Clear all sort classes in this table
+                table.querySelectorAll('th').forEach(function(h) { h.classList.remove('sorted-asc', 'sorted-desc'); });
+
+                if (isAsc) {
+                    th.classList.add('sorted-desc');
+                } else {
+                    th.classList.add('sorted-asc');
+                }
+                var dir = th.classList.contains('sorted-asc') ? 1 : -1;
+
+                rows.sort(function(a, b) {
+                    var aText = a.children[colIndex].textContent.trim().replace('%', '').replace('—', '');
+                    var bText = b.children[colIndex].textContent.trim().replace('%', '').replace('—', '');
+                    var aNum = parseFloat(aText);
+                    var bNum = parseFloat(bText);
+                    if (!isNaN(aNum) && !isNaN(bNum)) return (aNum - bNum) * dir;
+                    return aText.localeCompare(bText) * dir;
+                });
+
+                rows.forEach(function(row) { tbody.appendChild(row); });
+
+                // Re-number rank column
+                rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.forEach(function(row, i) {
+                    var cell = row.children[0];
+                    cell.textContent = i + 1;
+                    cell.className = rankClass(i + 1);
+                });
+            });
+        });
+    }
+
+    // ── Tab switching ──
+    document.getElementById('tabBar').addEventListener('click', function(e) {
+        var tab = e.target.closest('.tab');
+        if (!tab) return;
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+        tab.classList.add('active');
+        var target = document.getElementById('tab-' + tab.getAttribute('data-tab'));
+        if (target) target.classList.add('active');
+    });
+
+    // ── Data fetch ──
+    function fetchData() {
+        fetch(PRIMARY_URL + '?t=' + Date.now())
+            .then(function(r) {
+                if (!r.ok) throw new Error('Primary endpoint returned ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                rawData = data;
+                allStrategies = normalise(data);
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+                render();
+            })
+            .catch(function() {
+                // Try fallback
+                fetch(FALLBACK_URL + '?t=' + Date.now())
+                    .then(function(r) {
+                        if (!r.ok) throw new Error('Fallback returned ' + r.status);
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        rawData = data;
+                        allStrategies = normalise(data);
+                        document.getElementById('lastUpdated').textContent = new Date().toLocaleString() + ' (fallback)';
+                        render();
+                    })
+                    .catch(function(err) {
+                        // Use inline demo data
+                        loadDemoData();
+                    });
+            });
+    }
+
+    function loadDemoData() {
+        allStrategies = [
+            { rank:1, archetype:'Momentum', seed:'RSI-MACD Confluence', symbol:'BTC-USD', sharpe:2.41, sortino:3.12, winRate:0.68, maxDD:0.12, profitFactor:2.1, compositeScore:8.7, status:'paper-ready' },
+            { rank:2, archetype:'Mean Reversion', seed:'Connors RSI-2', symbol:'BTC-USD', sharpe:2.35, sortino:2.89, winRate:0.757, maxDD:0.08, profitFactor:2.4, compositeScore:8.5, status:'paper-ready' },
+            { rank:3, archetype:'Breakout', seed:'Keltner Expansion', symbol:'ETH-USD', sharpe:2.18, sortino:2.73, winRate:0.62, maxDD:0.15, profitFactor:1.9, compositeScore:8.1, status:'paper-ready' },
+            { rank:4, archetype:'Trend', seed:'Multi-TF EMA Stack', symbol:'BTC-USD', sharpe:2.05, sortino:2.61, winRate:0.65, maxDD:0.14, profitFactor:1.85, compositeScore:7.8, status:'incubator' },
+            { rank:5, archetype:'Momentum', seed:'Funding Rate Squeeze', symbol:'ETH-USD', sharpe:1.92, sortino:2.44, winRate:0.61, maxDD:0.18, profitFactor:1.7, compositeScore:7.4, status:'incubator' },
+            { rank:6, archetype:'Volatility', seed:'ATR Breakout', symbol:'BTC-USD', sharpe:1.85, sortino:2.31, winRate:0.59, maxDD:0.20, profitFactor:1.65, compositeScore:7.1, status:'incubator' },
+            { rank:7, archetype:'Mean Reversion', seed:'Bollinger Bounce', symbol:'ETH-USD', sharpe:1.78, sortino:2.15, winRate:0.63, maxDD:0.11, profitFactor:1.8, compositeScore:6.9, status:'incubator' },
+            { rank:8, archetype:'Trend', seed:'Ichimoku Cloud', symbol:'BTC-USD', sharpe:1.65, sortino:2.02, winRate:0.57, maxDD:0.22, profitFactor:1.55, compositeScore:6.5, status:'incubator' },
+            { rank:9, archetype:'Breakout', seed:'Donchian Channel', symbol:'ETH-USD', sharpe:1.52, sortino:1.88, winRate:0.55, maxDD:0.19, profitFactor:1.5, compositeScore:6.2, status:'incubator' },
+            { rank:10, archetype:'Momentum', seed:'Williams %R Reversal', symbol:'BTC-USD', sharpe:1.41, sortino:1.75, winRate:0.54, maxDD:0.24, profitFactor:1.4, compositeScore:5.8, status:'rejected' },
+            { rank:11, archetype:'Volatility', seed:'VIX Spike Play', symbol:'ETH-USD', sharpe:1.32, sortino:1.60, winRate:0.52, maxDD:0.25, profitFactor:1.35, compositeScore:5.5, status:'rejected' },
+            { rank:12, archetype:'Mean Reversion', seed:'Z-Score Mean Revert', symbol:'BTC-USD', sharpe:1.25, sortino:1.48, winRate:0.58, maxDD:0.16, profitFactor:1.45, compositeScore:5.3, status:'rejected' },
+            { rank:13, archetype:'Trend', seed:'ADX Trend Follow', symbol:'ETH-USD', sharpe:1.18, sortino:1.35, winRate:0.51, maxDD:0.28, profitFactor:1.3, compositeScore:5.0, status:'rejected' },
+            { rank:14, archetype:'Breakout', seed:'OBV Breakout', symbol:'BTC-USD', sharpe:1.05, sortino:1.22, winRate:0.49, maxDD:0.30, profitFactor:1.2, compositeScore:4.6, status:'rejected' },
+            { rank:15, archetype:'Momentum', seed:'Stochastic Cross', symbol:'ETH-USD', sharpe:0.95, sortino:1.10, winRate:0.48, maxDD:0.32, profitFactor:1.15, compositeScore:4.2, status:'rejected' }
+        ];
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleString() + ' (demo data)';
+        render();
+    }
+
+    // ── Init ──
+    fetchData();
+    setInterval(fetchData, REFRESH_MS);
+})();
+</script>
+</body>
+</html>

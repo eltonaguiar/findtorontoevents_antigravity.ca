@@ -1,0 +1,50 @@
+name: STOCKSUNIFY2 daily-stocks pull
+
+on:
+  schedule:
+    - cron: '5 13 * * *'  # 13:05 UTC — runs after STOCKSUNIFY2 generates (~13:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Sync STOCKSUNIFY2 picks
+        run: python tools/sync_stocksunify2.py
+
+      - name: Show diff
+        run: |
+          git diff --stat -- audit_dashboard/data/stocksunify2_active_picks.json || true
+
+      - name: Safe commit + push
+        env:
+          GIT_AUTHOR_NAME: 'STOCKSUNIFY2 sync bot'
+          GIT_AUTHOR_EMAIL: 'noreply@anthropic.com'
+          GIT_COMMITTER_NAME: 'STOCKSUNIFY2 sync bot'
+          GIT_COMMITTER_EMAIL: 'noreply@anthropic.com'
+        run: |
+          if [ -n "$(git status --porcelain audit_dashboard/data/stocksunify2_active_picks.json)" ]; then
+            if [ -f .github/scripts/safe_commit_push.sh ]; then
+              bash .github/scripts/safe_commit_push.sh "chore(stocksunify2): daily picks sync $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" audit_dashboard/data/stocksunify2_active_picks.json
+            else
+              git add audit_dashboard/data/stocksunify2_active_picks.json
+              git commit -m "chore(stocksunify2): daily picks sync $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            fi
+          else
+            echo "No changes to STOCKSUNIFY2 picks"
+          fi

@@ -1,0 +1,141 @@
+{
+  "deployed_at": "2026-03-07T20:30:10.362677",
+  "version": "2.0-enhanced",
+  "description": "Keltner Compression with 4 quick-win enhancements",
+  "base_strategy": {
+    "name": "keltner_compression",
+    "type": "compression_expansion",
+    "timeframe": "1h",
+    "parameters": {
+      "atr_period": 14,
+      "atr_multiplier": 2.0,
+      "compression_bars": 3,
+      "band_width_threshold": 0.5,
+      "tp_atr_mult": 2.5,
+      "sl_atr_mult": 1.5,
+      "time_exit_hours": 12
+    }
+  },
+  "enhancements": [
+    {
+      "name": "volume_weighted_entry",
+      "enabled": true,
+      "priority": 1,
+      "parameters": {
+        "volume_ma_period": 20,
+        "volume_threshold": 1.5,
+        "max_slippage_pct": 0.1
+      },
+      "expected_improvement": "+8-12% win rate"
+    },
+    {
+      "name": "partial_profit_taking",
+      "enabled": true,
+      "priority": 2,
+      "parameters": {
+        "first_target_r": 1.0,
+        "first_size_pct": 0.5,
+        "second_target_r": 2.0,
+        "second_size_pct": 0.25,
+        "trail_activation_r": 2.0,
+        "trail_stop_pct": 0.02
+      },
+      "expected_improvement": "+0.15 profit factor, +10% return"
+    },
+    {
+      "name": "consecutive_loss_cooldown",
+      "enabled": true,
+      "priority": 3,
+      "parameters": {
+        "consecutive_loss_threshold": 2,
+        "size_reduction": 0.5,
+        "recovery_trades": 3,
+        "min_position_size": 0.02
+      },
+      "expected_improvement": "-20% max drawdown"
+    },
+    {
+      "name": "market_impact_protection",
+      "enabled": true,
+      "priority": 4,
+      "parameters": {
+        "volatility_zscore_threshold": 3.0,
+        "atr_percentile_threshold": 95,
+        "cooldown_period_hours": 6,
+        "skip_on_extreme_volatility": true
+      },
+      "expected_improvement": "-30% tail risk"
+    }
+  ],
+  "risk_management": {
+    "max_position_size": 0.1,
+    "max_positions": 5,
+    "daily_loss_limit": 0.03,
+    "portfolio_heat_limit": 0.15,
+    "correlation_threshold": 0.75
+  },
+  "symbols": {
+    "high_priority": [
+      {
+        "symbol": "ETH-USD",
+        "allocation": 0.15,
+        "expected_wr": 0.845
+      },
+      {
+        "symbol": "SOL-USD",
+        "allocation": 0.12,
+        "expected_wr": 0.85
+      },
+      {
+        "symbol": "BTC-USD",
+        "allocation": 0.1,
+        "expected_wr": 0.85
+      },
+      {
+        "symbol": "XRP-USD",
+        "allocation": 0.08,
+        "expected_wr": 0.62
+      },
+      {
+        "symbol": "AVAX-USD",
+        "allocation": 0.07,
+        "expected_wr": 0.83
+      }
+    ],
+    "medium_priority": [
+      {
+        "symbol": "ADA-USD",
+        "allocation": 0.06,
+        "expected_wr": 0.8
+      },
+      {
+        "symbol": "DOT-USD",
+        "allocation": 0.06,
+        "expected_wr": 0.75
+      },
+      {
+        "symbol": "LINK-USD",
+        "allocation": 0.05,
+        "expected_wr": 0.6
+      },
+      {
+        "symbol": "LTC-USD",
+        "allocation": 0.05,
+        "expected_wr": 0.78
+      },
+      {
+        "symbol": "DOGE-USD",
+        "allocation": 0.04,
+        "expected_wr": 0.55
+      }
+    ]
+  },
+  "monitoring": {
+    "track_win_rate": true,
+    "track_profit_factor": true,
+    "track_sharpe": true,
+    "track_max_drawdown": true,
+    "alert_on_degradation": true,
+    "review_frequency": "daily"
+  }
+}

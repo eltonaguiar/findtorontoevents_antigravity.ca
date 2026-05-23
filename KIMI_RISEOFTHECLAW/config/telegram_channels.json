@@ -1,0 +1,30 @@
+{
+  "_comment": "Telegram channel configuration for signal monitoring. Add channel usernames or IDs.",
+  "_note": "Requires TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_SESSION env vars",
+  "_setup": "Run: python -m telethon.sessions to generate session, or use Telethon interactive login",
+  "channels": [
+    {
+      "username": "CryptoSignals",
+      "enabled": false,
+      "description": "Example -- replace with actual channel usernames you follow",
+      "trust_level": "medium"
+    },
+    {
+      "username": "WhaleAlert",
+      "enabled": false,
+      "description": "Whale Alert crypto large transfers",
+      "trust_level": "high"
+    }
+  ],
+  "parse_patterns": [
+    "TP1\\s*[:\\-@]?\\s*\\$?([\\d,.]+)",
+    "TP2\\s*[:\\-@]?\\s*\\$?([\\d,.]+)",
+    "SL\\s*[:\\-@]?\\s*\\$?([\\d,.]+)",
+    "Entry\\s*[:\\-@]?\\s*\\$?([\\d,.]+)",
+    "Target\\s*[:\\-@]?\\s*\\$?([\\d,.]+)",
+    "🎯\\s*\\$?([\\d,.]+)"
+  ],
+  "min_confidence": 0.6,
+  "signal_ttl_hours": 4,
+  "refresh_interval_seconds": 300
+}

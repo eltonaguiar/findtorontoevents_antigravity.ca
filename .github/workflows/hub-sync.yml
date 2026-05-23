@@ -1,0 +1,41 @@
+name: Hub Data Sync
+
+on:
+  schedule:
+    - cron: '22 * * * *'  # Every hour at :22
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Collect system data for hub
+        run: |
+          echo "Hub uses client-side JS (hub/js/consensus_engine.js, hub/js/quality_scorer.js)"
+          echo "Ensuring hub data directory has latest winning combos..."
+
+          # Export winning combos if signal_recorder exists
+          if [ -f signal_recorder/export_hub_combos.py ]; then
+            pip install pandas 2>/dev/null || true
+            PYTHONPATH=. python signal_recorder/export_hub_combos.py || echo "::warning::Combo export failed — check signal_recorder module"
+          fi
+
+      - name: Commit Updates
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add hub/data/
+          git commit -m "Sync hub data $(date +%H:%M) [skip ci]" || echo "No changes"
+          bash .github/scripts/safe_push.sh
+

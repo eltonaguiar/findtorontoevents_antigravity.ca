@@ -1,0 +1,33 @@
+# BOND research P2 — CANDIDATES swarm.
+#
+# Prompt at swarm_runs/briefing_research_bond_p2.md (inline-patched with
+# verified P1 citations). 3 engines: cerebras (1.0x weight from P1),
+# deepseek (0.5x), inception (0.0x — excluded). Add xai for tiebreaker
+# since inception got vote-zeroed.
+#
+# Run:
+#   python tools/swarm/swarm_run.py --config tools/swarm/examples/research_bond_p2.yaml --json-strict
+#
+# Budget: ~$1 across 3 engines.
+
+name: research_bond_p2_${TS}
+prompt_file: swarm_runs/briefing_research_bond_p2.md
+out_dir: swarm_runs/research_bond_p2_${TS}
+max_parallel: 3
+json_strict: true
+strictness: strict
+
+engines:
+  - name: cerebras
+    sampling:
+      temperature: 0.3
+      max_tokens: 8000
+  - name: deepseek
+    model: deepseek-chat
+    sampling:
+      temperature: 0.3
+      max_tokens: 8000
+  - name: xai
+    sampling:
+      temperature: 0.3
+      max_tokens: 8000

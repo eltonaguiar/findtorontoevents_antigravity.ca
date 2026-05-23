@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consensus Picks — Multi-System Agreement Tracker</title>
+<style>
+:root {
+  --bg: #0a0a12; --card: #12121e; --card-hover: #1a1a2e; --border: #2a2a3e;
+  --text: #e2e8f0; --text-dim: #6b7280; --green: #22c55e; --red: #ef4444;
+  --yellow: #eab308; --orange: #f97316; --purple: #a78bfa; --cyan: #06b6d4; --blue: #3b82f6;
+  --gold: #ffd700;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 24px; font-weight: 700; }
+h1 .accent { color: var(--gold); }
+h2 { font-size: 16px; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); color: var(--purple); }
+.subtitle { color: var(--text-dim); font-size: 12px; margin-bottom: 16px; }
+.nav { display: flex; gap: 12px; font-size: 12px; margin-bottom: 12px; }
+.nav a { color: var(--cyan); text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+
+/* Stats row */
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.stat-card .label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .value { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.green { color: var(--green); } .red { color: var(--red); } .gold { color: var(--gold); } .blue { color: var(--blue); }
+
+/* Tier banner */
+.tier-section { margin-bottom: 24px; }
+.tier-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; }
+.tier-super { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.3); color: var(--gold); }
+.tier-strong { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); color: var(--blue); }
+.tier-moderate { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); color: var(--purple); }
+.tier-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+.badge-super { background: rgba(255,215,0,0.2); color: var(--gold); }
+.badge-strong { background: rgba(59,130,246,0.2); color: var(--blue); }
+.badge-moderate { background: rgba(167,139,250,0.2); color: var(--purple); }
+.badge-won { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-lost { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge-active { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge-long { background: rgba(34,197,94,0.1); color: var(--green); }
+.badge-short { background: rgba(239,68,68,0.1); color: var(--red); }
+
+/* Pick cards */
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 10px; }
+.pick-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; transition: border-color 0.2s; cursor: pointer; }
+.pick-card:hover { border-color: var(--purple); }
+.pick-card.super-card { border-color: rgba(255,215,0,0.3); }
+.pick-card.super-card:hover { border-color: var(--gold); }
+.pick-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pick-symbol { font-size: 18px; font-weight: 700; }
+.pick-pnl { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pick-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+.pick-meta .meta-label { font-size: 9px; text-transform: uppercase; color: var(--text-dim); }
+.pick-meta .meta-value { font-weight: 600; color: var(--text); }
+.system-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.sys-tag { font-size: 9px; padding: 1px 6px; border-radius: 3px; background: rgba(167,139,250,0.1); color: var(--purple); position: relative; cursor: help; }
+.sys-tag[title]:hover { background: rgba(167,139,250,0.25); }
+
+/* Expand hint */
+.expand-hint { font-size: 9px; color: var(--text-dim); margin-top: 6px; text-align: right; opacity: 0.6; }
+.pick-card:hover .expand-hint { opacity: 1; color: var(--cyan); }
+
+/* Strategy detail panel (expandable) */
+.strat-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.pick-card.expanded .strat-detail { display: block; }
+.strat-section { margin-bottom: 8px; }
+.strat-section-title { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cyan); font-weight: 700; margin-bottom: 4px; }
+.strat-row { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 0; border-bottom: 1px solid rgba(42,42,62,0.5); }
+.strat-row:last-child { border-bottom: none; }
+.strat-system { color: var(--purple); font-weight: 600; min-width: 100px; }
+.strat-name { color: var(--text); flex: 1; }
+.strat-dir-badge { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 700; }
+.strat-dir-long { background: rgba(34,197,94,0.15); color: var(--green); }
+.strat-dir-short { background: rgba(239,68,68,0.15); color: var(--red); }
+
+/* Conflict bar */
+.conflict-bar { margin-top: 8px; }
+.conflict-label { font-size: 9px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+.conflict-meter { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--border); }
+.conflict-long { background: var(--green); }
+.conflict-short { background: var(--red); }
+.conflict-counts { display: flex; justify-content: space-between; font-size: 10px; margin-top: 2px; }
+.conflict-counts .long-ct { color: var(--green); font-weight: 600; }
+.conflict-counts .short-ct { color: var(--red); font-weight: 600; }
+.conflict-warning { font-size: 10px; color: var(--orange); margin-top: 3px; }
+
+/* Tooltips */
+[data-tooltip] { position: relative; }
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; border: 1px solid var(--border); color: var(--text);
+  padding: 6px 10px; border-radius: 6px; font-size: 10px; white-space: pre-line;
+  max-width: 280px; z-index: 100; pointer-events: none; line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+th { background: var(--card); color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 8px 6px; text-align: left; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 5; }
+th.r, td.r { text-align: right; font-variant-numeric: tabular-nums; font-family: 'Consolas', monospace; }
+td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+tr:hover { background: var(--card-hover); }
+
+/* Agreement meter */
+.agree-bar { display: flex; align-items: center; gap: 6px; }
+.agree-dots { display: flex; gap: 2px; }
+.agree-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.agree-dot.filled { background: var(--gold); }
+
+.loading { text-align: center; padding: 60px; color: var(--text-dim); }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.disclaimer { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.15); border-radius: 6px; padding: 10px 14px; margin-top: 20px; font-size: 10px; color: var(--text-dim); }
+.disclaimer strong { color: var(--red); }
+.footer { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text-dim); text-align: center; }
+.refresh-btn { background: var(--card); border: 1px solid var(--border); color: var(--cyan); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+.refresh-btn:hover { border-color: var(--cyan); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <h1><span class="accent">&#9733;</span> Consensus Picks — <span class="accent">Multi-System Agreement</span></h1>
+    <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
+  </div>
+  <div class="subtitle">
+    Picks ranked by system agreement. SUPER tier = 3+ independent systems agree. Tracked with live Bybit/Binance prices.
+    | Last updated: <strong id="lastUpdated">—</strong>
+  </div>
+  <div class="nav">
+    <a href="../audit_dashboard/portfolio_history.html">Full Audit Trail &rarr;</a>
+    <a href="../audit_dashboard/claudes_test.html">Portfolio Challenge</a>
+    <a href="https://findtorontoevents.ca/audit/">&larr; Unified Audit</a>
+  </div>
+
+  <div id="statsRow" class="stat-row"></div>
+  <div id="content"><div class="loading"><div class="spinner"></div>Loading consensus data...</div></div>
+
+  <div class="disclaimer">
+    <strong>DISCLAIMER:</strong> This is a signal tracking dashboard, NOT financial advice.
+    Past performance does not predict future results. Consensus agreement does not guarantee profitable trades.
+  </div>
+  <div class="footer">Consensus Dashboard v1.0 | Cross-Aggregation Engine | Auto-updates every 5 min via GitHub Actions</div>
+</div>
+
+<script>
+const fmt = (n, d=2) => { if (n == null) return '--'; const v = Number(n); return isFinite(v) ? v.toFixed(d) : '--'; };
+const fmtUsd = n => { if (n == null) return '--'; const v = Number(n); return isFinite(v) ? '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '--'; };
+const fmtPct = n => { const v = Number(n||0); return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; };
+const fmtPrice = n => { if (!n || n === 0) return '--'; const a = Math.abs(n); return a >= 1000 ? '$'+n.toLocaleString('en-US',{maximumFractionDigits:2}) : a >= 1 ? '$'+n.toFixed(4) : '$'+n.toFixed(6); };
+
+function agreeDots(count, max=8) {
+  let html = '<div class="agree-bar"><div class="agree-dots">';
+  for (let i = 0; i < max; i++) html += '<div class="agree-dot' + (i < count ? ' filled' : '') + '"></div>';
+  html += '</div><span style="font-size:11px;font-weight:700;color:var(--gold)">' + count + '</span></div>';
+  return html;
+}
+
+function tierBadge(tier) {
+  const cls = tier === 'SUPER' ? 'badge-super' : tier === 'STRONG' ? 'badge-strong' : 'badge-moderate';
+  return '<span class="tier-badge ' + cls + '">' + tier + '</span>';
+}
+
+function statusBadge(status) {
+  if (status === 'WON') return '<span class="tier-badge badge-won">WON</span>';
+  if (status === 'LOST') return '<span class="tier-badge badge-lost">LOST</span>';
+  return '<span class="tier-badge badge-active">ACTIVE</span>';
+}
+
+function dirBadge(dir) {
+  return '<span class="tier-badge badge-' + dir.toLowerCase() + '">' + dir + '</span>';
+}
+
+// System description map — explains what each base system does
+const SYSTEM_INFO = {
+  alpha_engine: {desc: '100-strategy scanner (Connors RSI-2, funding rate, on-chain, quant)', type: 'Scanner'},
+  kimi: {desc: 'KIMI Rise of the Claw — 81 algorithms including crypto acceleration, proven strategies, ML ranker', type: 'Scanner'},
+  breakout_b: {desc: 'ML Breakout System B — ML-driven S/R breakout detection with regime filter', type: 'ML Model'},
+  breakout_c: {desc: 'Spike Reverse System C — counter-trend reversal after sharp moves', type: 'ML Model'},
+  ml_crypto_pred: {desc: 'ML Crypto Predictor — XGBoost/Random Forest trained on historical patterns', type: 'ML Model'},
+  predictions: {desc: 'Social Prediction Tracker — aggregates analyst predictions from crypto influencers', type: 'Social'},
+  paper_trading: {desc: 'Paper Trading Portfolio — live-simulated positions tracking real P&L', type: 'Portfolio'},
+  crypto_ml_edge: {desc: 'Crypto ML Edge — gradient-boosted model for short-term crypto momentum', type: 'ML Model'},
+  battleground: {desc: 'ML Battleground Arena — 3 competing ML systems (filter/regime/deeplearn)', type: 'ML Model'},
+  coinglass_strategies: {desc: 'CoinGlass data — funding rates, open interest, liquidation analysis', type: 'On-Chain'},
+  rl_agent: {desc: 'Reinforcement Learning PPO Agent — trained on reward-shaped trading environment', type: 'RL Agent'},
+  mercury2: {desc: 'Mercury2 — multi-timeframe trend follower with volatility regime detection', type: 'Scanner'},
+  incubator_gainer: {desc: 'Baby Strat Incubator — testing ground for new strategy ideas', type: 'Incubator'},
+  signal_engine: {desc: 'Signal Engine — PineScript-derived crypto signals with mutation engine', type: 'Scanner'},
+};
+
+// Store loaded super_signals data globally
+let superSignalsData = null;
+
+function getSystemTooltip(sysName) {
+  const info = SYSTEM_INFO[sysName];
+  if (!info) return sysName;
+  return info.type + ': ' + info.desc;
+}
+
+function buildConflictBar(symbol) {
+  if (!superSignalsData || !superSignalsData.symbol_breakdown) return '';
+  const bd = superSignalsData.symbol_breakdown[symbol];
+  if (!bd) return '';
+
+  const longCt = bd.long || 0;
+  const shortCt = bd.short || 0;
+  const total = longCt + shortCt;
+  if (total === 0) return '';
+
+  const longPct = (longCt / total * 100).toFixed(0);
+  const shortPct = (shortCt / total * 100).toFixed(0);
+  const hasConflict = shortCt > 0 && longCt > 0;
+  const conflictSeverity = Math.min(longCt, shortCt) / total;
+
+  let warning = '';
+  if (conflictSeverity > 0.35) {
+    warning = '<div class="conflict-warning">&#9888; High conflict — ' + shortCt + ' systems disagree (near split)</div>';
+  } else if (conflictSeverity > 0.15) {
+    warning = '<div class="conflict-warning">&#9888; Some conflict — ' + Math.min(longCt,shortCt) + ' systems disagree</div>';
+  }
+
+  return '<div class="conflict-bar">' +
+    '<div class="conflict-label">Signal Consensus: ' + total + ' total signals across all systems</div>' +
+    '<div class="conflict-meter">' +
+      '<div class="conflict-long" style="width:' + longPct + '%"></div>' +
+      '<div class="conflict-short" style="width:' + shortPct + '%"></div>' +
+    '</div>' +
+    '<div class="conflict-counts">' +
+      '<span class="long-ct">' + longCt + ' LONG (' + longPct + '%)</span>' +
+      '<span class="short-ct">' + shortCt + ' SHORT (' + shortPct + '%)</span>' +
+    '</div>' +
+    warning +
+    '</div>';
+}
+
+function buildStrategyDetail(pick) {
+  const systems = pick.source_systems || [];
+  const symbol = pick.symbol;
+
+  // Get detailed system info from super_signals breakdown
+  const bd = (superSignalsData && superSignalsData.symbol_breakdown) ? superSignalsData.symbol_breakdown[symbol] : null;
+  const sysDetails = (bd && bd.system_details) ? bd.system_details : [];
+
+  // Build agreeing systems section with strategies
+  let html = '<div class="strat-detail">';
+  html += '<div class="strat-section">';
+  html += '<div class="strat-section-title">&#9654; Agreeing Systems (' + systems.length + ' confirm ' + pick.direction + ')</div>';
+  systems.forEach(sys => {
+    const info = SYSTEM_INFO[sys] || {desc: 'Unknown system', type: '?'};
+    // Find strategy name from system_details
+    const detail = sysDetails.find(d => d.system === sys);
+    const stratName = (detail && detail.strategy) ? detail.strategy : '';
+    html += '<div class="strat-row">';
+    html += '<span class="strat-system">' + sys + '</span>';
+    html += '<span class="strat-name">' + info.desc + (stratName ? '<br><span style="color:var(--cyan);font-size:10px">Strategy: ' + stratName + '</span>' : '') + '</span>';
+    html += '<span class="strat-dir-badge strat-dir-' + pick.direction.toLowerCase() + '">' + pick.direction + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Build conflicting systems section using system_details
+  if (bd) {
+    const oppositeDir = pick.direction === 'LONG' ? 'SHORT' : 'LONG';
+    const oppCount = pick.direction === 'LONG' ? (bd.short || 0) : (bd.long || 0);
+
+    if (oppCount > 0) {
+      // Get opposing system details
+      const opposing = sysDetails.filter(d => d.direction === oppositeDir);
+      // Also check for systems in breakdown but not in agreeing list
+      const disagreeingSystems = (bd.systems || []).filter(s => !systems.includes(s));
+
+      html += '<div class="strat-section">';
+      html += '<div class="strat-section-title" style="color:var(--red)">&#9888; Conflicting Signals (' + oppCount + ' say ' + oppositeDir + ')</div>';
+
+      if (opposing.length > 0) {
+        opposing.forEach(d => {
+          const info = SYSTEM_INFO[d.system] || {desc: 'Unknown system', type: '?'};
+          html += '<div class="strat-row">';
+          html += '<span class="strat-system">' + d.system + '</span>';
+          html += '<span class="strat-name">' + info.desc + (d.strategy ? '<br><span style="color:var(--orange);font-size:10px">Strategy: ' + d.strategy + '</span>' : '') + '</span>';
+          html += '<span class="strat-dir-badge strat-dir-' + oppositeDir.toLowerCase() + '">' + oppositeDir + '</span>';
+          html += '</div>';
+        });
+      } else if (disagreeingSystems.length > 0) {
+        disagreeingSystems.forEach(sys => {
+          const info = SYSTEM_INFO[sys] || {desc: 'Unknown system', type: '?'};
+          html += '<div class="strat-row">';
+          html += '<span class="strat-system">' + sys + '</span>';
+          html += '<span class="strat-name">' + info.desc + '</span>';
+          html += '<span class="strat-dir-badge strat-dir-' + oppositeDir.toLowerCase() + '">' + oppositeDir + '</span>';
+          html += '</div>';
+        });
+      } else {
+        html += '<div class="strat-row"><span class="strat-name" style="color:var(--text-dim)">' + oppCount + ' opposing signal(s) from other timeframes/strategies within same systems</span></div>';
+      }
+      html += '</div>';
+    }
+  }
+
+  // List all unique strategies active on this symbol
+  if (sysDetails.length > 0) {
+    const uniqueStrats = [...new Set(sysDetails.map(d => d.strategy).filter(s => s && s.length > 0))];
+    if (uniqueStrats.length > 0) {
+      html += '<div class="strat-section">';
+      html += '<div class="strat-section-title">&#128202; All Active Strategies for ' + symbol + ' (' + uniqueStrats.length + ')</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+      uniqueStrats.slice(0, 20).forEach(st => {
+        html += '<span class="sys-tag" style="background:rgba(6,182,212,0.1);color:var(--cyan)">' + st + '</span>';
+      });
+      if (uniqueStrats.length > 20) html += '<span class="sys-tag">+' + (uniqueStrats.length-20) + ' more</span>';
+      html += '</div></div>';
+    }
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function buildPickCard(pick, isSuper) {
+  const pnl = pick.unrealized_pnl_pct || pick.pnl_pct || 0;
+  const pnlCls = pnl >= 0 ? 'green' : 'red';
+  const status = pick.status || 'ACTIVE';
+  const systems = pick.source_systems || [];
+
+  return `
+    <div class="pick-card ${isSuper ? 'super-card' : ''}" onclick="this.classList.toggle('expanded')">
+      <div class="pick-top">
+        <div>
+          <span class="pick-symbol">${pick.symbol}</span>
+          ${dirBadge(pick.direction)} ${tierBadge(pick.consensus_tier)}
+          ${status !== 'ACTIVE' ? statusBadge(status) : ''}
+        </div>
+        <div class="pick-pnl ${pnlCls}">${fmtPct(pnl)}</div>
+      </div>
+      <div class="pick-meta">
+        <div><div class="meta-label">Entry</div><div class="meta-value">${fmtPrice(pick.entry_price)}</div></div>
+        <div><div class="meta-label">TP</div><div class="meta-value" style="color:var(--green)">${fmtPrice(pick.tp_price)}</div></div>
+        <div><div class="meta-label">SL</div><div class="meta-value" style="color:var(--red)">${fmtPrice(pick.sl_price)}</div></div>
+        <div><div class="meta-label" data-tooltip="How confident the consensus engine is in this pick (higher = more systems agree strongly)">Confidence</div><div class="meta-value">${(pick.confidence*100).toFixed(0)}%</div></div>
+        <div><div class="meta-label" data-tooltip="Number of independent systems that generated the same signal. Higher agreement = stronger conviction.">Agreement</div><div class="meta-value">${agreeDots(pick.agreement_count)}</div></div>
+        <div><div class="meta-label">Live Price</div><div class="meta-value">${fmtPrice(pick.last_price)}</div></div>
+      </div>
+      ${buildConflictBar(pick.symbol)}
+      <div class="system-tags">
+        ${systems.map(s => '<span class="sys-tag" title="' + getSystemTooltip(s) + '">' + s + '</span>').join('')}
+      </div>
+      <div class="expand-hint">&#9660; Click to expand strategy details</div>
+      ${buildStrategyDetail(pick)}
+    </div>`;
+}
+
+async function loadData() {
+  const content = document.getElementById('content');
+  const statsRow = document.getElementById('statsRow');
+
+  try {
+    const [resp, ssResp] = await Promise.all([
+      fetch('data/consensus_outcomes.json', { signal: AbortSignal.timeout(10000) }),
+      fetch('data/super_signals.json', { signal: AbortSignal.timeout(10000) }).catch(() => null)
+    ]);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+
+    // Load super_signals for conflict/strategy data
+    if (ssResp && ssResp.ok) {
+      superSignalsData = await ssResp.json();
+    }
+
+    const active = data.active || [];
+    const closed = data.closed || [];
+    const stats = data.stats || {};
+
+    document.getElementById('lastUpdated').textContent = data.last_checked
+      ? new Date(data.last_checked).toLocaleString('en-US', {timeZone:'America/New_York', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true}) + ' EST'
+      : '—';
+
+    // Tier breakdown
+    const closedByTier = {};
+    closed.forEach(c => {
+      const t = c.consensus_tier || '?';
+      if (!closedByTier[t]) closedByTier[t] = {wins:0, losses:0, pnl:[]};
+      if (c.status === 'WON') closedByTier[t].wins++;
+      else closedByTier[t].losses++;
+      closedByTier[t].pnl.push(c.pnl_pct || 0);
+    });
+
+    const superStats = closedByTier['SUPER'] || {wins:0, losses:0, pnl:[]};
+    const superWR = (superStats.wins + superStats.losses) > 0
+      ? (superStats.wins / (superStats.wins + superStats.losses) * 100) : 0;
+    const superAvg = superStats.pnl.length > 0
+      ? superStats.pnl.reduce((a,b)=>a+b,0) / superStats.pnl.length : 0;
+
+    // Stats
+    statsRow.innerHTML = [
+      {label:'Tracked', value: stats.total_tracked || (active.length + closed.length), cls:'blue'},
+      {label:'Active', value: active.length, cls:'gold'},
+      {label:'Closed', value: closed.length, cls:''},
+      {label:'Win Rate', value: fmt(stats.win_rate||0,1)+'%', cls: (stats.win_rate||0) >= 50 ? 'green' : 'red'},
+      {label:'Cumulative P&L', value: fmtPct(stats.cumulative_pnl_pct||0), cls: (stats.cumulative_pnl_pct||0) >= 0 ? 'green' : 'red'},
+      {label:'SUPER WR', value: fmt(superWR,0)+'%', cls: superWR >= 50 ? 'green' : 'red'},
+      {label:'SUPER Avg PnL', value: fmtPct(superAvg), cls: superAvg >= 0 ? 'green' : 'red'},
+      {label:'Best Trade', value: fmtPct(stats.best_trade_pct||0), cls:'green'},
+      {label:'Worst Trade', value: fmtPct(stats.worst_trade_pct||0), cls:'red'},
+    ].map(c => '<div class="stat-card"><div class="label">'+c.label+'</div><div class="value '+c.cls+'">'+c.value+'</div></div>').join('');
+
+    let html = '';
+
+    // === ACTIVE PICKS by tier ===
+    const superActive = active.filter(p => p.consensus_tier === 'SUPER');
+    const strongActive = active.filter(p => p.consensus_tier === 'STRONG');
+    const modActive = active.filter(p => p.consensus_tier === 'MODERATE');
+
+    // SUPER
+    if (superActive.length > 0) {
+      html += '<div class="tier-section">';
+      html += '<div class="tier-header tier-super"><span style="font-size:18px">&#9733;</span> SUPER Consensus — ' + superActive.length + ' Active (3+ systems agree) <span style="margin-left:auto;font-size:12px">Historical: ' + superStats.wins + 'W/' + superStats.losses + 'L = ' + fmt(superWR,0) + '% WR</span></div>';
+      html += '<div class="pick-grid">';
+      superActive.sort((a,b) => (b.unrealized_pnl_pct||0) - (a.unrealized_pnl_pct||0));
+      superActive.forEach(p => { html += buildPickCard(p, true); });
+      html += '</div></div>';
+    }
+
+    // STRONG
+    if (strongActive.length > 0) {
+      const strongStats = closedByTier['STRONG'] || {wins:0,losses:0};
+      const sWR = (strongStats.wins+strongStats.losses)>0 ? (strongStats.wins/(strongStats.wins+strongStats.losses)*100) : 0;
+      html += '<div class="tier-section">';
+      html += '<div class="tier-header tier-strong">&#9650; Strong Consensus — ' + strongActive.length + ' Active <span style="margin-left:auto;font-size:12px">Historical: ' + strongStats.wins + 'W/' + strongStats.losses + 'L = ' + fmt(sWR,0) + '% WR</span></div>';
+      html += '<div class="pick-grid">';
+      strongActive.sort((a,b) => (b.unrealized_pnl_pct||0) - (a.unrealized_pnl_pct||0));
+      strongActive.forEach(p => { html += buildPickCard(p, false); });
+      html += '</div></div>';
+    }
+
+    // MODERATE
+    if (modActive.length > 0) {
+      const modStats = closedByTier['MODERATE'] || {wins:0,losses:0};
+      const mWR = (modStats.wins+modStats.losses)>0 ? (modStats.wins/(modStats.wins+modStats.losses)*100) : 0;
+      html += '<div class="tier-section">';
+      html += '<div class="tier-header tier-moderate">&#9679; Moderate Consensus — ' + modActive.length + ' Active <span style="margin-left:auto;font-size:12px">Historical: ' + modStats.wins + 'W/' + modStats.losses + 'L = ' + fmt(mWR,0) + '% WR</span></div>';
+      html += '<div class="pick-grid">';
+      modActive.sort((a,b) => (b.unrealized_pnl_pct||0) - (a.unrealized_pnl_pct||0));
+      modActive.forEach(p => { html += buildPickCard(p, false); });
+      html += '</div></div>';
+    }
+
+    // === CLOSED TRADES TABLE ===
+    if (closed.length > 0) {
+      html += '<h2>Closed Trades (' + closed.length + ')</h2>';
+      html += '<table><thead><tr><th>Symbol</th><th>Dir</th><th>Tier</th><th class="r">Entry</th><th class="r">Exit</th><th class="r">P&L</th><th>Result</th><th class="r">Agreement</th><th>Systems</th><th>Closed</th></tr></thead><tbody>';
+
+      // Sort by close time descending
+      const sortedClosed = [...closed].sort((a,b) => new Date(b.closed_at||0) - new Date(a.closed_at||0));
+      sortedClosed.forEach(c => {
+        const pnlCls = (c.pnl_pct||0) >= 0 ? 'green' : 'red';
+        html += '<tr>';
+        html += '<td><strong>' + c.symbol + '</strong></td>';
+        html += '<td>' + dirBadge(c.direction) + '</td>';
+        html += '<td>' + tierBadge(c.consensus_tier) + '</td>';
+        html += '<td class="r">' + fmtPrice(c.entry_price) + '</td>';
+        html += '<td class="r">' + fmtPrice(c.exit_price) + '</td>';
+        html += '<td class="r ' + pnlCls + '" style="font-weight:700">' + fmtPct(c.pnl_pct) + '</td>';
+        html += '<td>' + statusBadge(c.status) + '</td>';
+        html += '<td class="r">' + agreeDots(c.agreement_count) + '</td>';
+        html += '<td style="font-size:10px">' + (c.source_systems||[]).join(', ') + '</td>';
+        html += '<td style="font-size:10px;color:var(--text-dim)">' + (c.closed_at ? new Date(c.closed_at).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+
+    // === TIER PERFORMANCE SUMMARY ===
+    html += '<h2>Performance by Consensus Tier</h2>';
+    html += '<table><thead><tr><th>Tier</th><th class="r">Trades</th><th class="r">Wins</th><th class="r">Losses</th><th class="r">Win Rate</th><th class="r">Avg P&L</th><th class="r">Total P&L</th></tr></thead><tbody>';
+    ['SUPER','STRONG','MODERATE'].forEach(tier => {
+      const d = closedByTier[tier];
+      if (!d) return;
+      const total = d.wins + d.losses;
+      const wr = total > 0 ? (d.wins/total*100) : 0;
+      const avg = d.pnl.length > 0 ? d.pnl.reduce((a,b)=>a+b,0)/d.pnl.length : 0;
+      const sum = d.pnl.reduce((a,b)=>a+b,0);
+      const wrCls = wr >= 50 ? 'green' : 'red';
+      html += '<tr>';
+      html += '<td>' + tierBadge(tier) + '</td>';
+      html += '<td class="r">' + total + '</td>';
+      html += '<td class="r green">' + d.wins + '</td>';
+      html += '<td class="r red">' + d.losses + '</td>';
+      html += '<td class="r ' + wrCls + '" style="font-weight:700">' + fmt(wr,1) + '%</td>';
+      html += '<td class="r ' + (avg>=0?'green':'red') + '">' + fmtPct(avg) + '</td>';
+      html += '<td class="r ' + (sum>=0?'green':'red') + '" style="font-weight:700">' + fmtPct(sum) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    content.innerHTML = html;
+
+  } catch(err) {
+    content.innerHTML = '<div class="loading" style="color:var(--red)">Failed to load: ' + err.message + '<br>Make sure data/consensus_outcomes.json is accessible.</div>';
+  }
+}
+
+loadData();
+// Auto-refresh every 60 seconds
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>

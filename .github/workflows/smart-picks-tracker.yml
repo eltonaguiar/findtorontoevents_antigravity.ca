@@ -1,0 +1,51 @@
+name: Smart Picks Tracker
+
+on:
+  schedule:
+    - cron: '54 * * * *'  # Staggered from :52 to reduce push contention
+  workflow_dispatch:
+
+concurrency:
+  group: smart-picks-publish
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Run smart picks engine + tracker
+        env:
+          # M-034: block CRYPTO super_signals/luxalgo_filters at conf>=0.85 (anti-correlated WR)
+          CRYPTO_CONF_INVERSION_GATE: "1"
+          # PCG-5: enforce portfolio gates (regime, duplicate, concentration, profit-lock, correlation)
+          PCG5_ENFORCE: "1"
+          # M-042: COMMODITY SHORT-only (cta_replicator LONG WR=0%, LONG already hard-blocked)
+          COMMODITY_SHORT_ONLY: "1"
+          # A1 meta-label shadow gate — shadow mode only (AUC=0.5795, 941 post-v2.1 picks)
+          META_LABEL_GATE: "1"
+        run: |
+          cd alpha_engine
+          python smart_picks_engine.py || true
+          python smart_picks_tracker.py || true
+
+      - name: Commit and push
+        run: |
+          bash .github/scripts/safe_commit_push.sh \
+            "Smart picks batch $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]" \
+            alpha_engine/data/smart_picks.json \
+            alpha_engine/data/smart_picks_history.json
+

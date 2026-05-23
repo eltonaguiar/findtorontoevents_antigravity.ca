@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "purpose": "Registry of strategies/modules that use synthetic data generation",
+    "created": "2026-04-06",
+    "audit": "SYNTHETIC_DATA_AUDIT_2026-04-06.md",
+    "policy": "Strategies validated ONLY on synthetic data get -30 score penalty and _synthetic_origin flag. Must have data_source='real' for Smart Picks qualification."
+  },
+  "synthetic_data_files": {
+    "alpha_engine/bollinger_meanrev.py": {
+      "function": "generate_synthetic_data",
+      "seed": 42,
+      "usage": "__main__ test block only",
+      "risk": "LOW — not imported by production code, self-test only",
+      "strategy_names": ["bb_mean_reversion"],
+      "production_impact": false
+    },
+    "alpha_engine/grid_trading_incubator.py": {
+      "function": "generate_synthetic_data",
+      "seed": 42,
+      "usage": "__main__ test block only",
+      "risk": "LOW — not imported by production code, self-test only",
+      "strategy_names": ["grid_trading"],
+      "production_impact": false
+    },
+    "alpha_engine/rsi_momentum_strategy.py": {
+      "function": "generate_synthetic_data",
+      "seed": 42,
+      "usage": "__main__ test block only",
+      "risk": "LOW — not imported by production code, self-test only",
+      "strategy_names": ["rsi_momentum"],
+      "production_impact": false
+    },
+    "alpha_engine/vectorized_backtest.py": {
+      "function": "generate_synthetic_candles",
+      "seed": 42,
+      "usage": "__main__ benchmark block only",
+      "risk": "LOW — production callers (run_massive_mutations.py) supply REAL Binance candles",
+      "strategy_names": ["keltner_compression_expansion"],
+      "production_impact": false
+    },
+    "alpha_engine/confluence_pipeline.py": {
+      "function": "inline np.random.seed(42)",
+      "seed": 42,
+      "usage": "__main__ demo block only",
+      "risk": "LOW — production path receives real signals",
+      "strategy_names": [],
+      "production_impact": false
+    },
+    "alpha_engine/diagonal_trendline_breakout.py": {
+      "function": "inline np.random.seed(42)",
+      "seed": 42,
+      "usage": "__main__ demo block only",
+      "risk": "LOW — self-test only",
+      "strategy_names": ["diagonal_trendline_breakout"],
+      "production_impact": false
+    },
+    "alpha_engine/smart_entry.py": {
+      "function": "inline np.random.seed(42)",
+      "seed": 42,
+      "usage": "__main__ self-test block only",
+      "risk": "LOW — SmartEntryDetector receives real data in production",
+      "production_impact": false
+    },
+    "alpha_engine/pattern_cnn_lite.py": {
+      "function": "inline np.random.seed(42)",
+      "seed": 42,
+      "usage": "__main__ fallback when yfinance unavailable",
+      "risk": "LOW — tries real data first, synthetic is fallback for testing only",
+      "production_impact": false
+    }
+  },
+  "monte_carlo_seed_usage": {
+    "_note": "These use seed=42 for REPRODUCIBLE Monte Carlo simulations, NOT synthetic price data. This is correct and standard practice.",
+    "files": [
+      "alpha_engine/monte_carlo.py",
+      "alpha_engine/intensive_monte_carlo.py",
+      "alpha_engine/levy_gaussian_monte_carlo.py",
+      "alpha_engine/hf_backtest_pipeline.py",
+      "alpha_engine/advanced_risk_system.py",
+      "alpha_engine/forward_validator.py",
+      "alpha_engine/vectorized_backtest.py (bootstrap_ci)"
+    ]
+  },
+  "validation_test_seed_usage": {
+    "_note": "These use seed=42 in __main__ demo/test blocks for statistical validation demos. Correct usage.",
+    "files": [
+      "alpha_engine/validation/statistical_gates.py",
+      "alpha_engine/validation/sharpe_metrics.py"
+    ]
+  },
+  "strategies_with_synthetic_origin_risk": [
+    "bb_mean_reversion",
+    "grid_trading",
+    "rsi_momentum",
+    "keltner_compression_expansion",
+    "diagonal_trendline_breakout"
+  ]
+}

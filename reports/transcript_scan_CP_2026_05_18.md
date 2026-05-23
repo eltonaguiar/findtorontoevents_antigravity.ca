@@ -1,0 +1,260 @@
+# Transcript action-item scan
+
+- transcript: `C:\Users\zerou\.claude\projects\c--findtorontoevents-antigravity-ca\21f62fd8-dfb6-4ef3-a869-5125568fc326.jsonl`
+- turns: 161 · chunks: 20 · provider: deepseek
+- deduped action items: 173
+
+## Action items (deduped across chunks)
+
+- [OPEN] Install Greptile (npm install -g greptile)
+- [OPEN] Sign up at app.greptile.com and get API key
+- [OPEN] Get GitHub PAT with repo scope
+- [OPEN] Index the repository via Greptile API (POST /v2/repositories)
+- [OPEN] Wire up Greptile MCP server config for Claude Code
+- [DONE] Research and compare Greptile vs Sourcegraph Cody
+- [DONE] Run dropchat
+- [OPEN] Build structured JSON payload from session deliverables (commits, PRs, files, decisions, etc.)
+- [OPEN] Run `git log --since="<session start UTC>" --oneline --all` to gather commits
+- [OPEN] Run `gh pr list --author=@me --json number,title,state,url --search "updated:>=<session start>"` to gather PRs
+- [OPEN] Send broadcast via adapter: `python tools/adapters/cursor_claude_adapter.py --runtime claude --http-base http://192.168.2.32:8788 send --topic SESSION_SUMMARY --payload @/tmp/session_summary_payload.json --to all`
+- [OPEN] Verify send went out: `python tools/protocol_inspect.py --http-base http://192.168.2.32:8788 tail --limit 5`
+- [OPEN] Drain DMs: `python tools/adapters/freebuff_adapter.py --peer-id claude-desktop --http-base http://192.168.2.32:8788 poll --limit 50 > /tmp/inbox_dms.json`
+- [OPEN] Drain broadcasts: `python tools/adapters/freebuff_adapter.py --peer-id all --http-base http://192.168.2.32:8788 poll --limit 50 > /tmp/inbox_broadcasts.json`
+- [OPEN] Triage peer messages (classify by topic, review, act on)
+- [DONE] Run dropchat protocol (gateway health check, session data, broadcast, drain inbox, closing envelope, inbox report)
+- [DONE] Provide closing summary with broadcast/inbox/peers/revised/follow-ups
+- [OPEN] Sign up at app.greptile.com, get API key + GitHub PAT, paste them for install and MCP wiring
+- [OPEN] Deploy subagents and/or agent swarm(s) as needed
+- [DONE] Check for existing credentials and environment before deploying install agents
+- [DONE] Install npm packages
+- [DONE] Run transcript scan
+- [DONE] Check install output in parallel
+- [DONE] Install Greptile MCP server (v3.0.4)
+- [DONE] Wire Greptile into Claude Code config with GitHub PAT
+- [OPEN] Obtain Greptile API key (blocker remaining)
+- [DONE] Run dropchat with completed state
+- [DONE] Deploy swarm to verify full setup and check open items
+- [OPEN] Build structured JSON payload from session deliverables (Step 1)
+- [OPEN] Triage peer messages (Step 4)
+- [DONE] Install greptile-mcp-server v3.0.4 globally
+- [DONE] Wire greptile MCP entry into ~/.claude.json with GitHub PAT
+- [DONE] Create tools/greptile_setup.ps1
+- [OPEN] Sign up at app.greptile.com, copy API key, run greptile_setup.ps1, restart Claude Code
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history, PR #1086)
+- [OPEN] Do not use elite_score for gating (walk-forward eff=0.005)
+- [DONE] Clean up Greptile MCP config from ~/.claude.json
+- [DONE] Clean up tools/greptile_setup.ps1
+- [DONE] Install ripgrep (already installed)
+- [DONE] Install ctags
+- [DONE] Attempt code-search-mcp (failed — private GitHub Package auth required)
+- [DONE] Install mcp-ripgrep and wire into ~/.claude.json
+- [DONE] Attempt ast-grep (failed — broken on Node 24/Windows)
+- [DONE] Test mcp-ripgrep with a real query (end-to-end trace)
+- [OPEN] Restart Claude Code to load mcp-ripgrep MCP server
+- [UNCLEAR] Run dropchat to sync to peers (offered, not confirmed accepted or done)
+- [DONE] Set goal: implement `/goal` skill for Claude Code (spec file written)
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via `goal_state.py tick`
+- [OPEN] Judge own work and record verdict via `goal_state.py judge`
+- [OPEN] If not done and budget remains, schedule wakeup for auto-continuation
+- [OPEN] Verify quality_gates.py is clean (noted as already committed by another agent)
+- [OPEN] Document elite_score gate findings
+- [OPEN] Sync findings to peers
+- [OPEN] User must decide between option A, B, or C for the elite_score gate conflict (ETF gate default=0 bug)
+- [DONE] quality_gates.py audit completed — no action needed
+- [DONE] ast-grep-py installed and verified working
+- [DONE] mcp-ripgrep wired into ~/.claude.json (requires restart to activate)
+- [DONE] Peer sync sent (msg `7ac860c8`)
+- [OPEN] User instructed to "keep proceeding till all action items are done" — implies continuation after decision
+- [DONE] Set up `/goal` skill specification (written to `c:\findtorontoevents_antigravity.ca\.claude\skills\goal`)
+- [OPEN] Fix ETF `default=0` bug (Option B — skip gate when `elite_score` field absent)
+- [OPEN] Build ast-grep-py MCP wrapper
+- [OPEN] Run tests to verify gate fix
+- [UNCLEAR] Check if failing test is pre-existing or caused by edit
+- [DONE] Fix FUTURES block list in `multi_asset_copytrader`
+- [DONE] Update test to check `MONITORED_FUTURES_STRATEGIES` instead of `BLOCKED_DIRECTION_TRIPLES`
+- [DONE] Commit both fixes and run broader test suite
+- [DONE] Re-apply test edit that didn't land
+- [DONE] Re-create lost `ast_search.py`
+- [DONE] Re-apply lost test change
+- [DONE] Push commits
+- [DONE] Fix dashboard generator to include ETF stub in `asset_class_health`
+- [DONE] Patch `dashboard_data.json` with ETF stub
+- [DONE] Commit generator fix
+- [OPEN] Fix test with FOREX-realistic TP/SL values
+- [DONE] Install Greptile and index codebase/database/GitHub Actions
+- [DONE] Consider Sourcegraph Cody as alternative
+- [DONE] Decide against Greptile (paid)
+- [DONE] Proceed with free alternatives (mcp-ripgrep, code-search-mcp, ast-grep)
+- [DONE] Install mcp-ripgrep + ast-grep, undo Greptile setup
+- [DONE] Sync session state to cross-PC peers (`/dropchat-multipc`)
+- [DONE] Scan transcript for open action items (`/swarm-transcript-review`)
+- [DONE] Persistent autonomous loop to close all open items (`/goal keep proceeding till all action items are done.`)
+- [OPEN] Fix `test_smart_gate_forex_uses_forward_wr_alias_fields` — add `monkeypatch.setenv("MAGNITUDE_SANITY_GATE_ENABLED", "0")` after line ~776
+- [DONE] Run failing test to confirm fix passes (test_smart_gate_forex_uses_forward_wr_alias_fields)
+- [DONE] Check other previously failing tests (test_trust_tier_non_crypto_default_on.py — all 18 pass)
+- [DONE] Run broader test suite (all 130 tests pass)
+- [DONE] Record verdict and close goal (goal achieved in 4/20 turns)
+- [DONE] Commit tools/ast_search.py (3a58621e)
+- [OPEN] Proceed on next steps (user invoked `/goal proceed on next steps` — no further work shown)
+- [DONE] Implement PR-4: ml_enhanced quarantine (quarantine loaded, gate wired, tests pass, committed)
+- [DONE] Flip ETF VIX gate default to enforce mode (ETF_VIX_GATE_ENFORCE=1) and add tests (committed, pushed)
+- [DONE] Assess PR-3 (post-cost expectancy gate promotion) via agent swarm (verdict: do not promote, gate broken)
+- [DONE] Fix win_rate normalization in post-cost gate (normalization logic correct, test added, committed)
+- [OPEN] Implement PR-1: CT=F concentration cap (weekly signal emission cap of 40%) — assessed existing cap satisfies intent, but no explicit implementation shown
+- [UNCLEAR] Check CI status and fix any test failures — mentioned but no results shown
+- [UNCLEAR] Identify top CRYPTO strategy bleeders not yet blocked — mentioned but no action shown
+- [UNCLEAR] Compute estimated CRYPTO PF improvement from ml_enhanced quarantine — mentioned but no action shown
+- [DONE] Fix post-cost gate win_rate normalization (line 8133-8140 committed)
+- [DONE] Add `TestPostCostGateWinRateNormalization` class (2 tests)
+- [DONE] Add `TestEtfVixGate` class (4 tests)
+- [DONE] Add `TestMlEnhancedQuarantine` class (3 tests)
+- [OPEN] Implement PR-4: CRYPTO ml_enhanced family quarantine (141 strategies)
+- [OPEN] Implement PR-2: ETF VIX<25 gate promotion (enforce mode)
+- [OPEN] Implement PR-3: Post-cost expectancy gate normalization fix
+- [OPEN] Implement PR-1: CT=F concentration cap (already covered by existing 30% active-picks cap)
+- [OPEN] Run multiple autonomous rounds with swarm assistance if needed
+- [DONE] Commit post-cost gate fix (committed as `b91565343f`)
+- [DONE] Commit new test class for post-cost gate (committed as `b91565343f`)
+- [DONE] Push committed changes (pushed successfully)
+- [DONE] Run full test suite to confirm baseline (5257 passed, 37 skipped, 1 xfailed)
+- [DONE] Investigate COT lag fix for COMMODITY (determined `cot_positioning` already blocked)
+- [DONE] Check `cta_replicator` dragging COMMODITY (identified as blocker)
+- [DONE] Verify `money_ready_verdict()` for COMMODITY and CRYPTO (both MONEY_READY)
+- [DONE] Tick goal counter (goal achieved)
+- [DONE] Investigate CT=F concentration cap for COMMODITY (M-096 gate wired at 35% cap)
+- [DONE] Fix test fixture for leftover `.bak_m096test` file (committed as `65acbfcfc7`)
+- [DONE] Commit test fixture fix (committed as `65acbfcfc7`)
+- [DONE] Add new test file for CT=F cap (committed as `65acbfcfc7`)
+- [OPEN] Run swarm-transcript-scan on most recent session JSONL (53/65 chunks done, still running)
+- [DONE] Run transcript scan on session 7b29f719 (already completed before this turn)
+- [DONE] Run dropchat-multipc workflow (broadcast confirmed, message_id: 81fe2fb3)
+- [OPEN] Investigate COMMODITY MONEY_READY contamination (multi_asset_copytrader aliasing)
+- [OPEN] Investigate CRYPTO confidence field corruption (146 rows with confidence 15-78)
+- [OPEN] Fix edge_stability_harness.py to read all 32 ledger files (currently reads only closed_picks.json)
+- [OPEN] Commit DAILY_IDEAS update
+- [OPEN] Scan recent MDs for actionable items
+- [OPEN] Fix INJUSDT_15m_D SHORT gap in BLOCKED_DIRECTION_TRIPLES
+- [OPEN] Update template.html for pending_spa_alerts UI (T3)
+- [OPEN] Research EQUITY pnl=0 filter
+- [OPEN] Investigate quan_engine/rapid_fire for CRYPTO before blocking
+- [OPEN] Run COT lag-correction (M-021) before COMMODITY T1 sizing
+- [OPEN] Update updates/index.html + agentmemory
+- [UNCLEAR] MySQL ghost-row purge (~2026-05-24 PA console) — operator-only
+- [UNCLEAR] 50webs DB password rotation (stocks123 still in git history) — operator-only
+- [UNCLEAR] COMMODITY_CONCENTRATION_CAP_BY_CLASS = {"COMMODITY": 0.85} — user must decide
+- [DONE] DAILY_IDEAS.MD committed at `02496331dc`
+- [OPEN] Build C-2 exchange net-flow spread strategy
+- [OPEN] MySQL ghost-row purge (PA console ~2026-05-24)
+- [OPEN] PEAD (post-earnings announcement drift) for EQUITY
+- [OPEN] TradingView Pine → pandas-ta backtest harness
+- [OPEN] `ccxt` + copytrader leaderboard → auto-backtest pipeline
+- [OPEN] CT=F concentration cap enforce (`COMMODITY_CTF_CAP=1`)
+- [OPEN] Pre-register C-2 in `hypothesis_registry.json`
+- [OPEN] Feed chat transcript into agent swarm for review of further action items
+- [OPEN] Break transcript into chunks for review if needed
+- [DONE] Set goal: "keep working on next steps till all todos/action items are completed, then feed our chat transcript into our agent swarm and have them review for any further action items needed, if needed break it down into chunks for review."
+- [DONE] Check M-001/M-002 for conflicts with M-096
+- [DONE] Verify INJUSDT is already blocked
+- [DONE] Add updates/index.html entry
+- [OPEN] Run current session transcript through the swarm
+- [OPEN] Check pending_spa_alerts UI badge in template.html
+- [OPEN] Handle any other quick items
+- [DONE] Add `TestPostCostGateWinRateNormalization` class with 2 tests for post-cost gate win_rate normalization
+- [DONE] Commit test file `tests/test_quality_gates.py` with commit `b91565343f`
+- [DONE] Fix `hide_active_picks` fixture to clear stale `.bak_m096test` before rename on Windows
+- [DONE] Commit fix with commit `65acbfcfc7`
+- [OPEN] Run the `TestPostCostGateWinRateNormalization` tests
+- [OPEN] Commit the `TestPostCostGateWinRateNormalization` tests (if not already committed in the prior session)
+- [OPEN] Save the hedge-fund path prompt to `DAILY_IDEAS.MD` and commit to GitHub main
+- [OPEN] Review all `.MD` files within the past week for statistical edge per asset class; determine path to institutional grade performance
+- [OPEN] Drop a session summary entry for `findtorontoevents.ca/updates/index.html`
+- [OPEN] Run the session summary content through the agent swarm for critique/enhancement ideas
+- [OPEN] Continue working on next steps until all todos/action items are completed
+- [OPEN] Feed the chat transcript into the agent swarm for review of any further action items needed
+- [UNCLEAR] Implement ETF VIX gate enforce, post-cost gate normalization, CT=F concentration, COMMODITY MONEY_READY path (goal loop)
+- [DONE] Pre-register C-2 with corrected SOPR signal (not raw exchange flows)
+- [DONE] Commit the transcript scan
+- [DONE] Investigate VIX gate direction
+- [DONE] Pre-register H-018
+- [DONE] Handle `/swarm-transcript-review` on the current session
+- [OPEN] Run `swarm-transcript-scan` skill steps (pick transcript, run scanner, report results)
+
+## OPEN (76)
+
+- [OPEN] Install Greptile (npm install -g greptile)
+- [OPEN] Sign up at app.greptile.com and get API key
+- [OPEN] Get GitHub PAT with repo scope
+- [OPEN] Index the repository via Greptile API (POST /v2/repositories)
+- [OPEN] Wire up Greptile MCP server config for Claude Code
+- [OPEN] Build structured JSON payload from session deliverables (commits, PRs, files, decisions, etc.)
+- [OPEN] Run `git log --since="<session start UTC>" --oneline --all` to gather commits
+- [OPEN] Run `gh pr list --author=@me --json number,title,state,url --search "updated:>=<session start>"` to gather PRs
+- [OPEN] Send broadcast via adapter: `python tools/adapters/cursor_claude_adapter.py --runtime claude --http-base http://192.168.2.32:8788 send --topic SESSION_SUMMARY --payload @/tmp/session_summary_payload.json --to all`
+- [OPEN] Verify send went out: `python tools/protocol_inspect.py --http-base http://192.168.2.32:8788 tail --limit 5`
+- [OPEN] Drain DMs: `python tools/adapters/freebuff_adapter.py --peer-id claude-desktop --http-base http://192.168.2.32:8788 poll --limit 50 > /tmp/inbox_dms.json`
+- [OPEN] Drain broadcasts: `python tools/adapters/freebuff_adapter.py --peer-id all --http-base http://192.168.2.32:8788 poll --limit 50 > /tmp/inbox_broadcasts.json`
+- [OPEN] Triage peer messages (classify by topic, review, act on)
+- [OPEN] Sign up at app.greptile.com, get API key + GitHub PAT, paste them for install and MCP wiring
+- [OPEN] Deploy subagents and/or agent swarm(s) as needed
+- [OPEN] Obtain Greptile API key (blocker remaining)
+- [OPEN] Build structured JSON payload from session deliverables (Step 1)
+- [OPEN] Triage peer messages (Step 4)
+- [OPEN] Sign up at app.greptile.com, copy API key, run greptile_setup.ps1, restart Claude Code
+- [OPEN] Rotate ejaguiar1_stocks MySQL password (stocks123 in git history, PR #1086)
+- [OPEN] Do not use elite_score for gating (walk-forward eff=0.005)
+- [OPEN] Restart Claude Code to load mcp-ripgrep MCP server
+- [OPEN] Work one turn toward the goal (real tool calls, edits, commits)
+- [OPEN] Tick the turn counter via `goal_state.py tick`
+- [OPEN] Judge own work and record verdict via `goal_state.py judge`
+- [OPEN] If not done and budget remains, schedule wakeup for auto-continuation
+- [OPEN] Verify quality_gates.py is clean (noted as already committed by another agent)
+- [OPEN] Document elite_score gate findings
+- [OPEN] Sync findings to peers
+- [OPEN] User must decide between option A, B, or C for the elite_score gate conflict (ETF gate default=0 bug)
+- [OPEN] User instructed to "keep proceeding till all action items are done" — implies continuation after decision
+- [OPEN] Fix ETF `default=0` bug (Option B — skip gate when `elite_score` field absent)
+- [OPEN] Build ast-grep-py MCP wrapper
+- [OPEN] Run tests to verify gate fix
+- [OPEN] Fix test with FOREX-realistic TP/SL values
+- [OPEN] Fix `test_smart_gate_forex_uses_forward_wr_alias_fields` — add `monkeypatch.setenv("MAGNITUDE_SANITY_GATE_ENABLED", "0")` after line ~776
+- [OPEN] Proceed on next steps (user invoked `/goal proceed on next steps` — no further work shown)
+- [OPEN] Implement PR-1: CT=F concentration cap (weekly signal emission cap of 40%) — assessed existing cap satisfies intent, but no explicit implementation shown
+- [OPEN] Implement PR-4: CRYPTO ml_enhanced family quarantine (141 strategies)
+- [OPEN] Implement PR-2: ETF VIX<25 gate promotion (enforce mode)
+- [OPEN] Implement PR-3: Post-cost expectancy gate normalization fix
+- [OPEN] Implement PR-1: CT=F concentration cap (already covered by existing 30% active-picks cap)
+- [OPEN] Run multiple autonomous rounds with swarm assistance if needed
+- [OPEN] Run swarm-transcript-scan on most recent session JSONL (53/65 chunks done, still running)
+- [OPEN] Investigate COMMODITY MONEY_READY contamination (multi_asset_copytrader aliasing)
+- [OPEN] Investigate CRYPTO confidence field corruption (146 rows with confidence 15-78)
+- [OPEN] Fix edge_stability_harness.py to read all 32 ledger files (currently reads only closed_picks.json)
+- [OPEN] Commit DAILY_IDEAS update
+- [OPEN] Scan recent MDs for actionable items
+- [OPEN] Fix INJUSDT_15m_D SHORT gap in BLOCKED_DIRECTION_TRIPLES
+- [OPEN] Update template.html for pending_spa_alerts UI (T3)
+- [OPEN] Research EQUITY pnl=0 filter
+- [OPEN] Investigate quan_engine/rapid_fire for CRYPTO before blocking
+- [OPEN] Run COT lag-correction (M-021) before COMMODITY T1 sizing
+- [OPEN] Update updates/index.html + agentmemory
+- [OPEN] Build C-2 exchange net-flow spread strategy
+- [OPEN] MySQL ghost-row purge (PA console ~2026-05-24)
+- [OPEN] PEAD (post-earnings announcement drift) for EQUITY
+- [OPEN] TradingView Pine → pandas-ta backtest harness
+- [OPEN] `ccxt` + copytrader leaderboard → auto-backtest pipeline
+- [OPEN] CT=F concentration cap enforce (`COMMODITY_CTF_CAP=1`)
+- [OPEN] Pre-register C-2 in `hypothesis_registry.json`
+- [OPEN] Feed chat transcript into agent swarm for review of further action items
+- [OPEN] Break transcript into chunks for review if needed
+- [OPEN] Run current session transcript through the swarm
+- [OPEN] Check pending_spa_alerts UI badge in template.html
+- [OPEN] Handle any other quick items
+- [OPEN] Run the `TestPostCostGateWinRateNormalization` tests
+- [OPEN] Commit the `TestPostCostGateWinRateNormalization` tests (if not already committed in the prior session)
+- [OPEN] Save the hedge-fund path prompt to `DAILY_IDEAS.MD` and commit to GitHub main
+- [OPEN] Review all `.MD` files within the past week for statistical edge per asset class; determine path to institutional grade performance
+- [OPEN] Drop a session summary entry for `findtorontoevents.ca/updates/index.html`
+- [OPEN] Run the session summary content through the agent swarm for critique/enhancement ideas
+- [OPEN] Continue working on next steps until all todos/action items are completed
+- [OPEN] Feed the chat transcript into the agent swarm for review of any further action items needed
+- [OPEN] Run `swarm-transcript-scan` skill steps (pick transcript, run scanner, report results)

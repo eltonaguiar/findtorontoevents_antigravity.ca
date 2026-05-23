@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://findtorontoevents.ca/schemas/experiment_entry.json",
+  "title": "HedgeFundExperimentEntry",
+  "description": "One line in tools/data/experiment_log.jsonl — Git-tracked experiment audit trail (Mercury plan §1).",
+  "type": "object",
+  "required": ["experiment_id", "timestamp_utc", "metrics"],
+  "additionalProperties": true,
+  "properties": {
+    "experiment_id": {
+      "type": "string",
+      "description": "Stable id, e.g. walk_forward_ml60_20260402 or dsr_rerun_v3"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC when the experiment was recorded"
+    },
+    "agent": {
+      "type": "string",
+      "description": "Agent or human author (cursor-composer, claude-paper-tv, …)"
+    },
+    "git_sha": {
+      "type": "string",
+      "description": "git rev-parse HEAD at run time if available"
+    },
+    "model_type": {
+      "type": "string",
+      "description": "e.g. xgboost, lightgbm, lstm, ensemble"
+    },
+    "hyperparams": {
+      "type": "object",
+      "description": "Key hyperparameters (JSON object)"
+    },
+    "feature_set_version": {
+      "type": "string"
+    },
+    "data_version": {
+      "type": "string",
+      "description": "Dashboard JSON hash, closed_picks path, or dataset tag"
+    },
+    "backtest_window": {
+      "type": "string",
+      "description": "e.g. 2024-01-01..2025-06-30"
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Arbitrary metrics: sharpe, dsr, cvar99, wr, n_trades, …"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["accepted", "rejected", "promoted", "aborted", "in_progress", "unknown"]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "related_tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Scripts invoked, e.g. tools/deflated_sharpe.py"
+    }
+  }
+}

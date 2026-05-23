@@ -1,0 +1,102 @@
+name: ALPHA ENGINE - Bond Emitter
+
+# Serialize against itself + the overall push-storm mitigation pattern.
+concurrency:
+  group: alpha-engine-bond-push
+  cancel-in-progress: false
+
+on:
+  schedule:
+    # Run daily at 6:10 UTC
+    - cron: '10 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  emit-bond-picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy
+
+      - name: Run Bond scanner (production)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          # 2026-05-12: FRED API has been timing out on every series (10 min
+          # wasted per run, see reports/asset_class_deep_dive_BOND_2026-05-12.md).
+          # Skip FRED entirely until reachability is restored — the ETF-aware
+          # bond strategies (yield_momentum, duration_rotation, mean_reversion)
+          # work fine on yfinance OHLC for TLT/IEF/SHY/LQD/HYG/AGG/BND/etc.
+          # bond_data_fred.py already checks SKIP_FRED before any network call.
+          # 2026-05-18: Re-enabled FRED (was '1' due to timeouts on 2026-05-12).
+          # bond_yield_curve_slope strategy (T10Y2Y inversion→BUY TLT) was impaired.
+          # BOND has 0 picks in last 30d — restoring FRED unlocks a 6th strategy.
+          # Rollback: set to '1' if FRED timeouts recur (>5min wasted per run).
+          SKIP_FRED: '0'
+        run: |
+          # 2026-05-17: Replaced proof-of-concept spike (bond_emitter_spike.py, 0 picks)
+          # with the production bond_scanner.py which uses all 6 strategies, iterates
+          # BOND_SYMBOLS from config.py, and has a proper yfinance OHLCV fallback.
+          # --merge writes directly to alpha_engine/data/active_picks_bond.json AND
+          # merges into active_picks.json so the outcome_resolver picks them up.
+          python -m alpha_engine.bond_scanner --merge
+
+      - name: Commit Bond picks
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/active_picks_bond.json alpha_engine/data/active_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Add Bond picks from emitter [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${{ github.repository }}.git"
+          # Retry loop vs push-lock contention (see alpha-engine-etf.yml).
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            delay=$((i * i * 3 + RANDOM % 15))
+            [ $delay -gt 90 ] && delay=$((90 + RANDOM % 15))
+            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
+              echo "Rebase failed on attempt $i (next delay ${delay}s)"
+              git rebase --abort 2>/dev/null || true
+              sleep "$delay"
+              continue
+            }
+            # `set -e` (GHA default) exits the step on a failed `$(...)` assignment
+            # BEFORE `push_rc=$?` runs, making the retry loop dead code on push failure.
+            # Same shape fix as audit-dashboard.yml in PR #440.
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed on attempt $i"
+              push_ok=true
+              break
+            fi
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All 10 push attempts failed — data generated, next cycle will self-heal."
+            exit 1
+          fi

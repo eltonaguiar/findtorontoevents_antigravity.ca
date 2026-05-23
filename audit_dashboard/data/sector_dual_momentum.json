@@ -1,0 +1,212 @@
+{
+  "generated_at": "2026-05-12T01:35:46.507043+00:00",
+  "strategy_name": "sector_dual_momentum_12_1",
+  "reference": "Antonacci 2014 GEM (ISBN 978-0071849449); Zarattini & Antonacci 2024 \u2014 SSRN 4857230",
+  "expected_sharpe_range": [
+    0.8,
+    1.1
+  ],
+  "expected_max_drawdown_pct": 15.0,
+  "rebalance_frequency": "monthly",
+  "method_caveat": "12-1 momentum skips most-recent month to avoid short-term reversal. Absolute-momentum filter on SPY gates risk_on vs risk_off. Free yfinance daily closes are sufficient \u2014 no premium data required.",
+  "wiring_status": "OPT_IN_SIDECAR \u2014 not yet consumed by production pick path. See follow-up wire-up in audit_trail/dashboard_generator.py.",
+  "universe": [
+    "XLE",
+    "XLF",
+    "XLK",
+    "XLV",
+    "XLI",
+    "XLP",
+    "XLY",
+    "XLU",
+    "XLB",
+    "XLRE",
+    "SPY",
+    "VEU",
+    "AGG",
+    "TLT"
+  ],
+  "sector_universe": [
+    "XLE",
+    "XLF",
+    "XLK",
+    "XLV",
+    "XLI",
+    "XLP",
+    "XLY",
+    "XLU",
+    "XLB",
+    "XLRE"
+  ],
+  "benchmark_universe": [
+    "SPY",
+    "VEU",
+    "AGG",
+    "TLT"
+  ],
+  "lookback_months": 12,
+  "skip_months": 1,
+  "top_n": 3,
+  "risk_off_ticker": "AGG",
+  "per_etf": [
+    {
+      "ticker": "XLE",
+      "last_close": 57.16999816894531,
+      "mom_12_1_pct": 38.566,
+      "history_len_days": 292,
+      "current_rank": 1
+    },
+    {
+      "ticker": "XLF",
+      "last_close": 51.18000030517578,
+      "mom_12_1_pct": 3.61,
+      "history_len_days": 292,
+      "current_rank": 8
+    },
+    {
+      "ticker": "XLK",
+      "last_close": 177.8800048828125,
+      "mom_12_1_pct": 33.833,
+      "history_len_days": 292,
+      "current_rank": 2
+    },
+    {
+      "ticker": "XLV",
+      "last_close": 143.0399932861328,
+      "mom_12_1_pct": 11.524,
+      "history_len_days": 292,
+      "current_rank": 7
+    },
+    {
+      "ticker": "XLI",
+      "last_close": 175.0399932861328,
+      "mom_12_1_pct": 26.905,
+      "history_len_days": 292,
+      "current_rank": 3
+    },
+    {
+      "ticker": "XLP",
+      "last_close": 83.37000274658203,
+      "mom_12_1_pct": 0.791,
+      "history_len_days": 292,
+      "current_rank": 10
+    },
+    {
+      "ticker": "XLY",
+      "last_close": 119.37000274658203,
+      "mom_12_1_pct": 12.564,
+      "history_len_days": 292,
+      "current_rank": 6
+    },
+    {
+      "ticker": "XLU",
+      "last_close": 45.13999938964844,
+      "mom_12_1_pct": 15.628,
+      "history_len_days": 292,
+      "current_rank": 5
+    },
+    {
+      "ticker": "XLB",
+      "last_close": 52.2599983215332,
+      "mom_12_1_pct": 23.439,
+      "history_len_days": 292,
+      "current_rank": 4
+    },
+    {
+      "ticker": "XLRE",
+      "last_close": 44.56999969482422,
+      "mom_12_1_pct": 3.389,
+      "history_len_days": 292,
+      "current_rank": 9
+    },
+    {
+      "ticker": "SPY",
+      "last_close": 739.2999877929688,
+      "mom_12_1_pct": 21.576,
+      "history_len_days": 292
+    },
+    {
+      "ticker": "VEU",
+      "last_close": 83.20999908447266,
+      "mom_12_1_pct": 25.702,
+      "history_len_days": 292
+    },
+    {
+      "ticker": "AGG",
+      "last_close": 98.91999816894531,
+      "mom_12_1_pct": 1.8,
+      "history_len_days": 292
+    },
+    {
+      "ticker": "TLT",
+      "last_close": 85.55999755859375,
+      "mom_12_1_pct": -0.345,
+      "history_len_days": 292
+    }
+  ],
+  "decision": {
+    "regime": "risk_on",
+    "spy_mom_12_1_pct": 21.576,
+    "basket": [
+      "XLE",
+      "XLK",
+      "XLI"
+    ],
+    "top_n": 3,
+    "risk_off_ticker": "AGG",
+    "sector_ranking": [
+      {
+        "ticker": "XLE",
+        "mom_12_1_pct": 38.566,
+        "rank": 1
+      },
+      {
+        "ticker": "XLK",
+        "mom_12_1_pct": 33.833,
+        "rank": 2
+      },
+      {
+        "ticker": "XLI",
+        "mom_12_1_pct": 26.905,
+        "rank": 3
+      },
+      {
+        "ticker": "XLB",
+        "mom_12_1_pct": 23.439,
+        "rank": 4
+      },
+      {
+        "ticker": "XLU",
+        "mom_12_1_pct": 15.628,
+        "rank": 5
+      },
+      {
+        "ticker": "XLY",
+        "mom_12_1_pct": 12.564,
+        "rank": 6
+      },
+      {
+        "ticker": "XLV",
+        "mom_12_1_pct": 11.524,
+        "rank": 7
+      },
+      {
+        "ticker": "XLF",
+        "mom_12_1_pct": 3.61,
+        "rank": 8
+      },
+      {
+        "ticker": "XLRE",
+        "mom_12_1_pct": 3.389,
+        "rank": 9
+      },
+      {
+        "ticker": "XLP",
+        "mom_12_1_pct": 0.791,
+        "rank": 10
+      }
+    ],
+    "note": "top-3 sector basket on positive SPY 12-1 momentum",
+    "expected_signal_strength": "STRONG"
+  }
+}

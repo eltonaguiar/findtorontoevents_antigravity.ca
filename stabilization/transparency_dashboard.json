@@ -1,0 +1,160 @@
+{
+  "generated_at": "2026-02-28T04:00:00",
+  "system_status": "EMERGENCY STABILIZATION - 95+ STRATEGIES DISABLED",
+  "summary": {
+    "total_strategies": 114,
+    "active_strategies": 6,
+    "disabled_strategies": 108,
+    "fantasy_entries_purged": 3,
+    "total_forward_trades": 39,
+    "total_pnl_dollar": -1462,
+    "total_pnl_pct": -3.80,
+    "forward_win_rate": 41
+  },
+  "financial_reality": {
+    "net_forward_pnl": -1462,
+    "win_rate": 41,
+    "closed_trades": 39,
+    "status": "BELOW_BREAKEVEN",
+    "open_losers": 8
+  },
+  "tier_1_proven": [
+    {
+      "name": "connors_rsi2",
+      "description": "Larry Connors RSI-2 mean reversion",
+      "evidence": "SPY 75.7%, QQQ 75%, IWM 70.7%, BTC 62%",
+      "p_value": 0.000006,
+      "status": "READY_FOR_LIVE",
+      "recommended_risk": "2% per trade"
+    },
+    {
+      "name": "vix_spike_reversal",
+      "description": "VIX spike mean reversion",
+      "evidence": "SPY 72% WR, 10yr backtest",
+      "p_value": 0.022,
+      "status": "READY_FOR_LIVE",
+      "recommended_risk": "1% per trade (VIX>20 only)"
+    }
+  ],
+  "tier_2_watch_list": [
+    {
+      "name": "hurst_regime_adaptive",
+      "forward_wr": 71.4,
+      "trades": 7,
+      "status": "MONITOR_UNTIL_20_TRADES",
+      "action": "Keep in paper trading"
+    },
+    {
+      "name": "autocorrelation_exploiter",
+      "forward_wr": 83.3,
+      "trades": 6,
+      "status": "MONITOR_UNTIL_20_TRADES",
+      "action": "Keep in paper trading"
+    },
+    {
+      "name": "multi_sigma_reversal",
+      "forward_wr": 100,
+      "trades": 3,
+      "status": "MONITOR_UNTIL_20_TRADES",
+      "action": "Keep in paper trading"
+    }
+  ],
+  "tier_3_needs_test": [
+    {
+      "name": "nylondon_flow_session_momentum_v1",
+      "evidence": "BTC/ETH/SOL all >61% WR",
+      "status": "NEEDS_RIGOROUS_BACKTEST",
+      "requirements": [
+        "5 years data (2020-2025)",
+        "5 assets: BTC, ETH, SOL, ADA, LINK",
+        "3 timeframes: 1h, 4h, 1d",
+        "Calculate p-value, Sharpe, PF",
+        "Monte Carlo simulation"
+      ],
+      "pass_criteria": "p<0.05, WR>52%, PF>1.2 on 3+ assets"
+    }
+  ],
+  "disabled_strategies": {
+    "count": 108,
+    "original_9": [
+      "double_top_bottom_detector",
+      "halloween_effect",
+      "monthly_seasonality",
+      "fourier_cycle_detector",
+      "smart_money_fvg",
+      "m2_liquidity_lag",
+      "price_touch_recurrence",
+      "cross_sectional_momentum",
+      "community_ict_fvg_selective"
+    ],
+    "additional_8": [
+      "btc_dominance_rotation",
+      "halving_cycle_position",
+      "dynamic_momentum_scaling",
+      "ema_rsi_momentum",
+      "rsi_divergence",
+      "triple_ema_trend",
+      "zscore_reversion",
+      "bb_squeeze_expansion"
+    ],
+    "soc_variants": 91,
+    "total_disabled": 108
+  },
+  "key_insights": [
+    "Mean reversion works in current chop (Hurst, Autocorr showing 70-100% WR)",
+    "Parameter variants = overfitting (10 variants guarantees 1-2 look amazing by chance)",
+    "Statistical proof is rare (only 2/114 strategies passed p<0.05)",
+    "Forward testing exposes truth (41% WR vs backtest promises)",
+    "Small samples lie (<20 trades cannot be trusted)"
+  ],
+  "go_no_go_gates": {
+    "month_1": {
+      "status": "IN_PROGRESS",
+      "actions": [
+        "[OK] Disable 95+ unproven strategies",
+        "[OK] Keep only 3 proven + 3 watch list",
+        "[TEST] Run rigorous backtests on nylondon_flow"
+      ]
+    },
+    "month_2": {
+      "status": "PENDING",
+      "actions": [
+        "[CHECK] Evaluate nylondon_flow results",
+        "[PASS] If passes: Promote to LIVE (total 3 live)",
+        "[FAIL] If fails: Keep only Connors RSI-2 and VIX Spike"
+      ]
+    },
+    "month_3": {
+      "status": "PENDING",
+      "actions": [
+        "[CHECK] Evaluate hurst/autocorrelation forward results",
+        "[PASS] If 20+ trades and WR>60%: Run rigorous backtests"
+      ]
+    },
+    "month_6": {
+      "status": "PENDING",
+      "actions": [
+        "[GOAL] 3-5 LIVE strategies with proven edge",
+        "[GOAL] Net profitable forward trading",
+        "[FAIL] If not profitable: System shutdown review"
+      ]
+    }
+  },
+  "data_integrity": {
+    "fantasy_entries_found": 3,
+    "fantasy_entries_removed": 3,
+    "files_cleaned": ["prove_winners_results.json"],
+    "backup_needs_purge": true,
+    "max_acceptable_pnl_pct": 100,
+    "audit_rule": "Any PnL > 100% is flagged as calculation error"
+  },
+  "guard_status": {
+    "strategy_guard_active": true,
+    "files_patched": [
+      "alpha_engine/live_2hr_challenge.py",
+      "alpha_engine/battle_test.py",
+      "alpha_engine/battle_test_rigorous.py"
+    ],
+    "disabled_file": "stabilization/disabled_strategies.json"
+  }
+}

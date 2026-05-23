@@ -1,0 +1,171 @@
+{
+  "description": "Paper trading portfolios to test which systems (alone or together) can be trusted for profit",
+  "version": "1.0.0",
+  "created_at": "2026-03-08",
+  "starting_capital_per_portfolio": 10000,
+  "risk_per_trade": 0.02,
+  "max_positions_per_portfolio": 10,
+  "max_hold_days": 7,
+  "systems": {
+    "alpha_engine": {
+      "name": "Alpha Engine",
+      "active_picks_path": "alpha_engine/data/active_picks.json",
+      "closed_picks_path": "alpha_engine/data/closed_picks.json",
+      "historical_wr": 39.6,
+      "total_closed": 204,
+      "status": "active"
+    },
+    "battleground": {
+      "name": "Baby Battleground",
+      "active_picks_path": "battleground/data/active_picks.json",
+      "closed_picks_path": "battleground/data/closed_picks.json",
+      "historical_wr": 60.2,
+      "total_closed": 669,
+      "status": "active"
+    },
+    "rapid_fire": {
+      "name": "Rapid Fire (NOW)",
+      "active_picks_path": "rapid_fire_data/active_picks.json",
+      "closed_picks_path": "rapid_fire_data/now_picks.json",
+      "historical_wr": 0,
+      "total_closed": 0,
+      "status": "active"
+    },
+    "kimi_signal_tracking": {
+      "name": "KIMI Signal Tracking",
+      "active_picks_path": "riseoftheclaw/data/signal_tracking.json",
+      "historical_wr": 64.0,
+      "total_closed": 1028,
+      "status": "active"
+    },
+    "claude_gainer_ml_perf": {
+      "name": "Claude Gainer ML",
+      "historical_wr": 70.0,
+      "total_closed": 10,
+      "status": "monitoring"
+    },
+    "crypto_ml_edge": {
+      "name": "Crypto ML Edge",
+      "historical_wr": 100.0,
+      "total_closed": 5,
+      "status": "monitoring"
+    },
+    "coinglass": {
+      "name": "Coinglass",
+      "historical_wr": 0,
+      "total_closed": 0,
+      "status": "active"
+    },
+    "crypto_winners": {
+      "name": "Crypto Winners",
+      "historical_wr": 40.8,
+      "total_closed": 49,
+      "status": "active"
+    },
+    "ml_crypto_predictor": {
+      "name": "ML Crypto Predictor",
+      "historical_wr": 0,
+      "total_closed": 0,
+      "status": "active"
+    }
+  },
+  "portfolios": {
+    "solo_systems": {
+      "description": "Individual system performance - baseline for comparison",
+      "portfolios": [
+        {"id": "solo_alpha", "name": "Solo: Alpha Engine", "systems": ["alpha_engine"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "solo_battleground", "name": "Solo: Battleground", "systems": ["battleground"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "solo_rapid_fire", "name": "Solo: Rapid Fire", "systems": ["rapid_fire"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "solo_kimi", "name": "Solo: KIMI Signals", "systems": ["kimi_signal_tracking"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "solo_claude", "name": "Solo: Claude Gainer", "systems": ["claude_gainer_ml_perf"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "solo_crypto_ml", "name": "Solo: Crypto ML Edge", "systems": ["crypto_ml_edge"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "solo_coinglass", "name": "Solo: Coinglass", "systems": ["coinglass"], "min_agreement": 1, "max_agreement": 1}
+      ]
+    },
+    "pair_combinations": {
+      "description": "Two-system agreement combinations - test synergy",
+      "portfolios": [
+        {"id": "pair_alpha_battle", "name": "Pair: Alpha + Battleground", "systems": ["alpha_engine", "battleground"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_alpha_kimi", "name": "Pair: Alpha + KIMI", "systems": ["alpha_engine", "kimi_signal_tracking"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_battle_kimi", "name": "Pair: Battleground + KIMI", "systems": ["battleground", "kimi_signal_tracking"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_alpha_claude", "name": "Pair: Alpha + Claude", "systems": ["alpha_engine", "claude_gainer_ml_perf"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_kimi_claude", "name": "Pair: KIMI + Claude", "systems": ["kimi_signal_tracking", "claude_gainer_ml_perf"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_rapid_alpha", "name": "Pair: Rapid Fire + Alpha", "systems": ["rapid_fire", "alpha_engine"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_rapid_battle", "name": "Pair: Rapid Fire + Battleground", "systems": ["rapid_fire", "battleground"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_crypto_ml_alpha", "name": "Pair: Crypto ML + Alpha", "systems": ["crypto_ml_edge", "alpha_engine"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "pair_coinglass_battle", "name": "Pair: Coinglass + Battleground", "systems": ["coinglass", "battleground"], "min_agreement": 2, "max_agreement": 2}
+      ]
+    },
+    "triplet_combinations": {
+      "description": "Three-system agreement combinations - test consensus power",
+      "portfolios": [
+        {"id": "triple_alpha_battle_kimi", "name": "Triple: Alpha + Battle + KIMI", "systems": ["alpha_engine", "battleground", "kimi_signal_tracking"], "min_agreement": 3, "max_agreement": 3},
+        {"id": "triple_alpha_kimi_claude", "name": "Triple: Alpha + KIMI + Claude", "systems": ["alpha_engine", "kimi_signal_tracking", "claude_gainer_ml_perf"], "min_agreement": 3, "max_agreement": 3},
+        {"id": "triple_battle_kimi_claude", "name": "Triple: Battle + KIMI + Claude", "systems": ["battleground", "kimi_signal_tracking", "claude_gainer_ml_perf"], "min_agreement": 3, "max_agreement": 3},
+        {"id": "triple_alpha_battle_claude", "name": "Triple: Alpha + Battle + Claude", "systems": ["alpha_engine", "battleground", "claude_gainer_ml_perf"], "min_agreement": 3, "max_agreement": 3},
+        {"id": "triple_rapid_alpha_battle", "name": "Triple: Rapid + Alpha + Battle", "systems": ["rapid_fire", "alpha_engine", "battleground"], "min_agreement": 3, "max_agreement": 3},
+        {"id": "triple_crypto_ml_alpha_kimi", "name": "Triple: Crypto ML + Alpha + KIMI", "systems": ["crypto_ml_edge", "alpha_engine", "kimi_signal_tracking"], "min_agreement": 3, "max_agreement": 3}
+      ]
+    },
+    "flexible_consensus": {
+      "description": "Flexible agreement levels - 2 of 3, 2 of 4, 3 of 5, etc.",
+      "portfolios": [
+        {"id": "flex_2of3_alpha_battle_kimi", "name": "Flex 2/3: Alpha/Battle/KIMI", "systems": ["alpha_engine", "battleground", "kimi_signal_tracking"], "min_agreement": 2, "max_agreement": 3},
+        {"id": "flex_2of4_alpha_battle_kimi_claude", "name": "Flex 2/4: Alpha/Battle/KIMI/Claude", "systems": ["alpha_engine", "battleground", "kimi_signal_tracking", "claude_gainer_ml_perf"], "min_agreement": 2, "max_agreement": 4},
+        {"id": "flex_3of5_full", "name": "Flex 3/5: All Major Systems", "systems": ["alpha_engine", "battleground", "kimi_signal_tracking", "claude_gainer_ml_perf", "rapid_fire"], "min_agreement": 3, "max_agreement": 5},
+        {"id": "flex_2of5_full", "name": "Flex 2/5: All Major Systems", "systems": ["alpha_engine", "battleground", "kimi_signal_tracking", "claude_gainer_ml_perf", "rapid_fire"], "min_agreement": 2, "max_agreement": 5}
+      ]
+    },
+    "high_performance_systems": {
+      "description": "Only systems with proven track records (WR > 50%)",
+      "portfolios": [
+        {"id": "hp_battleground_only", "name": "HP: Battleground Only", "systems": ["battleground"], "min_agreement": 1, "max_agreement": 1, "filter": "wr_threshold", "min_wr": 50},
+        {"id": "hp_kimi_only", "name": "HP: KIMI Only", "systems": ["kimi_signal_tracking"], "min_agreement": 1, "max_agreement": 1, "filter": "wr_threshold", "min_wr": 50},
+        {"id": "hp_claude_only", "name": "HP: Claude Gainer Only", "systems": ["claude_gainer_ml_perf"], "min_agreement": 1, "max_agreement": 1, "filter": "wr_threshold", "min_wr": 50},
+        {"id": "hp_battle_kimi", "name": "HP: Battleground + KIMI (2+)", "systems": ["battleground", "kimi_signal_tracking"], "min_agreement": 2, "max_agreement": 2, "filter": "wr_threshold", "min_wr": 50},
+        {"id": "hp_all_proven", "name": "HP: All Proven Systems", "systems": ["battleground", "kimi_signal_tracking", "claude_gainer_ml_perf"], "min_agreement": 1, "max_agreement": 3, "filter": "wr_threshold", "min_wr": 50}
+      ]
+    },
+    "ml_focused": {
+      "description": "ML-based systems only - test if ML adds value",
+      "portfolios": [
+        {"id": "ml_claude_only", "name": "ML: Claude Gainer Only", "systems": ["claude_gainer_ml_perf"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "ml_crypto_ml_only", "name": "ML: Crypto ML Edge Only", "systems": ["crypto_ml_edge"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "ml_kimi_only", "name": "ML: KIMI ML Only", "systems": ["kimi_signal_tracking"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "ml_all", "name": "ML: All ML Systems", "systems": ["claude_gainer_ml_perf", "crypto_ml_edge", "kimi_signal_tracking", "ml_crypto_predictor"], "min_agreement": 1, "max_agreement": 4},
+        {"id": "ml_consensus_2of3", "name": "ML: 2/3 ML Consensus", "systems": ["claude_gainer_ml_perf", "crypto_ml_edge", "kimi_signal_tracking"], "min_agreement": 2, "max_agreement": 3},
+        {"id": "ml_consensus_all", "name": "ML: All 3 Must Agree", "systems": ["claude_gainer_ml_perf", "crypto_ml_edge", "kimi_signal_tracking"], "min_agreement": 3, "max_agreement": 3}
+      ]
+    },
+    "rapid_fire_variants": {
+      "description": "Test Rapid Fire in various combinations",
+      "portfolios": [
+        {"id": "rf_solo", "name": "RF: Solo", "systems": ["rapid_fire"], "min_agreement": 1, "max_agreement": 1},
+        {"id": "rf_plus_best", "name": "RF + Best System (Battleground)", "systems": ["rapid_fire", "battleground"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "rf_plus_ml", "name": "RF + ML (Claude)", "systems": ["rapid_fire", "claude_gainer_ml_perf"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "rf_plus_kimi", "name": "RF + KIMI", "systems": ["rapid_fire", "kimi_signal_tracking"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "rf_plus_alpha", "name": "RF + Alpha", "systems": ["rapid_fire", "alpha_engine"], "min_agreement": 2, "max_agreement": 2},
+        {"id": "rf_plus_top3", "name": "RF + Top 3 Systems", "systems": ["rapid_fire", "battleground", "kimi_signal_tracking", "claude_gainer_ml_perf"], "min_agreement": 2, "max_agreement": 4}
+      ]
+    }
+  },
+  "rules": {
+    "entry_rules": {
+      "require_same_direction": true,
+      "min_confidence_per_system": 0.5,
+      "max_age_hours": 24,
+      "no_conflicting_signals": true
+    },
+    "exit_rules": {
+      "use_tp_sl": true,
+      "time_stop_days": 7,
+      "trailing_stop": false
+    },
+    "risk_management": {
+      "position_sizing": "fixed_fractional",
+      "risk_per_trade_pct": 2.0,
+      "max_correlated_positions": 3,
+      "max_sector_exposure_pct": 30
+    }
+  }
+}

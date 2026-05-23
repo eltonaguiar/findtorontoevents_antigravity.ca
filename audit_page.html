@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unified Audit Dashboard �?? Antigravity</title>
+<meta http-equiv="refresh" content="300">
+<style>
+:root {
+  --bg: #0a0a12;
+  --card: #1a1a2e;
+  --card-hover: #1f1f3a;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --green: #4caf50;
+  --red: #f44336;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --yellow: #f59e0b;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 16px;
+}
+a { color: var(--purple); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 20px 0 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.header h1 { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+.header .subtitle { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+
+/* Summary cards */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: center;
+}
+.stat-card .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat-card .value.positive { color: var(--green); }
+.stat-card .value.negative { color: var(--red); }
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+}
+.filter-bar label { font-size: 12px; color: var(--text-dim); margin-right: 2px; }
+.filter-bar select, .filter-bar input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.filter-bar input[type="text"] { width: 160px; }
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); font-weight: 600; }
+
+/* Tab content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  background: #0f1628;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 10px 8px;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.data-table th:hover { color: var(--text); }
+/* Sticky header for tables */
+.data-table thead { position: sticky; top: 0; background: var(--bg); z-index: 5; }
+.data-table td {
+  padding: 8px;
+  border-bottom: 1px solid #1a1a30;
+  vertical-align: middle;
+}
+.data-table tr:hover { background: var(--card-hover); }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; font-family: 'Consolas', 'Fira Code', monospace; }
+.strat-tip-wrap { position: relative; display: inline-block; cursor: pointer; border-bottom: 1px dashed var(--text-dim); }
+.strat-tip-wrap:hover .strat-tip { display: block; }
+.strat-tip { display: none; position: absolute; z-index: 9999; top: calc(100% + 8px); left: 0; min-width: 300px; max-width: 340px; background: #12122a; border: 1px solid var(--purple); border-radius: 8px; padding: 12px 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); pointer-events: none; font-size: 12px; line-height: 1.5; color: var(--text); }
+.strat-tip::before { content: ''; position: absolute; bottom: 100%; left: 24px; border: 6px solid transparent; border-bottom-color: var(--purple); }
+.strat-tip .tip-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--cyan); }
+.strat-tip .tip-row { display: flex; justify-content: space-between; padding: 2px 0; }
+.strat-tip .tip-label { color: var(--text-dim); }
+.strat-tip .tip-val { font-weight: 600; font-family: 'Consolas', monospace; }
+.strat-tip .tip-divider { border-top: 1px solid var(--border); margin: 5px 0; }
+.strat-tip .tip-no-data { color: var(--text-dim); font-style: italic; text-align: center; padding: 8px 0; }
+
+/* Price position gauge */
+.price-gauge { display: inline-flex; align-items: center; gap: 4px; width: 100%; min-width: 90px; }
+.price-gauge-bar { position: relative; flex: 1; height: 8px; background: linear-gradient(90deg, var(--red) 0%, var(--yellow) 40%, var(--green) 100%); border-radius: 4px; overflow: visible; }
+.price-gauge-marker { position: absolute; top: -3px; width: 3px; height: 14px; background: #fff; border-radius: 2px; box-shadow: 0 0 4px rgba(255,255,255,0.6); transform: translateX(-1px); }
+.price-gauge-entry { position: absolute; top: -2px; width: 1px; height: 12px; background: var(--cyan); opacity: 0.6; }
+.price-gauge-label { font-size: 9px; color: var(--text-dim); white-space: nowrap; }
+
+/* Column header tooltips */
+.col-tip { position: relative; cursor: help; }
+.col-tip::after { content: attr(data-tip); display: none; position: absolute; z-index: 9999; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); min-width: 200px; max-width: 280px; background: #12122a; border: 1px solid var(--purple); border-radius: 6px; padding: 8px 10px; font-size: 11px; font-weight: 400; color: var(--text); line-height: 1.5; text-transform: none; letter-spacing: 0; box-shadow: 0 4px 16px rgba(0,0,0,0.5); white-space: normal; pointer-events: none; }
+.col-tip:hover::after { display: block; }
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge-long { background: rgba(76,175,80,0.2); color: var(--green); }
+.badge-short { background: rgba(244,67,54,0.2); color: var(--red); }
+.badge-crypto { background: rgba(167,139,250,0.2); color: var(--purple); }
+.badge-forex { background: rgba(96,165,250,0.2); color: var(--blue); }
+.badge-equity { background: rgba(34,211,238,0.2); color: var(--cyan); }
+.badge-active { background: rgba(76,175,80,0.15); color: var(--green); }
+.badge-retired { background: rgba(136,136,136,0.15); color: var(--text-dim); }
+.badge-monitoring { background: rgba(255,193,7,0.15); color: #ffc107; }
+.badge-empty { background: rgba(244,67,54,0.1); color: #777; }
+.badge-fwd { background: rgba(76,175,80,0.2); color: var(--green); }
+.badge-mixed { background: rgba(245,158,11,0.2); color: var(--yellow); }
+.badge-bt { background: rgba(96,165,250,0.2); color: var(--blue); }
+
+.pnl-pos { color: var(--green); }
+.pnl-neg { color: var(--red); }
+.pnl-zero { color: var(--text-dim); }
+
+/* Cards grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.info-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.info-card h3 {
+  font-size: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.info-card .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 13px;
+}
+.info-card .row .lbl { color: var(--text-dim); }
+.info-card .row .val { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Audit log */
+.audit-entry {
+  padding: 8px 12px;
+  border-left: 3px solid var(--border);
+  margin-bottom: 6px;
+  font-size: 13px;
+  background: var(--card);
+  border-radius: 0 6px 6px 0;
+}
+.audit-entry .ts { color: var(--text-dim); font-size: 11px; }
+.audit-entry .type { font-weight: 600; color: var(--purple); }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* Agreement Matrix */
+.matrix-table { border-collapse: collapse; width: 100%; font-family: 'Consolas', 'Fira Code', monospace; font-size: 13px; }
+.matrix-table th { background: #0f1628; color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.matrix-table th:first-child { text-align: left; min-width: 140px; }
+.matrix-table td { padding: 6px; text-align: center; border-bottom: 1px solid #1a1a30; position: relative; }
+.matrix-table td:first-child { text-align: left; font-size: 12px; color: var(--text); white-space: nowrap; overflow: visible; max-width: 220px; }
+.matrix-table tr:hover { background: var(--card-hover); }
+.matrix-table .agree-row td { border-top: 2px solid var(--border); font-weight: 700; font-size: 12px; background: rgba(15,22,40,0.6); }
+.matrix-cell { cursor: default; font-size: 15px; font-weight: 700; }
+.matrix-cell-long { color: var(--green); }
+.matrix-cell-short { color: var(--red); }
+.matrix-cell-dash { color: #333; font-size: 12px; }
+.matrix-tooltip { display: none; position: absolute; z-index: 9999; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); min-width: 220px; max-width: 300px; background: #12122a; border: 1px solid var(--purple); border-radius: 8px; padding: 10px 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); font-size: 11px; line-height: 1.5; color: var(--text); text-align: left; pointer-events: none; white-space: normal; }
+.matrix-tooltip::after { content: '\n[... truncated for brevity ...]';
+
+</style>
+</head>
+<body>
+<div class="header"><h1>Unified Audit Dashboard</h1><div class="subtitle">Generated at 2026-03-13T20:53:44.610Z</div></div>
+<div class="summary-row"><div class="stat-card"><div class="label">Total Picks</div><div class="value">1234</div></div></div>
+
+<!-- GROK Top Picks Tab -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab('grok')">🧠 GROK Top Picks</button>
+</div>
+
+<div id="overview" class="tab-content active">
+  <!-- Existing overview/summary here -->
+</div>
+
+<div id="grok" class="tab-content">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h3>GROK Top 3 Picks <span class="badge" style="background: linear-gradient(135deg, #a78bfa, #22d3ee); color: white; font-size: 12px;">AI Selected</span></h3>
+    <div id="grok-ts" style="font-size: 12px; color: var(--text-dim);"></div>
+  </div>
+  <div id="grok-loading" style="text-align: center; padding: 40px; color: var(--text-dim);">Loading...</div>
+  <table class="data-table" id="grok-table" style="display: none;">
+    <thead>
+      <tr>
+        <th class="col-tip" data-tip="Strategy generating the signal">Strategy</th>
+        <th class="col-tip" data-tip="Asset symbol & category">Symbol</th>
+        <th>Dir</th>
+        <th class="col-tip" data-tip="Entry price">Entry</th>
+        <th>TP</th>
+        <th>SL</th>
+        <th class="col-tip" data-tip="AI confidence score">Conf</th>
+        <th>Unrealized</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div id="grok-historical" style="margin-top: 24px;">
+    <h4 style="color: var(--text-dim);">Realized P/L History <span class="badge" style="opacity: 0.6;" id="grok-hist-count">0 trades</span></h4>
+    <table class="data-table" id="grok-hist-table" style="display: none;">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Entry</th>
+          <th>Exit</th>
+          <th>P/L %</th>
+          <th>Closed At</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p id="grok-hist-empty" style="color: var(--text-dim); font-style: italic;">No closed trades yet. Tracking starts now.</p>
+  </div>
+</div>
+
+<script>
+let grokData = null;
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tabName).classList.add('active');
+}
+
+async function loadGrokPicks() {
+  try {
+    const res = await fetch('data/grok_top_picks.json?' + Date.now());
+    grokData = await res.json();
+    document.getElementById('grok-ts').textContent = 'Updated: ' + new Date(grokData.timestamp).toLocaleString();
+    
+    const tbody = document.querySelector('#grok-table tbody');
+    tbody.innerHTML = '';
+    grokData.grok_top_picks.forEach(pick => {
+      const row = tbody.insertRow();
+      const dirClass = pick.signal_type.toLowerCase();
+      const tpClass = pick.take_profit > pick.entry_price ? 'pnl-pos' : 'pnl-neg';
+      const slClass = pick.stop_loss < pick.entry_price ? 'pnl-pos' : 'pnl-neg';
+      row.innerHTML = `
+        <td title="${pick.extra_json ? JSON.parse(pick.extra_json).signal_basis || pick.strategy : pick.strategy}">${pick.strategy}</td>
+        <td>${pick.symbol} <span class="badge-${pick.category}">${pick.category.toUpperCase()}</span></td>
+        <td><span class="badge-${dirClass}">${pick.signal_type}</span></td>
+        <td class="num">${pick.entry_price.toFixed(4)}</td>
+        <td class="num ${tpClass}">${pick.take_profit.toFixed(4)}</td>
+        <td class="num ${slClass}">${pick.stop_loss.toFixed(4)}</td>
+        <td class="num">${Math.round(pick.confidence * 100)}%</td>
+        <td class="num pnl-zero" data-pick-id="${pick.id}">⏳</td>
+      `;
+    });
+    
+    document.getElementById('grok-loading').style.display = 'none';
+    document.getElementById('grok-table').style.display = 'table';
+    // Populate historical realized P/L table if data exists
+    const histTable = document.getElementById('grok-hist-table');
+    const histTbody = histTable.querySelector('tbody');
+    const histEmpty = document.getElementById('grok-hist-empty');
+    const histCount = document.getElementById('grok-hist-count');
+    if (grokData.historical_realized && grokData.historical_realized.length > 0) {
+      histTbody.innerHTML = '';
+      grokData.historical_realized.forEach(rec => {
+        const row = histTbody.insertRow();
+        row.innerHTML = `
+          <td>${rec.symbol}</td>
+          <td class="num">${rec.entry_price.toFixed(4)}</td>
+          <td class="num">${rec.exit_price.toFixed(4)}</td>
+          <td class="num ${rec.pnl_pct >= 0 ? 'pnl-pos' : 'pnl-neg'}">${rec.pnl_pct.toFixed(2)}%</td>
+          <td>${new Date(rec.closed_at).toLocaleString()}</td>
+        `;
+      });
+      histTable.style.display = 'table';
+      histEmpty.style.display = 'none';
+      histCount.textContent = `${grokData.historical_realized.length} trades`;
+    } else {
+      histTable.style.display = 'none';
+      histEmpty.style.display = 'block';
+      histCount.textContent = '0 trades';
+    }
+  } catch (err) {
+    console.error('GROK picks load error:', err);
+    document.getElementById('grok-loading').textContent = 'Failed to load picks';
+  }
+}
+
+// Auto-refresh
+loadGrokPicks();
+setInterval(loadGrokPicks, 5 * 60 * 1000); // 5 min
+</script>
+
+</body>
+</html>

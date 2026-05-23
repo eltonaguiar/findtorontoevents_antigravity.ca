@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUPERPOWERS: The Neural Net - ML Battleground System C</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6}
+a{color:#3b82f6;text-decoration:none}
+.container{max-width:1400px;margin:0 auto;padding:16px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:20px 0;border-bottom:1px solid #1e1e3a}
+.header-left{display:flex;align-items:center;gap:14px}
+.header-title{font-size:28px;font-weight:800;background:linear-gradient(135deg,#a855f7,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.version-badge{background:#a855f722;color:#a855f7;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;border:1px solid #a855f744}
+.header-right{display:flex;align-items:center;gap:12px;font-size:13px;color:#94a3b8}
+.pulse-dot{width:8px;height:8px;background:#a855f7;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.back-link{font-size:13px;color:#a855f7;padding:6px 12px;border:1px solid #a855f744;border-radius:6px}
+.back-link:hover{background:#a855f722}
+
+/* Model Status */
+.model-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:24px;margin:20px 0;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.model-status-badge{padding:10px 24px;border-radius:8px;font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.model-trained{background:#22c55e18;color:#22c55e;border:2px solid #22c55e55}
+.model-untrained{background:#ef444418;color:#ef4444;border:2px solid #ef444455}
+.model-info{font-size:13px;color:#94a3b8}
+.model-info strong{color:#e2e8f0}
+
+/* Confidence Heatmap */
+.heatmap-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0}
+.section-title{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.heatmap-grid{display:grid;gap:2px;margin-top:12px}
+.heatmap-header{font-size:11px;color:#64748b;text-align:center;font-weight:700;padding:6px}
+.heatmap-label{font-size:12px;color:#94a3b8;padding:6px 8px;display:flex;align-items:center;font-weight:600}
+.heatmap-cell{border-radius:4px;padding:6px;text-align:center;font-size:12px;font-weight:700;min-width:60px;transition:background .3s}
+.heatmap-legend{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:#64748b}
+.heatmap-legend-bar{height:12px;flex:1;max-width:200px;border-radius:3px;background:linear-gradient(90deg,#1e1e3a,#22c55e)}
+
+/* Stats Bar */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0}
+.stat-card{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:16px;text-align:center}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px}
+.stat-value{font-size:28px;font-weight:800}
+.stat-sub{font-size:11px;color:#64748b;margin-top:2px}
+.green{color:#22c55e}.red{color:#ef4444}.yellow{color:#eab308}.blue{color:#3b82f6}.purple{color:#a855f7}
+
+/* Validation Gate */
+.validation-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0}
+.gate-bar{display:flex;gap:8px;flex-wrap:wrap}
+.gate-item{flex:1;min-width:140px;background:#0a0a12;border-radius:8px;padding:12px;text-align:center;border:1px solid #1e1e3a}
+.gate-icon{font-size:24px;margin-bottom:4px}
+.gate-label{font-size:11px;color:#94a3b8}
+.gate-value{font-size:14px;font-weight:700;margin-top:2px}
+.gate-pass{border-color:#22c55e44;background:#22c55e08}
+.gate-fail{border-color:#ef444444;background:#ef444408}
+.progress-bar-bg{width:100%;height:8px;background:#1e1e3a;border-radius:4px;margin-top:14px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#a855f7,#7c3aed);transition:width .5s}
+
+/* Tables */
+.table-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid #1e1e3a;color:#64748b;text-transform:uppercase;font-size:11px;letter-spacing:.5px;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #1e1e3a11;white-space:nowrap}
+tr:hover{background:#ffffff06}
+.pnl-pos{color:#22c55e;font-weight:700}.pnl-neg{color:#ef4444;font-weight:700}
+.badge{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-buy{background:#22c55e22;color:#22c55e}.badge-sell{background:#ef444422;color:#ef4444}
+
+/* Strategy Breakdown */
+  .strategy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+  .strategy-card{background:#0a0a12;border:1px solid #1e1e3a;border-radius:8px;padding:12px;text-align:center;transition:opacity .2s,cursor:pointer}
+  .strategy-card:hover{transform:translateY(-2px);border-color:#a855f788}
+  .strategy-name{font-size:12px;color:#94a3b8;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .strategy-wr{font-size:22px;font-weight:800}
+  .strategy-trades{font-size:11px;color:#64748b}
+  .strategy-dates{font-size:10px;color:#475569;margin-top:4px;line-height:1.3}
+
+  /* Modal */
+  .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal-overlay.active{opacity:1;pointer-events:auto}
+  .modal{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:24px;max-width:900px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .modal-title{font-size:20px;font-weight:800}
+  .modal-close{background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer;padding:4px 8px;border-radius:4px}
+  .modal-close:hover{background:#1e1e3a;color:#e2e8f0}
+  .modal-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}
+  .modal-table th{text-align:left;padding:10px 12px;border-bottom:2px solid #1e1e3a;color:#64748b;text-transform:uppercase;font-size:11px;letter-spacing:.5px;white-space:nowrap;position:sticky;top:0;background:#12121f}
+  .modal-table td{padding:10px 12px;border-bottom:1px solid #1e1e3a11;white-space:nowrap}
+  .modal-table tr:hover{background:#0a0a12}
+.age-badge{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;display:inline-block;margin-left:4px}
+.age-new{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44}
+.age-recent{background:#3b82f622;color:#3b82f6;border:1px solid #3b82f644}
+.age-old{background:#ef444422;color:#ef4444;border:1px solid #ef444444}
+.tip{position:relative;cursor:help;border-bottom:1px dotted #64748b}
+.tip:hover::after{content:attr(data-tip);position:absolute;background:#1e1e3a;color:#e2e8f0;padding:8px 12px;border-radius:6px;font-size:11px;white-space:pre-line;margin-top:22px;left:50%;transform:translateX(-50%);z-index:100;border:1px solid #3b82f644;box-shadow:0 4px 12px rgba(0,0,0,.5);min-width:180px;text-align:left;line-height:1.5;font-weight:400}
+.filter-bar{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-right:4px}
+.filter-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;border:1px solid #1e1e3a;background:#12121f;color:#94a3b8;cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:#3b82f688;color:#e2e8f0}
+.filter-btn.active{background:#3b82f622;border-color:#3b82f6;color:#3b82f6}
+.strategy-card.hidden{display:none}
+
+/* Equity Chart */
+.chart-section{background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:20px;margin:20px 0}
+canvas{width:100%!important;height:250px!important;display:block}
+
+/* Responsive */
+@media(max-width:768px){
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  .header{flex-direction:column;align-items:flex-start}
+  .header-title{font-size:20px}
+  .stat-value{font-size:22px}
+  .gate-bar{flex-direction:column}
+  .model-section{flex-direction:column;text-align:center}
+}
+@media(max-width:480px){
+  .stats-bar{grid-template-columns:1fr}
+  .container{padding:10px}
+}
+
+.loading{text-align:center;padding:40px;color:#64748b}
+.error-banner{background:#ef444422;border:1px solid #ef4444;color:#ef4444;padding:12px 16px;border-radius:8px;margin:12px 0;display:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <div class="header-title">SUPERPOWERS: THE NEURAL NET</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <span class="version-badge" id="versionBadge">v0.1.0</span>
+          <span style="font-size:12px;color:#64748b">System C - Deep Learning Predictor</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span style="font-size:12px;color:#64748b;margin-right:8px" id="scanFreq"></span>
+      <a href="../arena.html" class="back-link">ARENA</a>
+      <span><span class="pulse-dot"></span> <span id="lastUpdated">Loading...</span></span>
+    </div>
+  </div>
+
+  <div id="errorBanner" class="error-banner"></div>
+
+  <!-- ML EXPLAINER -->
+  <div style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #a855f733;border-radius:10px;padding:16px 20px;margin:16px 0;line-height:1.7">
+    <div style="font-size:14px;font-weight:700;color:#a855f7;margin-bottom:8px">How System C (The Neural Net) Works &mdash; Plain English</div>
+    <div style="font-size:12px;color:#e2e8f0">
+      <p style="margin-bottom:8px"><strong style="color:#a855f7">What it does:</strong> System C is the most advanced ML system. It uses a <strong>GRU neural network with attention</strong> &mdash; a type of artificial brain that reads price history like a sentence, learning which past moments matter most for predicting the future. Unlike XGBoost (which looks at a snapshot), the neural net understands sequences and patterns over time.</p>
+      <p style="margin-bottom:8px"><strong style="color:#a855f7">What is GRU?</strong> GRU (Gated Recurrent Unit) is like a short-term memory system. Imagine reading a book one word at a time &mdash; a GRU remembers the important plot points and forgets irrelevant details. For trading, it reads 100+ candles in sequence and learns temporal patterns like "after 3 red candles with increasing volume, price usually bounces."</p>
+      <p style="margin-bottom:8px"><strong style="color:#a855f7">What is Attention?</strong> Attention lets the model "highlight" the most relevant candles. If a whale moved 5 hours ago and that's more important than what happened 1 hour ago, the attention layer will focus on that. It's the same technology that powers ChatGPT and modern AI.</p>
+      <p style="margin-bottom:8px"><strong style="color:#a855f7">What does the heatmap show?</strong> The confidence heatmap shows how confident the neural net is about each symbol at each timeframe. Brighter green = higher confidence in the prediction (BUY or SELL). Red = model is uncertain or predicts a move against the signal.</p>
+      <p style="margin-bottom:8px"><strong style="color:#a855f7">25 input features:</strong> The model ingests: normalized OHLCV, RSI, MACD, Bollinger %B, volume z-score, hour of day (sine/cosine), BTC return, Fear &amp; Greed index, funding rate, Fibonacci position, and lagged returns. It predicts 3 things simultaneously: entry signal, take profit level, and stop loss level.</p>
+      <p><strong style="color:#eab308">Current status:</strong> <span style="color:#22c55e">TRAINED</span> &mdash; Model file (gru_attention.pt) exists. System C has a trained neural net and may be generating predictions, but Discord notifications are disabled pending performance review.</p>
+    </div>
+  </div>
+
+  <!-- Model Status -->
+  <div class="model-section">
+    <div class="model-status-badge" id="modelBadge">Loading...</div>
+    <div class="model-info">
+      <div>Last Trained: <strong id="lastTrained">--</strong></div>
+      <div>Training Loss: <strong id="trainingLoss">--</strong></div>
+      <div>Architecture: <strong id="modelArch">LSTM + Attention</strong></div>
+    </div>
+  </div>
+
+  <!-- Confidence Heatmap -->
+  <div class="heatmap-section">
+    <div class="section-title">Entry Confidence Heatmap (Pairs x Timeframes)</div>
+    <div id="heatmapContainer" style="overflow-x:auto">
+      <div class="loading">Waiting for model predictions...</div>
+    </div>
+    <div class="heatmap-legend">
+      <span>0% (no signal)</span>
+      <div class="heatmap-legend-bar"></div>
+      <span>65%+ (strong signal)</span>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="statWR">--</div><div class="stat-sub" id="statWRsub"></div></div>
+    <div class="stat-card"><div class="stat-label">Sharpe Ratio</div><div class="stat-value blue" id="statSharpe">--</div></div>
+    <div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-value" id="statTrades" style="color:#e2e8f0">--</div></div>
+    <div class="stat-card"><div class="stat-label">Max Drawdown</div><div class="stat-value red" id="statDD">--</div></div>
+    <div class="stat-card"><div class="stat-label">Active Picks</div><div class="stat-value purple" id="statActive">--</div></div>
+  </div>
+
+  <!-- Validation Gate -->
+  <div class="validation-section">
+    <div class="section-title">Validation Gate - Path to PROVEN</div>
+    <div class="gate-bar">
+      <div class="gate-item" id="gate1"><div class="gate-icon">--</div><div class="gate-label">Trades >= 50</div><div class="gate-value">0 / 50</div></div>
+      <div class="gate-item" id="gate2"><div class="gate-icon">--</div><div class="gate-label">Win Rate > 55%</div><div class="gate-value">--</div></div>
+      <div class="gate-item" id="gate3"><div class="gate-icon">--</div><div class="gate-label">Sharpe > 1.0</div><div class="gate-value">--</div></div>
+      <div class="gate-item" id="gate4"><div class="gate-icon">--</div><div class="gate-label">Max DD < 15%</div><div class="gate-value">--</div></div>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="gateProgress" style="width:0%"></div></div>
+  </div>
+
+  <!-- Active Picks -->
+  <div class="table-section">
+    <div class="section-title">Active Picks</div>
+    <table>
+      <thead><tr><th>Symbol</th><th>Signal</th><th>Strategy</th><th>Entry</th><th>TP</th><th>SL</th><th>R:R</th><th>ML Score</th><th>TP/SL Method</th><th>Opened (EST)</th><th>Reason</th><th>Unreal. PnL</th></tr></thead>
+      <tbody id="activePicksBody"><tr><td colspan="12" class="loading">Waiting for data...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Recent Closed Trades -->
+  <div class="table-section">
+    <div class="section-title">Recent Closed Trades (Last 20)</div>
+    <table>
+      <thead><tr><th>Symbol</th><th>Strategy</th><th>Entry</th><th>Exit</th><th>Net PnL%</th><th>Exit Reason</th><th>Closed (EST)</th><th>Duration</th></tr></thead>
+      <tbody id="closedTradesBody"><tr><td colspan="8" class="loading">Waiting for data...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Strategy Breakdown -->
+  <div class="validation-section">
+    <div class="section-title">Strategy Breakdown</div>
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-btn active" onclick="filterStrats('all',this)">All</button>
+      <button class="filter-btn" onclick="filterStrats('new',this)">New (&lt;12h)</button>
+      <button class="filter-btn" onclick="filterStrats('recent',this)">Recent (12-48h)</button>
+      <button class="filter-btn" onclick="filterStrats('old',this)">Old (&gt;48h)</button>
+    </div>
+    <div class="strategy-grid" id="strategyGrid"><div class="loading">Waiting for data...</div></div>
+    <div id="systemInception" style="margin-top:12px;font-size:11px;color:#475569"></div>
+  </div>
+
+  <!-- Equity Curve -->
+  <div class="chart-section">
+    <div class="section-title">Equity Curve</div>
+    <canvas id="equityChart"></canvas>
+  </div>
+</div>
+
+<script>
+const DATA_URL = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main/ml_battleground/system_c_deeplearn/data/dashboard.json';
+let _systemData = null;
+
+function wrColor(wr) { return wr >= 55 ? '#22c55e' : wr >= 45 ? '#eab308' : '#ef4444'; }
+function fmtPct(v) { return v != null ? v.toFixed(2) + '%' : '--'; }
+function fmtNum(v, d) { return v != null ? v.toFixed(d || 2) : '--'; }
+function fmtDate(iso) { if (!iso) return '--'; const d = new Date(iso); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+function timeAgo(iso) { if (!iso) return ''; const hrs=(Date.now()-new Date(iso).getTime())/3600000; if(hrs<1)return Math.round(hrs*60)+'m ago'; if(hrs<24)return Math.round(hrs)+'h ago'; return Math.round(hrs/24)+'d ago'; }
+function ageBadge(iso) { if(!iso)return ''; const hrs=(Date.now()-new Date(iso).getTime())/3600000; if(hrs<12)return '<span class="age-badge age-new">NEW</span>'; if(hrs<48)return '<span class="age-badge age-recent">RECENT</span>'; return '<span class="age-badge age-old">OLD</span>'; }
+function ageClass(iso) { if(!iso)return 'old'; const hrs=(Date.now()-new Date(iso).getTime())/3600000; if(hrs<12)return 'new'; if(hrs<48)return 'recent'; return 'old'; }
+function filterStrats(filter,btn) { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.strategy-card').forEach(c=>{if(filter==='all')c.classList.remove('hidden');else c.classList.toggle('hidden',c.dataset.age!==filter);}); }
+
+function heatColor(prob) {
+  if (prob == null || prob < 0.01) return '#1e1e3a';
+  if (prob < 0.3) return '#1a3a1e';
+  if (prob < 0.5) return '#2d5a2e';
+  if (prob < 0.65) return '#3d7a3e';
+  return '#22c55e';
+}
+
+function heatTextColor(prob) {
+  return (prob != null && prob >= 0.3) ? '#fff' : '#64748b';
+}
+
+async function loadData() {
+  try {
+    const r = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    render(d);
+    document.getElementById('errorBanner').style.display = 'none';
+  } catch(e) {
+    const eb = document.getElementById('errorBanner');
+    eb.textContent = 'Data load failed: ' + e.message + '. Retrying in 60s...';
+    eb.style.display = 'block';
+    renderDemo();
+  }
+}
+
+function render(d) {
+  _systemData = d;
+  document.getElementById('versionBadge').textContent = d.version || 'v0.1.0';
+  document.getElementById('lastUpdated').textContent = d.updated_est || (d.last_updated ? new Date(d.last_updated).toLocaleString() : 'Just now');
+  document.getElementById('scanFreq').textContent = d.scan_frequency ? '\u23F1 ' + d.scan_frequency : '';
+
+  // Model Status
+  const modelLoaded = d.model_loaded === true || d.model_status === 'trained';
+  const badge = document.getElementById('modelBadge');
+  badge.textContent = modelLoaded ? 'MODEL TRAINED' : 'NOT TRAINED';
+  badge.className = 'model-status-badge ' + (modelLoaded ? 'model-trained' : 'model-untrained');
+  document.getElementById('lastTrained').textContent = d.last_trained ? new Date(d.last_trained).toLocaleString() : 'Never';
+  document.getElementById('trainingLoss').textContent = d.training_loss != null ? d.training_loss.toFixed(6) : '--';
+  if (d.architecture) document.getElementById('modelArch').textContent = d.architecture;
+
+  // Confidence Heatmap
+  const grid = d.confidence_grid || {};
+  const container = document.getElementById('heatmapContainer');
+  const pairs = Object.keys(grid);
+  const tfs = ['15m', '1h'];
+
+  if (pairs.length) {
+    const cols = 1 + tfs.length;
+    let html = `<div class="heatmap-grid" style="grid-template-columns: 120px repeat(${tfs.length}, 1fr)">`;
+    html += '<div class="heatmap-header"></div>';
+    tfs.forEach(tf => { html += `<div class="heatmap-header">${tf}</div>`; });
+    pairs.forEach(pair => {
+      html += `<div class="heatmap-label">${pair}</div>`;
+      tfs.forEach(tf => {
+        const prob = grid[pair]?.[tf] ?? null;
+        const bg = heatColor(prob);
+        const tc = heatTextColor(prob);
+        const txt = prob != null ? (prob * 100).toFixed(0) + '%' : '--';
+        html += `<div class="heatmap-cell" style="background:${bg};color:${tc}">${txt}</div>`;
+      });
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  } else {
+    container.innerHTML = '<div class="loading">No confidence data - model not yet trained</div>';
+  }
+
+  // Stats — support both d.metrics.* and d.stats.* field names
+  const m = d.metrics || d.stats || {};
+  const wr = m.win_rate ?? 0;
+  const wrEl = document.getElementById('statWR');
+  wrEl.textContent = fmtPct(wr * (wr <= 1 ? 100 : 1));
+  wrEl.style.color = wrColor(wr * (wr <= 1 ? 100 : 1));
+  document.getElementById('statWRsub').textContent = (m.wins || 0) + 'W / ' + (m.losses || 0) + 'L';
+  document.getElementById('statSharpe').textContent = fmtNum(m.sharpe_ratio ?? m.sharpe);
+  document.getElementById('statTrades').textContent = m.total_trades ?? m.trades ?? 0;
+  document.getElementById('statDD').textContent = fmtPct((m.max_drawdown ?? m.max_dd ?? 0) * ((m.max_drawdown ?? m.max_dd ?? 0) <= 1 ? 100 : 1));
+  document.getElementById('statActive').textContent = d.active_picks?.length ?? 0;
+
+  // Validation gates
+  const trades = m.total_trades ?? m.trades ?? 0;
+  const sharpe = m.sharpe_ratio ?? m.sharpe ?? 0;
+  const rawDD = m.max_drawdown ?? m.max_dd ?? 0;
+  const dd = rawDD <= 1 ? rawDD * 100 : rawDD;
+  const gates = [
+    { pass: trades >= 50, label: trades + ' / 50' },
+    { pass: wr > 55, label: fmtPct(wr) },
+    { pass: sharpe > 1.0, label: fmtNum(sharpe) },
+    { pass: dd < 15, label: fmtPct(dd) }
+  ];
+  let passed = 0;
+  gates.forEach((g, i) => {
+    const el = document.getElementById('gate' + (i+1));
+    el.className = 'gate-item ' + (g.pass ? 'gate-pass' : 'gate-fail');
+    el.querySelector('.gate-icon').textContent = g.pass ? '\u2705' : '\u274C';
+    el.querySelector('.gate-value').textContent = g.label;
+    if (g.pass) passed++;
+  });
+  document.getElementById('gateProgress').style.width = (passed / 4 * 100) + '%';
+
+  // Active Picks
+  const apBody = document.getElementById('activePicksBody');
+  if (d.active_picks?.length) {
+    apBody.innerHTML = d.active_picks.map(p => {
+      const pnl = p.unrealized_pnl_pct ?? p.unrealized_pnl ?? 0;
+      const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const sig = p.signal_type || p.signal || '--';
+      const sigClass = sig.toLowerCase() === 'buy' ? 'badge-buy' : 'badge-sell';
+      return `<tr>
+        <td><strong>${p.symbol||'--'}</strong></td>
+        <td><span class="badge ${sigClass}">${sig}</span></td>
+        <td>${p.strategy||'--'}</td>
+        <td>${fmtNum(p.entry_price ?? p.entry,4)}</td>
+        <td>${fmtNum(p.take_profit ?? p.tp,4)}</td>
+        <td>${fmtNum(p.stop_loss ?? p.sl,4)}</td>
+        <td>${fmtNum(p.risk_reward ?? p.rr,1)}</td>
+        <td>${fmtNum(p.ml_score ?? p.confidence)}</td>
+        <td>${p.tp_sl_method||'--'}</td>
+        <td>${p.timestamp_est||'--'}</td>
+        <td style="white-space:normal;max-width:300px;font-size:11px;color:#94a3b8">${p.pick_reason||'--'}</td>
+        <td class="${pnlClass}">${fmtPct(pnl)}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    apBody.innerHTML = '<tr><td colspan="12" class="loading">No active picks</td></tr>';
+  }
+
+  // Closed Trades
+  const ctBody = document.getElementById('closedTradesBody');
+  const closed = (d.closed_trades || d.recent_closed || []).slice(0, 20);
+  if (closed.length) {
+    ctBody.innerHTML = closed.map(t => {
+      const pnl = t.net_pnl_pct ?? t.net_pnl ?? 0;
+      const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const stratInc = t.strategy_inception;
+      const stratUpd = t.strategy_last_code_update;
+      const stratTip = stratInc ? 'Strategy since: ' + fmtDate(stratInc) + (stratUpd ? '\\nCode updated: ' + fmtDate(stratUpd) : '') : '';
+      const stratHtml = stratTip ? `<span class="tip" data-tip="${stratTip}">${t.strategy||'--'}</span> ${ageBadge(stratUpd||stratInc)}` : (t.strategy||'--');
+      return `<tr>
+        <td><strong>${t.symbol||'--'}</strong></td>
+        <td>${stratHtml}</td>
+        <td>${fmtNum(t.entry_price ?? t.entry,4)}</td>
+        <td>${fmtNum(t.exit_price ?? t.exit,4)}</td>
+        <td class="${pnlClass}">${fmtPct(pnl)}</td>
+        <td>${t.exit_reason||'--'}</td>
+        <td>${(t.closed_at_est ?? t.closed_est)||'--'}</td>
+        <td>${t.duration||'--'}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    ctBody.innerHTML = '<tr><td colspan="8" class="loading">No closed trades yet</td></tr>';
+  }
+
+  // Strategy Breakdown
+  const sg = document.getElementById('strategyGrid');
+  if (d.strategy_breakdown && Object.keys(d.strategy_breakdown).length) {
+    sg.innerHTML = Object.entries(d.strategy_breakdown).map(([name, s]) => {
+      const swr = s.win_rate ?? 0;
+      const inc = s.inception || d.inception_date;
+      const upd = s.last_code_update || d.last_code_update;
+      const age = ageClass(upd || inc);
+      const pnl = s.total_pnl || 0;
+      const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const tipText = 'Inception: ' + fmtDate(inc) + '\\nCode updated: ' + fmtDate(upd) + '\\nTrades: ' + (s.trades||0) + '\\nPnL: ' + (pnl>=0?'+':'') + pnl.toFixed(2) + '%' + '\\n\\nClick to view trade details';
+      return `<div class="strategy-card" data-age="${age}" data-strategy="${name}" onclick="openStrategyModal('${name}')">
+        <div class="strategy-name tip" data-tip="${tipText}">${name.replace(/_/g,' ')} ${ageBadge(upd||inc)}</div>
+        <div class="strategy-wr" style="color:${wrColor(swr)}">${fmtPct(swr)}</div>
+        <div class="strategy-trades">${s.trades||0} trades | <span class="${pnlClass}">${pnl>=0?'+':''}${pnl.toFixed(2)}%</span></div>
+        <div class="strategy-dates">Since ${fmtDate(inc)}</div>
+      </div>`;
+    }).join('');
+  } else {
+    sg.innerHTML = '<div class="loading">No strategy data yet</div>';
+  }
+
+  // System inception info
+  const incEl = document.getElementById('systemInception');
+  if (d.inception_date) {
+    incEl.innerHTML = 'System inception: ' + fmtDate(d.inception_date) + ' | Last code update: ' + fmtDate(d.last_code_update) + ' (' + timeAgo(d.last_code_update) + ')';
+  }
+
+  drawEquity(d.equity_curve || []);
+}
+
+function drawEquity(data) {
+  const canvas = document.getElementById('equityChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 250 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 250;
+  ctx.clearRect(0, 0, W, H);
+
+  if (data.length < 2) {
+    ctx.fillStyle = '#64748b';ctx.font = '14px sans-serif';ctx.textAlign = 'center';
+    ctx.fillText('Equity curve will appear after trades', W/2, H/2);
+    return;
+  }
+
+  const vals = data.map(p => typeof p === 'number' ? p : p.value || p.equity || 0);
+  const min = Math.min(...vals), max = Math.max(...vals), range = max - min || 1;
+  const pad = {t:20,b:30,l:60,r:20};
+  const cw = W-pad.l-pad.r, ch = H-pad.t-pad.b;
+
+  ctx.strokeStyle = '#1e1e3a';ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = pad.t + ch * i/4;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='11px sans-serif';ctx.textAlign='right';
+    ctx.fillText((max - range*i/4).toFixed(2), pad.l-8, y+4);
+  }
+
+  ctx.beginPath();ctx.strokeStyle = '#a855f7';ctx.lineWidth = 2;
+  vals.forEach((v,i) => {
+    const x = pad.l + (i/(vals.length-1))*cw;
+    const y = pad.t + (1-(v-min)/range)*ch;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  const lastX = pad.l + cw;
+  ctx.lineTo(lastX, pad.t+ch);ctx.lineTo(pad.l, pad.t+ch);ctx.closePath();
+  const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grad.addColorStop(0,'rgba(168,85,247,0.25)');grad.addColorStop(1,'rgba(168,85,247,0)');
+  ctx.fillStyle = grad;ctx.fill();
+}
+
+function renderDemo() {
+  render({
+    version: 'v0.1.0', last_updated: new Date().toISOString(),
+    model_status: 'untrained', last_trained: null, training_loss: null,
+    confidence_grid: {},
+    metrics: { win_rate: 0, sharpe_ratio: 0, total_trades: 0, max_drawdown: 0, wins: 0, losses: 0 },
+    active_picks: [], closed_trades: [], strategy_breakdown: {}, equity_curve: []
+  });
+}
+
+loadData();
+setInterval(loadData, 60000);
+
+// Modal functions
+function openStrategyModal(strategyName) {
+  const modal = document.getElementById('tradeModal');
+  const title = document.getElementById('modalTitle');
+  const tbody = document.getElementById('modalTradesBody');
+
+  if (!modal || !title || !tbody) return;
+
+  title.textContent = 'The Neural Net - ' + strategyName.replace(/_/g, ' ') + ' Trades';
+
+  if (!_systemData) {
+    tbody.innerHTML = '<tr><td colspan="8">No data available</td></tr>';
+    modal.classList.add('active');
+    return;
+  }
+
+  const allClosed = _systemData.recent_closed || _systemData.closed_trades || [];
+  const strategyTrades = allClosed.filter(t => t.strategy === strategyName);
+
+  if (strategyTrades.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8">No closed trades for this strategy yet</td></tr>';
+  } else {
+    tbody.innerHTML = strategyTrades.map(t => {
+      const pnl = t.net_pnl_pct ?? t.net_pnl ?? 0;
+      const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const sig = t.signal_type || t.signal || 'BUY';
+      const sigClass = sig.toLowerCase() === 'buy' ? 'badge-buy' : 'badge-sell';
+      const duration = t.duration || calculateDuration(t.timestamp, t.closed_at);
+      return `<tr>
+        <td><span style="color:#a855f7;font-weight:700">C</span></td>
+        <td><strong>${t.symbol||'--'}</strong></td>
+        <td><span class="badge ${sigClass}">${sig}</span></td>
+        <td>${fmtNum(t.entry_price ?? t.entry,4)}</td>
+        <td>${fmtNum(t.exit_price ?? t.exit,4)}</td>
+        <td class="${pnlClass}">${fmtPct(pnl)}</td>
+        <td style="font-size:11px;color:#94a3b8;max-width:200px">${t.exit_reason||'--'}</td>
+        <td style="font-size:11px;color:#64748b">${duration}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  modal.classList.add('active');
+}
+
+function closeModal() {
+  const modal = document.getElementById('tradeModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function calculateDuration(start, end) {
+  if (!start || !end) return '--';
+  const startMs = new Date(start).getTime();
+  const endMs = new Date(end).getTime();
+  const diffHrs = (endMs - startMs) / 3600000;
+  if (diffHrs < 1) return Math.round(diffHrs * 60) + 'm';
+  if (diffHrs < 24) return Math.round(diffHrs) + 'h';
+  return Math.round(diffHrs / 24) + 'd';
+}
+
+// Close modal on overlay click
+const _tradeModal = document.getElementById('tradeModal');
+if (_tradeModal) _tradeModal.addEventListener('click', (e) => {
+  if (e.target.id === 'tradeModal') closeModal();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>

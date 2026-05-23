@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Weekly Edge Filters — findtorontoevents.ca/audit</title>
+<style>
+  :root {
+    --bg:#0a0e1a; --panel:#111827; --border:#1f2937; --text:#e5e7eb;
+    --muted:#9ca3af; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --strong:#22c55e; --accept:#3b82f6; --weak:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px}
+  h1{margin:0 0 8px;font-size:24px}
+  .sub{color:var(--muted);margin-bottom:24px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .card h2{margin:0 0 8px;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+  .ac{font-size:11px;padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em}
+  .ac-crypto{background:#3b82f622;color:#60a5fa;border:1px solid #3b82f644}
+  .ac-equity{background:#22c55e22;color:#4ade80;border:1px solid #22c55e44}
+  .ac-meme{background:#a855f722;color:#c084fc;border:1px solid #a855f744}
+  .ac-forex{background:#f59e0b22;color:#fbbf24;border:1px solid #f59e0b44}
+  .tier{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.04em}
+  .tier-ACCEPT_STRONG{background:#22c55e22;color:var(--strong);border:1px solid #22c55e55}
+  .tier-ACCEPT{background:#3b82f622;color:var(--accept);border:1px solid #3b82f655}
+  .tier-ACCEPT_WEAK{background:#f59e0b22;color:var(--weak);border:1px solid #f59e0b55}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .metric{background:#0a0e1a;border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center}
+  .metric .v{font-size:18px;font-weight:600;color:#fff}
+  .metric .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .pf-strong{color:var(--good)}
+  .pf-med{color:#60a5fa}
+  pre{background:#0a0e1a;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;overflow:auto;margin:8px 0 0}
+  .rec{color:var(--muted);font-size:12px;margin-top:8px;font-style:italic}
+  .nope{background:var(--panel);border:1px solid var(--bad);border-radius:12px;padding:16px;margin-top:16px}
+  .nope h3{margin:0 0 8px;color:var(--bad)}
+  .legend{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:24px;flex-wrap:wrap}
+  a{color:#60a5fa}
+</style>
+</head>
+<body>
+<h1>🎯 Weekly Edge Filters — Hedge-Fund-Grade</h1>
+<div class="sub">Generated 2026-05-16 · Source: <code>audit_trail/data/universal_resolved_picks.json</code> · 5,000 closed picks over 12 weeks · OOS-validated + bootstrap-stable</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="nope">
+  <h3>⚠️ Asset Classes With NO Viable Edge Yet</h3>
+  <strong>BONDS · ETF · FUTURES · COMMODITIES</strong> — zero closed picks in the resolver dataset.
+  Do <strong>not</strong> deploy real capital in these classes against this audit until the upstream resolver tags them or a separate analysis pipeline reads from <code>bt_backtest_trades</code>.
+</div>
+
+<div class="legend">
+  <div>🟢 STRONG: OOS PF ≥ 2.0, P(PF&gt;1) ≥ 95%</div>
+  <div>🔵 ACCEPT: OOS PF ≥ 1.3, P(PF&gt;1) ≥ 80%</div>
+  <div>🟡 WEAK: full-sample PF ≥ 1.5, OOS too thin to confirm</div>
+</div>
+
+<script>
+const FILTERS = __FILTERS_JSON__;
+
+function tierBadge(t) {
+  return `<span class="tier tier-${t}">${t.replace('_',' ')}</span>`;
+}
+function acBadge(ac) {
+  return `<span class="ac ac-${ac.toLowerCase()}">${ac}</span>`;
+}
+function pfClass(pf) {
+  if (pf >= 5) return 'pf-strong';
+  if (pf >= 2) return 'pf-med';
+  return '';
+}
+function specToText(spec){
+  return Object.entries(spec).map(([k,v]) => `${k}=${Array.isArray(v)?JSON.stringify(v):v}`).join('\n');
+}
+
+const grid = document.getElementById('grid');
+const ranked = [];
+for (const ac of ['CRYPTO','EQUITY','FOREX','MEME']) {
+  for (const f of (FILTERS[ac] || [])) {
+    ranked.push({...f, asset_class: ac});
+  }
+}
+// sort by OOS PF descending
+ranked.sort((a,b) => (b.oos_pf || 0) - (a.oos_pf || 0));
+
+for (const f of ranked) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <h2>${f.name} ${acBadge(f.asset_class)}</h2>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+      ${tierBadge(f.tier)}
+      <span style="color:var(--muted);font-size:12px">~${f.expected_picks_per_week} picks/week</span>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="v ${pfClass(f.oos_pf)}">${f.oos_pf?.toFixed(2)}</div><div class="l">OOS Profit Factor</div></div>
+      <div class="metric"><div class="v">${(f.oos_wr*100)?.toFixed(0)}%</div><div class="l">OOS Win Rate</div></div>
+      <div class="metric"><div class="v">${f.oos_n}</div><div class="l">OOS Sample n</div></div>
+      <div class="metric"><div class="v">${f.full_pf?.toFixed(2)}</div><div class="l">Full PF</div></div>
+      <div class="metric"><div class="v">${(f.full_wr*100)?.toFixed(0)}%</div><div class="l">Full WR</div></div>
+      <div class="metric"><div class="v">${(f.bootstrap_p_pf_above_1*100)?.toFixed(0)}%</div><div class="l">P(PF&gt;1)</div></div>
+    </div>
+    <pre>${specToText(f.spec)}</pre>
+    <div class="rec">${f.recommendation}</div>
+  `;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>

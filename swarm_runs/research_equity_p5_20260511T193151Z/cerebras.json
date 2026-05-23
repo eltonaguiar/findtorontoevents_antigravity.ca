@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "engine": "synth_ai_1",
+  "asset_class": "EQUITY",
+  "run_id": "run_2026-05-11T19-17-46Z",
+  "synthesis": [
+    {
+      "spec_id": "equity_ts_momentum_v1",
+      "verdict": "MIXED",
+      "rationale": "Backtest shows very high PF (55.79) and 100% win rate, but only 4 trades over the 5-year window, far below the 100-trade minimum, making the result statistically unreliable. The signal is a simplified SMA crossover, not the true spec, so longer history and faithful signal parsing are needed.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_vol_target_v1",
+      "verdict": "MIXED",
+      "rationale": "Identical performance to the momentum ETF (PF 55.79, WR 100%) yet only 4 trades, which is insufficient for robust inference. Simplified signal translation further limits confidence; more data required before deployment.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_carry_pair_v1",
+      "verdict": "MIXED",
+      "rationale": "Meets PF (5.24), WR (66.7%) and MDD (19.3%) thresholds, but the backtest contains only 6 trades, well under the 100-trade floor. The simplified SMA-crossover proxy may misrepresent the intended carry-based entry, so a longer history and faithful signal are needed.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_hmm_momentum_v1",
+      "verdict": "NO_EDGE",
+      "rationale": "While PF (100.64) and WR (100%) are impressive, MDD (22.8%) exceeds the 20% limit and the strategy executed only 3 trades, far below the required sample size. Combined with the simplified signal, there is no reliable edge to endorse.",
+      "wiring_plan": ""
+    },
+    {
+      "spec_id": "equity_bab_pair_v1",
+      "verdict": "MIXED",
+      "rationale": "PF (5.24), WR (66.7%) and MDD (19.3%) satisfy Tier-2 thresholds, but the backtest comprises only 6 trades, insufficient for statistical confidence. The entry logic is currently approximated by an SMA crossover, so longer data and accurate signal parsing are needed.",
+      "wiring_plan": ""
+    }
+  ],
+  "run_verdict": "NO_EDGE",
+  "run_rationale": "None of the candidates satisfy the Tier-2 floor because all suffer from an inadequate number of trades (<100) and, in one case, excessive drawdown. The backtests also rely on a simplified SMA-crossover proxy rather than the true specification, further limiting confidence. Until longer histories are generated and the faithful-signal translator is applied, no production-ready edge can be confirmed.",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs\\research_equity_p5_20260511T193151Z\\cerebras.json.raw.txt",
+    "engine": "cerebras",
+    "ts": "20260511T193153Z",
+    "session_id": "",
+    "model_fingerprint": "gpt-oss-120b",
+    "tokens_in": 1818,
+    "tokens_out": 1613,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}

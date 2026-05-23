@@ -1,0 +1,200 @@
+# Sports endpoint smoke tests + Playwright JS-error suite.
+#
+# Runs on:
+#   - Every PR touching live-monitor/api/*.php, live-monitor/sports-betting.html,
+#     config/auto_place_policy.json, or tests/test_sports_endpoints*.py /
+#     tests/sports_betting_js_errors.spec.js
+#   - Hourly via cron (catches drift between git HEAD and the FTP-deployed
+#     production state — we've had two outages this week from
+#     committed-but-not-deployed and deployed-but-not-committed mismatches)
+#   - Manual workflow_dispatch
+#
+# Both suites hit the live production endpoints (read-only) — same pattern as
+# tests/sports_api_dashboard.spec.ts which is already in the playwright config.
+#
+# Failure modes this catches:
+#   1. PHP parse errors leaked into HTML (conflict markers, syntax errors)
+#   2. Fatal errors from missing require_once dependencies
+#   3. API endpoints returning empty when rows should exist (pick_history
+#      strict_mode SQL bug)
+#   4. JS errors during tab switching (FINISHED filter, Performance widgets,
+#      Pick History population, all-tab-switch)
+#   5. Missing schema fields (is_finished, by_recommendation_sport,
+#      clv_weekly_trend, _diag)
+
+name: Sports endpoint smoke + Playwright
+
+on:
+  pull_request:
+    paths:
+      - 'live-monitor/api/**.php'
+      - 'live-monitor/sports-betting.html'
+      - 'live-monitor/sports-betting.js'
+      - 'config/auto_place_policy.json'
+      - 'tests/test_sports_endpoints_smoke.py'
+      - 'tests/sports_betting_js_errors.spec.js'
+      - '.github/workflows/sports-smoke-and-e2e.yml'
+  schedule:
+    # Hourly — catches FTP/main drift within an hour, well below the
+    # human-detection threshold from the FINISHED-filter outages this week.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: sports-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          update-environment: false
+
+      - name: Run pytest smoke suite (live production endpoints)
+        id: pytest
+        env:
+          # Opt-in gate: tests are skipped unless LIVE_SMOKE=1. This workflow
+          # (PR-touch + hourly cron + manual dispatch) is the canonical
+          # caller. Other PR CI does not set this and therefore does not
+          # block on live-prod regressions. See
+          # updates/2026-05-03-sports-smoke-cron-only.md.
+          LIVE_SMOKE: '1'
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest tests/test_sports_endpoints_smoke.py -v --tb=short
+
+      - name: Setup Node + Playwright
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright (chromium only)
+        run: |
+          npm ci --no-audit --no-fund --prefer-offline 2>/dev/null || npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright JS-error suite (chromium only, live production)
+        run: |
+          # Force only the chromium project to keep CI under 2 min.
+          npx playwright test tests/sports_betting_js_errors.spec.js \
+            --project='Desktop Chrome' \
+            --reporter=list \
+            --timeout 30000
+
+      - name: Compute last-known-good commit (last green main)
+        id: lkg
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          # The last commit on main with a green sports-smoke run.
+          # If we can't find one (workflow is new), fall back to the PR's merge-base.
+          LKG=$(gh run list --workflow=sports-smoke-and-e2e.yml --branch=main --status=success --limit=1 --json headSha -q '.[0].headSha' 2>/dev/null || echo '')
+          if [ -z "$LKG" ]; then
+            LKG=$(git merge-base origin/main HEAD)
+          fi
+          echo "lkg=$LKG" >> "$GITHUB_OUTPUT"
+          echo "Last-known-good: $LKG"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Surface failure summary on PR comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          LKG: ${{ steps.lkg.outputs.lkg }}
+        with:
+          script: |
+            const lkg = (process.env.LKG || '').slice(0, 12) || 'origin/main';
+            const body = `❌ **Sports smoke + e2e tests failed** on this PR.\n\n` +
+              `These guard against the production-down regressions we hit twice this week ` +
+              `(conflict markers in PHP, missing require_once deps).\n\n` +
+              `### Run locally\n\`\`\`\n` +
+              `python3 -m pytest tests/test_sports_endpoints_smoke.py -v\n` +
+              `npx playwright test tests/sports_betting_js_errors.spec.js --project='Desktop Chrome'\n` +
+              `\`\`\`\n\n` +
+              `### Emergency revert (if production is broken)\n` +
+              `Last-known-good main commit (last green sports-smoke run): \`${lkg}\`\n\n` +
+              `\`\`\`bash\n` +
+              `# Restore main to last green state:\n` +
+              `git checkout main && git pull && git revert --no-edit HEAD\n` +
+              `# Or if multiple bad commits: git reset --hard ${lkg} && git push --force-with-lease\n` +
+              `# Then immediately FTP-deploy:\n` +
+              `tools/deploy_sports_files.sh --force\n` +
+              `\`\`\`\n\n` +
+              `See workflow run logs for full output.`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+  deploy-guard:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 4
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Compare git HEAD vs FTP production for sports files
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::warning::FTP_* secrets not set — skipping deploy guard"
+            exit 0
+          fi
+          set -e
+          BASE="https://findtorontoevents.ca"
+          mkdir -p /tmp/prod
+          MISMATCHES=0
+          for f in \
+              "live-monitor/sports-betting.html" \
+              "live-monitor/api/sports_picks.php" \
+              "live-monitor/api/sports_bets.php" \
+              "live-monitor/api/sports_value_analyze_lib.php" \
+              "live-monitor/api/sports_value_nhl_goalie_lib.php" \
+              "live-monitor/api/sports_steam.php" \
+              "live-monitor/api/sports_steam_detector.php" \
+              "live-monitor/api/sports_arb.php" \
+              "live-monitor/api/sports_arb_scanner.php" \
+              "live-monitor/api/sports_ml.php" \
+              "config/auto_place_policy.json"
+          do
+            if [ ! -f "$f" ]; then
+              continue
+            fi
+            curl --silent --max-time 30 --user "$FTP_USER:$FTP_PASS" \
+              -o "/tmp/prod/$(basename $f)" "ftp://$FTP_SERVER/findtorontoevents.ca/$f" || {
+                echo "::warning::Could not fetch $f from FTP"
+                continue
+              }
+            # Normalize line endings before hashing
+            HASH_LOCAL=$(tr -d '\r' < "$f" | sha256sum | cut -d' ' -f1)
+            HASH_PROD=$(tr -d '\r' < "/tmp/prod/$(basename $f)" | sha256sum | cut -d' ' -f1)
+            if [ "$HASH_LOCAL" != "$HASH_PROD" ]; then
+              echo "::warning::DRIFT $f  git=$HASH_LOCAL prod=$HASH_PROD"
+              MISMATCHES=$((MISMATCHES + 1))
+            else
+              echo "OK $f"
+            fi
+          done
+          if [ "$MISMATCHES" -gt 0 ]; then
+            echo "::warning::$MISMATCHES file(s) drifted between git and production. Re-run an FTP deploy."
+            # Don't fail the workflow — drift is operator-actionable, not a test failure.
+            # Hourly cron just surfaces the warning in the run log.
+          fi

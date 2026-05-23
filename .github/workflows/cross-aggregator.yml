@@ -1,0 +1,267 @@
+name: Cross-System Signal Aggregator
+
+on:
+  schedule:
+    - cron: '8,38 * * * *' # Every 30 min (was */10 sources update every 15-20min)
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cross-system-signal-aggregator
+  # Keep only the freshest scheduled run so a hung run does not block the pipeline.
+  cancel-in-progress: ${{ github.event_name == 'schedule' }}
+
+jobs:
+  aggregate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 35
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Fix broken submodule entry
+        run: |
+          git rm --cached tmp/fte_clone 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pymysql yfinance
+
+      - name: Process strategy inbox
+        run: |
+          python -m strategy_registry || echo "Registry: no envelopes to process"
+
+      - name: Smart Money equity scan
+        run: |
+          echo "Running Smart Money equity scanner..."
+          python smart_money/scanner.py || echo "Smart Money scan failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Run cross-system aggregator
+        run: |
+          echo "Running cross-system signal aggregator..."
+          python cross_aggregation/aggregator.py
+
+      - name: Run Super Signal detector
+        run: |
+          echo "Running Super Signal cross-pair consensus detector..."
+          python -m cross_aggregation.super_signal || echo "Super Signal detection failed (non-fatal)"
+
+      - name: Send Discord consensus alert
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+          DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
+          DISCORD_ML_CHANNEL: ${{ secrets.DISCORD_ML_CHANNEL }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            echo "Sending Discord consensus alert (with classification routing)..."
+            python -m cross_aggregation.discord_notify || echo "Discord notification failed (non-fatal)"
+          else
+            echo "No DISCORD_WEBHOOK_URL set, skipping Discord notification"
+          fi
+
+      - name: Send FreshPicks for consensus picks
+        env:
+          DISCORD_WEBHOOK_FRESHPICKS: ${{ secrets.DISCORD_WEBHOOK_FRESHPICKS }}
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_FRESHPICKS" ]; then
+            echo "Sending consensus picks to #fresh-picks..."
+            python3 -c "
+          import json, os, sys
+          sys.path.insert(0, '.')
+          from cross_aggregation.freshpicks_notify import send_fresh_pick, send_no_picks_status
+
+          agg_path = 'data/aggregated_picks.json'
+          prev_path = 'data/freshpicks_consensus_sent.json'
+
+          if not os.path.exists(agg_path):
+              print('No aggregated_picks.json found')
+              exit(0)
+
+          raw = json.load(open(agg_path))
+          # Handle both formats: plain list or dict with regime wrapper
+          if isinstance(raw, dict):
+              picks = raw.get('consensus_picks', [])
+          elif isinstance(raw, list):
+              picks = raw
+          else:
+              picks = []
+          if not picks:
+              print('No consensus picks to send')
+              send_no_picks_status('no_signals', total_scanned=0)
+              exit(0)
+
+          # Load previously sent picks to avoid exact duplicates
+          # Key = symbol__direction__entry_price (allows same symbol with different entries)
+          sent_keys = set()
+          if os.path.exists(prev_path):
+              try:
+                  sent_keys = set(json.load(open(prev_path)))
+              except: pass
+
+          def pick_key(p):
+              entry = p.get('entry', 0)
+              return f\"{p.get('symbol','')}__{p.get('direction','')}__{round(float(entry), 4)}\"
+
+          new_picks = [p for p in picks if pick_key(p) not in sent_keys]
+          if not new_picks:
+              print(f'All {len(picks)} consensus picks already sent, skipping')
+              send_no_picks_status('all_sent', total_scanned=len(picks))
+              exit(0)
+
+          # Build FORWARD-ONLY aggregate stats from all system data files
+          stats = {'total': 0, 'active': len(picks), 'wins': 0, 'losses': 0,
+                   'win_rate': 0, 'realized_pnl_pct': 0, 'unrealized_pnl_pct': 0,
+                   'tracking_since': '', 'recent_closed': []}
+          # Gather closed picks from available systems for combined stats
+          all_closed = []
+          for cp_path in ['mercury2/data/closed_picks.json',
+                          'alpha_engine/data/closed_picks.json',
+                          'ml_battleground/system_f_clawsofdoom/data/closed_picks.json']:
+              try:
+                  cp = json.load(open(cp_path))
+                  for c in cp:
+                      s = c.get('status','')
+                      is_win = s in ('WON','WIN','CLOSED_TP')
+                      is_loss = s in ('LOST','LOSS','CLOSED_SL')
+                      if is_win: stats['wins'] += 1
+                      if is_loss: stats['losses'] += 1
+                      pnl = c.get('pnl_pct', c.get('realized_pnl_pct', 0))
+                      if isinstance(pnl, (int,float)) and abs(pnl) < 1: pnl = pnl * 100
+                      all_closed.append({'symbol': c.get('symbol','?'), 'pnl_pct': pnl/100,
+                                         'status': 'WON' if is_win else 'LOST' if is_loss else s,
+                                         'strategy': c.get('strategy','')})
+              except: pass
+          stats['total'] = len(all_closed)
+          stats['win_rate'] = stats['wins'] / stats['total'] * 100 if stats['total'] else 0
+          stats['realized_pnl_pct'] = sum(c['pnl_pct'] * 100 for c in all_closed)
+          stats['recent_closed'] = all_closed[-5:] if all_closed else []
+          stats['tracking_since'] = 'Feb 17' # earliest forward data across systems
+          # Rolling WR (last 20 closed) + max drawdown
+          if len(all_closed) >= 20:
+              last20 = all_closed[-20:]
+              stats['rolling_wr_20'] = sum(1 for c in last20 if c.get('status') == 'WON') / 20 * 100
+          cum = 0; peak = 0; dd = 0
+          for c in all_closed:
+              cum += c.get('pnl_pct', 0) * 100
+              peak = max(peak, cum)
+              dd = min(dd, cum - peak)
+          stats['max_drawdown_pct'] = round(dd, 2)
+
+          dashboard = 'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/monitor/'
+          sent = 0
+          for p in new_picks:
+              fp = {
+                  'symbol': p.get('symbol', ''),
+                  'direction': p.get('direction', 'LONG'),
+                  'entry_price': p.get('entry', 0),
+                  'tp_price': p.get('tp', 0),
+                  'sl_price': p.get('sl', 0),
+                  'confidence': p.get('confidence', 0),
+                  'strategy': f\"Consensus ({p.get('agreement_count',0)}/{p.get('total_systems',0)} systems)\",
+                  'reason': 'Sources: ' + ', '.join(p.get('source_systems', [])),
+              }
+              if send_fresh_pick('Cross-System Consensus', fp, dashboard, stats=stats):
+                  sent += 1
+
+          # Save sent keys (keep last 500 to prevent unbounded growth)
+          all_sent = list(sent_keys | {pick_key(p) for p in new_picks})
+          if len(all_sent) > 500: all_sent = all_sent[-500:]
+          json.dump(all_sent, open(prev_path, 'w'))
+          if sent == 0:
+              send_no_picks_status('quality_gate', total_scanned=len(new_picks), blocked_count=len(new_picks))
+          print(f'Sent {sent}/{len(new_picks)} new consensus picks to #fresh-picks')
+          " || echo "FreshPicks notification failed (non-fatal)"
+          else
+            echo "No DISCORD_WEBHOOK_FRESHPICKS set, skipping"
+          fi
+
+      - name: Push signal aggregator picks to audit trail
+        run: python signal_aggregator/audit_push.py
+        continue-on-error: true
+
+      - name: Track consensus pick outcomes (TP/SL)
+        run: |
+          echo "Tracking consensus + super signal TP/SL outcomes..."
+          python -m cross_aggregation.consensus_outcome_tracker || echo "Consensus outcome tracking failed (non-fatal)"
+
+      - name: Forward-test top picks
+        run: |
+          echo "Tracking top-scoring picks for forward testing..."
+          python -m cross_aggregation.forward_test_tracker || echo "Forward test tracking failed (non-fatal)"
+        continue-on-error: true
+
+      - name: DNA Master Picks check exits
+        env:
+          DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: |
+          echo "Checking DNA Master Picks TP/SL exits..."
+          python -m cross_aggregation.dna_master_tracker || echo "DNA Master tracker failed (non-fatal)"
+
+      - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add smart_money/data/active_picks.json 2>/dev/null || true
+          git add data/aggregated_picks.json data/freshpicks_consensus_sent.json
+          git add data/freshpicks_gate_state.json 2>/dev/null || true
+          git add data/elite_picks.json data/experimental_picks.json 2>/dev/null || true
+          git add data/dna_master_picks.db 2>/dev/null || true
+          git add data/audit_trail.db data/audit_trail.db-wal data/audit_trail.db-shm 2>/dev/null || true
+          git add cross_aggregation/data/super_signals.json 2>/dev/null || true
+          git add cross_aggregation/data/consensus_outcomes.json 2>/dev/null || true
+          git add cross_aggregation/data/forward_test_results.json 2>/dev/null || true
+          git add cross_aggregation/data/beta_score_tracker.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Cross-system aggregation $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+            push_ok=false
+            for i in 1 2 3 4 5; do
+              git pull --rebase "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" main 2>/dev/null || true
+              if bash .github/scripts/safe_push.sh "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"; then
+                echo "Push succeeded on attempt $i"
+                push_ok=true
+                break
+              fi
+              if [ "$i" -lt 5 ]; then
+                echo "Push attempt $i failed, retrying..."
+                sleep $((i * 3))
+              fi
+            done
+            if [ "$push_ok" = false ]; then
+              echo "ERROR: all push attempts failed"
+              exit 1
+            fi
+          fi
+
+      - name: Notify sandbox on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_SANDBOX" ]; then
+            curl -s -H "Content-Type: application/json" -d "{
+              \"embeds\": [{
+                \"title\": \"\\u274c Cross-Aggregator FAILED\",
+                \"description\": \"Workflow failed at $(date -u +'%Y-%m-%d %H:%M UTC')\\n[View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\",
+                \"color\": 15548997
+              }]
+            }" "$DISCORD_WEBHOOK_SANDBOX" || true
+          fi
+

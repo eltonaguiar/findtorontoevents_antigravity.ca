@@ -1,0 +1,316 @@
+# =============================================================================
+# Resolver Plan — Steps 5-6 — at_raw_picks symbol-format backfill (Defect 1)
+# =============================================================================
+# Manually-triggered workflow that runs the one-time symbol normalization
+# spec from reports/RESOLUTION_PIPELINE_FIX_PLAN_2026-05-18.md (Defect 1)
+# against the production MySQL. GHA runners are IP-allowlisted by 50webs;
+# desktop sessions are not — so this MUST run here, not locally.
+#
+# Defect-1 normalization spec (~2,086 rows in at_raw_picks):
+#   - `=F` suffix rows  -> asset_class FUTURES         (~1,226 rows)
+#   - bare FOREX rows    -> append `=X`, class FOREX    (~835 rows)
+#   - existing `=X` rows -> fix asset_class to FOREX    (~19 rows)
+#   - junk bare symbols  -> quarantine (CHF, JPY, ...)  (6 rows)
+#
+# SAFE-BY-DEFAULT:
+#   - dry_run defaults to true (preflight counts only, NO writes)
+#   - confirm gate must equal 'APPLY-BACKFILL' or the run fails immediately
+#   - a full backup table at_raw_picks_bak_<run_id> is created before any write
+#
+# -----------------------------------------------------------------------------
+# ROLLBACK (if the backfill corrupts data, run this in a MySQL client):
+#
+#   RENAME TABLE at_raw_picks         TO at_raw_picks_broken_<date>;
+#   RENAME TABLE at_raw_picks_bak_<run_id> TO at_raw_picks;
+#
+# (<run_id> is printed in the BACKUP step log; <date> is any YYYYMMDD tag.)
+# -----------------------------------------------------------------------------
+
+name: Resolver Step 5-6 — at_raw_picks Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "type APPLY-BACKFILL to proceed"
+        required: true
+        default: ""
+      dry_run:
+        description: "Dry-run (preflight counts only, no writes)"
+        type: boolean
+        required: true
+        default: true
+
+concurrency:
+  group: resolver-step5-6-backfill
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      # (a) checkout + python + pymysql --------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: python -m pip install pymysql
+
+      # (b) GUARD — fail fast unless the operator typed the exact phrase ------
+      - name: Confirm guard
+        run: |
+          if [ "${{ inputs.confirm }}" != "APPLY-BACKFILL" ]; then
+            echo "::error::confirm input must be exactly 'APPLY-BACKFILL' (got '${{ inputs.confirm }}'). Aborting."
+            exit 1
+          fi
+          echo "Confirm guard passed."
+          echo "dry_run = ${{ inputs.dry_run }}"
+
+      # (c)-(h) backup + preflight + (conditional) UPDATE + verification -----
+      # DB creds mirror .github/workflows/mysql-trading-sync.yml exactly:
+      #   secrets.MYSQL_PASSWORD with fallback to secrets.AUDIT_DB_PASS.
+      - name: Backup, preflight, normalize, verify
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_PORT: '3306'
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          RUN_ID: ${{ github.run_id }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python - <<'PYEOF'
+          # -----------------------------------------------------------------
+          # Resolver Step 5-6 backfill — embedded pymysql script.
+          # Runs entirely in-process so the SQL is reviewable in one place.
+          # -----------------------------------------------------------------
+          import os
+          import sys
+          import pymysql
+
+          HOST = os.environ["AUDIT_DB_HOST"]
+          PORT = int(os.environ["AUDIT_DB_PORT"])
+          USER = os.environ["AUDIT_DB_USER"]
+          NAME = os.environ["AUDIT_DB_NAME"]
+          PASS = os.environ.get("AUDIT_DB_PASS") or ""
+          RUN_ID = os.environ["RUN_ID"]
+          DRY_RUN = os.environ.get("DRY_RUN", "true").lower() == "true"
+
+          if not PASS:
+              print("::error::No DB password in env (MYSQL_PASSWORD / AUDIT_DB_PASS secret unset).")
+              sys.exit(1)
+
+          conn = pymysql.connect(
+              host=HOST, port=PORT, user=USER, password=PASS, database=NAME,
+              connect_timeout=30, read_timeout=120, write_timeout=120,
+              charset="utf8mb4", autocommit=False,
+          )
+          cur = conn.cursor()
+
+          # Backup table name — unique per run so rollback is unambiguous.
+          BAK = "at_raw_picks_bak_%s" % RUN_ID
+
+          # Junk bare symbols to quarantine (Defect-1 spec — 6 rows).
+          JUNK = ("CHF", "JPY")
+
+          # ---- (c) BACKUP --------------------------------------------------
+          print("=" * 70)
+          print("STEP (c) BACKUP")
+          cur.execute("SELECT COUNT(*) FROM at_raw_picks")
+          src_count = cur.fetchone()[0]
+          print("at_raw_picks current row count: %d" % src_count)
+          # CREATE TABLE ... AS SELECT is DDL — implicitly commits; safe here.
+          cur.execute("CREATE TABLE `%s` AS SELECT * FROM at_raw_picks" % BAK)
+          cur.execute("SELECT COUNT(*) FROM `%s`" % BAK)
+          bak_count = cur.fetchone()[0]
+          print("Backup table created: %s  (%d rows)" % (BAK, bak_count))
+          if bak_count != src_count:
+              print("::error::Backup row count (%d) != source (%d). Aborting before any UPDATE."
+                    % (bak_count, src_count))
+              sys.exit(1)
+          print("ROLLBACK if needed:")
+          print("  RENAME TABLE at_raw_picks TO at_raw_picks_broken_<date>;")
+          print("  RENAME TABLE %s TO at_raw_picks;" % BAK)
+
+          # ---- (d) PREFLIGHT — count each category to be changed -----------
+          print("=" * 70)
+          print("STEP (d) PREFLIGHT — categories targeted by the normalization")
+
+          # Category 1: `=F` futures rows whose asset_class is NOT yet FUTURES.
+          cur.execute("""
+              SELECT COUNT(*) FROM at_raw_picks
+              WHERE symbol LIKE %s
+                AND (asset_class IS NULL OR asset_class <> 'FUTURES')
+          """, ("%=F",))
+          n_futures = cur.fetchone()[0]
+          print("  [1] =F rows mis-classified (-> FUTURES):        %d" % n_futures)
+
+          # Category 2: existing `=X` rows whose asset_class is NOT FOREX.
+          cur.execute("""
+              SELECT COUNT(*) FROM at_raw_picks
+              WHERE symbol LIKE %s
+                AND (asset_class IS NULL OR asset_class <> 'FOREX')
+          """, ("%=X",))
+          n_fx_fix = cur.fetchone()[0]
+          print("  [2] =X rows with wrong asset_class (-> FOREX):  %d" % n_fx_fix)
+
+          # Category 3: bare FOREX rows (6-char A-Z pair, no suffix, not junk)
+          #             that should get the `=X` suffix + FOREX class.
+          junk_in = ",".join(["%s"] * len(JUNK))
+          cur.execute("""
+              SELECT COUNT(*) FROM at_raw_picks
+              WHERE symbol REGEXP '^[A-Z]{6}$'
+                AND symbol NOT LIKE %s
+                AND symbol NOT LIKE %s
+                AND symbol NOT IN (""" + junk_in + """)
+          """, ("%=X", "%=F") + JUNK)
+          n_bare_fx = cur.fetchone()[0]
+          print("  [3] bare FOREX rows (-> append =X, FOREX):      %d" % n_bare_fx)
+
+          # Category 4: junk bare symbols to quarantine.
+          cur.execute("""
+              SELECT COUNT(*) FROM at_raw_picks
+              WHERE symbol IN (""" + junk_in + """)
+          """, JUNK)
+          n_junk = cur.fetchone()[0]
+          print("  [4] junk bare symbols (-> QUARANTINE):          %d" % n_junk)
+
+          total = n_futures + n_fx_fix + n_bare_fx + n_junk
+          print("  ---------------------------------------------")
+          print("  TOTAL rows the APPLY pass would change:         %d" % total)
+
+          # ---- (e) DRY-RUN stops here --------------------------------------
+          if DRY_RUN:
+              print("=" * 70)
+              print("DRY-RUN — no writes performed. Backup table %s left in place"
+                    % BAK)
+              print("(drop it manually if you re-run dry; the APPLY pass makes a"
+                    " fresh per-run backup).")
+              conn.rollback()
+              conn.close()
+              sys.exit(0)
+
+          # ---- (f) APPLY — normalization UPDATEs inside one transaction ----
+          print("=" * 70)
+          print("STEP (f) APPLY — running normalization UPDATEs in a transaction")
+
+          # UPDATE 1 — `=F` rows -> FUTURES.
+          cur.execute("""
+              UPDATE at_raw_picks
+              SET asset_class = 'FUTURES'
+              WHERE symbol LIKE %s
+                AND (asset_class IS NULL OR asset_class <> 'FUTURES')
+          """, ("%=F",))
+          u1 = cur.rowcount
+          print("  UPDATE 1 (=F -> FUTURES):           %d rows" % u1)
+
+          # UPDATE 2 — existing `=X` rows -> FOREX asset_class.
+          cur.execute("""
+              UPDATE at_raw_picks
+              SET asset_class = 'FOREX'
+              WHERE symbol LIKE %s
+                AND (asset_class IS NULL OR asset_class <> 'FOREX')
+          """, ("%=X",))
+          u2 = cur.rowcount
+          print("  UPDATE 2 (=X asset_class -> FOREX): %d rows" % u2)
+
+          # UPDATE 3 — bare FOREX rows -> append `=X` + set FOREX class.
+          # CONCAT keeps the canonical write-time form (EURUSD -> EURUSD=X).
+          cur.execute("""
+              UPDATE at_raw_picks
+              SET symbol = CONCAT(symbol, '=X'),
+                  asset_class = 'FOREX'
+              WHERE symbol REGEXP '^[A-Z]{6}$'
+                AND symbol NOT LIKE %s
+                AND symbol NOT LIKE %s
+                AND symbol NOT IN (""" + junk_in + """)
+          """, ("%=X", "%=F") + JUNK)
+          u3 = cur.rowcount
+          print("  UPDATE 3 (bare -> =X FOREX):        %d rows" % u3)
+
+          # UPDATE 4 — junk bare symbols -> quarantine.
+          # asset_class set to QUARANTINE so the resolver / pf_registry skip them.
+          cur.execute("""
+              UPDATE at_raw_picks
+              SET asset_class = 'QUARANTINE'
+              WHERE symbol IN (""" + junk_in + """)
+          """, JUNK)
+          u4 = cur.rowcount
+          print("  UPDATE 4 (junk -> QUARANTINE):      %d rows" % u4)
+
+          conn.commit()
+          print("  COMMIT OK — total rows changed: %d" % (u1 + u2 + u3 + u4))
+
+          # ---- (h) POST-WRITE VERIFICATION ---------------------------------
+          print("=" * 70)
+          print("STEP (h) POST-WRITE VERIFICATION")
+          cur.execute("""
+              SELECT COALESCE(asset_class, 'NULL') AS ac, COUNT(*)
+              FROM at_raw_picks
+              GROUP BY COALESCE(asset_class, 'NULL')
+              ORDER BY 2 DESC
+          """)
+          print("  Per-asset-class row counts (post-backfill):")
+          for ac, n in cur.fetchall():
+              print("    %-14s %d" % (ac, n))
+
+          cur.execute("""
+              SELECT COUNT(*) FROM at_raw_picks
+              WHERE symbol REGEXP '^[A-Z]{6}$'
+          """)
+          remaining_bare = cur.fetchone()[0]
+          print("  Remaining bare 6-char symbols (expect ~0 + quarantined): %d"
+                % remaining_bare)
+
+          # Backfill writes do not touch a timestamp column, so report a small
+          # sample of FOREX/FUTURES rows for operator eyeball sign-off instead.
+          cur.execute("""
+              SELECT id, symbol, asset_class, status
+              FROM at_raw_picks
+              WHERE symbol LIKE %s OR symbol LIKE %s
+              ORDER BY id DESC
+              LIMIT 15
+          """, ("%=X", "%=F"))
+          print("  Sample of normalized FOREX/FUTURES rows:")
+          for row in cur.fetchall():
+              print("    id=%s symbol=%s class=%s status=%s"
+                    % (row[0], row[1], row[2], row[3]))
+
+          conn.close()
+          print("=" * 70)
+          print("DONE. Operator: review the per-class counts above. Rollback")
+          print("instructions are in the BACKUP step log and this file header.")
+          PYEOF
+
+      # (g) RE-RESOLVE — run the canonical resolver over the corrected rows.
+      # universal_pick_resolver.py is the canonical entrypoint (`python -m
+      # audit_trail.universal_pick_resolver`, has a main() at line 797).
+      # Skipped on dry-run since no rows were changed. Non-fatal so a resolver
+      # hiccup does not mask a successful backfill — operator reviews the log.
+      - name: Re-resolve corrected rows
+        if: ${{ inputs.dry_run == false }}
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_PORT: '3306'
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_NAME: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python -m audit_trail.universal_pick_resolver \
+            || echo "::warning::universal_pick_resolver exited non-zero — backfill itself succeeded; review resolver log above."

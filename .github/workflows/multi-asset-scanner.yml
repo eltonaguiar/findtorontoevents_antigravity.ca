@@ -1,0 +1,79 @@
+name: "Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities"
+
+# v2 REBUILD: Old scanner disabled 2026-03-16 (25.8% WR, -36% PnL).
+# New approach: uses copy_trader_intel pattern (proven 57%+ WR on crypto)
+# with multi-asset scraping, backtesting, and variation portfolios.
+
+on:
+  schedule:
+    # Every 30 minutes  covers London+NY overlap and Asian session
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  multi-asset-scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests numpy pandas yfinance
+
+      - name: "Step 1a: Run multi-asset copytrader scraper (forex/futures/stocks/commodities)"
+        run: python copy_trader_intel/multi_asset_copytrader_scraper.py
+        continue-on-error: true
+
+      - name: "Step 1b: Run CTA strategy replicator (academically-verified strategies)"
+        run: python copy_trader_intel/cta_strategy_replicator.py
+        continue-on-error: true
+
+      - name: "Step 2: Score all multi-asset strategies"
+        run: python copy_trader_intel/multi_asset_scorer.py
+        continue-on-error: true
+
+      - name: "Step 3: Build variation portfolios (conservative/moderate/aggressive/scalper/swing)"
+        run: python copy_trader_intel/variation_portfolio_builder.py
+        continue-on-error: true
+
+      - name: "Step 4: Bridge  merge multi-asset + CTA picks into alpha engine active_picks"
+        run: python copy_trader_intel/multi_asset_bridge.py
+        continue-on-error: true
+
+      - name: "Step 5: Quality monitor  validate non-crypto pick quality"
+        run: python copy_trader_intel/pick_quality_monitor.py
+        continue-on-error: true
+
+      - name: Commit and push changes
+        run: |
+          cd $GITHUB_WORKSPACE
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Auto-update $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main 2>/dev/null || {
+              git rebase --abort 2>/dev/null
+              git checkout --theirs -- alpha_engine/data/ 2>/dev/null
+              git add alpha_engine/data/ 2>/dev/null
+              git pull --no-rebase -X theirs origin main 2>/dev/null || true
+            }
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            sleep $((i * 3))
+          done
+

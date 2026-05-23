@@ -1,0 +1,184 @@
+name: Futures Agent
+
+on:
+  schedule:
+    # Twice daily on weekdays — futures markets open Sunday 6pm ET, close Friday 5pm ET
+    # Run at 14:00 UTC (10:00 ET, after US market open) and 22:00 UTC (18:00 ET, after close)
+    - cron: '0 14 * * 1-5'
+    - cron: '0 22 * * 1-5'
+    # Also Sunday evening when futures markets reopen
+    - cron: '0 22 * * 0'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable verbose debug output'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: futures-agent
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  futures-scan:
+    name: Futures Scanner
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          update-environment: false
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Run Futures scanner
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONUNBUFFERED: '1'
+          FUTURES_ELITE_FLOOR: ${{ vars.FUTURES_ELITE_FLOOR || '45' }}
+        run: |
+          python - <<'EOF'
+          import sys, json, os
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+
+          import pandas as pd
+          import yfinance as yf
+
+          from config import FUTURES_SYMBOLS
+          from futures_strategies import (
+              futures_tsmom, futures_connors_rsi2,
+              futures_cross_asset_momentum, futures_vol_regime_breakout,
+          )
+          from elite_scorer import compute_elite_score
+          _elite_floor = float(os.getenv("FUTURES_ELITE_FLOOR", "45") or 45)
+
+          # ── fetch data ────────────────────────────────────────────────────
+          # Note: CL=F (WTI crude) removed — 26 trades, 3.8% WR. Not in FUTURES_SYMBOLS.
+          # Always fetch SPY+^VIX for cross-asset momentum and macro gate.
+          print(f"Fetching data for {len(FUTURES_SYMBOLS)} futures contracts...")
+          data = {}
+          for sym in list(FUTURES_SYMBOLS.keys()) + ["SPY", "^VIX"]:
+              try:
+                  df = yf.Ticker(sym).history(period="1y")
+                  if not df.empty:
+                      data[sym] = df
+              except Exception as e:
+                  print(f"  WARN fetch failed {sym}: {e}")
+          print(f"  Loaded {len(data)} symbols")
+
+          # fail-open guard: refuse to exit green on < 50% symbol load rate
+          _n_req = len(FUTURES_SYMBOLS)
+          _n_loaded = sum(1 for s in FUTURES_SYMBOLS if s in data)
+          if _n_loaded < max(1, _n_req) * 0.50:
+              print(f"::error::DATA FETCH FAILURE — only {_n_loaded}/{_n_req} futures symbols loaded "
+                    f"(yfinance empty/delisted); refusing to exit green on missing data")
+              sys.exit(1)
+
+          # ── run strategies ────────────────────────────────────────────────
+          picks = []
+          for fn in [
+              futures_tsmom, futures_connors_rsi2,
+              futures_cross_asset_momentum, futures_vol_regime_breakout,
+          ]:
+              try:
+                  picks += fn(data)
+              except Exception as e:
+                  print(f"  WARN strategy {fn.__name__} failed: {e}")
+
+          # ── score ─────────────────────────────────────────────────────────
+          for p in picks:
+              p.update(compute_elite_score(p))
+
+          # ── curate ────────────────────────────────────────────────────────
+          quality = sorted(
+              [p for p in picks if float(p.get("confidence", 0) or 0) >= 0.50
+               and float(p.get("risk_reward", 0) or 0) >= 1.15
+               and float(p.get("elite_score", 0) or 0) >= _elite_floor],
+              key=lambda p: (p.get("elite_score", 0), p.get("confidence", 0)),
+              reverse=True,
+          )
+
+          # Performance note from closed picks: Futures 0.0% WR (0/3 trades), -1.35% PnL, PF 0.00
+          # Root cause: NO dedicated futures strategies existed. Only 3 trades total.
+          # Fix: 4 new dedicated strategies (TSMOM, ConnorsRSI2, Cross-Asset, Vol-Regime)
+          perf_note = (
+              "Live WR: 0.0% (0/3 closed) — CRITICAL: no dedicated futures strategies existed. "
+              "4 new strategies deployed: futures_tsmom (55-60% academic WR), "
+              "futures_connors_rsi2 (73-76% WR on index proxies), "
+              "futures_cross_asset_momentum, futures_vol_regime_breakout"
+          )
+
+          out = {
+              "agent": "futures",
+              "timestamp": pd.Timestamp.now().isoformat(),
+              "total_raw": len(picks),
+              "quality": len(quality),
+              "symbols_tracked": len(FUTURES_SYMBOLS),
+              "strategies_run": 4,
+              "live_performance_note": perf_note,
+              "picks": quality,
+          }
+          Path("non_crypto_agent/data").mkdir(parents=True, exist_ok=True)
+          Path("non_crypto_agent/data/futures_picks.json").write_text(
+              json.dumps(out, indent=2, default=str)
+          )
+          print(f"Futures agent: {len(quality)} quality picks from {len(picks)} raw")
+          for p in quality[:5]:
+              print(f"  {p['symbol']} {p.get('signal_type','?')} conf={p.get('confidence',0):.2f} rr={p.get('risk_reward',0):.2f} strategy={p.get('strategy','?')}")
+
+          print(f"\n=== FUTURES AGENT SUMMARY ===")
+          print(f"Symbols tracked : {len(FUTURES_SYMBOLS)}")
+          print(f"Raw picks       : {len(picks)}")
+          print(f"Quality picks   : {len(quality)}")
+          print(f"Performance note: {perf_note}")
+
+          # ── fail-loud 0-signal guard ──────────────────────────────────────
+          # Data fetch already validated above (>=50% symbol load or ::error::
+          # + exit 1). Here the fetch was healthy, so a quality==0 result is a
+          # genuine no-signal / too-strict-curation outcome — surface it as a
+          # ::warning:: so the green workflow status stops hiding near-zero
+          # futures pick volume. Mirrors etf_scanner.py / bond_scanner.py.
+          # NOTE: this does NOT decide whether to relax thresholds or build a
+          # new scanner — that is operator-gated. It only makes the silence loud.
+          if len(quality) == 0:
+              if len(picks) == 0:
+                  print(f"::warning::FUTURES emitter produced 0 raw signals on healthy "
+                        f"data ({_n_loaded}/{_n_req} symbols loaded) — genuine no-signal "
+                        f"market across all 4 strategies; FUTURES pick volume is zero")
+              else:
+                  print(f"::warning::FUTURES emitter produced 0 QUALITY picks from "
+                        f"{len(picks)} raw on healthy data ({_n_loaded}/{_n_req} symbols "
+                        f"loaded) — all raw picks rejected by curation gate "
+                        f"(confidence>=0.50 AND risk_reward>=1.15 AND elite_score>="
+                        f"{_elite_floor:g}); FUTURES pick volume is zero")
+          EOF
+
+      - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add non_crypto_agent/data/futures_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Futures agent: $(date -u '+%Y-%m-%d %H:%M') UTC scan [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          bash .github/scripts/safe_push.sh

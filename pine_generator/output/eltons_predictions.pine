@@ -1,0 +1,3150 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// https://mozilla.org/MPL/2.0/
+// (c) Elton Aguiar — findtorontoevents.ca/alpha-engine
+// Generated: 2026-05-22T21:08:32Z
+// Template version: 5.0
+
+//@version=6
+indicator("Elton's Predictions v6.0.1538 [30 Strategies | 2 Proven] Decision Engine", "Elton's v6.0.1538 DE", overlay=true, max_labels_count=500, max_boxes_count=500)
+
+// ============================================================================
+//                          INPUT SECTION
+// ============================================================================
+
+// === STRATEGY SELECTOR ===
+groupMain = "STRATEGY SETTINGS"
+i_strategy = input.string("Auto-Detect (Best for Asset)", "Active Strategy", options=["Auto-Detect (Best for Asset)", "Connors RSI-2", "VIX Spike Reversal", "MACD Momentum", "EMA Crossover", "Ichimoku Cloud", "Bollinger Squeeze", "VWAP Reversion", "RSI Divergence", "Supertrend", "Swing Failure (SFP)", "Break of Structure", "Liquidation Cascade", "Momentum Crash", "Multi-Strategy Consensus", "Seasonal Bias", "Halving Cycle", "Turn of Month", "Day of Week", "Cycle Detection", "S/R Magnetism", "Liquidity Sweep", "Nonlinear TSMOM", "CTREND Multi-MA", "Flash Crash Reversal", "HMA Trend", "Fair Value Gap", "Keltner Squeeze", "Order Block", "Wyckoff Spring", "CVD Divergence"], group=groupMain, tooltip="Auto-Detect picks the best strategy for the asset type (crypto/forex/stock). Or select manually.")
+i_showSignals = input.bool(true, "Show Signals", group=groupMain)
+i_signalClassifier = input.bool(true, "Show Confidence Score", group=groupMain, tooltip="Shows confidence level on signals")
+
+// === DECISION ENGINE ===
+groupDecision = "DECISION ENGINE"
+i_showDecisionPanel = input.bool(true, "Show Decision Panel", group=groupDecision, tooltip="The primary HUD — shows BUY/SELL/WAIT verdict with confidence breakdown")
+i_decisionLocation = input.string("Top Left", "Decision Panel Location", options=["Top Left", "Top Right", "Bottom Left", "Bottom Right"], group=groupDecision)
+i_minConfidence = input.int(40, "Minimum Confidence %", minval=0, maxval=95, step=5, group=groupDecision, tooltip="Signals below this confidence are filtered out")
+i_htfTrend = input.string("60", "Higher TF Trend Filter", options=["15", "60", "240", "D", "W"], group=groupDecision, tooltip="Timeframe for trend alignment scoring (EMA 9/21)")
+i_minRR = input.float(1.5, "Minimum R:R Ratio", minval=0.0, maxval=10.0, step=0.5, group=groupDecision, tooltip="Signals below this Risk:Reward ratio are filtered. 0 = disabled.")
+i_smartTPSL = input.bool(true, "Smart TP/SL (auto-cleanup)", group=groupDecision, tooltip="Deletes previous TP/SL boxes when a new signal fires")
+i_showGuide = input.bool(false, "Show User Guide", group=groupDecision, tooltip="Displays a reference guide explaining verdicts, confidence, and how to read the Decision Panel")
+i_showQDT = input.bool(true, "Show Quick Decision Tree", group=groupDecision, tooltip="Compact traffic-light panel: GO / CAUTION / SKIP based on 5 key factors")
+i_qdtLocation = input.string("Bottom Left", "Quick Decision Location", options=["Top Left", "Top Right", "Bottom Left", "Bottom Right"], group=groupDecision)
+
+// === PERFORMANCE MODE ===
+groupPerf = "PERFORMANCE DATA"
+i_perfMode = input.string("Backtest", "Performance Mode", ["Backtest", "Forward-Test", "Both"], group=groupPerf, tooltip="Backtest: Historical validated results. Forward-Test: Live paper trading results.")
+i_showDashboard = input.bool(false, "Show Strategy Dashboard", group=groupPerf)
+i_dashLocation = input.string("Top Right", "Dashboard Location", ["Top Right", "Bottom Right", "Bottom Left"], group=groupPerf)
+i_dashSize = input.string("Small", "Dashboard Size", ["Tiny", "Small", "Normal"], group=groupPerf)
+
+// === RISK MANAGEMENT ===
+groupRisk = "RISK MANAGEMENT"
+i_showTPSL = input.bool(true, "Show TP/SL Zones", group=groupRisk)
+i_tpMult = input.float(3.0, "TP Multiplier (ATR)", minval=1.0, maxval=10.0, step=0.5, group=groupRisk, tooltip="Take Profit = Entry + ATR * this value")
+i_slMult = input.float(1.5, "SL Multiplier (ATR)", minval=0.5, maxval=5.0, step=0.5, group=groupRisk, tooltip="Stop Loss = Entry - ATR * this value")
+i_atrPeriod = input.int(14, "ATR Period", minval=5, maxval=50, group=groupRisk)
+i_tpslBars = input.int(25, "TP/SL Box Width (bars)", minval=5, maxval=100, group=groupRisk)
+
+// === VISUAL SETTINGS ===
+groupVisual = "VISUAL SETTINGS"
+i_candleColor = input.string("Confirmation Gradient", "Candle Coloring", ["Confirmation Gradient", "Contrarian Gradient", "None"], group=groupVisual)
+i_showReversal = input.bool(true, "Reversal Zones", group=groupVisual)
+i_showSessions = input.bool(false, "Sessions (NY/London)", group=groupVisual)
+
+// === REVERSAL ZONE SETTINGS ===
+groupRZ = "REVERSAL ZONES"
+i_rzLength = input.int(20, "SuperSmoother Length", minval=5, maxval=100, group=groupRZ)
+i_rzAtrLen = input.int(14, "ATR Length (Bands)", minval=5, maxval=50, group=groupRZ)
+i_rzInnerMult = input.float(3.14159, "Inner Band Mult (pi*1.0*ATR)", minval=1.0, maxval=10.0, group=groupRZ)
+i_rzOuterMult = input.float(7.588, "Outer Band Mult (pi*2.415*ATR)", minval=2.0, maxval=20.0, group=groupRZ)
+
+// === SESSION SETTINGS ===
+groupSess = "SESSION OVERLAY"
+i_nyStart = input.int(1300, "NY Session Start (UTC)", group=groupSess)
+i_nyEnd = input.int(2200, "NY Session End (UTC)", group=groupSess)
+i_lonStart = input.int(700, "London Session Start (UTC)", group=groupSess)
+i_lonEnd = input.int(1600, "London Session End (UTC)", group=groupSess)
+
+// === ADVANCED ENGINE (v6.0) ===
+groupAdvanced = "ADVANCED ENGINE"
+i_showRegime = input.bool(true, "Show Regime Detection", group=groupAdvanced, tooltip="Displays current market regime: TRENDING / RANGING / VOLATILE / QUIET")
+i_useCorrelationCaps = input.bool(true, "Correlation Group Caps", group=groupAdvanced, tooltip="Prevents correlated strategies from stacking consensus votes")
+i_useBayesian = input.bool(true, "Bayesian Confidence", group=groupAdvanced, tooltip="Replaces additive scoring with probabilistic logistic regression model")
+i_useRegimeFitness = input.bool(true, "Regime-Adaptive Strategies", group=groupAdvanced, tooltip="Penalizes strategies that don't fit the current market regime")
+i_showKelly = input.bool(true, "Show Kelly Sizing", group=groupAdvanced, tooltip="Displays Half-Kelly position sizing recommendation in Decision Panel")
+i_useCircuitBreaker = input.bool(true, "Drawdown Circuit Breaker", group=groupAdvanced, tooltip="Reduces confidence after consecutive losses")
+i_cbMaxLosses = input.int(3, "CB Loss Threshold", minval=1, maxval=10, group=groupAdvanced, tooltip="Number of consecutive losses before circuit breaker activates")
+i_adaptiveThresholds = input.bool(true, "Volatility-Adaptive Thresholds", group=groupAdvanced, tooltip="RSI and Z-score thresholds adapt to current volatility regime")
+i_confirmedOnly = input.bool(true, "Non-Repainting Mode", group=groupAdvanced, tooltip="Only trigger signals on confirmed (closed) bars. Prevents intrabar signal artefacts. Recommended ON for live trading.")
+i_dualTP = input.bool(true, "Dual TP Targets", group=groupAdvanced, tooltip="Show TP1 (1.5x ATR) and TP2 (2.5x ATR) for scaled exits")
+i_showCommentary = input.bool(true, "Expert Commentary", group=groupAdvanced, tooltip="Shows contextual insight label based on current market conditions")
+
+
+// ============================================================================
+//                     PRE-COMPUTED VALUES (global scope)
+// ============================================================================
+
+// --- Asset type detection ---
+_isCrypto = syminfo.type == "crypto" or str.contains(str.lower(syminfo.ticker), "btc") or str.contains(str.lower(syminfo.ticker), "eth")
+_isForex = syminfo.type == "forex"
+_isStock = syminfo.type == "stock" or syminfo.type == "fund" or syminfo.type == "dr"
+_isIndex = syminfo.type == "index"
+
+// --- Auto-Detect: route to best strategy per asset class ---
+// Crypto → Multi-Strategy Consensus (aggregates all 24 strategies)
+// Forex  → Ichimoku Cloud (62% WR, designed for forex markets)
+// ALL asset classes → Connors RSI-2 (only PROVEN strategy: 75.7% SPY, 75.3% QQQ, 62.5% BTC)
+// No proven crypto/forex-specific strategies yet — route everything to proven
+_effectiveStrategy = i_strategy != "Auto-Detect (Best for Asset)" ? i_strategy : "Connors RSI-2"
+_stratDisplay = i_strategy == "Auto-Detect (Best for Asset)" ? "Auto → " + _effectiveStrategy : _effectiveStrategy
+
+// --- Streak counter for ConnorsRSI — must be at global scope for `var` persistence ---
+var int _crsi_streak = 0
+_crsi_streak := close > close[1] ? (nz(_crsi_streak[1]) >= 0 ? nz(_crsi_streak[1]) + 1 : 1) : close < close[1] ? (nz(_crsi_streak[1]) <= 0 ? nz(_crsi_streak[1]) - 1 : -1) : 0
+
+// --- SuperSmoother filter — must be at global scope for `var` persistence ---
+f_supersmoother(_src, _len) =>
+    _pi = math.pi
+    _a1 = math.exp(-math.sqrt(2.0) * _pi / _len)
+    _b1 = 2.0 * _a1 * math.cos(math.sqrt(2.0) * _pi / _len)
+    _c2 = _b1
+    _c3 = -_a1 * _a1
+    _c1 = 1.0 - _c2 - _c3
+    var float _ss = na
+    _ss := _c1 * (_src + nz(_src[1])) / 2.0 + _c2 * nz(_ss[1]) + _c3 * nz(_ss[2])
+    _ss
+
+// --- Higher TF trend filter (global scope — request.security MUST run every bar) ---
+f_htf_data() =>
+    e9 = ta.ema(close, 9)
+    e21 = ta.ema(close, 21)
+    [e9[1], e21[1], close[1]]  // [1] offset = confirmed (previous completed bar)
+
+[_htf_ema9, _htf_ema21, _htf_close] = request.security(syminfo.tickerid, i_htfTrend, f_htf_data(), lookahead=barmerge.lookahead_on)
+_htf_bullish = nz(_htf_ema9) > nz(_htf_ema21) and nz(_htf_close) > nz(_htf_ema21)
+_htf_bearish = nz(_htf_ema9) < nz(_htf_ema21) and nz(_htf_close) < nz(_htf_ema21)
+_htf_trend_str = _htf_bullish ? "BULLISH" : _htf_bearish ? "BEARISH" : "NEUTRAL"
+
+// --- Volume confirmation (global scope) — v6.1 Composite Z-Score ---
+_vol_sma20 = ta.sma(volume, 20)
+_vol_ratio = _vol_sma20 > 0 ? volume / _vol_sma20 : 1.0
+_vol_strong = _vol_ratio >= 2.0
+_vol_confirm = _vol_ratio >= 1.2
+_vol_weak = _vol_ratio < 0.8
+_vol_status = _vol_strong ? "STRONG" : _vol_confirm ? "CONFIRMED" : _vol_weak ? "WEAK" : "NORMAL"
+
+// Composite Volume Score (0-100) — 5 weighted components from Kimi Claw Pro research
+// 1. Volume Z-score (30%): how unusual is current volume statistically
+_vol_rel_sma50 = ta.sma(_vol_ratio, 50)
+_vol_rel_stdev = ta.stdev(_vol_ratio, 50)
+_vol_zscore = _vol_rel_stdev > 0 ? (_vol_ratio - _vol_rel_sma50) / _vol_rel_stdev : 0.0
+
+// 2. Volume trend strength (25%): |EMA(vol,10) - EMA(vol,30)| / SMA(vol,20)
+_vol_ema10 = ta.ema(volume, 10)
+_vol_ema30 = ta.ema(volume, 30)
+_vol_trend_str = _vol_sma20 > 0 ? math.abs(_vol_ema10 - _vol_ema30) / _vol_sma20 * 100.0 : 0.0
+
+// 3. Volume-price divergence (20%): price drops but vol surges = potential reversal
+_vpd_priceChg = nz((close - close[5]) / close[5] * 100.0)
+_vpd_volChg = volume[5] > 0 ? (volume - volume[5]) / volume[5] * 100.0 : 0.0
+_vpd_bullish = _vpd_priceChg < -2.0 and _vpd_volChg > 50.0
+_vpd_bearish = _vpd_priceChg > 2.0 and _vpd_volChg < -30.0
+
+// 4. Volume trend rising (15%): 3 consecutive rising bars
+_vol_rising = volume > volume[1] and volume[1] > volume[2]
+
+// 5. Relative volume excess (10%): how far above average
+_vol_excess = _vol_ratio > 1.0 ? (_vol_ratio - 1.0) * 50.0 : 0.0
+
+// Composite (0-100 scale, clamped)
+_volComposite = math.min(100.0, math.max(0.0, 30.0 * math.max(0.0, _vol_zscore * 20.0) + 25.0 * (_vol_trend_str / 2.0) + 20.0 * (_vpd_bullish or _vpd_bearish ? 1.0 : _vol_strong ? 0.5 : 0.0) + 15.0 * (_vol_rising ? 1.0 : 0.0) + 10.0 * _vol_excess))
+
+// ============================================================================
+//            REGIME DETECTION ENGINE (v6.0 — ADX + Choppiness + ATR)
+// ============================================================================
+// Classifies market into: TRENDING / RANGING / VOLATILE / QUIET / NORMAL
+// Used by: Strategy-Regime Fitness, Adaptive Thresholds, Bayesian Confidence
+
+// --- ADX (Average Directional Index) for trend strength ---
+[_diPlus, _diMinus, _adx] = ta.dmi(14, 14)
+
+// --- Choppiness Index (0-100): high = choppy/ranging, low = trending ---
+// CI = 100 * LOG10(SUM(TR, 14) / (Highest(14) - Lowest(14))) / LOG10(14)
+_chopTrSum = math.sum(ta.tr(true), 14)
+_chopHigh14 = ta.highest(high, 14)
+_chopLow14 = ta.lowest(low, 14)
+_chopRange = _chopHigh14 - _chopLow14
+// Pine v6 has no math.log10() — use change-of-base: log10(x) = ln(x) / ln(10)
+_log10 = math.log(10.0)
+_choppiness = _chopRange > 0 ? 100.0 * (math.log(_chopTrSum / _chopRange) / _log10) / (math.log(14.0) / _log10) : 50.0
+
+// --- ATR Percentile (0-100): where current vol sits in 100-bar history ---
+_atrPctile = ta.percentrank(ta.atr(14), 100)
+
+// --- Regime Classification with Hysteresis (v6.1 — prevents whipsaw) ---
+// Once classified, regime persists until a stronger counter-signal appears.
+// Entry thresholds are strict; exit thresholds are relaxed (sticky).
+var string _regimePersist = "NORMAL"
+
+_regimeTrending = _adx > 25 and _choppiness < 38.2
+_regimeRanging = _adx < 20 and _choppiness > 61.8
+_regimeVolatile = _atrPctile > 80
+_regimeQuiet = _atrPctile < 20 and _adx < 15
+
+// Hysteresis: stay in regime until conditions clearly reverse
+if _regimeVolatile
+    _regimePersist := "VOLATILE"
+else if _regimeTrending
+    _regimePersist := "TRENDING"
+else if _regimeRanging
+    _regimePersist := "RANGING"
+else if _regimeQuiet
+    _regimePersist := "QUIET"
+else if _regimePersist == "VOLATILE" and _atrPctile > 60
+    _regimePersist := "VOLATILE"  // sticky: stay volatile until pctile drops below 60
+else if _regimePersist == "TRENDING" and _adx > 20
+    _regimePersist := "TRENDING"  // sticky: stay trending until ADX drops below 20
+else if _regimePersist == "RANGING" and _choppiness > 50
+    _regimePersist := "RANGING"  // sticky: stay ranging until choppiness drops below 50
+else if _regimePersist == "QUIET" and _atrPctile < 35
+    _regimePersist := "QUIET"  // sticky: stay quiet until pctile rises above 35
+else
+    _regimePersist := "NORMAL"
+
+_regimeStr = _regimePersist
+_regimeColor = _regimePersist == "VOLATILE" ? #ef4444 : _regimePersist == "TRENDING" ? #22c55e : _regimePersist == "RANGING" ? #eab308 : _regimePersist == "QUIET" ? #888888 : #3b82f6
+
+// Update regime booleans from hysteresis result (used by fitness function)
+_regimeTrending := _regimePersist == "TRENDING"
+_regimeRanging := _regimePersist == "RANGING"
+_regimeVolatile := _regimePersist == "VOLATILE"
+_regimeQuiet := _regimePersist == "QUIET"
+
+// ============================================================================
+//     SECOND HIGHER TIMEFRAME (Triple TF Confluence — EMA 50/200)
+// ============================================================================
+// Derives a 2nd HTF from user-selected HTF for more robust trend scoring.
+// If user picked 60 → HTF2 = 240; if 240 → HTF2 = D; etc.
+
+_htf2_tf = switch i_htfTrend
+    "15" => "60"
+    "60" => "240"
+    "240" => "D"
+    "D" => "W"
+    "W" => "M"
+    => "D"
+
+f_htf2_data() =>
+    e50 = ta.ema(close, 50)
+    e200 = ta.ema(close, 200)
+    [e50[1], e200[1]]  // [1] offset = confirmed (non-repainting)
+
+[_htf2_ema50, _htf2_ema200] = request.security(syminfo.tickerid, _htf2_tf, f_htf2_data(), lookahead=barmerge.lookahead_on)
+_htf2_bullish = nz(_htf2_ema50) > nz(_htf2_ema200)
+_htf2_bearish = nz(_htf2_ema50) < nz(_htf2_ema200)
+
+// Combined HTF score: average of both timeframes (-1 to +1 scale)
+_htf1_score = _htf_bullish ? 1.0 : _htf_bearish ? -1.0 : 0.0
+_htf2_score = _htf2_bullish ? 1.0 : _htf2_bearish ? -1.0 : 0.0
+_htfComboScore = (_htf1_score + _htf2_score) / 2.0  // -1.0 to +1.0
+
+// ============================================================================
+//     VOLATILITY-ADAPTIVE THRESHOLDS (v6.0)
+// ============================================================================
+// RSI and Z-score thresholds adapt to ATR percentile.
+// High vol → wider thresholds (fewer but higher-quality signals)
+// Low vol → tighter thresholds (catch smaller moves)
+
+_adaptRsiOS = i_adaptiveThresholds ? (_atrPctile > 80 ? 8.0 : _atrPctile > 60 ? 5.0 : _atrPctile > 40 ? 3.0 : 2.0) : 5.0
+_adaptRsiOB = 100.0 - _adaptRsiOS
+_adaptZThresh = i_adaptiveThresholds ? (_atrPctile > 80 ? 2.5 : _atrPctile > 60 ? 2.0 : _atrPctile > 40 ? 1.5 : 1.2) : 1.5
+
+// ============================================================================
+//     STRATEGY-REGIME FITNESS FUNCTION (v6.0)
+// ============================================================================
+// Returns 0.0-1.0 fitness multiplier based on how well a strategy fits the regime.
+// Groups: Trend(2,3,4,8,10,24), MeanRev(0,5,6,9,11,19), Vol(1,12), Seasonal(14-18), Div(7)
+
+f_regime_fitness(_idx) =>
+    // Trend-following strategies: excel in TRENDING, poor in RANGING
+    _isTrend = _idx == 2 or _idx == 3 or _idx == 4 or _idx == 8 or _idx == 10 or _idx == 21 or _idx == 22 or _idx == 24 or _idx == 25 or _idx == 27
+    // Mean-reversion strategies: excel in RANGING, poor in TRENDING
+    _isMeanRev = _idx == 0 or _idx == 5 or _idx == 6 or _idx == 9 or _idx == 11 or _idx == 19 or _idx == 20 or _idx == 26 or _idx == 28 or _idx == 29
+    // Volatility strategies: excel in VOLATILE
+    _isVol = _idx == 1 or _idx == 12 or _idx == 23
+    // Seasonal: regime-agnostic
+    _isSeasonal = _idx >= 14 and _idx <= 18
+    // Divergence: best in RANGING/NORMAL
+    _isDiv = _idx == 7 or _idx == 29
+
+    float fit = 0.5  // default neutral
+    if _isTrend
+        fit := _regimeTrending ? 1.0 : _regimeRanging ? 0.15 : _regimeVolatile ? 0.6 : _regimeQuiet ? 0.3 : 0.5
+    else if _isMeanRev
+        fit := _regimeRanging ? 1.0 : _regimeTrending ? 0.15 : _regimeVolatile ? 0.4 : _regimeQuiet ? 0.8 : 0.5
+    else if _isVol
+        fit := _regimeVolatile ? 1.0 : _regimeTrending ? 0.3 : _regimeRanging ? 0.2 : _regimeQuiet ? 0.1 : 0.4
+    else if _isSeasonal
+        fit := 0.5  // Seasonal bias is regime-agnostic (calendar-based)
+    else if _isDiv
+        fit := _regimeRanging ? 0.9 : _regimeTrending ? 0.3 : _regimeVolatile ? 0.5 : 0.6
+
+    i_useRegimeFitness ? fit : 1.0  // bypass if user disables
+
+
+// ============================================================================
+//                     STRATEGY FUNCTIONS
+// ============================================================================
+// Each function returns [bool longSignal, bool shortSignal, float baseStrength]
+// baseStrength is 0-40 scale (Factor 1 of the dynamic confidence engine).
+// All functions are defined before the signal router calls them.
+
+// ---------------------------------------------------------------------------
+// 1. CONNORS RSI-2  (75.7% WR SPY, p=6e-06, Sharpe 4.84)
+//    Mean reversion: RSI(2) < 5 above 200 SMA = buy dip.
+//    ConnorsRSI composite (RSI-3 + streak percentrank + %change percentrank).
+// ---------------------------------------------------------------------------
+f_connors_rsi2() =>
+    rsi2 = ta.rsi(close, 2)
+    sma200 = ta.sma(close, 200)
+    aboveSma = close > sma200
+
+    // ConnorsRSI composite components
+    rsi3 = ta.rsi(close, 3)
+
+    // Streak percentrank (uses global _crsi_streak)
+    pctRankStreak = ta.percentrank(_crsi_streak, 100)
+
+    // Percent-change rank
+    pctChg = nz(ta.change(close) / close[1] * 100)
+    pctRankChg = ta.percentrank(pctChg, 100)
+
+    // Composite ConnorsRSI
+    crsi = (rsi3 + pctRankStreak + pctRankChg) / 3.0
+
+    // Volatility-adaptive thresholds (v6.0): uses _adaptRsiOS from regime engine
+    // Crypto gets wider base threshold, then adapted by ATR percentile
+    _cBase = _isCrypto ? 10.0 : 5.0
+    _cTh = i_adaptiveThresholds ? math.max(_cBase, _adaptRsiOS * 2.0) : _cBase
+    longSig = rsi2 < _cTh and aboveSma
+    shortSig = rsi2 > (100.0 - _cTh) and not aboveSma
+
+    // Base strength (0-40): deeper RSI extremes = stronger signal
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := rsi2 < 2.0 ? 40.0 : rsi2 < 3.0 ? 35.0 : 30.0
+    else if shortSig
+        baseStrength := rsi2 > 98.0 ? 40.0 : rsi2 > 97.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 2. VIX SPIKE REVERSAL  (72% WR, Sharpe 6.20, p=0.022)
+//    Fear capitulation: VIX > 30 + oversold RSI(2) on equities above 200 SMA.
+//    Long-only strategy (no short signals). Guarded: not valid on crypto.
+// ---------------------------------------------------------------------------
+f_vix_spike() =>
+    vixClose = request.security("CBOE:VIX", "D", close)
+    rsi2 = ta.rsi(close, 2)
+    sma200 = ta.sma(close, 200)
+    aboveSma = close > sma200
+
+    vixSpike = nz(vixClose) > 30
+    // Crypto: ATR percentile > 90 = extreme volatility (fear proxy replaces VIX)
+    _atrFear = ta.percentrank(ta.atr(14), 100) > 90
+    longSig = (_isCrypto ? _atrFear : vixSpike) and rsi2 < 20 and aboveSma
+    shortSig = false // Long-only (fear capitulation = buy)
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := nz(vixClose) > 40.0 ? 40.0 : nz(vixClose) > 35.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 3. MACD MOMENTUM  (~65% WR)
+//    Classic MACD crossover filtered by RSI to avoid overbought/oversold entries.
+// ---------------------------------------------------------------------------
+f_macd_momentum() =>
+    [macdLine, signalLine, hist] = ta.macd(close, 12, 26, 9)
+    rsi14 = ta.rsi(close, 14)
+
+    // Crossover + histogram acceleration continuation (fires during trends, not just on cross bar)
+    _mCross = ta.crossover(macdLine, signalLine)
+    _mAccel = macdLine > signalLine and hist > 0 and hist > hist[1] and hist[1] > hist[2]
+    longSig = (_mCross or _mAccel) and rsi14 < 80
+    _mCrossDn = ta.crossunder(macdLine, signalLine)
+    _mAccelDn = macdLine < signalLine and hist < 0 and hist < hist[1] and hist[1] < hist[2]
+    shortSig = (_mCrossDn or _mAccelDn) and rsi14 > 20
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := math.abs(hist) > 2.0 * math.abs(nz(hist[1])) ? 40.0 : math.abs(hist) > 1.5 * math.abs(nz(hist[1])) ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 4. EMA 9/21 CROSSOVER  (~60% WR)
+//    Fast EMA crosses slow EMA, filtered by 50 SMA trend direction.
+// ---------------------------------------------------------------------------
+f_ema_crossover() =>
+    ema9 = ta.ema(close, 9)
+    ema21 = ta.ema(close, 21)
+    sma50 = ta.sma(close, 50)
+
+    // Crossover + pullback re-entry (fires when price retests 21 EMA during a trend)
+    _eCross = ta.crossover(ema9, ema21) and close > sma50
+    _ePull = ema9 > ema21 and close > sma50 and low <= ema21 * 1.003 and close > ema21 and close > open
+    longSig = _eCross or _ePull
+    _eCrossDn = ta.crossunder(ema9, ema21) and close < sma50
+    _ePullDn = ema9 < ema21 and close < sma50 and high >= ema21 * 0.997 and close < ema21 and close < open
+    shortSig = _eCrossDn or _ePullDn
+
+    gap = math.abs(ema9 - ema21) / close * 100.0
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := gap > 0.5 ? 40.0 : gap > 0.2 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 5. ICHIMOKU CLOUD
+//    Tenkan/Kijun cross with price above/below the Kumo (cloud).
+// ---------------------------------------------------------------------------
+f_ichimoku() =>
+    convPeriod = 9
+    basePeriod = 26
+    spanBPeriod = 52
+
+    tenkan = (ta.highest(high, convPeriod) + ta.lowest(low, convPeriod)) / 2
+    kijun = (ta.highest(high, basePeriod) + ta.lowest(low, basePeriod)) / 2
+    spanA = (tenkan + kijun) / 2
+    spanB = (ta.highest(high, spanBPeriod) + ta.lowest(low, spanBPeriod)) / 2
+
+    cloudTop = math.max(nz(spanA[26]), nz(spanB[26]))
+    cloudBot = math.min(nz(spanA[26]), nz(spanB[26]))
+    aboveCloud = close > cloudTop
+    belowCloud = close < cloudBot
+    tkCross = ta.crossover(tenkan, kijun)
+    tkCrossDown = ta.crossunder(tenkan, kijun)
+
+    // TK cross + cloud breakout (fires when price breaks above cloud with TK aligned)
+    _tkLong = tkCross and aboveCloud
+    _cloudBrk = ta.crossover(close, cloudTop) and tenkan > kijun
+    longSig = _tkLong or _cloudBrk
+    _tkShort = tkCrossDown and belowCloud
+    _cloudBrkDn = ta.crossunder(close, cloudBot) and tenkan < kijun
+    shortSig = _tkShort or _cloudBrkDn
+
+    // Distance from cloud edge as percentage of close
+    float dist = 0.0
+    if longSig
+        dist := cloudTop > 0 ? (close - cloudTop) / close * 100.0 : 0.0
+    else if shortSig
+        dist := cloudBot > 0 ? (cloudBot - close) / close * 100.0 : 0.0
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := dist > 2.0 ? 40.0 : dist > 1.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 6. BOLLINGER SQUEEZE
+//    Bollinger Bands contract inside Keltner Channels (squeeze).
+//    Signal fires when squeeze releases with momentum direction.
+// ---------------------------------------------------------------------------
+f_bollinger_squeeze() =>
+    [bbMid, bbUp, bbLow] = ta.bb(close, 20, 2.0)
+    kcMid = ta.ema(close, 20)
+    kcRange = ta.atr(10) * 1.5
+    kcUp = kcMid + kcRange
+    kcLow = kcMid - kcRange
+
+    sqzOn = bbLow > kcLow and bbUp < kcUp   // BB inside KC = squeeze
+    sqzOff = not sqzOn
+
+    // Momentum: linear regression of close minus midline
+    mom = ta.linreg(close - bbMid, 20, 0)
+
+    prevSqz = sqzOn[1] == true   // explicit bool — nz() does not accept bool in v6
+    _barsSinceSqz = nz(ta.barssince(sqzOn), 9999)  // pre-compute: must run every bar
+    // Release + post-squeeze continuation (fires for 12 bars after squeeze ends)
+    _bRelease = sqzOff and prevSqz
+    _bPost = sqzOff and not prevSqz and _barsSinceSqz < 12
+    longSig = (_bRelease and mom > 0) or (_bPost and mom > 0 and mom > mom[1])
+    shortSig = (_bRelease and mom < 0) or (_bPost and mom < 0 and mom < mom[1])
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := math.abs(mom) > 2.0 * math.abs(nz(mom[1])) ? 40.0 : math.abs(mom) > 1.5 * math.abs(nz(mom[1])) ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 7. VWAP REVERSION
+//    Z-score of price relative to VWAP. Buy at -2 sigma, sell at +2 sigma.
+// ---------------------------------------------------------------------------
+f_vwap_reversion() =>
+    vwapVal = ta.vwap(hlc3)
+    atrV = ta.atr(14)
+    zScore = atrV != 0 ? (close - vwapVal) / atrV : 0.0
+    rsi2 = ta.rsi(close, 2)   // pre-compute: ta.rsi() must run every bar
+
+    // Volatility-adaptive z-score threshold (v6.0)
+    _zTh = i_adaptiveThresholds ? _adaptZThresh : 1.5
+    longSig = zScore < -_zTh    // Below VWAP by adaptive threshold
+    shortSig = zScore > _zTh    // Above VWAP by adaptive threshold
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := math.abs(zScore) > 3.0 ? 40.0 : math.abs(zScore) > 2.5 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 8. RSI DIVERGENCE
+//    Bullish divergence: price lower low + RSI higher low.
+//    Bearish divergence: price higher high + RSI lower high.
+// ---------------------------------------------------------------------------
+f_rsi_divergence() =>
+    rsi14 = ta.rsi(close, 14)
+    lookback = 5  // Reduced from 14: confirms in 5 bars (5h on 1H), fires 3x more often
+
+    // Pivot lows for bullish divergence
+    pricePivotLow = ta.pivotlow(low, lookback, lookback)
+    rsiPivotLow = ta.pivotlow(rsi14, lookback, lookback)
+
+    // Bullish: price makes lower low, RSI makes higher low
+    prevPriceLow = ta.valuewhen(not na(pricePivotLow), low[lookback], 1)
+    prevRsiLow = ta.valuewhen(not na(rsiPivotLow), rsi14[lookback], 1)
+    bullDiv = not na(pricePivotLow) and not na(rsiPivotLow) and low[lookback] < prevPriceLow and rsi14[lookback] > prevRsiLow
+
+    // Pivot highs for bearish divergence
+    pricePivotHigh = ta.pivothigh(high, lookback, lookback)
+    rsiPivotHigh = ta.pivothigh(rsi14, lookback, lookback)
+
+    prevPriceHigh = ta.valuewhen(not na(pricePivotHigh), high[lookback], 1)
+    prevRsiHigh = ta.valuewhen(not na(rsiPivotHigh), rsi14[lookback], 1)
+    bearDiv = not na(pricePivotHigh) and not na(rsiPivotHigh) and high[lookback] > prevPriceHigh and rsi14[lookback] < prevRsiHigh
+
+    longSig = bullDiv
+    shortSig = bearDiv
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := rsi14 < 25.0 ? 40.0 : rsi14 < 30.0 ? 35.0 : 30.0
+    else if shortSig
+        baseStrength := rsi14 > 75.0 ? 40.0 : rsi14 > 70.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 9. SUPERTREND
+//    Price crosses above/below the Supertrend band (factor 3, ATR 10).
+// ---------------------------------------------------------------------------
+f_supertrend() =>
+    factor = 3.0
+    atrPeriod = 10
+    [stVal, stDir] = ta.supertrend(factor, atrPeriod)
+    atrRef = ta.atr(atrPeriod)
+
+    // Crossover + pullback re-entry (fires when price retests Supertrend line during trend)
+    _stCross = ta.crossover(close, stVal)
+    _stPull = stDir < 0 and low <= stVal * 1.005 and close > stVal and close > open
+    longSig = _stCross or _stPull
+    _stCrossDn = ta.crossunder(close, stVal)
+    _stPullDn = stDir > 0 and high >= stVal * 0.995 and close < stVal and close < open
+    shortSig = _stCrossDn or _stPullDn
+
+    gap = atrRef > 0 ? math.abs(close - stVal) / atrRef : 0.0
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := gap > 1.5 ? 40.0 : gap > 1.0 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 10: Swing Failure Pattern (Hsaka / ICT)
+// ============================================================================
+// Reference: Hsaka documented $400M+ using this pattern.
+// Price wicks beyond a swing high/low then closes back inside = failed breakout.
+// One of the most profitable reversal patterns in crypto trading.
+// Win rate: 58-65% with proper context. Best on 1H-4H crypto.
+// ============================================================================
+
+f_sfp() =>
+    // 20-bar lookback for swing points (exclude current bar)
+    _swingHigh = ta.highest(high, 20)[1]
+    _swingLow = ta.lowest(low, 20)[1]
+    _range = high - low
+
+    // Bullish SFP: wick below swing low, close back above, bullish candle
+    _wickBelow = _swingLow - low
+    _bullSfp = low < _swingLow and close > _swingLow and close > open and _range > 0 and _wickBelow / _range >= 0.25
+
+    // Bearish SFP: wick above swing high, close back below, bearish candle
+    _wickAbove = high - _swingHigh
+    _bearSfp = high > _swingHigh and close < _swingHigh and close < open and _range > 0 and _wickAbove / _range >= 0.25
+
+    float baseStrength = 0.0
+    if _bullSfp or _bearSfp
+        _depth = _bullSfp ? (_range > 0 ? _wickBelow / _range : 0.0) : (_range > 0 ? _wickAbove / _range : 0.0)
+        baseStrength := _depth > 0.5 ? 38.0 : _depth > 0.35 ? 34.0 : 30.0
+
+    [_bullSfp, _bearSfp, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 11: Break of Structure (ICT Smart Money Concepts)
+// ============================================================================
+// Reference: ICT methodology. BOS = price breaks above prior swing high
+// (bullish) or below prior swing low (bearish) with volume confirmation.
+// CHOCH = first break against prevailing trend = reversal signal.
+// Win rate: 55-65% with volume confirmation. Best on 1H-Daily.
+// ============================================================================
+
+f_bos() =>
+    // 20-bar swing points
+    _pivotHigh = ta.highest(high, 20)[1]
+    _pivotLow = ta.lowest(low, 20)[1]
+
+    // Bullish BOS: close crosses above prior swing high with volume
+    _bullBos = close > _pivotHigh and close[1] <= _pivotHigh and _vol_ratio >= 1.2
+
+    // Bearish BOS: close crosses below prior swing low with volume
+    _bearBos = close < _pivotLow and close[1] >= _pivotLow and _vol_ratio >= 1.2
+
+    float baseStrength = 0.0
+    if _bullBos or _bearBos
+        baseStrength := _vol_ratio >= 2.5 ? 38.0 : _vol_ratio >= 1.8 ? 34.0 : 30.0
+
+    [_bullBos, _bearBos, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 12: Liquidation Cascade Buy (Wave 5)
+// ============================================================================
+// Reference: Mean reversion after liquidation cascades.
+// 3+ consecutive red candles + volume spike + extreme RSI = cascade exhaustion.
+// Best on 1H-4H crypto. Win rate: 65-70% with proper volume confirmation.
+// ============================================================================
+
+f_liquidation_cascade() =>
+    // Detect consecutive red candles (cascade)
+    _red1 = close[1] < open[1]
+    _red2 = close[2] < open[2]
+    _red3 = close[3] < open[3]
+    _cascade = _red1 and _red2 and _red3
+
+    // RSI(2) extreme oversold
+    _rsi2 = ta.rsi(close, 2)
+    _extreme = _rsi2 < 10
+
+    // Volume spike: current > 2.5x average
+    _volSpike = _vol_ratio >= 2.5
+
+    // Price drop magnitude (4-bar)
+    _dropPct = (close - close[4]) / close[4] * 100
+
+    // Cascade buy: 3+ red + RSI extreme + vol spike + meaningful drop
+    _cascadeBuy = _cascade and _extreme and _volSpike and _dropPct < -3.0
+
+    // No short signal — this is a mean reversion buy-only strategy
+    longSig = _cascadeBuy
+    shortSig = false
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := _rsi2 < 3.0 ? 40.0 : _rsi2 < 5.0 ? 37.0 : _dropPct < -8.0 ? 38.0 : 33.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ============================================================================
+// STRATEGY 13: Momentum Crash Hedge (Daniel & Moskowitz 2016)
+// ============================================================================
+// Reference: Daniel & Moskowitz (2016) JFE — momentum crash detection.
+// When realized vol of 5d momentum returns spikes 2x above its average,
+// momentum strategies are at risk of crashing. Sell/reduce exposure.
+// This is a PROTECTIVE strategy — generates SELL signals in danger zones.
+// ============================================================================
+
+f_momentum_crash() =>
+    // 5-bar momentum returns
+    _momRet = (close - close[5]) / close[5]
+
+    // Rolling volatility of momentum returns (20-bar)
+    _momVol = ta.stdev(_momRet, 20)
+    _momVolAvg = ta.sma(_momVol, 60)
+
+    // Vol ratio: current vs average
+    _vr = _momVolAvg > 0 ? _momVol / _momVolAvg : 1.0
+
+    // Recent drawdown from 10-bar high
+    _recentHigh = ta.highest(high, 10)
+    _drawdown = (_recentHigh - close) / _recentHigh * 100
+
+    // Crash signal: momentum vol 2x+ above average AND meaningful drawdown
+    shortSig = _vr >= 2.0 and _drawdown >= 3.0
+    longSig = false  // Protective only
+
+    float baseStrength = 0.0
+    if shortSig
+        baseStrength := _vr >= 3.0 ? 40.0 : _vr >= 2.5 ? 36.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 15. SEASONAL BIAS  (~62% WR)
+//    Monthly return seasonality: Oct best (90% WR BTC), Sep worst.
+//    Combined with RSI confirmation for timing.
+//    Reference: Bouman & Jacobsen (2002), Seasonax
+// ---------------------------------------------------------------------------
+f_seasonal_bias() =>
+    m = month(time)
+    rsi14 = ta.rsi(close, 14)
+    sma50 = ta.sma(close, 50)
+
+    // Monthly bias scores (based on BTC 2011-2025 data)
+    // Oct=+24%, Nov=+17%, Dec=+12%, Apr=+13%, Jan=+10%
+    // Sep=-4.8%, Jun=-1.2%, Aug=-0.5%
+    bullMonth = m == 10 or m == 11 or m == 12 or m == 1 or m == 4
+    bearMonth = m == 9 or m == 6
+
+    longSig = bullMonth and rsi14 < 65 and close > sma50
+    shortSig = bearMonth and rsi14 > 35 and close < sma50
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := m == 10 ? 40.0 : m == 11 ? 37.0 : m == 12 ? 35.0 : 32.0
+    else if shortSig
+        baseStrength := m == 9 ? 38.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 16. HALVING CYCLE  (~67% WR)
+//    BTC halving cycle position detector. Last halving: April 19, 2024.
+//    Avg 480 days to peak, diminishing returns each cycle.
+//    Reference: PlanB S2F, Glassnode halving analysis
+// ---------------------------------------------------------------------------
+f_halving_cycle() =>
+    // Days since April 19, 2024 halving (approximate using bar timestamps)
+    halvingDate = timestamp("2024-04-19T00:00:00")
+    daysSince = (time - halvingDate) / 86400000  // ms to days
+
+    sma200 = ta.sma(close, 200)
+    rsi14 = ta.rsi(close, 14)
+
+    // Cycle phases (based on historical BTC halving patterns):
+    // 0-180d: Accumulation (buy zone)
+    // 180-480d: Markup (strong bull, weakening as we approach 480)
+    // 480-600d: Distribution (sell zone)
+    // 600-730d: Decline
+    accumulation = daysSince >= 0 and daysSince < 180
+    markup = daysSince >= 180 and daysSince < 480
+    distribution = daysSince >= 480 and daysSince < 600
+    decline = daysSince >= 600 and daysSince < 730
+
+    longSig = (accumulation or (markup and daysSince < 400)) and rsi14 < 70 and close > sma200
+    shortSig = (distribution or decline) and rsi14 > 30 and close < sma200
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := accumulation ? 40.0 : daysSince < 300 ? 37.0 : 33.0
+    else if shortSig
+        baseStrength := distribution ? 37.0 : 35.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 17. TURN OF MONTH  (~60% WR, p=0.01)
+//    Last trading day through first 3 days of month anomaly.
+//    +0.473% average in the 4-day window.
+//    Reference: Ariel (1987), Lakonishok & Smidt (1988)
+// ---------------------------------------------------------------------------
+f_turn_of_month() =>
+    dom = dayofmonth(time)
+    rsi14 = ta.rsi(close, 14)
+    sma20 = ta.sma(close, 20)
+
+    // Buy window: last 2 days of month (28-31) or first 3 days
+    buyWindow = dom >= 28 or dom <= 3
+    sellWindow = dom >= 14 and dom <= 18  // Mid-month weakness (empirical)
+
+    longSig = buyWindow and rsi14 < 70 and close > sma20
+    shortSig = sellWindow and rsi14 > 40 and close < sma20
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := dom <= 1 ? 38.0 : dom <= 3 ? 35.0 : 33.0
+    else if shortSig
+        baseStrength := 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 18. DAY OF WEEK EFFECT  (~57% WR, p=0.035)
+//    Day-of-week return anomaly for crypto.
+//    Friday best (+1.24%), Monday 2nd, Thursday worst (-0.88%).
+//    Reference: Caporale & Plastun (2019)
+// ---------------------------------------------------------------------------
+f_day_of_week() =>
+    dow = dayofweek(time)  // 1=Sunday, 2=Mon, ..., 6=Friday, 7=Saturday
+    rsi14 = ta.rsi(close, 14)
+    sma20 = ta.sma(close, 20)
+
+    bestDay = dow == 6     // Friday
+    goodDay = dow == 2     // Monday
+    worstDay = dow == 5    // Thursday
+
+    longSig = (bestDay or goodDay) and rsi14 < 60 and close > sma20
+    shortSig = worstDay and rsi14 > 45 and close < sma20
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := bestDay ? 35.0 : 32.0
+    else if shortSig
+        baseStrength := 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 19. CYCLE DETECTION  (~58% WR)
+//    Autocorrelation-based dominant cycle identification.
+//    Detects if price is at cycle trough or peak.
+//    Reference: Ehlers (2001) "Rocket Science for Traders"
+// ---------------------------------------------------------------------------
+f_cycle_detect() =>
+    // Detrend close using linear regression
+    src = close
+    linreg50 = ta.linreg(src, 50, 0)
+    detrended = src - linreg50
+
+    // Find dominant cycle via autocorrelation at representative periods
+    // Pre-computed at fixed intervals to avoid ta.correlation() inside loop (Pine v6 consistency)
+    _c10 = nz(ta.correlation(detrended, detrended[10], 50))
+    _c15 = nz(ta.correlation(detrended, detrended[15], 50))
+    _c20 = nz(ta.correlation(detrended, detrended[20], 50))
+    _c30 = nz(ta.correlation(detrended, detrended[30], 50))
+    _c40 = nz(ta.correlation(detrended, detrended[40], 50))
+    _c50 = nz(ta.correlation(detrended, detrended[50], 50))
+    _c60 = nz(ta.correlation(detrended, detrended[60], 50))
+    float bestCorr = math.max(_c10, math.max(_c15, math.max(_c20, math.max(_c30, math.max(_c40, math.max(_c50, _c60))))))
+    int bestPeriod = bestCorr == _c10 ? 10 : bestCorr == _c15 ? 15 : bestCorr == _c20 ? 20 : bestCorr == _c30 ? 30 : bestCorr == _c40 ? 40 : bestCorr == _c50 ? 50 : 60
+
+    // Phase: where are we in the cycle?
+    // Use sine fit approximation: if detrended is at local minimum = trough
+    rsi14 = ta.rsi(close, 14)
+    atTrough = detrended < detrended[1] and detrended < detrended[2] and detrended[1] < detrended[2]
+    atPeak = detrended > detrended[1] and detrended > detrended[2] and detrended[1] > detrended[2]
+
+    longSig = atTrough and bestCorr > 0.3 and rsi14 < 40
+    shortSig = atPeak and bestCorr > 0.3 and rsi14 > 60
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        baseStrength := bestCorr > 0.6 ? 38.0 : bestCorr > 0.4 ? 35.0 : 30.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 20. S/R MAGNETISM  (~63% WR)
+//    Support/Resistance levels act as price magnets.
+//    Multi-touch levels with Williams fractals.
+//    Reference: Bulkowski (2005), Williams (1995)
+// ---------------------------------------------------------------------------
+f_sr_magnetism() =>
+    // Find pivot highs and lows (fractal pivots)
+    pivHi = ta.pivothigh(high, 5, 5)
+    pivLo = ta.pivotlow(low, 5, 5)
+
+    // Track last 4 pivot levels
+    var float r1 = na, var float r2 = na
+    var float s1 = na, var float s2 = na
+
+    if not na(pivHi)
+        r2 := r1
+        r1 := pivHi
+    if not na(pivLo)
+        s2 := s1
+        s1 := pivLo
+
+    // Check proximity to S/R levels (within 0.5%)
+    nearResist = nz(r1) > 0 and math.abs(close - r1) / close < 0.005
+    nearSupport = nz(s1) > 0 and math.abs(close - s1) / close < 0.005
+
+    // Double-touch confirmation (two nearby pivots = stronger level)
+    resistConfirm = nz(r1) > 0 and nz(r2) > 0 and math.abs(r1 - r2) / nz(r1) < 0.01
+    supportConfirm = nz(s1) > 0 and nz(s2) > 0 and math.abs(s1 - s2) / nz(s1) < 0.01
+
+    rsi14 = ta.rsi(close, 14)
+
+    // Buy at support with confirmation, sell at resistance
+    longSig = nearSupport and supportConfirm and rsi14 < 40 and close > open
+    shortSig = nearResist and resistConfirm and rsi14 > 60 and close < open
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := resistConfirm ? 38.0 : 33.0
+    else if shortSig
+        baseStrength := supportConfirm ? 38.0 : 33.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 21. LIQUIDITY SWEEP REVERSAL  (73% WR, 2.5:1 R:R — v5.0 research)
+//     Detects price sweeping beyond swing high/low then reversing back inside.
+//     Long wick + close back inside = trapped liquidity = reversal.
+//     Market structure filter: longs only above EMA50, shorts below.
+//     Reference: ICT / SMC liquidity sweep concept + pivot analysis
+// ---------------------------------------------------------------------------
+f_liquidity_sweep() =>
+    // Swing high/low detection using pivots (20-bar lookback)
+    pivHi20 = ta.pivothigh(high, 20, 5)
+    pivLo20 = ta.pivotlow(low, 20, 5)
+
+    // Track most recent swing levels
+    var float _lsSwingHi = na
+    var float _lsSwingLo = na
+    if not na(pivHi20)
+        _lsSwingHi := pivHi20
+    if not na(pivLo20)
+        _lsSwingLo := pivLo20
+
+    // EMA50 market structure filter
+    ema50 = ta.ema(close, 50)
+
+    // Sweep detection: price goes 0.3% beyond swing, closes back inside with long wick
+    _sweepThresh = 0.003  // 0.3% beyond swing level
+
+    // Bullish sweep: low goes below swing low, close comes back above it, long lower wick
+    _loSweep = nz(_lsSwingLo) > 0 and low < _lsSwingLo * (1.0 - _sweepThresh) and close > _lsSwingLo
+    _loWick = (close - low) > (high - low) * 0.6  // Lower wick > 60% of range
+    _lsBullStruct = close > ema50  // Only longs above EMA50
+
+    // Bearish sweep: high goes above swing high, close comes back below it, long upper wick
+    _hiSweep = nz(_lsSwingHi) > 0 and high > _lsSwingHi * (1.0 + _sweepThresh) and close < _lsSwingHi
+    _hiWick = (high - close) > (high - low) * 0.6  // Upper wick > 60% of range
+    _lsBearStruct = close < ema50  // Only shorts below EMA50
+
+    longSig = _loSweep and _loWick and _lsBullStruct
+    shortSig = _hiSweep and _hiWick and _lsBearStruct
+
+    float baseStrength = 0.0
+    if longSig
+        // Deeper sweep = higher strength
+        _sweepDepth = nz(_lsSwingLo) > 0 ? (nz(_lsSwingLo) - low) / nz(_lsSwingLo) * 100.0 : 0.0
+        baseStrength := _sweepDepth > 1.0 ? 40.0 : _sweepDepth > 0.5 ? 37.0 : 33.0
+    else if shortSig
+        _sweepDepth2 = nz(_lsSwingHi) > 0 ? (high - nz(_lsSwingHi)) / nz(_lsSwingHi) * 100.0 : 0.0
+        baseStrength := _sweepDepth2 > 1.0 ? 40.0 : _sweepDepth2 > 0.5 ? 37.0 : 33.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 22. NONLINEAR TSMOM  (Moskowitz 2025 — S-shaped position sizing)
+//     Standard TSMOM: 12-period return / volatility → signal direction.
+//     S-shaped (tanh) weighting dampens position at extremes.
+//     Volatility targeting: position = target_vol / realized_vol, clamped.
+//     Reference: Moskowitz, Ooi, Pedersen (2012 JFE) + Moskowitz (2025)
+// ---------------------------------------------------------------------------
+f_nonlinear_tsmom() =>
+    // 12-period momentum return
+    _tsmomRet12 = nz((close - close[12]) / close[12])
+
+    // Realized volatility (20-period standard deviation of returns, annualized proxy)
+    _tsmomDailyRet = nz((close - close[1]) / close[1])
+    _tsmomVol = ta.stdev(_tsmomDailyRet, 20)
+
+    // Raw TSMOM signal: return / vol (Sharpe-like measure)
+    _tsmomRaw = _tsmomVol > 0 ? _tsmomRet12 / (_tsmomVol * math.sqrt(12.0)) : 0.0
+
+    // S-shaped weighting: tanh function dampens extreme signals
+    // Pine v6 doesn't have math.tanh — approximate: tanh(x) = (exp(2x)-1)/(exp(2x)+1)
+    _tanhArg = math.min(5.0, math.max(-5.0, _tsmomRaw))  // clamp to avoid overflow
+    _exp2x = math.exp(2.0 * _tanhArg)
+    _tanhVal = (_exp2x - 1.0) / (_exp2x + 1.0)  // S-shaped: -1 to +1
+
+    // Volatility targeting: scale position by target_vol / realized_vol
+    _targetVol = 0.15  // 15% annualized target
+    _annVol = _tsmomVol * math.sqrt(252.0)
+    _volScale = _annVol > 0 ? math.min(2.0, math.max(0.2, _targetVol / _annVol)) : 1.0
+
+    // Combined signal: S-shaped weight * vol scale
+    _tsmomSignal = _tanhVal * _volScale
+
+    // Threshold for signal generation
+    longSig = _tsmomSignal > 0.5
+    shortSig = _tsmomSignal < -0.5
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := _tsmomSignal > 1.2 ? 40.0 : _tsmomSignal > 0.8 ? 36.0 : 32.0
+    else if shortSig
+        baseStrength := _tsmomSignal < -1.2 ? 40.0 : _tsmomSignal < -0.8 ? 36.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 23. CTREND-INSPIRED  (Fieberg 2025 JFQA — 2.62% weekly alpha)
+//     Multi-horizon moving average signals: SMA(5), SMA(10), SMA(20), SMA(50), SMA(100).
+//     For each MA: score = close > MA ? +1 : -1
+//     Composite = weighted sum of all MA signals (short-term weighted heavier).
+//     Signal when composite exceeds threshold in either direction.
+//     Reference: Fieberg et al. (2025) "Cross-Sectional Trend", JFQA
+// ---------------------------------------------------------------------------
+f_ctrend() =>
+    // Multi-horizon moving averages
+    _ctSma5 = ta.sma(close, 5)
+    _ctSma10 = ta.sma(close, 10)
+    _ctSma20 = ta.sma(close, 20)
+    _ctSma50 = ta.sma(close, 50)
+    _ctSma100 = ta.sma(close, 100)
+
+    // Per-MA score: +1 if above, -1 if below
+    _ctS5 = close > _ctSma5 ? 1.0 : -1.0
+    _ctS10 = close > _ctSma10 ? 1.0 : -1.0
+    _ctS20 = close > _ctSma20 ? 1.0 : -1.0
+    _ctS50 = close > _ctSma50 ? 1.0 : -1.0
+    _ctS100 = close > _ctSma100 ? 1.0 : -1.0
+
+    // Weighted composite: shorter MAs weighted heavier (elastic net approximation)
+    // Weights: SMA5=0.30, SMA10=0.25, SMA20=0.20, SMA50=0.15, SMA100=0.10
+    _ctComposite = 0.30 * _ctS5 + 0.25 * _ctS10 + 0.20 * _ctS20 + 0.15 * _ctS50 + 0.10 * _ctS100
+
+    // Signal when composite exceeds threshold (0.4 = at least 3 of 5 MAs agree with weighting)
+    longSig = _ctComposite > 0.4
+    shortSig = _ctComposite < -0.4
+
+    float baseStrength = 0.0
+    if longSig
+        baseStrength := _ctComposite > 0.8 ? 40.0 : _ctComposite > 0.6 ? 36.0 : 32.0
+    else if shortSig
+        baseStrength := _ctComposite < -0.8 ? 40.0 : _ctComposite < -0.6 ? 36.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// 24. FLASH CRASH REVERSAL  (71% WR, 4:1 R:R — v5.0 research)
+//     Detects rapid price drops >5% in 5 bars + RSI<15 + volume >5x average.
+//     First green candle after crash = entry.
+//     Reference: Market microstructure crash recovery patterns
+// ---------------------------------------------------------------------------
+f_flash_crash() =>
+    // Rapid price drop: >5% decline in 5 bars
+    _fcDrop = nz((close - close[5]) / close[5] * 100.0)
+    _fcCrash = _fcDrop < -5.0
+
+    // Extreme oversold: RSI(2) < 15
+    _fcRsi = ta.rsi(close, 2)
+    _fcOversold = _fcRsi < 15.0
+
+    // Volume surge: >5x 20-period average
+    _fcVolAvg = ta.sma(volume, 20)
+    _fcVolSurge = _fcVolAvg > 0 ? volume / _fcVolAvg > 5.0 : false
+
+    // First green candle after crash conditions met on previous bar
+    _fcPrevCrash = nz((close[1] - close[6]) / close[6] * 100.0) < -5.0
+    _fcPrevRsiOS = nz(ta.rsi(close[1], 2)) < 15.0 or _fcOversold
+    _fcGreen = close > open  // Current bar is green (recovery candle)
+
+    // Entry: crash conditions on prior bars + first green candle now
+    longSig = (_fcCrash or _fcPrevCrash) and (_fcOversold or _fcPrevRsiOS) and _fcVolSurge and _fcGreen
+    shortSig = false  // Long-only (flash crash = buy the recovery)
+
+    float baseStrength = 0.0
+    if longSig
+        // Deeper crash = stronger signal
+        _crashDepth = math.abs(_fcDrop)
+        baseStrength := _crashDepth > 10.0 ? 40.0 : _crashDepth > 7.0 ? 38.0 : _crashDepth > 5.0 ? 35.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// STRATEGY 25: HMA Trend (Hull Moving Average direction change)
+//     HMA = WMA(2*WMA(n/2) - WMA(n), sqrt(n))
+//     Faster than EMA with less lag (Alan Hull, 2005)
+//     Entry: HMA direction change + SMA(50) trend filter + RSI guard
+//     Backtest: SPY 59.1% WR Sharpe 4.45, QQQ 60% WR Sharpe 3.77
+//     Correlation group: Trend (caps with MACD, EMA Cross, Supertrend, etc.)
+// ---------------------------------------------------------------------------
+f_hma_trend() =>
+    // Hull Moving Average calculation
+    _hmaLen = 50
+    _hmaHalf = ta.wma(close, int(_hmaLen / 2))
+    _hmaFull = ta.wma(close, _hmaLen)
+    _hmaDiff = 2 * _hmaHalf - _hmaFull
+    _hma = ta.wma(_hmaDiff, int(math.floor(math.sqrt(_hmaLen))))
+
+    // Direction change detection
+    _hmaUp = _hma > _hma[1] and _hma[1] <= _hma[2]  // Turning up
+    _hmaDn = _hma < _hma[1] and _hma[1] >= _hma[2]  // Turning down
+
+    // Trend filter: SMA(50) for direction confirmation
+    _sma50 = ta.sma(close, 50)
+    _aboveSma = close > _sma50
+    _belowSma = close < _sma50
+
+    // RSI guard: avoid extreme conditions
+    _rsi14 = ta.rsi(close, 14)
+    _notOB = _rsi14 < 75
+    _notOS = _rsi14 > 25
+
+    longSig = _hmaUp and _aboveSma and _notOB
+    shortSig = _hmaDn and _belowSma and _notOS
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        // Stronger if HMA slope is steep
+        _hmaSlope = nz(math.abs(_hma - _hma[1]) / _hma * 100.0)
+        baseStrength := _hmaSlope > 1.0 ? 38.0 : _hmaSlope > 0.5 ? 35.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// Strategy 26: Fair Value Gap (FVG) — ICT imbalance detection
+//     Evidence: Edgeful backtests 60-70%+ WR on YM 30m with confluence
+//     Signal: Candle gap (high[2] < low[0]) + retracement entry + HTF trend
+//     Correlation group: SMC (caps with BOS, SFP, Order Block)
+// ---------------------------------------------------------------------------
+f_fvg() =>
+    // Detect Fair Value Gaps (imbalance candles)
+    _fvgBull = high[2] < low[0] and (close[1] - open[1]) > ta.atr(14) * 0.5  // bullish FVG with displacement
+    _fvgBear = low[2] > high[0] and (open[1] - close[1]) > ta.atr(14) * 0.5  // bearish FVG with displacement
+
+    // FVG zone boundaries
+    _fvgBullTop = _fvgBull ? low[0] : na
+    _fvgBullBot = _fvgBull ? high[2] : na
+    _fvgBearTop = _fvgBear ? low[2] : na
+    _fvgBearBot = _fvgBear ? high[0] : na
+
+    // Track last FVG zones with var persistence
+    var float _lastBullFvgTop = na
+    var float _lastBullFvgBot = na
+    var float _lastBearFvgTop = na
+    var float _lastBearFvgBot = na
+    var int _lastBullFvgBar = 0
+    var int _lastBearFvgBar = 0
+
+    if _fvgBull
+        _lastBullFvgTop := _fvgBullTop
+        _lastBullFvgBot := _fvgBullBot
+        _lastBullFvgBar := bar_index
+
+    if _fvgBear
+        _lastBearFvgTop := _fvgBearTop
+        _lastBearFvgBot := _fvgBearBot
+        _lastBearFvgBar := bar_index
+
+    // Entry signal: price retraces INTO the FVG zone (within 20 bars)
+    _bullEntry = not na(_lastBullFvgTop) and low <= _lastBullFvgTop and close >= _lastBullFvgBot and (bar_index - _lastBullFvgBar) <= 20 and (bar_index - _lastBullFvgBar) >= 1
+    _bearEntry = not na(_lastBearFvgTop) and high >= _lastBearFvgBot and close <= _lastBearFvgTop and (bar_index - _lastBearFvgBar) <= 20 and (bar_index - _lastBearFvgBar) >= 1
+
+    // HTF trend filter
+    _bullWithTrend = _bullEntry and _htf_bullish
+    _bearWithTrend = _bearEntry and _htf_bearish
+
+    // Invalidate mitigated FVGs
+    if _bullEntry
+        _lastBullFvgTop := na
+    if _bearEntry
+        _lastBearFvgTop := na
+
+    longSig = _bullWithTrend
+    shortSig = _bearWithTrend
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        // Stronger if FVG gap is wider (more imbalance)
+        _gapSize = longSig ? nz(_lastBullFvgTop - _lastBullFvgBot) : nz(_lastBearFvgTop - _lastBearFvgBot)
+        _gapAtr = _gapSize / ta.atr(14)
+        baseStrength := _gapAtr > 1.5 ? 38.0 : _gapAtr > 1.0 ? 35.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// Strategy 27: Keltner Squeeze (TTM Squeeze variant)
+//     Evidence: QuantifiedStrategies.com 77% WR on SPY (288 trades)
+//     Signal: BB inside KC (squeeze) → squeeze release + momentum direction
+//     Correlation group: Mean-Reversion (caps with Bollinger, VWAP, etc.)
+// ---------------------------------------------------------------------------
+f_keltner_squeeze() =>
+    // Keltner Channel
+    _kcBasis = ta.ema(close, 20)
+    _kcRange = ta.atr(20) * 1.5
+    _kcUpper = _kcBasis + _kcRange
+    _kcLower = _kcBasis - _kcRange
+
+    // Bollinger Bands
+    _bbBasis = ta.sma(close, 20)
+    _bbDev = ta.stdev(close, 20) * 2.0
+    _bbUpper = _bbBasis + _bbDev
+    _bbLower = _bbBasis - _bbDev
+
+    // Squeeze: BB inside KC
+    _squeeze = _bbUpper < _kcUpper and _bbLower > _kcLower
+    _squeezeFired = not _squeeze and _squeeze[1]  // squeeze just released
+
+    // Momentum histogram: linear regression of price relative to midline
+    _midline = math.avg(math.avg(_kcUpper, _kcLower), math.avg(_bbUpper, _bbLower))
+    _momentum = ta.linreg(close - _midline, 12, 0)
+    _momRising = _momentum > _momentum[1]
+    _momFalling = _momentum < _momentum[1]
+
+    // SMA filter for trend context
+    _sma50 = ta.sma(close, 50)
+
+    longSig = _squeezeFired and _momentum > 0 and _momRising and close > _sma50
+    shortSig = _squeezeFired and _momentum < 0 and _momFalling and close < _sma50
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        // Stronger if momentum is decisive
+        _momStr = math.abs(_momentum) / ta.atr(14)
+        baseStrength := _momStr > 1.0 ? 38.0 : _momStr > 0.5 ? 35.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// Strategy 28: Order Block Detection (ICT/SMC)
+//     Evidence: Practitioner data 55-65% WR with displacement + confluence
+//     Signal: Last opposing candle before impulse move, enter on retracement
+//     Correlation group: SMC (caps with BOS, SFP, FVG)
+// ---------------------------------------------------------------------------
+f_order_block() =>
+    // Detect impulse moves (displacement candles)
+    _atr14 = ta.atr(14)
+    _bodySize = math.abs(close - open)
+    _isImpulseUp = _bodySize > _atr14 * 1.5 and close > open
+    _isImpulseDown = _bodySize > _atr14 * 1.5 and close < open
+
+    // Track demand OB: last bearish candle before bullish impulse
+    var float _demandOBTop = na
+    var float _demandOBBot = na
+    var int _demandOBBar = 0
+
+    // Track supply OB: last bullish candle before bearish impulse
+    var float _supplyOBTop = na
+    var float _supplyOBBot = na
+    var int _supplyOBBar = 0
+
+    // Find demand OB (bullish impulse detected)
+    if _isImpulseUp
+        // Walk back to find last bearish candle
+        if close[1] < open[1]
+            _demandOBTop := math.max(open[1], close[1])
+            _demandOBBot := math.min(open[1], close[1])
+            _demandOBBar := bar_index - 1
+        else if close[2] < open[2]
+            _demandOBTop := math.max(open[2], close[2])
+            _demandOBBot := math.min(open[2], close[2])
+            _demandOBBar := bar_index - 2
+        else if close[3] < open[3]
+            _demandOBTop := math.max(open[3], close[3])
+            _demandOBBot := math.min(open[3], close[3])
+            _demandOBBar := bar_index - 3
+
+    // Find supply OB (bearish impulse detected)
+    if _isImpulseDown
+        if close[1] > open[1]
+            _supplyOBTop := math.max(open[1], close[1])
+            _supplyOBBot := math.min(open[1], close[1])
+            _supplyOBBar := bar_index - 1
+        else if close[2] > open[2]
+            _supplyOBTop := math.max(open[2], close[2])
+            _supplyOBBot := math.min(open[2], close[2])
+            _supplyOBBar := bar_index - 2
+        else if close[3] > open[3]
+            _supplyOBTop := math.max(open[3], close[3])
+            _supplyOBBot := math.min(open[3], close[3])
+            _supplyOBBar := bar_index - 3
+
+    // Entry: price retraces into OB zone (within 30 bars, OB not invalidated)
+    _demandValid = not na(_demandOBTop) and (bar_index - _demandOBBar) <= 30 and (bar_index - _demandOBBar) >= 2
+    _supplyValid = not na(_supplyOBTop) and (bar_index - _supplyOBBar) <= 30 and (bar_index - _supplyOBBar) >= 2
+
+    _demandEntry = _demandValid and low <= _demandOBTop and close > _demandOBBot
+    _supplyEntry = _supplyValid and high >= _supplyOBBot and close < _supplyOBTop
+
+    // Invalidation: price closes THROUGH the OB
+    if not na(_demandOBTop) and close < _demandOBBot
+        _demandOBTop := na
+    if not na(_supplyOBTop) and close > _supplyOBTop
+        _supplyOBTop := na
+
+    // HTF trend filter
+    longSig = _demandEntry and _htf_bullish
+    shortSig = _supplyEntry and _htf_bearish
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        _freshness = longSig ? 30.0 - float(bar_index - _demandOBBar) : 30.0 - float(bar_index - _supplyOBBar)
+        baseStrength := _freshness > 20 ? 37.0 : _freshness > 10 ? 34.0 : 31.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// Strategy 29: Wyckoff Spring/Upthrust (Simplified)
+//     Evidence: LuxAlgo 65-70% resolution rate for accumulation ranges
+//     Signal: False breakdown below range support (spring) with reversal close
+//     Correlation group: Mean-Reversion (caps with Connors, Bollinger, etc.)
+// ---------------------------------------------------------------------------
+f_wyckoff_spring() =>
+    // Identify trading range: ATR compression (low volatility consolidation)
+    _rangePeriod = 50
+    _atrNow = ta.atr(14)
+    _atrAvg = ta.sma(_atrNow, _rangePeriod)
+    _inRange = _atrNow < _atrAvg * 0.8  // ATR below 80% of average = range-bound
+
+    // Range boundaries from the consolidation period
+    _rangeHigh = ta.highest(high, _rangePeriod)
+    _rangeLow = ta.lowest(low, _rangePeriod)
+
+    // Spring: wick below range low with close BACK inside range + volume confirmation
+    _spring = _inRange[1] and low < _rangeLow[1] and close > _rangeLow[1] and close > open
+    _springVolume = _spring and volume > ta.sma(volume, 20) * 1.3
+
+    // Upthrust: wick above range high with close BACK inside range
+    _upthrust = _inRange[1] and high > _rangeHigh[1] and close < _rangeHigh[1] and close < open
+    _upthrustVolume = _upthrust and volume > ta.sma(volume, 20) * 1.3
+
+    // RSI confirmation (spring should show oversold bounce, upthrust overbought rejection)
+    _rsi14 = ta.rsi(close, 14)
+    _springRsi = _springVolume and _rsi14 > 30 and _rsi14 < 50  // recovering from oversold
+    _upthrustRsi = _upthrustVolume and _rsi14 > 60 and _rsi14 < 75  // rejecting from overbought
+
+    longSig = _springRsi
+    shortSig = _upthrustRsi
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        // Stronger if wick is deeper (more false break conviction)
+        _wickDepth = longSig ? (_rangeLow[1] - low) / _atrNow : (high - _rangeHigh[1]) / _atrNow
+        baseStrength := _wickDepth > 1.0 ? 38.0 : _wickDepth > 0.5 ? 35.0 : 32.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ---------------------------------------------------------------------------
+// Strategy 30: CVD Approximation (Buying Pressure Divergence)
+//     Evidence: ScienceDirect 2025 VPIN/CVD signals predict future price jumps
+//     Signal: Cumulative delta divergence from price (approx via bar direction)
+//     Correlation group: Divergence (caps with RSI Divergence)
+// ---------------------------------------------------------------------------
+f_cvd_approx() =>
+    // Approximate cumulative volume delta using bar direction
+    _bullVol = close > open ? volume : close == open ? volume * 0.5 : 0.0
+    _bearVol = close < open ? volume : close == open ? volume * 0.5 : 0.0
+    _delta = _bullVol - _bearVol
+
+    // Cumulative delta (rolling 50-bar window for stability)
+    _cumDelta = math.sum(_delta, 50)
+    _cumDelta5 = math.sum(_delta[5], 50)  // 5 bars ago for comparison
+
+    // Price extremes (20-bar lookback)
+    _priceNewHigh = high == ta.highest(high, 20)
+    _priceNewLow = low == ta.lowest(low, 20)
+
+    // Divergence detection
+    // Bearish: price makes new high but cumulative delta is weakening
+    _bearDiv = _priceNewHigh and _cumDelta < _cumDelta5 and _cumDelta < _cumDelta[10]
+    // Bullish: price makes new low but cumulative delta is strengthening
+    _bullDiv = _priceNewLow and _cumDelta > _cumDelta5 and _cumDelta > _cumDelta[10]
+
+    // Volume confirmation
+    _volAboveAvg = volume > ta.sma(volume, 20) * 1.1
+
+    longSig = _bullDiv and _volAboveAvg
+    shortSig = _bearDiv and _volAboveAvg
+
+    float baseStrength = 0.0
+    if longSig or shortSig
+        // Stronger if divergence is more extreme
+        _divMag = math.abs(_cumDelta - _cumDelta5) / math.max(math.abs(_cumDelta5), 1.0)
+        baseStrength := _divMag > 0.5 ? 37.0 : _divMag > 0.25 ? 34.0 : 31.0
+
+    [longSig, shortSig, baseStrength]
+
+
+// ============================================================================
+//         PRE-COMPUTE ALL STRATEGIES (global scope, runs every bar)
+// ============================================================================
+// All strategies computed once at global scope to:
+// 1. Avoid conditional request.security issues (VIX call must run every bar)
+// 2. Eliminate redundant function calls
+// 3. Enable consensus aggregation without separate function
+
+[_g_l1, _g_s1, _g_c1] = f_connors_rsi2()
+[_g_l2, _g_s2, _g_c2] = f_vix_spike()
+[_g_l3, _g_s3, _g_c3] = f_macd_momentum()
+[_g_l4, _g_s4, _g_c4] = f_ema_crossover()
+[_g_l5, _g_s5, _g_c5] = f_ichimoku()
+[_g_l6, _g_s6, _g_c6] = f_bollinger_squeeze()
+[_g_l7, _g_s7, _g_c7] = f_vwap_reversion()
+[_g_l8, _g_s8, _g_c8] = f_rsi_divergence()
+[_g_l9, _g_s9, _g_c9] = f_supertrend()
+[_g_l10, _g_s10, _g_c10] = f_sfp()
+[_g_l11, _g_s11, _g_c11] = f_bos()
+[_g_l12, _g_s12, _g_c12] = f_liquidation_cascade()
+[_g_l13, _g_s13, _g_c13] = f_momentum_crash()
+[_g_l15, _g_s15, _g_c15] = f_seasonal_bias()
+[_g_l16, _g_s16, _g_c16] = f_halving_cycle()
+[_g_l17, _g_s17, _g_c17] = f_turn_of_month()
+[_g_l18, _g_s18, _g_c18] = f_day_of_week()
+[_g_l19, _g_s19, _g_c19] = f_cycle_detect()
+[_g_l20, _g_s20, _g_c20] = f_sr_magnetism()
+[_g_l21, _g_s21, _g_c21] = f_liquidity_sweep()
+[_g_l22, _g_s22, _g_c22] = f_nonlinear_tsmom()
+[_g_l23, _g_s23, _g_c23] = f_ctrend()
+[_g_l24, _g_s24, _g_c24] = f_flash_crash()
+[_g_l25, _g_s25, _g_c25] = f_hma_trend()
+[_g_l26, _g_s26, _g_c26] = f_fvg()
+[_g_l27, _g_s27, _g_c27] = f_keltner_squeeze()
+[_g_l28, _g_s28, _g_c28] = f_order_block()
+[_g_l29, _g_s29, _g_c29] = f_wyckoff_spring()
+[_g_l30, _g_s30, _g_c30] = f_cvd_approx()
+
+// --- Consensus: same-bar RAW counts (for display) ---
+_consBullRaw = (_g_l1 ? 1 : 0) + (_g_l2 ? 1 : 0) + (_g_l3 ? 1 : 0) + (_g_l4 ? 1 : 0) + (_g_l5 ? 1 : 0) + (_g_l6 ? 1 : 0) + (_g_l7 ? 1 : 0) + (_g_l8 ? 1 : 0) + (_g_l9 ? 1 : 0) + (_g_l10 ? 1 : 0) + (_g_l11 ? 1 : 0) + (_g_l12 ? 1 : 0) + (_g_l13 ? 1 : 0) + (_g_l15 ? 1 : 0) + (_g_l16 ? 1 : 0) + (_g_l17 ? 1 : 0) + (_g_l18 ? 1 : 0) + (_g_l19 ? 1 : 0) + (_g_l20 ? 1 : 0) + (_g_l21 ? 1 : 0) + (_g_l22 ? 1 : 0) + (_g_l23 ? 1 : 0) + (_g_l24 ? 1 : 0) + (_g_l25 ? 1 : 0) + (_g_l26 ? 1 : 0) + (_g_l27 ? 1 : 0) + (_g_l28 ? 1 : 0) + (_g_l29 ? 1 : 0) + (_g_l30 ? 1 : 0)
+_consBearRaw = (_g_s1 ? 1 : 0) + (_g_s2 ? 1 : 0) + (_g_s3 ? 1 : 0) + (_g_s4 ? 1 : 0) + (_g_s5 ? 1 : 0) + (_g_s6 ? 1 : 0) + (_g_s7 ? 1 : 0) + (_g_s8 ? 1 : 0) + (_g_s9 ? 1 : 0) + (_g_s10 ? 1 : 0) + (_g_s11 ? 1 : 0) + (_g_s12 ? 1 : 0) + (_g_s13 ? 1 : 0) + (_g_s15 ? 1 : 0) + (_g_s16 ? 1 : 0) + (_g_s17 ? 1 : 0) + (_g_s18 ? 1 : 0) + (_g_s19 ? 1 : 0) + (_g_s20 ? 1 : 0) + (_g_s21 ? 1 : 0) + (_g_s22 ? 1 : 0) + (_g_s23 ? 1 : 0) + (_g_s24 ? 1 : 0) + (_g_s25 ? 1 : 0) + (_g_s26 ? 1 : 0) + (_g_s27 ? 1 : 0) + (_g_s28 ? 1 : 0) + (_g_s29 ? 1 : 0) + (_g_s30 ? 1 : 0)
+
+// ============================================================================
+//     CORRELATION GROUP CAPS (v6.0 — prevent correlated strategy stacking)
+// ============================================================================
+// Groups: Trend(3,4,5,9,11,22,23,25)→max 2, MeanRev(1,6,7,10,12,20,21)→max 2,
+//         Vol(2,13,24)→max 1, Seasonal(15-19)→max 1, Divergence(8)→max 1
+// Consensus maxes at 7 (not 23) — each vote is more meaningful.
+// Raw counts kept for display; capped counts used for scoring.
+
+// Trend group: MACD(3), EMA Cross(4), Ichimoku(5), Supertrend(9), BOS(11), TSMOM(22), CTREND(23), HMA(25) → cap 2
+_trendBullRaw = (_g_l3?1:0) + (_g_l4?1:0) + (_g_l5?1:0) + (_g_l9?1:0) + (_g_l11?1:0) + (_g_l22?1:0) + (_g_l23?1:0) + (_g_l25?1:0)
+_trendBearRaw = (_g_s3?1:0) + (_g_s4?1:0) + (_g_s5?1:0) + (_g_s9?1:0) + (_g_s11?1:0) + (_g_s22?1:0) + (_g_s23?1:0) + (_g_s25?1:0)
+_trendBullCap = i_useCorrelationCaps ? math.min(_trendBullRaw, 2) : _trendBullRaw
+_trendBearCap = i_useCorrelationCaps ? math.min(_trendBearRaw, 2) : _trendBearRaw
+
+// Mean-reversion group: ConnorsRSI(1), Bollinger(6), VWAP(7), SFP(10), LiqCascade(12), S/R(20), LiqSweep(21), KeltnerSqz(27), WyckoffSpring(29) → cap 2
+_mrBullRaw = (_g_l1?1:0) + (_g_l6?1:0) + (_g_l7?1:0) + (_g_l10?1:0) + (_g_l12?1:0) + (_g_l20?1:0) + (_g_l21?1:0) + (_g_l27?1:0) + (_g_l29?1:0)
+_mrBearRaw = (_g_s1?1:0) + (_g_s6?1:0) + (_g_s7?1:0) + (_g_s10?1:0) + (_g_s12?1:0) + (_g_s20?1:0) + (_g_s21?1:0) + (_g_s27?1:0) + (_g_s29?1:0)
+_mrBullCap = i_useCorrelationCaps ? math.min(_mrBullRaw, 2) : _mrBullRaw
+_mrBearCap = i_useCorrelationCaps ? math.min(_mrBearRaw, 2) : _mrBearRaw
+
+// Volatility group: VIX(2), MomentumCrash(13), FlashCrash(24) → cap 1
+_volBullRaw = (_g_l2?1:0) + (_g_l13?1:0) + (_g_l24?1:0)
+_volBearRaw = (_g_s2?1:0) + (_g_s13?1:0) + (_g_s24?1:0)
+_volBullCap = i_useCorrelationCaps ? math.min(_volBullRaw, 1) : _volBullRaw
+_volBearCap = i_useCorrelationCaps ? math.min(_volBearRaw, 1) : _volBearRaw
+
+// Seasonal group: Seasonal(15), Halving(16), TurnOfMonth(17), DayOfWeek(18), Cycle(19) → cap 1
+_seasBullRaw = (_g_l15?1:0) + (_g_l16?1:0) + (_g_l17?1:0) + (_g_l18?1:0) + (_g_l19?1:0)
+_seasBearRaw = (_g_s15?1:0) + (_g_s16?1:0) + (_g_s17?1:0) + (_g_s18?1:0) + (_g_s19?1:0)
+_seasBullCap = i_useCorrelationCaps ? math.min(_seasBullRaw, 1) : _seasBullRaw
+_seasBearCap = i_useCorrelationCaps ? math.min(_seasBearRaw, 1) : _seasBearRaw
+
+// Divergence group: RSI Divergence(8), CVD Approx(30) → cap 1
+_divBullCap = i_useCorrelationCaps ? math.min((_g_l8?1:0) + (_g_l30?1:0), 1) : (_g_l8?1:0) + (_g_l30?1:0)
+_divBearCap = i_useCorrelationCaps ? math.min((_g_s8?1:0) + (_g_s30?1:0), 1) : (_g_s8?1:0) + (_g_s30?1:0)
+
+// SMC group: FVG(26), OrderBlock(28) → cap 1 (correlated ICT methods)
+_smcBullRaw = (_g_l26?1:0) + (_g_l28?1:0)
+_smcBearRaw = (_g_s26?1:0) + (_g_s28?1:0)
+_smcBullCap = i_useCorrelationCaps ? math.min(_smcBullRaw, 1) : _smcBullRaw
+_smcBearCap = i_useCorrelationCaps ? math.min(_smcBearRaw, 1) : _smcBearRaw
+
+// Correlation-capped consensus (max possible = 2+2+1+1+1+1 = 8)
+_consBull = _trendBullCap + _mrBullCap + _volBullCap + _seasBullCap + _divBullCap + _smcBullCap
+_consBear = _trendBearCap + _mrBearCap + _volBearCap + _seasBearCap + _divBearCap + _smcBearCap
+
+// --- Rolling 5-bar window consensus (correlation-capped) ---
+// If a strategy fired within the last 5 bars, it counts toward consensus.
+// Same correlation caps apply to prevent correlated strategy stacking.
+_rb1 = nz(ta.barssince(_g_l1), 9999) < 5 ? 1 : 0
+_rb2 = nz(ta.barssince(_g_l2), 9999) < 5 ? 1 : 0
+_rb3 = nz(ta.barssince(_g_l3), 9999) < 5 ? 1 : 0
+_rb4 = nz(ta.barssince(_g_l4), 9999) < 5 ? 1 : 0
+_rb5 = nz(ta.barssince(_g_l5), 9999) < 5 ? 1 : 0
+_rb6 = nz(ta.barssince(_g_l6), 9999) < 5 ? 1 : 0
+_rb7 = nz(ta.barssince(_g_l7), 9999) < 5 ? 1 : 0
+_rb8 = nz(ta.barssince(_g_l8), 9999) < 5 ? 1 : 0
+_rb9 = nz(ta.barssince(_g_l9), 9999) < 5 ? 1 : 0
+_rb10 = nz(ta.barssince(_g_l10), 9999) < 5 ? 1 : 0
+_rb11 = nz(ta.barssince(_g_l11), 9999) < 5 ? 1 : 0
+_rb12 = nz(ta.barssince(_g_l12), 9999) < 5 ? 1 : 0
+_rb13 = nz(ta.barssince(_g_l13), 9999) < 5 ? 1 : 0
+_rb15 = nz(ta.barssince(_g_l15), 9999) < 5 ? 1 : 0
+_rb16 = nz(ta.barssince(_g_l16), 9999) < 5 ? 1 : 0
+_rb17 = nz(ta.barssince(_g_l17), 9999) < 5 ? 1 : 0
+_rb18 = nz(ta.barssince(_g_l18), 9999) < 5 ? 1 : 0
+_rb19 = nz(ta.barssince(_g_l19), 9999) < 5 ? 1 : 0
+_rb20 = nz(ta.barssince(_g_l20), 9999) < 5 ? 1 : 0
+_rb21 = nz(ta.barssince(_g_l21), 9999) < 5 ? 1 : 0
+_rb22 = nz(ta.barssince(_g_l22), 9999) < 5 ? 1 : 0
+_rb23 = nz(ta.barssince(_g_l23), 9999) < 5 ? 1 : 0
+_rb24 = nz(ta.barssince(_g_l24), 9999) < 5 ? 1 : 0
+_rb25 = nz(ta.barssince(_g_l25), 9999) < 5 ? 1 : 0
+_rb26 = nz(ta.barssince(_g_l26), 9999) < 5 ? 1 : 0
+_rb27 = nz(ta.barssince(_g_l27), 9999) < 5 ? 1 : 0
+_rb28 = nz(ta.barssince(_g_l28), 9999) < 5 ? 1 : 0
+_rb29 = nz(ta.barssince(_g_l29), 9999) < 5 ? 1 : 0
+_rb30 = nz(ta.barssince(_g_l30), 9999) < 5 ? 1 : 0
+
+// Rolling window with correlation caps (same groups as same-bar)
+_rbTrendBull = i_useCorrelationCaps ? math.min(_rb3 + _rb4 + _rb5 + _rb9 + _rb11 + _rb22 + _rb23 + _rb25, 2) : _rb3 + _rb4 + _rb5 + _rb9 + _rb11 + _rb22 + _rb23 + _rb25
+_rbMRBull = i_useCorrelationCaps ? math.min(_rb1 + _rb6 + _rb7 + _rb10 + _rb12 + _rb20 + _rb21 + _rb27 + _rb29, 2) : _rb1 + _rb6 + _rb7 + _rb10 + _rb12 + _rb20 + _rb21 + _rb27 + _rb29
+_rbVolBull = i_useCorrelationCaps ? math.min(_rb2 + _rb13 + _rb24, 1) : _rb2 + _rb13 + _rb24
+_rbSeasBull = i_useCorrelationCaps ? math.min(_rb15 + _rb16 + _rb17 + _rb18 + _rb19, 1) : _rb15 + _rb16 + _rb17 + _rb18 + _rb19
+_rbDivBull = i_useCorrelationCaps ? math.min(_rb8 + _rb30, 1) : _rb8 + _rb30
+_rbSmcBull = i_useCorrelationCaps ? math.min(_rb26 + _rb28, 1) : _rb26 + _rb28
+_recentBull = _rbTrendBull + _rbMRBull + _rbVolBull + _rbSeasBull + _rbDivBull + _rbSmcBull
+
+_rs1 = nz(ta.barssince(_g_s1), 9999) < 5 ? 1 : 0
+_rs2 = nz(ta.barssince(_g_s2), 9999) < 5 ? 1 : 0
+_rs3 = nz(ta.barssince(_g_s3), 9999) < 5 ? 1 : 0
+_rs4 = nz(ta.barssince(_g_s4), 9999) < 5 ? 1 : 0
+_rs5 = nz(ta.barssince(_g_s5), 9999) < 5 ? 1 : 0
+_rs6 = nz(ta.barssince(_g_s6), 9999) < 5 ? 1 : 0
+_rs7 = nz(ta.barssince(_g_s7), 9999) < 5 ? 1 : 0
+_rs8 = nz(ta.barssince(_g_s8), 9999) < 5 ? 1 : 0
+_rs9 = nz(ta.barssince(_g_s9), 9999) < 5 ? 1 : 0
+_rs10 = nz(ta.barssince(_g_s10), 9999) < 5 ? 1 : 0
+_rs11 = nz(ta.barssince(_g_s11), 9999) < 5 ? 1 : 0
+_rs12 = nz(ta.barssince(_g_s12), 9999) < 5 ? 1 : 0
+_rs13 = nz(ta.barssince(_g_s13), 9999) < 5 ? 1 : 0
+_rs15 = nz(ta.barssince(_g_s15), 9999) < 5 ? 1 : 0
+_rs16 = nz(ta.barssince(_g_s16), 9999) < 5 ? 1 : 0
+_rs17 = nz(ta.barssince(_g_s17), 9999) < 5 ? 1 : 0
+_rs18 = nz(ta.barssince(_g_s18), 9999) < 5 ? 1 : 0
+_rs19 = nz(ta.barssince(_g_s19), 9999) < 5 ? 1 : 0
+_rs20 = nz(ta.barssince(_g_s20), 9999) < 5 ? 1 : 0
+_rs21 = nz(ta.barssince(_g_s21), 9999) < 5 ? 1 : 0
+_rs22 = nz(ta.barssince(_g_s22), 9999) < 5 ? 1 : 0
+_rs23 = nz(ta.barssince(_g_s23), 9999) < 5 ? 1 : 0
+_rs24 = nz(ta.barssince(_g_s24), 9999) < 5 ? 1 : 0
+_rs25 = nz(ta.barssince(_g_s25), 9999) < 5 ? 1 : 0
+_rs26 = nz(ta.barssince(_g_s26), 9999) < 5 ? 1 : 0
+_rs27 = nz(ta.barssince(_g_s27), 9999) < 5 ? 1 : 0
+_rs28 = nz(ta.barssince(_g_s28), 9999) < 5 ? 1 : 0
+_rs29 = nz(ta.barssince(_g_s29), 9999) < 5 ? 1 : 0
+_rs30 = nz(ta.barssince(_g_s30), 9999) < 5 ? 1 : 0
+
+_rbTrendBear = i_useCorrelationCaps ? math.min(_rs3 + _rs4 + _rs5 + _rs9 + _rs11 + _rs22 + _rs23 + _rs25, 2) : _rs3 + _rs4 + _rs5 + _rs9 + _rs11 + _rs22 + _rs23 + _rs25
+_rbMRBear = i_useCorrelationCaps ? math.min(_rs1 + _rs6 + _rs7 + _rs10 + _rs12 + _rs20 + _rs21 + _rs27 + _rs29, 2) : _rs1 + _rs6 + _rs7 + _rs10 + _rs12 + _rs20 + _rs21 + _rs27 + _rs29
+_rbVolBear = i_useCorrelationCaps ? math.min(_rs2 + _rs13 + _rs24, 1) : _rs2 + _rs13 + _rs24
+_rbSeasBear = i_useCorrelationCaps ? math.min(_rs15 + _rs16 + _rs17 + _rs18 + _rs19, 1) : _rs15 + _rs16 + _rs17 + _rs18 + _rs19
+_rbDivBear = i_useCorrelationCaps ? math.min(_rs8 + _rs30, 1) : _rs8 + _rs30
+_rbSmcBear = i_useCorrelationCaps ? math.min(_rs26 + _rs28, 1) : _rs26 + _rs28
+_recentBear = _rbTrendBear + _rbMRBear + _rbVolBear + _rbSeasBear + _rbDivBear + _rbSmcBear
+
+// Rolling window: with corr caps, max is 8. 3+ = strong consensus, 2 = moderate
+_consLong = _recentBull >= 3
+_consShort = _recentBear >= 3
+
+// ============================================================================
+//     🔥 DOUBLE IGNITE DETECTION — Multi-Strategy Convergence Fire (v6.1)
+// ============================================================================
+// Fires when 3+ correlation groups agree on same bar (raw, not rolling),
+// OR when 2+ groups agree for 2 consecutive bars → "something is cooking"
+//
+// Uses correlation-group COUNTS (not raw strategy counts) to ensure
+// independent signal sources, not correlated strategies stacking up.
+
+_igGroupBull = (_trendBullRaw > 0 ? 1 : 0) + (_mrBullRaw > 0 ? 1 : 0) + (_volBullRaw > 0 ? 1 : 0) + (_seasBullRaw > 0 ? 1 : 0) + ((_g_l8 or _g_l30) ? 1 : 0) + (_smcBullRaw > 0 ? 1 : 0)
+_igGroupBear = (_trendBearRaw > 0 ? 1 : 0) + (_mrBearRaw > 0 ? 1 : 0) + (_volBearRaw > 0 ? 1 : 0) + (_seasBearRaw > 0 ? 1 : 0) + ((_g_s8 or _g_s30) ? 1 : 0) + (_smcBearRaw > 0 ? 1 : 0)
+
+// Hot = 2+ independent groups firing
+_igBullHot = _igGroupBull >= 2
+_igBearHot = _igGroupBear >= 2
+
+// Double Ignite: 3+ groups same bar, OR 2+ groups for 2 consecutive bars
+_doubleIgniteBull = _igGroupBull >= 3 or (_igBullHot and _igBullHot[1])
+_doubleIgniteBear = _igGroupBear >= 3 or (_igBearHot and _igBearHot[1])
+
+// Confidence boost: Double Ignite adds +10 to base strength
+_igniteBoost = _doubleIgniteBull ? 10.0 : _doubleIgniteBear ? 10.0 : 0.0
+
+_consBase = (_doubleIgniteBull or _doubleIgniteBear) ? 45.0 : _recentBull >= 5 ? 40.0 : _recentBull >= 4 ? 37.0 : _recentBull >= 3 ? 35.0 : _recentBull >= 2 ? 30.0 : _recentBear >= 5 ? 40.0 : _recentBear >= 4 ? 37.0 : _recentBear >= 3 ? 35.0 : _recentBear >= 2 ? 30.0 : 0.0
+
+
+// ============================================================================
+//                   ACTIVE INDEX + TIMEFRAME VALIDATION
+// ============================================================================
+// _activeIdx is needed by TF scoring, placed BEFORE signal dispatch.
+
+_activeIdx = switch _effectiveStrategy
+    "Connors RSI-2"            => 0
+    "VIX Spike Reversal"       => 1
+    "MACD Momentum"            => 2
+    "EMA Crossover"            => 3
+    "Ichimoku Cloud"           => 4
+    "Bollinger Squeeze"        => 5
+    "VWAP Reversion"           => 6
+    "RSI Divergence"           => 7
+    "Supertrend"               => 8
+    "Swing Failure (SFP)"      => 9
+    "Break of Structure"       => 10
+    "Liquidation Cascade"      => 11
+    "Momentum Crash"           => 12
+    "Multi-Strategy Consensus" => 13
+    "Seasonal Bias"     => 14
+    "Halving Cycle"     => 15
+    "Turn of Month"     => 16
+    "Day of Week"       => 17
+    "Cycle Detection"   => 18
+    "S/R Magnetism"     => 19
+    "Liquidity Sweep"   => 20
+    "Nonlinear TSMOM"   => 21
+    "CTREND Multi-MA"   => 22
+    "Flash Crash Reversal" => 23
+    "HMA Trend"            => 24
+    "Fair Value Gap"       => 25
+    "Keltner Squeeze"      => 26
+    "Order Block"          => 27
+    "Wyckoff Spring"       => 28
+    "CVD Divergence"       => 29
+    => -1
+
+// --- Timeframe validation function ---
+f_tf_score(_idx) =>
+    tf = timeframe.in_seconds()
+    // Per-strategy min/max in seconds
+    min_s = switch _idx
+        0 => 3600    // Connors: 1H+ (crypto-adapted thresholds)
+        1 => 3600    // VIX/Fear: 1H+ (ATR-percentile on crypto)
+        2 => 300     // MACD: 5m
+        3 => 900     // EMA: 15m
+        4 => 3600    // Ichimoku: 1H+ (cloud breakout works on all TFs)
+        5 => 3600    // Bollinger: 1H
+        6 => 60      // VWAP: 1m
+        7 => 3600    // RSI Diverg: 1H
+        8 => 900     // Supertrend: 15m
+        9 => 3600    // SFP: 1H (need clear swing points)
+        10 => 3600   // BOS: 1H (need clear structure)
+        11 => 3600   // Liquidation Cascade: 1H+ (need clear volume patterns)
+        12 => 3600   // Momentum Crash: 1H+ (need momentum vol calc)
+        13 => 60     // Consensus: any
+        14 => 86400  // Seasonal: Daily only
+        15 => 86400  // Halving: Daily only
+        16 => 86400  // Turn of Month: Daily
+        17 => 86400  // Day of Week: Daily
+        18 => 3600   // Cycle: 1H+
+        19 => 3600   // S/R Magnetism: 1H+
+        20 => 3600   // Liquidity Sweep: 1H+
+        21 => 86400  // Nonlinear TSMOM: Daily
+        22 => 86400  // CTREND Multi-MA: Daily
+        23 => 300    // Flash Crash: 5m+ (rapid moves)
+        24 => 3600   // HMA Trend: 1H+ (needs 50 bars for HMA)
+        25 => 3600   // FVG: 1H+ (need clear candle gaps)
+        26 => 3600   // Keltner Squeeze: 1H+ (squeeze needs time to develop)
+        27 => 3600   // Order Block: 1H+ (need clear swing structure)
+        28 => 3600   // Wyckoff Spring: 1H+ (range needs 50+ bars)
+        29 => 3600   // CVD Approx: 1H+ (volume delta needs history)
+        => 60
+    max_s = switch _idx
+        0 => 86400    // Connors: Daily only
+        1 => 86400    // VIX: Daily only
+        2 => 3600     // MACD: up to 1H
+        3 => 14400    // EMA: up to 4H
+        4 => 604800   // Ichimoku: up to Weekly
+        5 => 14400    // Bollinger: up to 4H
+        6 => 14400    // VWAP: up to 4H (intraday)
+        7 => 86400    // RSI Diverg: up to Daily
+        8 => 86400    // Supertrend: up to Daily
+        9 => 86400    // SFP: up to Daily
+        10 => 86400   // BOS: up to Daily
+        11 => 14400   // Liquidation Cascade: up to 4H
+        12 => 86400   // Momentum Crash: up to Daily
+        13 => 604800  // Consensus: any
+        14 => 604800  // Seasonal: up to Weekly
+        15 => 604800  // Halving: up to Weekly
+        16 => 86400   // Turn of Month: Daily
+        17 => 86400   // Day of Week: Daily
+        18 => 86400   // Cycle: up to Daily
+        19 => 86400   // S/R Magnetism: up to Daily
+        20 => 86400   // Liquidity Sweep: up to Daily
+        21 => 604800  // Nonlinear TSMOM: up to Weekly
+        22 => 604800  // CTREND Multi-MA: up to Weekly
+        23 => 3600    // Flash Crash: up to 1H
+        24 => 86400   // HMA Trend: up to Daily
+        25 => 86400   // FVG: up to Daily
+        26 => 86400   // Keltner Squeeze: up to Daily
+        27 => 86400   // Order Block: up to Daily
+        28 => 86400   // Wyckoff Spring: up to Daily
+        29 => 86400   // CVD Approx: up to Daily
+        => 604800
+    tf >= min_s and tf <= max_s ? 10.0 : tf >= min_s / 2 and tf <= max_s * 2 ? 5.0 : 0.0
+
+_tf_match_score = f_tf_score(_activeIdx)
+_tf_match_str = _tf_match_score >= 10.0 ? "MATCH" : _tf_match_score >= 5.0 ? "CLOSE" : "MISMATCH"
+
+// ============================================================================
+//     PROVEN STATUS + REGIME FITNESS + CIRCUIT BREAKER (v6.0)
+// ============================================================================
+
+// --- Proven status array (moved here from decision panel for Bayesian access) ---
+var bool[] strat_proven = array.from(true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false)
+_activeProven = _activeIdx >= 0 and _activeIdx < array.size(strat_proven) ? array.get(strat_proven, _activeIdx) : false
+
+// --- Active strategy regime fitness (0.0-1.0) ---
+_activeFitness = f_regime_fitness(_activeIdx)
+
+// --- Drawdown Circuit Breaker (v6.0) ---
+// Tracks consecutive TP/SL outcomes via `var` persistence.
+// After N consecutive losses, applies logit penalty in Bayesian model.
+// Resets on first win.
+var int _cbConsecutiveLosses = 0
+var float _cbLastEntry = 0.0
+var int _cbLastDir = 0  // 1=long, -1=short, 0=none
+var int _cbLastBar = 0
+
+// Check if previous signal hit TP or SL (simplified: compare price move to ATR-based targets)
+_cbAtr = ta.atr(14)
+if _cbLastDir != 0 and bar_index > _cbLastBar + 1
+    _cbPriceMove = _cbLastDir > 0 ? close - _cbLastEntry : _cbLastEntry - close
+    _cbTPdist = _cbAtr * i_tpMult
+    _cbSLdist = _cbAtr * i_slMult
+    if _cbPriceMove >= _cbTPdist
+        _cbConsecutiveLosses := 0  // Win — reset
+        _cbLastDir := 0
+    else if _cbPriceMove <= -_cbSLdist
+        _cbConsecutiveLosses := _cbConsecutiveLosses + 1  // Loss — increment
+        _cbLastDir := 0
+
+// Circuit breaker active when losses exceed threshold
+_cbActive = i_useCircuitBreaker and _cbConsecutiveLosses >= i_cbMaxLosses
+_cbPenalty = i_useCircuitBreaker ? float(_cbConsecutiveLosses) * -0.7 : 0.0  // logit penalty
+
+
+// ============================================================================
+//                     SIGNAL DISPATCH (ROUTER)
+// ============================================================================
+// Uses pre-computed values with if/else chain (avoids switch tuple-type issues in v6).
+
+bool isLong = false
+bool isShort = false
+float confidence = 0.0
+
+if _effectiveStrategy == "Connors RSI-2"
+    isLong := _g_l1
+    isShort := _g_s1
+    confidence := _g_c1
+else if _effectiveStrategy == "VIX Spike Reversal"
+    isLong := _g_l2
+    isShort := _g_s2
+    confidence := _g_c2
+else if _effectiveStrategy == "MACD Momentum"
+    isLong := _g_l3
+    isShort := _g_s3
+    confidence := _g_c3
+else if _effectiveStrategy == "EMA Crossover"
+    isLong := _g_l4
+    isShort := _g_s4
+    confidence := _g_c4
+else if _effectiveStrategy == "Ichimoku Cloud"
+    isLong := _g_l5
+    isShort := _g_s5
+    confidence := _g_c5
+else if _effectiveStrategy == "Bollinger Squeeze"
+    isLong := _g_l6
+    isShort := _g_s6
+    confidence := _g_c6
+else if _effectiveStrategy == "VWAP Reversion"
+    isLong := _g_l7
+    isShort := _g_s7
+    confidence := _g_c7
+else if _effectiveStrategy == "RSI Divergence"
+    isLong := _g_l8
+    isShort := _g_s8
+    confidence := _g_c8
+else if _effectiveStrategy == "Supertrend"
+    isLong := _g_l9
+    isShort := _g_s9
+    confidence := _g_c9
+else if _effectiveStrategy == "Swing Failure (SFP)"
+    isLong := _g_l10
+    isShort := _g_s10
+    confidence := _g_c10
+else if _effectiveStrategy == "Break of Structure"
+    isLong := _g_l11
+    isShort := _g_s11
+    confidence := _g_c11
+else if _effectiveStrategy == "Liquidation Cascade"
+    isLong := _g_l12
+    isShort := _g_s12
+    confidence := _g_c12
+else if _effectiveStrategy == "Momentum Crash"
+    isLong := _g_l13
+    isShort := _g_s13
+    confidence := _g_c13
+else if _effectiveStrategy == "Multi-Strategy Consensus"
+    isLong := _consLong
+    isShort := _consShort
+    confidence := _consBase
+else if _effectiveStrategy == "Seasonal Bias"
+    isLong := _g_l15
+    isShort := _g_s15
+    confidence := _g_c15
+else if _effectiveStrategy == "Halving Cycle"
+    isLong := _g_l16
+    isShort := _g_s16
+    confidence := _g_c16
+else if _effectiveStrategy == "Turn of Month"
+    isLong := _g_l17
+    isShort := _g_s17
+    confidence := _g_c17
+else if _effectiveStrategy == "Day of Week"
+    isLong := _g_l18
+    isShort := _g_s18
+    confidence := _g_c18
+else if _effectiveStrategy == "Cycle Detection"
+    isLong := _g_l19
+    isShort := _g_s19
+    confidence := _g_c19
+else if _effectiveStrategy == "S/R Magnetism"
+    isLong := _g_l20
+    isShort := _g_s20
+    confidence := _g_c20
+else if _effectiveStrategy == "Liquidity Sweep"
+    isLong := _g_l21
+    isShort := _g_s21
+    confidence := _g_c21
+else if _effectiveStrategy == "Nonlinear TSMOM"
+    isLong := _g_l22
+    isShort := _g_s22
+    confidence := _g_c22
+else if _effectiveStrategy == "CTREND Multi-MA"
+    isLong := _g_l23
+    isShort := _g_s23
+    confidence := _g_c23
+else if _effectiveStrategy == "Flash Crash Reversal"
+    isLong := _g_l24
+    isShort := _g_s24
+    confidence := _g_c24
+else if _effectiveStrategy == "HMA Trend"
+    isLong := _g_l25
+    isShort := _g_s25
+    confidence := _g_c25
+else if _effectiveStrategy == "Fair Value Gap"
+    isLong := _g_l26
+    isShort := _g_s26
+    confidence := _g_c26
+else if _effectiveStrategy == "Keltner Squeeze"
+    isLong := _g_l27
+    isShort := _g_s27
+    confidence := _g_c27
+else if _effectiveStrategy == "Order Block"
+    isLong := _g_l28
+    isShort := _g_s28
+    confidence := _g_c28
+else if _effectiveStrategy == "Wyckoff Spring"
+    isLong := _g_l29
+    isShort := _g_s29
+    confidence := _g_c29
+else if _effectiveStrategy == "CVD Divergence"
+    isLong := _g_l30
+    isShort := _g_s30
+    confidence := _g_c30
+
+
+// ============================================================================
+//         MARKET BIAS AGGREGATION (always-on directional assessment)
+// ============================================================================
+// Counts strategies whose CONDITIONS are currently bullish/bearish (ongoing),
+// not just crossover events on the current bar. Feeds into confidence Factor 4.
+
+_biasRsi2g = ta.rsi(close, 2)
+_biasSma200g = ta.sma(close, 200)
+_biasRsi14g = ta.rsi(close, 14)
+[_biasMacdG, _biasSigG, _biasHistG] = ta.macd(close, 12, 26, 9)
+_biasEma9g = ta.ema(close, 9)
+_biasEma21g = ta.ema(close, 21)
+[_biasST_val, _biasST_dir] = ta.supertrend(3.0, 10)
+_biasVwapG = ta.vwap(hlc3)
+_biasTenkan = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+_biasKijun = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+_biasSpanA = (_biasTenkan + _biasKijun) / 2
+_biasSpanB = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+_biasCloudTop = math.max(nz(_biasSpanA[26]), nz(_biasSpanB[26]))
+_biasCloudBot = math.min(nz(_biasSpanA[26]), nz(_biasSpanB[26]))
+_biasBBmom = ta.linreg(close - ta.sma(close, 20), 20, 0)
+
+// Per-strategy bias (8 of 9; VIX excluded — event-driven only)
+_bb1 = _biasRsi2g < 30 and close > _biasSma200g
+_br1 = _biasRsi2g > 70 and close < _biasSma200g
+_bb3 = _biasHistG > 0
+_br3 = _biasHistG < 0
+_bb4 = _biasEma9g > _biasEma21g
+_br4 = _biasEma9g < _biasEma21g
+_bb5 = close > _biasCloudTop
+_br5 = close < _biasCloudBot
+_bb6 = _biasBBmom > 0
+_br6 = _biasBBmom < 0
+_bb7 = close < _biasVwapG
+_br7 = close > _biasVwapG
+_bb8 = _biasRsi14g < 40
+_br8 = _biasRsi14g > 60
+_bb9 = _biasST_dir < 0
+_br9 = _biasST_dir > 0
+
+// SFP bias: price near recent swing low = bullish SFP zone
+_sfpSwingLow = ta.lowest(low, 20)[1]
+_sfpSwingHigh = ta.highest(high, 20)[1]
+_bb10 = low <= _sfpSwingLow * 1.005 and close > _sfpSwingLow  // Near swing low, holding above
+_br10 = high >= _sfpSwingHigh * 0.995 and close < _sfpSwingHigh  // Near swing high, rejected
+
+// BOS bias: price relative to structure
+_bb11 = close > _sfpSwingHigh  // Above structure = bullish
+_br11 = close < _sfpSwingLow   // Below structure = bearish
+
+// Liquidation cascade bias: RSI(2) < 15 and 3+ red candles = cascade oversold zone
+_bb12 = ta.rsi(close, 2) < 15 and close[1] < open[1] and close[2] < open[2] and close[3] < open[3]
+_br12 = false  // Liquidation cascade is buy-only
+
+// Momentum crash bias: momentum vol elevated = bearish protective
+_biMomRet = (close - close[5]) / nz(close[5], close)
+_biMomVol = ta.stdev(_biMomRet, 20)
+_biMomVolAvg = ta.sma(_biMomVol, 60)
+_bb13 = false  // Momentum crash is sell-only (protective)
+_br13 = nz(_biMomVolAvg) > 0 ? _biMomVol / _biMomVolAvg >= 1.8 : false
+
+// Liquidity sweep bias: price near swing low with bullish wick
+_lsBiasSwLo = ta.lowest(low, 20)[1]
+_lsBiasSwHi = ta.highest(high, 20)[1]
+_bb21 = nz(_lsBiasSwLo) > 0 and low < _lsBiasSwLo and close > _lsBiasSwLo and (close - low) > (high - low) * 0.5
+_br21 = nz(_lsBiasSwHi) > 0 and high > _lsBiasSwHi and close < _lsBiasSwHi and (high - close) > (high - low) * 0.5
+
+// TSMOM bias: 12-period momentum direction
+_bbTsmomRet = nz((close - close[12]) / close[12])
+_bb22 = _bbTsmomRet > 0.03  // 3%+ positive momentum
+_br22 = _bbTsmomRet < -0.03
+
+// CTREND bias: multi-MA alignment
+_bbCtSma20 = ta.sma(close, 20)
+_bbCtSma50 = ta.sma(close, 50)
+_bb23 = close > _bbCtSma20 and close > _bbCtSma50
+_br23 = close < _bbCtSma20 and close < _bbCtSma50
+
+// Flash crash bias: extreme drop conditions
+_bbFcDrop = nz((close - close[5]) / close[5] * 100.0)
+_bb24 = _bbFcDrop < -5.0 and ta.rsi(close, 2) < 20  // Crash zone = bullish reversal bias
+_br24 = false  // Flash crash is long-only
+
+// HMA bias: HMA direction = trend direction
+_biasHmaHalf = ta.wma(close, 25)
+_biasHmaFull = ta.wma(close, 50)
+_biasHmaDiff = 2 * _biasHmaHalf - _biasHmaFull
+_biasHma = ta.wma(_biasHmaDiff, int(math.floor(math.sqrt(50))))
+_bb25 = _biasHma > _biasHma[1]  // HMA rising = bullish
+_br25 = _biasHma < _biasHma[1]  // HMA falling = bearish
+
+_biasBull = (_bb1?1:0) + (_bb3?1:0) + (_bb4?1:0) + (_bb5?1:0) + (_bb6?1:0) + (_bb7?1:0) + (_bb8?1:0) + (_bb9?1:0) + (_bb10?1:0) + (_bb11?1:0) + (_bb12?1:0) + (_bb13?1:0) + (_bb21?1:0) + (_bb22?1:0) + (_bb23?1:0) + (_bb24?1:0) + (_bb25?1:0)
+_biasBear = (_br1?1:0) + (_br3?1:0) + (_br4?1:0) + (_br5?1:0) + (_br6?1:0) + (_br7?1:0) + (_br8?1:0) + (_br9?1:0) + (_br10?1:0) + (_br11?1:0) + (_br12?1:0) + (_br13?1:0) + (_br21?1:0) + (_br22?1:0) + (_br23?1:0) + (_br24?1:0) + (_br25?1:0)
+
+// BIAS-PROMOTED SIGNALS: When no strategy fires but bias is strongly directional
+// Fires once per regime (12-bar cooldown) when 7+ of 10 strategies agree
+var int _lastBiasBar = 0
+_biasCD = bar_index - _lastBiasBar > 12
+if not isLong and not isShort and _biasCD
+    if _biasBull >= 7
+        isLong := true
+        confidence := 28.0
+        _lastBiasBar := bar_index
+    else if _biasBear >= 7
+        isShort := true
+        confidence := 28.0
+        _lastBiasBar := bar_index
+
+
+// ============================================================================
+//     BAYESIAN CONFIDENCE ENGINE (v6.0 — Logistic Regression Model)
+// ============================================================================
+// Replaces naive additive scoring with probabilistic logistic regression.
+// P(win) = sigmoid(β₀ + Σ βᵢ·xᵢ) where features are normalized 0-1.
+//
+// Coefficients calibrated for realistic confidence:
+//   All perfect (logit≈4.9) → 99.3% → capped 95%
+//   All average (logit≈0.5) → 62%
+//   All bad (logit≈-3.35) → 3.4%
+//
+// Features:
+//   x_base:    Base signal strength (0-40) normalized to 0-1
+//   x_regime:  Strategy-regime fitness (0-1) from f_regime_fitness()
+//   x_htf:     Higher TF combo alignment (-1 to +1) normalized to 0-1
+//   x_vol:     Volume confirmation (0-1)
+//   x_agree:   Correlation-capped consensus agreement (0-7) normalized to 0-1
+//   x_proven:  Proven status (0 or 1)
+//   x_tf:      TF match score (0-10) normalized to 0-1
+//   x_cb:      Circuit breaker penalty (logit additive, negative)
+
+// --- Feature extraction (all normalized 0-1) ---
+float _f1_base = confidence  // Raw baseStrength from strategy (0-40)
+float _x_base = math.min(1.0, math.max(0.0, _f1_base / 40.0))
+
+float _x_regime = _activeFitness  // Already 0-1
+
+// HTF combo: aligned with signal direction? (-1 to +1 → 0 to 1)
+float _htfDirScore = 0.0
+if isLong
+    _htfDirScore := _htfComboScore  // +1 if both HTFs bullish
+else if isShort
+    _htfDirScore := -_htfComboScore  // invert for shorts
+_x_htf = (_htfDirScore + 1.0) / 2.0  // normalize to 0-1
+
+// Volume: 0-1 from composite Z-score (v6.1 — replaces binary thresholds)
+float _x_vol = math.min(1.0, math.max(0.0, _volComposite / 100.0))
+
+// Consensus agreement: capped consensus (0-7) normalized
+_biasAgree = isLong ? _biasBull : isShort ? _biasBear : 0
+float _corrCappedAgree = isLong ? float(_consBull) : isShort ? float(_consBear) : 0.0
+float _x_agree = math.min(1.0, _corrCappedAgree / 7.0)
+
+// Proven status
+float _x_proven = _activeProven ? 1.0 : 0.0
+
+// TF match: 0 or 5 or 10 → normalize to 0-1
+float _x_tf = math.min(1.0, _tf_match_score / 10.0)
+
+// --- Logistic regression model ---
+// Calibrated coefficients (β values) — v6.1.1 recalibrated for meaningful P(win) spread
+// Design targets: Perfect signal → 95% (capped), Strong → 75-85%, Average → 45-60%, Weak → <30%
+// Previous calibration (β₀=-3.0) clustered all signals at 80-95%, defeating signal grading
+float _b0 = -4.0     // intercept (prior: ~1.8% without any positive signal — conservative)
+float _b_base = 1.5   // base signal strength (reduced from 2.5 — was dominating)
+float _b_regime = 2.0  // regime fitness (increased — key differentiator)
+float _b_htf = 1.5    // HTF alignment (increased — counter-trend penalty matters)
+float _b_vol = 1.0    // volume confirmation (increased — reward strong volume)
+float _b_agree = 1.5   // consensus agreement (reduced from 2.0 — was overweighted)
+float _b_proven = 1.5  // proven backtest bonus (increased — proven strategies deserve more)
+float _b_tf = 0.5     // timeframe match
+
+// Compute logit (log-odds)
+float _logit = _b0 + _b_base * _x_base + _b_regime * _x_regime + _b_htf * _x_htf + _b_vol * _x_vol + _b_agree * _x_agree + _b_proven * _x_proven + _b_tf * _x_tf
+
+// Apply circuit breaker penalty (logit-additive: -0.7 per consecutive loss)
+_logit := _logit + _cbPenalty
+
+// Sigmoid: P(win) = 1 / (1 + e^(-logit))
+float _pWin = 1.0 / (1.0 + math.exp(-_logit))
+
+// Convert to 0-100 confidence, capped at 95% (no signal should be 100% confident)
+float dynamicConfidence = i_useBayesian ? math.min(95.0, math.max(0.0, _pWin * 100.0)) : math.max(0.0, math.min(92.0, _f1_base + (_vol_strong ? 15.0 : _vol_confirm ? 10.0 : _vol_weak ? 0.0 : 5.0) + (_x_htf > 0.5 ? 20.0 : _x_htf < 0.25 ? -10.0 : 5.0) + math.min(15.0, math.max(0.0, float(_biasAgree - 2) * 3.0)) + _tf_match_score))
+
+// Override confidence with Bayesian score
+confidence := dynamicConfidence
+
+// --- Kelly Criterion Position Sizing (v6.0) ---
+// Half-Kelly = (p*b - q) / (2*b) where p=P(win), b=R:R ratio, q=1-p
+// Conservative half-Kelly, capped at 25% of portfolio per trade
+float _rrForKelly = i_slMult > 0 ? i_tpMult / i_slMult : 1.5
+float _kellyFull = _rrForKelly > 0 ? (_pWin * _rrForKelly - (1.0 - _pWin)) / _rrForKelly : 0.0
+float _kellyHalf = math.max(0.0, math.min(0.25, _kellyFull / 2.0))
+float _kellyPct = _kellyHalf * 100.0  // For display (0-25%)
+
+// Apply minimum confidence filter
+bool _passesConfidence = (isLong or isShort) ? dynamicConfidence >= i_minConfidence : false
+isLong := isLong and _passesConfidence
+isShort := isShort and _passesConfidence
+
+// Non-repainting gate: only trigger on confirmed (closed) bars (v6.1)
+// Prevents intrabar signal artefacts — signals only appear after bar closes
+if i_confirmedOnly
+    isLong := isLong and barstate.isconfirmed
+    isShort := isShort and barstate.isconfirmed
+
+// --- Circuit breaker: track new signals for TP/SL outcome validation ---
+if isLong and _cbLastDir == 0
+    _cbLastEntry := close
+    _cbLastDir := 1
+    _cbLastBar := bar_index
+else if isShort and _cbLastDir == 0
+    _cbLastEntry := close
+    _cbLastDir := -1
+    _cbLastBar := bar_index
+
+
+// ============================================================================
+//              SIGNAL LABELS + SMART TP/SL BOXES + R:R
+// ============================================================================
+
+atrVal = ta.atr(i_atrPeriod)
+
+// ATR multiplier scaling by regime (v6.1 — wider stops in volatile, tighter in quiet)
+_regimeAtrScale = _regimePersist == "VOLATILE" ? 1.5 : _regimePersist == "QUIET" ? 0.8 : _regimePersist == "RANGING" ? 1.1 : 1.0
+_scaledTpMult = i_tpMult * _regimeAtrScale
+_scaledSlMult = i_slMult * _regimeAtrScale
+_scaledTp2Mult = i_dualTP ? _scaledTpMult * 1.667 : _scaledTpMult  // TP2 ≈ 2.5x ATR when TP1 = 1.5x
+
+// --- Signal Letter Grading (v6.1) ---
+// Maps Bayesian confidence to intuitive A+ through F grade
+f_signal_grade(_conf) =>
+    _conf >= 85.0 ? "A+" : _conf >= 75.0 ? "A" : _conf >= 65.0 ? "B+" : _conf >= 55.0 ? "B" : _conf >= 45.0 ? "C" : _conf >= 35.0 ? "D" : "F"
+
+f_grade_color(_conf) =>
+    _conf >= 85.0 ? #22c55e : _conf >= 75.0 ? #22c55e : _conf >= 65.0 ? #86efac : _conf >= 55.0 ? #eab308 : _conf >= 45.0 ? #f97316 : #ef4444
+
+// Persistent references for smart cleanup
+var box _prevTpBox = na
+var box _prevSlBox = na
+var box _prevTp2Box = na     // Dual TP2 box (v6.1)
+var label _prevTpLabel = na
+var label _prevSlLabel = na
+var label _prevTp2Label = na  // Dual TP2 label (v6.1)
+var label _prevSigLabel = na
+
+// Persistent last-signal tracking (for Decision Panel during WAIT)
+var int _lastSigBar = 0
+var int _lastSigDir = 0    // 1=long, -1=short
+var float _lastConf = 0.0
+var float _lastEntry = na
+var float _lastTP = na
+var float _lastSL = na
+var float _lastRR = 0.0
+
+f_calc_rr(_entry, _tp, _sl) =>
+    reward = math.abs(_tp - _entry)
+    risk = math.abs(_entry - _sl)
+    risk > 0 ? reward / risk : 0.0
+
+// --- Long Signal ---
+if isLong and i_showSignals
+    entryPrice = close
+    tpPrice = entryPrice + atrVal * _scaledTpMult
+    slPrice = entryPrice - atrVal * _scaledSlMult
+    tp2Price = entryPrice + atrVal * _scaledTp2Mult  // Dual TP2 (wider target)
+    rrRatio = f_calc_rr(entryPrice, tpPrice, slPrice)
+    passRR = i_minRR <= 0 or rrRatio >= i_minRR
+
+    if passRR
+        // Smart cleanup of previous signal objects
+        if i_smartTPSL
+            if not na(_prevTpBox)
+                box.delete(_prevTpBox)
+            if not na(_prevSlBox)
+                box.delete(_prevSlBox)
+            if not na(_prevTp2Box)
+                box.delete(_prevTp2Box)
+            if not na(_prevTpLabel)
+                label.delete(_prevTpLabel)
+            if not na(_prevSlLabel)
+                label.delete(_prevSlLabel)
+            if not na(_prevTp2Label)
+                label.delete(_prevTp2Label)
+            if not na(_prevSigLabel)
+                label.delete(_prevSigLabel)
+
+        // Signal grade + confidence-colored label (v6.1)
+        _grade = f_signal_grade(dynamicConfidence)
+        _gradeCol = f_grade_color(dynamicConfidence)
+        labelCol = _doubleIgniteBull ? color.new(#ff6d00, 0) : dynamicConfidence >= 75.0 ? #22c55e : dynamicConfidence >= 60.0 ? #eab308 : #f97316
+        confPct = str.tostring(dynamicConfidence, "#")
+        rrStr = str.tostring(rrRatio, "#.#")
+        agreeStr = str.tostring(_biasAgree)
+        _diTag = _doubleIgniteBull ? "🔥 IGNITE 🔥\n" : ""
+        _diSrcStr = _doubleIgniteBull ? " [" + str.tostring(_igGroupBull) + " grp]" : ""
+        labelText = _diTag + _grade + " BUY " + confPct + "% (" + agreeStr + "/7)\nR:R " + rrStr + _diSrcStr
+        _prevSigLabel := label.new(bar_index, low, labelText, style=label.style_label_up, color=labelCol, textcolor=color.white, size=_doubleIgniteBull ? size.normal : size.small)
+
+        // Track for Decision Panel
+        _lastSigBar := bar_index
+        _lastSigDir := 1
+        _lastConf := dynamicConfidence
+        _lastEntry := entryPrice
+        _lastTP := tpPrice
+        _lastSL := slPrice
+        _lastRR := rrRatio
+
+        if i_showTPSL
+            _prevTpBox := box.new(bar_index, tpPrice, bar_index + i_tpslBars, entryPrice, bgcolor=color.new(#22c55e, 85), border_color=#22c55e, border_style=line.style_dashed)
+            _prevSlBox := box.new(bar_index, entryPrice, bar_index + i_tpslBars, slPrice, bgcolor=color.new(#ef4444, 85), border_color=#ef4444, border_style=line.style_dashed)
+            _prevTpLabel := label.new(bar_index + i_tpslBars, tpPrice, "TP1: " + str.tostring(tpPrice, format.mintick), style=label.style_label_left, color=color.new(#22c55e, 50), textcolor=#22c55e, size=size.tiny)
+            _prevSlLabel := label.new(bar_index + i_tpslBars, slPrice, "SL: " + str.tostring(slPrice, format.mintick), style=label.style_label_left, color=color.new(#ef4444, 50), textcolor=#ef4444, size=size.tiny)
+            // Dual TP2 — extended target for scaled exits (v6.1)
+            if i_dualTP
+                _prevTp2Box := box.new(bar_index, tp2Price, bar_index + i_tpslBars, tpPrice, bgcolor=color.new(#10b981, 90), border_color=#10b981, border_style=line.style_dotted)
+                _prevTp2Label := label.new(bar_index + i_tpslBars, tp2Price, "TP2: " + str.tostring(tp2Price, format.mintick), style=label.style_label_left, color=color.new(#10b981, 50), textcolor=#10b981, size=size.tiny)
+
+// --- Short Signal ---
+if isShort and i_showSignals
+    entryPrice = close
+    tpPrice = entryPrice - atrVal * _scaledTpMult
+    slPrice = entryPrice + atrVal * _scaledSlMult
+    tp2Price = entryPrice - atrVal * _scaledTp2Mult  // Dual TP2
+    rrRatio = f_calc_rr(entryPrice, tpPrice, slPrice)
+    passRR = i_minRR <= 0 or rrRatio >= i_minRR
+
+    if passRR
+        // Smart cleanup of previous signal objects
+        if i_smartTPSL
+            if not na(_prevTpBox)
+                box.delete(_prevTpBox)
+            if not na(_prevSlBox)
+                box.delete(_prevSlBox)
+            if not na(_prevTp2Box)
+                box.delete(_prevTp2Box)
+            if not na(_prevTpLabel)
+                label.delete(_prevTpLabel)
+            if not na(_prevSlLabel)
+                label.delete(_prevSlLabel)
+            if not na(_prevTp2Label)
+                label.delete(_prevTp2Label)
+            if not na(_prevSigLabel)
+                label.delete(_prevSigLabel)
+
+        // Signal grade + confidence-colored label (v6.1)
+        _grade = f_signal_grade(dynamicConfidence)
+        _gradeCol = f_grade_color(dynamicConfidence)
+        labelCol = _doubleIgniteBear ? color.new(#ff6d00, 0) : dynamicConfidence >= 75.0 ? #ef4444 : dynamicConfidence >= 60.0 ? #eab308 : #f97316
+        confPct = str.tostring(dynamicConfidence, "#")
+        rrStr = str.tostring(rrRatio, "#.#")
+        agreeStr = str.tostring(_biasAgree)
+        _diTag = _doubleIgniteBear ? "🔥 IGNITE 🔥\n" : ""
+        _diSrcStr = _doubleIgniteBear ? " [" + str.tostring(_igGroupBear) + " grp]" : ""
+        labelText = _diTag + _grade + " SELL " + confPct + "% (" + agreeStr + "/7)\nR:R " + rrStr + _diSrcStr
+        _prevSigLabel := label.new(bar_index, high, labelText, style=label.style_label_down, color=labelCol, textcolor=color.white, size=_doubleIgniteBear ? size.normal : size.small)
+
+        // Track for Decision Panel
+        _lastSigBar := bar_index
+        _lastSigDir := -1
+        _lastConf := dynamicConfidence
+        _lastEntry := entryPrice
+        _lastTP := tpPrice
+        _lastSL := slPrice
+        _lastRR := rrRatio
+
+        if i_showTPSL
+            _prevTpBox := box.new(bar_index, entryPrice, bar_index + i_tpslBars, tpPrice, bgcolor=color.new(#ef4444, 85), border_color=#ef4444, border_style=line.style_dashed)
+            _prevSlBox := box.new(bar_index, slPrice, bar_index + i_tpslBars, entryPrice, bgcolor=color.new(#22c55e, 85), border_color=#22c55e, border_style=line.style_dashed)
+            _prevTpLabel := label.new(bar_index + i_tpslBars, tpPrice, "TP1: " + str.tostring(tpPrice, format.mintick), style=label.style_label_left, color=color.new(#ef4444, 50), textcolor=#ef4444, size=size.tiny)
+            _prevSlLabel := label.new(bar_index + i_tpslBars, slPrice, "SL: " + str.tostring(slPrice, format.mintick), style=label.style_label_left, color=color.new(#22c55e, 50), textcolor=#22c55e, size=size.tiny)
+            // Dual TP2 — extended target for scaled exits (v6.1)
+            if i_dualTP
+                _prevTp2Box := box.new(bar_index, tpPrice, bar_index + i_tpslBars, tp2Price, bgcolor=color.new(#10b981, 90), border_color=#10b981, border_style=line.style_dotted)
+                _prevTp2Label := label.new(bar_index + i_tpslBars, tp2Price, "TP2: " + str.tostring(tp2Price, format.mintick), style=label.style_label_left, color=color.new(#10b981, 50), textcolor=#10b981, size=size.tiny)
+
+
+// ============================================================================
+//              EXPERT COMMENTARY LABEL (v6.1 — contextual insight)
+// ============================================================================
+// Shows a brief, actionable commentary based on current market conditions.
+// Positioned near the last bar for quick reference.
+
+var label _commentaryLabel = na
+
+if barstate.islast and i_showCommentary
+    if not na(_commentaryLabel)
+        label.delete(_commentaryLabel)
+    string _cmnt = ""
+    color _cmntCol = #a78bfa
+    if _cbActive
+        _cmnt := "CIRCUIT BREAKER: " + str.tostring(_cbConsecutiveLosses) + " consecutive losses — reduce size or wait"
+        _cmntCol := #ef4444
+    else if _regimePersist == "VOLATILE" and (isLong or isShort)
+        _cmnt := "HIGH VOL regime — stops widened " + str.tostring(_regimeAtrScale, "#.#") + "x, use smaller position"
+        _cmntCol := #f97316
+    else if _regimePersist == "QUIET" and (isLong or isShort)
+        _cmnt := "LOW VOL regime — tighter stops (" + str.tostring(_regimeAtrScale, "#.#") + "x), watch for breakout"
+        _cmntCol := #eab308
+    else if _activeProven and dynamicConfidence >= 75.0 and (isLong or isShort)
+        _cmnt := "HIGH CONVICTION: proven strategy + strong confluence"
+        _cmntCol := #22c55e
+    else if not _activeProven and (isLong or isShort)
+        _cmnt := "UNPROVEN strategy — reduce position size, tighter risk"
+        _cmntCol := #f97316
+    else if (isLong and _htfComboScore < -0.3) or (isShort and _htfComboScore > 0.3)
+        _cmnt := "COUNTER-TREND signal — HTF disagrees, use extra caution"
+        _cmntCol := #ef4444
+    else if _vol_weak and (isLong or isShort)
+        _cmnt := "LOW VOLUME — weak conviction, consider waiting for confirmation"
+        _cmntCol := #eab308
+    else if isLong or isShort
+        _cmnt := "Conditions aligned — follow Decision Panel sizing"
+        _cmntCol := #86efac
+    else if math.abs(_biasBull - _biasBear) >= 5
+        _cmnt := "Strong directional bias (" + str.tostring(_biasBull) + "B/" + str.tostring(_biasBear) + "R) — watch for signal"
+        _cmntCol := #00d4ff
+    else
+        _cmnt := _regimePersist + " regime | ADX:" + str.tostring(_adx, "#") + " CI:" + str.tostring(_choppiness, "#") + " | Scanning..."
+        _cmntCol := #555555
+    _commentaryLabel := label.new(bar_index + 3, close, _cmnt, style=label.style_label_left, color=color.new(_cmntCol, 80), textcolor=_cmntCol, size=size.small)
+
+// ============================================================================
+//                  ALERTS (dynamic via alert(), static via alertcondition)
+// ============================================================================
+
+// Dynamic alerts with Decision Engine data
+if isLong and i_showSignals
+    _diAlert = _doubleIgniteBull ? "🔥 DOUBLE IGNITE " : ""
+    alert(_diAlert + "Decision Engine BUY on " + syminfo.ticker + " | Conf: " + str.tostring(dynamicConfidence, "#") + "% | " + _stratDisplay + " | Bias: " + str.tostring(_biasBull) + "B/" + str.tostring(_biasBear) + "R | HTF: " + _htf_trend_str + (_doubleIgniteBull ? " | Ignite: " + str.tostring(_igGroupBull) + " groups" : ""), alert.freq_once_per_bar)
+if isShort and i_showSignals
+    _diAlert = _doubleIgniteBear ? "🔥 DOUBLE IGNITE " : ""
+    alert(_diAlert + "Decision Engine SELL on " + syminfo.ticker + " | Conf: " + str.tostring(dynamicConfidence, "#") + "% | " + _stratDisplay + " | Bias: " + str.tostring(_biasBull) + "B/" + str.tostring(_biasBear) + "R | HTF: " + _htf_trend_str + (_doubleIgniteBear ? " | Ignite: " + str.tostring(_igGroupBear) + " groups" : ""), alert.freq_once_per_bar)
+
+// Static alertconditions (for TradingView alert dialog — const string required)
+alertcondition(isLong, title="Elton BUY Signal", message="Elton's Predictions: BUY signal on {{ticker}} at {{close}}")
+alertcondition(isShort, title="Elton SELL Signal", message="Elton's Predictions: SELL signal on {{ticker}} at {{close}}")
+alertcondition(isLong or isShort, title="Elton Any Signal", message="Elton's Predictions: Signal on {{ticker}} at {{close}}")
+alertcondition(_doubleIgniteBull, title="🔥 Double Ignite BULL", message="🔥 DOUBLE IGNITE: Multiple independent strategy groups firing BULLISH on {{ticker}} at {{close}}")
+alertcondition(_doubleIgniteBear, title="🔥 Double Ignite BEAR", message="🔥 DOUBLE IGNITE: Multiple independent strategy groups firing BEARISH on {{ticker}} at {{close}}")
+
+// Confidence plot (hidden, available for alerts and data window)
+plot(dynamicConfidence, "Confidence %", display=display.data_window, color=color.new(color.blue, 100))
+plot(_doubleIgniteBull ? 1 : _doubleIgniteBear ? -1 : 0, "🔥 Double Ignite", display=display.data_window, color=color.new(#ff6d00, 100))
+plot(_igGroupBull, "Ignite Bull Groups", display=display.data_window, color=color.new(#ff6d00, 100))
+plot(_igGroupBear, "Ignite Bear Groups", display=display.data_window, color=color.new(#ff6d00, 100))
+
+// ============================================================================
+//               PINE SCREENER OUTPUTS
+// ============================================================================
+// All plots use display=display.data_window so they appear in the screener
+// and data window without cluttering the chart.
+
+// Signal direction: 2=Strong Long, 1=Long, -1=Short, -2=Strong Short, 0=None
+plot(isLong and dynamicConfidence >= 75 ? 2 : isLong ? 1 : isShort and dynamicConfidence >= 75 ? -2 : isShort ? -1 : 0, "Signal", display=display.data_window, color=color.new(color.blue, 100))
+
+// Consensus counts (how many strategies agree)
+plot(_consBull, "Consensus Bull", display=display.data_window, color=color.new(color.blue, 100))
+plot(_consBear, "Consensus Bear", display=display.data_window, color=color.new(color.blue, 100))
+
+// Bias counts (how many bias filters agree)
+plot(_biasBull, "Bias Bull", display=display.data_window, color=color.new(color.blue, 100))
+plot(_biasBear, "Bias Bear", display=display.data_window, color=color.new(color.blue, 100))
+
+// HTF combo score (-1.0 to +1.0: negative=bearish, positive=bullish)
+plot(_htfComboScore, "HTF Score", display=display.data_window, color=color.new(color.blue, 100))
+
+// Regime as numeric: 1=Trending, 2=Ranging, 3=Volatile, 4=Quiet, 0=Normal
+plot(_regimePersist == "TRENDING" ? 1 : _regimePersist == "RANGING" ? 2 : _regimePersist == "VOLATILE" ? 3 : _regimePersist == "QUIET" ? 4 : 0, "Regime", display=display.data_window, color=color.new(color.blue, 100))
+
+// Core technicals
+plot(_adx, "ADX", display=display.data_window, color=color.new(color.blue, 100))
+plot(_choppiness, "Choppiness", display=display.data_window, color=color.new(color.blue, 100))
+
+// Volume metrics
+plot(_vol_ratio, "Vol Ratio", display=display.data_window, color=color.new(color.blue, 100))
+plot(_vol_zscore, "Vol Z-Score", display=display.data_window, color=color.new(color.blue, 100))
+
+// Strategy fitness & proven status
+plot(_activeFitness, "Regime Fitness", display=display.data_window, color=color.new(color.blue, 100))
+plot(_activeProven ? 1 : 0, "Proven", display=display.data_window, color=color.new(color.blue, 100))
+
+// TP/SL multipliers (after regime scaling)
+plot(_scaledTpMult, "TP Mult", display=display.data_window, color=color.new(color.blue, 100))
+plot(_scaledSlMult, "SL Mult", display=display.data_window, color=color.new(color.blue, 100))
+
+// Bayesian P(win) raw — already shown as Confidence % above, this is the 0-1 form
+plot(i_useBayesian ? _pWin : na, "Bayes P(win)", display=display.data_window, color=color.new(color.blue, 100))
+
+
+// ============================================================================
+//               CANDLE COLORING (MACD-based gradient)
+// ============================================================================
+// Uses MACD histogram to color candles in a 4-level confirmation or
+// contrarian gradient. Self-contained — no external libraries.
+
+[_macdCC, _sigCC, histCC] = ta.macd(close, 12, 26, 9)
+
+// 4-level gradient based on histogram magnitude and direction
+histRising = histCC > nz(histCC[1])
+
+// Confirmation Gradient: green when MACD hist positive & rising, red when negative & falling
+confGreen4 = histCC > 0 and histRising      // Strong bullish
+confGreen3 = histCC > 0 and not histRising   // Weakening bullish
+confRed3   = histCC < 0 and not histRising   // Weakening bearish (hist falling = more negative)
+confRed4   = histCC < 0 and histRising       // Recovering bearish (hist rising from negative)
+
+confirmColor = confGreen4 ? #22c55e : confGreen3 ? #86efac : confRed4 ? #fca5a5 : confRed3 ? #ef4444 : color.gray
+
+// Contrarian Gradient: inverted — red on MACD highs (overbought), green on MACD lows (oversold)
+contrarianColor = confGreen4 ? #ef4444 : confGreen3 ? #fca5a5 : confRed4 ? #86efac : confRed3 ? #22c55e : color.gray
+
+candleCol = i_candleColor == "Confirmation Gradient" ? confirmColor : i_candleColor == "Contrarian Gradient" ? contrarianColor : na
+
+barcolor(candleCol)
+
+
+// ============================================================================
+//          REVERSAL ZONES (SuperSmoother-based mean reversion channel)
+// ============================================================================
+// SuperSmoother filter (Ehlers) creates the center line.
+// Inner band: pi * 1.0 * ATR  |  Outer band: pi * 2.415 * ATR
+// Gradient fill marks statistical extreme zones.
+
+// f_supersmoother is defined at the top of the file (global scope)
+
+rzSrc = hlc3
+rzCenter = f_supersmoother(rzSrc, i_rzLength)
+rzAtr = ta.atr(i_rzAtrLen)
+
+// Band calculations
+rzInnerUp = rzCenter + i_rzInnerMult * rzAtr
+rzInnerDn = rzCenter - i_rzInnerMult * rzAtr
+rzOuterUp = rzCenter + i_rzOuterMult * rzAtr
+rzOuterDn = rzCenter - i_rzOuterMult * rzAtr
+
+// Plots (only visible when Reversal Zones enabled)
+pCenter   = plot(i_showReversal ? rzCenter : na, "RZ Center", color=color.new(#a78bfa, 30), linewidth=1)
+pInnerUp  = plot(i_showReversal ? rzInnerUp : na, "RZ Inner Up", color=color.new(#ef4444, 60), linewidth=1, style=plot.style_linebr)
+pInnerDn  = plot(i_showReversal ? rzInnerDn : na, "RZ Inner Dn", color=color.new(#22c55e, 60), linewidth=1, style=plot.style_linebr)
+pOuterUp  = plot(i_showReversal ? rzOuterUp : na, "RZ Outer Up", color=color.new(#ef4444, 40), linewidth=1, style=plot.style_linebr)
+pOuterDn  = plot(i_showReversal ? rzOuterDn : na, "RZ Outer Dn", color=color.new(#22c55e, 40), linewidth=1, style=plot.style_linebr)
+
+// Gradient fills between bands
+fill(pOuterUp, pInnerUp, color=i_showReversal ? color.new(#ef4444, 88) : na, title="Upper Extreme Zone")
+fill(pOuterDn, pInnerDn, color=i_showReversal ? color.new(#22c55e, 88) : na, title="Lower Extreme Zone")
+fill(pInnerUp, pCenter,  color=i_showReversal ? color.new(#ef4444, 95) : na, title="Upper Caution Zone")
+fill(pInnerDn, pCenter,  color=i_showReversal ? color.new(#22c55e, 95) : na, title="Lower Caution Zone")
+
+
+// ============================================================================
+//          SESSION MARKERS (NY / London box overlay)
+// ============================================================================
+// Draws semi-transparent session boxes for New York and London trading hours.
+
+// Helper: check if current bar falls within session window (UTC hour*100 + minute)
+f_inSession(_start, _end) =>
+    utcHour = hour(time, "UTC")
+    utcMin  = minute(time, "UTC")
+    t = utcHour * 100 + utcMin
+    _start < _end ? (t >= _start and t < _end) : (t >= _start or t < _end)
+
+inNY  = f_inSession(i_nyStart, i_nyEnd)
+inLon = f_inSession(i_lonStart, i_lonEnd)
+
+// Track session boxes
+var box nyBox  = na
+var box lonBox = na
+var float nyHigh  = na
+var float nyLow   = na
+var float lonHigh = na
+var float lonLow  = na
+
+if i_showSessions
+    // --- New York Session ---
+    if inNY and not inNY[1]
+        // Session start: create new box
+        nyHigh := high
+        nyLow  := low
+        nyBox  := box.new(bar_index, high, bar_index, low, bgcolor=color.new(#3b82f6, 92), border_color=color.new(#3b82f6, 70), border_width=1)
+        label.new(bar_index, high, "NY", style=label.style_label_down, color=color.new(#3b82f6, 70), textcolor=#3b82f6, size=size.tiny)
+    else if inNY
+        // Extend box
+        nyHigh := math.max(nz(nyHigh), high)
+        nyLow  := math.min(nz(nyLow), low)
+        if not na(nyBox)
+            box.set_right(nyBox, bar_index)
+            box.set_top(nyBox, nyHigh)
+            box.set_bottom(nyBox, nyLow)
+
+    // --- London Session ---
+    if inLon and not inLon[1]
+        lonHigh := high
+        lonLow  := low
+        lonBox  := box.new(bar_index, high, bar_index, low, bgcolor=color.new(#f59e0b, 92), border_color=color.new(#f59e0b, 70), border_width=1)
+        label.new(bar_index, high, "LDN", style=label.style_label_down, color=color.new(#f59e0b, 70), textcolor=#f59e0b, size=size.tiny)
+    else if inLon
+        lonHigh := math.max(nz(lonHigh), high)
+        lonLow  := math.min(nz(lonLow), low)
+        if not na(lonBox)
+            box.set_right(lonBox, bar_index)
+            box.set_top(lonBox, lonHigh)
+            box.set_bottom(lonBox, lonLow)
+
+
+// ============================================================================
+//              SUPERTREND OVERLAY (Visual Trail)
+// ============================================================================
+// Plots Supertrend line on chart when Supertrend or Consensus strategy is active.
+
+[stLine, stDir] = ta.supertrend(3.0, 10)
+stColor = stDir < 0 ? #22c55e : #ef4444
+showSupertrend = _effectiveStrategy == "Supertrend" or _effectiveStrategy == "Multi-Strategy Consensus"
+plot(showSupertrend ? stLine : na, "Supertrend Trail", color=stColor, linewidth=2, style=plot.style_linebr)
+
+
+// ============================================================================
+//             ICHIMOKU CLOUD OVERLAY (when Ichimoku or Consensus selected)
+// ============================================================================
+// Plots the Kumo cloud for visual context.
+
+ichiConv = (ta.highest(high, 9) + ta.lowest(low, 9)) / 2
+ichiBase = (ta.highest(high, 26) + ta.lowest(low, 26)) / 2
+ichiSpanA = (ichiConv + ichiBase) / 2
+ichiSpanB = (ta.highest(high, 52) + ta.lowest(low, 52)) / 2
+
+showIchi = _effectiveStrategy == "Ichimoku Cloud" or _effectiveStrategy == "Multi-Strategy Consensus"
+pSpanA = plot(showIchi ? ichiSpanA : na, "Span A", color=color.new(#22c55e, 70), offset=26)
+pSpanB = plot(showIchi ? ichiSpanB : na, "Span B", color=color.new(#ef4444, 70), offset=26)
+fill(pSpanA, pSpanB, color=showIchi ? (ichiSpanA >= ichiSpanB ? color.new(#22c55e, 90) : color.new(#ef4444, 90)) : na, title="Kumo Cloud")
+plot(showIchi ? ichiConv : na, "Tenkan-sen", color=color.new(#00d4ff, 40), linewidth=1)
+plot(showIchi ? ichiBase : na, "Kijun-sen", color=color.new(#f59e0b, 40), linewidth=1)
+
+
+// ============================================================================
+//           BOLLINGER + KELTNER OVERLAY (when Bollinger Squeeze selected)
+// ============================================================================
+
+showBB = _effectiveStrategy == "Bollinger Squeeze"
+[bbMidOv, bbUpOv, bbLowOv] = ta.bb(close, 20, 2.0)
+kcMidOv = ta.ema(close, 20)
+kcRangeOv = ta.atr(10) * 1.5
+kcUpOv = kcMidOv + kcRangeOv
+kcLowOv = kcMidOv - kcRangeOv
+
+// Squeeze state indicator
+sqzOnOv = bbLowOv > kcLowOv and bbUpOv < kcUpOv
+
+plot(showBB ? bbUpOv : na, "BB Upper", color=color.new(#3b82f6, 50), linewidth=1)
+plot(showBB ? bbLowOv : na, "BB Lower", color=color.new(#3b82f6, 50), linewidth=1)
+plot(showBB ? kcUpOv : na, "KC Upper", color=color.new(#f59e0b, 50), linewidth=1, style=plot.style_cross)
+plot(showBB ? kcLowOv : na, "KC Lower", color=color.new(#f59e0b, 50), linewidth=1, style=plot.style_cross)
+
+// Squeeze dots at bottom of chart
+plotshape(showBB and sqzOnOv, "Squeeze ON", shape.diamond, location.bottom, color=#ef4444, size=size.tiny)
+plotshape(showBB and not sqzOnOv, "Squeeze OFF", shape.diamond, location.bottom, color=#22c55e, size=size.tiny)
+
+
+// ============================================================================
+//         VWAP OVERLAY (when VWAP Reversion selected)
+// ============================================================================
+
+showVwap = _effectiveStrategy == "VWAP Reversion"
+vwapOv = ta.vwap(hlc3)
+atrOvVwap = ta.atr(14)
+vwapUp2 = vwapOv + 2.0 * atrOvVwap
+vwapDn2 = vwapOv - 2.0 * atrOvVwap
+
+plot(showVwap ? vwapOv : na, "VWAP", color=color.new(#a78bfa, 20), linewidth=2)
+plot(showVwap ? vwapUp2 : na, "VWAP +2s", color=color.new(#ef4444, 50), linewidth=1, style=plot.style_circles)
+plot(showVwap ? vwapDn2 : na, "VWAP -2s", color=color.new(#22c55e, 50), linewidth=1, style=plot.style_circles)
+
+
+// ============================================================================
+//         EMA OVERLAY (when EMA Crossover selected)
+// ============================================================================
+
+showEma = _effectiveStrategy == "EMA Crossover"
+plot(showEma ? ta.ema(close, 9) : na, "EMA 9", color=#00d4ff, linewidth=1)
+plot(showEma ? ta.ema(close, 21) : na, "EMA 21", color=#f59e0b, linewidth=1)
+plot(showEma ? ta.sma(close, 50) : na, "SMA 50", color=color.new(#a78bfa, 30), linewidth=1, style=plot.style_cross)
+
+
+// ============================================================================
+//             200 SMA REFERENCE LINE (Connors / VIX strategies)
+// ============================================================================
+
+showSma200 = _effectiveStrategy == "Connors RSI-2" or _effectiveStrategy == "VIX Spike Reversal" or _effectiveStrategy == "Multi-Strategy Consensus"
+plot(showSma200 ? ta.sma(close, 200) : na, "SMA 200", color=color.new(#888888, 40), linewidth=1, style=plot.style_cross)
+
+
+// ============================================================================
+//                  DECISION ENGINE PANEL (PRIMARY HUD)
+// ============================================================================
+// 2 columns x 12 rows — the main dashboard for v2.0.
+// Shows verdict, confidence breakdown, HTF trend, volume, TF match, entry/TP/SL/R:R.
+
+decPos = switch i_decisionLocation
+    "Top Left" => position.top_left
+    "Top Right" => position.top_right
+    "Bottom Left" => position.bottom_left
+    => position.bottom_right
+
+var table decPanel = table.new(decPos, 2, 17, bgcolor=#0a0a14, border_color=#2a2a4a, border_width=1, frame_color=#3b82f6, frame_width=2)
+
+// (strat_proven array is now declared earlier for Bayesian model access)
+
+if barstate.islast and i_showDecisionPanel
+    // Row 0: Title with proven count + engine version
+    table.cell(decPanel, 0, 0, "DECISION ENGINE v6.0.1538 [2/30] Bayesian", text_color=#00d4ff, text_size=size.small, text_halign=text.align_center)
+    table.merge_cells(decPanel, 0, 0, 1, 0)
+
+    // Row 1: VERDICT (BUY NOW / SELL NOW / LEAN BUY / LEAN SELL / WAIT)
+    _biasNet = _biasBull - _biasBear
+    _verdict = isLong ? "BUY NOW" : isShort ? "SELL NOW" : _biasNet >= 3 ? "LEAN BUY" : _biasNet <= -3 ? "LEAN SELL" : _biasNet >= 1 ? "SLIGHT BULL" : _biasNet <= -1 ? "SLIGHT BEAR" : "WAIT"
+    _verdictBg = isLong ? color.new(#22c55e, 70) : isShort ? color.new(#ef4444, 70) : _biasNet >= 3 ? color.new(#22c55e, 85) : _biasNet <= -3 ? color.new(#ef4444, 85) : color.new(#888888, 80)
+    _verdictColor = isLong ? #22c55e : isShort ? #ef4444 : _biasNet >= 3 ? #86efac : _biasNet <= -3 ? #fca5a5 : _biasNet >= 1 ? #86efac : _biasNet <= -1 ? #fca5a5 : #888888
+    table.cell(decPanel, 0, 1, _verdict, text_color=_verdictColor, text_size=size.large, text_halign=text.align_center, bgcolor=_verdictBg)
+    table.merge_cells(decPanel, 0, 1, 1, 1)
+
+    // Row 2: Confidence (Bayesian P(win) when signal active)
+    _displayConf = (isLong or isShort) ? dynamicConfidence : float(math.max(_biasBull, _biasBear)) / 7.0 * 50.0
+    _confStr = str.tostring(_displayConf, "#.#") + "%"
+    _confColor = _displayConf >= 75.0 ? #22c55e : _displayConf >= 60.0 ? #eab308 : _displayConf >= 45.0 ? #f97316 : #ef4444
+    _confLabel = i_useBayesian ? "P(win)" : "Confidence"
+    table.cell(decPanel, 0, 2, _confLabel, text_color=#aaaacc, text_size=size.small, bgcolor=#0f0f1e)
+    table.cell(decPanel, 1, 2, _confStr, text_color=_confColor, text_size=size.small, bgcolor=#0f0f1e)
+
+    // Row 3: Strategy (shows resolved name + proven badge)
+    _provenBadge = _activeProven ? " [PROVEN]" : " [UNPROVEN]"
+    _provenBadgeColor = _activeProven ? #22c55e : #ef4444
+    table.cell(decPanel, 0, 3, "Strategy", text_color=#aaaacc, text_size=size.small)
+    table.cell(decPanel, 1, 3, _stratDisplay + _provenBadge, text_color=_provenBadgeColor, text_size=size.small)
+
+    // Row 4: Regime (v6.0 — market classification)
+    table.cell(decPanel, 0, 4, "Regime", text_color=#aaaacc, text_size=size.small, bgcolor=#0f0f1e)
+    _regimeFitStr = i_useRegimeFitness ? " (fit:" + str.tostring(_activeFitness, "#.##") + ")" : ""
+    table.cell(decPanel, 1, 4, _regimeStr + _regimeFitStr, text_color=_regimeColor, text_size=size.small, bgcolor=#0f0f1e)
+
+    // Row 5: Market Bias (ongoing conditions, capped consensus)
+    _biasStr = str.tostring(_consBull) + "/" + str.tostring(_consBear) + " (raw:" + str.tostring(_consBullRaw) + "/" + str.tostring(_consBearRaw) + ")"
+    _biasNetColor = _consBull > _consBear ? #22c55e : _consBear > _consBull ? #ef4444 : #eab308
+    table.cell(decPanel, 0, 5, "Consensus", text_color=#aaaacc, text_size=size.small)
+    table.cell(decPanel, 1, 5, _biasStr, text_color=_biasNetColor, text_size=size.small)
+
+    // Row 6: HTF Trend (dual TF)
+    _htfLabel = "HTF " + i_htfTrend + "/" + _htf2_tf
+    _htf1Str = _htf_bullish ? "B" : _htf_bearish ? "S" : "N"
+    _htf2Str = _htf2_bullish ? "B" : _htf2_bearish ? "S" : "N"
+    _htfComboStr = _htf1Str + "/" + _htf2Str + " (" + str.tostring(_htfComboScore, "#.#") + ")"
+    _htfColor = _htfComboScore > 0.3 ? #22c55e : _htfComboScore < -0.3 ? #ef4444 : #888888
+    table.cell(decPanel, 0, 6, _htfLabel, text_color=#aaaacc, text_size=size.small, bgcolor=#0f0f1e)
+    table.cell(decPanel, 1, 6, _htfComboStr, text_color=_htfColor, text_size=size.small, bgcolor=#0f0f1e)
+
+    // Row 7: Volume
+    _volColor = _vol_strong ? #22c55e : _vol_confirm ? #eab308 : _vol_weak ? #ef4444 : #888888
+    _volStr = _vol_status + " (" + str.tostring(_vol_ratio, "#.#") + "x)"
+    table.cell(decPanel, 0, 7, "Volume", text_color=#aaaacc, text_size=size.small)
+    table.cell(decPanel, 1, 7, _volStr, text_color=_volColor, text_size=size.small)
+
+    // Row 8: TF Match
+    _tfColor = _tf_match_score >= 10.0 ? #22c55e : _tf_match_score >= 5.0 ? #eab308 : #ef4444
+    table.cell(decPanel, 0, 8, "TF Match", text_color=#aaaacc, text_size=size.small, bgcolor=#0f0f1e)
+    table.cell(decPanel, 1, 8, _tf_match_str, text_color=_tfColor, text_size=size.small, bgcolor=#0f0f1e)
+
+    // Row 9-11: Entry/TP/SL/R:R (only when signal active) — using regime-scaled multipliers
+    if isLong or isShort
+        _entry = close
+        _tp = isLong ? _entry + atrVal * _scaledTpMult : _entry - atrVal * _scaledTpMult
+        _sl = isLong ? _entry - atrVal * _scaledSlMult : _entry + atrVal * _scaledSlMult
+        _tp2 = isLong ? _entry + atrVal * _scaledTp2Mult : _entry - atrVal * _scaledTp2Mult
+        _rr = f_calc_rr(_entry, _tp, _sl)
+        _rrColor = _rr >= 2.0 ? #22c55e : _rr >= 1.5 ? #eab308 : #ef4444
+        _gradeDisp = f_signal_grade(dynamicConfidence)
+        _gradeDispCol = f_grade_color(dynamicConfidence)
+
+        table.cell(decPanel, 0, 9, "Entry [" + _gradeDisp + "]", text_color=_gradeDispCol, text_size=size.small)
+        table.cell(decPanel, 1, 9, str.tostring(_entry, format.mintick), text_color=#ffffff, text_size=size.small)
+        _tpStr = i_dualTP ? str.tostring(_tp, format.mintick) + " / " + str.tostring(_tp2, format.mintick) : str.tostring(_tp, format.mintick)
+        table.cell(decPanel, 0, 10, i_dualTP ? "TP1/TP2 / SL" : "TP / SL", text_color=#aaaacc, text_size=size.small, bgcolor=#0f0f1e)
+        table.cell(decPanel, 1, 10, _tpStr + " / " + str.tostring(_sl, format.mintick), text_color=#ffffff, text_size=size.small, bgcolor=#0f0f1e)
+        table.cell(decPanel, 0, 11, "R:R Ratio", text_color=#aaaacc, text_size=size.small)
+        table.cell(decPanel, 1, 11, str.tostring(_rr, "#.##") + ":1 (x" + str.tostring(_regimeAtrScale, "#.#") + ")", text_color=_rrColor, text_size=size.small)
+    else
+        // No active BUY NOW / SELL NOW signal — show LIVE TP/SL based on current bias
+        _hasBias = _biasNet != 0
+        _barsAgo = bar_index - _lastSigBar
+        _hasLastSig = _lastSigDir != 0 and _barsAgo < 500
+
+        if _hasBias
+            _liveEntry = close
+            _biasIsBull = _biasNet > 0
+            _liveTP = _biasIsBull ? _liveEntry + atrVal * _scaledTpMult : _liveEntry - atrVal * _scaledTpMult
+            _liveSL = _biasIsBull ? _liveEntry - atrVal * _scaledSlMult : _liveEntry + atrVal * _scaledSlMult
+            _liveRR = f_calc_rr(_liveEntry, _liveTP, _liveSL)
+            _liveDirStr = _biasIsBull ? "LONG" : "SHORT"
+            _liveDirCol = _biasIsBull ? #22c55e : #ef4444
+            _liveRRCol = _liveRR >= 2.0 ? #22c55e : _liveRR >= 1.5 ? #eab308 : #ef4444
+
+            table.cell(decPanel, 0, 9, "If " + _liveDirStr + " now", text_color=_liveDirCol, text_size=size.small)
+            table.cell(decPanel, 1, 9, str.tostring(_liveEntry, format.mintick), text_color=#aaaacc, text_size=size.small)
+            table.cell(decPanel, 0, 10, "TP / SL", text_color=_liveDirCol, text_size=size.small, bgcolor=#0f0f1e)
+            table.cell(decPanel, 1, 10, str.tostring(_liveTP, format.mintick) + " / " + str.tostring(_liveSL, format.mintick), text_color=_liveDirCol, text_size=size.small, bgcolor=#0f0f1e)
+            table.cell(decPanel, 0, 11, "R:R Ratio", text_color=#aaaacc, text_size=size.small)
+            table.cell(decPanel, 1, 11, str.tostring(_liveRR, "#.##") + ":1", text_color=_liveRRCol, text_size=size.small)
+        else if _hasLastSig
+            _ldStr = _lastSigDir > 0 ? "BUY" : "SELL"
+            _ldCol = _lastSigDir > 0 ? color.new(#22c55e, 50) : color.new(#ef4444, 50)
+            table.cell(decPanel, 0, 9, "Last: " + _ldStr, text_color=_ldCol, text_size=size.small)
+            table.cell(decPanel, 1, 9, str.tostring(_lastEntry, format.mintick) + " (" + str.tostring(_barsAgo) + " bars)", text_color=#555555, text_size=size.small)
+            table.cell(decPanel, 0, 10, "TP / SL", text_color=#555555, text_size=size.small, bgcolor=#0f0f1e)
+            table.cell(decPanel, 1, 10, "Neutral — no bias direction", text_color=#555555, text_size=size.small, bgcolor=#0f0f1e)
+            table.cell(decPanel, 0, 11, "", text_color=#555555, text_size=size.small)
+            table.cell(decPanel, 1, 11, "", text_color=#555555, text_size=size.small)
+        else
+            table.cell(decPanel, 0, 9, "", text_color=#555555, text_size=size.small)
+            table.cell(decPanel, 1, 9, "No signals yet", text_color=#555555, text_size=size.small)
+            table.cell(decPanel, 0, 10, "", text_color=#555555, text_size=size.small, bgcolor=#0f0f1e)
+            table.cell(decPanel, 1, 10, "", text_color=#555555, text_size=size.small, bgcolor=#0f0f1e)
+            table.cell(decPanel, 0, 11, "", text_color=#555555, text_size=size.small)
+            table.cell(decPanel, 1, 11, "", text_color=#555555, text_size=size.small)
+
+    // Row 12: Kelly Position Sizing (v6.0)
+    if i_showKelly
+        _kellyStr = (isLong or isShort) ? str.tostring(_kellyPct, "#.#") + "% of portfolio" : "—"
+        _kellyColor = _kellyPct >= 10.0 ? #22c55e : _kellyPct >= 5.0 ? #eab308 : _kellyPct > 0 ? #f97316 : #888888
+        table.cell(decPanel, 0, 12, "Half-Kelly", text_color=#aaaacc, text_size=size.small, bgcolor=#0f0f1e)
+        table.cell(decPanel, 1, 12, _kellyStr, text_color=_kellyColor, text_size=size.small, bgcolor=#0f0f1e)
+    else
+        table.cell(decPanel, 0, 12, "", bgcolor=#0a0a14, text_size=size.tiny)
+        table.cell(decPanel, 1, 12, "", bgcolor=#0a0a14, text_size=size.tiny)
+
+    // Row 13: Circuit Breaker Status (v6.0)
+    _cbStr = _cbActive ? "ACTIVE (" + str.tostring(_cbConsecutiveLosses) + " losses)" : _cbConsecutiveLosses > 0 ? str.tostring(_cbConsecutiveLosses) + " losses" : "Clear"
+    _cbColor = _cbActive ? #ef4444 : _cbConsecutiveLosses > 0 ? #eab308 : #22c55e
+    table.cell(decPanel, 0, 13, "Circuit Brk", text_color=#aaaacc, text_size=size.small)
+    table.cell(decPanel, 1, 13, _cbStr, text_color=_cbColor, text_size=size.small)
+
+    // Row 14: ADX + Choppiness values (regime detail)
+    _adxStr = "ADX:" + str.tostring(_adx, "#") + " CI:" + str.tostring(_choppiness, "#") + " Vol:" + str.tostring(_atrPctile, "#") + "%"
+    table.cell(decPanel, 0, 14, "Indicators", text_color=#aaaacc, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(decPanel, 1, 14, _adxStr, text_color=#888888, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    // Row 15: Footer / warnings
+    if _effectiveStrategy == "VIX Spike Reversal" and _isCrypto
+        table.cell(decPanel, 0, 15, "WARNING: VIX N/A on Crypto", text_color=#ef4444, text_size=size.tiny, bgcolor=color.new(#ef4444, 90), text_halign=text.align_center)
+        table.merge_cells(decPanel, 0, 15, 1, 15)
+    else
+        table.cell(decPanel, 0, 15, "Min Conf: " + str.tostring(i_minConfidence) + "% | Min R:R: " + str.tostring(i_minRR, "#.#"), text_color=#555555, text_size=size.tiny, text_halign=text.align_center)
+        table.merge_cells(decPanel, 0, 15, 1, 15)
+
+    // Row 16: Proven disclaimer
+    _disclaimerText = _activeProven ? "Backtest-validated strategy" : "UNPROVEN: no real backtest — use caution"
+    _disclaimerColor = _activeProven ? #22c55e : #ef4444
+    table.cell(decPanel, 0, 16, _disclaimerText, text_color=_disclaimerColor, text_size=size.tiny, text_halign=text.align_center)
+    table.merge_cells(decPanel, 0, 16, 1, 16)
+
+
+// ============================================================================
+//                  USER GUIDE PANEL (toggleable reference)
+// ============================================================================
+// Explains verdicts, confidence scoring, and how to read each field.
+// Toggle: Settings > Decision Engine > Show User Guide
+
+guidePos = switch i_decisionLocation
+    "Top Left" => position.bottom_left
+    "Top Right" => position.bottom_right
+    "Bottom Left" => position.top_left
+    => position.top_right
+
+var table guidePanel = table.new(guidePos, 2, 22, bgcolor=#0a0a14, border_color=#2a2a4a, border_width=1, frame_color=#a78bfa, frame_width=2)
+
+if barstate.islast and i_showGuide
+    // Title
+    table.cell(guidePanel, 0, 0, "USER GUIDE", text_color=#a78bfa, text_size=size.small, text_halign=text.align_center)
+    table.merge_cells(guidePanel, 0, 0, 1, 0)
+
+    // --- VERDICTS ---
+    table.cell(guidePanel, 0, 1, "VERDICTS", text_color=#00d4ff, text_size=size.tiny, bgcolor=#1a1a2e, text_halign=text.align_center)
+    table.merge_cells(guidePanel, 0, 1, 1, 1)
+
+    table.cell(guidePanel, 0, 2, "BUY NOW", text_color=#22c55e, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 2, "Strategy fired a confirmed BUY — Entry/TP/SL set", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    table.cell(guidePanel, 0, 3, "SELL NOW", text_color=#ef4444, text_size=size.tiny)
+    table.cell(guidePanel, 1, 3, "Strategy fired a confirmed SELL — Entry/TP/SL set", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 4, "LEAN BUY", text_color=#86efac, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 4, "No signal, but 3+ strategies lean bullish (bias)", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    table.cell(guidePanel, 0, 5, "LEAN SELL", text_color=#fca5a5, text_size=size.tiny)
+    table.cell(guidePanel, 1, 5, "No signal, but 3+ strategies lean bearish (bias)", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 6, "SLIGHT BULL", text_color=#86efac, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 6, "Mild bullish lean (1-2 strategy advantage)", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    table.cell(guidePanel, 0, 7, "SLIGHT BEAR", text_color=#fca5a5, text_size=size.tiny)
+    table.cell(guidePanel, 1, 7, "Mild bearish lean (1-2 strategy advantage)", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 8, "WAIT", text_color=#888888, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 8, "Neutral — equal bull/bear count, no edge", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    // --- CONFIDENCE ---
+    table.cell(guidePanel, 0, 9, "CONFIDENCE", text_color=#00d4ff, text_size=size.tiny, bgcolor=#1a1a2e, text_halign=text.align_center)
+    table.merge_cells(guidePanel, 0, 9, 1, 9)
+
+    table.cell(guidePanel, 0, 10, "75%+", text_color=#22c55e, text_size=size.tiny)
+    table.cell(guidePanel, 1, 10, "High — strong signal + volume + HTF aligned", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 11, "60-74%", text_color=#eab308, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 11, "Moderate — signal is good, some factors weak", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    table.cell(guidePanel, 0, 12, "45-59%", text_color=#f97316, text_size=size.tiny)
+    table.cell(guidePanel, 1, 12, "Low — signal fired but conditions mixed", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 13, "< 45%", text_color=#ef4444, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 13, "Weak — bias-only reading, no confirmed signal", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    // --- PANEL FIELDS ---
+    table.cell(guidePanel, 0, 14, "PANEL FIELDS", text_color=#00d4ff, text_size=size.tiny, bgcolor=#1a1a2e, text_halign=text.align_center)
+    table.merge_cells(guidePanel, 0, 14, 1, 14)
+
+    table.cell(guidePanel, 0, 15, "Market Bias", text_color=#aaaacc, text_size=size.tiny)
+    table.cell(guidePanel, 1, 15, "8 strategies' ongoing conditions (not events)", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 16, "HTF Trend", text_color=#aaaacc, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 16, "EMA 9/21 trend on higher timeframe", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    table.cell(guidePanel, 0, 17, "Volume", text_color=#aaaacc, text_size=size.tiny)
+    table.cell(guidePanel, 1, 17, "Current vs 20-bar avg (STRONG=2x, CONFIRMED=1.2x)", text_color=#cccccc, text_size=size.tiny)
+
+    table.cell(guidePanel, 0, 18, "TF Match", text_color=#aaaacc, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(guidePanel, 1, 18, "Is this chart timeframe valid for the strategy?", text_color=#cccccc, text_size=size.tiny, bgcolor=#0f0f1e)
+
+    table.cell(guidePanel, 0, 19, "R:R Ratio", text_color=#aaaacc, text_size=size.tiny)
+    table.cell(guidePanel, 1, 19, "Reward:Risk — green 2:1+, yellow 1.5:1+, red below", text_color=#cccccc, text_size=size.tiny)
+
+    // --- TIPS ---
+    table.cell(guidePanel, 0, 20, "TIPS", text_color=#00d4ff, text_size=size.tiny, bgcolor=#1a1a2e, text_halign=text.align_center)
+    table.merge_cells(guidePanel, 0, 20, 1, 20)
+
+    table.cell(guidePanel, 0, 21, "", text_color=#888888, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.merge_cells(guidePanel, 0, 21, 1, 21)
+    table.cell(guidePanel, 0, 21, "BUY/SELL NOW = trade signal. LEAN = directional bias only. Use Multi-Strategy Consensus for crypto.", text_color=#888888, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+    table.merge_cells(guidePanel, 0, 21, 1, 21)
+
+
+// ============================================================================
+//                  QUICK DECISION TREE (compact traffic light)
+// ============================================================================
+// 3 columns x 7 rows — glance-and-go verdict: GO / CAUTION / SKIP.
+// Evaluates 5 key factors: Confidence, Volume, TF Match, Signal/Bias, Proven.
+
+qdtPos = switch i_qdtLocation
+    "Top Left" => position.top_left
+    "Top Right" => position.top_right
+    "Bottom Left" => position.bottom_left
+    => position.bottom_right
+
+var table qdtPanel = table.new(qdtPos, 3, 7, bgcolor=#0a0a14, border_color=#2a2a4a, border_width=1, frame_color=#f59e0b, frame_width=2)
+
+if barstate.islast and i_showQDT
+    // --- Compute decision factors ---
+    _qdt_biasNet = _biasBull - _biasBear
+    _qdt_proven = _activeIdx >= 0 and _activeIdx < array.size(strat_proven) ? array.get(strat_proven, _activeIdx) : false
+    _qdt_conf = dynamicConfidence
+
+    // 5 binary factors
+    bool _qf1 = _qdt_conf >= 60.0
+    bool _qf2 = not _vol_weak
+    bool _qf3 = _tf_match_score >= 10.0
+    bool _qf4 = isLong or isShort or math.abs(_qdt_biasNet) >= 3
+    bool _qf5 = _qdt_proven
+
+    int _qdt_pass = (_qf1?1:0) + (_qf2?1:0) + (_qf3?1:0) + (_qf4?1:0) + (_qf5?1:0)
+
+    // --- Tier logic ---
+    string _qdt_tier = "CAUTION"
+    if _qf1 and _qf2 and _qf3 and _qf4
+        _qdt_tier := "GO"
+    else if _qdt_conf < 40.0 or _tf_match_score < 5.0 or (_vol_weak and _qdt_conf < 60.0)
+        _qdt_tier := "SKIP"
+
+    // Proven upgrade (one tier bump)
+    if _qf5
+        if _qdt_tier == "CAUTION"
+            _qdt_tier := "GO"
+        else if _qdt_tier == "SKIP"
+            _qdt_tier := "CAUTION"
+
+    // --- Colors ---
+    _qdtTierColor = _qdt_tier == "GO" ? #22c55e : _qdt_tier == "SKIP" ? #ef4444 : #eab308
+    _qdtTierBg = _qdt_tier == "GO" ? color.new(#22c55e, 70) : _qdt_tier == "SKIP" ? color.new(#ef4444, 70) : color.new(#eab308, 70)
+
+    // --- Row 0: Title ---
+    table.cell(qdtPanel, 0, 0, "QUICK DECISION", text_color=#00d4ff, text_size=size.small, text_halign=text.align_center)
+    table.merge_cells(qdtPanel, 0, 0, 2, 0)
+
+    // --- Rows 1-5: Factor checklist ---
+    _p1 = _qf1 ? "YES" : "NO"
+    _c1 = _qf1 ? #22c55e : #ef4444
+    _p2 = _qf2 ? "YES" : "NO"
+    _c2 = _qf2 ? #22c55e : #ef4444
+    _p3 = _qf3 ? "YES" : "NO"
+    _c3 = _qf3 ? #22c55e : #ef4444
+    _p4 = _qf4 ? "YES" : "NO"
+    _c4 = _qf4 ? #22c55e : #ef4444
+    _p5 = _qf5 ? "YES" : "NO"
+    _c5 = _qf5 ? #22c55e : #ef4444
+
+    // Row 1: Confidence
+    _confLabel = "Conf " + str.tostring(_qdt_conf, "#") + "%"
+    table.cell(qdtPanel, 0, 1, "1", text_color=#555555, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+    table.cell(qdtPanel, 1, 1, _confLabel, text_color=#aaaacc, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(qdtPanel, 2, 1, _p1, text_color=_c1, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+
+    // Row 2: Volume
+    _volLabel = "Vol " + _vol_status
+    table.cell(qdtPanel, 0, 2, "2", text_color=#555555, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(qdtPanel, 1, 2, _volLabel, text_color=#aaaacc, text_size=size.tiny)
+    table.cell(qdtPanel, 2, 2, _p2, text_color=_c2, text_size=size.tiny, text_halign=text.align_center)
+
+    // Row 3: TF Match
+    table.cell(qdtPanel, 0, 3, "3", text_color=#555555, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+    table.cell(qdtPanel, 1, 3, "TF " + _tf_match_str, text_color=#aaaacc, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(qdtPanel, 2, 3, _p3, text_color=_c3, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+
+    // Row 4: Signal / Bias strength
+    _sigLabel = isLong ? "BUY signal" : isShort ? "SELL signal" : math.abs(_qdt_biasNet) >= 3 ? "Bias " + str.tostring(_qdt_biasNet) : "Weak bias"
+    table.cell(qdtPanel, 0, 4, "4", text_color=#555555, text_size=size.tiny, text_halign=text.align_center)
+    table.cell(qdtPanel, 1, 4, _sigLabel, text_color=#aaaacc, text_size=size.tiny)
+    table.cell(qdtPanel, 2, 4, _p4, text_color=_c4, text_size=size.tiny, text_halign=text.align_center)
+
+    // Row 5: Proven status
+    _provenLabel = _qdt_proven ? "PROVEN" : "Unproven"
+    table.cell(qdtPanel, 0, 5, "5", text_color=#555555, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+    table.cell(qdtPanel, 1, 5, _provenLabel, text_color=_qdt_proven ? #22c55e : #888888, text_size=size.tiny, bgcolor=#0f0f1e)
+    table.cell(qdtPanel, 2, 5, _p5, text_color=_c5, text_size=size.tiny, bgcolor=#0f0f1e, text_halign=text.align_center)
+
+    // Row 6: VERDICT (large, colored)
+    _tierIcon = _qdt_tier == "GO" ? ">>  GO" : _qdt_tier == "SKIP" ? ">>  SKIP" : ">>  CAUTION"
+    _passText = str.tostring(_qdt_pass) + "/5"
+    table.cell(qdtPanel, 0, 6, _tierIcon, text_color=_qdtTierColor, text_size=size.normal, text_halign=text.align_center, bgcolor=_qdtTierBg)
+    table.merge_cells(qdtPanel, 0, 6, 1, 6)
+    table.cell(qdtPanel, 2, 6, _passText, text_color=_qdtTierColor, text_size=size.small, text_halign=text.align_center, bgcolor=_qdtTierBg)
+
+
+// ============================================================================
+//                  STRATEGY PERFORMANCE DASHBOARD (secondary)
+// ============================================================================
+// Table displays backtest/forward-test performance for all 30 strategies.
+// Default OFF in v2.0 (Decision Panel is the primary HUD).
+// {PLACEHOLDER} tokens are replaced by the Python generator with actual stats.
+
+var string[] strat_names = array.from("Connors RSI-2", "VIX Spike", "MACD Momentum", "EMA Cross", "Ichimoku", "Bollinger Sqz", "VWAP Revert", "RSI Diverg", "Supertrend", "SFP", "BOS", "Liq Cascade", "Mom Crash", "Consensus", "Seasonal", "Halving", "Turn Month", "DOW", "Cycle", "S/R Magnet", "Liq Sweep", "TSMOM NL", "CTREND", "Flash Crash", "HMA Trend", "FVG", "Keltner Sqz", "Order Block", "Wyckoff Spg", "CVD Diverg")
+
+// --- Backtest stats (embedded by generator) ---
+var float[] bt_wr     = array.from(75.7, 72.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 73.0, 0.0, 0.0, 71.0, 59.1, 65.0, 77.0, 60.0, 63.0, 0.0)
+var float[] bt_sharpe = array.from(4.514, 6.202, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.500, 0.000, 0.000, 3.200, 4.450, 0.000, 0.000, 0.000, 0.000, 0.000)
+var string[] bt_pval  = array.from("6.0e-06", "0.021643", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "0.26", "N/A", "N/A", "N/A", "N/A", "N/A")
+var int[] bt_trades   = array.from(74, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 0)
+var string[] bt_tf    = array.from("Daily", "Daily", "5m-1H", "15m-4H", "Daily", "1H-4H", "Intraday", "1H-Daily", "15m-Daily", "1H-Daily", "1H-Daily", "1H-4H", "1H-Daily", "Multi", "Daily", "Daily", "Daily", "Daily", "Daily", "1H-Daily", "1H-Daily", "Daily", "Daily-Wkly", "5m-1H", "1H-Daily", "1H-Daily", "1H-Daily", "1H-Daily", "1H-Daily", "1H-Daily")
+var string[] bt_method = array.from("RSI(2)<5+SMA200", "VIX>30+RSI<20", "MACD cross+RSI", "EMA9/21 cross", "TK cross+cloud", "BB/KC squeeze", "VWAP z>2 sigma", "Pivot divergence", "ATR trail flip", "Wick SFP", "BOS/CHOCH", "RSI2<10+3red+vol", "MomVol 2x spike", "3+ agree", "Month bias+RSI", "Halving phase", "DOM 28-3", "DOW best/worst", "FFT cycle phase", "Pivot S/R touch", "Sweep+wick revert", "S-shaped TSMOM", "Multi-MA composite", "Flash crash+RSI15", "HMA50 dir+SMA50", "FVG retrace+HTF", "BB/KC squeeze+mom", "OB retrace+disp", "Spring/upthrust", "CVD price diverg")
+var string[] bt_symbol = array.from("SPY", "SPY", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "Multi", "BTCUSD", "BTCUSD", "SPY", "BTCUSD", "BTCUSD", "BTCUSD", "BTCUSD", "Multi", "Multi", "BTCUSD", "SPY", "BTCUSD", "SPY", "BTCUSD", "BTCUSD", "BTCUSD")
+
+// --- Forward-test stats (embedded by generator) ---
+var float[] ft_wr     = array.from(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+var int[] ft_trades   = array.from(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+// --- Net WR% after transaction costs (embedded by generator) ---
+var float[] net_wr    = array.from(75.7, 72.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+// --- Estimated round-trip transaction cost per trade (embedded by generator) ---
+var float[] tx_cost   = array.from(0.03, 0.03, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.50, 0.25, 0.25, 0.03, 0.25, 0.25, 0.25, 0.25, 0.50, 0.50, 0.25, 0.03, 0.25, 0.03, 0.25, 0.25, 0.25)
+
+// --- Proven status: declared earlier (before decision panel) ---
+
+// --- Build Dashboard Table (12 columns x 26 rows) ---
+// Column 0=Status, 1=Strategy, 2=WR%, 3=Net WR%, 4=Costs, 5=Sharpe, 6=p-val, 7=Trades, 8=TF, 9=Mode, 10=Method, 11=Tested On
+dashPos = i_dashLocation == "Top Right" ? position.top_right : i_dashLocation == "Bottom Right" ? position.bottom_right : position.bottom_left
+dSize = i_dashSize == "Tiny" ? size.tiny : i_dashSize == "Small" ? size.small : size.normal
+
+var table dash = table.new(dashPos, 12, 35, bgcolor=#0f0f1a, border_color=#2a2a4a, border_width=1, frame_color=#2a2a4a, frame_width=2)
+
+if barstate.islast and i_showDashboard
+    // --- Title row ---
+    table.cell(dash, 0, 0, "Elton's Predictions v6.0.1538 | 2/30 Strategies Proven", text_color=#00d4ff, text_size=dSize, text_halign=text.align_center)
+    table.merge_cells(dash, 0, 0, 11, 0)
+
+    // --- Generated date row ---
+    table.cell(dash, 0, 1, "Generated: 2026-05-22T21:08:32Z", text_color=#666666, text_size=size.tiny, text_halign=text.align_center)
+    table.merge_cells(dash, 0, 1, 11, 1)
+
+    // --- Header row ---
+    headerLabels = array.from("Status", "Strategy", "WR%", "Net WR%", "Costs", "Sharpe", "p-val", "Trades", "TF", "Mode", "Method", "Tested On")
+    for i = 0 to 11
+        table.cell(dash, i, 2, array.get(headerLabels, i), text_color=#aaaacc, text_size=dSize, bgcolor=#1a1a2e, text_halign=text.align_center)
+
+    // --- Data rows (25 strategies) ---
+    for row = 0 to 23
+        isActive = row == _activeIdx or (_effectiveStrategy == "Multi-Strategy Consensus")
+        isProven = array.get(strat_proven, row)
+        rowBg = isActive ? #1a2a3a : isProven ? #0f0f1a : #0a0a10
+
+        // Select backtest or forward-test data based on mode
+        wr = i_perfMode == "Forward-Test" ? array.get(ft_wr, row) : array.get(bt_wr, row)
+        trades = i_perfMode == "Forward-Test" ? array.get(ft_trades, row) : array.get(bt_trades, row)
+        wrColor = isProven ? (wr > 65 ? #22c55e : wr > 55 ? #eab308 : #888888) : #555555
+        mode = i_perfMode == "Forward-Test" ? "Forward" : "Backtest"
+
+        // "Both" mode: show backtest WR with forward trades appended
+        if i_perfMode == "Both"
+            wr := array.get(bt_wr, row)
+            trades := array.get(bt_trades, row) + array.get(ft_trades, row)
+            mode := "Both"
+            wrColor := isProven ? (wr > 65 ? #22c55e : wr > 55 ? #eab308 : #888888) : #555555
+
+        // Text dimming for unproven strategies
+        nameColor = isProven ? (isActive ? #00d4ff : #ffffff) : #666666
+        statColor = isProven ? #cccccc : #444444
+        methodColor = isProven ? #888888 : #333333
+
+        // Status badge (PROVEN / UNPROVEN)
+        statusText = isProven ? "PROVEN" : "UNPROVEN"
+        statusColor = isProven ? #22c55e : #555555
+        statusBg = isProven ? color.new(#22c55e, 90) : color.new(#555555, 90)
+        table.cell(dash, 0, row + 3, statusText, text_color=statusColor, text_size=dSize, bgcolor=statusBg, text_halign=text.align_center)
+
+        // Strategy name (highlight active, dim unproven)
+        table.cell(dash, 1, row + 3, array.get(strat_names, row), text_color=nameColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_left)
+        // Win Rate (show "--" for unproven with 0 trades)
+        wrText = isProven ? str.tostring(wr, "#.#") + "%" : trades > 0 ? str.tostring(wr, "#.#") + "%" : "--"
+        table.cell(dash, 2, row + 3, wrText, text_color=wrColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Net Win Rate (after transaction costs)
+        nwr = array.get(net_wr, row)
+        nwrText = isProven ? str.tostring(nwr, "#.#") + "%" : trades > 0 ? str.tostring(nwr, "#.#") + "%" : "--"
+        nwrColor = isProven ? (nwr > 55 ? #22c55e : nwr > 50 ? #eab308 : #ef4444) : #555555
+        table.cell(dash, 3, row + 3, nwrText, text_color=nwrColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Transaction Costs (round-trip %)
+        costVal = array.get(tx_cost, row)
+        costText = str.tostring(costVal, "#.##") + "%"
+        costColor = costVal <= 0.05 ? #22c55e : costVal <= 0.3 ? #eab308 : #ef4444
+        table.cell(dash, 4, row + 3, costText, text_color=costColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Sharpe Ratio
+        sharpeText = isProven ? str.tostring(array.get(bt_sharpe, row), "#.##") : "--"
+        table.cell(dash, 5, row + 3, sharpeText, text_color=statColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // P-value
+        pvalText = isProven ? array.get(bt_pval, row) : "N/A"
+        table.cell(dash, 6, row + 3, pvalText, text_color=statColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Trade count
+        tradeText = trades > 0 ? str.tostring(trades) : "--"
+        table.cell(dash, 7, row + 3, tradeText, text_color=statColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Timeframe
+        table.cell(dash, 8, row + 3, array.get(bt_tf, row), text_color=statColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Mode
+        modeColor = mode == "Forward" ? #3b82f6 : mode == "Both" ? #a78bfa : isProven ? #f59e0b : #444444
+        table.cell(dash, 9, row + 3, mode, text_color=modeColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+        // Method
+        table.cell(dash, 10, row + 3, array.get(bt_method, row), text_color=methodColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_left)
+        // Tested On
+        table.cell(dash, 11, row + 3, array.get(bt_symbol, row), text_color=methodColor, text_size=dSize, bgcolor=rowBg, text_halign=text.align_center)
+
+    // --- Disclaimer row ---
+    table.cell(dash, 0, 27, "Only PROVEN strategies (p<0.05) contribute to signal confidence. UNPROVEN = no real backtest data. Net WR = after fees/slippage.", text_color=#ef4444, text_size=size.tiny, text_halign=text.align_center)
+    table.merge_cells(dash, 0, 27, 11, 27)
+
+    // --- Proven summary row ---
+    table.cell(dash, 0, 28, "2/30 strategies backed by real backtest data with statistical significance | Costs: exchange fees + spread + slippage", text_color=#22c55e, text_size=size.tiny, text_halign=text.align_center)
+    table.merge_cells(dash, 0, 28, 11, 28)
+
+    // --- Footer row: Active strategy summary with dynamic confidence ---
+    footerText = "Active: " + _stratDisplay + " | Conf: " + str.tostring(dynamicConfidence, "#") + "% | ATR: " + str.tostring(atrVal, format.mintick)
+    table.cell(dash, 0, 29, footerText, text_color=#00d4ff, text_size=size.tiny, text_halign=text.align_center)
+    table.merge_cells(dash, 0, 29, 11, 29)
+
+
+// ============================================================================
+//                  SIGNAL HISTORY TRACKER
+// ============================================================================
+// Tracks recent signal counts for the active strategy (on-chart reference).
+
+var int longCount  = 0
+var int shortCount = 0
+var int totalBars  = 0
+
+if isLong
+    longCount += 1
+if isShort
+    shortCount += 1
+totalBars += 1
+
+// Small info label on last bar
+if barstate.islast and i_showSignals
+    infoText = _stratDisplay + "\nLongs: " + str.tostring(longCount) + " | Shorts: " + str.tostring(shortCount) + "\nBars: " + str.tostring(totalBars)
+    label.new(bar_index + 3, close, infoText, style=label.style_label_left, color=color.new(#1a1a2e, 20), textcolor=#aaaacc, size=size.tiny)
+
+
+// ============================================================================
+//                  BACKGROUND HIGHLIGHTS
+// ============================================================================
+// Subtle background color on signal bars for quick visual scanning.
+
+bgLong  = isLong and i_showSignals ? color.new(#22c55e, 93) : na
+bgShort = isShort and i_showSignals ? color.new(#ef4444, 93) : na
+bgcolor(bgLong, title="Long Signal Background")
+bgcolor(bgShort, title="Short Signal Background")
+
+
+// ============================================================================
+//                  MULTI-STRATEGY CONSENSUS METER
+// ============================================================================
+// When Multi-Strategy Consensus is selected, shows a visual meter of how many
+// strategies agree on the current direction.
+
+if barstate.islast and _effectiveStrategy == "Multi-Strategy Consensus" and i_showSignals
+    // Uses pre-computed _consBull / _consBear from global scope (no conditional function calls)
+    meterText = "CONSENSUS METER\n" + "Bull: " + str.tostring(_consBull) + "/23 | Bear: " + str.tostring(_consBear) + "/23\n" + "2/30 strategies proven (p<0.05)"
+    meterColor = _consBull >= 3 ? color.new(#22c55e, 30) : _consBear >= 3 ? color.new(#ef4444, 30) : color.new(#888888, 30)
+    label.new(bar_index + 6, high, meterText, style=label.style_label_left, color=meterColor, textcolor=color.white, size=size.small)
+
+
+// ============================================================================
+//                         END OF TEMPLATE
+// ============================================================================
+// Placeholder index reference for the Python generator:
+//
+// Strategy order (index 0-23):
+//   0 = Connors RSI-2
+//   1 = VIX Spike Reversal
+//   2 = MACD Momentum
+//   3 = EMA Crossover
+//   4 = Ichimoku Cloud
+//   5 = Bollinger Squeeze
+//   6 = VWAP Reversion
+//   7 = RSI Divergence
+//   8 = Supertrend
+//   9 = Swing Failure Pattern (SFP)
+//   10 = Break of Structure (BOS)
+//   11 = Liquidation Cascade
+//   12 = Momentum Crash
+//   13 = Multi-Strategy Consensus
+//   14 = Seasonal Bias
+//   15 = Halving Cycle
+//   16 = Turn of Month
+//   17 = Day of Week
+//   18 = Cycle Detection
+//   19 = S/R Magnetism
+//   20 = Liquidity Sweep Reversal
+//   21 = Nonlinear TSMOM (Moskowitz 2025)
+//   22 = CTREND Multi-MA (Fieberg 2025 JFQA)
+//   23 = Flash Crash Reversal
+//   24 = HMA Trend (Hull Moving Average, Alan Hull 2005)
+//
+// Backtest placeholders:
+//   75.7 .. 0.0           float  Win rate percentage (e.g. 75.7)
+//   4.514 .. 4.450   float  Sharpe ratio (e.g. 4.84)
+//   "6.0e-06" .. "0.26"       string P-value (e.g. "6e-06")
+//   74 .. 22   int    Number of trades (e.g. 148)
+//   "Daily" .. "1H-Daily"           string Timeframe (e.g. "1D")
+//   "RSI(2)<5+SMA200" .. "HMA50 dir+SMA50"   string Method name (e.g. "Mean Reversion")
+//   "SPY" .. "SPY"   string Backtested symbol (e.g. "SPY")
+//
+// Forward-test placeholders:
+//   0.0 .. 0.0           float  Forward-test win rate
+//   0 .. 0   int    Forward-test trade count
+//
+// Transaction cost placeholders:
+//   75.7 .. 0.0         float  Net win rate after transaction costs (e.g. 72.5)
+//   0.03 .. 0.03       float  Estimated round-trip cost % (e.g. 0.25)
+//
+// Proven status placeholders:
+//   true .. false          bool   true if real backtest with p<0.05
+//
+// Global placeholders:
+//   6.0.1538          string  Version number (e.g. "5.0.0")
+//   30   string  Number of strategies (e.g. "24")
+//   2     string  Number of proven strategies (e.g. "2")
+//   30      string  Total number of strategies (e.g. "24")
+//   2026-05-22T21:08:32Z   string  ISO date of generation (e.g. "2026-02-20")
+//   5.0 string  Template version (e.g. "4.0")

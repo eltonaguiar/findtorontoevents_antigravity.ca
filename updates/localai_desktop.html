@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local AI Desktop Benchmark | findtorontoevents</title>
+    <meta name="description" content="Benchmark log for local GGUF/Ollama/LM Studio consults on the audit money-ready pipeline. RTX 5070 + i9-14900K.">
+    <link rel="canonical" href="https://findtorontoevents.ca/updates/localai_desktop.html">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e1a;color:#e0e6ed;line-height:1.65}
+        .container{max-width:1100px;margin:0 auto;padding:36px 20px 60px}
+        header{background:linear-gradient(135deg,#1a2540 0%,#0f1629 100%);padding:28px;border-radius:16px;margin-bottom:20px;border:1px solid #2a3f5f}
+        h1{font-size:1.8em;color:#fbbf24;margin-bottom:8px}
+        h2{color:#34d399;font-size:1.2em;margin:16px 0 8px;border-left:4px solid #34d399;padding-left:10px}
+        .section{background:#111827;padding:20px;border-radius:12px;margin-bottom:14px;border:1px solid #1f2937}
+        p,li{color:#d1d5db;margin-bottom:6px}
+        ul{padding-left:22px}
+        code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 6px;border-radius:4px;font-size:0.9em}
+        table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88em}
+        th,td{padding:7px 9px;text-align:left;border-bottom:1px solid #1f2937}
+        th{color:#a78bfa;background:rgba(167,139,250,0.06)}
+        a{color:#60a5fa}
+        .back{font-size:0.9em;margin-bottom:12px;display:inline-block}
+        .hw{background:rgba(96,165,250,0.1);border:1px solid #3b82f6;padding:12px;border-radius:8px;margin:10px 0}
+    </style>
+</head>
+<body>
+<div class="container">
+<a class="back" href="/updates/">&larr; Back to Updates</a>
+<header>
+    <h1>Local AI Desktop Benchmark</h1>
+    <p style="color:#94a3b8">Money-ready consult pipeline — Phase 3 local models · Updated 2026-05-19</p>
+</header>
+
+<div class="section hw">
+    <strong>Hardware:</strong> Intel i9-14900K (24C/32T) · NVIDIA RTX 5070 12GB · 32GB DDR5<br>
+    <strong>Prompts:</strong> <code>swarm_runs/_prompts/MONEY_READY_HARVEST_v1.md</code> (fast) · <code>MONEY_READY_MASTER_v1.md</code> (full)<br>
+    <strong>Repo doc:</strong> <code>BENCHMARK_LOCALAI_DESKTOP.md</code> (canonical table — commit to main)
+</div>
+
+<div class="section">
+    <h2>Model paths (disk cleanup)</h2>
+    <ul>
+        <li><code>F:\Models\Ollama_GGUFs\</code> — library GGUF files</li>
+        <li><code>swarm_runs/ollama-modelfiles/</code> — auto-generated Modelfiles</li>
+        <li><code>C:\Users\zerou\.ollama\models\</code> — Ollama blobs</li>
+        <li><code>swarm_runs/local-gguf-consult/</code> — consult outputs only</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Benchmark results (2026-05-19)</h2>
+    <table>
+        <thead><tr><th>Model</th><th>Backend</th><th>Mode</th><th>OK</th><th>Chars</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>qwen2.5-coder:14b-instruct-q4_K_M</td><td>Ollama</td><td>GPU</td><td>Y</td><td>4644</td><td>Best local structured output</td></tr>
+            <tr><td>qwen3:14b</td><td>Ollama</td><td>GPU</td><td>Y</td><td>6819</td><td>Strong per-class tables</td></tr>
+            <tr><td>deepseek-r1:14b</td><td>Ollama</td><td>GPU</td><td>Y</td><td>5887</td><td>Slow; may need &gt;480s timeout</td></tr>
+            <tr><td>phi3.5:latest</td><td>Ollama</td><td>GPU</td><td>Y</td><td>6469</td><td>Fast; verify claims (hallucination risk)</td></tr>
+            <tr><td>llama3.2:3b</td><td>Ollama</td><td>GPU</td><td>Y</td><td>1113</td><td>Fast screen only</td></tr>
+            <tr><td>gpt-oss:120b-cloud</td><td>Ollama cloud</td><td>cloud</td><td>Y</td><td>5328</td><td>Not local VRAM</td></tr>
+        </tbody>
+    </table>
+    <p>Full JSON: <code>swarm_runs/local-gguf-consult/_summary.json</code></p>
+</div>
+
+<div class="section">
+    <h2>Run commands</h2>
+    <pre style="background:#0f172a;padding:12px;border-radius:8px;overflow-x:auto"><code>cd e:\findtorontoevents_antigravity.ca
+python tools/ollama_import_gguf.py --scan
+python tools/ollama_import_gguf.py --import-all
+python tools/local_gguf_ollama_consult.py --all-installed</code></pre>
+</div>
+
+<div class="section">
+    <h2>Known blockers</h2>
+    <ul>
+        <li><strong>Broken F: symlinks</strong> — many <code>library-*.gguf</code> point to deleted blobs; run <code>ollama pull &lt;model&gt;</code> then <code>--import-all</code> again.</li>
+        <li><strong>invalid model name</strong> — usually missing blob, not bad tag. Use <code>ollama_import_gguf.py --scan</code>.</li>
+        <li><strong>14B+ models</strong> — allow 600–900s timeout; Ollama uses GPU when VRAM allows.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Related</h2>
+    <ul>
+        <li><a href="/updates/2026-05-19-ai-consult-pipeline.md">AI consult pipeline kickoff (MD)</a></li>
+        <li><a href="/audit/">Audit dashboard</a></li>
+        <li>Prior swarm: <code>reports/QUANT_RESCUE_SWARM_VERDICT_2026-05-19_cursor.md</code></li>
+    </ul>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{
+  "generated_at_utc": "2026-04-05T02:00:45Z",
+  "method": "bootstrap + permutation on all-strategies asset_class=CRYPTO trades",
+  "random_seed": 42,
+  "n_bootstrap": 10000,
+  "n_permutation": 10000,
+  "fees_per_round_trip_pct": 0.2,
+  "filters": {
+    "strategy_exact": null,
+    "strategy_contains": null,
+    "strategy_in": null,
+    "asset_class": "CRYPTO",
+    "symbol": null,
+    "source_system": null,
+    "inverse": false
+  },
+  "historical_sample": {
+    "n": 2659,
+    "mean_net_pnl_per_trade_pct": 0.052,
+    "wins": 1295,
+    "losses": 1364,
+    "wr_pct": 48.7,
+    "cumulative_net_pnl_pct": 137.66,
+    "wilson_95_ci_wr_pct": [
+      46.81,
+      50.6
+    ]
+  },
+  "bootstrap_95_ci": {
+    "mean_pnl_per_trade_pct": [
+      -0.098,
+      0.203
+    ],
+    "win_rate_pct": [
+      46.7,
+      50.6
+    ],
+    "p_mean_positive": 0.7552,
+    "p_wr_above_55_pct": 0.0
+  },
+  "permutation_test": {
+    "null_hypothesis": "Direction flips are random (50/50) \u2014 no directional edge",
+    "p_value_one_sided": 0.2497,
+    "reject_null_at_0.05": false,
+    "interpretation": "p >= 0.05: observed mean cannot be distinguished from random direction flips"
+  },
+  "forward_projection_bootstrap_resample": {
+    "n_30": {
+      "p_positive_cumulative_pnl": 0.5137,
+      "median_terminal_pnl_pct": 0.54,
+      "p5_terminal_pnl_pct": -22.85,
+      "p95_terminal_pnl_pct": 28.48,
+      "max_drawdown_estimated_p5": -22.85
+    },
+    "n_100": {
+      "p_positive_cumulative_pnl": 0.5574,
+      "median_terminal_pnl_pct": 3.93,
+      "p5_terminal_pnl_pct": -49.66,
+      "p95_terminal_pnl_pct": 69.49,
+      "max_drawdown_estimated_p5": -49.66
+    },
+    "n_300": {
+      "p_positive_cumulative_pnl": 0.596,
+      "median_terminal_pnl_pct": 13.79,
+      "p5_terminal_pnl_pct": -95.74,
+      "p95_terminal_pnl_pct": 130.61,
+      "max_drawdown_estimated_p5": -95.74
+    }
+  },
+  "caveats": [
+    "Bootstrap assumes trades are i.i.d. \u2014 regime shifts break this",
+    "Permutation test's null is direction-flip-random, not 'no edge' per se",
+    "Small-n samples have wide CIs; interpret with caution",
+    "Forward projection is IN-SAMPLE resample; does not account for regime decay",
+    "Real deployment adds borrow, slippage, and execution costs beyond --fees-pct"
+  ]
+}

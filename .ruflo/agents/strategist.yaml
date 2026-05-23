@@ -1,0 +1,37 @@
+# Ruflo-style agent: Strategy Ideation Architect
+# Proposes new trading strategies based on data analysis
+type: strategist
+version: "1.0.0"
+role: architect
+model: meta-llama/llama-3.3-70b-instruct:free
+goal: |
+  Strategy ideation: read updates/strong_strategy_per_asset_class_*.md,
+  battleground/data/chatgpt_combined_signals.json, and any what-if or near-pick docs.
+  Propose 3 new trading strategies with: name, asset class, expected edge,
+  implementation sketch, risk controls. Return JSON array. If the source files
+  cannot be inspected, return unable_to_verify instead of generic strategy ideas.
+capabilities:
+  - strategy-design
+  - market-analysis
+  - risk-modeling
+  - edge-detection
+  - implementation-planning
+optimizations:
+  - context-caching
+  - memory-persistence
+  - structured-json-output
+swarm: strategy
+priority: medium
+metadata:
+  created: "2026-05-05T00:00:00.000Z"
+  workspace: /mnt/c/findtorontoevents_antigravity.ca
+  dataSources:
+    - updates/strong_strategy_per_asset_class_*.md
+    - battleground/data/chatgpt_combined_signals.json
+    - alpha_engine/config.py
+    - baby_strategies/
+  deliverables:
+    - 3_new_strategy_proposals
+    - name_asset_class_expected_edge
+    - implementation_sketch
+    - risk_controls
