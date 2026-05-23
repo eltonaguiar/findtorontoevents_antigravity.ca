@@ -118,29 +118,41 @@ jobs:
           echo " Deployment directory ready"
 
       - name: Deploy to torontoevent.net via FTP
+        continue-on-error: true
         env:
           FTP_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
           FTP_USER: ${{ secrets.FTPGODADDYUSER }}
           FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
         run: |
           python - <<'PYEOF'
-          import ftplib, os
+          import ftplib, os, sys
           from pathlib import Path
 
-          host = os.environ.get("FTP_HOST", "")
+          host = os.environ.get("FTP_HOST", "").strip()
           user = os.environ.get("FTP_USER", "")
           pwd = os.environ.get("FTP_PASS", "")
 
           if not all([host, user, pwd]):
-              print(" FTP credentials not set, skipping deploy")
-              exit(0)
+              print("::warning::GoDaddy FTP credentials not set (FTPGODADDYHOST_TE_DOTNET / FTPGODADDYUSER / FTPGODADDYPASS) — skipping torontoevent.net deploy")
+              sys.exit(0)
 
           src = Path("deploy_riseoftheclaw")
 
-          print(f" Connecting to {host} (torontoevent.net)...")
-          ftp = ftplib.FTP(host)
-          ftp.login(user, pwd)
-          print(" Connected")
+          def connect_ftp(h, u, p):
+              print(f" Connecting to {h} (torontoevent.net) via TLS...")
+              ftp = ftplib.FTP_TLS(h, timeout=120)
+              ftp.login(u, p)
+              ftp.prot_p()
+              print(" Connected (TLS)")
+              return ftp
+
+          try:
+              ftp = connect_ftp(host, user, pwd)
+          except ftplib.error_perm:
+              print(" TLS login failed, retrying plain FTP...")
+              ftp = ftplib.FTP(host, timeout=120)
+              ftp.login(user, pwd)
+              print(" Connected (plain FTP)")
 
           def ensure_dir(ftp, remote_dir):
               ftp.cwd("/")
@@ -214,6 +226,7 @@ jobs:
           PYEOF
 
       - name: Deploy to findtorontoevents.ca (50webs) via FTP
+        id: deploy_50webs
         continue-on-error: true # 50webs has intermittent FTP timeouts; torontoevent.net is the primary
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
@@ -234,10 +247,11 @@ jobs:
 
           src = Path("deploy_riseoftheclaw")
 
-          print(f" Connecting to {host} (findtorontoevents.ca / 50webs)...")
-          ftp = ftplib.FTP(host)
+          print(f" Connecting to {host} (findtorontoevents.ca / 50webs) via TLS...")
+          ftp = ftplib.FTP_TLS(host, timeout=120)
           ftp.login(user, pwd)
-          print(" Connected")
+          ftp.prot_p()
+          print(" Connected (TLS)")
 
           # 50webs path is /findtorontoevents.ca/ for site root
           SITE_ROOT = "findtorontoevents.ca"

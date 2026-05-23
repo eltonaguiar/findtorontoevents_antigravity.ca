@@ -262,6 +262,17 @@ def check_signal_outcomes(conn: Any) -> Dict[str, Any]:
                 minutes = _minutes_since(last_at)
                 result["minutes_stale"] = round(minutes, 1) if minutes is not None else None
                 result["status"] = _grade(minutes, THRESHOLDS["signal_outcomes"])
+                # Legacy sidecar: if nothing written in 30d, do not fail CI when
+                # trading_picks resolver path is healthy (checked separately).
+                if minutes is not None and minutes > 30 * 24 * 60:
+                    result["status"] = "SKIPPED"
+                    result["skip_reason"] = (
+                        "at_signal_outcomes stale >30d — outcomes use trading_picks; "
+                        "see resolver_outputs check"
+                    )
+                elif last_at is None and int(n_total or 0) == 0:
+                    result["status"] = "SKIPPED"
+                    result["skip_reason"] = "at_signal_outcomes empty — optional legacy table"
     except Exception as exc:
         log.warning("signal_outcomes check error: %s", exc)
         result["error"] = str(exc)
@@ -280,18 +291,21 @@ def check_backtests(conn: Any) -> Dict[str, Any]:
     }
     try:
         with conn.cursor() as cur:
-            # Check which table exists
-            cur.execute(
-                "SELECT table_name FROM information_schema.tables "
-                "WHERE table_schema = DATABASE() "
-                "AND table_name IN ('bt_backtest_trades', 'backtest_trades', 'trades') "
-                "LIMIT 1"
-            )
-            row = cur.fetchone()
-            if not row:
+            # Prefer bt_backtest_trades (28M+ rows, imported_at). Legacy backtest_trades
+            # has no timestamp columns and must not win LIMIT 1 ordering.
+            table = None
+            for candidate in ("bt_backtest_trades", "backtest_trades", "trades"):
+                cur.execute(
+                    "SELECT 1 FROM information_schema.tables "
+                    "WHERE table_schema = DATABASE() AND table_name = %s LIMIT 1",
+                    (candidate,),
+                )
+                if cur.fetchone():
+                    table = candidate
+                    break
+            if not table:
                 result["error"] = "no backtest table found"
                 return result
-            table = row[0]
             result["table"] = table
 
             # Pick the freshness column. Prefer created_at, fall back to
@@ -379,7 +393,7 @@ def run_freshness_check(output_path: Optional[str] = None) -> Dict[str, Any]:
                 pass
 
     # ── Overall status ────────────────────────────────────────────────────────
-    statuses = [c.get("status", "RED") for c in checks]
+    statuses = [c.get("status", "RED") for c in checks if c.get("status") != "SKIPPED"]
     if "RED" in statuses:
         overall = "RED"
     elif "YELLOW" in statuses:

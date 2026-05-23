@@ -1,168 +1,23 @@
-name: Send Morning Goal Follow-Ups
+# DISABLED 2026-05-23 — Morning goal follow-up DMs are out of project scope.
+# EVENT_NOTIFY_API_KEY remains in repo secrets for send-accountability-reminders and PHP APIs.
+# To re-enable: restore workflow from git history (pre-2026-05-23).
+
+name: Send Morning Goal Follow-Ups (disabled)
 
 on:
-  # SCHEDULE DISABLED 2026-05-23 — failing with HTTP 403, EVENT_NOTIFY_API_KEY empty/missing
-  # schedule:
-  #   # Run at 14:00 UTC = 9:00 AM EST / 10:00 AM EDT
-  #   # The PHP endpoint has its own 8-10 AM EST window check as a safety net
-  #   - cron: '0 14 * * *'
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: 'Dry run (preview only, no DMs sent)'
+      acknowledge_disabled:
+        description: 'This workflow is disabled. Leave default.'
         required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'false'
-          - 'true'
+        default: 'disabled'
+        type: string
 
 jobs:
-  send-followups:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
-    env:
-      EVENT_NOTIFY_API_KEY: ${{ secrets.EVENT_NOTIFY_API_KEY }}
-
+  disabled-notice:
+    runs-on: ubuntu-latest
     steps:
-    - name: Merge API keys into existing .env on server
-      env:
-        FTP_HOST: ${{ secrets.FTP_HOST }}
-        FTP_USER: ${{ secrets.FTP_USER }}
-        FTP_PASS: ${{ secrets.FTP_PASS }}
-        DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-      run: |
-        # IMPORTANT: Read existing .env first, then merge our keys in.
-        # Previous bug: this step OVERWROTE the entire .env, wiping DB credentials
-        # and causing "Access denied (using password: NO)" on findtorontoevents.ca.
-        python3 - <<'PYEOF'
-        import ftplib, os, io
-
-        host = os.environ.get("FTP_HOST", "")
-        user = os.environ.get("FTP_USER", "")
-        pw   = os.environ.get("FTP_PASS", "")
-        api_key = os.environ.get("EVENT_NOTIFY_API_KEY", "")
-        bot_token = os.environ.get("DISCORD_BOT_TOKEN", "")
-
-        if not all([host, user, pw, api_key]):
-            print("Missing credentials, skipping .env deploy")
-            exit(0)
-
-        # Keys this workflow needs to set
-        new_keys = {
-            "EVENT_NOTIFY_API_KEY": api_key,
-            "ACCOUNTABILITY_REMINDER_KEY": api_key,
-        }
-        if bot_token:
-            new_keys["DISCORD_BOT_TOKEN"] = bot_token
-
-        ftp = ftplib.FTP(host)
-        ftp.login(user, pw)
-
-        for path in ["findtorontoevents.ca/fc/api", "findtorontoevents.ca/favcreators/api"]:
-            ftp.cwd("/")
-            for part in path.split("/"):
-                try: ftp.cwd(part)
-                except: ftp.mkd(part); ftp.cwd(part)
-
-            # Read existing .env content
-            existing_lines = []
-            try:
-                buf = io.BytesIO()
-                ftp.retrbinary("RETR .env", buf.write)
-                existing_lines = buf.getvalue().decode("utf-8", errors="replace").splitlines()
-                print(f"  Read existing .env from /{path}/ ({len(existing_lines)} lines)")
-            except Exception as e:
-                print(f"  No existing .env in /{path}/ ({e}), creating new")
-
-            # Parse existing keys (preserve order, update/add ours)
-            existing_keys = {}
-            ordered_lines = []
-            for line in existing_lines:
-                stripped = line.strip()
-                if stripped == "" or stripped.startswith("#"):
-                    ordered_lines.append(line)
-                    continue
-                if "=" in stripped:
-                    k = stripped.split("=", 1)[0].strip()
-                    existing_keys[k] = len(ordered_lines)
-                ordered_lines.append(line)
-
-            # Update existing keys or append new ones
-            for k, v in new_keys.items():
-                new_line = f"{k}={v}"
-                if k in existing_keys:
-                    ordered_lines[existing_keys[k]] = new_line
-                else:
-                    ordered_lines.append(new_line)
-
-            merged = "\n".join(ordered_lines) + "\n"
-            ftp.storbinary("STOR .env", io.BytesIO(merged.encode()))
-            print(f"  Merged .env to /{path}/ ({len(ordered_lines)} lines)")
-
-        ftp.quit()
-        print("Done  existing DB credentials preserved")
-        PYEOF
-
-    - name: Send Morning Goal Follow-Up DMs
-      run: |
-        DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
-        URL="https://findtorontoevents.ca/fc/api/accountability/goal_followup.php"
-
-        if [ "$DRY_RUN" = "true" ]; then
-          URL="${URL}?dry_run=1"
-          echo "Dry run mode  no DMs will be sent"
-        fi
-
-        echo "Sending morning goal follow-ups..."
-        response=$(curl -s -w "\n%{http_code}" \
-          -X POST \
-          -H "Content-Type: application/json" \
-          -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
-          -A "Mozilla/5.0 (compatible; FindTorontoEvents-Followups/1.0)" \
-          -d '{"action":"send_followups"}' \
-          "$URL")
-
-        http_code=$(echo "$response" | tail -n1)
-        body=$(echo "$response" | sed '$d')
-
-        # ModSecurity fallback: if POST was blocked (412/403), retry as GET
-        if [ "$http_code" = "412" ] || [ "$http_code" = "403" ]; then
-          echo "POST blocked by ModSecurity (HTTP $http_code), retrying as GET..."
-          if echo "$URL" | grep -q '?'; then
-            FALLBACK_URL="${URL}&method=post"
-          else
-            FALLBACK_URL="${URL}?method=post"
-          fi
-          response=$(curl -s -w "\n%{http_code}" \
-            -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
-            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Followups/1.0)" \
-            "$FALLBACK_URL")
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
-        fi
-
-        echo "HTTP Status: $http_code"
-        echo "Response: $body"
-
-        if [ "$http_code" != "200" ]; then
-          echo "::error::Failed to send follow-ups (HTTP $http_code)"
-          exit 1
-        fi
-
-        echo "$body" | python3 -c "
-        import sys, json
-        data = json.load(sys.stdin)
-        print(f\"DMs sent: {data.get('sent', 0)}\")
-        print(f\"Skipped (already sent today / no tasks): {data.get('skipped', 0)}\")
-        print(f\"Date: {data.get('date', '?')}\")
-        print(f\"EST hour: {data.get('hour_est', '?')}\")
-        if data.get('dry_run'):
-            previews = data.get('previews', [])
-            print(f\"Preview count: {len(previews)}\")
-            for p in previews[:10]:
-                print(f\"  -> {p.get('discord_id')}: {p.get('tasks')} tasks, top streak: {p.get('top_streak')}\")
-        if data.get('errors'):
-            for e in data['errors']:
-                print(f\"Error: {e}\")
-        "
-
+      - name: Workflow disabled
+        run: |
+          echo "::notice::Send Morning Goal Follow-Ups is disabled (2026-05-23). Not in project scope."
+          echo "Use send-accountability-reminders or fc/api endpoints if needed."

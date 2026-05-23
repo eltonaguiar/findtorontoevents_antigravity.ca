@@ -1,0 +1,67 @@
+# Regenerate GitHub Actions fleet summary (JSON + HTML) and deploy to findtorontoevents.ca
+name: gha-summary-report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  generate-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify gh CLI auth
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: gh auth status
+
+      - name: Generate GHA summary (full fleet)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          python tools/generate_gha_summary_html.py \
+            --repo "${{ github.repository }}" \
+            --branch main \
+            --max-workers 8 \
+            --log-timeout 120
+
+      - name: Commit summary artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh \
+              "Update GHA actions summary [skip ci]" \
+              reports/gha_actions_summary.json \
+              reports/gha_actions_summary.html
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add reports/gha_actions_summary.json reports/gha_actions_summary.html
+            git diff --staged --quiet || git commit -m "Update GHA actions summary [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main || echo "No push needed"
+          fi
+
+      - name: Deploy summary HTML to findtorontoevents.ca
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: python tools/deploy_gha_summary.py

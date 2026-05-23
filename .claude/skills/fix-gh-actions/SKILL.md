@@ -15,6 +15,50 @@ Scan all recent GitHub Actions workflow runs, find failures whose workflow has N
 4. Show the user a table of unresolved failures
 5. Offer to rerun failed jobs via `gh run rerun --failed <run_id>`
 
+## Hardening Rules (Lessons Learned)
+
+- Duplicate workflow display names can hide unresolved failures. If a user cites a specific run URL/ID, always verify that run directly via `gh run view <id>` and then inspect that exact workflow ID via GitHub API.
+- In PowerShell, prefer single-quoted `--jq` strings or PowerShell-native JSON grouping to avoid escaping issues with `\(...)` interpolation.
+- If a run is long-lived or repeatedly failing, escalate with `tools/swarm_v2` (`swarm actions` and/or `swarm research`) and include concrete log evidence before proposing fixes.
+
+### Verify a User-Flagged Run by Workflow ID
+
+```bash
+gh run view <run_id> --json workflowName,status,conclusion,createdAt,url
+gh api --method GET repos/<owner>/<repo>/actions/runs/<run_id> --jq '.workflow_id'
+gh api --method GET repos/<owner>/<repo>/actions/workflows/<workflow_id>/runs -f branch=main -f per_page=20
+```
+
+Use this when run-name grouping says "all good" but a known run appears unresolved.
+
+### PowerShell-Safe Alternative (No jq Escaping)
+
+```powershell
+$runs = gh run list --branch main --limit 200 --json workflowName,status,conclusion,databaseId,createdAt,url | ConvertFrom-Json
+$latest = $runs | Group-Object workflowName | ForEach-Object { $_.Group | Sort-Object createdAt | Select-Object -Last 1 }
+$latest | Where-Object { $_.status -eq 'completed' -and @('failure','timed_out','startup_failure','stale') -contains $_.conclusion }
+```
+
+### Stuck / Repeated-Failure Escalation
+
+If a run is still `queued`/`pending`/`in_progress` for unusually long or a workflow keeps failing:
+
+1. Pull run details + failed logs:
+
+```bash
+gh run view <run_id> --json jobs,createdAt,updatedAt,status,conclusion,url
+gh run view <run_id> --log-failed
+```
+
+2. Run swarm analysis:
+
+```bash
+PYTHONPATH=tools/swarm_v2 python -m swarms.cli.main actions <owner>/<repo> --since 7d
+PYTHONPATH=tools/swarm_v2 python -m swarms.cli.main research "<run_id> failure summary and logs" --depth 3 --route A
+```
+
+3. Apply a fix that addresses root cause (workflow config, permissions, trigger duplication, flaky step), then re-run or dispatch the workflow.
+
 ## Execution
 
 Run this bash command to get all failed latest-runs:
