@@ -34,6 +34,13 @@ jobs:
           update-environment: false
           python-version: '3.11'
 
+      - name: Fetch dashboard_payload.json from production
+        run: |
+          mkdir -p audit_trail/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
+            -o audit_trail/data/dashboard_payload.json \
+            || echo "::warning::dashboard_payload.json fetch failed — portfolio_manager may degrade"
+
       - name: Run portfolio manager
         run: python -m audit_dashboard.portfolio_manager
 
