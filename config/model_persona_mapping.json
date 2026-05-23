@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-22T00:00:00Z",
+  "description": "Maps AI models to personas and asset class assignments for the AI Prediction Tournament.",
+  "models": {
+    "deepseek_v4": {
+      "provider": "DeepSeek",
+      "api_type": "deepseek",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "model_name": "deepseek-chat",
+      "endpoint": "https://api.deepseek.com/v1/chat/completions",
+      "assignments": {
+        "CRYPTO": ["momentum_scalp"],
+        "EQUITY": ["trend_follower"],
+        "COMMODITY": ["cta_trend"]
+      }
+    },
+    "gpt4o_mini": {
+      "provider": "OpenAI",
+      "api_type": "openai",
+      "api_key_env": "OPENAI_API_KEY",
+      "model_name": "gpt-4o-mini",
+      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "assignments": {
+        "CRYPTO": ["mean_reversion"],
+        "EQUITY": ["value_investor"],
+        "ETF": ["sector_rotation"],
+        "FOREX": ["carry_trade"]
+      }
+    },
+    "cerebras_llama4": {
+      "provider": "Cerebras",
+      "api_type": "cerebras",
+      "api_key_env": "CEREBRAS_API_KEY",
+      "model_name": "llama4-scout",
+      "endpoint": "https://api.cerebras.ai/v1/chat/completions",
+      "assignments": {
+        "CRYPTO": ["grid_trader"],
+        "EQUITY": ["growth_at_reasonable_price"],
+        "COMMODITY": ["seasonal_pattern"]
+      }
+    },
+    "grok3": {
+      "provider": "xAI",
+      "api_type": "openai_compat",
+      "api_key_env": "XAI_API_KEY",
+      "model_name": "grok-3",
+      "endpoint": "https://api.x.ai/v1/chat/completions",
+      "assignments": {
+        "CRYPTO": ["breakout_scanner"],
+        "EQUITY": ["momentum_momentum"],
+        "ETF": ["macro_hedge"]
+      }
+    },
+    "cursor_agent": {
+      "provider": "Cursor (Anthropic)",
+      "api_type": "anthropic",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "model_name": "claude-sonnet-4-20250514",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "assignments": {
+        "CRYPTO": ["volatility_breakout"],
+        "EQUITY": ["quality_compound"],
+        "COMMODITY": ["supply_demand"],
+        "FOREX": ["central_bank_policy"]
+      }
+    },
+    "claude_opus": {
+      "provider": "Anthropic",
+      "api_type": "anthropic",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "model_name": "claude-opus-4-20250514",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "assignments": {
+        "CRYPTO": ["narrative_trader"],
+        "EQUITY": ["moat_investor"],
+        "COMMODITY": ["global_macro"],
+        "ETF": ["factor_rotation"],
+        "FOREX": ["purchasing_power_parity"],
+        "BOND": ["duration_call"]
+      }
+    },
+    "mercury": {
+      "provider": "Inception Labs (OpenRouter)",
+      "api_type": "openai_compat",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "model_name": "inceptionlabs/mercury-v1",
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "assignments": {
+        "CRYPTO": ["liquidity_grazer"],
+        "EQUITY": ["statistical_arb"],
+        "COMMODITY": ["weather_hedge"],
+        "FOREX": ["order_flow"],
+        "ETF": ["volatility_tilt"],
+        "BOND": ["flight_to_safety"]
+      }
+    },
+    "ring_261T": {
+      "provider": "Inclusion AI (OpenRouter)",
+      "api_type": "openai_compat",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "model_name": "inclusionai/ring-2.6-1t",
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "assignments": {
+        "CRYPTO": ["bayesian_breakout"],
+        "EQUITY": ["cross_sectional_momentum"],
+        "COMMODITY": ["inventory_cycle"],
+        "FOREX": ["purchasing_power_parity"]
+      }
+    },
+    "gemini_25_pro": {
+      "provider": "Google",
+      "api_type": "openai_compat",
+      "api_key_env": "GOOGLE_AI_API_KEY",
+      "model_name": "gemini-2.5-pro-exp-03-25",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      "assignments": {
+        "CRYPTO": ["onchain_analytics"],
+        "EQUITY": ["earnings_momentum"],
+        "COMMODITY": ["geopolitical_risk"]
+      }
+    },
+    "mistral_large": {
+      "provider": "Mistral",
+      "api_type": "openai_compat",
+      "api_key_env": "MISTRAL_API_KEY",
+      "model_name": "mistral-large-2411",
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "assignments": {
+        "EQUITY": ["quality_growth"],
+        "CRYPTO": ["technical_swing"]
+      }
+    }
+  },
+  "asset_classes": ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND"],
+  "resolution_windows_days": {
+    "EQUITY": 30,
+    "CRYPTO": 14,
+    "COMMODITY": 28,
+    "FOREX": 21,
+    "ETF": 30,
+    "BOND": 60
+  },
+  "universe": {
+    "CRYPTO": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "ADAUSDT", "AVAXUSDT", "DOTUSDT", "LINKUSDT", "UNIUSDT", "LTCUSDT", "BCHUSDT", "ATOMUSDT", "NEARUSDT", "TRXUSDT", "APTUSDT", "ARBUSDT", "OPUSDT", "SUIUSDT", "INJUSDT", "HBARUSDT", "SEIUSDT", "CROUSDT", "FTMUSDT", "ALGOUSDT", "SANDUSDT", "MANAUSDT", "IMXUSDT", "DYDXUSDT", "MATICUSDT"],
+    "EQUITY": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK.B", "JPM", "V", "JNJ", "WMT", "MA", "PG", "UNH", "HD", "DIS", "BAC", "ADBE", "CRM", "NFLX", "CMCSA", "PYPL", "INTC", "AMD", "MRK", "VZ", "KO", "PEP", "TMO"],
+    "FOREX": ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCHF"],
+    "COMMODITY": ["GC=F", "SI=F", "CL=F", "NG=F", "HG=F"],
+    "ETF": ["SPY", "QQQ", "IWM", "EEM", "GLD"],
+    "BOND": ["^TNX", "^TYX"]
+  }
+}

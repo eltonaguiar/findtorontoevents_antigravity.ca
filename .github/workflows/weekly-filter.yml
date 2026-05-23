@@ -19,8 +19,17 @@ jobs:
       - name: Run weekly filter
         run: python tools/edge_filter_engine_v3.py
         continue-on-error: true
+      - name: Pull latest before commit (storm-commit race protection)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git stash --include-untracked || true
+          git pull --rebase origin main || true
+          git stash pop || true
       - name: Commit filter report
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'auto: weekly real-money filter [skip ci]'
           file_pattern: 'reports/weekly_filter_*.md reports/weekly_filter_*.json'
+          push_options: '--force-with-lease'
