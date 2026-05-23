@@ -99,6 +99,8 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             safe_float(p.get("exit_price", 0)),
             safe_str(p.get("exit_reason", "")),
             safe_str(p.get("resolved_at", "")),
+            safe_str(p.get("reason", ""), 3000),
+            safe_str(p.get("entry_criteria", ""), 1000),
         ))
 
     ddl = [
@@ -113,6 +115,8 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             take_profit     DECIMAL(16,4) DEFAULT NULL,
             stop_loss       DECIMAL(16,4) DEFAULT NULL,
             thesis          TEXT          DEFAULT NULL,
+            reason          TEXT          DEFAULT NULL COMMENT 'Detailed persona rationale',
+            entry_criteria  TEXT          DEFAULT NULL COMMENT 'Specific entry triggers that fired',
             data_source     VARCHAR(64)   DEFAULT '',
             confidence      DECIMAL(5,4)  DEFAULT 0,
             timeframe       VARCHAR(16)   DEFAULT '',
@@ -133,16 +137,26 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             UNIQUE KEY uq_pick (model_id, symbol, submitted_at(19))
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """,
+        """
+        ALTER TABLE ai_tournament_picks
+            ADD COLUMN IF NOT EXISTS reason TEXT DEFAULT NULL COMMENT 'Detailed persona rationale'
+            AFTER thesis;
+        """,
+        """
+        ALTER TABLE ai_tournament_picks
+            ADD COLUMN IF NOT EXISTS entry_criteria TEXT DEFAULT NULL COMMENT 'Specific entry triggers that fired'
+            AFTER reason;
+        """,
     ]
 
     insert_sql = """
         INSERT INTO ai_tournament_picks
             (model_id, symbol, asset_class, direction, entry_price,
-             take_profit, stop_loss, thesis, data_source, confidence,
+             take_profit, stop_loss, thesis, reason, entry_criteria, data_source, confidence,
              timeframe, status, submitted_at, provider, model_version,
              strategy_name, persona_id, current_price, unrealized_pnl_pct,
              pnl_pct, exit_price, exit_reason, resolved_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s)
         ON DUPLICATE KEY UPDATE
@@ -153,6 +167,7 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             exit_reason     = VALUES(exit_reason),
             resolved_at     = VALUES(resolved_at),
             status          = VALUES(status),
+            reason          = VALUES(reason),
             updated_at      = NOW()
     """
 
