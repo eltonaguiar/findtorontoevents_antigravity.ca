@@ -3,6 +3,7 @@ r'''Tests for P1-B: Regime gate integration in production_scanner.py'''
 
 import sys, unittest
 from pathlib import Path
+from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'alpha_engine'))
 
 from production_scanner import (
@@ -13,7 +14,16 @@ from production_scanner import (
     _PROVEN_SHORT_STRATEGIES,
 )
 
+# Stable mock data for load_strategy_performance so Gate 8 (algo probation)
+# doesn't flap when automated workflows overwrite strategy_performance.json.
+_MOCK_STRATEGY_PERF = {
+    'macd_crossover': {'closed_picks': 16, 'win_rate': 0.6875},
+    'cot_positioning': {'closed_picks': 43, 'win_rate': 0.81},
+    'cftc_cot_commercial_signal': {'closed_picks': 12, 'win_rate': 0.58},
+}
 
+
+@patch('production_scanner.load_strategy_performance', return_value=_MOCK_STRATEGY_PERF)
 class TestRegimeGate(unittest.TestCase):
     r'''Test Gate 4b (SHORT regime alignment) and Gate 4c (LONG regime alignment).
 
@@ -29,6 +39,11 @@ class TestRegimeGate(unittest.TestCase):
     - cot_positioning: in _SHORT_EXEMPT_STRATEGIES AND _CONTRARIAN_SHORT_EXEMPT → exempt all gates
     - cftc_cot_commercial_signal: in _SHORT_EXEMPT_STRATEGIES → exempt all gates
     - Non-contrarian non-exempt strategies: test Gate 4c (LONG block) with cot_positioning BUY.
+
+    NOTE: load_strategy_performance is mocked at class level to avoid flapping
+    when automated workflows overwrite strategy_performance.json with partial data
+    (PR root cause: ALPHA ENGINE hourly runs regress macd_crossover closed_picks
+    from 16 to 1, causing Gate 8 algo-probation to reject exempt SHORT picks).
     '''
 
     def _make_short_exempt(self, **kw):
@@ -65,7 +80,7 @@ class TestRegimeGate(unittest.TestCase):
         return base
 
     # ========== Gate 4b SHORT aligned (should pass) ==========
-    def test_short_aligned_bearish_regime_passes(self):
+    def test_short_aligned_bearish_regime_passes(self, _mock):
         r'''SHORT in BEARISH regime = aligned, passes Gate 4b. macd_crossover is
         exempt from regime check (in _SHORT_EXEMPT_STRATEGIES).'''
         pick = self._make_short_exempt(
@@ -74,7 +89,7 @@ class TestRegimeGate(unittest.TestCase):
         passed, _ = apply_quality_gates([pick], regime='BEARISH', closed_picks=[])
         self.assertEqual(len(passed), 1)
 
-    def test_short_aligned_bullish_high_short_conf_passes(self):
+    def test_short_aligned_bullish_high_short_conf_passes(self, _mock):
         r'''SHORT in BULLISH with macro_short_conf > 0.35 = aligned, passes.
         macd_crossover is exempt from regime alignment check.'''
         pick = self._make_short_exempt(
@@ -84,7 +99,7 @@ class TestRegimeGate(unittest.TestCase):
         self.assertEqual(len(passed), 1)
 
     # ========== Gate 4b SHORT exemption (exempt strategies pass regardless) ==========
-    def test_short_exempt_in_bullish_regime_passes(self):
+    def test_short_exempt_in_bullish_regime_passes(self, _mock):
         r'''Exempt SHORT strategy (macd_crossover in _SHORT_EXEMPT_STRATEGIES) passes
         Gate 4b even in BULLISH regime — exempt strategies bypass regime alignment.'''
         pick = self._make_short_exempt(
@@ -94,7 +109,7 @@ class TestRegimeGate(unittest.TestCase):
         passed, _ = apply_quality_gates([pick], regime='BULLISH', closed_picks=[])
         self.assertEqual(len(passed), 1)
 
-    def test_short_choppy_neutral_regime_passes(self):
+    def test_short_choppy_neutral_regime_passes(self, _mock):
         r'''SHORT in CHOPPY with balanced confidence passes Gate 4b (indecisive).'''
         pick = self._make_short_exempt(
             macro_regime='CHOPPY', macro_long_conf=0.52, macro_short_conf=0.48,
@@ -103,14 +118,14 @@ class TestRegimeGate(unittest.TestCase):
         self.assertEqual(len(passed), 1)
 
     # ========== Backward compatibility (no macro_regime field) ==========
-    def test_pick_without_macro_regime_passes_short(self):
+    def test_pick_without_macro_regime_passes_short(self, _mock):
         r'''Pick without macro_regime field passes all gates (backward compatible).'''
         pick = self._make_short_exempt()
         passed, _ = apply_quality_gates([pick], regime='BEARISH', closed_picks=[])
         self.assertEqual(len(passed), 1)
 
     # ========== VOLATILE regime gate (Gate 4b extension) ==========
-    def test_exempt_contrarian_passes_volatile_regime(self):
+    def test_exempt_contrarian_passes_volatile_regime(self, _mock):
         r'''Exempt contrarian (macd_crossover in _SHORT_EXEMPT_STRATEGIES) passes
         VOLATILE regime regardless of forward_trades. Exempt strategies bypass Gate 4b.'''
         pick = self._make_short_exempt(
@@ -120,7 +135,7 @@ class TestRegimeGate(unittest.TestCase):
         passed, _ = apply_quality_gates([pick], regime='VOLATILE', closed_picks=[])
         self.assertEqual(len(passed), 1)
 
-    def test_proven_exempt_contrarian_passes_volatile_regime(self):
+    def test_proven_exempt_contrarian_passes_volatile_regime(self, _mock):
         r'''Proven exempt contrarian (3+ forward trades) in VOLATILE passes.'''
         pick = self._make_short_exempt(
             forward_trades=5, recent_wr=0.60,
@@ -130,7 +145,7 @@ class TestRegimeGate(unittest.TestCase):
         self.assertEqual(len(passed), 1)
 
     # ========== Gate 4c LONG regime alignment ==========
-    def test_long_misaligned_bearish_regime_blocked(self):
+    def test_long_misaligned_bearish_regime_blocked(self, _mock):
         r'''LONG in BEARISH regime blocked by Gate 4c. Reason stored in
         _quality_gate_rejected (used internally by apply_quality_gates).'''
         pick = self._make_buy(
@@ -140,7 +155,7 @@ class TestRegimeGate(unittest.TestCase):
         self.assertEqual(len(rejected), 1)
         self.assertIn('bearish', rejected[0].get('_quality_gate_rejected', '').lower())
 
-    def test_long_misaligned_volatile_regime_blocked(self):
+    def test_long_misaligned_volatile_regime_blocked(self, _mock):
         r'''LONG in VOLATILE regime blocked by Gate 4c.'''
         pick = self._make_buy(
             macro_regime='VOLATILE', macro_long_conf=0.40, macro_short_conf=0.60,
@@ -149,7 +164,7 @@ class TestRegimeGate(unittest.TestCase):
         self.assertEqual(len(rejected), 1)
         self.assertIn('volatile', rejected[0].get('_quality_gate_rejected', '').lower())
 
-    def test_long_aligned_bullish_regime_passes(self):
+    def test_long_aligned_bullish_regime_passes(self, _mock):
         r'''LONG in BULLISH regime passes Gate 4c.'''
         pick = self._make_buy(
             macro_regime='BULLISH', macro_long_conf=0.85, macro_short_conf=0.15,
@@ -157,7 +172,7 @@ class TestRegimeGate(unittest.TestCase):
         passed, _ = apply_quality_gates([pick], regime='BULLISH', closed_picks=[])
         self.assertEqual(len(passed), 1)
 
-    def test_long_pick_without_macro_regime_passes(self):
+    def test_long_pick_without_macro_regime_passes(self, _mock):
         r'''LONG pick without macro_regime field passes (backward compatible).'''
         pick = self._make_buy()
         passed, _ = apply_quality_gates([pick], regime='BEARISH', closed_picks=[])
