@@ -177,7 +177,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update events from scraper (GitHub Actions) [skip ci]"
+            git commit -m "chore: update events from scraper (GitHub Actions)"
             for i in 1 2 3; do
               git pull --rebase "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" main 2>/dev/null || true
               bash .github/scripts/safe_push.sh "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
