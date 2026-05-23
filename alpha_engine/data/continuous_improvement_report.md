@@ -1,20 +1,20 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-23T15:21:04.816173+00:00
+Generated: 2026-05-23T15:23:36.381576+00:00
 
 ## Topline
 - Open positions: 94
 - Price coverage: 100.0%
-- Open average PnL: 107.9362%
+- Open average PnL: 101.5165%
 - Directional correctness: 69.15%
 - Regime: BEARISH
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
 - [HIGH] CONFIDENCE_INVERSION: High-confidence picks are underperforming low-confidence picks (63.0% vs 89.5%)
-- [HIGH] PEER_STALE: alpha_engine data is stale (83707.0m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (113.5m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (112000.1m old)
+- [HIGH] PEER_STALE: alpha_engine data is stale (83709.6m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (116.1m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (112002.6m old)
 - [HIGH] STRATEGY_DECAY: claude_ml_moderate_mut is a rehabilitation candidate (WR 0.0%, PF 0.0, Sharpe -67.192)
 - [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on SOLUSDT ({'LONG': 1, 'SHORT': 5})
 
