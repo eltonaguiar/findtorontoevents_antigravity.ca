@@ -680,10 +680,20 @@ jobs:
         echo "::warning title=custom-sports-update::update_custom_sports_picks.py FAILED — UFC/Tennis/Golf picks did NOT refresh this run. The job is still green only because the scraper step is continue-on-error; treat sports_custom_picks.json as stale until the next successful run."
         echo "scraper step failed — picks not refreshed"
 
+    - name: Pull latest before commit (storm-commit race protection)
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin main
+        git stash --include-untracked || true
+        git pull --rebase origin main || true
+        git stash pop || true
+
     - name: Commit updated picks
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "[skip ci] Auto-update custom sports picks"
         file_pattern: backfill/sports_custom_picks.json
         token: ${{ secrets.TOKEN_FOR_PUSH || secrets.GH_PAT || github.token }}
+        push_options: '--force-with-lease'
 
