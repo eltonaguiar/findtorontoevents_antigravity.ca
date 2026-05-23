@@ -1,22 +1,22 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-23T15:01:00.747428+00:00
+Generated: 2026-05-23T15:21:04.816173+00:00
 
 ## Topline
-- Open positions: 108
+- Open positions: 94
 - Price coverage: 100.0%
-- Open average PnL: 73.8635%
-- Directional correctness: 73.15%
+- Open average PnL: 107.9362%
+- Directional correctness: 69.15%
 - Regime: BEARISH
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] CONFIDENCE_INVERSION: High-confidence picks are underperforming low-confidence picks (67.9% vs 91.8%)
-- [HIGH] PEER_STALE: alpha_engine data is stale (83687.0m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (93.5m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (111980.1m old)
+- [HIGH] CONFIDENCE_INVERSION: High-confidence picks are underperforming low-confidence picks (63.0% vs 89.5%)
+- [HIGH] PEER_STALE: alpha_engine data is stale (83707.0m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (113.5m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (112000.1m old)
 - [HIGH] STRATEGY_DECAY: claude_ml_moderate_mut is a rehabilitation candidate (WR 0.0%, PF 0.0, Sharpe -67.192)
-- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BNBUSDT ({'LONG': 4, 'SHORT': 3})
+- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on SOLUSDT ({'LONG': 1, 'SHORT': 5})
 
 ## Recommendations
 - tighten_risk_and_reduce_gross_exposure: Choppy regime or drawdown breach warrants smaller sizing and tighter review cadence.
