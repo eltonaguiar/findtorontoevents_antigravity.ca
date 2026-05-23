@@ -104,8 +104,13 @@ def collect_workflow_row(
 
     never_run = len(runs) == 0
     stale_reason = stale_reasons.get(name)
+    # Belt-and-suspenders: even if guardian cache says unresolved,
+    # if the workflow's own latest run shows success, it's resolved.
+    is_unresolved = (wid in unresolved_ids) if wid is not None else False
+    if is_unresolved and runs and latest_status == "completed" and latest_conclusion == "success":
+        is_unresolved = False
     flags = {
-        "unresolved": wid in unresolved_ids if wid is not None else False,
+        "unresolved": is_unresolved,
         "chronic_cancelled": name in chronic_names,
         "never_run": never_run,
         "stale": bool(stale_reason) or never_run,
