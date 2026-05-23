@@ -29,7 +29,11 @@ if ($expected_token === '' || substr($expected_token, 0, 7) === 'IMPORT_' || $ex
 }
 
 // -- Config --
-$db_host = 'localhost';
+// 127.0.0.1 forces TCP; matches MySQL user grant 'admin'@'%' (verified working from
+// remote at 2026-05-23). 'localhost' triggers Unix-socket auth which matches the
+// 'admin'@'localhost' grant row — that row either doesn't exist or has a different
+// password on this server, yielding 1045 for every DB import.
+$db_host = '127.0.0.1';
 $db_user = 'IMPORT_DB_USER_PLACEHOLDER';
 $db_pass = 'IMPORT_DB_PASS_PLACEHOLDER';
 
