@@ -228,7 +228,7 @@ Output ONLY a valid JSON array. No markdown, no explanation, no code fences. Exa
 ]"""
 
 
-def build_prompt(model_cfg: dict, asset_class: str, universe: list[str]) -> list[dict]:
+def build_prompt(model_cfg: dict, asset_class: str, universe: list[str], persona_id: str = "") -> list[dict]:
     """Build the messages array for prompting a model."""
     config = load_config()
     windows = config.get("resolution_windows_days", {})
@@ -246,6 +246,12 @@ def build_prompt(model_cfg: dict, asset_class: str, universe: list[str]) -> list
         universe=json.dumps(universe_sample),
         timeframe=f"{timeframe_days}d",
     )
+
+    # Add persona-specific strategy instructions when a persona is active
+    if persona_id:
+        strategy_desc = PERSONA_STRATEGIES.get(persona_id, persona_id)
+        thesis_options = "\n".join(f"  - {t}" for t in PERSONA_THESIS_MAP.get(persona_id, [f"{persona_id}: look for this setup"]))
+        prompt += f"\n\nYour trading persona: {strategy_desc}\nExample thesis options for your style:\n{thesis_options}\n\nPurposefully generate picks that match this persona's unique approach."
 
     return [
         {"role": "system", "content": "You are a quantitative trading analyst. Output raw JSON only."},
@@ -321,7 +327,7 @@ PERSONA_THESIS_MAP: dict[str, list[str]] = {
 
 
 def parse_picks_response(
-    response: dict | None, model_cfg: dict, model_id: str, asset_class: str
+    response: dict | None, model_cfg: dict, model_id: str, asset_class: str, persona_id: str = ""
 ) -> list[dict]:
     """Parse picks from an API response."""
     picks: list[dict] = []
@@ -351,11 +357,10 @@ def parse_picks_response(
 
     # Try to extract JSON from the response
     content = content.strip()
-    
+
     # Remove markdown code fences if present
     if content.startswith("```"):
         lines = content.split("\n")
-        # Find the first and last ``` markers
         start = 0
         end = len(lines)
         for i, line in enumerate(lines):
@@ -371,28 +376,22 @@ def parse_picks_response(
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        # Try to find JSON array in the text
         match = re.search(r"\[.*\]", content, re.DOTALL)
         if match:
             try:
                 parsed = json.loads(match.group(0))
             except json.JSONDecodeError:
-                print(f"  [parse] Failed to extract JSON from response for {model_id}")
+                print(f"  [parse] Failed to extract JSON from response for {model_id}/{persona_id}")
                 return picks
         else:
-            print(f"  [parse] No JSON array found in response for {model_id}")
+            print(f"  [parse] No JSON array found in response for {model_id}/{persona_id}")
             return picks
 
     if not isinstance(parsed, list):
         parsed = [parsed]
 
-    strategy_name = ""
-    persona_ids = model_cfg.get("assignments", {}).get(asset_class, [])
-    if persona_ids:
-        persona_id = persona_ids[0]
-        strategy_name = PERSONA_STRATEGIES.get(persona_id, persona_id)
-
     model_version = model_cfg.get("model_name", model_id)
+    strategy_name = PERSONA_STRATEGIES.get(persona_id, persona_id)
 
     now_iso = datetime.now(timezone.utc).isoformat()
     for pick in parsed:
@@ -406,7 +405,6 @@ def parse_picks_response(
         tp = float(pick.get("take_profit", 0))
         sl = float(pick.get("stop_loss", 0))
 
-        # Validate basic structure
         if entry <= 0 or tp <= 0 or sl <= 0:
             continue
 
@@ -427,7 +425,7 @@ def parse_picks_response(
             "provider": model_cfg.get("provider", ""),
             "model_version": model_version,
             "strategy_name": strategy_name,
-            "persona_id": persona_ids[0] if persona_ids else "",
+            "persona_id": persona_id,
             "current_price": entry,
             "unrealized_pnl_pct": 0.0,
         })
@@ -590,7 +588,7 @@ def generate_fallback_picks(config: dict) -> list[dict]:
 
 
 def try_prompt_model(
-    model_id: str, model_cfg: dict, asset_class: str, universe: list[str]
+    model_id: str, model_cfg: dict, asset_class: str, universe: list[str], persona_id: str = ""
 ) -> list[dict]:
     """Attempt to prompt a model for picks in an asset class."""
     api_key_env = model_cfg.get("api_key_env", "")
@@ -600,11 +598,11 @@ def try_prompt_model(
     endpoint = model_cfg.get("endpoint", "")
 
     if not api_key:
-        print(f"  [skip] {model_id}/{asset_class}: no {api_key_env}")
         return []
 
-    messages = build_prompt(model_cfg, asset_class, universe)
-    print(f"  [prompt] {model_id}/{asset_class} ({model_name})...")
+    messages = build_prompt(model_cfg, asset_class, universe, persona_id)
+    label = f"{model_id}/{persona_id}/{asset_class}" if persona_id else f"{model_id}/{asset_class}"
+    print(f"  [prompt] {label} ({model_name})...")
 
     response = None
     if api_type == "openai":
@@ -621,11 +619,11 @@ def try_prompt_model(
         print(f"  [skip] {model_id}: unknown api_type '{api_type}'")
 
     if response:
-        picks = parse_picks_response(response, model_cfg, model_id, asset_class)
-        print(f"  [result] {model_id}/{asset_class}: {len(picks)} picks")
+        picks = parse_picks_response(response, model_cfg, model_id, asset_class, persona_id)
+        print(f"  [result] {label}: {len(picks)} picks")
         return picks
 
-    print(f"  [fail] {model_id}/{asset_class}: API call failed")
+    print(f"  [fail] {label}: API call failed")
     return []
 
 
@@ -722,18 +720,19 @@ def main() -> None:
 
     models = config.get("models", {})
 
-    # Try each model for each assigned asset class
+    # Try each model for each assigned asset class × persona
     for model_id, model_cfg in models.items():
         assignments = model_cfg.get("assignments", {})
-        for asset_class in assignments:
+        for asset_class, persona_ids in assignments.items():
             ac_universe = universe.get(asset_class, [])
             if not ac_universe:
                 continue
-            picks = try_prompt_model(model_id, model_cfg, asset_class, ac_universe)
-            if picks:
-                api_success = True
-                all_picks.extend(picks)
-            time.sleep(0.5)  # Rate limit between models
+            for persona_id in persona_ids:
+                picks = try_prompt_model(model_id, model_cfg, asset_class, ac_universe, persona_id)
+                if picks:
+                    api_success = True
+                    all_picks.extend(picks)
+                time.sleep(0.5)  # Rate limit between models
 
     # If no API calls succeeded, use fallback
     if not api_success or not all_picks:
