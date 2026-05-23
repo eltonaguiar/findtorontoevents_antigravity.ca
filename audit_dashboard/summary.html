@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Audit Performance Summary — Edge by Asset Class &amp; Tab</title>
+<style>
+:root {
+  --bg: #0a0a12; --card: #1a1a2e; --border: #2a2a4a; --text: #e0e0e0; --text-dim: #888;
+  --green-bright: #22c55e; --red-bright: #ef4444; --blue: #60a5fa; --purple: #a78bfa;
+  --yellow: #f59e0b; --orange: #fb923c; --cyan: #22d3ee;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:16px; max-width:1500px; margin:0 auto; }
+h2 { font-size:16px; font-weight:600; color:var(--blue); margin:24px 0 10px; border-bottom:1px solid var(--border); padding-bottom:6px; display:flex; align-items:center; gap:8px; }
+a { color:var(--purple); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.header { text-align:center; padding:16px 0 12px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.header h1 { font-size:22px; font-weight:700; letter-spacing:0.5px; }
+.header .subtitle { color:var(--text-dim); font-size:12px; margin-top:2px; }
+.header .nav { margin-top:10px; font-size:12px; }
+.header .nav a { margin:0 8px; }
+
+#loading { text-align:center; padding:40px; color:var(--text-dim); font-size:14px; }
+#loading .spinner { display:inline-block; width:24px; height:24px; border:2px solid var(--border); border-top:2px solid var(--blue); border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px; vertical-align:middle; }
+@keyframes spin { to { transform:rotate(360deg); } }
+#error { display:none; text-align:center; padding:20px; color:var(--red-bright); font-size:13px; background:rgba(239,68,68,0.08); border-radius:8px; margin:20px 0; }
+
+/* Filter bar */
+.filter-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:8px; }
+.filter-bar label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; }
+.filter-bar button { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:6px 12px; cursor:pointer; transition:all 0.15s; }
+.filter-bar button.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+.filter-bar button:hover:not(.active) { border-color:var(--blue); }
+.filter-bar .sep { color:var(--text-dim); margin:0 4px; }
+#filter-info { font-size:11px; color:var(--yellow); margin-left:auto; }
+
+/* Unrealized PnL warning */
+#unrealized-warning { display:none; padding:8px 14px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:8px; margin-bottom:12px; font-size:12px; color:var(--yellow); }
+
+/* Section filter tags */
+.section-filter-tag { display:inline-block; font-size:9px; font-weight:600; padding:2px 8px; border-radius:10px; margin-left:8px; background:rgba(96,165,250,0.12); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
+.section-filter-tag.warn { background:rgba(239,68,68,0.12); color:var(--red-bright); border:1px solid rgba(239,68,68,0.3); }
+
+.overall-strip { display:grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap:8px; margin-bottom:20px; }
+.overall-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 12px; text-align:center; cursor:pointer; transition:border-color 0.15s; }
+.overall-card:hover { border-color:var(--blue); }
+.overall-card .lbl { font-size:10px; color:var(--text-dim); text-transform:uppercase; }
+.overall-card .val { font-size:22px; font-weight:700; margin-top:2px; }
+.overall-card .sub { font-size:10px; color:var(--text-dim); margin-top:2px; }
+
+.master-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:16px; margin-bottom:24px; }
+
+.scorecard { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.scorecard .class-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.scorecard .class-name { font-size:16px; font-weight:700; }
+.edge-verdict { font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:12px; letter-spacing:0.5px; }
+.edge-verdict.stable_edge { background:rgba(34,197,94,0.15); color:var(--green-bright); border:1px solid rgba(34,197,94,0.3); }
+.edge-verdict.decaying_edge { background:rgba(239,68,68,0.12); color:var(--red-bright); border:1px solid rgba(239,68,68,0.3); }
+.edge-verdict.no_edge { background:rgba(239,68,68,0.18); color:var(--red-bright); border:1px solid rgba(239,68,68,0.4); }
+.edge-verdict.mixed { background:rgba(245,158,11,0.15); color:var(--yellow); border:1px solid rgba(245,158,11,0.3); }
+.edge-verdict.insufficient_data { background:rgba(100,116,139,0.15); color:var(--text-dim); border:1px solid rgba(100,116,139,0.3); }
+.sample-warning { display:inline-block; font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; margin-left:6px; background:rgba(239,68,68,0.18); color:var(--red-bright); border:1px solid rgba(239,68,68,0.3); }
+
+.metric-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.metric-row:last-child { border-bottom:none; }
+.metric-label { color:var(--text-dim); }
+.metric-value { font-weight:600; font-variant-numeric:tabular-nums; }
+.metric-value.pos { color:var(--green-bright); }
+.metric-value.neg { color:var(--red-bright); }
+.metric-value.warn { color:var(--yellow); }
+
+.tab-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap:6px; margin-top:8px; }
+.tab-mini { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:6px; padding:8px 10px; }
+.tab-mini .tab-name { font-size:10px; color:var(--text-dim); text-transform:uppercase; }
+.tab-mini .tab-n { font-size:18px; font-weight:700; }
+.tab-mini .tab-wr { font-size:11px; }
+
+.data-table { width:100%; border-collapse:collapse; font-size:12px; margin:10px 0 20px; }
+.data-table th { text-align:left; padding:7px 10px; background:rgba(255,255,255,0.03); color:var(--text-dim); font-weight:600; font-size:10px; text-transform:uppercase; border-bottom:1px solid var(--border); letter-spacing:0.3px; }
+.data-table td { padding:6px 10px; border-bottom:1px solid rgba(255,255,255,0.04); font-variant-numeric:tabular-nums; }
+.data-table tr:hover { background:rgba(255,255,255,0.02); }
+.data-table td.pos { color:var(--green-bright); }
+.data-table td.neg { color:var(--red-bright); }
+.data-table td.neutral { color:var(--text-dim); }
+.data-table td.clickable { cursor:pointer; }
+
+.pill { display:inline-block; font-size:9px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:4px; }
+.pill.green { background:rgba(34,197,94,0.15); color:var(--green-bright); }
+.pill.red { background:rgba(239,68,68,0.15); color:var(--red-bright); }
+.pill.yellow { background:rgba(245,158,11,0.15); color:var(--yellow); }
+
+/* HF grade bars */
+.grade-bar { display:inline-block; height:14px; border-radius:3px; min-width:4px; margin-right:2px; vertical-align:middle; }
+.grade-a { background:var(--green-bright); }
+.grade-b { background:#84cc16; }
+.grade-c { background:var(--yellow); }
+.grade-d { background:var(--orange); }
+.grade-f { background:var(--red-bright); }
+.benchmark-stripe { display:inline-block; position:relative; }
+.benchmark-stripe::after { content:''; position:absolute; top:-1px; bottom:-1px; width:2px; background:#fff; opacity:0.6; }
+
+.eli5-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:12px; }
+.eli5-card h4 { font-size:13px; font-weight:600; color:var(--blue); margin-bottom:6px; }
+.eli5-card p { font-size:12px; color:var(--text-dim); line-height:1.6; margin-bottom:6px; }
+.eli5-card .thresholds { display:flex; gap:12px; flex-wrap:wrap; font-size:11px; margin-top:4px; }
+.eli5-card .thresholds span { padding:2px 8px; border-radius:4px; }
+.eli5-card .thresholds .great { background:rgba(34,197,94,0.12); color:var(--green-bright); }
+.eli5-card .thresholds .good { background:rgba(132,204,22,0.10); color:#84cc16; }
+.eli5-card .thresholds .ok { background:rgba(245,158,11,0.10); color:var(--yellow); }
+.eli5-card .thresholds .bad { background:rgba(239,68,68,0.10); color:var(--red-bright); }
+
+.bm-row { background:rgba(96,165,250,0.06) !important; }
+.bm-row td { font-size:11px !important; color:var(--blue) !important; }
+
+.drill-section { margin:0 0 20px; }
+.drill-section-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.drill-close { cursor:pointer; color:var(--text-dim); font-size:14px; }
+.drill-close:hover { color:var(--red-bright); }
+.drill-trades-table { max-height:500px; overflow-y:auto; }
+.drill-trades-table table { width:100%; border-collapse:collapse; font-size:11px; }
+.drill-trades-table th { text-align:left; padding:6px 8px; background:rgba(255,255,255,0.05); color:var(--text-dim); font-size:10px; text-transform:uppercase; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:1; }
+.drill-trades-table td { padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.03); }
+
+.footer { text-align:center; padding:20px; color:var(--text-dim); font-size:11px; border-top:1px solid var(--border); margin-top:32px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Audit Performance Summary</h1>
+  <div class="subtitle">Edge by Asset Class — Across All Tabs, Filters &amp; Sections</div>
+  <div class="nav">
+    <a href="/audit/">&#x2190; Dashboard</a>
+    <a href="/audit/edge_stability.html">Edge Stability</a>
+    <span id="data-age" style="font-size:11px;color:#666;margin-left:12px"></span>
+  </div>
+</div>
+
+<div id="loading"><span class="spinner"></span> Loading dashboard data&hellip;</div>
+<div id="error"></div>
+<div id="content" style="display:none">
+
+  <!-- Timeframe & Status Controls -->
+  <div class="filter-bar">
+    <label>Time:</label>
+    <button data-tf="all" class="active">All Time</button>
+    <button data-tf="8h">8h</button>
+    <button data-tf="24h">24h</button>
+    <button data-tf="48h">48h</button>
+    <button data-tf="72h">72h</button>
+    <button data-tf="7d">7d</button>
+    <button data-tf="30d">30d</button>
+    <span class="sep">|</span>
+    <label>Status:</label>
+    <button data-status="all" class="active">Both</button>
+    <button data-status="open">Open</button>
+    <button data-status="closed">Closed</button>
+    <span id="filter-info"></span>
+  </div>
+  <div id="unrealized-warning">&#x26A0; Showing <strong>open picks</strong> &mdash; PnL values reflect <em>unrealized</em> current profit/loss, not final outcomes. Win-rate and closed-trade stats only count resolved picks.</div>
+
+  <!-- Overall Summary Strip -->
+  <div class="overall-strip" id="overallStrip"></div>
+
+  <!-- Drill-down details -->
+  <div id="drillDetail" style="display:none"></div>
+
+  <!-- Scorecards -->
+  <h2>Edge Scorecards by Asset Class<span class="section-filter-tag" id="sc-tag"></span></h2>
+  <div style="margin-bottom:4px"><button onclick="toggleScEli5()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:10px;padding:2px 10px;cursor:pointer" id="scEli5Btn">[?] ELI5</button></div>
+  <div id="scEli5" style="display:none"></div>
+  <div class="master-grid" id="scorecards"></div>
+
+  <h2>Performance by Timeframe<span class="section-filter-tag" id="pt-tag"></span></h2>
+  <div id="perfTimeframeGrid"></div>
+
+  <h2>What-If Simulation: $100 Per Pick<span class="section-filter-tag">closed only</span></h2>
+  <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
+    Simulates investing $100 in each of the most recent picks per asset class, capped at 10 picks per class. 
+    Select an edge/sort criterion to see how different filtering strategies would have performed.
+    Only closed (resolved) picks are included — these are actual outcomes, not hypothetical.
+  </p>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="whatifControls">
+    <button data-wi="recent" class="active" onclick="setWhatIf('recent')">Most Recent (closing-date bias)</button>
+    <button data-wi="pnl" onclick="setWhatIf('pnl')">Highest PnL (lookback bias)</button>
+    <button data-wi="earliest" onclick="setWhatIf('earliest')">Earliest Entry (forward-test, no bias)</button>
+    <button data-wi="wr_strat" onclick="setWhatIf('wr_strat')">Best Strategy WR (lookahead bias)</button>
+    <button data-wi="best_pf" onclick="setWhatIf('best_pf')">Highest PF Systems (lookahead bias)</button>
+    <button data-wi="diversified" onclick="setWhatIf('diversified')">Symbol-Diversified (closing-date bias)</button>
+  </div>
+  <div id="whatifResults"></div>
+
+  <h2>Readiness Gate States</h2>
+  <div style="margin-bottom:4px"><button onclick="toggleRdEli5()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:10px;padding:2px 10px;cursor:pointer" id="rdEli5Btn">[?] ELI5</button></div>
+  <div id="rdEli5" style="display:none"></div>
+  <table class="data-table" id="readinessTable">
+    <thead><tr><th>Asset Class</th><th>Gate State</th><th>Sample Tier</th><th>N</th><th>PF</th><th>WR%</th><th>Sizing</th><th>WalkFwd OOS WR</th><th>Consistency</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Walk-Forward Edge Validation<span class="section-filter-tag">static</span></h2>
+  <div id="wfToggleBar" style="margin-bottom:8px">
+    <button onclick="toggleWfExplanations()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:4px 12px;cursor:pointer" id="wfToggleExplanations">[?] Show ELI5</button>
+  </div>
+  <div id="wfEli5" style="display:none"></div>
+  <div id="walkforwardGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px"></div>
+
+  <h2>Risk-Adjusted Metrics (HF Stats)<span class="section-filter-tag">static</span></h2>
+  <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Computed from individual trade returns (not portfolio equity curve). Values reflect per-trade distributions and are inflated vs real portfolio metrics. For context: S&amp;P 500 buy-and-hold Sharpe ~0.4, top hedge funds ~1.5. Grade scale below.</div>
+  <div id="hfBenchmarkBar" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px"></div>
+  <div id="hfToggleBar" style="margin-bottom:8px">
+    <button id="hfToggleExplanations" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:4px 12px;cursor:pointer" onclick="toggleHfExplanations()">[?] Show ELI5 Explanations</button>
+    <button id="hfToggleBenchmarks" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:4px 12px;cursor:pointer;margin-left:6px" onclick="toggleHfBenchmarks()">[B] Show Industry Benchmarks</button>
+  </div>
+  <table class="data-table" id="hfStatsTable">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+  <div id="hfEli5" style="display:none"></div>
+
+</div>
+
+<div class="footer">
+  <strong>Refresh schedule:</strong> Dashboard data regenerates every hour at :10 UTC (6:10 AM EST / 7:10 AM EDT) via <code>audit-dashboard.yml</code> cron job. Generator runs ~30-35 min — fresh data lands ~:40-:45 UTC.<br>
+  Edge Stability sidecar updates separately (last: <span id="es-age">—</span>). <strong>Summary picks:</strong> all active + last 30 days of closed trades, auto-generated with each dashboard run.<br>
+  This page is static HTML — <strong>hard refresh (Ctrl+Shift+R)</strong> to pull the latest JSON data. No auto-reload timer.
+</div>
+
+<script>
+// ─── State ─────────────────────────────────────────────────────────
+var D = null, ES = null;
+var _tf = 'all', _status = 'all';
+var _picksCache = null; // {open: [...], closed: [...], all: [...]}
+
+var ASSET_CLASSES = ['CRYPTO','EQUITY','FOREX','COMMODITY','FUTURES','BOND','ETF'];
+var CLASS_COLORS = { CRYPTO:'#f7931a',EQUITY:'#60a5fa',FOREX:'#22d3ee',COMMODITY:'#a78bfa',FUTURES:'#f59e0b',BOND:'#fb923c',ETF:'#4ade80' };
+
+var TFCUT = { '8h':8*3600*1000, '24h':24*3600*1000, '48h':48*3600*1000, '72h':72*3600*1000, '7d':7*86400*1000, '30d':30*86400*1000 };
+
+// ─── Helpers ───────────────────────────────────────────────────────
+function fmtPct(v,d) { if(v==null||!isFinite(v))return'\u2014'; d=d!=null?d:1; return(v>=0?'+':'')+v.toFixed(d)+'%'; }
+function fmtNum(v,d) { if(v==null||!isFinite(v))return'\u2014'; return v.toFixed(d!=null?d:2); }
+function fmtInt(v) { return(v==null||!isFinite(v))?'\u2014':v.toLocaleString(); }
+function fmtPf(v) { if(v==null||!isFinite(v))return'\u2014'; return v.toFixed(2); }
+function fmtSharpe(v) { return(v==null||!isFinite(v))?'\u2014':v.toFixed(2); }
+function fmtWR(v, total) { if(v==null||!isFinite(v))return'\u2014'; if(total!=null&&total===0)return'0 trades'; return v.toFixed(1)+'%'; }
+function posClass(v) { if(v==null||!isFinite(v))return'neutral'; return v>0.5?'pos':v<-0.5?'neg':'neutral'; }
+function colorClass(v) { if(v==null)return'neutral'; if(typeof v==='string')v=parseFloat(v); if(!isFinite(v))return'neutral'; return v>0?'pos':v<0?'neg':'neutral'; }
+function esc(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toEST(iso) { if(!iso)return''; try{return new Date(iso).toLocaleString('en-US',{timeZone:'America/New_York',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true,timeZoneName:'short'});}catch(e){return iso;} }
+
+function parseTs(s) {
+  if(!s) return 0;
+  s = String(s);
+  if(s.indexOf('T')<0&&s.indexOf(' ')>0) s=s.replace(' ','T');
+  if(s.indexOf('T')>0&&s.indexOf('+')<0&&!/Z$/.test(s)) s+='Z';
+  var ms = new Date(s).getTime();
+  return isFinite(ms)?ms:0;
+}
+
+function pickTs(p) { return parseTs(p.closed_at||p.resolved_at||p.timestamp); }
+
+function isClosed(p) {
+  var o = String(p.outcome||p.status||'').toLowerCase();
+  if(o==='won'||o==='loss'||o==='lost'||o==='flat'||o==='win'||o==='tp_hit'||o==='sl_hit') return true;
+  // Fallback: if pick has a closed_at timestamp and a resolved pnl_pct, treat as closed
+  if(p.closed_at) {
+    var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||0);
+    if(isFinite(pnl) && pnl !== 0) return true;
+  }
+  return false;
+}
+
+function deriveAssetClass(sym) {
+  if(!sym) return null;
+  sym = String(sym).toUpperCase();
+  if(/USDT$|USDC$|BUSD$/.test(sym)) return 'CRYPTO';
+  if(/-USD$/.test(sym)) return 'CRYPTO';
+  if(/=X$/.test(sym)) return 'FOREX';
+  if(/=F$/.test(sym)) return 'COMMODITY';
+  if(/^XAU|^XAG/.test(sym)) return 'COMMODITY';
+  if(/\.TO$|\.L$|\.AX$/.test(sym)) return 'EQUITY';
+  return null;
+}
+
+// ─── Global ELI5 toggles ───────────────────────────────────────────
+var _scEli5 = false, _rdEli5 = false;
+function toggleScEli5() { _scEli5 = !_scEli5; document.getElementById('scEli5').style.display = _scEli5?'block':'none'; document.getElementById('scEli5').innerHTML = _scEli5?scEli5Content():''; document.getElementById('scEli5Btn').textContent = _scEli5?'[-] ELI5':'[?] ELI5'; }
+function toggleRdEli5() { _rdEli5 = !_rdEli5; document.getElementById('rdEli5').style.display = _rdEli5?'block':'none'; document.getElementById('rdEli5').innerHTML = _rdEli5?rdEli5Content():''; document.getElementById('rdEli5Btn').textContent = _rdEli5?'[-] ELI5':'[?] ELI5'; }
+
+function scEli5Content() {
+  return '<div class="eli5-card"><h4>How to Read the Scorecards</h4>'+
+    '<p><b>Open/Closed:</b> Open picks are still active (unrealized PnL). Closed picks have a final outcome (WON/LOSS/FLAT). Only closed picks count toward Win Rate.</p>'+
+    '<p><b>Win Rate:</b> % of closed trades that were profitable. Above 50% means you have a directional edge. But watch out — a high WR with huge losers is worse than a low WR with small losers and big winners.</p>'+
+    '<p><b>Total PnL:</b> Sum of all individual trade % returns. If open picks are included, a "(w/open)" tag warns that PnL includes unrealized profits.</p>'+
+    '<p><b>Profit Factor:</b> Gross profit / gross loss. PF > 1.5 is strong, PF > 2.0 is world-class. PF < 1.0 means you are losing money. A <span class="sample-warning">n=X</span> badge warns the sample is too small to trust the PF number.</p>'+
+    '<p><b>Health Status:</b> STABLE = 100+ resolved trades, statistically reliable. CANDIDATE = 50–99 trades, emerging but needs more data. INSUFFICIENT = under 50 trades, not statistically meaningful.</p>'+
+    '<p><b>Edge Verdict (from Edge Stability):</b> STABLE EDGE = strategy consistently profitable across time windows. DECAYING EDGE = was profitable but deteriorating. NO EDGE = losing money consistently. INSUFFICIENT DATA = not enough trades to judge.</p>'+
+    '<p><b>Per Source:</b> Shows how this class appears in different views — Active Picks, Non-Crypto filtered view, and unique symbol count.</p></div>';
+}
+
+function rdEli5Content() {
+  return '<div class="eli5-card"><h4>Readiness Gate States</h4>'+
+    '<p><b>Gate State:</b> Whether this asset class is cleared for real-money trading or paper-only.</p>'+
+    '<p><b>MONITORING</b> (yellow): Being watched. Not yet cleared for sizing but generating picks.</p>'+
+    '<p><b>ACTIVE</b> (green): Cleared for trading. Meets all charter requirements (T1/T2/T3).</p>'+
+    '<p><b>DISABLED/BLOCKED</b> (red): Explicitly turned off — either too risky, insufficient data, or under remediation.</p>'+
+    '<p><b>Sample Tier:</b> T1 = elite (PF >= 2.0, WR >= 55%, n >= 200). T2 = strong (PF >= 1.5, WR >= 50%, n >= 100). T3 = adequate (PF >= 1.2, WR >= 45%, n >= 100). BELOW_T2/INSUFFICIENT = not enough data or performance.</p>'+
+    '<p><b>WalkFwd OOS WR:</b> Win rate from walk-forward cross-validation. This is the "did it work on data it never saw?" test.</p>'+
+    '<p><b>Consistency:</b> % of walk-forward folds where OOS WR >= 50%. Higher = more reliable across different time periods.</p></div>';
+}
+function buildPickPool() {
+  if(_picksCache) return;
+  var open = [], closed = [];
+
+  // Prefer sidecar data (all active + last 30d closed, no 3500 cap) if available
+  var sp = D._summaryPicks;
+  if(sp && sp.active && sp.active.length > 0) {
+    open = sp.active;
+    if(sp.closed) closed = sp.closed;
+  } else {
+    // Fallback to main payload
+    if(D.picks&&D.picks.active) {
+      D.picks.active.forEach(function(p) { if(!isClosed(p)) open.push(p); else closed.push(p); });
+    }
+    if(D.picks&&D.picks.recent_closed) {
+      D.picks.recent_closed.forEach(function(p) { closed.push(p); });
+    }
+  }
+
+  _picksCache = { open:open, closed:closed, all:open.concat(closed), totalClosed: D.summary?D.summary.total_closed_picks:null };
+}
+
+function getFilteredPicks() {
+  buildPickPool();
+  var source;
+  if(_status==='open') source = _picksCache.open;
+  else if(_status==='closed') source = _picksCache.closed;
+  else source = _picksCache.all;
+
+  if(_tf==='all') return source;
+  var cutoff = Date.now() - TFCUT[_tf];
+  return source.filter(function(p) {
+    var ts = pickTs(p);
+    return ts > 0 && ts > cutoff;
+  });
+}
+
+function invalidateCache() { _picksCache = null; }
+
+// ─── Aggregate picks into per-class stats ──────────────────────────
+function aggPicks(picks) {
+  var out = {};
+  picks.forEach(function(p) {
+    var cls = p.asset_class||p.assetClass||deriveAssetClass(p.symbol)||'UNKNOWN';
+    if(!out[cls]) out[cls] = { open:0, closed:0, wins:0, losses:0, flat:0, pnl_raw:0, items:[], symbols:{}, hasOpen:false };
+    var o = out[cls];
+    if(isClosed(p)) {
+      o.closed++;
+      var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||0);
+      if(isFinite(pnl)) {
+        o.pnl_raw += pnl;
+        if(pnl>0.01) o.wins++;
+        else if(pnl<-0.01) o.losses++;
+        else o.flat++;
+      }
+    } else {
+      o.open++;
+      o.hasOpen = true;
+      var pnl = parseFloat(p.current_pnl_pct||p.pnl_pct||p.realized_pnl_pct||0);
+      if(isFinite(pnl)) o.pnl_raw += pnl;
+    }
+    o.items.push(p);
+    var sym = String(p.symbol||'').toUpperCase();
+    o.symbols[sym] = (o.symbols[sym]||0)+1;
+  });
+  Object.keys(out).forEach(function(cls) {
+    var o = out[cls];
+    var total = o.wins+o.losses+(o.flat||0);
+    o.total = total;
+    o.win_rate = total>0?(o.wins/total*100):null;
+    o.n_symbols = Object.keys(o.symbols).length;
+    o.dupe_warning = null;
+    Object.keys(o.symbols).forEach(function(s) { if(o.symbols[s]>1) o.dupe_warning = true; });
+    // PF
+    var grossPnl = 0;
+    o.items.forEach(function(p) {
+      var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||p.current_pnl_pct||0);
+      if(isFinite(pnl)) grossPnl += pnl;
+    });
+    var winSum = 0, lossSum = 0;
+    o.items.forEach(function(p) {
+      var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||p.current_pnl_pct||0);
+      if(!isFinite(pnl)) return;
+      if(pnl>0) winSum += pnl;
+      else if(pnl<0) lossSum += Math.abs(pnl);
+    });
+    o.profit_factor = lossSum>0.001 ? winSum/lossSum : (winSum>0 ? 999 : null);
+  });
+  return out;
+}
+
+// ─── Section filter tags ───────────────────────────────────────────
+function tfLabel() { return _tf==='all'?'all time':_tf; }
+function statusLabel() { return _status==='all'?'open + closed':_status==='open'?'open only':'closed only'; }
+function filterTag() { return tfLabel()+' \u00B7 '+statusLabel(); }
+
+// ─── Fetch ─────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    var [resp,esResp,spResp] = await Promise.all([
+      fetch('/audit/data/dashboard_payload.json?'+Date.now()),
+      fetch('/audit/data/edge_stability/edge_stability_index.json?'+Date.now()).catch(function(){return null;}),
+      fetch('/audit/data/summary_picks.json?'+Date.now()).catch(function(){return null;})
+    ]);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    D = await resp.json();
+    if(esResp&&esResp.ok) ES = await esResp.json();
+    // Sidecar: all active + last 30d closed (not capped at 3500)
+    if(spResp&&spResp.ok) {
+      var sp = await spResp.json();
+      if(sp.active) D._summaryPicks = sp;
+    }
+  } catch(e) {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error').style.display='block';
+    document.getElementById('error').textContent='Failed to load: '+e.message; return;
+  }
+  document.getElementById('loading').style.display='none';
+  document.getElementById('content').style.display='block';
+  document.getElementById('data-age').textContent = 'Data: '+toEST(D.generated_at);
+  if(ES&&ES.as_of) document.getElementById('es-age').textContent = toEST(ES.as_of);
+  setupControls();
+  render();
+}
+
+function setupControls() {
+  document.querySelectorAll('.filter-bar button[data-tf]').forEach(function(b) {
+    b.addEventListener('click',function() {
+      document.querySelectorAll('.filter-bar button[data-tf]').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active'); _tf = b.dataset.tf; invalidateCache(); render();
+    });
+  });
+  document.querySelectorAll('.filter-bar button[data-status]').forEach(function(b) {
+    b.addEventListener('click',function() {
+      document.querySelectorAll('.filter-bar button[data-status]').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active'); _status = b.dataset.status; invalidateCache(); render();
+    });
+  });
+}
+
+// ─── Main render ───────────────────────────────────────────────────
+function render() {
+  var filtered = getFilteredPicks();
+  var agg = aggPicks(filtered);
+
+  // Filter info and unrealized warning
+  document.getElementById('filter-info').textContent = 'Showing: '+filterTag()+' ('+filtered.length+' picks' + (_picksCache&&_picksCache.totalClosed?' of '+_picksCache.totalClosed.toLocaleString()+' total closed':'') + ')';
+  document.getElementById('unrealized-warning').style.display = (_status==='open'||_status==='all')?'block':'none';
+
+  // Section tags
+  var tagHtml = '<span style="font-size:11px;color:var(--text-dim);font-weight:400">'+filterTag()+'</span>';
+  document.getElementById('sc-tag').innerHTML = tagHtml;
+  document.getElementById('pt-tag').innerHTML = tagHtml;
+
+  renderOverallStrip(agg);
+  renderScorecards(agg);
+  renderPerfTimeframeGrid();
+  renderWhatIf();
+  renderReadinessTable();
+  renderWalkforwardGrid();
+  renderHfStats();
+  document.getElementById('drillDetail').style.display='none';
+}
+
+// ─── Overall Strip ─────────────────────────────────────────────────
+function renderOverallStrip(agg) {
+  var totalClosed=0,totalWins=0,totalLosses=0,totalOpen=0,classCount=0;
+  var dupeClasses = [];
+
+  ASSET_CLASSES.forEach(function(cls) {
+    var a = agg[cls];
+    if(a) {
+      totalOpen += a.open||0;
+      totalClosed += a.closed||0;
+      totalWins += a.wins||0;
+      totalLosses += a.losses||0;
+      classCount++;
+      if(a.dupe_warning) dupeClasses.push(cls);
+    }
+  });
+  var overallWr = (totalWins+totalLosses)>0?(totalWins/(totalWins+totalLosses)*100):null;
+
+  // PnL: use compounded from D.summary for all-time, or raw sum for filtered
+  var totalPnl = 0;
+  ASSET_CLASSES.forEach(function(cls) { if(agg[cls]) totalPnl += agg[cls].pnl_raw||0; });
+
+  var highEdge = ASSET_CLASSES.filter(function(c){return ES&&ES.classes&&ES.classes[c]&&ES.classes[c].consistency_verdict==='STABLE_EDGE';});
+  var decaying = ASSET_CLASSES.filter(function(c){return ES&&ES.classes&&ES.classes[c]&&ES.classes[c].consistency_verdict==='DECAYING_EDGE';});
+
+  // When showing all-time, use the server-compounded number. Otherwise raw sum with a note.
+  var isAllTime = _tf==='all'&&_status==='all';
+  var displayPnl = isAllTime?(D.summary&&D.summary.total_pnl_pct_compounded_ew):totalPnl;
+  var pnlNote = isAllTime?'compound':'raw sum';
+
+  var s = document.getElementById('overallStrip');
+  var activeLabel = (_status==='open')?'Active Picks':(_status==='closed')?'Closed Picks':'Total Picks';
+  var activeSub = (_status==='all')?'open: '+totalOpen+' / closed: '+totalClosed:'';
+
+  s.innerHTML =
+    '<div class="overall-card" onclick="drillCard(\'classes\')"><div class="lbl">Asset Classes</div><div class="val">'+classCount+'</div></div>'+
+    '<div class="overall-card" onclick="drillCard(\'stable\')"><div class="lbl">STABLE EDGE</div><div class="val" style="color:var(--green-bright)">'+highEdge.length+'</div><div style="font-size:10px;color:var(--green-bright)">'+highEdge.join(', ')+'</div></div>'+
+    '<div class="overall-card" onclick="drillCard(\'decaying\')"><div class="lbl">DECAYING</div><div class="val" style="color:var(--red-bright)">'+decaying.length+'</div><div style="font-size:10px;color:var(--red-bright)">'+decaying.join(', ')+'</div></div>'+
+    '<div class="overall-card" onclick="drillCard(\'closed\')"><div class="lbl">Closed (resolved)</div><div class="val">'+fmtInt(totalClosed)+'</div><div class="sub">'+totalWins+'W / '+totalLosses+'L | last 30d full data</div></div>'+
+    '<div class="overall-card" onclick="drillCard(\'wr\')"><div class="lbl">Win Rate</div><div class="val '+(overallWr!=null?(overallWr>=50?'pos':'neg'):'')+'">'+(overallWr!=null?overallWr.toFixed(1)+'%':'\u2014')+'</div><div class="sub">of resolved trades</div></div>'+
+    '<div class="overall-card" onclick="drillCard(\'pnl\')"><div class="lbl">Total PnL</div><div class="val '+colorClass(displayPnl)+'">'+(displayPnl!=null?fmtPct(displayPnl,1):'\u2014')+'</div><div class="sub">'+pnlNote+(dupeClasses.length>0?', '+dupeClasses.length+' classes w/ dupes':'')+'</div></div>'+
+    '<div class="overall-card" onclick="drillCard(\'active\')"><div class="lbl">'+activeLabel+'</div><div class="val">'+fmtInt(totalOpen+totalClosed)+'</div><div class="sub">'+activeSub+'</div></div>';
+}
+
+// ─── Scorecards (fully dynamic from agg) ───────────────────────────
+function renderScorecards(agg) {
+  var health = D.performance&&D.performance.asset_class_health?D.performance.asset_class_health:{};
+  var nc = D.summary&&D.summary.non_crypto_performance&&D.summary.non_crypto_performance.categories?D.summary.non_crypto_performance.categories:{};
+
+  var html = '';
+  ASSET_CLASSES.forEach(function(cls) {
+    var a = agg[cls]||{};
+    var h = health[cls]||{};
+    var ncp = nc[cls]||{};
+    var pfDisplay = fmtPf(a.profit_factor);
+    if((a.closed||0)>0&&(a.closed||0)<10) pfDisplay += '<span class="sample-warning">n='+(a.closed||0)+'</span>';
+
+    var esV = (ES&&ES.classes&&ES.classes[cls])?ES.classes[cls].consistency_verdict:null;
+    var esClass = esV?esV.toLowerCase().replace(/ /g,'_'):'insufficient_data';
+    var verdictLabel = esV?esV.replace(/_/g,' '):'\u2014';
+    if(esV==='DECAYING_EDGE') verdictLabel='DECAYING';
+    if(esV==='STABLE_EDGE') verdictLabel='STABLE EDGE';
+
+    html += '<div class="scorecard"><div class="class-header"><span class="class-name" style="color:'+(CLASS_COLORS[cls]||'#fff')+'">'+cls+'</span>';
+    html += '<span class="edge-verdict '+esClass+'">'+verdictLabel+'</span></div>';
+
+    html += '<div class="metric-row"><span class="metric-label">Picks (open/closed)</span><span class="metric-value">'+(a.open||0)+' / '+(a.closed||0)+'</span></div>';
+    html += '<div class="metric-row"><span class="metric-label">Win Rate (resolved)</span><span class="metric-value '+(a.win_rate!=null?(a.win_rate>=50?'pos':'neg'):'')+'">'+fmtWR(a.win_rate,a.total)+' ('+(a.wins||0)+'W/'+(a.losses||0)+'L)</span></div>';
+    html += '<div class="metric-row"><span class="metric-label">Total PnL</span><span class="metric-value '+colorClass(a.pnl_raw)+'">'+fmtPct(a.pnl_raw,1)+((a.hasOpen && _status !== 'closed')?' <span style="font-size:9px;color:var(--yellow)">(w/open)</span>':'')+'</span></div>';
+    html += '<div class="metric-row"><span class="metric-label">Profit Factor</span><span class="metric-value '+(a.profit_factor!=null?(a.profit_factor>=1.5?'pos':a.profit_factor>=1.0?'warn':'neg'):'')+'">'+pfDisplay+'</span></div>';
+
+    // Health status
+    if(h.status) {
+      var sColor = h.status==='stable'?'var(--green-bright)':h.status==='candidate'?'var(--yellow)':'var(--text-dim)';
+      html += '<div class="metric-row"><span class="metric-label">Health Status</span><span class="metric-value" style="color:'+sColor+'">'+h.status.toUpperCase()+' ('+fmtInt(h.resolved_n)+' resolved)</span></div>';
+    }
+
+    // Per-tab mini
+    html += '<div style="margin-top:10px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Per Source</div><div class="tab-grid">';
+    html += '<div class="tab-mini"><div class="tab-name">Active</div><div class="tab-n">'+(a.open||0)+'</div></div>';
+    html += '<div class="tab-mini"><div class="tab-name">Non-Crypto</div><div class="tab-n">'+fmtInt(ncp.closed||0)+'</div><div class="tab-wr" style="color:'+(ncp.win_rate!=null?(ncp.win_rate>=50?'var(--green-bright)':'var(--red-bright)'):'var(--text-dim)')+'">'+(ncp.win_rate!=null?ncp.win_rate.toFixed(1)+'%':'\u2014')+'</div></div>';
+    html += '<div class="tab-mini"><div class="tab-name">Symbols</div><div class="tab-n">'+fmtInt(a.n_symbols||0)+'</div></div>';
+    html += '</div>';
+
+    // Edge stability
+    if(ES&&ES.classes&&ES.classes[cls]) {
+      var es = ES.classes[cls];
+      html += '<div style="margin-top:10px;font-size:11px;color:var(--text-dim)">Edge: PF='+fmtPf(es.all_time_pf)+' WR='+(es.all_time_wr||0).toFixed(1)+'% n='+fmtInt(es.n_total)+' | 7d:'+(es.wr_7d||0).toFixed(1)+'% 30d:'+(es.wr_30d||0).toFixed(1)+'% 90d:'+(es.wr_90d||0).toFixed(1)+'%';
+      if(es.pareto_flag) html += '<br><span class="pill yellow">'+es.pareto_flag+'</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  document.getElementById('scorecards').innerHTML = html;
+}
+
+// ─── Performance by Timeframe (asset class x timeframe window matrix) ─────────
+function renderPerfTimeframeGrid() {
+  // Compute WR/PnL/PF per asset class across multiple timeframe windows using sidecar data
+  var sp = D._summaryPicks;
+  var allClosed = (sp && sp.closed) ? sp.closed : [];
+  
+  var timeframes = [
+    {key:'8h',label:'8h',ms:8*3600*1000},
+    {key:'24h',label:'24h',ms:24*3600*1000},
+    {key:'48h',label:'48h',ms:48*3600*1000},
+    {key:'72h',label:'72h',ms:72*3600*1000},
+    {key:'7d',label:'7d',ms:7*86400*1000},
+    {key:'30d',label:'30d',ms:30*86400*1000},
+    {key:'all',label:'All-Time',ms:Infinity}
+  ];
+
+  // Pre-sort closed picks by timestamp desc
+  var closedSorted = allClosed.slice().sort(function(a,b) {
+    return parseTs(b.closed_at||b.timestamp||'') - parseTs(a.closed_at||a.timestamp||'');
+  });
+
+  // For each timeframe, collect per-class stats
+  var perTf = {};
+  timeframes.forEach(function(tf) {
+    var cutoff = Date.now() - tf.ms;
+    perTf[tf.key] = {label:tf.label, classes:{}};
+    closedSorted.forEach(function(p) {
+      var ts = parseTs(p.closed_at||p.timestamp||'');
+      if(ts <= cutoff || ts === 0) return;
+      var cls = p.asset_class||p.assetClass||deriveAssetClass(p.symbol)||'UNKNOWN';
+      if(!perTf[tf.key].classes[cls]) perTf[tf.key].classes[cls] = {n:0,wins:0,losses:0,pnl:0,winPnl:0,lossPnl:0};
+      var c = perTf[tf.key].classes[cls];
+      c.n++;
+      var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||0);
+      if(pnl===0) pnl = parseFloat(p.realized_pnl_pct||0);
+      c.pnl += pnl;
+      if(pnl>0.01){c.wins++;c.winPnl+=pnl;}
+      else if(pnl<-0.01){c.losses++;c.lossPnl+=Math.abs(pnl);}
+    });
+  });
+
+  // Build header: Asset Class | 8h | 24h | 48h | 72h | 7d | 30d | All-Time
+  var html = '<table class="data-table"><thead><tr><th>Asset Class</th>';
+  timeframes.forEach(function(tf) { html += '<th>'+tf.label+'</th>'; });
+  html += '</tr></thead><tbody>';
+
+  ASSET_CLASSES.forEach(function(cls) {
+    html += '<tr><td style="color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600">'+cls+'</td>';
+    timeframes.forEach(function(tf) {
+      var c = (perTf[tf.key].classes[cls]) || {n:0,wins:0,losses:0,pnl:0,winPnl:0,lossPnl:0};
+      if(c.n===0) {
+        html += '<td class="neutral">—</td>';
+      } else {
+        var wr = (c.wins+c.losses)>0?(c.wins/(c.wins+c.losses)*100):null;
+        var pf = c.lossPnl>0.001?(c.winPnl/c.lossPnl):(c.winPnl>0?999:null);
+        var wrClass = wr!=null?(wr>=50?'pos':'neg'):'neutral';
+        html += '<td>'+
+          '<span class="'+wrClass+'">WR '+(wr!=null?wr.toFixed(1)+'%':'—')+'</span><br>'+
+          '<span class="'+colorClass(c.pnl)+'">PnL '+fmtPct(c.pnl,1)+'</span><br>'+
+          '<span style="font-size:10px;color:var(--text-dim)">n='+c.n+' PF='+fmtPf(pf)+'</span>'+
+          '</td>';
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('perfTimeframeGrid').innerHTML = html;
+}
+
+// ─── What-If Simulation ──────────────────────────────────────────────
+var _whatIfMode = 'recent';
+var _stratWR = {}; // computed from all closed picks: strategy -> {wins,losses}
+var _systemWR = {}; // system -> {wins,losses}
+
+function setWhatIf(mode) {
+  _whatIfMode = mode;
+  document.querySelectorAll('#whatifControls button').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('#whatifControls button[data-wi=\"'+mode+'\"]').classList.add('active');
+  renderWhatIf();
+}
+
+function renderWhatIf() {
+  var sp = D._summaryPicks;
+  if(!sp||!sp.closed){document.getElementById('whatifResults').innerHTML='<p style=\"color:var(--text-dim)\">Sidecar data not loaded.</p>';return;}
+
+  // Build strategy/system WR caches from ALL closed picks
+  if(Object.keys(_stratWR).length===0) {
+    sp.closed.forEach(function(p) {
+      var s = (p.strategy||'unknown').toLowerCase().trim();
+      var sys = (p.source_system||p.system||'unknown').toLowerCase().trim();
+      var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||0);
+      if(!_stratWR[s]) _stratWR[s]={wins:0,losses:0,totalPnl:0};
+      if(!_systemWR[sys]) _systemWR[sys]={wins:0,losses:0,totalPnl:0};
+      if(pnl>0.01){_stratWR[s].wins++;_systemWR[sys].wins++;_stratWR[s].totalPnl+=pnl;_systemWR[sys].totalPnl+=pnl;}
+      else if(pnl<-0.01){_stratWR[s].losses++;_systemWR[sys].losses++;_stratWR[s].totalPnl+=pnl;_systemWR[sys].totalPnl+=pnl;}
+    });
+  }
+
+  // Group picks by class, sort by timestamp desc
+  var byClass = {};
+  sp.closed.forEach(function(p) {
+    var cls = p.asset_class||p.assetClass||deriveAssetClass(p.symbol)||'UNKNOWN';
+    if(!byClass[cls]) byClass[cls]=[];
+    byClass[cls].push(p);
+  });
+
+  // Sort each class by the selected criterion, then pick top 10
+  var results = {};
+  var grandInvested = 0, grandReturn = 0, grandWins = 0, grandLosses = 0;
+  var perTrade = [];
+
+  Object.keys(byClass).forEach(function(cls) {
+    var picks = byClass[cls].slice();
+    var pnl = parseFloat;
+
+    // Apply edge criterion
+    if(_whatIfMode==='recent') {
+      picks.sort(function(a,b){return parseTs(b.closed_at||b.timestamp)-parseTs(a.closed_at||a.timestamp);});
+    } else if(_whatIfMode==='pnl') {
+      picks.sort(function(a,b){return pnl(b.pnl_pct||b.realized_pnl_pct||0)-pnl(a.pnl_pct||a.realized_pnl_pct||0);});
+    } else if(_whatIfMode==='earliest') {
+      // Forward-test: sort by entry timestamp OLDEST first (you'd have picked the earliest opportunities)
+      picks.sort(function(a,b){return parseTs(a.timestamp)-parseTs(b.timestamp);});
+    } else if(_whatIfMode==='wr_strat') {
+      picks.sort(function(a,b){
+        var sa=(_stratWR[(a.strategy||'').toLowerCase().trim()]||{wins:0,losses:0});
+        var sb=(_stratWR[(b.strategy||'').toLowerCase().trim()]||{wins:0,losses:0});
+        var wra=sa.wins+sa.losses>0?sa.wins/(sa.wins+sa.losses):0;
+        var wrb=sb.wins+sb.losses>0?sb.wins/(sb.wins+sb.losses):0;
+        return wrb-wra;
+      });
+    } else if(_whatIfMode==='best_pf') {
+      picks.sort(function(a,b){
+        var sa=(_systemWR[(a.source_system||a.system||'').toLowerCase().trim()]||{wins:0,losses:0,totalPnl:0});
+        var sb=(_systemWR[(b.source_system||b.system||'').toLowerCase().trim()]||{wins:0,losses:0,totalPnl:0});
+        var wa=sa.wins>0?sa.totalPnl/sa.wins:0, la=sa.losses>0?Math.abs(sa.totalPnl)/sa.losses:0;
+        var wb=sb.wins>0?sb.totalPnl/sb.wins:0, lb=sb.losses>0?Math.abs(sb.totalPnl)/sb.losses:0;
+        var pfa=la>0?wa/la:(wa>0?999:0), pfb=lb>0?wb/lb:(wb>0?999:0);
+        return pfb-pfa;
+      });
+    } else if(_whatIfMode==='diversified') {
+      // Pick most recent, but max 1 per symbol
+      var seen={}, deduped=[];
+      picks.sort(function(a,b){return parseTs(b.closed_at||b.timestamp)-parseTs(a.closed_at||a.timestamp);});
+      picks.forEach(function(p){var s=(p.symbol||'').toUpperCase();if(!seen[s]){seen[s]=true;deduped.push(p);}});
+      picks=deduped;
+    }
+
+    var top = picks.slice(0,10);
+    var invested = top.length * 100;
+    var returns = 0, wins=0, losses=0;
+    top.forEach(function(p){
+      var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||0);
+      returns += 100 * pnl / 100;
+      if(pnl>0.01) wins++;
+      else if(pnl<-0.01) losses++;
+      perTrade.push({cls:cls,sym:p.symbol,pnl:pnl,strat:p.strategy});
+    });
+
+    grandInvested += invested;
+    grandReturn += returns;
+    grandWins += wins;
+    grandLosses += losses;
+
+    var wr = (wins+losses)>0?(wins/(wins+losses)*100):0;
+    results[cls] = {invested:invested,returns:returns.toFixed(2),wins:wins,losses:losses,wr:wr,n:top.length};
+  });
+
+  var grandPnL = grandReturn;
+  var grandWR = (grandWins+grandLosses)>0?(grandWins/(grandWins+grandLosses)*100):0;
+
+  // Build table
+  var modeLabels = {
+    recent:'Most Recent 10 per class (closing-date bias — you only know these picks exist because they already closed)',
+    pnl:'Highest PnL picks (PURE lookback bias — sorted by realized outcome after the fact)',
+    earliest:'Earliest entry picks (FORWARD-TEST — oldest entry timestamps first, no lookahead. Closest to realistic.)',
+    wr_strat:'Best strategy WR (lookahead bias — strategy WR computed from ALL data including future trades)',
+    best_pf:'Highest-PF systems (lookahead bias — system PF computed from ALL data including future trades)',
+    diversified:'Symbol-diversified (closing-date bias — picks most recently closed trades, capped 1 per symbol)'
+  };
+  var html = '<div style=\"background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px\">'+
+    '<div style=\"font-size:13px;font-weight:700;margin-bottom:8px\">'+modeLabels[_whatIfMode]+'</div>'+
+    '<table class=\"data-table\"><thead><tr><th>Asset Class</th><th>Picks</th><th>Invested</th><th>Return $</th><th>Return %</th><th>W/L</th><th>WR</th></tr></thead><tbody>';
+
+  var classes = ['CRYPTO','EQUITY','FOREX','COMMODITY','FUTURES','BOND','ETF'];
+  classes.forEach(function(cls) {
+    var r = results[cls];
+    if(!r){html+='<tr><td style=\"color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600\">'+cls+'</td><td colspan=\"6\" class=\"neutral\">No closed trades</td></tr>';return;}
+    var retPct = (r.returns/r.invested*100);
+    var lowSample = r.n < 10;
+    html += '<tr>'+
+      '<td style=\"color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600\">'+cls+(lowSample?' <span title=\"Only '+r.n+' picks — statistically unreliable\" style=\"color:var(--yellow);cursor:help\">&#x26A0;</span>':'')+'</td>'+
+      '<td>'+r.n+'</td>'+
+      '<td>$'+r.invested.toLocaleString()+'</td>'+
+      '<td class=\"'+colorClass(r.returns)+'\">$'+parseFloat(r.returns).toFixed(2)+(lowSample?' <span title=\"Small sample: only '+r.n+' picks. Results are not statistically reliable.\" style=\"color:var(--yellow);cursor:help;font-size:10px\">&#x26A0;</span>':'')+'</td>'+
+      '<td class=\"'+colorClass(retPct)+'\">'+fmtPct(retPct,1)+(lowSample?' <span title=\"Small sample: only '+r.n+' picks. Results are not statistically reliable.\" style=\"color:var(--yellow);cursor:help;font-size:10px\">&#x26A0;</span>':'')+'</td>'+
+      '<td>'+r.wins+'W / '+r.losses+'L</td>'+
+      '<td class=\"'+(r.wr>=50?'pos':'neg')+'\">'+r.wr.toFixed(1)+'%</td>'+
+      '</tr>';
+  });
+
+  // Total row
+  var totalRetPct = (grandReturn/grandInvested*100);
+  html += '<tr style=\"border-top:2px solid var(--border);font-weight:700;background:rgba(96,165,250,0.05)\">'+
+    '<td>TOTAL</td>'+
+    '<td>'+perTrade.length+'</td>'+
+    '<td>$'+grandInvested.toLocaleString()+'</td>'+
+    '<td class=\"'+colorClass(grandPnL)+'\">$'+grandPnL.toFixed(2)+'</td>'+
+    '<td class=\"'+colorClass(totalRetPct)+'\">'+fmtPct(totalRetPct,1)+'</td>'+
+    '<td>'+grandWins+'W / '+grandLosses+'L</td>'+
+    '<td class=\"'+(grandWR>=50?'pos':'neg')+'\">'+grandWR.toFixed(1)+'%</td>'+
+    '</tr>';
+
+  html += '</tbody></table>'+
+    '<div style=\"font-size:10px;color:var(--text-dim);margin-top:6px\">'+
+    'Methodology: $100 invested in each selected pick. Return = $100 x (pnl%/100). All outcomes are actual closed-trade PnL from the last 30 days. No slippage, fees, or position overlap constraints applied. '+
+    (_whatIfMode==='earliest'?'<span style=\"color:var(--green-bright)\"><b>FORWARD-TEST:</b> Sorted by entry timestamp (oldest first). No future information used — picks selected based only on what was known at entry time. This is the most realistic estimate.</span> ':
+     _whatIfMode==='pnl'?'<span style=\"color:var(--red-bright)\"><b>LOOKBACK BIAS:</b> Picks sorted by realized PnL AFTER outcomes are known. This overstates performance — it cherry-picks winners.</span> ':
+     _whatIfMode==='wr_strat'||_whatIfMode==='best_pf'?'<span style=\"color:var(--yellow)\"><b>LOOKAHEAD BIAS:</b> Strategy/system WR/PF computed from ALL data including trades that happened AFTER these picks. Real-time WR at entry time would be lower.</span> ':'')+
+    'Past performance does not guarantee future results.'+
+    '</div></div>';
+  document.getElementById('whatifResults').innerHTML = html;
+}
+
+// ─── Readiness (static server data — not timeframe-filtered) ───────
+function renderReadinessTable() {
+  var readiness = D.readiness&&D.readiness.by_class?D.readiness.by_class:{};
+  var wf = D.walkforward&&D.walkforward.by_class?D.walkforward.by_class:{};
+  var html = '';
+  ASSET_CLASSES.forEach(function(cls) {
+    var r = readiness[cls]||{};
+    var w = wf[cls]||{};
+    var gateColor = r.gate_state==='ACTIVE'?'var(--green-bright)':r.gate_state==='BLOCKED'||r.gate_state==='DISABLED'?'var(--red-bright)':'var(--yellow)';
+    var tierColor = r.sample_tier==='T1'||r.sample_tier==='T2'?'var(--green-bright)':r.sample_tier==='T3'?'var(--yellow)':'var(--text-dim)';
+    html += '<tr><td style="color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600">'+cls+'</td>'+
+      '<td style="color:'+gateColor+';font-weight:600">'+(r.gate_state||'\u2014')+'</td>'+
+      '<td style="color:'+tierColor+'">'+(r.sample_tier||'\u2014')+'</td><td>'+fmtInt(r.n)+'</td><td>'+fmtPf(r.pf)+'</td>'+
+      '<td>'+(r.wr!=null?r.wr.toFixed(1)+'%':'\u2014')+'</td>'+
+      '<td>'+(r.sizing_allowed?'<span style="color:var(--green-bright)">YES</span>':'<span style="color:var(--red-bright)">NO</span>')+'</td>'+
+      '<td>'+(w.oos_wr!=null?w.oos_wr.toFixed(1)+'%':'\u2014')+'</td><td>'+(w.consistency!=null?w.consistency.toFixed(1)+'%':'\u2014')+'</td></tr>';
+  });
+  document.querySelector('#readinessTable tbody').innerHTML = html;
+}
+
+// ─── Walkforward with ELI5 ───────────────────────────────────────
+var _wfExplanationsVisible = false;
+
+function toggleWfExplanations() { _wfExplanationsVisible = !_wfExplanationsVisible; renderWalkforwardGrid(); }
+
+function renderWalkforwardGrid() {
+  var wf = D.walkforward&&D.walkforward.by_class?D.walkforward.by_class:{};
+  var html = '';
+
+  if(_wfExplanationsVisible) {
+    document.getElementById('wfEli5').innerHTML = wfEli5Content();
+    document.getElementById('wfEli5').style.display = 'block';
+    document.getElementById('wfToggleExplanations').textContent = '[-] Hide ELI5';
+  } else {
+    document.getElementById('wfEli5').style.display = 'none';
+    document.getElementById('wfToggleExplanations').textContent = '[?] Show ELI5';
+  }
+
+  Object.keys(wf).forEach(function(cls) {
+    var w = wf[cls];
+    if(!w.folds_detail) return;
+    var folds = w.folds_detail.sort(function(a,b){return a.fold-b.fold;});
+    var foldHtml = '';
+    folds.forEach(function(f) {
+      var decayColor = f.decay>=0?'var(--green-bright)':'var(--red-bright)';
+      foldHtml += '<div style="display:flex;align-items:center;gap:8px;margin:2px 0;font-size:11px">'+
+        '<span style="min-width:22px;color:var(--text-dim)">F'+f.fold+'</span>'+
+        '<span style="color:'+(f.test_wr>=50?'var(--green-bright)':'var(--red-bright)')+';min-width:38px;text-align:right">'+(f.test_wr!=null?f.test_wr.toFixed(1)+'%':'\u2014')+'</span>'+
+        '<span style="color:'+decayColor+';min-width:40px;text-align:right">'+(f.decay>=0?'+':'')+f.decay.toFixed(1)+'%</span>'+
+        '<span style="color:var(--text-dim);font-size:10px;min-width:45px;text-align:right">sh='+f.test_sharpe.toFixed(1)+'</span>'+
+        '<span style="color:var(--text-dim);font-size:9px">'+(f.test_avg_pnl!=null?'avg '+fmtPct(f.test_avg_pnl,1):'')+'</span>'+
+        '</div>';
+    });
+
+    // Build mini legend inside each card when ELI5 is on
+    var legend = _wfExplanationsVisible ? '<div style="font-size:10px;color:var(--text-dim);margin:6px 0;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:4px;line-height:1.5">'+
+      '<b>How to read:</b><br>'+
+      '<b>F1–F'+w.folds+':</b> Folds = training windows. Each fold trains on '+ (w.window_config?w.window_config.train_size:'?') +' trades, tests on the next '+ (w.window_config?w.window_config.test_size:'?') +'. Think: "Did the strategy work on data it never saw?"<br>'+
+      '<b>Test WR%:</b> Win rate on unseen (out-of-sample) trades. <span style="color:var(--green-bright)">Green ≥ 50%</span>, <span style="color:var(--red-bright)">Red &lt; 50%</span>.<br>'+
+      '<b>Decay:</b> Test WR minus Train WR. <span style="color:var(--green-bright)">Positive</span> = strategy improved out-of-sample (rare, great sign). <span style="color:var(--red-bright)">Negative</span> = overfitting (worked in backtest, failed live).<br>'+
+      '<b>sh:</b> Sharpe ratio of the test period. Combines return and risk into one number. ≥ 1.0 is good, ≥ 2.0 is excellent.<br>'+
+      '<b>OOS WR:</b> Average win rate across ALL folds. The single best number: if ≥ 50% and consistent, the strategy has real predictive power.<br>'+
+      '<b>Consistency:</b> % of folds where test WR ≥ 50%. 100% means every fold was profitable — the gold standard.<br>'+
+      '<b>Worst fold WR:</b> The single worst fold\'s win rate. Shows downside risk — even great strategies have bad periods.</div>' : '';
+
+    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">'+
+      '<div style="font-size:14px;font-weight:700;color:'+(CLASS_COLORS[cls]||'#fff')+'">'+cls+'</div>'+
+      '<div style="font-size:12px;margin:4px 0;display:flex;flex-wrap:wrap;gap:12px;align-items:center">'+
+        '<span>OOS WR: <b '+(w.oos_wr>=50?'style="color:var(--green-bright)"':'style="color:var(--red-bright)"')+'>'+(w.oos_wr||0).toFixed(1)+'%</b> &plusmn;'+(w.oos_wr_std||0).toFixed(1)+'%</span>'+
+        '<span>Decay: <b class="'+colorClass(w.decay)+'">'+fmtPct(w.decay,1)+'</b></span>'+
+        '<span>OOS Sharpe: <b>'+(w.oos_sharpe||0).toFixed(1)+'</b></span>'+
+      '</div>'+
+      '<div style="font-size:12px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:12px">'+
+        '<span>Consistency: <b '+(w.consistency>=70?'style="color:var(--green-bright)"':w.consistency>=50?'style="color:var(--yellow)"':'style="color:var(--red-bright)"')+'>'+(w.consistency||0).toFixed(0)+'%</b></span>'+
+        '<span>Worst fold: <b class="'+((w.worst_fold_wr||0)>=40?'':'neg')+'">'+(w.worst_fold_wr||0).toFixed(1)+'%</b></span>'+
+        '<span style="font-size:11px;color:var(--text-dim)">'+w.folds+' folds, '+(w.window_config?w.window_config.min_trades:'\u2014')+' min trades/window</span>'+
+      '</div>'+
+      legend+
+      '<div style="display:flex;gap:2px;font-size:10px;color:var(--text-dim);margin-bottom:4px;padding-left:2px">'+
+        '<span style="min-width:22px">#</span>'+
+        '<span style="min-width:38px;text-align:right">Test WR</span>'+
+        '<span style="min-width:40px;text-align:right">Decay</span>'+
+        '<span style="min-width:45px;text-align:right">Sharpe</span>'+
+        '<span>Avg PnL</span>'+
+      '</div>'+
+      foldHtml+'</div>';
+  });
+  document.getElementById('walkforwardGrid').innerHTML = html||'<p style="color:var(--text-dim)">No walkforward data.</p>';
+}
+
+function wfEli5Content() {
+  return '<div style="margin-bottom:16px">'+
+    '<div class="eli5-card"><h4>Walk-Forward Validation — The Full Picture</h4>'+
+    '<p>Walk-forward testing is the <strong>gold standard</strong> for proving a trading strategy isn\'t just memorizing the past (overfitting). It repeatedly trains on older data, then tests on <em>newer data the model has never seen</em> — just like real trading where you can only use yesterday\'s information to predict tomorrow.</p>'+
+    '<p><strong>How the folds work:</strong> Imagine you have 280 trades ordered by time. Fold 1 trains on trades 0–80, tests on 81–120. Fold 2 trains on 20–100, tests on 101–140. Fold 3 trains on 40–120, tests on 121–160. Each fold steps forward 20 trades. The key question: <em>does the strategy consistently work on data it never trained on?</em></p>'+
+    '<div class="thresholds">'+
+      '<span class="great"><strong>Great:</strong> OOS WR ≥ 55%, Consistency ≥ 80%, Decay ≥ -5% (minimal overfitting)</span>'+
+      '<span class="good"><strong>Good:</strong> OOS WR ≥ 50%, Consistency ≥ 60%, Decay ≥ -10%</span>'+
+      '<span class="ok"><strong>Suspect:</strong> OOS WR ≥ 45% but high decay (< -15%) — likely overfit</span>'+
+      '<span class="bad"><strong>Reject:</strong> OOS WR &lt; 45% or Consistency &lt; 40% — strategy has no real edge</span>'+
+    '</div></div>'+
+    '<div class="eli5-card"><h4>Key Terms (per-fold columns)</h4>'+
+    '<p><strong>F# (Fold number):</strong> Each fold is one train/test cycle. More folds = more robust proof (or more evidence of failure).</p>'+
+    '<p><strong>Test WR%:</strong> Win rate on the out-of-sample (OOS) test period. This is the only number that matters — it\'s what the strategy would have actually earned in live trading.</p>'+
+    '<p><strong>Decay:</strong> (Test WR − Train WR). Negative decay = the strategy performed worse on unseen data than on training data — the classic signature of overfitting. Positive decay is rare and very bullish.</p>'+
+    '<p><strong>sh (Sharpe):</strong> Risk-adjusted return during the test period. Above 1.0 is good, above 2.0 is excellent. Below 0 means the strategy lost money on a risk-adjusted basis.</p>'+
+    '<p><strong>OOS WR (overall):</strong> The average test WR across all folds. This is the headline number — if it\'s above 50% and consistent, you have a real edge.</p>'+
+    '<p><strong>Consistency:</strong> Percentage of folds where test WR ≥ 50%. 100% = every single time period was profitable. Below 50% = the strategy is unreliable.</p>'+
+    '<p><strong>Worst fold WR:</strong> The single worst fold. Even great strategies have bad periods — this tells you what the worst-case scenario looks like.</p>'+
+    '<p><strong>OOS Sharpe ± std:</strong> Average Sharpe across folds plus standard deviation. Wide std = inconsistent performance across time periods.</p></div>'+
+    '</div>';
+}
+
+// ─── HF Stats ─────────────────────────────────────────────────────
+// ─── HF Stats with grades, benchmarks, and ELI5 ──────────────────
+var _hfExplanationsVisible = false;
+var _hfBenchmarksVisible = false;
+
+// Industry benchmark reference — top-quartile hedge fund medians
+var HF_BENCHMARKS = {
+  sharpe: { label:'Top Hedge Fund', value:1.5, note:'Top-quartile multi-strat hedge fund median' },
+  sortino: { label:'Top Hedge Fund', value:2.0, note:'Top-quartile hedge fund; equity L/S ~1.5' },
+  calmar: { label:'Strong Fund', value:1.0, note:'Calmar > 1.0 = strong risk-adjusted return' },
+  win_rate: { label:'Elite Fund', value:0.55, note:'55%+ WR is top-decile across all asset classes' },
+  profit_factor: { label:'Institutional', value:1.5, note:'PF > 1.5 = threshold for institutional allocators' },
+  max_drawdown: { label:'Conservative', value:20, note:'< 20% DD is conservative; crypto funds often 40-60%' }
+};
+
+function gradeSharpe(v) { if(v==null||!isFinite(v)) return {grade:'—',cls:''}; if(v>=2.0) return {grade:'A+',cls:'grade-a'}; if(v>=1.5) return {grade:'A',cls:'grade-a'}; if(v>=1.0) return {grade:'B',cls:'grade-b'}; if(v>=0.5) return {grade:'C',cls:'grade-c'}; if(v>=0) return {grade:'D',cls:'grade-d'}; return {grade:'F',cls:'grade-f'}; }
+function gradeSortino(v) { if(v==null||!isFinite(v)) return {grade:'—',cls:''}; if(v>=3.0) return {grade:'A+',cls:'grade-a'}; if(v>=2.0) return {grade:'A',cls:'grade-a'}; if(v>=1.0) return {grade:'B',cls:'grade-b'}; if(v>=0.5) return {grade:'C',cls:'grade-c'}; if(v>=0) return {grade:'D',cls:'grade-d'}; return {grade:'F',cls:'grade-f'}; }
+function gradeCalmar(v) { if(v==null||!isFinite(v)) return {grade:'—',cls:''}; if(v>=2.0) return {grade:'A+',cls:'grade-a'}; if(v>=1.0) return {grade:'A',cls:'grade-a'}; if(v>=0.5) return {grade:'B',cls:'grade-b'}; if(v>=0.25) return {grade:'C',cls:'grade-c'}; if(v>=0) return {grade:'D',cls:'grade-d'}; return {grade:'F',cls:'grade-f'}; }
+function gradeWR(v) { if(v==null||!isFinite(v)) return {grade:'—',cls:''}; if(v>=0.60) return {grade:'A+',cls:'grade-a'}; if(v>=0.55) return {grade:'A',cls:'grade-a'}; if(v>=0.50) return {grade:'B',cls:'grade-b'}; if(v>=0.45) return {grade:'C',cls:'grade-c'}; if(v>=0.40) return {grade:'D',cls:'grade-d'}; return {grade:'F',cls:'grade-f'}; }
+function gradePF(v) { if(v==null||!isFinite(v)) return {grade:'—',cls:''}; if(v>=2.0) return {grade:'A+',cls:'grade-a'}; if(v>=1.5) return {grade:'A',cls:'grade-a'}; if(v>=1.2) return {grade:'B',cls:'grade-b'}; if(v>=1.0) return {grade:'C',cls:'grade-c'}; if(v>=0.8) return {grade:'D',cls:'grade-d'}; return {grade:'F',cls:'grade-f'}; }
+function gradeDD(v) { if(v==null||!isFinite(v)) return {grade:'—',cls:''}; if(v<=10) return {grade:'A+',cls:'grade-a'}; if(v<=20) return {grade:'A',cls:'grade-a'}; if(v<=35) return {grade:'B',cls:'grade-b'}; if(v<=50) return {grade:'C',cls:'grade-c'}; if(v<=70) return {grade:'D',cls:'grade-d'}; return {grade:'F',cls:'grade-f'}; }
+
+function gradeBar(grade) {
+  var bars = { 'A+':3, 'A':3, 'B':2, 'C':1, 'D':0, 'F':0, '—':0 };
+  var clsMap = { 'A+':'grade-a', 'A':'grade-a', 'B':'grade-b', 'C':'grade-c', 'D':'grade-d', 'F':'grade-f', '—':'' };
+  var n = bars[grade]||0;
+  var html = '';
+  for(var i=0;i<n;i++) html += '<span class="grade-bar '+clsMap[grade]+'"></span>';
+  html += ' <span style="font-size:10px;color:'+(clsMap[grade]?('var(--'+clsMap[grade].replace('grade-','')+(clsMap[grade]==='grade-a'?'-bright':''))+')':'var(--text-dim)')+'">'+grade+'</span>';
+  return html;
+}
+
+function benchmarkIndicator(val, metric) {
+  var bm = HF_BENCHMARKS[metric];
+  if(!bm||val==null||!isFinite(val)) return '';
+  var meets = metric==='max_drawdown' ? (val <= bm.value) : (val >= bm.value);
+  if(!meets) return '';
+  return ' <span title="'+bm.label+': '+bm.value+'. '+bm.note+'" style="font-size:9px;background:rgba(59,130,246,0.15);color:var(--blue);padding:0 4px;border-radius:3px;cursor:help">[B]</span>';
+}
+
+function renderHfStats() {
+  var hf = D.hf_stats&&D.hf_stats.by_asset_class?D.hf_stats.by_asset_class:{};
+  var html = '';
+
+  // Build header with clickable metric names
+  var thead = '<tr><th>Class</th><th>Trades</th>'+
+    '<th class="clickable" onclick="toggleHfExplanations()" title="Click for ELI5">Sharpe [?]</th>'+
+    '<th class="clickable" onclick="toggleHfExplanations()" title="Click for ELI5">Sortino [?]</th>'+
+    '<th class="clickable" onclick="toggleHfExplanations()" title="Click for ELI5">Calmar [?]</th>'+
+    '<th>WR</th><th>PF</th><th>Max DD</th></tr>';
+
+  // Benchmark row
+  var bmRow = _hfBenchmarksVisible ? '<tr class="bm-row"><td style="font-weight:700">[B] Benchmark</td><td>—</td>'+
+    '<td>'+HF_BENCHMARKS.sharpe.value+' <span style="font-size:9px">'+HF_BENCHMARKS.sharpe.label+'</span></td>'+
+    '<td>'+HF_BENCHMARKS.sortino.value+' <span style="font-size:9px">'+HF_BENCHMARKS.sortino.label+'</span></td>'+
+    '<td>'+HF_BENCHMARKS.calmar.value+' <span style="font-size:9px">'+HF_BENCHMARKS.calmar.label+'</span></td>'+
+    '<td>'+(HF_BENCHMARKS.win_rate.value*100).toFixed(0)+'%</td>'+
+    '<td>'+HF_BENCHMARKS.profit_factor.value+'</td>'+
+    '<td>'+HF_BENCHMARKS.max_drawdown.value+'%</td></tr>' : '';
+
+  ASSET_CLASSES.forEach(function(cls) {
+    var h = hf[cls];
+    if(!h){
+      var note = '';
+      if(cls==='FUTURES') note = ' (HF stats depend on HF-side data pipeline; FUTURES picks route through Commodity in HF system)';
+      html += '<tr><td style="color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600">'+cls+'</td><td colspan="7" class="neutral">No data'+note+'</td></tr>';
+      return;
+    }
+    var sg = gradeSharpe(h.sharpe);
+    var so = gradeSortino(h.sortino);
+    var ca = gradeCalmar(h.calmar);
+    var wr = gradeWR(h.win_rate);
+    var pf = gradePF(h.profit_factor);
+    var dd = gradeDD(h.max_drawdown_pct);
+
+    html += '<tr>'+
+      '<td style="color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600">'+cls+'</td>'+
+      '<td>'+fmtInt(h.n)+'</td>'+
+      '<td>'+gradeBar(sg.grade)+' '+fmtSharpe(h.sharpe)+benchmarkIndicator(h.sharpe,'sharpe')+'</td>'+
+      '<td>'+gradeBar(so.grade)+' '+fmtSharpe(h.sortino)+benchmarkIndicator(h.sortino,'sortino')+'</td>'+
+      '<td>'+gradeBar(ca.grade)+' '+fmtSharpe(h.calmar)+benchmarkIndicator(h.calmar,'calmar')+'</td>'+
+      '<td>'+gradeBar(wr.grade)+' '+(h.win_rate!=null?(h.win_rate*100).toFixed(1)+'%':'\u2014')+benchmarkIndicator(h.win_rate,'win_rate')+'</td>'+
+      '<td>'+gradeBar(pf.grade)+' '+fmtPf(h.profit_factor)+benchmarkIndicator(h.profit_factor,'profit_factor')+'</td>'+
+      '<td>'+gradeBar(dd.grade)+' '+(h.max_drawdown_pct!=null?h.max_drawdown_pct.toFixed(1)+'%':'\u2014')+benchmarkIndicator(h.max_drawdown_pct,'max_drawdown')+'</td>'+
+      '</tr>';
+  });
+
+  document.querySelector('#hfStatsTable thead').innerHTML = thead;
+  document.querySelector('#hfStatsTable tbody').innerHTML = bmRow + html;
+  document.getElementById('hfEli5').innerHTML = _hfExplanationsVisible ? eli5Content() : '';
+  document.getElementById('hfEli5').style.display = _hfExplanationsVisible ? 'block' : 'none';
+
+  // Update toggle buttons
+  document.getElementById('hfToggleExplanations').textContent = _hfExplanationsVisible ? '[-] Hide ELI5 Explanations' : '[?] Show ELI5 Explanations';
+  document.getElementById('hfToggleBenchmarks').textContent = _hfBenchmarksVisible ? '[B] Hide Industry Benchmarks' : '[B] Show Industry Benchmarks';
+}
+
+function toggleHfExplanations() { _hfExplanationsVisible = !_hfExplanationsVisible; renderHfStats(); }
+function toggleHfBenchmarks() { _hfBenchmarksVisible = !_hfBenchmarksVisible; renderHfStats(); }
+
+function eli5Content() {
+  return '<div style="margin-top:12px">'+
+    eli5Card('Sharpe Ratio','Measures return per unit of total risk (volatility). Think: \"How much reward am I getting for the roller-coaster ride?\" Uses ALL volatility — both up and down — as the \"cost.\" **Note:** These Sharpe values are computed from individual trade returns, not a portfolio equity curve. Per-trade Sharpe is typically 2-4x higher than portfolio Sharpe because trades don\'t overlap with full capital. A realistic portfolio Sharpe from these strategies would be roughly 1/3 to 1/2 of the number shown.',
+      [{label:'Elite',val:'≥ 2.0',cls:'great',desc:'World-class. Renaissance Medallion territory.'},
+       {label:'Great',val:'1.5 – 2.0',cls:'great',desc:'Top-quartile hedge fund. Very attractive.'},
+       {label:'Good',val:'1.0 – 1.5',cls:'good',desc:'Solid. Beats most mutual funds.'},
+       {label:'OK',val:'0.5 – 1.0',cls:'ok',desc:'Market-like. S&P 500 Sharpe is ~0.4–0.6 long-term.'},
+       {label:'Poor',val:'< 0.5',cls:'bad',desc:'Sub-market. Risk not being compensated.'}])+
+    eli5Card('Sortino Ratio','Like Sharpe, but only penalizes DOWNSIDE volatility. Think: "I don\'t mind going up fast — I mind going down." Uses only negative returns in the risk calculation.',
+      [{label:'Elite',val:'≥ 3.0',cls:'great',desc:'Exceptional downside efficiency.'},
+       {label:'Great',val:'2.0 – 3.0',cls:'great',desc:'Top-tier. Strong upside capture, limited crashes.'},
+       {label:'Good',val:'1.0 – 2.0',cls:'good',desc:'Decent. Better than most.'},
+       {label:'OK',val:'0.5 – 1.0',cls:'ok',desc:'Market-ish.'},
+       {label:'Poor',val:'< 0.5',cls:'bad',desc:'Downside risk dominates returns.'}])+
+    eli5Card('Calmar Ratio','Total return ÷ maximum drawdown. Think: "How many times over did I earn back my worst loss?" A Calmar of 5 means you earned 5× your worst peak-to-trough loss.',
+      [{label:'Elite',val:'≥ 2.0',cls:'great',desc:'Exceptional. Earned back worst DD 2×+.'},
+       {label:'Strong',val:'1.0 – 2.0',cls:'great',desc:'Solid. Fully recovered worst loss + profit.'},
+       {label:'OK',val:'0.5 – 1.0',cls:'ok',desc:'Haven\'t fully earned back worst loss.'},
+       {label:'Weak',val:'0.25 – 0.5',cls:'bad',desc:'Large drawdowns relative to returns.'},
+       {label:'Poor',val:'< 0.25',cls:'bad',desc:'Risk of ruin territory.'}])+
+    eli5Card('Win Rate','% of trades that closed profitable. Think: "How often do I win?" Caveat: a 90% WR with huge losers is worse than a 40% WR with small losers and big winners (trend-followers).',
+      [{label:'Elite',val:'≥ 60%',cls:'great',desc:'Exceptional. Very few strategies achieve this consistently.'},
+       {label:'Great',val:'55 – 60%',cls:'great',desc:'Top-decile. Most pro traders are here or below.'},
+       {label:'Good',val:'50 – 55%',cls:'good',desc:'Above 50/50. Positive edge confirmed.'},
+       {label:'OK',val:'45 – 50%',cls:'ok',desc:'Slightly below coin-flip. Needs strong W/L ratio.'},
+       {label:'Poor',val:'< 45%',cls:'bad',desc:'Needs massive avg win to compensate. Trend follower territory.'}])+
+    eli5Card('Profit Factor','Gross profit ÷ gross loss. Think: "For every $1 I lose, how many dollars do I win?" A PF of 2.0 means you make $2 for every $1 lost.',
+      [{label:'Elite',val:'≥ 2.0',cls:'great',desc:'World-class. Wins are 2×+ larger than losses.'},
+       {label:'Great',val:'1.5 – 2.0',cls:'great',desc:'Strong. Institutional allocator threshold.'},
+       {label:'Good',val:'1.2 – 1.5',cls:'good',desc:'Positive edge. Strategy has real alpha.'},
+       {label:'Marginal',val:'1.0 – 1.2',cls:'ok',desc:'Barely profitable. One bad month could flip.'},
+       {label:'Losing',val:'< 1.0',cls:'bad',desc:'Losing money overall. Gross losses exceed gross profits.'}])+
+    eli5Card('Max Drawdown','Largest peak-to-trough decline. Think: "In the worst period, how much did I lose from top to bottom?" Key for psychology — can you stomach it?',
+      [{label:'Excellent',val:'< 10%',cls:'great',desc:'Very conservative. Market-neutral / arb territory.'},
+       {label:'Good',val:'10 – 20%',cls:'great',desc:'Well-managed risk. Most professional mandates.'},
+       {label:'Moderate',val:'20 – 35%',cls:'good',desc:'Normal for directional strategies.'},
+       {label:'High',val:'35 – 50%',cls:'ok',desc:'Aggressive. Requires conviction to hold through.'},
+       {label:'Extreme',val:'> 50%',cls:'bad',desc:'Very high risk. Strategy may have survivorship issues.'}])+
+    '</div>';
+}
+
+function eli5Card(title, desc, thresholds) {
+  var th = '';
+  thresholds.forEach(function(t) {
+    th += '<span class="'+t.cls+'"><strong>'+t.label+':</strong> '+t.val+' — '+t.desc+'</span>';
+  });
+  return '<div class="eli5-card"><h4>'+title+'</h4><p>'+desc+'</p><div class="thresholds">'+th+'</div></div>';
+}
+
+// ─── Drill-down ────────────────────────────────────────────────────
+function drillCard(type) {
+  var filtered = getFilteredPicks();
+  var el = document.getElementById('drillDetail');
+
+  if(type==='pnl') {
+    var clean = D.summary&&D.summary.clean_metrics?D.summary.clean_metrics:null;
+    var html = '<div class="drill-section"><div class="drill-section-header"><span class="drill-close" onclick="document.getElementById(\'drillDetail\').style.display=\'none\'">X</span><strong>PnL Breakdown</strong> ('+filterTag()+')</div>';
+    html += '<table class="data-table"><tr><th>Metric</th><th>Value</th><th>Note</th></tr>';
+    html += '<tr><td>Compounded EW (REAL return)</td><td class="'+colorClass(D.summary&&D.summary.total_pnl_pct_compounded_ew)+'">'+(D.summary?fmtPct(D.summary.total_pnl_pct_compounded_ew,1):'\u2014')+'</td><td>Equal-weighted compound of all-time trades</td></tr>';
+    if(clean) {
+      html += '<tr><td>Purged PnL (outliers removed)</td><td class="'+colorClass(clean.purged_pnl_raw)+'">'+fmtPct(clean.purged_pnl_raw,1)+'</td><td>'+clean.purge_summary+'</td></tr>';
+      html += '<tr><td>Capped PnL (10% cap)</td><td class="pos">'+fmtPct(clean.total_pnl_capped,1)+'</td><td>Per-trade PnL capped at &plusmn;10%</td></tr>';
+      html += '<tr><td>Median Trade PnL</td><td class="'+colorClass(clean.median_trade_pnl)+'">'+fmtPct(clean.median_trade_pnl,1)+'</td><td>Typical trade result</td></tr>';
+      html += '<tr><td>Top Concentration</td><td>'+(clean.top_symbol||'\u2014')+': '+fmtPct(clean.top_symbol_pnl,1)+' of total</td><td></td></tr>';
+    }
+    html += '<tr><td>Profit Factor</td><td>'+(D.summary?fmtPf(D.summary.profit_factor):'\u2014')+'</td><td>All-time</td></tr>';
+    html += '<tr><td>Expectancy</td><td class="'+posClass(D.summary&&D.summary.expectancy)+'">'+(D.summary&&D.summary.expectancy!=null?(D.summary.expectancy>=0?'+':'')+D.summary.expectancy.toFixed(2)+'%':'\u2014')+'</td><td>Per-trade expected return</td></tr>';
+    html += '<tr><td>Filtered Raw Sum</td><td class="'+colorClass(D.summary&&D.summary.total_pnl_pct_sum_raw)+'">'+fmtPct(D.summary&&D.summary.total_pnl_pct_sum_raw,1)+'</td><td>Raw sum of all individual trade % returns</td></tr>';
+    html += '</table></div>';
+    el.innerHTML = html;
+  }
+  else if(type==='classes') {
+    var agg = aggPicks(filtered);
+    var html = '<div class="drill-section"><div class="drill-section-header"><span class="drill-close" onclick="document.getElementById(\'drillDetail\').style.display=\'none\'">X</span><strong>Per-Class Overview</strong> ('+filterTag()+')</div>';
+    html += '<table class="data-table"><thead><tr><th>Class</th><th>Open</th><th>Closed</th><th>Wins</th><th>Losses</th><th>WR%</th><th>PnL</th><th>PF</th><th>Symbols</th><th>Dupes?</th></tr></thead><tbody>';
+    ASSET_CLASSES.forEach(function(cls) {
+      var a = agg[cls]||{};
+      html += '<tr><td style="color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600">'+cls+'</td>'+
+        '<td>'+fmtInt(a.open||0)+'</td><td>'+fmtInt(a.closed||0)+'</td>'+
+        '<td class="pos">'+fmtInt(a.wins||0)+'</td><td class="neg">'+fmtInt(a.losses||0)+'</td>'+
+        '<td class="'+(a.win_rate!=null?(a.win_rate>=50?'pos':'neg'):'neutral')+'">'+(a.win_rate!=null?a.win_rate.toFixed(1)+'%':'\u2014')+'</td>'+
+        '<td class="'+colorClass(a.pnl_raw)+'">'+fmtPct(a.pnl_raw,1)+'</td>'+
+        '<td>'+fmtPf(a.profit_factor)+'</td>'+
+        '<td>'+fmtInt(a.n_symbols||0)+'</td>'+
+        '<td>'+(a.dupe_warning?'<span class="pill red">DUPES</span>':'')+'</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+  }
+  else if(type==='stable' || type==='decaying') {
+    var vs = ASSET_CLASSES.filter(function(c){return ES&&ES.classes&&ES.classes[c]&&ES.classes[c].consistency_verdict=== (type==='stable'?'STABLE_EDGE':'DECAYING_EDGE');});
+    var label = type==='stable'?'STABLE EDGE':'DECAYING EDGE';
+    var html = '<div class="drill-section"><div class="drill-section-header"><span class="drill-close" onclick="document.getElementById(\'drillDetail\').style.display=\'none\'">X</span><strong>'+label+' Classes</strong></div>';
+    html += '<table class="data-table"><thead><tr><th>Class</th><th>PF</th><th>WR</th><th>Sharpe</th><th>WR 7d</th><th>WR 30d</th><th>WR 90d</th><th>N</th><th>Concentration</th></tr></thead><tbody>';
+    vs.forEach(function(cls) {
+      var e = ES.classes[cls];
+      html += '<tr><td style="color:'+(CLASS_COLORS[cls]||'#fff')+';font-weight:600">'+cls+'</td>'+
+        '<td>'+fmtPf(e.all_time_pf)+'</td>'+
+        '<td class="'+(e.all_time_wr>=50?'pos':'neg')+'">'+(e.all_time_wr||0).toFixed(1)+'%</td>'+
+        '<td class="'+(e.all_time_sharpe>=0?'pos':'neg')+'">'+fmtSharpe(e.all_time_sharpe)+'</td>'+
+        '<td>'+fmtNum(e.wr_7d,1)+'%</td><td>'+fmtNum(e.wr_30d,1)+'%</td><td>'+fmtNum(e.wr_90d,1)+'%</td>'+
+        '<td>'+fmtInt(e.n_total)+'</td><td>'+(e.pareto_flag||'\u2014')+'</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+  }
+  else {
+    // Trade-level drill
+    drillTrades(type==='active'?'Active Picks':type==='closed'?'Closed Picks':type==='wr'?'All Resolved Trades':'Trades', type==='active'?function(p){return !isClosed(p);}:type==='closed'?function(p){return isClosed(p);}:type==='wr'?function(p){return isClosed(p);}:null);
+    return;
+  }
+  el.style.display='block';
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+function drillTrades(title, filterFn) {
+  var filtered = getFilteredPicks();
+  var picks = filterFn?filtered.filter(filterFn):filtered;
+  picks.sort(function(a,b){ return pickTs(b)-pickTs(a); });
+  var limit = Math.min(picks.length, 500);
+
+  var html = '<div class="drill-section"><div class="drill-section-header"><span class="drill-close" onclick="document.getElementById(\'drillDetail\').style.display=\'none\'">X</span><strong>'+title+'</strong> <span style="font-size:11px;color:var(--text-dim)">('+limit+' of '+picks.length+', '+filterTag()+')</span></div>';
+  html += '<div class="drill-trades-table"><table><thead><tr><th>Symbol</th><th>Class</th><th>Dir</th><th>Entry</th><th>PnL%</th><th>Result</th><th>Strategy</th><th>System</th><th>Time (EST)</th></tr></thead><tbody>';
+
+  for(var i=0; i<limit; i++) {
+    var p = picks[i];
+    var cls = p.asset_class||p.assetClass||deriveAssetClass(p.symbol)||'?';
+    var closed = isClosed(p);
+    var pnl = parseFloat(p.pnl_pct||p.realized_pnl_pct||p.current_pnl_pct||0);
+    var result = closed?(pnl>0.01?'WON':pnl<-0.01?'LOSS':'FLAT'):(pnl>0?'+OPEN':pnl<0?'-OPEN':'OPEN');
+    html += '<tr>'+
+      '<td style="font-weight:600">'+esc(p.symbol||'?')+'</td>'+
+      '<td style="color:'+(CLASS_COLORS[cls]||'#fff')+'">'+cls+'</td>'+
+      '<td>'+(p.direction||'')+'</td>'+
+      '<td>'+fmtNum(parseFloat(p.entry_price),4)+'</td>'+
+      '<td class="'+colorClass(pnl)+'">'+fmtPct(pnl,2)+'</td>'+
+      '<td style="color:'+(pnl>0.01?'var(--green-bright)':pnl<-0.01?'var(--red-bright)':'var(--text-dim)')+'">'+result+'</td>'+
+      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(p.strategy||p.source||'')+'">'+esc((p.strategy||p.source||'').substring(0,45))+'</td>'+
+      '<td>'+esc((p.source_system||p.system||'').substring(0,25))+'</td>'+
+      '<td style="font-size:10px;color:var(--text-dim)">'+toEST(p.timestamp||p.closed_at||p.resolved_at)+'</td></tr>';
+  }
+  html += '</tbody></table></div></div>';
+  document.getElementById('drillDetail').innerHTML = html;
+  document.getElementById('drillDetail').style.display = 'block';
+  document.getElementById('drillDetail').scrollIntoView({behavior:'smooth'});
+}
+
+// ─── Init ──────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
