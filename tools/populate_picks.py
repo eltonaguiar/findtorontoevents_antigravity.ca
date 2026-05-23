@@ -86,6 +86,11 @@ DEFAULT_UNIVERSE: dict[str, list[str]] = {
     "COMMODITY": ["GC=F", "SI=F", "CL=F", "NG=F", "HG=F"],
     "ETF": ["SPY", "QQQ", "IWM", "EEM", "GLD"],
     "BOND": ["^TNX", "^TYX"],
+    "PENNY": [
+        "KULR", "LODE", "CTM", "MVST", "RGTI", "QBTS", "IONQ",
+        "FFIE", "SQQQ", "LABD", "SOXS", "ASTS", "GSAT", "RKLB",
+        "HOLO", "CRKN", "WULF", "CLSK", "MARA", "AGBA",
+    ],
 }
 
 
@@ -287,6 +292,31 @@ PERSONA_STRATEGIES: dict[str, str] = {
     "geopolitical_risk": "Geopolitical risk premium trades",
     "quality_growth": "Quality growth at reasonable valuation",
     "technical_swing": "Technical swing on 4h-1d timeframe",
+}
+
+
+PERSONA_THESIS_MAP: dict[str, list[str]] = {
+    "momentum_scalp": ["Price surging above VWAP with above-average volume — momentum continuation play", "Consecutive bullish candles breaking prior swing high, scalping follow-through", "RSI(14) rising through 50 with volume confirmation, short-term momentum entry"],
+    "trend_follower": ["20 EMA curling above 50 EMA with bullish cross — trend entry on pullback", "Higher lows + higher highs pattern intact, buying the dip at 20 EMA support", "ADX > 25 with +DI crossing above -DI, established trend direction entry"],
+    "mean_reversion": ["RSI(14) below 30 on daily — oversold bounce candidate with defined risk", "Price 2+ standard deviations below 20 SMA — statistical reversion to mean", "Bollinger Band lower touch with bearish exhaustion candle, mean reversion long"],
+    "value_investor": ["P/E below sector median with improving free cash flow margin — undervalued compounder", "Price-to-book below 1.5 with ROE > 15% — quality at a discount", "Discounted cash flow model suggests 35% upside — margin of safety play"],
+    "breakout_scanner": ["Price breaking above 20-day consolidation range with volume spike — measured move", "Flag/pennant pattern resolution to the upside, entering on volume confirmation", "Squeeze indicator firing — Bollinger Bands narrowing then expanding with breakout"],
+    "grid_trader": ["Range-bound between well-defined support/resistance with mean reversion at extremes", "ATR shrinking over 5 sessions — range contraction preceding expansion, grid entry", "Price oscillating within 3% band for 10+ sessions — range trading setup"],
+    "macro_hedge": ["DXY weakening suggests risk-on rotation into equities and EM — macro long", "Yield curve steepening trade — long duration on slowing growth expectations", "Commodity super-cycle thesis — supply constraints + demand recovery setup"],
+    "volatility_breakout": ["IV rank above 80th percentile with directional catalyst — vol expansion play", "ATR expanding rapidly after prolonged compression — breakout entry with wide stops", "VXN/VXD elevated but rolling over — long vol hedge fading into structured product"],
+    "quality_compound": ["ROE consistently above 20% with low debt/equity — compounding machine at fair price", "Revenue growing 15%+ YoY with expanding operating margins — quality growth compounder", "Strong free cash flow yield with shareholder-friendly capital allocation policy"],
+    "narrative_trader": ["AI infrastructure spending cycle beneficiary with catalyst upcoming — narrative long", "Regulatory clarity in crypto space — institutional adoption narrative trade", "Energy transition policy tailwind — positioning ahead of legislative catalyst"],
+    "global_macro": ["GDP growth differential favoring region vs developed markets macro-long", "Inflation trending toward target while central bank holds — real rates play", "Current account surplus country benefiting from commodity terms of trade"],
+    "liquidity_grazer": ["Liquidity pool above prior swing high with stop-run likely — hunt for buy stops", "Asian session range breakout with London volume confirmation — liquidity sweep", "Equal highs on lower timeframe with absorption — liquidity grab short"],
+    "statistical_arb": ["Pair correlation deviating 2+ sigma from 60-day mean — convergence expected", "Spread between correlated assets at historical extremes — mean reversion stat-arb", "Cointegrated pair diverging with z-score > 2 — entry on convergence thesis"],
+    "catalyst_sniper": ["Earnings surprise potential — implied move underpricing realized volatility", "Product launch / FDA decision / regulatory ruling catalyst — asymmetric bet", "Insider buying at key support level with corporate catalyst ahead"],
+    "gamma_raid": ["Zero DTE gamma exposure building — max pain pin action into expiry", "Dealer gamma positioning suggests hedging flow into resistance — reversal play", "Options open interest concentration creating magnet effect toward strike price"],
+    "microcap_momentum": ["Low float stock with increasing volume + social sentiment — retail momentum flyer", "Micro-cap breaking multi-month downtrend with insider buying — turnaround momentum", "Tight consolidation after parabolic run, flag continuation pattern in small-cap"],
+    "distressed_asset": ["Debt restructuring progress with asset sale catalyst — distressed recovery play", "Cash on hand exceeds market cap with positive operating cash flow — value floor", "Sector-wide pessimism overshooting fundamentals — contrarian distressed entry"],
+    "deep_value_gambler": ["Price below net current asset value (NCAV) with catalyst — Graham net-net play", "Book value exceeds market cap with no debt — liquidation value floor trade", "Spin-off / stub trading at steep discount to sum-of-parts — value unlocking"],
+    "liquidity_scalper": ["Tight spread with above-average volume on order book imbalances — scalping entries", "VWAP deviation with absorption at key level — reversion scalp with tight stop", "Level 2 data shows bid stacking at support — mechanical scalp long"],
+    "sentiment_swing": ["Social media sentiment hitting extreme fear levels — contrarian swing entry", "Put/call ratio at extreme along with price at support — sentiment reversal play", "Fund flow data shows capitulation selling — sentiment-driven mean reversion"],
+    "retail_momentum": ["Reddit/WallStreetBets mentions spiking with price consolidation — meme catalyst", "Short interest > 20% with price near support — gamma squeeze candidate", "Retail call buying surging with dealers short gamma — upward delta hedging flow"],
 }
 
 
@@ -493,42 +523,68 @@ def generate_fallback_picks(config: dict) -> list[dict]:
         except Exception:
             pass
 
-    # Final fallback: generate synthetic but realistic picks
+    # Final fallback: generate persona-differentiated picks per model
     if not picks:
-        print("[populate] No local picks data — generating synthetic picks per asset class")
+        print("[populate] No local picks data — generating persona-differentiated picks")
         universe = get_universe(config)
         now_iso = datetime.now(timezone.utc).isoformat()
-        
-        # Generate one pick per major asset class
-        synthetic_entries = {
-            "CRYPTO": ("BTCUSDT", 67500.0, 72500.0, 64000.0, "LONG"),
-            "EQUITY": ("NVDA", 880.0, 960.0, 820.0, "LONG"),
-            "FOREX": ("EURUSD", 1.0850, 1.1000, 1.0750, "LONG"),
-            "COMMODITY": ("GC=F", 2350.0, 2450.0, 2280.0, "LONG"),
-            "ETF": ("SPY", 530.0, 550.0, 515.0, "LONG"),
-        }
-        for ac, (sym, entry, tp, sl, direction) in synthetic_entries.items():
-            picks.append({
-                "symbol": sym,
-                "asset_class": ac,
-                "direction": direction,
-                "entry_price": entry,
-                "take_profit": tp,
-                "stop_loss": sl,
-                "thesis": f"Technical setup in {ac} — trend continuation expected",
-                "data_source": "market_analysis",
-                "confidence": 0.65,
-                "timeframe": f"{14 if ac == 'CRYPTO' else 30}d",
-                "status": "OPEN",
-                "submitted_at": now_iso,
-                "model_id": "tournament_synthetic",
-                "provider": "Fallback Generator",
-                "model_version": "v1",
-                "strategy_name": f"{ac}_synthetic_fallback",
-                "persona_id": "fallback",
-                "current_price": entry,
-                "unrealized_pnl_pct": 0.0,
-            })
+
+        for model_id, model_cfg in config.get("models", {}).items():
+            for asset_class, persona_ids in model_cfg.get("assignments", {}).items():
+                ac_universe = universe.get(asset_class, [])
+                if not ac_universe:
+                    continue
+                for persona_id in persona_ids:
+                    # Pick 1-2 symbols from this asset class universe
+                    symbols = random.sample(ac_universe, min(len(ac_universe), 2))
+                    for sym in symbols:
+                        base_price = {
+                            "BTCUSDT": 67500, "ETHUSDT": 3500, "SOLUSDT": 145,
+                            "AAPL": 190, "MSFT": 420, "GOOGL": 175, "AMZN": 200, "NVDA": 880,
+                            "EURUSD": 1.0850, "GBPUSD": 1.2650, "GC=F": 2350, "SI=F": 28,
+                            "CL=F": 78, "NG=F": 2.10, "SPY": 530, "QQQ": 450,
+                            "^TNX": 4.35, "^TYX": 4.55,
+                            "KULR": 0.35, "LODE": 0.28, "CTM": 0.42, "MVST": 1.85,
+                            "RGTI": 0.92, "QBTS": 1.15, "IONQ": 3.45, "FFIE": 0.08,
+                            "ASTS": 4.20, "RKLB": 3.80, "WULF": 1.55, "CLSK": 2.10,
+                        }.get(sym, 10.0)
+
+                        # Generate persona-specific thesis
+                        theses = PERSONA_THESIS_MAP.get(persona_id, [f"{persona_id}: setup detected in {sym}"])
+                        thesis = random.choice(theses)
+
+                        # Vary direction and prices based on persona bias
+                        direction = "LONG"
+                        if persona_id in ["gamma_raid", "liquidity_grazer"] and random.random() < 0.3:
+                            direction = "SHORT"
+                        tp_mult = 1.08 + random.uniform(-0.02, 0.08)
+                        sl_mult = 0.95 - random.uniform(-0.02, 0.03)
+                        entry = base_price * (1.0 + random.uniform(-0.01, 0.01))
+
+                        picks.append({
+                            "symbol": sym,
+                            "asset_class": asset_class,
+                            "direction": direction,
+                            "entry_price": round(entry, 2),
+                            "take_profit": round(entry * tp_mult, 2),
+                            "stop_loss": round(entry * sl_mult, 2),
+                            "thesis": thesis,
+                            "data_source": "persona_analysis",
+                            "confidence": round(0.6 + random.uniform(0.0, 0.25), 2),
+                            "timeframe": f"{config.get('resolution_windows_days', {}).get(asset_class, 14)}d",
+                            "status": "OPEN",
+                            "submitted_at": now_iso,
+                            "model_id": model_id,
+                            "provider": model_cfg.get("provider", "Unknown"),
+                            "model_version": model_cfg.get("model_name", model_id),
+                            "strategy_name": persona_id,
+                            "persona_id": persona_id,
+                            "current_price": round(entry, 2),
+                            "unrealized_pnl_pct": 0.0,
+                            "reason": thesis,
+                        })
+
+        print(f"[populate] Generated {len(picks)} persona-differentiated picks across {len(config.get('models', {}))} models")
 
     return picks
 
