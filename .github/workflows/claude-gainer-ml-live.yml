@@ -120,7 +120,16 @@ jobs:
         if: failure()
         env:
           DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
-        run: bash .github/notify-failure.sh "Claude Gainer ML  Live Scanner" "$DISCORD_WEBHOOK_SANDBOX" "${{ github.repository }}" "${{ github.run_id }}"
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_SANDBOX" ]; then
+            echo "No DISCORD_WEBHOOK_SANDBOX set, skipping failure notification"
+            exit 0
+          fi
+          TS=$(date -u +'%Y-%m-%d %H:%M UTC')
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"❌ Claude Gainer ML Live Scanner FAILED\",\"description\":\"**Time:** ${TS}\\n[View Run](${RUN_URL})\",\"color\":15548997,\"footer\":{\"text\":\"Sandbox Failure Monitor\"}}]}" \
+            "$DISCORD_WEBHOOK_SANDBOX" || true
 
       - name: Notify ML channel on failure
         if: failure()
