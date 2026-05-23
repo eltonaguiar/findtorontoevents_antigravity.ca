@@ -1,21 +1,21 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-23T17:03:00.297491+00:00
+Generated: 2026-05-23T17:39:28.082657+00:00
 
 ## Topline
-- Open positions: 144
-- Price coverage: 97.92%
-- Open average PnL: 65.3162%
-- Directional correctness: 68.09%
+- Open positions: 143
+- Price coverage: 97.9%
+- Open average PnL: 57.9807%
+- Directional correctness: 68.57%
 - Regime: CHOPPY
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
 - [HIGH] CONFIDENCE_INVERSION: High-confidence picks are underperforming low-confidence picks (69.0% vs 90.6%)
-- [HIGH] PEER_STALE: alpha_engine data is stale (83809.0m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (99.9m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (112102.1m old)
-- [HIGH] REGIME_SHIFT: Regime changed BEARISH -> CHOPPY while open PnL fell from 88.90% to 65.32%
+- [HIGH] PEER_STALE: alpha_engine data is stale (83845.4m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (136.4m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (112138.5m old)
+- [HIGH] REGIME_SHIFT: Regime changed BEARISH -> CHOPPY while open PnL fell from 88.90% to 57.98%
 - [HIGH] STRATEGY_DECAY: fx_smart_carry_trade_momentum is a rehabilitation candidate (WR 6.25%, PF 0.046, Sharpe -28.944)
 - [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BTCUSDT ({'LONG': 6, 'SHORT': 4})
 
