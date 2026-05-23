@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Movers — Trading Signal Engine</title>
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #1c2333;
+    --bg-hover: #222d3d;
+    --border: #30363d;
+    --border-accent: #388bfd44;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --green: #3fb950;
+    --green-bg: #3fb95018;
+    --green-border: #3fb95044;
+    --red: #f85149;
+    --red-bg: #f8514918;
+    --red-border: #f8514944;
+    --blue: #58a6ff;
+    --blue-bg: #58a6ff18;
+    --yellow: #d29922;
+    --yellow-bg: #d2992218;
+    --purple: #bc8cff;
+    --tag-bg: #1f2a3a;
+    --tag-border: #30363d;
+    --radius: 8px;
+    --radius-sm: 5px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .widget {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Header */
+  .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .widget-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .widget-title .icon { font-size: 20px; }
+
+  .widget-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .refresh-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+
+  .refresh-dot.stale { background: var(--yellow); animation: none; }
+  .refresh-dot.error { background: var(--red); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Summary bar */
+  .summary-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
+  .summary-bar .stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+  }
+
+  .summary-bar .separator {
+    color: var(--text-muted);
+    user-select: none;
+  }
+
+  .summary-bar .total { color: var(--blue); }
+  .summary-bar .winners { color: var(--green); }
+  .summary-bar .losers { color: var(--red); }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-select {
+    appearance: none;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 6px 28px 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b949e'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: border-color 0.15s;
+  }
+
+  .filter-select:hover { border-color: var(--blue); }
+  .filter-select:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+  .dir-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .dir-toggle button {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: none;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-right: 1px solid var(--border);
+  }
+
+  .dir-toggle button:last-child { border-right: none; }
+
+  .dir-toggle button.active {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .dir-toggle button:hover:not(.active) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  /* PnL threshold */
+  .threshold-input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    width: 60px;
+    text-align: center;
+  }
+
+  .threshold-input:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+  /* Table container */
+  .table-wrap {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .table-wrap thead th {
+    background: var(--bg-tertiary);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .table-wrap thead th:hover { color: var(--text-primary); }
+  .table-wrap thead th .sort-arrow { margin-left: 4px; font-size: 10px; opacity: 0.5; }
+  .table-wrap thead th.sorted .sort-arrow { opacity: 1; color: var(--blue); }
+
+  .table-wrap tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+
+  .table-wrap tbody tr:last-child { border-bottom: none; }
+  .table-wrap tbody tr:hover { background: var(--bg-hover); }
+
+  .table-wrap td {
+    padding: 10px 14px;
+    white-space: nowrap;
+  }
+
+  /* Cell styles */
+  .cell-symbol {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+
+  .cell-pnl {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cell-pnl.positive { color: var(--green); }
+  .cell-pnl.negative { color: var(--red); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .tag-long {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+  }
+
+  .tag-short {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid var(--red-border);
+  }
+
+  .tag-asset {
+    background: var(--tag-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--tag-border);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .cell-score {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cell-confidence {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+  }
+
+  .cell-strategy {
+    font-size: 12px;
+    color: var(--text-secondary);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cell-age {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .cell-na { color: var(--text-muted); font-style: italic; }
+
+  /* Score bar visualization */
+  .score-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .score-bar-fill {
+    width: 40px;
+    height: 4px;
+    background: var(--bg-primary);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill-inner {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* Empty / loading states */
+  .state-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    gap: 10px;
+  }
+
+  .state-msg .icon { font-size: 32px; }
+  .state-msg .sub { font-size: 12px; color: var(--text-muted); }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error banner */
+  .error-banner {
+    padding: 10px 14px;
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--red);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .widget { padding: 12px; }
+    .table-wrap { overflow-x: auto; }
+    .table-wrap table { min-width: 900px; }
+  }
+
+  @media (max-width: 600px) {
+    .widget-header { flex-direction: column; align-items: flex-start; }
+    .filters { gap: 8px; }
+    .summary-bar { font-size: 12px; }
+  }
+
+  /* Config URL input */
+  .config-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .config-bar label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+
+  .config-url {
+    flex: 1;
+    min-width: 280px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+
+  .config-url:focus { outline: 2px solid var(--blue); outline-offset: 1px; color: var(--text-primary); }
+
+  .btn-load {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-load:hover { opacity: 0.85; }
+
+  /* Row flash on refresh */
+  @keyframes row-flash {
+    from { background: var(--blue-bg); }
+    to { background: transparent; }
+  }
+
+  .row-updated { animation: row-flash 0.6s ease-out; }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <!-- Config -->
+  <div class="config-bar">
+    <label>📡 Payload URL</label>
+    <input type="text" class="config-url" id="payloadUrl"
+      placeholder="https://raw.githubusercontent.com/.../dashboard_payload.json"
+      value="https://raw.githubusercontent.com/example/trading-signals/main/dashboard_payload.json">
+    <button class="btn-load" id="btnLoad" onclick="loadFromConfig()">Load</button>
+  </div>
+
+  <!-- Header -->
+  <div class="widget-header">
+    <div class="widget-title">
+      <span class="icon">🔥</span>
+      <span>Big Movers</span>
+    </div>
+    <div class="widget-meta">
+      <span><span class="refresh-dot" id="statusDot"></span> <span id="statusText">Connecting…</span></span>
+      <span id="lastUpdate">—</span>
+    </div>
+  </div>
+
+  <!-- Error banner (hidden by default) -->
+  <div class="error-banner" id="errorBanner" style="display:none">
+    <span>⚠️</span>
+    <span id="errorText"></span>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="summary-bar" id="summaryBar">
+    <span class="stat total" id="summaryTotal">0 big movers</span>
+    <span class="separator">|</span>
+    <span class="stat winners" id="summaryWinners">0 winners</span>
+    <span class="separator">|</span>
+    <span class="stat losers" id="summaryLosers">0 losers</span>
+    <span class="separator">|</span>
+    <span class="stat" style="color:var(--text-muted);font-weight:400" id="summaryThreshold">|PnL| > 3%</span>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <span>Asset</span>
+      <select class="filter-select" id="filterAsset" onchange="renderTable()">
+        <option value="ALL">All Classes</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span>Direction</span>
+      <div class="dir-toggle" id="dirToggle">
+        <button class="active" data-dir="ALL" onclick="setDirection('ALL', this)">All</button>
+        <button data-dir="LONG" onclick="setDirection('LONG', this)">Long</button>
+        <button data-dir="SHORT" onclick="setDirection('SHORT', this)">Short</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span>Min |PnL| %</span>
+      <input type="number" class="threshold-input" id="thresholdInput" value="3" min="0" step="0.5"
+        onchange="onThresholdChange()" title="Minimum absolute PnL% to display">
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-col="symbol" onclick="sortBy('symbol')">Symbol <span class="sort-arrow">▲</span></th>
+          <th data-col="direction" onclick="sortBy('direction')">Dir <span class="sort-arrow">▲</span></th>
+          <th data-col="asset_class" onclick="sortBy('asset_class')">Asset <span class="sort-arrow">▲</span></th>
+          <th data-col="pnl_pct" class="sorted" onclick="sortBy('pnl_pct')">PnL % <span class="sort-arrow">▼</span></th>
+          <th data-col="score" onclick="sortBy('score')">Score <span class="sort-arrow">▲</span></th>
+          <th data-col="confidence" onclick="sortBy('confidence')">Conf <span class="sort-arrow">▲</span></th>
+          <th data-col="strategy" onclick="sortBy('strategy')">Strategy <span class="sort-arrow">▲</span></th>
+          <th data-col="age_hours" onclick="sortBy('age_hours')">Age <span class="sort-arrow">▲</span></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="8">
+          <div class="state-msg">
+            <div class="spinner"></div>
+            <span>Loading big movers…</span>
+            <span class="sub">Fetching payload</span>
+          </div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let allBigMovers = [];
+let filteredData = [];
+let currentDirection = 'ALL';
+let currentSort = { col: 'pnl_pct', asc: false };
+let currentAsset = 'ALL';
+let refreshTimer = null;
+const DEFAULT_THRESHOLD = 3;
+const REFRESH_MS = 60000;
+
+// ── URL management ──
+function getPayloadUrl() {
+  const saved = localStorage.getItem('bigMover_payloadUrl');
+  if (saved) return saved;
+  return document.getElementById('payloadUrl').value.trim();
+}
+
+function loadFromConfig() {
+  const url = document.getElementById('payloadUrl').value.trim();
+  if (!url) return;
+  localStorage.setItem('bigMover_payloadUrl', url);
+  fetchData(url);
+}
+
+// ── Fetch ──
+async function fetchData(url) {
+  const dot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const errorBanner = document.getElementById('errorBanner');
+
+  dot.className = 'refresh-dot';
+  statusText.textContent = 'Fetching…';
+  errorBanner.style.display = 'none';
+
+  try {
+    const resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    processPayload(data);
+    dot.className = 'refresh-dot';
+    statusText.textContent = 'Live';
+    document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch (err) {
+    dot.className = 'refresh-dot error';
+    statusText.textContent = 'Error';
+    document.getElementById('errorText').textContent = err.message;
+    errorBanner.style.display = 'flex';
+
+    if (allBigMovers.length === 0) {
+      showEmpty('Failed to load payload', err.message);
+    }
+  }
+}
+
+// ── Process payload ──
+function processPayload(data) {
+  let raw = [];
+
+  // Support both top-level big_movers and nested structures
+  if (Array.isArray(data.big_movers)) {
+    raw = data.big_movers;
+  } else if (data.payload && Array.isArray(data.payload.big_movers)) {
+    raw = data.payload.big_movers;
+  } else if (Array.isArray(data)) {
+    // Try treating as direct array
+    raw = data;
+  }
+
+  // Normalize and filter by threshold
+  const threshold = getThreshold();
+  allBigMovers = raw
+    .filter(p => p && typeof p.pnl_pct === 'number' && Math.abs(p.pnl_pct) >= threshold)
+    .map(normalizePick);
+
+  updateAssetFilter();
+  renderTable();
+}
+
+function normalizePick(p) {
+  return {
+    symbol: p.symbol || p.ticker || '—',
+    direction: (p.direction || '—').toUpperCase(),
+    asset_class: (p.asset_class || p.asset || p.assetClass || '—').toUpperCase(),
+    pnl_pct: typeof p.pnl_pct === 'number' ? p.pnl_pct : null,
+    score: typeof p.score === 'number' || typeof p.score === 'string' ? Number(p.score) : null,
+    confidence: typeof p.confidence === 'number' ? p.confidence : null,
+    strategy: p.strategy || p.system || '—',
+    age_hours: typeof p.age_hours === 'number' ? p.age_hours : (typeof p.age === 'number' ? p.age : null),
+  };
+}
+
+// ── Threshold ──
+function getThreshold() {
+  const v = parseFloat(document.getElementById('thresholdInput').value);
+  return isNaN(v) || v < 0 ? DEFAULT_THRESHOLD : v;
+}
+
+function onThresholdChange() {
+  const url = getPayloadUrl();
+  document.getElementById('summaryThreshold').textContent = '|PnL| > ' + getThreshold() + '%';
+  // Re-filter from raw — but we don't keep raw, so re-fetch
+  fetchData(url);
+}
+
+// ── Asset filter ──
+function updateAssetFilter() {
+  const sel = document.getElementById('filterAsset');
+  const assets = [...new Set(allBigMovers.map(p => p.asset_class).filter(a => a !== '—'))].sort();
+  const prev = sel.value;
+  sel.innerHTML = '<option value="ALL">All Classes</option>';
+  assets.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = a;
+    sel.appendChild(opt);
+  });
+  if (assets.includes(prev)) sel.value = prev;
+}
+
+// ── Direction toggle ──
+function setDirection(dir, btn) {
+  currentDirection = dir;
+  document.querySelectorAll('#dirToggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+// ── Sort ──
+function sortBy(col) {
+  if (currentSort.col === col) {
+    currentSort.asc = !currentSort.asc;
+  } else {
+    currentSort.col = col;
+    // Default: descending for pnl_pct and score, ascending for text
+    currentSort.asc = !['pnl_pct', 'score', 'confidence', 'age_hours'].includes(col);
+  }
+
+  document.querySelectorAll('thead th').forEach(th => {
+    const arrow = th.querySelector('.sort-arrow');
+    if (th.dataset.col === col) {
+      th.classList.add('sorted');
+      arrow.textContent = currentSort.asc ? '▲' : '▼';
+    } else {
+      th.classList.remove('sorted');
+      arrow.textContent = '▲';
+    }
+  });
+
+  renderTable();
+}
+
+function sortData(data) {
+  const { col, asc } = currentSort;
+  return [...data].sort((a, b) => {
+    let va = a[col], vb = b[col];
+    if (va === null || va === undefined || va === '—') va = asc ? Infinity : -Infinity;
+    if (vb === null || vb === undefined || vb === '—') vb = asc ? Infinity : -Infinity;
+
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+
+    if (col === 'pnl_pct') {
+      // Sort by absolute value descending by default
+      return asc ? Math.abs(va) - Math.abs(vb) : Math.abs(vb) - Math.abs(va);
+    }
+
+    return asc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+}
+
+// ── Render ──
+function renderTable() {
+  const assetFilter = document.getElementById('filterAsset').value;
+
+  filteredData = allBigMovers.filter(p => {
+    if (currentDirection !== 'ALL' && p.direction !== currentDirection) return false;
+    if (assetFilter !== 'ALL' && p.asset_class !== assetFilter) return false;
+    return true;
+  });
+
+  filteredData = sortData(filteredData);
+
+  // Update summary
+  const winners = filteredData.filter(p => p.pnl_pct !== null && p.pnl_pct > 0).length;
+  const losers = filteredData.filter(p => p.pnl_pct !== null && p.pnl_pct < 0).length;
+  document.getElementById('summaryTotal').textContent = filteredData.length + ' big mover' + (filteredData.length !== 1 ? 's' : '');
+  document.getElementById('summaryWinners').textContent = winners + ' winner' + (winners !== 1 ? 's' : '');
+  document.getElementById('summaryLosers').textContent = losers + ' loser' + (losers !== 1 ? 's' : '');
+
+  const tbody = document.getElementById('tableBody');
+
+  if (filteredData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">
+      <div class="state-msg">
+        <span class="icon">📊</span>
+        <span>No big movers match current filters</span>
+        <span class="sub">Picks with |PnL| > ${getThreshold()}% will appear here</span>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filteredData.map((p, i) => {
+    const pnlClass = p.pnl_pct === null ? '' : (p.pnl_pct >= 0 ? 'positive' : 'negative');
+    const pnlSign = p.pnl_pct === null ? '' : (p.pnl_pct >= 0 ? '+' : '');
+    const dirClass = p.direction === 'LONG' ? 'tag-long' : (p.direction === 'SHORT' ? 'tag-short' : '');
+    const scoreColor = p.score === null ? '' : (p.score >= 70 ? 'color:var(--green)' : (p.score >= 50 ? 'color:var(--blue)' : 'color:var(--yellow)'));
+    const ageDisplay = formatAge(p.age_hours);
+
+    return `<tr class="${i < 3 ? 'row-updated' : ''}">
+      <td class="cell-symbol">${esc(p.symbol)}</td>
+      <td>${dirClass ? `<span class="tag ${dirClass}">${esc(p.direction)}</span>` : '<span class="cell-na">—</span>'}</td>
+      <td><span class="tag tag-asset">${esc(p.asset_class)}</span></td>
+      <td class="cell-pnl ${pnlClass}">${p.pnl_pct !== null ? pnlSign + p.pnl_pct.toFixed(2) + '%' : '<span class="cell-na">—</span>'}</td>
+      <td>${renderScore(p.score)}</td>
+      <td class="cell-confidence">${p.confidence !== null ? p.confidence.toFixed(2) : '<span class="cell-na">—</span>'}</td>
+      <td class="cell-strategy" title="${esc(p.strategy)}">${esc(p.strategy)}</td>
+      <td class="cell-age">${ageDisplay}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderScore(score) {
+  if (score === null) return '<span class="cell-na">—</span>';
+  const color = score >= 70 ? 'var(--green)' : (score >= 50 ? 'var(--blue)' : (score >= 30 ? 'var(--yellow)' : 'var(--red)'));
+  const pct = Math.min(score, 100);
+  return `<div class="score-bar">
+    <span class="cell-score" style="color:${color}">${score}</span>
+    <div class="score-bar-fill"><div class="score-bar-fill-inner" style="width:${pct}%;background:${color}"></div></div>
+  </div>`;
+}
+
+function formatAge(hours) {
+  if (hours === null || hours === undefined) return '<span class="cell-na">—</span>';
+  if (hours < 1) return Math.round(hours * 60) + 'm';
+  if (hours < 24) return hours.toFixed(1) + 'h';
+  return (hours / 24).toFixed(1) + 'd';
+}
+
+function esc(str) {
+  if (!str) return '—';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function showEmpty(title, sub) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = `<tr><td colspan="8">
+    <div class="state-msg">
+      <span class="icon">📭</span>
+      <span>${esc(title)}</span>
+      <span class="sub">${esc(sub)}</span>
+    </div>
+  </td></tr>`;
+}
+
+// ── Auto-refresh ──
+function startRefreshLoop() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    const url = getPayloadUrl();
+    if (url) fetchData(url);
+  }, REFRESH_MS);
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  const url = getPayloadUrl();
+  document.getElementById('payloadUrl').value = url;
+  fetchData(url);
+  startRefreshLoop();
+
+  // Enter key on URL input
+  document.getElementById('payloadUrl').addEventListener('keydown', e => {
+    if (e.key === 'Enter') loadFromConfig();
+  });
+});
+</script>
+
+</body>
+</html>
