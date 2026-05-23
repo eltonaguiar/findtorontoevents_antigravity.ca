@@ -39,7 +39,7 @@ jobs:
         run: |
           git config user.name "Forward Signal Scanner"
           git config user.email "scanner@bot"
-          git add incubator/forward_test.db incubator/backtest_results/forward_signals.json
+          git add -f incubator/forward_test.db incubator/backtest_results/forward_signals.json
           git diff --cached --quiet || git commit -m "Forward scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
           for i in 1 2 3; do
             bash .github/scripts/safe_push.sh && break
