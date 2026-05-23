@@ -52,9 +52,9 @@ jobs:
           git diff --cached --quiet && echo "No changes" && exit 0
           git stash
           git pull --rebase -X theirs origin main 2>/dev/null || {
-            git rebase --abort 2>/dev/null
-            git checkout --theirs -- alpha_engine/data/ 2>/dev/null
-            git add alpha_engine/data/ 2>/dev/null
+            git rebase --abort 2>/dev/null || true
+            git checkout --theirs -- alpha_engine/data/ 2>/dev/null || true
+            git add alpha_engine/data/ 2>/dev/null || true
             git pull --no-rebase -X theirs origin main 2>/dev/null || true
           }
           git stash pop || {
@@ -73,9 +73,9 @@ jobs:
           git commit -m "chore(claudes-test): update portfolio state [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase -X theirs origin main 2>/dev/null || {
-              git rebase --abort 2>/dev/null
-              git checkout --theirs -- alpha_engine/data/ 2>/dev/null
-              git add alpha_engine/data/ 2>/dev/null
+              git rebase --abort 2>/dev/null || true
+              git checkout --theirs -- alpha_engine/data/ 2>/dev/null || true
+              git add alpha_engine/data/ 2>/dev/null || true
               git pull --no-rebase -X theirs origin main 2>/dev/null || true
             }
             bash .github/scripts/safe_push.sh && break
