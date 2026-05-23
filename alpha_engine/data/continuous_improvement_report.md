@@ -1,21 +1,21 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-23T11:20:23.081653+00:00
+Generated: 2026-05-23T11:43:36.564783+00:00
 
 ## Topline
-- Open positions: 87
+- Open positions: 84
 - Price coverage: 100.0%
-- Open average PnL: 32.455%
-- Directional correctness: 57.47%
+- Open average PnL: 30.9605%
+- Directional correctness: 48.81%
 - Regime: BEARISH
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] PEER_STALE: alpha_engine data is stale (83466.3m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (105.7m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (111759.4m old)
+- [HIGH] PEER_STALE: alpha_engine data is stale (83489.6m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (128.9m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (111782.6m old)
 - [HIGH] STRATEGY_DECAY: fx_smart_carry_trade_momentum is a rehabilitation candidate (WR 6.25%, PF 0.046, Sharpe -28.944)
-- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BNBUSDT ({'LONG': 3, 'SHORT': 3})
+- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on SOLUSDT ({'LONG': 1, 'SHORT': 5})
 
 ## Recommendations
 - tighten_risk_and_reduce_gross_exposure: Choppy regime or drawdown breach warrants smaller sizing and tighter review cadence.
