@@ -24,7 +24,7 @@ on:
           - 'false'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   detect-duplicate-large-blobs:
@@ -43,6 +43,7 @@ jobs:
             '+refs/heads/*:refs/remotes/origin/*'
 
       - name: Scan for duplicated large blobs across non-main branches
+        id: scan
         env:
           MIN_SIZE_MB: ${{ github.event.inputs.min_size_mb || '20' }}
           MIN_BRANCH_COPIES: ${{ github.event.inputs.min_branch_copies || '3' }}
@@ -153,12 +154,128 @@ jobs:
           with open('branch_large_blob_findings.json', 'w', encoding='utf-8') as fh:
               json.dump(findings, fh, indent=2)
 
-          if findings and fail_on_findings:
-              print('Detected duplicated large blobs across multiple non-main branches.', file=sys.stderr)
-              sys.exit(1)
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+              fh.write(f"findings_count={len(findings)}\n")
+              fh.write(f"has_findings={'true' if findings else 'false'}\n")
 
           print('Duplicate large blob scan completed.')
           PY
+
+      - name: Update job health page with timestamped alert
+        if: steps.scan.outputs.has_findings == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const path = 'updates/job-health.md';
+            const markerStart = '<!-- ALERTS_START -->';
+            const markerEnd = '<!-- ALERTS_END -->';
+            const findings = JSON.parse(fs.readFileSync('branch_large_blob_findings.json', 'utf8'));
+            const nowIso = new Date().toISOString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const maxBranches = 5;
+
+            const entryLines = [];
+            entryLines.push(`### Alert @ ${nowIso}`);
+            entryLines.push('');
+            entryLines.push('- Type: duplicate-large-files-across-branches');
+            entryLines.push(`- Workflow run: ${runUrl}`);
+            entryLines.push(`- Duplicates detected: ${findings.length}`);
+            entryLines.push('');
+
+            for (const f of findings.slice(0, 50)) {
+              const branchesShown = (f.branches || []).slice(0, maxBranches);
+              const hidden = Math.max((f.branches || []).length - branchesShown.length, 0);
+              const samplePaths = (f.sample_paths || []).slice(0, 5);
+              entryLines.push(`- Blob ${f.blob} (${f.size_mb} MB) in ${f.branch_count} branch(es)`);
+              if (samplePaths.length > 0) {
+                entryLines.push(`  - files: ${samplePaths.join(', ')}`);
+              }
+              entryLines.push(`  - branches: ${branchesShown.join(', ') || 'none'}`);
+              if (hidden > 0) {
+                entryLines.push(`  - branches_more: +${hidden}`);
+              }
+            }
+            entryLines.push('');
+
+            const entryText = entryLines.join('\n');
+
+            let current = null;
+            let sha = null;
+            try {
+              const got = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path,
+                ref: 'main',
+              });
+              sha = got.data.sha;
+              current = Buffer.from(got.data.content, 'base64').toString('utf8');
+            } catch (err) {
+              if (err.status !== 404) {
+                throw err;
+              }
+            }
+
+            if (!current) {
+              current = [
+                '# Job Health',
+                '',
+                'Automated health alerts for critical workflows.',
+                '',
+                '## Duplicate Large File Alerts',
+                '',
+                'Newest first. This section is updated by Branch Large File Duplicate Guard.',
+                '',
+                markerStart,
+                '_No alerts yet._',
+                markerEnd,
+                ''
+              ].join('\n');
+            }
+
+            if (!current.includes(markerStart) || !current.includes(markerEnd)) {
+              throw new Error('Job health page markers are missing.');
+            }
+
+            const start = current.indexOf(markerStart) + markerStart.length;
+            const end = current.indexOf(markerEnd);
+            const existingInner = current.slice(start, end).trim();
+            const entriesRaw = existingInner && existingInner !== '_No alerts yet._'
+              ? existingInner
+              : '';
+
+            const existingEntries = entriesRaw
+              ? entriesRaw.split(/\n(?=### Alert @ )/m).filter(Boolean)
+              : [];
+
+            const combined = [entryText, ...existingEntries].slice(0, 30);
+            const nextInner = combined.length ? combined.join('\n\n') : '_No alerts yet._';
+            const updated = `${current.slice(0, start)}\n${nextInner}\n${current.slice(end)}`;
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              message: `ci(job-health): duplicate file alert ${nowIso}`,
+              content: Buffer.from(updated, 'utf8').toString('base64'),
+              branch: 'main',
+              sha,
+            });
+
+            core.notice('Job health page updated with duplicate-large-file alert.');
+
+      - name: Enforce fail-on-findings policy
+        if: always()
+        env:
+          FAIL_ON_FINDINGS: ${{ github.event.inputs.fail_on_findings || 'true' }}
+          HAS_FINDINGS: ${{ steps.scan.outputs.has_findings }}
+        run: |
+          if [ "${HAS_FINDINGS}" = "true" ] && [ "${FAIL_ON_FINDINGS}" = "true" ]; then
+            echo "Detected duplicated large blobs across multiple non-main branches." >&2
+            exit 1
+          fi
 
       - name: Upload findings artifact
         if: always()
