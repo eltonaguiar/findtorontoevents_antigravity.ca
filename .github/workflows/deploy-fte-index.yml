@@ -6,9 +6,6 @@ on:
     paths:
       - 'TORONTOEVENTS_ANTIGRAVITY/index.html'
       - 'TORONTOEVENTS_ANTIGRAVITY/next_htaccess'
-      - 'events.json'
-      - 'next/events.json'
-      - 'last_update.json'
       - '.github/workflows/deploy-fte-index.yml'
   workflow_run:
     workflows: ["Scrape events"]
@@ -33,6 +30,10 @@ jobs:
           VERSION="$(date -u +%Y-%m-%d)-$(git rev-parse --short HEAD)"
           echo "Deploy version: ${VERSION}"
           sed -i "s/2026-01-29-parallel-fix/${VERSION}/g" TORONTOEVENTS_ANTIGRAVITY/index.html
+          # Keep the "Updated daily" date in sync with the actual deploy date.
+          DEPLOY_DATE="$(date -u '+%b %e, %Y' | sed 's/  / /')"
+          sed -i "s/Updated daily • [A-Z][a-z][a-z] [0-9]\{1,2\}, [0-9]\{4\}/Updated daily • ${DEPLOY_DATE}/g" TORONTOEVENTS_ANTIGRAVITY/index.html
+          echo "Updated daily date set to: ${DEPLOY_DATE}"
 
       - name: Validate site payload before FTP upload
         run: |
