@@ -8,6 +8,8 @@ Flag and block risk patterns where large files are duplicated across multiple no
 
 - New GitHub Actions workflow:
   - `.github/workflows/branch-large-file-dup-guard.yml`
+- New job health page:
+  - `updates/job-health.md`
 
 ## Policy behavior
 
@@ -19,6 +21,8 @@ Flag and block risk patterns where large files are duplicated across multiple no
 - Fetches branch refs and scans tree entries (does not require full blob download).
 - Flags repeated large blobs when the same blob SHA appears in at least N non-main branches.
 - Writes a run summary and uploads `branch_large_blob_findings.json` as an artifact.
+- When findings exist, appends a timestamped alert entry to `updates/job-health.md`.
+- Alert entries include duplicate blob/file samples and branch list (capped to 5 branches per duplicate item).
 - Fails the run by default when findings exist.
 
 ## Why this helps
