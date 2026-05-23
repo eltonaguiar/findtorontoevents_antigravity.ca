@@ -6,15 +6,9 @@ name: Deploy findtorontoevents.ca next/events.json
 # fresh data to main.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'next/events.json'
-      - 'last_update.json'
-      - 'metadata.json'
-      - 'next/metadata.json'
-      - 'data/metadata.json'
-      - 'TORONTOEVENTS_ANTIGRAVITY/metadata.json'
+  workflow_run:
+    workflows: ["Scrape events"]
+    types: [completed]
 
 permissions:
   contents: read
