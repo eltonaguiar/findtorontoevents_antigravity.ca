@@ -20,15 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GH_PAT || github.token }}
+          token: ${{ github.token }}
           fetch-depth: 1
-          sparse-checkout: |
-            .github
-            crypto_gainer_ml
-            claude_gainer_ml
-            shared
-            alpha_engine
-            updates/data
 
       - uses: actions/setup-python@v6
         with:
