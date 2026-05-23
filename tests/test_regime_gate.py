@@ -39,6 +39,7 @@ class TestRegimeGate(unittest.TestCase):
             signal_type='SHORT', category='crypto', ml_score=0.85,
             rr_ratio=2.0, volume_ratio=1.5,
             forward_trades=3, recent_wr=0.55,
+            source_system='copy_trader',
             entry_price=95000.0, take_profit=91000.0, stop_loss=98000.0,
         )
         base.update(kw)
