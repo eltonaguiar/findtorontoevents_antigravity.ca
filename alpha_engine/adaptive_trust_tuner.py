@@ -81,8 +81,8 @@ def _compute_rolling_metrics(trades: list[dict]) -> dict:
     def _profit_factor(subset: list[dict]) -> float | None:
         if not subset:
             return None
-        gross_wins = sum(abs(t.get("pnl_pct", 0)) for t in subset if t.get("status") == "WON")
-        gross_losses = sum(abs(t.get("pnl_pct", 0)) for t in subset if t.get("status") == "LOST")
+        gross_wins = sum(abs(t.get("pnl_pct") or 0) for t in subset if t.get("status") == "WON")
+        gross_losses = sum(abs(t.get("pnl_pct") or 0) for t in subset if t.get("status") == "LOST")
         if gross_losses == 0:
             return 99.0 if gross_wins > 0 else 1.0
         return round(gross_wins / gross_losses, 2)
@@ -90,7 +90,7 @@ def _compute_rolling_metrics(trades: list[dict]) -> dict:
     def _avg_pnl(subset: list[dict]) -> float | None:
         if not subset:
             return None
-        return round(sum(t.get("pnl_pct", 0) for t in subset) / len(subset), 4)
+        return round(sum((t.get("pnl_pct") or 0) for t in subset) / len(subset), 4)
 
     last10 = trades[-10:] if total >= 5 else trades
     last20 = trades[-20:] if total >= 10 else trades

@@ -1568,12 +1568,28 @@ def _get_strategy_forward_pnl(pick: dict, strategy_perf: Optional[dict] = None) 
     return fw_pnl
 
 
+def _coerce_regime_field(v):
+    """Coerce a regime-like pick field to a lowercase string.
+
+    annotate_signal_with_regime() may set pick['market_regime'] to the full
+    regime_info dict (scanner.py:1282), and a stale HMM bridge can leave
+    pick['hmm_regime'] as a dict too. dict.lower() would crash and dump every
+    pick to fallback score 25; pull the inner regime string out instead.
+    """
+    if isinstance(v, dict):
+        return str(v.get("regime", "") or v.get("market_regime", "") or "")
+    return str(v or "")
+
+
 def _check_regime_alignment(pick: dict) -> bool:
     """Check if pick direction aligns with current market regime."""
     direction = str(pick.get("direction", "") or pick.get("signal_type", "") or "").upper()
-    regime = (pick.get("regime_at_entry") or pick.get("regime_trend_direction") or
-              pick.get("regime_at_signal") or pick.get("btc_regime") or
-              pick.get("hmm_regime") or pick.get("market_regime") or "").lower().strip()
+    regime = (_coerce_regime_field(pick.get("regime_at_entry")) or
+              _coerce_regime_field(pick.get("regime_trend_direction")) or
+              _coerce_regime_field(pick.get("regime_at_signal")) or
+              _coerce_regime_field(pick.get("btc_regime")) or
+              _coerce_regime_field(pick.get("hmm_regime")) or
+              _coerce_regime_field(pick.get("market_regime")) or "").lower().strip()
 
     # Map non-standard regime values
     regime_map = {"momentum": "trending", "accumulation": "bullish", "distribution": "bearish",
@@ -2205,9 +2221,12 @@ def compute_elite_score(
     #     Transition = +1
     # =========================================================================
     regime_bonus = 0
-    _regime = (pick.get("regime_at_entry") or pick.get("regime_trend_direction") or
-               pick.get("regime_at_signal") or pick.get("btc_regime") or
-               pick.get("hmm_regime") or pick.get("market_regime") or "").lower().strip()
+    _regime = (_coerce_regime_field(pick.get("regime_at_entry")) or
+               _coerce_regime_field(pick.get("regime_trend_direction")) or
+               _coerce_regime_field(pick.get("regime_at_signal")) or
+               _coerce_regime_field(pick.get("btc_regime")) or
+               _coerce_regime_field(pick.get("hmm_regime")) or
+               _coerce_regime_field(pick.get("market_regime")) or "").lower().strip()
     # LIVE REGIME LOOKUP: if pick has no regime data, read from hmm_regime.json
     if not _regime:
         try:
@@ -3218,6 +3237,7 @@ def enrich_picks_with_elite_score(
         except Exception as _score_err:
             # Per-pick error: assign fallback score so this pick doesn't stay
             # unscored, and continue scoring the rest of the list.
+            import traceback as _tb
             error_count += 1
             pick["elite_score"] = 25  # Fallback: conservative D-grade score
             pick["elite_breakdown"] = {"_error": str(_score_err)}
@@ -3225,6 +3245,8 @@ def enrich_picks_with_elite_score(
             _sym = pick.get("symbol", "?")
             _strat = pick.get("strategy", "?")
             print(f"  [ELITE] ERROR scoring {_sym} ({_strat}): {_score_err} -- assigned fallback score 25")
+            if error_count <= 3:
+                print("  [ELITE] traceback (first 3 only):\n" + _tb.format_exc())
     if error_count > 0:
         print(f"  [ELITE] {error_count} picks failed scoring and got fallback score 25")
 
