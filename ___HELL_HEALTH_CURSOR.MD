@@ -10,7 +10,7 @@
 | Area | Status | Notes |
 |------|--------|-------|
 | **FavCreators `/fc/#/guest`** | ✅ Fixed | `.env` deployed; `status.php` → `db: connected` |
-| **MySQL Trading Picks Sync** | ⚠️ Partial | Auth **fixed** (`printf` secrets). Run 26329747150: 4000/4006 upserted; 6 dedup-key collisions → exit 1. **Fix staged locally** in `mysql_trading_sync.py` (treat errno 1062 as skip). Needs commit+push. |
+| **MySQL Trading Picks Sync** | 🔄 Verifying | Dedup fix pushed (`a331aea2`); run [26330281519](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26330281519) in progress on runner |
 | **Strategy Health Monitor/Report** | ⏳ Pending | Should pass after `MYSQL_PASSWORD` fix propagates |
 | **GitHub Pages deploys** | ❌ Blocked | Pages not enabled — [settings/pages](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/settings/pages) |
 | **FTP deploy workflows** | ⚠️ Partial | `FTP_HOST` was bad earlier; verify `ftps2.50webs.com` in secrets |
@@ -179,6 +179,26 @@ Unchanged blockers: GitHub Pages (404), FTP mirror sync, git push race (Claude's
 
 ---
 
+## CHECK 2026-05-23 10:24 UTC — CURSOR POST-PUSH
+
+### ✅ Committed & pushed (`a331aea2`)
+- `mysql_trading_sync.py` — errno 1062 dedup skip
+- `db_test.php` — PHP 5.2 fix
+- `tools/gha_health_monitor_cursor.py` + `___HELL_HEALTH_CURSOR.MD`
+
+### 🔄 MySQL sync verification run [26330281519](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26330281519)
+- Status: **pending** (queued on runner as of 10:28 UTC)
+
+### 📉 Stale failures: **7 → 2-3** (traction improving)
+**Cleared since session start:** MySQL Trading Picks Sync (auth), Strategy Health Monitor/Report, DB Sync, Run Backtests, Claude's Test (intermittent).
+
+**Still stale (10:28 UTC):**
+- Deploy Rise of the Claw Dashboard — GitHub Pages 404
+- CI Tests — new failure (investigating)
+- Audit Drift Telemetry — new failure (investigating)
+
+---
+
 ## CHECK 2026-05-23 10:13:30 UTC
 - **Stale failures** (latest run failed, no success since): **3**
 - **In progress:** 5
@@ -242,3 +262,54 @@ deploy-to-ftp	Deploy to findtorontoevents.ca	2026-05-23T10:08:12.5395941Z ##[err
 **New deep-dives this check:** Claude's Test - Portfolio Manager, Deploy Rise of the Claw Dashboard, DNA Genome Daily Pipeline
 
 ⏭️ **Skipping next check** — complicated failure(s); cooldown 15 min until 10:28 UTC.
+
+## CHECK 2026-05-23 10:29:02 UTC
+- **Stale failures** (latest run failed, no success since): **3**
+- **In progress:** 5
+- **Recent failures** (last 15 runs): 1
+
+### ❌ CI Tests
+- Run: [26330280855](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26330280855)
+- Failed at: 2026-05-23T10:24:16Z
+- **Classification:** UNKNOWN — needs manual log review
+- **Log tail:**
+```
+test (3.12)	Run all tests	2026-05-23T10:26:51.5014918Z SKIPPED [1] tests/test_hf_pick_contracts.py:13: could not import 'pydantic': No module named 'pydantic'
+test (3.12)	Run all tests	2026-05-23T10:26:51.5015832Z SKIPPED [1] tests/test_pick_schema.py:5: could not import 'pydantic': No module named 'pydantic'
+test (3.12)	Run all tests	2026-05-23T10:26:51.5016479Z SKIPPED [1] tests/test_quan_engine_inverse_adapter.py:12: quan_engine_inverse feature removed from antigravity_strategies
+test (3.12)	Run all tests	2026-05-23T10:26:51.5017150Z SKIPPED [1] tests/test_regime_gate_keltner.py:12: regime gate helpers removed from keltner strategy module
+test (3.12)	Run all tests	2026-05-23T10:26:51.5017752Z SKIPPED [1] tests/test_regime_gate_squeeze.py:13: regime gate helpers removed from challenge_v3
+test (3.12)	Run all tests	2026-05-23T10:26:51.5018400Z SKIPPED [1] tests/test_signal_spec.py:13: could not import 'pydantic': No module named 'pydantic'
+test (3.12)	Run all tests	2026-05-23T10:26:51.5018977Z SKIPPED [1] tests/test_system_c_attention_sequence.py:8: could not import 'torch': No module named 'torch'
+test (3.12)	Run all tests	2026-05-23T10:26:51.5019617Z ERROR tests/test_audit_metric_invariants.py
+test (3.12)	Run all tests	2026-05-23T10:26:51.5019903Z ERROR tests/test_dashboard_payload_contract.py
+test (3.12)	Run all tests	2026-05-23T10:26:51.5020251Z !!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+test (3.12)	Run all tests	2026-05-23T10:26:51.5020681Z =========== 7 skipped, 10 deselected, 1 warning, 2 errors in 25.39s ============
+test (3.12)	Run all tests	2026-05-23T10:26:52.1060358Z ##[error]Process completed with exit code 2.
+```
+
+### ❌ Audit Drift Telemetry
+- Run: [26330204496](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26330204496)
+- Failed at: 2026-05-23T10:20:09Z
+- **Classification:** UNKNOWN — needs manual log review
+- **Log tail:**
+```
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6628890Z               ^^^^^^^^^^^^^^^^^^^^^^
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6629979Z   File "/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/tools/drift/build_backtest_forward_drift.py", line 40, in _read_json
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6630924Z     return json.loads(path.read_text(encoding="utf-8"))
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6631326Z                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6631978Z   File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/pathlib.py", line 1058, in read_text
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6871727Z     with self.open(mode='r', encoding=encoding, errors=errors) as f:
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6872628Z          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6873797Z   File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/pathlib.py", line 1044, in open
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6875101Z     return io.open(self, mode, buffering, encoding, errors, newline)
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6875990Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6877327Z FileNotFoundError: [Errno 2] No such file or directory: 'audit_dashboard/data/dashboard_data.json'
+drift	Build canonical backtest-forward drift report	2026-05-23T10:21:28.6944832Z ##[error]Process completed with exit code 1.
+```
+
+### (cached) Deploy Rise of the Claw Dashboard — run `26329961213`
+
+**New deep-dives this check:** CI Tests, Audit Drift Telemetry
+
+⏭️ **Skipping next check** — complicated failure(s); cooldown 15 min until 10:43 UTC.

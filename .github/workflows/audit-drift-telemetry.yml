@@ -40,13 +40,23 @@ jobs:
           mkdir -p audit_dashboard/data/drift_snapshots
 
       - name: Build canonical backtest-forward drift report
+        id: drift_build
         run: |
+          # Remove stale committed artifact so skip path cannot validate old rows
+          rm -f tmp/backtest_forward_drift_analysis.json
           python tools/drift/build_backtest_forward_drift.py \
             --input audit_dashboard/data/dashboard_data.json \
             --output tmp/backtest_forward_drift_analysis.json \
             --snapshot-dir audit_dashboard/data/drift_snapshots
+          if [ -f tmp/backtest_forward_drift_analysis.json ]; then
+            echo "has_drift=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_drift=0" >> "$GITHUB_OUTPUT"
+            echo "SKIP: no dashboard_data.json — downstream drift steps skipped until audit-dashboard pipeline runs."
+          fi
 
       - name: Validate backtest integrity
+        if: steps.drift_build.outputs.has_drift == '1'
         shell: pwsh
         run: |
           ./tools/drift/validate_backtest_integrity.ps1 `
@@ -58,12 +68,14 @@ jobs:
             -FailOnError
 
       - name: Compute dynamic drift score
+        if: steps.drift_build.outputs.has_drift == '1'
         run: |
           node tools/drift/compute_dynamic_drift_score.js \
             --input audit_dashboard/data/hourly_asset_class_24h_report.json \
             --config config/drift_params.json \
             --output audit_dashboard/data/drift_scores_latest.json
       - name: Trigger probation actions
+        if: steps.drift_build.outputs.has_drift == '1'
         shell: pwsh
         run: |
           ./tools/drift/trigger_probation_actions.ps1 `
@@ -74,6 +86,7 @@ jobs:
 
 
       - name: Export drift metrics (Prometheus format)
+        if: steps.drift_build.outputs.has_drift == '1'
         shell: pwsh
         run: |
           ./tools/drift/export_drift_metrics.ps1 `
