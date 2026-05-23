@@ -80,7 +80,13 @@ def generate_research_topics(picks: list[dict]) -> list[dict[str, Any]]:
         n_picks = len(group_picks)
 
         # Confidence stats
-        confidences = [float(p.get("confidence", 0.5)) for p in group_picks]
+        confidences = []
+        for p in group_picks:
+            v = p.get("confidence", 0.5)
+            if isinstance(v, str):
+                confidences.append({"HIGH": 0.8, "MEDIUM": 0.5, "LOW": 0.2}.get(v, 0.5))
+            else:
+                confidences.append(float(v))
         avg_conf = sum(confidences) / len(confidences) if confidences else 0.5
 
         # Direction split
@@ -186,7 +192,13 @@ def generate_portfolio_analytics_leaderboard(picks: list[dict]) -> list[dict[str
         n = len(g_picks)
 
         # Confidence stats
-        confs = [float(p.get("confidence", 0.5)) for p in g_picks]
+        confs = []
+        for p in g_picks:
+            v = p.get("confidence", 0.5)
+            if isinstance(v, str):
+                confs.append({"HIGH": 0.8, "MEDIUM": 0.5, "LOW": 0.2}.get(v, 0.5))
+            else:
+                confs.append(float(v))
         avg_conf = sum(confs) / len(confs) if confs else 0
 
         # Asset class coverage
