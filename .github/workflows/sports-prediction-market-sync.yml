@@ -33,20 +33,35 @@ jobs:
         python3 alpha_engine/sports_prediction_market_sync.py --verbose
         echo "Done"
 
-    - name: Pull latest before commit (storm-commit race protection)
+    - name: Commit + push updated signals (safe_push)
+      env:
+        GH_PAT: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
       run: |
+        set -e
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin main
-        git stash --include-untracked || true
-        git pull --rebase origin main || true
-        git stash pop || true
 
-    - name: Commit updated signals
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "[skip ci] Auto-sync sports prediction market signals"
-        file_pattern: |
-          backfill/sports_prediction_market_signals.json
-          alpha_engine/data/sports_prediction_market_signals.json
-        push_options: '--force-with-lease'
+        FILES="backfill/sports_prediction_market_signals.json alpha_engine/data/sports_prediction_market_signals.json"
+        git add $FILES 2>/dev/null || true
+        git diff --cached --quiet && echo "No signal changes" && exit 0
+
+        bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+        git commit -m "[skip ci] Auto-sync sports prediction market signals"
+
+        pushed=0
+        for i in 1 2 3 4 5; do
+          git pull --rebase -X theirs origin main 2>/dev/null || {
+            git rebase --abort 2>/dev/null || true
+            git pull --no-rebase -X theirs origin main 2>/dev/null || true
+          }
+          if bash .github/scripts/safe_push.sh; then
+            pushed=1
+            break
+          fi
+          echo "Retry $i..."
+          sleep $((i * 3))
+        done
+        if [ "$pushed" -ne 1 ]; then
+          echo "::error::sports-sync failed to push after 5 retries"
+          exit 1
+        fi
