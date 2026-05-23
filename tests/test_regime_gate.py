@@ -46,11 +46,17 @@ class TestRegimeGate(unittest.TestCase):
 
     def _make_buy(self, **kw):
         r'''BUY/LONG pick using cot_positioning (43 trades, 81% WR).
-        Tests Gate 4c: blocks LONG in BEARISH/VOLATILE regimes.'''
+        Tests Gate 4c: blocks LONG in BEARISH/VOLATILE regimes.
+
+        NOTE: BTCUSDT is a toxic symbol (Gate 7) requiring conf>=0.90+ml>=0.80
+        or an exemption. Default confidence is set to 0.92 to pass Gate 7.
+        source_system is set to "copy_trader" to pass Gate 8 (algo probation).
+        '''
         base = dict(
-            symbol='BTCUSDT', strategy='cot_positioning', confidence=0.80,
+            symbol='BTCUSDT', strategy='cot_positioning', confidence=0.92,
             signal_type='BUY', category='crypto', ml_score=0.85,
             rr_ratio=2.0, volume_ratio=1.5, forward_trades=0, recent_wr=0.60,
+            source_system='copy_trader',
             # BUY R:R >= 1.2: entry=95000, tp=103000 (8000 reward), sl=91000 (4000 risk)
             entry_price=95000.0, take_profit=103000.0, stop_loss=91000.0,
         )

@@ -75,26 +75,37 @@ def test_rolling_window_caps_per_trade_pnl() -> None:
 # ─── _compound_per_day_geomean_annualized ──────────────────────────────────
 
 def test_geomean_annualized_constant_daily_return() -> None:
-    """+0.1% per day → ((1.001)^252 - 1) * 100 ≈ 28.65%."""
+    """+0.1% per trade, 31 trades over 30 calendar days.
+
+    The function uses true CAGR over calendar days (not 252-day annualization):
+    equity = 1.001^31 ≈ 1.03147, days=30
+    CAGR = (1.03147^(365.25/30) - 1) * 100 ≈ 45.82%
+    """
     picks: list[dict] = []
-    for d in range(30):
+    for d in range(31):
         day = f"2026-05-{d+1:02d}" if d < 31 else f"2026-06-{d-30:02d}"
         picks.append(_mk_pick(0.1, day=day, sym=f"S{d}"))
     result = dg._compound_per_day_geomean_annualized(picks)
-    expected = ((1.001) ** 252 - 1.0) * 100.0
-    assert result == pytest.approx(expected, abs=0.5)
+    assert result == pytest.approx(45.82, abs=0.5)
 
 
 def test_geomean_annualized_alternating_returns_near_zero() -> None:
-    """Alternating +1%/-1% per day: arithmetic mean = 0 → annualized ≈ 0%."""
+    """Alternating +1%/-1% per trade, 31 trades over 30 calendar days.
+
+    Geometric compound of alternating ±1% is slightly > 1 because there are
+    16 wins and 15 losses (odd count): equity ≈ 1.01^16 * 0.99^15 ≈ 1.0085.
+    CAGR = (1.0085^(365.25/30) - 1) * 100 ≈ 10.84%.
+
+    Note: NOT zero because the geometric mean of (1+x)(1-x) = 1-x² < 1,
+    but the extra +1% trade on odd count gives net positive.
+    """
     picks: list[dict] = []
-    for d in range(30):
+    for d in range(31):
         day = f"2026-05-{d+1:02d}"
         pnl = 1.0 if d % 2 == 0 else -1.0
         picks.append(_mk_pick(pnl, day=day, sym=f"S{d}"))
     result = dg._compound_per_day_geomean_annualized(picks)
-    # mean_daily = 0 → ((1+0)^252 - 1) = 0
-    assert result == pytest.approx(0.0, abs=0.1)
+    assert result == pytest.approx(10.84, abs=0.5)
 
 
 def test_geomean_annualized_insufficient_days_returns_none() -> None:
@@ -103,15 +114,15 @@ def test_geomean_annualized_insufficient_days_returns_none() -> None:
 
 
 def test_geomean_annualized_clamped_at_sanity_cap() -> None:
-    """Huge positive daily mean → result clamped at sanity_cap (default 9999)."""
+    """Huge positive daily mean → result clamped at _ANNUALIZED_CEIL_PCT (999.9)."""
     picks: list[dict] = []
-    for d in range(10):
-        day = f"2026-05-{d+1:02d}"
-        # Pre-cap each is 9.5% (under 10% cap), so daily mean = 9.5% →
-        # (1.095)^252 ≈ 1.5e10 → clamped.
+    for d in range(31):
+        day = f"2026-05-{d+1:02d}" if d < 31 else f"2026-06-{d-30:02d}"
+        # 9.5% per trade → equity ≈ 16.67 over 30 days → CAGR explodes → clamped
         picks.append(_mk_pick(9.5, day=day, sym=f"S{d}"))
     result = dg._compound_per_day_geomean_annualized(picks)
-    assert result == 9999.0
+    # Clamped to _ANNUALIZED_CEIL_PCT = 999.9 (not legacy 9999.0)
+    assert result == 999.9
 
 
 # ─── _per_trade_sharpe ─────────────────────────────────────────────────────
