@@ -774,7 +774,17 @@ def main() -> None:
         print(f"[populate] Carried forward {len(existing_open)} open picks from previous days")
 
     # Inject persona rationale into each pick
+    def _fmt_conf(v):
+        """Safely format confidence as percentage string."""
+        if isinstance(v, str):
+            return {"HIGH": "80%", "MEDIUM": "50%", "LOW": "20%"}.get(v, v)
+        try:
+            return f"{float(v):.0%}"
+        except (TypeError, ValueError):
+            return str(v)
+
     try:
+        sys.path.insert(0, str(REPO_ROOT))
         from tools.ai_tournament.persona_registry import build_persona_rationale
         for p in all_picks:
             pid = p.get("persona_id", "")
@@ -785,11 +795,11 @@ def main() -> None:
                     p.get("confidence", 0.5)
                 )
             if not p.get("reason") and p.get("thesis"):
-                p["reason"] = f"Entry thesis: {p['thesis']} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {p.get('confidence', 0.5):.0%}"
+                p["reason"] = f"Entry thesis: {p['thesis']} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
     except ImportError:
         for p in all_picks:
             if not p.get("reason") and p.get("thesis"):
-                p["reason"] = f"Thesis: {p['thesis']} | Confidence: {p.get('confidence', 0.5):.0%}"
+                p["reason"] = f"Thesis: {p['thesis']} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
 
     # Write output
     out_path = pick_out_path()
