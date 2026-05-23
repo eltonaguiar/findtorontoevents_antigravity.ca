@@ -10,12 +10,16 @@ on:
     # Redeploy every 6 hours to keep in sync
     - cron: '15 */6 * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Rapid Fire - NOW Scanner"]
+    types: [completed]
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 5
 
