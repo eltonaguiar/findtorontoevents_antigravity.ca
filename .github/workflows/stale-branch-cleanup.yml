@@ -1,0 +1,163 @@
+name: Stale Branch Cleanup
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      age_days:
+        description: 'Delete merged branches older than this many days'
+        required: true
+        default: '45'
+      dry_run:
+        description: 'If true, report only; do not delete branches'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete stale merged branches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const defaultBranch = context.payload.repository.default_branch;
+            const ageDaysInput = context.payload.inputs?.age_days || '45';
+            const dryRunInput = context.payload.inputs?.dry_run || 'true';
+            const ageDays = Number.parseInt(ageDaysInput, 10);
+            const dryRun = dryRunInput === 'true';
+            const now = Date.now();
+            const msPerDay = 24 * 60 * 60 * 1000;
+
+            if (!Number.isFinite(ageDays) || ageDays < 1) {
+              core.setFailed(`Invalid age_days input: ${ageDaysInput}`);
+              return;
+            }
+
+            const protectedNamePatterns = [
+              /^main$/i,
+              /^master$/i,
+              /^develop$/i,
+              /^dev$/i,
+              /^staging$/i,
+              /^production$/i,
+              /^prod$/i,
+              /^release\//i
+            ];
+
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const skipped = [];
+            const candidates = [];
+            const deleted = [];
+
+            for (const b of branches) {
+              const name = b.name;
+
+              if (name === defaultBranch) {
+                skipped.push(`${name}: default branch`);
+                continue;
+              }
+
+              if (b.protected) {
+                skipped.push(`${name}: protected branch`);
+                continue;
+              }
+
+              if (protectedNamePatterns.some((p) => p.test(name))) {
+                skipped.push(`${name}: reserved branch name`);
+                continue;
+              }
+
+              const openPrs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${name}`,
+                per_page: 1
+              });
+
+              if (openPrs.data.length > 0) {
+                skipped.push(`${name}: has open PR`);
+                continue;
+              }
+
+              const cmp = await github.rest.repos.compareCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: defaultBranch,
+                head: name
+              });
+
+              if (!(cmp.data.status === 'behind' || cmp.data.status === 'identical')) {
+                skipped.push(`${name}: not merged into ${defaultBranch} (${cmp.data.status})`);
+                continue;
+              }
+
+              const branchInfo = await github.rest.repos.getBranch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: name
+              });
+
+              const commitDate = branchInfo.data.commit?.commit?.author?.date;
+              if (!commitDate) {
+                skipped.push(`${name}: missing commit timestamp`);
+                continue;
+              }
+
+              const age = Math.floor((now - Date.parse(commitDate)) / msPerDay);
+              if (age < ageDays) {
+                skipped.push(`${name}: age ${age}d < threshold ${ageDays}d`);
+                continue;
+              }
+
+              candidates.push({ name, age, commitDate });
+            }
+
+            for (const c of candidates) {
+              if (dryRun) {
+                continue;
+              }
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${c.name}`
+              });
+              deleted.push(c.name);
+            }
+
+            const candidateLines = candidates
+              .sort((a, b) => b.age - a.age)
+              .map((c) => `- ${c.name} (${c.age}d, last commit ${c.commitDate})`)
+              .join('\n') || '- none';
+
+            const deletedLines = deleted.map((n) => `- ${n}`).join('\n') || '- none';
+            const skippedPreview = skipped.slice(0, 50).map((s) => `- ${s}`).join('\n') || '- none';
+
+            core.summary
+              .addHeading('Stale Branch Cleanup Result')
+              .addRaw(`Mode: ${dryRun ? 'dry-run' : 'delete'}\n`)
+              .addRaw(`Threshold: ${ageDays} days\n\n`)
+              .addHeading('Candidates', 2)
+              .addRaw(`${candidateLines}\n\n`)
+              .addHeading('Deleted', 2)
+              .addRaw(`${deletedLines}\n\n`)
+              .addHeading('Skipped (first 50)', 2)
+              .addRaw(`${skippedPreview}\n`)
+              .write();
+
+            core.notice(`stale-branch-cleanup mode=${dryRun ? 'dry-run' : 'delete'} candidates=${candidates.length} deleted=${deleted.length}`);
