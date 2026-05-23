@@ -80,13 +80,14 @@ def _load_payload():
         pytest.skip(
             f"dashboard_data.json missing at {PAYLOAD_PATH} — see "
             "memory/feedback_dashboard_data_local_staleness; pull "
-            "origin/main copy before running locally."
+            "origin/main copy before running locally.",
+            allow_module_level=True,
         )
     try:
         with PAYLOAD_PATH.open("r", encoding="utf-8") as fh:
             return json.load(fh)
     except json.JSONDecodeError as exc:
-        pytest.skip(f"dashboard_data.json is not valid JSON: {exc}")
+        pytest.skip(f"dashboard_data.json is not valid JSON: {exc}", allow_module_level=True)
 
 
 PAYLOAD = _load_payload()

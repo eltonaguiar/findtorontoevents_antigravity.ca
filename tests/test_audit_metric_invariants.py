@@ -49,13 +49,14 @@ def _load_payload():
     if not PAYLOAD_PATH.exists():
         pytest.skip(
             f"dashboard_data.json missing at {PAYLOAD_PATH} — run the audit "
-            "pipeline or pull origin/main copy before running locally."
+            "pipeline or pull origin/main copy before running locally.",
+            allow_module_level=True,
         )
     try:
         with PAYLOAD_PATH.open("r", encoding="utf-8") as fh:
             return json.load(fh)
     except json.JSONDecodeError as exc:  # pragma: no cover - defensive
-        pytest.skip(f"dashboard_data.json is not valid JSON: {exc}")
+        pytest.skip(f"dashboard_data.json is not valid JSON: {exc}", allow_module_level=True)
 
 
 PAYLOAD = _load_payload()
