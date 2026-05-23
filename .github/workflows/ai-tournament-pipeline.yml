@@ -146,6 +146,32 @@ jobs:
             echo "Copied $(basename $LATEST) → audit_dashboard/data/ai_tournament_picks_latest.json"
           fi
 
+      - name: Sync persona registry to database
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+        run: |
+          echo "=== Syncing persona registry ==="
+          python tools/ai_tournament/persona_registry.py || echo "::warning title=persona_registry::Persona registry sync failed"
+
+      - name: Generate research topics and leaderboard analytics
+        run: |
+          echo "=== Generating research topics ==="
+          python tools/ai_tournament/research_generator.py || echo "::warning title=research_generator::Research generation failed"
+          if [ -f 'audit_dashboard/data/research/ai_leaderboard_data.json' ]; then
+            echo "Leaderboard analytics data generated"
+            python3 -c "
+          import json
+          d = json.load(open('audit_dashboard/data/research/ai_leaderboard_data.json'))
+          print(f\"  {d['n_picks_total']} total picks | {d['n_models']} models | {d['n_personas']} personas | {d['n_asset_classes']} asset classes\")
+          for e in d.get('leaderboard_entries', [])[:5]:
+              print(f\"  {e['model_id']:20s}/{e['persona_id']:25s} picks={e['n_picks']} conf={e['avg_confidence']} ac={e['n_asset_classes']}\")
+          "
+          fi
+        continue-on-error: true
+
       - name: Verify output was produced
         run: |
           FAILED=0
@@ -170,6 +196,8 @@ jobs:
           git add data/ai_tournament/
           git add audit_dashboard/data/ai_tournament_picks_latest.json
           git add audit_dashboard/data/ai_tournament_leaderboard.json
+          git add audit_dashboard/data/research/ai_leaderboard_data.json
+          git add audit_dashboard/data/research/research_index_data.json
 
           git diff --cached --quiet && echo "No changes to commit" && exit 0
 
