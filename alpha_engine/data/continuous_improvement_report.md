@@ -1,20 +1,21 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-23T11:06:09.519202+00:00
+Generated: 2026-05-23T11:20:23.081653+00:00
 
 ## Topline
-- Open positions: 142
-- Price coverage: 97.89%
-- Open average PnL: 249.776%
-- Directional correctness: 58.99%
+- Open positions: 87
+- Price coverage: 100.0%
+- Open average PnL: 32.455%
+- Directional correctness: 57.47%
 - Regime: BEARISH
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] PEER_STALE: alpha_engine data is stale (83452.1m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (111745.2m old)
+- [HIGH] PEER_STALE: alpha_engine data is stale (83466.3m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (105.7m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (111759.4m old)
 - [HIGH] STRATEGY_DECAY: fx_smart_carry_trade_momentum is a rehabilitation candidate (WR 6.25%, PF 0.046, Sharpe -28.944)
-- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BTCUSDT ({'LONG': 7, 'SHORT': 4})
+- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BNBUSDT ({'LONG': 3, 'SHORT': 3})
 
 ## Recommendations
 - tighten_risk_and_reduce_gross_exposure: Choppy regime or drawdown breach warrants smaller sizing and tighter review cadence.
@@ -23,4 +24,4 @@ Generated: 2026-05-23T11:06:09.519202+00:00
 - route_bollinger_squeeze_to_mutation_or_inverse: bollinger_squeeze is under threshold. Follow the repo policy: mutate or invert instead of disabling. (`alpha_mutation_scan`)
 - route_clone_hl_copy_Auros_66M_to_mutation_or_inverse: clone_hl_copy_Auros_66M is under threshold. Follow the repo policy: mutate or invert instead of disabling. (`copytrader_mutation_extract`)
 - review_symbol_level_peer_conflicts: Conflicting peer directions can indicate regime disagreement or stale assumptions. (`refresh_portfolio_monitor`)
-- prefer_validated_leaders_for_next_cycle: Current leaders are ml_enhanced_ZKUSDT_4h_D_ensemble_stack, clone_hl_copy_PensionFund_24M. Bias new risk toward proven survivors.
+- prefer_validated_leaders_for_next_cycle: Current leaders are ml_enhanced_ZKUSDT_4h_D_ensemble_stack. Bias new risk toward proven survivors.
