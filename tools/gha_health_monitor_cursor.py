@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""Cursor GHA health monitor — checks every 15 min, appends to ___HELL_HEALTH_CURSOR.MD."""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+LOG_FILE = REPO_ROOT / "___HELL_HEALTH_CURSOR.MD"
+INTERVAL_SEC = 15 * 60
+SKIP_NEXT_FILE = REPO_ROOT / ".cursor" / "gha_health_skip_next.flag"
+STATE_FILE = REPO_ROOT / ".cursor" / "gha_health_state.json"
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def run_gh(args: list[str], timeout: int = 120) -> tuple[int, str, str]:
+    cmd = ["gh"] + args
+    try:
+        p = subprocess.run(
+            cmd,
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return p.returncode, p.stdout.strip(), p.stderr.strip()
+    except subprocess.TimeoutExpired:
+        return 1, "", "timeout"
+    except FileNotFoundError:
+        return 127, "", "gh CLI not found"
+
+
+def get_stale_failures() -> list[dict]:
+    jq = (
+        '[group_by(.workflowName)[] | sort_by(.createdAt) | last | '
+        'select(.status == "completed" and (.conclusion == "failure" or '
+        '.conclusion == "timed_out" or .conclusion == "startup_failure" or '
+        '.conclusion == "stale"))] | sort_by(.createdAt) | reverse'
+    )
+    code, out, err = run_gh(
+        ["run", "list", "--branch", "main", "--limit", "200", "--json",
+         "workflowName,status,conclusion,databaseId,createdAt,url", "--jq", jq]
+    )
+    if code != 0 or not out:
+        return []
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError:
+        return []
+
+
+def get_recent_runs(limit: int = 20) -> list[dict]:
+    code, out, _ = run_gh(
+        ["run", "list", "--branch", "main", "--limit", str(limit), "--json",
+         "workflowName,status,conclusion,createdAt,databaseId"]
+    )
+    if code != 0 or not out:
+        return []
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError:
+        return []
+
+
+def get_failed_log_tail(run_id: int, lines: int = 12) -> str:
+    code, out, err = run_gh(["run", "view", str(run_id), "--log-failed"], timeout=180)
+    if code != 0:
+        return err or out or "(no failed log available)"
+    tail = out.splitlines()[-lines:] if out else []
+    return "\n".join(tail) if tail else "(empty failed log)"
+
+
+def classify_failure(log_tail: str) -> str:
+    s = log_tail.lower()
+    if "access denied" in s and "ejaguiar1_" in s:
+        return "ENV — MySQL password/secret (check trailing newline in gh secret set)"
+    if "sync complete:" in s and "upserted" in s and "errors" in s:
+        return "BROKEN — sync mostly OK but exit 1 on dedup/upsert errors (see mysql_trading_sync.py)"
+    if "github pages" in s or "pages deployment" in s or "ensure github pages" in s:
+        return "ENV — GitHub Pages not enabled on repo"
+    if "name or service not known" in s or "gaierror" in s:
+        return "ENV — FTP_HOST / DNS misconfigured in secrets"
+    if "not connected" in s and "mput" in s:
+        return "ENV — FTP session dropped (mirror host creds or TLS)"
+    if "exit code 128" in s and "git" in s:
+        return "FLAKY — git push/rebase race during auto-commit"
+    if "invalid username or token" in s:
+        return "ENV — GH_PAT / token permissions for Pages deploy"
+    return "UNKNOWN — needs manual log review"
+
+
+def append_log(text: str) -> None:
+    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(text)
+        if not text.endswith("\n"):
+            f.write("\n")
+
+
+def write_header_if_missing() -> None:
+    if LOG_FILE.exists() and LOG_FILE.stat().st_size > 0:
+        return
+    append_log(
+        "# GITHUB ACTIONS HEALTH MONITOR — CURSOR\n\n"
+        f"**Monitoring started:** {utc_now()}  \n"
+        f"**Check interval:** 15 minutes  \n"
+        f"**Script:** `tools/gha_health_monitor_cursor.py`  \n"
+        f"**Context:** Post-major GitHub restore — tracking traction\n\n"
+        "---\n"
+    )
+
+
+def load_state() -> dict:
+    if not STATE_FILE.exists():
+        return {"seen_failures": {}, "skip_until": 0}
+    try:
+        return json.loads(STATE_FILE.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {"seen_failures": {}, "skip_until": 0}
+
+
+def save_state(state: dict) -> None:
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    STATE_FILE.write_text(json.dumps(state, indent=2))
+
+
+def one_check(deep_dive: bool = True) -> bool:
+    """Returns True if this check was skipped."""
+    write_header_if_missing()
+    state = load_state()
+    now_ts = time.time()
+
+    if SKIP_NEXT_FILE.exists():
+        SKIP_NEXT_FILE.unlink(missing_ok=True)
+        state["skip_until"] = 0
+        save_state(state)
+        append_log(f"\n## CHECK {utc_now()} — SKIPPED (flag cleared)\n")
+        append_log("_Previous check requested skip; resuming normal schedule._\n")
+        return True
+
+    if state.get("skip_until", 0) > now_ts:
+        append_log(
+            f"\n## CHECK {utc_now()} — SKIPPED (deep-dive cooldown)\n"
+            f"_Resume after {datetime.fromtimestamp(state['skip_until'], tz=timezone.utc).strftime('%H:%M UTC')}_\n"
+        )
+        return True
+
+    stale = get_stale_failures()
+    recent = get_recent_runs(15)
+    in_progress = [r for r in recent if r.get("status") != "completed"]
+    recent_fails = [r for r in recent if r.get("conclusion") == "failure"]
+
+    append_log(f"\n## CHECK {utc_now()}\n")
+    append_log(f"- **Stale failures** (latest run failed, no success since): **{len(stale)}**")
+    append_log(f"- **In progress:** {len(in_progress)}")
+    append_log(f"- **Recent failures** (last 15 runs): {len(recent_fails)}")
+
+    if not stale and not recent_fails:
+        append_log("\n✅ **All clear** — no stale failures detected.\n")
+        save_state(state)
+        return False
+
+    complicated = False
+    new_failures = []
+
+    for item in stale[:10]:
+        rid = str(item.get("databaseId", ""))
+        wf = item.get("workflowName", "?")
+        if state["seen_failures"].get(rid) == "deep_dived":
+            append_log(f"\n### (cached) {wf} — run `{rid}`")
+            continue
+        append_log(f"\n### ❌ {wf}")
+        append_log(f"- Run: [{rid}]({item.get('url', '')})")
+        append_log(f"- Failed at: {item.get('createdAt', '?')}")
+        if deep_dive:
+            log_tail = get_failed_log_tail(int(rid))
+            kind = classify_failure(log_tail)
+            append_log(f"- **Classification:** {kind}")
+            append_log("- **Log tail:**")
+            append_log("```")
+            append_log(log_tail[:2500])
+            append_log("```")
+            state["seen_failures"][rid] = "deep_dived"
+            new_failures.append(wf)
+            if kind.startswith("UNKNOWN") or "FLAKY" in kind:
+                complicated = True
+
+    if new_failures:
+        append_log(f"\n**New deep-dives this check:** {', '.join(new_failures)}")
+
+    if complicated and deep_dive:
+        state["skip_until"] = now_ts + INTERVAL_SEC
+        append_log(
+            f"\n⏭️ **Skipping next check** — complicated failure(s); cooldown 15 min until "
+            f"{datetime.fromtimestamp(state['skip_until'], tz=timezone.utc).strftime('%H:%M UTC')}.\n"
+        )
+
+    save_state(state)
+    return False
+
+
+def main() -> None:
+    once = "--once" in sys.argv
+    if once:
+        one_check(deep_dive=True)
+        return
+
+    append_log(f"\n---\n**Daemon loop started** {utc_now()} (every {INTERVAL_SEC // 60} min)\n")
+    while True:
+        try:
+            one_check(deep_dive=True)
+        except Exception as e:
+            append_log(f"\n## CHECK {utc_now()} — MONITOR ERROR\n```\n{e}\n```\n")
+        if once:
+            break
+        time.sleep(INTERVAL_SEC)
+
+
+if __name__ == "__main__":
+    main()
