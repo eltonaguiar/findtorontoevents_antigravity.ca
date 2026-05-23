@@ -773,6 +773,24 @@ def main() -> None:
                 all_picks.append(ep)
         print(f"[populate] Carried forward {len(existing_open)} open picks from previous days")
 
+    # Inject persona rationale into each pick
+    try:
+        from tools.ai_tournament.persona_registry import build_persona_rationale
+        for p in all_picks:
+            pid = p.get("persona_id", "")
+            if pid and not p.get("reason"):
+                p["reason"] = build_persona_rationale(
+                    pid, p.get("symbol", ""),
+                    p.get("direction", "LONG"),
+                    p.get("confidence", 0.5)
+                )
+            if not p.get("reason") and p.get("thesis"):
+                p["reason"] = f"Entry thesis: {p['thesis']} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {p.get('confidence', 0.5):.0%}"
+    except ImportError:
+        for p in all_picks:
+            if not p.get("reason") and p.get("thesis"):
+                p["reason"] = f"Thesis: {p['thesis']} | Confidence: {p.get('confidence', 0.5):.0%}"
+
     # Write output
     out_path = pick_out_path()
     out_path.write_text(json.dumps(all_picks, indent=2))
