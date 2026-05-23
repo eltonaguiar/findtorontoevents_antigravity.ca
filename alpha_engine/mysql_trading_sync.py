@@ -560,6 +560,7 @@ def sync(dry_run=False):
 
     # Upsert rows in batches
     inserted = 0
+    duplicates = 0
     errors = 0
     batch_size = 50
 
@@ -573,7 +574,8 @@ def sync(dry_run=False):
                 errno = getattr(e, "args", [None])[0]
                 # 1062 = duplicate on uq_trading_picks_dedup — row already stored under another id
                 if errno == 1062:
-                    if errors <= 5:
+                    duplicates += 1
+                    if duplicates <= 5:
                         log_info(f"Dedup skip for {row['id'][:50]}: already in DB")
                     continue
                 errors += 1
@@ -588,7 +590,7 @@ def sync(dry_run=False):
     # Summary
     print()
     print("-" * 60)
-    log_ok(f"Sync complete: {inserted} upserted, {errors} errors")
+    log_ok(f"Sync complete: {inserted} upserted, {duplicates} dedup skipped, {errors} errors")
 
     # Quick count verification
     try:
