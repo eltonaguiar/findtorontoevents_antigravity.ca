@@ -30,6 +30,20 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Fetch dashboard_data.json from production
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json \
+            || {
+              echo "::warning::dashboard_data.json fetch from production failed; trying audit_trail mirror"
+              mkdir -p audit_trail/data
+              curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
+                -o audit_trail/data/dashboard_payload.json \
+                || echo "::warning::both data sources unreachable"
+            }
+          ls -la audit_dashboard/data/dashboard_data.json 2>&1 || true
+
       - name: Generate freshness report (warn-only)
         run: |
           python tools/generate_asset_class_freshness_report.py \
