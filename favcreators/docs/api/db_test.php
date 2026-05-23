@@ -24,15 +24,19 @@ function read_env_key($key) {
     return null;
 }
 
-$host = read_env_key('MYSQL_HOST') ?: 'localhost';
-$user = read_env_key('MYSQL_USER') ?: 'ejaguiar1_favcreators';
-$pass = read_env_key('MYSQL_PASSWORD') ?: '';
-$db   = read_env_key('MYSQL_DATABASE') ?: 'ejaguiar1_favcreators';
+$_h = read_env_key('MYSQL_HOST');
+$host = ($_h !== null && $_h !== '') ? $_h : 'localhost';
+$_u = read_env_key('MYSQL_USER');
+$user = ($_u !== null && $_u !== '') ? $_u : 'ejaguiar1_favcreators';
+$_p = read_env_key('MYSQL_PASSWORD');
+$pass = ($_p !== null) ? $_p : '';
+$_d = read_env_key('MYSQL_DATABASE');
+$db   = ($_d !== null && $_d !== '') ? $_d : 'ejaguiar1_favcreators';
 
 $conn = @new mysqli($host, $user, $pass, $db);
 $err  = $conn ? $conn->connect_error : 'constructor returned null';
 
-echo json_encode([
+echo json_encode(array(
     'php'        => PHP_VERSION,
     'env_exists' => $env_exists,
     'env_readable'=> $env_readable,
@@ -43,4 +47,4 @@ echo json_encode([
     'pass_first3'=> $pass ? substr($pass, 0, 3) . '...' : '(empty)',
     'connect_err'=> $err,
     'ok'         => !$err,
-]);
+));

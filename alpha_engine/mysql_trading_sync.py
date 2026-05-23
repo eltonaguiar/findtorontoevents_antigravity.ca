@@ -570,6 +570,12 @@ def sync(dry_run=False):
                 cursor.execute(UPSERT_SQL, row)
                 inserted += 1
             except pymysql.Error as e:
+                errno = getattr(e, "args", [None])[0]
+                # 1062 = duplicate on uq_trading_picks_dedup — row already stored under another id
+                if errno == 1062:
+                    if errors <= 5:
+                        log_info(f"Dedup skip for {row['id'][:50]}: already in DB")
+                    continue
                 errors += 1
                 if errors <= 5:
                     log_err(f"Upsert failed for {row['id'][:50]}: {e}")
