@@ -52,6 +52,32 @@ Sub-prompts:
 - Patent assignments → predict M&A or partnership 30-60 days ahead
 - Government contract awards (SAM.gov) → small-cap winner signals
 
+#### IDEA-E Analysis (2026-05-24 — 2-engine swarm)
+
+**Engines:** DeepSeek V3.2 + Cerebras. Both reviewed the same codebase context (existing , ,  VT Restatement Short,  EDGAR stubs, May 14 swarm scoring at 23/100 rank 7).
+
+**Verdict: 4.5/10 composite — niche diversification play, not a primary alpha source.** Engines disagreed sharply on feasibility (DeepSeek 2/10 vs Cerebras 7/10), but converged on one point: the full vision (USPTO + SAM + PACER + Panjiva) is over-engineering. MVP-only is the right first step.
+
+| Criterion | DeepSeek | Cerebras | Composite |
+|---|---|---|---|
+| Gap fit | 3/10 (no gap — Form 4/13D already cover corporate catalysts) | 7/10 (orthogonal gap — partnership ≠ insider buy/sell) | **5/10** |
+| Realism / signal count | 2/10 (50-100 actionable/yr from 80K 8-Ks = 0.1%) | 6/10 (4-6/wk true partnerships >00M cap) | **4/10** |
+| Data accessibility | 5/10 (free but noisy; PACER adds 0-50/mo) | 8/10 (EDGAR FTS API + SEC 13D/G + USPTO all zero-cost) | **6.5/10** |
+| Integration feasibility | 4/10 (~400 loc, no entry/exit/backtest framework) | 7/10 (~150 loc MVP, reuse EdgarFtsClient, plug into vt_partner_strategies) | **5.5/10** |
+| Priority vs EDGE_CRITERIA | 1/10 (behind confidence fix, regime audit, FOREX kill) | 4/10 (nice-to-have diversification post-core fixes) | **2.5/10** |
+| **Overall** | **2/10** | **7/10** | **~4.5/10** |
+
+**DeepSeek's core objection (valid):** Partnership announcements are PR, not capital commitment. Insider buys (Form 4) and activist filings (13D) show people putting money where their mouth is. A press release about a "strategic partnership" has no skin in the game — the 95%+ false-positive rate is structural, not fixable with better keyword filters.
+
+**Cerebras's core defense (also valid):** The edge is *speed of dissemination*, not depth of signal. A Samsung-supplier 8-K that moves the supplier stock 3-5% in the first 2 hours is a real phenomenon (documented in academic event-study literature). The question is whether a keyword scanner can beat the market's NLP-parsing latency on a /usr/bin/bash budget. Probably not — but at ~150 lines and zero new dependencies, it's a cheap experiment.
+
+**Salvageable elements (for future Sprint if priority rises):**
+- **8-K keyword scanner MVP (~80 lines):**  reusing the  pattern from . Query EDGAR 8-K FTS API for  with a 7-day lookback. Regex-filter for company names >00M market cap. Emit  to . Paper-trade for 30 days, measure realized PF.
+- **Discard:** USPTO patent assignment scraper, SAM.gov contract awards, PACER docket monitoring, Panjiva bills of lading — all require separate scrapers, auth, or paid tiers with unproven signal value. Do not build until the 8-K MVP proves PF>1.2 after transaction costs.
+- **Estimated effort:** 2-4 hours for MVP. Accept/Reject criterion: if 30-day paper-trade PF < 1.0 OR signal count < 10, kill the idea permanently.
+
+**Decision: DEFER — do not implement now.** Priority is below Sprint 1 (confidence fix + regime audit + FOREX kill) and below higher-scoring ideas (IDEA-A asset-class criteria research at 8/10 from May 14 swarm, IDEA-H Polymarket at 6/10). Revisit only if a future Sprint has slack and the core confidence/regime/FOREX pipeline is stable.
+
 ### IDEA-F: Chinese / Hong Kong markets
 
 HSI / SSE / SZSE indices, ADR universe (BABA, JD, BIDU, PDD), KraneShares ETFs (KWEB, KBA, KGRN). Trade A-share-ADR premium/discount as stat-arb. Cross-listed pairs.
