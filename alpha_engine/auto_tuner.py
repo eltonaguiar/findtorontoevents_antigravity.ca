@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import DATA_DIR
 from database import SQLiteStore
 from drawdown_tracker import compute_all_drawdowns
+from hedge_fund_quality_gate import PORTFOLIO_MAX_DRAWDOWN_PCT
 from ml_ranker import MLSignalRanker
 
 # ---------------------------------------------------------------------------
@@ -818,7 +819,10 @@ def get_boost_factors() -> dict[str, float]:
 
 CIRCUIT_BREAKERS = {
     "consecutive_losing_weeks": 3,       # 3 losing weeks in a row → pause all
-    "max_system_drawdown_pct": -15.0,    # System-wide DD > 15% → pause all for 24h (was -25%)
+    # System-wide DD hard cap — reads PORTFOLIO_MAX_DRAWDOWN_PCT from
+    # hedge_fund_quality_gate (single source of truth, env-overridable via
+    # HF_GATE_PORTFOLIO_MAX_DD). Convert fraction (0.15) → negative pct (-15.0).
+    "max_system_drawdown_pct": -PORTFOLIO_MAX_DRAWDOWN_PCT * 100,
     "min_system_win_rate": 0.40,         # Overall WR < 40% over last 50 trades → pause all
     "max_single_strategy_loss": -500,    # Any strategy loses > $500 → disable that strategy
     "halt_duration_hours": 24,           # How long to pause after circuit breaker trips
