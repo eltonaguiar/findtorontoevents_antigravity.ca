@@ -846,6 +846,61 @@ def main() -> None:
                 except Exception:
                     p["reason"] = str(p.get("thesis", ""))[:200]
 
+    # ── Position sizing: Kelly criterion + risk budgeting ──
+    try:
+        # Look up historical persona performance from DB for Kelly calc
+        persona_stats = {}
+        try:
+            import pymysql
+            conn = pymysql.connect(host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
+                                   user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
+                                   password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
+                                   database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
+                                   port=3306, connect_timeout=5)
+            cur = conn.cursor()
+            cur.execute("SELECT persona_id, ROUND(AVG(CASE WHEN status='WIN' THEN 1.0 ELSE 0 END), 4) as wr, ROUND(AVG(pnl_pct), 4) as avg_pnl FROM tournament_picks WHERE status IN ('WIN','LOSS') AND persona_id != '' GROUP BY persona_id")
+            for row in cur.fetchall():
+                persona_stats[row[0]] = {'wr': float(row[1]), 'avg_pnl': float(row[2] or 0)}
+            conn.close()
+        except Exception:
+            pass  # Continue without DB stats
+
+        for p in all_picks:
+            pid = p.get("persona_id", "")
+            conf = p.get("confidence", 0.5)
+            if isinstance(conf, str):
+                conf = {"HIGH": 0.8, "MEDIUM": 0.5, "LOW": 0.2}.get(conf, 0.5)
+            else:
+                conf = float(conf)
+
+            # Kelly formula: f* = (p*b - q) / b where p=win prob, q=loss prob, b=RR
+            entry = float(p.get("entry_price", 1))
+            tp = float(p.get("take_profit", entry * 1.1))
+            sl = float(p.get("stop_loss", entry * 0.95))
+            rr = abs((tp - entry) / (entry - sl)) if abs(entry - sl) > 0 else 1.0
+
+            # Use historical WR if available, else confidence as win prob
+            if pid in persona_stats:
+                p_win = persona_stats[pid]['wr']
+            else:
+                p_win = conf
+
+            q_loss = 1.0 - p_win
+            kelly = (p_win * rr - q_loss) / rr if rr > 0 else 0
+            # Cap at 25% (quarter-Kelly for safety)
+            kelly = max(0, min(0.25, kelly * 0.25))
+
+            # Risk budget: % of portfolio at risk per trade
+            risk_per_trade = kelly * 2.0  # Double Kelly for risk budget (aggressive but capped)
+            risk_per_trade = min(risk_per_trade, 0.05)  # Never more than 5%
+
+            p["kelly_pct"] = round(kelly * 100, 1)
+            p["risk_budget_pct"] = round(risk_per_trade * 100, 1)
+            p["reward_risk_ratio"] = round(rr, 2)
+            p["position_size_suggestion"] = f"Kelly={kelly*100:.1f}% | Risk={risk_per_trade*100:.1f}% | RR={rr:.1f}"
+    except Exception as e:
+        print(f"[populate] Position sizing failed (non-fatal): {e}")
+
     # Write output
     out_path = pick_out_path()
     out_path.write_text(json.dumps(all_picks, indent=2))

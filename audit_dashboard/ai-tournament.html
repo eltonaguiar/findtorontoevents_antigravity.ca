@@ -156,6 +156,10 @@
 
 <!-- LEADERBOARD -->
 <h2>Leaderboard — Forward-Test Only <span class="small">(min n=30 to rank; CI-adjusted score)</span></h2>
+<div style="margin-bottom:6px">
+  <button onclick="toggleLbEli5()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:#e6e6f0;font-size:10px;padding:2px 10px;cursor:pointer" id="lbEli5Btn">[?] ELI5</button>
+</div>
+<div id="lbEli5" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.6"></div>
 
 <!-- TIME WINDOW FILTER TABS -->
 <div class="time-tabs" id="time-tabs">
@@ -188,6 +192,10 @@
 
 <!-- MODEL SUMMARY TABLE -->
 <h2>Model Summary — All-Time Performance</h2>
+<div style="margin-bottom:6px">
+  <button onclick="toggleMsEli5()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:#e6e6f0;font-size:10px;padding:2px 10px;cursor:pointer" id="msEli5Btn">[?] ELI5</button>
+</div>
+<div id="msEli5" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.6"></div>
 <div id="model-summary-count" style="margin-bottom:8px;font-size:12px;color:#a0a0b0">Loading...</div>
 <div style="overflow-x:auto">
 <table class="lb">
@@ -205,21 +213,18 @@
   <table class="lb">
     <thead><tr><th>Model</th><th>Provider</th><th>API key env var</th><th>Asset classes</th><th>Status</th></tr></thead>
     <tbody>
-      <tr><td class="model-name">Mercury</td><td>Inception Labs (via OpenRouter)</td><td><code>OPENROUTER_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
-      <tr><td class="model-name">Llama-4-Scout</td><td>Cerebras</td><td><code>CEREBRAS_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
-      <tr><td class="model-name">Ring-2.6-1T</td><td>Inclusion AI (via OpenRouter)</td><td><code>OPENROUTER_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
-      <tr><td class="model-name">Grok-3</td><td>xAI</td><td><code>XAI_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
-      <tr><td class="model-name">DeepSeek-R1</td><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
-      <tr><td class="model-name">GPT-4o</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
-      <tr><td class="model-name">Claude Opus 4.7</td><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PROMPTING</span></td></tr>
-      <tr><td class="model-name">Gemini 2.5 Pro</td><td>Google</td><td><code>GOOGLE_AI_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING</span></td></tr>
-      <tr><td class="model-name">GLM-4.7-flash</td><td>OFOX/ZhipuAI</td><td><code>OFOX_AI_KEY</code></td><td>CRYPTO, EQUITY</td><td><span class="badge b-pending">PENDING</span></td></tr>
-      <tr><td class="model-name">Mistral Large</td><td>Mistral</td><td><code>MISTRAL_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING</span></td></tr>
-      <tr><td class="model-name">Command R+</td><td>Cohere</td><td><code>COHERE_API_KEY</code></td><td>All 6</td><td><span class="badge b-pending">PENDING</span></td></tr>
+      <tr><td class="model-name">DeepSeek V4</td><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>✅ 7 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
+      <tr><td class="model-name">GPT-4o-mini</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>✅ 4 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Llama-4-Scout</td><td>Cerebras</td><td><code>CEREBRAS_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Grok-3</td><td>xAI</td><td><code>XAI_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Cursor Agent</td><td>Antrhopic</td><td><code>ANTHROPIC_API_KEY</code></td><td>✅ 6 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Ring-2.6-1T</td><td>Inclusion AI</td><td><code>OPENROUTER_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Mercury V2</td><td>Inception Labs</td><td><code>OPENROUTER_API_KEY</code></td><td>✅ 8 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Gemini 2.5 Pro</td><td>Google</td><td><code>GEMINI_FREE_KEY</code></td><td>✅ 4 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
+      <tr><td class="model-name">Mistral Large</td><td>Mistral</td><td><code>MISTRAL_API_KEY</code></td><td>⏳ PENDING</td><td><span class="badge b-pending">PENDING</span></td></tr>
+      <tr><td class="model-name">Claude Opus</td><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
+      <tr><td class="model-name">GPT-5</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
     </tbody>
-  </table>
-  </div>
-</details>
 
 <!-- PRE-REGISTERED UNIVERSE -->
 <div class="universe-panel">
@@ -249,6 +254,14 @@
     <div class="universe-class">
       <strong>BOND</strong>
       <span>US10Y (^TNX), US30Y (^TYX)</span>
+    </div>
+    <div class="universe-class">
+      <strong>PENNY / CHEAP STOCKS</strong>
+      <span>KULR, LODE, CTM, MVST, RGTI, QBTS, IONQ, FFIE, ASTS, GSAT, RKLB, WULF, CLSK, MARA (sub-$5 stocks &amp; micro-caps)</span>
+    </div>
+    <div class="universe-class">
+      <strong>FUTURES</strong>
+      <span>ES=F (S&amp;P e-mini), NQ=F (Nasdaq), YM=F (Dow), RTY=F (Russell), CL=F (crude), NG=F (nat gas), GC=F (gold), SI=F (silver), HG=F (copper)</span>
     </div>
   </div>
 </div>
@@ -682,6 +695,13 @@ async function loadPicks() {
     container.innerHTML = html;
   } catch(e) { /* keep placeholder */ }
 }
+
+// ── ELI5 toggles ──
+var _lbEli5 = false, _msEli5 = false;
+function toggleLbEli5() { _lbEli5 = !_lbEli5; var d = document.getElementById('lbEli5'); d.style.display = _lbEli5?'block':'none'; d.innerHTML = _lbEli5?lbEli5Content():''; document.getElementById('lbEli5Btn').textContent = _lbEli5?'[-] ELI5':'[?] ELI5'; }
+function toggleMsEli5() { _msEli5 = !_msEli5; var d = document.getElementById('msEli5'); d.style.display = _msEli5?'block':'none'; d.innerHTML = _msEli5?msEli5Content():''; document.getElementById('msEli5Btn').textContent = _msEli5?'[-] ELI5':'[?] ELI5'; }
+function lbEli5Content() { return '<div><b>How to read the leaderboard</b><br><br>Think of a video game high-score list. Each AI model is a player trying to make good stock picks.<br><br><b>WR</b> = Win Rate — what percentage of their bets win? 55% means they win 55 out of 100 bets.<br><b>PF</b> = Profit Factor — how much do they make per dollar lost? 2.0 means they make $2 for every $1 lost.<br><b>Score</b> = WR x PF, adjusted for luck (statistical confidence). Higher is better.<br><br>Models need at least <b>30 resolved picks</b> to appear on the leaderboard. Until then they\'re in "BUILDING" mode — still gathering data. The system automatically penalizes models with too few picks so a lucky 3-for-3 start doesn\'t fool anyone.<br><br><b>Min n=30:</b> You need at least 30 finished bets before we take your score seriously. This prevents luck from looking like skill.</div>'; }
+function msEli5Content() { return '<div><b>What do these numbers mean?</b><br><br>Every row is one AI model or trading strategy that has submitted picks to the tournament.<br><br><b>Picks</b> = Total bets made (open + resolved combined).<br><b>WR</b> = Win Rate — how often the pick won when resolved (%).<br><b>Resolved</b> = Bets that have finished — either hit TP (win), SL (loss), or expired.<br><b>W/L</b> = Wins vs Losses count.<br><b>Avg PnL</b> = Average profit or loss per resolved pick.<br><b>Last Pick</b> = When the model last submitted a pick (in EST).<br><b>Personas</b> = How many different strategies/personalities this model uses.<br><b>Classes</b> = How many asset classes this model covers (crypto, stocks, forex, etc.).<br><br><span style="color:#22c55e">Green</span> WR = doing well. <span style="color:#ef4444">Red</span> = needs improvement. Grey = not enough data yet.</div>'; }
 
 // ── Init ──
 loadPicksAndLeaderboard().then(() => { loadPicks(); loadModelSummary(); });
