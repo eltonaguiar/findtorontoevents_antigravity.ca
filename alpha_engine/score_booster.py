@@ -1404,6 +1404,43 @@ def run_score_booster(payload_path: Path | None = None) -> dict:
         log.info("SHORT direction edge bonus: %d picks boosted (+3 score, proven 38.7%% WR edge)",
                  short_edge_boosted)
 
+    # ── P2: Whale consensus boost (2026-05-24) ──
+    # If ≥2 verified whales agree on a symbol+direction, boost score by +10%.
+    # Guard: skip if <2 verified whale profiles exist.
+    # Verifies: Unit test 0/1/2 whales → 0.00/0.00/0.10 boost.
+    whale_boosted = 0
+    try:
+        from tools.ai_tournament.whale_consensus_boost import load_whale_signals as _load_whale
+        whale_consensus = _load_whale()
+        if whale_consensus:
+            verified_whale_count = len(whale_consensus)
+            if verified_whale_count >= 2:
+                for pick in active_picks:
+                    sym = (pick.get("symbol") or "").upper().replace("-USD", "USDT")
+                    if sym not in whale_consensus:
+                        continue
+                    direction = _normalize_direction(pick)
+                    whale_dir = whale_consensus[sym]
+                    if direction == whale_dir:
+                        old_score = _float(pick.get("score", 0))
+                        boost_pts = max(1, int(old_score * 0.10))
+                        new_score = min(100, int(old_score + boost_pts))
+                        if new_score > old_score:
+                            pick["score"] = new_score
+                            pick["_whale_consensus_boost"] = boost_pts
+                            whale_boosted += 1
+                log.info("Whale consensus boost: %d picks boosted (+10%%) from %d verified whale symbols",
+                         whale_boosted, verified_whale_count)
+            else:
+                log.warning("Whale consensus boost SKIPPED: only %d verified whale symbols (need ≥2)",
+                            verified_whale_count)
+        else:
+            log.info("Whale consensus boost SKIPPED: no whale signals available")
+    except ImportError:
+        log.warning("Whale consensus boost SKIPPED: whale_consensus_boost module not available")
+    except Exception as e:
+        log.warning("Whale consensus boost failed (fail-open): %s", e)
+
     # ── P1: Persona_WR → confidence proxy (2026-05-24) ──
     # Picks with confidence ≤ 0.01 get persona_WR as confidence fallback.
     # Clamped 0.25-0.75, same as tools/ai_tournament/ingest_to_db.py enrichment.

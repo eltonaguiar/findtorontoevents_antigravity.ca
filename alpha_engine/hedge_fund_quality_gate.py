@@ -121,6 +121,20 @@ ETF_BANNED_SYMBOLS = frozenset({"IWM", "GLD"})
 # ───────────────── BOND rules ─────────────────
 # Sample too small (n=17) for structural claims. Allow all.
 
+# ───────────────── PENNY rules ─────────────────
+# 2026-05-24: Paper-only scaffold. n=0 resolved. Confidence floor of 0.80
+# until n≥30 — penny stocks have inherent adverse selection and wide spreads.
+# Banned symbols/sources will be populated as picks start resolving.
+PENNY_BANNED_SYMBOLS: frozenset = frozenset()
+PENNY_BANNED_STRATEGIES: frozenset = frozenset()
+PENNY_CONFIDENCE_MIN = float(os.environ.get("HF_GATE_PENNY_CONFIDENCE_MIN", "0.80"))
+
+# ───────────────── FUTURES rules ─────────────────
+# 2026-05-24: Paper-only scaffold. n=0 resolved.
+# futures_momentum blocked per quarantine_manifest (class-wide).
+FUTURES_BANNED_SYMBOLS: frozenset = frozenset()
+FUTURES_BANNED_STRATEGIES = frozenset({"futures_momentum"})
+
 # ───────────────── ML-score rules (cross-AC, ML-sourced picks only) ─────────────────
 # Derived from 486 RESOLVED Claude ML picks in updates/data/claude_ml_picks.json.
 # Only the mid band [0.35, 0.50) was profitable: n=47, WR 57%, PF 2.13, +96% pnl.
@@ -166,7 +180,10 @@ ML_SOURCE_SYSTEMS = frozenset({
 
 def _ac(pick: dict[str, Any]) -> str:
     ac = str(pick.get("asset_class") or pick.get("category") or "").upper().strip()
-    return {"ETFS": "ETF", "BONDS": "BOND", "COMMODITIES": "COMMODITY", "STOCKS": "EQUITY"}.get(ac, ac)
+    return {
+        "ETFS": "ETF", "BONDS": "BOND", "COMMODITIES": "COMMODITY",
+        "STOCKS": "EQUITY", "PENNY_STOCK": "PENNY", "PENNY_STOCKS": "PENNY",
+    }.get(ac, ac)
 
 
 def _direction(pick: dict[str, Any]) -> str:
@@ -311,6 +328,26 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
     elif ac == "ETF":
         if sym in ETF_BANNED_SYMBOLS:
             return False, f"HF_GATE: ETF banned symbol {sym} (PF < 0.85)"
+
+    elif ac in ("PENNY", "PENNY_STOCK"):
+        if sym in PENNY_BANNED_SYMBOLS:
+            return False, f"HF_GATE: PENNY banned symbol {sym}"
+        if strat in PENNY_BANNED_STRATEGIES:
+            return False, f"HF_GATE: PENNY banned strategy {strat}"
+        if conf is not None and conf < PENNY_CONFIDENCE_MIN:
+            return False, (
+                f"HF_GATE: PENNY confidence {conf:.3f} < {PENNY_CONFIDENCE_MIN:.2f} "
+                f"(paper-only scaffold; n=0 resolved — floor will relax at n≥30)"
+            )
+
+    elif ac == "FUTURES":
+        if sym in FUTURES_BANNED_SYMBOLS:
+            return False, f"HF_GATE: FUTURES banned symbol {sym}"
+        if strat in FUTURES_BANNED_STRATEGIES:
+            return False, (
+                f"HF_GATE: FUTURES banned strategy {strat} "
+                f"(blocked per quarantine_manifest; n=0 resolved)"
+            )
 
     # ── Cross-AC ML check: only runs on picks carrying a pump_probability ──
     if _is_ml_source(pick):
@@ -474,5 +511,7 @@ __all__ = [
     "FOREX_BANNED_SYMBOLS", "FOREX_BANNED_STRATEGIES",
     "FOREX_CONFIDENCE_REJECT_BANDS",
     "ETF_BANNED_SYMBOLS",
+    "PENNY_BANNED_SYMBOLS", "PENNY_BANNED_STRATEGIES", "PENNY_CONFIDENCE_MIN",
+    "FUTURES_BANNED_SYMBOLS", "FUTURES_BANNED_STRATEGIES",
     "ML_PUMP_PROB_MIN", "ML_PUMP_PROB_MAX", "ML_SOURCE_SYSTEMS",
 ]

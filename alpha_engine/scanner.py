@@ -141,6 +141,13 @@ from database import SQLiteStore
 from elite_scorer import compute_elite_score
 from ml_ranker import MLSignalRanker
 from position_sizing import get_position_size, get_kelly_fraction
+# P3: Regime-aware position sizing (5 rules -- 2026-05-24)
+try:
+    from alpha_engine.regime_position_sizer import compute_position_size as compute_regime_position_size
+    _HAS_REGIME_POSITION_SIZER = True
+except ImportError:
+    compute_regime_position_size = None
+    _HAS_REGIME_POSITION_SIZER = False
 try:
     from orderbook_strategies import get_orderbook_scores_batch
 except ImportError:
@@ -3696,6 +3703,53 @@ def open_new_picks(signals: list[dict], db: SQLiteStore,
             open_positions=open_picks_all,
             current_crypto_allocation=_crypto_alloc,
         )
+
+        # P3: Regime-aware position sizing (5 rules -- 2026-05-24)
+        if _HAS_REGIME_POSITION_SIZER and compute_regime_position_size is not None:
+            try:
+                _asset_class = signal.get("category", signal.get("asset_class", "crypto")).upper()
+                _direction = signal.get("signal_type", signal.get("direction", "BUY"))
+                _atr_val = float(kelly_sizing.get("atr_adjustment", 0) or 0)
+                _price = float(signal.get("entry_price", 0))
+                _base_risk = float(kelly_sizing.get("kelly_fraction", 0.02))
+                _regime = (context or {}).get("regime_sentinel", {}).get("regime",
+                           (context or {}).get("hmm_regime", {}).get("aggregate", {}).get("market_regime"))
+                _active = open_picks_all or []
+                _p3_sizing = compute_regime_position_size(
+                    symbol=symbol,
+                    direction=_direction,
+                    asset_class=_asset_class,
+                    entry_price=_price,
+                    atr=_atr_val,
+                    portfolio_value=STARTING_CAPITAL,
+                    base_risk_pct=_base_risk * 100,
+                    active_positions=_active,
+                    current_total_exposure_pct=current_exposure,
+                    regime=_regime,
+                )
+                # Merge P3 results into kelly_sizing for downstream consumption
+                kelly_sizing["p3_position_size_pct"] = _p3_sizing.get("position_size_pct", 0)
+                kelly_sizing["p3_position_size_usd"] = _p3_sizing.get("position_size_usd", 0)
+                kelly_sizing["p3_regime_multiplier"] = _p3_sizing.get("regime_multiplier", 1.0)
+                kelly_sizing["p3_correlation_penalty"] = _p3_sizing.get("correlation_penalty", 1.0)
+                kelly_sizing["p3_portfolio_heat_scale"] = _p3_sizing.get("portfolio_heat_scale", 1.0)
+                kelly_sizing["p3_stop_distance_pct"] = _p3_sizing.get("stop_distance_pct", 0.0)
+                kelly_sizing["p3_rules_applied"] = _p3_sizing.get("rules_applied", [])
+                kelly_sizing["p3_regime"] = _p3_sizing.get("regime", "unknown")
+                # Apply P3 sizing to allocation if available
+                _p3_pct = _p3_sizing.get("position_size_pct", 0)
+                if _p3_pct > 0:
+                    _old_alloc = allocation
+                    allocation = round(STARTING_CAPITAL * _p3_pct / 100, 2)
+                    _delta_pct = abs(allocation - _old_alloc) / max(_old_alloc, 1) * 100
+                    if _delta_pct > 20:
+                        logger.info(
+                            "[P3_sizing] %s allocation %s → %s (Δ%.0f%%, rules=%s)",
+                            symbol, round(_old_alloc, 2), round(allocation, 2),
+                            _delta_pct, _p3_sizing.get("rules_applied", [])
+                        )
+            except Exception:
+                pass  # fail-open: P3 sizing is additive, not blocking
 
         # Apply Regime Sentinel risk multiplier to position sizing
         sentinel_data = (context or {}).get("regime_sentinel", {})

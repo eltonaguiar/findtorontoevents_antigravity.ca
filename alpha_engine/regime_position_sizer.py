@@ -317,6 +317,201 @@ def classify_regime(candles: list[dict]) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# P3: Position Sizing Rules (2026-05-24) -- 5 rules
+# ---------------------------------------------------------------------------
+
+# Rule 1: Regime-based size scaling
+REGIME_SIZE_SCALING: dict[str, float] = {
+    "TRENDING_UP":   1.00,   # Full size — trend is your friend
+    "TRENDING_DOWN": 0.80,   # Slightly reduced — counter-trend risk for longs
+    "CHOPPY":        0.50,   # Half size — no directional edge
+    "VOLATILE":      0.25,   # Quarter size — whipsaw risk extreme
+}
+
+# Rule 2: Per-symbol maximum allocation (% of portfolio)
+MAX_ALLOCATION_PER_SYMBOL: dict[str, float] = {
+    "CRYPTO":    0.05,   # 5% max per crypto symbol
+    "FOREX":     0.03,   # 3% max per forex pair
+    "EQUITY":    0.04,   # 4% max per equity
+    "COMMODITY": 0.04,
+    "FUTURES":   0.03,
+    "ETF":       0.05,
+    "BOND":      0.06,
+    "DEFAULT":   0.03,
+}
+
+# Rule 3: Correlation group penalty — reduce size when correlated positions exist
+# Grouped by asset class + direction; same group = -25% size per additional position
+CORRELATION_GROUP_PENALTY: float = 0.25  # -25% per correlated position beyond first
+
+# Rule 4: Portfolio heat cap — max total exposure before reducing all sizes
+MAX_TOTAL_EXPOSURE_PCT: float = 0.25  # 25% max total portfolio exposure
+
+# Rule 5: ATR-based minimum stop distance (% of price)
+ATR_STOP_MULTIPLIER: float = 1.5  # Stop = 1.5x ATR from entry
+
+
+def get_regime_size_multiplier(regime: str) -> float:
+    """Rule 1: Return position size multiplier for a given regime."""
+    return REGIME_SIZE_SCALING.get(regime, 0.50)
+
+
+def get_max_allocation_pct(asset_class: str) -> float:
+    """Rule 2: Return maximum allocation % for a given asset class."""
+    return MAX_ALLOCATION_PER_SYMBOL.get(asset_class.upper(),
+                                          MAX_ALLOCATION_PER_SYMBOL["DEFAULT"])
+
+
+def compute_atr_stop_distance(atr: float, price: float) -> float:
+    """Rule 5: Compute minimum stop distance in price units from ATR."""
+    if price <= 0 or atr <= 0:
+        return 0.0
+    return ATR_STOP_MULTIPLIER * atr
+
+
+def compute_correlation_penalty(
+    symbol: str,
+    direction: str,
+    asset_class: str,
+    active_positions: list[dict],
+) -> float:
+    """Rule 3: Compute size penalty based on correlated active positions.
+
+    Returns a multiplier in [0.0, 1.0] — 1.0 = no penalty, lower = more reduction.
+    Each additional position in the same asset_class+direction group reduces
+    size by CORRELATION_GROUP_PENALTY (25%).
+    """
+    d = direction.upper().strip()
+    if d in ("BUY", "LONG"):
+        d = "LONG"
+    elif d in ("SELL", "SHORT"):
+        d = "SHORT"
+    else:
+        return 1.0
+
+    ac = asset_class.upper().strip()
+    same_group = 0
+    for pos in (active_positions or []):
+        pos_ac = str(pos.get("asset_class", "")).upper().strip()
+        pos_dir = str(pos.get("direction", pos.get("signal_type", ""))).upper().strip()
+        if pos_dir in ("BUY", "LONG"):
+            pos_dir = "LONG"
+        elif pos_dir in ("SELL", "SHORT"):
+            pos_dir = "SHORT"
+        if pos_ac == ac and pos_dir == d:
+            same_group += 1
+
+    if same_group <= 1:
+        return 1.0
+    # Each additional correlated position beyond the first reduces size by 25%
+    penalty = max(0.0, 1.0 - (same_group - 1) * CORRELATION_GROUP_PENALTY)
+    return penalty
+
+
+def check_portfolio_heat(
+    current_total_exposure_pct: float,
+    max_exposure: float = MAX_TOTAL_EXPOSURE_PCT,
+) -> tuple[bool, float]:
+    """Rule 4: Check if portfolio is overheating and return scale-down factor.
+
+    Returns (is_overheated, scale_factor).
+    If overheated, scale_factor < 1.0 reduces all new position sizes.
+    """
+    if current_total_exposure_pct <= max_exposure:
+        return False, 1.0
+    scale = max_exposure / max(current_total_exposure_pct, 0.001)
+    scale = max(0.10, min(1.0, scale))  # Never scale below 10%
+    return True, scale
+
+
+def compute_position_size(
+    symbol: str,
+    direction: str,
+    asset_class: str,
+    entry_price: float,
+    atr: float,
+    portfolio_value: float,
+    base_risk_pct: float,
+    active_positions: list[dict] | None = None,
+    current_total_exposure_pct: float = 0.0,
+    regime: str | None = None,
+) -> dict:
+    """Compute position size by applying all 5 P3 rules in sequence.
+
+    Returns dict with:
+      - position_size_pct: final position size as % of portfolio
+      - position_size_usd: position size in dollars
+      - stop_distance_pct: stop distance as % of entry price
+      - regime_multiplier: Rule 1 scaling factor
+      - correlation_penalty: Rule 3 penalty factor
+      - portfolio_heat_scale: Rule 4 heat scale factor
+      - rules_applied: list of rule names applied
+    """
+    rules_applied = []
+
+    # Rule 1: Regime scaling
+    if regime is None:
+        regime = get_regime()
+    regime_mult = get_regime_size_multiplier(regime)
+    size_pct = base_risk_pct * regime_mult
+    rules_applied.append("rule1_regime_scale")
+
+    # Rule 2: Per-symbol max allocation cap
+    max_alloc = get_max_allocation_pct(asset_class)
+    if size_pct > max_alloc:
+        size_pct = max_alloc
+        rules_applied.append("rule2_symbol_cap")
+
+    # Rule 5: ATR-based stop distance — if ATR is available, enforce min stop
+    stop_distance_pct = 0.0
+    if atr > 0 and entry_price > 0:
+        stop_distance = compute_atr_stop_distance(atr, entry_price)
+        stop_distance_pct = round(stop_distance / entry_price * 100, 2)
+        # Don't let position be larger than what risk budget allows at ATR stop
+        max_size_from_atr = base_risk_pct / max(stop_distance_pct, 0.1) * 100
+        if max_size_from_atr < size_pct:
+            size_pct = max(size_pct * 0.5, max_size_from_atr * 0.01)
+            rules_applied.append("rule5_atr_bound")
+
+    # Rule 3: Correlation penalty
+    corr_penalty = 1.0
+    if active_positions:
+        corr_penalty = compute_correlation_penalty(
+            symbol, direction, asset_class, active_positions
+        )
+        if corr_penalty < 1.0:
+            size_pct *= corr_penalty
+            rules_applied.append("rule3_correlation")
+
+    # Rule 4: Portfolio heat cap
+    heat_scale = 1.0
+    if current_total_exposure_pct > 0:
+        is_hot, heat_scale = check_portfolio_heat(
+            current_total_exposure_pct + size_pct
+        )
+        if is_hot:
+            size_pct *= heat_scale
+            rules_applied.append("rule4_portfolio_heat")
+
+    # Clamp to reasonable bounds
+    size_pct = max(0.005, min(size_pct, max_alloc))  # Min 0.5%, max per-symbol cap
+    size_pct = round(size_pct, 4)
+    position_usd = round(portfolio_value * size_pct, 2)
+
+    return {
+        "position_size_pct": size_pct,
+        "position_size_usd": position_usd,
+        "stop_distance_pct": stop_distance_pct,
+        "regime_multiplier": round(regime_mult, 2),
+        "correlation_penalty": round(corr_penalty, 2),
+        "portfolio_heat_scale": round(heat_scale, 2),
+        "rules_applied": rules_applied,
+        "regime": regime,
+        "max_allocation_pct": max_alloc,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
