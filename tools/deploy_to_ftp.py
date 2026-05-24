@@ -368,7 +368,9 @@ def deploy_audit_dashboard(ftp: ftplib.FTP, main_remote_base: str) -> int:
     """Upload audit HTML/JS/data to /audit/ and /audit_dashboard/ (live mirrors common URLs)."""
     base = main_remote_base.rstrip("/")
     local_dir = WORKSPACE / "audit_dashboard"
-    names = ("index.html", "dashboard_enhancements.js", "template.html", "hc_filter.js")
+    names = ("index.html", "dashboard_enhancements.js", "template.html", "hc_filter.js",
+             "ai-tournament.html", "ai_leaderboard.html", "research_index.html", "edge_stability.html",
+             "curated_picks_20260524.html", "hedge_fund_simulation_20260524.html")
     n = 0
     for name in names:
         local_path = local_dir / name
