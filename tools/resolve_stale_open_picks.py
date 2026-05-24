@@ -53,6 +53,30 @@ logging.basicConfig(
 )
 log = logging.getLogger("stale_open_resolver")
 
+def _read_db_password() -> str:
+    """Read DB password from /home/eaguiar2015/dbpasses.txt if available."""
+    import json
+    try:
+        creds = json.loads(open("/home/eaguiar2015/.qwen/settings.json").read())
+        db_cred = creds.get("credentials", {})
+        # Check common key names for database credentials
+        return (db_cred.get("stocks_password") or 
+                db_cred.get("db_pass_stocks") or 
+                db_cred.get("DB_PASS_STOCKS") or "")
+    except Exception:
+        pass
+    
+    try:
+        lines = open("/home/eaguiar2015/dbpasses.txt").read().strip().splitlines()
+        # The password for stocks DB is typically the line matching "stocks"
+        for line in lines:
+            if "stocks" in line.lower():
+                return line.strip()
+        return lines[0] if lines else ""
+    except FileNotFoundError:
+        return ""
+
+
 # ---------------------------------------------------------------------------
 # DB config
 # ---------------------------------------------------------------------------
@@ -63,7 +87,7 @@ DB_PASS = (
     os.getenv("AUDIT_DB_PASS")
     or os.getenv("DB_PASS_STOCKS")
     or os.getenv("MYSQL_PASSWORD")
-    or ""
+    or _read_db_password()
 )
 DB_NAME = os.getenv("AUDIT_DB_NAME", os.getenv("DB_NAME", "ejaguiar1_stocks"))
 
@@ -113,10 +137,29 @@ def _connect():
     )
 
 
-def _hold_hours_for(asset_class: str) -> int:
-    """Return the per-asset-class TIME_EXIT window in hours."""
-    ac = (asset_class or "").upper().strip()
-    return MAX_HOLD_HOURS_BY_CLASS.get(ac, DEFAULT_MAX_HOLD_HOURS)
+def _hold_hours_for(category: str) -> int:
+    """Return the per-category TIME_EXIT window in hours."""
+    c = (category or "").strip().lower()
+    # Map categories to asset-class-like hold windows
+    mapping = {
+        "crypto": 48,
+        "meme": 48,
+        "equity": 96,
+        "equities": 96,
+        "stock": 96,
+        "stocks": 96,
+        "penny": 72,
+        "pennystock": 72,
+        "etf": 96,
+        "commodity": 96,
+        "commodities": 96,
+        "futures": 96,
+        "forex": 120,
+        "bond": 120,
+        "bonds": 120,
+        "index": 96,
+    }
+    return mapping.get(c, DEFAULT_MAX_HOLD_HOURS)
 
 
 # ---------------------------------------------------------------------------

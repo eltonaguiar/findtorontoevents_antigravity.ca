@@ -47,6 +47,18 @@ except ImportError:
     _USE_DB_ENV = False
 
 
+def _read_db_password() -> str:
+    """Read DB password from /home/eaguiar2015/dbpasses.txt if available."""
+    try:
+        lines = open("/home/eaguiar2015/dbpasses.txt").read().strip().splitlines()
+        for line in lines:
+            if "stocks" in line.lower():
+                return line.strip()
+        return lines[0] if lines else ""
+    except FileNotFoundError:
+        return ""
+
+
 def _connect() -> Any:
     """Return a pymysql connection to ejaguiar1_stocks."""
     try:
@@ -58,10 +70,12 @@ def _connect() -> Any:
         creds = get_stocks_creds()
         return pymysql.connect(**creds)
 
-    password = os.environ.get("DB_PASS_STOCKS") or os.environ.get("MYSQL_PASSWORD")
+    password = (os.environ.get("DB_PASS_STOCKS") or 
+                os.environ.get("MYSQL_PASSWORD") or 
+                _read_db_password())
     if not password:
         raise RuntimeError(
-            "No DB password — set DB_PASS_STOCKS or MYSQL_PASSWORD"
+            "No DB password — set DB_PASS_STOCKS, MYSQL_PASSWORD, or create /home/eaguiar2015/dbpasses.txt"
         )
     return pymysql.connect(
         host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
