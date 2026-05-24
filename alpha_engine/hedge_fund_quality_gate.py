@@ -52,10 +52,32 @@ CRYPTO_BANNED_STRATEGIES = frozenset({
 # (882 picks, 53% of crypto volume, WR 29.9%, PF 0.69). Half-open interval.
 CRYPTO_CONFIDENCE_DEAD_BAND = (0.60, 0.70)
 
+# ───────────────── CRYPTO source-system blocks ─────────────────
+# 2026-05-24: Per curated-picks forward-test audit, these source_systems produce
+# negative aggregate PnL on CRYPTO and inflate raw dashboard counts.
+# claude_gainer: n=15, -3.34% avg | dna_rapid_fire_mutations: n=6, -0.98%
+# regime_terminal: n=4, -0.38% | ml_crypto_pred: n=155, -0.48%
+# Env-var overridable for shadow-mode tuning.
+CRYPTO_BANNED_SOURCES = frozenset(
+    s.strip() for s in os.environ.get(
+        "HF_GATE_CRYPTO_BANNED_SOURCES",
+        "claude_gainer,dna_rapid_fire_mutations,regime_terminal,ml_crypto_pred"
+    ).split(",") if s.strip()
+)
+
 # ───────────────── EQUITY rules ─────────────────
 # Equity SHORTs are a tiny historical sample (n=4) and went 0/3. Equity LONG
 # has realized PF 1.49, so the asymmetric rule matches the evidence.
 EQUITY_ALLOWED_DIRECTIONS = frozenset({"LONG", "BUY"})
+# 2026-05-24: Source-system blocks for EQUITY. Default empty — stocks_competition
+# and fast_stocks_competition are already filtered from Smart Picks display by
+# audit_trail/quality_gates.py BLOCKED_SOURCE_SYSTEMS (but NOT from this gate).
+# Add source names here to block at HF gate execution time. Env-var overridable.
+EQUITY_BANNED_SOURCES = frozenset(
+    s.strip() for s in os.environ.get(
+        "HF_GATE_EQUITY_BANNED_SOURCES", ""
+    ).split(",") if s.strip()
+)
 # 2026-05-16: AAPL un-banned. Original n=15/PF=0.69 ban was below 30-pick charter
 # minimum. Strategy-specific evidence: rs-breakout-scout fwd_wr=73.0% (forward_validated=True).
 # Recent closed n=17, PF=1.03 — marginal but not sub-floor. Re-evaluate if n>=30 PF<0.80.
@@ -261,6 +283,7 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
     strat = _strategy(pick)
     direction = _direction(pick)
     conf = _confidence(pick)
+    src = str(pick.get("source_system") or "").strip()
 
     # ── Cross-AC pipeline hygiene: empty/missing strategy is a pipeline defect,
     # not a legitimate pick. Recent 790 FOREX closed picks show n=10 empty-strat
@@ -270,6 +293,8 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
         return False, "HF_GATE: empty strategy (pipeline defect; n=10 FOREX showed 10% WR / -1.875% avg)"
 
     if ac == "CRYPTO":
+        if src in CRYPTO_BANNED_SOURCES:
+            return False, f"HF_GATE: CRYPTO banned source_system {src} (negative aggregate PnL per forward-test audit 2026-05-24)"
         if sym in CRYPTO_BANNED_SYMBOLS:
             return False, f"HF_GATE: CRYPTO banned symbol {sym} (empirical PF<0.95, n>=20; see crypto_rsi4h_killzone_review_2026_04_28.md)"
         if strat in CRYPTO_BANNED_STRATEGIES:
@@ -288,6 +313,8 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
         # Fall through to cross-AC ML check below
 
     elif ac == "EQUITY":
+        if src in EQUITY_BANNED_SOURCES:
+            return False, f"HF_GATE: EQUITY banned source_system {src} (negative aggregate PnL per forward-test audit 2026-05-24)"
         if direction and direction not in EQUITY_ALLOWED_DIRECTIONS:
             return False, f"HF_GATE: EQUITY {direction} rejected (LONG-only historical edge; SHORT n=4 went 0/3)"
         if sym in EQUITY_BANNED_SYMBOLS:
@@ -511,6 +538,7 @@ __all__ = [
     "FOREX_BANNED_SYMBOLS", "FOREX_BANNED_STRATEGIES",
     "FOREX_CONFIDENCE_REJECT_BANDS",
     "ETF_BANNED_SYMBOLS",
+    "CRYPTO_BANNED_SOURCES", "EQUITY_BANNED_SOURCES",
     "PENNY_BANNED_SYMBOLS", "PENNY_BANNED_STRATEGIES", "PENNY_CONFIDENCE_MIN",
     "FUTURES_BANNED_SYMBOLS", "FUTURES_BANNED_STRATEGIES",
     "ML_PUMP_PROB_MIN", "ML_PUMP_PROB_MAX", "ML_SOURCE_SYSTEMS",
