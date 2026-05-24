@@ -1,21 +1,21 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-24T13:03:24.870059+00:00
+Generated: 2026-05-24T13:14:56.367568+00:00
 
 ## Topline
-- Open positions: 161
-- Price coverage: 88.2%
-- Open average PnL: 29.7483%
-- Directional correctness: 52.82%
+- Open positions: 100
+- Price coverage: 99.0%
+- Open average PnL: 36.0587%
+- Directional correctness: 50.51%
 - Regime: BULLISH
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] PEER_STALE: alpha_engine data is stale (85009.4m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (152.3m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (113302.5m old)
-- [HIGH] STRATEGY_DECAY: cta_commodity_momentum_term is a rehabilitation candidate (WR 0.0%, PF 0.0, Sharpe -140.452)
-- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on XRPUSDT ({'LONG': 4, 'SHORT': 4})
+- [HIGH] PEER_STALE: alpha_engine data is stale (85020.9m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (163.9m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (113314.0m old)
+- [HIGH] STRATEGY_DECAY: ml_enhanced_JTOUSDT_1d_B_lightgbm is a rehabilitation candidate (WR 36.67%, PF 0.297, Sharpe -8.277)
+- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on XRPUSDT ({'LONG': 2, 'SHORT': 4})
 
 ## Recommendations
 - tighten_risk_and_reduce_gross_exposure: Choppy regime or drawdown breach warrants smaller sizing and tighter review cadence.
