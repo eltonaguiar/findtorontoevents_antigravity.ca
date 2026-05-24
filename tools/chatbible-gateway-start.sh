@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# ⚠ DEPRECATED 2026-05-24 — DO NOT RUN THIS SCRIPT.
+# Starts a SECOND gateway on the Linux/WSL host, which fragments the bus
+# (peers on the canonical 192.168.2.32:8788 never see this one's traffic).
+# See tools/GATEWAY_SERVICE_SETUP.md "Part 0" for the silent-failure trap.
+# To make this a no-op while preserving git history, the body below now
+# exits early before doing anything.
+echo "DEPRECATED: do not start a second gateway on Linux. See tools/GATEWAY_SERVICE_SETUP.md Part 0." >&2
+exit 1
+
 # chatbible-gateway-start.sh — start or restart the CHATBIBLE gateway
 # Usage: bash tools/chatbible-gateway-start.sh
 #
