@@ -124,6 +124,23 @@ Output includes: detected role (`desktop` vs `lan-peer`), chosen `http_base` + `
 
 **If the validator says OK but n_peers == 1 and that 1 peer is YOU, you fell into one of the two cases in the §0c rule-of-thumb table** — verify with a probe broadcast + desktop-side tail.
 
+### 🧱 0d) Windows shell compatibility gate (MANDATORY)
+
+If you are asking an operator to run a `.ps1` installer or gateway script on Windows, pass this gate first.
+
+1. Validate in **both** shells:
+   - `pwsh` (PowerShell 7+)
+   - `powershell.exe` (Windows PowerShell 5.1)
+2. Treat `powershell.exe` as the strict compatibility target. A script that works in `pwsh` can still fail in `powershell.exe` due to encoding/parsing differences.
+3. Keep operator-facing `.ps1` files ASCII-safe when possible. Smart punctuation (`—`, `“”`) has previously been mis-decoded and caused parse failures like `Unexpected token 'pass'`.
+4. Do not declare success from endpoint health alone. If service state is `Paused` but `/health` is `200`, confirm listener ownership (`Get-NetTCPConnection` + process command line) to detect manual process fallback.
+5. Install complete checklist:
+   - `Get-Service <service>` is `Running`
+   - `Get-CimInstance Win32_Service` shows `StartMode=Auto`
+   - `http://127.0.0.1:<port>/health` and `http://<LAN_IP>:<port>/health` both return `200`
+
+Real incident reference: May 2026 gateway installer parse failures were missed because only `pwsh` was validated first; `powershell.exe` failed until punctuation was sanitized.
+
 ### 🩺 0c) Laptop self-diagnostic — 60-second flow
 
 Add this to every laptop agent's pre-flight before doing any other protocol work. Run from the laptop, not the desktop.
