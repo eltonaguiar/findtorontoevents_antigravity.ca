@@ -1,19 +1,19 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-24T17:08:05.069300+00:00
+Generated: 2026-05-24T17:29:51.807827+00:00
 
 ## Topline
 - Open positions: 93
 - Price coverage: 98.92%
-- Open average PnL: 21.3337%
-- Directional correctness: 44.57%
+- Open average PnL: 21.4607%
+- Directional correctness: 43.48%
 - Regime: CHOPPY
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] PEER_STALE: alpha_engine data is stale (85254.0m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (220.7m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (113547.1m old)
+- [HIGH] PEER_STALE: alpha_engine data is stale (85275.8m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (242.5m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (113568.9m old)
 - [HIGH] STRATEGY_DECAY: ml_enhanced_JTOUSDT_1d_B_lightgbm is a rehabilitation candidate (WR 36.67%, PF 0.297, Sharpe -8.277)
 - [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on XRPUSDT ({'LONG': 2, 'SHORT': 4})
 - [MEDIUM] REGIME_SHIFT: Regime changed BULLISH -> CHOPPY
