@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated_at": "2026-05-24T20:33:13.872777Z",
+    "generated_at": "2026-05-24T20:39:06.771444Z",
     "window_since": "2026-05-17",
     "window_until": "2026-05-24",
     "script": "tools/pick_flow_snapshot.py"
@@ -196,6 +196,45 @@
       }
     ],
     "min_confidence": 0.7
+  },
+  "equity_hf_gate": {
+    "total": 277,
+    "hf_passed": 219,
+    "hf_rejected": 58,
+    "hf_errors": 0,
+    "conf_passed": 219,
+    "reject_reasons": [
+      {
+        "reason": "HF_GATE: EQUITY SHORT rejected (LONG-only historical edge; SHORT n=4 went 0/3)",
+        "count": 51
+      },
+      {
+        "reason": "HF_GATE: empty strategy (pipeline defect; n=10 FOREX showed 10% WR / -1.875% avg)",
+        "count": 4
+      },
+      {
+        "reason": "HF_GATE: EQUITY confidence 0.601 in reject band [0.60,0.65) (n=52, WR 35.3%, cum -28.1%)",
+        "count": 1
+      },
+      {
+        "reason": "HF_GATE: EQUITY confidence 0.620 in reject band [0.60,0.65) (n=52, WR 35.3%, cum -28.1%)",
+        "count": 1
+      },
+      {
+        "reason": "HF_GATE: EQUITY confidence 0.631 in reject band [0.60,0.65) (n=52, WR 35.3%, cum -28.1%)",
+        "count": 1
+      }
+    ],
+    "min_confidence": 0.0,
+    "source_breakdown": {
+      "AlphaEngine": 270,
+      "kimi_feb17": 4,
+      "copy_trader_binance": 1,
+      "alpha_engine_unified": 1,
+      "sandbox_opposite": 1
+    },
+    "banned_source_hits": {},
+    "banned_sources_configured": []
   },
   "note": "crypto_hf_gate runs on active OPEN CRYPTO picks (separate population from the per_class raw_emitted counts, which cover all statuses). hf_passed = survived HF gate (banned sources/symbols/drawdown). conf_passed = hf_passed \u2229 confidence \u2265 crypto_hf_gate.min_confidence. Closed WR/PF use closed_at-dated rows; picks whose status is terminal but closed_at is NULL are not counted."
 }
