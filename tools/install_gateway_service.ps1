@@ -6,9 +6,9 @@ Install the cross-PC protocol gateway as a Windows service via nssm.
 Idempotent installer. Run from PowerShell as Administrator on the desktop
 that hosts the canonical gateway (the machine reachable at 192.168.2.32:8788
 from every other peer). After install, the gateway survives reboots, shell
-closes, and operator log-offs — which eliminates the recurring failure mode
+closes, and operator log-offs -- which eliminates the recurring failure mode
 documented in CHATBIBLE_FAILURE.MD ("human-must-restart-gateway", 2026-05-15
-/ 2026-05-22 / 2026-05-24 — same root cause every time).
+/ 2026-05-22 / 2026-05-24 -- same root cause every time).
 
 .PARAMETER ServiceName
 Windows service name. Default: cross-pc-gateway
@@ -26,7 +26,7 @@ HTTP port. Default: 8788
 WebSocket port. Default: 8787
 
 .PARAMETER Host
-Bind address. Default: 0.0.0.0 (LAN-reachable). Do NOT use 127.0.0.1 — other
+Bind address. Default: 0.0.0.0 (LAN-reachable). Do NOT use 127.0.0.1 -- other
 peers cannot reach loopback from a different machine.
 
 .PARAMETER NssmExe
@@ -56,7 +56,7 @@ After install, manage the service with:
 
 Logs are written to <RepoRoot>\logs\cross_pc_gateway\stdout.log and stderr.log.
 
-The protocol bus is SINGLE-HOST by design — only ONE machine should run this
+The protocol bus is SINGLE-HOST by design -- only ONE machine should run this
 service. Other peers (Linux/WSL, laptops, other workstations) should run
 register_peer.py as their daemon, NOT a second gateway. See
 CHATBIBLE_FAILURE.MD 2026-05-22T13:28Z correction for why a second gateway
@@ -126,7 +126,7 @@ function Resolve-RepoRoot {
     $scriptDir = Split-Path -Parent $PSCommandPath
     $candidate = (Resolve-Path (Join-Path $scriptDir "..")).Path
     if (-not (Test-Path (Join-Path $candidate "tools\protocol_gateway.py"))) {
-        throw "Auto-detected RepoRoot $candidate does not contain tools\protocol_gateway.py — pass -RepoRoot '<path>'."
+        throw "Auto-detected RepoRoot $candidate does not contain tools\protocol_gateway.py -- pass -RepoRoot '<path>'."
     }
     return $candidate
 }
@@ -177,7 +177,7 @@ $arguments = "`"$gatewayScript`" --host $BindHost --http-port $HttpPort --ws-por
 & $nssm set $ServiceName Start SERVICE_AUTO_START | Out-Null
 & $nssm set $ServiceName AppExit Default Restart | Out-Null
 & $nssm set $ServiceName AppRestartDelay 5000 | Out-Null     # 5s between restarts
-& $nssm set $ServiceName Description "Cross-PC protocol gateway (ws+http) — single canonical bus for multi-agent fleet" | Out-Null
+& $nssm set $ServiceName Description "Cross-PC protocol gateway (ws+http) -- single canonical bus for multi-agent fleet" | Out-Null
 
 # Start
 & $nssm start $ServiceName | Out-Null
