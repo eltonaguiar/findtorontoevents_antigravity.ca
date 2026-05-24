@@ -2365,3 +2365,44 @@ python tools/anon_ai_council/deep_probe_from_manifest.py \
 ```
 
 **Context:** GitHub Copilot built the `tools/anon_ai_council/` skill; Claude Code completed the benchmark (6/102 anonymous sources work). Reports: `updates/2026-05-19-anonymous-ai-council-*.md`.
+
+---
+
+## 2026-05-24 — AI Tournament Pipeline Hedge-Fund-Grade Session
+
+### Session Overview
+Built and hardened a 34-model, 9-asset-class tournament prediction pipeline. 3,149 picks in `tournament_picks` table, 53.4% overall WR.
+
+### Key Deliverables
+- **Pipeline:** DB ingest fix → Kelly sizing → price tracker PENNY/FUTURES → kill gates → copy trader adapter → position sizing rules
+- **Analytics:** Edge significance gate (4-test framework), portfolio analytics (Sharpe/VaR/drawdown), concentration monitor, performance reporting
+- **Data:** FRED API key fix → all 7 series live; Kalshi/Polymarket wired into research; Copy Trader adapter (20+ picks/2h)
+- **Quality:** Persona_WR confidence proxy, auto-zero KILLED personas, asset-class-level blocking (FOREX KILLED, BOND WARN)
+- **UX:** Model summary table + ELI5 on tournament page; PENNY/FUTURES added to universe
+
+### Key Findings
+- 0 Tier-1 edge pairs pass all 4 statistical gates (strict by design)
+- deep_value × EQUITY: 60 picks, 60% WR, +1.07% PnL — only proven edge pair
+- FOREX: 57.3% WR but -0.39% avg PnL — statistical trap, zero allocation
+- regime_adaptive 84.6% WR is SYNTHETIC_SEED data from old pipeline (not our pipeline)
+- ML calibration is SYSTEM-WIDE INVERTED — confidence 0.85-0.90 has 20% WR
+- UEPS (US Equity Picks) has n=0/100 — no live equity picks yet
+
+### Remaining Gaps for IDEA-B (Hedge Fund Grade Picks)
+- [ ] Statistical kill gates need walk-forward validation
+- [ ] FRED macro regime → pick direction integration (data exists, not wired to scoring)
+- [ ] Polymarket whale consensus → only 1 symbol with 2+ agreement (need Dune addresses)
+- [ ] "Super Secure Picks" persona category for conservative capital preservation
+- [ ] HYROTRADER crypto-only → need multi-asset expansion
+- [ ] UEPS needs first 100 picks to build track record
+- [ ] ML calibration inversion fix — confidence is anti-predictive
+- [ ] 353 legacy picks with future timestamps need cleanup
+
+### Reports Generated
+- reports/EDGE_CRITERIA_SWARM_2026-05-24.md
+- reports/EDGE_CRITERIA_SWARM_SYNTHESIS_2026-05-24.md
+- reports/HEDGE_FUND_GAP_ANALYSIS_2026-05-24.md
+- updates/2026-05-24-ai-tournament-hedge-fund-readiness.html
+
+### Agent Swarm: 3-engine (quant + systems + portfolio) + 3-engine follow-up (action plan + gap analysis + integration)
+### Files Modified: 20+ across pipeline, analytics, dashboard, config, CI workflows
