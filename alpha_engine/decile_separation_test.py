@@ -47,8 +47,8 @@ def _load_scored_picks(path):
         scored.append({
             "score": float(score),
             "won": status == "WON",
-            "pnl_pct": float(p.get("pnl_pct", 0.0)),
-            "confidence": float(p.get("confidence", 0.0)),
+            "pnl_pct": float(p.get("pnl_pct") or 0.0),
+            "confidence": float(p.get("confidence") or 0.0),
             "regime": _normalize_regime(p.get("regime_at_entry")),
             "category": _normalize_category(p.get("category", "unknown")),
         })

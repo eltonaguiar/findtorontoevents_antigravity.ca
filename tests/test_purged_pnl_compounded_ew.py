@@ -15,19 +15,19 @@ def _pick(symbol, pnl, ts, source_system="test_sys"):
 
 def test_purged_compound_excludes_toxic_symbol():
     rows = [
-        _pick("BTCUSDT", 10.0, "2026-01-01T00:00:00"),
+        _pick("BTCUSDT", 2.0, "2026-01-01T00:00:00"),
         _pick("TRXUSDT", 200.0, "2026-01-02T00:00:00"),
     ]
     m = compute_clean_metrics(rows, cap_pct=10.0)
-    assert m["purged_pnl_raw"] == 10.0
-    assert m["purged_pnl_compounded_ew"] == 10.0
+    assert m["purged_pnl_raw"] == 2.0
+    assert m["purged_pnl_compounded_ew"] == 2.0
 
 
 def test_purged_compound_two_trades():
     rows = [
-        _pick("A", 10.0, "2026-01-01T00:00:00"),
-        _pick("B", 10.0, "2026-01-03T00:00:00"),
+        _pick("A", 2.0, "2026-01-01T00:00:00"),
+        _pick("B", 2.0, "2026-01-03T00:00:00"),
     ]
     m = compute_clean_metrics(rows, cap_pct=10.0)
-    assert m["purged_pnl_raw"] == 20.0
-    assert m["purged_pnl_compounded_ew"] == 21.0
+    assert m["purged_pnl_raw"] == 4.0
+    assert m["purged_pnl_compounded_ew"] == 4.04
