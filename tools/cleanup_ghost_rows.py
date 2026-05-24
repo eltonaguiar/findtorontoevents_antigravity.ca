@@ -104,10 +104,33 @@ DEFAULT_MIN_COHORT_SIZE = 5
 DEFAULT_MAX_DELETES = 1000
 
 
+# ── Known ghost cohorts (from db_health.json analysis) ────────────────────────
+# Format: (symbol, strategy, direction, entry_price_approx)
+KNOWN_GHOST_COHORTS = []
+
+# Additional targets for non-standard ghost patterns
+GHOST_DELETES = [
+    # Rows with empty symbol AND strategy in trading_picks — ancient corrupted data (ids 262-489)
+    {
+        "name": "empty_field_corrupted_trading_picks",
+        "table": "trading_picks",
+        "where": "(symbol='' OR symbol IS NULL) AND (strategy='' OR strategy IS NULL)",
+        "keep_min_id": True,
+    },
+]
+
 # ── Cohort detection ─────────────────────────────────────────────────────────
 
-def discover_ghost_cohorts(conn: Any, min_size: int = DEFAULT_MIN_COHORT_SIZE) -> List[Dict[str, Any]]:
-    """Find cohorts of (symbol, strategy, direction, entry_price) with count > min_size.
+def discover_ghost_cohorts(
+    conn: Any,
+    min_size: int = DEFAULT_MIN_COHORT_SIZE,
+    use_known_only: bool = False,
+) -> List[Dict[str, Any]]:
+    """Find cohorts of duplicate rows sharing (symbol, strategy, direction, entry_price).
+
+    Strategy: if use_known_only=True, queries only the pre-known ghost cohorts
+    (fast, no full-table GROUP BY). Otherwise attempts a full-table scan but
+    catches timeouts and falls back to known cohorts.
 
     Returns list of cohort dicts with keys: strategy, symbol, direction,
     entry_price, count, min_id, max_id, pnl_sample.
@@ -115,20 +138,20 @@ def discover_ghost_cohorts(conn: Any, min_size: int = DEFAULT_MIN_COHORT_SIZE) -
     cohort_select = ", ".join(f"`{c}`" for c in COHORT_COLS)
     entry_col = ENTRY_PRICE_COL
 
-    sql = f"""
-        SELECT {cohort_select},
-               `{entry_col}`,
-               COUNT(*) AS cnt,
-               MIN(`{PK_COL}`) AS min_id,
-               MAX(`{PK_COL}`) AS max_id
-        FROM `{TARGET_TABLE}`
-        GROUP BY {cohort_select}, `{entry_col}`
-        HAVING COUNT(*) > %s
-        ORDER BY cnt DESC
-    """
-
-    cohorts = []
-    try:
+    def _full_scan():
+        """Attempt full-table GROUP BY query (may timeout on large tables)."""
+        sql = f"""
+            SELECT {cohort_select},
+                   `{entry_col}`,
+                   COUNT(*) AS cnt,
+                   MIN(`{PK_COL}`) AS min_id,
+                   MAX(`{PK_COL}`) AS max_id
+            FROM `{TARGET_TABLE}`
+            GROUP BY {cohort_select}, `{entry_col}`
+            HAVING COUNT(*) > %s
+            ORDER BY cnt DESC
+        """
+        cohorts = []
         with conn.cursor() as cur:
             cur.execute(sql, (min_size,))
             for row in cur.fetchall():
@@ -136,14 +159,117 @@ def discover_ghost_cohorts(conn: Any, min_size: int = DEFAULT_MIN_COHORT_SIZE) -
                     "strategy": row[0],
                     "symbol": row[1],
                     "direction": row[2],
-                    "entry_price": row[3],
+                    "entry_price": str(row[3]),
                     "count": int(row[4]),
                     "min_id": int(row[5]),
                     "max_id": int(row[6]),
                 })
+        return cohorts
+
+    # If known-only mode requested, query only known targets
+    if use_known_only:
+        log.info("Scanning %d known ghost cohort targets...", len(KNOWN_GHOST_COHORTS))
+        cohorts = _scan_known_targets(conn, min_size)
+        log.info("Found %d active ghost cohorts (known-targets mode).", len(cohorts))
+        return cohorts
+
+    # Otherwise: attempt full scan first; fall back to known on timeout
+    try:
+        log.info("Attempting full-table ghost cohort discovery...")
+        cohorts = _full_scan()
+        if cohorts:
+            log.info("Full scan found %d cohorts.", len(cohorts))
+            return cohorts
     except Exception as exc:
-        log.error("Error discovering cohorts: %s", exc)
-        raise
+        log.warning("Full-scan failed (%s), falling back to known targets.", exc)
+
+    # Fallback: query known targets
+    log.info("Falling back to known ghost cohort targets...")
+    cohorts = _scan_known_targets(conn, min_size)
+    log.info("Known-targets found %d active ghost cohorts.", len(cohorts))
+    return cohorts
+
+
+def _scan_known_targets(
+    conn: Any,
+    min_size: int = DEFAULT_MIN_COHORT_SIZE,
+) -> List[Dict[str, Any]]:
+    """Query specific (symbol, strategy, direction, entry_price) combinations."""
+    cohorts = []
+    for symbol, strategy, direction, ep in KNOWN_GHOST_COHORTS:
+        where_clauses = [
+            "`symbol` = %s",
+            "`strategy` = %s",
+            "`direction` = %s",
+        ]
+        params = [symbol, strategy, direction]
+
+        # Use LIKE for entry_price to handle approximation
+        where_clauses.append("`entry_price` LIKE %s")
+        params.append(f"{ep}%")
+
+        sql = (
+            f"SELECT `{PK_COL}`, `{ENTRY_PRICE_COL}` "
+            f"FROM `{TARGET_TABLE}` "
+            f"WHERE {' AND '.join(where_clauses)} "
+            f"ORDER BY `{PK_COL}` ASC"
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                count = len(rows)
+                if count >= min_size:
+                    cohorts.append({
+                        "symbol": symbol,
+                        "strategy": strategy,
+                        "direction": direction,
+                        "entry_price": ep,  # approximate value (used with LIKE)
+                        "count": count,
+                        "min_id": int(rows[0][0]),
+                        "max_id": int(rows[-1][0]),
+                        "_approx_entry": True,  # signal to use LIKE instead of =
+                    })
+                    log.info(
+                        "  Ghost: %-12s / %-16s / %-5s @ %-10s → %d rows",
+                        symbol, strategy, direction, ep, count,
+                    )
+        except Exception as exc:
+            log.error("  Error scanning %s/%s/%s: %s", symbol, strategy, direction, exc)
+
+    # Also scan GHOST_DELETES patterns (non-standard ghosts like empty fields)
+    log.info("  Scanning %d custom ghost patterns...", len(GHOST_DELETES))
+    for target in GHOST_DELETES:
+        try:
+            table_name = target.get("table", TARGET_TABLE)
+            with conn.cursor() as cur:
+                sql_cnt = f"SELECT COUNT(*) FROM `{table_name}` WHERE {target['where']}"
+                cur.execute(sql_cnt)
+                cnt_row = cur.fetchone()
+                count = int(cnt_row[0]) if cnt_row else 0
+
+                if count >= min_size:
+                    cohorts.append({
+                        "symbol": "",
+                        "strategy": "",
+                        "direction": "",
+                        "entry_price": "",
+                        "count": count,
+                        "min_id": None,
+                        "max_id": None,
+                        "_custom_where": target["where"],
+                        "_ghost_table": table_name,
+                        "keep_min_id": False,  # delete ALL matching rows
+                    })
+                    log.info(
+                        "  Ghost: %-35s → %d rows (%s)",
+                        target["name"], count, target["where"][:60],
+                    )
+                else:
+                    log.debug("count=%d < min_size=%d, skipping", count, min_size)
+        except Exception as exc:
+            import traceback; traceback.print_exc()
+            log.error("  Error scanning ghost pattern %s: %s", target["name"], exc)
 
     return cohorts
 
@@ -171,6 +297,16 @@ def build_delete_sql(cohort: Dict[str, Any], limit: Optional[int] = None) -> Tup
 
     Returns (sql, params) tuple.
     """
+    # Custom WHERE clause pattern (e.g., empty_field_corrupted)
+    if "_custom_where" in cohort:
+        tbl = cohort.get("_ghost_table", TARGET_TABLE)
+        base_sql = f"DELETE FROM `{tbl}` WHERE {cohort['_custom_where']}"
+        keep_min = cohort.get("keep_min_id", True)
+        if keep_min and cohort["min_id"] is not None:
+            base_sql += f" AND `{PK_COL}` != %s"
+            return base_sql, [cohort["min_id"]]
+        return base_sql, []  # delete all matching rows
+
     # Strategy: delete all rows in the cohort EXCEPT the one with min_id
     conditions = []
     params: List[Any] = []
@@ -179,8 +315,13 @@ def build_delete_sql(cohort: Dict[str, Any], limit: Optional[int] = None) -> Tup
         conditions.append(f"`{col}` = %s")
         params.append(cohort[col])
 
-    conditions.append(f"`{ENTRY_PRICE_COL}` = %s")
-    params.append(cohort["entry_price"])
+    # Use LIKE for approximate entry_price (known-targets mode)
+    if cohort.get("_approx_entry"):
+        conditions.append(f"`{ENTRY_PRICE_COL}` LIKE %s")
+        params.append(f"{cohort['entry_price']}%")
+    else:
+        conditions.append(f"`{ENTRY_PRICE_COL}` = %s")
+        params.append(cohort["entry_price"])
 
     conditions.append(f"`{PK_COL}` != %s")
     params.append(cohort["min_id"])
@@ -273,12 +414,15 @@ def run_cleanup(
                 with conn.cursor() as cur:
                     affected = cur.execute(sql, params)
                     cohort_detail["deleted"] = int(affected)
-                    log.info(
-                        "[%d/%d] DELETED %d rows: %s %s %s @ entry=%s (kept id=%d)",
-                        i + 1, len(cohorts), affected,
-                        cohort["strategy"], cohort["symbol"], cohort["direction"],
-                        cohort["entry_price"], cohort["min_id"],
-                    )
+                    if "_custom_where" in cohort and not cohort.get("keep_min_id", True):
+                        log.info("[%d/%d] DELETED ALL %d rows: %s (full-delete)", i + 1, len(cohorts), affected, cohort["name"])
+                    else:
+                        log.info(
+                            "[%d/%d] DELETED %d rows: %s %s %s @ entry=%s (kept id=%s)",
+                            i + 1, len(cohorts), affected,
+                            cohort["strategy"], cohort["symbol"], cohort["direction"],
+                            cohort["entry_price"], cohort["min_id"],
+                        )
                     report["total_deleted"] += int(affected)
                     deletes_remaining -= int(affected)
             except Exception as exc:
@@ -287,12 +431,16 @@ def run_cleanup(
                 report["errors"].append(error_msg)
                 cohort_detail["error"] = str(exc)
         else:
-            log.info(
-                "[%d/%d] WOULD DELETE %d rows: %s %s %s @ entry=%s (keep id=%d, %d total in cohort)",
-                i + 1, len(cohorts), to_delete,
-                cohort["strategy"], cohort["symbol"], cohort["direction"],
-                cohort["entry_price"], cohort["min_id"], cohort["count"],
-            )
+            if "_custom_where" in cohort and not cohort.get("keep_min_id", True):
+                # Full delete — no "keep id" message
+                log.info("[%d/%d] WOULD DELETE ALL %d rows: %s (full-delete)", i + 1, len(cohorts), to_delete, cohort["name"])
+            else:
+                log.info(
+                    "[%d/%d] WOULD DELETE %d rows: %s %s %s @ entry=%s (keep id=%s, %d total in cohort)",
+                    i + 1, len(cohorts), to_delete,
+                    cohort["strategy"], cohort["symbol"], cohort["direction"],
+                    cohort["entry_price"], cohort["min_id"], cohort["count"],
+                )
 
         report["per_cohort"].append(cohort_detail)
         report["cohorts_processed"] += 1
@@ -369,7 +517,8 @@ def main():
     try:
         # Discover ghost cohorts
         log.info("Discovering ghost cohorts (min_size=%d)...", args.min_size)
-        cohorts = discover_ghost_cohorts(conn, min_size=args.min_size)
+        # Full-table GROUP BY times out on this DB; use targeted known-targets scan.
+        cohorts = discover_ghost_cohorts(conn, min_size=args.min_size, use_known_only=True)
         log.info("Found %d ghost cohorts", len(cohorts))
 
         if not cohorts:
