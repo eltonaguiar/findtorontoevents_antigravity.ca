@@ -37,3 +37,27 @@ Addresses the four workflows flagged on [gha-summary.html](https://findtorontoev
 **Fix:** Fail-fast in workflow when secret missing (clear `::error::` message). Schedule remains disabled until secret is set.
 
 **Status (2026-05-23):** `EVENT_NOTIFY_API_KEY` set in GitHub Actions secrets and merged into server `/fc/api/.env` + `/favcreators/api/.env`. **Send Morning Goal Follow-Ups workflow disabled** (out of project scope); use `send-accountability-reminders` if accountability DMs are needed later.
+
+---
+
+## Latest dashboard snapshot (2026-05-23T22:24:50Z)
+
+**Live:** https://findtorontoevents.ca/updates/gha-summary.html
+
+| Metric | Count |
+|--------|------:|
+| Workflows scanned | 301 |
+| Running now | 20 |
+| Needs attention | 1 |
+| Unresolved failure (guardian) | 1 |
+| Chronic cancelled | 0 |
+| Latest failed | 1 |
+| Latest cancelled | 2 |
+| Never run | 123 |
+| Stale (never run / old) | 138 |
+
+**Unresolved:** DB Freshness Guardian — last failed run before `db_freshness_check.py` fix (rerun requested). Sports Prediction Market Sync and Rise of the Claw deploy cleared after PAT/TLS fixes.
+
+**Needs attention (latest run):** DB Freshness Check (Legacy Manual) — separate legacy workflow; review or disable if redundant with `db-freshness-guardian.yml`.
+
+**Disabled:** Send Morning Goal Follow-Ups (disabled).
