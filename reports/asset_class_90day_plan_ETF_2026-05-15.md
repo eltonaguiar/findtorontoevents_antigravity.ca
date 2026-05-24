@@ -171,3 +171,24 @@ This plan is ruthless, data-driven, focused on compounding the clean academic ro
 
 ---
 *Generated 2026-05-15 per money-maker-continual-improve skill invocation. Pilot asset class for system remains COMMODITY; this is ETF-specific 90d wiring + validation plan (tertiary parallel track).*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**ETF-specific changes:**
+- **Freshness threshold:** 5 minutes. ETFs are slower than equities and bonds/MFs in terms of how often a meaningful signal changes.
+- **ETF is the easiest path to institutional trust** per ChatGPT's review — liquid, diversified, low manipulation risk, factor-measurable. Workstream F1 (wiring missing ETF emitters into the active JSON pipeline) is **P0 here** — the May-15 plan called this "high-ROI activate-now"; the refresh upgrades it to a Stage-1 prerequisite for the class.
+- **Sector rotation + VIX gate** (Tier-1 backtest per May-15) — wire-up first, calibrate second, then enable. Do not size up until calibration is monotonic.
+- **Tracking error + NAV-vs-price spread + expense-ratio + factor-overlap** become first-class columns (Workstream F3 ETF additions). Tracking error >0.5% suppresses the pick.
+- **Pairs sleeve (C2)** lands naturally here: TLT/IEF, XLE/XOP, SPY/RSP duration & equal-weight spread trades are textbook market-neutral. Opt-in sidecar per Wire-Up Rule until shadow forward-test n>50.
+- **Verdict (refreshed):** ETF is the **second canary**. Once EQUITY hits Stage-1, ETF follows the same A→B→C path within 4 weeks because the data is cleaner. By Day 90 the plan expects ETF at Stage-1 minimum.

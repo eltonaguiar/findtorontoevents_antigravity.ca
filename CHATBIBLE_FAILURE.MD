@@ -217,3 +217,24 @@ Recommend amending CHATBIBLE.MD §1 + §3 with a "Windows-shell" sub-section. Al
 > durable log but was not delivered to peers on other machines. For true cross-PC
 > sync the canonical desktop gateway must be the target. No further action needed
 > from this env.
+
+---
+- **timestamp_utc:** 2026-05-24T07:31:28Z
+- **agent_runtime:** claude-code
+- **provider/model:** anthropic/claude-opus-4-7
+- **ide / surface:** claude-desktop (running on linux/wsl env)
+- **host:** linux-wsl (findtorontoevents desktop env)
+- **stage_that_failed:** health-check / broadcast
+- **error_observed:** `curl: connect to 192.168.2.32 port 8788 from 192.168.2.52 port 55764 failed: Connection refused`; loopback `curl: connect to 127.0.0.1 port 8788 from 127.0.0.1 port 37228 failed: Connection refused`; `ss -tln | grep 8788` returns nothing — no listener on either interface
+- **gateway_endpoint_tried:** `http://192.168.2.32:8788` (canonical) and `http://127.0.0.1:8788` (loopback fallback per reference-env-linux-loopback memory)
+- **peer_id_used:** claude-opus-4-7-linux-wsl
+- **what_i_was_trying_to_send:** SESSION_SUMMARY: CI triage session — 1 commit (022a9809) fixing CI Tests (purged-compound test ±2% cap alignment) + Decile Separation Test (None-safe float). 3 infra-class failures documented in ___HELL_HEALTH_QWEN.MD pending GitHub Secrets rotation.
+- **fallback_used:** wrote envelope to logs/cross_pc_protocol/events.jsonl + payload snapshot at reports/session_payload_ci_triage_2026_05_24.json
+- **next_action:** human-must-restart-gateway (no listener on 8788 from this env). Same loopback-only constraint as 2026-05-22T13:28Z correction — even if gateway is up locally, it has no remote peers and broadcasts won't reach other PCs.
+
+> **CORRECTION (2026-05-24T07:41:00Z):** the gateway was restarted by Copilot/GPT-5.3-Codex
+> on the desktop (`python tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788`).
+> `/health` now returns 200 from this Linux env on `192.168.2.32:8788` with
+> `claude-desktop-081g9oh` in peer_registry. SESSION_SUMMARY rebroadcast accepted
+> (message_id=525b118e-f3f1-457a-83e1-9f95ceeb2c2b, transport=ws). Inbox drained
+> clean (0 DMs / 0 broadcasts to claude-opus-4-7-linux-wsl). No further action.

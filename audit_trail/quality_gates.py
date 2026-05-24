@@ -1500,6 +1500,13 @@ PERMANENTLY_KILLED_STRATEGIES = {
     "carry-trade-momentum",      # 26.7% WR, 15 trades, -2.2% PnL
     "copy_hl_lb_None",           # 32.0% WR, 278 trades, -806.4% PnL — 2nd worst strategy by total loss
     "copy_hl_lb_none",           # lowercase variant of above
+
+    # 2026-05-24 Institutional Readiness P0 — BOND kill (0% WR across all 9 closed picks).
+    # All 3 BOND strategies show consistent negative edge. See
+    # reports/audit_benchmark_analysis_2026-05-24.md.
+    "bond_mean_reversion",       # n=5, 0% WR, all losses
+    "bond_yield_momentum",       # n=3, 0% WR, all losses
+    "bond_yield_curve_slope",    # n=1, 0% WR
 }
 
 # FIX: Case-insensitive kill check. Picks arrive as lowercase but kill list has mixed case.
@@ -2104,6 +2111,9 @@ BLOCKED_STRATEGIES = {
     # 2026-05-13: forex_rsi2_mean_reversion re-blocked post-resolver-v2.
     # n=84 trailing-14d, WR 7.1%, PF 0.09, avg PnL -0.42%. See PERMANENTLY_KILLED_STRATEGIES.
     ("forex_rsi2_mean_reversion", "FOREX"),
+    # 2026-05-24 Institutional Readiness P0 — FOREX killers (0% WR, consistent losses).
+    ("fx_smart_carry_trade_momentum", "FOREX"),       # n=15, 0% WR, -0.08% sum
+    ("fx_smart_forex_rsi2_mean_reversion", "FOREX"),  # n=5, 0% WR, -0.03% sum
     # 2026-04-14 edge-discovery sweep (see updates/2026-04-14-edge-discovery-and-plan.md)
     # Strategies below were scanned from the ~3,500-pick closed ledger (n >= 30).
     # Most: WR < 35% and/or PF < 0.65. Exception: Short-Term Reversal has PF 1.07 but
@@ -3101,6 +3111,10 @@ EXTRA_KILLED_FOREX_STRATEGIES = {
     "community_london_breakout_v2_forex",  # 0.0% WR on n=16, -7.9% PnL
                                            # London ORB academic edge is 40-60% WR;
                                            # this implementation has zero edge
+    # 2026-05-24 Institutional Readiness P0 — FOREX killers.
+    # Historical closed_picks.json shows consistent negative edge.
+    "fx_smart_carry_trade_momentum",       # n=15, 0% WR, -0.08% sum PnL
+    "fx_smart_forex_rsi2_mean_reversion",  # n=5, 0% WR, -0.03% sum PnL
 }
 PERMANENTLY_KILLED_STRATEGIES |= EXTRA_KILLED_FOREX_STRATEGIES
 # Refresh case-insensitive lookup

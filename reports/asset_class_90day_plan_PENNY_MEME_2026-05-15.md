@@ -149,3 +149,24 @@ This plan is ruthless, data-driven, and decisive: the PENNY_MEME bucket is not "
 
 ---
 *Generated 2026-05-15 per money-maker-continual-improve skill invocation on Low-Quality Equities (Penny Stocks + Meme Coins) audit. System pilot remains COMMODITY (COT real edge); this is high-risk bucket quarantine plan (no sleeve). Follows AGENTS.md / CLAUDE.md / SOUL.md / memory/2026-05-15.md + skill.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**PENNY/MEME-specific changes:**
+- **Freshness threshold:** 30 seconds (memes), 60 seconds (penny equities). Pump-and-dump windows are short; stale picks here are actively dangerous.
+- **PENNY/MEME is the cleanest fit for the speculative bucket (Workstream D1)** — May-15 already called for "full quarantine, 0% allocation, research-only." The refresh upgrades this to **automatic `speculative_flag=True` for every pick**, with hard gates: float size, dilution probability (warrants/convertibles), borrow availability, halt frequency, social-velocity anomaly.
+- **Manipulation-risk score** becomes a first-class column. Calibrate against known pump-and-dump fingerprints (volume spike vs price spike timing, social-velocity vs realized-volume divergence).
+- **No institutional path for PENNY/MEME in 90 days, period.** The work here is to make the dashboard *clearly* speculative — separate visual treatment on `/audit`, distinct color, "speculative — DO NOT use for allocation decisions" banner.
+- **Gemini's "Speculative Microcap Engine"** recommendation is fulfilled by D1 Step 2 conditional on Step 1 surfacing institutional-bucket contamination. If contamination shows up, D1 Step 2 builds the dedicated engine here first.
+- **Verdict (refreshed):** PENNY/MEME stays quarantined but **made honest** — the dashboard stops pretending these are tradeable picks. They're research / pattern-mining inputs only.

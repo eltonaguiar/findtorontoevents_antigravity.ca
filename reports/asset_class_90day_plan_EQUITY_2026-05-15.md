@@ -219,3 +219,25 @@ This plan is ruthless, data-driven, focused on compounding real persistent edge 
 
 ---
 *Generated 2026-05-15 per money-maker-continual-improve skill invocation on EQUITY audit. Pilot for system remains COMMODITY (COT); this is EQUITY-specific 90d rescue-to-Tier-2 plan. Follows AGENTS.md / CLAUDE.md / SOUL.md / every-session reads of SOUL/USER/memory/2026-05-15.md + skill.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**EQUITY-specific changes:**
+- **Freshness threshold:** 60 seconds during market hours; suppressed entirely after-hours unless a queued earnings/news event is the source.
+- **EQUITY is the closest class to Stage-1 ready** (PF 1.41 / WR 52.7% / n=421 in the 2026-05-24 post-resolver-v2 snapshot). This makes it the **canary class** for the entire institutional-readiness plan — the Workstream A→B→C path proves itself here first.
+- **Macro-calendar blackout (Workstream B2):** no new equity picks within ±60 minutes of CPI / FOMC / NFP / pre-open earnings. Hard rule.
+- **Factor exposure vector (D3):** every institutional-bucket equity pick carries size / value / quality / momentum / low-vol factor scores. Used by Workstream C1 portfolio constraints to enforce a factor budget.
+- **VIX-regime 12-1 momentum** (backtest PF 5.37, unshipped per May-15 plan) gets the Stage-1 calibration treatment before shipping: prove monotonicity on hold-out, then wire into `passes_smart_gate`.
+- **Speculative split (D1):** sub-$5 equities, IPOs in their first 90 days, and microcaps (<$300M market cap) get `speculative_flag=True`. Blue-chip + mid-cap stays institutional.
+- **Verdict (refreshed):** EQUITY is the **canary**. If Workstream A+B can lift it from PF 1.41 → PF 1.5+ at Sharpe>1.0 within 90 days with no regression on n, the whole plan is validated. If it cannot, the plan needs a real edge upgrade before any other class is attempted.

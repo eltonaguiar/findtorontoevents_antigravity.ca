@@ -180,3 +180,25 @@ This plan is ruthless, data-driven, focused on compounding real edge while elimi
 
 ---
 *Generated 2026-05-15 per money-maker-continual-improve skill invocation. Pilot asset class for system remains COMMODITY; this is CRYPTO-specific 90d rescue/shrink plan.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**CRYPTO-specific changes:**
+- **Freshness threshold:** 30 seconds. Anything older is suppressed at the gate. This is the tightest SLA — crypto moves fastest.
+- **Universe shrink stays mandatory** (was already in the May-15 plan): top 20–30 liquid coins only, hard ADV gate, MEMECOIN class quarantined into the speculative bucket (D1) — not just sector-capped.
+- **Volume share caps on noisy sources:** `quan_engine` (~18% historical, PF 0.70) and `unknown` (~7%, PF 0.35) are the elite-strategy drags. Hard cap each at ≤ 5% of CRYPTO emission volume — already partially shipped via Hermes c2c072c0123 (12%→5% on quan_engine), but the `unknown` source still needs an explicit cap + traceability fix (Workstream G3 lineage requirement).
+- **Funding-rate carry / OI delta / liquidation-cluster / stablecoin-flow features** become first-class columns (Workstream F3). The Glassnode on-chain module (`alpha_engine/crypto_onchain_momentum.py`) graduates from default-off experiment to wired-into-`score_pick` after backtest n>200 (currently n=167, WARN).
+- **BTC UTC death-zone filter (M-001)** is now Stage-1-blocking — until it's wired into `passes_active_gate`, CRYPTO cannot pass Stage 1 because the calibration cannot be monotonic without it.
+- **Speculative split (D1):** meme coins (DOGE, SHIB, PEPE, FARTCOIN, BONK, FLOKI, WIF, TRUMP, BRETT) get `speculative_flag=True` automatically. Liquid majors + established L1/DeFi stay in the institutional path.
+- **Verdict (refreshed):** CRYPTO remains sub-T2 (PF 1.25-1.36 / WR 44.6-46.7%). Volume king but quality problem. The May-15 plan was right that universe shrink + drag-quarantine is the path; this refresh adds the calibration + lineage layer that prevents the next "high score = low realized WR" inversion from being invisible.
