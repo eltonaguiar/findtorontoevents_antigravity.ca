@@ -3,6 +3,8 @@
 **Date:** 2026-05-23  
 **Live URL:** https://findtorontoevents.ca/updates/gha-summary.html
 
+**Last refresh:** 2026-05-23T22:24:50Z — 301 workflows, 20 running, 1 needs attention (see failures doc for guardian-cache caveat).
+
 ## What was built
 
 A fleet-wide GitHub Actions health dashboard that:

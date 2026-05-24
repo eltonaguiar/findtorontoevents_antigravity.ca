@@ -135,12 +135,13 @@ def compute_clean_metrics(closed_picks, cap_pct=10.0):
     purge_symbols = {"TRXUSDT", "KATUSDT", "KITEUSDT", "RESOLVUSDT"}
     purge_systems = {"mercury2_fast", "mercury2_slow"}
     
-    purged = [p for p in resolved if 
+    purged = [p for p in resolved if
               p.get("symbol", "").upper() not in purge_symbols and
               p.get("source_system", "").lower() not in purge_systems]
     purged_pnls = [float(p.get("pnl_pct", 0) or 0) for p in purged]
     total_pnl_purged = sum(purged_pnls)
-    purged_pnl_compounded_ew = _compound_pct_ew_chronological(purged, None)
+    # Match dashboard_generator.py _MAX_PNL_COMPOUND = 2 (per-trade cap for EW compound)
+    purged_pnl_compounded_ew = _compound_pct_ew_chronological(purged, max_abs_pct=2.0)
 
     # Sharpe ratio (per-trade, not annualized)
     sharpe_per_trade = None
