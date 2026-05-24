@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Tournament Pipeline — Hedge Fund Grade — May 24 2026</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.6; }
+  h1 { font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  h2 { font-size: 16px; margin-top: 24px; color: #93c5fd; }
+  .done { background: #14532d; color: #86efac; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .warn { background: #713f12; color: #fbbf24; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .todo { background: #7c2d12; color: #fca5a5; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+  th { color: #a0a0b0; font-size: 11px; text-transform: uppercase; }
+  .meta { color: #6b7280; font-size: 11px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>🏆 AI Tournament Pipeline — Hedge Fund Grade</h1>
+<div class="meta">May 24, 2026 · Multi-session build · 15+ commits</div>
+
+<h2>What Was Built</h2>
+
+<h3>Pipeline Core</h3>
+<table>
+  <tr><th>Component</th><th>Status</th><th>What It Does</th></tr>
+  <tr><td>DB Ingest</td><td><span class="done">DONE</span></td><td>865 picks/batch into tournament_picks (34 cols, dedup_key upsert)</td></tr>
+  <tr><td>Kelly Sizing</td><td><span class="done">DONE</span></td><td>Fractional Kelly, equal-weight until n&ge;20 per persona, 1.5% max</td></tr>
+  <tr><td>Price Tracker</td><td><span class="done">DONE</span></td><td>PENNY 7d, FUTURES 14d resolution windows, =X/=F suffix fix</td></tr>
+  <tr><td>Kill Gate</td><td><span class="done">DONE</span></td><td>4-statistical-gate framework: 4 KILLED personas, FOREX asset-class blocked</td></tr>
+  <tr><td>Copy Trader</td><td><span class="done">DONE</span></td><td>20+ picks/2h converted to tournament format, CI-wired</td></tr>
+  <tr><td>Position Sizing Rules</td><td><span class="done">DONE</span></td><td>1.5%/position, 10 concurrent max, 5% class concentration</td></tr>
+</table>
+
+<h3>Data Integration</h3>
+<table>
+  <tr><th>Source</th><th>Status</th><th>Data Points</th></tr>
+  <tr><td>FRED Macro</td><td><span class="done">LIVE</span></td><td>7 series: Fed Funds 3.62%, 10Y2Y 0.43, CPI 332.4, VIX 16.76, HY Spread 2.78%</td></tr>
+  <tr><td>Kalshi</td><td><span class="done">WIRED</span></td><td>9 prediction market signals into research topics</td></tr>
+  <tr><td>Polymarket</td><td><span class="done">WIRED</span></td><td>3 signals + 8 whale profiles, confidence booster for consensus</td></tr>
+  <tr><td>Copy Trader</td><td><span class="done">WIRED</span></td><td>Stocks/forex/commodities picks every 2h</td></tr>
+</table>
+
+<h3>Analytics</h3>
+<table>
+  <tr><th>Tool</th><th>Status</th></tr>
+  <tr><td>Edge Significance Gate (4-test)</td><td><span class="done">DONE</span></td></tr>
+  <tr><td>Portfolio Analytics (Sharpe, VaR, DD)</td><td><span class="done">DONE</span></td></tr>
+  <tr><td>Diversification Monitor</td><td><span class="done">DONE</span></td></tr>
+  <tr><td>Performance Reporting</td><td><span class="done">DONE</span></td></tr>
+  <tr><td>Confidence Proxy (persona_WR)</td><td><span class="done">DONE</span></td></tr>
+  <tr><td>Super Secure Picks Personas</td><td><span class="done">NEW</span></td></tr>
+</table>
+
+<h2>Current State</h2>
+<ul>
+  <li><strong>3,149 picks</strong> across 9 asset classes, 34 models, 53.4% overall WR</li>
+  <li><strong>0 Tier-1</strong> edge pairs (strict statistical framework)</li>
+  <li><strong>deep_value x EQUITY</strong>: 60 picks, 60% WR, +1.07% PnL — only proven pair</li>
+  <li><strong>FOREX BLOCKED</strong> (253 picks, -0.39% PnL) — statistical trap confirmed</li>
+  <li><strong>BOND WARNED</strong> (251 picks, -0.14% PnL) — near breakeven</li>
+</ul>
+
+<h2>Key Findings</h2>
+<ul>
+  <li><strong>regime_adaptive 84.6% WR</strong> is SYNTHETIC_SEED data from old pipeline — not leakage</li>
+  <li><strong>ML calibration SYSTEM-WIDE INVERTED</strong> — confidence 0.85-0.90 is worst bucket (20% WR)</li>
+  <li><strong>UEPS (US Equity Picks) n=0/100</strong> — fundamental scoring exists but no track record</li>
+  <li><strong>FRED data operational</strong> after fixing hardcoded api_key="" + setting GitHub secret</li>
+</ul>
+
+<h2>Reports Generated</h2>
+<ul>
+  <li><code>reports/EDGE_CRITERIA_SWARM_2026-05-24.md</code> — 3-agent quant/systems/portfolio audit</li>
+  <li><code>reports/EDGE_CRITERIA_SWARM_SYNTHESIS_2026-05-24.md</code> — consensus findings</li>
+  <li><code>reports/HEDGE_FUND_GAP_ANALYSIS_2026-05-24.md</code> — per-class gap analysis</li>
+  <li><code>reports/EDGE_CRITERIA_ACTION_PLAN_2026-05-24.md</code> — 2-engine swarm action plan</li>
+</ul>
+
+<h2>Next Priorities</h2>
+<ol>
+  <li><strong>Super Secure Picks</strong> — generate first batch using new persona criteria</li>
+  <li><strong>UEPS track record</strong> — build first 100 equity picks with fundamental scoring</li>
+  <li><strong>ML calibration fix</strong> — investigate why confidence 0.85-0.90 has 20% WR</li>
+  <li><strong>FRED regime integration</strong> — wire macro regime into pick direction scoring</li>
+  <li><strong>PENNY/FUTURES resolution</strong> — first batches resolve May 31 and Jun 7</li>
+</ol>
+
+</body>
+</html>
