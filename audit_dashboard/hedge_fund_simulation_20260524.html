@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Hedge Fund Simulation — Multi-Round Debate Results | May 24 2026</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.6; }
+  h1 { font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  h2 { font-size: 16px; margin-top: 28px; color: #93c5fd; }
+  h3 { font-size: 13px; color: #c0c0d0; margin-top: 16px; }
+  .round { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; margin: 16px 0; }
+  .agent { border-left: 3px solid #3b82f6; padding-left: 12px; margin: 10px 0; }
+  .agent.risk { border-left-color: #ef4444; }
+  .agent.pm { border-left-color: #22c55e; }
+  .agent.quant { border-left-color: #8b5cf6; }
+  .agent.persona { border-left-color: #f59e0b; }
+  .agent.hf { border-left-color: #06b6d4; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  th { color: #a0a0b0; font-size: 10px; text-transform: uppercase; }
+  .long { color: #86efac; }
+  .short { color: #fca5a5; }
+  .veto { color: #ef4444; font-weight: 700; }
+  .consensus { background: rgba(34,197,94,0.08); border-radius: 4px; padding: 2px 6px; font-size: 10px; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .meta { color: #6b7280; font-size: 11px; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 6px; font-size: 9px; font-weight: 700; }
+  .b-green { background: #14532d; color: #86efac; }
+  .b-red { background: #7c2d12; color: #fca5a5; }
+  .b-yellow { background: #713f12; color: #fbbf24; }
+</style>
+</head>
+<body>
+
+<h1>🤖 AI Hedge Fund Simulation — Multi-Round Debate Results</h1>
+<div class="meta">Generated: May 24, 2026 · 3 debate rounds · 10+ AI models · Data: tournament_picks (3,149 picks, 34 models)</div>
+
+<!-- ROUND 1 -->
+<div class="round">
+<h2>Round 1: Initial Pick Debate (7 Models)</h2>
+<div class="meta">Models: Risk Manager, Portfolio Manager, Cerebras GPT-OSS-120B, DeepSeek V4, KiloCode, Kimi, Cursor</div>
+
+<h3>Consensus Top 5</h3>
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Direction</th><th>Entry</th><th>Models Agreeing</th></tr>
+  <tr><td>1</td><td><strong>TLT</strong> (Bond)</td><td class="long">LONG</td><td>$87.66</td><td><span class="consensus">7/7</span></td></tr>
+  <tr><td>2</td><td><strong>SPY</strong> (ETF)</td><td class="short">SHORT</td><td>$726.80</td><td><span class="consensus">7/7</span></td></tr>
+  <tr><td>3</td><td><strong>GLD</strong> (ETF)</td><td class="long">LONG</td><td>$257.93</td><td><span class="consensus">7/7</span></td></tr>
+  <tr><td>4</td><td><strong>CL=F</strong> (Commodity)</td><td class="short">SHORT</td><td>$68.25</td><td><span class="consensus">5/7</span></td></tr>
+  <tr><td>5</td><td><strong>XOM</strong> (Equity)</td><td class="short">SHORT</td><td>$116.91</td><td><span class="consensus">5/7</span></td></tr>
+</table>
+
+<h3>Key Findings</h3>
+<ul>
+  <li><span class="veto">VETOED:</span> MVST (0 data), MSFT#2 (RR&lt;1), SHY (coin flip with costs)</li>
+  <li><span class="badge b-red">SYSTEMIC:</span> "80% confidence epidemic" — n=23 cannot support 80% confidence claims</li>
+  <li><span class="badge b-red">SYSTEMIC:</span> Duplicate MSFT entries — no position dedup in pipeline</li>
+  <li><span class="badge b-red">SYSTEMIC:</span> No n-threshold gate — 0-data personas generating live signals</li>
+  <li><span class="badge b-yellow">FIX NEEDED:</span> Confidence calibration, minimum n=50 gate, RR>=0.8 filter, duplicate detection</li>
+</ul>
+
+<h3>Swarm Prompts Used</h3>
+<details><summary>Click to expand</summary>
+<pre><code># Pick Debate Prompt (fed to 7 engines via swarm_run.py + subagents)
+
+You are one of 7 independent AI models evaluating the same curated pick list.
+You MUST respond in your own voice. Do not defer to other models.
+
+## The Picks (Forward-Tested Only, tournament_picks DB)
+EQUITY: MSFT LONG 447.89 (WR 58%, n=164), XOM SHORT 116.91 (WR 58%, n=164)
+CRYPTO: AVAXUSDT SHORT 22.83 (WR 65%, n=23), SOLUSDT LONG 157.39 (WR 65%, n=23)
+ETF: SPY SHORT 726.80 (WR 65%, n=23), GLD LONG 257.93 (WR 65%, n=23)
+COMMODITY: CL=F SHORT 68.25 (WR 65%, n=23), NG=F SHORT 3.90 (WR 65%, n=23)
+BOND: TLT LONG 87.66 (WR 65%, n=23), SHY SHORT 80.27 (WR 58%, n=164)
+PENNY: MVST LONG 1.80 (WR 0%, n=0)
+
+TASK: Rank YOUR top 5 picks. Veto 1-2 picks. Flag systemic issues.</code></pre>
+</details>
+
+<h3>Model-Specific Insights</h3>
+<div class="agent risk"><strong>Risk Manager:</strong> "XOM SHORT is the most honest pick — 30% confidence on 58% WR, good RR 2.1. The system tells you it's uncertain. That's a feature."</div>
+<div class="agent pm"><strong>Portfolio Manager:</strong> "Top 5 trim: TLT, SPY, GLD, CL=F, AVAXUSDT — dropping the conflicting SOL, redundant XOM, seasonal NG, low-conviction SHY/MSFT."</div>
+<div class="agent"><strong>Cerebras (gpt-oss-120b):</strong> "Absence of minimum-sample-size gate. A simple rule: require 50 observations for WR>60% would reduce false positives."</div>
+<div class="agent"><strong>DeepSeek (v4-flash):</strong> "The n-threshold is applied inconsistently. Equity n=164 vs crypto n=23 — not statistically equivalent."</div>
+</div>
+
+<!-- ROUND 2 -->
+<div class="round">
+<h2>Round 2: Full Cross-Asset + IPO/Mutual Fund Gap Analysis</h2>
+<div class="meta">Models: Multi-Asset Allocator, Financial Data Architect</div>
+
+<h3>Expanded Pick List (All 9 Asset Classes)</h3>
+<table>
+  <tr><th>Class</th><th>#1</th><th>#2</th><th>#3</th><th>Status</th></tr>
+  <tr><td>EQUITY</td><td>PG SHORT $167.37</td><td>GOOGL LONG $186.63</td><td>META LONG $620.71</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>CRYPTO</td><td>SOLUSDT LONG $157.39</td><td>ETHUSDT SHORT $2150</td><td>BTCUSDT SHORT $78,626</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>ETF</td><td>SPY SHORT $726.80</td><td>GLD LONG $257.93</td><td>XLE SHORT $91.74</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>COMMODITY</td><td>SI=F SHORT $34.93</td><td>CL=F SHORT $68.25</td><td>—</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>BOND</td><td>TLT LONG $87.66</td><td>BND LONG $71.47</td><td>SHY SHORT $82.36</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>PENNY</td><td>MVST $1.80</td><td>KULR $2.20</td><td>QBTS $1.50</td><td><span class="badge b-yellow">0 RESOLVED</span></td></tr>
+  <tr><td>FUTURES</td><td>ES=F LONG 5600</td><td>GC=F LONG 2500</td><td>CL=F SHORT 73</td><td><span class="badge b-yellow">0 RESOLVED</span></td></tr>
+  <tr><td>FOREX</td><td colspan="3" class="veto">🔴 BLOCKED — Kill gate: 57.3% WR, -0.39% avg PnL</td><td><span class="badge b-red">BLOCKED</span></td></tr>
+  <tr><td>IPO/Mutual Funds</td><td colspan="3">⏳ ZERO DATA — Infrastructure not built</td><td><span class="badge b-yellow">GAP</span></td></tr>
+</table>
+
+<h3>Multi-Asset Allocator: Top 10 Composite Scores</h3>
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Score</th><th>WR</th><th>n</th><th>RR</th></tr>
+  <tr><td>1</td><td>SPY SHORT</td><td>4.59</td><td>62.5%</td><td>124</td><td>1.9</td></tr>
+  <tr><td>2</td><td>TLT LONG</td><td>4.35</td><td>62.5%</td><td>124</td><td>1.8</td></tr>
+  <tr><td>3</td><td>SHY SHORT</td><td>3.86</td><td>62.5%</td><td>124</td><td>1.6</td></tr>
+  <tr><td>4</td><td>GLD LONG</td><td>2.90</td><td>62.5%</td><td>124</td><td>1.2</td></tr>
+  <tr><td>5</td><td>WMT SHORT</td><td>2.67</td><td>64.0%</td><td>11</td><td>2.1</td></tr>
+</table>
+<p>Score = Confidence × WR × RR × ln(n+1), normalized per class.</p>
+
+<h3>IPO/Mutual Fund Gap Analysis</h3>
+<div class="agent"><strong>Financial Data Architect recommendations:</strong>
+<ul>
+  <li><strong>IPO Stocks:</strong> SEC EDGAR (RSS feed for S-1 filings), Nasdaq IPO Calendar (RSS), StockAnalysis.com IPO page (scrapable). Build <code>tools/ipo_scraper.py</code> (~200 lines). Persona: <code>ipo_momentum</code> for post-IPO 30-day window.</li>
+  <li><strong>Mutual Funds:</strong> Track Fidelity Zero funds (FZROX, FZILX, FZIPX), Schwab (SWTSX, SWISX), Vanguard (VTSAX, VTIAX). Score by expense ratio (zero = best), Sharpe ratio, factor tilt. Persona: <code>fund_quality_gate</code>.</li>
+  <li><strong>Est. build time:</strong> 4-6 hours for IPO scraper + persona, 2-3 hours for mutual fund tracker.</li>
+</ul>
+</div>
+</div>
+
+<!-- ROUND 3 -->
+<div class="round">
+<h2>Round 3: Hedge Fund Simulation — Quant + Persona + PM</h2>
+<div class="meta">Models: Quant Researcher, Behavioral Analyst, Hedge Fund PM ($500k AUM) | 🔄 RUNNING</div>
+
+<h3>Methodology</h3>
+<ul>
+  <li><strong>Quant:</strong> Expected Value per pick, Sharpe estimation, correlation matrix, Kelly sizing, risk parity optimization</li>
+  <li><strong>Persona:</strong> Market narrative per pick, news context, earnings catalysts, freely available data sources (Yahoo, SEC, CoinGecko, FRED)</li>
+  <li><strong>Hedge Fund PM:</strong> Final 10-position allocation with $500k AUM, 1.5% risk/position, 15% total risk budget</li>
+</ul>
+
+<h3>Data Sources Used (All Free/Open)</h3>
+<table>
+  <tr><th>Source</th><th>Asset Classes</th><th>What It Provides</th></tr>
+  <tr><td>Yahoo Finance (yfinance)</td><td>EQUITY, ETF, COMMODITY, BOND</td><td>OHLCV, fundamentals, options</td></tr>
+  <tr><td>FRED (St. Louis Fed)</td><td>ALL (macro context)</td><td>Fed Funds, CPI, VIX, yield curve</td></tr>
+  <tr><td>CoinGecko</td><td>CRYPTO</td><td>Price, volume, market cap</td></tr>
+  <tr><td>SEC EDGAR</td><td>EQUITY (IPO tracking)</td><td>S-1 filings, 10-K, 8-K</td></tr>
+  <tr><td>Polymarket/Kalshi</td><td>ALL (sentiment)</td><td>Prediction market probabilities</td></tr>
+  <tr><td>CFTC COT Reports</td><td>COMMODITY, FOREX</td><td>Positioning data</td></tr>
+</table>
+
+<h3>Personas Deployed This Round</h3>
+<table>
+  <tr><th>Persona</th><th>Asset Class</th><th>Method</th></tr>
+  <tr><td><code>quant_systematic</code></td><td>ALL</td><td>EV, Sharpe, Kelly, risk parity</td></tr>
+  <tr><td><code>behavioral_narrative</code></td><td>ALL</td><td>News sentiment, narrative consistency, earnings catalysts</td></tr>
+  <tr><td><code>hedge_fund_pm</code></td><td>ALL</td><td>Position sizing, risk budget, correlation management</td></tr>
+  <tr><td><code>invert_losers</code></td><td>EQUITY</td><td>Fade underperformers (WR 64%, n=11)</td></tr>
+  <tr><td><code>risk_parity</code></td><td>ALL</td><td>Equal risk contribution across assets (WR 60%, n=124)</td></tr>
+  <tr><td><code>vol_arb</code></td><td>CRYPTO,COMMODITY</td><td>Volatility arbitrage (WR 65%, n=23)</td></tr>
+</table>
+</div>
+
+<p style="margin-top:32px;color:#6b7280;font-size:11px">Not financial advice. Educational/research purposes only. Data: tournament_picks table (ejaguiar1_stocks). 
+<a href="/audit/ai-tournament.html">AI Tournament</a> · <a href="/audit/curated_picks_20260524.html">Curated Picks</a></p>
+</body>
+</html>
