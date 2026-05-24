@@ -153,7 +153,14 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
     alter_fallbacks = [
         "ALTER TABLE ai_tournament_picks ADD COLUMN reason TEXT DEFAULT NULL COMMENT 'Detailed persona rationale' AFTER thesis;",
         "ALTER TABLE ai_tournament_picks ADD COLUMN entry_criteria TEXT DEFAULT NULL COMMENT 'Specific entry triggers that fired' AFTER reason;",
+        "ALTER TABLE ai_tournament_picks ADD COLUMN take_profit DECIMAL(16,4) DEFAULT NULL AFTER entry_price;",
+        "ALTER TABLE ai_tournament_picks ADD COLUMN stop_loss DECIMAL(16,4) DEFAULT NULL AFTER take_profit;",
     ]
+
+    # Last resort: drop and recreate if column mismatch persists
+    drop_and_recreate = """
+        DROP TABLE IF EXISTS ai_tournament_picks;
+    """ + ddl[0]
 
     insert_sql = """
         INSERT INTO ai_tournament_picks
@@ -177,7 +184,7 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             updated_at      = NOW()
     """
 
-    return ddl, rows, insert_sql, alter_fallbacks
+    return ddl, rows, insert_sql, alter_fallbacks, drop_and_recreate
 
 
 def main() -> None:
@@ -190,7 +197,7 @@ def main() -> None:
         print("[ingest] No picks to ingest — exiting")
         return
 
-    ddl_statements, rows, insert_sql, alter_fallbacks = build_upsert_sql(picks)
+    ddl_statements, rows, insert_sql, alter_fallbacks, drop_and_recreate = build_upsert_sql(picks)
     print(f"[ingest] {len(rows)} rows to upsert")
 
     # Try MySQL connection
@@ -228,14 +235,13 @@ def main() -> None:
                     cur.execute(ddl)
                 except Exception as alter_e:
                     print(f"[ingest] DDL failed, trying fallback: {alter_e}")
-                    # Fallback to simpler ALTER for older MySQL
                     import re
                     for fallback in alter_fallbacks:
                         try:
                             cur.execute(fallback)
                             print(f"[ingest] Fallback ALTER succeeded")
                         except Exception:
-                            pass  # Column may already exist
+                            pass
             print("[ingest] Tables verified")
 
             # Insert in batches
@@ -252,7 +258,23 @@ def main() -> None:
     except ImportError:
         print("[ingest] WARNING: pymysql not installed — skipping MySQL ingestion")
     except Exception as e:
-        print(f"[ingest] ERROR: MySQL ingestion failed: {e}")
+        err = str(e)
+        print(f"[ingest] ERROR: MySQL ingestion failed: {err}")
+        # Last resort: column mismatch — drop and recreate table
+        if "Unknown column" in err:
+            try:
+                import pymysql
+                conn2 = pymysql.connect(host=db_host, user=db_user, password=db_pass, database=db_name, port=3306, connect_timeout=10)
+                with conn2.cursor() as cur:
+                    for stmt in drop_and_recreate.split(';'):
+                        s = stmt.strip()
+                        if s:
+                            cur.execute(s + ';')
+                conn2.commit()
+                conn2.close()
+                print("[ingest] Table dropped and recreated — data will be ingested on next run")
+            except Exception as e2:
+                print(f"[ingest] Drop/recreate also failed: {e2}")
         # Don't crash the pipeline — the JSON files still exist
 
 

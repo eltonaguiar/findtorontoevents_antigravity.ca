@@ -836,11 +836,15 @@ def main() -> None:
                     p.get("confidence", 0.5)
                 )
             if not p.get("reason") and p.get("thesis"):
-                p["reason"] = f"Entry thesis: {p['thesis']} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
-    except ImportError:
+                p["reason"] = f"Entry thesis: {p['thesis'][:200]} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
+    except Exception as e:
+        print(f"[populate] Reason injection failed (non-fatal): {e}")
         for p in all_picks:
             if not p.get("reason") and p.get("thesis"):
-                p["reason"] = f"Thesis: {p['thesis']} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
+                try:
+                    p["reason"] = f"Thesis: {str(p['thesis'])[:200]} | Conf: {_fmt_conf(p.get('confidence', 0.5))}"
+                except Exception:
+                    p["reason"] = str(p.get("thesis", ""))[:200]
 
     # Write output
     out_path = pick_out_path()
