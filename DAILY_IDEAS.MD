@@ -106,6 +106,46 @@ Sub-prompts:
 - Fed-meeting probability markets → STIR (short-term interest rate) trade
 - Causation check: do Polymarket odds LEAD or LAG the underlying market?
 
+#### IDEA-H Analysis (2026-05-24 — 2-engine swarm)
+
+**Engines:** DeepSeek V3.2 + Cerebras. Both reviewed the full PM infrastructure (8,700+ loc across 11 production files — , , , , , , , , , , ), quality_gates weights (prediction_market_consensus=14, polymarket_signals=14, pm_whale_signals=10), and the existing  dict in .
+
+**Verdict: 7.5/10 composite — strong infrastructure leverage, the highest-scoring idea from the May 13 brainstorm so far.** Both engines agreed this is the best candidate among the 12 ideas given the deep existing PM foundation. The key insight: 40% of the code is already written — IDEA-H is extending the PM engine from crypto-only to equity/macro, not building from scratch.
+
+| Criterion | DeepSeek | Cerebras | Composite |
+|---|---|---|---|
+| Gap fit | 7/10 (strong but domain shift from crypto→equity; 40% infra reuse) | 9/10 (natural extension of existing PM engine) | **8/10** |
+| Realism / signal count | 8-15/wk raw, 35% actionable = 3-5/wk | 4-6/wk clean (odds>70%, vol>50k, trend≥2h) | **4-6/wk** |
+| Data accessibility | /usr/bin/bash — Polymarket Gamma + Kalshi + FRED + yfinance, all free | 9/10 — /usr/bin/bash incremental, all already licensed or free | **9/10** |
+| Integration feasibility | ~570 LOC total (450 new + 120 modified) | ~560 LOC total (pm_macro_overlay.py ~200 loc + lead_lag_analyzer.py ~250 loc + extensions) | **~560 LOC** |
+| Priority vs EDGE_CRITERIA | 6/10 (Sprint 3 — after core foundation stable via Sprint 2) | 7.5/10 (Sprint 2 candidate, synergizes with symbol-universe audit) | **6.5/10** |
+| **Overall** | **6.8/10** | **8.2/10** | **~7.5/10** |
+
+**Key point of agreement: Fed-rate correlation is the highest-signal entry point.** Both engines independently identified Polymarket Fed-meeting probability markets as the cleanest signal — they have the most liquidity, the tightest bid-ask spreads, and the most direct mapping to tradable instruments (fed funds futures / STIR). Election and geopolitical markets are noisier but worth Phase 2.
+
+**DeepSeek's caution (valid):** EQUITY/MACRO PM markets have 10-100× lower liquidity than crypto PM markets. A Fed rate market might have 0-200K volume vs BTC markets at -50M. Signal reliability drops accordingly — ~35% of extracted signals are actionable vs ~55% for crypto PM. The 3-5 clean signals/week is lower than intuition suggests.
+
+**Cerebras's optimism (also valid):** The edge is **cross-platform agreement**, not raw probability. When BOTH Polymarket AND Kalshi agree on a Fed rate outcome AND the probability is >70%, the signal quality jumps. The existing  already implements strict pairwise agreement — IDEA-H is wiring that same pattern to macro instruments.
+
+**Salvageable elements (MVP-first build plan):**
+
+- **Phase 1 — Fed-rate correlation MVP (~150 LOC):** Create . Query Polymarket Gamma API for Fed rate markets (), cross-reference with Kalshi rate markets via the existing  dict. When both platforms agree direction with probability >70%, emit a macro signal: . Reuse the existing  weight framework and  staleness guard (4h). Wire into  with weight=10 (conservative — lower than crypto PM at 14 due to thinner data). **No new dependencies.**
+- **Phase 2 — Election/geopolitical extension (~200 LOC):** Create . Map election markets to sector ETFs (R=small-cap/IWM, D=healthcare/XLV). Map geopolitical markets to commodities (oil conflict → USO, gold safe-haven → GLD). Use the same Polymarket+Kalshi pairwise agreement pattern. Expected: 2-3 sector-rotation signals + 1-2 commodity signals per week.
+- **Lead/lag analysis (~100 LOC):** Create . Simple cross-correlation: for each PM event with >20 daily data points, compute (PM_odds[t], underlying_return[t-3..t+3]) correlation window. If PM odds lead by 1-3 days with Pearson r>0.3, flag as leading indicator. If odds lag by 1-3 days, flag as reactive (discard for trading). Output:  consumed by  to adjust source weights dynamically. **Critical:** gates must use ONLY data up to the pick timestamp (no forward-looking leakage).
+
+**Discard (~1,300 LOC saved):**
+- Full PM-to-market correlation matrix — too noisy at current liquidity levels; simple pairwise is sufficient
+- Real-time WebSocket ingestion — hourly polling via existing CI/CD ( workflow) is sufficient; real-time adds latency complexity with no signal gain at 4-6 signals/week
+- ML lead/lag predictors (LSTM, Granger causality) — simple cross-correlation is sufficient for MVP; ML adds overfit risk with n<100 weekly signals
+- Multi-exchange arbitrage (PredictIt, Manifold, Metaculus) — Polymarket+Kalshi covers 80%+ of relevant volume; adding more exchanges dilutes signal/noise
+- Full sector-rotation backtester — paper-trade the MVP for 60 days first; backtest only if PF>1.2 after 30+ resolved signals
+
+**Estimated effort:** 4-8 hours for Phase 1 MVP. 10-15 hours for Phase 1+2+lead/lag. **No new dependencies, no new API keys, /usr/bin/bash recurring cost.**
+
+**Accept/Reject criterion for Phase 1 MVP:** After 60 days paper-trading with ≥30 resolved signals: PF≥1.25 AND WR≥50% → promote to Sprint 3 full build. PF<1.0 OR signal count <10 resolved → kill the MVP, archive findings.
+
+**Decision: RECOMMEND FOR SPRINT 2 — highest ROI idea from the May 13 brainstorm.** Scores 7.5/10 vs IDEA-E's 4.5/10. The existing 8,700-line PM infrastructure means ~40% of the work is already done. The Fed-rate correlation MVP is 150 LOC, /usr/bin/bash cost, and extends an already-production system into a new asset class. Priority is below Sprint 1 (DONE — confidence fix + regime audit + FOREX kill) and alongside Sprint 2 candidates (PBO/CPCV harness, symbol universe audit). Recommend slotting into Sprint 2 if the PBO/CPCV harness doesn't consume the full sprint.
+
 ### IDEA-I: Weather → farming / soft commodities
 
 Forecast rain (NOAA GFS, ECMWF, weather.com API) → corn/wheat/soy futures (ZC/ZW/ZS=F). Drought monitor + crop-progress weekly (USDA WASDE).
