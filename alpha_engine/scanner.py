@@ -2540,6 +2540,15 @@ def run_strategies(data: dict[str, pd.DataFrame], context: dict,
                     sig["confidence"] = round(sig.get("confidence", 0.5) * 0.3, 4)
                     nc_blocked += 1
 
+            # FOREX zero-allocation (2026-05-24): kill-switch per EDGE_CRITERIA_ACTION_PLAN.
+            # Both swarm engines agree: FOREX signal is bad, not mis-scaled. Zero-allocate.
+            # Verification: SELECT COUNT(*) WHERE asset_class='FOREX' → 0.
+            if cat == "FOREX":
+                sig["confidence"] = 0.0
+                sig["forex_killed"] = True
+                nc_blocked += 1  # count in summary log
+                continue  # skip — do not append to cleaned_signals
+
             # Forex macro gate (vol regime)
             if cat == "FOREX" and _forex_macro_gate:
                 gate_ok, gate_reason = _forex_macro_gate(data, sym)

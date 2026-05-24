@@ -1404,6 +1404,23 @@ def run_score_booster(payload_path: Path | None = None) -> dict:
         log.info("SHORT direction edge bonus: %d picks boosted (+3 score, proven 38.7%% WR edge)",
                  short_edge_boosted)
 
+    # ── P1: Persona_WR → confidence proxy (2026-05-24) ──
+    # Picks with confidence ≤ 0.01 get persona_WR as confidence fallback.
+    # Clamped 0.25-0.75, same as tools/ai_tournament/ingest_to_db.py enrichment.
+    # Verifies: SELECT confidence FROM tournament_picks LIMIT 10 → non-zero.
+    persona_wr_proxied = 0
+    for pick in active_picks:
+        raw_conf = _float(pick.get("confidence", 0))
+        if raw_conf > 0.01:
+            continue
+        pw = _float(pick.get("persona_win_rate", 0))
+        if pw > 0:
+            pick["confidence"] = max(0.25, min(0.75, pw))
+            pick["_persona_wr_proxy"] = True
+            persona_wr_proxied += 1
+    if persona_wr_proxied:
+        log.info("Persona_WR confidence proxy: %d picks enriched (confidence was ≤0.01)", persona_wr_proxied)
+
     # ── Confidence recalibration per asset class (2026-05-14) ──
     # Per-system analysis shows confidence is INVERTED for some classes:
     #   CRYPTO: conf>=0.9 -> 14.4%% WR, conf 0.5-0.6 -> 60.3%% WR
