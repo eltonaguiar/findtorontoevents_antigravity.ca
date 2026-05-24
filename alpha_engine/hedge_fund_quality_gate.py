@@ -57,11 +57,13 @@ CRYPTO_CONFIDENCE_DEAD_BAND = (0.60, 0.70)
 # negative aggregate PnL on CRYPTO and inflate raw dashboard counts.
 # claude_gainer: n=15, -3.34% avg | dna_rapid_fire_mutations: n=6, -0.98%
 # regime_terminal: n=4, -0.38% | ml_crypto_pred: n=155, -0.48%
-# Env-var overridable for shadow-mode tuning.
+# 2026-05-24 (second pass): ml_bg_system_f: n=9, -1.39% | crypto_winners: n=4, -0.92%
+# ⚠️ crypto_winners n=4 is below the 10-trade floor — re-evaluate at n≥10.
+# All bans are env-var overridable for shadow-mode tuning.
 CRYPTO_BANNED_SOURCES = frozenset(
     s.strip() for s in os.environ.get(
         "HF_GATE_CRYPTO_BANNED_SOURCES",
-        "claude_gainer,dna_rapid_fire_mutations,regime_terminal,ml_crypto_pred"
+        "claude_gainer,dna_rapid_fire_mutations,regime_terminal,ml_crypto_pred,ml_bg_system_f,crypto_winners"
     ).split(",") if s.strip()
 )
 
@@ -69,13 +71,18 @@ CRYPTO_BANNED_SOURCES = frozenset(
 # Equity SHORTs are a tiny historical sample (n=4) and went 0/3. Equity LONG
 # has realized PF 1.49, so the asymmetric rule matches the evidence.
 EQUITY_ALLOWED_DIRECTIONS = frozenset({"LONG", "BUY"})
-# 2026-05-24: Source-system blocks for EQUITY. Default empty — stocks_competition
-# and fast_stocks_competition are already filtered from Smart Picks display by
-# audit_trail/quality_gates.py BLOCKED_SOURCE_SYSTEMS (but NOT from this gate).
-# Add source names here to block at HF gate execution time. Env-var overridable.
+# 2026-05-24: Source-system blocks for EQUITY.
+# stocks_competition: n=295, -1.02% avg (already in BLOCKED_SOURCE_SYSTEMS for Smart Picks display)
+# fast_stocks_competition: n=21, -1.95% avg
+# multi_asset_institutional: n=6, -3.55% avg | kimi_signal_tracking: n=4, -4.32% avg
+# ml_bg_system_f: n=6, -1.26% (cross-AC contaminant — also in CRYPTO_BANNED_SOURCES)
+# ⚠️ kimi_signal_tracking (n=4), multi_asset_institutional (n=6), ml_bg_system_f EQUITY (n=6)
+# are below the 10-trade floor — re-evaluate each at n≥10.
+# Env-var overridable for shadow-mode tuning.
 EQUITY_BANNED_SOURCES = frozenset(
     s.strip() for s in os.environ.get(
-        "HF_GATE_EQUITY_BANNED_SOURCES", ""
+        "HF_GATE_EQUITY_BANNED_SOURCES",
+        "stocks_competition,fast_stocks_competition,multi_asset_institutional,kimi_signal_tracking,ml_bg_system_f"
     ).split(",") if s.strip()
 )
 # 2026-05-16: AAPL un-banned. Original n=15/PF=0.69 ban was below 30-pick charter
