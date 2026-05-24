@@ -177,7 +177,7 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             updated_at      = NOW()
     """
 
-    return ddl, rows, insert_sql
+    return ddl, rows, insert_sql, alter_fallbacks
 
 
 def main() -> None:
@@ -190,7 +190,7 @@ def main() -> None:
         print("[ingest] No picks to ingest — exiting")
         return
 
-    ddl_statements, rows, insert_sql = build_upsert_sql(picks)
+    ddl_statements, rows, insert_sql, alter_fallbacks = build_upsert_sql(picks)
     print(f"[ingest] {len(rows)} rows to upsert")
 
     # Try MySQL connection
