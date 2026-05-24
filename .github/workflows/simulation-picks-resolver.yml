@@ -1,0 +1,52 @@
+name: AI Hedge Fund Simulation — Weekly Pick Resolution
+
+on:
+  schedule:
+    - cron: '0 23 * * 6'  # Saturday 23:00 UTC (weekly)
+  workflow_dispatch:
+
+jobs:
+  resolve-simulation-picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install pymysql yfinance requests
+      - name: Resolve simulation picks
+        env:
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS }}
+        run: |
+          python3 -c "
+          import pymysql, yfinance, json
+          from datetime import datetime, timezone
+          conn = pymysql.connect(host='$DB_HOST_STOCKS', user='$DB_USER_STOCKS', password='$DB_PASS_STOCKS', database='$DB_NAME_STOCKS', port=3306)
+          cur = conn.cursor()
+          cur.execute('SELECT id, symbol, entry_price, direction, take_profit, stop_loss FROM simulation_picks WHERE status=\"OPEN\"')
+          resolved = 0
+          for r in cur.fetchall():
+              pid, sym, entry, d, tp, sl = r[0], r[1], float(r[2] or 0), r[3], float(r[4] or 0), float(r[5] or 0)
+              try:
+                  t = yfinance.Ticker(sym)
+                  hist = t.history(period='14d')
+                  if hist.empty: continue
+                  price = float(hist['Close'].iloc[-1])
+                  direction_mult = 1.0 if d == 'LONG' else -1.0
+                  pnl = (price - entry) / entry * direction_mult * 100
+                  status = 'WIN' if pnl > 0 else 'LOSS'
+                  cur.execute('UPDATE simulation_picks SET exit_price=%s, pnl_pct=%s, status=%s, resolved_at=%s WHERE id=%s',
+                              (price, round(pnl,4), status, datetime.now(timezone.utc).isoformat(), pid))
+                  resolved += 1
+              except: pass
+          conn.commit()
+          print(f'Resolved {resolved} picks')
+          conn.close()
+          "
+      - name: Update webpage
+        run: |
+          curl -s "https://findtorontoevents.ca/audit/hedge_fund_simulation_20260524.html" > /dev/null || true
+          echo "Webpage refresh triggered"
