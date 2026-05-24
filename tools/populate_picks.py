@@ -155,6 +155,47 @@ def call_generic_openai_compat(
     return None
 
 
+def call_cerebras_sdk(
+    api_key: str, model: str, messages: list[dict], timeout: int = 60
+) -> dict | None:
+    """Call Cerebras via their Python SDK (bypasses REST IP blocks)."""
+    try:
+        import os
+        os.environ["CEREBRAS_API_KEY"] = api_key
+        from cerebras.cloud.sdk import Cerebras
+
+        client = Cerebras(timeout=timeout)
+        # Map messages to SDK format
+        sdk_messages = []
+        for m in messages:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            sdk_messages.append({"role": role, "content": content})
+
+        resp = client.chat.completions.create(
+            messages=sdk_messages,
+            model=model,
+            max_completion_tokens=4096,
+            temperature=0.7,
+            top_p=1,
+        )
+        if resp and resp.choices:
+            choice = resp.choices[0]
+            content = choice.message.content or ""
+            # Convert to openai-format dict for parse_picks_response
+            return {
+                "choices": [{"message": {"content": content, "role": "assistant"}}],
+                "model": model,
+            }
+    except ImportError:
+        print("  [Cerebras] SDK not installed — falling back to REST")
+        return None
+    except Exception as e:
+        print(f"  [Cerebras] SDK error: {e}")
+        return None
+    return None
+
+
 def call_anthropic_api(
     api_key: str, model: str, messages: list[dict], timeout: int = 60
 ) -> dict | None:
@@ -636,7 +677,7 @@ def try_prompt_model(
     elif api_type == "deepseek":
         response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
     elif api_type == "cerebras":
-        response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
+        response = call_cerebras_sdk(api_key, model_name, messages)
     else:
         print(f"  [skip] {model_id}: unknown api_type '{api_type}'")
 
