@@ -133,3 +133,23 @@ Additional deep-dive subagents are queued for FOREX, BOND, FUTURES, and Low-Qual
 Detailed per-asset-class execution plans (with specific symbols, data sources, backtest frameworks, and pruning lists) will be linked here as the subagents complete their work.
 
 *Generated with the `money-maker-continual-improve` skill + live subagent fleet.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh (overlay, does not invalidate the May-15 backlog)
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini) reviewed the live `/audit` surface on 2026-05-24, and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations + ofox) reviewed the resulting plan. Both passes are folded into [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md) — the **honesty + risk + governance layer** on top of this document.
+
+**What changed vs the May-15 plan:**
+
+- **Optimization target re-framed** from "find explosive winners" → **"preserve capital while compounding asymmetrically."** This is the single biggest change; it cascades into ranking, filters, exits, portfolio construction, swarm design.
+- **Two-stage gate** replaces the single institutional gate. Stage 1 (Sharpe>1.0 / MDD<25% / 90 days clean / monotonic calibration) is the realistic 90-day target; Stage 2 (Sharpe>1.5 / MDD<20% / 6 months) is the real-money gate. The original "Sharpe>1.5 in 6 months" was flagged as too tight by 5/5 swarm engines given the current PF 1.3–1.55 baseline.
+- **New Workstream G (Governance / Monitoring / Rollback)** — real-time alerting, circuit-breaker on Stage-1 floor violation, data lineage, CI/CD regression on a frozen golden hold-out, explainability surface, quarterly stress replays.
+- **D1 (speculative/institutional split) is now two-step** — Step 1 ships a `speculative_flag` boolean (cheap, 1 week); Step 2 splits engines only if Step 1 surfaces contamination.
+- **Calibration of `smart_score`** (Platt / isotonic) added as a P0 — addresses the May-22 inverted-confidence finding.
+- **Per-pick freshness SLA** with class-specific thresholds and auto-suppression (crypto 30s, FX 10s, equity 60s, ETF 5m, MF 1d). The May-15 plan called for "DB Freshness Guardian" generically; this hard-codes the SLAs and pushes them to the gate, not just the dashboard.
+
+**Pilot priorities unchanged:** COMMODITY (diversify beyond CT=F) + EQUITY (broad book) + ETF (sector rotation + VIX gate) remain primary. CRYPTO universe shrink + toxic-system quarantine still mandatory. FOREX + BOND still maintenance-mode. FUTURES + PENNY/MEME folded into the speculative bucket per D1.
+
+**Authority:** [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md) supersedes the *strategy* sections of this doc going forward; the *execution backlog* below (M-IDs, per-class pilots, ghost-row cleanup, etc.) continues unchanged.
+
+Source: [updates/2026-05-24-multi-ai-consult-prediction-system-review.md](../updates/2026-05-24-multi-ai-consult-prediction-system-review.md) + `swarm_runs/iret-review-{20260524T054451Z,fan-20260524T054507Z}/`.

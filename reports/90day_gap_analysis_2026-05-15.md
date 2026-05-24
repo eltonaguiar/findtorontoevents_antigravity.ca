@@ -218,3 +218,44 @@ These items appear in 90-day plans but have NO corresponding M-xxx item in the m
 ---
 
 *Report generated: 2026-05-15T~22:00Z. Dashboard age at read: 1.08h (FRESH). All n citations are resolved_n unless marked closed.*
+
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**Gap-analysis-specific changes:**
+
+The May-15 gap analysis catalogued WHAT was missing per class. The 2026-05-24 refresh adds a meta-gap that the May-15 doc could not have catalogued: **the gates themselves were not honest.** Calibration was inverted, freshness wasn't enforced, sum-of-percentages was reported as a return, lookahead leakage was in the trust columns.
+
+**New universal gaps surfaced by the 4-AI consult + 5-engine swarm:**
+
+| Gap | Severity | Workstream that closes it |
+|---|---|---|
+| No per-pick freshness SLA at the gate | P0 | A1 |
+| No cross-provider price reconciliation | P0 | A2 |
+| `smart_score` calibration broken / inverted | P0 | A3 |
+| Lookahead leakage in `sym_track_wr` / `trust_tier` / `strat_fwd_wr` | P0 | A4 + already-shipped May-22 audit |
+| Sum-of-percentages reported as return | P1 (May-22 partially shipped) | A5 |
+| No transaction-cost / slippage layer | P1 | B1 |
+| No regime classifier or macro-calendar blackout | P1 | B2 |
+| No portfolio-construction constraints | P1 | C1 |
+| Personas are LLM-stylistic, not factor-orthogonal | P2 | E1 |
+| No diversity guardrail on swarm | P2 | E2 |
+| **No real-time monitoring & alerting** (swarm gap) | P0 | G1 |
+| **No circuit-breaker on Stage-1 floor violation** (swarm gap) | P0 | G2 |
+| **No data lineage / `source_id` / `model_version`** (swarm gap) | P1 | G3 |
+| **No golden-set regression in CI** (swarm gap) | P1 | G4 |
+| **No per-pick explainability** (swarm gap) | P2 | G5 |
+| **No stress / scenario replays** (swarm gap) | P2 | G6 |
+
+**Updated priority order:** A1+A3 (truly blocking) → A2+A4+A5+A6+G1+G2 (parallel honesty/governance) → B → C → D1 Step 1 → E → F → D1 Step 2 (conditional). Detailed in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md §4](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md#4-sequencing--timeline-revised-per-swarm-critique).

@@ -171,3 +171,24 @@ This plan is brutally honest, evidence-based (file:line + report citations), and
 **NFA / Disclaimer:** All analysis research-grade. Past (polluted) performance no guarantee. Contract specs, yf data, and live slippage not stress-tested at scale. Consult risk/compliance before any sizing. Report produced 2026-05-15 per "money-maker-continual-improve" skill without running forbidden heavy scripts (check_active_picks / smart_picks_engine).
 
 **Refs for follow-up:** All cited files + `reports/asset_class_90day_plan_COMMODITY_2026-05-15.md` (COT falsification details), `futures_deep_dive_round2_2026-05-13.md` (pilot specs), `alpha_engine/futures_strategies.py:74-462` (full strategy code).
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**FUTURES-specific changes:**
+- **Freshness threshold:** 60 seconds during pit-equivalent / RTH hours; 5 minutes overnight.
+- **FUTURES has n=0 in its own tile** because commodity futures route to COMMODITY (classification bug). Two options on the table (May-15 plan): merge financial futures (ES, NQ, ZN, ZB, 6E, etc.) into a unified CTA bucket OR deprecate the separate FUTURES tile.
+- **Refreshed verdict:** **merge.** Maintaining a separate FUTURES tile with n=0 violates Workstream A5 (honest stat surface). Either it gets real volume (financial futures emitter) by Day 30 or the tile is deprecated and we stop pretending it exists.
+- **If kept:** curve shape, basis, roll-yield, margin requirements become first-class columns (F3); regime classifier (B2) gates entry; macro-blackout (B2) applies for financials.
+- **Speculative split (D1):** illiquid single contracts (low OI / wide spreads) get `speculative_flag=True`. Liquid majors (ES, NQ, ZN, ZB, GC, CL, 6E, 6J) stay institutional.
+- **Workstream G2 circuit-breaker** applies normally — if FUTURES tile is merged into CTA, the CTA bucket gets its own breaker.

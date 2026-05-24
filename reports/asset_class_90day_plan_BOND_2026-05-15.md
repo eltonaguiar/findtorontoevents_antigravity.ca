@@ -199,3 +199,25 @@ This aligns with Goal #1 (phenomenal /audit across classes), Wire-Up Rule, MUTAT
 
 ---
 *Generated 2026-05-15 by senior quant "money-maker-continual-improve" audit. Brutal honesty over optimism. Update only after Phase 1 telemetry.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**BOND-specific changes:**
+- **Freshness threshold:** 5 minutes. Bond signals are slower than equities; 1-day for mutual-fund-style holdings.
+- **Sample size remains the blocker.** PF 1.72 / WR 55.6% looks great but n=18 is far below the 100 floor required for Stage-1 calibration to be meaningful. Wilson-lower-95% CI is too wide to act on.
+- **Workstream F1 (wire missing BOND emitters) is P0** — without more signal volume, BOND cannot reach Stage-1 in this 90-day window regardless of edge quality. Concentration on TLT (75% of volume per May-15) is the symptom; thin emitters are the cause.
+- **Duration + convexity + real yields + breakeven inflation + credit spreads** become first-class columns (Workstream F3). Pure-technical bond signals usually fail per ChatGPT's review.
+- **Pairs sleeve (C2):** TLT/IEF (long-short duration), HYG/LQD (credit-quality spread), TIP/IEF (breakeven inflation) are natural. Opt-in sidecar.
+- **Speculative split (D1):** BOND stays in the institutional path. High-yield single-name corporate bonds get `speculative_flag=True` (when/if we ever emit them).
+- **Verdict (refreshed):** BOND remains de-prioritized for size-up but **upgraded for honesty** — the dashboard must stop showing BOND as "T2 candidate" when n=18 is the truth. Workstream A5 (honest stat surface) enforces this. F1 emitter wire-up is the only path to Stage-1 by Day 90.
