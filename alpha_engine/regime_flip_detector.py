@@ -496,6 +496,96 @@ def check_flip() -> bool:
 # Standalone entry point
 # ---------------------------------------------------------------------------
 
+def audit_regime_label_timestamps(pick_timestamps: list[str] | None = None) -> dict:
+    """P0: Audit that regime labels do not leak forward-looking data.
+
+    Checks that regime_last_checked and momentum_last_updated timestamps
+    are not ahead of any pick timestamps. If they are, the regime label
+    contains future information — a data-integrity violation.
+
+    Args:
+        pick_timestamps: Optional list of ISO-format pick timestamps to check.
+                         If None, only checks for internal timestamp consistency.
+
+    Returns dict with: ok (bool), violations (list[str]), regime_ts, momentum_ts.
+    """
+    import logging as _log_audit
+    _log = _log_audit.getLogger("regime_flip.audit")
+
+    result: dict = {"ok": True, "violations": [], "regime_ts": None, "momentum_ts": None}
+
+    if not REGIME_REPORT_PATH.exists():
+        result["violations"].append("regime_report.json not found — cannot audit")
+        result["ok"] = False
+        return result
+
+    try:
+        with open(REGIME_REPORT_PATH, "r", encoding="utf-8") as f:
+            report = json.load(f)
+    except Exception as e:
+        result["violations"].append(f"failed to load regime_report.json: {e}")
+        result["ok"] = False
+        return result
+
+    regime_ts = report.get("regime_last_checked")
+    momentum_ts = report.get("momentum_last_updated")
+    momentum_fresh = report.get("momentum_fresh", True)
+
+    result["regime_ts"] = regime_ts
+    result["momentum_ts"] = momentum_ts
+
+    # Check 1: momentum staleness (regime is fresh but momentum is stale)
+    if not momentum_fresh:
+        result["violations"].append(
+            "momentum_fresh=False — RSI/ATR/drawdown may be stale "
+            f"(momentum_last_updated={momentum_ts})"
+        )
+        result["ok"] = False
+
+    # Check 2: internal consistency — momentum_ts ahead of regime_ts?
+    if regime_ts and momentum_ts:
+        try:
+            rt = datetime.fromisoformat(str(regime_ts).replace("Z", "+00:00"))
+            mt = datetime.fromisoformat(str(momentum_ts).replace("Z", "+00:00"))
+            if mt > rt:
+                result["violations"].append(
+                    f"momentum_ts ({momentum_ts}) ahead of regime_ts ({regime_ts}) — "
+                    "momentum data is newer than the regime label"
+                )
+        except (ValueError, TypeError):
+            pass
+
+    # Check 3: pick timestamps vs regime label (forward-looking leak detection)
+    if pick_timestamps and regime_ts:
+        try:
+            rt_dt = datetime.fromisoformat(str(regime_ts).replace("Z", "+00:00"))
+            for pts in pick_timestamps:
+                try:
+                    pt_dt = datetime.fromisoformat(str(pts).replace("Z", "+00:00"))
+                    if rt_dt > pt_dt:
+                        result["violations"].append(
+                            f"regime label ({regime_ts}) is AHEAD of pick ({pts}) — "
+                            "regime label contains forward-looking information"
+                        )
+                        result["ok"] = False
+                        break
+                except (ValueError, TypeError):
+                    continue
+        except (ValueError, TypeError):
+            pass
+
+    if result["ok"]:
+        _log.info("Regime label timestamp audit: PASSED (regime=%s, momentum=%s)",
+                  regime_ts or "NONE", momentum_ts or "NONE")
+    else:
+        _log.warning("Regime label timestamp audit: FAILED — %d violation(s)",
+                     len(result["violations"]))
+        for v in result["violations"]:
+            _log.warning("  VIOLATION: %s", v)
+
+    return result
+
+
 def run():
     """Run regime flip detection standalone."""
     print("=" * 60)
