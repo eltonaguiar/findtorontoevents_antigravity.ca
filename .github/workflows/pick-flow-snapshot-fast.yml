@@ -37,11 +37,21 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
           git add reports/pick_flow_snapshot.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
-          else
-            git commit -m "Pick flow snapshot $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
-            git push origin main
+            exit 0
           fi
+          git commit -m "Pick flow snapshot $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+          # Retry push up to 5 times — concurrent CI jobs push frequently
+          for i in 1 2 3 4 5; do
+            if git push origin main 2>&1; then
+              echo "Push succeeded on attempt $i"
+              exit 0
+            fi
+            echo "Push attempt $i failed, pulling and retrying in 3s..."
+            sleep 3
+            git pull --rebase origin main
+          done
+          echo "Push failed after 5 attempts"
+          exit 1
