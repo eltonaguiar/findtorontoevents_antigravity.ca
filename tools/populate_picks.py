@@ -155,6 +155,47 @@ def call_generic_openai_compat(
     return None
 
 
+def call_cerebras_sdk(
+    api_key: str, model: str, messages: list[dict], timeout: int = 60
+) -> dict | None:
+    """Call Cerebras via their Python SDK (bypasses REST IP blocks)."""
+    try:
+        import os
+        os.environ["CEREBRAS_API_KEY"] = api_key
+        from cerebras.cloud.sdk import Cerebras
+
+        client = Cerebras(timeout=timeout)
+        # Map messages to SDK format
+        sdk_messages = []
+        for m in messages:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            sdk_messages.append({"role": role, "content": content})
+
+        resp = client.chat.completions.create(
+            messages=sdk_messages,
+            model=model,
+            max_completion_tokens=4096,
+            temperature=0.7,
+            top_p=1,
+        )
+        if resp and resp.choices:
+            choice = resp.choices[0]
+            content = choice.message.content or ""
+            # Convert to openai-format dict for parse_picks_response
+            return {
+                "choices": [{"message": {"content": content, "role": "assistant"}}],
+                "model": model,
+            }
+    except ImportError:
+        print("  [Cerebras] SDK not installed — falling back to REST")
+        return None
+    except Exception as e:
+        print(f"  [Cerebras] SDK error: {e}")
+        return None
+    return None
+
+
 def call_anthropic_api(
     api_key: str, model: str, messages: list[dict], timeout: int = 60
 ) -> dict | None:
@@ -636,7 +677,7 @@ def try_prompt_model(
     elif api_type == "deepseek":
         response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
     elif api_type == "cerebras":
-        response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
+        response = call_cerebras_sdk(api_key, model_name, messages)
     else:
         print(f"  [skip] {model_id}: unknown api_type '{api_type}'")
 
@@ -772,6 +813,34 @@ def main() -> None:
             if key not in existing_ids:
                 all_picks.append(ep)
         print(f"[populate] Carried forward {len(existing_open)} open picks from previous days")
+
+    # Inject persona rationale into each pick
+    def _fmt_conf(v):
+        """Safely format confidence as percentage string."""
+        if isinstance(v, str):
+            return {"HIGH": "80%", "MEDIUM": "50%", "LOW": "20%"}.get(v, v)
+        try:
+            return f"{float(v):.0%}"
+        except (TypeError, ValueError):
+            return str(v)
+
+    try:
+        sys.path.insert(0, str(REPO_ROOT))
+        from tools.ai_tournament.persona_registry import build_persona_rationale
+        for p in all_picks:
+            pid = p.get("persona_id", "")
+            if pid and not p.get("reason"):
+                p["reason"] = build_persona_rationale(
+                    pid, p.get("symbol", ""),
+                    p.get("direction", "LONG"),
+                    p.get("confidence", 0.5)
+                )
+            if not p.get("reason") and p.get("thesis"):
+                p["reason"] = f"Entry thesis: {p['thesis']} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
+    except ImportError:
+        for p in all_picks:
+            if not p.get("reason") and p.get("thesis"):
+                p["reason"] = f"Thesis: {p['thesis']} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
 
     # Write output
     out_path = pick_out_path()

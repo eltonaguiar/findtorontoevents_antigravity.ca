@@ -99,6 +99,8 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             safe_float(p.get("exit_price", 0)),
             safe_str(p.get("exit_reason", "")),
             safe_str(p.get("resolved_at", "")),
+            safe_str(p.get("reason", ""), 3000),
+            safe_str(p.get("entry_criteria", ""), 1000),
         ))
 
     ddl = [
@@ -113,6 +115,8 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             take_profit     DECIMAL(16,4) DEFAULT NULL,
             stop_loss       DECIMAL(16,4) DEFAULT NULL,
             thesis          TEXT          DEFAULT NULL,
+            reason          TEXT          DEFAULT NULL COMMENT 'Detailed persona rationale',
+            entry_criteria  TEXT          DEFAULT NULL COMMENT 'Specific entry triggers that fired',
             data_source     VARCHAR(64)   DEFAULT '',
             confidence      DECIMAL(5,4)  DEFAULT 0,
             timeframe       VARCHAR(16)   DEFAULT '',
@@ -133,16 +137,32 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             UNIQUE KEY uq_pick (model_id, symbol, submitted_at(19))
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """,
+        """
+        ALTER TABLE ai_tournament_picks
+            ADD COLUMN IF NOT EXISTS reason TEXT DEFAULT NULL COMMENT 'Detailed persona rationale'
+            AFTER thesis;
+        """,
+        """
+        ALTER TABLE ai_tournament_picks
+            ADD COLUMN IF NOT EXISTS entry_criteria TEXT DEFAULT NULL COMMENT 'Specific entry triggers that fired'
+            AFTER reason;
+        """,
+    ]
+
+    # Fallback ALTER for older MySQL (< 8.0.16) that doesn't support IF NOT EXISTS
+    alter_fallbacks = [
+        "ALTER TABLE ai_tournament_picks ADD COLUMN reason TEXT DEFAULT NULL COMMENT 'Detailed persona rationale' AFTER thesis;",
+        "ALTER TABLE ai_tournament_picks ADD COLUMN entry_criteria TEXT DEFAULT NULL COMMENT 'Specific entry triggers that fired' AFTER reason;",
     ]
 
     insert_sql = """
         INSERT INTO ai_tournament_picks
             (model_id, symbol, asset_class, direction, entry_price,
-             take_profit, stop_loss, thesis, data_source, confidence,
+             take_profit, stop_loss, thesis, reason, entry_criteria, data_source, confidence,
              timeframe, status, submitted_at, provider, model_version,
              strategy_name, persona_id, current_price, unrealized_pnl_pct,
              pnl_pct, exit_price, exit_reason, resolved_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s)
         ON DUPLICATE KEY UPDATE
@@ -153,10 +173,11 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
             exit_reason     = VALUES(exit_reason),
             resolved_at     = VALUES(resolved_at),
             status          = VALUES(status),
+            reason          = VALUES(reason),
             updated_at      = NOW()
     """
 
-    return ddl, rows, insert_sql
+    return ddl, rows, insert_sql, alter_fallbacks
 
 
 def main() -> None:
@@ -169,7 +190,7 @@ def main() -> None:
         print("[ingest] No picks to ingest — exiting")
         return
 
-    ddl_statements, rows, insert_sql = build_upsert_sql(picks)
+    ddl_statements, rows, insert_sql, alter_fallbacks = build_upsert_sql(picks)
     print(f"[ingest] {len(rows)} rows to upsert")
 
     # Try MySQL connection
@@ -203,7 +224,18 @@ def main() -> None:
         )
         with conn.cursor() as cur:
             for ddl in ddl_statements:
-                cur.execute(ddl)
+                try:
+                    cur.execute(ddl)
+                except Exception as alter_e:
+                    print(f"[ingest] DDL failed, trying fallback: {alter_e}")
+                    # Fallback to simpler ALTER for older MySQL
+                    import re
+                    for fallback in alter_fallbacks:
+                        try:
+                            cur.execute(fallback)
+                            print(f"[ingest] Fallback ALTER succeeded")
+                        except Exception:
+                            pass  # Column may already exist
             print("[ingest] Tables verified")
 
             # Insert in batches
