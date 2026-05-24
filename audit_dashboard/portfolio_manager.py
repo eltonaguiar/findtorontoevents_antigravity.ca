@@ -11,6 +11,7 @@ import os
 import sys
 import urllib.request
 import urllib.error
+from alpha_engine.hedge_fund_quality_gate import PORTFOLIO_MAX_DRAWDOWN_PCT
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from copy import deepcopy
@@ -2223,7 +2224,7 @@ def portfolio_risk_budget(
     hwm = port.get("high_water_mark", equity)
     if hwm > 0:
         mdd = (hwm - equity) / hwm
-        if mdd > 0.15:
+        if mdd > PORTFOLIO_MAX_DRAWDOWN_PCT:
             return (
                 False,
                 f"Portfolio in {mdd * 100:.1f}% drawdown (exceeds 15% MDD limit)",
