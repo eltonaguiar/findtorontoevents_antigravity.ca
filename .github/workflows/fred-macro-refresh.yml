@@ -26,6 +26,8 @@ jobs:
         run: pip install requests
 
       - name: Fetch FRED macro indicators
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python tools/fred_macro_sidecar.py
 
       - name: Commit if changed

@@ -251,9 +251,11 @@ def write_leaderboard_data(picks: list[dict]) -> None:
     print(f"[research_generator] Wrote {len(lb)} leaderboard entries + {len(topics)} research topics to {path.name}")
 
 
-def write_research_index(picks: list[dict]) -> None:
+def write_research_index(picks: list[dict], extra_topics: list[dict] | None = None) -> None:
     """Write structured research index entries for the research page."""
     topics = generate_research_topics(picks)
+    if extra_topics:
+        topics = extra_topics
 
     index = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -273,12 +275,91 @@ def write_research_index(picks: list[dict]) -> None:
     print(f"[research_generator] Wrote {len(topics)} research topics to {path.name}")
 
 
+def load_macro_data() -> dict[str, Any]:
+    """Load FRED/Kalshi/Polymarket macro data for context enrichment."""
+    macro = {"fred": None, "kalshi": None, "polymarket": None}
+    
+    fred_path = REPO_ROOT / "tools" / "data" / "fred_macro_context.json"
+    if fred_path.exists():
+        try:
+            macro["fred"] = json.loads(fred_path.read_text())
+            print(f"[research_generator] Loaded FRED macro context")
+        except Exception as e:
+            print(f"[research_generator] FRED load failed: {e}")
+    
+    kalshi_path = REPO_ROOT / "alpha_engine" / "data" / "kalshi_signals.json"
+    if kalshi_path.exists():
+        try:
+            macro["kalshi"] = json.loads(kalshi_path.read_text())
+            print(f"[research_generator] Loaded Kalshi signals")
+        except Exception as e:
+            print(f"[research_generator] Kalshi load failed: {e}")
+    
+    polymarket_path = REPO_ROOT / "alpha_engine" / "data" / "polymarket_signals.json"
+    if polymarket_path.exists():
+        try:
+            macro["polymarket"] = json.loads(polymarket_path.read_text())
+            print(f"[research_generator] Loaded Polymarket signals")
+        except Exception as e:
+            print(f"[research_generator] Polymarket load failed: {e}")
+    
+    return macro
+
+
+def enrich_with_macro(topics: list[dict], macro: dict[str, Any]) -> list[dict]:
+    """Add macro regime context to research topics."""
+    if macro.get("fred"):
+        fred = macro["fred"]
+        regime = fred.get("macro_regime", {})
+        if regime:
+            topics.append({
+                "topic_id": "macro_regime",
+                "title": f"Macro Regime: {regime.get('label', 'Unknown')}",
+                "severity": SEVERITY_VALIDATE,
+                "asset_class": "ALL",
+                "description": f"Current macro regime: {regime.get('label', 'N/A')}. "
+                               f"Confidence: {regime.get('confidence', 'N/A')}. "
+                               f"Affects all asset class correlations.",
+                "recommendation": "Adjust portfolio beta and cross-asset correlation targets based on regime.",
+                "suggested_experiment": "Compare tournament pick performance across macro regime changes. "
+                                       "Split backtest by expansion vs contraction phases.",
+                "metric_current": regime.get("label", "?"),
+                "metric_target": "regime-consistent performance",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+            })
+    
+    if macro.get("kalshi"):
+        ks = macro["kalshi"]
+        kalshi_picks = ks.get("picks", [])
+        if kalshi_picks:
+            topics.append({
+                "topic_id": "kalshi_signals",
+                "title": f"Kalshi Prediction Markets: {len(kalshi_picks)} active signals",
+                "severity": SEVERITY_VALIDATE,
+                "asset_class": "ALL",
+                "description": f"Kalshi prediction markets show {len(kalshi_picks)} active signals "
+                               f"across election, economic, and event contracts.",
+                "recommendation": "Cross-reference Kalshi implied probabilities with tournament pick directions.",
+                "metric_current": f"{len(kalshi_picks)} signals",
+                "metric_target": "correlation between market-implied and model-implied probabilities",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+            })
+    
+    return topics
+
+
 if __name__ == "__main__":
     print(f"[research_generator] Generating research topics and leaderboard data — {datetime.now(timezone.utc).isoformat()}")
     picks = load_latest_picks()
     if not picks:
         picks = load_historical_picks(7)
     print(f"[research_generator] Loaded {len(picks)} picks")
+    
+    # Enrich with macro data
+    macro = load_macro_data()
+    topics = generate_research_topics(picks)
+    topics = enrich_with_macro(topics, macro)
+    
     write_leaderboard_data(picks)
-    write_research_index(picks)
-    print("[research_generator] Done")
+    write_research_index(picks, topics)
+    print(f"[research_generator] Done — {len(topics)} topics including macro")

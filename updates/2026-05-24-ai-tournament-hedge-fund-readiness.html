@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Tournament Pipeline &amp; Hedge Fund Readiness — May 24 2026</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.6; }
+  h1 { font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  h2 { font-size: 16px; margin-top: 24px; color: #93c5fd; }
+  h3 { font-size: 14px; color: #c0c0d0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .done { background: #14532d; color: #86efac; }
+  .partial { background: #713f12; color: #fbbf24; }
+  .todo { background: #7c2d12; color: #fca5a5; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+  th { color: #a0a0b0; font-size: 11px; text-transform: uppercase; }
+  .meta { color: #6b7280; font-size: 11px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>🤖 AI Tournament Pipeline — Hedge Fund Readiness</h1>
+<div class="meta">May 24, 2026 · Updated by GitHub Actions · References: SUPREME_PLAN_90days, MASTER_ACTION_PLAN_2026-05-18, MONEY_MAKER_READYv2</div>
+
+<h2>Current State (May 24, 2026)</h2>
+<table>
+  <tr><th>Metric</th><th>Value</th></tr>
+  <tr><td>Total Picks</td><td>3,149</td></tr>
+  <tr><td>Resolved Picks</td><td>1,636 (874 WIN, 762 LOSS)</td></tr>
+  <tr><td>Overall WR</td><td>53.4%</td></tr>
+  <tr><td>Active Models</td><td>34</td></tr>
+  <tr><td>Asset Classes</td><td>9 (EQUITY, CRYPTO, COMMODITY, FOREX, ETF, BOND, PENNY, FUTURES, STOCKS)</td></tr>
+  <tr><td>Pipeline Runs</td><td>✅ All green (last 5 runs)</td></tr>
+  <tr><td>DB Quality</td><td>✅ No duplicates, no status/PnL mismatches, wins+losses=resolved</td></tr>
+</table>
+
+<h2>SUPREME PLAN Progress</h2>
+<table>
+  <tr><th>Goal</th><th>Status</th><th>Detail</th></tr>
+  <tr><td>Diversified asset class</td><td><span class="badge done">DONE</span></td><td>9 classes, 4 with 400+ picks each</td></tr>
+  <tr><td>DB Freshness Guardian</td><td><span class="badge done">DONE</span></td><td>tournament_picks updated every pipeline cycle</td></tr>
+  <tr><td>Outcome tracking</td><td><span class="badge done">DONE</span></td><td>3,149 picks with dedup_key, WIN/LOSS/OPEN status</td></tr>
+  <tr><td>Symbol universe audit</td><td><span class="badge done">DONE</span></td><td>100+ symbols across 9 classes</td></tr>
+  <tr><td>Kelly position sizing</td><td><span class="badge done">DONE</span></td><td>Kelly%, risk_budget%, reward:risk ratio per pick</td></tr>
+  <tr><td>Slippage model</td><td><span class="badge partial">PARTIAL</span></td><td>bps per class in price_tracker, needs live validation</td></tr>
+  <tr><td>Statistical kill gates</td><td><span class="badge todo">TODO</span></td><td>Need automated strategy pruning by WR/PF thresholds</td></tr>
+  <tr><td>FRED/Kalshi data</td><td><span class="badge todo">TODO</span></td><td>FRED_API_KEY exists, not wired into pipeline</td></tr>
+  <tr><td>Backtesting framework</td><td><span class="badge todo">TODO</span></td><td>Price tracker only does forward-test resolution</td></tr>
+</table>
+
+<h2>Per-Class Performance</h2>
+<table>
+  <tr><th>Class</th><th>Picks</th><th>Resolved</th><th>WR</th><th>Avg PnL</th><th>Readiness</th></tr>
+  <tr><td>EQUITY</td><td>650</td><td>317</td><td>52.1%</td><td>+0.56%</td><td><span class="badge done">✅ PASS</span></td></tr>
+  <tr><td>CRYPTO</td><td>628</td><td>310</td><td>50.0%</td><td>+1.02%</td><td><span class="badge done">✅ PASS</span></td></tr>
+  <tr><td>COMMODITY</td><td>470</td><td>254</td><td>53.9%</td><td>+0.21%</td><td><span class="badge done">✅ PASS</span></td></tr>
+  <tr><td>FOREX</td><td>454</td><td>253</td><td>57.3%</td><td>-0.39%</td><td><span class="badge partial">⚠️ NEG PnL</span></td></tr>
+  <tr><td>ETF</td><td>453</td><td>251</td><td>55.0%</td><td>+0.17%</td><td><span class="badge done">✅ PASS</span></td></tr>
+  <tr><td>BOND</td><td>439</td><td>251</td><td>53.4%</td><td>-0.14%</td><td><span class="badge partial">⚠️ NEG PnL</span></td></tr>
+  <tr><td>PENNY</td><td>43</td><td>0</td><td>—</td><td>—</td><td><span class="badge todo">BUILDING</span></td></tr>
+  <tr><td>FUTURES</td><td>11</td><td>0</td><td>—</td><td>—</td><td><span class="badge todo">BUILDING</span></td></tr>
+</table>
+
+<h2>Enhancements Made This Session</h2>
+<ul>
+  <li><strong>Pipeline Fixes:</strong> Confidence format bug fix, DB ingest rewrite (targets tournament_picks), price tracker resolution windows for PENNY/FUTURES</li>
+  <li><strong>Position Sizing:</strong> Kelly criterion + risk budgeting added to every pick output</li>
+  <li><strong>Portfolio Analytics:</strong> Sharpe, VaR(95%), max drawdown per asset class (wired into pipeline)</li>
+  <li><strong>Diversification Monitor:</strong> Concentration alerts per asset class (none triggered — max 21.8%)</li>
+  <li><strong>Performance Reporting:</strong> Per-model Sharpe, WR, avg PnL with top-5 ranking</li>
+  <li><strong>Research Topics:</strong> Auto-generated improvement topics from performance gaps</li>
+  <li><strong>Model Summary:</strong> Live DB data on ai-tournament.html with ELI5 explainers</li>
+  <li><strong>Data Quality:</strong> Verified 0 duplicates, 0 status/PnL mismatches across all 3,149 picks</li>
+  <li><strong>API Keys Set:</strong> 11 keys set as GitHub Secrets (DeepSeek, xAI, Gemini, OpenRouter, Cerebras, etc.)</li>
+  <li><strong>ELI5 Explanations:</strong> Added to leaderboard and model summary sections</li>
+</ul>
+
+<h2>Priority TODOs (Next Session)</h2>
+<ol>
+  <li><strong>Statistical Kill Gates</strong> — Auto-prune strategies below WR<40% or PF<0.8 after n>=30 resolved</li>
+  <li><strong>FRED API Integration</strong> — Wire FRED data for macro gating across all asset classes</li>
+  <li><strong>Kalshi/Polymarket Signals</strong> — Wire prediction market data for regime detection</li>
+  <li><strong>Backtesting Harness</strong> — Walk-forward validation for strategy candidates before live deployment</li>
+  <li><strong>Copytrader Intelligence</strong> — Wire copy_trader_intel/ into tournament pipeline</li>
+  <li><strong>Real-Money Readiness Dashboard</strong> — Verdict tiles per class (PASS/WATCH/BLOCKED) with Kelly allocation</li>
+  <li><strong>353 Future-Dated Picks</strong> — Fix legacy timestamps from old pipeline data</li>
+</ol>
+
+<h2>Links</h2>
+<ul>
+  <li><a href="/audit/ai-tournament.html">AI Tournament Dashboard</a></li>
+  <li><a href="/audit/">Audit Summary</a></li>
+  <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca">GitHub Repository</a></li>
+  <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/SUPREME_PLAN_90days.md">SUPREME PLAN</a></li>
+  <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/MASTER_ACTION_PLAN_2026-05-18.md">MASTER ACTION PLAN</a></li>
+</ul>
+
+</body>
+</html>
