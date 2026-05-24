@@ -118,16 +118,16 @@ def fetch_price_crypto(symbol: str) -> float | None:
 
 def fetch_price_equity(symbol: str) -> float | None:
     """yfinance → Alpha Vantage failover for equity/ETF/commodity/bond prices."""
-    # Tier 1: yfinance
+    clean = symbol.replace("=F", "").replace("=X", "")
     try:
-        ticker = yf.Ticker(symbol)
+        ticker = yf.Ticker(clean)
         hist = ticker.history(period="2d")
         if not hist.empty:
             return float(hist["Close"].iloc[-1])
     except Exception:
         pass
 
-    # Tier 2: Alpha Vantage
+    # Tier 2: Alpha Vantage (use clean symbol, strip suffixes)
     av_key = os.environ.get("ALPHA_VANTAGE_KEY", "")
     if av_key:
         try:
@@ -154,7 +154,8 @@ FOREX_YFINANCE_SUFFIX: dict[str, str] = {
 
 def fetch_price_forex(symbol: str) -> float | None:
     """yfinance → exchangerate-api failover for G10 FOREX pairs."""
-    yf_symbol = FOREX_YFINANCE_SUFFIX.get(symbol.upper(), f"{symbol}=X")
+    clean = symbol.upper().replace("=X", "")
+    yf_symbol = FOREX_YFINANCE_SUFFIX.get(clean, f"{clean}=X")
     try:
         ticker = yf.Ticker(yf_symbol)
         hist = ticker.history(period="2d")
