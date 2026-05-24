@@ -8,6 +8,9 @@ This file is the DB-independent canonical source. The pipeline syncs it to MySQL
 """
 from __future__ import annotations
 
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 PERSONA_REGISTRY: dict[str, dict[str, Any]] = {

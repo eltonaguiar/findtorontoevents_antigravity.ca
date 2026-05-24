@@ -155,6 +155,47 @@ def call_generic_openai_compat(
     return None
 
 
+def call_cerebras_sdk(
+    api_key: str, model: str, messages: list[dict], timeout: int = 60
+) -> dict | None:
+    """Call Cerebras via their Python SDK (bypasses REST IP blocks)."""
+    try:
+        import os
+        os.environ["CEREBRAS_API_KEY"] = api_key
+        from cerebras.cloud.sdk import Cerebras
+
+        client = Cerebras(timeout=timeout)
+        # Map messages to SDK format
+        sdk_messages = []
+        for m in messages:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            sdk_messages.append({"role": role, "content": content})
+
+        resp = client.chat.completions.create(
+            messages=sdk_messages,
+            model=model,
+            max_completion_tokens=4096,
+            temperature=0.7,
+            top_p=1,
+        )
+        if resp and resp.choices:
+            choice = resp.choices[0]
+            content = choice.message.content or ""
+            # Convert to openai-format dict for parse_picks_response
+            return {
+                "choices": [{"message": {"content": content, "role": "assistant"}}],
+                "model": model,
+            }
+    except ImportError:
+        print("  [Cerebras] SDK not installed — falling back to REST")
+        return None
+    except Exception as e:
+        print(f"  [Cerebras] SDK error: {e}")
+        return None
+    return None
+
+
 def call_anthropic_api(
     api_key: str, model: str, messages: list[dict], timeout: int = 60
 ) -> dict | None:
@@ -636,7 +677,7 @@ def try_prompt_model(
     elif api_type == "deepseek":
         response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
     elif api_type == "cerebras":
-        response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
+        response = call_cerebras_sdk(api_key, model_name, messages)
     else:
         print(f"  [skip] {model_id}: unknown api_type '{api_type}'")
 
@@ -774,7 +815,17 @@ def main() -> None:
         print(f"[populate] Carried forward {len(existing_open)} open picks from previous days")
 
     # Inject persona rationale into each pick
+    def _fmt_conf(v):
+        """Safely format confidence as percentage string."""
+        if isinstance(v, str):
+            return {"HIGH": "80%", "MEDIUM": "50%", "LOW": "20%"}.get(v, v)
+        try:
+            return f"{float(v):.0%}"
+        except (TypeError, ValueError):
+            return str(v)
+
     try:
+        sys.path.insert(0, str(REPO_ROOT))
         from tools.ai_tournament.persona_registry import build_persona_rationale
         for p in all_picks:
             pid = p.get("persona_id", "")
@@ -785,11 +836,70 @@ def main() -> None:
                     p.get("confidence", 0.5)
                 )
             if not p.get("reason") and p.get("thesis"):
-                p["reason"] = f"Entry thesis: {p['thesis']} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {p.get('confidence', 0.5):.0%}"
-    except ImportError:
+                p["reason"] = f"Entry thesis: {p['thesis'][:200]} | Strategy: {p.get('strategy_name', p.get('persona_id', 'N/A'))} | Confidence: {_fmt_conf(p.get('confidence', 0.5))}"
+    except Exception as e:
+        print(f"[populate] Reason injection failed (non-fatal): {e}")
         for p in all_picks:
             if not p.get("reason") and p.get("thesis"):
-                p["reason"] = f"Thesis: {p['thesis']} | Confidence: {p.get('confidence', 0.5):.0%}"
+                try:
+                    p["reason"] = f"Thesis: {str(p['thesis'])[:200]} | Conf: {_fmt_conf(p.get('confidence', 0.5))}"
+                except Exception:
+                    p["reason"] = str(p.get("thesis", ""))[:200]
+
+    # ── Position sizing: Kelly criterion + risk budgeting ──
+    try:
+        # Look up historical persona performance from DB for Kelly calc
+        persona_stats = {}
+        try:
+            import pymysql
+            conn = pymysql.connect(host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
+                                   user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
+                                   password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
+                                   database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
+                                   port=3306, connect_timeout=5)
+            cur = conn.cursor()
+            cur.execute("SELECT persona_id, ROUND(AVG(CASE WHEN status='WIN' THEN 1.0 ELSE 0 END), 4) as wr, ROUND(AVG(pnl_pct), 4) as avg_pnl FROM tournament_picks WHERE status IN ('WIN','LOSS') AND persona_id != '' GROUP BY persona_id")
+            for row in cur.fetchall():
+                persona_stats[row[0]] = {'wr': float(row[1]), 'avg_pnl': float(row[2] or 0)}
+            conn.close()
+        except Exception:
+            pass  # Continue without DB stats
+
+        for p in all_picks:
+            pid = p.get("persona_id", "")
+            conf = p.get("confidence", 0.5)
+            if isinstance(conf, str):
+                conf = {"HIGH": 0.8, "MEDIUM": 0.5, "LOW": 0.2}.get(conf, 0.5)
+            else:
+                conf = float(conf)
+
+            # Kelly formula: f* = (p*b - q) / b where p=win prob, q=loss prob, b=RR
+            entry = float(p.get("entry_price", 1))
+            tp = float(p.get("take_profit", entry * 1.1))
+            sl = float(p.get("stop_loss", entry * 0.95))
+            rr = abs((tp - entry) / (entry - sl)) if abs(entry - sl) > 0 else 1.0
+
+            # Use historical WR if available, else confidence as win prob
+            if pid in persona_stats:
+                p_win = persona_stats[pid]['wr']
+            else:
+                p_win = conf
+
+            q_loss = 1.0 - p_win
+            kelly = (p_win * rr - q_loss) / rr if rr > 0 else 0
+            # Cap at 25% (quarter-Kelly for safety)
+            kelly = max(0, min(0.25, kelly * 0.25))
+
+            # Risk budget: % of portfolio at risk per trade
+            risk_per_trade = kelly * 2.0  # Double Kelly for risk budget (aggressive but capped)
+            risk_per_trade = min(risk_per_trade, 0.05)  # Never more than 5%
+
+            p["kelly_pct"] = round(kelly * 100, 1)
+            p["risk_budget_pct"] = round(risk_per_trade * 100, 1)
+            p["reward_risk_ratio"] = round(rr, 2)
+            p["position_size_suggestion"] = f"Kelly={kelly*100:.1f}% | Risk={risk_per_trade*100:.1f}% | RR={rr:.1f}"
+    except Exception as e:
+        print(f"[populate] Position sizing failed (non-fatal): {e}")
 
     # Write output
     out_path = pick_out_path()
