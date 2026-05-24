@@ -156,6 +156,11 @@ jobs:
           echo "=== Syncing persona registry ==="
           python tools/ai_tournament/persona_registry.py || echo "::warning title=persona_registry::Persona registry sync failed"
 
+      - name: Run kill gate (auto-prune failing strategies)
+        run: |
+          echo "=== Running statistical kill gate ==="
+          python tools/ai_tournament/kill_gate.py || echo "::warning title=kill_gate::Kill gate failed"
+
       - name: Wire copy trader picks into tournament format
         run: |
           echo "=== Running copy trader adapter ==="
