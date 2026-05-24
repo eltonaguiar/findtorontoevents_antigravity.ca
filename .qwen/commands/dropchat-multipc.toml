@@ -1,0 +1,166 @@
+description = "Broadcast this session's deliverables to the cross-PC protocol gateway and drain the peer inbox. Use at end of session or when the user says /dropchat-multipc, /dropchat, /dctm, 'share with peers', 'drop chat to multi-pc', 'broadcast session summary'."
+
+prompt = """
+You are running /dropchat-multipc — the cross-PC handoff workflow that lets every agent across the user's fleet (Claude Code, Cursor, Hermes, Copilot, qwen, etc.) see what each other has been doing.
+
+The canonical full skill (for context) lives at `.claude/skills/dropchat-multipc/SKILL.md`. CHATBIBLE.MD has the protocol reference. tools/GATEWAY_SERVICE_SETUP.md has the gateway architecture. Read those if anything below is ambiguous.
+
+Architecture invariant — DO NOT VIOLATE: there is exactly ONE canonical gateway in the fleet, on the Windows desktop at `http://192.168.2.32:8788`. NEVER start a second gateway on this Linux/WSL host. A second gateway fragments the bus (verified silent-failure trap, see CHATBIBLE_FAILURE.MD 2026-05-22T13:28Z correction and tools/GATEWAY_SERVICE_SETUP.md Part 0). If the canonical gateway is unreachable, log the failure (Step 7 below) and stop — do NOT self-host.
+
+## Workflow
+
+### Step 1 — health-check the gateway
+
+```bash
+curl -s --max-time 5 http://192.168.2.32:8788/health | python3 -m json.tool
+```
+
+If connection-refused or non-200: skip to Step 7 (failure logging). Do NOT proceed with steps 2-6.
+
+### Step 2 — gather the session payload (real data only, no fabrication)
+
+```bash
+SINCE=$(date -u -d '4 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+git log --since="$SINCE" --oneline --all > /tmp/session_commits.txt
+gh pr list --author=@me --json number,title,state,url --search "updated:>=$SINCE" > /tmp/session_prs.json 2>/dev/null || echo '[]' > /tmp/session_prs.json
+```
+
+Write `/tmp/session_summary_payload.json` with this shape:
+
+```json
+{
+  "schema": "session-summary/v1",
+  "agent": "qwen-<model-id>-<host>",
+  "session_started_utc": "<SINCE>",
+  "session_ended_utc": "<NOW>",
+  "branch_at_end": "<git rev-parse --abbrev-ref HEAD>",
+  "commits_this_session": [{"sha": "<short>", "subject": "...", "branch": "...", "files": <int>}],
+  "prs_opened_or_updated": [],
+  "merged_to_main_this_session": [],
+  "files_written": ["<paths>"],
+  "decisions": ["1-line each, e.g. 'Removed rogue Linux gateway service per /dropchat-multipc audit'"],
+  "open_questions": ["1-line each"],
+  "follow_ups_for_other_agents": [{"to": "all", "ask": "...", "priority": "P0|P1|P2"}],
+  "files_to_check": ["<paths peers should review>"]
+}
+```
+
+Rules:
+- agent: name yourself uniquely. Example: `qwen3.7-max-linux-wsl`. Never bare `qwen` or `claude`.
+- decisions: actual decisions made this session, not generic platitudes.
+- Do NOT paste raw transcript / model-think into the payload.
+- Trim files_written to deltas, not full diffs.
+
+### Step 3 — broadcast
+
+```bash
+PAYLOAD=$(cat /tmp/session_summary_payload.json)
+python3 tools/adapters/cursor_claude_adapter.py --runtime claude \\
+  --http-base http://192.168.2.32:8788 \\
+  send --topic SESSION_SUMMARY \\
+  --payload "$PAYLOAD" \\
+  --to all
+```
+
+Verify ack: the response should contain `"ok": true` and a `message_id`. If the response is anything else, treat as Step 7 failure.
+
+### Step 4 — drain inbox
+
+```bash
+PEER_ID="qwen3.7-max-linux-wsl"   # match the agent field from Step 2
+python3 tools/adapters/freebuff_adapter.py --peer-id "$PEER_ID" --http-base http://192.168.2.32:8788 poll --limit 50 > /tmp/inbox_dms.json
+python3 tools/adapters/freebuff_adapter.py --peer-id all --http-base http://192.168.2.32:8788 poll --limit 50 > /tmp/inbox_broadcasts.json
+```
+
+Polling is destructive — once you drain, messages pop off the queue. For a non-destructive peek use:
+
+```bash
+python3 tools/protocol_inspect.py --http-base http://192.168.2.32:8788 tail --limit 10
+```
+
+### Step 5 — triage peer messages
+
+For each message in /tmp/inbox_dms.json and /tmp/inbox_broadcasts.json:
+1. Classify by topic.
+2. If it's a P0 bug claim that overlaps your session's work, re-verify on disk before acting.
+3. If envelope has `require_ack: true`, POST /ack with the message_id after handling.
+4. Decide: Accept-and-act, Defer-with-reply, or Reject-with-reply.
+5. Append a one-line summary per message to `reports/peer_inbox_$(date -u +%Y-%m-%dT%H-%M-%SZ).md`.
+
+If both queues are empty, write a single line: `- [info] topic=none source=DM/BROADCAST action=No messages received during this drain.`
+
+### Step 6 — optional revise + closing broadcast
+
+If peer feedback warrants a code change, make a SEPARATE small commit citing the peer message_id, push. Then send SESSION_CLOSED:
+
+```bash
+python3 tools/adapters/cursor_claude_adapter.py --runtime claude \\
+  --http-base http://192.168.2.32:8788 \\
+  send --topic SESSION_CLOSED \\
+  --payload '{"peer":"<your-peer-id>","drained_n":<n>,"acted_on":<n>,"next_session_eta":"<ISO>"}' \\
+  --to all
+```
+
+### Step 7 — failure logging (MANDATORY when any step fails to reach the gateway)
+
+If Step 1, 3, or 4 fails (connection-refused, timeout, gateway returns rejection), append a structured entry to `CHATBIBLE_FAILURE.MD` at repo root. Format:
+
+```markdown
+---
+- **timestamp_utc:** <UTC ISO>
+- **agent_runtime:** qwen-code
+- **provider/model:** <qwen3.7-max | qwen3.6-plus | ...>
+- **ide / surface:** qwen-cli or vscode-qwen
+- **host:** <hostname>
+- **stage_that_failed:** health-check | broadcast | inbox-drain | ack-roundtrip
+- **error_observed:** `<verbatim error text, no paraphrase>`
+- **gateway_endpoint_tried:** `http://192.168.2.32:8788`
+- **peer_id_used:** <your peer_id>
+- **what_i_was_trying_to_send:** <topic + 1-line summary>
+- **fallback_used:** none-just-this-file | <other>
+- **next_action:** human-must-restart-gateway | retry-on-next-session | escalate-to-Elton
+```
+
+Then commit + push:
+
+```bash
+git add CHATBIBLE_FAILURE.MD
+git commit -m "log: CHATBIBLE protocol failure $(date -u +%Y-%m-%dT%H:%M:%SZ) -- qwen-code @ linux-wsl"
+git push origin HEAD:main
+```
+
+If push to main is blocked: push to a `chat-failure-<utc>` branch and open a PR.
+
+DO NOT skip Step 7 when the gateway is unreachable. Silent failures are how multi-agent sessions diverge. The operator scans CHATBIBLE_FAILURE.MD daily.
+
+## Final output to the user
+
+Print this 6-line summary at the end:
+
+```
+[dropchat-multipc] <UTC ISO>
+broadcast: SESSION_SUMMARY -> all (message_id=<id>, n_commits=<n>, n_prs=<n>)
+inbox: <n> DMs, <m> broadcasts pulled
+peers reachable: <count from /health peer_registry>
+revised: <0|N> files touched per peer feedback
+follow-ups posted: <count>
+```
+
+## Common failure modes you must handle
+
+| Symptom | Cause | Action |
+|---|---|---|
+| /health connection-refused | Canonical gateway down on Windows desktop | Step 7 only. Do NOT start a local gateway. |
+| Empty peer_registry but /health=200 | Gateway just restarted; peers haven't re-heartbeat | Wait 60s and re-check; if still empty, your broadcast still lands in event log for replay |
+| Adapter returns "schema_version mismatch" | Stale adapter | `git pull origin main -- tools/adapters/` and retry |
+| `pytest.skip outside of a test` style errors | Wrong tool entirely | This skill never runs pytest. Re-read the workflow. |
+
+## Anti-patterns
+
+- Do NOT post the raw chat transcript. Always summarize to the structured payload.
+- Do NOT start a second gateway on this host. EVER. (See architecture invariant at top.)
+- Do NOT broadcast on every tool call — once per session, OR when explicitly invoked.
+- Do NOT skip Step 7 when the gateway is unreachable.
+- Do NOT pick a generic peer_id like 'qwen' or 'claude' — be specific.
+"""
