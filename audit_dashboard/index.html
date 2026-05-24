@@ -5125,7 +5125,10 @@ function renderSummary() {
   }
 
   const serverCompoundEw = typeof s.total_pnl_pct_compounded_ew === 'number' ? s.total_pnl_pct_compounded_ew : null;
-  const displayCompoundEw = statsFiltered ? (closedPicks.length ? compoundEwCappedPct(closedPicks, 500) : null) : serverCompoundEw;
+  // Client-side recompute with filters: match server cap (±2% per trade, 9999% ceiling)
+  // 500% cap was producing absurd numbers (e.g. +1,122,354%) because it allowed
+  // single-trade outliers to balloon the geometric compound across thousands of trades.
+  const displayCompoundEw = statsFiltered ? (closedPicks.length ? Math.min(9999, Math.max(-99, compoundEwCappedPct(closedPicks, 2))) : null) : serverCompoundEw;
   const totalPnlSubParts = [];
   if (usingInstitutionalPnl) {
     totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">Raw incl. toxic: <span style="color:var(--red);font-weight:600">${fmtPct(rawTotalPnl)}</span></span>`);
@@ -5136,7 +5139,7 @@ function renderSummary() {
     const _pew = cm.purged_pnl_compounded_ew;
     totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">Purged EW compound (raw, chrono): <span style="color:${_pew >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(_pew)}</span></span>`);
   } else if (displayCompoundEw != null && !usingInstitutionalPnl) {
-    totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">EW compound (\u00b1500 cap, chrono): <span style="color:${displayCompoundEw >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(displayCompoundEw)}</span></span>`);
+    totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">EW compound (\u00b12 cap, chrono): <span style="color:${displayCompoundEw >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(displayCompoundEw)}</span></span>`);
   }
   const totalPnlSubHtml = totalPnlSubParts.join('<br>');
 
@@ -5144,7 +5147,7 @@ function renderSummary() {
     active: `Total active (open) picks across ${statsFiltered ? 'filtered' : 'all'} systems. ${provenPicks} from proven systems (30+ trades, 45%+ WR) and ${probationPicks} from probation/sandbox systems. Stale picks (>48h with <1% PnL) and broken entries (>$1M) are auto-hidden.\n\n????? PROVEN BREAKDOWN ?????\n${provenBreakdownHtml}`,
     closed: `Recently closed trades ${statsFiltered ? 'matching current filters / trust book' : '(up to 2,000 most recent)'}. Used to calculate Win Rate, PnL, and Profit Factor.`,
     winRate: `Percentage of resolved trades that were profitable. Calculated as wins / (wins + losses + flat) from ${statsFiltered ? totalClosed + ' filtered' : 'all'} closed trades. Above 50% = edge exists.`,
-    totalPnl: `Cumulative PnL% across all ${statsFiltered ? totalClosed + ' filtered' : ''} closed trades.\n\nWARNING: this is a sum of per-trade PnL %, NOT a portfolio compound return. Each trade's % is on its own entry price; summing assumes equal-weight non-compounding sizing. For a portfolio-compound figure, see "EW Compound" sub-line (capped at 10% per pick to prevent outlier blow-up).\n\nHeadline: 500%-capped sum (full book) or raw purged sum (institutional). EW compound sub-line matches that population (purged raw chrono vs full book capped chrono).${cappedPnl != null ? '\n\nExcl. Outliers (capped +/-10%): ' + fmtPct(cappedPnl) + '\n' + outlierCount + ' trades had |PnL| > 10% and were capped.' : ''}${concWarning ? '\n\n' + concWarning : ''}`,
+    totalPnl: `Cumulative PnL% across all ${statsFiltered ? totalClosed + ' filtered' : ''} closed trades.\n\nWARNING: this is a sum of per-trade PnL %, NOT a portfolio compound return. Each trade's % is on its own entry price; summing assumes equal-weight non-compounding sizing. For a portfolio-compound figure, see "EW Compound" sub-line (capped at 2% per pick to prevent outlier blow-up).\n\nHeadline: 500%-capped sum (full book) or raw purged sum (institutional). EW compound sub-line matches that population (purged raw chrono vs full book capped chrono).${cappedPnl != null ? '\n\nExcl. Outliers (capped +/-10%): ' + fmtPct(cappedPnl) + '\n' + outlierCount + ' trades had |PnL| > 10% and were capped.' : ''}${concWarning ? '\n\n' + concWarning : ''}`,
     profitFactor: `Total winning PnL / Total losing PnL. PF > 1.0 = making more than losing. PF > 2.0 = strong edge. ${statsFiltered ? 'Computed from filtered data.' : ''}`,
     expectancy: `Average PnL per trade. Positive = each trade makes money on average. Calculated as Total PnL / Number of closed trades.`,
     avgWinLoss: `Average winning trade size vs average losing trade size. Ideally wins should be larger than losses (favorable R:R).`,
@@ -6040,7 +6043,7 @@ function renderNonCryptoPanel() {
       var avgPnlColor = avgPnl >= 0.5 ? 'var(--green)' : avgPnl >= 0 ? 'var(--yellow)' : 'var(--red)';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Average PnL per closed trade. More meaningful than the sum — shows the per-trade edge. +0.5% avg is solid; +1%+ is excellent." style="cursor:help;text-decoration:underline dotted">Avg PnL/trade</span><span class="nc-val" style="color:' + avgPnlColor + '">' + fmt(avgPnl, 2) + '%</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Unrealized PnL from currently open positions (mark-to-market)">Unrealized (open)</span><span class="nc-val" style="color:' + unrealizedColor + '">' + fmtPct(unrealizedPnl) + '</span></div>';
-      cardsHtml += '<div class="nc-row" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:2px;margin-top:2px"><span class="nc-lbl" style="font-weight:700" title="Equal-weight COMPOUNDED return on closed picks: start with $1, multiply by (1 + pnl_pct) for each trade in time order, ±500% per-trade cap. What a real equal-weight portfolio would have returned — the honest headline." style="cursor:help;text-decoration:underline dotted">Compound Return (EW)</span><span class="nc-val" style="color:' + compoundColor + ';font-weight:700">' + (compoundPnl == null ? '&mdash;' : fmtPct(compoundPnl)) + '</span></div>';
+      cardsHtml += '<div class="nc-row" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:2px;margin-top:2px"><span class="nc-lbl" style="font-weight:700" title="Equal-weight COMPOUNDED return on closed picks: start with $1, multiply by (1 + pnl_pct) for each trade in time order, ±2% per-trade cap, ±9999% hard ceiling. What a real equal-weight portfolio would have returned — the honest headline." style="cursor:help;text-decoration:underline dotted">Compound Return (EW)</span><span class="nc-val" style="color:' + compoundColor + ';font-weight:700">' + (compoundPnl == null ? '&mdash;' : fmtPct(compoundPnl)) + '</span></div>';
       cardsHtml += topStratHtml;
 
       // Recent 5 picks preview (closed, sorted by closed_at DESC).
@@ -6361,9 +6364,11 @@ function renderCryptoPanel() {
       unrealizedPnl += Math.max(-500, Math.min(500, upnl));
     });
     // Honest headline: equal-weight compounded return on closed picks (chrono,
-    // ±500% per-trade cap) — NOT the raw sum-of-percentages, which overstates by
-    // ~14x at this trade count. See updates/ 2026-05-22 stat-validation audit.
-    var compoundPnl = compoundEwCappedPct(catClosed, 500);
+    // ±2% per-trade cap, ±9999% hard ceiling) — NOT the raw sum-of-percentages.
+    // 500% cap was producing absurd numbers (e.g. +1,122,354%) — now matches
+    // server-side _MAX_PNL_COMPOUND = 2 in dashboard_generator.py.
+    var compoundPnl = compoundEwCappedPct(catClosed, 2);
+    compoundPnl = compoundPnl != null ? Math.min(9999, Math.max(-99, compoundPnl)) : compoundPnl;
     var compoundColor = compoundPnl == null ? 'var(--text-dim)' : compoundPnl >= 0 ? 'var(--green)' : 'var(--red)';
     var unrealizedColor = unrealizedPnl >= 0 ? 'var(--green)' : 'var(--red)';
 
@@ -6400,7 +6405,7 @@ function renderCryptoPanel() {
       var avgPnlColorC = avgPnlC >= 0.5 ? 'var(--green)' : avgPnlC >= 0 ? 'var(--yellow)' : 'var(--red)';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Average PnL per closed trade. +0.5% is solid per-trade edge; +1%+ is excellent. More meaningful than the sum." style="cursor:help;text-decoration:underline dotted">Avg PnL/trade</span><span class="nc-val" style="color:' + avgPnlColorC + '">' + fmt(avgPnlC, 2) + '%</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl">Unrealized (open)</span><span class="nc-val" style="color:' + unrealizedColor + '">' + fmtPct(unrealizedPnl) + '</span></div>';
-      cardsHtml += '<div class="nc-row" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:2px;margin-top:2px"><span class="nc-lbl" style="font-weight:700" title="Equal-weight COMPOUNDED return on closed picks: start with $1, multiply by (1 + pnl_pct) for each trade in time order, ±500% per-trade cap. This is what a real equal-weight portfolio would have returned. The honest headline number." style="cursor:help;text-decoration:underline dotted">Compound Return (EW)</span><span class="nc-val" style="color:' + compoundColor + ';font-weight:700">' + (compoundPnl == null ? '&mdash;' : fmtPct(compoundPnl)) + '</span></div>';
+      cardsHtml += '<div class="nc-row" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:2px;margin-top:2px"><span class="nc-lbl" style="font-weight:700" title="Equal-weight COMPOUNDED return on closed picks: start with $1, multiply by (1 + pnl_pct) for each trade in time order, ±2% per-trade cap, ±9999% hard ceiling. This is what a real equal-weight portfolio would have returned. The honest headline number." style="cursor:help;text-decoration:underline dotted">Compound Return (EW)</span><span class="nc-val" style="color:' + compoundColor + ';font-weight:700">' + (compoundPnl == null ? '&mdash;' : fmtPct(compoundPnl)) + '</span></div>';
 
       // 2026-04-16: Last-20 picks preview (active + closed combined, sorted DESC).
       // Phase 2 of Recent-N rollout — gives crypto tiles parity with the non-crypto
