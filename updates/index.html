@@ -54496,3 +54496,57 @@ py quant_lab/stress_tester.py --walkforward         # Walk-forward validation</p
         <p style="margin:8px 0 0;color:#999;">Reports: COHORT_HARNESS_VERDICT_2026-05-18.md, cohort_harness_verdict_2026-05-18.json | Tools: edge_stability_harness.py, cohort_disagreement_filter.py</p>
       </div>
     </div>
+
+    <!-- Update: May 24, 2026 — AI Tournament Pipeline: Hedge Fund Grade + Curated Picks -->
+    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="tournament,hedge-fund,picks,swarm,safety" data-category="trading" data-types="feature,pipeline,research">
+      <div class="update-date" style="line-height:1.5">May 24, 2026 &mdash; <strong style="color:#22c55e;">🏆 AI Tournament Pipeline: Hedge Fund Grade + Multi-Model Curated Picks</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Massive pipeline build across multiple sessions. <strong>3,149 picks</strong> across 9 asset classes from 34 AI models, with full hedge-fund-grade infrastructure.</p>
+
+        <h3>Pipeline Built</h3>
+        <ul>
+          <li><strong>DB Ingest</strong>: tournament_picks table (34 cols, dedup_key upsert, 865 picks/batch)</li>
+          <li><strong>Kelly Sizing</strong>: Fractional Kelly with equal-weight until n&ge;20 per persona, 1.5% max per position</li>
+          <li><strong>Kill Gate</strong>: 4-statistical-gate framework — 4 KILLED personas, FOREX asset-class blocked, BOND warned</li>
+          <li><strong>Price Tracker</strong>: PENNY 7d, FUTURES 14d resolution windows with Yahoo ticker fixes</li>
+          <li><strong>Copy Trader</strong>: 20+ picks/2h converted to tournament format, CI-wired</li>
+        </ul>
+
+        <h3>Data Integration</h3>
+        <ul>
+          <li><strong>FRED Macro LIVE</strong>: 7 series operational (Fed Funds 3.62%, CPI 332.4, VIX 16.76)</li>
+          <li><strong>Kalshi/Polymarket</strong>: 9+3 signals wired into research &amp; confidence boosting</li>
+        </ul>
+
+        <h3>Curated Picks — Top 3 Per Asset Class (7-Model Consensus)</h3>
+        <p>7 AI models (Risk Manager, Portfolio Manager, Cerebras GPT-OSS-120B, DeepSeek V4, KiloCode, Kimi, Cursor) debated forward-tested picks. Full consensus:</p>
+        <table style="font-size:11px;margin:8px 0">
+          <tr><th>Class</th><th>#1</th><th>#2</th><th>#3</th><th>Models</th></tr>
+          <tr><td>EQUITY</td><td>MSFT LONG $447.89</td><td>XOM SHORT $116.91</td><td>MSFT LONG $444.53</td><td>7/7</td></tr>
+          <tr><td>CRYPTO</td><td>AVAX SHORT $22.83</td><td>SOL LONG $157.39</td><td>ETH SHORT $2,150</td><td>6/7</td></tr>
+          <tr><td>ETF</td><td>SPY SHORT $726.80</td><td>GLD LONG $257.93</td><td>GLD LONG $259.24</td><td>7/7</td></tr>
+          <tr><td>COMMODITY</td><td>CL=F SHORT $68.25</td><td>NG=F SHORT $3.90</td><td>SI=F SHORT $34.93</td><td>5/7</td></tr>
+          <tr><td>BOND</td><td>TLT LONG $87.66</td><td>IEF LONG $91.98</td><td>SHY SHORT $80.27</td><td>6/7</td></tr>
+        </table>
+
+        <h3>Top 5 Overall (Consensus)</h3>
+        <ol>
+          <li><strong>TLT LONG</strong> — 7/7 models agree, cleanest macro expression</li>
+          <li><strong>SPY SHORT</strong> — 7/7 agree, foundation of risk-off book</li>
+          <li><strong>GLD LONG</strong> — 7/7 agree, stagflation hedge</li>
+          <li><strong>CL=F SHORT</strong> — 5/7 agree, demand destruction thesis</li>
+          <li><strong>XOM SHORT</strong> — 5/7 agree, energy equity short</li>
+        </ol>
+        <p style="color:#fca5a5"><strong>Vetoed:</strong> MVST (0 data), MSFT#2 (RR&lt;1), SHY (coin flip)</p>
+
+        <h3>Key Findings</h3>
+        <ul>
+          <li>ADBE/PYPL/QCOM are fundamental screen picks with <strong>zero forward-test data</strong> in tournament_picks</li>
+          <li>regime_adaptive 84.6% WR is <strong>SYNTHETIC_SEED data</strong> from old pipeline — not leakage</li>
+          <li>ML calibration <strong>SYSTEM-WIDE INVERTED</strong> — confidence 0.85-0.90 has 20% WR</li>
+          <li>FOREX confirmed statistical trap: 57.3% WR, -0.39% avg PnL — zero-allocated</li>
+        </ul>
+
+        <p style="margin:8px 0 0"><a href="/audit/curated_picks_20260524.html">🎯 Curated Picks Page</a> · <a href="/audit/ai-tournament.html">AI Tournament Dashboard</a> · 15+ commits, 7-model swarm</p>
+      </div>
+    </div>
