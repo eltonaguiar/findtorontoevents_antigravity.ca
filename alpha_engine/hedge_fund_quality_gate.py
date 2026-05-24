@@ -160,6 +160,14 @@ FOREX_HC_CONFIDENCE_MIN = float(os.environ.get("HF_GATE_FOREX_HC_CONFIDENCE_MIN"
 # ───────────────── ETF rules ─────────────────
 ETF_BANNED_SYMBOLS = frozenset({"IWM", "GLD"})
 
+# ───────────────── Portfolio-level hard cap ─────────────────
+# 2026-05-24 debate consensus: 15% portfolio max drawdown hard cap.
+# Any strategy/source/class exceeding this at the portfolio level triggers
+# a full stop. Env-overridable (HF_GATE_PORTFOLIO_MAX_DD) for shadow-mode
+# tuning. This is the absolute ceiling — per-class caps in quarantine_manifest
+# are subordinate to this limit.
+PORTFOLIO_MAX_DRAWDOWN_PCT = float(os.environ.get("HF_GATE_PORTFOLIO_MAX_DD", "0.15"))
+
 # ───────────────── BOND rules ─────────────────
 # Sample too small (n=17) for structural claims. Allow all.
 
@@ -577,4 +585,5 @@ __all__ = [
     "PENNY_BANNED_SYMBOLS", "PENNY_BANNED_STRATEGIES", "PENNY_CONFIDENCE_MIN",
     "FUTURES_BANNED_SYMBOLS", "FUTURES_BANNED_STRATEGIES",
     "ML_PUMP_PROB_MIN", "ML_PUMP_PROB_MAX", "ML_SOURCE_SYSTEMS",
+    "PORTFOLIO_MAX_DRAWDOWN_PCT",
 ]
