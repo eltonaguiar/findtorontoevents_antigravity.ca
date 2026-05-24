@@ -1,0 +1,339 @@
+{
+  "timestamp": "2026-05-24T07:57:04.715228+00:00",
+  "mode": "all",
+  "summary": {
+    "total": 9,
+    "passed": 1,
+    "failed": 8,
+    "critical_failed": true,
+    "by_severity": {
+      "critical": {
+        "passed": 0,
+        "failed": 3
+      },
+      "high": {
+        "passed": 1,
+        "failed": 4
+      },
+      "medium": {
+        "passed": 0,
+        "failed": 1
+      }
+    }
+  },
+  "results": [
+    {
+      "passed": false,
+      "message": "Red-tier DB health checks: pnl_integrity, open_bloat, won_pnl_contradiction",
+      "data": {
+        "red_checks": [
+          "pnl_integrity",
+          "open_bloat",
+          "won_pnl_contradiction"
+        ],
+        "overall": {
+          "elapsed_s": 576.04,
+          "checks_run": 4,
+          "checks_passed": 1,
+          "checks_failed": 3,
+          "any_red": true
+        }
+      },
+      "name": "DbHealthCheck",
+      "severity": "critical"
+    },
+    {
+      "passed": false,
+      "message": "PnL mismatch: 39.0% (threshold: 5%)",
+      "data": {
+        "mismatch_pct": 38.97,
+        "threshold": 5.0,
+        "gt1pct_mismatch": 10501,
+        "gt001pct_mismatch": 12735,
+        "sampled": 26945
+      },
+      "name": "PnLIntegrityCheck",
+      "severity": "critical"
+    },
+    {
+      "passed": false,
+      "message": "WON/PnL contradiction detected \u2014 some WON trades have negative avg PnL",
+      "data": {
+        "contradiction_detected": true,
+        "by_status": [
+          {
+            "status": "WON",
+            "n": 2531,
+            "avg_pnl": -41.12555038,
+            "negative_pnl_count": 9
+          },
+          {
+            "status": "SL_HIT",
+            "n": 1081,
+            "avg_pnl": -2.23580666,
+            "negative_pnl_count": 1081
+          },
+          {
+            "status": "TP_HIT",
+            "n": 813,
+            "avg_pnl": 2.96901845,
+            "negative_pnl_count": 0
+          },
+          {
+            "status": "LOST",
+            "n": 3232,
+            "avg_pnl": -3.38857506,
+            "negative_pnl_count": 3209
+          }
+        ]
+      },
+      "name": "WonPnlContradiction",
+      "severity": "critical"
+    },
+    {
+      "passed": false,
+      "message": "Ghost rows: 56,559 (threshold: 1,000)",
+      "data": {
+        "total_ghost_rows": 56559,
+        "threshold": 1000,
+        "top_cohorts": [
+          {
+            "asset_class": "CRYPTO",
+            "strategy": "quan_engine",
+            "symbol": "MATICUSDT",
+            "direction": "LONG",
+            "pnl_pct": -15.0,
+            "n": 20474,
+            "distinct_entries": 1,
+            "sampled_at": 150000
+          },
+          {
+            "asset_class": "MEMECOIN",
+            "strategy": "meta_strategy",
+            "symbol": "DOGEUSDT",
+            "direction": "LONG",
+            "pnl_pct": 5.0,
+            "n": 5661,
+            "distinct_entries": 4,
+            "sampled_at": 500000
+          },
+          {
+            "asset_class": "MEMECOIN",
+            "strategy": "meta_strategy",
+            "symbol": "WIFUSDT",
+            "direction": "SHORT",
+            "pnl_pct": -3.0,
+            "n": 4644,
+            "distinct_entries": 4,
+            "sampled_at": 500000
+          },
+          {
+            "asset_class": "MEMECOIN",
+            "strategy": "meta_strategy",
+            "symbol": "DOGEUSDT",
+            "direction": "LONG",
+            "pnl_pct": 1.3226,
+            "n": 4199,
+            "distinct_entries": 1,
+            "sampled_at": 500000
+          },
+          {
+            "asset_class": "MEMECOIN",
+            "strategy": "meta_strategy",
+            "symbol": "SHIBUSDT",
+            "direction": "LONG",
+            "pnl_pct": 5.082,
+            "n": 4158,
+            "distinct_entries": 1,
+            "sampled_at": 500000
+          }
+        ]
+      },
+      "name": "GhostRowCount",
+      "severity": "high"
+    },
+    {
+      "passed": false,
+      "message": "Open rows: 29,254,204 (threshold: 1,000,000)",
+      "data": {
+        "open_count": 29254204,
+        "threshold": 1000000,
+        "info_schema_estimate": 1271867,
+        "hours_since_last_close": 271,
+        "validator_frozen": true
+      },
+      "name": "OpenBloatCheck",
+      "severity": "high"
+    },
+    {
+      "passed": true,
+      "message": "All 153 JSON files are within 7 days",
+      "data": {
+        "total_json_files": 153,
+        "threshold_days": 7
+      },
+      "name": "DataFreshnessCheck",
+      "severity": "high"
+    },
+    {
+      "passed": false,
+      "message": "22 ETF symbol(s) misclassified: XLI, XLI, XLI, XLI, XLI, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM, IWM",
+      "data": {
+        "misclassified": [
+          {
+            "symbol": "XLI",
+            "tagged_as": "CRYPTO",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "XLI",
+            "tagged_as": "CRYPTO",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "XLI",
+            "tagged_as": "CRYPTO",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "XLI",
+            "tagged_as": "CRYPTO",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "XLI",
+            "tagged_as": "CRYPTO",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          },
+          {
+            "symbol": "IWM",
+            "tagged_as": "EQUITY",
+            "expected": "ETF"
+          }
+        ],
+        "etf_symbols_checked": [
+          "DIA",
+          "EEM",
+          "EFA",
+          "IWM",
+          "QQQ",
+          "SPY",
+          "VOO",
+          "VTI",
+          "XLE",
+          "XLF",
+          "XLI",
+          "XLK",
+          "XLP",
+          "XLU",
+          "XLV",
+          "XLY"
+        ]
+      },
+      "name": "AssetClassificationCheck",
+      "severity": "high"
+    },
+    {
+      "passed": false,
+      "message": "Signal outcomes: 115,782 min stale (threshold: 1,440 min)",
+      "data": {
+        "minutes_stale": 115782.0,
+        "threshold": 1440,
+        "last_resolved_at": "2026-03-04 08:47:58",
+        "status": "RED"
+      },
+      "name": "SignalOutcomesCheck",
+      "severity": "high"
+    },
+    {
+      "passed": false,
+      "message": "Backtests table error: no timestamp column in backtest_trades \u2014 schema check needed",
+      "data": {
+        "error": "no timestamp column in backtest_trades \u2014 schema check needed",
+        "n_total": 0
+      },
+      "name": "BacktestTableCheck",
+      "severity": "medium"
+    }
+  ]
+}

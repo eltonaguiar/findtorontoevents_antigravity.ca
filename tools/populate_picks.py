@@ -516,9 +516,18 @@ def generate_fallback_picks(config: dict) -> list[dict]:
         smart_picks = smart_data.get("picks", [])
         excluded = smart_data.get("excluded_reasons", {})
         print(f"[populate] Found {len(smart_picks)} smart picks, {len(excluded)} excluded groups")
+        # Fix 2026-05-24: use canonical classifier to validate asset_class
+        from alpha_engine.asset_class import asset_class_from_symbol
         for sp in smart_picks[:20]:  # Take top 20
             symbol = sp.get("symbol", "")
-            asset_class = sp.get("asset_class", "CRYPTO")
+            # Trust upstream but validate against canonical classifier
+            upstream_ac = sp.get("asset_class", sp.get("category", "CRYPTO")).upper()
+            canonical_ac = asset_class_from_symbol(symbol).upper()
+            # Override if canonical is a known symbol class (etf/bond/equity/forex/futures)
+            if canonical_ac in ("ETF", "BOND", "EQUITY", "FOREX", "FUTURES"):
+                asset_class = canonical_ac
+            else:
+                asset_class = upstream_ac
             direction = sp.get("direction", "LONG")
             entry = float(sp.get("entry_price", sp.get("current_price", 0)))
             if entry <= 0:
@@ -553,9 +562,16 @@ def generate_fallback_picks(config: dict) -> list[dict]:
         try:
             active_data = json.loads(ACTIVE_PICKS.read_text())
             if isinstance(active_data, list):
+                from alpha_engine.asset_class import asset_class_from_symbol
                 for ap in active_data[:20]:
                     symbol = ap.get("symbol", "")
-                    asset_class = ap.get("asset_class", ap.get("category", "CRYPTO"))
+                    # Fix 2026-05-24: validate upstream asset_class against canonical classifier
+                    upstream_ac = (ap.get("asset_class") or ap.get("category") or "CRYPTO").upper()
+                    canonical_ac = asset_class_from_symbol(symbol).upper()
+                    if canonical_ac in ("ETF", "BOND", "EQUITY", "FOREX", "FUTURES"):
+                        asset_class = canonical_ac
+                    else:
+                        asset_class = upstream_ac
                     direction = ap.get("direction", "LONG")
                     entry = float(ap.get("entry_price", ap.get("price", 0)))
                     if entry <= 0:

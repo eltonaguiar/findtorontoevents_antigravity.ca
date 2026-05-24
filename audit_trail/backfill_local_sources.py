@@ -217,12 +217,23 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
             exit_price = p.get("exit_price", p.get("close_price"))
             exit_reason = p.get("exit_reason", p.get("close_reason"))
             pnl = p.get("pnl_pct", p.get("net_pnl_pct", p.get("return_pct")))
+
+            # Sign-coherence guard (mirrors mysql_client.py mysql_close_trade):
+            # If exit_reason claims TP/WON but pnl is negative (or SL/LOST but
+            # pnl is positive), trust the pnl sign. Source files can contain
+            # contradictory reason+pnl data that produces the WON-vs-PnL
+            # contradiction flagged in db_health.json.
+            pnl_f = safe_float(pnl) if pnl is not None else None
+            if status in ("WON", "WIN", "CLOSED_TP", "TP_HIT") and pnl_f is not None and pnl_f < 0:
+                status = "LOST"
+            elif status in ("LOST", "LOSS", "CLOSED_SL", "SL_HIT") and pnl_f is not None and pnl_f > 0:
+                status = "WON"
+
             # Infer WON/LOST from pnl when status is still ambiguous (CLOSED)
-            if status == "CLOSED" and pnl is not None:
-                pnl_f = safe_float(pnl)
-                if pnl_f is not None and pnl_f > 0:
+            if status == "CLOSED" and pnl_f is not None:
+                if pnl_f > 0:
                     status = "WON"
-                elif pnl_f is not None and pnl_f < 0:
+                elif pnl_f < 0:
                     status = "LOST"
 
         ts = p.get("timestamp", p.get("signal_timestamp", p.get("date",
