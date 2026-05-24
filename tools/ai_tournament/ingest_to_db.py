@@ -78,6 +78,33 @@ def fmt_confidence(v: Any) -> str:
         return "MEDIUM"
 
 
+def enrich_confidence_with_persona_wr(picks: list[dict]) -> None:
+    """If a pick's confidence is 0/None, fallback to persona_WR as proxy.
+    Clamps between 0.25 (floor) and 0.75 (ceiling) for safety."""
+    try:
+        import pymysql
+        conn = pymysql.connect(
+            host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
+            user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
+            password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
+            database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
+            port=3306, connect_timeout=5)
+        cur = conn.cursor()
+        cur.execute("SELECT persona_id, ROUND(AVG(CASE WHEN status='WIN' THEN 1.0 ELSE 0.0 END), 4) FROM tournament_picks WHERE status IN ('WIN','LOSS') AND persona_id != '' GROUP BY persona_id")
+        persona_wr = {r[0]: max(0.25, min(0.75, float(r[1]))) for r in cur.fetchall()}
+        conn.close()
+        
+        enriched = 0
+        for p in picks:
+            if float(p.get("confidence", 0)) <= 0.01 and p.get("persona_id", "") in persona_wr:
+                p["confidence"] = persona_wr[p["persona_id"]]
+                enriched += 1
+        if enriched:
+            print(f"[ingest] Enriched {enriched} picks with persona_WR confidence proxy")
+    except Exception as e:
+        print(f"[ingest] Persona_WR enrichment skipped (non-fatal): {e}")
+
+
 def build_upsert_sql(picks: list[dict]) -> tuple[list[tuple], str, str]:
     """Build rows + insert_sql for tournament_picks upsert."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -181,6 +208,7 @@ def main() -> None:
         print("[ingest] No picks to ingest — exiting")
         return
 
+    enrich_confidence_with_persona_wr(picks)
     rows, insert_sql, source = build_upsert_sql(picks)
     print(f"[ingest] {len(rows)} rows to upsert into tournament_picks")
 

@@ -56,9 +56,10 @@ def _fetch_observations(series_id: str, limit: int) -> list[dict]:
     FRED public API allows unauthenticated requests at ~120/min for public series.
     An empty api_key string is accepted by the endpoint.
     """
+    import os
     params = {
         "series_id": series_id,
-        "api_key": "",          # empty = anonymous (public series only)
+        "api_key": os.environ.get("FRED_API_KEY", ""),
         "file_type": "json",
         "sort_order": "desc",
         "limit": limit,

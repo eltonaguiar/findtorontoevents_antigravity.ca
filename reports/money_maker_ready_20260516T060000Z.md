@@ -146,3 +146,32 @@ python audit_trail/edge_filter_bootstrap.py --system aggregated_picks
 *NOT FINANCIAL ADVICE — research surface only.*
 *Bootstrap CI: pre-registered OOS split 2026-04-01, 5000 iterations, seed=42.*
 *See `audit_trail/edge_filter_bootstrap.py` for full methodology.*
+
+
+## State Update — 2026-05-24T01:44Z
+
+### AI Tournament Pipeline (New System)
+**Status:** Operational. Generating picks across 9 asset classes, 34 models.
+
+### Tier-2 Charter Compliance (PF>=1.5, WR>=50%, n>=100)
+| Asset Class | n | WR | PF | Tier-2 Met? |
+|---|---|---|---|---|
+| EQUITY | 317 | 52.1% | 1.09 | WR+y n+ PF- |
+| CRYPTO | 310 | 50.0% | 1.00 | WR+y n+ PF- |
+| COMMODITY | 254 | 53.9% | 1.17 | WR+y n+ PF- |
+| ETF | 251 | 55.0% | 1.22 | WR+y n+ PF- |
+| FOREX | 253 | 57.3% | 1.34 | WR+y n+ PF- |
+| BOND | 251 | 53.4% | 1.15 | WR+y n+ PF- |
+
+### New Capabilities
+- Kelly criterion position sizing per pick
+- Portfolio analytics (Sharpe, VaR, drawdown) per class
+- Diversification monitor with concentration alerts
+- Performance reporting per model with Sharpe ranking
+- Research topic auto-generation from performance gaps
+- Model summary table with live DB data on tournament page
+
+### Data Quality
+- 3,149 picks across 9 asset classes
+- 0 duplicates, 0 status/PnL mismatches
+- wins + losses = resolved for all classes (100% consistent)
