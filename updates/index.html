@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -108,6 +108,42 @@
     <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/alpha/performance.html" target="_blank"
       rel="noopener">Alpha Performance</a>
   </div>
+    
+<!-- Update: May 24, 2026 — AI Tournament Pipeline: Hedge Fund Grade + Curated Picks -->
+    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="tournament,hedge-fund,picks,swarm,safety" data-category="trading" data-types="feature,pipeline,research">
+      <div class="update-date" style="line-height:1.5">May 24, 2026 &mdash; <strong style="color:#22c55e;">🏆 AI Tournament Pipeline: Hedge Fund Grade + Multi-Model Curated Picks</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Built and hardened a 34-model, 9-asset-class tournament prediction pipeline. <strong>3,149 forward-test picks</strong> in the tournament_picks MySQL table, 53.4% overall WR. Full hedge-fund-grade infrastructure: DB ingest, Kelly position sizing, statistical kill gates, price tracker, copy trader adapter, and position sizing rules enforced.</p>
+
+        <p style="margin:0 0 6px;"><strong>Pipeline shipped:</strong></p>
+        <ul style="margin:0 0 8px; padding-left:20px;">
+          <li><strong>DB Ingest</strong>: tournament_picks table (34 cols, dedup_key upsert, 865 picks/batch)</li>
+          <li><strong>Kelly Sizing</strong>: Fractional Kelly, equal-weight until n≥20 per persona, 1.5% max per position</li>
+          <li><strong>Kill Gate</strong>: 4-statistical-gate framework — 4 KILLED personas, FOREX asset-class blocked, BOND warned</li>
+          <li><strong>Price Tracker</strong>: PENNY 7d, FUTURES 14d resolution windows with Yahoo ticker fixes</li>
+          <li><strong>Copy Trader</strong>: 20+ picks/2h converted to tournament format, CI-wired</li>
+        </ul>
+
+        <p style="margin:0 0 6px;"><strong>Data integration:</strong></p>
+        <ul style="margin:0 0 8px; padding-left:20px;">
+          <li><strong>FRED Macro LIVE</strong>: 7 series operational (Fed Funds 3.62%, CPI 332.4, VIX 16.76) after fixing hardcoded api_key bug</li>
+          <li><strong>Kalshi/Polymarket</strong>: 9+3 signals wired into research generator and confidence boosting</li>
+        </ul>
+
+        <p style="margin:0 0 6px;"><strong>7-model debate consensus — Top 3 per asset class:</strong> Risk Manager, Portfolio Manager, Cerebras GPT-OSS-120B, DeepSeek V4, KiloCode, Kimi, and Cursor converged on TLT LONG, SPY SHORT, and GLD LONG as the strongest consensus picks (7/7 agreement). Full forward-tested pick list across EQUITY (MSFT/XOM/PG), CRYPTO (AVAX/SOL/ETH), ETF (SPY/GLD/XLE), COMMODITY (CL=F/SI=F/NG=F), and BOND (TLT/IEF/SHY). PENNY and FUTURES have 0 resolved data — PAPER ONLY. FOREX zero-allocated (kill gate: 57.3% WR, -0.39% avg PnL).</p>
+
+        <p style="margin:0 0 6px;"><strong>Key findings:</strong></p>
+        <ul style="margin:0 0 8px; padding-left:20px;">
+          <li>ADBE/PYPL/QCOM are fundamental screen picks with <strong>zero forward-test data</strong> in tournament_picks — UEPS has n=0/100 live</li>
+          <li>regime_adaptive 84.6% WR is <strong>SYNTHETIC_SEED data</strong> from old pipeline — not leakage in our system</li>
+          <li>ML calibration <strong>SYSTEM-WIDE INVERTED</strong> — confidence 0.85-0.90 band has 20% WR (anti-predictive)</li>
+          <li>FOREX confirmed statistical trap: 57.3% WR, -0.39% avg PnL — blocked by kill gate</li>
+        </ul>
+
+        <p style="margin:0"><a href="/audit/simulation_full_report_20260524.html">📊 Full Simulation Report</a> · <a href="/audit/curated_picks_20260524.html">🎯 Curated Picks</a> · <a href="/audit/ai-tournament.html">🏆 AI Tournament</a> · <a href="/audit/hedge_fund_simulation_20260524.html">🤖 3-Round Debate</a> · 20+ commits, 10+ model swarm</p>
+      </div>
+    </div>
+
 
   <!-- AUDIT-VALIDATION-PROGRESS (amendable in-progress entry — update as the stat audit advances) -->
   <div class="update-entry" style="--dot-color: #c4b5fd; background: #1a1230; border: 2px solid #c4b5fd; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="audit,plan,institutional,90day,swarm-reviewed,goal-1,documentation,improvement" data-category="trading" data-types="documentation,improvement">
@@ -1105,59 +1141,6 @@
     </div>
 
     
-<!-- Update: May 24, 2026 — AI Tournament Pipeline: Hedge Fund Grade + Curated Picks -->
-    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="tournament,hedge-fund,picks,swarm,safety" data-category="trading" data-types="feature,pipeline,research">
-      <div class="update-date" style="line-height:1.5">May 24, 2026 &mdash; <strong style="color:#22c55e;">🏆 AI Tournament Pipeline: Hedge Fund Grade + Multi-Model Curated Picks</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">Massive pipeline build across multiple sessions. <strong>3,149 picks</strong> across 9 asset classes from 34 AI models, with full hedge-fund-grade infrastructure.</p>
-
-        <h3>Pipeline Built</h3>
-        <ul>
-          <li><strong>DB Ingest</strong>: tournament_picks table (34 cols, dedup_key upsert, 865 picks/batch)</li>
-          <li><strong>Kelly Sizing</strong>: Fractional Kelly with equal-weight until n&ge;20 per persona, 1.5% max per position</li>
-          <li><strong>Kill Gate</strong>: 4-statistical-gate framework — 4 KILLED personas, FOREX asset-class blocked, BOND warned</li>
-          <li><strong>Price Tracker</strong>: PENNY 7d, FUTURES 14d resolution windows with Yahoo ticker fixes</li>
-          <li><strong>Copy Trader</strong>: 20+ picks/2h converted to tournament format, CI-wired</li>
-        </ul>
-
-        <h3>Data Integration</h3>
-        <ul>
-          <li><strong>FRED Macro LIVE</strong>: 7 series operational (Fed Funds 3.62%, CPI 332.4, VIX 16.76)</li>
-          <li><strong>Kalshi/Polymarket</strong>: 9+3 signals wired into research &amp; confidence boosting</li>
-        </ul>
-
-        <h3>Curated Picks — Top 3 Per Asset Class (7-Model Consensus)</h3>
-        <p>7 AI models (Risk Manager, Portfolio Manager, Cerebras GPT-OSS-120B, DeepSeek V4, KiloCode, Kimi, Cursor) debated forward-tested picks. Full consensus:</p>
-        <table style="font-size:11px;margin:8px 0">
-          <tr><th>Class</th><th>#1</th><th>#2</th><th>#3</th><th>Models</th></tr>
-          <tr><td>EQUITY</td><td>MSFT LONG $447.89</td><td>XOM SHORT $116.91</td><td>MSFT LONG $444.53</td><td>7/7</td></tr>
-          <tr><td>CRYPTO</td><td>AVAX SHORT $22.83</td><td>SOL LONG $157.39</td><td>ETH SHORT $2,150</td><td>6/7</td></tr>
-          <tr><td>ETF</td><td>SPY SHORT $726.80</td><td>GLD LONG $257.93</td><td>GLD LONG $259.24</td><td>7/7</td></tr>
-          <tr><td>COMMODITY</td><td>CL=F SHORT $68.25</td><td>NG=F SHORT $3.90</td><td>SI=F SHORT $34.93</td><td>5/7</td></tr>
-          <tr><td>BOND</td><td>TLT LONG $87.66</td><td>IEF LONG $91.98</td><td>SHY SHORT $80.27</td><td>6/7</td></tr>
-        </table>
-
-        <h3>Top 5 Overall (Consensus)</h3>
-        <ol>
-          <li><strong>TLT LONG</strong> — 7/7 models agree, cleanest macro expression</li>
-          <li><strong>SPY SHORT</strong> — 7/7 agree, foundation of risk-off book</li>
-          <li><strong>GLD LONG</strong> — 7/7 agree, stagflation hedge</li>
-          <li><strong>CL=F SHORT</strong> — 5/7 agree, demand destruction thesis</li>
-          <li><strong>XOM SHORT</strong> — 5/7 agree, energy equity short</li>
-        </ol>
-        <p style="color:#fca5a5"><strong>Vetoed:</strong> MVST (0 data), MSFT#2 (RR&lt;1), SHY (coin flip)</p>
-
-        <h3>Key Findings</h3>
-        <ul>
-          <li>ADBE/PYPL/QCOM are fundamental screen picks with <strong>zero forward-test data</strong> in tournament_picks</li>
-          <li>regime_adaptive 84.6% WR is <strong>SYNTHETIC_SEED data</strong> from old pipeline — not leakage</li>
-          <li>ML calibration <strong>SYSTEM-WIDE INVERTED</strong> — confidence 0.85-0.90 has 20% WR</li>
-          <li>FOREX confirmed statistical trap: 57.3% WR, -0.39% avg PnL — zero-allocated</li>
-        </ul>
-
-        <p style="margin:8px 0 0"><a href="/audit/curated_picks_20260524.html">🎯 Curated Picks</a> · <a href="/audit/ai-tournament.html">AI Tournament</a> · <a href="/audit/hedge_fund_simulation_20260524.html">🤖 Hedge Fund Simulation</a> · 15+ commits, 10+ model swarm</p>
-      </div>
-
 <!-- Update: May 17, 2026 ~05:40 UTC — M-046/M-047 gates + CRYPTO T1 certification + weekly filter -->
     <div class="update-entry" style="--dot-color: #22c55e;" data-tags="gates,commodity,crypto,equity,vix,kelly,weekly-filter,t1-certification,goal-1,swarm-review" data-category="trading" data-types="feature,documentation">
       <div class="update-date">May 24, 2026 &mdash; LIVE (updated hourly)</div>
@@ -10161,10 +10144,10 @@
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          May 24, 2026 &mdash; 05:39 PM EST | Hourly Portfolio Update
+          May 24, 2026 &mdash; 06:40 PM EST | Hourly Portfolio Update
         </h4>
-        <p><strong>35 active, 1 waiting</strong> | 80 open positions | 647 closed trades | W/L: 207/440 (32% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
-        <p><strong>Top 3:</strong> Tournament: All Assets (+2.47%), Fear & Greed Contrarian (+2.13%), Stocks: Short-Term Reversal (+2.07%)</p>
+        <p><strong>35 active, 1 waiting</strong> | 79 open positions | 648 closed trades | W/L: 207/441 (32% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
+        <p><strong>Top 3:</strong> Tournament: All Assets (+2.46%), Fear & Greed Contrarian (+2.21%), Stocks: Short-Term Reversal (+2.07%)</p>
         <table style="width:100%; border-collapse:collapse; margin:8px 0; font-size:0.88em;">
           <tr style="border-bottom:1px solid #2a2a3e;">
             <th style="text-align:left; padding:3px;">#</th>
@@ -10176,45 +10159,46 @@
             <th style="text-align:left; padding:3px;">Closed</th>
             <th style="text-align:left; padding:3px;">Status</th>
           </tr>
-          <tr><td>1</td><td><strong>Tournament: All Assets</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+2.47%</strong></td><td>3</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>2</td><td><strong>Fear & Greed Contrarian</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#22c55e"><strong>+2.13%</strong></td><td>1</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>1</td><td><strong>Tournament: All Assets</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+2.46%</strong></td><td>3</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>2</td><td><strong>Fear & Greed Contrarian</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#22c55e"><strong>+2.21%</strong></td><td>1</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
           <tr><td>3</td><td><strong>Stocks: Short-Term Reversal</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+2.07%</strong></td><td>3</td><td>4</td><td style="color:#22c55e">ACTIVE</td></tr>
           <tr><td>4</td><td><strong>Stocks: Best Picks</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+1.89%</strong></td><td>1</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>5</td><td><strong>Multi-Asset: Diversified</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+1.70%</strong></td><td>4</td><td>11</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>6</td><td><strong>HTF Weekly Momentum</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+1.66%</strong></td><td>2</td><td>12</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>7</td><td><strong>Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.30%</strong></td><td>1</td><td>20</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>8</td><td><strong>High Consensus</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.30%</strong></td><td>3</td><td>32</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>9</td><td><strong>Claude's Best</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.19%</strong></td><td>1</td><td>23</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>10</td><td><strong>Prop: Swing Trader</strong></td><td style="color:#eab308">Prop</td><td>$200K</td><td style="color:#22c55e"><strong>+0.68%</strong></td><td>2</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>11</td><td><strong>Golden Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.50%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>12</td><td><strong>Momentum Riders</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.27%</strong></td><td>4</td><td>35</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>13</td><td><strong>Hoffman Elite Combo</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+0.19%</strong></td><td>2</td><td>19</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>14</td><td><strong>Beaten Majors Long-Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.06%</strong></td><td>2</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>15</td><td><strong>Futures: Index & Commodities</strong></td><td>Signal</td><td>$10K</td><td style="color:inherit"><strong>+0.00%</strong></td><td>0</td><td>0</td><td style="color:#eab308">WAITING</td></tr>
-          <tr><td>16</td><td><strong>ETFs: Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.02%</strong></td><td>2</td><td>0</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>17</td><td><strong>Forex: Carry & Momentum</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#ef4444"><strong>-0.03%</strong></td><td>0</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>18</td><td><strong>Relative Strength Recovery</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.10%</strong></td><td>1</td><td>4</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>19</td><td><strong>Regime Filtered</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.11%</strong></td><td>1</td><td>22</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>20</td><td><strong>Sentiment Divergence</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.21%</strong></td><td>0</td><td>3</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>21</td><td><strong>Basis & Carry</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.29%</strong></td><td>2</td><td>10</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>22</td><td><strong>Small Position</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.40%</strong></td><td>4</td><td>17</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>23</td><td><strong>RSI Capitulation Sniper</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.42%</strong></td><td>1</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>24</td><td><strong>Prop: Conservative</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-0.65%</strong></td><td>2</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>5</td><td><strong>HTF Weekly Momentum</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+1.77%</strong></td><td>2</td><td>12</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>6</td><td><strong>Multi-Asset: Diversified</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+1.72%</strong></td><td>4</td><td>11</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>7</td><td><strong>High Consensus</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.31%</strong></td><td>2</td><td>32</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>8</td><td><strong>Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.30%</strong></td><td>1</td><td>20</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>9</td><td><strong>Claude's Best</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.18%</strong></td><td>1</td><td>23</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>10</td><td><strong>Prop: Swing Trader</strong></td><td style="color:#eab308">Prop</td><td>$200K</td><td style="color:#22c55e"><strong>+0.61%</strong></td><td>2</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>11</td><td><strong>Golden Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.55%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>12</td><td><strong>Hoffman Elite Combo</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+0.21%</strong></td><td>2</td><td>19</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>13</td><td><strong>Momentum Riders</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.18%</strong></td><td>4</td><td>35</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>14</td><td><strong>Futures: Index & Commodities</strong></td><td>Signal</td><td>$10K</td><td style="color:inherit"><strong>+0.00%</strong></td><td>0</td><td>0</td><td style="color:#eab308">WAITING</td></tr>
+          <tr><td>15</td><td><strong>ETFs: Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.02%</strong></td><td>2</td><td>0</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>16</td><td><strong>Forex: Carry & Momentum</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#ef4444"><strong>-0.03%</strong></td><td>0</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>17</td><td><strong>Beaten Majors Long-Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.05%</strong></td><td>2</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>18</td><td><strong>Sentiment Divergence</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.21%</strong></td><td>0</td><td>3</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>19</td><td><strong>Regime Filtered</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.26%</strong></td><td>1</td><td>22</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>20</td><td><strong>RSI Capitulation Sniper</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.37%</strong></td><td>1</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>21</td><td><strong>Small Position</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.40%</strong></td><td>4</td><td>17</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>22</td><td><strong>Relative Strength Recovery</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.41%</strong></td><td>1</td><td>4</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>23</td><td><strong>Basis & Carry</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.42%</strong></td><td>2</td><td>10</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>24</td><td><strong>Prop: Conservative</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-0.73%</strong></td><td>3</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
           <tr><td>25</td><td><strong>High Conviction</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.84%</strong></td><td>1</td><td>31</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>26</td><td><strong>Consensus Plays</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-1.06%</strong></td><td>3</td><td>27</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>27</td><td><strong>Prop: Aggressive</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-2.05%</strong></td><td>6</td><td>36</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>28</td><td><strong>Proven Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.08%</strong></td><td>3</td><td>34</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>29</td><td><strong>Deep Drawdown DCA</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-2.27%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>30</td><td><strong>Fresh Signals</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.40%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>31</td><td><strong>Regime Aligned</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.68%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>32</td><td><strong>Contrarian</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.92%</strong></td><td>3</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>33</td><td><strong>Score Leaders</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.95%</strong></td><td>5</td><td>33</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>34</td><td><strong>Anti-Meme</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.02%</strong></td><td>2</td><td>28</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>35</td><td><strong>R:R Kings</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.50%</strong></td><td>3</td><td>16</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>36</td><td><strong>HTF Trend Follower</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#ef4444"><strong>-3.72%</strong></td><td>2</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>26</td><td><strong>Consensus Plays</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-1.22%</strong></td><td>3</td><td>27</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>27</td><td><strong>Prop: Aggressive</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-2.21%</strong></td><td>5</td><td>37</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>28</td><td><strong>Proven Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.24%</strong></td><td>3</td><td>34</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>29</td><td><strong>Deep Drawdown DCA</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-2.51%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>30</td><td><strong>Fresh Signals</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.62%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>31</td><td><strong>Regime Aligned</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.73%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>32</td><td><strong>Contrarian</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.94%</strong></td><td>3</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>33</td><td><strong>Score Leaders</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.00%</strong></td><td>5</td><td>33</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>34</td><td><strong>Anti-Meme</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.00%</strong></td><td>2</td><td>28</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>35</td><td><strong>HTF Trend Follower</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#ef4444"><strong>-3.70%</strong></td><td>2</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>36</td><td><strong>R:R Kings</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.91%</strong></td><td>3</td><td>16</td><td style="color:#22c55e">ACTIVE</td></tr>
         </table>
-        <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $727,434.24. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
+        <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $726,880.61. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -10790,49 +10774,49 @@
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 24, 05:39 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 24, 06:40 PM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>
             <th>#</th><th>Portfolio</th><th>Type</th><th>Capital</th><th>P&amp;L%</th>
             <th>Open</th><th>Closed</th><th>Status</th>
           </tr>
-          <tr><td>1</td><td><strong>Tournament: All Assets</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+2.47%</strong></td><td>3</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>2</td><td><strong>Fear & Greed Contrarian</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#22c55e"><strong>+2.13%</strong></td><td>1</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>1</td><td><strong>Tournament: All Assets</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+2.46%</strong></td><td>3</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>2</td><td><strong>Fear & Greed Contrarian</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#22c55e"><strong>+2.21%</strong></td><td>1</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
           <tr><td>3</td><td><strong>Stocks: Short-Term Reversal</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+2.07%</strong></td><td>3</td><td>4</td><td style="color:#22c55e">ACTIVE</td></tr>
           <tr><td>4</td><td><strong>Stocks: Best Picks</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+1.89%</strong></td><td>1</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>5</td><td><strong>Multi-Asset: Diversified</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+1.70%</strong></td><td>4</td><td>11</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>6</td><td><strong>HTF Weekly Momentum</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+1.66%</strong></td><td>2</td><td>12</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>7</td><td><strong>Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.30%</strong></td><td>1</td><td>20</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>8</td><td><strong>High Consensus</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.30%</strong></td><td>3</td><td>32</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>9</td><td><strong>Claude's Best</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.19%</strong></td><td>1</td><td>23</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>10</td><td><strong>Prop: Swing Trader</strong></td><td style="color:#eab308">Prop</td><td>$200K</td><td style="color:#22c55e"><strong>+0.68%</strong></td><td>2</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>11</td><td><strong>Golden Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.50%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>12</td><td><strong>Momentum Riders</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.27%</strong></td><td>4</td><td>35</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>13</td><td><strong>Hoffman Elite Combo</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+0.19%</strong></td><td>2</td><td>19</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>14</td><td><strong>Beaten Majors Long-Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.06%</strong></td><td>2</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>15</td><td><strong>Futures: Index & Commodities</strong></td><td>Signal</td><td>$10K</td><td style="color:inherit"><strong>+0.00%</strong></td><td>0</td><td>0</td><td style="color:#eab308">WAITING</td></tr>
-          <tr><td>16</td><td><strong>ETFs: Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.02%</strong></td><td>2</td><td>0</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>17</td><td><strong>Forex: Carry & Momentum</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#ef4444"><strong>-0.03%</strong></td><td>0</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>18</td><td><strong>Relative Strength Recovery</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.10%</strong></td><td>1</td><td>4</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>19</td><td><strong>Regime Filtered</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.11%</strong></td><td>1</td><td>22</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>20</td><td><strong>Sentiment Divergence</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.21%</strong></td><td>0</td><td>3</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>21</td><td><strong>Basis & Carry</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.29%</strong></td><td>2</td><td>10</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>22</td><td><strong>Small Position</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.40%</strong></td><td>4</td><td>17</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>23</td><td><strong>RSI Capitulation Sniper</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.42%</strong></td><td>1</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>24</td><td><strong>Prop: Conservative</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-0.65%</strong></td><td>2</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>5</td><td><strong>HTF Weekly Momentum</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+1.77%</strong></td><td>2</td><td>12</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>6</td><td><strong>Multi-Asset: Diversified</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#22c55e"><strong>+1.72%</strong></td><td>4</td><td>11</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>7</td><td><strong>High Consensus</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.31%</strong></td><td>2</td><td>32</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>8</td><td><strong>Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.30%</strong></td><td>1</td><td>20</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>9</td><td><strong>Claude's Best</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+1.18%</strong></td><td>1</td><td>23</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>10</td><td><strong>Prop: Swing Trader</strong></td><td style="color:#eab308">Prop</td><td>$200K</td><td style="color:#22c55e"><strong>+0.61%</strong></td><td>2</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>11</td><td><strong>Golden Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.55%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>12</td><td><strong>Hoffman Elite Combo</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#22c55e"><strong>+0.21%</strong></td><td>2</td><td>19</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>13</td><td><strong>Momentum Riders</strong></td><td>Signal</td><td>$10K</td><td style="color:#22c55e"><strong>+0.18%</strong></td><td>4</td><td>35</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>14</td><td><strong>Futures: Index & Commodities</strong></td><td>Signal</td><td>$10K</td><td style="color:inherit"><strong>+0.00%</strong></td><td>0</td><td>0</td><td style="color:#eab308">WAITING</td></tr>
+          <tr><td>15</td><td><strong>ETFs: Sector Rotation</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.02%</strong></td><td>2</td><td>0</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>16</td><td><strong>Forex: Carry & Momentum</strong></td><td style="color:#a78bfa">Non-Crypto</td><td>$10K</td><td style="color:#ef4444"><strong>-0.03%</strong></td><td>0</td><td>9</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>17</td><td><strong>Beaten Majors Long-Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.05%</strong></td><td>2</td><td>5</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>18</td><td><strong>Sentiment Divergence</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.21%</strong></td><td>0</td><td>3</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>19</td><td><strong>Regime Filtered</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.26%</strong></td><td>1</td><td>22</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>20</td><td><strong>RSI Capitulation Sniper</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.37%</strong></td><td>1</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>21</td><td><strong>Small Position</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.40%</strong></td><td>4</td><td>17</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>22</td><td><strong>Relative Strength Recovery</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-0.41%</strong></td><td>1</td><td>4</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>23</td><td><strong>Basis & Carry</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.42%</strong></td><td>2</td><td>10</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>24</td><td><strong>Prop: Conservative</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-0.73%</strong></td><td>3</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
           <tr><td>25</td><td><strong>High Conviction</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-0.84%</strong></td><td>1</td><td>31</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>26</td><td><strong>Consensus Plays</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-1.06%</strong></td><td>3</td><td>27</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>27</td><td><strong>Prop: Aggressive</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-2.05%</strong></td><td>6</td><td>36</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>28</td><td><strong>Proven Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.08%</strong></td><td>3</td><td>34</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>29</td><td><strong>Deep Drawdown DCA</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-2.27%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>30</td><td><strong>Fresh Signals</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.40%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>31</td><td><strong>Regime Aligned</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.68%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>32</td><td><strong>Contrarian</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.92%</strong></td><td>3</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>33</td><td><strong>Score Leaders</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.95%</strong></td><td>5</td><td>33</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>34</td><td><strong>Anti-Meme</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.02%</strong></td><td>2</td><td>28</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>35</td><td><strong>R:R Kings</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.50%</strong></td><td>3</td><td>16</td><td style="color:#22c55e">ACTIVE</td></tr>
-          <tr><td>36</td><td><strong>HTF Trend Follower</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#ef4444"><strong>-3.72%</strong></td><td>2</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>26</td><td><strong>Consensus Plays</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-1.22%</strong></td><td>3</td><td>27</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>27</td><td><strong>Prop: Aggressive</strong></td><td style="color:#eab308">Prop</td><td>$100K</td><td style="color:#ef4444"><strong>-2.21%</strong></td><td>5</td><td>37</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>28</td><td><strong>Proven Only</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.24%</strong></td><td>3</td><td>34</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>29</td><td><strong>Deep Drawdown DCA</strong></td><td style="color:#06b6d4">Deep Value</td><td>$10K</td><td style="color:#ef4444"><strong>-2.51%</strong></td><td>2</td><td>7</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>30</td><td><strong>Fresh Signals</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.62%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>31</td><td><strong>Regime Aligned</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.73%</strong></td><td>3</td><td>40</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>32</td><td><strong>Contrarian</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-2.94%</strong></td><td>3</td><td>30</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>33</td><td><strong>Score Leaders</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.00%</strong></td><td>5</td><td>33</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>34</td><td><strong>Anti-Meme</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.00%</strong></td><td>2</td><td>28</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>35</td><td><strong>HTF Trend Follower</strong></td><td style="color:#f97316">HTF</td><td>$10K</td><td style="color:#ef4444"><strong>-3.70%</strong></td><td>2</td><td>15</td><td style="color:#22c55e">ACTIVE</td></tr>
+          <tr><td>36</td><td><strong>R:R Kings</strong></td><td>Signal</td><td>$10K</td><td style="color:#ef4444"><strong>-3.91%</strong></td><td>3</td><td>16</td><td style="color:#22c55e">ACTIVE</td></tr>
         </table>
         <p><em>Honest assessment (CORRECTED): After removing all synthetic/stale data, returns range from -0.23% to +3.40%. RSI Capitulation leads at +3.40%. Most portfolios show small gains (+0.3% to +1.5%). Two are slightly underwater. No portfolio has blown since the data cleanup. Win rate across all clean closed trades: 100% (33 wins, 0 losses — but small sample size, all within hours).</em></p>
 
