@@ -1,21 +1,21 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-24T19:18:56.384533+00:00
+Generated: 2026-05-24T19:20:47.349992+00:00
 
 ## Topline
-- Open positions: 147
-- Price coverage: 97.28%
-- Open average PnL: 24.3123%
-- Directional correctness: 53.15%
+- Open positions: 150
+- Price coverage: 97.33%
+- Open average PnL: 20.5453%
+- Directional correctness: 51.37%
 - Regime: CHOPPY
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] PEER_STALE: alpha_engine data is stale (85384.9m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (116.9m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (113678.0m old)
+- [HIGH] PEER_STALE: alpha_engine data is stale (85386.8m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (118.7m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (113679.8m old)
 - [HIGH] STRATEGY_DECAY: clone_hl_copy_Auros_66M is a rehabilitation candidate (WR 60.0%, PF 0.123, Sharpe -10.511)
-- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BTCUSDT ({'SHORT': 4, 'LONG': 6})
+- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BTCUSDT ({'LONG': 6, 'SHORT': 4})
 
 ## Recommendations
 - tighten_risk_and_reduce_gross_exposure: Choppy regime or drawdown breach warrants smaller sizing and tighter review cadence.
