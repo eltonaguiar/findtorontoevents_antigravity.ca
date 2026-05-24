@@ -138,6 +138,7 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
           DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
           DB_STOCKS_NAME: ejaguiar1_stocks
+          HF_GATE_EQUITY_BANNED_SOURCES: 'stocks_competition,fast_stocks_competition,multi_asset_institutional,kimi_signal_tracking,ml_bg_system_f'
         run: |
           pip install pymysql -q 2>/dev/null || true
           python tools/paper_trade_mysql_writer.py || echo "Paper trade MySQL writer skipped (no paper positions or config missing)"
