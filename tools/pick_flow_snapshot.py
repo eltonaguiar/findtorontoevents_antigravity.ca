@@ -119,6 +119,19 @@ def _query_active_by_source(cur, asset_class: str) -> list[dict]:
     return cur.fetchall()
 
 
+def _query_equity_sources_30d(cur) -> list[dict]:
+    """Return all EQUITY source_system values + raw pick counts from last 30 days.
+    Used to cross-reference the EQUITY_BANNED_SOURCES frozenset against actual
+    emitters — names may differ from what the forward-test audit identified."""
+    cur.execute(
+        "SELECT source_system, COUNT(*) n "
+        "FROM at_raw_picks WHERE asset_class='EQUITY' "
+        "AND DATE(recorded_at) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) "
+        "GROUP BY source_system ORDER BY n DESC"
+    )
+    return cur.fetchall()
+
+
 # ---------------------------------------------------------------------------
 #  HF gate simulation (import only if available)
 # ---------------------------------------------------------------------------
@@ -228,9 +241,26 @@ def build_snapshot(since: str, until: str) -> dict:
                 except IndexError:
                     pass
         equity_hf["banned_source_hits"] = banned_src_hits
-        equity_hf["banned_sources_configured"] = [
-            s.strip() for s in os.environ.get("HF_GATE_EQUITY_BANNED_SOURCES", "").split(",") if s.strip()
-        ]
+        # Report what the gate actually uses (import its frozenset, not raw env var)
+        try:
+            from alpha_engine.hedge_fund_quality_gate import EQUITY_BANNED_SOURCES as _eq_bs
+            equity_hf["banned_sources_configured"] = sorted(_eq_bs)
+            # Cross-reference: list ALL EQUITY sources from last 30 days with banned markers
+            try:
+                eq_sources_30d = _query_equity_sources_30d(cur)
+                equity_hf["all_equity_sources_30d"] = [
+                    {
+                        "source_system": r["source_system"],
+                        "raw_count": r["n"],
+                        "banned": r["source_system"] in _eq_bs,
+                    }
+                    for r in eq_sources_30d
+                ]
+            except Exception:
+                equity_hf["all_equity_sources_30d"] = []
+        except ImportError:
+            equity_hf["banned_sources_configured"] = []
+            equity_hf["all_equity_sources_30d"] = []
     except Exception:
         equity_hf = {"error": "EQUITY HF-gate query failed", "total": 0}
 
@@ -345,6 +375,13 @@ def main():
             print("  EQUITY banned source hits:")
             for src, count in sorted(banned_hits.items(), key=lambda x: -x[1]):
                 print(f"    {src}: {count}")
+        # Print all EQUITY sources from last 30 days with banned markers
+        all_srcs = eq.get("all_equity_sources_30d", [])
+        if all_srcs:
+            print("\n  EQUITY source_system values (30d), banned=✗:")
+            for s in all_srcs:
+                marker = "✗" if s["banned"] else " "
+                print(f"    [{marker}] {s['source_system']:40} n={s['raw_count']:>5}")
 
     print(f"\n  → {out_path}")
 

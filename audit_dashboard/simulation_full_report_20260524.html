@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Hedge Fund Simulation — Full Methodology & Results | May 2026</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.6; }
+  h1 { font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  h2 { font-size: 16px; margin-top: 28px; color: #93c5fd; }
+  h3 { font-size: 13px; color: #c0c0d0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  th { color: #a0a0b0; font-size: 10px; text-transform: uppercase; }
+  .green { color: #86efac; } .red { color: #fca5a5; } .yellow { color: #fbbf24; }
+  .card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; margin: 12px 0; }
+  .verdict { background: #7c2d12; color: #fca5a5; padding: 12px 16px; border-radius: 8px; margin: 12px 0; font-weight: 700; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 9px; font-weight: 700; }
+  .b-green { background: #14532d; color: #86efac; } .b-red { background: #7c2d12; color: #fca5a5; } .b-yellow { background: #713f12; color: #fbbf24; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .meta { color: #6b7280; font-size: 11px; }
+  ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+
+<h1>🤖 AI Hedge Fund Simulation — Full Report</h1>
+<div class="meta">May 24, 2026 · 10-round AI debate · 22 forward-test picks · 15+ AI models · Data: tournament_picks (MySQL)</div>
+
+<div class="verdict">
+⚠️ HONEST VERDICT: The simulation built real infrastructure but is NOT ready for real money. The confidence engine is inverted (higher confidence = lower win rate), 2 of 9 asset classes have zero resolved data, and only 2 of 22 picks have verified forward-test track records. The debate pipeline itself produced more value than the strategies — catching the confidence epidemic, duplicate entries, and n-threshold gaps.
+</div>
+
+<h2>1. Methodology</h2>
+<div class="card">
+<h3>Data Source</h3>
+<p>All picks are queried from <code>tournament_picks</code> table (MySQL: ejaguiar1_stocks, 3,149 rows, 34 AI models, 9 asset classes). Only forward-test OPEN picks are used. Synthetic/backtest data (SYNTHETIC_SEED_ENRICHED, BACKTEST_VERIFIED) and KILLED personas (ml_pattern, relative_strength, dividend_compound) are excluded. FOREX is blocked by kill gate (57.3% WR, -0.39% avg PnL).</p>
+
+<h3>Confidence Assignment</h3>
+<table>
+  <tr><th>Method</th><th>Description</th><th>Picks</th></tr>
+  <tr><td><span class="badge b-green">PERSONA WR</span></td><td>When persona has n≥20 resolved picks, confidence = persona win rate</td><td>6 picks (PG 64%, SOL 65%, TLT/SPY/GLD/SHY 62.5%)</td></tr>
+  <tr><td><span class="badge b-yellow">MODEL-REPORTED</span></td><td>Pick comes from model that reported its own confidence (HIGH/MEDIUM/LOW string or 0-1 float)</td><td>7 picks (MSFT 30%, XOM 30%, CL=F 80%)</td></tr>
+  <tr><td><span class="badge b-red">IMPUTED</span></td><td>No WR and no model-reported confidence — coin-flip assumption</td><td>9 picks (SI=F 50%, PENNY/FUTURES 0%)</td></tr>
+</table>
+
+<h3>Ranking Formula</h3>
+<code>Composite Score = Confidence × WR × RR × ln(n+1)</code>, normalized per asset class. Picks with n=0 score zero by definition.
+
+<h3>Debate Process</h3>
+<p><strong>Round 1 (7 models):</strong> Risk Manager + Portfolio Manager + Cerebras GPT-OSS-120B + DeepSeek V4 + KiloCode + Kimi + Cursor — debated which picks are safest, which to veto. Produced consensus top 5 and systemic issue list.</p>
+<p><strong>Round 2 (2 models):</strong> Multi-Asset Allocator + Financial Data Architect — expanded to all 9 asset classes, identified IPO/mutual fund infrastructure gaps.</p>
+<p><strong>Round 3 (3 models):</strong> Quant Researcher (EV/Sharpe/Kelly) + Behavioral Analyst (market narrative) + Hedge Fund PM ($500k AUM allocation). Produced 8-position risk-parity portfolio.</p>
+<p><strong>Round 4:</strong> IPO Lockup Expiry Strategy — SHORT 30 days before 180-day lockup expiry. Currently data-starved (needs live SEC EDGAR scraper).</p>
+<p><strong>Rounds 5-14 (10 agents):</strong> Pick-by-pick review, cross-round pattern analysis, devil's advocate audit, entry criteria standardization, data gap ranking, statistical edge recalculation, model attribution scorecard, final executive synthesis.</p>
+</div>
+
+<h2>2. Results Per Asset Class</h2>
+
+<h3>EQUITY <span class="badge b-green">6 PICKS</span></h3>
+<div class="card">
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Direction</th><th>Entry</th><th>WR</th><th>n</th><th>RR</th><th>Conf</th><th>Status</th></tr>
+  <tr><td>1</td><td>META</td><td class="green">LONG</td><td>$620.71</td><td>60%</td><td>124</td><td>1.7</td><td>50%</td><td><span class="badge b-green">PROVEN</span></td></tr>
+  <tr><td>2</td><td>PG</td><td class="red">SHORT</td><td>$167.37</td><td>64%</td><td>164</td><td>1.5</td><td>64%</td><td><span class="badge b-green">VERIFIED</span></td></tr>
+  <tr><td>3</td><td>GOOGL</td><td class="green">LONG</td><td>$186.63</td><td>60%</td><td>124</td><td>2.5</td><td>30%</td><td><span class="badge b-yellow">ESTIMATED</span></td></tr>
+</table>
+<p><strong>Best equity edge:</strong> PG SHORT — only verified-WR equity pick (64%, n=164). META LONG is the AI monetization flywheel play. GOOGL has highest RR (2.5) but low confidence (30%). <strong>Gap:</strong> UEPS fundamental screen shows ADBE (Score 0.839) as theoretically highest-quality but has 0 forward-test data in tournament_picks.</p>
+</div>
+
+<h3>CRYPTO <span class="badge b-yellow">4 PICKS</span></h3>
+<div class="card">
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Direction</th><th>Entry</th><th>WR</th><th>n</th><th>RR</th><th>Conf</th><th>Status</th></tr>
+  <tr><td>1</td><td>SOLUSDT</td><td class="green">LONG</td><td>$157.39</td><td>65%</td><td>23</td><td>2.1</td><td>65%</td><td><span class="badge b-green">VERIFIED</span></td></tr>
+  <tr><td>2</td><td>AVAXUSDT</td><td class="red">SHORT</td><td>$22.83</td><td>65%</td><td>23</td><td>1.8</td><td>65%</td><td><span class="badge b-yellow">SMALL N</span></td></tr>
+</table>
+<p>SOLUSDT LONG is the only crypto pick with verified WR (65%, n=23). vol_arb persona has only 23 resolved picks — statistically insufficient (95% CI: ±20%). <strong>Risk:</strong> Crypto shorts (AVAX, BTC, ETH) conflict directionally with SOL long — if risk-on returns, all shorts get run over.</p>
+</div>
+
+<h3>ETF <span class="badge b-green">3 PICKS</span></h3>
+<div class="card">
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Direction</th><th>Entry</th><th>WR</th><th>n</th><th>RR</th><th>Conf</th></tr>
+  <tr><td>1</td><td>SPY</td><td class="red">SHORT</td><td>$726.80</td><td>62.5%</td><td>124</td><td>1.9</td><td>62.5%</td></tr>
+  <tr><td>2</td><td>GLD</td><td class="green">LONG</td><td>$257.93</td><td>62.5%</td><td>124</td><td>1.2</td><td>62.5%</td></tr>
+</table>
+<p>SPY SHORT + GLD LONG = textbook stagflation pair. Both anchored by risk_parity persona (n=124). SPY SHORT is the highest composite score in the entire book. GLD has weakest RR (1.2) but diversification value.</p>
+</div>
+
+<h3>BOND <span class="badge b-green">3 PICKS</span></h3>
+<div class="card">
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Direction</th><th>Entry</th><th>WR</th><th>n</th><th>RR</th><th>Conf</th></tr>
+  <tr><td>1</td><td>TLT</td><td class="green">LONG</td><td>$87.66</td><td>62.5%</td><td>124</td><td>1.8</td><td>62.5%</td></tr>
+  <tr><td>2</td><td>SHY</td><td class="red">SHORT</td><td>$82.36</td><td>62.5%</td><td>124</td><td>1.6</td><td>62.5%</td></tr>
+</table>
+<p>TLT LONG is the strongest consensus pick (7/7 models). SHY SHORT + TLT LONG = curve steepener. <strong>Risk:</strong> Bond Sharpe ratios inflated by low vol assumption (0.5% daily). Real bond strategies do not sustain Sharpe 19.</p>
+</div>
+
+<h3>COMMODITY <span class="badge b-yellow">3 PICKS</span></h3>
+<div class="card">
+<table>
+  <tr><th>Rank</th><th>Pick</th><th>Direction</th><th>Entry</th><th>WR</th><th>n</th><th>RR</th><th>Conf</th></tr>
+  <tr><td>1</td><td>SI=F</td><td class="red">SHORT</td><td>$34.93</td><td>62.5%</td><td>124</td><td>1.4</td><td>50%</td></tr>
+  <tr><td>2</td><td>CL=F</td><td class="red">SHORT</td><td>$68.25</td><td>65%</td><td>23</td><td>1.1</td><td>80%</td></tr>
+</table>
+<p>CL=F SHORT has near-zero EV (0.05 risk units) and RR=1.1 — risk/reward barely above breakeven. <strong>Gap:</strong> COMMODITY pipeline may be broken — top systems (multi_asset_cot, PF=4.72) have n=0 in resolved DB. All commodity picks are SHORT — check for regime bias. SI=F SHORT replaced CL=F in the adjusted portfolio.</p>
+</div>
+
+<h3>PENNY & FUTURES <span class="badge b-red">BLOCKED</span></h3>
+<div class="card">
+<p><strong>WR=0%, n=0 for all 6 picks.</strong> MVST, KULR, QBTS (penny stocks) and ES=F, GC=F, CL=F (futures) have zero resolved data. No statistical basis for inclusion. These should be removed from active pick list until n≥50 resolved trades. Currently listed as PAPER ONLY — no real capital allocation.</p>
+</div>
+
+<h3>FOREX <span class="badge b-red">BLOCKED</span></h3>
+<div class="card">
+<p>Kill gate active: 57.3% WR, -0.39% avg PnL, 253 resolved picks. Statistical trap confirmed — many small wins, occasional large losers (3.2:1 loss-to-win ratio). 63% of FOREX wins are 1-basis-point "resolver flicker." Zero allocation until asymmetric TP/SL fix is validated.</p>
+</div>
+
+<h2>3. What's Broken (P0 — Must Fix Before Real Money)</h2>
+<table>
+  <tr><th>#</th><th>Issue</th><th>Severity</th><th>Fix</th></tr>
+  <tr><td>1</td><td><strong>ML confidence INVERTED</strong> — 0.85-0.90 band has 20% WR</td><td class="red">CRITICAL</td><td>Flip scoring: high confidence → sell signal. Recalibrate against realized outcomes.</td></tr>
+  <tr><td>2</td><td><strong>No n-threshold gate</strong> — 0-data personas generating live signals</td><td class="red">CRITICAL</td><td>Require ≥50 resolved trades per source before any signal passes.</td></tr>
+  <tr><td>3</td><td><strong>PENNY/FUTURES with 0 resolved data</strong></td><td class="red">CRITICAL</td><td>Drop from active pick list. Paper-track until n≥50.</td></tr>
+  <tr><td>4</td><td><strong>CL=F duplicated</strong> at 2 prices ($68.25 / $73)</td><td class="yellow">HIGH</td><td>Keep commodity entry, drop futures entry.</td></tr>
+  <tr><td>5</td><td><strong>FOREX resolver bug</strong> — 63% wins are 1bp "flicker"</td><td class="yellow">HIGH</td><td>Already blocked by kill gate. Fix asymmetric TP/SL before re-enabling.</td></tr>
+  <tr><td>6</td><td><strong>COMMODITY pipeline broken</strong> — top systems have n=0 in resolved DB</td><td class="yellow">HIGH</td><td>Investigate table mismatch. multi_asset_cot PF=4.72 invisible to OOS validator.</td></tr>
+</table>
+
+<h2>4. Areas for Improvement</h2>
+
+<h3>findtorontoevents.ca/audit/</h3>
+<ul>
+  <li><strong>UEPS has n=0/100</strong> — US Equity Picks section shows "Building track record." ADBE (Score 0.839, F-Score 7/9, ROIC 45%) is theoretically the strongest pick but has 0 forward-test data.</li>
+  <li><strong>Smart Picks not DB-verified</strong> — The manifest says Smart Picks filters against smart_picks_feed, but historical closed rows lack at-issue confluence/score fields. Cannot verify edge claims.</li>
+  <li><strong>Money Ready button orphaned</strong> — btn-money-ready toggles state but no render path applies the filter.</li>
+  <li><strong>PnL display is sum-of-percentages</strong> — "+1380.78%" is arithmetic sum of per-trade PnL%, not compounded return. Honest EW compound is +50.6%.</li>
+  <li><strong>Missing tracking:</strong> audit_integration/06_pick_surface_eval_schema.sql designed but not wired.</li>
+</ul>
+
+<h3>findtorontoevents.ca/audit/ai-tournament.html</h3>
+<ul>
+  <li><strong>Model Summary now shows live DB data</strong> — 34 models, ELI5 explainers, per-model WR/PnL. Good.</li>
+  <li><strong>Pending Models table stale</strong> — still shows old model names (Mercury, Llama-4-Scout as "PROMPTING"). Needs sync with actual config.</li>
+  <li><strong>No kill gate visualization</strong> — 4 KILLED personas + FOREX blocked not shown on page.</li>
+  <li><strong>No super-secure picks section</strong> — persona criteria built but not surfaced on page.</li>
+  <li><strong>Missing IPO/Mutual Fund asset class</strong> — infrastructure gap.</li>
+</ul>
+
+<h3>Overall System</h3>
+<ul>
+  <li><strong>Confidence pipeline broken system-wide</strong> — all tournament_picks rows show confidence=0.00 for resolved picks. persona_WR proxy partially fixes this.</li>
+  <li><strong>No covariance matrix for Kelly sizing</strong> — individual Kelly fractions assume uncorrelated bets.</li>
+  <li><strong>No transaction cost model</strong> — 0.15% crypto round-trip not subtracted from PnL.</li>
+  <li><strong>IPO lockup strategy starved of data</strong> — needs live SEC EDGAR scraper.</li>
+  <li><strong>Only 2 of 22 picks have verified WR</strong> — statistical power insufficient for any conclusions yet.</li>
+</ul>
+
+<h2>5. 1-Week Prediction</h2>
+<p>Resolver fires May 30 at 23:00 UTC.</p>
+<table>
+  <tr><th>Pick</th><th>Direction</th><th>Prediction</th><th>Confidence</th><th>Rationale</th></tr>
+  <tr><td>TLT LONG</td><td class="green">BULLISH</td><td class="green">WIN</td><td>HIGH</td><td>7/7 model consensus. Cleanest macro expression.</td></tr>
+  <tr><td>SPY SHORT</td><td class="red">BEARISH</td><td class="green">WIN</td><td>HIGH</td><td>Foundation of risk-off book. Market correction continuing.</td></tr>
+  <tr><td>GLD LONG</td><td class="green">BULLISH</td><td class="green">WIN</td><td>HIGH</td><td>Stagflation hedge thesis intact.</td></tr>
+  <tr><td>PG SHORT</td><td class="red">BEARISH</td><td class="green">WIN</td><td>MEDIUM</td><td>Only verified-WR equity pick (64%).</td></tr>
+  <tr><td>CL=F SHORT</td><td class="red">BEARISH</td><td class="red">LOSS</td><td>LOW</td><td>Near-zero EV. Oil geopolitical risk.</td></tr>
+  <tr><td>SHY SHORT</td><td class="red">BEARISH</td><td class="red">LOSS</td><td>LOW</td><td>Coin flip. Rate cut priced in.</td></tr>
+</table>
+
+<h2>6. Key Files</h2>
+<table>
+  <tr><th>File</th><th>Content</th></tr>
+  <tr><td><code>reports/AI_HEDGE_FUND_SIMULATION_EXECUTIVE_SUMMARY_2026-05-24.md</code></td><td>Complete 159-line executive summary</td></tr>
+  <tr><td><code>audit_dashboard/hedge_fund_simulation_20260524.html</code></td><td>3-round debate results (7 models, per-agent insights)</td></tr>
+  <tr><td><code>audit_dashboard/curated_picks_20260524.html</code></td><td>Top 3 picks per asset class</td></tr>
+  <tr><td><code>updates/2026-05-24-cross-asset-statistical-analysis.md</code></td><td>Per-pick EV/Sharpe/Kelly, correlation matrix</td></tr>
+  <tr><td><code>reports/CONFIDENCE_METHODOLOGY_2026-05-24.md</code></td><td>3 confidence methods, thresholds, calibration gaps</td></tr>
+</table>
+
+<p style="margin-top:32px;color:#6b7280;font-size:11px">⚠️ Not financial advice. Educational/research simulation only. Zero real money deployed. 
+<a href="/audit/ai-tournament.html">AI Tournament</a> · <a href="/audit/curated_picks_20260524.html">Curated Picks</a> · <a href="/updates/">Updates</a></p>
+</body>
+</html>

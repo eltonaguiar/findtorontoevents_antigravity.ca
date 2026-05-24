@@ -4,6 +4,8 @@ Deploy Toronto Events + FavCreators to FTP (full set — no partial deploy).
 
 Quick partial uploads (same FTP_* env vars):
   python tools/deploy_to_ftp.py --audit-only
+  python tools/deploy_to_ftp.py --favcreators-only
+  python tools/deploy_to_ftp.py --main-index-only
   python tools/deploy_to_ftp.py --updates-only
   python tools/deploy_to_ftp.py --live-monitor-only
 
@@ -370,7 +372,8 @@ def deploy_audit_dashboard(ftp: ftplib.FTP, main_remote_base: str) -> int:
     local_dir = WORKSPACE / "audit_dashboard"
     names = ("index.html", "dashboard_enhancements.js", "template.html", "hc_filter.js",
              "ai-tournament.html", "ai_leaderboard.html", "research_index.html", "edge_stability.html",
-             "curated_picks_20260524.html", "hedge_fund_simulation_20260524.html")
+             "curated_picks_20260524.html", "hedge_fund_simulation_20260524.html",
+             "simulation_full_report_20260524.html")
     n = 0
     for name in names:
         local_path = local_dir / name
@@ -515,6 +518,82 @@ def deploy_live_monitor_only() -> None:
         print("Live-monitor deploy complete.")
     except Exception as e:
         print(f"Live-monitor deploy failed: {e}")
+        raise SystemExit(1)
+
+
+def deploy_favcreators_only() -> None:
+    """FTP upload FavCreators /fc/ only. Same env vars as full deploy."""
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"FavCreators-only deploy to FTP: {host}")
+    print(f"Remote: {remote_path}/fc/")
+    if parent_root:
+        print(f"Also: {parent_root}/fc/")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            deploy_favcreators(ftp, remote_path)
+            if parent_root:
+                deploy_favcreators(ftp, parent_root)
+        print("FavCreators deploy complete.")
+    except Exception as e:
+        print(f"FavCreators deploy failed: {e}")
+        raise SystemExit(1)
+
+
+def deploy_main_index_only() -> None:
+    """FTP upload the canonical hand-coded homepage index.html only."""
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    source = WORKSPACE / "TORONTOEVENTS_ANTIGRAVITY" / "index.html"
+    if not source.is_file():
+        source = WORKSPACE / "index.html"
+    if not source.is_file():
+        print("Main index source not found.")
+        raise SystemExit(1)
+
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"Main-index-only deploy to FTP: {host}")
+    print(f"Source: {source}")
+    print(f"Remote: {remote_path}/index.html")
+    if parent_root:
+        print(f"Also: {parent_root}/index.html")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            ok = _upload_file(ftp, source, f"{remote_path}/index.html")
+            if parent_root:
+                ok = _upload_file(ftp, source, f"{parent_root}/index.html") and ok
+        if not ok:
+            raise RuntimeError("index upload failed")
+        print("Main index deploy complete.")
+    except Exception as e:
+        print(f"Main index deploy failed: {e}")
         raise SystemExit(1)
 
 
@@ -675,6 +754,10 @@ if __name__ == "__main__":
 
     if "--audit-only" in sys.argv:
         deploy_audit_only()
+    elif "--favcreators-only" in sys.argv:
+        deploy_favcreators_only()
+    elif "--main-index-only" in sys.argv:
+        deploy_main_index_only()
     elif "--live-monitor-only" in sys.argv:
         deploy_live_monitor_only()
     elif "--updates-only" in sys.argv:
