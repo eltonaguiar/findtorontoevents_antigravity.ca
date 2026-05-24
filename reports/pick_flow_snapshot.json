@@ -197,5 +197,157 @@
     ],
     "min_confidence": 0.7
   },
+  "equity_hf_gate": {
+    "total": 282,
+    "hf_passed": 226,
+    "hf_rejected": 56,
+    "hf_errors": 0,
+    "conf_passed": 226,
+    "reject_reasons": [
+      {
+        "reason": "HF_GATE: EQUITY SHORT rejected (LONG-only historical edge; SHORT n=4 went 0/3)",
+        "count": 49
+      },
+      {
+        "reason": "HF_GATE: empty strategy (pipeline defect; n=10 FOREX showed 10% WR / -1.875% avg)",
+        "count": 4
+      },
+      {
+        "reason": "HF_GATE: EQUITY confidence 0.601 in reject band [0.60,0.65) (n=52, WR 35.3%, cum -28.1%)",
+        "count": 1
+      },
+      {
+        "reason": "HF_GATE: EQUITY confidence 0.620 in reject band [0.60,0.65) (n=52, WR 35.3%, cum -28.1%)",
+        "count": 1
+      },
+      {
+        "reason": "HF_GATE: EQUITY confidence 0.631 in reject band [0.60,0.65) (n=52, WR 35.3%, cum -28.1%)",
+        "count": 1
+      }
+    ],
+    "min_confidence": 0.0,
+    "source_breakdown": {
+      "AlphaEngine": 275,
+      "kimi_feb17": 4,
+      "copy_trader_binance": 1,
+      "alpha_engine_unified": 1,
+      "sandbox_opposite": 1
+    },
+    "banned_source_hits": {},
+    "banned_sources_configured": [
+      "fast_stocks_competition",
+      "kimi_signal_tracking",
+      "ml_bg_system_f",
+      "multi_asset_institutional",
+      "stocks_competition"
+    ],
+    "all_equity_sources_30d": [
+      {
+        "source_system": "smart_money",
+        "raw_count": 2105,
+        "banned": false
+      },
+      {
+        "source_system": "alpha_engine_unified",
+        "raw_count": 1277,
+        "banned": false
+      },
+      {
+        "source_system": "AlphaEngine",
+        "raw_count": 868,
+        "banned": false
+      },
+      {
+        "source_system": "alpha_engine",
+        "raw_count": 30,
+        "banned": false
+      },
+      {
+        "source_system": "stocksunify2",
+        "raw_count": 11,
+        "banned": false
+      },
+      {
+        "source_system": "KIMI_ClawResearch",
+        "raw_count": 9,
+        "banned": false
+      },
+      {
+        "source_system": "signal_recorder",
+        "raw_count": 3,
+        "banned": false
+      },
+      {
+        "source_system": "non_crypto_consensus",
+        "raw_count": 3,
+        "banned": false
+      },
+      {
+        "source_system": "orphan_emitter_forex_futures",
+        "raw_count": 3,
+        "banned": false
+      },
+      {
+        "source_system": "kimi_feb17",
+        "raw_count": 2,
+        "banned": false
+      },
+      {
+        "source_system": "portfolio_stocks_short_term",
+        "raw_count": 2,
+        "banned": false
+      },
+      {
+        "source_system": "growth_stock_screener",
+        "raw_count": 2,
+        "banned": false
+      },
+      {
+        "source_system": "KIMI_RiseOfTheClaw",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "multi_asset_institutional",
+        "raw_count": 1,
+        "banned": true
+      },
+      {
+        "source_system": "portfolio_multi_asset_diversified",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "multi_asset_scanner",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "portfolio_stocks_best",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "ml_gatekeeper",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "copy_trader_binance",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "aggregated_picks",
+        "raw_count": 1,
+        "banned": false
+      },
+      {
+        "source_system": "portfolio_all_asset_tournament",
+        "raw_count": 1,
+        "banned": false
+      }
+    ]
+  },
   "note": "crypto_hf_gate runs on active OPEN CRYPTO picks (separate population from the per_class raw_emitted counts, which cover all statuses). hf_passed = survived HF gate (banned sources/symbols/drawdown). conf_passed = hf_passed \u2229 confidence \u2265 crypto_hf_gate.min_confidence. Closed WR/PF use closed_at-dated rows; picks whose status is terminal but closed_at is NULL are not counted."
 }
