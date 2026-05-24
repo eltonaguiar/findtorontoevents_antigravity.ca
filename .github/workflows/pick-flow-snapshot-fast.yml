@@ -1,0 +1,57 @@
+name: Pick Flow Snapshot (Fast)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install pymysql -q
+
+      - name: Run pick flow snapshot
+        env:
+          AUDIT_DB_HOST: ${{ secrets.AUDIT_DB_HOST }}
+          AUDIT_DB_USER: ${{ secrets.AUDIT_DB_USER }}
+          AUDIT_DB_PASS: ${{ secrets.AUDIT_DB_PASS }}
+          AUDIT_DB_NAME: ${{ secrets.AUDIT_DB_NAME }}
+          HF_GATE_CRYPTO_BANNED_SOURCES: ${{ vars.HF_GATE_CRYPTO_BANNED_SOURCES }}
+          HF_GATE_EQUITY_BANNED_SOURCES: ${{ vars.HF_GATE_EQUITY_BANNED_SOURCES }}
+        run: python tools/pick_flow_snapshot.py --days 7 --out reports/pick_flow_snapshot.json
+
+      - name: Commit and push snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/pick_flow_snapshot.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Pick flow snapshot $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+          # Retry push up to 5 times — concurrent CI jobs push frequently
+          for i in 1 2 3 4 5; do
+            if git push origin main 2>&1; then
+              echo "Push succeeded on attempt $i"
+              exit 0
+            fi
+            echo "Push attempt $i failed, pulling and retrying in 3s..."
+            sleep 3
+            git pull --rebase origin main
+          done
+          echo "Push failed after 5 attempts"
+          exit 1

@@ -1,11 +1,11 @@
-### Momentum Scalp Scanner (2026-05-24 16:18 UTC)
+### Momentum Scalp Scanner (2026-05-24 20:18 UTC)
 
 **New symbols scanned:** 1 gainers + 1 bounce candidates
 **Picks generated:** 4
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | ZECUSDT | LONG | 659.7 | 681.07 | 643.6725 | 1.33 | 85% | `genesis_momentum_blend` | +8.7% | Genesis score 7/10: ST=bull ADX=2 RSI=62 mom5=2.2% |
-| 2 | ZECUSDT | LONG | 659.7 | 681.07 | 643.6725 | 1.33 | 85% | `genesis_momentum_blend` | +8.7% | Genesis score 7/10: ST=bull ADX=2 RSI=62 mom5=2.2% |
-| 3 | ZECUSDT | LONG | 659.7 | 681.07 | 643.6725 | 1.33 | 59% | `ema_momentum_volume` | +8.7% | EMA stack aligned (9>650.1336 > 21>640.3393 > 50) vol=0.8x R |
-| 4 | ZECUSDT | LONG | 659.7 | 681.07 | 643.6725 | 1.33 | 59% | `ema_momentum_volume` | +8.7% | EMA stack aligned (9>650.1336 > 21>640.3393 > 50) vol=0.8x R |
+| 1 | ZECUSDT | LONG | 674.39 | 701.4057 | 654.1282 | 1.33 | 75% | `genesis_momentum_blend` | +9.4% | Genesis score 5/10: ST=bull ADX=2 RSI=67 mom5=1.9% |
+| 2 | ZECUSDT | LONG | 674.39 | 701.4057 | 654.1282 | 1.33 | 75% | `genesis_momentum_blend` | +9.4% | Genesis score 5/10: ST=bull ADX=2 RSI=67 mom5=1.9% |
+| 3 | ZECUSDT | LONG | 674.39 | 701.4057 | 654.1282 | 1.33 | 55% | `ema_momentum_volume` | +9.4% | EMA stack aligned (9>663.6923 > 21>650.8795 > 50) vol=0.0x R |
+| 4 | ZECUSDT | LONG | 674.39 | 701.4057 | 654.1282 | 1.33 | 55% | `ema_momentum_volume` | +9.4% | EMA stack aligned (9>663.6923 > 21>650.8795 > 50) vol=0.0x R |
