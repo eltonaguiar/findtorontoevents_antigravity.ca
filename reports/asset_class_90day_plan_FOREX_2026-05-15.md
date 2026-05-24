@@ -181,3 +181,26 @@ NFA. All numbers, paths, and citations from 2026-05-15 workspace files (dashboar
 ---
 
 *End of report. Brutal honesty, concrete files/lines/metrics, no hedging. Quality over volume. References named explicitly for auditability and reproducibility.*
+
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**FOREX-specific changes:**
+- **Freshness threshold:** 10 seconds. FOREX is the tightest SLA across all classes.
+- **FOREX is genuinely sub-floor** (PF 0.27 / WR 46.4% / n=1169 post-noise). Per CLAUDE.md, this requires the **mutate-before-kill protocol** (`docs/MUTATION_THREE_AXIS_PROTOCOL.md`) plus a deep-dive doc before any new gates — DO NOT silently kill.
+- **Macro-calendar blackout (B2) is non-negotiable** — central-bank meetings + scheduled releases (NFP, CPI, GDP, retail sales, PMI) dominate FX. Hard suppress within ±90 minutes.
+- **Rate differential + carry + DXY correlation + COT positioning + central-bank surprise index** become first-class columns (Workstream F3). Without these, FOREX models are running blind per Gemini's review.
+- **No real-money path in 90 days.** Plan stays maintenance-mode + research per May-15. The institutional-readiness work here is to make the dashboard *honest* about FX (Stage-1 not achievable in this window) rather than try to force it.
+- **Speculative split (D1):** exotic pairs (any non-major) get `speculative_flag=True`. Majors only for institutional consideration once Stage-1 is conceivable.
+- **Verdict (refreshed):** FOREX gets the honesty layer (A) + the macro-blackout filter (B2) + the data-feature expansion (F3), but Workstreams C/D/E are out-of-scope for FOREX in this 90-day window. Goal is "stop pretending FOREX is close to ready," not "get FOREX to Stage-1."

@@ -214,3 +214,24 @@ All fully cited, production-grade research. Ready for engineering window or next
 
 ---
 *End of Firing 11 Baby + 90-Day Expansion. Subagent complete.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+The 4-AI consult + 5-engine swarm second-opinion on 2026-05-24 produced [reports/INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](../../INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). The baby-strategy 90-day expansion catalogued in this doc remains the **strategy candidate pipeline**, but the **promotion criteria** now follow the two-stage gate:
+
+- **Stage 1 (paper-trustworthy, what a baby strategy must hit to be considered for live emission):** PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / n≥100 / 90 days clean / monotonic Platt-calibrated score / passes lookahead-CI guard.
+- **Stage 2 (institutional, what a candidate must hit before sized-up real-money allocation):** PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / n≥100 / 6 months clean.
+
+**Specific impacts on the FIRING 11 baby strategy candidates:**
+
+- **`funding_arb` family (CRYPTO)** — still the highest-conviction. Stage-1 requires the freshness-30s gate + funding-rate freshness check (Bybit/Binance/Hyperliquid free APIs). Must pass Workstream A4 lookahead CI on the funding-rate timestamp.
+- **`vt_pattern_sweep.py` (EQUITY, n=245/PF 1.479)** — Stage 1 is within reach. Requires Workstream B2 macro-calendar blackout to prevent earnings/CPI contamination from inflating the apparent edge.
+- **`multi_timeframe_ema_cloud` (PF 6.95)** — too good to be true; PF 6.95 is the kind of number that usually means lookahead. **Must clear Workstream A4 CI** before any promotion consideration.
+- **H-037 (ETF VIX carry, n=1185)** — best Stage-1 candidate by sample size. Wire VIX freshness check; calibrate per Stage 1.
+- **H-017 liquidation cascade** — CRYPTO speculative; auto-gets `speculative_flag=True` per D1 Step 1.
+- **E-ANON-001** — needs source_id lineage (Workstream G3) before any forward emission. "Anonymous" sources do not pass governance.
+
+**Calibration & explainability rule (Workstream G5):** every baby strategy that graduates to live emission must surface "why it fired" in the per-pick explainability modal — gate names that passed, top-3 feature contributors, source provenance, calibrated score percentile. No black-box promotions.
+
+**CI gate (Workstream G4):** any PR that adds or modifies a baby-strategy emitter must pass the golden hold-out regression — back-test on the frozen golden set must not lose > 5% PF vs main. The continual research loop fires that test on each emitter graduation.

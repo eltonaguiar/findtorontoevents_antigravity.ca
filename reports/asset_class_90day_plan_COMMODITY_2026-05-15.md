@@ -199,3 +199,25 @@ NFA. All numbers from 2026-05-15 workspace files. This plan advances Goal #1 (ph
 ---
 
 *End of report. Brutal honesty prioritized over optimism. Concrete files, dates, and metrics cited throughout for auditability.*
+---
+
+## 2026-05-24 — Institutional-Readiness Refresh
+
+A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 5-engine swarm second-opinion (deepseek + groq + inception + pollinations) produced an honesty/risk/governance overlay captured in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md). This appendix records what changes for THIS class specifically.
+
+**Universal additions (apply to every class):**
+- Per-pick freshness SLA enforced at the gate level (class threshold listed below); auto-suppress beyond threshold.
+- Cross-provider price reconciliation (≥2 providers); `data_quality=degraded` flag on divergence.
+- `smart_score` Platt/isotonic calibration runs per asset class; rank-vs-realized-WR must be monotonic on hold-out before any size-up.
+- Lookahead-leakage CI guard (`entry_ts < signal_ts` fails the pipeline).
+- Stage-1 gate: PF>1.3 / WR>48% / Sharpe>1.0 / MDD<25% / 90 days clean. Stage-2 gate (institutional): PF>1.5 / WR>50% / Sharpe>1.5 / MDD<20% / 6 months clean. **Real money only after Stage-2 holds 6 consecutive months.**
+- Workstream G (governance) applies: real-time alerts + circuit-breaker on Stage-1 floor violation + data lineage + golden-set regression in CI.
+
+**COMMODITY-specific changes:**
+- **Freshness threshold:** 60 seconds for active futures sessions; 5 minutes off-hours.
+- **The cotton concentration risk (May-15's #1 finding) is unchanged** — must diversify beyond CT=F. Workstream B1 (transaction-cost layer) is especially important here because commodity slippage + roll-yield costs can erase apparent edge.
+- **Curve shape (contango/backwardation), inventory levels, COT positioning, seasonality** become first-class gate inputs (Workstream F3). The COT M-095 leakage fix from the Firing 11 batch must hold under Workstream A4 lookahead CI.
+- **Regime classifier (B2)** is particularly relevant for COMMODITY — weather + geopolitics + macro regime shifts dominate. Gate the class through a regime tag.
+- **Friction-adjusted DSR fix** (the 0.08 vs 0.0008 bug from May-15) is Workstream A-equivalent here: until friction is honest, calibration cannot be honest.
+- **Speculative split (D1):** COMMODITY stays in the institutional path. Single-name futures with <5k open interest get `speculative_flag=True`.
+- **Verdict (refreshed):** COMMODITY meets Stage-2 PF (1.78) but WR (46.9%) is still below the 50% floor, and concentration risk remains the dominant story. Pilot diversification (4-6 names beyond cotton) + friction-honest calibration + regime gating are the path. The 60-day go/no-go from the May-15 plan stays — if we cannot diversify beyond CT=F with positive expectancy after costs, COMMODITY is a single-strategy sleeve with hard caps, not a full class.
