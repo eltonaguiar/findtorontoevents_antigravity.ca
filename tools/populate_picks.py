@@ -908,6 +908,26 @@ def main() -> None:
     except Exception as e:
         print(f"[populate] Position sizing failed (non-fatal): {e}")
 
+    # ── Kill gate: auto-zero KILLED personas ──
+    try:
+        kill_path = REPO_ROOT / "audit_dashboard" / "data" / "research" / "kill_gate_report.json"
+        if kill_path.exists():
+            kill_data = json.loads(kill_path.read_text())
+            blocked = set(kill_data.get("blocked_personas", []))
+            warned = set(kill_data.get("warned_personas", []))
+            before = len(all_picks)
+            all_picks = [p for p in all_picks if p.get("persona_id", "") not in blocked]
+            killed_count = before - len(all_picks)
+            if killed_count:
+                print(f"[populate] Kill gate: removed {killed_count} picks from blocked personas: {sorted(blocked)}")
+            warn_picks = [p for p in all_picks if p.get("persona_id", "") in warned]
+            if warn_picks:
+                print(f"[populate] Kill gate: {len(warn_picks)} picks from WARN personas (monitoring): {sorted(warned)}")
+                for p in warn_picks:
+                    p["data_integrity_flag"] = "KILL_GATE_WARNED"
+    except Exception as e:
+        print(f"[populate] Kill gate check skipped (non-fatal): {e}")
+
     # Write output
     out_path = pick_out_path()
     out_path.write_text(json.dumps(all_picks, indent=2))
