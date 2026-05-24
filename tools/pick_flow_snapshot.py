@@ -228,9 +228,12 @@ def build_snapshot(since: str, until: str) -> dict:
                 except IndexError:
                     pass
         equity_hf["banned_source_hits"] = banned_src_hits
-        equity_hf["banned_sources_configured"] = [
-            s.strip() for s in os.environ.get("HF_GATE_EQUITY_BANNED_SOURCES", "").split(",") if s.strip()
-        ]
+        # Report what the gate actually uses (import its frozenset, not raw env var)
+        try:
+            from alpha_engine.hedge_fund_quality_gate import EQUITY_BANNED_SOURCES as _eq_bs
+            equity_hf["banned_sources_configured"] = sorted(_eq_bs)
+        except ImportError:
+            equity_hf["banned_sources_configured"] = []
     except Exception:
         equity_hf = {"error": "EQUITY HF-gate query failed", "total": 0}
 
