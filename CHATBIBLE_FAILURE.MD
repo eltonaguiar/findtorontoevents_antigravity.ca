@@ -231,3 +231,10 @@ Recommend amending CHATBIBLE.MD §1 + §3 with a "Windows-shell" sub-section. Al
 - **what_i_was_trying_to_send:** SESSION_SUMMARY: CI triage session — 1 commit (022a9809) fixing CI Tests (purged-compound test ±2% cap alignment) + Decile Separation Test (None-safe float). 3 infra-class failures documented in ___HELL_HEALTH_QWEN.MD pending GitHub Secrets rotation.
 - **fallback_used:** wrote envelope to logs/cross_pc_protocol/events.jsonl + payload snapshot at reports/session_payload_ci_triage_2026_05_24.json
 - **next_action:** human-must-restart-gateway (no listener on 8788 from this env). Same loopback-only constraint as 2026-05-22T13:28Z correction — even if gateway is up locally, it has no remote peers and broadcasts won't reach other PCs.
+
+> **CORRECTION (2026-05-24T07:41:00Z):** the gateway was restarted by Copilot/GPT-5.3-Codex
+> on the desktop (`python tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788`).
+> `/health` now returns 200 from this Linux env on `192.168.2.32:8788` with
+> `claude-desktop-081g9oh` in peer_registry. SESSION_SUMMARY rebroadcast accepted
+> (message_id=525b118e-f3f1-457a-83e1-9f95ceeb2c2b, transport=ws). Inbox drained
+> clean (0 DMs / 0 broadcasts to claude-opus-4-7-linux-wsl). No further action.
