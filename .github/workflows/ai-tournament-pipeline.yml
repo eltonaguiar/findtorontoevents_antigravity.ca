@@ -160,6 +160,12 @@ jobs:
         run: |
           echo "=== Generating research topics ==="
           python tools/ai_tournament/research_generator.py || echo "::warning title=research_generator::Research generation failed"
+          
+          echo "=== Running portfolio analytics ==="
+          python tools/tournament_analytics.py 2>&1 | head -20 || echo "::warning title=portfolio_analytics::Analytics failed"
+          if [ -f 'audit_dashboard/data/research/risk_metrics.json' ]; then
+            echo "Risk metrics generated"
+          fi
           if [ -f 'audit_dashboard/data/research/ai_leaderboard_data.json' ]; then
             echo "Leaderboard analytics data generated"
             python3 -c "
