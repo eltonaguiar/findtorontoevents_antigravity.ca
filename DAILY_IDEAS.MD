@@ -146,6 +146,47 @@ Sub-prompts:
 
 **Decision: RECOMMEND FOR SPRINT 2 — highest ROI idea from the May 13 brainstorm.** Scores 7.5/10 vs IDEA-E's 4.5/10. The existing 8,700-line PM infrastructure means ~40% of the work is already done. The Fed-rate correlation MVP is 150 LOC, /usr/bin/bash cost, and extends an already-production system into a new asset class. Priority is below Sprint 1 (DONE — confidence fix + regime audit + FOREX kill) and alongside Sprint 2 candidates (PBO/CPCV harness, symbol universe audit). Recommend slotting into Sprint 2 if the PBO/CPCV harness doesn't consume the full sprint.
 
+#### IDEA-A Analysis (2026-05-24 — 2-engine swarm)
+
+**Engines:** DeepSeek V3.2 + Cerebras. Both reviewed the full per-asset-class infrastructure: 22 CRYPTO-only proven strategies (1,835 lines), hedge_fund_quality_gate (478 lines) with per-class rejection rules, non_crypto_quality_gate (785 lines), and live performance data from dashboard_data.json + TOP10_STRATEGIES_PER_ASSET_CLASS_2026-05-19.md.
+
+**Gap fit: 8/10 (both engines agree).** The gap is stark: 22 proven strategies exist for CRYPTO but ZERO for EQUITY, COMMODITY, FOREX, ETF, or BOND. EQUITY is dead (n=5, PF=0.25). BOND is dead (n=5, PF=0.00). ETF is overfit (n=2, PF=11.99). The codebase has per-class REJECTION rules but no per-class ENTRY criteria outside CRYPTO. Only FOREX (PF=1.49 via cta_replicator) and COMMODITY (PF=1.42 via multi_asset_cot) are functional beyond crypto.
+
+**Key divergence: surgical vs comprehensive.** DeepSeek recommends a SURGICAL approach: audit CRYPTO gates instead of discovering new criteria (the 22 strategies exist but aren't properly gated — PF=0.66 class-level), isolate FOREX cta_replicator instead of running 20 rounds (PF=2.51 standalone), defer BOND/ETF until n>30, and focus 20-round research on EQUITY + COMMODITY only. Estimated 500-650 LOC over 3 weeks. Cerebras recommends running 20 rounds for ALL 6 classes, adding on-chain data (Glassnode ~$2k/mo), macro overlays, and full swarm orchestration. Estimated 1,500 LOC over 8 days parallelized.
+
+**Per-class assessment (synthesized from both engines):**
+
+| Class | Current PF/n | Recommendation | Expected ROI | LOC est |
+|-------|-------------|----------------|-------------|---------|
+| CRYPTO | 0.66/1127 | AUDIT gates, don't research new criteria. Retroactively apply hedge_fund_quality_gate banned-symbol + dead-confidence-band filters to all 1127 closed picks. The 22 strategies have proven WRs 55-83% individually — the class-level PF drag is gating/execution, not criteria deficiency. | PF+0.10-0.15 immediate | 0 (no code, just audit) |
+| EQUITY | 0.25/5 | RESEARCH 20 rounds using FREE data only (Yahoo Finance P/E-P/B-EV/EBITDA, SEC EDGAR insider filings, FRED macro). Target 3 criteria: value-momentum composite, insider buy clusters (≥3 officers buying within 30 days), earnings-revision triggers (EPS surprise + guidance raise). Cross-check against EQUITY confidence reject band [0.60, 0.65). | High — greenfield with no existing criteria, large TAM | +250 LOC |
+| COMMODITY | 1.42/55 | RESEARCH 5-10 rounds focusing on ADDITIVE criteria: seasonality (grain harvest cycles — ZC/ZW/ZS, energy winter draws — NG, metals seasonals), term-structure backwardation confirmation. COT commercial extremes already work (PF 1.60); the goal is to add orthogonal signals that raise WR from 54.5% to 58%. | Medium — already functional, seeking edge stacking | +150 LOC |
+| FOREX | 1.49/148 | ISOLATE cta_replicator (PF 2.51, n=109) from the FOREX basket. The class PF 1.49 is dragged by multi_asset_copytrader (PF 0.16, n=325). Instead of researching new criteria, surgically split FOREX into: (a) high-conviction (cta_replicator + signal_validation FOREX cohort at 63% WR) vs (b) kill-list (multi_asset_copytrader FOREX, alpha_engine FOREX at PF 0.59). Raise FOREX allocation from 0% to 15% for the high-conviction basket. | High — 2.5x PF strategy already exists, just needs isolation | +80 LOC |
+| ETF | 11.99/2 | DEFER until n≥30. OOS Sharpe +6.37 with decay 10.8 and only 12 folds = severe overfit suspicion. The two-pick sample is statistically meaningless. | Low until charter floor met | 0 |
+| BOND | 0.00/5 | DEFER until n≥30. Current n=5 at PF=0.00 — no signal. Activate the BOND scanner workflow (FRED_API_KEY already set) to grow sample to charter floor 30+, then re-evaluate. | Low until pipeline active | 0 |
+
+**Integration feasibility:**
+- **Entry criteria registry:** `alpha_engine/proven_research_strategies.py` gets non-crypto strategy functions for the first time — currently 22 CRYPTO-only, add equity_value_momentum(), commodity_seasonality(), forex_cta_isolated(). New ~250 LOC.
+- **Quality gate extension:** `alpha_engine/hedge_fund_quality_gate.py` gets EQUITY value-metric gates (e.g., P/E floor, insider-cluster min count), COMMODITY seasonality window checks. New ~80 LOC.
+- **Quarantine manifest:** FOREX allocation raised from 0% → 15% for high-conviction FOREX basket only (not blanket). Update in `audit_dashboard/data/quarantine_manifest.json` or config equivalent. ~20 LOC.
+- **No new files needed.** All changes are extensions to existing modules.
+
+**Priority ranking vs Sprint 3-6:**
+1. **IMMEDIATE (zero code):** CRYPTO audit — retroactively apply existing hedge_fund_quality_gate to all closed picks, measure PF impact
+2. **SPRINT 3:** IDEA-A EQUITY + COMMODITY criteria (500-650 LOC) + P4 correlation matrix shell (both engines agree P4 is parallel)
+3. **SPRINT 4:** IDEA-A FOREX isolation (80 LOC) + P5 CPCV harness
+4. **SPRINT 5:** P6 external data integration
+5. **DEFERRED:** IDEA-A BOND/ETF until charter floor n≥30 met
+
+**Salvage vs discard:**
+- **Salvage:** ALL existing files (proven_research_strategies.py, hedge_fund_quality_gate.py, non_crypto_quality_gate.py, quarantine_manifest) — extended, not replaced. The existing per-class rejection infrastructure (banned symbols, confidence bands, RSI killzones) stays intact and is the foundation new ENTRY criteria build upon.
+- **Discard:** Nothing. Pure extension.
+- **CRYPTO specifically:** The 22 existing strategies are SALVAGED but RE-GATED. Don't touch the strategy code itself — fix the gate that lets them through unfiltered.
+
+**Bottom-line score: 7/10 composite.**
+
+**Decision: APPROVED WITH SCOPE MODIFICATION.** IDEA-A is approved for EQUITY + COMMODITY (20 rounds each, free data only), FOREX isolation (no research, just surgical split), and CRYPTO audit (zero code, gate retroactive application). BOND and ETF are DEFERRED until charter-floor n≥30. The full "20 rounds per class × 6 classes = 120 rounds" original vision is pared to ~35 rounds (20 EQUITY + 15 COMMODITY) — a 70% scope reduction that preserves the highest-ROI targets. Estimated 500-650 LOC across 3 sprints. Expected class-level PF lift: EQUITY 0.25→0.50+ (pilot), COMMODITY 1.42→1.55+, FOREX 0.27→0.60+ (by isolation).
+
 ### IDEA-I: Weather → farming / soft commodities
 
 Forecast rain (NOAA GFS, ECMWF, weather.com API) → corn/wheat/soy futures (ZC/ZW/ZS=F). Drought monitor + crop-progress weekly (USDA WASDE).
