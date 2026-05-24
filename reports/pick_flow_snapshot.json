@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated_at": "2026-05-24T21:43:53.635465Z",
+    "generated_at": "2026-05-24T21:47:25.966291Z",
     "window_since": "2026-05-17",
     "window_until": "2026-05-24",
     "script": "tools/pick_flow_snapshot.py"
@@ -22,7 +22,7 @@
       "gate_rejected": 0,
       "top_reject_reason": "",
       "consensus_survivors": 0,
-      "closed": 8247,
+      "closed": 8249,
       "win_rate_pct": "66.6",
       "profit_factor": 5.56
     },
@@ -42,7 +42,7 @@
       "gate_rejected": 0,
       "top_reject_reason": "",
       "consensus_survivors": 0,
-      "closed": 6126,
+      "closed": 6127,
       "win_rate_pct": "83.5",
       "profit_factor": 0.1
     },
@@ -62,8 +62,8 @@
       "gate_rejected": 0,
       "top_reject_reason": "",
       "consensus_survivors": 0,
-      "closed": 115,
-      "win_rate_pct": "66.1",
+      "closed": 116,
+      "win_rate_pct": "66.4",
       "profit_factor": 2.56
     }
   ],
@@ -198,15 +198,15 @@
     "min_confidence": 0.7
   },
   "equity_hf_gate": {
-    "total": 284,
+    "total": 282,
     "hf_passed": 226,
-    "hf_rejected": 58,
+    "hf_rejected": 56,
     "hf_errors": 0,
     "conf_passed": 226,
     "reject_reasons": [
       {
         "reason": "HF_GATE: EQUITY SHORT rejected (LONG-only historical edge; SHORT n=4 went 0/3)",
-        "count": 51
+        "count": 49
       },
       {
         "reason": "HF_GATE: empty strategy (pipeline defect; n=10 FOREX showed 10% WR / -1.875% avg)",
@@ -227,14 +227,20 @@
     ],
     "min_confidence": 0.0,
     "source_breakdown": {
-      "AlphaEngine": 277,
+      "AlphaEngine": 275,
       "kimi_feb17": 4,
       "copy_trader_binance": 1,
       "alpha_engine_unified": 1,
       "sandbox_opposite": 1
     },
     "banned_source_hits": {},
-    "banned_sources_configured": []
+    "banned_sources_configured": [
+      "fast_stocks_competition",
+      "kimi_signal_tracking",
+      "ml_bg_system_f",
+      "multi_asset_institutional",
+      "stocks_competition"
+    ]
   },
   "note": "crypto_hf_gate runs on active OPEN CRYPTO picks (separate population from the per_class raw_emitted counts, which cover all statuses). hf_passed = survived HF gate (banned sources/symbols/drawdown). conf_passed = hf_passed \u2229 confidence \u2265 crypto_hf_gate.min_confidence. Closed WR/PF use closed_at-dated rows; picks whose status is terminal but closed_at is NULL are not counted."
 }
