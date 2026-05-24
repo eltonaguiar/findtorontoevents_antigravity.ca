@@ -55,6 +55,8 @@ RESOLUTION_WINDOWS_DAYS = {
     "FOREX": 21,
     "ETF": 30,
     "BOND": 60,
+    "PENNY": 7,
+    "FUTURES": 14,
 }
 
 
