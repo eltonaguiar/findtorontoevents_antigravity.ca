@@ -156,6 +156,24 @@ jobs:
           echo "=== Syncing persona registry ==="
           python tools/ai_tournament/persona_registry.py || echo "::warning title=persona_registry::Persona registry sync failed"
 
+      - name: Wire copy trader picks into tournament format
+        run: |
+          echo "=== Running copy trader adapter ==="
+          python tools/ai_tournament/copy_trader_adapter.py || echo "::warning title=copy_trader::Copy trader adapter failed (no data available?)"
+          # Merge copy trader picks into latest tournament picks if generated
+          if [ -f 'audit_dashboard/data/copy_trader_tournament_picks.json' ]; then
+            echo "Merging copy trader picks into tournament data"
+            python3 -c "
+import json
+ct = json.load(open('audit_dashboard/data/copy_trader_tournament_picks.json'))
+picks_file = 'data/ai_tournament/picks_' + __import__('datetime').datetime.utcnow().strftime('%Y%m%d') + '.json'
+existing = json.load(open(picks_file)) if __import__('os').path.exists(picks_file) else []
+existing.extend(ct)
+json.dump(existing, open(picks_file, 'w'), indent=2)
+print(f'Merged {len(ct)} copy trader picks → {picks_file} ({len(existing)} total)')
+" || echo "::warning title=copy_trader_merge::Copy trader merge failed"
+          fi
+
       - name: Generate research topics and leaderboard analytics
         run: |
           echo "=== Generating research topics ==="

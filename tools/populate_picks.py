@@ -858,9 +858,9 @@ def main() -> None:
                                    database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
                                    port=3306, connect_timeout=5)
             cur = conn.cursor()
-            cur.execute("SELECT persona_id, ROUND(AVG(CASE WHEN status='WIN' THEN 1.0 ELSE 0 END), 4) as wr, ROUND(AVG(pnl_pct), 4) as avg_pnl FROM tournament_picks WHERE status IN ('WIN','LOSS') AND persona_id != '' GROUP BY persona_id")
+            cur.execute("SELECT persona_id, ROUND(AVG(CASE WHEN status='WIN' THEN 1.0 ELSE 0 END), 4) as wr, ROUND(AVG(pnl_pct), 4) as avg_pnl, COUNT(*) as n FROM tournament_picks WHERE status IN ('WIN','LOSS') AND persona_id != '' GROUP BY persona_id")
             for row in cur.fetchall():
-                persona_stats[row[0]] = {'wr': float(row[1]), 'avg_pnl': float(row[2] or 0)}
+                persona_stats[row[0]] = {'wr': float(row[1]), 'avg_pnl': float(row[2] or 0), 'n': int(row[3])}
             conn.close()
         except Exception:
             pass  # Continue without DB stats
@@ -891,13 +891,20 @@ def main() -> None:
             kelly = max(0, min(0.25, kelly * 0.25))
 
             # Risk budget: % of portfolio at risk per trade
-            risk_per_trade = kelly * 2.0  # Double Kelly for risk budget (aggressive but capped)
-            risk_per_trade = min(risk_per_trade, 0.05)  # Never more than 5%
+            # Portfolio manager rules: equal-weight until n>=20, then fractional Kelly
+            # Max 1.5% per position, max 2% total risk, max 10 concurrent positions
+            persona_n = persona_stats.get(pid, {}).get('n', 0)
+            if persona_n < 20:
+                risk_per_trade = 1.5  # Equal-weight baseline: 1.5% per position
+            else:
+                risk_per_trade = kelly * 100  # Fractional Kelly at n>=20
+            risk_per_trade = min(risk_per_trade, 1.5)  # Hard cap at 1.5% per position
 
             p["kelly_pct"] = round(kelly * 100, 1)
-            p["risk_budget_pct"] = round(risk_per_trade * 100, 1)
+            p["risk_budget_pct"] = round(risk_per_trade, 1)
             p["reward_risk_ratio"] = round(rr, 2)
-            p["position_size_suggestion"] = f"Kelly={kelly*100:.1f}% | Risk={risk_per_trade*100:.1f}% | RR={rr:.1f}"
+            p["persona_n_resolved"] = persona_n
+            p["position_size_suggestion"] = f"Kelly={kelly*100:.1f}% | Risk={risk_per_trade:.1f}% | RR={rr:.1f} | N={persona_n}"
     except Exception as e:
         print(f"[populate] Position sizing failed (non-fatal): {e}")
 
