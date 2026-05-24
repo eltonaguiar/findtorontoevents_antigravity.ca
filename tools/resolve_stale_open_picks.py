@@ -301,6 +301,8 @@ def resolve_stale_open_picks(
             return summary
 
         batches_done = 0
+        empty_streak = 0  # consecutive batches with 0 stale picks — exit after threshold
+        MAX_EMPTY_STREAK = 10  # stop scanning when this many consecutive batches have no stale picks
 
         while True:
             picks = find_stale_picks(conn, batch_size)
@@ -324,9 +326,17 @@ def resolve_stale_open_picks(
                 summary["by_strategy"][strat]["stale"] += 1
 
             if not stale_picks:
+                empty_streak += 1
+                if empty_streak >= MAX_EMPTY_STREAK:
+                    log.info(
+                        "Stopped: %d consecutive batches with 0 stale picks (checked %d total batches).",
+                        MAX_EMPTY_STREAK, batches_done,
+                    )
+                    break
+
                 log.info(
-                    "Batch %d: %d OPEN picks checked, 0 stale.",
-                    batches_done, len(picks),
+                    "Batch %d: %d OPEN picks checked, 0 stale (streak=%d/%d).",
+                    batches_done, len(picks), empty_streak, MAX_EMPTY_STREAK,
                 )
                 continue
 
@@ -343,18 +353,19 @@ def resolve_stale_open_picks(
                 chunk_size = 1000
                 total_updated = 0
 
-                for i in range(0, len(all_ids), chunk_size):
-                    chunk = all_ids[i:i + chunk_size]
-                    placeholders = ",".join(["%s"] * len(chunk))
-                    bulk_sql = (
-                        "UPDATE trading_picks SET "
-                        "status='TIME_EXIT', "
-                        "exit_reason='TIME_EXIT_MAX_HOLD', "
-                        "exit_price=entry_price, pnl_pct=0.0 "
-                        f"WHERE id IN ({placeholders})"
-                    )
-                    cur.execute(bulk_sql, chunk)
-                    total_updated += cur.rowcount
+                with conn.cursor() as cur:
+                    for i in range(0, len(all_ids), chunk_size):
+                        chunk = all_ids[i:i + chunk_size]
+                        placeholders = ",".join(["%s"] * len(chunk))
+                        bulk_sql = (
+                            "UPDATE trading_picks SET "
+                            "status='TIME_EXIT', "
+                            "exit_reason='TIME_EXIT_MAX_HOLD', "
+                            "exit_price=entry_price, pnl_pct=0.0 "
+                            f"WHERE id IN ({placeholders})"
+                        )
+                        cur.execute(bulk_sql, chunk)
+                        total_updated += cur.rowcount
 
                 conn.commit()
                 summary["total_resolved"] += total_updated
