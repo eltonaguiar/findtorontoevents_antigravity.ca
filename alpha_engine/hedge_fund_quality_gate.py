@@ -340,6 +340,100 @@ def why_rejected(pick: dict[str, Any]) -> str | None:
     return None if ok else reason
 
 
+def passes_safety_score_gate(pick: dict[str, Any]) -> tuple[bool, str]:
+    """Return (True, "OK") or (False, reason) based on persona-based safety_score.
+
+    Salvaged from the Persona-Based Safe-Pick swarm critique (DAILY_IDEAS.MD
+    2026-05-24). This gate uses RELAXED per-class thresholds — it acts as a
+    floor, rejecting only the obviously unsafe tail. Designed to be called
+    ALONGSIDE passes_hedge_fund_gate(), not instead of it.
+
+    Metrics are extracted from the pick dict (risk_metrics, fundamental_snapshot,
+    or top-level fields). If no metrics are available, the gate passes (fail-open).
+
+    Threshold source: config/persona_thresholds.yaml.
+    """
+    from alpha_engine.value_screener import compute_safety_score, _load_persona_thresholds
+
+    ac = _ac(pick)
+    if not ac or ac == "UNKNOWN":
+        return True, "PERSONA_SAFETY: unknown asset class — pass (fail-open)"
+
+    # Extract metrics from pick dict (try multiple locations)
+    metrics: dict[str, float | None] = {}
+
+    # 1. Try risk_metrics sub-dict (persona output format)
+    rm = pick.get("risk_metrics") or {}
+    if isinstance(rm, dict):
+        metrics["volatility"] = rm.get("volatility")
+        metrics["beta"] = rm.get("beta")
+        metrics["sharpe"] = rm.get("sharpe")
+        metrics["max_drawdown"] = rm.get("max_drawdown")
+
+    # 2. Try fundamental_snapshot (UEPS picks)
+    fs = pick.get("fundamental_snapshot") or {}
+    if isinstance(fs, dict):
+        # Fall through if risk_metrics already set them
+        if metrics.get("volatility") is None:
+            metrics["volatility"] = fs.get("volatility")
+        if metrics.get("beta") is None:
+            metrics["beta"] = fs.get("beta")
+
+    # 3. Try top-level fields
+    for key, mkey in (
+        ("volatility", "volatility"), ("annualized_vol", "volatility"),
+        ("beta", "beta"), ("stock_beta", "beta"),
+        ("sharpe_ratio", "sharpe"), ("sharpe", "sharpe"),
+        ("max_drawdown", "max_drawdown"), ("max_dd", "max_drawdown"),
+        ("cagr", "cagr"), ("annual_cagr", "cagr"),
+    ):
+        if metrics.get(mkey) is None:
+            val = pick.get(key)
+            if val is not None:
+                try:
+                    metrics[mkey] = float(val)
+                except (TypeError, ValueError):
+                    pass
+
+    # 4. Try extra / extra_data
+    extra = pick.get("extra") or pick.get("extra_data") or {}
+    if isinstance(extra, dict):
+        for key, mkey in (
+            ("cagr", "cagr"), ("annual_cagr", "cagr"),
+            ("sharpe", "sharpe"), ("sharpe_ratio", "sharpe"),
+        ):
+            if metrics.get(mkey) is None:
+                val = extra.get(key)
+                if val is not None:
+                    try:
+                        metrics[mkey] = float(val)
+                    except (TypeError, ValueError):
+                        pass
+
+    # If we have zero metrics, fail-open (don't block picks with incomplete data)
+    present = sum(1 for v in metrics.values() if v is not None)
+    if present == 0:
+        return True, "PERSONA_SAFETY: no metrics available — pass (fail-open)"
+
+    try:
+        t = _load_persona_thresholds()
+    except Exception:
+        t = {"safety_score_floor": 0.40}
+    score = compute_safety_score(metrics, ac, thresholds=t)
+    floor = float(t.get("safety_score_floor", 0.40))
+
+    if score < floor:
+        present_str = "/".join(
+            f"{k}={v:.3f}" for k, v in sorted(metrics.items())
+            if v is not None
+        )
+        return False, (
+            f"PERSONA_SAFETY: {ac} safety_score={score:.3f} below floor={floor:.2f} "
+            f"(present: {present_str})"
+        )
+    return True, "OK"
+
+
 def batch_evaluate(picks: list[dict[str, Any]]) -> dict[str, Any]:
     """Evaluate a batch and return summary counters."""
     kept, rejected = 0, 0
@@ -367,6 +461,7 @@ def batch_evaluate(picks: list[dict[str, Any]]) -> dict[str, Any]:
 
 __all__ = [
     "passes_hedge_fund_gate",
+    "passes_safety_score_gate",
     "why_rejected",
     "batch_evaluate",
     # Exposed for tests and for callers that want to inspect / override rules.

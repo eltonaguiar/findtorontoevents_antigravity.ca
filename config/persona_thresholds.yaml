@@ -1,0 +1,88 @@
+# config/persona_thresholds.yaml
+#
+# Per-asset-class safety thresholds for the persona-based composite safety_score gate.
+# Salvaged from the Persona-Based Safe-Pick swarm critique (DAILY_IDEAS.MD 2026-05-24).
+#
+# These are RELAXED thresholds — the original proposal's 12% vol / 0.4 D/E / 12%
+# max-DD would yield 0-3 picks from the entire S&P 500. These thresholds are tuned
+# to act as a floor, not a cliff: they reject only the obviously unsafe tail.
+#
+# Usage:
+#   from alpha_engine.value_screener import compute_safety_score
+#   from alpha_engine.hedge_fund_quality_gate import passes_safety_score_gate
+#
+# Updates require a PR. Overrides go in overrides/<ticket>.yaml.
+schema_version: "v1.0"
+
+# Composite weights for the safety_score formula.
+# safety_score = w_vol*vol_score + w_beta*beta_score + w_sharpe*sharpe_score
+#              + w_dd*dd_score + w_cagr*cagr_score
+# Each component_score is 0-1, normalized against its class threshold.
+composite_weights:
+  vol: 0.25      # Annualized volatility (lower = safer)
+  beta: 0.20     # Market beta (lower = safer)
+  sharpe: 0.20   # Sharpe ratio (higher = safer)
+  max_dd: 0.15   # Max drawdown (lower = safer)
+  cagr: 0.20     # CAGR (higher = safer)
+
+# Minimum composite safety_score to pass the gate.
+# Set per-class because some classes (CRYPTO) are inherently higher vol.
+safety_score_floor: 0.40   # Reject if composite < 0.40 (very permissive floor)
+
+asset_classes:
+  EQUITY:
+    description: "Stocks — large/mid-cap value & growth"
+    vol_max: 0.35              # 35% annualized vol (S&P 500 ~15%, meme stocks ~60%)
+    sharpe_min: 0.30           # Sharpe floor (S&P 500 ~0.8, quality stocks >1.0)
+    beta_max: 1.50             # Beta ceiling (SPY=1.0, NVDA ~1.7)
+    max_dd_max: 0.40           # Max DD from peak (2008 S&P was ~55%, 2022 ~25%)
+    cagr_min: 0.0              # Don't reject on negative CAGR (cyclicals exist)
+
+  CRYPTO:
+    description: "Cryptocurrencies — majors, alts (excl. meme coins)"
+    vol_max: 1.20              # 120% annualized (BTC ~60%, ETH ~80%, alts higher)
+    sharpe_min: 0.10           # Near-zero floor (BTC 4yr Sharpe ~1.0, alts lower)
+    beta_max: 2.50             # Crypto beta to BTC (1.0 = BTC itself)
+    max_dd_max: 0.75           # 75% DD (BTC has had 80%+ drawdowns)
+    cagr_min: 0.0              # Don't reject on negative (bear market years)
+
+  FOREX:
+    description: "Currency pairs — majors, crosses, exotics"
+    vol_max: 0.20              # 20% annualized (most pairs 5-15%)
+    sharpe_min: 0.0            # Allow flat (carry strategies can be near-flat Sharpe)
+    beta_max: 1.20             # Low beta to any index
+    max_dd_max: 0.25           # 25% max DD (FX is less volatile)
+    cagr_min: -0.05            # Slightly negative OK (structural issues acknowledged)
+
+  COMMODITY:
+    description: "Commodities — metals, energy, agricultural"
+    vol_max: 0.50              # 50% annualized (oil ~40%, gold ~18%, NG ~60%)
+    sharpe_min: 0.10
+    beta_max: 1.50
+    max_dd_max: 0.55           # Commodities are cyclical, deep drawdowns happen
+    cagr_min: -0.05
+
+  ETF:
+    description: "Exchange-traded funds — index, sector, thematic"
+    vol_max: 0.35              # Similar to EQUITY (broad market ETFs ~15-20%)
+    sharpe_min: 0.30
+    beta_max: 1.20             # Most ETFs track indices, beta near 1.0
+    max_dd_max: 0.40
+    cagr_min: 0.0
+
+  BOND:
+    description: "Fixed income — treasuries, corporates, sovereign"
+    vol_max: 0.15              # Bonds generally low-vol (Treasuries 5-10%)
+    sharpe_min: 0.20
+    beta_max: 0.80             # Bonds typically low beta to equities
+    max_dd_max: 0.20           # 2022 was historically bad for bonds (~15-20%)
+    cagr_min: -0.02            # Slightly negative allowed (rate hiking cycles)
+
+# ─────────────────── Metric normalization ───────────────────
+# For "lower is safer" metrics (vol, beta, max_dd):
+#   component_score = 1 - clamp(metric / threshold, 0, 1)
+# For "higher is safer" metrics (sharpe, cagr):
+#   component_score = clamp(metric / threshold, 0, 1)
+#
+# If a metric is missing/None, it defaults to 0.0 contribution.
+# If any individual component_score < 0, it is clamped to 0.
