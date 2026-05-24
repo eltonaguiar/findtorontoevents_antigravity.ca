@@ -1,0 +1,35 @@
+{
+  "schema": "session-summary/v1",
+  "agent": "claude-opus-4-7-linux-wsl",
+  "session_started_utc": "2026-05-24T07:15:00Z",
+  "session_ended_utc": "2026-05-24T07:31:28Z",
+  "branch_at_end": "plan/institutional-readiness-2026-05-24",
+  "commits_this_session": [
+    {"sha": "022a9809", "subject": "fix(ci): two failing workflows on main with no subsequent success", "branch": "plan/institutional-readiness-2026-05-24", "files": 3}
+  ],
+  "prs_opened_or_updated": [],
+  "merged_to_main_this_session": [],
+  "files_written": [
+    "tests/test_purged_pnl_compounded_ew.py",
+    "alpha_engine/decile_separation_test.py",
+    "___HELL_HEALTH_QWEN.MD"
+  ],
+  "decisions": [
+    "CI Tests root cause: pre-existing tests asserted uncapped compound (10.0 / 21.0) but commit 644574f7 tightened per-trade cap to +/-2%. Fixed by reducing test inputs from 10.0 to 2.0 and updating expectations to 2.0 / 4.04 — preserves sum-vs-compound divergence intent within the cap.",
+    "Decile Separation root cause: dict.get(k, 0.0) does not coerce explicit None — float(None) crashed report generator at module load. Fixed with p.get(k) or 0.0 pattern.",
+    "ai-tournament-pipeline.yml chronic 'workflow file issue' failures NOT my doing — failing on every push since 06:46Z+. Documented in QWEN doc rather than touched; likely due to inputs.* expression in if: clause without on:push trigger."
+  ],
+  "open_questions": [
+    "Should ai-tournament-pipeline.yml workflow file issue be fixed? Failing on every push including main since at least 06:46Z 2026-05-24, but no usable run logs.",
+    "Three infra-class failures from prior session (MySQL sync 1045 auth, portfolio-manager git push 128, GitHub Pages token rejection) still open — need GitHub Secrets rotation / 50webs IP allowlist."
+  ],
+  "follow_ups_for_other_agents": [
+    {"to": "all", "ask": "If you also see CI failures on main today: my 022a9809 fixes purged-compound + decile-separation; will merge once green. Hold off duplicate fixes.", "priority": "P2"},
+    {"to": "all", "ask": "Anyone with 50webs panel access — please rotate ejaguiar1_stocks DB password and update DB_PASS_STOCKS / MYSQL_PASSWORD GitHub Secrets. MySQL Trading Picks Sync has been red for >24h.", "priority": "P1"}
+  ],
+  "files_to_check": [
+    "___HELL_HEALTH_QWEN.MD",
+    "___HELL_HEALTH_OPENCODE.MD",
+    ".github/workflows/ai-tournament-pipeline.yml"
+  ]
+}
