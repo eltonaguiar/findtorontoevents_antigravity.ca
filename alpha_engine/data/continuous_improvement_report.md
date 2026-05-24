@@ -1,21 +1,22 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-24T09:30:24.618873+00:00
+Generated: 2026-05-24T09:35:49.864210+00:00
 
 ## Topline
-- Open positions: 172
-- Price coverage: 95.93%
-- Open average PnL: 30.0547%
-- Directional correctness: 60.0%
+- Open positions: 89
+- Price coverage: 98.88%
+- Open average PnL: 43.9247%
+- Directional correctness: 57.95%
 - Regime: BULLISH
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] CONFIDENCE_INVERSION: High-confidence picks are underperforming low-confidence picks (48.4% vs 70.0%)
-- [HIGH] PEER_STALE: alpha_engine data is stale (84796.4m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (113089.4m old)
-- [HIGH] STRATEGY_DECAY: clone_hl_copy_Auros_66M is a rehabilitation candidate (WR 60.0%, PF 0.123, Sharpe -10.511)
-- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BTCUSDT ({'SHORT': 5, 'LONG': 9})
+- [HIGH] CONFIDENCE_INVERSION: High-confidence picks are underperforming low-confidence picks (53.1% vs 82.6%)
+- [HIGH] PEER_STALE: alpha_engine data is stale (84801.8m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (196.0m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (113094.9m old)
+- [HIGH] STRATEGY_DECAY: stocks_rsi2_pullback is a rehabilitation candidate (WR 38.71%, PF 1.103, Sharpe 0.734)
+- [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on XRPUSDT ({'LONG': 2, 'SHORT': 4})
 
 ## Recommendations
 - tighten_risk_and_reduce_gross_exposure: Choppy regime or drawdown breach warrants smaller sizing and tighter review cadence.
