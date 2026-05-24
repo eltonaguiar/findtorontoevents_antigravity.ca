@@ -93,6 +93,159 @@ class ScreenerScore:
 
 
 # =============================================================================
+# Persona-based safety score (salvaged from persona swarm critique 2026-05-24)
+# =============================================================================
+
+def compute_safety_score(
+    metrics: dict[str, float | None],
+    asset_class: str,
+    thresholds: dict[str, Any] | None = None,
+) -> float:
+    """Compute a composite safety_score (0-1) from risk/return metrics.
+
+    Persona-based formula salvaged from the Persona-Based Safe-Pick swarm
+    critique (DAILY_IDEAS.MD 2026-05-24). Uses RELAXED per-class thresholds
+    to act as a floor, not a cliff — rejecting only the obviously unsafe tail.
+
+    Formula:
+        safety_score = w_vol * vol_score + w_beta * beta_score
+                     + w_sharpe * sharpe_score + w_dd * dd_score
+                     + w_cagr * cagr_score
+
+    Normalization:
+        For "lower is safer" metrics (vol, beta, max_dd):
+            component = 1 - clamp(metric / threshold, 0, 1)
+        For "higher is safer" metrics (sharpe, cagr):
+            component = clamp(metric / threshold, 0, 1)
+
+    Args:
+        metrics: dict with optional keys ''volatility'', ''beta'', ''sharpe'',
+                 ''max_drawdown'', ''cagr''. Missing keys default to 0 contribution.
+        asset_class: one of EQUITY, CRYPTO, FOREX, COMMODITY, ETF, BOND.
+        thresholds: optional override dict (loaded from config/persona_thresholds.yaml
+                    if not provided).
+
+    Returns:
+        float 0-1, where 0 = maximally unsafe, 1 = maximally safe.
+    """
+    # Load thresholds if not provided
+    if thresholds is None:
+        thresholds = _load_persona_thresholds()
+
+    ac_thresh = thresholds.get(asset_class.upper(), {}).get("thresholds", {})
+    if not ac_thresh:
+        # Unknown asset class — skip the gate (return 1.0 = pass)
+        return 1.0
+
+    weights = thresholds.get("composite_weights", {})
+    w_vol = weights.get("vol", 0.25)
+    w_beta = weights.get("beta", 0.20)
+    w_sharpe = weights.get("sharpe", 0.20)
+    w_dd = weights.get("max_dd", 0.15)
+    w_cagr = weights.get("cagr", 0.20)
+
+    # --- Volatility (lower is safer) ---
+    vol_max = ac_thresh.get("vol_max")
+    vol = metrics.get("volatility")
+    if vol is not None and vol_max is not None and vol_max > 0:
+        vol_score = 1.0 - min(max(vol / vol_max, 0.0), 1.0)
+    else:
+        vol_score = 0.0
+
+    # --- Beta (lower is safer) ---
+    beta_max = ac_thresh.get("beta_max")
+    beta = metrics.get("beta")
+    if beta is not None and beta_max is not None and beta_max > 0:
+        beta_score = 1.0 - min(max(beta / beta_max, 0.0), 1.0)
+    else:
+        beta_score = 0.0
+
+    # --- Sharpe (higher is safer) ---
+    sharpe_min = ac_thresh.get("sharpe_min")
+    sharpe = metrics.get("sharpe")
+    if sharpe is not None and sharpe_min is not None and sharpe_min > 0:
+        sharpe_score = min(max(sharpe / sharpe_min, 0.0), 1.0)
+    elif sharpe is not None and sharpe_min is not None and sharpe_min == 0:
+        sharpe_score = 1.0  # Floor is 0, anything non-negative passes
+    else:
+        sharpe_score = 0.0
+
+    # --- Max Drawdown (lower is safer) ---
+    dd_max = ac_thresh.get("max_dd_max")
+    max_dd = metrics.get("max_drawdown")
+    if max_dd is not None and dd_max is not None and dd_max > 0:
+        # max_dd is negative (e.g. -0.25 for 25% drawdown). Take absolute.
+        dd_abs = abs(max_dd)
+        dd_score = 1.0 - min(max(dd_abs / dd_max, 0.0), 1.0)
+    else:
+        dd_score = 0.0
+
+    # --- CAGR (higher is safer) ---
+    cagr_min = ac_thresh.get("cagr_min")
+    cagr = metrics.get("cagr")
+    if cagr is not None and cagr_min is not None:
+        if cagr_min <= 0:
+            # When the floor is at or below zero, score from floor to 2x floor
+            cagr_score = min(max((cagr - cagr_min) / max(abs(cagr_min), 0.01), 0.0), 1.0)
+        else:
+            cagr_score = min(max(cagr / cagr_min, 0.0), 1.0)
+    else:
+        cagr_score = 0.0
+
+    safety_score = (
+        w_vol * vol_score
+        + w_beta * beta_score
+        + w_sharpe * sharpe_score
+        + w_dd * dd_score
+        + w_cagr * cagr_score
+    )
+    return min(max(safety_score, 0.0), 1.0)
+
+
+# Cache for persona thresholds to avoid repeated YAML parsing
+_persona_thresholds_cache: dict[str, Any] | None = None
+
+
+def _load_persona_thresholds() -> dict[str, Any]:
+    """Load persona thresholds from config/persona_thresholds.yaml.
+
+    Cached after first load. Returns a dict keyed by asset class,
+    each containing ''thresholds'' and ''composite_weights''.
+    """
+    global _persona_thresholds_cache
+    if _persona_thresholds_cache is not None:
+        return _persona_thresholds_cache
+
+    import os
+
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "config", "persona_thresholds.yaml",
+    )
+    try:
+        import yaml
+        with open(config_path, "r", encoding="utf-8") as f:
+            raw = yaml.safe_load(f) or {}
+    except (FileNotFoundError, ImportError, yaml.YAMLError):
+        raw = {}
+
+    # Normalize: build {asset_class: {thresholds: {...}, composite_weights: {...}}}
+    result: dict[str, Any] = {
+        "composite_weights": raw.get("composite_weights", {}),
+        "safety_score_floor": raw.get("safety_score_floor", 0.40),
+    }
+    for ac, cfg in raw.get("asset_classes", {}).items():
+        result[ac.upper()] = {
+            "thresholds": {
+                k: v for k, v in cfg.items()
+                if k in ("vol_max", "sharpe_min", "beta_max", "max_dd_max", "cagr_min")
+            },
+        }
+    _persona_thresholds_cache = result
+    return result
+
+
+# =============================================================================
 # Pure-function scorers
 # =============================================================================
 def compute_piotroski_f_score(
