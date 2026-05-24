@@ -165,8 +165,7 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[tuple], str, str]:
             pnl_pct          = VALUES(pnl_pct),
             exit_price       = VALUES(exit_price),
             exit_reason      = VALUES(exit_reason),
-            resolved_at      = VALUES(resolved_at),
-            updated_at       = NOW()
+            resolved_at      = VALUES(resolved_at)
     """
 
     return rows, insert_sql, source
