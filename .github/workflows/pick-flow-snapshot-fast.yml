@@ -31,9 +31,12 @@ jobs:
         run: python tools/pick_flow_snapshot.py --days 7 --out reports/pick_flow_snapshot.json
 
       - name: Commit and push snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add reports/pick_flow_snapshot.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
