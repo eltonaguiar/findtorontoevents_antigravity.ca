@@ -219,6 +219,8 @@ Sub-prompts:
 | BOND | 2% |
 | **Portfolio Max DD** | **15%** |
 
+> **Note:** Per-class risk budgets are independent limits, not additive. They won't all hit simultaneously due to correlation diversification. The 15% portfolio-wide cap is the binding constraint.
+
 Risk Manager's 15% portfolio-wide drawdown cap is adopted as the hard limit. The Portfolio Manager's argument for higher per-class risk budgets is acknowledged but deferred until n≥30 for CRYPTO, COMMODITY, BOND, and until FOREX cta_replicator isolation completes.
 
 #### Areas of Agreement (Both Engines)
