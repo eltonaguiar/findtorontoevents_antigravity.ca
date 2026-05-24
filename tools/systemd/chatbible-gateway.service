@@ -1,0 +1,24 @@
+[Unit]
+Description=CHATBIBLE Cross-PC Protocol Gateway
+Documentation=file:///home/eaguiar2015/findtorontoevents_antigravity.ca/CHATBIBLE.MD
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/eaguiar2015/findtorontoevents_antigravity.ca
+ExecStart=/usr/bin/python3 tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788 --peer-id gateway-systemd
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+# Environment
+Environment=PYTHONUNBUFFERED=1
+
+# Security: no privilege escalation needed
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/home/eaguiar2015/findtorontoevents_antigravity.ca/logs/cross_pc_protocol
+
+[Install]
+WantedBy=default.target
