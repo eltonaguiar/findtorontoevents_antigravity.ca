@@ -2547,6 +2547,15 @@ def run_strategies(data: dict[str, pd.DataFrame], context: dict,
                     sig["confidence"] = round(sig.get("confidence", 0.5) * 0.3, 4)
                     nc_blocked += 1
 
+            # FOREX_HIGH_CONVICTION carve-out (2026-05-24): cta_replicator (n=97, PF 2.38,
+            # WR 64.9%) isolated from main FOREX basket. Reclassify to FOREX_HIGH_CONVICTION
+            # so it bypasses the zero-allocation kill-switch below.
+            if cat == "FOREX" and sig.get("source_system", "").strip().lower() == "cta_replicator":
+                sig["asset_class"] = "FOREX_HIGH_CONVICTION"
+                sig["category"] = "FOREX_HIGH_CONVICTION"
+                cat = "FOREX_HIGH_CONVICTION"
+                # Fall through -- normal processing, NOT killed
+
             # FOREX zero-allocation (2026-05-24): kill-switch per EDGE_CRITERIA_ACTION_PLAN.
             # Both swarm engines agree: FOREX signal is bad, not mis-scaled. Zero-allocate.
             # Verification: SELECT COUNT(*) WHERE asset_class='FOREX' → 0.

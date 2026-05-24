@@ -144,6 +144,19 @@ FOREX_CONFIDENCE_REJECT_BANDS: tuple[tuple[float, float], ...] = (
     (0.95, 1.0001),
 )
 
+# ───────────────── FOREX_HIGH_CONVICTION rules ─────────────────
+# 2026-05-24: cta_replicator (n=97, PF 2.38, WR 64.9%) isolated from main FOREX
+# basket (0% allocation) into a high-conviction sub-class. Scanner reclassifies
+# cta_replicator FOREX picks as FOREX_HIGH_CONVICTION at execution time.
+# Only cta_replicator source_system is allowed — any other source trying to use
+# this class is rejected (defense-in-depth). FOREX symbol bans are inherited.
+# FOREX banned strategies and confidence bands are NOT inherited — cta_replicator
+# uses its own strategy names (cta_fx_multifactor, etc.) and has a fundamentally
+# different confidence distribution (PF 2.38 vs aggregate FOREX PF < 1.0).
+# Confidence floor 0.60 per empirical cta_replicator FOREX distribution.
+FOREX_HC_ALLOWED_SOURCES = frozenset({"cta_replicator"})
+FOREX_HC_CONFIDENCE_MIN = float(os.environ.get("HF_GATE_FOREX_HC_CONFIDENCE_MIN", "0.60"))
+
 # ───────────────── ETF rules ─────────────────
 ETF_BANNED_SYMBOLS = frozenset({"IWM", "GLD"})
 
@@ -359,6 +372,20 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
                         f"(n=38, WR 39.5%, cum -30.3%)"
                     )
 
+    elif ac == "FOREX_HIGH_CONVICTION":
+        if src not in FOREX_HC_ALLOWED_SOURCES:
+            return False, (
+                f"HF_GATE: FOREX_HC rejected source_system {src} — "
+                f"only cta_replicator allowed (n=97, PF 2.38, WR 64.9%)"
+            )
+        if sym in FOREX_BANNED_SYMBOLS:
+            return False, f"HF_GATE: FOREX_HC banned symbol {sym} (FOREX symbol ban inherited)"
+        if conf is not None and conf < FOREX_HC_CONFIDENCE_MIN:
+            return False, (
+                f"HF_GATE: FOREX_HC confidence {conf:.3f} < {FOREX_HC_CONFIDENCE_MIN:.2f} "
+                f"(cta_replicator empirical floor; n=97, PF 2.38)"
+            )
+
     elif ac == "ETF":
         if sym in ETF_BANNED_SYMBOLS:
             return False, f"HF_GATE: ETF banned symbol {sym} (PF < 0.85)"
@@ -544,6 +571,7 @@ __all__ = [
     "COMMODITY_BANNED_STRATEGIES", "COMMODITY_CONFIDENCE_MIN",
     "FOREX_BANNED_SYMBOLS", "FOREX_BANNED_STRATEGIES",
     "FOREX_CONFIDENCE_REJECT_BANDS",
+    "FOREX_HC_ALLOWED_SOURCES", "FOREX_HC_CONFIDENCE_MIN",
     "ETF_BANNED_SYMBOLS",
     "CRYPTO_BANNED_SOURCES", "EQUITY_BANNED_SOURCES",
     "PENNY_BANNED_SYMBOLS", "PENNY_BANNED_STRATEGIES", "PENNY_CONFIDENCE_MIN",
