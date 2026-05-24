@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-17T08:56:56.329003+00:00",
+  "generated_at": "2026-05-24T09:07:10.141725+00:00",
   "input_files": {
     "strategy_results": "alpha_engine/data/walk_forward_results.json",
     "pair_results": "backtest_results/walk_forward_results.json",
@@ -19,6 +19,7 @@
     "fisher_combined_p_value": 0.0,
     "significant_after_bh": [
       "ema_crossover",
+      "rsi_reversal",
       "bollinger_bounce",
       "macd_divergence"
     ],
@@ -38,17 +39,17 @@
       },
       {
         "strategy": "rsi_reversal",
-        "raw_p_value": 0.193608,
-        "bh_q_value": 0.193608,
-        "bonferroni_p": 0.774433,
-        "significant_5pct_bh": false,
+        "raw_p_value": 0.02846,
+        "bh_q_value": 0.02846,
+        "bonferroni_p": 0.113839,
+        "significant_5pct_bh": true,
         "significant_5pct_bonf": false
       },
       {
         "strategy": "bollinger_bounce",
-        "raw_p_value": 0.000439,
-        "bh_q_value": 0.000585,
-        "bonferroni_p": 0.001754,
+        "raw_p_value": 0.0,
+        "bh_q_value": 0.0,
+        "bonferroni_p": 0.0,
         "significant_5pct_bh": true,
         "significant_5pct_bonf": true
       },
@@ -63,110 +64,129 @@
     ]
   },
   "robust_edge_candidates": [
+    "rsi_reversal",
     "bollinger_bounce"
   ],
   "portfolio_risk": {
     "portfolio": {
-      "n_trades": 1052,
-      "win_rate": 0.5713,
-      "probability_of_loss": 0.4287,
+      "n_trades": 1194,
+      "win_rate": 0.5771,
+      "probability_of_loss": 0.4229,
       "avg_r_multiple": 2.0,
-      "max_drawdown": 0.987948,
-      "sharpe": 7.488,
-      "sortino": 3.202282452800502e+16,
-      "calmar": 12.9282,
+      "max_drawdown": 0.989424,
+      "sharpe": 7.6865,
+      "sortino": 2.461228377639124e+16,
+      "calmar": 13.8413,
       "var_95": -0.015,
       "cvar_95": -0.015,
-      "deflated_sharpe": 67.1622,
+      "deflated_sharpe": 75.843,
       "prob_sharpe": 1.0
     },
     "pairs": {
       "ALGO/USDT": {
-        "trades": 6,
-        "pnl_sum": -0.045,
-        "probability_of_loss": 0.8333,
-        "stop_loss_hit_frequency": 0.8333,
+        "trades": 14,
+        "pnl_sum": -0.165,
+        "probability_of_loss": 0.9286,
+        "stop_loss_hit_frequency": 0.9286,
+        "r_multiple": 2.0,
+        "var_95": -0.015,
+        "cvar_95": -0.015
+      },
+      "APE/USDT": {
+        "trades": 25,
+        "pnl_sum": -0.24,
+        "probability_of_loss": 0.88,
+        "stop_loss_hit_frequency": 0.88,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "BTC/USDT": {
-        "trades": 104,
-        "pnl_sum": 0.6,
-        "probability_of_loss": 0.5385,
-        "stop_loss_hit_frequency": 0.5385,
+        "trades": 73,
+        "pnl_sum": 0.93,
+        "probability_of_loss": 0.3836,
+        "stop_loss_hit_frequency": 0.3836,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "DOGE/USDT": {
-        "trades": 10,
-        "pnl_sum": -0.105,
-        "probability_of_loss": 0.9,
-        "stop_loss_hit_frequency": 0.9,
+        "trades": 15,
+        "pnl_sum": -0.18,
+        "probability_of_loss": 0.9333,
+        "stop_loss_hit_frequency": 0.9333,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "DOT/USDT": {
-        "trades": 31,
-        "pnl_sum": -0.105,
-        "probability_of_loss": 0.7419,
-        "stop_loss_hit_frequency": 0.7419,
+        "trades": 47,
+        "pnl_sum": -0.165,
+        "probability_of_loss": 0.7447,
+        "stop_loss_hit_frequency": 0.7447,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
-      "DYDX/USDT": {
-        "trades": 7,
-        "pnl_sum": -0.105,
-        "probability_of_loss": 1.0,
-        "stop_loss_hit_frequency": 1.0,
-        "r_multiple": 0.0,
+      "ETH/USDT": {
+        "trades": 13,
+        "pnl_sum": -0.15,
+        "probability_of_loss": 0.9231,
+        "stop_loss_hit_frequency": 0.9231,
+        "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "FET/USDT": {
-        "trades": 20,
-        "pnl_sum": -0.03,
-        "probability_of_loss": 0.7,
-        "stop_loss_hit_frequency": 0.7,
+        "trades": 8,
+        "pnl_sum": 0.06,
+        "probability_of_loss": 0.5,
+        "stop_loss_hit_frequency": 0.5,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
+      "INJ/USDT": {
+        "trades": 4,
+        "pnl_sum": 0.12,
+        "probability_of_loss": 0.0,
+        "stop_loss_hit_frequency": 1.0,
+        "r_multiple": 0.0,
+        "var_95": 0.03,
+        "cvar_95": 0.03
+      },
       "SHIB/USDT": {
-        "trades": 32,
-        "pnl_sum": -0.165,
-        "probability_of_loss": 0.7812,
-        "stop_loss_hit_frequency": 0.7812,
+        "trades": 44,
+        "pnl_sum": -0.12,
+        "probability_of_loss": 0.7273,
+        "stop_loss_hit_frequency": 0.7273,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "SOL/USDT": {
-        "trades": 11,
-        "pnl_sum": 0.15,
-        "probability_of_loss": 0.3636,
-        "stop_loss_hit_frequency": 0.3636,
+        "trades": 27,
+        "pnl_sum": -0.36,
+        "probability_of_loss": 0.963,
+        "stop_loss_hit_frequency": 0.963,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "TRX/USDT": {
-        "trades": 782,
-        "pnl_sum": 11.445,
-        "probability_of_loss": 0.3414,
-        "stop_loss_hit_frequency": 0.3414,
+        "trades": 882,
+        "pnl_sum": 12.915,
+        "probability_of_loss": 0.3413,
+        "stop_loss_hit_frequency": 0.3413,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
       },
       "XRP/USDT": {
-        "trades": 49,
-        "pnl_sum": -0.375,
-        "probability_of_loss": 0.8367,
-        "stop_loss_hit_frequency": 0.8367,
+        "trades": 42,
+        "pnl_sum": 0.45,
+        "probability_of_loss": 0.4286,
+        "stop_loss_hit_frequency": 0.4286,
         "r_multiple": 2.0,
         "var_95": -0.015,
         "cvar_95": -0.015
@@ -175,34 +195,34 @@
   },
   "bootstrap": {
     "sharpe": {
-      "mean": 7.915188560179219,
-      "median": 7.698268752869969,
-      "std": 3.005439091952207,
-      "ci_5": 3.2963148517290795,
-      "ci_95": 13.181069492760624,
-      "pct_positive": 0.998
+      "mean": 8.10479640910835,
+      "median": 7.991372394027554,
+      "std": 2.8104227805269995,
+      "ci_5": 3.6626990789182288,
+      "ci_95": 13.06672423148613,
+      "pct_positive": 0.9996666666666667
     },
     "total_return": {
-      "mean": 17431238.738206174,
-      "median": 62188.059746654544,
-      "ci_5": 98.99328237786526,
-      "ci_95": 38677388.72262295
+      "mean": 254943204.54467094,
+      "median": 433467.97467158845,
+      "ci_5": 347.65116056626044,
+      "ci_95": 360329084.5554847
     },
     "max_drawdown": {
-      "mean": 0.7542258313963731,
-      "median": 0.7610205055953111,
-      "ci_5": 0.5442947983417432,
-      "ci_95": 0.9358062392513802
+      "mean": 0.7617095307707553,
+      "median": 0.7666114660355707,
+      "ci_5": 0.5619526104926275,
+      "ci_95": 0.9411053992228479
     },
     "sortino": {
-      "mean": 5.19595317206068e+16,
-      "ci_5": 2.107259694378361e+16,
-      "ci_95": 1.433980435988742e+17
+      "mean": 5.440695434944948e+16,
+      "ci_5": 2.517683082431983e+16,
+      "ci_95": 9.186094369941899e+16
     },
     "bootstrap_type": "stationary_politis_romano",
     "avg_block_size": 20,
     "n_simulations": 3000,
-    "n_returns": 1052
+    "n_returns": 1194
   },
   "cross_asset_holdout": {
     "crypto": {
@@ -237,13 +257,13 @@
     },
     "other": {
       "n_strategies": 5,
-      "avg_test_win_rate_pct": 34.98,
+      "avg_test_win_rate_pct": 39.0,
       "pass_55pct_edge": false
     }
   },
   "forex_walk_forward": {
     "source_report_type": "forex_walk_forward_backtest",
-    "source_generated_at": "2026-05-10T08:54:09.051412+00:00",
+    "source_generated_at": "2026-05-17T08:59:05.411073+00:00",
     "data_source": "yfinance",
     "input_path": "alpha_engine/data/forex_walk_forward_results.json",
     "symbols": [
@@ -264,11 +284,11 @@
       },
       {
         "strategy": "rsi_reversal",
-        "raw_p_value": 0.010663,
-        "bh_q_value": 0.010663,
-        "bonferroni_p": 0.042652,
+        "raw_p_value": 0.013592,
+        "bh_q_value": 0.013592,
+        "bonferroni_p": 0.054368,
         "significant_5pct_bh": true,
-        "significant_5pct_bonf": true
+        "significant_5pct_bonf": false
       },
       {
         "strategy": "bollinger_bounce",
@@ -295,32 +315,30 @@
     ],
     "significant_after_bonferroni": [
       "ema_crossover",
-      "rsi_reversal",
       "bollinger_bounce",
       "macd_divergence"
     ],
     "robust_edge_candidates": [
-      "rsi_reversal",
       "bollinger_bounce"
     ],
     "crypto_vs_forex_oos": [
       {
         "strategy": "bollinger_bounce",
-        "crypto_oos_win_rate": 65.85,
-        "crypto_oos_trades": 123,
-        "crypto_oos_pf": 41.474,
-        "forex_oos_win_rate": 64.93,
-        "forex_oos_trades": 499,
-        "forex_oos_pf": 999.0
+        "crypto_oos_win_rate": 75.19,
+        "crypto_oos_trades": 133,
+        "crypto_oos_pf": 999.0,
+        "forex_oos_win_rate": 63.8,
+        "forex_oos_trades": 500,
+        "forex_oos_pf": 17.633
       },
       {
         "strategy": "ema_crossover",
-        "crypto_oos_win_rate": 24.0,
-        "crypto_oos_trades": 150,
-        "crypto_oos_pf": 0.0,
-        "forex_oos_win_rate": 33.39,
-        "forex_oos_trades": 575,
-        "forex_oos_pf": 2.007
+        "crypto_oos_win_rate": 25.0,
+        "crypto_oos_trades": 156,
+        "crypto_oos_pf": 0.044,
+        "forex_oos_win_rate": 34.3,
+        "forex_oos_trades": 583,
+        "forex_oos_pf": 2.481
       },
       {
         "strategy": "funding_rate_contrarian",
@@ -333,21 +351,21 @@
       },
       {
         "strategy": "macd_divergence",
-        "crypto_oos_win_rate": 22.98,
-        "crypto_oos_trades": 235,
-        "crypto_oos_pf": 0.0,
-        "forex_oos_win_rate": 37.85,
-        "forex_oos_trades": 930,
-        "forex_oos_pf": 4.332
+        "crypto_oos_win_rate": 24.79,
+        "crypto_oos_trades": 234,
+        "crypto_oos_pf": 0.003,
+        "forex_oos_win_rate": 38.34,
+        "forex_oos_trades": 918,
+        "forex_oos_pf": 999.0
       },
       {
         "strategy": "rsi_reversal",
-        "crypto_oos_win_rate": 62.07,
-        "crypto_oos_trades": 29,
-        "crypto_oos_pf": 1.324,
-        "forex_oos_win_rate": 59.88,
-        "forex_oos_trades": 167,
-        "forex_oos_pf": 999.0
+        "crypto_oos_win_rate": 70.0,
+        "crypto_oos_trades": 30,
+        "crypto_oos_pf": 999.0,
+        "forex_oos_win_rate": 59.52,
+        "forex_oos_trades": 168,
+        "forex_oos_pf": 6.895
       }
     ]
   }
