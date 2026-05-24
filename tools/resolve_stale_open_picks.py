@@ -183,14 +183,14 @@ def find_stale_picks(conn, batch_size: int) -> list[dict[str, Any]]:
 
     Returns list of pick dicts.
     """
-    # We query all OPEN picks with their asset_class and timestamp, then
+    # We query all OPEN picks with their category and timestamp, then
     # filter in Python for the per-class threshold (simpler than a massive
     # UNION of per-class queries).
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, symbol, asset_class, strategy, direction, "
-            "entry_price, tp_price, sl_price, "
-            "created_at, submitted_at "
+            "SELECT id, symbol, category, strategy, direction, "
+            "entry_price, take_profit, stop_loss, "
+            "created_at "
             "FROM trading_picks "
             "WHERE status = 'OPEN' "
             "ORDER BY created_at ASC "
@@ -229,7 +229,7 @@ def is_stale(pick: dict) -> bool:
     age_hours = _pick_age_hours(pick)
     if age_hours is None:
         return False
-    max_hours = _hold_hours_for(pick.get("asset_class", ""))
+    max_hours = _hold_hours_for(pick.get("category", ""))
     return age_hours > max_hours
 
 
@@ -301,7 +301,6 @@ def resolve_stale_open_picks(
             return summary
 
         batches_done = 0
-        total_resolved = 0
 
         while True:
             picks = find_stale_picks(conn, batch_size)
@@ -319,7 +318,7 @@ def resolve_stale_open_picks(
 
             # Accumulate stats by asset class and strategy
             for p in stale_picks:
-                ac = (p.get("asset_class") or "UNKNOWN").upper()
+                ac = (p.get("category") or "UNKNOWN").upper()
                 strat = (p.get("strategy") or "unknown")[:100]
                 summary["by_asset_class"][ac]["stale"] += 1
                 summary["by_strategy"][strat]["stale"] += 1
@@ -334,42 +333,46 @@ def resolve_stale_open_picks(
             log.info(
                 "Batch %d: %d OPEN picks, %d stale (>%d asset classes).",
                 batches_done, len(picks), len(stale_picks),
-                len({(p.get("asset_class") or "UNKNOWN").upper() for p in stale_picks}),
+                len({(p.get("category") or "UNKNOWN").upper() for p in stale_picks}),
             )
 
             if execute:
-                # Batch update
-                update_sql = (
-                    "UPDATE trading_picks "
-                    "SET status='TIME_EXIT', resolved_at=%s, "
-                    "exit_reason='TIME_EXIT_MAX_HOLD', exit_price=entry_price, pnl_pct=0.0 "
-                    "WHERE id=%s"
-                )
-                resolved_now = now_utc.strftime("%Y-%m-%d %H:%M:%S")
+                # Bulk update using WHERE id IN (...). Chunk into groups of 1000
+                # to avoid oversized queries over slow network connections.
+                all_ids = [p["id"] for p in stale_picks]
+                chunk_size = 1000
+                total_updated = 0
 
-                updated = 0
-                with conn.cursor() as cur:
-                    for p in stale_picks:
-                        try:
-                            cur.execute(update_sql, (resolved_now, p["id"]))
-                            ac = (p.get("asset_class") or "UNKNOWN").upper()
-                            strat = (p.get("strategy") or "unknown")[:100]
-                            summary["by_asset_class"][ac]["resolved"] += 1
-                            summary["by_strategy"][strat]["resolved"] += 1
-                            updated += 1
-                        except Exception as exc:
-                            log.error("Update error for pick %s: %s", p.get("id"), exc)
-                            summary["errors"] += 1
+                for i in range(0, len(all_ids), chunk_size):
+                    chunk = all_ids[i:i + chunk_size]
+                    placeholders = ",".join(["%s"] * len(chunk))
+                    bulk_sql = (
+                        "UPDATE trading_picks SET "
+                        "status='TIME_EXIT', "
+                        "exit_reason='TIME_EXIT_MAX_HOLD', "
+                        "exit_price=entry_price, pnl_pct=0.0 "
+                        f"WHERE id IN ({placeholders})"
+                    )
+                    cur.execute(bulk_sql, chunk)
+                    total_updated += cur.rowcount
 
                 conn.commit()
-                total_resolved += updated
-                summary["total_resolved"] = total_resolved
-                log.info("Batch %d: %d picks resolved (cumulative: %d).",
-                         batches_done, updated, total_resolved)
+                summary["total_resolved"] += total_updated
+                # Also set by_asset_class/by_strategy resolved counts
+                for p in stale_picks:
+                    ac = (p.get("category") or "UNKNOWN").upper()
+                    strat = (p.get("strategy") or "unknown")[:100]
+                    summary["by_asset_class"][ac]["resolved"] += 1
+                    summary["by_strategy"][strat]["resolved"] += 1
+
+                log.info(
+                    "Batch %d: %d picks resolved via bulk update (cumulative: %d).",
+                    batches_done, total_updated, summary["total_resolved"],
+                )
             else:
                 # DRY_RUN: just count
                 for p in stale_picks:
-                    ac = (p.get("asset_class") or "UNKNOWN").upper()
+                    ac = (p.get("category") or "UNKNOWN").upper()
                     strat = (p.get("strategy") or "unknown")[:100]
                     summary["by_asset_class"][ac]["resolved"] += 1
                     summary["by_strategy"][strat]["resolved"] += 1
