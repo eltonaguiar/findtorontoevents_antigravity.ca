@@ -301,6 +301,15 @@ try:
 except ImportError:
     _HAS_ANOMALY_DETECTOR = False
 
+
+# Hedge Fund Quality Gate -- banned sources, banned symbols, drawdown caps
+# Wired into apply_quality_gates() so enforcement happens at trade-time, not just audit-time.
+try:
+    from alpha_engine.hedge_fund_quality_gate import passes_hedge_fund_gate
+
+    _HAS_HEDGE_FUND_GATE = True
+except ImportError:
+    _HAS_HEDGE_FUND_GATE = False
 # Drawdown Tracker -- per-strategy drawdown + loss streak penalties
 try:
     from drawdown_tracker import compute_all_drawdowns
@@ -3080,6 +3089,16 @@ def apply_quality_gates(
                     f"[CONCENTRATION] {_sym_13} already has {_sym_count} active picks "
                     f"(max 3 per symbol)"
                 )
+
+        # Gate 14: Hedge Fund Quality Gate -- banned sources/symbols/drawdown enforcement
+        # Wired here so blocked sources are rejected at trade-time, not just audit-time.
+        if not reject_reason and _HAS_HEDGE_FUND_GATE:
+            try:
+                _hf_ok, _hf_reason = passes_hedge_fund_gate(pick)
+                if not _hf_ok:
+                    reject_reason = f"[HF GATE] {_hf_reason}"
+            except Exception:
+                pass  # fail-open: never block picks from a gate import failure
 
         if reject_reason:
             pick["_quality_gate_rejected"] = reject_reason
