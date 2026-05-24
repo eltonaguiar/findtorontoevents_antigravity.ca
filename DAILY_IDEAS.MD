@@ -187,6 +187,63 @@ Sub-prompts:
 
 **Decision: APPROVED WITH SCOPE MODIFICATION.** IDEA-A is approved for EQUITY + COMMODITY (20 rounds each, free data only), FOREX isolation (no research, just surgical split), and CRYPTO audit (zero code, gate retroactive application). BOND and ETF are DEFERRED until charter-floor n≥30. The full "20 rounds per class × 6 classes = 120 rounds" original vision is pared to ~35 rounds (20 EQUITY + 15 COMMODITY) — a 70% scope reduction that preserves the highest-ROI targets. Estimated 500-650 LOC across 3 sprints. Expected class-level PF lift: EQUITY 0.25→0.50+ (pilot), COMMODITY 1.42→1.55+, FOREX 0.27→0.60+ (by isolation).
 
+
+### IDEA-A Debate Swarm Consensus — 2026-05-24
+
+**2-engine debate:** Risk Manager (DeepSeek) vs Portfolio Manager (Cerebras) on the curated picks allocation. Both engines agree on class direction; they disagree on aggressiveness.
+
+#### Consensus Allocation Table
+
+| Class | Risk Mgr | Port Mgr | **Consensus** | Verdict |
+|-------|----------|----------|---------------|---------|
+| **EQUITY** | 8% | 22% | **15%** | DEPLOY — strongest forward-test signal (WR 58%, n=164) |
+| **ETF** | 6% | 12% | **9%** | DEPLOY — SPY short + GLD long verified edge |
+| **CRYPTO** | 5% | 10% | **7%** | WARN — n=23 below 30-trade floor, size down until gate audit |
+| **COMMODITY** | 5% | 8% | **6%** | WARN — COT edge real, all-SHORT bias needs monitoring |
+| **BOND** | 2% | 8% | **5%** | WARN — good WR but negative PnL (same trap as FOREX) |
+| **FOREX** | 0% | 0% | **0%** | 🔴 KILL — both engines agree: positive WR + negative PnL = statistical trap |
+| **PENNY** | 0% | 0% | **0%** | ⏳ ACCUMULATE — paper-only, n=0 resolved |
+| **FUTURES** | 0% | 0% | **0%** | ⏳ ACCUMULATE — paper-only, n=0 resolved |
+| **CASH** | 74% | 40% | **58%** | Buffer — deployable as n grows per class |
+
+**Total: 100%** (42% deployed, 58% in reserve)
+
+#### Risk Budget Allocation
+
+| Class | Risk Drawdown Cap |
+|-------|-------------------|
+| EQUITY | 10% |
+| ETF | 5% |
+| CRYPTO | 5% |
+| COMMODITY | 3% |
+| BOND | 2% |
+| **Portfolio Max DD** | **15%** |
+
+Risk Manager's 15% portfolio-wide drawdown cap is adopted as the hard limit. The Portfolio Manager's argument for higher per-class risk budgets is acknowledged but deferred until n≥30 for CRYPTO, COMMODITY, BOND, and until FOREX cta_replicator isolation completes.
+
+#### Areas of Agreement (Both Engines)
+
+1. **EQUITY is the flagship class** — WR 58% at n=164 is the most statistically reliable signal in the portfolio. Both engines agree to overweight EQUITY relative to all other deployed classes.
+2. **FOREX must be killed at 0%** — the 57.3% WR / -0.39% PnL pattern is unambiguous statistical trap. No engine dissents.
+3. **PENNY + FUTURES stay at 0%** — both engines agree: deploy zero capital until first resolution. The scaffolding added today (banned symbols, confidence floors) is the correct posture.
+4. **CRYPTO, COMMODITY, BOND all WARN** — all three have forward-test edge but insufficient sample size (CRYPTO n=23) or negative PnL despite good WR (BOND).
+
+#### Areas of Disagreement (Resolved via Consensus)
+
+1. **CASH buffer:** RM demanded 74% (near-catastrophe protection), PM argued 40% (capital efficiency). **Consensus: 58%** — enough to cover a 3σ event while keeping 42% deployed against proven edge. Cash scales down as class-level n grows past 30.
+2. **EQUITY allocation:** RM capped at 8% ("n=164 is backtest-contaminated"), PM pushed for 22% ("forward-test WR 58% is real"). **Consensus: 15%** — above RM floor, below PM ceiling, with review trigger at n=300.
+3. **ETF gating:** RM wanted 6% due to liquidity concerns on GLD. PM wanted 12% citing WR stability across sub-classes (SPY short + GLD long). **Consensus: 9%** — split the difference, monitor GLD bid-ask spread monthly.
+
+#### Top 3 Immediate Actions (Synthesized)
+
+1. **Execute FOREX kill** — already at 0% in quarantine_manifest. Lock allocation at 0% until cta_replicator (PF 2.51) is isolated into high-conviction basket (target: Sprint 4).
+2. **Gate-audit EQUITY + CRYPTO** — both classes show the "garbage-inflated raw n, profitable forward-test n" pattern. Audit the quality gates to stop backtest/synthetic contamination (zero-code fix, same treatment as CRYPTO IDEA-A recommendation).
+3. **Deploy consensus allocation** — set per-class caps at EQUITY 15%, ETF 9%, CRYPTO 7%, COMMODITY 6%, BOND 5%, CASH 58%. Adjust monthly as n milestones hit (n=30, 50, 100).
+
+#### Bottom Line
+
+> The portfolio has ONE proven-class edge (EQUITY, WR 58%, n=164) and FOUR monitored-class signals (ETF, CRYPTO, COMMODITY, BOND). Deploy 42% against the proven edge while holding 58% cash reserve. Re-evaluate monthly as n accumulates. FOREX remains killed until cta_replicator isolation. Risk budget: 15% max portfolio drawdown, hard cap.
+
 ### IDEA-I: Weather → farming / soft commodities
 
 Forecast rain (NOAA GFS, ECMWF, weather.com API) → corn/wheat/soy futures (ZC/ZW/ZS=F). Drought monitor + crop-progress weekly (USDA WASDE).
