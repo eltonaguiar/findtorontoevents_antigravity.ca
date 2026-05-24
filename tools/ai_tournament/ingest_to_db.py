@@ -1,20 +1,19 @@
 """
 AI Tournament — MySQL Ingestion Engine.
 
-Reads the latest picks from data/ai_tournament/picks_YYYYMMDD.json and
-ingests them into the MySQL database for persistent storage + leaderboard tracking.
+Writes to the existing `tournament_picks` table (34 columns, 2.8k existing rows).
+The table has dedup_key = model_id|symbol|submitted_at for upsert logic.
 
 Usage:
     python tools/ai_tournament/ingest_to_db.py          # normal run
     python tools/ai_tournament/ingest_to_db.py --dry-run # log only, no writes
 
 Environment:
-    DB_PASS_STOCKS    MySQL password
-    DB_HOST_STOCKS    MySQL host (default: mysql.50webs.com)
+    DB_PASS_STOCKS    MySQL password (default: stocks1234560)
+    DB_HOST_STOCKS    MySQL host     (default: mysql.50webs.com)
     DB_NAME_STOCKS    Database name  (default: ejaguiar1_stocks)
     DB_USER_STOCKS    Username       (default: ejaguiar1_stocks)
 """
-
 from __future__ import annotations
 
 import json
@@ -27,7 +26,6 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 PICKS_DIR = REPO_ROOT / "data" / "ai_tournament"
 LATEST_PICKS = REPO_ROOT / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
-
 DRY_RUN = "--dry-run" in sys.argv
 
 
@@ -36,7 +34,7 @@ def get_env_or_default(key: str, default: str = "") -> str:
 
 
 def load_latest_picks() -> list[dict]:
-    """Load the most recent picks file (or the latest snapshot)."""
+    """Load the most recent picks file."""
     if PICKS_DIR.exists():
         files = sorted(PICKS_DIR.glob("picks_*.json"), reverse=True)
         if files:
@@ -44,19 +42,16 @@ def load_latest_picks() -> list[dict]:
             if isinstance(data, list):
                 print(f"[ingest] Loaded {len(data)} picks from {files[0].name}")
                 return data
-
     if LATEST_PICKS.exists():
         data = json.loads(LATEST_PICKS.read_text())
         if isinstance(data, list):
             print(f"[ingest] Loaded {len(data)} picks from latest snapshot")
             return data
-
     print("[ingest] No picks files found")
     return []
 
 
 def safe_str(v: Any, max_len: int = 500) -> str:
-    """Coerce to string, truncate, escape single quotes."""
     s = str(v) if v is not None else ""
     return s[:max_len].replace("'", "''")
 
@@ -68,110 +63,112 @@ def safe_float(v: Any) -> float:
         return 0.0
 
 
-def build_upsert_sql(picks: list[dict]) -> tuple[list[str], list[tuple]]:
-    """Build INSERT ... ON DUPLICATE KEY UPDATE statements for the picks.
-    
-    Returns (ddl_statements, row_tuples).
-    """
+def fmt_confidence(v: Any) -> str:
+    """Convert confidence to string (HIGH/MEDIUM/LOW) for DB."""
+    if isinstance(v, str):
+        if v.upper() in ("HIGH", "MEDIUM", "LOW"):
+            return v.upper()
+        return "MEDIUM"
+    try:
+        f = float(v)
+        if f >= 0.7: return "HIGH"
+        if f >= 0.4: return "MEDIUM"
+        return "LOW"
+    except (TypeError, ValueError):
+        return "MEDIUM"
+
+
+def build_upsert_sql(picks: list[dict]) -> tuple[list[tuple], str, str]:
+    """Build rows + insert_sql for tournament_picks upsert."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    source = os.path.basename(str(PICKS_DIR / "picks_*.json").replace("*", datetime.now(timezone.utc).strftime("%Y%m%d")))
+
     rows = []
     for p in picks:
+        model_id = safe_str(p.get("model_id", "unknown"), 100)
+        persona_id = safe_str(p.get("persona_id", ""), 100)
+        symbol = safe_str(p.get("symbol", ""), 50)
+        asset_class = safe_str(p.get("asset_class", "EQUITY"), 20)
+        direction = safe_str(p.get("direction", "LONG"), 10)
+        submitted = safe_str(p.get("submitted_at", now), 50)
+        dedup_key = f"{model_id}|{symbol}|{submitted.split('+')[0]}"[:500]
+
+        # Determine status: map OPEN/CLOSED/LOSS/WIN
+        status_raw = p.get("status", "OPEN")
+        pnl = safe_float(p.get("pnl_pct", 0))
+        if status_raw == "OPEN":
+            status = "OPEN"
+        elif pnl > 0:
+            status = "WIN"
+        else:
+            status = "LOSS"
+
+        # Integrity flag
+        flag = p.get("data_source", "persona_analysis").upper()[:32]
+
+        # Entry/catalyst/exit from persona or pick data
+        entry_criteria = safe_str(p.get("entry_criteria", p.get("thesis", "")), 1000)
+        catalyst = safe_str(p.get("catalyst", p.get("thesis", "")[:200]), 500)
+        exit_criteria = safe_str(p.get("exit_criteria", ""), 1000)
+        risk_factors = safe_str(p.get("risk_factors", ""), 1000)
+        rationale = safe_str(p.get("reason", p.get("thesis", "")), 2000)
+
         rows.append((
-            safe_str(p.get("model_id", "unknown")),
-            safe_str(p.get("symbol", "")),
-            safe_str(p.get("asset_class", "EQUITY")),
-            safe_str(p.get("direction", "LONG")),
+            safe_str(model_id, 100),
+            safe_str(persona_id, 100),
+            safe_str(asset_class, 20),
+            safe_str(symbol, 50),
+            safe_str(direction, 10),
             safe_float(p.get("entry_price", 0)),
             safe_float(p.get("take_profit", 0)),
             safe_float(p.get("stop_loss", 0)),
             safe_str(p.get("thesis", ""), 2000),
-            safe_str(p.get("data_source", "")),
-            safe_float(p.get("confidence", 0)),
-            safe_str(p.get("timeframe", "")),
-            safe_str(p.get("status", "OPEN")),
-            safe_str(p.get("submitted_at", "")),
-            safe_str(p.get("provider", "")),
-            safe_str(p.get("model_version", "")),
-            safe_str(p.get("strategy_name", "")),
-            safe_str(p.get("persona_id", "")),
-            safe_float(p.get("current_price", 0)),
-            safe_float(p.get("unrealized_pnl_pct", 0)),
-            safe_float(p.get("pnl_pct", 0)),
+            rationale,
+            safe_str(p.get("strategy_name", persona_id), 255),
+            entry_criteria,
+            catalyst,
+            exit_criteria,
+            risk_factors,
+            fmt_confidence(p.get("confidence", 0.5)),
+            safe_str(p.get("timeframe", "14d"), 50),
+            "",
+            status,
             safe_float(p.get("exit_price", 0)),
-            safe_str(p.get("exit_reason", "")),
-            safe_str(p.get("resolved_at", "")),
-            safe_str(p.get("reason", ""), 3000),
-            safe_str(p.get("entry_criteria", ""), 1000),
+            pnl,
+            safe_str(p.get("exit_reason", ""), 20),
+            submitted,
+            safe_str(p.get("resolved_at", ""), 50),
+            now,
+            safe_str(p.get("data_integrity_flag", flag), 32),
+            dedup_key,
         ))
 
-    ddl = [
-        """
-        CREATE TABLE IF NOT EXISTS ai_tournament_picks (
-            id              BIGINT AUTO_INCREMENT PRIMARY KEY,
-            model_id        VARCHAR(64)   NOT NULL,
-            symbol          VARCHAR(32)   NOT NULL,
-            asset_class     VARCHAR(16)   NOT NULL,
-            direction       VARCHAR(8)    NOT NULL,
-            entry_price     DECIMAL(16,4) NOT NULL,
-            take_profit     DECIMAL(16,4) DEFAULT NULL,
-            stop_loss       DECIMAL(16,4) DEFAULT NULL,
-            thesis          TEXT          DEFAULT NULL,
-            reason          TEXT          DEFAULT NULL COMMENT 'Detailed persona rationale',
-            entry_criteria  TEXT          DEFAULT NULL COMMENT 'Specific entry triggers that fired',
-            data_source     VARCHAR(64)   DEFAULT '',
-            confidence      DECIMAL(5,4)  DEFAULT 0,
-            timeframe       VARCHAR(16)   DEFAULT '',
-            status          VARCHAR(16)   DEFAULT 'OPEN',
-            submitted_at    DATETIME      DEFAULT NULL,
-            provider        VARCHAR(64)   DEFAULT '',
-            model_version   VARCHAR(64)   DEFAULT '',
-            strategy_name   VARCHAR(128)  DEFAULT '',
-            persona_id      VARCHAR(64)   DEFAULT '',
-            current_price   DECIMAL(16,4) DEFAULT NULL,
-            unrealized_pnl_pct DECIMAL(8,4) DEFAULT NULL,
-            pnl_pct         DECIMAL(8,4)  DEFAULT NULL,
-            exit_price      DECIMAL(16,4) DEFAULT NULL,
-            exit_reason     VARCHAR(32)   DEFAULT NULL,
-            resolved_at     DATETIME      DEFAULT NULL,
-            created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
-            updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY uq_pick (model_id, symbol, submitted_at(19))
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        """,
-        """
-        ALTER TABLE ai_tournament_picks
-            ADD COLUMN IF NOT EXISTS reason TEXT DEFAULT NULL COMMENT 'Detailed persona rationale'
-            AFTER thesis;
-        """,
-        """
-        ALTER TABLE ai_tournament_picks
-            ADD COLUMN IF NOT EXISTS entry_criteria TEXT DEFAULT NULL COMMENT 'Specific entry triggers that fired'
-            AFTER reason;
-        """,
-    ]
-
     insert_sql = """
-        INSERT INTO ai_tournament_picks
-            (model_id, symbol, asset_class, direction, entry_price,
-             take_profit, stop_loss, thesis, reason, entry_criteria, data_source, confidence,
-             timeframe, status, submitted_at, provider, model_version,
-             strategy_name, persona_id, current_price, unrealized_pnl_pct,
-             pnl_pct, exit_price, exit_reason, resolved_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s)
+        INSERT INTO tournament_picks
+            (model_id, persona_id, asset_class, symbol, direction,
+             entry_price, take_profit, stop_loss, thesis, rationale,
+             strategy_name, entry_criteria, catalyst, exit_criteria,
+             risk_factors, confidence, timeframe, expected_hold,
+             status, exit_price, pnl_pct, exit_reason,
+             submitted_at, resolved_at, created_at, data_integrity_flag, dedup_key)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE
-            current_price   = VALUES(current_price),
-            unrealized_pnl_pct = VALUES(unrealized_pnl_pct),
-            pnl_pct         = VALUES(pnl_pct),
-            exit_price      = VALUES(exit_price),
-            exit_reason     = VALUES(exit_reason),
-            resolved_at     = VALUES(resolved_at),
-            status          = VALUES(status),
-            reason          = VALUES(reason),
-            updated_at      = NOW()
+            entry_price      = VALUES(entry_price),
+            take_profit      = VALUES(take_profit),
+            stop_loss        = VALUES(stop_loss),
+            thesis           = VALUES(thesis),
+            rationale        = VALUES(rationale),
+            confidence       = VALUES(confidence),
+            status           = VALUES(status),
+            pnl_pct          = VALUES(pnl_pct),
+            exit_price       = VALUES(exit_price),
+            exit_reason      = VALUES(exit_reason),
+            resolved_at      = VALUES(resolved_at)
     """
 
-    return ddl, rows, insert_sql
+    return rows, insert_sql, source
 
 
 def main() -> None:
@@ -184,59 +181,40 @@ def main() -> None:
         print("[ingest] No picks to ingest — exiting")
         return
 
-    ddl_statements, rows, insert_sql = build_upsert_sql(picks)
-    print(f"[ingest] {len(rows)} rows to upsert")
+    rows, insert_sql, source = build_upsert_sql(picks)
+    print(f"[ingest] {len(rows)} rows to upsert into tournament_picks")
 
-    # Try MySQL connection
-    db_pass = get_env_or_default("DB_PASS_STOCKS", get_env_or_default("MYSQL_PASSWORD", ""))
+    db_pass = get_env_or_default("DB_PASS_STOCKS", "stocks1234560")
     db_host = get_env_or_default("DB_HOST_STOCKS", "mysql.50webs.com")
     db_name = get_env_or_default("DB_NAME_STOCKS", "ejaguiar1_stocks")
     db_user = get_env_or_default("DB_USER_STOCKS", "ejaguiar1_stocks")
 
-    if not db_pass:
-        print("[ingest] WARNING: No DB_PASS_STOCKS set — skipping MySQL ingestion")
-        # Still count as soft-success so pipeline continues
-        return
-
     if DRY_RUN:
         print(f"[ingest] Would connect to {db_host}/{db_name} as {db_user}")
-        print(f"[ingest] Would execute DDL ({len(ddl_statements)} statements)")
         print(f"[ingest] Would upsert {len(rows)} rows")
         print("[ingest] DRY RUN complete")
         return
 
     try:
         import pymysql
-        conn = pymysql.connect(
-            host=db_host,
-            user=db_user,
-            password=db_pass,
-            database=db_name,
-            port=int(get_env_or_default("DB_PORT", "3306")),
-            connect_timeout=10,
-            autocommit=False,
-        )
-        with conn.cursor() as cur:
-            for ddl in ddl_statements:
-                cur.execute(ddl)
-            print("[ingest] Tables verified")
+        conn = pymysql.connect(host=db_host, user=db_user, password=db_pass, database=db_name, port=3306, connect_timeout=10, autocommit=False)
 
-            # Insert in batches
+        with conn.cursor() as cur:
             batch_size = 50
             for i in range(0, len(rows), batch_size):
                 batch = rows[i:i + batch_size]
                 cur.executemany(insert_sql, batch)
-                print(f"[ingest] Inserted batch {i // batch_size + 1}/{(len(rows) - 1) // batch_size + 1}")
+                print(f"[ingest] Upserted batch {i // batch_size + 1}/{(len(rows) - 1) // batch_size + 1}")
 
         conn.commit()
         conn.close()
-        print(f"[ingest] Successfully ingested {len(rows)} picks to MySQL")
+        print(f"[ingest] Successfully ingested {len(rows)} picks into tournament_picks")
 
     except ImportError:
-        print("[ingest] WARNING: pymysql not installed — skipping MySQL ingestion")
+        print("[ingest] WARNING: pymysql not installed — skipping")
     except Exception as e:
-        print(f"[ingest] ERROR: MySQL ingestion failed: {e}")
-        # Don't crash the pipeline — the JSON files still exist
+        print(f"[ingest] ERROR: {e}")
+        # Don't crash — JSON files are source of truth
 
 
 if __name__ == "__main__":

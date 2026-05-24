@@ -186,6 +186,18 @@
 </table>
 <div class="small" style="margin-top:6px">*Score = lower_95%(WR) × lower_95%(PF) — only rewards statistically supported performance. Models need n≥30 resolved picks to earn a rank.</div>
 
+<!-- MODEL SUMMARY TABLE -->
+<h2>Model Summary — All-Time Performance</h2>
+<div id="model-summary-count" style="margin-bottom:8px;font-size:12px;color:#a0a0b0">Loading...</div>
+<div style="overflow-x:auto">
+<table class="lb">
+  <thead><tr><th>Model</th><th>Picks</th><th>WR</th><th>Resolved</th><th>W/L</th><th>Avg PnL</th><th>Last Pick</th><th>Personas</th><th>Classes</th></tr></thead>
+  <tbody id="model-summary-tbody">
+    <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:12px">Loading model data...</td></tr>
+  </tbody>
+</table>
+</div>
+
 <!-- PENDING MODELS TABLE -->
 <details open>
   <summary>Pending model submissions (Phase 1B in progress)</summary>
@@ -558,6 +570,34 @@ async function loadPicksAndLeaderboard() {
   updateTabCounts();
 }
 
+// ── Load model summary from DB ──
+async function loadModelSummary() {
+  try {
+    const resp = await fetch('./data/ai_tournament_model_summary.json?' + Date.now());
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const tbl = document.getElementById('model-summary-tbody');
+    if (!tbl) return;
+    let html = '';
+    data.models.forEach(m => {
+      const wrClass = m.win_rate_pct >= 55 ? 'pnl-pos' : m.win_rate_pct < 45 ? 'pnl-neg' : 'pnl-neu';
+      html += `<tr>
+        <td class="model-name">${esc(m.model_id)}</td>
+        <td class="num">${m.total_picks}</td>
+        <td class="num ${wrClass}">${m.win_rate_pct}%</td>
+        <td class="num">${m.resolved}</td>
+        <td class="num">${m.wins}/${m.losses}</td>
+        <td class="num">${m.avg_pnl_pct > 0 ? '+' : ''}${m.avg_pnl_pct}%</td>
+        <td class="small">${toEST(m.last_pick)}</td>
+        <td class="num">${m.personas}</td>
+        <td class="num">${m.asset_classes}</td>
+      </tr>`;
+    });
+    tbl.innerHTML = html;
+    document.getElementById('model-summary-count').textContent = data.n_models + ' models · ' + data.n_picks_total + ' picks · ' + data.n_resolved + ' resolved';
+  } catch(e) { /* keep placeholder */ }
+}
+
 // ── EST time helper ──
 function toEST(utcStr) {
   if (!utcStr) return '\u2014';
@@ -644,7 +684,7 @@ async function loadPicks() {
 }
 
 // ── Init ──
-loadPicksAndLeaderboard().then(() => loadPicks());
+loadPicksAndLeaderboard().then(() => { loadPicks(); loadModelSummary(); });
 </script>
 </body>
 </html>
