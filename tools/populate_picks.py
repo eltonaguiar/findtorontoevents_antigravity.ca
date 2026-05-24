@@ -915,11 +915,18 @@ def main() -> None:
             kill_data = json.loads(kill_path.read_text())
             blocked = set(kill_data.get("blocked_personas", []))
             warned = set(kill_data.get("warned_personas", []))
+            blocked_ac = set(kill_data.get("blocked_asset_classes", []))
+            warned_ac = set(kill_data.get("warned_asset_classes", []))
             before = len(all_picks)
-            all_picks = [p for p in all_picks if p.get("persona_id", "") not in blocked]
+            all_picks = [p for p in all_picks 
+                         if p.get("persona_id", "") not in blocked 
+                         and p.get("asset_class", "") not in blocked_ac]
             killed_count = before - len(all_picks)
             if killed_count:
-                print(f"[populate] Kill gate: removed {killed_count} picks from blocked personas: {sorted(blocked)}")
+                print(f"[populate] Kill gate: removed {killed_count} picks from blocked personas/classes: blocked_personas={sorted(blocked)} blocked_classes={sorted(blocked_ac)}")
+            if warned_ac:
+                ac_warn_picks = [p for p in all_picks if p.get("asset_class", "") in warned_ac]
+                print(f"[populate] Kill gate: {len(ac_warn_picks)} picks from WARN asset classes: {sorted(warned_ac)}")
             warn_picks = [p for p in all_picks if p.get("persona_id", "") in warned]
             if warn_picks:
                 print(f"[populate] Kill gate: {len(warn_picks)} picks from WARN personas (monitoring): {sorted(warned)}")

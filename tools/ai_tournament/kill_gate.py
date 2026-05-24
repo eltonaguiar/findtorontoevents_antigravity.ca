@@ -64,8 +64,28 @@ report = {
     "monitor": sum(1 for k in kills if k["stage"] == "MONITOR"),
     "blocked_personas": [k["persona_id"] for k in kills if k["stage"] == "KILLED"],
     "warned_personas": [k["persona_id"] for k in kills if k["stage"] == "WARN"],
+    "blocked_asset_classes": [],
+    "warned_asset_classes": [],
     "pairs": kills,
 }
+
+# Check whole asset classes for negative expectancy
+cur.execute("""
+    SELECT asset_class, COUNT(*) as n,
+           ROUND(AVG(pnl_pct), 4) as avg_pnl,
+           ROUND(AVG(CASE WHEN status='WIN' THEN 1.0 ELSE 0.0 END), 4) as wr
+    FROM tournament_picks
+    WHERE status IN ('WIN','LOSS') AND asset_class != ''
+    GROUP BY asset_class HAVING n >= 50
+""")
+for r in cur.fetchall():
+    ac = r[0]; n = int(r[1]); pnl = float(r[2] or 0); wr = float(r[3] or 0)
+    if n >= 100 and pnl < -0.20:
+        report["blocked_asset_classes"].append(ac)
+        print(f"  ASSET CLASS KILLED: {ac} (n={n}, WR={wr*100:.1f}%, PnL={pnl:+.2f}%)")
+    elif n >= 50 and pnl < 0:
+        report["warned_asset_classes"].append(ac)
+        print(f"  ASSET CLASS WARN: {ac} (n={n}, WR={wr*100:.1f}%, PnL={pnl:+.2f}%)")
 
 out = r'c:\findtorontoevents_antigravity.ca\audit_dashboard\data\research\kill_gate_report.json'
 os.makedirs(os.path.dirname(out), exist_ok=True)
