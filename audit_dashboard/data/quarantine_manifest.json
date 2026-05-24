@@ -3,15 +3,16 @@
   "version": "1.0",
   "description": "Master registry of all currently-quarantined strategies, symbol-strategy pairs, and direction triples. Source of truth aggregating BLOCKED_ASSET_STRATEGY_PAIRS / BLOCKED_DIRECTION_TRIPLES / BLOCKED_ASSET_STRATEGY_SYMBOL_TRIPLES / PERMANENTLY_KILLED_STRATEGIES from audit_trail/quality_gates.py. Updated whenever a quarantine entry lands.",
   "size_caps": {
-    "CRYPTO": {"max_pct_of_risk": 10, "rationale": "Per Grok 2026-05-12 rescue plan + ML inversion -16.67pp on CRYPTO holdout"},
-    "FOREX":  {"max_pct_of_risk": 0,  "rationale": "Sub-floor PF 0.27 / WR 45.6% on n=1169; class-blocked per hedge_fund_sprint until SHORT-only rehab clears"},
+    "EQUITY": {"max_pct_of_risk": 15, "rationale": "2026-05-24 debate consensus: T2 candidate PF 1.41/WR 52.7% n=421; tightened from 25→15% for portfolio-level DD discipline"},
+    "ETF": {"max_pct_of_risk": 9, "rationale": "2026-05-24 debate consensus: borderline T2; tightened from 20→9% pending emission audit"},
+    "CRYPTO": {"max_pct_of_risk": 7, "rationale": "2026-05-24 debate consensus: ML inversion -16.67pp on holdout; tightened from 10→7%"},
+    "COMMODITY": {"max_pct_of_risk": 6, "rationale": "2026-05-24 debate consensus: CT=F factor-beta sleeve (not alpha); tightened from 25→6% per CTA-crowding cap"},
+    "BOND": {"max_pct_of_risk": 5, "rationale": "2026-05-24 debate consensus: Quality-T2 PF 1.72 but n=18 sub-floor; tightened from 20→5% post-FRED fix"},
+    "FOREX":  {"max_pct_of_risk": 0,  "rationale": "Sub-floor PF 0.27/WR 45.6% n=1169; class-blocked per hedge_fund_sprint until SHORT-only rehab clears"},
+    "FOREX_HIGH_CONVICTION": {"max_pct_of_risk": 15, "rationale": "2026-05-24: cta_replicator isolated from main FOREX basket (n=97, PF 2.38, WR 64.9%). Only cta_replicator source allowed; scanner reclassifies at execution."},
     "FUTURES": {"max_pct_of_risk": 0, "rationale": "Silent-dead 5.9% WR; only CT=F (anchor) is real per cot_paper_pilot_status.json"},
     "MEMECOIN": {"max_pct_of_risk": 0, "rationale": "Class quarantined; PF 0.499 on n=1869"},
-    "PENNY_STOCK": {"max_pct_of_risk": 0, "rationale": "WR 6.76% on n=148; noise"},
-    "ETF": {"max_pct_of_risk": 20, "rationale": "Borderline T2; emission audit pending"},
-    "EQUITY": {"max_pct_of_risk": 25, "rationale": "T2 candidate; PF 1.41 / WR 52.7% on n=421"},
-    "COMMODITY": {"max_pct_of_risk": 25, "rationale": "CT=F factor-beta sleeve (not alpha); CTA-crowding cap per AQR R3 review"},
-    "BOND": {"max_pct_of_risk": 20, "rationale": "Quality-T2 (PF 1.72) but n=18 sub-floor; ramping post-FRED fix"}
+    "PENNY_STOCK": {"max_pct_of_risk": 0, "rationale": "WR 6.76% on n=148; noise"}
   },
   "blocked_strategies_class_wide": [
     {"strategy": "kimi_signal_tracking", "scope": "all", "rationale": "-974% PnL on FOREX n=177 PF 0.26", "commit": "4a2d337a5dc"},

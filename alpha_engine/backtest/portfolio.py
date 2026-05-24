@@ -13,6 +13,8 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from alpha_engine.hedge_fund_quality_gate import PORTFOLIO_MAX_DRAWDOWN_PCT
+
 
 @dataclass
 class Position:
@@ -70,7 +72,7 @@ class PortfolioConstructor:
         max_sector_pct: float = 0.25,
         max_positions: int = 30,
         max_daily_turnover_pct: float = 0.20,
-        max_drawdown_halt: float = 0.15,
+        max_drawdown_halt: float = PORTFOLIO_MAX_DRAWDOWN_PCT,
     ):
         self.initial_capital = initial_capital
         self.max_position_pct = max_position_pct

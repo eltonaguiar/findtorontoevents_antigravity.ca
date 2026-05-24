@@ -16,12 +16,14 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
 
+from alpha_engine.hedge_fund_quality_gate import PORTFOLIO_MAX_DRAWDOWN_PCT
+
 
 class KillSwitchLevel(Enum):
     """4-tier kill switch system."""
     WARNING = (0.05, "yellow", "5% DD - Warning, reduce size 25%")
     CAUTION = (0.10, "orange", "10% DD - Caution, reduce size 50%")
-    ALERT = (0.15, "red", "15% DD - Alert, reduce size 75%")
+    ALERT = (PORTFOLIO_MAX_DRAWDOWN_PCT, "red", f"{PORTFOLIO_MAX_DRAWDOWN_PCT*100:.0f}% DD - Alert, reduce size 75%")
     KILL = (0.20, "black", "20% DD - KILL SWITCH, halt all trading")
     
     def __init__(self, threshold: float, color: str, description: str):

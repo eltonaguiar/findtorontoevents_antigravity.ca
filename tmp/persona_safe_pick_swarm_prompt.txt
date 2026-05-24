@@ -1,0 +1,57 @@
+You are a hedge fund quant architect evaluating a Persona-Based Safe-Pick system for asset-class recommendations.
+
+## Context
+
+Our project (findtorontoevents.ca/audit) tries to predict stocks/crypto/forex/bonds/commodities/futures/ETFs. We have:
+- A per_asset_class_predictor with verified IC weights
+- A conviction_stack with S/A/B tiers
+- hedge_fund_quality_gate with per-class rejection rules
+- An EDGE_CRITERIA_ACTION_PLAN showing 6 actionable gaps
+- Only 2 proven edge pairs: deep_value×EQUITY (n=60, WR 60.0%) and momentum_breakout×ETF (n=46, WR 58.7%)
+
+## The Proposal: Persona-Based Safe-Pick LLM System
+
+A prompt template that defines "personas" per asset class, each with:
+1. Persona Name & Role
+2. Core definition of "safe" (volatility, drawdown, credit quality, liquidity, yield)
+3. Data sources & frequency
+4. Algorithmic filters (step-by-step rules)
+5. Back-testing protocol (Sharpe, max DD, CAGR thresholds)
+6. JSON output format
+
+Plus a Python script that screens stocks/ETFs/crypto using yfinance with thresholds:
+- Stocks: market_cap>$50B, vol<12%, beta<0.9, D/E<0.4, FCF growth>5%, div_yield≥1%, Sharpe>1.2, max DD<12%, CAGR>8%
+- Crypto: vol<30% (very generous)
+- Composite safety score (0-1) normalized from above metrics
+
+## Critique Questions
+
+1. **Gap fit:** Which of OUR existing gaps (per ASSET_CLASS_EDGE_AND_SAFETY_REVIEW_2026-05-24.md) does this approach fill? Which does it NOT fill?
+
+2. **Realism:** The Python script thresholds (Sharpe>1.2, max DD<12%, CAGR>8%) would eliminate virtually everything in the current market. Is this proposal realistically implementable or is it a paper-tiger that would produce 0-1 picks per year?
+
+3. **Integration feasibility:** Can this persona system be integrated into our existing `per_asset_class_predictor.py` + `conviction_stack.py` + `hedge_fund_quality_gate.py` stack? Where would its outputs plug in?
+
+4. **Redundancy:** We already have "Fortress Value" (EQUITY), "Institutional Grade" (CRYPTO), etc. personas defined in our review. How does the proposed persona system differ? Is it additive or redundant?
+
+5. **The Python script — production-ready?** 
+   - It uses `yfinance` with single-point `info` dict (no time-series fundamentals → FCF growth is a placeholder!)
+   - The backtest protocol says "train 2010-2018, test 2019-2023" but the script doesn't actually backtest
+   - Crypto handling is trivial (vol<30% only)
+   - What's salvageable vs what needs a complete rewrite?
+
+6. **Priority vs our EDGE_CRITERIA_ACTION_PLAN:** Where would implementing this persona system rank vs:
+   - P1: Fixing confidence field (5 lines)
+   - P0: Regime label audit (25 lines)  
+   - FOREX zero-allocation (8 lines)
+   - Position sizing rules (80 lines)
+
+7. **What's genuinely novel here?** The "persona" framing is new but the screening methodology (vol, beta, D/E, Sharpe filters) is standard greenblatt/piotroski/lopez-de-prado. What does this add that our existing value_screener.py + hedge_fund_quality_gate.py doesn't already do?
+
+8. **Missing asset classes:** The script handles stocks, ETFs, crypto. It's missing FOREX, BOND, COMMODITY, FUTURES. The prompt claims to extend to them. What's the realistic effort to add these?
+
+9. **The composite score:** How would this safety_score interact with our existing trust/elite/ml/smart scores? Would it be an additional input to the predictor or a final gate?
+
+10. **Bottom line:** On a scale of 1-10, how useful is this proposal for closing our hedge-fund-quality gap? What SPECIFIC elements should we steal vs discard?
+
+Be brutally honest. Concrete file paths and line counts where appropriate. No hand-waving.

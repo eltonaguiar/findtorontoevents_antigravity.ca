@@ -52,10 +52,39 @@ CRYPTO_BANNED_STRATEGIES = frozenset({
 # (882 picks, 53% of crypto volume, WR 29.9%, PF 0.69). Half-open interval.
 CRYPTO_CONFIDENCE_DEAD_BAND = (0.60, 0.70)
 
+# ───────────────── CRYPTO source-system blocks ─────────────────
+# 2026-05-24: Per curated-picks forward-test audit, these source_systems produce
+# negative aggregate PnL on CRYPTO and inflate raw dashboard counts.
+# claude_gainer: n=15, -3.34% avg | dna_rapid_fire_mutations: n=6, -0.98%
+# regime_terminal: n=4, -0.38% | ml_crypto_pred: n=155, -0.48%
+# 2026-05-24 (second pass): ml_bg_system_f: n=9, -1.39% | crypto_winners: n=4, -0.92%
+# ⚠️ crypto_winners n=4 is below the 10-trade floor — re-evaluate at n≥10.
+# All bans are env-var overridable for shadow-mode tuning.
+CRYPTO_BANNED_SOURCES = frozenset(
+    s.strip() for s in os.environ.get(
+        "HF_GATE_CRYPTO_BANNED_SOURCES",
+        "claude_gainer,dna_rapid_fire_mutations,regime_terminal,ml_crypto_pred,ml_bg_system_f,crypto_winners"
+    ).split(",") if s.strip()
+)
+
 # ───────────────── EQUITY rules ─────────────────
 # Equity SHORTs are a tiny historical sample (n=4) and went 0/3. Equity LONG
 # has realized PF 1.49, so the asymmetric rule matches the evidence.
 EQUITY_ALLOWED_DIRECTIONS = frozenset({"LONG", "BUY"})
+# 2026-05-24: Source-system blocks for EQUITY.
+# stocks_competition: n=295, -1.02% avg (already in BLOCKED_SOURCE_SYSTEMS for Smart Picks display)
+# fast_stocks_competition: n=21, -1.95% avg
+# multi_asset_institutional: n=6, -3.55% avg | kimi_signal_tracking: n=4, -4.32% avg
+# ml_bg_system_f: n=6, -1.26% (cross-AC contaminant — also in CRYPTO_BANNED_SOURCES)
+# ⚠️ kimi_signal_tracking (n=4), multi_asset_institutional (n=6), ml_bg_system_f EQUITY (n=6)
+# are below the 10-trade floor — re-evaluate each at n≥10.
+# Env-var overridable for shadow-mode tuning.
+EQUITY_BANNED_SOURCES = frozenset(
+    s.strip() for s in os.environ.get(
+        "HF_GATE_EQUITY_BANNED_SOURCES",
+        "stocks_competition,fast_stocks_competition,multi_asset_institutional,kimi_signal_tracking,ml_bg_system_f"
+    ).split(",") if s.strip()
+)
 # 2026-05-16: AAPL un-banned. Original n=15/PF=0.69 ban was below 30-pick charter
 # minimum. Strategy-specific evidence: rs-breakout-scout fwd_wr=73.0% (forward_validated=True).
 # Recent closed n=17, PF=1.03 — marginal but not sub-floor. Re-evaluate if n>=30 PF<0.80.
@@ -115,8 +144,29 @@ FOREX_CONFIDENCE_REJECT_BANDS: tuple[tuple[float, float], ...] = (
     (0.95, 1.0001),
 )
 
+# ───────────────── FOREX_HIGH_CONVICTION rules ─────────────────
+# 2026-05-24: cta_replicator (n=97, PF 2.38, WR 64.9%) isolated from main FOREX
+# basket (0% allocation) into a high-conviction sub-class. Scanner reclassifies
+# cta_replicator FOREX picks as FOREX_HIGH_CONVICTION at execution time.
+# Only cta_replicator source_system is allowed — any other source trying to use
+# this class is rejected (defense-in-depth). FOREX symbol bans are inherited.
+# FOREX banned strategies and confidence bands are NOT inherited — cta_replicator
+# uses its own strategy names (cta_fx_multifactor, etc.) and has a fundamentally
+# different confidence distribution (PF 2.38 vs aggregate FOREX PF < 1.0).
+# Confidence floor 0.60 per empirical cta_replicator FOREX distribution.
+FOREX_HC_ALLOWED_SOURCES = frozenset({"cta_replicator"})
+FOREX_HC_CONFIDENCE_MIN = float(os.environ.get("HF_GATE_FOREX_HC_CONFIDENCE_MIN", "0.60"))
+
 # ───────────────── ETF rules ─────────────────
 ETF_BANNED_SYMBOLS = frozenset({"IWM", "GLD"})
+
+# ───────────────── Portfolio-level hard cap ─────────────────
+# 2026-05-24 debate consensus: 15% portfolio max drawdown hard cap.
+# Any strategy/source/class exceeding this at the portfolio level triggers
+# a full stop. Env-overridable (HF_GATE_PORTFOLIO_MAX_DD) for shadow-mode
+# tuning. This is the absolute ceiling — per-class caps in quarantine_manifest
+# are subordinate to this limit.
+PORTFOLIO_MAX_DRAWDOWN_PCT = float(os.environ.get("HF_GATE_PORTFOLIO_MAX_DD", "0.15"))
 
 # ───────────────── BOND rules ─────────────────
 # Sample too small (n=17) for structural claims. Allow all.
@@ -261,6 +311,7 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
     strat = _strategy(pick)
     direction = _direction(pick)
     conf = _confidence(pick)
+    src = str(pick.get("source_system") or "").strip()
 
     # ── Cross-AC pipeline hygiene: empty/missing strategy is a pipeline defect,
     # not a legitimate pick. Recent 790 FOREX closed picks show n=10 empty-strat
@@ -270,6 +321,8 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
         return False, "HF_GATE: empty strategy (pipeline defect; n=10 FOREX showed 10% WR / -1.875% avg)"
 
     if ac == "CRYPTO":
+        if src in CRYPTO_BANNED_SOURCES:
+            return False, f"HF_GATE: CRYPTO banned source_system {src} (negative aggregate PnL per forward-test audit 2026-05-24)"
         if sym in CRYPTO_BANNED_SYMBOLS:
             return False, f"HF_GATE: CRYPTO banned symbol {sym} (empirical PF<0.95, n>=20; see crypto_rsi4h_killzone_review_2026_04_28.md)"
         if strat in CRYPTO_BANNED_STRATEGIES:
@@ -288,6 +341,8 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
         # Fall through to cross-AC ML check below
 
     elif ac == "EQUITY":
+        if src in EQUITY_BANNED_SOURCES:
+            return False, f"HF_GATE: EQUITY banned source_system {src} (negative aggregate PnL per forward-test audit 2026-05-24)"
         if direction and direction not in EQUITY_ALLOWED_DIRECTIONS:
             return False, f"HF_GATE: EQUITY {direction} rejected (LONG-only historical edge; SHORT n=4 went 0/3)"
         if sym in EQUITY_BANNED_SYMBOLS:
@@ -324,6 +379,20 @@ def passes_hedge_fund_gate(pick: dict[str, Any]) -> tuple[bool, str]:
                         f"[{lo:.2f},{hi:.2f}) — overconfidence trap "
                         f"(n=38, WR 39.5%, cum -30.3%)"
                     )
+
+    elif ac == "FOREX_HIGH_CONVICTION":
+        if src not in FOREX_HC_ALLOWED_SOURCES:
+            return False, (
+                f"HF_GATE: FOREX_HC rejected source_system {src} — "
+                f"only cta_replicator allowed (n=97, PF 2.38, WR 64.9%)"
+            )
+        if sym in FOREX_BANNED_SYMBOLS:
+            return False, f"HF_GATE: FOREX_HC banned symbol {sym} (FOREX symbol ban inherited)"
+        if conf is not None and conf < FOREX_HC_CONFIDENCE_MIN:
+            return False, (
+                f"HF_GATE: FOREX_HC confidence {conf:.3f} < {FOREX_HC_CONFIDENCE_MIN:.2f} "
+                f"(cta_replicator empirical floor; n=97, PF 2.38)"
+            )
 
     elif ac == "ETF":
         if sym in ETF_BANNED_SYMBOLS:
@@ -510,8 +579,11 @@ __all__ = [
     "COMMODITY_BANNED_STRATEGIES", "COMMODITY_CONFIDENCE_MIN",
     "FOREX_BANNED_SYMBOLS", "FOREX_BANNED_STRATEGIES",
     "FOREX_CONFIDENCE_REJECT_BANDS",
+    "FOREX_HC_ALLOWED_SOURCES", "FOREX_HC_CONFIDENCE_MIN",
     "ETF_BANNED_SYMBOLS",
+    "CRYPTO_BANNED_SOURCES", "EQUITY_BANNED_SOURCES",
     "PENNY_BANNED_SYMBOLS", "PENNY_BANNED_STRATEGIES", "PENNY_CONFIDENCE_MIN",
     "FUTURES_BANNED_SYMBOLS", "FUTURES_BANNED_STRATEGIES",
     "ML_PUMP_PROB_MIN", "ML_PUMP_PROB_MAX", "ML_SOURCE_SYSTEMS",
+    "PORTFOLIO_MAX_DRAWDOWN_PCT",
 ]
