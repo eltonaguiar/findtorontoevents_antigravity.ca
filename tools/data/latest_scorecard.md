@@ -1,5 +1,5 @@
 # ASSET CLASS STRATEGY SCORECARD
-## Generated: 2026-05-25 18:52 UTC
+## Generated: 2026-05-25 20:46 UTC
 
 ### CRYPTO
 Strategy                            Tier                n      WR     PF  Sharpe    p-value
@@ -7,7 +7,7 @@ Strategy                            Tier                n      WR     PF  Sharpe
 ❌ st_fear_greed_contrarian         UNPROVEN          n/a
 ❌ keltner_compression_expansion    UNPROVEN          n/a
 ❌ copy_hl_whale                    UNPROVEN          n/a
-❌ st_atr_vol_breakout              UNPROVEN            1  100.0%  3.31   0.00   1.000000
+❌ st_atr_vol_breakout              UNPROVEN          n/a
 
 ### EQUITY
 Strategy                            Tier                n      WR     PF  Sharpe    p-value
