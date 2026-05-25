@@ -305,6 +305,124 @@ PERSONA_REGISTRY: dict[str, dict[str, Any]] = {
         "worst_market_conditions": ["Asset-light business models dominating returns", "Prolonged periods where value factors underperform", "Technological disruption making physical assets obsolete"],
         "min_historical_trades": 30,
     },
+
+    # ═══════════════════════════════════════════════════════════════════
+    # HEDGE-FUND-STYLE PERSONAS (introduced 2026-05-25 with Mercury V2 submission)
+    # Inspired by real-world strategy archetypes at Renaissance, Citadel,
+    # Bridgewater, Elliott, Tiger Global. Each persona is a fictional PM/firm
+    # composite — names are originals, not copies of FinceptTerminal's
+    # investor-name agents (warren_buffett_agent, benjamin_graham_agent, …).
+    # ═══════════════════════════════════════════════════════════════════
+    "voss_global_macro": {
+        "display_name": "Dr. Elena Voss — Global Macro Strategist (Voss Macro Partners)",
+        "strategy_family": "macro_directional",
+        "philosophy": "Top-down focus on geopolitics, interest rates, inflation, commodities, and cross-asset allocation. Uses macro data and policy shifts for directional bets across equities, commodities, ETFs, and FX.",
+        "entry_criteria": [
+            "Cross-asset thesis with at least 2 confirming macro signals (rate path, commodity flows, geopolitical shock)",
+            "Position aligned with prevailing central-bank stance",
+            "Liquidity-tier instruments only (ETFs, large-cap, listed commodities/futures)",
+        ],
+        "exit_criteria": [
+            "Macro thesis invalidated (e.g., Fed pivot when long real assets)",
+            "Trailing stop at 10% from entry on directional ETF bets",
+            "Take partial at +12-15%, hold remainder to TP",
+        ],
+        "risk_reward_target": "2.0 to 3.5",
+        "max_risk_per_trade_pct": 2.0,
+        "suggested_backtesting_protocol": "Macro regime-aware walk-forward 12mo windows. Tag by regime (risk-on/off, real-rate sign). Minimum 40 trades per regime.",
+        "confidence_calibration": "HIGH when 3+ macro signals align AND price respecting prior structure. MEDIUM with 2 signals or stretched move. LOW when betting against prevailing regime.",
+        "best_market_conditions": ["Regime transitions (rates, geopolitics)", "Commodity supercycles", "Cross-asset divergences"],
+        "worst_market_conditions": ["Range-bound macro", "Policy uncertainty without directional catalysts"],
+        "min_historical_trades": 40,
+    },
+    "reed_long_short_fundamental": {
+        "display_name": "Marcus Reed — Long/Short Equity Fundamentalist (Reed Capital)",
+        "strategy_family": "fundamental_long_short",
+        "philosophy": "Deep bottom-up fundamental analysis. Longs undervalued or improving companies, shorts overvalued or deteriorating ones. Sector-agnostic but pairs trades for market neutrality.",
+        "entry_criteria": [
+            "Long: FCF yield > 5%, ROIC trending up, earnings revisions positive",
+            "Short: Negative revisions + valuation premium > 1 std-dev to sector",
+            "Pair within sector when possible to neutralize beta",
+        ],
+        "exit_criteria": [
+            "Fundamental thesis broken (guidance cut, ROIC reversal)",
+            "Target reached on FCF yield compression or expansion",
+            "Pair unwind when spread reverts",
+        ],
+        "risk_reward_target": "2.0 to 4.0",
+        "max_risk_per_trade_pct": 1.5,
+        "suggested_backtesting_protocol": "Quarterly rebal. Track per-leg P&L. Use 6mo OOS for factor stability. Tag by sector + market-cap bucket.",
+        "confidence_calibration": "HIGH when long+short legs both pass screens AND pair correlated >0.6. MEDIUM with one-sided thesis. LOW when valuation alone drives short.",
+        "best_market_conditions": ["Earnings season", "Rotation periods", "Dispersion-rich markets"],
+        "worst_market_conditions": ["Beta-driven rallies/crashes", "Short-squeeze regimes"],
+        "min_historical_trades": 60,
+    },
+    "sharma_quant_momentum": {
+        "display_name": "Dr. Priya Sharma — Quantitative Momentum / Factor Trader (AlgoForge Hedge)",
+        "strategy_family": "systematic_factor",
+        "philosophy": "Data-driven, systematic approach relying on cross-sectional momentum, earnings-surprise, low-volatility factors. ETF-heavy for scalability and speed.",
+        "entry_criteria": [
+            "Top decile on composite (momentum × earnings revision × quality)",
+            "Volatility factor regime-on (1mo realised < 12mo median)",
+            "Liquidity check: ADV > $50M",
+        ],
+        "exit_criteria": [
+            "Drops out of top quintile of composite (monthly rebal)",
+            "Vol regime flip to risk-off (VIX > 25 sustained 5 days)",
+            "Hard stop at -8% per position",
+        ],
+        "risk_reward_target": "1.5 to 2.5",
+        "max_risk_per_trade_pct": 1.0,
+        "suggested_backtesting_protocol": "Rolling 12mo IS / 3mo OOS, monthly rebal. Account for transaction costs at 8bps. Minimum Sharpe 1.0 on OOS to pass.",
+        "confidence_calibration": "HIGH when composite z-score > 1.5 AND vol regime risk-on. MEDIUM at z > 1.0. LOW below.",
+        "best_market_conditions": ["Trending momentum regimes", "Low-correlation environments", "Post-earnings drift periods"],
+        "worst_market_conditions": ["Sharp reversals", "Crowded-momentum unwinds", "Vol regime flips"],
+        "min_historical_trades": 100,
+    },
+    "chen_thematic_ai_growth": {
+        "display_name": "Lila Chen — Thematic AI/Growth Specialist (Chen Tech Ventures)",
+        "strategy_family": "thematic_growth",
+        "philosophy": "Concentrated bets on disruptive innovation, especially AI infrastructure, semiconductors, and high-growth tech. Ignores near-term valuation for structural tailwinds and earnings momentum.",
+        "entry_criteria": [
+            "Direct thematic exposure (AI compute, energy, data center, robotics)",
+            "Forward EPS growth > 25% with hyperscaler capex confirmation",
+            "Technical: above 50-day with no broken trend",
+        ],
+        "exit_criteria": [
+            "Theme thesis broken (capex guide-down from 2+ hyperscalers)",
+            "Trailing stop at 20% (high-vol position sizing)",
+            "Partial at +30%, hold remainder for multi-year",
+        ],
+        "risk_reward_target": "3.0 to 5.0",
+        "max_risk_per_trade_pct": 3.0,
+        "suggested_backtesting_protocol": "Thematic basket walk-forward. Account for high concentration risk. Tag by sub-theme (compute/power/network/edge).",
+        "confidence_calibration": "HIGH on Mag7 + direct chip plays. MEDIUM on adjacent infra (utilities, REITs). LOW on second-derivative names.",
+        "best_market_conditions": ["Capex acceleration cycles", "Bull markets favoring duration", "Post-earnings beat-and-raise"],
+        "worst_market_conditions": ["Multiple compression on rates spike", "AI capex pause/disappointment", "Risk-off rotations to value"],
+        "min_historical_trades": 30,
+    },
+    "lang_value_contrarian": {
+        "display_name": "Victor Lang — Value/Contrarian Investor (Lang Value Partners)",
+        "strategy_family": "value_contrarian",
+        "philosophy": "Hunts for undervalued assets with strong balance sheets, high FCF yields, or temporary mispricing. Rotates into cyclicals or defensives when growth is stretched.",
+        "entry_criteria": [
+            "FCF yield > 7% AND debt/equity < 0.5",
+            "Trading below sector median P/B or P/E",
+            "Insider buying or buyback authorization > 5% of market cap",
+        ],
+        "exit_criteria": [
+            "Valuation reaches sector median",
+            "Fundamental deterioration (FCF turning negative)",
+            "Hard stop at -10% from entry",
+        ],
+        "risk_reward_target": "2.0 to 3.0",
+        "max_risk_per_trade_pct": 2.0,
+        "suggested_backtesting_protocol": "Quarterly value screens. Hold 12-18mo. Tag by quality bucket (high/med/low). Compare vs sector benchmark.",
+        "confidence_calibration": "HIGH when FCF yield > 9% AND insider buying. MEDIUM with valuation alone. LOW on value traps (declining ROIC).",
+        "best_market_conditions": ["Late-cycle rotations", "Post-bubble unwinds", "Sector rotation periods"],
+        "worst_market_conditions": ["Growth-dominated bull markets", "Multiple expansion environments"],
+        "min_historical_trades": 40,
+    },
 }
 
 # ── Registry access helpers ──

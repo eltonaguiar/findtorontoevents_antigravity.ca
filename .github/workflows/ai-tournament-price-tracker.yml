@@ -41,14 +41,17 @@ jobs:
           FORCE_RESOLVE: ${{ github.event.inputs.force_resolve }}
         run: python tools/ai_tournament/price_tracker.py
 
-      - name: Update leaderboard
-        run: python tools/ai_tournament/update_leaderboard.py
+      - name: Update leaderboard + model summary
+        run: |
+          python tools/ai_tournament/update_leaderboard.py
+          python tools/ai_tournament/build_model_summary.py
 
       - name: Commit results
         run: |
           git config user.name  "Hermes Agent"
           git config user.email "noreply@anthropic.com"
           git add audit_dashboard/data/ai_tournament_leaderboard.json
+          git add audit_dashboard/data/ai_tournament_model_summary.json || true
           git add data/ai_tournament/
           git add audit_dashboard/data/ai_tournament_picks_latest.json || true
           git diff --cached --quiet && echo "No changes to commit" && exit 0

@@ -124,6 +124,8 @@ jobs:
         run: |
           echo "=== Updating leaderboard ==="
           python tools/ai_tournament/update_leaderboard.py || echo "::warning title=leaderboard::Leaderboard update failed"
+          echo "=== Rebuilding model summary (drives the table on /audit/ai-tournament.html) ==="
+          python tools/ai_tournament/build_model_summary.py || echo "::warning title=model_summary::Model summary build failed"
           echo "=== Leaderboard output ==="
           if [ -f 'audit_dashboard/data/ai_tournament_leaderboard.json' ]; then
             python3 -c "
@@ -217,6 +219,7 @@ jobs:
           git add data/ai_tournament/
           git add audit_dashboard/data/ai_tournament_picks_latest.json
           git add audit_dashboard/data/ai_tournament_leaderboard.json
+          git add audit_dashboard/data/ai_tournament_model_summary.json || true
           git add audit_dashboard/data/research/ai_leaderboard_data.json
           git add audit_dashboard/data/research/research_index_data.json
 

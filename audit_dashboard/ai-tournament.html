@@ -55,6 +55,7 @@
   /* Leaderboard table */
   table.lb { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
   table.lb th { background: rgba(255,255,255,0.04); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.lb th.num { text-align: right; }
   table.lb td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
   table.lb tr:hover td { background: rgba(96,165,250,0.06); }
   table.lb .rank { font-weight: 700; color: #fbbf24; }
@@ -200,9 +201,20 @@
 <div id="model-summary-count" style="margin-bottom:8px;font-size:12px;color:#a0a0b0">Loading...</div>
 <div style="overflow-x:auto">
 <table class="lb">
-  <thead><tr><th>Model</th><th>Picks</th><th>WR</th><th>Resolved</th><th>W/L</th><th>Avg PnL</th><th>Last Pick</th><th>Personas</th><th>Classes</th></tr></thead>
+  <thead><tr>
+    <th>Model</th>
+    <th class="num">Picks</th>
+    <th class="num">WR</th>
+    <th class="num">Resolved</th>
+    <th class="num">W/L</th>
+    <th class="num">Avg PnL</th>
+    <th>Last Pick (EST)</th>
+    <th class="num">Personas</th>
+    <th class="num">Classes</th>
+    <th>Drill-down</th>
+  </tr></thead>
   <tbody id="model-summary-tbody">
-    <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:12px">Loading model data...</td></tr>
+    <tr><td colspan="10" style="text-align:center;color:#4b5563;padding:12px">Loading model data...</td></tr>
   </tbody>
 </table>
 </div>
@@ -227,10 +239,27 @@
       <tr><td class="model-name">GPT-5</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
     </tbody>
 
+<!-- PERSONAS -->
+<h2 id="personas">Personas — how each AI is asked to think</h2>
+<div class="method-box">
+  <p>Every model is assigned <strong>2–5 personas</strong> per asset class. A persona is a pre-registered strategy lens (entry/exit rules, R:R targets, market-condition fit). The same model can submit different picks under different personas — that's how we measure whether a model is good at, e.g., <em>mean reversion</em> vs <em>breakout trading</em>.</p>
+  <p class="small" style="margin-top:6px">Canonical source: <code>tools/ai_tournament/persona_registry.py</code> + per-model assignments in <code>config/model_persona_mapping.json</code>. Drill into any model on the table above (click model name) to see its per-persona win-rate breakdown.</p>
+  <h3 style="margin-top:14px">Personas active in production (23 unique across 7 models, snapshot 2026-05-25)</h3>
+  <div class="universe-grid">
+    <div class="universe-class"><strong>Technical / momentum</strong><span>momentum_scalp · trend_follower · breakout_scanner · momentum_momentum · cross_sectional_momentum · systematic_momentum · volatility_breakout · bayesian_breakout</span></div>
+    <div class="universe-class"><strong>Mean reversion / value</strong><span>mean_reversion · value_investor · quality_compound · growth_at_reasonable_price · bankruptcy_recovery</span></div>
+    <div class="universe-class"><strong>Macro / cycle</strong><span>cta_trend · macro_hedge · inventory_cycle · purchasing_power_parity · seasonal_pattern</span></div>
+    <div class="universe-class"><strong>Microstructure / event</strong><span>grid_trader · supply_demand · gamma_raid · correlation_breaker · microcap_momentum</span></div>
+  </div>
+  <p class="small" style="margin-top:10px"><strong>Originality check:</strong> Our personas are <em>strategy archetypes</em> (e.g., <code>momentum_scalp</code>, <code>cta_trend</code>). The <a href="https://github.com/Fincept-Corporation/FinceptTerminal">FinceptTerminal</a> agent set is built around <em>famous investor names</em> (<code>warren_buffett_agent</code>, <code>benjamin_graham_agent</code>, etc., 11 total). No overlap in naming or design — we describe <em>what</em> the strategy does; they describe <em>who</em> would run it.</p>
+</div>
+
 <!-- PRE-REGISTERED UNIVERSE -->
 <div class="universe-panel">
   <h3>📋 Pre-Registered Universe (locked 2026-05-19 — models must pick within this list)</h3>
   <p class="small">All models compete on the same pre-approved symbols. Picks <em>outside</em> the universe are accepted but marked as bonus/unranked. Universe locked to prevent cherry-picking.</p>
+  <p class="small" style="color:#fbbf24;margin-top:6px"><strong>⚠ Planned expansion:</strong> universe will be widened in v1.2 to match the symbols actually traded on <a href="/audit/">/audit</a> per asset class (EQUITY → full S&P 500 + active /audit symbols; CRYPTO → top 100 + active /audit picks; ETF → SPY/QQQ/IWM + the 30 ETFs the system trades; etc.). When universes diverge, the AI-tournament can't be compared apples-to-apples to system performance. To prevent models from taking shortcuts (always picking the same liquid 5 names) we will enforce the <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/.claude/skills/noshortcutsprompt/SKILL.md"><code>/noshortcutsprompt</code></a> at submission time and allow multiple parallel calls per model+persona so coverage scales with universe size.</p>
+  <p class="small">💡 <strong>Symbol drill-down:</strong> on any model's <a href="./model.html">drill-down page</a> you can click a symbol to jump to its row on <a href="/audit/">/audit</a> — so you can compare what the AI is saying about, e.g., NVDA vs what our system's active/closed picks for NVDA show.</p>
   <div class="universe-grid">
     <div class="universe-class">
       <strong>EQUITY</strong>
@@ -270,6 +299,15 @@
 <!-- METHODOLOGY SUMMARY -->
 <h2>Rules &amp; Methodology</h2>
 <div class="method-box">
+  <h3 style="margin-top:0">How forward-testing works (success / failure definition)</h3>
+  <ul>
+    <li><strong>Default holding window: 7 days (1 week)</strong> from <code>submitted_at</code>, unless the pick specifies a longer asset-class window (see windows below).</li>
+    <li><strong>WIN</strong> — current price hits <strong>TP</strong> before <strong>SL</strong> within the window.</li>
+    <li><strong>LOSS</strong> — current price hits <strong>SL</strong> before <strong>TP</strong> within the window.</li>
+    <li><strong>FLAT (EXPIRED)</strong> — neither TP nor SL touched by window close. We mark the pick at the closing price; PnL counts but the pick does <em>not</em> earn a "win" badge.</li>
+    <li><strong>OPEN</strong> picks show a live <em>fwd-test status</em> in the drill-down: <code>↗ toward TP</code> / <code>↘ toward SL</code> / <code>→ flat so far</code> with current unrealized PnL.</li>
+    <li>Price source: yfinance (equities/ETFs/FX/futures), Binance + CoinGecko fallback (crypto). Resolver runs every ~20 min during sessions; nightly EOD sweep checks all open picks.</li>
+  </ul>
   <ul>
     <li><strong>Forward-test only</strong> for ranking. Backtests recorded but not used for leaderboard position.</li>
     <li><strong>Resolution:</strong> TP/SL hit (first one) → win/loss. Expiry at closing price (not mid-price). Slippage: 5–10bps equity, 0.2% crypto.</li>
@@ -280,6 +318,8 @@
     <li><strong>Max SL/TP ratio: 2.0</strong> (SL ≤ 2×TP). Min RR ≥ 1.5. Enforced at submission.</li>
     <li><strong>Model version pinned</strong> at tournament start for reproducibility.</li>
     <li><strong>No shortcuts prompt</strong> applied to every model — see <code>/noshortcutsprompt</code> skill.</li>
+    <li><strong>Random-guess audit (v1.2, planned):</strong> after each submission, the same model is re-asked: <em>"Are these picks based on live market data and news you can cite, or is at least one a random guess? List sources per pick. If you cannot cite a source, mark the pick as <code>speculation</code>."</em> Picks the model self-flags as speculation are still tracked but excluded from the leaderboard score until they resolve.</li>
+    <li><strong>Confidence tooltip:</strong> hover any HIGH/MED/LOW badge on the drill-down to see <em>why</em> the model chose that level (rating, market-supported flag, R:R, timeframe, data source).</li>
   </ul>
   <div class="small" style="margin-top:8px">Full methodology: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/AI_PREDICTION_TOURNAMENT_METHODOLOGY.md">docs/AI_PREDICTION_TOURNAMENT_METHODOLOGY.md</a> · Swarm review: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/ai_tournament_methodology_swarm_review_20260519.md">reports/ai_tournament_methodology_swarm_review_20260519.md</a></div>
 </div>
@@ -337,7 +377,7 @@
 </details>
 
 <footer>
-  <span>findtorontoevents.ca/audit/ai-tournament · Updated by GitHub Actions daily at 23:00 UTC (18:00 EDT)</span>
+  <span>findtorontoevents.ca/audit/ai-tournament · Updated by GitHub Actions daily at 23:00 UTC (18:00 EST / 19:00 EDT)</span>
   <span><a href="/audit/">Main audit</a> · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca">GitHub</a></span>
 </footer>
 
@@ -599,8 +639,9 @@ async function loadModelSummary() {
     let html = '';
     data.models.forEach(m => {
       const wrClass = m.win_rate_pct >= 55 ? 'pnl-pos' : m.win_rate_pct < 45 ? 'pnl-neg' : 'pnl-neu';
+      const drillUrl = './model.html?id=' + encodeURIComponent(m.model_id);
       html += `<tr>
-        <td class="model-name">${esc(m.model_id)}</td>
+        <td class="model-name"><a href="${drillUrl}">${esc(m.model_id)}</a></td>
         <td class="num">${m.total_picks}</td>
         <td class="num ${wrClass}">${m.win_rate_pct}%</td>
         <td class="num">${m.resolved}</td>
@@ -609,10 +650,12 @@ async function loadModelSummary() {
         <td class="small">${toEST(m.last_pick)}</td>
         <td class="num">${m.personas}</td>
         <td class="num">${m.asset_classes}</td>
+        <td><a href="${drillUrl}" style="font-size:11px">View picks →</a></td>
       </tr>`;
     });
     tbl.innerHTML = html;
-    document.getElementById('model-summary-count').textContent = data.n_models + ' models · ' + data.n_picks_total + ' picks · ' + data.n_resolved + ' resolved';
+    const genEst = toEST(data.generated_at);
+    document.getElementById('model-summary-count').innerHTML = data.n_models + ' models · ' + data.n_picks_total + ' picks · ' + data.n_resolved + ' resolved · <span class="small">refreshed ' + genEst + ' EST</span>';
   } catch(e) { /* keep placeholder */ }
 }
 
@@ -656,11 +699,12 @@ async function loadPicks() {
         html += `<div class="strategy-box">${esc(modelPicks[0].strategy_name)}: ${esc(modelPicks[0].rationale?.slice(0,120))}${modelPicks[0].rationale?.length > 120 ? '…' : ''}</div>`;
       }
 
+      const drillBase = './model.html?id=' + encodeURIComponent(modelId);
       html += `<div class="stats-row">
         <div class="stat"><span class="stat-val">${wr !== null ? (wr*100).toFixed(0)+'%' : '—'}</span><span class="stat-label">Win Rate</span></div>
-        <div class="stat"><span class="stat-val">${modelPicks.length}</span><span class="stat-label">Total Picks</span></div>
-        <div class="stat"><span class="stat-val">${open}</span><span class="stat-label">Open</span></div>
-        <div class="stat"><span class="stat-val">${resolved.length}</span><span class="stat-label">Resolved</span></div>
+        <div class="stat"><a href="${drillBase}" style="text-decoration:none;color:inherit"><span class="stat-val">${modelPicks.length}</span><span class="stat-label">Total Picks</span></a></div>
+        <div class="stat"><a href="${drillBase}&status=OPEN" style="text-decoration:none;color:inherit" title="View only open picks for ${esc(modelId)}"><span class="stat-val" style="color:#93c5fd">${open}</span><span class="stat-label">Open →</span></a></div>
+        <div class="stat"><a href="${drillBase}&status=RESOLVED" style="text-decoration:none;color:inherit" title="View only resolved (WIN/LOSS/EXPIRED) picks for ${esc(modelId)}"><span class="stat-val" style="color:#86efac">${resolved.length}</span><span class="stat-label">Resolved →</span></a></div>
       </div>`;
 
       const recentPicks = modelPicks.slice(0, 5);

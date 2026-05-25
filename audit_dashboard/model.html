@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model drill-down · AI Tournament · findtorontoevents.ca/audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1400px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; margin: 20px 0 10px; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .small { font-size: 11px; color: #a0a0b0; }
+  .nav { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .nav a { background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(255,255,255,0.08); }
+  .nav a:hover { background: rgba(96,165,250,0.12); text-decoration: none; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 12px 0 20px; }
+  .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-card .v { font-size: 20px; font-weight: 700; }
+  .stat-card .l { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pnl-pos { color: #22c55e; }
+  .pnl-neg { color: #ef4444; }
+  .pnl-neu { color: #a0a0b0; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: rgba(255,255,255,0.04); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  tr:hover td { background: rgba(96,165,250,0.06); }
+  .filter-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0 12px; }
+  .filter-bar select, .filter-bar input { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #e6e6f0; padding: 5px 10px; border-radius: 6px; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 10px; }
+  .b-open { background: #1e3a5f; color: #93c5fd; }
+  .b-win { background: #14532d; color: #86efac; }
+  .b-loss { background: #7c2d12; color: #fca5a5; }
+  .b-exp { background: #374151; color: #9ca3af; }
+  .err { padding: 20px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #fca5a5; }
+  .class-breakdown { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 12px 0; }
+  .class-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; }
+  .class-card .ac { font-weight: 700; color: #60a5fa; font-size: 13px; }
+  .class-card .row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; color: #a0a0b0; }
+  .conf { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: help; border-bottom: 1px dotted currentColor; }
+  .conf-HIGH { background: rgba(34,197,94,0.15); color: #86efac; }
+  .conf-MED, .conf-MEDIUM { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .conf-LOW { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .rationale-cell { max-width: 360px; }
+  .rationale-short { color: #c0c0d0; }
+  .rationale-full { display: none; color: #e6e6f0; line-height: 1.45; background: rgba(96,165,250,0.05); padding: 8px 10px; border-radius: 6px; border-left: 2px solid #60a5fa; margin-top: 6px; white-space: pre-wrap; }
+  .rationale-cell.expanded .rationale-full { display: block; }
+  .eli5-toggle { font-size: 10px; color: #60a5fa; cursor: pointer; user-select: none; margin-left: 6px; }
+  .symbol-link { color: #93c5fd; font-weight: 700; }
+  .symbol-link:hover { color: #60a5fa; text-decoration: underline; }
+  .meta-line { font-size: 10px; color: #6b7280; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/audit/">← Main Audit</a>
+  <a href="/audit/ai-tournament.html">← AI Tournament</a>
+</nav>
+
+<h1 id="model-title">Model drill-down</h1>
+<div class="small" id="model-meta">Loading…</div>
+
+<div class="summary-grid" id="summary-grid"></div>
+
+<h2>Performance by asset class</h2>
+<div class="class-breakdown" id="class-breakdown"><div class="small">Loading…</div></div>
+
+<h2>Performance by persona / strategy</h2>
+<div class="small" style="margin-bottom:8px">Each AI uses multiple <em>personas</em> (e.g., <code>growth_at_reasonable_price</code>, <code>mean_reversion_pullback</code>). Personas are pre-registered strategies — see <a href="/audit/ai-tournament.html#personas">methodology</a>.</div>
+<div class="class-breakdown" id="persona-breakdown"><div class="small">No persona data in picks.</div></div>
+
+<h2>All picks <span class="small" id="picks-count"></span></h2>
+<div class="filter-bar">
+  <label class="small">Status:
+    <select id="f-status">
+      <option value="">All</option>
+      <option value="OPEN">Open</option>
+      <option value="WIN">Win</option>
+      <option value="LOSS">Loss</option>
+      <option value="EXPIRED">Expired</option>
+    </select>
+  </label>
+  <label class="small">Asset class:
+    <select id="f-class"><option value="">All</option></select>
+  </label>
+  <label class="small">Symbol contains:
+    <input id="f-symbol" type="text" placeholder="e.g. BTC" style="width:140px">
+  </label>
+  <button id="f-clear" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#e6e6f0;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer">Clear</button>
+</div>
+<div style="overflow-x:auto">
+<table id="picks-tbl">
+  <thead><tr>
+    <th>Date (EST)</th>
+    <th>Symbol</th>
+    <th>Class</th>
+    <th>Dir</th>
+    <th>Conf</th>
+    <th class="num">Entry</th>
+    <th class="num">TP</th>
+    <th class="num">SL</th>
+    <th class="num">R:R</th>
+    <th>Status</th>
+    <th>Fwd-test</th>
+    <th class="num">Days</th>
+    <th class="num">PnL %</th>
+    <th>Persona / Rationale</th>
+  </tr></thead>
+  <tbody id="picks-body"></tbody>
+</table>
+</div>
+
+<footer style="margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.07);color:#4b5563;font-size:11px">
+  Data source: <code>audit_dashboard/data/ai_tournament_picks_latest.json</code> · Refreshed by GitHub Actions nightly (see <code>.github/workflows/ai-tournament-pipeline.yml</code>).
+</footer>
+
+<script>
+function esc(v){ if(v==null) return '—'; return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function toEST(s){ if(!s) return '—'; try { return new Date(s).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return s.slice(0,16); } }
+function pnlClass(v){ if(v==null||isNaN(v)) return 'pnl-neu'; return v>0?'pnl-pos':v<0?'pnl-neg':'pnl-neu'; }
+function fmtPct(v){ if(v==null||isNaN(v)) return '—'; return (v>0?'+':'')+Number(v).toFixed(2)+'%'; }
+function fmtNum(v,d=4){ if(v==null||isNaN(v)) return '—'; return Number(v).toFixed(d); }
+
+function statusBadge(s){
+  if(s==='OPEN') return '<span class="badge b-open">OPEN</span>';
+  if(s==='WIN') return '<span class="badge b-win">WIN</span>';
+  if(s==='LOSS') return '<span class="badge b-loss">LOSS</span>';
+  if(s==='EXPIRED') return '<span class="badge b-exp">EXPIRED</span>';
+  return '<span class="badge b-exp">'+esc(s||'?')+'</span>';
+}
+
+// Forward-test definition (mirrors what's documented on /audit/ai-tournament.html):
+// - Default holding window: 7 days (1 week) unless pick specifies a longer timeframe
+// - WIN: TP hit before SL  · LOSS: SL hit before TP  · FLAT: window expired, neither side touched
+// - DRIFTING_UP / DRIFTING_DOWN: still open, current_price moving toward TP / SL
+function fwdStatus(p){
+  if(p.status === 'WIN'){
+    return {label: p.exit_reason === 'TP_HIT' ? 'TP HIT' : 'WIN', cls:'pnl-pos'};
+  }
+  if(p.status === 'LOSS'){
+    return {label: p.exit_reason === 'SL_HIT' ? 'SL HIT' : 'LOSS', cls:'pnl-neg'};
+  }
+  if(p.status === 'EXPIRED'){
+    return {label: 'FLAT — window expired', cls:'pnl-neu'};
+  }
+  // OPEN
+  const cur = parseFloat(p.current_price);
+  const entry = parseFloat(p.entry_price);
+  const tp = parseFloat(p.take_profit);
+  const sl = parseFloat(p.stop_loss);
+  const upl = parseFloat(p.unrealized_pnl_pct);
+  if(isNaN(cur) || isNaN(entry)) return {label:'PENDING', cls:'pnl-neu'};
+  const towardTp = (p.direction === 'LONG') ? (cur > entry) : (cur < entry);
+  if(!isNaN(upl)){
+    if(upl >= 0.5) return {label:`↗ toward TP (${upl.toFixed(2)}%)`, cls:'pnl-pos'};
+    if(upl <= -0.5) return {label:`↘ toward SL (${upl.toFixed(2)}%)`, cls:'pnl-neg'};
+    return {label:`→ flat so far (${upl.toFixed(2)}%)`, cls:'pnl-neu'};
+  }
+  return {label: towardTp ? '↗ toward TP' : '↘ toward SL', cls: towardTp ? 'pnl-pos' : 'pnl-neg'};
+}
+
+function daysSince(iso){
+  if(!iso) return null;
+  const d = new Date(iso); if(isNaN(d)) return null;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+function realizedPnl(p){
+  // Prefer explicit pnl_pct, fall back to unrealized for OPEN picks
+  if(p.pnl_pct != null) return parseFloat(p.pnl_pct);
+  if(p.unrealized_pnl_pct != null) return parseFloat(p.unrealized_pnl_pct);
+  return null;
+}
+
+const params = new URLSearchParams(window.location.search);
+const targetModel = params.get('id');
+const initialStatus = (params.get('status') || '').toUpperCase();
+const initialClass = params.get('class') || '';
+const initialSymbol = params.get('symbol') || '';
+
+let allPicks = [];
+let filtered = [];
+
+async function init(){
+  if(!targetModel){
+    document.getElementById('model-title').textContent = 'Model drill-down';
+    document.getElementById('model-meta').innerHTML = '<div class="err">No model selected. Use <code>?id=&lt;model_id&gt;</code> in the URL, or pick one from the <a href="/audit/ai-tournament.html">tournament page</a>.</div>';
+    return;
+  }
+  document.getElementById('model-title').textContent = targetModel;
+  try {
+    const resp = await fetch('./data/ai_tournament_picks_latest.json?'+Date.now());
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    if(!Array.isArray(data)) throw new Error('expected array');
+    allPicks = data.filter(p => (p.model_id||'').toLowerCase() === targetModel.toLowerCase());
+    if(allPicks.length === 0){
+      document.getElementById('model-meta').innerHTML = '<div class="err">No picks found for <code>'+esc(targetModel)+'</code> in the latest snapshot.</div>';
+      return;
+    }
+    renderAll();
+  } catch(e){
+    document.getElementById('model-meta').innerHTML = '<div class="err">Failed to load picks: '+esc(e.message)+'</div>';
+  }
+}
+
+function renderAll(){
+  // Sort newest first
+  allPicks.sort((a,b)=> new Date(b.submitted_at||0) - new Date(a.submitted_at||0));
+
+  // Summary
+  const resolved = allPicks.filter(p => p.status==='WIN' || p.status==='LOSS' || p.status==='EXPIRED');
+  const open = allPicks.filter(p => p.status==='OPEN');
+  const wins = resolved.filter(p => p.status==='WIN' || (realizedPnl(p)||0) > 0).length;
+  const losses = resolved.length - wins;
+  const wr = resolved.length ? (wins/resolved.length*100) : null;
+  const pnls = resolved.map(realizedPnl).filter(v=>v!=null);
+  const avgPnl = pnls.length ? pnls.reduce((s,v)=>s+v,0)/pnls.length : null;
+  const last = allPicks[0]?.submitted_at;
+  const provider = allPicks[0]?.provider || allPicks[0]?.data_source || '—';
+
+  document.getElementById('model-meta').innerHTML =
+    'Provider: <code>'+esc(provider)+'</code> · Last pick: '+toEST(last)+' EST · '+allPicks.length+' picks total';
+
+  const wrClass = wr==null?'pnl-neu': wr>=55?'pnl-pos': wr<45?'pnl-neg':'pnl-neu';
+  document.getElementById('summary-grid').innerHTML = `
+    <div class="stat-card"><div class="v">${allPicks.length}</div><div class="l">Total picks</div></div>
+    <div class="stat-card"><div class="v">${open.length}</div><div class="l">Open</div></div>
+    <div class="stat-card"><div class="v">${resolved.length}</div><div class="l">Resolved</div></div>
+    <div class="stat-card"><div class="v ${wrClass}">${wr==null?'—':wr.toFixed(1)+'%'}</div><div class="l">Win rate</div></div>
+    <div class="stat-card"><div class="v">${wins}/${losses}</div><div class="l">W / L</div></div>
+    <div class="stat-card"><div class="v ${pnlClass(avgPnl)}">${avgPnl==null?'—':fmtPct(avgPnl)}</div><div class="l">Avg PnL</div></div>
+  `;
+
+  // By asset class
+  const byClass = {};
+  allPicks.forEach(p => {
+    const c = p.asset_class || 'UNKNOWN';
+    if(!byClass[c]) byClass[c] = { picks:0, resolved:0, wins:0, sumPnl:0, nPnl:0 };
+    byClass[c].picks++;
+    if(p.status==='WIN'||p.status==='LOSS'||p.status==='EXPIRED'){
+      byClass[c].resolved++;
+      const v = realizedPnl(p);
+      if(p.status==='WIN' || (v||0) > 0) byClass[c].wins++;
+      if(v!=null){ byClass[c].sumPnl += v; byClass[c].nPnl++; }
+    }
+  });
+  const cb = document.getElementById('class-breakdown');
+  const entries = Object.entries(byClass).sort((a,b)=>b[1].picks - a[1].picks);
+  cb.innerHTML = entries.map(([c, s]) => {
+    const wr = s.resolved ? (s.wins/s.resolved*100) : null;
+    const avg = s.nPnl ? s.sumPnl/s.nPnl : null;
+    return `<div class="class-card">
+      <div class="ac">${esc(c)}</div>
+      <div class="row"><span>Picks</span><span>${s.picks}</span></div>
+      <div class="row"><span>Resolved</span><span>${s.resolved}</span></div>
+      <div class="row"><span>WR</span><span class="${wr==null?'pnl-neu':wr>=55?'pnl-pos':wr<45?'pnl-neg':'pnl-neu'}">${wr==null?'—':wr.toFixed(1)+'%'}</span></div>
+      <div class="row"><span>Avg PnL</span><span class="${pnlClass(avg)}">${avg==null?'—':fmtPct(avg)}</span></div>
+    </div>`;
+  }).join('');
+
+  // By persona
+  const byPersona = {};
+  allPicks.forEach(p => {
+    const k = p.persona_id || p.strategy_name || null;
+    if(!k) return;
+    if(!byPersona[k]) byPersona[k] = { picks:0, resolved:0, wins:0, sumPnl:0, nPnl:0, strat:p.strategy_name||'' };
+    byPersona[k].picks++;
+    if(p.status==='WIN'||p.status==='LOSS'||p.status==='EXPIRED'){
+      byPersona[k].resolved++;
+      const v = realizedPnl(p);
+      if(p.status==='WIN' || (v||0) > 0) byPersona[k].wins++;
+      if(v!=null){ byPersona[k].sumPnl += v; byPersona[k].nPnl++; }
+    }
+  });
+  const pb = document.getElementById('persona-breakdown');
+  const pEntries = Object.entries(byPersona).sort((a,b)=>b[1].picks - a[1].picks);
+  if(pEntries.length === 0){
+    pb.innerHTML = '<div class="small">This model has no persona-tagged picks in the snapshot. (Older submissions may pre-date the persona schema.)</div>';
+  } else {
+    pb.innerHTML = pEntries.map(([k, s]) => {
+      const wr = s.resolved ? (s.wins/s.resolved*100) : null;
+      const avg = s.nPnl ? s.sumPnl/s.nPnl : null;
+      return `<div class="class-card">
+        <div class="ac">${esc(k)}</div>
+        ${s.strat ? `<div class="small" style="margin-bottom:4px">${esc(s.strat)}</div>`: ''}
+        <div class="row"><span>Picks</span><span>${s.picks}</span></div>
+        <div class="row"><span>Resolved</span><span>${s.resolved}</span></div>
+        <div class="row"><span>WR</span><span class="${wr==null?'pnl-neu':wr>=55?'pnl-pos':wr<45?'pnl-neg':'pnl-neu'}">${wr==null?'—':wr.toFixed(1)+'%'}</span></div>
+        <div class="row"><span>Avg PnL</span><span class="${pnlClass(avg)}">${avg==null?'—':fmtPct(avg)}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Populate class filter
+  const fc = document.getElementById('f-class');
+  entries.forEach(([c]) => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c; fc.appendChild(o);
+  });
+
+  // Apply initial filters from URL params
+  if(initialStatus){
+    // Treat 'RESOLVED' or 'CLOSED' as any non-OPEN status; the dropdown has explicit WIN/LOSS/EXPIRED
+    if(initialStatus === 'RESOLVED' || initialStatus === 'CLOSED'){
+      // Render twice: first show all resolved as a single bucket via a synthetic filter
+      // Simplest: leave dropdown blank and just filter to non-OPEN
+      window._statusBucket = 'RESOLVED';
+    } else if(['OPEN','WIN','LOSS','EXPIRED'].includes(initialStatus)){
+      document.getElementById('f-status').value = initialStatus;
+    }
+  }
+  if(initialClass) document.getElementById('f-class').value = initialClass;
+  if(initialSymbol) document.getElementById('f-symbol').value = initialSymbol;
+
+  applyFilter();
+}
+
+function applyFilter(){
+  const s = document.getElementById('f-status').value;
+  const c = document.getElementById('f-class').value;
+  const sym = (document.getElementById('f-symbol').value||'').toUpperCase().trim();
+  filtered = allPicks.filter(p => {
+    if(s && p.status !== s) return false;
+    if(!s && window._statusBucket === 'RESOLVED' && p.status === 'OPEN') return false;
+    if(c && p.asset_class !== c) return false;
+    if(sym && !(p.symbol||'').toUpperCase().includes(sym)) return false;
+    return true;
+  });
+  renderPicks();
+}
+
+function rrRatio(p){
+  const e = parseFloat(p.entry_price), tp = parseFloat(p.take_profit), sl = parseFloat(p.stop_loss);
+  if(!e || !tp || !sl) return null;
+  const reward = Math.abs(tp - e), risk = Math.abs(e - sl);
+  if(risk === 0) return null;
+  return reward / risk;
+}
+
+function eli5Rationale(text){
+  if(!text) return 'No rationale provided.';
+  // Heuristic ELI5: short plain-language summary built from the technical text.
+  // We keep the original and prepend a 1-sentence "in plain English" tag.
+  const s = String(text).trim();
+  // Simple keyword translations
+  const map = [
+    [/RSI\(?(\d+)?\)?\s*<\s*30/i, 'price looks oversold (a popular momentum gauge dipped into bargain territory)'],
+    [/RSI\(?(\d+)?\)?\s*>\s*70/i, 'price looks overbought (momentum gauge is hot)'],
+    [/MACD.*bullish/i, 'short-term momentum is turning up vs. long-term'],
+    [/MACD.*bearish/i, 'short-term momentum is turning down vs. long-term'],
+    [/breakout|breakdown/i, 'price punched through a level traders watch'],
+    [/mean[- ]revers/i, 'price stretched too far and tends to snap back'],
+    [/EMA|SMA|moving average/i, 'price is reacting to a popular trend-following line'],
+    [/earnings/i, 'an earnings catalyst is in play'],
+    [/sentiment|whale/i, 'big-money positioning supports the trade'],
+    [/COT|positioning/i, 'large-trader positioning supports the trade'],
+    [/seasonal/i, 'historical calendar pattern supports the trade']
+  ];
+  const hits = [];
+  for(const [re, plain] of map){ if(re.test(s)){ hits.push(plain); if(hits.length >= 2) break; } }
+  if(hits.length === 0){
+    // Fallback: first sentence trimmed
+    return s.split(/[.!?]\s/)[0].slice(0, 180) + (s.length > 180 ? '…' : '');
+  }
+  return 'In plain English: ' + hits.join('; ') + '.';
+}
+
+function confTooltip(p){
+  // Build a short reason that justifies the confidence level using available fields
+  const c = (p.confidence || '').toUpperCase();
+  const bits = [];
+  if(p.rating) bits.push('rating=' + p.rating);
+  if(p.market_supported === true) bits.push('market data supports thesis');
+  if(p.market_supported === false) bits.push('market data does NOT support thesis');
+  if(p.timeframe) bits.push('TF=' + p.timeframe);
+  const rr = rrRatio(p);
+  if(rr) bits.push('R:R=' + rr.toFixed(2));
+  if(p.data_source) bits.push('src=' + String(p.data_source).slice(0,40));
+  const why = bits.length ? bits.join(' · ') : (p.thesis ? String(p.thesis).slice(0,140) : 'no explanation provided');
+  const meaning = c === 'HIGH' ? 'Model is highly confident this trade hits TP before SL.'
+                : c === 'MED' || c === 'MEDIUM' ? 'Model sees a positive edge but acknowledges material downside risk.'
+                : c === 'LOW' ? 'Speculative — model flags significant uncertainty.'
+                : 'Confidence level not provided by model.';
+  return meaning + '\n\nWhy: ' + why;
+}
+
+function renderPicks(){
+  document.getElementById('picks-count').textContent = '(' + filtered.length + ')';
+  const body = document.getElementById('picks-body');
+  if(filtered.length === 0){
+    body.innerHTML = '<tr><td colspan="14" style="text-align:center;color:#6b7280;padding:20px">No picks match these filters.</td></tr>';
+    return;
+  }
+  const cap = 500;
+  const rows = filtered.slice(0, cap);
+  body.innerHTML = rows.map((p, idx) => {
+    const pnl = realizedPnl(p);
+    const persona = p.persona_id || '—';
+    const strat = p.strategy_name || '';
+    const rationale = p.thesis || p.rationale || p.reason || '';
+    const eli5 = eli5Rationale(rationale);
+    const rr = rrRatio(p);
+    const conf = (p.confidence || '').toUpperCase();
+    const confCls = 'conf-' + (conf || 'NONE');
+    const symbolHref = '/audit/?symbol=' + encodeURIComponent(p.symbol || '');
+    const meta = [];
+    if(strat) meta.push(esc(strat));
+    if(p.timeframe) meta.push('TF: '+esc(p.timeframe));
+    if(p.exit_reason) meta.push('exit: '+esc(p.exit_reason));
+    return `<tr>
+      <td class="small">${toEST(p.submitted_at)}</td>
+      <td><a class="symbol-link" href="${symbolHref}" title="Open ${esc(p.symbol)} on main audit dashboard">${esc(p.symbol)}</a></td>
+      <td>${esc(p.asset_class)}</td>
+      <td class="${p.direction==='LONG'?'pnl-pos':p.direction==='SHORT'?'pnl-neg':''}">${esc(p.direction)}</td>
+      <td>${conf ? `<span class="conf ${confCls}" title="${esc(confTooltip(p))}">${esc(conf)}</span>` : '<span class="small">—</span>'}</td>
+      <td class="num">${fmtNum(p.entry_price)}</td>
+      <td class="num pnl-pos" title="Take profit target">${fmtNum(p.take_profit)}</td>
+      <td class="num pnl-neg" title="Stop loss">${fmtNum(p.stop_loss)}</td>
+      <td class="num">${rr==null?'—':rr.toFixed(2)}</td>
+      <td>${statusBadge(p.status)}</td>
+      <td class="small ${fwdStatus(p).cls}">${fwdStatus(p).label}</td>
+      <td class="num">${daysSince(p.submitted_at) == null ? '—' : daysSince(p.submitted_at)+'d'}</td>
+      <td class="num ${pnlClass(pnl)}">${pnl==null?'—':fmtPct(pnl)}</td>
+      <td class="rationale-cell" id="rc-${idx}">
+        <div><strong>${esc(persona)}</strong>${strat ? ' · <span class="small">'+esc(strat)+'</span>':''}</div>
+        <div class="rationale-short">${esc(rationale.slice(0,140))}${rationale.length>140?'…':''}
+          ${rationale ? `<span class="eli5-toggle" onclick="toggleRationale(${idx})">[ELI5 / full]</span>` : ''}
+        </div>
+        <div class="rationale-full"><div><em>Plain English:</em> ${esc(eli5)}</div><div style="margin-top:6px"><em>Model's full rationale:</em><br>${esc(rationale)}</div>${meta.length?`<div class="meta-line">${meta.join(' · ')}</div>`:''}</div>
+      </td>
+    </tr>`;
+  }).join('');
+  if(filtered.length > cap){
+    body.insertAdjacentHTML('beforeend', '<tr><td colspan="14" style="text-align:center;color:#6b7280;padding:12px">Showing first '+cap+' of '+filtered.length+' — narrow your filter to see more.</td></tr>');
+  }
+}
+
+function toggleRationale(idx){
+  const el = document.getElementById('rc-'+idx);
+  if(el) el.classList.toggle('expanded');
+}
+
+document.getElementById('f-status').addEventListener('change', applyFilter);
+document.getElementById('f-class').addEventListener('change', applyFilter);
+document.getElementById('f-symbol').addEventListener('input', applyFilter);
+document.getElementById('f-clear').addEventListener('click', () => {
+  document.getElementById('f-status').value = '';
+  document.getElementById('f-class').value = '';
+  document.getElementById('f-symbol').value = '';
+  applyFilter();
+});
+
+init();
+</script>
+</body>
+</html>
