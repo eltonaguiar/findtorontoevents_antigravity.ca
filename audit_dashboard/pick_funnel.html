@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pick Funnel · findtorontoevents.ca/audit/pick-funnel</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1400px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { margin-bottom: 4px; font-size: 22px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; margin: 24px 0 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  h3 { font-size: 13px; color: #c0c0d0; margin: 12px 0 6px; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .small { font-size: 11px; color: #a0a0b0; }
+  .nav { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .nav a { background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(255,255,255,0.08); }
+  .nav a:hover { background: rgba(96,165,250,0.12); text-decoration: none; }
+  .nav a.active { background: rgba(96,165,250,0.2); border-color: #60a5fa; color: #93c5fd; }
+  .hero { text-align: center; padding: 28px 16px 20px; background: linear-gradient(135deg, rgba(96,165,250,0.08) 0%, rgba(34,197,94,0.08) 100%); border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(96,165,250,0.15); }
+  .hero h1 { font-size: 26px; margin-bottom: 8px; }
+  .hero p { color: #a0a0b0; max-width: 720px; margin: 0 auto; font-size: 13px; }
+  table.lb { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  table.lb th { background: rgba(255,255,255,0.04); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.lb th.num { text-align: right; }
+  table.lb td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  table.lb tr:hover td { background: rgba(96,165,250,0.06); }
+  table.lb .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pnl-pos { color: #22c55e; }
+  .pnl-neg { color: #ef4444; }
+  .pnl-neu { color: #a0a0b0; }
+  .badge { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:700; font-size:10px; letter-spacing:0.3px; }
+  .b-pass { background:#14532d; color:#86efac; border:1px solid #22c55e; }
+  .b-fail { background:#7c2d12; color:#fca5a5; border:1px solid #ef4444; }
+  .b-meh  { background:#3a3a44; color:#a0a0b0; border:1px solid #6b7280; }
+  .b-hc   { background:#1e3a5f; color:#93c5fd; border:1px solid #3b82f6; }
+  /* Funnel bar */
+  .funnel-row { display:grid; grid-template-columns: 90px 1fr; gap:10px; margin:8px 0; align-items:center; }
+  .funnel-row .ac-name { font-size:12px; color:#c0c0d0; font-weight:700; }
+  .funnel-bars { display:flex; gap:2px; height:24px; background:rgba(255,255,255,0.02); border-radius:3px; overflow:hidden; }
+  .stage { display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; min-width:24px; padding:0 6px; }
+  .s1 { background:#3b82f6; }      /* scanned */
+  .s2 { background:#2563eb; }      /* smart */
+  .s3 { background:#1e40af; }      /* hc */
+  .s4 { background:#1e3a8a; }      /* opened */
+  .s5 { background:#22c55e; }      /* win */
+  .s6 { background:#ef4444; }      /* loss */
+  .panel { background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:14px; margin:16px 0; }
+  .panel h3 { margin-top:0; }
+  .eli5 { display:none; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin:6px 0; font-size:12px; line-height:1.6; color:#c0c0d0; }
+  .eli5-btn { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:5px; color:#e6e6f0; font-size:10px; padding:2px 10px; cursor:pointer; margin:6px 0; }
+  .edge-cell { font-family: ui-monospace, monospace; font-size: 11px; color:#c0c0d0; }
+  footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07); color: #4b5563; font-size: 11px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .ac-section { margin: 18px 0; padding: 10px 14px; background: rgba(255,255,255,0.015); border-radius: 6px; border-left: 3px solid #60a5fa; }
+  pre.verdict { white-space: pre-wrap; background:#0e0e16; padding:12px; border-radius:6px; font-size:11px; line-height:1.5; max-height: 480px; overflow:auto; border:1px solid rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>🔬 Pick Funnel · /audit</h1>
+  <p>Every pick scanned → score floor → trust gate → high-conviction → opened → closed → win/loss. Per-class visibility into where edge lives and where money would have been made.</p>
+  <div style="margin-top:10px;font-size:11px;color:#4b5563" id="generated-at">Loading…</div>
+</div>
+
+<nav class="nav">
+  <a href="/audit/">← Main Audit</a>
+  <a href="/audit/ai-tournament.html">🏆 AI Tournament</a>
+  <a href="/audit/pick_funnel.html" class="active">🔬 Pick Funnel</a>
+  <a href="/audit/ai_leaderboard.html">AI Leaderboard</a>
+  <a href="/audit/research_index.html">Research Index</a>
+</nav>
+
+<!-- ===== TODAY'S PICKS ===== -->
+<h2>Today's Picks (last 24h)</h2>
+<button class="eli5-btn" onclick="toggle('eli5-today')">[?] ELI5</button>
+<div class="eli5" id="eli5-today">
+  Each row is a pick our scanners produced in the last 24h. <b>AGV</b>=alpha-gravity raw score; <b>SCORE</b>=elite_score (gate-deciding); <b>TRUST</b>=strategy track-record; <b>CONF</b>=model confidence. The <b>Gate</b> column shows the highest gate the pick cleared — HC = high-conviction (score≥80, conf≥0.75, trust≥60), VA = verified-alpha (score≥70), SMART = passed per-class smart floor, FAIL = none. If FAIL, hover the row for the reason.
+</div>
+<div id="funnel-bars-today" class="panel"></div>
+<table class="lb" id="today-table">
+  <thead><tr>
+    <th>Symbol</th><th>Dir</th><th>Class</th><th>System</th><th>Strategy</th>
+    <th class="num">SCORE</th><th class="num">TRUST</th><th class="num">CONF</th>
+    <th class="num">Entry</th><th class="num">TP</th><th class="num">SL</th>
+    <th>Status</th><th>Gate</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- ===== 90D FUNNEL ===== -->
+<h2>90-Day Per-Class Funnel</h2>
+<button class="eli5-btn" onclick="toggle('eli5-90d')">[?] ELI5</button>
+<div class="eli5" id="eli5-90d">
+  For each asset class over 90 days: how many picks were SCANNED → how many passed the SMART gate (per-class score floor + conf≥0.60) → how many cleared HIGH-CONVICTION → how many actually OPENED → how many closed as WIN or LOSS. WR shown is decisive-only (WIN/(WIN+LOSS)), so flat/expired picks don't dilute it. CRYPTO and COMMODITY dominate volume; FOREX is the largest noise sink.
+</div>
+<div id="funnel-bars-90d" class="panel"></div>
+<table class="lb" id="funnel90-table">
+  <thead><tr>
+    <th>Class</th>
+    <th class="num">Scanned</th><th class="num">Smart</th><th class="num">VA</th>
+    <th class="num">HC</th><th class="num">Proven</th>
+    <th class="num">Opened</th><th class="num">Closed</th>
+    <th class="num">Win</th><th class="num">Loss</th><th class="num">Decisive</th>
+    <th class="num">WR%</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- ===== REJECTED UNIVERSE ===== -->
+<h2>Rejected from Universe (today)</h2>
+<button class="eli5-btn" onclick="toggle('eli5-rej')">[?] ELI5</button>
+<div class="eli5" id="eli5-rej">
+  These are symbols in our scanned universe that did NOT produce a SMART-grade pick today. <b>Not scanned</b> = no row appeared at all (price feed, blackout, or universe-filter killed it earlier). <b>Gate rejected</b> = scanner emitted a candidate but the per-class score/conf/trust floor killed it before /audit could surface it. Drilling in: most equity rejects are below the SMART_PICKS_MIN_SCORE_EQUITY=60 floor.
+</div>
+<div id="rejected-universe" class="panel"></div>
+
+<!-- ===== TOP EDGES ===== -->
+<h2>Top Edges per Class (90d)</h2>
+<button class="eli5-btn" onclick="toggle('eli5-edge')">[?] ELI5</button>
+<div class="eli5" id="eli5-edge">
+  "Edge cells" are combinations of pick-tags (trust tier, confidence band, R:R band, strategy family, direction, source) that — over the last 90 days — historically delivered <b>WR ≥ 55% (Bayesian-shrunk to discount small-n)</b> + <b>PF ≥ 1.5</b> + <b>n ≥ 20 closed</b>. That's the PROVEN definition. PROVEN cells should keep getting capital; "good WR, bad PF" cells win often but lose big when they're wrong (don't size up); "best PF overall" can flag suspiciously-good cells that deserve a manual sanity check for leakage.
+</div>
+<div id="top-edges" class="panel"></div>
+
+<!-- ===== SWARM VERDICT ===== -->
+<h2>Swarm Verdict (deepseek + cerebras + gemini)</h2>
+<button class="eli5-btn" onclick="toggle('eli5-swarm')">[?] ELI5</button>
+<div class="eli5" id="eli5-swarm">
+  We piped the top-edges JSON to 3 outside models and asked: "is this edge real or noise; if we put $100k @ 1% risk last 90d, what's the P&L; what one gate change lifts it most?". Consensus below. Models disagree on CRYPTO (cerebras = noise, deepseek = noise+leakage suspected, gemini = mixed) and agree on COMMODITY = real edge.
+</div>
+<div class="panel" id="swarm-verdict">
+  <p class="small">Read full report: <a href="/audit/research_index.html">research index</a> · <code>reports/2026-05-25_pick_funnel_swarm_verdict.md</code></p>
+  <pre class="verdict" id="swarm-text">Loading…</pre>
+</div>
+
+<footer>
+  <span>findtorontoevents.ca/audit — pick funnel · UTC timestamps · read-only on prod tables</span>
+  <span>Auto-refresh nightly via .github/workflows/pick-funnel-nightly.yml</span>
+</footer>
+
+<script>
+function toggle(id){const e=document.getElementById(id);e.style.display=e.style.display==='block'?'none':'block';}
+
+function fmt(x, dp=2){ if (x===null||x===undefined||isNaN(x)) return '—'; return Number(x).toFixed(dp); }
+function fnum(x){ if (x===null||x===undefined) return '—'; return Number(x).toLocaleString(); }
+
+function gateBadge(gates){
+  if (!gates) return '<span class="badge b-meh">?</span>';
+  if (gates.high_conviction) return '<span class="badge b-hc">HC</span>';
+  if (gates.verified_alpha) return '<span class="badge b-pass">VA</span>';
+  if (gates.smart) return '<span class="badge b-pass">SMART</span>';
+  return `<span class="badge b-fail" title="${gates.first_fail_reason||''}">FAIL</span>`;
+}
+
+function renderFunnelBars(funnel, containerId){
+  const el = document.getElementById(containerId);
+  const max = Math.max(...Object.values(funnel).map(b=>b.scanned||0));
+  const rows = Object.entries(funnel).sort((a,b)=>(b[1].scanned||0)-(a[1].scanned||0));
+  el.innerHTML = '<h3>Funnel by Asset Class</h3>' + rows.map(([ac,b])=>{
+    const w = x => Math.max(2, 100*(x||0)/max) + '%';
+    return `<div class="funnel-row"><div class="ac-name">${ac}</div>
+      <div class="funnel-bars" title="${ac}: ${b.scanned} scanned, ${b.passed_smart} smart, ${b.opened} opened, ${b.win} win, ${b.loss} loss">
+        <div class="stage s1" style="width:${w(b.scanned)}">${b.scanned}</div>
+        <div class="stage s2" style="width:${w(b.passed_smart)}">${b.passed_smart}</div>
+        <div class="stage s3" style="width:${w(b.passed_high_conviction)}">${b.passed_high_conviction}</div>
+        <div class="stage s4" style="width:${w(b.opened)}">${b.opened}</div>
+        <div class="stage s5" style="width:${w(b.win)}">${b.win}</div>
+        <div class="stage s6" style="width:${w(b.loss)}">${b.loss}</div>
+      </div></div>`;
+  }).join('') + '<div class="small" style="margin-top:8px">Blue=scanned · Blue2=smart · Blue3=HC · Blue4=opened · Green=win · Red=loss</div>';
+}
+
+function renderTodayTable(picks){
+  const tb = document.querySelector('#today-table tbody');
+  if (!picks || picks.length === 0){ tb.innerHTML = '<tr><td colspan="13" class="small">No picks in last 24h.</td></tr>'; return; }
+  tb.innerHTML = picks.slice(0,200).map(p=>{
+    const pnl = p.pnl_pct;
+    const pnlc = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : 'pnl-neu';
+    return `<tr>
+      <td><b>${p.symbol||'—'}</b></td>
+      <td>${p.direction||'—'}</td>
+      <td>${p.asset_class||'—'}</td>
+      <td class="small">${p.source_system||'—'}</td>
+      <td class="small">${p.strategy||'—'}</td>
+      <td class="num">${p.elite_score??'—'}</td>
+      <td class="num">${p.trust_score??'—'}</td>
+      <td class="num">${fmt(p.confidence,2)}</td>
+      <td class="num">${fmt(p.entry,4)}</td>
+      <td class="num">${fmt(p.tp,4)}</td>
+      <td class="num">${fmt(p.sl,4)}</td>
+      <td class="${pnlc}">${p.status||'—'}${pnl!=null?` <span class="small">(${fmt(pnl,2)}%)</span>`:''}</td>
+      <td>${gateBadge(p.gates)}</td>
+    </tr>`;
+  }).join('') + (picks.length>200 ? `<tr><td colspan="13" class="small">(showing 200 of ${picks.length})</td></tr>` : '');
+}
+
+function render90dTable(funnel){
+  const tb = document.querySelector('#funnel90-table tbody');
+  const rows = Object.entries(funnel).sort((a,b)=>(b[1].scanned||0)-(a[1].scanned||0));
+  tb.innerHTML = rows.map(([ac,b])=>`<tr>
+    <td><b>${ac}</b></td>
+    <td class="num">${fnum(b.scanned)}</td>
+    <td class="num">${fnum(b.passed_smart)}</td>
+    <td class="num">${fnum(b.passed_verified_alpha)}</td>
+    <td class="num">${fnum(b.passed_high_conviction)}</td>
+    <td class="num">${fnum(b.passed_proven)}</td>
+    <td class="num">${fnum(b.opened)}</td>
+    <td class="num">${fnum(b.closed)}</td>
+    <td class="num pnl-pos">${fnum(b.win)}</td>
+    <td class="num pnl-neg">${fnum(b.loss)}</td>
+    <td class="num">${fnum(b.decisive)}</td>
+    <td class="num">${b.wr_pct!=null?b.wr_pct+'%':'—'}</td>
+  </tr>`).join('');
+}
+
+function renderRejected(rej){
+  const el = document.getElementById('rejected-universe');
+  const entries = Object.entries(rej.by_class||{});
+  if (!entries.length){ el.innerHTML = '<p class="small">No universe data loaded.</p>'; return; }
+  el.innerHTML = entries.map(([ac,b])=>{
+    const grSample = (b.gate_rejected_sample||[]).map(r=>
+      `<tr><td><b>${r.symbol}</b></td><td class="num">${r.elite_score??'—'}</td>
+       <td class="num">${fmt(r.confidence,2)}</td><td class="small">${r.first_fail_reason||'—'}</td></tr>`
+    ).join('');
+    const ns = (b.not_scanned_sample||[]).slice(0,30).join(', ');
+    return `<details><summary><b>${ac}</b> — universe=${b.universe_size}, scanned today=${b.scanned_today}, not-scanned=${b.not_scanned_count}, gate-rejected=${b.gate_rejected_count}</summary>
+      ${grSample ? `<table class="lb" style="margin-top:8px"><thead><tr><th>Symbol</th><th class="num">Score</th><th class="num">Conf</th><th>Fail reason</th></tr></thead><tbody>${grSample}</tbody></table>` : '<p class="small">No gate-rejected rows.</p>'}
+      ${ns ? `<p class="small" style="margin-top:8px"><b>Not scanned today (sample):</b> ${ns}${b.not_scanned_count>30?' …':''}</p>` : ''}
+    </details>`;
+  }).join('');
+}
+
+function renderTopEdges(edges){
+  const el = document.getElementById('top-edges');
+  el.innerHTML = '<p class="small">PROVEN definition: WR_shrunk ≥ 55%, PF ≥ 1.5, n ≥ 20.</p>' +
+    Object.entries(edges.by_class||{}).map(([ac,b])=>{
+      const proven = (b.top_edges_proven||[]).map(e=>
+        `<tr><td class="edge-cell">${e.cell}</td><td class="num">${e.n}</td><td class="num">${e.wr_shrunk_pct}%</td><td class="num">${e.pf}</td><td class="num">${e.avg_pnl_pct}%</td></tr>`
+      ).join('');
+      const pf = (b.best_pf_overall||[]).slice(0,3).map(e=>
+        `<tr><td class="edge-cell">${e.cell}</td><td class="num">${e.n}</td><td class="num">${e.wr_pct}%</td><td class="num">${e.pf}</td><td class="num">${e.avg_pnl_pct}%</td></tr>`
+      ).join('');
+      return `<div class="ac-section">
+        <h3>${ac} <span class="small">— n_closed=${b.n_closed}, cells evaluated=${b.n_cells_evaluated}</span></h3>
+        ${proven ? `<div><b>PROVEN edges:</b><table class="lb"><thead><tr><th>Cell</th><th class="num">n</th><th class="num">WR (shrunk)</th><th class="num">PF</th><th class="num">avg PnL</th></tr></thead><tbody>${proven}</tbody></table></div>` : '<p class="small">No PROVEN cells — class either has too few closed trades or the gates haven\'t isolated an edge.</p>'}
+        ${pf ? `<div style="margin-top:8px"><b>Best PF (sanity-check for leakage):</b><table class="lb"><thead><tr><th>Cell</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">avg PnL</th></tr></thead><tbody>${pf}</tbody></table></div>` : ''}
+      </div>`;
+    }).join('');
+}
+
+async function loadAll(){
+  try {
+    const [today, d90, rej, edges] = await Promise.all([
+      fetch('data/pick_funnel_today.json').then(r=>r.json()),
+      fetch('data/pick_funnel_90d.json').then(r=>r.json()),
+      fetch('data/pick_funnel_rejected_universe.json').then(r=>r.json()),
+      fetch('data/top_edges_per_class.json').then(r=>r.json()),
+    ]);
+    document.getElementById('generated-at').textContent =
+      `Generated ${today.generated_at} UTC · today n=${today.n_picks} · 90d n=${d90.n_picks}`;
+    renderFunnelBars(today.funnel_by_class||{}, 'funnel-bars-today');
+    renderFunnelBars(d90.funnel_by_class||{}, 'funnel-bars-90d');
+    renderTodayTable(today.picks||[]);
+    render90dTable(d90.funnel_by_class||{});
+    renderRejected(rej);
+    renderTopEdges(edges);
+  } catch(e){
+    document.body.insertAdjacentHTML('beforeend', `<p style="color:#ef4444;padding:16px">Load error: ${e.message}</p>`);
+  }
+  try {
+    const txt = await fetch('/audit/swarm_verdict.txt').then(r=>r.ok?r.text():null);
+    if (txt) document.getElementById('swarm-text').textContent = txt;
+    else document.getElementById('swarm-text').textContent = 'Swarm verdict report not yet copied to dashboard. See reports/2026-05-25_pick_funnel_swarm_verdict.md in the repo.';
+  } catch { document.getElementById('swarm-text').textContent='(verdict report not deployed)'; }
+}
+loadAll();
+</script>
+</body>
+</html>
