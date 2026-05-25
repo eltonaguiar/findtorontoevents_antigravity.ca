@@ -54,7 +54,9 @@ jobs:
         git config --local user.name "GitHub Action"
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
         git add dashboard/
-        git add -f data/live_picks.db
+        # data/live_picks.db intentionally NOT tracked — listed in scrub policy
+        # (docs/GIT_HISTORY_REWRITE_2026-05-25.md). Regenerated per run by
+        # live_picks_tracker.py; dashboard reads from generated dashboard/ output.
         git diff --staged --quiet && echo "No changes to commit" && exit 0
         git commit -m "Live picks update: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
         for i in 1 2 3; do
