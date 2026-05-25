@@ -3,7 +3,8 @@
 (those are widely used by other peer agents and have been reverted by
 linters in the past — keep them stable; this module owns the swarm path).
 
-Supports: deepseek, cerebras, xai, inception, ollama_cloud, ollama_local, openrouter, nous.
+Supports: deepseek, nvidia_deepseek, cerebras, xai, inception, ollama_cloud,
+ollama_local, openrouter, nous.
 
 Usage:
     python tools/swarm/api_consult.py --provider deepseek --prompt-file p.md
@@ -15,6 +16,7 @@ Errors go to stderr; exit non-zero.
 
 Env keys:
     DEEPSEEK_API / DEEPSEEK_API_KEY
+    NVIDIA_API_KEY / NGC_API_KEY / NVAPI_KEY
     CEREBRAS_API / CEREBRAS_API_KEY
     X_AI_KEY / XAI_API_KEY / X_AI / GROK_SUPER
     INCEPTION_AI_KEY / INCEPTION_API_KEY
@@ -22,8 +24,9 @@ Env keys:
     OLLAMA_LOCAL_MODEL / OLLAMA_MODEL (optional; keyless local ollama)
     OPENROUTER (OpenAI-compat gateway, 200+ models from many vendors)
 
-Model overrides: DEEPSEEK_MODEL, CEREBRAS_MODEL, XAI_MODEL, INCEPTION_MODEL,
-                 OLLAMA_CLOUD_MODEL, OLLAMA_LOCAL_MODEL, OPENROUTER_MODEL.
+Model overrides: DEEPSEEK_MODEL, NVIDIA_DEEPSEEK_MODEL, CEREBRAS_MODEL,
+                 XAI_MODEL, INCEPTION_MODEL, OLLAMA_CLOUD_MODEL,
+                 OLLAMA_LOCAL_MODEL, OPENROUTER_MODEL.
 """
 from __future__ import annotations
 
@@ -51,6 +54,14 @@ PROVIDERS: dict[str, dict] = {
         "key_envs": ("DEEPSEEK_API", "DEEPSEEK_API_KEY"),
         "max_tokens_field": "max_tokens",
         "max_tokens": 4000,
+    },
+    "nvidia_deepseek": {
+        "url": "https://integrate.api.nvidia.com/v1/chat/completions",
+        "model": "deepseek-ai/deepseek-v4-pro",
+        "key_envs": ("NVIDIA_API_KEY", "NGC_API_KEY", "NVAPI_KEY"),
+        "max_tokens_field": "max_tokens",
+        "max_tokens": 8192,
+        "extra_body": {"chat_template_kwargs": {"thinking": False}},
     },
     "xai": {
         "url": "https://api.x.ai/v1/chat/completions",
@@ -151,6 +162,7 @@ PROVIDERS: dict[str, dict] = {
 #   <ENGINE>_TEMPERATURE / <ENGINE>_MAX_TOKENS / <ENGINE>_TOP_P
 SAMPLING_DEFAULTS: dict[str, dict] = {
     "deepseek":     {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
+    "nvidia_deepseek": {"temperature": 1.0, "max_tokens": 8192, "top_p": 0.95},
     "xai":          {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
     "inception":    {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
     "cerebras":     {"temperature": 0.2, "max_completion_tokens": 4000, "top_p": 1.0},
@@ -404,6 +416,10 @@ def call_openai_compat(provider: str, prompt: str, model_override: str | None,
         "model": body_model,
         "messages": [{"role": "user", "content": prompt}],
     }
+    # Provider-level extensions for OpenAI-compatible backends that support
+    # additional request keys (for example NVIDIA's chat_template_kwargs).
+    if cfg.get("extra_body"):
+        body.update(cfg["extra_body"])
     # Build URL: append ?model=<name> for providers that use query-param routing.
     base_url = cfg["url"]
     if model_qp_name:
@@ -792,6 +808,7 @@ def call_ollama_local(prompt: str, model_override: str | None,
 
 PROVIDER_ALIASES = {
     "gemini_api": "gemini",
+    "nvidia": "nvidia_deepseek",
 }
 
 SUPPORTED_PROVIDERS = sorted(set(PROVIDERS.keys()) | set(PROVIDER_ALIASES.keys()) | {"cerebras", "ollama_cloud", "ollama_local", "gemini", "github_models", "pollinations"})

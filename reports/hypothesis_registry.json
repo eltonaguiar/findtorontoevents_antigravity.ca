@@ -842,6 +842,65 @@
         "atr_exit"
       ],
       "notes": "F16/F17/F18 priority EQUITY T2 (high-n reversal complement to vt_pattern n=245). F18 delivered deeper 3y 598-signal forward-sim analysis (per-ticker variance documented, overall positive edge). Pre-reg before any post-patch full harness/backtest on clean data. Parallel with sector_rotation, PEAD H-002/H-016, insider H-028v3, ETF flow. Patch (tagging) is external gate; readiness HIGH once landed."
+    },
+    {
+      "id": "H-101",
+      "asset_class": "COMMODITY",
+      "family": "COT_positioning_v2_post_M095",
+      "description": "POST-FIX REPLAY of H-001 leakage-fix. Candidate edge from top_edges_per_class.json::by_class.COMMODITY (90-day window): cell `conf=C0.60-0.70 & rr=RR1.0-1.5 & source=multi_asset_copytrader`, n=137, wr=70.07%, pf=3.274, holdout_pf=2.307. Same source+family as rejected H-001. We pre-register a TIME-PARTITIONED REPLAY: restrict this exact cell to picks generated STRICTLY AFTER the M-095 publication-lag fix (2026-05-20) AND with cot_asof + 3 calendar days <= signal_time. Hypothesis: post-fix-only PF > 1.50 with n >= 50, single-underlying concentration < 25%.",
+      "test_statistic": "profit_factor (post-fix-only sub-sample)",
+      "filter_exact": {
+        "asset_class": "COMMODITY",
+        "source": "multi_asset_copytrader",
+        "family": "cot",
+        "direction": "SHORT",
+        "conf_bin": "C0.60-0.70",
+        "rr_bin": "RR1.0-1.5",
+        "score_decile": "S20",
+        "signal_time_gte": "2026-05-20T00:00:00Z",
+        "publication_lag_constraint": "signal_time >= cot_asof + 3 calendar days"
+      },
+      "acceptance_criteria": {
+        "min_pf": 1.5,
+        "min_n": 50,
+        "max_single_underlying_share": 0.25,
+        "min_wr": 0.55,
+        "min_eff": 0.3,
+        "validation": "walk_forward_eff_harness + per-underlying breakdown + pre/post 2026-05-20 split"
+      },
+      "kill_criteria": {
+        "post_fix_pf_below": 1.1,
+        "post_fix_n_below": 30,
+        "single_underlying_share_above": 0.5,
+        "leakage_re_detected": "any pick with signal_time < cot_asof + 3 days"
+      },
+      "economic_prior": "If COT extreme-positioning SHORT actually predicts commodity mean-reversion, the signal should survive the 3-day publication lag. If it does not, the headline 70% WR is fully attributable to look-ahead, identical to H-001.",
+      "statistical_test": "Two-stage: (1) Time-split PF & WR (pre-2026-05-20 vs post-2026-05-20) with binomial CI on WR; (2) on post-fix subset only, walk-forward 14-day windows with eff floor 0.30 and Bonferroni correction over family-of-tests = 1 (this cell only, no fishing).",
+      "harness": "tools/audit/replay_cell_with_pubguard.py (TO BUILD) \u2014 reads closed_picks.json, filters to the exact cell, splits pre/post 2026-05-20, prints PF/WR/n + underlying breakdown.",
+      "sample_size_requirement": {
+        "minimum_post_fix_trades": 50,
+        "if_below_minimum": "DEFER \u2014 wait until n>=50 post-fix; do NOT promote on aggregate window"
+      },
+      "consult_panel_inputs": {
+        "engines": [
+          "openai_codex",
+          "google_gemini",
+          "xai_grok"
+        ],
+        "consensus_verdict": "DATA_QUALITY_LEAKAGE (3/3, avg confidence ~90%)",
+        "consult_files": [
+          "reports/2026-05-25_commodity_cot_edge_consult_codex.md",
+          "reports/2026-05-25_commodity_cot_edge_consult_gemini.md",
+          "reports/2026-05-25_commodity_cot_edge_consult_grok.md"
+        ],
+        "synthesis": "reports/2026-05-25_commodity_cot_edge_triangulation.md"
+      },
+      "status": "PRE-REGISTERED",
+      "registered_at": "2026-05-25T06:33:49.518243+00:00",
+      "data_sample_lock": "closed_picks.json snapshot at registration time (commit pending)",
+      "predecessor": "H-001 (REJECTED 2026-05-20)",
+      "money_recommendation": "PAPER_ONLY until acceptance criteria met",
+      "operator_notes": "M-107 pre-registration. Per CLAUDE.md operator_note on H-001, COT_positioning as a whole is NOT salvageable; H-101 is intentionally a NARROW survival test of one specific cell, not a re-test of the rejected hypothesis. If post-fix PF < 1.10 OR n < 30, mark REJECTED and STOP cell-mining this source+family. Two parallel agents are running adjacent checks: a972ec (statistical sanity / data quality) and a4fa75 (filter pipeline). Their findings should be merged into this entry before any backtest execution."
     }
   ],
   "fork2_new_signals": [
