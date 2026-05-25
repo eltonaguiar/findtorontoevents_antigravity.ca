@@ -245,3 +245,24 @@ jobs:
             git stash pop 2>/dev/null || true
             sleep ${i}0
           done
+
+      # 2026-05-25 AUX fix (5-peer consult consensus, see
+      # reports/2026-05-25_resolver_pipeline_5peer_consult.md):
+      # The pipeline regenerated audit_dashboard/ai-tournament.html and
+      # committed it, but the live findtorontoevents.ca/audit/ai-tournament.html
+      # was stuck at the pre-fix size (49,139 bytes) because no workflow
+      # was FTP-uploading it. 50webs has no shell — files don't reach
+      # production until somebody FTP-uploads them.
+      - name: FTP upload AI tournament artifacts to findtorontoevents.ca
+        if: ${{ !inputs.dry_run }}
+        env:
+          FTP_USER:   ${{ secrets.FTP_USER }}
+          FTP_PASS:   ${{ secrets.FTP_PASS }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER || 'ftps2.50webs.com' }}
+        run: |
+          if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=ftp::FTP_USER/FTP_PASS secrets not set — skipping live deploy. ai-tournament.html will serve stale until manual upload."
+            exit 0
+          fi
+          python tools/deploy_audit_files.py --only ai_tournament || echo "::warning title=ftp::ai_tournament upload had failures"
+        continue-on-error: true
