@@ -21,7 +21,7 @@ import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
-from itertools import product
+from itertools import combinations, product
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -115,12 +115,37 @@ def expand_pick_tags(p: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-# Cell-key dimensions to enumerate (3-tag combos to keep the space tractable)
+# Cell-key dimensions to enumerate (all C(7,3) + C(7,4) combos = 70 total)
 DIMS = ["trust", "conf", "rr", "fam", "dir", "score_dec", "source"]
+DIM_COMBOS: List[Tuple[str, ...]] = (
+    [tuple(c) for c in combinations(DIMS, 3)] +
+    [tuple(c) for c in combinations(DIMS, 4)]
+)
+
+# Caps to keep the per-class memory bounded
+TOP_CELLS_PER_CLASS = 200  # rank by n desc, then score only the top N
+MIN_N = 20
+HOLDOUT_PF_FLOOR = 1.2     # both halves must clear this PF for holdout_pass
 
 
-def find_top_edges(picks: List[Dict[str, Any]]) -> Dict[str, Any]:
-    # Group by asset_class
+def _score_cell(wins: int, n: int, pnls: List[float]) -> Dict[str, Any]:
+    wr = wins / n if n else 0.0
+    wr_shrunk = bayes_wr(wins, n) if n else 0.0
+    pf = profit_factor(pnls)
+    avg = sum(pnls) / n if n else 0.0
+    return {
+        "n": n,
+        "wins": wins,
+        "wr_pct": round(100 * wr, 2),
+        "wr_shrunk_pct": round(100 * wr_shrunk, 2),
+        "pf": round(pf, 3) if pf != float("inf") else 99.0,
+        "avg_pnl_pct": round(avg, 4),
+    }
+
+
+def find_top_edges(picks: List[Dict[str, Any]]) -> Tuple[Dict[str, Any], int]:
+    """Returns (per-class results, total cells evaluated across all classes)."""
+    # Group by asset_class, attach an ordering timestamp for holdout split
     by_class: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for p in picks:
         st = _classify_status(p.get("status"))
@@ -129,74 +154,136 @@ def find_top_edges(picks: List[Dict[str, Any]]) -> Dict[str, Any]:
         tags = expand_pick_tags(p)
         tags["_won"] = (st == "WIN")
         tags["_pnl"] = float(p["pnl_pct"]) if p.get("pnl_pct") is not None else 0.0
+        # Time-ordering key: prefer closed_at, fall back to created_at
+        t = p.get("closed_at") or p.get("created_at")
+        tags["_ts"] = t if t is not None else ""
         by_class[tags["asset_class"]].append(tags)
 
     result: Dict[str, Any] = {}
+    total_cells = 0
+
     for ac, rows in by_class.items():
+        # Sort chronologically for the holdout split
+        rows_sorted = sorted(rows, key=lambda r: str(r["_ts"]))
+        split_idx = int(len(rows_sorted) * 0.6)
+        train_set_ids = set(id(r) for r in rows_sorted[:split_idx])
+
         cells: Dict[Tuple[Tuple[str, str], ...], Dict[str, Any]] = defaultdict(
-            lambda: {"n": 0, "wins": 0, "pnls": []}
+            lambda: {
+                "n": 0, "wins": 0, "pnls": [],
+                "n_tr": 0, "wins_tr": 0, "pnls_tr": [],
+                "n_ho": 0, "wins_ho": 0, "pnls_ho": [],
+            }
         )
-        # Permute over 3-dim combos to constrain combinatorics
-        dim_combos = [
-            ("trust", "conf", "fam"),
-            ("trust", "score_dec", "dir"),
-            ("conf", "rr", "fam"),
-            ("fam", "dir", "source"),
-            ("trust", "fam", "dir"),
-            ("score_dec", "conf", "dir"),
-            ("rr", "fam", "dir"),
-            ("source", "trust", "dir"),
-        ]
-        for r in rows:
-            for combo in dim_combos:
-                key = tuple((d, r[d]) for d in combo)
+        for r in rows_sorted:
+            in_train = id(r) in train_set_ids
+            for combo in DIM_COMBOS:
+                key = (combo, tuple(r[d] for d in combo))
                 c = cells[key]
                 c["n"] += 1
                 if r["_won"]:
                     c["wins"] += 1
                 c["pnls"].append(r["_pnl"])
+                if in_train:
+                    c["n_tr"] += 1
+                    if r["_won"]:
+                        c["wins_tr"] += 1
+                    c["pnls_tr"].append(r["_pnl"])
+                else:
+                    c["n_ho"] += 1
+                    if r["_won"]:
+                        c["wins_ho"] += 1
+                    c["pnls_ho"].append(r["_pnl"])
 
-        # Score cells
+        # Memory cap: keep top-N cells by n
+        sized = [(key, c) for key, c in cells.items() if c["n"] >= MIN_N]
+        sized.sort(key=lambda kv: kv[1]["n"], reverse=True)
+        sized = sized[:TOP_CELLS_PER_CLASS]
+        n_cells_eval = len(sized)
+        total_cells += n_cells_eval
+
         scored = []
-        for key, c in cells.items():
-            n = c["n"]
-            if n < 20:
-                continue
-            wr = c["wins"] / n
-            wr_shrunk = bayes_wr(c["wins"], n)
-            pf = profit_factor(c["pnls"])
-            avg = sum(c["pnls"]) / n
-            cell_label = " & ".join(f"{k}={v}" for k, v in key)
+        for key, c in sized:
+            combo, values = key
+            base = _score_cell(c["wins"], c["n"], c["pnls"])
+            tr = _score_cell(c["wins_tr"], c["n_tr"], c["pnls_tr"])
+            ho = _score_cell(c["wins_ho"], c["n_ho"], c["pnls_ho"])
+            holdout_pass = (
+                c["n_tr"] >= 10 and c["n_ho"] >= 10
+                and tr["pf"] >= HOLDOUT_PF_FLOOR
+                and ho["pf"] >= HOLDOUT_PF_FLOOR
+            )
+            cell_label = " & ".join(f"{k}={v}" for k, v in zip(combo, values))
             scored.append({
                 "cell": cell_label,
-                "n": n,
-                "wins": c["wins"],
-                "wr_pct": round(100 * wr, 2),
-                "wr_shrunk_pct": round(100 * wr_shrunk, 2),
-                "pf": round(pf, 3) if pf != float("inf") else 99.0,
-                "avg_pnl_pct": round(avg, 4),
+                "dims": list(combo),
+                **base,
+                "train_pf": tr["pf"],
+                "train_n": tr["n"],
+                "holdout_pf": ho["pf"],
+                "holdout_n": ho["n"],
+                "holdout_pass": holdout_pass,
             })
 
-        # PROVEN edges
-        proven = [s for s in scored if s["wr_shrunk_pct"] >= 55 and s["pf"] >= 1.5]
+        result[ac] = {
+            "n_closed": len(rows),
+            "n_cells_evaluated": n_cells_eval,
+            "_scored": scored,  # temp, stripped below after multi-test correction
+        }
+
+    # Multiple-testing correction: Bonferroni alpha=0.05 across ALL cells across ALL classes
+    bonf_alpha = 0.05 / max(total_cells, 1)
+    # Approximate: for WR_shrunk >= 55% & n >= 20, one-sided binomial p-value under H0 (wr=0.5)
+    # Use normal approximation: z = (p_hat - 0.5) / sqrt(0.25/n). Cell passes Bonferroni if 1-Phi(z) < bonf_alpha
+    # Threshold z* = inverse Normal CDF at (1 - bonf_alpha)
+    try:
+        from statistics import NormalDist
+        z_star = NormalDist().inv_cdf(1.0 - bonf_alpha)
+    except Exception:
+        z_star = 5.0
+
+    final: Dict[str, Any] = {}
+    for ac, b in result.items():
+        scored = b.pop("_scored")
+        for s in scored:
+            n = s["n"]
+            p_hat = s["wr_pct"] / 100.0
+            z = (p_hat - 0.5) / (0.25 / max(n, 1)) ** 0.5 if n > 0 else 0.0
+            s["wr_z"] = round(z, 3)
+            s["bonferroni_pass"] = bool(z >= z_star)
+
+        proven = [
+            s for s in scored
+            if s["wr_shrunk_pct"] >= 55 and s["pf"] >= 1.5
+            and s["holdout_pass"] and s["bonferroni_pass"]
+        ]
         proven.sort(key=lambda x: (x["pf"], x["wr_shrunk_pct"], x["n"]), reverse=True)
-        # Promising-but-failing (good WR, weak PF)
+
+        proven_unadj = [s for s in scored if s["wr_shrunk_pct"] >= 55 and s["pf"] >= 1.5]
+        proven_unadj.sort(key=lambda x: (x["pf"], x["wr_shrunk_pct"], x["n"]), reverse=True)
+
         promising_wr_weak_pf = [
             s for s in scored
             if s["wr_shrunk_pct"] >= 55 and s["pf"] < 1.5
         ]
         promising_wr_weak_pf.sort(key=lambda x: x["wr_shrunk_pct"], reverse=True)
-        # System-wide best by PF (even if WR<55)
         best_pf = sorted(scored, key=lambda x: x["pf"], reverse=True)[:5]
 
-        result[ac] = {
-            "n_closed": len(rows),
-            "n_cells_evaluated": len(cells),
-            "top_edges_proven": proven[:5],
+        final[ac] = {
+            "n_closed": b["n_closed"],
+            "n_cells_evaluated": b["n_cells_evaluated"],
+            "top_edges_proven": proven[:10],
+            "top_edges_proven_unadjusted": proven_unadj[:10],
             "rejected_good_wr_bad_pf": promising_wr_weak_pf[:5],
             "best_pf_overall": best_pf,
+            "n_holdout_pass": sum(1 for s in scored if s["holdout_pass"]),
+            "n_bonferroni_pass": sum(1 for s in scored if s["bonferroni_pass"]),
         }
-    return result
+
+    # Stash globals so main() can use them in payload header
+    find_top_edges._total_cells = total_cells  # type: ignore[attr-defined]
+    find_top_edges._bonf_alpha = bonf_alpha    # type: ignore[attr-defined]
+    return final, total_cells
 
 
 def main() -> int:
@@ -208,15 +295,81 @@ def main() -> int:
     finally:
         conn.close()
 
-    edges = find_top_edges(picks)
+    edges, total_cells = find_top_edges(picks)
+    bonf_alpha = getattr(find_top_edges, "_bonf_alpha", 0.05)
+    criteria = (
+        f"PROVEN = WR_shrunk>=55%, PF>=1.5, n>=20, "
+        f"holdout_pass (PF>=1.2 on both 60/40 chrono splits), "
+        f"Bonferroni-adjusted alpha=0.05/{total_cells}={bonf_alpha:.3e}. "
+        f"Enumerates all C(7,3)+C(7,4)=70 tag-dim combos across "
+        f"[trust,conf,rr,fam,dir,score_dec,source]; cap top-200 cells per class by n."
+    )
     payload = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "window_days": 90,
-        "criteria": "PROVEN = WR_shrunk>=55%, PF>=1.5, n>=20",
+        "criteria": criteria,
+        "n_total_cells_evaluated": total_cells,
+        "bonferroni_alpha": bonf_alpha,
+        "n_dim_combos": len(DIM_COMBOS),
         "by_class": edges,
     }
     OUT.write_text(json.dumps(payload, indent=2, default=str))
     print(f"[top_edges] wrote {OUT}")
+
+    # Markdown summary
+    try:
+        md_path = ROOT / "reports" / "2026-05-25_top_edges_full_combinatorial.md"
+        lines = [
+            "# Top Edges — Full Combinatorial Audit (2026-05-25)",
+            "",
+            f"Generated: {payload['generated_at']}",
+            f"Window: last {payload['window_days']}d closed picks",
+            "",
+            "## Criteria",
+            "",
+            criteria,
+            "",
+            f"- Total cells evaluated (after n>=20 + top-200/class cap): **{total_cells}**",
+            f"- Dim combos enumerated per pick: **{len(DIM_COMBOS)}** (C(7,3)+C(7,4))",
+            f"- Bonferroni alpha: **{bonf_alpha:.3e}**",
+            "",
+            "## Per-class summary",
+            "",
+            "| Class | n_closed | cells | holdout_pass | bonf_pass | PROVEN (adj) | PROVEN (unadj) | Top edge |",
+            "|-------|----------|-------|--------------|-----------|--------------|----------------|----------|",
+        ]
+        for ac, b in sorted(edges.items()):
+            top = b["top_edges_proven"][0] if b["top_edges_proven"] else (
+                b["top_edges_proven_unadjusted"][0] if b["top_edges_proven_unadjusted"] else None
+            )
+            top_str = (
+                f"{top['cell']} (PF {top['pf']}, WR_s {top['wr_shrunk_pct']}%, n {top['n']})"
+                if top else "—"
+            )
+            lines.append(
+                f"| {ac} | {b['n_closed']} | {b['n_cells_evaluated']} | "
+                f"{b['n_holdout_pass']} | {b['n_bonferroni_pass']} | "
+                f"{len(b['top_edges_proven'])} | {len(b['top_edges_proven_unadjusted'])} | {top_str} |"
+            )
+        lines += ["", "## PROVEN (Bonferroni + holdout) — top 5 per class", ""]
+        for ac, b in sorted(edges.items()):
+            lines.append(f"### {ac}")
+            if not b["top_edges_proven"]:
+                lines.append("_No cells passed all gates._")
+            else:
+                lines.append("| Cell | n | WR | WR_shrunk | PF | train_pf | holdout_pf |")
+                lines.append("|------|---|----|-----------|----|----------|------------|")
+                for s in b["top_edges_proven"][:5]:
+                    lines.append(
+                        f"| {s['cell']} | {s['n']} | {s['wr_pct']}% | {s['wr_shrunk_pct']}% | "
+                        f"{s['pf']} | {s['train_pf']} | {s['holdout_pf']} |"
+                    )
+            lines.append("")
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text("\n".join(lines))
+        print(f"[top_edges] wrote {md_path}")
+    except Exception as e:
+        print(f"[top_edges] WARN: could not write markdown summary: {e}")
 
     # Best-effort: insert top edges into tournament_rating_algorithms
     try:
