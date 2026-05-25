@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-25 04:31 UTC",
+  "generated_at": "2026-05-25 05:16 UTC",
   "incidents": {
     "OVERALL": [
       {
@@ -931,6 +931,30 @@
         "link_github_ref": null
       },
       {
+        "enhancement_id": 28,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "Adopt multi-model-consensus 0-100 algorithm quality score (DeepSeek+Kimi+8 CF models)",
+        "description": "10-model panel (NVIDIA DeepSeek-R1-32B + kimi-k2.6 + CF qwen3-30b/qwq-32b/llama-3.3-70b/llama-4-scout/nemotron-3-120b/gpt-oss-120b/glm-4.7-flash/mistral-small-24b) converged on 8 core scoring dimensions: Sharpe(20%)+Sortino(20%)+MaxDD(20%)+n(10%)+Bonf-sig(10%)+OOS-ratio(10%)+cost-burden(5%)+bias-audit(5%). v1 synthesis at reports/2026-05-25_multi_model_scoring_synthesis_v1.md. Wire as sidecar advisory quality_score in nav_surface_edge_matrix.json + score_pick + verified-alpha gate.",
+        "category": "SCORING",
+        "expected_impact": "HIGH",
+        "effort": "M",
+        "status": "BACKLOG",
+        "proposed_by": "multi-model-consensus",
+        "related_persona_id": null,
+        "proposed_features": null,
+        "success_metric": "quality_score column live on /audit/pick_funnel.html nav-surface matrix; every promoted strategy carries a documented 0-100 score; deploy band (>=80) blocks promotion until all 10 Kimi gates pass",
+        "target_release": null,
+        "review_notes": null,
+        "implementation_pr": null,
+        "created_at": "2026-05-25 05:15:27",
+        "updated_at": "2026-05-25 05:15:27",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-05-25_multi_model_scoring_synthesis_v1.md",
+        "link_url": null,
+        "link_github_ref": null
+      },
+      {
         "enhancement_id": 27,
         "asset_class": "OVERALL",
         "source_ref": null,
@@ -1075,30 +1099,6 @@
         "link_github_ref": null
       },
       {
-        "enhancement_id": 14,
-        "asset_class": "OVERALL",
-        "source_ref": null,
-        "title": "Add 10-gate deployment checklist as CI gate on shadow->probation promotion",
-        "description": "Per Qwen framework: OOS Sharpe>=0.5, max DD<20%, WR binomial p<0.05, Sharpe CoV<0.5, edge-decay slope>-0.05, permutation p<0.10, net-Sharpe-after-costs>0.30, zero leakage flags, parameter sweep stability <15% PnL loss, stress-test (Mar 2020) DD<=30%. Failures block promotion or force reduced sizing.",
-        "category": "METHODOLOGY",
-        "expected_impact": "HIGH",
-        "effort": "M",
-        "status": "BACKLOG",
-        "proposed_by": "qwen-code",
-        "related_persona_id": null,
-        "proposed_features": null,
-        "success_metric": "CI workflow exists that runs all 10 gates on a candidate strategy + writes pass/fail JSON; no strategy promotes without all 10 green",
-        "target_release": null,
-        "review_notes": null,
-        "implementation_pr": null,
-        "created_at": "2026-05-25 03:51:47",
-        "updated_at": "2026-05-25 03:51:47",
-        "implemented_at": null,
-        "link_md_path": "reports/2026-05-25_qwen_momentum_macro_pipeline_framework.md",
-        "link_url": null,
-        "link_github_ref": null
-      },
-      {
         "enhancement_id": 12,
         "asset_class": "OVERALL",
         "source_ref": null,
@@ -1119,6 +1119,30 @@
         "updated_at": "2026-05-25 03:51:47",
         "implemented_at": null,
         "link_md_path": "reports/2026-05-25_opencode_session_deep_scan.md",
+        "link_url": null,
+        "link_github_ref": null
+      },
+      {
+        "enhancement_id": 14,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "Add 10-gate deployment checklist as CI gate on shadow->probation promotion",
+        "description": "Per Qwen framework: OOS Sharpe>=0.5, max DD<20%, WR binomial p<0.05, Sharpe CoV<0.5, edge-decay slope>-0.05, permutation p<0.10, net-Sharpe-after-costs>0.30, zero leakage flags, parameter sweep stability <15% PnL loss, stress-test (Mar 2020) DD<=30%. Failures block promotion or force reduced sizing.",
+        "category": "METHODOLOGY",
+        "expected_impact": "HIGH",
+        "effort": "M",
+        "status": "BACKLOG",
+        "proposed_by": "qwen-code",
+        "related_persona_id": null,
+        "proposed_features": null,
+        "success_metric": "CI workflow exists that runs all 10 gates on a candidate strategy + writes pass/fail JSON; no strategy promotes without all 10 green",
+        "target_release": null,
+        "review_notes": null,
+        "implementation_pr": null,
+        "created_at": "2026-05-25 03:51:47",
+        "updated_at": "2026-05-25 03:51:47",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-05-25_qwen_momentum_macro_pipeline_framework.md",
         "link_url": null,
         "link_github_ref": null
       },
@@ -1171,30 +1195,6 @@
         "link_github_ref": null
       },
       {
-        "enhancement_id": 3,
-        "asset_class": "OVERALL",
-        "source_ref": null,
-        "title": "Implement random-guess audit self-flag prompt",
-        "description": "After each AI-tournament submission, re-prompt the model: 'Are these picks based on cited live market data or speculation? Mark each.' Store flag in tournament_pick_research.research_basis.",
-        "category": "METHODOLOGY",
-        "expected_impact": "HIGH",
-        "effort": "M",
-        "status": "BACKLOG",
-        "proposed_by": "claude-opus-4-7",
-        "related_persona_id": null,
-        "proposed_features": null,
-        "success_metric": "research_basis populated on every new pick within 7 days of rollout",
-        "target_release": null,
-        "review_notes": null,
-        "implementation_pr": null,
-        "created_at": "2026-05-25 03:41:15",
-        "updated_at": "2026-05-25 03:41:15",
-        "implemented_at": null,
-        "link_md_path": "DAILY_IDEAS.MD",
-        "link_url": null,
-        "link_github_ref": null
-      },
-      {
         "enhancement_id": 1,
         "asset_class": "OVERALL",
         "source_ref": null,
@@ -1215,6 +1215,30 @@
         "updated_at": "2026-05-25 03:41:15",
         "implemented_at": null,
         "link_md_path": "reports/2026-05-25_audit_ui_edge_audit.md",
+        "link_url": null,
+        "link_github_ref": null
+      },
+      {
+        "enhancement_id": 3,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "Implement random-guess audit self-flag prompt",
+        "description": "After each AI-tournament submission, re-prompt the model: 'Are these picks based on cited live market data or speculation? Mark each.' Store flag in tournament_pick_research.research_basis.",
+        "category": "METHODOLOGY",
+        "expected_impact": "HIGH",
+        "effort": "M",
+        "status": "BACKLOG",
+        "proposed_by": "claude-opus-4-7",
+        "related_persona_id": null,
+        "proposed_features": null,
+        "success_metric": "research_basis populated on every new pick within 7 days of rollout",
+        "target_release": null,
+        "review_notes": null,
+        "implementation_pr": null,
+        "created_at": "2026-05-25 03:41:15",
+        "updated_at": "2026-05-25 03:41:15",
+        "implemented_at": null,
+        "link_md_path": "DAILY_IDEAS.MD",
         "link_url": null,
         "link_github_ref": null
       },
@@ -1766,6 +1790,6 @@
   },
   "totals": {
     "incidents": 38,
-    "enhancements": 37
+    "enhancements": 38
   }
 }
