@@ -3551,3 +3551,59 @@ Note: this is a second deepseek response in prose form (not strict JSON), distin
 | **CRYPTO** | Active addresses 3mo Δ 15 · GitHub commits 15 · MVRV z-score 15 · 90d momentum 15 · 24h vol/mcap 10 · regulatory risk (inv) 10 · risk-on correlation (inv) 10 | percentile |
 
 **Implementation pipeline (deepseek):** weekly cron → pull factor data → percentile/z-score within peer group → weighted sum → map 0-100 to 1-10 via deciles → Tier 9-10 = Buy, 7-8 = Hold, ≤6 = Review/Reduce. **No CRYPTO/FOREX floor specified** (gap vs Claude's answer which had explicit floors at 5/10 and 6/10).
+
+---
+
+## 2026-05-25 03:15 UTC — Prompt provenance + Ring-2.6-1T (opencode) integration
+
+### The 4 canonical prompts sent to the AI tournament fleet this session
+
+For reproducibility — these are the *exact* prompts the user sent to every model (Mercury V2, Grok-3, Qwen3.6-flash, Nemotron 3 Super, Ring-2.6-1T, deepseek, gemini, cerebras, claude_opus_4_7). Save these verbatim and use them on every future round so cross-model answers are apples-to-apples.
+
+**Prompt 1 — hedge-fund personas + per-asset-class picks:**
+> "Give me a list of personas that could similar to ones a hedge fund would use, then act as each persona, and come up with the top picks per asset class for ETFs / stocks for picks based on the latest market data and come up with a list of picks including TP/PL, entry reason"
+>
+> (immediately followed by `/dropchat-multipc` so peer agents see the output)
+
+**Prompt 2 — expand into a database-ready spec per model+persona+pick:**
+> "expand your results given with the following: Your Provider-Model (Qwen — … model?) + prompt given + your ideal trading style for each asset class, and a specific rationale for each pick, and your strategy, how long to hold it? what TP/SL? what was the pick based on? a guess? how many symbols did they check? what did you research? Also survey the personas you used ask them how we can improve their picks, what data points do they need? other stats? etc"
+
+**Prompt 3 — tier-rating algorithm per asset class:**
+> "furthermore if you were challenged to give a pick rating system to create a tier list of symbols on a scale of 1-10 per asset class, what algorithm would you use for each asset class?"
+
+**Prompt 4 — prompt provenance (this entry):**
+> "save these prompts appending them to our DAILY_IDEAS.MD and commit that to github."
+
+These 4 prompts now feed directly into the new DB schema (committed 2026-05-25 03:10 UTC):
+- Prompt text → `tournament_prompts.system_prompt` / `user_prompt`
+- Prompt 2 self-survey output → `tournament_pick_research.symbols_screened` + `sources_jsonl` + `research_basis` + `self_audit_response`
+- Prompt 3 output → `tournament_rating_algorithms.features` JSON + `floor_score` + `signature_insight`
+
+### Ring-2.6-1T (via OpenRouter / opencode) — playbook ingested
+
+Source: `hedge_fund_persona_playbook_v2.md` (570 lines, 2026-05-25). 8 personas (Macro Strategist · Quant/StatArb · Event-Driven · CTA/Trend · Value · Risk Parity · Vol Trader · Crypto-Native). Top picks across all classes: NVDA 9.4 · AAPL 9.1 · QQQ 9.2 · BTC 9.1 · GLD 7.8.
+
+**Tier-rating algorithms now seeded in `tournament_rating_algorithms` (5 rows for ring_261T):**
+
+| Asset | Top weight | Floor | Signature insight |
+|---|---|---|---|
+| EQUITY | Quality 25% | 5/10 | Quality dominates over momentum (20%) — contrarian to most retail screens |
+| ETF | Trend 25% + MacroAlign 25% (tied) | 5/10 | Macro alignment tied for #1 weight — unusual for ETF systems that lean pure technical |
+| CRYPTO | OnChainHealth 30% | 5/10 | MVRV + exchange flows dominate; narrative explicitly weighted (20%) |
+| COMMODITY | MacroTrend 30% | 5/10 | Real-rate + geopolitical risk premium as core; seasonality + carry are equal sleeves |
+| BOND | MacroTrend 30% | 5/10 | Derived from shared COMMODITY/BOND algo, feature definitions adapted for fixed income |
+
+Self-assessment survey captured under `hedge_fund_persona_playbook_v2.md §4`:
+- Edge-decay rates: 3-6mo crypto narratives · 6-12mo quant factors · 12-18mo macro positioning · 24+mo value structural
+- Sharpe targets: vol trader 1.5 · quant 1.2 · value 1.1 · macro 1.0
+- Missing-data list per persona: dark pool prints (quant), options flow (event-driven), volume profile (CTA), on-chain whale tracking (crypto), customer concentration (value), realised vol decomposition (risk parity), variance swaps (vol trader), credit default swaps (macro)
+
+### Cross-model tier-rating consensus update (3 models with structured answers in DB now: claude_opus_4_7, deepseek, ring_261T)
+
+**EQUITY consensus features (all 3):** momentum, quality/ROIC, earnings/value
+**ETF consensus (3/3):** trend, relative strength, liquidity
+**CRYPTO consensus (3/3):** on-chain/funding/MVRV, volume, momentum
+**FOREX consensus (2/2 of those answering):** rate differential (carry), real/PPP deviation, momentum
+**COMMODITY consensus (2/2):** macro/regime, supply-demand (inventories/COT), real rates / USD
+
+Next step: write `tools/ai_tournament/consensus_tier_algorithm.py` to take consensus features with ≥2-model agreement, derive averaged weights, emit seed for `alpha_engine/score_v3.py` (opt-in sidecar per Wire-Up Rule).
