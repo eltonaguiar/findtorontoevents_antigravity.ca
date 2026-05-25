@@ -84,3 +84,14 @@ If you see a Hermes Agent session leaking GitHub PATs in shell command previews,
 - `py_compile` for syntax checks (never run generators locally)
 - `gh run list --branch main` to check GitHub Actions status
 - `gh run rerun --failed <id>` to rerun failed jobs
+
+## DO NOT trust unsourced model claims about /audit numbers
+
+Several Cloudflare-hosted models (DeepSeek R1 Distill Qwen 32B in particular,
+session-ses_1a25.md 2026-05-25) confidently invent per-class WR/PF/Sharpe
+numbers when asked "look at findtorontoevents.ca/audit". They have no
+browser/tool access and will fabricate plausible-but-wrong figures (e.g.
+CRYPTO 68% WR / PF 2.45 — actual is 43% WR / PF 1.14 per
+`money_ready_verdict.json` 2026-05-24). The right pattern for outside-AI
+grounding: this session pulls the verdict JSON locally → feeds it verbatim
+to the model → asks for interpretation. **Never let the model claim to fetch.**
