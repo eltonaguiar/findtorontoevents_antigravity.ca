@@ -65,6 +65,15 @@
   footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07); color: #4b5563; font-size: 11px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
   .ac-section { margin: 18px 0; padding: 10px 14px; background: rgba(255,255,255,0.015); border-radius: 6px; border-left: 3px solid #60a5fa; }
   pre.verdict { white-space: pre-wrap; background:#0e0e16; padding:12px; border-radius:6px; font-size:11px; line-height:1.5; max-height: 480px; overflow:auto; border:1px solid rgba(255,255,255,0.05); }
+  /* Recency subset styling — distinct accents per window. */
+  .recency-2w  { border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.04); padding: 10px 14px; border-radius: 4px; margin: 10px 0; }
+  .recency-48h { border-left: 4px solid #ec4899; background: rgba(236,72,153,0.05); padding: 10px 14px; border-radius: 4px; margin: 10px 0; }
+  .chip-14d { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:800; font-size:10px; letter-spacing:0.3px; background:#78350f; color:#fcd34d; border:1px solid #f59e0b; margin-left:6px; }
+  .chip-48h { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:800; font-size:10px; letter-spacing:0.3px; background:#831843; color:#fbcfe8; border:1px solid #ec4899; margin-left:6px; }
+  .chip-all { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:800; font-size:10px; letter-spacing:0.3px; background:#1e3a8a; color:#bfdbfe; border:1px solid #3b82f6; margin-left:6px; }
+  .insuff   { color:#a0a0b0; font-style:italic; font-size:11px; }
+  .recency-hero { background: linear-gradient(135deg, rgba(236,72,153,0.10), rgba(245,158,11,0.06)); border:2px solid rgba(236,72,153,0.5); border-radius:10px; padding:14px 18px; margin:18px 0 24px; }
+  .recency-hero h2 { border-bottom: none; margin-top:0; color:#fbcfe8; text-transform:none; letter-spacing:0; font-size:16px; }
 </style>
 </head>
 <body>
@@ -123,6 +132,16 @@
   </div>
 </div>
 
+<!-- ===== LAST 48 HOURS — PER ASSET CLASS (added 2026-05-25) ===== -->
+<!-- "Drive the point home" subset. Distinct magenta accent + [48h] chip.
+     Sidecar: data/pick_summary_stats_48h.json built by
+     tools/audit_pick_funnel/build_recency_summary.py. -->
+<div class="recency-hero" id="hero-48h">
+  <h2>Last 48 Hours — Per Asset Class <span class="chip-48h">[48h]</span></h2>
+  <p class="small" style="color:#fbcfe8">What ACTUALLY happened on the live `at_raw_picks` table in the last 48 hours — per asset class rollup + the per-pick detail rows. This is the cohort to trust most: zero curation lag, zero noise from the historical pool. If a class shows INSUFFICIENT n here while the all-time row shows 90% WR, the all-time row is a relic.</p>
+  <div id="recency-48h-summary"><p class="small">Loading pick_summary_stats_48h.json…</p></div>
+</div>
+
 <!-- NAV SURFACE MATRIX -->
 <!-- Honest WR / PF / holdout-PF / why-no-edge for every clickable filter or
      tab on /audit. Server-side computed via tools/audit_pick_funnel/
@@ -137,6 +156,11 @@
 </div>
 <div class="panel" id="nav-surface-matrix">
   <p class="small">Loading nav surface matrix…</p>
+</div>
+<div class="recency-2w" id="nav-surface-matrix-2w">
+  <div style="font-weight:700;font-size:12px;color:#fcd34d">14-day subset <span class="chip-14d">[14d]</span></div>
+  <p class="small" style="color:#fcd34d">Same Bayes-shrunk WR / PF, but restricted to picks <b>opened OR closed in the last 14 days</b> per asset class. Sourced from <code>data/pick_summary_stats_2w.json</code>. If the all-time row above is "EDGE" but the 14d row is sub-50% WR or has caveats (single_source_concentration, EXPIRED-mislabeled-WON), the all-time edge is historical, not current.</p>
+  <div id="recency-2w-summary"><p class="small">Loading…</p></div>
 </div>
 <!-- /NAV SURFACE MATRIX -->
 
@@ -183,6 +207,11 @@
   These are symbols in our scanned universe that did NOT produce a SMART-grade pick today. <b>Not scanned</b> = no row appeared at all (price feed, blackout, or universe-filter killed it earlier). <b>Gate rejected</b> = scanner emitted a candidate but the per-class score/conf/trust floor killed it before /audit could surface it. Drilling in: most equity rejects are below the SMART_PICKS_MIN_SCORE_EQUITY=60 floor.
 </div>
 <div id="rejected-universe" class="panel"></div>
+<div class="recency-2w">
+  <div style="font-weight:700;font-size:12px;color:#fcd34d">14-day rejection counts <span class="chip-14d">[14d]</span></div>
+  <p class="small" style="color:#fcd34d">14-day per-class touched / active / closed counts from <code>at_raw_picks</code>. A class with high "touched" but low "decisive" in 14d means the gate is now rejecting most candidates — useful sanity-check against the "today" rejected universe above.</p>
+  <div id="recency-2w-counts"><p class="small">Loading…</p></div>
+</div>
 
 <!-- ===== TOP EDGES ===== -->
 <h2>Top Edges per Class (90d)</h2>
@@ -191,6 +220,11 @@
   "Edge cells" are combinations of pick-tags (trust tier, confidence band, R:R band, strategy family, direction, source) that — over the last 90 days — historically delivered <b>WR ≥ 55% (Bayesian-shrunk to discount small-n)</b> + <b>PF ≥ 1.5</b> + <b>n ≥ 20 closed</b>. That's the PROVEN definition. PROVEN cells should keep getting capital; "good WR, bad PF" cells win often but lose big when they're wrong (don't size up); "best PF overall" can flag suspiciously-good cells that deserve a manual sanity check for leakage.
 </div>
 <div id="top-edges" class="panel"></div>
+<div class="recency-2w">
+  <div style="font-weight:700;font-size:12px;color:#fcd34d">14-day per-class WR / PF <span class="chip-14d">[14d]</span></div>
+  <p class="small" style="color:#fcd34d">Per-class rollup over the last 14 days (Bayes-shrunk, dedup-aware, single-source-concentration flagged). Compare with the all-time "PROVEN edges" above — a cell that's PROVEN over 90d but absent here means the edge stopped firing OR stopped winning.</p>
+  <div id="recency-2w-perclass"><p class="small">Loading…</p></div>
+</div>
 
 <!-- ===== SWARM VERDICT ===== -->
 <h2>Swarm Verdict (deepseek + cerebras + gemini)</h2>
@@ -201,6 +235,11 @@
 <div class="panel" id="swarm-verdict">
   <p class="small">Read full report: <a href="/audit/research_index.html">research index</a> · <code>reports/2026-05-25_pick_funnel_swarm_verdict.md</code></p>
   <pre class="verdict" id="swarm-text">Loading…</pre>
+</div>
+<div class="recency-2w">
+  <div style="font-weight:700;font-size:12px;color:#fcd34d">14-day reality check on the swarm verdict <span class="chip-14d">[14d]</span></div>
+  <p class="small" style="color:#fcd34d">The swarm verdict above used the 90d/all-time cohort. Below is the 14d ground truth from <code>at_raw_picks</code>. If the swarm called "COMMODITY = real edge" but 14d-COMMODITY now shows PF&lt;1, the verdict is stale.</p>
+  <div id="recency-2w-swarm"><p class="small">Loading…</p></div>
 </div>
 
 <!-- CLICK FUNNEL PANEL (added 2026-05-25) -->
@@ -217,6 +256,11 @@
 </div>
 <div class="panel" id="click-funnel-panel">
   <div class="small">No clicks yet — visit <a href="/audit/">/audit</a>, click <b>HIGH CONVICTION</b> or <b>MONEY READY</b>, then refresh this page.</div>
+</div>
+<div class="recency-2w" id="click-funnel-panel-2w">
+  <div style="font-weight:700;font-size:12px;color:#fcd34d">Your 14d clicks vs 14d performance <span class="chip-14d">[14d]</span></div>
+  <p class="small" style="color:#fcd34d">Of your recent clicks (local), how many landed on asset classes whose 14d cohort actually has edge? Filtered to the last 14 days of clicks.</p>
+  <div id="click-funnel-2w-body"><div class="small">No clicks in the last 14 days.</div></div>
 </div>
 <!-- /CLICK FUNNEL PANEL -->
 
@@ -235,6 +279,16 @@
   <b>WR<sub>shrunk</sub></b> uses a Beta(α=10, β=10) prior (prior_n=20, prior_mean=0.5) — pulls small-n cells toward 50%. <b>PF</b> &lt; 1 means losers outweighed winners. <b>Mean R</b> is mean per-trade pnl_pct (not R-multiples). <b>Max DD</b> is peak-to-trough on a chrono cumulative-pnl_pct equity curve over the cohort.
 </div>
 <div class="panel" id="pick-summary"><p class="small">Loading pick_summary_stats.json…</p></div>
+<div class="recency-2w">
+  <div style="font-weight:700;font-size:12px;color:#fcd34d">Same table, restricted to the last 14 days <span class="chip-14d">[14d]</span></div>
+  <p class="small" style="color:#fcd34d">Per-class summary from <code>data/pick_summary_stats_2w.json</code> — picks opened OR closed in the last 14 days only. Shrinkage prior matches the all-time table above.</p>
+  <div id="pick-summary-2w"><p class="small">Loading…</p></div>
+</div>
+<div class="recency-48h">
+  <div style="font-weight:700;font-size:12px;color:#fbcfe8">Same table, restricted to the last 48 hours <span class="chip-48h">[48h]</span></div>
+  <p class="small" style="color:#fbcfe8">Per-class summary from <code>data/pick_summary_stats_48h.json</code> — picks opened OR closed in the last 48 hours only. Cells with n&lt;10 decisive trades show "INSUFFICIENT n" rather than fabricating a WR.</p>
+  <div id="pick-summary-48h"><p class="small">Loading…</p></div>
+</div>
 <script>
 (async function loadPickSummary(){
   try {
@@ -489,6 +543,136 @@ function renderNavSurfaceMatrix(mx){
   el.innerHTML = header + sections;
 }
 
+// =========================================================================
+// RECENCY RENDERERS — 14d + 48h subsets. Sidecars built by
+// tools/audit_pick_funnel/build_recency_summary.py. Distinct coloring keeps
+// the user's eye on what's RECENT vs the all-time numbers above.
+// =========================================================================
+function _fmtRec(v, dp=2){
+  if (v===null||v===undefined) return '—';
+  if (v==='inf') return '∞';
+  return Number(v).toFixed(dp);
+}
+function _wrCls(v){ if (v==null) return 'pnl-neu'; return v>=55?'pnl-pos':(v<45?'pnl-neg':'pnl-neu'); }
+function _pfCls(v){ if (v==null||v==='inf') return v==='inf'?'pnl-pos':'pnl-neu'; return v>=1.5?'pnl-pos':(v<1?'pnl-neg':'pnl-neu'); }
+function _caveatBadges(cv){
+  if (!cv || !cv.length) return '';
+  return cv.map(c=>`<span class="badge b-fail" title="${c}" style="margin-left:4px;font-size:9px">${c.split('=')[0]}</span>`).join('');
+}
+function renderRecencyTable(s, mountId, accentClass){
+  const el = document.getElementById(mountId);
+  if (!el) return;
+  if (!s || !s.by_class){ el.innerHTML = '<p class="small" style="color:#ef4444">Sidecar missing — run tools/audit_pick_funnel/build_recency_summary.py.</p>'; return; }
+  const entries = Object.entries(s.by_class).sort((a,b)=>(b[1].n_touched||0)-(a[1].n_touched||0));
+  const rows = entries.map(([ac,b])=>{
+    const wrCell = (b.wr_pct!=null)
+      ? `<td class="num ${_wrCls(b.wr_pct)}">${_fmtRec(b.wr_pct)}%</td>`
+      : (b.n_decisive < (s.insufficient_n_floor||10)
+          ? `<td class="num insuff">INSUFF-N (n=${b.n_decisive})</td>`
+          : `<td class="num">—</td>`);
+    const wrsCell = b.wr_shrunk_pct!=null ? `<td class="num">${_fmtRec(b.wr_shrunk_pct)}%</td>` : `<td class="num insuff">—</td>`;
+    const pf = b.pf;
+    const pfCell = `<td class="num ${_pfCls(pf)}">${_fmtRec(pf,3)}</td>`;
+    const topSrc = b.top_source ? `${b.top_source} <span class="small">(${Math.round((b.top_source_share||0)*100)}%)</span>` : '—';
+    const topSym = b.top_symbol ? `${b.top_symbol} <span class="small">(${Math.round((b.top_symbol_share||0)*100)}%)</span>` : '—';
+    return `<tr><td><b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td>${wrCell}${wrsCell}${pfCell}<td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${topSym}</td><td class="small">${topSrc}</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
+  }).join('');
+  const fallback = s.fallback_mode ? `<div class="small" style="color:#fca5a5;margin-bottom:6px">⚠ FALLBACK MODE: ${s.source}</div>` : '';
+  el.innerHTML = `${fallback}<p class="small">Generated ${s.generated_at} · window=${s.window_label} · cutoff=${s.cutoff_utc} · source=${s.source} · prior=${s.shrinkage_prior}</p>
+    <table class="lb"><thead><tr>
+      <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
+      <th class="num">WR</th><th class="num">WR<sub>shrunk</sub></th><th class="num">PF</th><th class="num">Mean PnL</th>
+      <th>Top symbol</th><th>Top source</th><th>Caveats</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderRecencyCompact(s, mountId, columnsOnly){
+  // Compact rollup used under nav-matrix / top-edges / rejected / swarm.
+  const el = document.getElementById(mountId);
+  if (!el) return;
+  if (!s || !s.by_class){ el.innerHTML = '<p class="small" style="color:#ef4444">Sidecar missing.</p>'; return; }
+  const entries = Object.entries(s.by_class).sort((a,b)=>(b[1].n_touched||0)-(a[1].n_touched||0));
+  const rows = entries.map(([ac,b])=>{
+    const wr = (b.wr_pct!=null) ? `<span class="${_wrCls(b.wr_pct)}">${_fmtRec(b.wr_pct)}%</span>`
+              : (b.n_decisive < (s.insufficient_n_floor||10) ? `<span class="insuff">INSUFF-N(${b.n_decisive})</span>` : '—');
+    const pf = `<span class="${_pfCls(b.pf)}">${_fmtRec(b.pf,2)}</span>`;
+    return `<tr><td><b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_decisive}</td><td class="num">${wr}</td><td class="num">${pf}</td><td class="small">${b.top_source||'—'} <span class="small">(${Math.round((b.top_source_share||0)*100)}%)</span></td><td>${_caveatBadges(b.caveats)}</td></tr>`;
+  }).join('');
+  el.innerHTML = `<table class="lb"><thead><tr><th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">decisive</th><th class="num">WR</th><th class="num">PF</th><th>Top source (share)</th><th>Caveats</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderRecency48hHero(s){
+  const el = document.getElementById('recency-48h-summary');
+  if (!el) return;
+  if (!s || !s.by_class){ el.innerHTML = '<p class="small" style="color:#ef4444">48h sidecar missing.</p>'; return; }
+  const entries = Object.entries(s.by_class).sort((a,b)=>(b[1].n_touched||0)-(a[1].n_touched||0));
+  const summary = entries.map(([ac,b])=>{
+    const wr = (b.wr_pct!=null) ? `<span class="${_wrCls(b.wr_pct)}">${_fmtRec(b.wr_pct)}%</span>`
+              : (b.n_decisive < (s.insufficient_n_floor||10) ? `<span class="insuff">INSUFF-N(${b.n_decisive})</span>` : '—');
+    return `<tr><td><b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td><td class="num">${wr}</td><td class="num ${_pfCls(b.pf)}">${_fmtRec(b.pf,3)}</td><td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${b.top_source||'—'} (${Math.round((b.top_source_share||0)*100)}%)</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
+  }).join('');
+  // Per-pick detail per class — collapsed by default
+  const detail = entries.map(([ac,b])=>{
+    const picks = b.picks || [];
+    const actives = b.active_picks || [];
+    if (!picks.length && !actives.length) return '';
+    const closedRows = picks.map(p=>{
+      const pnl = p.pnl_pct;
+      const pnlc = pnl>0?'pnl-pos':(pnl<0?'pnl-neg':'pnl-neu');
+      return `<tr><td><b>${p.symbol||'—'}</b></td><td>${p.direction||'—'}</td><td class="small">${p.source_system||'—'}</td><td class="small">${p.strategy||'—'}</td><td class="small">${(p.opened_at||'').replace('T',' ').slice(0,19)}</td><td class="small">${(p.closed_at||'').replace('T',' ').slice(0,19)}</td><td>${p.status||'—'}</td><td class="num ${pnlc}">${pnl!=null?_fmtRec(pnl,2)+'%':'—'}</td><td class="num">${p.hold_minutes!=null?p.hold_minutes:'—'}</td></tr>`;
+    }).join('');
+    const activeRows = actives.map(p=>`<tr style="background:rgba(96,165,250,0.04)"><td><b>${p.symbol||'—'}</b></td><td>${p.direction||'—'}</td><td class="small">${p.source_system||'—'}</td><td class="small">${p.strategy||'—'}</td><td class="small">${(p.opened_at||'').replace('T',' ').slice(0,19)}</td><td class="small">—</td><td>${p.status||'OPEN'}</td><td class="num">—</td><td class="num">—</td></tr>`).join('');
+    return `<details style="margin-top:8px"><summary><b>${ac}</b> — ${picks.length} closed + ${actives.length} active in 48h</summary>
+      <table class="lb" style="margin-top:6px"><thead><tr><th>Symbol</th><th>Dir</th><th>Source</th><th>Strategy</th><th>Opened</th><th>Closed</th><th>Status</th><th class="num">PnL%</th><th class="num">Hold (min)</th></tr></thead><tbody>${activeRows}${closedRows}</tbody></table>
+    </details>`;
+  }).join('');
+  el.innerHTML = `<p class="small" style="color:#fbcfe8">Generated ${s.generated_at} · cutoff=${s.cutoff_utc} · source=${s.source}</p>
+    <table class="lb"><thead><tr>
+      <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
+      <th class="num">WR</th><th class="num">PF</th><th class="num">Mean PnL</th><th>Top source</th><th>Caveats</th>
+    </tr></thead><tbody>${summary}</tbody></table>
+    <div style="margin-top:10px"><b style="font-size:12px;color:#fbcfe8">Per-pick detail (48h):</b>${detail||'<p class="small">No per-pick rows.</p>'}</div>`;
+}
+function renderClickFunnel14d(){
+  // Filter the click-funnel localStorage to last 14d.
+  const KEY = '_audit_click_funnel_v1';
+  const host = document.getElementById('click-funnel-2w-body');
+  if (!host) return;
+  let arr = [];
+  try { arr = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(arr)) arr = []; } catch(e){}
+  const cutoff = Date.now() - 14*24*3600*1000;
+  const recent = arr.filter(e=>{
+    const t = Date.parse(e.ts||'');
+    return !isNaN(t) && t >= cutoff;
+  });
+  if (!recent.length){ host.innerHTML = '<div class="small">No clicks in the last 14 days.</div>'; return; }
+  const counts = recent.reduce((m,e)=>{ const k=`${e.buttonId}|${e.asset_class_filter||'all'}`; m[k]=(m[k]||0)+1; return m; },{});
+  const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,c])=>{
+    const [btn, af] = k.split('|');
+    return `<tr><td><code>${btn}</code></td><td>${af}</td><td class="num">${c}</td></tr>`;
+  }).join('');
+  host.innerHTML = `<div class="small" style="color:#fcd34d">${recent.length} click(s) in the last 14 days.</div><table class="lb"><thead><tr><th>Button</th><th>Asset filter</th><th class="num">Clicks</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+async function loadRecencySubsets(){
+  try {
+    const [r2w, r48h] = await Promise.all([
+      fetch('data/pick_summary_stats_2w.json').then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch('data/pick_summary_stats_48h.json').then(r=>r.ok?r.json():null).catch(()=>null),
+    ]);
+    // 48h hero
+    renderRecency48hHero(r48h);
+    // 14d full table under Active+Closed summary
+    renderRecencyTable(r2w, 'pick-summary-2w', 'recency-2w');
+    renderRecencyTable(r48h, 'pick-summary-48h', 'recency-48h');
+    // 14d compact under nav-matrix, rejected, top-edges, swarm
+    renderRecencyCompact(r2w, 'recency-2w-summary');
+    renderRecencyCompact(r2w, 'recency-2w-counts');
+    renderRecencyCompact(r2w, 'recency-2w-perclass');
+    renderRecencyCompact(r2w, 'recency-2w-swarm');
+    renderClickFunnel14d();
+  } catch(e){
+    console.error('recency load failed', e);
+  }
+}
+
 async function loadAll(){
   try {
     const [today, d90, rej, edges, navmx] = await Promise.all([
@@ -516,6 +700,7 @@ async function loadAll(){
     else document.getElementById('swarm-text').textContent = 'Swarm verdict report not yet copied to dashboard. See reports/2026-05-25_pick_funnel_swarm_verdict.md in the repo.';
   } catch { document.getElementById('swarm-text').textContent='(verdict report not deployed)'; }
   renderClickFunnel();
+  loadRecencySubsets();
 }
 
 // CLICK FUNNEL PANEL — renders localStorage _audit_click_funnel_v1
