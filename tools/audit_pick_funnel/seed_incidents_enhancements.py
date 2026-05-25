@@ -195,6 +195,19 @@ INCIDENTS = [
      "Run the COT-dedup audit live, compute n + WR + PF under (a) raw, (b) deduped-by-release-week, (c) cot_paper_pilot-only sleeve. Publish the truth-table; update the page's SUPREME EDGE callout to match.",
      "reports/audit_benchmark_analysis_2026-05-24.md", None, None, "claude-opus-4-7"),
 
+    # ---- Added from opencode session-ses_1a2d.md queued action items ----
+    ("OVERALL", "sync_active_mysql_picks_to_json upstream writer missing — root cause of 0.09% raw-pick outcome coverage",
+     "Opencode 2026-05-12 identified the missing upstream writer that should read ACTIVE at_raw_picks, detect TP/SL/time-exit per asset class, and feed new entries into closed_picks.json. Without it the signal_outcomes table has 0.09% coverage of raw picks — every forward-WR claim is built on 0.1% of the actual pick population.",
+     "P0", "OPEN", "alpha_engine/active_picks_sync.py (proposed) + forward_validator.validate_picks()",
+     "New module alpha_engine/active_picks_sync.py invoked inline from forward_validator. Reuses existing failover price fetchers. Estimate 2-3h with tests. This is the upstream of the 'signal_outcomes 82d stale' incident already filed.",
+     "session-ses_1a2d.md", None, None, "opencode/ring-2.6-1t"),
+
+    ("CRYPTO", "meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_backtest_trades",
+     "Opencode flagged 1.6M template rows from meta_strategy across MEMECOIN/CRYPTO symbol+direction pairs in backtest_trades. Same root cause as the ghost-rows finding from Qwen's db_health (top 11 ghost cohorts are meta_strategy MEMECOIN). Defer blanket-block until db_health ghost_rows.top_cohorts repopulates after CI commit-list fix lands.",
+     "P1", "TRIAGED", "meta_strategy emitter / bt_backtest_trades writer",
+     "Wait 1-2 cron cycles for db_health refresh post-commit d317560ac9c. Then decide: blanket-block meta_strategy on CRYPTO/MEMECOIN OR symbol-triple enumeration.",
+     "session-ses_1a2d.md", None, "d317560ac9c", "opencode/ring-2.6-1t"),
+
     ("FOREX", "All FOREX strategies losers except cta_cross_asset_tsmom SHORT (93% USDJPY concentration)",
      "Per benchmark report: forex_carry_momentum, forex_rsi2_mean_reversion, myfxbook_retail_contrarian all losing. Only cta_cross_asset_tsmom SHORT has WR 57.6% but is 93% concentrated in USDJPY — not a diversified edge, just one carry trade.",
      "P0", "OPEN", "alpha_engine FOREX strategies (concentration risk)",
@@ -287,6 +300,31 @@ ENHANCEMENTS = [
      "DATA_FEED", "MEDIUM", "L", "BACKLOG", "claude+persona_survey", "gamma_raid",
      "gamma_raid persona shows >=3pp WR improvement after data integration",
      "reports/2026-05-25_persona_improvement_survey.md", None, None),
+
+    # ---- Added from opencode session-ses_1a2d.md queued action items ----
+    ("OVERALL", "WON-vs-PnL backfill SQL — re-label legacy contradicted rows",
+     "Opencode P0 DRAFT. UPDATE pass that re-computes status from pnl_pct for any (status='WON', pnl_pct<0) or (status='LOST', pnl_pct>0) row. Sign-coherence guard already stops NEW contradictions; this backfills the historical 2,531+ WON rows with negative PnL flagged in db_health.json::won_pnl_contradiction.",
+     "SCORING", "HIGH", "S", "BACKLOG", "opencode/ring-2.6-1t", None,
+     "All WON rows have pnl_pct >= 0; all LOST/SL_HIT rows have pnl_pct <= 0; aggregates re-published",
+     "session-ses_1a2d.md", None, None),
+
+    ("BONDS", "Wire bond_scanner.py (3 strategies) to production cron",
+     "alpha_engine/bond_scanner.py exists with yield_momentum, duration_rotation, mean_reversion; not currently wired into production_scanner main loop. Universe of 14 symbols ready at config.py:721. Wiring should lift BOND n from 18 to 50+ within 2 weeks.",
+     "METHODOLOGY", "HIGH", "S", "BACKLOG", "opencode/ring-2.6-1t", None,
+     "BOND n>=50 within 2 weeks of wire-up; class no longer marked 'sample-size-thin' on /audit",
+     "session-ses_1a2d.md", None, None),
+
+    ("OVERALL", "Batch-DSR backtest the 206 baby_strategies/ files (zero currently wired)",
+     "Opencode found 206 files in alpha_engine/baby_strategies/, ZERO wired to production. Massive untapped pipeline. Surface a batch DSR runner (anti_overfit_audit_sidecar.py over baby_strategies/*) to find DSR-real candidates and promote them per the Wire-Up Rule.",
+     "METHODOLOGY", "HIGH", "M", "BACKLOG", "opencode/ring-2.6-1t", None,
+     "DSR audit completes on 206 strategies; >=3 candidates with DSR>=0.95 promoted to probation with documented production caller",
+     "session-ses_1a2d.md", None, None),
+
+    ("COMMODITIES", "Execute COT 7-step testing plan (steps 1-5 active work + step 6 paper-pilot + step 7 risk-of-ruin)",
+     "Opencode P2 PASSIVE. Gates the only currently-DSR-verified single-class deviation candidate (cot_positioning + CT=F). Steps 1-5 ~6h active work; Step 6 = 4-week paper pilot (currently SHADOW); Step 7 = Monte Carlo risk-of-ruin sim.",
+     "METHODOLOGY", "MEDIUM", "L", "BACKLOG", "opencode/ring-2.6-1t", "lang_value_contrarian",
+     "All 7 steps green; cot_positioning + CT=F clears the 10-step Lopez de Prado AFML readiness gate; first eligible LIVE candidate",
+     "reports/cot_paper_pilot_testing_plan_2026-05-12.md", None, None),
 
     ("OVERALL", "Pick-funnel rejection visibility on /audit",
      "Show why each symbol scanned but not picked was rejected (which gate killed it). Pick-funnel automation already extracts this; needs UI surface beyond /audit/pick_funnel.html.",
