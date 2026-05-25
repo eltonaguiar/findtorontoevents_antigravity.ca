@@ -50,6 +50,32 @@ CREATE TABLE IF NOT EXISTS tournament_pick_research (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
+-- 2b. tournament_rating_algorithms — one row per (model_id, persona_id,
+--     asset_class). Captures the 1-10 tier-rating algorithm each model+
+--     persona uses for that asset class: feature list (JSON), weights,
+--     data feeds, refusal floor, signature insight.
+--     Source: cross-model response to tmp/tier_rating_algorithm_prompt.md.
+--     Surfaced on /audit/ai-tournament.html#tier-rating.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tournament_rating_algorithms (
+    algorithm_id        INT          NOT NULL AUTO_INCREMENT,
+    model_id            VARCHAR(100) NOT NULL,
+    provider            VARCHAR(100) DEFAULT NULL,
+    persona_id          VARCHAR(100) DEFAULT NULL,
+    asset_class         VARCHAR(20)  NOT NULL,
+    features            JSON         DEFAULT NULL,
+    floor_score         TINYINT      DEFAULT NULL,
+    signature_insight   TEXT         DEFAULT NULL,
+    source_ref          VARCHAR(255) DEFAULT NULL,
+    captured_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (algorithm_id),
+    UNIQUE KEY uq_tra_mpa (model_id, persona_id, asset_class),
+    KEY idx_tra_model (model_id),
+    KEY idx_tra_class (asset_class),
+    KEY idx_tra_provider (provider)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
 -- 3. ALTER tournament_picks — add prompt_submission_id, provider
 --    50webs MariaDB does NOT support `ADD COLUMN IF NOT EXISTS` reliably.
 --    Use an information_schema guard via stored procedure for idempotency.
