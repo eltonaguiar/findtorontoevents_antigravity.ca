@@ -106,6 +106,23 @@
   </dl>
 </details>
 
+<!-- NAV SURFACE MATRIX -->
+<!-- Honest WR / PF / holdout-PF / why-no-edge for every clickable filter or
+     tab on /audit. Server-side computed via tools/audit_pick_funnel/
+     build_nav_surface_matrix.py — sidecar at data/nav_surface_edge_matrix.json.
+     Client-side JS falls back to the sidecar if dashboard_data.json fetch fails.
+     Other agents editing this file: please preserve this NAV SURFACE MATRIX
+     ... /NAV SURFACE MATRIX fence so the section can be 3-way-merged safely. -->
+<h2>Navigation-surface Edge Matrix</h2>
+<button class="eli5-btn" onclick="toggle('eli5-navmatrix')">[?] ELI5</button>
+<div class="eli5" id="eli5-navmatrix">
+  For each clickable filter / tab on /audit (Verified Alpha, Smart Picks, Money Ready, High-Conviction, the US-Equity sub-tabs, ELITE display tier) we compute — per asset class on the 90d closed pool — <b>n</b>, raw <b>WR%</b>, Bayesian-shrunk <b>WR%</b>, <b>PF</b>, the <b>train</b>/<b>holdout</b> PF on a chrono 60/40 split, whether the cell passes a Bonferroni-corrected significance test (α=0.05/8 surfaces), and an auto-generated <b>why-no-edge</b> string (small_n / overfit / concentration / source_quality / TIME_EXIT_inflation). Verdict at the top of each surface = <i>edge</i> if at least one asset-class row passes both holdout (PF≥1.2) and Bonferroni, otherwise <i>no-edge</i>.
+</div>
+<div class="panel" id="nav-surface-matrix">
+  <p class="small">Loading nav surface matrix…</p>
+</div>
+<!-- /NAV SURFACE MATRIX -->
+
 <!-- ===== TODAY'S PICKS ===== -->
 <h2>Today's Picks (last 24h)</h2>
 <button class="eli5-btn" onclick="toggle('eli5-today')">[?] ELI5</button>
@@ -333,14 +350,82 @@ function renderTopEdges(edges){
     }).join('');
 }
 
+// NAV SURFACE MATRIX renderer — reads server-side sidecar
+// data/nav_surface_edge_matrix.json. Tooltips reuse the glossary's
+// definitions so the column meaning stays canonical in one place.
+const NAV_TIP = {
+  n:        TIP.n,
+  wr:       TIP.wr,
+  wrs:      TIP.wrs,
+  pf:       TIP.pf,
+  train_pf: 'PF on the chrono first-60% slice of this surface\'s closed picks. Higher than holdout = potential overfit.',
+  hold_pf:  'PF on the chrono last-40% slice. pass_holdout = holdout_pf >= 1.2 (edge survives forward in time).',
+  bonf:     'Two-tailed z-test of WR against the 50% null. Bonferroni-corrected alpha = 0.05 / 8 surfaces.',
+  why:      'Auto-generated reason a cell does NOT carry an edge. Composite of small_n / overfit / concentration / source_quality / TIME_EXIT_inflation. Empty = the cell is an edge.',
+};
+function fmtPF(x){
+  if (x === null || x === undefined) return '—';
+  if (x === 'inf' || x === Infinity) return '∞';
+  return Number(x).toFixed(2);
+}
+function renderNavSurfaceMatrix(mx){
+  const el = document.getElementById('nav-surface-matrix');
+  if (!el) return;
+  if (!mx || !mx.surfaces){ el.innerHTML = '<p class="small" style="color:#ef4444">Nav matrix sidecar missing — run tools/audit_pick_funnel/build_nav_surface_matrix.py.</p>'; return; }
+  const header = `<p class="small">Sidecar generated ${mx.generated_at} UTC · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Verdict = <b>edge</b> only if at least one asset-class row passes <i>holdout</i> (PF≥1.2) AND <i>Bonferroni</i>. Tooltips on column headers (i) reuse the glossary above.</p>`;
+  const sections = mx.surfaces.map(s=>{
+    const vBadge = s.verdict === 'edge'
+      ? `<span class="badge b-pass">EDGE in ${s.edge_classes.join(', ')||'—'}</span>`
+      : `<span class="badge b-fail">NO EDGE</span>`;
+    const rows = s.rows.filter(r=>r.n>0).map(r=>{
+      const passBoth = r.pass_holdout && r.pass_bonferroni;
+      const wrCls = r.wr_pct >= 55 ? 'pnl-pos' : (r.wr_pct < 45 ? 'pnl-neg' : 'pnl-neu');
+      const pfCls = (r.pf !== null && r.pf !== '—' && r.pf !== 'inf' && r.pf < 1.0) ? 'pnl-neg' : (r.pf === 'inf' || (r.pf !== null && r.pf >= 1.5) ? 'pnl-pos' : 'pnl-neu');
+      const hoCls = r.pass_holdout ? 'pnl-pos' : 'pnl-neg';
+      const bf  = r.pass_bonferroni ? '<span class="badge b-pass">SIG</span>' : '<span class="badge b-meh">NS</span>';
+      const ho  = r.pass_holdout ? '<span class="badge b-pass">PASS</span>' : '<span class="badge b-fail">FAIL</span>';
+      const acLabel = r.asset_class === '_overall' ? '<b>ALL</b>' : r.asset_class;
+      const eli5Why = r.why_no_edge ? `<tr class="eli5-row"><td colspan="9">why_no_edge: ${r.why_no_edge}</td></tr>` : '';
+      return `<tr>
+        <td>${acLabel}</td>
+        <td class="num">${r.n}</td>
+        <td class="num ${wrCls}">${r.wr_pct!=null?r.wr_pct+'%':'—'}</td>
+        <td class="num">${r.wr_shrunk_pct!=null?r.wr_shrunk_pct+'%':'—'}</td>
+        <td class="num ${pfCls}">${fmtPF(r.pf)}</td>
+        <td class="num">${fmtPF(r.train_pf)}</td>
+        <td class="num ${hoCls}">${fmtPF(r.holdout_pf)}</td>
+        <td>${ho}</td>
+        <td>${bf}</td>
+      </tr>${eli5Why}`;
+    }).join('');
+    return `<div class="ac-section">
+      <h3>${s.label} ${vBadge} <span class="small">— n_total=${s.n_total}</span></h3>
+      ${rows ? `<table class="lb"><thead><tr>
+        <th>Asset class</th>
+        <th class="num">n${ihint(NAV_TIP.n)}</th>
+        <th class="num">WR${ihint(NAV_TIP.wr)}</th>
+        <th class="num">WR<sub>shrunk</sub>${ihint(NAV_TIP.wrs)}</th>
+        <th class="num">PF${ihint(NAV_TIP.pf)}</th>
+        <th class="num">train PF${ihint(NAV_TIP.train_pf)}</th>
+        <th class="num">holdout PF${ihint(NAV_TIP.hold_pf)}</th>
+        <th>holdout${ihint(NAV_TIP.hold_pf)}</th>
+        <th>Bonferroni${ihint(NAV_TIP.bonf)}</th>
+      </tr></thead><tbody>${rows}</tbody></table>` : '<p class="small">No closed picks matched this surface.</p>'}
+    </div>`;
+  }).join('');
+  el.innerHTML = header + sections;
+}
+
 async function loadAll(){
   try {
-    const [today, d90, rej, edges] = await Promise.all([
+    const [today, d90, rej, edges, navmx] = await Promise.all([
       fetch('data/pick_funnel_today.json').then(r=>r.json()),
       fetch('data/pick_funnel_90d.json').then(r=>r.json()),
       fetch('data/pick_funnel_rejected_universe.json').then(r=>r.json()),
       fetch('data/top_edges_per_class.json').then(r=>r.json()),
+      fetch('data/nav_surface_edge_matrix.json').then(r=>r.ok?r.json():null).catch(()=>null),
     ]);
+    renderNavSurfaceMatrix(navmx);
     document.getElementById('generated-at').textContent =
       `Generated ${today.generated_at} UTC · today n=${today.n_picks} · 90d n=${d90.n_picks}`;
     renderFunnelBars(today.funnel_by_class||{}, 'funnel-bars-today');

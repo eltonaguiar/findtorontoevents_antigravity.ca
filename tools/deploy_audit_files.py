@@ -31,6 +31,7 @@ UPLOADS = [
     ("audit_dashboard/data/pick_funnel_90d.json",            "/findtorontoevents.ca/audit/data/pick_funnel_90d.json",             "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_rejected_universe.json", "/findtorontoevents.ca/audit/data/pick_funnel_rejected_universe.json", "pick_funnel"),
     ("audit_dashboard/data/top_edges_per_class.json",        "/findtorontoevents.ca/audit/data/top_edges_per_class.json",         "pick_funnel"),
+    ("audit_dashboard/data/nav_surface_edge_matrix.json",    "/findtorontoevents.ca/audit/data/nav_surface_edge_matrix.json",     "pick_funnel"),
     ("audit_dashboard/model.html",                           "/findtorontoevents.ca/audit/model.html",                            "model"),
     ("audit_dashboard/ai-tournament.html",                   "/findtorontoevents.ca/audit/ai-tournament.html",                    "ai_tournament"),
     ("audit_dashboard/data/ai_tournament_picks_latest.json", "/findtorontoevents.ca/audit/data/ai_tournament_picks_latest.json",  "ai_tournament"),
