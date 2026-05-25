@@ -1,0 +1,360 @@
+"""
+Seed INCIDENT_* + ENHANCEMENT_* tables with findings from the 2026-05-25
+multi-AI audit (Claude Opus 4.7 + Ring-2.6-1T + opencode + grok session
+exports). Idempotent: uses INSERT ... ON DUPLICATE KEY UPDATE keyed on title.
+
+Pattern: one row per actionable finding. Tables tagged by asset class.
+'OVERALL' table catches cross-cutting issues (resolver dead, env-var bugs).
+"""
+from __future__ import annotations
+import json, os
+import pymysql
+
+# (table_suffix, title, description, severity, status, affected, fix, link_md_path, link_url, link_github_ref, reporter)
+INCIDENTS = [
+    # ---- OVERALL (cross-cutting) ----
+    ("OVERALL", "trust_score NULL on 99.99% of closed picks",
+     "trading_picks.trust_score is NULL on 38,884 of 38,889 closed picks. HC overlay requires trust_score>=4 (CRYPTO) / >=5 (EQUITY). Cited CRYPTO 60.3% N=562 and EQUITY 68.1% N=72 stats unreproducible — only 5 closed picks have a non-NULL trust_score.",
+     "P0", "OPEN", "trading_picks.trust_score / audit_dashboard/hc_filter.js",
+     "Backfill trust_score from strategy registry OR move HC gate to a field that IS populated (elite_score / derived TRUST tier). Or mark HC overlay UNVERIFIABLE on UI until backfill lands.",
+     "reports/2026-05-25_audit_ui_edge_audit.md", None, None, "claude-opus-4-7"),
+
+    ("OVERALL", "5 FOREX rows have pnl_pct < -100% (one at -106,700%)",
+     "Unit-clamp bug commit #876 missed 5 rows. Distorts FOREX avg to -8% and rounds PF to 0.00, making the entire class look catastrophic even though baseline WR is 43.9% on n=1666.",
+     "P0", "OPEN", "trading_picks.pnl_pct (FOREX category)",
+     "UPDATE trading_picks SET pnl_pct = -100 WHERE pnl_pct < -100 AND category='FOREX'. Investigate the 5 rows to see which strategy/script bypassed the clamp.",
+     "reports/2026-05-25_audit_ui_edge_audit.md", None, None, "claude-opus-4-7"),
+
+    ("OVERALL", "signal_outcomes table 82 days stale",
+     "Last resolved 2026-03-04. Outcome resolver pipeline appears dead. All forward-WR performance claims unverifiable because signal_outcomes has only 0.09% coverage of raw picks.",
+     "P0", "OPEN", "at_signal_outcomes / outcome resolver pipeline",
+     "Investigate why resolver stopped writing. Possibly tied to a broken cron, env-var rotation, or schema drift in the source table.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("OVERALL", "Top-N Rank Backtest tool returned Access denied",
+     "tools/top_n_rank_backtest.py read DB_STOCKS_PASSWORD but this host sets DB_PASS_STOCKS. Fell back to default password 'stocks' -> MySQL 1045 Access denied. Also queried asset_class/score columns that don't exist on live trading_picks (uses category/elite_score).",
+     "P1", "RESOLVED", "tools/top_n_rank_backtest.py",
+     "Two commits: 702eac27 (env-var aliasing) + c5fcbdc1 (schema columns). Verified live: EQUITY 90d returns n=85, top-10/day cum PnL +1.16%.",
+     None, None, "702eac27,c5fcbdc1", "ring-2.6-1t"),
+
+    ("OVERALL", "COT paper pilot over-emission",
+     "cot_paper_pilot.py counts the same weekly CFTC release as ~100 separate trades. Inflates n from ~5 real unique releases to 101. The DSR=1.0/WR=86.5% headline is therefore overstated. Three independent AI audits flagged this.",
+     "P0", "OPEN", "cot_paper_pilot.py / cot_positioning strategy",
+     "Deduplicate by CFTC release week. Recompute DSR + WR + PF on the deduped n. Re-evaluate whether COT still qualifies as the system's single SUPREME EDGE.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("OVERALL", "ML calibration system-wide inverted",
+     "Confidence is anti-predictive: conf>=0.9 -> WR 14.4%, conf 0.5-0.6 -> WR 60.3%. The 5-factor Smart Picks engine weights quality/elite_score at 35% which is derived from confidence, so the top-of-funnel ranker is structurally flipped — at least for crypto.",
+     "P0", "TRIAGED", "smart_picks_engine.py / score derivation",
+     "Invert the confidence contribution for crypto (or use trust_score as primary signal as code-comment already suggests). Validate across other classes — likely needs per-class inversion.",
+     None, None, None, "kimi/multiple"),
+
+    ("OVERALL", "Smart Picks 'Signal Time' is dashboard-file age, not pick age",
+     "smart_picks_feed pick objects lack the signal_time field. Template logic falls back to age_hours which is computed at dashboard JSON build time. So all rows display the same '1.4h ago' regardless of when the pick actually fired.",
+     "P1", "OPEN", "audit_trail/dashboard_generator.py (smart_picks_feed builder)",
+     "Populate signal_time = trading_picks.created_at on every entry in the smart_picks_feed payload. One-line addition.",
+     "reports/2026-05-25_audit_ui_edge_audit.md", "https://findtorontoevents.ca/audit/", None, "claude-opus-4-7"),
+
+    ("OVERALL", "smart_picks.json file 25 days stale",
+     "data/smart_picks.json last regenerated 2026-04-30T02:56. The dashboard reads smart_picks_feed which IS more recent (~1.5h), but the underlying picks may be cycled with stale entry prices.",
+     "P0", "OPEN", "data/smart_picks.json / smart_picks_engine.py",
+     "Re-run smart_picks_engine.py and wire to a daily cron. Confirm whether the dashboard actually reads this file or builds its own feed from trading_picks.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("OVERALL", "Swarm Picks tab effectively abandoned",
+     "data/swarm_picks.json has 38 picks; newest is dated 2026-05-12 (13 days old). Workflow swarm-pick-review.yml runs daily but no longer adds picks — only resolves the existing 38.",
+     "P1", "OPEN", "audit/ Swarm Picks tab / .github/workflows/swarm-pick-review.yml",
+     "Either revive multi_model_pick_gen.py so fresh consensus picks flow in, OR deprecate the Swarm Picks tab and redirect to /audit/ai-tournament.html.",
+     "reports/2026-05-25_audit_ui_edge_audit.md", "https://findtorontoevents.ca/audit/", None, "claude-opus-4-7"),
+
+    # ---- per-class ----
+    ("STOCKS", "PEAD equity strategy stuck in shadow mode",
+     "The only WF-VERIFIED equity strategy (62.2% OOS WR on 2-day window) is the new pead_equity, but it never made it past shadow. Meanwhile the broken earnings_drift (0% WR on 92 picks) was active in prod.",
+     "P0", "OPEN", "alpha_engine/pead_equity (shadow mode)",
+     "Promote pead_equity from shadow -> probation. Document wire-up in updates/ per the Wire-Up Rule.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("STOCKS", "US Equity screener emits zero picks",
+     "The /audit/ueps tab is rendered (n=0/100 disclaimer shown) but no picks have ever been emitted. Composite (Magic Formula x Piotroski x Acquirer's Multiple x SafetyGate) is documented but has no live writer.",
+     "P1", "OPEN", "alpha_engine equity scanner / US Equity Picks tab",
+     "Wire the UEPS composite to a weekly scanner. First emit can be sample/seed to validate plumbing end-to-end.",
+     "reports/2026-05-25_audit_ui_edge_audit.md", "https://findtorontoevents.ca/audit/#ueps", None, "claude-opus-4-7+ring"),
+
+    ("STOCKS", "EQUITY production scanner may not be routed",
+     "code grep found no _run_equity_scanner or similar routing function in production_scanner.py main loop. Strategies (connors_rsi2, quality_compounders, equity_momentum_regime, pead_equity) exist in code but may never be called.",
+     "P1", "OPEN", "alpha_engine/production_scanner.py main loop",
+     "Add explicit per-class routing functions; verify each documented strategy is reachable from main(). Add a smoke test.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("CRYPTO", "ML 'edges' with PF 99-1094 are likely look-ahead leakage",
+     "Pick-funnel top_edges_per_class found cells like 'copy_trader_intel & LONG' (n=21, PF 1094) and 'conf=0.80-0.85 & ml' (n=42, PF 674) — values that high on tiny samples almost always indicate look-ahead bias in the feature pipeline, not real edge.",
+     "P1", "TRIAGED", "alpha_engine ml_enhanced_* family / copy_trader_intel feature pipeline",
+     "Audit the feature pipeline for look-ahead bias. Add walk-forward gate before any ML strategy claims edge. Mark current 'DSR=0.9995' claims as 'small-sample, awaiting n>=100 confirmation' on the dashboard.",
+     "audit_dashboard/data/top_edges_per_class.json", None, None, "claude-opus-4-7+deepseek+cerebras"),
+
+    ("CRYPTO", "quan_engine_scalp degraded to PF 0.42 / WR 37%",
+     "edge_decay_heatmap shows quan_engine_scalp at n=4236, WR 37.4%, PF 0.42 — verdict 'dead'. Yet it remains a substantial share of open CRYPTO volume per CLAUDE.md ('18% volume @ PF 0.70 drag elite strategies down').",
+     "P1", "OPEN", "alpha_engine quan_engine_scalp emitter",
+     "Per the mutation-three-axis protocol: cut volume share, mutate, or kill. Required to lift the CRYPTO class PF above the T2 threshold.",
+     "audit_dashboard/data/edge_decay_heatmap.json", None, None, "claude/edge_stability"),
+
+    ("FOREX", "forex_carry.py exists in repo but is NOT in allowlist",
+     "alpha_engine/new_strategies/forex_carry.py implements G10 interest-rate differential carry with claimed 55-60% WR / PF 1.2-1.5 but is not registered in non_crypto_policy.NON_CRYPTO_STRATEGY_POLICY so it never emits picks.",
+     "P1", "OPEN", "alpha_engine/non_crypto_policy.py allowlist",
+     "Add forex_carry to NON_CRYPTO_STRATEGY_POLICY with probation thresholds. Document wire-up in updates/.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("FOREX", "FOREX SL at 0.5% sits at median daily FX ATR",
+     "Causes 44% SL hit rate vs 12% TP hit (3.7x more stops than targets). After April 2026 widening (TP 0.75%->1.5%, SL 0.5%->0.8%) the situation improved but still asymmetric.",
+     "P1", "TRIAGED", "alpha_engine FOREX TP/SL config",
+     "Widen FOREX SL to >=1.0% (or use 1.5x daily ATR). Backtest before deploying.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("COMMODITIES", "cftc_cot_commercial_signal BLOCKED (19% WR on n=16)",
+     "Strategy is in code but blocked from production. Either rehab via mutation protocol or formally retire.",
+     "P2", "OPEN", "alpha_engine cftc_cot_commercial_signal",
+     "Run mutation analysis (docs/MUTATION_THREE_AXIS_PROTOCOL.md). If no axis recovers, formally retire and remove from allowlist.",
+     "docs/MUTATION_THREE_AXIS_PROTOCOL.md", None, None, "ring-2.6-1t"),
+
+    ("FUTURES", "futures_mean_reversion and ema_stack_momentum BANNED at 0% WR",
+     "Both strategies sit in code with BANNED status. Remove from registry to declutter.",
+     "P3", "OPEN", "alpha_engine futures_mean_reversion / ema_stack_momentum",
+     "Formal retirement entry. Move source files to deprecated/ subfolder.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("BONDS", "bond_connors_rsi2 new, probation, no forward trades",
+     "Claims 73% WR but is brand new — needs forward-test data before promotion.",
+     "P3", "OPEN", "alpha_engine/new_strategies/bond_connors_rsi2.py",
+     "Run for 60 days in shadow; gate to probation when n>=20 with WR>=55%.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("ETFS", "All 5 ETF strategies on probation with ZERO verified forward trades",
+     "etf_dual_momentum, etf_sector_momentum, etf_risk_parity_rotation, etf_faber_tactical, etf_trend_following all allow_without_forward=True. No track record.",
+     "P2", "OPEN", "alpha_engine ETF strategies / config",
+     "Pick one (etf_faber_tactical has strongest academic backing per Ring) and graduate to probation with a real forward floor. Document promotion path.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("PENNY", "skyrocket_detector NOT wired to production",
+     "alpha_engine/skyrocket_detector.py has the SIDU pattern framework ($0.63->$3.79 example) but is not called from production_scanner.py.",
+     "P2", "OPEN", "alpha_engine/skyrocket_detector.py",
+     "Wire to production scanner per Wire-Up Rule. Add tests + integration doc.",
+     None, None, None, "ring-2.6-1t"),
+
+    ("PENNY", "penny_deep_oversold BLOCKED by Gate 0",
+     "Strategy emits but every pick is rejected at Gate 0 (initial filter). Either fix Gate 0 to allow penny-class scores or move to a class-specific scoring path.",
+     "P3", "OPEN", "audit_trail/quality_gates.py Gate 0",
+     "Investigate Gate 0 logic. Likely needs per-class score floor.",
+     None, None, None, "ring-2.6-1t"),
+
+    # ---- Added 2026-05-25 from Qwen db_health.json exploration ----
+    ("OVERALL", "PnL integrity mismatch on 38.97% of sampled closed picks",
+     "db_health.json reports 10,501 / 26,945 sampled rows have a >1% pnl discrepancy between stored pnl_pct and recomputed (entry/exit/direction). 12,735 have >0.01% mismatch. Tier: RED. All cohort WR/PF stats built on top of trading_picks.pnl_pct are suspect at this drift level.",
+     "P0", "OPEN", "trading_picks.pnl_pct integrity",
+     "Re-resolve historical closed picks via re_resolve_historical_v2.py (referenced in template.html). Quantify per-strategy drift and re-publish asset_class_health post-fix.",
+     "audit_dashboard/data/db_health.json", None, None, "qwen-code"),
+
+    ("OVERALL", "WON status rows show avg pnl_pct = -41.1%",
+     "won_pnl_contradiction check: 2,531 rows tagged status='WON' have avg_pnl=-41.13%, 9 with negative pnl. SL_HIT rows are all negative as expected (good); TP_HIT all positive (good); LOST rows mostly negative (correct). The WON status is a labeling bug, not a stats artifact — every claim using status='WON' as a win flag is corrupted.",
+     "P0", "OPEN", "trading_picks.status='WON' rows",
+     "Re-label legacy 'WON' rows by recomputing from pnl_pct sign + exit_reason. WON->TP_HIT where pnl>0, WON->LOST or EXPIRED where pnl<=0. Add a CHECK constraint going forward.",
+     "audit_dashboard/data/db_health.json", None, None, "qwen-code"),
+
+    ("OVERALL", "56,559 ghost rows in trading_picks (top cohort: 20,474 identical MATICUSDT entries)",
+     "ghost_rows audit: 12 cohorts with thousands of identical (asset_class, strategy, symbol, direction, pnl_pct) rows. Top: CRYPTO/quan_engine/MATICUSDT/LONG/pnl=-15.0 with n=20,474 from 1 distinct entry. MEMECOIN/meta_strategy variants make up the next 10. This single cohort alone is dragging quan_engine_scalp stats to PF 0.42 / WR 37%.",
+     "P0", "OPEN", "trading_picks ghost-row write path",
+     "DEDUP via (asset_class, strategy, symbol, direction, pnl_pct, created_at) where distinct_entries=1 and n>50. Investigate the writer that's emitting the duplicates. quan_engine + meta_strategy are the top offenders.",
+     "audit_dashboard/data/db_health.json", None, None, "qwen-code"),
+
+    ("OVERALL", "29.2M open positions in trading_picks; validator frozen 270h",
+     "open_bloat check: 29,254,204 open status rows. info_schema estimates 1,271,867 — actual count 23x the estimate. Last terminal write was 2026-05-12 23:42 (270 hours ago). The forward_validator is frozen — no picks have been closed in 11+ days.",
+     "P0", "OPEN", "alpha_engine/forward_validator + trading_picks open queue",
+     "Restart forward_validator. Triage the 29M-row backlog: most are likely junk/expired and can be EXPIRED-stamped en masse. Check if validator process died vs is silently failing.",
+     "audit_dashboard/data/db_health.json", None, None, "qwen-code"),
+
+    ("OVERALL", "UNKNOWN asset_class on 951 active + 54 closed picks",
+     "Category is NULL/UNKNOWN for 951 active picks (~10% of active set) and 54 closed (35.2% WR). UI can't apply per-class gates to UNKNOWN rows. Cross-class stats undercount these.",
+     "P2", "OPEN", "trading_picks.category writer / classifier",
+     "Backfill UNKNOWN rows using symbol pattern matching (USDT/BTC suffix -> CRYPTO; =X suffix -> FOREX; etc.). Add a classifier guard at write time.",
+     None, None, None, "claude-opus-4-7"),
+
+    ("BONDS", "Antigravity_bond: 0% WR on n=9 — kill emission",
+     "audit_benchmark_analysis_2026-05-24.md: BOND class is 0% WR / PF 0.00 / Sharpe -2.465. Only strategy is antigravity_bond with 1 historical pick. Already flagged P0 in Freebuff 2026-05-17.",
+     "P0", "OPEN", "alpha_engine antigravity_bond",
+     "Kill BOND emission entirely. Re-enable only after a viable yield-curve or duration strategy is built (see ENHANCEMENT_BONDS).",
+     "reports/audit_benchmark_analysis_2026-05-24.md", None, None, "qwen-code+freebuff"),
+
+    ("COMMODITIES", "Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534",
+     "Benchmark says CRITICAL — cot_positioning at the STRATEGY level is strong (DSR=1.0 per Ring) but at the CLASS level (n=140 closed) numbers are catastrophic because cot_positioning is now BLOCKED per audit benchmark, and remaining cta_cross_asset_tsmom + cta_commodity_momentum_term are losers.",
+     "P0", "OPEN", "alpha_engine commodity strategies (post cot_positioning block)",
+     "Retire all remaining COMMODITY strategies. Rebuild from non-COT signals (term structure, EIA inventory, weather overlay). Reconcile the Ring 'cot DSR=1.0' claim vs the audit-benchmark 'cot BLOCKED' claim — see COMMODITY rationalize entry.",
+     "reports/audit_benchmark_analysis_2026-05-24.md", None, None, "qwen-code+freebuff"),
+
+    ("COMMODITIES", "Reconcile: cot_positioning DSR=1.0 (Ring) vs BLOCKED (audit benchmark) — contradiction",
+     "Ring's 2026-05-25 audit says cot_positioning is the SUPREME EDGE (DSR=1.0, WR=86.5%, n=104). audit_benchmark_analysis_2026-05-24 says cot_positioning is BLOCKED and the COT-dedup audit downgraded WR to 5% / PF 0.12 on n=20 post-dedup. Both can't be true.",
+     "P0", "OPEN", "cot_positioning evaluation (pipeline vs paper-pilot vs class aggregate)",
+     "Run the COT-dedup audit live, compute n + WR + PF under (a) raw, (b) deduped-by-release-week, (c) cot_paper_pilot-only sleeve. Publish the truth-table; update the page's SUPREME EDGE callout to match.",
+     "reports/audit_benchmark_analysis_2026-05-24.md", None, None, "claude-opus-4-7"),
+
+    ("FOREX", "All FOREX strategies losers except cta_cross_asset_tsmom SHORT (93% USDJPY concentration)",
+     "Per benchmark report: forex_carry_momentum, forex_rsi2_mean_reversion, myfxbook_retail_contrarian all losing. Only cta_cross_asset_tsmom SHORT has WR 57.6% but is 93% concentrated in USDJPY — not a diversified edge, just one carry trade.",
+     "P0", "OPEN", "alpha_engine FOREX strategies (concentration risk)",
+     "Block all FOREX strategies except cta_cross_asset_tsmom SHORT. Force symbol diversification on that one (cap USDJPY at <50%). Add forex_carry (Ring's recommendation) as the second leg.",
+     "reports/audit_benchmark_analysis_2026-05-24.md", None, None, "qwen-code+ring-2.6-1t"),
+]
+
+ENHANCEMENTS = [
+    # (table_suffix, title, description, category, expected_impact, effort, status, proposed_by, related_persona, success_metric, link_md_path, link_url, link_github_ref)
+    ("OVERALL", "Backfill trust_score on historical closed picks",
+     "Backfill from strategy registry so HC overlay claims become reproducible. Unblocks all 'closed-book edge' callouts on the page.",
+     "DATA_FEED", "HIGH", "M", "BACKLOG", "claude-opus-4-7", None,
+     "HC-gated closed picks recompute to claimed CRYPTO 60.3%/EQUITY 68.1% (within 5pp tolerance)",
+     "reports/2026-05-25_audit_ui_edge_audit.md", None, None),
+
+    ("OVERALL", "Add signal_time field to smart_picks_feed payload",
+     "One-line addition in dashboard_generator.py. Stops the 'all picks show 1.4h ago' misleading display.",
+     "UI", "MEDIUM", "S", "BACKLOG", "claude-opus-4-7", None,
+     "Smart Picks rows display per-pick ages spanning the actual pick lifetime (not all same value)",
+     "reports/2026-05-25_audit_ui_edge_audit.md", "https://findtorontoevents.ca/audit/", None),
+
+    ("OVERALL", "Implement random-guess audit self-flag prompt",
+     "After each AI-tournament submission, re-prompt the model: 'Are these picks based on cited live market data or speculation? Mark each.' Store flag in tournament_pick_research.research_basis.",
+     "METHODOLOGY", "HIGH", "M", "BACKLOG", "claude-opus-4-7", None,
+     "research_basis populated on every new pick within 7 days of rollout",
+     "DAILY_IDEAS.MD", None, None),
+
+    ("OVERALL", "Cross-model consensus tier-rating extractor",
+     "Build tools/ai_tournament/consensus_tier_algorithm.py: for each (asset_class, feature_concept), take median weight across all models in tournament_rating_algorithms. Features with >=2-model consensus seed alpha_engine/score_v3.py.",
+     "SCORING", "HIGH", "L", "BACKLOG", "claude-opus-4-7+swarm", None,
+     "score_v3.py opt-in sidecar shows >=3pp WR lift vs current score_pick.py on 90d closed picks (paired bootstrap p<0.05)",
+     "DAILY_IDEAS.MD", None, None),
+
+    ("CRYPTO", "Add on-chain + funding-rate feed (Glassnode + Coinglass)",
+     "Top recommendation from persona-improvement survey: addresses CLAUDE.md CRYPTO PF 1.25 -> T2 PF 1.5 gap. Covers 6 crypto personas (~453 picks).",
+     "DATA_FEED", "HIGH", "L", "BACKLOG", "claude+persona_survey", "ring_crypto_native",
+     "CRYPTO PF improves from 1.25 to >=1.5 on next 90d sample with funding+whale gates applied",
+     "reports/2026-05-25_persona_improvement_survey.md", None, None),
+
+    ("COMMODITIES", "Wire CFTC COT weekly feed for non-cot strategies",
+     "Top-2 data-feed investment from survey. Addresses sub-floor FOREX/COMMODITY classes by giving cta_trend / supply_demand / inventory_cycle real positioning data instead of inferring from price.",
+     "DATA_FEED", "HIGH", "M", "BACKLOG", "claude+persona_survey", None,
+     "CFTC COT data ingested weekly into a dedicated table; non-cot strategies show >=5pp WR lift",
+     "reports/2026-05-25_persona_improvement_survey.md", None, None),
+
+    ("OVERALL", "Add VIX/realised-vol regime tag at pick submission",
+     "Cheapest single fix per persona-survey — addresses 7 personas / ~470 picks. ~30% of picks fire in the wrong regime today.",
+     "GATE", "HIGH", "S", "BACKLOG", "claude+persona_survey", "mean_reversion+momentum_scalp+sharma_quant_momentum",
+     "Picks tagged with regime; backtest shows >=3pp WR improvement when filtering by regime-aligned subset",
+     "reports/2026-05-25_persona_improvement_survey.md", None, None),
+
+    ("OVERALL", "Universe expansion v1.2 — match AI tournament universe to /audit traded symbols",
+     "Currently the AI tournament locks symbols to 2026-05-19 snapshot. Widen to S&P 500 + active /audit picks per class so cross-system comparison is apples-to-apples.",
+     "METHODOLOGY", "MEDIUM", "M", "BACKLOG", "claude-opus-4-7", None,
+     "Per-class universe doubles or matches /audit symbol count; tournament leaderboard remains stable across switch",
+     "audit_dashboard/ai-tournament.html (universe panel)", "https://findtorontoevents.ca/audit/ai-tournament.html", None),
+
+    ("STOCKS", "Promote pead_equity from shadow to probation",
+     "Only WF-VERIFIED equity strategy (62.2% OOS WR). Currently dormant.",
+     "METHODOLOGY", "HIGH", "S", "BACKLOG", "ring-2.6-1t", None,
+     "pead_equity emits >=30 forward picks in first 30 days post-promotion with WR>=55%",
+     None, None, None),
+
+    ("FOREX", "Add forex_carry to non_crypto_policy allowlist",
+     "Implementation already in repo (alpha_engine/new_strategies/forex_carry.py) with G10 rate differential, claimed 55-60% WR. Only missing the allowlist entry.",
+     "GATE", "MEDIUM", "S", "BACKLOG", "ring-2.6-1t", "voss_global_macro",
+     "Strategy emits picks within 7 days of allowlist add; achieves >=50% WR on n>=10 within 30 days",
+     None, None, None),
+
+    ("BONDS", "Add yield-curve-momentum (TLT/IEF steepener-flattener)",
+     "Use new_strategies/tsmom.py framework to trade the 10Y-2Y curve via TLT vs IEF. BOND class currently has only bond_connors_rsi2 (new, no track record).",
+     "METHODOLOGY", "MEDIUM", "M", "BACKLOG", "ring-2.6-1t", "voss_global_macro",
+     "New strategy emits picks; BOND class n grows from 18 (sub-floor) toward charter n>=100",
+     None, None, None),
+
+    ("FUTURES", "Add commodity term-structure roll-yield strategy",
+     "Use cta_commodity_momentum_term framework. Captures contango/backwardation premium — proven hedge-fund recipe.",
+     "METHODOLOGY", "MEDIUM", "M", "BACKLOG", "ring-2.6-1t", "lang_value_contrarian",
+     "Roll-yield strategy emits picks; FUTURES class WR rises above 30% (current 11.1%)",
+     None, None, None),
+
+    ("PENNY", "Implement float-squeeze detector from skyrocket_detector framework",
+     "Penny stocks have only one (unwired) strategy. Build float-squeeze + volume-breakout signal using existing SIDU pattern code.",
+     "METHODOLOGY", "MEDIUM", "L", "BACKLOG", "ring-2.6-1t", None,
+     "New strategy wired into production_scanner; emits >=20 picks/month; first 50 picks show WR>=50%",
+     None, None, None),
+
+    ("ETFS", "Add real GEX + 0DTE flow data for gamma_raid persona",
+     "spotgamma/unusualwhales feeds. gamma_raid currently narrates gamma without consuming it; persona is already at WR 67.9% — real data should lift it further.",
+     "DATA_FEED", "MEDIUM", "L", "BACKLOG", "claude+persona_survey", "gamma_raid",
+     "gamma_raid persona shows >=3pp WR improvement after data integration",
+     "reports/2026-05-25_persona_improvement_survey.md", None, None),
+
+    ("OVERALL", "Pick-funnel rejection visibility on /audit",
+     "Show why each symbol scanned but not picked was rejected (which gate killed it). Pick-funnel automation already extracts this; needs UI surface beyond /audit/pick_funnel.html.",
+     "UI", "MEDIUM", "M", "BACKLOG", "claude-opus-4-7", None,
+     "Each asset class shows funnel: scanned -> passed score -> passed trust -> passed regime -> opened. Visible from main /audit page.",
+     "audit_dashboard/pick_funnel.html", "https://findtorontoevents.ca/audit/pick_funnel.html", None),
+]
+
+
+def main():
+    conn = pymysql.connect(
+        host='mysql.50webs.com', user='ejaguiar1_stocks',
+        password=os.environ['DB_PASS_STOCKS'], database=os.environ['DB_NAME_STOCKS'],
+        port=3306, connect_timeout=20, autocommit=False)
+    inc_inserted = inc_updated = 0
+    enh_inserted = enh_updated = 0
+    with conn.cursor() as cur:
+        for (cls, title, desc, sev, st, comp, fix, md, url, gh, reporter) in INCIDENTS:
+            tbl = f"INCIDENT_{cls}"
+            # Check existence by title
+            cur.execute(f"SELECT incident_id FROM {tbl} WHERE title=%s LIMIT 1", (title,))
+            existing = cur.fetchone()
+            if existing:
+                cur.execute(f"""UPDATE {tbl} SET description=%s, severity=%s, status=%s,
+                    affected_component=%s, recommended_fix=%s, link_md_path=%s,
+                    link_url=%s, link_github_ref=%s, reported_by=%s
+                    WHERE incident_id=%s""",
+                    (desc, sev, st, comp, fix, md, url, gh, reporter, existing[0]))
+                inc_updated += 1
+            else:
+                cur.execute(f"""INSERT INTO {tbl} (title, description, severity, status,
+                    affected_component, recommended_fix, link_md_path, link_url,
+                    link_github_ref, reported_by)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                    (title, desc, sev, st, comp, fix, md, url, gh, reporter))
+                inc_inserted += 1
+        for (cls, title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh) in ENHANCEMENTS:
+            tbl = f"ENHANCEMENT_{cls}"
+            cur.execute(f"SELECT enhancement_id FROM {tbl} WHERE title=%s LIMIT 1", (title,))
+            existing = cur.fetchone()
+            if existing:
+                cur.execute(f"""UPDATE {tbl} SET description=%s, category=%s, expected_impact=%s,
+                    effort=%s, status=%s, proposed_by=%s, related_persona_id=%s,
+                    success_metric=%s, link_md_path=%s, link_url=%s, link_github_ref=%s
+                    WHERE enhancement_id=%s""",
+                    (desc, cat, imp, eff, st, prop, persona, metric, md, url, gh, existing[0]))
+                enh_updated += 1
+            else:
+                cur.execute(f"""INSERT INTO {tbl} (title, description, category, expected_impact,
+                    effort, status, proposed_by, related_persona_id, success_metric,
+                    link_md_path, link_url, link_github_ref)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                    (title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh))
+                enh_inserted += 1
+    conn.commit()
+    print(f"INCIDENTS:   {inc_inserted} inserted, {inc_updated} updated")
+    print(f"ENHANCEMENTS: {enh_inserted} inserted, {enh_updated} updated")
+    with conn.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM vw_all_incidents"); print(f"vw_all_incidents:    {cur.fetchone()[0]} rows")
+        cur.execute("SELECT COUNT(*) FROM vw_all_enhancements"); print(f"vw_all_enhancements: {cur.fetchone()[0]} rows")
+        cur.execute("""SELECT asset_class, COUNT(*) FROM vw_all_incidents GROUP BY asset_class ORDER BY 2 DESC""")
+        print("\nIncidents by class:")
+        for r in cur.fetchall(): print(f"  {r[0]:14s} {r[1]}")
+        cur.execute("""SELECT asset_class, COUNT(*) FROM vw_all_enhancements GROUP BY asset_class ORDER BY 2 DESC""")
+        print("\nEnhancements by class:")
+        for r in cur.fetchall(): print(f"  {r[0]:14s} {r[1]}")
+    conn.close()
+
+
+if __name__ == "__main__":
+    main()

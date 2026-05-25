@@ -1,0 +1,59 @@
+name: Incidents + Enhancements — Nightly Page Render
+
+on:
+  schedule:
+    # Daily at 04:30 UTC (after pick-funnel-nightly at 04:00 UTC)
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "tools/audit_pick_funnel/seed_incidents_enhancements.py"
+      - "tools/audit_pick_funnel/render_incidents_page.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: incidents-enhancements
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install --quiet pymysql
+
+      - name: Render incidents.html + JSON sidecar + inject updates page
+        env:
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ]; then
+            echo "::warning title=skip::DB_PASS_STOCKS secret not set — skipping render"
+            exit 0
+          fi
+          python tools/audit_pick_funnel/render_incidents_page.py
+
+      - name: Commit generated artifacts
+        run: |
+          git config user.name  "Incidents Renderer"
+          git config user.email "noreply@anthropic.com"
+          git add audit_dashboard/incidents.html \
+                  audit_dashboard/data/incidents_enhancements_feed.json \
+                  updates/index.html
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "chore(incidents): nightly render $(date -u +%Y-%m-%d) [skip ci]"
+          git pull --rebase origin main
+          git push
