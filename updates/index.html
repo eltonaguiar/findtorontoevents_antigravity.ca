@@ -296,6 +296,37 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
+  <div class="update-entry" style="--dot-color: #ef4444; background: #1c0a0a; border: 2px solid #ef4444; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="multi-ai,grounding,leakage,commodity,debunk,meta,goal-1,improvement,documentation" data-category="trading" data-types="documentation,improvement,fix">
+    <div class="update-date" style="line-height:1.5">May 25, 2026 — <strong style="color:#ef4444;">⚠ Multi-AI Panel Meta-Review: same question, opposite answers — prompt grounding is the variable</strong></div>
+    <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+      <p style="margin:0 0 8px;">Two parallel multi-AI panels reached <strong>opposite verdicts on the same COMMODITY question.</strong> A 5-engine NVIDIA NIM panel (Kimi K2.6 + GPT-OSS-120B + GLM-5.1 + Nemotron Super 49B + Mistral Nemotron) — working from pre-dedup numbers — declared COMMODITY the system's #1 alpha, recommending 20-30% allocation. In parallel, a 3-engine codex/grok/gemini panel — shown the same numbers <em>plus</em> the leakage signals — classified the cell as <code>DATA_QUALITY_LEAKAGE</code> at <strong>~90% confidence</strong>, recognized as residue from already-rejected hypothesis H-001 (CFTC COT publication-lag look-ahead, REJECTED 2026-05-20 under M-095).</p>
+
+      <p style="margin:0 0 8px;"><strong>In-house verification confirmed Panel B:</strong> 87.6% of the headline "edge" is one symbol (CT=F cotton, 30-day hot streak), the Bonferroni denominator was fake (25 cells share identical trade-id sets — effective independent tests ≈ 7, not 200), and the merged-cohort rerun via the new <code>PF_REGISTRY_INCLUDE_DB=1</code> flag collapsed COMMODITY policy-clean NET PF from <strong>0.18 → 0.937</strong> when MySQL was merged in — well under T2's 1.5 bar, exactly matching Panel B's predicted range.</p>
+
+      <p style="margin:0 0 8px;"><strong>What Panel A got right anyway:</strong> a striking 6-day-window finding — <code>moderate_confidence</code> (n=455) and <code>low_confidence</code> (n=193) buckets went <strong>0-for-648, destroying −825% PnL</strong>, while 300 gated picks generated +994%. <em>Queued for verification</em> with the same scientific standard that killed the COMMODITY claim — the 0-for-455 number is statistically implausible on honest trades and may be definitional rather than alpha.</p>
+
+      <p style="margin:0 0 8px;"><strong>The lessons:</strong></p>
+      <ol style="margin:0 0 10px 18px;padding:0;font-size:0.9em;">
+        <li>Prompt grounding is the variable, not model count — 5 reputable models converged on a wrong answer because they never saw the leakage evidence.</li>
+        <li>Multi-AI consensus does not increase signal-to-noise on ungrounded prompts. It compounds whatever bias is in the prompt.</li>
+        <li>Future <code>consult-nvidia-models</code> / <code>consult-cloudflare-models</code> calls should mandate inclusion of <code>reports/hypothesis_registry.json</code> rejected-hypothesis entries that intersect the prompt's asset class.</li>
+        <li>The <code>build_pf_registry</code> MySQL extension (commit <code>a93dec2af</code>) is the load-bearing infrastructure fix — it unified two divergent cohorts (top_edges raw n=1219 vs verdict policy-clean n=28) into one dedup+policy+NET pipeline.</li>
+      </ol>
+
+      <p style="margin:0 0 6px;"><strong>Reports:</strong></p>
+      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/2026-05-25_multi_ai_panel_meta_review.md" style="color:#fca5a5">multi_ai_panel_meta_review.md</a> — the bridge document</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/2026-05-25_asset_class_edge_audit_deepseek_session.md" style="color:#fca5a5">asset_class_edge_audit_deepseek_session.md</a> — Panel A's findings</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/2026-05-25_commodity_cot_edge_triangulation.md" style="color:#fca5a5">commodity_cot_edge_triangulation.md</a> — Panel B's synthesis</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/2026-05-25_commodity_cot_edge_deep_dive.md" style="color:#fca5a5">commodity_cot_edge_deep_dive.md</a> — DB trade-level forensics</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/2026-05-25_policy_clean_vs_top_edges_funnel.md" style="color:#fca5a5">policy_clean_vs_top_edges_funnel.md</a> — filter-pipeline tracing</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/hypothesis_registry.json" style="color:#fca5a5">hypothesis_registry.json</a> — H-101 pre-registered per M-107</li>
+      </ul>
+
+      <p style="margin:0;font-size:0.85em;color:#9ca3af;"><strong>Open items spawned into <a href="/audit/incidents.html" style="color:#ef4444">/audit/incidents.html</a>:</strong> (1) multi-AI panel grounding rule (P1); (2) verify 0-for-648 quality-gate claim (enhancement); (3) verify <code>regime_adaptive × ETF</code> Wilson CI (enhancement); (4) verify <code>kimi_signal_tracking</code> / <code>aggregated_picks</code> per-source claims (enhancement).</p>
+    </div>
+  </div>
+
   <div class="update-entry" style="--dot-color: #06b6d4; background: #061620; border: 2px solid #06b6d4; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="multi-model,research,scoring,consensus,nvidia,cloudflare,deepseek,kimi,minimax,llama,gpt-oss,nemotron,qwen,glm,mistral,goal-1,research" data-category="trading" data-types="research,documentation">
     <div class="update-date" style="line-height:1.5">May 25, 2026 — <strong style="color:#06b6d4;">🧠 10-Model Cross-AI Scoring Research: "What makes a stock-prediction algorithm high quality?"</strong></div>
     <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">

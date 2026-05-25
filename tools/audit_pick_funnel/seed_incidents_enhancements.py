@@ -213,10 +213,34 @@ INCIDENTS = [
      "P0", "OPEN", "alpha_engine FOREX strategies (concentration risk)",
      "Block all FOREX strategies except cta_cross_asset_tsmom SHORT. Force symbol diversification on that one (cap USDJPY at <50%). Add forex_carry (Ring's recommendation) as the second leg.",
      "reports/audit_benchmark_analysis_2026-05-24.md", None, None, "qwen-code+ring-2.6-1t"),
+
+    ("OVERALL", "Multi-AI panel reached wrong COMMODITY consensus on ungrounded prompt",
+     "5-engine NVIDIA NIM panel (Kimi K2.6 + GPT-OSS-120B + GLM-5.1 + Nemotron Super 49B + Mistral Nemotron) unanimously declared COMMODITY the system's #1 alpha, recommending 20-30% allocation. The 3-engine codex/grok/gemini panel (shown the same numbers PLUS leakage signals) classified the same cell DATA_QUALITY_LEAKAGE at ~90% confidence. In-house verification confirmed the leakage panel — 87.6% one-symbol concentration (CT=F cotton), fake Bonferroni denominator, 30-day hot streak only. The merged-cohort registry rerun collapses COMMODITY policy-clean NET PF from 0.18 -> 0.937 (still under T2's 1.5 bar).",
+     "P1", "OPEN", "tools/swarm/api_consult.py + consult-nvidia-models / consult-cloudflare-models skills",
+     "Mandate inclusion of reports/hypothesis_registry.json rejected-hypothesis entries that intersect the prompt's asset class. Update consult-nvidia-models/SKILL.md + consult-cloudflare-models/SKILL.md to require a leakage-context block in every prompt template. Add a sentence: 'Be skeptical; if data suggests one symbol/source dominates, flag concentration risk.'",
+     "reports/2026-05-25_multi_ai_panel_meta_review.md", None, None, "claude-opus-4-7+roo-deepseek-session"),
 ]
 
 ENHANCEMENTS = [
     # (table_suffix, title, description, category, expected_impact, effort, status, proposed_by, related_persona, success_metric, link_md_path, link_url, link_github_ref)
+    ("OVERALL", "Verify the 648-for-0 un-gated-picks claim (DeepSeek session)",
+     "Roo's NIM panel session (2026-05-25) reports moderate_confidence (n=455) and low_confidence (n=193) buckets went 0-for-648 over the 6-day window 2026-05-16..21, destroying -825% PnL, while 300 gated picks generated +994%. If real this is the single highest-leverage filter in the system. 0-for-455 is statistically implausible (p~=0.5^455) on honest trades — the bucket may be circularly defined by 'failed all upstream gates.' Verify against audit_dashboard/data/dashboard_data.json::picks.recent_closed filtered to that date range; if buckets are post-gate residuals, 'gate them' is already done.",
+     "VALIDATION", "HIGH", "S", "BACKLOG", "claude-opus-4-7", None,
+     "Verified n / WR per quality_tier bucket from raw DB; circular-definition determination documented in reports/",
+     "reports/2026-05-25_multi_ai_panel_meta_review.md", None, None),
+
+    ("ETF", "Verify regime_adaptive x ETF Wilson CI 49.7-91.8% claim",
+     "Roo's session reports that regime_adaptive x ETF is the only persona-asset pair passing all statistical gates (binomial significance + positive PnL + positive Sharpe), Wilson CI 49.7-91.8%. Cross-reference with the prior 30d ETF PF=3.88 'STRONG RECENT' regime-shift thesis. If confirmed, this is the first non-COMMODITY production candidate after the COMMODITY edge debunk.",
+     "VALIDATION", "MEDIUM", "M", "BACKLOG", "claude-opus-4-7", None,
+     "Wilson CI reproduced from regime_adaptive persona's ETF picks; binomial significance test documented",
+     "reports/2026-05-25_multi_ai_panel_meta_review.md", "audit_dashboard/data/research/edge_significance_gate.json", None),
+
+    ("OVERALL", "Verify kimi_signal_tracking + aggregated_picks 6-day source-system claims",
+     "Roo's session reports: kimi_signal_tracking 168 picks WR 53.6% +257.34% (best source by total PnL); aggregated_picks 58 picks WR 74.1% +111.02% (underpowered but interesting). Run the same per-source rollup over a longer window (30d/90d) to test if these are persistent edges or 6-day noise. Apply the same dedup/policy/single-source-concentration checks that killed the COMMODITY claim.",
+     "VALIDATION", "MEDIUM", "S", "BACKLOG", "claude-opus-4-7", None,
+     "Per-source 30d/90d WR/PF confirmed with dedup + concentration flag; advancement-or-rejection documented",
+     "reports/2026-05-25_multi_ai_panel_meta_review.md", None, None),
+
     ("OVERALL", "Backfill trust_score on historical closed picks",
      "Backfill from strategy registry so HC overlay claims become reproducible. Unblocks all 'closed-book edge' callouts on the page.",
      "DATA_FEED", "HIGH", "M", "BACKLOG", "claude-opus-4-7", None,
