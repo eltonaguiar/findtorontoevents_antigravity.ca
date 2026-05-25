@@ -600,3 +600,20 @@ ___HELL_*.MD
 # =========================================================================
 ml_crypto_predictor/models/*.pkl
 ml_crypto_predictor/models/**/*.pkl
+
+# =========================================================================
+# 2026-05-25 bloat fix v10 — preemptive ML experiment-tracking patterns
+# Verified by peer review (nvidia/moonshot/kimi-k2.6 audit): no current files
+# in repo, but flagged as common bloat sources if anyone adds wandb/mlflow/
+# DVC tracking. Adding now to prevent future leaks (low risk, no false-pos).
+# =========================================================================
+wandb/
+mlruns/
+**/wandb/
+**/mlruns/
+.dvc/cache/
+.dvc/tmp/
+**/checkpoints/
+!docs/**/checkpoints/
+**/runs/events.out.tfevents.*
+**/tb_events/
