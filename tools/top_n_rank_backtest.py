@@ -63,13 +63,25 @@ def _write_graceful_payload(out_arg: str, asset_class: str, n: int, lookback_day
     print(f"# wrote graceful payload ({out_path.stat().st_size} bytes) — {error[:80]}", file=sys.stderr)
 
 
+def _env(*names, default=None):
+    """Try a list of env-var aliases in order. Returns first non-empty value, else default.
+    Reason: the repo has two parallel naming conventions in active use —
+    DB_STOCKS_PASSWORD vs DB_PASS_STOCKS — and Ring's 2026-05-25 audit hit
+    'Access denied' because this tool only looked at the first form."""
+    for n in names:
+        v = os.environ.get(n)
+        if v:
+            return v
+    return default
+
+
 def connect():
     return pymysql.connect(
-        host=os.environ.get("DB_STOCKS_HOST", "mysql.50webs.com"),
-        user=os.environ.get("DB_STOCKS_USER", "ejaguiar1_stocks"),
-        password=os.environ.get("DB_STOCKS_PASSWORD", "stocks"),
-        database=os.environ.get("DB_STOCKS_NAME", "ejaguiar1_stocks"),
-        port=int(os.environ.get("DB_STOCKS_PORT", "3306")),
+        host=_env("DB_STOCKS_HOST", "DB_HOST_STOCKS", default="mysql.50webs.com"),
+        user=_env("DB_STOCKS_USER", "DB_USER_STOCKS", default="ejaguiar1_stocks"),
+        password=_env("DB_STOCKS_PASSWORD", "DB_PASS_STOCKS"),
+        database=_env("DB_STOCKS_NAME", "DB_NAME_STOCKS", default="ejaguiar1_stocks"),
+        port=int(_env("DB_STOCKS_PORT", "DB_PORT_STOCKS", default="3306")),
         connect_timeout=30,
         read_timeout=120,
     )
