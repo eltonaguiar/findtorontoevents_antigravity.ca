@@ -34,6 +34,56 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+<!-- 2026-05-25 — Audit Deep-Dive Session: CI status, incident review, peer consultations, dashboard analysis -->
+<div class="update-entry" data-date="2026-05-25" data-type="fix" data-category="trading">
+  <div class="date-badge">May 25, 2026</div>
+  <h3>🔍 Audit Deep-Dive — GitHub Actions, Incidents Review &amp; Dashboard Analysis</h3>
+  
+  <p><strong>Purpose:</strong> Comprehensive review of CI health, audit/incidents.html tasks, peer consultations, and AI tournament/pick quality assessment.</p>
+  
+  <div style="background:rgba(239,68,68,0.08); border-left:4px solid #ef4444; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#ef4444">GitHub Actions Status</strong><br>
+    • <strong>11 workflows with failures</strong> in last 100 runs (across 90 unique workflows)<br>
+    • Worst: "Deploy Competition to Live Site" — 5/7 failures<br>
+    • Also failing: Outcome Resolver, Winner Pattern Scanner, Sports endpoint smoke test, CI Tests, MOMENTUM CATCHER, Forex Smart Picks, Pick Monitor &amp; Price Validator<br>
+    • All other workflows actively running or completed successfully
+  </div>
+  
+  <div style="background:rgba(245,158,11,0.08); border-left:4px solid #f59e0b; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#f59e0b">Top P0 Incidents (from /audit/incidents.html)</strong><br>
+    • <strong>signal_outcomes table 82 days stale</strong> — outcome resolver dead, ALL forward-WR unverifiable<br>
+    • <strong>PnL mismatch on 38.97% rows</strong> — ~10K rows corrupt, all cohort WR/PF stats suspect<br>
+    • <strong>WON label bug</strong> — 2,531 'WON' rows avg pnl=-41.13% (losing trades labeled won)<br>
+    • <strong>sync writer missing</strong> — only 0.09% of raw picks have outcomes recorded<br>
+    • <strong>trust_score NULL on 99.99%</strong> — HC overlay unverified on nearly all closed picks<br>
+    • <strong>56,559 ghost rows</strong> — duplicate entries (MATICUSDT top cohort: 20,474 identical)<br>
+    • <strong>forward_validator frozen 270h</strong> — 29.2M open positions not being resolved<br>
+    • <strong>smart_picks confidence inverted</strong> — structurally flips the ranker
+  </div>
+  
+  <div style="background:rgba(34,197,94,0.08); border-left:4px solid #22c55e; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#22c55e">Audit Dashboard Findings</strong><br>
+    • Main dashboard last updated 2026-05-21 (4 days stale), many tables showing "Loading..."<br>
+    • HyroTrader page returns 404<br>
+    • AI Tournament Phase 1B active — collecting picks from 8 models, no ranked data yet<br>
+    • Consensus features identified per asset class (equity, ETF, crypto, forex, commodity, bond)
+  </div>
+  
+  <div style="background:rgba(15,23,42,0.3); border-left:4px solid #3b82f6; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#3b82f6">Peer Consultation Results</strong><br>
+    • Opencode consulted → confirmed priorities: data integrity chain (#2→#5→#6) is right fix order<br>
+    • Added recommendations: audit trail gap, schema validation constraints, dead validator alerting<br>
+  </div>
+  
+  <div style="margin-top:12px;">
+    <strong style="color:#cbd5e1">Recommended next steps:</strong><br>
+    <span style="color:#ef4444">• IMMEDIATE:</span> Fix signal_outcomes resolver + PnL reconciliation (unlocks everything)<br>
+    <span style="color:#f59e0b">• NEXT SESSION:</span> Trust score backfill + smart_picks_engine weight fix + ghost row dedup<br>
+    <span style="color:#22c55e">• LOW-EFFORT:</span> Add insufficient-n badges, remove IPO claim, kill BOND emission, revive Swarm Picks tab
+  </div>
+</div>
+<!-- END ENTRY -->
+
   <div class="header">
     <h1>Latest Updates</h1>
     <div class="subtitle">New features, improvements, and bug fixes across all our apps</div>
