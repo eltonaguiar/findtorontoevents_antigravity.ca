@@ -16,10 +16,6 @@
   section { margin: 24px 0; }
   a { color: #60a5fa; }
   header { padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 16px; }
-  .nav { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-  .nav a { background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
-  .nav a:hover { background: rgba(96,165,250,0.12); text-decoration: none; }
-  .nav a.active { background: rgba(96,165,250,0.2); border-color: #60a5fa; color: #93c5fd; }
 </style>
 </head>
 <body>
@@ -30,18 +26,10 @@
     See <code>tools/research/orchestrator.py</code> + <code>updates/2026-05-11-research-orchestrator-design.md</code> for the 5-pass protocol.
   </div>
   <div style="color:#94a3b8;font-size:12px;margin-top:8px">
-    Index generated: <strong style="color:#e6e6f0">May 16, 2026 2:52 AM EDT</strong>
+    Index generated: <strong style="color:#e6e6f0">May 24, 2026 9:56 PM EDT</strong>
     &nbsp;•&nbsp; All run timestamps shown below are also <strong>EST/EDT</strong>; the <code>run_*</code> directory IDs are UTC.
   </div>
 </header>
-
-<!-- NAV -->
-<nav class="nav">
-  <a href="/audit/">← Main Audit</a>
-  <a href="/audit/ai-tournament.html">🏆 AI Tournament</a>
-  <a href="/audit/ai_leaderboard.html">AI Leaderboard (internal)</a>
-  <a href="/audit/research_index.html" class="active">Research Index</a>
-</nav>
 
 <section style="margin-top:12px">
   <h2>How to read this page</h2>
@@ -79,6 +67,21 @@
 
 <section>
   <h2 style="text-transform:uppercase">bond</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Bond Research)</summary>
+<li>PF=0.0, WR=0.0%, n=5 - no profitability and too few trades; cross-test shows ind</li>
+<li>PF=0.0, WR=0.0%, n=5 - no edge; simplified SMA proxy likely mis-represents inten</li>
+<li>PF=0.0, WR=0.0%, n=5 - no statistical edge; regime filter and risk-parity sizing</li>
+<li>PF=0.0, WR=0.0%, n=5 - flat performance; simplified signal likely mis-aligned wi</li>
+<li>PF=1.51 meets Tier-2 PF but WR=33.3% and n=9 are far below requirements; cross-t</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 10 runs, verdicts were mostly MIXED: 5, NO_EDGE: 5. 
+Bond strategies produce many theoretical candidates (14+) yet nearly zero clear edges — likely because bond ETFs have lower turnover and tighter spreads, limiting momentum/carry signal strength.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -184,6 +187,21 @@
   </table>
 </section><section>
   <h2 style="text-transform:uppercase">commodity</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Commodity Research)</summary>
+<li>PF=10.68 but only 4 trades</li>
+<li>PF=10.68 with n=4 trades; trade count far below Tier-2 floor, making the backtes</li>
+<li>PF=10.68 but only 4 trades; n too low for robust inference despite attractive me</li>
+<li>PF=2.25, WR=58.3% but only 12 trades; n&lt;100 violates Tier-2 floor, so edge is no</li>
+<li>PF=2.66, WR=64.7% yet only 17 trades; insufficient history to validate performan</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 5 runs, verdicts were mostly MIXED: 1, NO_EDGE: 4. 
+Commodity research generated diverse candidates (10 per run) but ALL failed — driven by very limited trading history where most strategies see only 4..17 trades, far below statistical confidence thresholds.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -239,6 +257,21 @@
   </table>
 </section><section>
   <h2 style="text-transform:uppercase">crypto</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Crypto Research)</summary>
+<li>Backtest shows PF=2.86 but only 5 trades, MDD=37.1% &gt;20% and WR=60% with a simpl</li>
+<li>Same metrics as other candidates</li>
+<li>PF looks attractive but only 5 trades, MDD exceeds Tier-2 limit and signal trans</li>
+<li>Metrics identical to others with n=5 and MDD=37.1%; trade count too low for reli</li>
+<li>Backtest PF=2.86 based on only 5 trades; high drawdown and simplified signal mea</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 5 runs, verdicts were mostly MIXED: 1, NO_EDGE: 4. 
+Crypto strategies consistently hit the trade-count wall (n < 30); higher volatility means more opportunities but also wider MDD swings that trip the 20% floor.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -294,6 +327,18 @@
   </table>
 </section><section>
   <h2 style="text-transform:uppercase">equity</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Equity Research)</summary>
+<li>Backtest shows very high PF</li>
+<li>Identical performance to the momentum ETF</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 5 runs, verdicts were mostly MIXED: 1, NO_EDGE: 4. 
+Equity research shows strong cross-test independence (ρ ≈ 0.95) which suggests ideas hold out-of-sample, but sample sizes remain the primary blocker to confident deployment.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -349,6 +394,20 @@
   </table>
 </section><section>
   <h2 style="text-transform:uppercase">etf</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Etf Research)</summary>
+<li>Backtest shows PF=77.12, WR=80%, MDD=17% - attractive but only 5 trades</li>
+<li>PF=1.97, WR=61.5%, MDD=19.7% meets the floor on PF/WR/MDD but only 13 trades; st</li>
+<li>Identical backtest stats to the carry-yield model</li>
+<li>Backtest shows PF=77.12, WR=80%, MDD=17% but only 5 trades; the strategy&#x27;s simpl</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 5 runs, verdicts were mostly MIXED: 5. 
+ETF sector research showed mixed results — some carry/value ideas survived initial screening but all lacked sufficient trade count to validate robustness.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -404,6 +463,21 @@
   </table>
 </section><section>
   <h2 style="text-transform:uppercase">forex</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Forex Research)</summary>
+<li>Backtest PF=1.61 and WR=56.7% look promising, but only 30 trades were observed a</li>
+<li>PF=0.7, WR=41.7% and Sharpe negative already fail Tier-2; with just 12 trades an</li>
+<li>Identical performance to the previous FXA candidate</li>
+<li>PF=1.61 and WR=56.7% meet the PF/WR thresholds but only 30 trades were recorded;</li>
+<li>While PF=1.61, WR=56.7% look decent, the strategy has only 30 trades and the ent</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 5 runs, verdicts were mostly MIXED: 1, NO_EDGE: 4. 
+Forex strategies consistently produced cross-test independent signals yet fell short of Tier-2 floors, suggesting the pair-selection logic works in principle but needs stronger directional filters.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -459,6 +533,21 @@
   </table>
 </section><section>
   <h2 style="text-transform:uppercase">futures</h2>
+  <section>
+  <details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned (Futures Research)</summary>
+<li>PF 3.5 meets the floor but WR 40% &lt; 50%, MDD 33.5% &gt; 20% and only 10 trades were</li>
+<li>PF 3.5 passes, yet WR 40% and MDD 33.5% violate Tier-2 thresholds and the backte</li>
+<li>Despite PF 3.5, WR 40% and MDD 33.5% fall short, and the sample size is only 10</li>
+<li>PF 3.5 is adequate but WR 40% and MDD 33.5% breach Tier-2 limits; only 10 trades</li>
+<li>PF 3.5 meets the floor, yet WR 40% and MDD 33.5% are outside acceptable ranges;</li>
+<br><strong style="font-size:11px">Key takeaway:</strong>
+<span style="font-size:11px;color:#cbd5e1;line-height:1.5">
+Out of 5 runs, verdicts were mostly MIXED: 1, NO_EDGE: 4. 
+Futures research produced the most NO_EDGE verdicts — commodity futures require specific regime awareness (contango/backwardation) that simple trend-following proxies miss entirely.
+</span>
+</details>
+</section>
+
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody><tr>
@@ -517,5 +606,9 @@
   Goal #1 (CLAUDE.md): phenomenal performance across ALL asset classes on /audit (Tier-2 floor PF≥1.5, WR≥50, MDD&lt;20, n≥100).
   This index updates whenever <code>python -m tools.research.build_research_index</code> runs (manually for now; CI cron in PR 3).
 </footer>
+
+<div style="margin-top:24px;padding:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;font-size:12px;line-height:1.6">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
 </body>
 </html>

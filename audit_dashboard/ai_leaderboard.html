@@ -43,6 +43,7 @@
     design: <code>reports/design_per_ai_pick_attribution_2026-05-15.md</code>.
   </div>
   <div id="meta" class="small" style="margin-top:8px"></div>
+  <div id="updated-est" class="small" style="color:#60a5fa;margin-top:4px"></div>
 </header>
 
 <!-- NAV -->
@@ -63,6 +64,10 @@
   below the n-floor render greyed and are rank-ineligible (<span class="badge b-building">building</span>).
   Goal #1 (CLAUDE.md): hedge-fund-grade edge per asset class.
 </footer>
+
+<div style="margin-top:24px;padding:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;font-size:12px;line-height:1.6">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
 
 <script>
 const fmt = (v, d=1) => v == null ? '—' : Number(v).toFixed(d);
@@ -91,9 +96,18 @@ fetch('data/ai_leaderboard/ai_leaderboard_index.json?cb=' + Date.now())
   .then(idx => {
     const t = idx.totals || {};
     document.getElementById('meta').textContent =
-      `As of: ${idx.as_of} · schema ${idx.schema_version} · ` +
+      `As of: ${new Date(idx.as_of).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET · schema ${idx.schema_version} · ` +
       `${t.engines} engine(s) · ${t.resolved}/${t.picks} resolved picks · ` +
       `n-floor ${idx.min_n_ranked}`;
+    // Also show a human-friendly updated label after the meta line
+    const dtEl = document.getElementById('updated-est');
+    if (dtEl && idx.as_of) {
+      dtEl.textContent = new Date(idx.as_of).toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit', hour12: true
+      }) + ' ET';
+    }
     const engines = idx.engines || [];
     if (!engines.length) {
       document.getElementById('board').innerHTML =

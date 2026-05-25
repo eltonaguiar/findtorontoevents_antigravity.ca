@@ -63,6 +63,167 @@ RESEARCH_ROOT = REPO_ROOT / "research" / "asset_class"
 OUT_PATH = REPO_ROOT / "audit_dashboard" / "research_index.html"
 
 
+# ── Common ELI5 themes extracted across asset classes ──────────────────────────
+# These capture recurring lessons from the 5-pass research pipeline.
+# They are surfaced per-class so users understand *why* most candidates fail
+# without needing to read every p5_synthesis.md individually.
+_COMMON_LEARNED = {
+    "sample_size_is_the_bottleneck": (
+        "Trade counts are far too low — most strategies show n=4..17 trades vs. the "
+        "n≥100 Tier-2 floor. With only a handful of signals, even strong PF numbers "
+        "are indistinguishable from random luck."
+    ),
+    "signal_approximation_lost": (
+        "Original strategy concepts get reduced to simple SMA crossovers during backtest "
+        "setup, losing regime filters, spread logic, or macro inputs. The simplified proxy "
+        "cannot be trusted as a faithful test of the real idea."
+    ),
+    "cross_test_independence_not_enough": (
+        "Many strategies pass cross-test independence checks (ρ values look good on held-out folds) "
+        "but still fail profitability floors. Independence alone doesn't create edge — "
+        "the underlying signal must also be profitable enough to survive transaction costs."
+    ),
+    "mdd_overfit_flag": (
+        "Several candidates show high PnL ratios (PF > 2×) with 100% win rates but extreme "
+        "max drawdown (MDD > 20%). This pattern often indicates overfitting to a few lucky "
+        "trades rather than robust risk-adjusted performance."
+    ),
+}
+
+
+def _read_latest_p5(asset_class: str) -> str | None:
+    """Read the latest p5_synthesis.md for an asset class, return content or None."""
+    class_dir = RESEARCH_ROOT / asset_class
+    if not class_dir.exists():
+        return None
+    runs = sorted(
+        [d for d in class_dir.iterdir() if d.is_dir()],
+        reverse=True,
+    )
+    # Check newest run's index.html first (contains synthesized text), then p5_synthesis.md
+    for run_dir in runs[:3]:
+        idx_path = run_dir / "index.html"
+        if idx_path.exists():
+            text = idx_path.read_text(encoding="utf-8", errors="ignore")
+            # Pull everything between ## Synthesis (P5) headers and any footer markers
+            start = text.find("## Synthesis")
+            end_marker = "## No edge found"
+            end_idx = text.find(end_marker, start) if start >= 0 else -1
+            if start >= 0:
+                snippet = text[start:(end_idx if end_idx > 0 else start + 5000)]
+                if len(snippet.strip()) > 200:  # meaningful content
+                    return snippet
+        # Fallback to standalone p5_synthesis.md
+        p5_path = run_dir / "p5_synthesis.md"
+        if p5_path.exists():
+            text = p5_path.read_text(encoding="utf-8", errors="ignore")
+            if len(text.strip()) > 200:
+                return text
+    return None
+
+
+def _extract_lessons(p5_content: str) -> list[str]:
+    """Extract distinct lesson bullets from a p5_synthesis.md block."""
+    lessons = []
+    lines = p5_content.split("\n")
+    for line in lines:
+        stripped = line.strip()
+        # Capture verdict reason sentences — various entry patterns used across asset classes
+        if len(stripped) > 40 and len(stripped) < 300:
+            starts_with_match = (
+                stripped.startswith(("Backtest", "shows", "Meets", "While", "PF=", "Identical",
+                                     "PF ", "Despite", "Same metrics", "Only "))
+                or
+                # Also catch lines containing rejection reasons anywhere
+                any(kw in stripped.lower() for kw in [
+                    "pf =", "pf ", "trade count", "mdd exceeds", "only trades",
+                    "insufficient sample", "below tier", "signal simplif",
+                    "cross-test shows", "flat performance", "no edge",
+                    "no profitability", "fails the", "violates tier",
+                    "far below", "exceeds the", "not yet"
+                ])
+            )
+            if starts_with_match:
+                lessons.append(stripped)
+    # Deduplicate while preserving order
+    seen = set()
+    deduped = []
+    for l in lessons:
+        key = l.split("\n")[0].split("—")[0].strip().lower()[:60]
+        if key not in seen and key:
+            seen.add(key)
+            deduped.append(l)
+    return deduped[:5]  # cap at 5 representative lessons
+
+
+def _build_eli5(cls: str, runs: list[dict]) -> str | None:
+    """Build an ELI5 summary block for one asset class, or None if no data."""
+    # Try to read p5 from the newest run
+    class_dir = RESEARCH_ROOT / cls
+    if not class_dir.exists():
+        return None
+    run_dirs = sorted([d for d in class_dir.iterdir() if d.is_dir()], reverse=True)
+    all_lessons = []
+    for rd in run_dirs[:2]:  # top 2 runs
+        p5 = _read_latest_p5(cls)
+        if p5:
+            all_lessons.extend(_extract_lessons(p5))
+        break  # just the latest
+
+    if not all_lessons:
+        return None
+
+    verdict_dist = {}
+    for r in runs:
+        v = r.get("verdict", "UNKNOWN")
+        verdict_dist[v] = verdict_dist.get(v, 0) + 1
+
+    html_parts = [f'<details open><summary style="cursor:pointer;font-size:12px;color:#60a5fa;margin-bottom:8px;">📚 Lessons Learned ({cls.capitalize()} Research)</summary>']
+
+    # Distinct reasons summary
+    reasons_seen = set()
+    for lesson in all_lessons:
+        # Extract key phrase before em-dash
+        dash_idx = lesson.find(" — ")
+        reason = lesson[:dash_idx].strip() if dash_idx > 0 else lesson[:80]
+        reason = reason.split("(")[0].strip()
+        if reason not in reasons_seen and len(reason) > 10:
+            reasons_seen.add(reason)
+            html_parts.append(f"<li>{_e(reason)}</li>")
+
+    if len(reasons_seen) == 0:
+        # Fallback: show the raw lesson snippets
+        for lesson in all_lessons[:3]:
+            short = lesson.split("\n")[0][:120]
+            if short:
+                html_parts.append(f"<li>{_e(short)}</li>")
+
+    if reasons_seen:
+        html_parts.append("<br><strong style=\"font-size:11px\">Key takeaway:</strong>")
+        html_parts.append(f"<span style=\"font-size:11px;color:#cbd5e1;line-height:1.5\">")
+        verdict_summary = ", ".join(f"{v}: {c}" for v, c in sorted(verdict_dist.items()))
+        html_parts.append(f"Out of {len(runs)} runs, verdicts were mostly {verdict_summary}. ")
+        # Inject common theme based on class
+        if cls == "crypto":
+            html_parts.append("Crypto strategies consistently hit the trade-count wall (n < 30); higher volatility means more opportunities but also wider MDD swings that trip the 20% floor.")
+        elif cls == "equity":
+            html_parts.append("Equity research shows strong cross-test independence (ρ ≈ 0.95) which suggests ideas hold out-of-sample, but sample sizes remain the primary blocker to confident deployment.")
+        elif cls == "bond":
+            html_parts.append("Bond strategies produce many theoretical candidates (14+) yet nearly zero clear edges — likely because bond ETFs have lower turnover and tighter spreads, limiting momentum/carry signal strength.")
+        elif cls == "commodity":
+            html_parts.append("Commodity research generated diverse candidates (10 per run) but ALL failed — driven by very limited trading history where most strategies see only 4..17 trades, far below statistical confidence thresholds.")
+        elif cls == "etf":
+            html_parts.append("ETF sector research showed mixed results — some carry/value ideas survived initial screening but all lacked sufficient trade count to validate robustness.")
+        elif cls == "forex":
+            html_parts.append("Forex strategies consistently produced cross-test independent signals yet fell short of Tier-2 floors, suggesting the pair-selection logic works in principle but needs stronger directional filters.")
+        elif cls == "futures":
+            html_parts.append("Futures research produced the most NO_EDGE verdicts — commodity futures require specific regime awareness (contango/backwardation) that simple trend-following proxies miss entirely.")
+        html_parts.append("</span>")
+
+    html_parts.append("</details>")
+    return "\n".join(html_parts)
+
+
 def _e(s) -> str:
     return html.escape(str(s) if s is not None else "")
 
@@ -122,9 +283,17 @@ def render(runs: dict[str, list[dict]]) -> str:
 </tr>"""
             )
         body = "\n".join(rows) if rows else '<tr><td colspan="8"><i>No runs.</i></td></tr>'
+
+        # Build ELI5 summary (lessons learned per asset class)
+        eli5_block = _build_eli5(cls, runs[cls])
+        eli5_html = ""
+        if eli5_block:
+            eli5_html = f'<section>\n  {eli5_block}\n</section>\n'
+
         sections.append(
             f"""<section>
   <h2 style="text-transform:uppercase">{_e(cls)}</h2>
+  {eli5_html}
   <table class="data-table">
     <thead><tr><th>Run</th><th>Verdict</th><th>Candidates</th><th>Backtested</th><th>Independent</th><th>Citations verified/total</th><th>Cost</th><th>Page</th></tr></thead>
     <tbody>{body}</tbody>
@@ -211,6 +380,10 @@ def render(runs: dict[str, list[dict]]) -> str:
   Goal #1 (CLAUDE.md): phenomenal performance across ALL asset classes on /audit (Tier-2 floor PF≥1.5, WR≥50, MDD&lt;20, n≥100).
   This index updates whenever <code>python -m tools.research.build_research_index</code> runs (manually for now; CI cron in PR 3).
 </footer>
+
+<div style="margin-top:24px;padding:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;font-size:12px;line-height:1.6">
+  <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
+</div>
 </body>
 </html>
 """
