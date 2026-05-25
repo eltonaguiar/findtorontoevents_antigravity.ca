@@ -3245,6 +3245,16 @@ def enrich_picks_with_elite_score(
             _sym = pick.get("symbol", "?")
             _strat = pick.get("strategy", "?")
             print(f"  [ELITE] ERROR scoring {_sym} ({_strat}): {_score_err} -- assigned fallback score 25")
+            # Diagnostic: when the error is "dict has no attribute 'lower'", dump
+            # which fields of this pick are dicts so we can pinpoint the source
+            # field. Per the comment near _coerce_regime_field, market_regime /
+            # hmm_regime are known offenders; this catches new ones too.
+            if "'dict' object has no attribute 'lower'" in str(_score_err) and error_count <= 5:
+                _dict_fields = [(k, type(v).__name__) for k, v in pick.items()
+                                if isinstance(v, dict) and k not in
+                                ("extra", "elite_breakdown", "ml_composite_breakdown", "cost_breakdown")]
+                if _dict_fields:
+                    print(f"  [ELITE] {_sym} has unexpected dict-typed fields: {_dict_fields}")
             if error_count <= 3:
                 print("  [ELITE] traceback (first 3 only):\n" + _tb.format_exc())
     if error_count > 0:
