@@ -88,17 +88,25 @@ def connect():
 
 
 def fetch_picks(cur, asset_class: str, lookback_days: int):
-    """Pull closed picks of the given asset_class with score, created_at, pnl_pct."""
+    """Pull closed picks of the given asset_class with score, created_at, pnl_pct.
+
+    Schema note (verified 2026-05-25): the live trading_picks table uses
+    column `category` not `asset_class`, and `elite_score` not `score`.
+    Aliased here for back-compat with the rest of the tool which expects
+    the conceptual names. Category is also lower-case in the data
+    (`crypto`, `equity`, `forex`...), so we match case-insensitively.
+    """
     placeholders = ",".join(["%s"] * len(TERMINAL_STATUSES))
     sql = f"""
-        SELECT id, strategy, symbol, direction, score, pnl_pct,
-               created_at, closed_at, status
+        SELECT id, strategy, symbol, direction,
+               elite_score AS score,
+               pnl_pct, created_at, closed_at, status
         FROM trading_picks
-        WHERE asset_class = %s
+        WHERE LOWER(category) = LOWER(%s)
           AND status IN ({placeholders})
           AND created_at >= NOW() - INTERVAL %s DAY
           AND pnl_pct IS NOT NULL
-          AND score IS NOT NULL
+          AND elite_score IS NOT NULL
         ORDER BY created_at DESC
     """
     params = (asset_class,) + TERMINAL_STATUSES + (lookback_days,)
