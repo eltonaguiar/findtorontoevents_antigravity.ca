@@ -1652,8 +1652,11 @@ def _resolve_claude_gainer_ml_pick(pick: dict, live_price: Optional[float]) -> b
     if exit_price is None:
         return False
 
-    # Compute PnL
-    pnl_pct = round((exit_price - entry) / entry * 100, 2)
+    # Compute PnL — direction-aware (SHORT: entry-exit, LONG: exit-entry)
+    if is_short:
+        pnl_pct = round((entry - exit_price) / entry * 100, 2)
+    else:
+        pnl_pct = round((exit_price - entry) / entry * 100, 2)
 
     # Update the original pick in-place
     original["status"] = "RESOLVED"
