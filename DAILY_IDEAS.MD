@@ -3607,3 +3607,18 @@ Self-assessment survey captured under `hedge_fund_persona_playbook_v2.md §4`:
 **COMMODITY consensus (2/2):** macro/regime, supply-demand (inventories/COT), real rates / USD
 
 Next step: write `tools/ai_tournament/consensus_tier_algorithm.py` to take consensus features with ≥2-model agreement, derive averaged weights, emit seed for `alpha_engine/score_v3.py` (opt-in sidecar per Wire-Up Rule).
+
+---
+
+## 2026-05-25 03:25 UTC — Attribution flag: grok_heavy vs mercury_v2
+
+User re-attributed the 5-persona hedge-fund picks (Voss/Reed/Sharma/Chen/Lang, 20 picks across EQUITY/ETF/COMMODITY) to **Grok HEAVY** (xAI). The same picks were saved earlier this session under `mercury_v2_20260525.json` because the user's initial message attributed them to "Mercury (Inception labs)".
+
+**Both submission files are now on disk** until clarification:
+- `data/ai_tournament/submissions/mercury_v2_20260525.json` (original attribution)
+- `data/ai_tournament/submissions/grok_heavy_hedgefund_20260525.json` (latest attribution)
+
+This is detectable in `ai_tournament_model_summary.json` — both `mercury_v2` and `grok_heavy` will show the same 5 personas and overlapping symbol set. Once the user confirms which model actually generated these, the wrong one should be deleted (with a note in the next DAILY_IDEAS entry).
+
+**Why this matters:** the AI-tournament leaderboard ranks by model. Double-counting picks under two model_ids inflates `ring_eligible` for one model and silently misses for the other. The next price-tracker run will resolve them under whichever model_id is on disk — picks resolved twice under different model_ids will skew tournament_model_stats.
+
