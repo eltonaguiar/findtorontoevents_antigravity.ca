@@ -93,8 +93,16 @@ def _compute_ml_composite(pick: dict) -> tuple[float, str]:
     _trust = str(pick.get("trust_tier") or "").upper()
     _claude_penalty = 0.65 if "claude_gainer" in _strat else 1.0
     _tier_penalty = 0.3 if _trust in {"SANDBOX", "UNTRUSTED", "UNPROVEN", "DEMOTED"} else 1.0
+    # 2026-05-25: dropped _w_conf 0.30 -> 0.10 per measured IC. SCORE_PNL_EDGE_
+    # REVIEW_2026-04.md reports Spearman(confidence, pnl) = 0.07 pool-wide
+    # (n=3500); Z-AI independent grounded analysis 2026-05-25 confirmed ~0.07.
+    # Weighting a 0.07-IC signal at 30% was top-of-funnel poison (Gemini
+    # consult: 'active poison'). Freed 20% -> ml_composite (positive signal)
+    # + small bump to forward_wr. NOT promoting elite_score yet — this file's
+    # docstring at line 70 says r=-0.001 while SCORE_PNL_EDGE_REVIEW reports
+    # 0.20 pool / 0.39 non-crypto; resolve the contradiction in a follow-up.
     # Optional: asset-class-aware weights (disabled by default for safe rollout).
-    _w_ml, _w_conf, _w_fwd = 0.6, 0.3, 0.1
+    _w_ml, _w_conf, _w_fwd = 0.75, 0.10, 0.15
     if bool(_POLICY_FLAGS.get("enable_asset_class_ml_composite_v2")):
         _raw_ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
         _weights_by_ac = (_RISK_POLICY.get("ml_composite_weights_by_asset") or {})

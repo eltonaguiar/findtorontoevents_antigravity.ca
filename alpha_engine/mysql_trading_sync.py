@@ -479,11 +479,27 @@ def sync(dry_run=False):
         if not pid or pid in seen_ids:
             continue
         seen_ids.add(pid)
+        # 2026-05-25: zero-allocate FOREX per reports/EDGE_CRITERIA_ACTION_PLAN_2026-05-24.md.
+        # The prior kill-switch existed only at scanner.py:2559 inside nc_quality_gate, which
+        # missed multi_asset_copytrader / non_crypto_consensus / combined_confidence_strategy
+        # / forex_copy_trader / regime_terminal / prediction_market_agents / alpha_engine — 387
+        # FOREX picks leaked since 2026-05-24. This is the single funnel every pick crosses
+        # before DB upsert. The 'FOREX_HIGH_CONVICTION' carve-out (cta_replicator only, PF
+        # 2.51 n=97 per commit e9dcfdca8) is preserved by the explicit category match. See
+        # reports/2026-05-25_forex_zero_allocate_filter_DRAFT.md.
+        _raw_cat = str(pick.get("category") or "").strip().upper()
+        if _raw_cat == "FOREX":
+            _forex_skipped = locals().get("_forex_skipped", 0) + 1
+            continue
         try:
             rows.append(pick_to_row(pick))
         except Exception as e:
             continue
 
+    _forex_skipped = locals().get("_forex_skipped", 0)
+    if _forex_skipped:
+        log_info(f"[FOREX_ZERO_ALLOCATE] suppressed {_forex_skipped} FOREX picks "
+                 f"(FOREX_HIGH_CONVICTION preserved per EDGE_CRITERIA_ACTION_PLAN_2026-05-24.md)")
     log_ok(f"Prepared {len(rows)} unique rows for upsert")
 
     if dry_run:

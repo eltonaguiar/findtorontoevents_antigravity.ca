@@ -386,6 +386,14 @@ def append_to_closed_picks_json(transitions: list[dict]) -> dict:
             # (peer freebuff discovery: quan_engine_scalp 5293 picks invisible because writer
             # never set resolved_at; harness reads resolved_at primarily)
             "resolved_at": datetime.now(timezone.utc).isoformat(),
+            # 2026-05-25: HIGH CONVICTION overlay closed-book stats were
+            # unreproducible because this writer dropped trust_score / elite_score /
+            # confidence on every OPEN -> WON/LOST transition (99.96% NULL in
+            # trading_picks per reports/2026-05-25_high_conviction_trust_score_audit.md).
+            # Forward all three fields so HC overlay can be backfilled going forward.
+            "trust_score": t.get("trust_score"),
+            "elite_score": t.get("elite_score"),
+            "confidence": t.get("confidence"),
             "_writer": "active_picks_sync_live",
         }
         existing.append(entry)
