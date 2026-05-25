@@ -3622,3 +3622,8 @@ This is detectable in `ai_tournament_model_summary.json` — both `mercury_v2` a
 
 **Why this matters:** the AI-tournament leaderboard ranks by model. Double-counting picks under two model_ids inflates `ring_eligible` for one model and silently misses for the other. The next price-tracker run will resolve them under whichever model_id is on disk — picks resolved twice under different model_ids will skew tournament_model_stats.
 
+
+## 2026-05-25 03:30 UTC — Attribution resolved: it was Grok HEAVY
+
+User confirmed the 5-persona Voss/Reed/Sharma/Chen/Lang hedge-fund picks (20 picks across EQUITY/ETF/COMMODITY) came from **Grok HEAVY (xAI)**, not Mercury V2 (Inception Labs). The mercury_v2_20260525.json file was an attribution error from earlier this session and has been removed. Picks now live only under `grok_heavy_hedgefund_20260525.json` so the price-tracker won't double-resolve. Persona registry entries (`voss_global_macro`, `reed_long_short_fundamental`, `sharma_quant_momentum`, `chen_thematic_ai_growth`, `lang_value_contrarian`) remain as-is in `tools/ai_tournament/persona_registry.py` — they're model-agnostic strategy archetypes, correctly tied to Grok HEAVY going forward.
+
