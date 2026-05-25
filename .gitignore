@@ -231,3 +231,14 @@ tmp_*.json
 actionlint_dir/actionlint.exe
 Kimi_Agent_*.zip
 Kimi_Agent_*(*).zip
+
+# 2026-05-25 bloat fix v3 — second-pass cleanup after audit. Each was found
+# in the top 30 history blobs (>20 MB). Production audit confirmed:
+#   closed_picks.json           — heavily used (8 readers, 5 writers) — keep current, regenerable
+#   closed_picks_enriched.json  — pure derivative from closed_picks via backfill_pick_features.py
+#   audit_edge_review_live.json — single consumer, no in-repo writer
+#   tools/data/snapshots/*.json — archived dashboard snapshots, only audit_smart_gate_funnel.py reads
+alpha_engine/data/closed_picks.json
+alpha_engine/data/closed_picks_enriched.json
+tools/data/audit_edge_review_live.json
+tools/data/snapshots/dashboard_data_*.json
