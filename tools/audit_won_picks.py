@@ -50,11 +50,14 @@ def audit_won_negative_picks(conn, dry_run=False):
     """Query for WON picks with negative PnL and optionally correct them."""
     cur = conn.cursor()
 
-    # Find WON picks with negative PnL
+    # Find WON picks with negative PnL.
+    # 2026-05-25: trading_picks schema has `category` (not `asset_class`)
+    # and `created_at` (not `opened_at`). The old column names crashed the
+    # tool on every run, blocking the won-picks contradiction audit.
     query = """
         SELECT id, symbol, direction, entry_price, exit_price, pnl_pct,
-               status, exit_reason, strategy, source_system, asset_class,
-               opened_at, closed_at
+               status, exit_reason, strategy, source_system, category,
+               created_at, closed_at
         FROM trading_picks
         WHERE status = 'WON' AND pnl_pct IS NOT NULL AND pnl_pct < 0
         ORDER BY pnl_pct ASC

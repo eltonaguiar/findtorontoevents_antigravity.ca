@@ -787,7 +787,8 @@ function lbEli5Content() { return '<div><b>How to read the leaderboard</b><br><b
 function msEli5Content() { return '<div><b>What do these numbers mean?</b><br><br>Every row is one AI model or trading strategy that has submitted picks to the tournament.<br><br><b>Picks</b> = Total bets made (open + resolved combined).<br><b>WR</b> = Win Rate — how often the pick won when resolved (%).<br><b>Resolved</b> = Bets that have finished — either hit TP (win), SL (loss), or expired.<br><b>W/L</b> = Wins vs Losses count.<br><b>Avg PnL</b> = Average profit or loss per resolved pick.<br><b>Last Pick</b> = When the model last submitted a pick (in EST).<br><b>Personas</b> = How many different strategies/personalities this model uses.<br><b>Classes</b> = How many asset classes this model covers (crypto, stocks, forex, etc.).<br><br><span style="color:#22c55e">Green</span> WR = doing well. <span style="color:#ef4444">Red</span> = needs improvement. Grey = not enough data yet.</div>'; }
 
 // ── Init ──
-loadPicksAndLeaderboard().then(() => { loadPicks(); loadModelSummary(); });
+loadPicksAndLeaderboard().then(() => { loadPicks(); }).catch(() => {});
+loadModelSummary();
 </script>
 <!-- AI POSTMORTEM HELPER (per-pick prompt + localStorage save, shared w/ /audit) -->
 <script src="ai_postmortem_helper.js"></script>
