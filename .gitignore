@@ -442,3 +442,56 @@ ejaguiar1_sportsbet.zip
 
 # Misc regenerable artifacts
 tools/data/audit_edge_review_live.json
+
+# =========================================================================
+# 2026-05-25 bloat fix v7 — manual audit by Roo on ELTONSVLLM_SERVER
+# (paid-mode-fast routing via the LiteLLM proxy). 35+ files >1MB still tracked.
+# Findings cross-checked against my v3/v4/v5/v6 — these are genuinely new
+# additions. Original work credit: copilot/identify-git-bloat-sources branch.
+# Doc: updates/2026-05-25-gitignore-bloat-audit.md
+# =========================================================================
+
+# Backtest / analysis outputs
+alpha_engine/data/unique_edge_backtest_results.json
+alpha_engine/data/dna_mutations.json
+backtest_results/**/*.sql
+incubator/backtest_results/**/*.json
+
+# Test artifacts (screenshots, regeneratable by re-running tests)
+tests/screenshots/**/*.png
+tests/artifacts/**/*.png
+
+# Backup files with timestamp suffixes (my v3 *.bak only catches `.bak`, not `.bak-<date>`)
+updates/index.html.bak*
+audit_dashboard/data/claudes_test_*.json
+audit_dashboard/data/claudes_test_*.json.bak
+
+# Live state / training output / log files
+ml_crypto_predictor/enhanced_models/live_picks/
+alpha_engine/data/missed_gainers_log.json
+claude_gainer_ml/tracker/
+copy_trader_intel/data/highscore_pick_history.json
+copy_trader_intel/data/okx_trader_database.json
+claude_gainer_ml/data/feature_matrix.csv
+claude_gainer_ml/data/raw_market_data.json
+
+# Swing ML models (missed by enhanced_models/models pattern — different dir)
+ml_crypto_predictor/models/swing/*.pkl
+
+# Audit quarantine / archive
+audit_trail/data/quarantine/
+audit_trail/data/universal_resolved_picks.json
+battleground/data/luxalgo_closed_picks.json
+reports/h006_funding_cache_*.json
+
+# Attachment archives + DB snapshots + competition data
+kimi_attachments_*/
+ejaguiar1_sportsbet.zip
+database/*/
+STOCKS/competition/competition-stocks.json
+
+# Deploy artifacts (regenerated each deploy run)
+deploy_riseoftheclaw/audit_dashboard/index.html
+
+# Dated AI tournament picks (current snapshot lives in *_latest.json which is tracked)
+data/ai_tournament/picks_2026*.json
