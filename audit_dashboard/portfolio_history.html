@@ -200,8 +200,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <!-- Global Strategy + Asset Class Analytics -->
 <div id="globalAnalytics" style="max-width:1400px;margin:0 auto;padding:0 1.5rem"></div>
 
-<!-- Risk Management Panel -->
-<div id="riskPanel" style="max-width:1400px;margin:0 auto;padding:0 1.5rem"></div>
+<!-- Pattern Classifier Panel (winners/losers + invert-or-mutate actions) -->
+<div id="classifierPanel" style="max-width:1400px;margin:0 auto;padding:0 1.5rem 1rem"></div>
+
+<!-- Risk Management Panel — DISABLED 2026-05-25: data/risk_metrics.json was stale (TEST1/TEST2 dummy positions from 2026-03-11). Re-enable only when audit_dashboard/portfolio_manager.py::export_risk_metrics is wired to a nightly workflow. -->
+<div id="riskPanel" style="display:none"></div>
 
 <div class="controls">
   <div>
@@ -1932,6 +1935,94 @@ function buildPicksTableWithPortfolio(picks) {
   return html;
 }
 
+// ---- Pattern Classifier (winners/losers + invert-or-mutate actions) ----
+// Source: tools/audit_pick_funnel/classify_portfolios.py
+async function loadPortfolioClassification() {
+  try {
+    const resp = await fetch('data/portfolio_classification.json?ts=' + Date.now(), { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch(e) { return null; }
+}
+
+function renderClassifierPanel(data) {
+  const container = document.getElementById('classifierPanel');
+  if (!container || !data) return;
+
+  const buckets = data.by_bucket || {};
+  const winners = buckets.REPEAT_WINNER || [];
+  const losers = buckets.REPEAT_LOSER || [];
+  const mixed = buckets.MIXED || [];
+  const fmtPct = (v) => (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+
+  function actionList(actions) {
+    if (!actions || !actions.length) return '<em style="color:var(--text-dim)">no action</em>';
+    return '<ul style="margin:6px 0 0 0;padding-left:18px;font-size:0.78rem;line-height:1.35">'
+      + actions.map(a => `<li><strong>${a.name || ('axis '+a.axis)}</strong>: ${a.detail || ''}</li>`).join('')
+      + '</ul>';
+  }
+
+  function card(p, color) {
+    const streak = p.verdict === 'REPEAT_LOSER'
+      ? `<span style="color:var(--red)">−${p.repeat_loser_streak}d</span>`
+      : p.verdict === 'REPEAT_WINNER'
+        ? `<span style="color:var(--green)">+${p.repeat_winner_streak}d</span>`
+        : `+${p.repeat_winner_streak}/-${p.repeat_loser_streak}`;
+    const eqColor = p.current_equity_vs_initial_pct >= 0 ? 'var(--green)' : 'var(--red)';
+    return `
+      <div style="background:var(--card);border:1px solid ${color};border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+          <strong style="font-size:0.92rem">${p.name || p.id}</strong>
+          <span style="font-size:0.72rem;color:var(--text-dim)">${p.methodology || ''}</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-dim);margin-top:4px">
+          equity: <span style="color:${eqColor};font-weight:600">${fmtPct(p.current_equity_vs_initial_pct)}</span>
+          · streak: ${streak}
+          · MDD30d: ${p.max_drawdown_pct_30d.toFixed(1)}%
+          · closed: ${p.closed_trades}
+          ${p.win_rate_pct != null ? '· WR: ' + p.win_rate_pct.toFixed(0) + '%' : ''}
+        </div>
+        ${actionList(p.recommended_actions)}
+      </div>`;
+  }
+
+  const stamp = data.generated_at ? new Date(data.generated_at).toLocaleString() : '';
+  container.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:1.05rem;font-weight:700">Pattern Classifier · winners / losers / mixed</div>
+        <div style="font-size:0.72rem;color:var(--text-dim)">
+          source: <code>data/portfolio_classification.json</code>
+          · per <code>docs/MUTATION_THREE_AXIS_PROTOCOL.md</code>
+          · generated ${stamp}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+        <div>
+          <div class="stat-card" style="margin-bottom:10px">
+            <div class="label">Repeat Winners (scale-up)</div>
+            <div class="value green">${winners.length}</div>
+          </div>
+          ${winners.slice(0, 8).map(p => card(p, 'rgba(34,197,94,0.5)')).join('') || '<div style="color:var(--text-dim);font-size:0.85rem">none yet — need >=3 consecutive positive days</div>'}
+        </div>
+        <div>
+          <div class="stat-card" style="margin-bottom:10px">
+            <div class="label">Repeat Losers (invert or mutate)</div>
+            <div class="value red">${losers.length}</div>
+          </div>
+          ${losers.slice(0, 8).map(p => card(p, 'rgba(239,68,68,0.5)')).join('') || '<div style="color:var(--text-dim);font-size:0.85rem">none — every portfolio recovering</div>'}
+        </div>
+        <div>
+          <div class="stat-card" style="margin-bottom:10px">
+            <div class="label">Mixed (hold)</div>
+            <div class="value yellow">${mixed.length}</div>
+          </div>
+          ${mixed.slice(0, 8).map(p => card(p, 'rgba(234,179,8,0.4)')).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 async function loadRiskMetrics() {
   try {
     const resp = await fetch('data/risk_metrics.json', { signal: AbortSignal.timeout(5000) });
@@ -2141,8 +2232,11 @@ async function init() {
     renderGlobalAnalytics();
     renderPortfolios();
 
-    // Load risk metrics (non-blocking)
-    loadRiskMetrics().then(renderRiskPanel);
+    // Load risk metrics (DISABLED — stale fake data; see riskPanel comment in HTML)
+    // loadRiskMetrics().then(renderRiskPanel);
+
+    // Load pattern classifier (winners/losers + invert-or-mutate actions)
+    loadPortfolioClassification().then(renderClassifierPanel);
 
   } catch (err) {
     grid.innerHTML = '<div class="error-msg">Failed to load portfolio data: ' + err.message + '<br><br>Make sure <code>data/claudes_test_state.json</code> is accessible.</div>';
