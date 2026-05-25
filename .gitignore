@@ -318,6 +318,15 @@ alpha_engine/data/hindsight/**/*.json
 **/data/active_picks.json
 **/data/live_*.json
 **/data/*_signals.json
+!cross_aggregation/data/super_signals.json  # needed by Deploy Competition workflow
+# Re-track other deploy-source live JSONs (CI fresh-checkout needs them)
+!KIMI_RISEOFTHECLAW/data/live_competition.json
+!KIMI_RISEOFTHECLAW/data/live_signals_now.json
+!KIMI_RISEOFTHECLAW/data/active_picks.json
+!regime_terminal/data/active_signals.json
+!crypto_ml_edge/data/active_picks.json
+!crypto_signal_engine/data/active_picks.json
+!quan_engine/data/active_signals.json
 **/data/*_signals_now.json
 **/data/scan_*.json
 **/data/scan_log.json
@@ -374,3 +383,62 @@ node_modules/
 *.swp
 *.swo
 *.tmp
+
+# =========================================================================
+# 2026-05-25 bloat fix v7 — Large tracked files still in working tree
+# =========================================================================
+# These files are regenerable outputs, test artifacts, or deployment
+# artifacts that don't need version control. Stopping commits prevents
+# ~50+ MB/month of unnecessary history growth.
+
+# Backtest results and analysis outputs
+alpha_engine/data/unique_edge_backtest_results.json
+alpha_engine/data/dna_mutations.json
+backtest_results/**/*.sql
+incubator/backtest_results/**/*.json
+quant_lab/combo_results/**/*.json
+
+# Test artifacts (screenshots, proof images)
+tests/screenshots/**/*.png
+tests/artifacts/**/*.png
+
+# Backup files (HTML, JSON, etc.)
+updates/index.html.bak*
+audit_dashboard/data/claudes_test_*.json
+audit_dashboard/data/claudes_test_*.json.bak
+
+# Live logs and state files (regenerated hourly/daily)
+ml_crypto_predictor/enhanced_models/live_picks/
+alpha_engine/data/missed_gainers_log.json
+claude_gainer_ml/tracker/
+copy_trader_intel/data/highscore_pick_history.json
+copy_trader_intel/data/okx_trader_database.json
+
+# Training data and feature matrices (regenerable)
+claude_gainer_ml/data/
+ml_crypto_predictor/models/swing/
+
+# Quarantine and archive artifacts
+audit_trail/data/quarantine/
+audit_trail/data/universal_resolved_picks.json
+
+# Deployment and build artifacts
+deploy_riseoftheclaw/
+TORONTOEVENTS_ANTIGRAVITY/audit/*.docx
+
+# Competition and tournament data
+STOCKS/competition/
+data/ai_tournament/
+audit_dashboard/data/ai_tournament_picks_latest.json
+battleground/data/luxalgo_closed_picks.json
+
+# Database snapshots and exports
+database/*/
+reports/h006_funding_cache_*.json
+
+# Attachments and archives
+kimi_attachments_*/
+ejaguiar1_sportsbet.zip
+
+# Misc regenerable artifacts
+tools/data/audit_edge_review_live.json
