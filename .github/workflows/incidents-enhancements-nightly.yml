@@ -57,3 +57,16 @@ jobs:
           git commit -m "chore(incidents): nightly render $(date -u +%Y-%m-%d) [skip ci]"
           git pull --rebase origin main
           git push
+
+      - name: FTP upload to findtorontoevents.ca (50webs has no shell)
+        env:
+          FTP_USER:   ${{ secrets.FTP_USER }}
+          FTP_PASS:   ${{ secrets.FTP_PASS }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER || 'ftps2.50webs.com' }}
+        run: |
+          if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=ftp::FTP_USER/FTP_PASS secrets not set — skipping live deploy. Page will serve stale until manual upload."
+            exit 0
+          fi
+          python tools/deploy_audit_files.py --only incidents || echo "::warning title=ftp::incidents upload had failures"
+          python tools/deploy_audit_files.py --only updates   || echo "::warning title=ftp::updates upload had failures"
