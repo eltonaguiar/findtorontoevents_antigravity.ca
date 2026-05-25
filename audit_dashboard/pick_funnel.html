@@ -281,20 +281,54 @@ function renderRejected(rej){
   }).join('');
 }
 
+// Tooltip text for the edge-cell metric columns (mirrors the glossary at top).
+const TIP = {
+  cell: 'Edge cell = a 3-tag intersection (e.g. conf × rr × fam) over 90d closed picks. PROVEN cells keep getting capital.',
+  n:    'Closed-trade sample size (WIN+LOSS only). PROVEN tier requires n ≥ 20.',
+  wr:   'Raw win rate = wins / n. No small-n correction — a 5-of-7 cell still shows 71% even when mostly noise.',
+  wrs:  'Beta-shrunk Bayesian win rate = (wins + 0.5*20) / (n + 20). Pulls small-n cells toward the 50% prior so noise cells do not look like real edges.',
+  pf:   'Profit Factor = sum(positive pnl) / |sum(negative pnl)|. 1.0 = break-even, ≥1.5 = solid edge, ≥3.0 = elite (sanity-check n + leakage).',
+  avg:  'Mean per-trade pnl_pct in the cell. SMALL avg + BIG PF is NORMAL for high-frequency scalp profiles (tiny per-trade moves, wins bigger than losses, more wins than losses).',
+};
+function ihint(t){ return `<span class="info" title="${t.replace(/"/g,'&quot;')}">i</span>`; }
+
+// Plain-English interpretation line under each PROVEN edge row.
+function eli5Edge(ac, e){
+  const tags = {};
+  (e.cell||'').split('&').forEach(seg=>{
+    const m = seg.trim().match(/^(\w+)=(.+)$/);
+    if (m) tags[m[1]] = m[2].trim();
+  });
+  const parts = [];
+  if (tags.conf)  parts.push(`confidence ${tags.conf.replace(/^C/,'')}`);
+  if (tags.rr)    parts.push(`R:R ${tags.rr.replace(/^RR/,'')}`);
+  if (tags.fam)   parts.push(`family "${tags.fam}"`);
+  if (tags.trust && tags.trust !== 'UNK') parts.push(`trust ${tags.trust}`);
+  if (tags.dir && tags.dir !== '?') parts.push(`${tags.dir} side`);
+  if (tags.source && tags.source !== 'unknown') parts.push(`source ${tags.source}`);
+  const where = parts.length ? parts.join(' + ') : 'this cell';
+  const scalp = (e.avg_pnl_pct != null && Math.abs(e.avg_pnl_pct) < 0.1 && e.pf >= 2)
+    ? ' — high-frequency scalp profile (tiny per-trade moves, wins bigger than losses)'
+    : '';
+  return `ELI5: an ${ac} pick matching ${where} historically won ~${e.wr_shrunk_pct}% of the time (shrunk, n=${e.n}) with PF ${e.pf} on a ${e.avg_pnl_pct}% mean per-trade${scalp}.`;
+}
+
 function renderTopEdges(edges){
   const el = document.getElementById('top-edges');
-  el.innerHTML = '<p class="small">PROVEN definition: WR_shrunk ≥ 55%, PF ≥ 1.5, n ≥ 20.</p>' +
+  el.innerHTML = '<p class="small">PROVEN definition: WR_shrunk ≥ 55%, PF ≥ 1.5, n ≥ 20. Hover any column header (i) or cell for a plain-English definition.</p>' +
     Object.entries(edges.by_class||{}).map(([ac,b])=>{
-      const proven = (b.top_edges_proven||[]).map(e=>
-        `<tr><td class="edge-cell">${e.cell}</td><td class="num">${e.n}</td><td class="num">${e.wr_shrunk_pct}%</td><td class="num">${e.pf}</td><td class="num">${e.avg_pnl_pct}%</td></tr>`
-      ).join('');
-      const pf = (b.best_pf_overall||[]).slice(0,3).map(e=>
-        `<tr><td class="edge-cell">${e.cell}</td><td class="num">${e.n}</td><td class="num">${e.wr_pct}%</td><td class="num">${e.pf}</td><td class="num">${e.avg_pnl_pct}%</td></tr>`
+      const provenRows = (b.top_edges_proven||[]).map(e=>{
+        const row = `<tr><td class="edge-cell" title="${TIP.cell}">${e.cell}</td><td class="num" title="${TIP.n}">${e.n}</td><td class="num" title="${TIP.wrs}">${e.wr_shrunk_pct}%</td><td class="num" title="${TIP.pf}">${e.pf}</td><td class="num" title="${TIP.avg}">${e.avg_pnl_pct}%</td></tr>`;
+        const eli5 = `<tr class="eli5-row"><td colspan="5">${eli5Edge(ac, e)}</td></tr>`;
+        return row + eli5;
+      }).join('');
+      const pfRows = (b.best_pf_overall||[]).slice(0,3).map(e=>
+        `<tr><td class="edge-cell" title="${TIP.cell}">${e.cell}</td><td class="num" title="${TIP.n}">${e.n}</td><td class="num" title="${TIP.wr}">${e.wr_pct}%</td><td class="num" title="${TIP.pf}">${e.pf}</td><td class="num" title="${TIP.avg}">${e.avg_pnl_pct}%</td></tr>`
       ).join('');
       return `<div class="ac-section">
         <h3>${ac} <span class="small">— n_closed=${b.n_closed}, cells evaluated=${b.n_cells_evaluated}</span></h3>
-        ${proven ? `<div><b>PROVEN edges:</b><table class="lb"><thead><tr><th>Cell</th><th class="num">n</th><th class="num">WR (shrunk)</th><th class="num">PF</th><th class="num">avg PnL</th></tr></thead><tbody>${proven}</tbody></table></div>` : '<p class="small">No PROVEN cells — class either has too few closed trades or the gates haven\'t isolated an edge.</p>'}
-        ${pf ? `<div style="margin-top:8px"><b>Best PF (sanity-check for leakage):</b><table class="lb"><thead><tr><th>Cell</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">avg PnL</th></tr></thead><tbody>${pf}</tbody></table></div>` : ''}
+        ${provenRows ? `<div><b>PROVEN edges:</b><table class="lb"><thead><tr><th>Cell${ihint(TIP.cell)}</th><th class="num">n${ihint(TIP.n)}</th><th class="num">WR (shrunk)${ihint(TIP.wrs)}</th><th class="num">PF${ihint(TIP.pf)}</th><th class="num">avg PnL${ihint(TIP.avg)}</th></tr></thead><tbody>${provenRows}</tbody></table></div>` : '<p class="small">No PROVEN cells — class either has too few closed trades or the gates haven\'t isolated an edge.</p>'}
+        ${pfRows ? `<div style="margin-top:8px"><b>Best PF (sanity-check for leakage):</b><table class="lb"><thead><tr><th>Cell${ihint(TIP.cell)}</th><th class="num">n${ihint(TIP.n)}</th><th class="num">WR${ihint(TIP.wr)}</th><th class="num">PF${ihint(TIP.pf)}</th><th class="num">avg PnL${ihint(TIP.avg)}</th></tr></thead><tbody>${pfRows}</tbody></table></div>` : ''}
       </div>`;
     }).join('');
 }
