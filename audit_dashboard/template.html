@@ -13127,11 +13127,53 @@ function applyHighConvictionPreset() {
     });
   }, 150);
 }
+// CLICK FUNNEL TELEMETRY (2026-05-25) — captures button clicks + visible-picks
+// snapshot to localStorage for the pick_funnel.html "your session" panel.
+// Local-only (no network, no PII); capped at 200 entries.
+window._logFunnelClick = function(buttonId) {
+  try {
+    var KEY = '_audit_click_funnel_v1';
+    var assetFilter = null;
+    try {
+      var s = document.getElementById('asset-filter') || document.getElementById('filter-asset');
+      if (s && 'value' in s) assetFilter = s.value;
+    } catch(e){}
+    var rows = [];
+    try {
+      var tbl = document.querySelector('#tab-active .data-table tbody')
+             || document.querySelector('#active-picks-tbody')
+             || document.querySelector('table tbody');
+      if (tbl) {
+        rows = Array.prototype.slice.call(tbl.querySelectorAll('tr'))
+          .filter(function(r){ return r.offsetParent !== null; });
+      }
+    } catch(e){}
+    var top3 = rows.slice(0,3).map(function(r){
+      var c = r.querySelector('td:nth-child(2)') || r.querySelector('td');
+      return c ? (c.textContent||'').trim().slice(0,16) : '';
+    }).filter(Boolean);
+    var entry = {
+      ts: new Date().toISOString(),
+      buttonId: buttonId,
+      asset_class_filter: assetFilter,
+      visible_picks_count: rows.length,
+      top_3_symbols: top3
+    };
+    var arr = [];
+    try { arr = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(arr)) arr = []; } catch(e){}
+    arr.push(entry);
+    if (arr.length > 200) arr = arr.slice(-200);
+    localStorage.setItem(KEY, JSON.stringify(arr));
+  } catch(e){ /* swallow */ }
+};
 // Single HIGH CONVICTION button (duplicate removed)
 var _btnConv = el('btn-conviction-picks');
-if (_btnConv) _btnConv.addEventListener('click', applyHighConvictionPreset);
+if (_btnConv) _btnConv.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks'); applyHighConvictionPreset(); });
 var _btnConvHero = el('btn-conviction-picks-hero');
-if (_btnConvHero) _btnConvHero.addEventListener('click', applyHighConvictionPreset);
+if (_btnConvHero) _btnConvHero.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks-hero'); applyHighConvictionPreset(); });
+// MONEY READY button instrumentation (button uses inline onclick=applyMoneyReady())
+var _btnMoneyReadyTelemetry = el('btn-money-ready');
+if (_btnMoneyReadyTelemetry) _btnMoneyReadyTelemetry.addEventListener('click', function(){ window._logFunnelClick('btn-money-ready'); });
 // Explainer close button + hide-on-clear wiring
 var _btnHcExplainerClose = el('hc-explainer-close');
 if (_btnHcExplainerClose) {

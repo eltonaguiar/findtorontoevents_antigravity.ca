@@ -51,6 +51,17 @@
   .eli5 { display:none; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin:6px 0; font-size:12px; line-height:1.6; color:#c0c0d0; }
   .eli5-btn { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:5px; color:#e6e6f0; font-size:10px; padding:2px 10px; cursor:pointer; margin:6px 0; }
   .edge-cell { font-family: ui-monospace, monospace; font-size: 11px; color:#c0c0d0; }
+  .info { display:inline-block; width:13px; height:13px; line-height:13px; text-align:center; border-radius:50%; background:rgba(96,165,250,0.2); color:#93c5fd; font-size:9px; font-weight:700; margin-left:4px; cursor:help; border:1px solid rgba(96,165,250,0.35); user-select:none; }
+  .info:hover { background:rgba(96,165,250,0.4); color:#fff; }
+  .glossary { background:rgba(96,165,250,0.04); border:1px solid rgba(96,165,250,0.18); border-radius:10px; padding:14px 18px; margin:0 0 18px; }
+  .glossary summary { cursor:pointer; font-weight:700; color:#93c5fd; font-size:13px; padding:4px 0; }
+  .glossary[open] summary { margin-bottom:10px; border-bottom:1px solid rgba(96,165,250,0.18); }
+  .glossary dl { display:grid; grid-template-columns: 140px 1fr; gap:6px 14px; margin:8px 0 0; font-size:12px; line-height:1.55; }
+  .glossary dt { font-weight:700; color:#c0c0d0; font-family:ui-monospace,monospace; }
+  .glossary dd { margin:0; color:#a0a0b0; }
+  .glossary dd b { color:#e6e6f0; }
+  .eli5-row { background:rgba(34,197,94,0.04); border-left:2px solid rgba(34,197,94,0.4); }
+  .eli5-row td { font-size:11px; color:#86efac; font-style:italic; padding:4px 10px 8px !important; }
   footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07); color: #4b5563; font-size: 11px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
   .ac-section { margin: 18px 0; padding: 10px 14px; background: rgba(255,255,255,0.015); border-radius: 6px; border-left: 3px solid #60a5fa; }
   pre.verdict { white-space: pre-wrap; background:#0e0e16; padding:12px; border-radius:6px; font-size:11px; line-height:1.5; max-height: 480px; overflow:auto; border:1px solid rgba(255,255,255,0.05); }
@@ -70,6 +81,30 @@
   <a href="/audit/ai_leaderboard.html">AI Leaderboard</a>
   <a href="/audit/research_index.html">Research Index</a>
 </nav>
+
+<details class="glossary">
+  <summary>What do these terms mean? (click to expand)</summary>
+  <dl>
+    <dt>WR (shrunk)</dt>
+    <dd><b>Beta-shrunk Bayesian win rate</b> — instead of raw <code>wins/n</code> (which makes 5-of-7 look like a 71% edge), we compute <code>(wins + 0.5*20) / (n + 20)</code>. This pulls small-n cells toward a 50% prior so noise cells don't look like real edges. Source: <code>tools/audit_pick_funnel/top_edges.py::bayes_wr()</code>.</dd>
+    <dt>PF</dt>
+    <dd><b>Profit Factor</b> = <code>sum(positive pnls) / abs(sum(negative pnls))</code>. <b>1.0</b> = break-even. <b>≥1.5</b> = solid edge. <b>≥3.0</b> = elite (always sanity-check n and leakage). Cell PF&lt;1 means losers outweighed winners even if WR was high.</dd>
+    <dt>n</dt>
+    <dd>Closed-trade sample size in the cell (WIN+LOSS only — flats/expired excluded). PROVEN tier requires <code>n≥20</code>.</dd>
+    <dt>fam</dt>
+    <dd><b>Strategy family</b> — bucketed from the <code>strategy</code> column by keyword: <code>scalp</code>, <code>breakout</code>, <code>momentum</code>, <code>mean_reversion</code>, <code>trend</code>, <code>vol</code>, <code>consensus</code>. <b>cftc</b> = strategies with "cftc" in the name (Commodity Futures Trading Commission positioning signals — commercial-hedger COT data). <b>cot</b> = sibling COT-reading strategies under different naming.</dd>
+    <dt>conf band</dt>
+    <dd><b>Confidence quantile</b> at pick time. <code>C0.60-0.70</code> = model confidence between 0.60 and 0.70. Bands above: <code>C0.70-0.75</code>, <code>C0.75-0.80</code>, <code>C0.80-0.85</code>, <code>C0.85-0.90</code>, <code>C&gt;=0.90</code>.</dd>
+    <dt>rr band</dt>
+    <dd><b>Reward-to-risk ratio</b> = <code>(tp-entry)/(entry-sl)</code> for LONG (flipped for SHORT). <code>RR1.0-1.5</code> = 1.0-1.5× payoff trade. Bands: <code>RR&lt;1.0</code>, <code>RR1.0-1.5</code>, <code>RR1.5-2.0</code>, <code>RR&gt;=2.0</code>.</dd>
+    <dt>avg PnL</dt>
+    <dd>Arithmetic mean of per-trade <code>pnl_pct</code> across the cell. <b>Small avg PnL + big PF is normal and not suspicious</b> — see the COMMODITY cftc example: 70% WR with ~0.05% wins vs ~0.04% losses gives PF≈3.3 on a 0.026% mean — high-frequency scalp profile, not "fake edge".</dd>
+    <dt>trust</dt>
+    <dd>Strategy track-record tier: <code>PROVEN</code> (≥80), <code>DEVELOPING</code> (60-79), <code>WATCH</code> (40-59), <code>SANDBOX</code> (20-39), <code>PROBATION</code> (&lt;20), <code>UNK</code> (no prior).</dd>
+    <dt>cell</dt>
+    <dd>A pick "edge cell" is a 3-tag intersection (e.g. <code>conf × rr × fam</code>) over 90d closed picks. PROVEN cells (<code>WR_shrunk≥55% &amp; PF≥1.5 &amp; n≥20</code>) keep getting capital; "good WR / bad PF" cells win often but lose big.</dd>
+  </dl>
+</details>
 
 <!-- ===== TODAY'S PICKS ===== -->
 <h2>Today's Picks (last 24h)</h2>
@@ -133,6 +168,21 @@
   <p class="small">Read full report: <a href="/audit/research_index.html">research index</a> · <code>reports/2026-05-25_pick_funnel_swarm_verdict.md</code></p>
   <pre class="verdict" id="swarm-text">Loading…</pre>
 </div>
+
+<!-- CLICK FUNNEL PANEL (added 2026-05-25) -->
+<!-- Reads localStorage key _audit_click_funnel_v1 populated by /audit
+     button instrumentation (template.html _logFunnelClick). Local-only,
+     per-browser, no network. Other agents editing this file: please
+     preserve this <!-- CLICK FUNNEL PANEL --> ... <!-- /CLICK FUNNEL PANEL --> block. -->
+<h2>Your Session — Click Funnel (local)</h2>
+<button class="eli5-btn" onclick="toggle('eli5-clickfunnel')">[?] ELI5</button>
+<div class="eli5" id="eli5-clickfunnel">
+  This panel shows <b>your own clicks</b> on the High Conviction and Money Ready buttons on /audit, captured to <code>localStorage</code> in this browser only (no network, no PII). For each click we record the asset-class filter, how many picks were visible, and the top 3 symbols at click time — so you can see what you were looking at when you triggered each preset. Clear it any time with the button below.
+</div>
+<div class="panel" id="click-funnel-panel">
+  <div class="small">No clicks yet — visit <a href="/audit/">/audit</a>, click <b>HIGH CONVICTION</b> or <b>MONEY READY</b>, then refresh this page.</div>
+</div>
+<!-- /CLICK FUNNEL PANEL -->
 
 <footer>
   <span>findtorontoevents.ca/audit — pick funnel · UTC timestamps · read-only on prod tables</span>
@@ -273,7 +323,37 @@ async function loadAll(){
     if (txt) document.getElementById('swarm-text').textContent = txt;
     else document.getElementById('swarm-text').textContent = 'Swarm verdict report not yet copied to dashboard. See reports/2026-05-25_pick_funnel_swarm_verdict.md in the repo.';
   } catch { document.getElementById('swarm-text').textContent='(verdict report not deployed)'; }
+  renderClickFunnel();
 }
+
+// CLICK FUNNEL PANEL — renders localStorage _audit_click_funnel_v1
+function renderClickFunnel(){
+  const KEY = '_audit_click_funnel_v1';
+  const host = document.getElementById('click-funnel-panel');
+  if (!host) return;
+  let arr = [];
+  try { arr = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(arr)) arr = []; } catch(e){}
+  if (!arr.length) return;
+  const counts = arr.reduce((m,e)=>{ m[e.buttonId]=(m[e.buttonId]||0)+1; return m; },{});
+  const last20 = arr.slice(-20).reverse();
+  const summary = Object.entries(counts).map(([b,c])=>`<code>${b}</code> &times; ${c}`).join(' &middot; ');
+  const rows = last20.map(e=>{
+    const ts = (e.ts||'').replace('T',' ').slice(0,19);
+    const syms = (e.top_3_symbols||[]).join(', ') || '<span class="small">—</span>';
+    const af = e.asset_class_filter || '<span class="small">all</span>';
+    return `<tr><td>${ts}</td><td><code>${e.buttonId}</code></td><td>${af}</td><td class="num">${e.visible_picks_count||0}</td><td>${syms}</td></tr>`;
+  }).join('');
+  host.innerHTML =
+    `<div style="margin-bottom:8px"><b>Clicks per button:</b> ${summary} &middot; <b>total:</b> ${arr.length}</div>` +
+    `<table class="lb"><thead><tr><th>When (UTC)</th><th>Button</th><th>Asset filter</th><th class="num">Visible picks</th><th>Top 3 symbols</th></tr></thead><tbody>${rows}</tbody></table>` +
+    `<div style="margin-top:8px"><button class="eli5-btn" id="cf-clear">Clear local click log</button> <span class="small">Local to this browser only.</span></div>`;
+  const btn = document.getElementById('cf-clear');
+  if (btn) btn.addEventListener('click', function(){
+    try { localStorage.removeItem(KEY); } catch(e){}
+    host.innerHTML = '<div class="small">Cleared.</div>';
+  });
+}
+
 loadAll();
 </script>
 </body>
