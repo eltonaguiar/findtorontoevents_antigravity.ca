@@ -1,19 +1,19 @@
 # Continuous Improvement Report
 
-Generated: 2026-05-24T23:17:55.142530+00:00
+Generated: 2026-05-24T23:55:23.778071+00:00
 
 ## Topline
-- Open positions: 237
-- Price coverage: 91.14%
-- Open average PnL: -518408.5495%
-- Directional correctness: 61.11%
+- Open positions: 238
+- Price coverage: 91.18%
+- Open average PnL: -516024.5568%
+- Directional correctness: 60.83%
 - Regime: CHOPPY
 
 ## Alerts
 - [CRITICAL] PORTFOLIO_DRAWDOWN_BREACH: Paper portfolio derivatives hit 10.15% drawdown
-- [HIGH] PEER_STALE: alpha_engine data is stale (85623.9m old)
-- [HIGH] PEER_STALE: copy_trader_intel data is stale (117.2m old)
-- [HIGH] PEER_STALE: paper_trading data is stale (113917.0m old)
+- [HIGH] PEER_STALE: alpha_engine data is stale (85661.4m old)
+- [HIGH] PEER_STALE: copy_trader_intel data is stale (154.7m old)
+- [HIGH] PEER_STALE: paper_trading data is stale (113954.4m old)
 - [HIGH] STRATEGY_DECAY: clone_hl_copy_Auros_66M is a rehabilitation candidate (WR 60.0%, PF 0.123, Sharpe -10.511)
 - [MEDIUM] PEER_DIRECTION_CONFLICT: Peer systems disagree on BTCUSDT ({'LONG': 6, 'SHORT': 4})
 
