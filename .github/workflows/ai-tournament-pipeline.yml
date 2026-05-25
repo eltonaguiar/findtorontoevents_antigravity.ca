@@ -185,6 +185,13 @@ jobs:
           if [ -f 'audit_dashboard/data/research/risk_metrics.json' ]; then
             echo "Risk metrics generated"
           fi
+          
+          echo "=== Generating tournament dashboard summary ==="
+          python tools/ai_tournament/gen_tournament_summary.py || echo "::warning title=tournament_summary::Summary failed"
+          if [ -f 'audit_dashboard/data/ai_tournament_model_summary.json' ]; then
+            echo "Tournament model summary generated"
+          fi
+          
           if [ -f 'audit_dashboard/data/research/ai_leaderboard_data.json' ]; then
             echo "Leaderboard analytics data generated"
             python3 -c "
