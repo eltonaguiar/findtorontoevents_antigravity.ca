@@ -61,8 +61,12 @@ def _emitter_registry_blocks_signal(signal: dict) -> bool:
     """T2-01: block toxic (class, strategy) at emission time in forward_validator."""
     try:
         from alpha_engine.emitter_whitelist import passes_emitter_registry_gate
+        # Fix 2026-05-24: check 'category' as fallback — ETF strategies emit
+        # "category": "etf" but no "asset_class" key, which would incorrectly
+        # default to "CRYPTO" and bypass the correct registry gate.
+        _ac = signal.get("asset_class") or signal.get("category") or "CRYPTO"
         probe = {
-            "asset_class": signal.get("asset_class", "CRYPTO"),
+            "asset_class": _ac,
             "strategy": signal.get("strategy") or signal.get("strategy_name"),
             "source_system": signal.get("source_system") or signal.get("source"),
             "symbol": signal.get("symbol"),

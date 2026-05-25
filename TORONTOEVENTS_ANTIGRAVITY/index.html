@@ -5676,6 +5676,8 @@
   var guestUsageApi = 'https://findtorontoevents.ca/fc/api/guest_usage.php';
 
   function checkGuestSiteLockdown() {
+    /* DISABLED: Guest login wall removed — all guests browse freely */
+    return;
     // If user is logged in, still ping to mark IP as registered, but no lockdown
     var user = window.__fc_logged_in_user__;
     var url = guestUsageApi + '?action=check_site';
@@ -5705,6 +5707,8 @@
   }
 
   function highlightSignInIsland() {
+    /* DISABLED: Guest login wall removed — no pulse needed */
+    return;
     var style = document.getElementById('fte-signin-pulse-css');
     if (style) return;
     style = document.createElement('style');
@@ -5716,6 +5720,8 @@
   }
 
   function showLoginWall() {
+    /* DISABLED: Guest login wall removed */
+    return;
     if (document.getElementById('fte-guest-login-wall')) return;
 
     var wall = document.createElement('div');
@@ -5771,11 +5777,8 @@
   // Expose so tracking script can re-check after event clicks
   window.__fte_recheckGuestLockdown = checkGuestSiteLockdown;
 
-  // Run check after page load (give time for auth check to complete)
-  function run() {
-    setTimeout(checkGuestSiteLockdown, 2000);
-    setTimeout(checkGuestSiteLockdown, 6000);
-  }
+  // Run check after page load (DISABLED — guest lockdown removed)
+  function run() { return; }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
   else run();
   window.addEventListener('load', run);
