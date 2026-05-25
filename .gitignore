@@ -296,3 +296,81 @@ reports/kimi_edge_audit_*/raw_picks_clean.csv
 
 # Regenerated HTML dump artifacts (not the live template/index)
 audit_full.html
+
+# =========================================================================
+# 2026-05-25 bloat fix v6 — Round 4 after multi-agent + multi-AI audit
+# =========================================================================
+#
+# Biggest single win: alpha_engine/data/hindsight/ has 2,305 tracked timestamped
+# JSONs (71 MB) auto-committed by evaluation loops.
+#
+# Live-state JSONs across many modules are touched 155+ times in 3 days by
+# auto-scan workflows. Production code reads them from disk; stopping commits
+# does not affect runtime.
+#
+# Universal Python/ML/JS hygiene patterns are added defensively in case any
+# slip into commits via `git add -A` etc.
+
+# --- Biggest single source: hindsight evaluations ---
+alpha_engine/data/hindsight/**/*.json
+
+# --- Live-state JSONs (high commit churn, runtime read from disk) ---
+**/data/active_picks.json
+**/data/live_*.json
+**/data/*_signals.json
+**/data/*_signals_now.json
+**/data/scan_*.json
+**/data/scan_log.json
+**/data/elimination_state.json
+**/data/tournament.json
+**/data/live_competition.json
+**/data/ml_weights.json
+**/data/winner_history.json
+**/data/regime_report.json
+**/data/outcome_resolver_log.json
+
+# --- Universal ML / data file extensions (regenerable training outputs) ---
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.parquet
+*.feather
+*.tflite
+
+# --- Specific cache + binary dirs called out by agent audit ---
+cli_memory_store/**/*.bin
+genome/data/ohlcv_cache/
+data/parquet/
+data_lake/**/*.parquet
+
+# --- Additional model dirs (each has production consumer reading from disk) ---
+claude_gainer_ml/models/*.joblib
+crypto_ml_edge/models/*.joblib
+ml_battleground/**/models/*.pt
+ml_battleground/**/models/*.joblib
+mercury2/models/*.joblib
+
+# --- Universal Python/JS hygiene (safety net against future leaks) ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.dist-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+node_modules/
+*.db-shm
+*.db-wal
+
+# --- IDE / editor temp ---
+.idea/
+*.swp
+*.swo
+*.tmp
