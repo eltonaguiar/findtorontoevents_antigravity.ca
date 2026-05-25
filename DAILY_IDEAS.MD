@@ -3536,3 +3536,18 @@ Ran the question through tools/swarm/swarm_run.py against deepseek + cerebras + 
 ### Next step
 
 Run a consensus extractor (TODO: tools/ai_tournament/consensus_tier_algorithm.py): for each (asset_class, feature_concept) tuple, take the median weight across models that included it (Claude/Deepseek/Gemini so far); features with >=2-model consensus go into `alpha_engine/score_v3.py` (opt-in sidecar per Wire-Up Rule, with a documented production-caller target). Pending: cursor_agent, grok3, ring_261T, qwen3_6_max, mercury_v2, nemotron3_super responses — to queue, append this prompt to their next pipeline run.
+
+### deepseek-cli (additional response, captured 03:05 UTC via Kilo session)
+
+Note: this is a second deepseek response in prose form (not strict JSON), distinct from the structured deepseek answer in the swarm run above. Format: per-class factor list with weights summing to 100, z-score/percentile normalization, piecewise linear map to 1-10.
+
+| Asset | Core factors (weight %) | Normalization |
+|---|---|---|
+| **EQUITY** | ROE 20 · Debt/EBITDA 15 · FCF yield 15 · 12mo momentum 15 · RSI(14) 10 · earnings surprise 10 · insider buying 5 · sector RS 10 | z-score vs peer group, clip [-2,2], rescale 0-100 |
+| **ETF** | 4wk net flow %AUM 25 · 12wk total return 20 · expense ratio (inv) 10 · holdings HHI (inv) 10 · tracking error (inv) 10 · factor exposure fit 15 · ADV 10 | same |
+| **BOND** | YTW vs benchmark 20 · duration-adjusted spread 15 · credit rating numeric 15 · interest coverage 10 · debt/EBITDA 10 · real-yield + breakeven fit 15 · bid-ask (inv) 10 | percentile in universe |
+| **COMMODITY** | 3mo spot momentum 20 · roll-yield (backwardation) 15 · inventory vs 5yr avg 15 · demand-shock idx (PMI/construction) 15 · supply-shock idx (rig count/OPEC) 10 · realised vol (inv) 10 · USD correlation (inv) 5 | percentile |
+| **FOREX** | Carry differential 20 · REER deviation (PPP) 15 · 12wk momentum 15 · 25-delta RR carry skew 10 · CA balance %GDP 10 · TOT for commodity-linked 10 · ADV 10 | percentile |
+| **CRYPTO** | Active addresses 3mo Δ 15 · GitHub commits 15 · MVRV z-score 15 · 90d momentum 15 · 24h vol/mcap 10 · regulatory risk (inv) 10 · risk-on correlation (inv) 10 | percentile |
+
+**Implementation pipeline (deepseek):** weekly cron → pull factor data → percentile/z-score within peer group → weighted sum → map 0-100 to 1-10 via deciles → Tier 9-10 = Buy, 7-8 = Hold, ≤6 = Review/Reduce. **No CRYPTO/FOREX floor specified** (gap vs Claude's answer which had explicit floors at 5/10 and 6/10).

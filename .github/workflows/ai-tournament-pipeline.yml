@@ -122,6 +122,8 @@ jobs:
 
       - name: Update leaderboard
         run: |
+          echo "=== Merging submissions/*.json into ai_tournament_picks_latest.json ==="
+          python tools/ai_tournament/merge_submissions_to_latest.py || echo "::warning title=merge::Submission merge failed"
           echo "=== Updating leaderboard ==="
           python tools/ai_tournament/update_leaderboard.py || echo "::warning title=leaderboard::Leaderboard update failed"
           echo "=== Rebuilding model summary (drives the table on /audit/ai-tournament.html) ==="

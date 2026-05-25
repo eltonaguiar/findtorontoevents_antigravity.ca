@@ -324,6 +324,36 @@
   <div class="small" style="margin-top:8px">Full methodology: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/AI_PREDICTION_TOURNAMENT_METHODOLOGY.md">docs/AI_PREDICTION_TOURNAMENT_METHODOLOGY.md</a> · Swarm review: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/ai_tournament_methodology_swarm_review_20260519.md">reports/ai_tournament_methodology_swarm_review_20260519.md</a></div>
 </div>
 
+<!-- TIER-RATING ALGORITHMS — per-model per-asset-class scoring formula -->
+<h2 id="tier-rating">Tier-rating algorithms per model · per asset class</h2>
+<div class="method-box">
+  <p>Each model in the tournament has been asked: <em>"If you were building a 1–10 pick rating system per asset class, what features, weights, data feeds, and refusal floor would you use?"</em> Below we document each respondent's algorithm so we can:</p>
+  <ul>
+    <li>Look for cross-model consensus on which features actually predict edge per class</li>
+    <li>Identify gaps where our production scoring on <a href="/audit/">/audit</a> is missing features all the models agree on</li>
+    <li>Spot model-specific biases (e.g., model X overweights momentum on every class — useful when reading their picks)</li>
+  </ul>
+  <p class="small">Live data: <code>audit_dashboard/data/tier_rating_algorithms.json</code> (one entry per model · per asset class, schema in <code>tmp/tier_rating_algorithm_prompt.md</code>). Currently a manual capture — auto-population from <code>swarm_runs/tier_rating_*</code> + per-model tournament prompts is on the roadmap (see <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/DAILY_IDEAS.MD">DAILY_IDEAS.MD</a> 2026-05-25 entry). Sourced answers so far: claude_opus_4_7, deepseek_v4 (2 separate runs), gemini_2_5_pro. Pending: grok3, ring_261T, cursor_agent, cerebras_llama4, qwen3_6_max, mercury_v2, nemotron3_super.</p>
+  <div id="tier-rating-container">
+    <div class="small" style="padding:18px;text-align:center;color:#4b5563;border:1px dashed rgba(255,255,255,0.08);border-radius:8px">
+      ⟳ Loading tier-rating algorithms… (if you see this for &gt;3s, the JSON hasn't been generated yet — see <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/DAILY_IDEAS.MD">DAILY_IDEAS.MD 2026-05-25 03:00 UTC</a> for the raw responses.)
+    </div>
+  </div>
+  <h3 style="margin-top:14px">Consensus features (≥2 model agreement, by asset class)</h3>
+  <div id="tier-consensus-container">
+    <div class="small">Awaiting more model responses. Current 2-model overlap (Claude + Deepseek):
+      <ul style="margin:8px 0 0 18px">
+        <li><strong>EQUITY:</strong> momentum (z-score peer-relative), quality (ROE / ROIC), earnings revision/surprise</li>
+        <li><strong>ETF:</strong> flow z-score, trend/momentum, factor exposure</li>
+        <li><strong>CRYPTO:</strong> on-chain activity (funding/whale/active-addresses), volume z-score, MVRV-style mean reversion</li>
+        <li><strong>FOREX:</strong> interest-rate differential (carry), real/PPP deviation, momentum</li>
+        <li><strong>COMMODITY:</strong> term-structure (roll yield), inventory delta, USD inverse</li>
+        <li><strong>BOND:</strong> yield-curve slope, credit/duration-adjusted spread, real yield</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <!-- PICKS SECTION — placeholder for dynamic content -->
 <h2>Model Picks (Forward-Test, Live Tracking)</h2>
 <div id="picks-container">
