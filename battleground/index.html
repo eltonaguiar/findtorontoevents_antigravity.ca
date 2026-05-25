@@ -1,0 +1,1777 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            SUPERPOWERS ARENA -- The Horse Race | Baby Strat Incubator
+        </title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                background: #0a0a12;
+                color: #e0e0e0;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                padding: 16px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            h1 {
+                font-size: 1.8rem;
+                color: #fff;
+                margin-bottom: 4px;
+                text-align: center;
+                background: linear-gradient(135deg, #00ff88, #0088ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .subtitle {
+                color: #888;
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            .status-bar {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 24px;
+                font-size: 0.75rem;
+                color: #666;
+            }
+            .status-bar .live-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #22c55e;
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+            }
+
+            /* Quick links */
+            .quick-links {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin: 0 0 16px;
+            }
+            .quick-link {
+                display: inline-flex;
+                align-items: center;
+                padding: 6px 10px;
+                border-radius: 999px;
+                border: 1px solid #2b2b54;
+                background: #131327;
+                color: #bfc8ff;
+                text-decoration: none;
+                font-size: 0.72rem;
+            }
+            .quick-link:hover {
+                border-color: #3b82f6;
+                background: #18213f;
+            }
+
+            /* Panel Styles */
+            .panel {
+                background: #12121e;
+                border: 1px solid #1e1e3a;
+                border-radius: 12px;
+                margin-bottom: 24px;
+                overflow: hidden;
+            }
+            .panel-header {
+                background: linear-gradient(135deg, #1e1e3a, #2a2a4a);
+                padding: 16px 20px;
+                border-bottom: 1px solid #1e1e3a;
+            }
+            .panel-title {
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .panel-title .icon {
+                font-size: 1.4rem;
+            }
+            .panel-content {
+                padding: 20px;
+            }
+
+            /* Systems A-E Table */
+            .systems-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.85rem;
+            }
+            .systems-table th {
+                background: #1e1e3a;
+                padding: 12px;
+                text-align: left;
+                color: #888;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.7rem;
+                letter-spacing: 0.5px;
+            }
+            .systems-table td {
+                padding: 12px;
+                border-bottom: 1px solid #1e1e3a;
+            }
+            .systems-table tr:hover {
+                background: #1e1e3a44;
+            }
+            .system-name {
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .system-name .letter {
+                width: 24px;
+                height: 24px;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                color: #000;
+            }
+            .badge {
+                font-size: 0.65rem;
+                padding: 3px 10px;
+                border-radius: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+            .badge-primary {
+                background: #22c55e22;
+                color: #22c55e;
+                border: 1px solid #22c55e44;
+            }
+            .badge-redesigned {
+                background: #eab30822;
+                color: #eab308;
+                border: 1px solid #eab30844;
+            }
+            .badge-new {
+                background: #3b82f622;
+                color: #3b82f6;
+                border: 1px solid #3b82f644;
+            }
+            .badge-paper {
+                background: #eab30822;
+                color: #eab308;
+                border: 1px solid #eab30844;
+            }
+            .badge-graduated {
+                background: #22c55e22;
+                color: #22c55e;
+                border: 1px solid #22c55e44;
+            }
+            .badge-passed {
+                background: #22c55e22;
+                color: #22c55e;
+                border: 1px solid #22c55e44;
+            }
+            .badge-insufficient {
+                background: #f9731622;
+                color: #f97316;
+                border: 1px solid #f9731644;
+            }
+            .badge-failed {
+                background: #ef444422;
+                color: #ef4444;
+                border: 1px solid #ef444444;
+            }
+            .badge-validating {
+                background: #8b5cf622;
+                color: #8b5cf6;
+                border: 1px solid #8b5cf644;
+            }
+            .metric-value {
+                font-weight: 700;
+                font-family: "SF Mono", monospace;
+            }
+            .metric-value.positive {
+                color: #22c55e;
+            }
+            .metric-value.negative {
+                color: #ef4444;
+            }
+            .metric-value.gray,
+            .metric value.gray {
+                color: #666;
+                font-size: 0.75rem;
+            }
+
+            /* Baby Strat Cards */
+            .baby-strat-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+            }
+            .baby-strat-card {
+                background: #0a0a12;
+                border: 1px solid #1e1e3a;
+                border-radius: 10px;
+                padding: 16px;
+                transition: all 0.2s;
+            }
+            .baby-strat-card:hover {
+                border-color: #3b82f6;
+                transform: translateY(-2px);
+            }
+            .baby-strat-card.status-paper {
+                border-color: #eab30844;
+            }
+            .baby-strat-card.status-graduated {
+                border-color: #22c55e44;
+            }
+            .baby-strat-card.status-passed {
+                border-color: #22c55e44;
+            }
+            .baby-strat-card.status-insufficient {
+                border-color: #f9731644;
+            }
+            .baby-strat-card.status-failed {
+                border-color: #ef444444;
+            }
+            .baby-strat-card.status-awaiting_backtest {
+                border-left-color: #f59e0b;
+            }
+            .baby-strat-card.status-bundle_candidate {
+                border-left-color: #8b5cf6;
+            }
+            .baby-strat-card.status-validating {
+                border-color: #8b5cf644;
+            }
+            .strat-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+            .strat-name {
+                font-weight: 700;
+                font-size: 0.95rem;
+                color: #fff;
+            }
+            .strat-meta {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.7rem;
+                color: #666;
+                margin-bottom: 12px;
+            }
+            .backtest-preview {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+            .metric {
+                background: #1e1e3a22;
+                padding: 8px;
+                border-radius: 6px;
+                text-align: center;
+            }
+            .metric label {
+                display: block;
+                font-size: 0.6rem;
+                color: #888;
+                text-transform: uppercase;
+                margin-bottom: 2px;
+            }
+            .metric value {
+                display: block;
+                font-size: 0.9rem;
+                font-weight: 700;
+                font-family: "SF Mono", monospace;
+            }
+            .paper-status {
+                margin-top: 12px;
+            }
+            .progress-bar {
+                height: 6px;
+                background: #1e1e3a;
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 6px;
+            }
+            .progress {
+                height: 100%;
+                background: linear-gradient(90deg, #eab308, #22c55e);
+                border-radius: 3px;
+                transition: width 0.3s;
+            }
+            .trades-count {
+                font-size: 0.7rem;
+                color: #888;
+                text-align: right;
+            }
+            .no-strats {
+                color: #666;
+                font-style: italic;
+                text-align: center;
+                padding: 40px;
+            }
+            .data-badge {
+                font-size: 0.62rem;
+                border-radius: 999px;
+                padding: 2px 7px;
+                border: 1px solid #333359;
+            }
+            .data-badge.real {
+                background: #163626;
+                color: #7deaab;
+                border-color: #2d7050;
+            }
+            .data-badge.mixed {
+                background: #3d2c12;
+                color: #ffd28d;
+                border-color: #7a5420;
+            }
+            .data-badge.unknown {
+                background: #2c2c2c;
+                color: #d1d1d1;
+                border-color: #515151;
+            }
+            .data-badge.multi-pair {
+                background: #1e3a5f;
+                color: #60a5fa;
+                border-color: #3b82f6;
+            }
+            .data-badge.no-multi-pair {
+                background: #2c2c2c;
+                color: #888;
+                border-color: #444;
+            }
+            .panel-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+            .mode-group {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+            .mode-label {
+                font-size: 0.68rem;
+                color: #8d91be;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            .mode-btn {
+                font-size: 0.72rem;
+                padding: 6px 10px;
+                border-radius: 8px;
+                border: 1px solid #30305f;
+                background: #14142a;
+                color: #cdd1ff;
+                cursor: pointer;
+            }
+            .mode-btn.active {
+                border-color: #3b82f6;
+                background: #19315c;
+            }
+            .mode-btn.alt.active {
+                border-color: #14b8a6;
+                background: #183c3c;
+            }
+            .status-filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+            .status-chip {
+                font-size: 0.68rem;
+                border-radius: 999px;
+                padding: 5px 10px;
+                border: 1px solid #313163;
+                background: #131327;
+                color: #b9bee9;
+                cursor: pointer;
+            }
+            .status-chip.active {
+                border-color: #4a77cd;
+                background: #1a2b54;
+                color: #dae8ff;
+            }
+            .verification-summary {
+                margin-bottom: 12px;
+                border: 1px solid #28284f;
+                background: #101024;
+                border-radius: 10px;
+                padding: 10px;
+            }
+            .verification-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 8px;
+            }
+            .verification-pill {
+                padding: 8px;
+                border: 1px solid #2d2d56;
+                border-radius: 8px;
+                background: #17172f;
+            }
+            .verification-pill .k {
+                display: block;
+                font-size: 0.62rem;
+                color: #9ca0ce;
+                text-transform: uppercase;
+            }
+            .verification-pill .v {
+                display: block;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-top: 2px;
+            }
+            .verification-note {
+                margin-top: 8px;
+                font-size: 0.7rem;
+                color: #a5a9cf;
+            }
+            .forward-leaders {
+                margin: 12px 0;
+                border: 1px solid #2b2b52;
+                background: #0f1022;
+                border-radius: 10px;
+                padding: 10px;
+            }
+            .forward-leaders h4 {
+                font-size: 0.78rem;
+                color: #dfe4ff;
+                margin-bottom: 8px;
+            }
+            .forward-leaders table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.74rem;
+            }
+            .forward-leaders th,
+            .forward-leaders td {
+                padding: 6px 8px;
+                border-bottom: 1px solid #24244a;
+                text-align: left;
+            }
+            .forward-leaders th {
+                color: #9fa6d9;
+                font-size: 0.64rem;
+                text-transform: uppercase;
+            }
+            .forward-leaders tr:last-child td {
+                border-bottom: none;
+            }
+
+            /* Graduated Table */
+            .graduated-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.82rem;
+            }
+            .graduated-table th {
+                background: #1e1e3a;
+                padding: 10px;
+                text-align: left;
+                color: #888;
+                font-weight: 600;
+                font-size: 0.68rem;
+                letter-spacing: 0.3px;
+            }
+            .graduated-table td {
+                padding: 10px;
+                border-bottom: 1px solid #1e1e3a;
+            }
+            .comparison-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .backtest-val {
+                color: #3b82f6;
+                font-weight: 600;
+            }
+            .forward-val {
+                color: #a855f7;
+                font-weight: 600;
+            }
+            .arrow {
+                color: #666;
+                font-size: 0.8rem;
+            }
+            .arrow.up {
+                color: #22c55e;
+            }
+            .arrow.down {
+                color: #ef4444;
+            }
+
+            /* Directional table */
+            .directional-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.82rem;
+            }
+            .directional-table th {
+                background: #1e1e3a;
+                padding: 10px;
+                text-align: left;
+                color: #888;
+                font-weight: 600;
+                font-size: 0.68rem;
+                letter-spacing: 0.3px;
+            }
+            .directional-table td {
+                padding: 10px;
+                border-bottom: 1px solid #1e1e3a;
+            }
+
+            /* Calendar */
+            .calendar-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .calendar-controls select {
+                border: 1px solid #323260;
+                background: #14142a;
+                color: #e1e4ff;
+                padding: 6px 8px;
+                border-radius: 8px;
+                font-size: 0.73rem;
+            }
+            .calendar-summary {
+                font-size: 0.73rem;
+                color: #aab0da;
+                margin-bottom: 10px;
+            }
+            .calendar-wrap {
+                display: grid;
+                gap: 10px;
+            }
+            .month-card {
+                border: 1px solid #28284f;
+                border-radius: 10px;
+                background: #111125;
+                padding: 10px;
+            }
+            .month-title {
+                font-size: 0.8rem;
+                color: #ebecff;
+                margin-bottom: 8px;
+            }
+            .weekday-row,
+            .day-grid {
+                display: grid;
+                grid-template-columns: repeat(7, minmax(0, 1fr));
+                gap: 6px;
+            }
+            .weekday {
+                font-size: 0.6rem;
+                color: #8c91bf;
+                text-align: center;
+            }
+            .day-cell {
+                min-height: 54px;
+                border: 1px solid #26264b;
+                border-radius: 6px;
+                background: #14142a;
+                padding: 4px;
+            }
+            .day-cell.blank {
+                border-style: dashed;
+                background: #0f0f1f;
+            }
+            .day-num {
+                font-size: 0.6rem;
+                color: #9ea3d1;
+            }
+            .day-pnl {
+                margin-top: 6px;
+                text-align: center;
+                font-size: 0.72rem;
+                font-family: "SF Mono", monospace;
+            }
+            .day-trades {
+                margin-top: 2px;
+                text-align: center;
+                color: #8d92bf;
+                font-size: 0.56rem;
+            }
+            .day-cell.positive {
+                background: #123121;
+                border-color: #2d6f4d;
+            }
+            .day-cell.positive .day-pnl {
+                color: #6fea9e;
+            }
+            .day-cell.negative {
+                background: #351921;
+                border-color: #763846;
+            }
+            .day-cell.negative .day-pnl {
+                color: #ff949f;
+            }
+            .day-cell.flat .day-pnl {
+                color: #b0b5dc;
+            }
+
+            /* Status glossary */
+            .status-definitions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+                gap: 10px;
+            }
+            .status-item {
+                border: 1px solid #292953;
+                background: #101025;
+                border-radius: 10px;
+                padding: 10px;
+            }
+            .status-item .key {
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #f0f1ff;
+            }
+            .status-item .desc {
+                font-size: 0.72rem;
+                color: #a8add8;
+                line-height: 1.4;
+                margin-top: 4px;
+            }
+
+            /* Alert Banner */
+            .alert-banner {
+                background: linear-gradient(135deg, #ef444422, #eab30822);
+                border: 1px solid #ef444444;
+                border-radius: 8px;
+                padding: 16px 20px;
+                margin-bottom: 24px;
+            }
+            .alert-banner h3 {
+                color: #ef4444;
+                font-size: 1rem;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .alert-banner p {
+                color: #aaa;
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+            .alert-banner .highlight {
+                color: #fff;
+                font-weight: 600;
+            }
+
+            /* Legend */
+            .legend {
+                display: flex;
+                gap: 16px;
+                flex-wrap: wrap;
+                padding: 12px 0;
+                font-size: 0.72rem;
+                color: #888;
+                justify-content: center;
+            }
+            .legend span {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .legend .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+            }
+
+            /* Glossary Section */
+            .glossary-section {
+                margin-bottom: 24px;
+                padding: 16px;
+                background: #0a0a12;
+                border: 1px solid #1e1e3a;
+                border-radius: 8px;
+            }
+            .glossary-section h4 {
+                color: #3b82f6;
+                font-size: 0.9rem;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #1e1e3a;
+            }
+            .status-item {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 10px;
+                align-items: flex-start;
+            }
+            .status-item .key {
+                min-width: 120px;
+                flex-shrink: 0;
+            }
+            .status-item .desc {
+                color: #aaa;
+                font-size: 0.8rem;
+                line-height: 1.5;
+            }
+
+            /* Graduation Criteria */
+            .graduation-criteria {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 16px;
+            }
+            .criteria-card {
+                background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+                border: 1px solid #2a2a4a;
+                border-radius: 10px;
+                padding: 16px;
+                position: relative;
+                overflow: hidden;
+            }
+            .criteria-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, #22c55e, #3b82f6, #a855f7);
+            }
+            .criteria-card.stage-1::before {
+                background: #3b82f6;
+            }
+            .criteria-card.stage-2::before {
+                background: #eab308;
+            }
+            .criteria-card.stage-3::before {
+                background: #22c55e;
+            }
+            .criteria-card h4 {
+                color: #fff;
+                font-size: 0.9rem;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .criteria-card .stage-label {
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 2px 8px;
+                border-radius: 4px;
+                background: #1e1e3a;
+                color: #888;
+            }
+            .criteria-card .stage-label.active {
+                background: #22c55e22;
+                color: #22c55e;
+                border: 1px solid #22c55e44;
+            }
+            .criteria-list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .criteria-list li {
+                color: #aaa;
+                font-size: 0.8rem;
+                padding: 8px 0;
+                border-bottom: 1px solid #1e1e3a;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .criteria-list li:last-child {
+                border-bottom: none;
+            }
+            .criteria-list li .check {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: 700;
+            }
+            .criteria-list li .check.required {
+                background: #22c55e22;
+                color: #22c55e;
+                border: 1px solid #22c55e44;
+            }
+            .criteria-list li .check.optional {
+                background: #3b82f622;
+                color: #3b82f6;
+                border: 1px solid #3b82f644;
+            }
+            .criteria-note {
+                margin-top: 12px;
+                padding: 10px;
+                background: #0a0a12;
+                border-radius: 6px;
+                font-size: 0.75rem;
+                color: #666;
+                line-height: 1.4;
+            }
+            .gate-explanation {
+                background: linear-gradient(135deg, #22c55e11, #3b82f611);
+                border: 1px solid #22c55e33;
+                border-radius: 8px;
+                padding: 14px;
+                margin-bottom: 16px;
+            }
+            .gate-explanation h5 {
+                color: #22c55e;
+                font-size: 0.85rem;
+                margin-bottom: 8px;
+            }
+            .gate-explanation p {
+                color: #aaa;
+                font-size: 0.8rem;
+                line-height: 1.5;
+                margin: 0;
+            }
+
+            /* Tooltips */
+            [data-tooltip] {
+                position: relative;
+                cursor: help;
+            }
+            [data-tooltip]::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: calc(100% + 8px);
+                left: 50%;
+                transform: translateX(-50%);
+                background: #1a1a2e;
+                border: 1px solid #3b82f6;
+                border-radius: 8px;
+                padding: 10px 14px;
+                min-width: 220px;
+                max-width: 320px;
+                z-index: 999;
+                font-size: 0.72rem;
+                color: #ccc;
+                line-height: 1.5;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s;
+                white-space: normal;
+            }
+            [data-tooltip]:hover::after {
+                opacity: 1;
+            }
+            [data-tooltip]::before {
+                content: "";
+                position: absolute;
+                bottom: calc(100% + 2px);
+                left: 50%;
+                transform: translateX(-50%);
+                border: 6px solid transparent;
+                border-top-color: #3b82f6;
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+            [data-tooltip]:hover::before {
+                opacity: 1;
+            }
+
+            /* Status chip tooltips */
+            .status-chip {
+                position: relative;
+            }
+            .status-chip:hover::after {
+                content: attr(data-desc);
+                position: absolute;
+                bottom: calc(100% + 6px);
+                left: 50%;
+                transform: translateX(-50%);
+                background: #1a1a2e;
+                border: 1px solid #3b82f6;
+                border-radius: 6px;
+                padding: 8px 12px;
+                min-width: 180px;
+                z-index: 100;
+                font-size: 0.7rem;
+                color: #ccc;
+                line-height: 1.4;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                white-space: normal;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .baby-strat-grid {
+                    grid-template-columns: 1fr;
+                }
+                .systems-table {
+                    font-size: 0.75rem;
+                }
+                .systems-table th,
+                .systems-table td {
+                    padding: 8px;
+                }
+                .directional-table,
+                .graduated-table {
+                    font-size: 0.75rem;
+                }
+                .directional-table th,
+                .directional-table td,
+                .graduated-table th,
+                .graduated-table td {
+                    padding: 8px;
+                }
+            }
+
+            /* Audit bar on cards */
+            .audit-bar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid #1e1e3a;
+                font-size: 0.72rem;
+            }
+            .realized-label,
+            .unrealized-label {
+                color: #888;
+            }
+            .audit-btn {
+                margin-left: auto;
+                padding: 3px 10px;
+                border-radius: 6px;
+                border: 1px solid #3b82f644;
+                background: #3b82f611;
+                color: #3b82f6;
+                font-size: 0.68rem;
+                font-weight: 600;
+                cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .audit-btn:hover {
+                background: #3b82f633;
+                border-color: #3b82f6;
+            }
+            .sortable-th {
+                cursor: pointer;
+                user-select: none;
+                white-space: nowrap;
+            }
+            .sortable-th:hover {
+                color: #818cf8;
+                text-decoration: underline;
+            }
+
+            /* Trade Audit Modal */
+            #trade-audit-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+            }
+            .audit-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.85);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .audit-content {
+                background: #12121e;
+                border: 1px solid #2a2a4a;
+                border-radius: 12px;
+                max-width: 900px;
+                width: 100%;
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 24px;
+            }
+            .audit-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+            .audit-header h3 {
+                font-size: 1.1rem;
+                color: #fff;
+            }
+            .audit-close {
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 4px 8px;
+            }
+            .audit-close:hover {
+                color: #fff;
+            }
+            .audit-summary {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .audit-stat {
+                background: #1e1e3a;
+                padding: 12px;
+                border-radius: 8px;
+                text-align: center;
+            }
+            .audit-stat label {
+                display: block;
+                font-size: 0.7rem;
+                color: #888;
+                margin-bottom: 4px;
+                text-transform: uppercase;
+            }
+            .audit-stat span {
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+            .audit-section-title {
+                font-size: 0.85rem;
+                color: #bfc8ff;
+                margin: 16px 0 8px;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #1e1e3a;
+            }
+            .audit-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.78rem;
+            }
+            .audit-table th {
+                background: #1e1e3a;
+                padding: 8px 10px;
+                text-align: left;
+                color: #888;
+                font-weight: 600;
+                font-size: 0.68rem;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            .audit-table td {
+                padding: 8px 10px;
+                border-bottom: 1px solid #1e1e3a22;
+            }
+            .audit-table tr:hover {
+                background: #1e1e3a44;
+            }
+            @media (max-width: 768px) {
+                .audit-summary {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                .audit-table {
+                    font-size: 0.7rem;
+                }
+                .audit-table th,
+                .audit-table td {
+                    padding: 6px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>SUPERPOWERS ARENA -- The Horse Race</h1>
+        <p class="subtitle">
+            Forward-first incubator view with real-data verification controls
+            and directional analytics.
+        </p>
+
+        <div class="status-bar">
+            <span class="live-dot"></span>
+            <span>Live</span>
+            <span>•</span>
+            <span id="last-updated">Updated: --</span>
+            <span>•</span>
+            <span id="next-update">Next update: --</span>
+        </div>
+
+        <!-- SYSTEM STATUS & QUALITY SUMMARY -->
+        <div id="system-status-bar" style="background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid #30363d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.75rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+                <div style="display:flex;align-items:center;gap:6px">
+                    <span style="color:#8b5cf6;font-weight:700;font-size:0.8rem">System Status & Quality</span>
+                    <span id="status-health-badge" style="padding:2px 8px;border-radius:8px;font-size:0.65rem;font-weight:600"></span>
+                </div>
+                <span id="status-timestamp" style="color:#6b7280;font-size:0.7rem"></span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px">
+                <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+                    <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Active Strategies</div>
+                    <div id="sq-active-strats" style="color:#22c55e;font-weight:700;font-size:1rem">--</div>
+                </div>
+                <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+                    <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Win Rate (Avg)</div>
+                    <div id="sq-avg-wr" style="font-weight:700;font-size:1rem">--</div>
+                </div>
+                <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+                    <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Best Sharpe</div>
+                    <div id="sq-best-sharpe" style="color:#3b82f6;font-weight:700;font-size:1rem">--</div>
+                </div>
+                <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+                    <div style="color:#888;font-size:0.6rem;text-transform:uppercase">DNA Combos Active</div>
+                    <div id="sq-dna-combos" style="color:#f59e0b;font-weight:700;font-size:1rem">--</div>
+                </div>
+                <div style="background:#1e293b;border-radius:6px;padding:6px 10px;text-align:center">
+                    <div style="color:#888;font-size:0.6rem;text-transform:uppercase">Quality Score</div>
+                    <div id="sq-quality" style="font-weight:700;font-size:1rem">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-links">
+            <a class="quick-link" href="#panel-active">Active Trades</a>
+            <a class="quick-link" href="#panel-systems">Survivor Strategies</a>
+            <a class="quick-link" href="#panel-bundles">Baby Bundles</a>
+            <a class="quick-link" href="#panel-combos">Meta-Strategy Combos</a>
+            <a class="quick-link" href="#panel-baby">Baby Strat Indicators</a>
+            <a class="quick-link" href="#panel-graduated"
+                >Graduated Baby Strats</a
+            >
+            <a class="quick-link" href="#panel-directional"
+                >Long/Short Breakdown</a
+            >
+            <a class="quick-link" href="#panel-calendar">P&amp;L Calendar</a>
+            <a class="quick-link" href="#panel-graduation"
+                >🎓 Graduation Criteria</a
+            >
+            <a class="quick-link" href="#panel-status">Status Definitions</a>
+            <a class="quick-link" href="#panel-unregistered"
+                >Unregistered Strategies</a
+            >
+        </div>
+
+        <!-- Info Banner -->
+        <div
+            class="info-banner"
+            style="
+                background: linear-gradient(135deg, #3b82f622, #22c55e22);
+                border: 1px solid #3b82f644;
+                border-radius: 8px;
+                padding: 16px 20px;
+                margin-bottom: 24px;
+            "
+        >
+            <h3
+                style="
+                    color: #3b82f6;
+                    font-size: 1rem;
+                    margin-bottom: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                "
+            >
+                📚 How to Read This Dashboard
+            </h3>
+            <p
+                style="
+                    color: #aaa;
+                    font-size: 0.85rem;
+                    line-height: 1.6;
+                    margin: 0;
+                "
+            >
+                <strong style="color: #fff">Status:</strong>
+                <span
+                    style="
+                        background: #22c55e22;
+                        color: #22c55e;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >PASSED</span
+                >
+                = Backtest passed → Ready for paper trading.
+                <span
+                    style="
+                        background: #eab30822;
+                        color: #eab308;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >PAPER</span
+                >
+                = In 30-day forward test.
+                <span
+                    style="
+                        background: #3b82f622;
+                        color: #3b82f6;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >GRADUATED</span
+                >
+                = Paper test complete → Ready for live.<br />
+                <strong style="color: #fff">Data:</strong>
+                <span
+                    style="
+                        background: #22c55e22;
+                        color: #22c55e;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >REAL</span
+                >
+                = 100% real market data.
+                <span
+                    style="
+                        background: #eab30822;
+                        color: #eab308;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >MIXED</span
+                >
+                = Real + BTC-proxy for cross-assets.<br />
+                <strong style="color: #fff">Metrics:</strong>
+                <span
+                    style="
+                        background: #a855f722;
+                        color: #a855f7;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >FORWARD</span
+                >
+                = Live paper trading performance (out-of-sample).
+                <span
+                    style="
+                        background: #3b82f622;
+                        color: #3b82f6;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                    "
+                    >BACKTEST</span
+                >
+                = Historical backtest (in-sample).<br />
+                <span style="color: #888"
+                    >💡 Hover over status badges and filter buttons for detailed
+                    explanations. Scroll down for full glossary.</span
+                >
+            </p>
+        </div>
+
+        <!-- Status Banner -->
+        <div
+            class="alert-banner"
+            style="
+                background: linear-gradient(135deg, #22c55e22, #3b82f622);
+                border-color: #22c55e44;
+            "
+        >
+            <h3 style="color: #22c55e">
+                10 Survivor Strategies Validated - Feb 28 2026
+            </h3>
+            <p>
+                All strategies passed
+                <span class="highlight">8/8 anti-overfit checks</span>: 24
+                symbols (crypto+equity+forex), 5yr daily data, walk-forward OOS,
+                regime robustness, binomial p&lt;0.05, both-halves consistency.
+                Baby strat cards default to
+                <span class="highlight">forward metrics</span>. Switch to
+                Backtest mode for historical results.
+            </p>
+        </div>
+
+        <!-- PANEL 0: Active Trades -->
+        <div class="panel" id="panel-active">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">📊</span> Active Trades
+                    <span style="font-size:0.75rem;color:#888;font-weight:400" id="active-trades-count"></span>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap" id="active-strategy-filter"></div>
+                <table class="systems-table" style="font-size:0.78rem">
+                    <thead id="active-trades-thead">
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Bundle</th>
+                            <th>Symbol</th>
+                            <th>Dir</th>
+                            <th>Entry</th>
+                            <th>TP</th>
+                            <th>SL</th>
+                            <th>PnL %</th>
+                            <th>Price Position</th>
+                            <th>Opened (EST)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="active-trades-tbody">
+                        <tr><td colspan="10" style="text-align:center;color:#666;padding:20px">Loading active trades...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 1: Systems A-E -->
+        <div class="panel" id="panel-systems">
+            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+                <div class="panel-title">
+                    <span class="icon">🎯</span> Survivor-Validated Strategies
+                    (10 proven, 24 symbols, 5yr data)
+                </div>
+                <div id="systems-mode-toggle" style="display:flex;gap:6px">
+                    <button class="mode-btn active" id="sys-mode-backtest" style="font-size:.7rem;padding:4px 12px">Backtest</button>
+                    <button class="mode-btn" id="sys-mode-forward" style="font-size:.7rem;padding:4px 12px">Forward</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <table class="systems-table">
+                    <thead id="systems-thead">
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>Sharpe</th>
+                            <th>Source</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="systems-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 1.5: Baby Bundles -->
+        <div class="panel" id="panel-bundles">
+            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+                <div class="panel-title">
+                    <span class="icon">📦</span> Baby Bundles
+                    <span
+                        style="
+                            font-size: 0.75rem;
+                            color: #888;
+                            font-weight: 400;
+                        "
+                        >(Forward-tested strategy groups - THE MAIN THING)</span
+                    >
+                </div>
+                <div id="bundle-mode-toggle" style="display:flex;gap:6px;align-items:center">
+                    <button class="mode-btn" id="bundle-mode-backtest" style="font-size:.7rem;padding:4px 12px">Backtest</button>
+                    <button class="mode-btn active" id="bundle-mode-forward" style="font-size:.7rem;padding:4px 12px">Live / Forward</button>
+                    <span style="width:1px;height:20px;background:#333;margin:0 4px"></span>
+                    <button class="mode-btn active" id="bundle-hide-low-wr" style="font-size:.65rem;padding:4px 10px;color:#f59e0b" onclick="HIDE_LOW_WR_BUNDLES=!HIDE_LOW_WR_BUNDLES;this.classList.toggle('active',HIDE_LOW_WR_BUNDLES);renderBundles()">Hide &lt;50% WR</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="bundles-grid" class="baby-strat-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL: Meta-Strategy Combos -->
+        <div class="panel" id="panel-combos">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">🧬</span> Meta-Strategy Combos
+                    <span style="font-size:0.75rem;color:#888;font-weight:400">(Permutation Engine v2.0 — Bayesian · Dempster-Shafer · Regime-Aware · Phoenix)</span>
+                </div>
+            </div>
+            <div class="panel-content">
+                <!-- DNA SYSTEM EXPLAINER -->
+                <div style="background:linear-gradient(135deg,#0d1117 0%,#161b22 100%);border:1px solid #f59e0b33;border-radius:10px;padding:16px 20px;margin-bottom:16px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                        <span style="font-size:1.3rem">🧬</span>
+                        <span style="color:#f59e0b;font-weight:700;font-size:0.95rem">Strategy DNA Engine</span>
+                        <span style="background:#f59e0b22;color:#f59e0b;padding:2px 8px;border-radius:8px;font-size:0.7rem">ACTIVE</span>
+                    </div>
+                    <p style="color:#9ca3af;font-size:0.8rem;line-height:1.5;margin:0 0 10px">
+                        This panel is powered by the <strong style="color:#e5e7eb">Strategy DNA Evolutionary Engine</strong> — every trading strategy combination is encoded as a biological genome
+                        with 5 chromosome groups: <code style="color:#60a5fa;background:#1e293b;padding:1px 4px;border-radius:3px">entry_genes</code>,
+                        <code style="color:#60a5fa;background:#1e293b;padding:1px 4px;border-radius:3px">exit_genes</code>,
+                        <code style="color:#60a5fa;background:#1e293b;padding:1px 4px;border-radius:3px">risk_genes</code>,
+                        <code style="color:#60a5fa;background:#1e293b;padding:1px 4px;border-radius:3px">meta_genes</code>, and a unique
+                        <code style="color:#60a5fa;background:#1e293b;padding:1px 4px;border-radius:3px">dna_hash</code> fingerprint.
+                    </p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:0.75rem">
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <div style="color:#a78bfa;font-weight:600;margin-bottom:3px">Evolutionary Optimization</div>
+                            <div style="color:#9ca3af">50 generations, 100 population, tournament selection, regime-aware mutation</div>
+                        </div>
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <div style="color:#34d399;font-weight:600;margin-bottom:3px">PSO Swarm Consensus</div>
+                            <div style="color:#9ca3af">10-dim particle swarm optimizes combo weights with market-adaptive inertia</div>
+                        </div>
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <div style="color:#f87171;font-weight:600;margin-bottom:3px">Nightmare Stress Tests</div>
+                            <div style="color:#9ca3af">5 GBM scenarios: Flash Crash, Infinite Pump, Correlation One, Liquidity Void, Regime Flipper</div>
+                        </div>
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <div style="color:#fbbf24;font-weight:600;margin-bottom:3px">Meta-Label Filter</div>
+                            <div style="color:#9ca3af">Lopez de Prado ML classifier vetoes low-probability trades before execution</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;padding-top:8px;border-top:1px solid #1e293b;display:flex;gap:12px;flex-wrap:wrap;font-size:0.7rem">
+                        <span style="color:#6b7280">Pipeline:</span>
+                        <span style="color:#60a5fa">Signal Sources (25+)</span>
+                        <span style="color:#4b5563">&rarr;</span>
+                        <span style="color:#a78bfa">Permutation Engine</span>
+                        <span style="color:#4b5563">&rarr;</span>
+                        <span style="color:#f59e0b">DNA Evolution</span>
+                        <span style="color:#4b5563">&rarr;</span>
+                        <span style="color:#34d399">Swarm Optimization</span>
+                        <span style="color:#4b5563">&rarr;</span>
+                        <span style="color:#f87171">Stress Test</span>
+                        <span style="color:#4b5563">&rarr;</span>
+                        <span style="color:#fbbf24">Meta-Label Veto</span>
+                        <span style="color:#4b5563">&rarr;</span>
+                        <span style="color:#22c55e">EXECUTE</span>
+                    </div>
+                </div>
+                <div class="verification-summary">
+                    <div class="verification-grid" id="combo-stats-grid">
+                        <div class="verification-pill"><span class="k">Total Permutations</span><span class="v" id="combo-total">--</span></div>
+                        <div class="verification-pill"><span class="k">Active Combos</span><span class="v" id="combo-active" style="color:#22c55e">--</span></div>
+                        <div class="verification-pill"><span class="k">Eliminated</span><span class="v" id="combo-eliminated" style="color:#ef4444">--</span></div>
+                        <div class="verification-pill"><span class="k">Phoenix Resurrected</span><span class="v" id="combo-resurrected" style="color:#f59e0b">--</span></div>
+                    </div>
+                </div>
+                <h4 style="color:#bfc8ff;font-size:0.85rem;margin:16px 0 8px;border-bottom:1px solid #1e1e3a;padding-bottom:6px">Top Winning Combos</h4>
+                <div style="overflow-x:auto">
+                    <table class="systems-table" id="combo-table">
+                        <thead id="combo-thead">
+                            <tr>
+                                <th>Combo</th>
+                                <th>Logic</th>
+                                <th>Systems</th>
+                                <th>Trades</th>
+                                <th>WR</th>
+                                <th>Sharpe</th>
+                                <th>PF</th>
+                                <th>Max DD</th>
+                                <th>p-value</th>
+                                <th>Portfolio</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="combo-tbody"></tbody>
+                    </table>
+                </div>
+                <h4 style="color:#bfc8ff;font-size:0.85rem;margin:16px 0 8px;border-bottom:1px solid #1e1e3a;padding-bottom:6px">Walk-Forward Validation</h4>
+                <div id="combo-walkforward" style="font-size:0.8rem;color:#888">Loading...</div>
+                <h4 style="color:#bfc8ff;font-size:0.85rem;margin:16px 0 8px;border-bottom:1px solid #1e1e3a;padding-bottom:6px">Adversarial Compatibility</h4>
+                <div id="combo-adversarial" style="font-size:0.8rem;color:#888">Loading...</div>
+                <h4 style="color:#bfc8ff;font-size:0.85rem;margin:16px 0 8px;border-bottom:1px solid #1e1e3a;padding-bottom:6px">Elimination / Phoenix Log</h4>
+                <div id="combo-elim-log" style="font-size:0.8rem;color:#888">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: Baby Strat Incubator -->
+        <div class="panel" id="panel-baby">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">🍼</span> Baby Strat Indicators
+                    <span
+                        id="strat-count"
+                        style="
+                            font-size: 0.85rem;
+                            color: #3b82f6;
+                            background: #3b82f622;
+                            padding: 2px 10px;
+                            border-radius: 12px;
+                            margin-left: 8px;
+                        "
+                        >0 shown</span
+                    >
+                    <span
+                        style="
+                            font-size: 0.75rem;
+                            color: #888;
+                            font-weight: 400;
+                        "
+                        >(default mode: forward)</span
+                    >
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="panel-controls">
+                    <div class="mode-group">
+                        <span class="mode-label">Metric Mode</span>
+                        <button class="mode-btn" id="mode-forward">
+                            Forward (Default)
+                        </button>
+                        <button class="mode-btn" id="mode-backtest">
+                            Backtest
+                        </button>
+                    </div>
+                    <div class="mode-group">
+                        <span class="mode-label">Data Basis</span>
+                        <button class="mode-btn alt" id="basis-real">
+                            Real Only
+                        </button>
+                        <button class="mode-btn alt" id="basis-all">
+                            Include Mixed
+                        </button>
+                    </div>
+                    <div class="mode-group">
+                        <span class="mode-label">FW Filter</span>
+                        <button class="mode-btn alt active" id="fw-filter-all">
+                            Show All
+                        </button>
+                        <button class="mode-btn alt" id="fw-filter-active">
+                            Has FW WR
+                        </button>
+                    </div>
+                    <div class="mode-group">
+                        <button class="mode-btn alt active" id="survivors-toggle" title="Survivors Only: Show strategies with Win Rate &gt; 50% AND Sharpe &gt; 0 (basic quality gates). Turn off to see all strategies including underperformers.">
+                            Survivors Only
+                        </button>
+                    </div>
+                </div>
+                <div class="status-filters" id="status-filters"></div>
+                <div class="verification-summary">
+                    <div class="verification-grid" id="verification-grid"></div>
+                    <div class="verification-note" id="verification-note"></div>
+                </div>
+                <div class="forward-leaders" id="forward-leaders"></div>
+                <div id="baby-strat-grid" class="baby-strat-grid">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="legend">
+                    <span
+                        ><span class="dot" style="background: #22c55e"></span>
+                        Passed = Stage 1 historical backtest pass</span
+                    >
+                    <span
+                        ><span class="dot" style="background: #eab308"></span>
+                        Paper/Graduated = forward stages</span
+                    >
+                    <span
+                        ><span class="dot" style="background: #ef4444"></span>
+                        Failed/Error = non-pass outcomes</span
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 3: Graduated Baby Strats -->
+        <div class="panel" id="panel-graduated">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">🎓</span> Graduated Baby Strats (System
+                    G)
+                    <span
+                        style="
+                            font-size: 0.75rem;
+                            color: #888;
+                            font-weight: 400;
+                        "
+                        >(Backtest vs Forward Test)</span
+                    >
+                </div>
+            </div>
+            <div class="panel-content">
+                <table class="graduated-table">
+                    <thead id="graduated-thead">
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Status</th>
+                            <th>Win Rate (BT → FW)</th>
+                            <th>Sharpe (BT → FW)</th>
+                            <th>Max DD (BT → FW)</th>
+                            <th>Trades</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="graduated-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 4: Directional Breakdown -->
+        <div class="panel" id="panel-directional">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">↕</span> Strategy Directional Breakdown
+                    <span
+                        style="
+                            font-size: 0.75rem;
+                            color: #888;
+                            font-weight: 400;
+                        "
+                        >(backtest directional split: overall vs long vs
+                        short)</span
+                    >
+                </div>
+            </div>
+            <div class="panel-content">
+                <table class="directional-table">
+                    <thead id="directional-thead">
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Status</th>
+                            <th>Overall (T/WR/S)</th>
+                            <th>Long (T/WR/S)</th>
+                            <th>Short (T/WR/S)</th>
+                            <th>Data/Stage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="directional-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 5: Daily PnL Calendar -->
+        <div class="panel" id="panel-calendar">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">📅</span> Daily P&amp;L Calendar
+                    <span
+                        style="
+                            font-size: 0.75rem;
+                            color: #888;
+                            font-weight: 400;
+                        "
+                        >(forward/backtest daily aggregates)</span
+                    >
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="calendar-controls">
+                    <span class="mode-label">Calendar Mode</span>
+                    <button class="mode-btn" id="cal-mode-forward">
+                        Forward (Default)
+                    </button>
+                    <button class="mode-btn" id="cal-mode-backtest">
+                        Backtest
+                    </button>
+                    <span class="mode-label" style="margin-left:12px">P&amp;L View</span>
+                    <button class="mode-btn active" id="cal-norm-avg" title="Average P&L per strategy — realistic expectation per position">Avg/Strategy</button>
+                    <button class="mode-btn" id="cal-norm-sum" title="Sum of all strategies — total system output">Sum All</button>
+                    <span class="mode-label" style="margin-left:12px">Strategy</span>
+                    <select id="calendar-strategy-filter"></select>
+                </div>
+                <!-- Exit Reason & Calendar Documentation -->
+                <div style="background:linear-gradient(135deg,#0d111766,#161b2266);border:1px solid #30363d;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.75rem">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                        <span style="font-size:1rem">📖</span>
+                        <span style="color:#8b5cf6;font-weight:700;font-size:.8rem">How Daily P&amp;L Works</span>
+                    </div>
+                    <p style="color:#9ca3af;margin:0 0 8px;line-height:1.5">
+                        Each day shows the <strong style="color:#e5e7eb">aggregate P/L of all trades that closed (exited) on that date</strong> in the <strong style="color:#60a5fa">EST timezone</strong>.
+                        A trade may have been <em>entered</em> on a different day than it was <em>closed</em>. Click any day to see the per-strategy breakdown.
+                    </p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <span class="badge badge-passed" style="font-size:.65rem">TP</span>
+                            <span style="color:#9ca3af;margin-left:6px"><strong style="color:#22c55e">Take Profit</strong> &mdash; Price reached the profit target. Trade closed in profit.</span>
+                        </div>
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <span class="badge badge-failed" style="font-size:.65rem">SL</span>
+                            <span style="color:#9ca3af;margin-left:6px"><strong style="color:#ef4444">Stop Loss</strong> &mdash; Price hit the stop-loss level. Trade closed to limit losses.</span>
+                        </div>
+                        <div style="background:#1e293b;border-radius:6px;padding:8px 10px">
+                            <span class="badge badge-validating" style="font-size:.65rem">TIME</span>
+                            <span style="color:#9ca3af;margin-left:6px"><strong style="color:#eab308">Time Stop</strong> &mdash; Trade held for <strong style="color:#e5e7eb">12 bars (12 hours)</strong> without hitting TP or SL. Auto-closed at market price.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="calendar-summary" id="calendar-summary"></div>
+                <div class="calendar-wrap" id="calendar-wrap"></div>
+            </div>
+        </div>
+
+        <!-- PANEL 6: Graduation Criteria -->
+        <div class="panel" id="panel-graduation">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">🎓</span> Graduation Criteria
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="graduation-criteria" id="graduation-criteria"></div>
+            </div>
+        </div>
+
+        <!-- PANEL 7: Status Definitions -->
+        <div class="panel" id="panel-status">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">ℹ</span> Status Definitions
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="status-definitions" id="status-definitions"></div>
+            </div>
+        </div>
+
+        <!-- PANEL 8: Unregistered Strategies -->
+        <div class="panel" id="panel-unregistered">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">&#9888;</span> Unregistered Strategies
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="unregistered-strategies"></div>
+            </div>
+        </div>
+
+        <script src="./app.js"></script>
+
+        <div id="trade-audit-modal"></div>
+    </body>
+</html>
