@@ -83,11 +83,17 @@ jobs:
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
         mkdir -p backtest_results ml_crypto_predictor/production_models
-        # Stage all ML outputs
-        git add ml_crypto_predictor/models/ ml_crypto_predictor/production_models/ \
-                ml_crypto_predictor/optim/ backtest_results/ \
-                updates/data/ || true
-        # Also add any new untracked model files
+        # Stage all ML outputs.
+        # -f bypasses gitignore for the model dirs — required because
+        # `ml_crypto_predictor/models/*.pkl` and `production_models/*.pkl`
+        # are gitignored (2026-05-25 bloat fix v9, see .gitignore) to stop
+        # the dir from bleeding bytes when devs git-add-A locally. This
+        # workflow IS the canonical writer; -f re-asserts that contract.
+        git add -f ml_crypto_predictor/models/ ml_crypto_predictor/production_models/ \
+                   ml_crypto_predictor/optim/ backtest_results/ \
+                   updates/data/ || true
+        # Catch any other untracked ML changes (non-pkl). The -f above already
+        # handles the gitignored .pkl files explicitly.
         git add -A ml_crypto_predictor/ backtest_results/ updates/data/ || true
         git diff --cached --quiet && echo "No changes" && exit 0
         # issue #141: block conflict-marker commits
