@@ -3627,3 +3627,21 @@ This is detectable in `ai_tournament_model_summary.json` — both `mercury_v2` a
 
 User confirmed the 5-persona Voss/Reed/Sharma/Chen/Lang hedge-fund picks (20 picks across EQUITY/ETF/COMMODITY) came from **Grok HEAVY (xAI)**, not Mercury V2 (Inception Labs). The mercury_v2_20260525.json file was an attribution error from earlier this session and has been removed. Picks now live only under `grok_heavy_hedgefund_20260525.json` so the price-tracker won't double-resolve. Persona registry entries (`voss_global_macro`, `reed_long_short_fundamental`, `sharma_quant_momentum`, `chen_thematic_ai_growth`, `lang_value_contrarian`) remain as-is in `tools/ai_tournament/persona_registry.py` — they're model-agnostic strategy archetypes, correctly tied to Grok HEAVY going forward.
 
+
+---
+
+## 2026-05-25 03:50 UTC — Audit UI / Edge / Freshness audit (consolidated)
+
+Two independent audits this hour (Claude Opus 4.7 + Ring-2.6-1T via opencode) converged on the same 7 findings:
+1. **HC overlay broken** — trust_score NULL on 99.99% of closed picks; cited "CRYPTO 60.3% N=562 / EQUITY 68.1% N=72" stats unreproducible.
+2. **Smart Picks "1.4h ago" is file age, not pick age** — `signal_time` field missing from payload, UI falls back to dashboard-file `age_hours`.
+3. **`smart_picks.json` itself is 25 days stale** (last regen 2026-04-30).
+4. **Swarm Picks abandoned** — newest pick 13 days old, no new picks flowing despite daily cron.
+5. **`signal_outcomes` table 82 days stale** — outcome-resolver pipeline dead.
+6. **Top-N Rank Backtest tool broken** ("Access denied" DB connect).
+7. **5 FOREX rows have `pnl_pct < -100%`** (one at -106,700%) — unit-clamp bug commit #876 missed them. Distorts FOREX PF to ~0.00.
+
+Full report: [reports/2026-05-25_audit_ui_edge_audit.md](reports/2026-05-25_audit_ui_edge_audit.md). Combined P0 list embedded there.
+
+**Honest profitability verdict (both auditors agree):** real edge is narrow — cot_positioning (DSR=1.0 / n=104 / PF 3.28 = legit) + ML-enhanced crypto LONGs with conf 0.80-0.85 (PF up to 99 but on tiny samples = unreliable). The "82% WR / PF 13" headline cells are post-hoc segment searches, not actionable forward signals. The system should NOT be treated as production-ready in current state. The Smart Picks button's own tooltip is the most accurate sentence on the page: "use it as a live signal overlay, not as a standalone edge filter."
+
