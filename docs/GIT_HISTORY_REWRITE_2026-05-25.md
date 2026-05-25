@@ -66,7 +66,7 @@ git log -1 --format='%h %s'
 # rm -rf ~/findtorontoevents_antigravity.ca.OLD-pre-2026-05-25-scrub
 ```
 
-**Disk saved**: the fresh clone will be **~327 MB** instead of the old ~2.3 GB.
+**Disk saved**: the *final* fresh clone will be **~327 MB** once GitHub's server-side gc runs. **But for the first 24-48 hours after the rewrite, clones will still be ~2 GB** because GitHub keeps both old and new packfiles until its next internal maintenance cycle. The full ~85% shrink shows up later, automatically — no action needed. Run `git gc --prune=now` after cloning to compact your local copy immediately.
 
 ---
 
