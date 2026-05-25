@@ -281,9 +281,17 @@ def resolve_stale_picks(
 
     try:
         with conn.cursor() as cur:
+            # 2026-05-25 schema-drift fix (5-peer consensus, see
+            # reports/2026-05-25_resolver_pipeline_5peer_consult.md):
+            #   asset_class -> category   (trading_picks uses `category`)
+            #   tp_price    -> take_profit
+            #   sl_price    -> stop_loss
+            # Use SQL aliases so the rest of this module keeps its existing
+            # dict keys (resolve_pick reads pick["asset_class"] etc.).
             sql = (
-                "SELECT id, symbol, asset_class, strategy, direction, "
-                "entry_price, created_at, tp_price, sl_price "
+                "SELECT id, symbol, category AS asset_class, strategy, direction, "
+                "entry_price, created_at, take_profit AS tp_price, "
+                "stop_loss AS sl_price "
                 "FROM trading_picks "
                 "WHERE status = 'OPEN' "
                 "AND created_at < NOW() - INTERVAL %s DAY "
@@ -334,10 +342,13 @@ def resolve_stale_picks(
                 summary["loss"],
             )
         else:
+            # 2026-05-25 schema-drift fix: trading_picks has no `resolved_at`
+            # column; the equivalents are `closed_at` (event time) and
+            # `updated_at` (row mtime, auto-updated). Write to `closed_at`.
             update_sql = (
                 "UPDATE trading_picks "
                 "SET status=%s, exit_price=%s, pnl_pct=%s, "
-                "exit_reason=%s, resolved_at=%s "
+                "exit_reason=%s, closed_at=%s "
                 "WHERE id=%s"
             )
             updated = 0

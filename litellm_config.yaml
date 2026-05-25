@@ -1,41 +1,157 @@
+# litellm proxy config — rotating fallback across all working consult_multi providers.
+#
+# Designed to be the single OpenAI-compatible endpoint that Roo, Kilo, or any
+# `openai`-SDK client can target. Same `hybrid-model` virtual name resolves
+# through the fallback chain below; on 429 / 401 / 5xx, LiteLLM cools the
+# failing instance and retries the next one transparently.
+#
+# Cloudflare is intentionally listed FIRST as the test cohort — its daily
+# 10,000-neuron quota is exhausted right now, so every request will demonstrate
+# the rotation working (cloudflare 429 -> groq -> ... until success).
+#
+# Keys are loaded from ~/dbpasses.txt by tools/start_litellm_proxy.sh and
+# exported into env before litellm starts. NEVER hardcoded here.
+
 litellm_settings:
   drop_params: true
+  set_verbose: false
+  request_timeout: 60
+
+router_settings:
+  # Try in order; on failure cool the failing instance and try the next.
+  routing_strategy: simple-shuffle
+  enable_fallbacks: true
+  num_retries: 2
+  allowed_fails: 1            # 1 failure → temporarily cool the instance
+  cooldown_time: 300          # park rate-limited keys for 5 min before retry
+  retry_after: 1
+  # Treat these statuses as "rotate to next" rather than "fail"
+  retry_policy:
+    BadRequestErrorRetries: 0
+    AuthenticationErrorRetries: 0
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
+    ContentPolicyViolationErrorRetries: 0
+    InternalServerErrorRetries: 2
 
 model_list:
-  # === Best Cloud Models via Ollama Cloud ===
+  # =====================================================================
+  # TIER 0 (test) — Cloudflare FIRST. Currently 429-quota-exhausted; will
+  # demonstrate auto-rotate on every request until UTC midnight reset.
+  # CF_API_BASE is the full per-account URL, assembled by start_litellm_proxy.sh
+  # from CF_ACCOUNT_ID + CF_API_TOKEN (litellm's `account_id` param doesn't
+  # interpolate `os.environ/...` correctly on the cloudflare provider).
+  # =====================================================================
+  - model_name: hybrid-model
+    litellm_params:
+      model: openai/@cf/meta/llama-3.1-8b-instruct
+      api_key: os.environ/CF_API_TOKEN
+      api_base: os.environ/CF_API_BASE
+
+  # =====================================================================
+  # TIER 1 — fastest sub-second providers (Groq / Cerebras)
+  # =====================================================================
+  - model_name: hybrid-model
+    litellm_params:
+      model: groq/llama-3.1-8b-instant
+      api_key: os.environ/GROQ_API_KEY
+
+  - model_name: hybrid-model
+    litellm_params:
+      model: cerebras/llama3.1-8b
+      api_key: os.environ/CEREBRAS_API_KEY
+
+  # =====================================================================
+  # TIER 2 — generous NIM free tier
+  # =====================================================================
+  - model_name: hybrid-model
+    litellm_params:
+      model: nvidia_nim/meta/llama-3.1-8b-instruct
+      api_key: os.environ/NVIDIA_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  # =====================================================================
+  # TIER 3 — broader free tiers
+  # =====================================================================
+  - model_name: hybrid-model
+    litellm_params:
+      model: together_ai/meta-llama/Meta-Llama-3-8B-Instruct-Lite
+      api_key: os.environ/TOGETHER_API_KEY
+
+  - model_name: hybrid-model
+    litellm_params:
+      model: fireworks_ai/accounts/fireworks/models/kimi-k2p5
+      api_key: os.environ/FIREWORKS_API_KEY
+
+  - model_name: hybrid-model
+    litellm_params:
+      model: mistral/mistral-small-latest
+      api_key: os.environ/MISTRAL_API_KEY
+
+  - model_name: hybrid-model
+    litellm_params:
+      model: gemini/gemini-flash-latest
+      api_key: os.environ/GEMINI_API_KEY
+
+  # =====================================================================
+  # TIER 4 — OpenAI-compatible gateways via custom api_base
+  # =====================================================================
+  # GitHub Models (free quota via github_pat tokens)
+  - model_name: hybrid-model
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/GITHUB_MODELS_KEY
+      api_base: https://models.inference.ai.azure.com
+
+  # DeepInfra (alt key per consult_multi.py — primary is dead)
+  - model_name: hybrid-model
+    litellm_params:
+      model: openai/meta-llama/Meta-Llama-3.1-8B-Instruct
+      api_key: os.environ/DEEPINFRA_API_KEY_ALT
+      api_base: https://api.deepinfra.com/v1/openai
+
+  # AIMLAPI
+  - model_name: hybrid-model
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/AIMLAPI_FREE_KEY
+      api_base: https://api.aimlapi.com/v1
+
+  # Nous Research Portal (free-tier model only)
+  - model_name: hybrid-model
+    litellm_params:
+      model: openai/Hermes-4-405B
+      api_key: os.environ/NOUS_API_KEY
+      api_base: https://inference-api.nousresearch.com/v1
+
+  # Hypereal (paid; gpt-5.5-instant unlocked after 2026-05-25 top-up)
+  - model_name: hybrid-model
+    litellm_params:
+      model: openai/gpt-5.5-instant
+      api_key: os.environ/HYPEREAL_API_KEY
+      api_base: https://api.hypereal.cloud/v1
+
+  # =====================================================================
+  # Legacy Ollama-Cloud aliases (preserved from prior config so existing
+  # callers using model_name=claude-opus-4-7 etc. don't break).
+  # =====================================================================
   - model_name: claude-opus-4-7
     litellm_params:
       model: ollama/kimi-k2.5:cloud
       api_base: https://ollama.com/api
       api_key: os.environ/OLLAMA_CLOUD_KEY
-
   - model_name: claude-sonnet-4-6
     litellm_params:
       model: ollama/kimi-k2.5:cloud
       api_base: https://ollama.com/api
       api_key: os.environ/OLLAMA_CLOUD_KEY
-
-  - model_name: claude-4
-    litellm_params:
-      model: ollama/kimi-k2.5:cloud
-      api_base: https://ollama.com/api
-      api_key: os.environ/OLLAMA_CLOUD_KEY
-
-  # Other strong Ollama Cloud models
   - model_name: kimi-k2.5
     litellm_params:
       model: ollama/kimi-k2.5:cloud
       api_base: https://ollama.com/api
       api_key: os.environ/OLLAMA_CLOUD_KEY
-
   - model_name: glm-5
     litellm_params:
       model: ollama/glm-5:cloud
-      api_base: https://ollama.com/api
-      api_key: os.environ/OLLAMA_CLOUD_KEY
-
-  - model_name: qwen2.5-coder
-    litellm_params:
-      model: ollama/qwen2.5-coder:cloud
       api_base: https://ollama.com/api
       api_key: os.environ/OLLAMA_CLOUD_KEY
