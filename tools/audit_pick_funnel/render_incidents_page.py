@@ -165,12 +165,40 @@ def render_html(incidents, enhancements, generated_at):
 </body></html>"""
 
 
+def _summarize_by_class(incidents, enhancements):
+    """Return rows of (class, n_inc_open, n_p0, top_inc_title, n_enh_open, top_enh_title)."""
+    rows = []
+    for cls in CLASSES:
+        inc = [r for r in incidents.get(cls, []) if r["status"] in ("OPEN", "TRIAGED", "IN_PROGRESS")]
+        enh = [r for r in enhancements.get(cls, []) if r["status"] in ("BACKLOG", "VALIDATED", "ACCEPTED")]
+        if not inc and not enh:
+            continue
+        n_p0 = sum(1 for r in inc if r["severity"] == "P0")
+        inc_sorted = sorted(inc, key=lambda r: (r["severity"] != "P0", r["severity"] != "P1"))
+        enh_sorted = sorted(enh, key=lambda r: (r["expected_impact"] != "HIGH", r["expected_impact"] != "MEDIUM"))
+        rows.append({
+            "class": cls,
+            "n_inc": len(inc),
+            "n_p0": n_p0,
+            "top_inc": inc_sorted[0]["title"] if inc_sorted else None,
+            "n_enh": len(enh),
+            "top_enh": enh_sorted[0]["title"] if enh_sorted else None,
+        })
+    return rows
+
+
 def render_updates_injection(incidents, enhancements, generated_at):
-    """Pick top P0/P1 OPEN incidents + HIGH-impact enhancements; render distinct-color cards."""
+    """Render the top-of-feed block with: (1) what this is, (2) per-class summary
+    table, (3) top P0/P1 incidents, (4) top HIGH-impact enhancements."""
     flat_inc = [r for cls in CLASSES for r in incidents.get(cls, [])]
     flat_enh = [r for cls in CLASSES for r in enhancements.get(cls, [])]
-    top_inc = [r for r in flat_inc if r["severity"] in ("P0","P1") and r["status"] in ("OPEN","TRIAGED","IN_PROGRESS")][:10]
-    top_enh = [r for r in flat_enh if r["expected_impact"] == "HIGH" and r["status"] in ("BACKLOG","VALIDATED","ACCEPTED")][:5]
+    open_inc = [r for r in flat_inc if r["status"] in ("OPEN", "TRIAGED", "IN_PROGRESS")]
+    open_enh = [r for r in flat_enh if r["status"] in ("BACKLOG", "VALIDATED", "ACCEPTED")]
+    n_p0 = sum(1 for r in open_inc if r["severity"] == "P0")
+    n_p1 = sum(1 for r in open_inc if r["severity"] == "P1")
+    summary_rows = _summarize_by_class(incidents, enhancements)
+    top_inc = sorted(open_inc, key=lambda r: (r["severity"] != "P0", r["severity"] != "P1"))[:10]
+    top_enh = sorted(open_enh, key=lambda r: r["expected_impact"] != "HIGH")[:5]
 
     parts = [INJECTION_START, '''
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -178,24 +206,59 @@ def render_updates_injection(incidents, enhancements, generated_at):
      Distinct visual identity via the .incident-card / .enhancement-card classes
      and the orange/green left border vs the default update-entry cards. -->
 <style>
-  .ie-section { margin: 28px 0; padding: 18px; background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(34,197,94,0.06)); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; }
-  .ie-section > h2 { margin: 0 0 8px; font-size: 18px; color: #f59e0b; }
-  .ie-section > p.intro { color: #94a3b8; font-size: 13px; margin-bottom: 14px; }
-  .incident-card { background: rgba(239,68,68,0.04); border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
-  .incident-card.sev-P1 { border-left-color: #f59e0b; background: rgba(245,158,11,0.04); }
-  .enhancement-card { background: rgba(34,197,94,0.05); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
+  .ie-section { margin: 28px 20px; padding: 20px 22px; background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(34,197,94,0.07)); border: 2px solid rgba(245,158,11,0.35); border-radius: 12px; max-width: 820px; margin-left: auto; margin-right: auto; }
+  .ie-section > h2 { margin: 0 0 6px; font-size: 19px; color: #f59e0b; }
+  .ie-section > .intro { color: #cbd5e1; font-size: 13px; margin: 0 0 14px; line-height: 1.55; }
+  .ie-section > .intro a { color: #93c5fd; text-decoration: underline; font-weight: 600; }
+  .ie-explainer { background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.2); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; font-size: 12.5px; color: #cbd5e1; line-height: 1.55; }
+  .ie-explainer strong { color: #fbbf24; }
+  .ie-explainer code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #fcd34d; }
+  table.ie-class-summary { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0 16px; }
+  table.ie-class-summary th { background: rgba(0,0,0,0.25); padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid rgba(148,163,184,0.2); }
+  table.ie-class-summary td { padding: 7px 8px; border-bottom: 1px solid rgba(148,163,184,0.08); color: #cbd5e1; vertical-align: top; }
+  table.ie-class-summary tr:hover td { background: rgba(96,165,250,0.05); }
+  table.ie-class-summary .cls { font-weight: 700; color: #93c5fd; }
+  table.ie-class-summary .p0 { color: #ef4444; font-weight: 700; }
+  table.ie-class-summary .top-issue { color: #f8fafc; font-size: 11.5px; }
+  .incident-card { background: rgba(239,68,68,0.06); border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
+  .incident-card.sev-P1 { border-left-color: #f59e0b; background: rgba(245,158,11,0.05); }
+  .enhancement-card { background: rgba(34,197,94,0.06); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
   .ie-card-meta { font-size: 11px; color: #9ca3af; margin-top: 3px; }
   .ie-card a { color: #93c5fd; text-decoration: none; font-weight: 600; }
   .ie-card a:hover { text-decoration: underline; color: #60a5fa; }
   .ie-class { display: inline-block; background: rgba(96,165,250,0.18); color: #93c5fd; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-right: 5px; }
+  .ie-section h3 { font-size: 14px; margin: 16px 0 6px; }
 </style>
 <div class="ie-section">
-  <h2>🐛 Open Incidents + 🚀 Top Enhancements (auto-synced from /audit DB)</h2>
-  <p class="intro">Live from the <code>INCIDENT_*</code> + <code>ENHANCEMENT_*</code> per-asset-class tables in <code>ejaguiar1_stocks</code>. <strong>Refreshed: ''' + esc(generated_at) + '''.</strong> Full list: <a href="/audit/incidents.html">/audit/incidents.html</a>.</p>
-''']
+  <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
+  <p class="intro"><strong>Refreshed:</strong> ''' + esc(generated_at) + ''' · <strong>''' + str(len(open_inc)) + ''' open incidents</strong> (''' + str(n_p0) + ''' P0 · ''' + str(n_p1) + ''' P1) · <strong>''' + str(len(open_enh)) + ''' enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+
+  <div class="ie-explainer">
+    <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
+    <strong>Where the data lives:</strong> 18 MySQL tables — <code>INCIDENT_&lt;CLASS&gt;</code> + <code>ENHANCEMENT_&lt;CLASS&gt;</code> for STOCKS / ETFS / CRYPTO / FOREX / COMMODITIES / BONDS / FUTURES / PENNY + <code>OVERALL</code> for cross-cutting issues — exported to <a href="/audit/data/incidents_enhancements_feed.json">JSON</a> and rendered to the dashboard at <a href="/audit/incidents.html">/audit/incidents.html</a> (full filterable view).
+    <strong>How it updates:</strong> peer-AI audits (Claude / Ring / Qwen / Kilo / Grok / opencode) seed new findings via <code>tools/audit_pick_funnel/cli_track.py</code>; the renderer runs nightly via <code>incidents-enhancements-nightly.yml</code> and FTP-pushes <code>incidents.html</code> + this <code>updates/index.html</code> block.
+    <strong>How to read severity:</strong> <span style="color:#ef4444">P0</span> = blocks the page from being trustable (data corruption, broken gate, false claim); <span style="color:#f59e0b">P1</span> = misleading or stale but page still works; P2/P3 = cleanup. Enhancement impact: HIGH = expected to materially lift WR/PF or close a known data gap.
+  </div>
+
+  <h3 style="color:#93c5fd">Per-asset-class summary</h3>
+  <table class="ie-class-summary">
+    <thead><tr><th>Class</th><th>Open #</th><th>P0</th><th>Top issue</th><th>Enh #</th><th>Top enhancement</th></tr></thead>
+    <tbody>''']
+    for r in summary_rows:
+        parts.append(f'''      <tr>
+        <td class="cls">{esc(r["class"])}</td>
+        <td>{r["n_inc"]}</td>
+        <td class="p0">{r["n_p0"] if r["n_p0"] else "—"}</td>
+        <td class="top-issue">{esc((r["top_inc"] or "—")[:90])}{"…" if r["top_inc"] and len(r["top_inc"])>90 else ""}</td>
+        <td>{r["n_enh"]}</td>
+        <td class="top-issue">{esc((r["top_enh"] or "—")[:80])}{"…" if r["top_enh"] and len(r["top_enh"])>80 else ""}</td>
+      </tr>''')
+    parts.append('''    </tbody>
+  </table>
+''')
 
     if top_inc:
-        parts.append('<h3 style="color:#ef4444;font-size:14px;margin:14px 0 6px">Open P0/P1 Incidents</h3>')
+        parts.append('<h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>')
         for r in top_inc:
             sev_cls = f"sev-{r['severity']}"
             parts.append(f'''  <div class="incident-card ie-card {sev_cls}">
@@ -204,33 +267,45 @@ def render_updates_injection(incidents, enhancements, generated_at):
   </div>''')
 
     if top_enh:
-        parts.append('<h3 style="color:#22c55e;font-size:14px;margin:14px 0 6px">Top HIGH-impact Enhancements</h3>')
+        parts.append('<h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>')
         for r in top_enh:
             parts.append(f'''  <div class="enhancement-card ie-card">
     <span class="ie-class">{esc(r["asset_class"])}</span> <strong>{esc(r["title"])}</strong>
     <div class="ie-card-meta">Impact {esc(r["expected_impact"])} · effort {esc(r["effort"])} · status {esc(r["status"])} · category {esc(r["category"])} · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>''')
+
+    parts.append('<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>')
     parts.append('</div>')
     parts.append(INJECTION_END)
     return "\n".join(parts)
 
 
 def inject_into_updates(html_block):
+    """Inject (or replace) the auto-block at the TOP of the updates feed so it's
+    the first thing readers see — not buried 54,000 lines down."""
     if not UPDATES_PAGE.exists():
         print(f"[render] skip updates injection — {UPDATES_PAGE} missing")
         return False
     src = UPDATES_PAGE.read_text(encoding="utf-8")
-    if INJECTION_START in src and INJECTION_END in src:
-        new = re.sub(
-            re.escape(INJECTION_START) + ".*?" + re.escape(INJECTION_END),
-            html_block.replace("\\", "\\\\"),  # escape backslashes for re.sub replacement
-            src, flags=re.DOTALL)
+    # Defensive: strip ANY existing block first (even bottom-of-page ones from
+    # the old fallback), so we never end up with two copies after a fix.
+    src = re.sub(
+        re.escape(INJECTION_START) + r".*?" + re.escape(INJECTION_END) + r"\s*",
+        "", src, flags=re.DOTALL)
+    # Insert just before the FIRST `<div class="update-entry"` so the block
+    # sits above the most recent entry in the feed (where eyes land first).
+    m = re.search(r'<div\s+class="update-entry"', src)
+    if m:
+        insertion_point = m.start()
+        # Walk backwards to start-of-line so the injected block sits flush left
+        line_start = src.rfind("\n", 0, insertion_point) + 1
+        # Use lambda for the replacement to avoid backreference interpretation in re.sub-style logic
+        new = src[:line_start] + html_block + "\n\n  " + src[line_start:]
     else:
-        # Find <main> opening tag and inject right after; fallback to before </body>
-        m = re.search(r"<main[^>]*>", src, re.IGNORECASE)
-        if m:
-            insertion_point = m.end()
-            new = src[:insertion_point] + "\n" + html_block + "\n" + src[insertion_point:]
+        # Fallback: just after <main> (if present), otherwise just before </body>
+        m2 = re.search(r"<main[^>]*>", src, re.IGNORECASE)
+        if m2:
+            new = src[:m2.end()] + "\n" + html_block + "\n" + src[m2.end():]
         else:
             new = src.replace("</body>", html_block + "\n</body>", 1)
     UPDATES_PAGE.write_text(new, encoding="utf-8")
