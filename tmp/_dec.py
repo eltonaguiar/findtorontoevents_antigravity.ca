@@ -1,1 +1,0 @@
-import base64,sys;open(sys.argv[1],chr(119)+chr(98)).write(base64.b64decode(sys.stdin.read().strip()))
