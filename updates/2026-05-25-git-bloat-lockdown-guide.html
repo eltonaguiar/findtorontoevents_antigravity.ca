@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Bloat Lockdown — 11 Rounds + History Rewrite | findtorontoevents</title>
+<meta name="description" content="The full 2026-05-25 bloat-lockdown session: 11 gitignore rounds + history rewrite + workflow patches + recovery guide. 2.3 GB → 327 MB.">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.6; }
+.container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+header { background: linear-gradient(135deg, #1e0a26 0%, #160618 100%); padding: 40px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #6b21a8; text-align: center; }
+h1 { font-size: 2.1em; background: linear-gradient(135deg, #c084fc 0%, #f0abfc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+.subtitle { color: #c4b5fd; font-size: 1.05em; }
+.section { background: #111827; padding: 28px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #1f2937; }
+h2 { color: #c084fc; font-size: 1.4em; margin-bottom: 16px; border-left: 4px solid #c084fc; padding-left: 14px; }
+h3 { color: #f0abfc; margin: 20px 0 10px; font-size: 1.05em; }
+ul, ol { padding-left: 22px; margin: 10px 0; }
+li { margin-bottom: 6px; }
+code { background: #1f2937; padding: 2px 7px; border-radius: 4px; color: #fbbf24; font-size: 0.88em; }
+pre { background: #0a1018; padding: 14px; border-radius: 8px; overflow-x: auto; border: 1px solid #1f2937; margin: 10px 0; font-size: 0.86em; }
+pre code { background: none; padding: 0; color: #cbd5e1; }
+table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88em; }
+th, td { padding: 8px 11px; text-align: left; border-bottom: 1px solid #1f2937; vertical-align: top; }
+th { background: #1f2937; color: #f0abfc; font-weight: 600; }
+tr:hover { background: #131b2c; }
+.callout { background: #1a0a26; border-left: 4px solid #c084fc; padding: 14px 18px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+.callout-warn { background: #260a0a; border-left-color: #ef4444; }
+.callout-good { background: #0a261a; border-left-color: #4ade80; }
+.callout h4 { color: #c084fc; margin: 0 0 6px; }
+.callout-warn h4 { color: #f87171; }
+.callout-good h4 { color: #4ade80; }
+.callout p { margin: 0; font-size: 0.93em; }
+a { color: #c084fc; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.kpi { display: inline-block; background: #1f2937; padding: 6px 12px; border-radius: 6px; font-weight: 600; margin: 0 4px; }
+.kpi-num { color: #4ade80; font-size: 1.1em; }
+footer { text-align: center; padding: 30px; color: #8b9dc3; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+<h1>🗜 Git Bloat Lockdown</h1>
+<p class="subtitle">11 gitignore rounds · history rewrite · 1,522 drift files evicted · 2.3 GB → 327 MB</p>
+<p class="subtitle" style="margin-top:8px;font-size:0.95em;">Comprehensive guide · 2026-05-25</p>
+</header>
+
+<div class="section">
+<h2>Headline numbers</h2>
+<table>
+<tr><th>Metric</th><th>Before</th><th>After</th><th>Δ</th></tr>
+<tr><td><code>.git/</code> server-side size</td><td>2.3 GB</td><td>~327 MB <em>(post-GitHub-gc)</em></td><td><strong style="color:#4ade80">−85%</strong></td></tr>
+<tr><td>Bloat per training/scan cycle</td><td>~1 GB/day</td><td>0 (gitignored)</td><td><strong style="color:#4ade80">stopped</strong></td></tr>
+<tr><td>Tracked-but-now-ignored files</td><td>1,522</td><td>0</td><td>evicted</td></tr>
+<tr><td>Deploy-required files preserved</td><td>—</td><td>16 (explicit <code>!</code> negations)</td><td>verified</td></tr>
+<tr><td>Workflow patches needed</td><td>—</td><td>1 (<code>train_crypto_models.yml</code>)</td><td>shipped</td></tr>
+<tr><td>Validator checks</td><td>—</td><td>8/8 PASS</td><td>repeatable</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>How to recover your clone</h2>
+<p>Every other PC that has a clone of this repo must follow the recovery doc <strong>before the next <code>git pull</code></strong>. The full guide is at:</p>
+<p><a href="/docs/GIT_HISTORY_REWRITE_2026-05-25.md" style="font-weight:700;font-size:1.1em">→ docs/GIT_HISTORY_REWRITE_2026-05-25.md</a> (also viewable via <code>gh api repos/eltonaguiar/findtorontoevents_antigravity.ca/contents/docs/GIT_HISTORY_REWRITE_2026-05-25.md</code>)</p>
+
+<div class="callout">
+<h4>TL;DR — pick one</h4>
+<p>
+<strong>Option A (recommended)</strong>: move your existing clone aside, fresh-clone the repo.<br>
+<strong>Option B (keeps untracked)</strong>: replace <code>.git/</code> in place with a bare clone, <code>git reset --hard origin/main</code>.<br>
+<strong>Option C (had unpushed work)</strong>: <code>git format-patch</code> your commits, follow A or B, then <code>git am</code> the patches on top of new main.
+</p>
+</div>
+
+<h3>Validator script</h3>
+<p>After recovery, run <code>scripts/validate-history-rewrite.sh</code> from the repo root. It runs 8 checks and prints PASS/FAIL per check + overall verdict:</p>
+<ol>
+<li>Recovery doc present</li>
+<li>Local HEAD matches origin/main</li>
+<li><code>git fsck</code> clean (no missing blobs)</li>
+<li>Post-rewrite gitignore commits in lineage</li>
+<li>No scrubbed bloat paths tracked in index</li>
+<li>Gitignore covers the scrubbed paths</li>
+<li>No unresolved merge conflicts</li>
+<li><code>git pull --ff-only origin main</code> would succeed</li>
+</ol>
+<p>All 8 must PASS. If any FAIL, the script shows the specific fix command.</p>
+</div>
+
+<div class="section">
+<h2>The 11 gitignore rounds</h2>
+<p>Each round was driven by a different audit — local heuristics, mirror-clone history scan, Roo on paid-mode-fast, Roo on free-mode-fast, Cursor on the same PC, GitHub Copilot, multi-AI fan-out. Cumulative effect: a defense-in-depth pattern that catches every category of regenerable bloat the repo's CI/training pipelines emit.</p>
+<table>
+<tr><th>Round</th><th>Trigger</th><th>What it caught</th></tr>
+<tr><td>v2</td><td>Initial bloat-stop after 2026-05-23 stripped reset only covered 3 paths</td><td>production_models/*.pkl, dashboard_data.json variants, events.json, tmp_*.json, Kimi_Agent_*.zip, actionlint.exe</td></tr>
+<tr><td>v3</td><td>Top-30 history blob audit</td><td>closed_picks.json (+ enriched), audit_edge_review_live.json, snapshots/dashboard_data_*.json</td></tr>
+<tr><td>v4</td><td>Post-scrub blob re-audit — found 1,746 .joblib files (3.6 GB!)</td><td>enhanced_models/models/*.joblib, closed_picks.archive.jsonl</td></tr>
+<tr><td>v5</td><td>Round-3 working-tree audit (tracked files &gt;1 MB)</td><td>tmp/, *.bak, *.log, **/*.db, parallel_agent guess_models.pkl, KIMI rf_model.pkl, gatekeeper joblibs, kimi_edge_audit CSVs, baby_strats dupes, audit_full.html</td></tr>
+<tr><td>v6</td><td>Multi-agent + multi-AI audit — <strong>biggest single win</strong>: hindsight/ had 2,304 timestamped JSONs (71 MB)</td><td>alpha_engine/data/hindsight/**/*.json, live-state JSON patterns (**/data/active_picks, live_*, *_signals, scan_*, tournament, elimination_state, ml_weights, winner_history, regime_report, outcome_resolver_log), universal ML extensions (*.npy/*.npz/*.h5/*.pt/*.pth/*.onnx/*.ckpt/*.parquet/*.feather), Python/JS hygiene (__pycache__, .pytest_cache, etc.)</td></tr>
+<tr><td>v7</td><td>Roo on paid-mode-fast (ELTONSVLLM_SERVER) independent audit</td><td>backtest *.sql + JSONs, test screenshots/artifacts, *.bak-&lt;date&gt; variants, swing model *.pkl, audit quarantine/, kimi_attachments_*/, database/*/, STOCKS/competition file-level adds</td></tr>
+<tr><td>v8</td><td><strong>Comprehensive lockdown</strong> after 2 deploy regressions from bare-dir ignores</td><td>Replaced bare <code>STOCKS/competition/</code> with file-glob + explicit !negations for all 7 deploy files. Catch-all: **/*.{pt,pth,h5,npz,docx,pdf,tar,tgz,7z,sql.gz,sqlite,sqlite3}. 1,522 drift files mass-evicted via <code>git ls-files -ci --exclude-standard | xargs git rm --cached</code>.</td></tr>
+<tr><td>v9</td><td>Roo on free-mode-fast (ELTONSVLLM_SERVERFREE): 70 .pkl files still tracked at 53 MB total</td><td>ml_crypto_predictor/models/*.pkl + workflow patch: <code>train_crypto_models.yml</code> changed <code>git add</code> → <code>git add -f</code> so the canonical writer still works</td></tr>
+<tr><td>v10</td><td>Peer review (5 AI engines) — preemptive ML-experiment-tracking patterns</td><td>wandb/, mlruns/, .dvc/cache/, **/checkpoints/, **/tb_events/, **/runs/events.out.tfevents.*</td></tr>
+<tr><td>v11</td><td>Cursor independent audit on this PC — found 23 stale-tracked files + .venv/ top-level gap</td><td>/.venv/ + **/.venv/, alpha_engine/data/{closed_picks_fast,forex_walk_forward,precursor_history,prediction_quality_history,momentum_tracker_picks,theory_portfolios_history,strategy_performance,extensive_backtest_results}.json, pick_funnel_*.json, trade_logs/*.json, skyrocket_detector/*.joblib, **/*.backup, **/*_OLD.html, CHATWITHIT_ARCHIVE_*</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>The "parent-dir excludes block file-level negations" gotcha</h2>
+<div class="callout-warn callout">
+<h4>Most expensive lesson of the session</h4>
+<p>Git docs: <em>"It is not possible to re-include a file if a parent directory of that file is excluded."</em> So if your <code>.gitignore</code> has <code>STOCKS/competition/</code> (a bare directory exclude), no later <code>!STOCKS/competition/foo.json</code> negation can re-include <code>foo.json</code>. Git stops descending into the directory at the parent-level exclude.</p>
+</div>
+<p>This caused <strong>two production-deploy regressions</strong> during the session — `super_signals.json` then `competition-stocks.json` both went missing from CI fresh-checkouts. Each time the FTP put failed with "No such file or directory".</p>
+<h3>The fix pattern</h3>
+<p>Replace bare directory ignores with <em>file-globs</em>, then add file-level negations:</p>
+<pre><code># DOES NOT WORK — negation is silently ignored
+STOCKS/competition/
+!STOCKS/competition/forward_picks.json
+
+# WORKS — file-glob + negations
+STOCKS/competition/*.json
+!STOCKS/competition/competition-crypto.json
+!STOCKS/competition/competition-forex.json
+!STOCKS/competition/forward_picks.json
+# ... etc for every deploy-required file in the dir</code></pre>
+</div>
+
+<div class="section">
+<h2>The "gitignore vs <code>git add -f</code>" dance for CI writers</h2>
+<p>Some workflows are the canonical writer for files that should NOT be tracked by devs locally. For example, <code>.github/workflows/train_crypto_models.yml</code> retrains and commits ML model weights every day — but if a dev does <code>git add -A</code> locally, we don't want their stale copies leaking into the index.</p>
+<p><strong>Pattern</strong>: gitignore the path AND have the canonical writer use <code>git add -f</code> to bypass gitignore for its specific commit. v9 fix in this session shows the template:</p>
+<pre><code># In .gitignore (blocks local dev adds):
+ml_crypto_predictor/models/*.pkl
+
+# In the workflow (canonical writer keeps working):
+git add -f ml_crypto_predictor/models/ \
+           ml_crypto_predictor/production_models/ \
+           ml_crypto_predictor/optim/ \
+           backtest_results/ updates/data/ || true</code></pre>
+<p>Audit of all 20+ workflows that use <code>git add</code> against gitignored paths showed they already correctly use <code>-f</code> for paths that need it. <code>quick-guess-ml.yml</code>, <code>now-scanner.yml</code>, <code>alpha-trend-catcher.yml</code> etc. all follow the pattern.</p>
+</div>
+
+<div class="section">
+<h2>Critical files preserved via <code>!negations</code> (don't break these)</h2>
+<p>Each of these is referenced by a deploy workflow (FTP put / scp / cp) and MUST stay tracked. The gitignore explicitly un-ignores them via <code>!</code> after a broader pattern that would otherwise catch them:</p>
+<table>
+<tr><th>File</th><th>Workflow that needs it</th></tr>
+<tr><td><code>STOCKS/competition/competition-{stocks,crypto,forex,meme_coins,penny_stocks,slim}.json</code></td><td><code>deploy-competition-to-site.yml</code>, <code>algorithm-competition-refresh.yml</code></td></tr>
+<tr><td><code>STOCKS/competition/forward_picks.json</code></td><td>same</td></tr>
+<tr><td><code>cross_aggregation/data/super_signals.json</code></td><td><code>deploy-competition-to-site.yml</code></td></tr>
+<tr><td><code>KIMI_RISEOFTHECLAW/data/live_competition.json</code></td><td><code>deploy-riseoftheclaw.yml</code></td></tr>
+<tr><td><code>KIMI_RISEOFTHECLAW/data/signal_tracking.json</code></td><td>same</td></tr>
+<tr><td><code>KIMI_RISEOFTHECLAW/data/live_signals_now.json</code></td><td>same</td></tr>
+<tr><td><code>KIMI_RISEOFTHECLAW/data/active_picks.json</code></td><td>same</td></tr>
+<tr><td><code>KIMI_RISEOFTHECLAW/data/closed_picks.json</code></td><td>same</td></tr>
+<tr><td><code>regime_terminal/data/active_signals.json</code></td><td>same</td></tr>
+<tr><td><code>crypto_ml_edge/data/active_picks.json</code></td><td><code>deploy-riseoftheclaw.yml</code>, <code>deploy-pages.yml</code></td></tr>
+<tr><td><code>crypto_signal_engine/data/active_picks.json</code></td><td>same</td></tr>
+<tr><td><code>quan_engine/data/active_signals.json</code></td><td>same</td></tr>
+<tr><td><code>data/ai_tournament/picks_latest.json</code></td><td><code>ai-tournament-pipeline.yml</code>, audit_dashboard reads this</td></tr>
+<tr><td><code>audit_dashboard/data/ai_tournament_picks_latest.json</code></td><td>audit_dashboard reads this</td></tr>
+<tr><td><code>alpha_engine/db/schema.sql</code></td><td>defense against <code>**/*.sql</code> catch-all (file is .sql, not .sqlite — harmless redundancy)</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>If a deploy starts failing</h2>
+<p>Diagnostic flow when a deploy workflow fails with "No such file or directory":</p>
+<ol>
+<li>Identify the missing file from the error log.</li>
+<li>Run <code>git check-ignore -v &lt;file&gt;</code> — this prints the matching <code>.gitignore</code> line if it's being blocked.</li>
+<li>If matched, add an explicit <code>!negation</code> right after the matching pattern in <code>.gitignore</code>.</li>
+<li><code>git add -f &lt;file&gt;</code>, commit, push.</li>
+<li>The recovery doc has an "open PRs" section explaining how to rebase PRs onto new main if needed.</li>
+</ol>
+</div>
+
+<div class="section">
+<h2>Open work post-session</h2>
+<table>
+<tr><th>Status</th><th>Item</th></tr>
+<tr><td>🟡 deferred</td><td>Second history scrub for ~3 GB cumulative historical blob weight (Copilot flagged). Bleed is stopped so existing weight just sits; <code>.git</code> may shrink naturally after GitHub's gc cycle runs (~1-2 days).</td></tr>
+<tr><td>🟡 deferred</td><td>Bluesmind paid Claude/Kimi models (require Anthropic-native /v1/messages format, not openai-compat)</td></tr>
+<tr><td>🟢 auto-recovers</td><td>HuggingFace monthly quota (first of next month), Cloudflare daily quota (UTC midnight), OpenAI quota (top-up)</td></tr>
+<tr><td>🔴 needs you</td><td>Re-clone every other PC before next <code>git pull</code> — recovery doc + validator are the source of truth</td></tr>
+<tr><td>🔴 needs you</td><td>xAI key rotation at console.x.ai (current direct-key invalid; Bluesmind-routed Grok still works)</td></tr>
+</table>
+</div>
+
+<footer>
+<p><a href="/updates/2026-05-25-litellm-proxy-guide.html">← LiteLLM Proxy Guide</a> · <a href="/updates/">All updates</a> · <a href="/audit/">Audit dashboard</a></p>
+<p style="margin-top:8px;font-size:0.83em;color:#64748b;">Generated 2026-05-25. Full session timeline + commit refs in <code>docs/GIT_HISTORY_REWRITE_2026-05-25.md</code>. Re-run <code>scripts/validate-history-rewrite.sh</code> any time to confirm your clone is in sync.</p>
+</footer>
+
+</div>
+</body>
+</html>
