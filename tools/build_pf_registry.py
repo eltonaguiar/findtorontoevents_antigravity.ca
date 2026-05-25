@@ -308,9 +308,86 @@ def _is_win(pnl_pct) -> bool:
 # ---------------------------------------------------------------------------
 # Load
 # ---------------------------------------------------------------------------
+def _load_mysql_rows(days: int = 90) -> tuple[list, dict]:
+    """Read closed picks from MySQL trading_picks (Action Item from
+    reports/2026-05-25_policy_clean_vs_top_edges_funnel.md).
+
+    Gated by env var PF_REGISTRY_INCLUDE_DB=1 (default off) so the historic
+    JSON-only behavior is preserved unless explicitly opted in. Reuses the
+    existing extract_funnel.fetch_picks reader so column selection stays in
+    sync with the audit pipeline.
+
+    Returns (rows, meta). rows match the JSON shape consumed by classify_rows:
+      - `category` from MySQL is copied into `asset_class` (which _asset_class
+        reads) so dedup / NET / policy all see the same field name as JSON
+        rows.
+      - `_origin_file` is set to a synthetic identifier so source_meta can
+        report DB contributions distinctly.
+      - status is uppercased and entry_date is filled from created_at so the
+        existing dedup key (strategy, symbol, direction, entry_date,
+        ~entry_price) groups DB rows identically to JSON re-emissions.
+    """
+    rows: list = []
+    meta: dict = {"enabled": True, "days": days}
+    try:
+        from tools import db_env  # type: ignore[import-not-found]
+        from tools.audit_pick_funnel import extract_funnel  # type: ignore[import-not-found]
+    except ImportError as exc:
+        meta.update({"loaded": 0, "error": f"import failed: {exc}"})
+        return rows, meta
+    try:
+        import pymysql  # type: ignore[import-not-found]
+    except ImportError as exc:
+        meta.update({"loaded": 0, "error": f"pymysql missing: {exc}"})
+        return rows, meta
+    try:
+        creds = db_env.get_stocks_creds()
+        creds.setdefault("cursorclass", pymysql.cursors.DictCursor)
+        conn = pymysql.connect(**creds)
+    except Exception as exc:  # broad: host-block / network / auth
+        meta.update({"loaded": 0, "error": f"connect failed: {type(exc).__name__}"})
+        return rows, meta
+    try:
+        raw = extract_funnel.fetch_picks(conn, days=days)
+    except Exception as exc:
+        meta.update({"loaded": 0, "error": f"fetch failed: {type(exc).__name__}"})
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return rows, meta
+    try:
+        conn.close()
+    except Exception:
+        pass
+    for r in raw:
+        if not isinstance(r, dict):
+            continue
+        r = dict(r)
+        # Bridge schema: MySQL has `category` and `created_at`; classify_rows
+        # reads `asset_class` and falls back through entry_date->...->created_at
+        # for the dedup key. Set asset_class explicitly so _asset_class doesn't
+        # have to infer.
+        if r.get("category") and not r.get("asset_class"):
+            r["asset_class"] = r["category"]
+        status = str(r.get("status") or "").upper()
+        if status:
+            r["status"] = status
+        r["_origin_file"] = f"mysql:trading_picks:{days}d"
+        rows.append(r)
+    meta["loaded"] = len(rows)
+    return rows, meta
+
+
 def load_rows():
     """Returns (rows, source_meta). rows is a flat list of dicts; source_meta
-    records which files were found and how many rows each contributed."""
+    records which files were found and how many rows each contributed.
+
+    When env var PF_REGISTRY_INCLUDE_DB=1 is set, ALSO loads closed picks
+    direct from MySQL trading_picks via _load_mysql_rows(). The merged
+    cohort then flows through the same classify_rows dedup + flicker filter
+    + policy-clean NET aggregation as JSON-sourced rows. See
+    reports/2026-05-25_policy_clean_vs_top_edges_funnel.md."""
     rows = []
     source_meta = []
     for rel in SOURCE_FILES:
@@ -340,6 +417,27 @@ def load_rows():
             rows.append(r)
             count += 1
         source_meta.append({"file": rel, "present": True, "rows": count})
+    if os.environ.get("PF_REGISTRY_INCLUDE_DB") == "1":
+        db_days_raw = os.environ.get("PF_REGISTRY_DB_DAYS") or "90"
+        try:
+            db_days = max(1, int(db_days_raw))
+        except ValueError:
+            db_days = 90
+        db_rows, db_meta = _load_mysql_rows(days=db_days)
+        rows.extend(db_rows)
+        source_meta.append({
+            "file": f"mysql://trading_picks?days={db_days}",
+            "present": True,
+            "rows": db_meta.get("loaded", 0),
+            **{k: v for k, v in db_meta.items() if k in ("error", "days")},
+        })
+    else:
+        source_meta.append({
+            "file": "mysql://trading_picks",
+            "present": False,
+            "rows": 0,
+            "note": "set PF_REGISTRY_INCLUDE_DB=1 to merge MySQL cohort",
+        })
     return rows, source_meta
 
 
