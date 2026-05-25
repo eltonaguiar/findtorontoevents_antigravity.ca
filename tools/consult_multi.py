@@ -67,6 +67,8 @@ _KEY_LABELS = {
     "TOGETHER_API_KEY_ALT": "TOGETHER AI API KEY ALT:",
     "CEREBRAS_API_KEY":   "CEREBRAS_FREE_API_KEY:",
     "HF_API_TOKEN":       "HUGGING_FACE_TOKEN",
+    "HF_API_TOKEN_ALT":   "HUGGING_FACE_TOKEN ALT(TRIED FINE GRAIN AND SETTING BUNCH OF CHECKBOXES):",
+    "HF_API_TOKEN_ALT2":  "HUGGINF_FACE TOKEN ALT2(READ):",  # sic — file typo
     "FIREWORKS_API_KEY":  "FIREWORKS FREE API KEY:",
     "FIREWORKS_API_KEY_ALT": "FIREWORKS FREE API KEY ALT:",
     "DEEPINFRA_API_KEY":  "DEEPINFRA API KEY:",
@@ -77,8 +79,8 @@ _KEY_LABELS = {
     "MISTRAL_API_KEY_ALT": "MISTRAL API KEY ALT:",
     "AIMLAPI_FREE_KEY":   "AIMLAPI.COM",
     "AIMLAPI_PAID_KEY":   "AIMLAPIKEY PAID ($20 limit):",
-    "HYPERBOLIC_API_KEY": "HYPEREAL CLOUD API KEY:",
-    "HYPERBOLIC_API_KEY_ALT": "HYPEREAL CLOUD API KEY 2:",
+    "HYPEREAL_API_KEY":   "HYPEREAL CLOUD API KEY:",
+    "HYPEREAL_API_KEY_ALT": "HYPEREAL CLOUD API KEY 2:",
     "CF_ACCOUNT_ID":      "Cloudflare account iD:",
     "CF_API_TOKEN":       "Cloudflare API key:",
 }
@@ -209,13 +211,29 @@ def _call_github_models(model, prompt, max_tokens=1500, timeout=90):
 
 
 def _call_huggingface(model, prompt, max_tokens=1500, timeout=90):
-    key = _get_key("HF_API_TOKEN")
-    if not key:
-        raise RuntimeError("HF_API_TOKEN not in env or ~/dbpasses.txt")
-    # New HF router exposes OpenAI-compatible interface
-    return _post_openai_compat(
-        "https://router.huggingface.co/v1/chat/completions",
-        key, model, prompt, max_tokens, timeout)
+    """HF Router — OpenAI-compatible. Each HF account has its own monthly
+    free credit pool, so cycle through all 3 keys on 402 (each could be a
+    separate account). 2026-05-25: legacy api-inference.huggingface.co is
+    DNS-unresolvable from this network; only the router is usable."""
+    keys = [k for k in (_get_key("HF_API_TOKEN"),
+                         _get_key("HF_API_TOKEN_ALT"),
+                         _get_key("HF_API_TOKEN_ALT2")) if k]
+    if not keys:
+        raise RuntimeError("no HF_API_TOKEN* in env or ~/dbpasses.txt")
+    last_exc = None
+    for key in keys:
+        try:
+            return _post_openai_compat(
+                "https://router.huggingface.co/v1/chat/completions",
+                key, model, prompt, max_tokens, timeout)
+        except urllib.error.HTTPError as exc:
+            # On 402 (payment required) and 429 (rate limit) try the next key;
+            # any other status surfaces immediately.
+            if exc.code in (402, 429):
+                last_exc = exc
+                continue
+            raise
+    raise last_exc or RuntimeError("all HF keys exhausted")
 
 
 def _call_deepinfra(model, prompt, max_tokens=1500, timeout=90):
@@ -263,13 +281,18 @@ def _call_aimlapi(model, prompt, max_tokens=1500, timeout=90):
         key, model, prompt, max_tokens, timeout)
 
 
-def _call_hyperbolic(model, prompt, max_tokens=1500, timeout=90):
-    """Hyperbolic Cloud — OpenAI-compatible. Key format ck_..."""
-    key = _get_key("HYPERBOLIC_API_KEY") or _get_key("HYPERBOLIC_API_KEY_ALT")
+def _call_hypereal(model, prompt, max_tokens=1500, timeout=90):
+    """Hypereal Cloud (https://hypereal.cloud/) — OpenAI-compatible frontier-
+    model proxy. Hosts Claude Opus 4.7, GPT-5.5, Gemini 3.5, Kimi K2.6, GLM 5.1,
+    DeepSeek V4 Pro, Qwen3 Max, etc. NOTE: paid service, requires $2 min credit
+    balance. Anthropic models route via /v1/messages (Anthropic format), not
+    /v1/chat/completions. 2026-05-25: keys present but account balance=0 so
+    all calls return 'insufficient_credits'."""
+    key = _get_key("HYPEREAL_API_KEY") or _get_key("HYPEREAL_API_KEY_ALT")
     if not key:
-        raise RuntimeError("HYPERBOLIC_API_KEY not in env or ~/dbpasses.txt")
+        raise RuntimeError("HYPEREAL_API_KEY not in env or ~/dbpasses.txt")
     return _post_openai_compat(
-        "https://api.hyperbolic.xyz/v1/chat/completions",
+        "https://api.hypereal.cloud/v1/chat/completions",
         key, model, prompt, max_tokens, timeout)
 
 
@@ -333,13 +356,13 @@ PROVIDERS = {
     "fireworks":     (_call_fireworks,     "accounts/fireworks/models/kimi-k2p5"),
     "github_models": (_call_github_models, "gpt-4o-mini"),
     "huggingface":   (_call_huggingface,   "openai/gpt-oss-20b"),
-    "gemini_api":    (_call_gemini_api,    "gemini-2.0-flash-lite"),
+    "gemini_api":    (_call_gemini_api,    "gemini-flash-latest"),
     "cloudflare":    (_call_cloudflare,    "@cf/meta/llama-3.1-8b-instruct"),
     "deepinfra":     (_call_deepinfra,     "meta-llama/Meta-Llama-3.1-8B-Instruct"),
     "nous":          (_call_nous,          "Hermes-4-405B"),
     "mistral":       (_call_mistral,       "mistral-small-latest"),
     "aimlapi":       (_call_aimlapi,       "gpt-4o-mini"),
-    "hyperbolic":    (_call_hyperbolic,    "meta-llama/Meta-Llama-3.1-8B-Instruct"),
+    "hypereal":      (_call_hypereal,      "kimi-k2.6"),
 }
 
 
@@ -410,7 +433,7 @@ def main() -> int:
             "nous": ("NOUS_API_KEY",),
             "mistral": ("MISTRAL_API_KEY",),
             "aimlapi": ("AIMLAPI_FREE_KEY",),
-            "hyperbolic": ("HYPERBOLIC_API_KEY",),
+            "hypereal": ("HYPEREAL_API_KEY",),
         }
         for name, (_, default) in PROVIDERS.items():
             need = key_for_provider.get(name, ())

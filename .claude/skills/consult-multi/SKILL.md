@@ -74,23 +74,26 @@ Presets (each writes one `.md` per peer to `--out-dir`):
 - **`reasoning4`** — kimi-K2.6 + gemini-pro + llama-405b + deepseek-v3. For heavy reasoning.
 - **`all9`** — one model per provider. Maximum diversity.
 
-## Verified provider status (2026-05-25)
+## Verified provider status (2026-05-25, 14 providers)
 
 | Provider | Status | Default model | Notes |
 |---|---|---|---|
 | nvidia | ✅ working | meta/llama-3.1-8b-instruct | Full NIM catalog accessible |
 | groq | ✅ working | qwen/qwen3-32b | Fastest free-tier inference |
 | cerebras | ✅ working | llama3.1-8b | 4 free models: glm-4.7, llama3.1-8b, qwen-3-235b, gpt-oss-120b |
-| together | ✅ working | meta-llama/Meta-Llama-3-8B-Instruct-Lite | 257 models; Lite variants are free-tier |
+| together | ✅ working | meta-llama/Meta-Llama-3-8B-Instruct-Lite | 257 models; Lite variants free |
 | fireworks | ✅ working | accounts/fireworks/models/kimi-k2p5 | kimi-k2p5, glm-5p1, gpt-oss-120b free |
 | github_models | ✅ working | gpt-4o-mini | Free quota on github_pat tokens |
-| deepinfra | ✅ working (alt key) | meta-llama/Meta-Llama-3.1-8B-Instruct | Primary key 401; alt works |
-| nous | ✅ working | Hermes-4-405B | **USE ONLY FREE MODELS** — balance=0 stops free access |
-| huggingface | ⚠️ quota | openai/gpt-oss-20b | 402 monthly free credits depleted; subscribe to PRO or wait reset |
-| gemini_api | ⚠️ rate-limit | gemini-2.0-flash-lite | 429 — try alt key (`GEMINI_API_KEY_ALT`) or wait |
-| cloudflare | ⚠️ rate-limit | @cf/meta/llama-3.1-8b-instruct | 429 daily neuron quota exhausted |
+| gemini_api | ✅ working | gemini-flash-latest | Primary key works; alt 429-blocked. Avoid thinking-models with low max_tokens (truncates without visible output). |
+| deepinfra | ✅ working (alt key) | meta-llama/Meta-Llama-3.1-8B-Instruct | Primary key dead (401); alt works |
+| nous | ✅ working | Hermes-4-405B | **USE ONLY FREE MODELS** per provider — balance=0 stops free access |
+| mistral | ✅ working | mistral-small-latest | Direct REST, free tier |
+| aimlapi | ✅ working | gpt-4o-mini | Free key preferred over $20-limit paid key |
+| huggingface | ⚠️ quota | openai/gpt-oss-20b | 402 monthly free credits depleted; subscribe to PRO or wait month reset. The legacy `api-inference.huggingface.co` is DNS-unresolvable from this network — only the router endpoint is usable. |
+| cloudflare | ⚠️ quota | @cf/meta/llama-3.1-8b-instruct | 429 daily 10,000-neuron quota exhausted; resets at UTC midnight |
+| hypereal | ⚠️ paid | kimi-k2.6 | Frontier-model proxy (Claude Opus 4.7, GPT-5.5, Gemini 3.5, etc.). Requires $2 min credit balance; current balance=0. **Domain: hypereal.cloud** (NOT hyperbolic.xyz — common confusion). Anthropic models route via `/v1/messages`. |
 
-**The 3 ⚠️ providers have valid keys** — they're rate-limited at the account level. Alt keys exist for gemini (`GEMINI_API_KEY_ALT`) but share the same quota family.
+**The 3 ⚠️ providers have valid keys** — they're quota-capped at the account level. Wait or pay.
 
 ## MANDATORY: leakage-context block
 
