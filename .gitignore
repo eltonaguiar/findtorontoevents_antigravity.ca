@@ -216,3 +216,18 @@ audit_trail/data/dashboard_payload.json
 
 # DB password remediation — never commit (see docs/db_remediation.md)
 .env.dbpw
+
+# 2026-05-25 bloat fix v2 — files missed by the 2026-05-23 stripped reset
+# (commit 4aaa6ff84). Each was still adding ~1GB/day to .git history.
+# All regenerable from training / scraping / CI. See verify_all_keys.py
+# pattern: production-deployed files don't need to be in git.
+ml_crypto_predictor/production_models/*.pkl
+audit/data/dashboard_data.json
+events.json
+next/events.json
+edge_analysis_results.json
+data/live_picks.db
+tmp_*.json
+actionlint_dir/actionlint.exe
+Kimi_Agent_*.zip
+Kimi_Agent_*(*).zip

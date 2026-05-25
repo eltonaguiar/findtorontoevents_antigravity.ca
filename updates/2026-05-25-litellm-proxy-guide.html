@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteLLM Rotating-Fallback Proxy — User Guide | findtorontoevents</title>
+    <meta name="description" content="Operator guide for the local LiteLLM proxy on :4000. Free-mode vs paid-mode, provider inventory, slash commands, troubleshooting, security model.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0a0e1a; color: #e0e6ed; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        header { background: linear-gradient(135deg, #0c2032 0%, #061626 100%); padding: 40px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #1e4a6f; text-align: center; }
+        h1 { font-size: 2.3em; background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        .subtitle { color: #8b9dc3; font-size: 1.1em; }
+        .section { background: #111827; padding: 30px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #1f2937; }
+        h2 { color: #38bdf8; font-size: 1.4em; margin-bottom: 18px; border-left: 4px solid #38bdf8; padding-left: 14px; }
+        h3 { color: #7dd3fc; margin: 22px 0 10px; font-size: 1.1em; }
+        ul, ol { padding-left: 22px; margin: 12px 0; }
+        li { margin-bottom: 6px; }
+        code { background: #1f2937; padding: 2px 7px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+        pre { background: #0a1018; padding: 16px; border-radius: 8px; overflow-x: auto; border: 1px solid #1f2937; margin: 12px 0; }
+        pre code { background: none; padding: 0; color: #cbd5e1; }
+        table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.9em; }
+        th, td { padding: 9px 11px; text-align: left; border-bottom: 1px solid #1f2937; vertical-align: top; }
+        th { background: #1f2937; color: #7dd3fc; font-weight: 600; }
+        tr:hover { background: #131b2c; }
+        .badge { display: inline-block; padding: 2px 9px; border-radius: 6px; font-weight: 600; font-size: 0.78em; margin-right: 6px; }
+        .badge-free { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid #22c55e; }
+        .badge-paid { background: rgba(251, 146, 60, 0.18); color: #fb923c; border: 1px solid #fb923c; }
+        .badge-blocked { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid #ef4444; }
+        .callout { background: #0a1c14; border-left: 4px solid #22c55e; padding: 14px 18px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+        .callout-warn { background: #1e0a0a; border-left-color: #ef4444; }
+        .callout-info { background: #0a1726; border-left-color: #38bdf8; }
+        .callout h4 { margin: 0 0 6px; color: inherit; }
+        .callout-warn h4 { color: #f87171; }
+        .callout-info h4 { color: #7dd3fc; }
+        .callout p { margin: 0; font-size: 0.93em; }
+        a { color: #38bdf8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        footer { text-align: center; padding: 30px; color: #8b9dc3; font-size: 0.88em; }
+        .nav { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+        .nav a { background: #1f2937; padding: 6px 12px; border-radius: 6px; font-size: 0.88em; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+    <h1>🛠 LiteLLM Rotating-Fallback Proxy</h1>
+    <p class="subtitle">Local OpenAI-compatible gateway · 25+ verified upstreams · FREE vs PAID modes</p>
+    <p class="subtitle" style="margin-top:8px;font-size:0.95em;">Operator guide · Updated 2026-05-25</p>
+</header>
+
+<div class="nav">
+    <a href="#what">What it is</a>
+    <a href="#quickstart">Quick start</a>
+    <a href="#modes">Modes</a>
+    <a href="#providers">Providers</a>
+    <a href="#commands">Slash commands</a>
+    <a href="#security">Security</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+</div>
+
+<div class="section" id="what">
+<h2>What this is, and why</h2>
+<p>A single endpoint at <code>http://localhost:4000/v1</code> that any OpenAI-SDK client (Roo, Kilo, ChatGPT-style apps, raw <code>curl</code>) can target. LiteLLM rotates through 25+ free-tier and paid LLM upstreams behind one virtual model name. When one provider hits a rate limit or auth failure, the next one in the chain serves the request transparently. The caller never has to know — or care — which upstream produced the answer.</p>
+
+<p>Built on 2026-05-25 to consolidate ~14 per-provider consult tools and remove the &ldquo;which key do I use today?&rdquo; cognitive overhead. All keys are read from a gitignored file outside the repo; nothing is hardcoded.</p>
+</div>
+
+<div class="section" id="quickstart">
+<h2>Quick start</h2>
+
+<h3>Start the proxy</h3>
+<pre><code>bash tools/start_litellm_proxy.sh --background</code></pre>
+<p>Or use the slash command <code>/startvllmp</code> in Claude Code. It is idempotent — refuses to double-launch if already running.</p>
+
+<h3>Point your client at it</h3>
+<table>
+    <tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Base URL</td><td><code>http://localhost:4000/v1</code></td></tr>
+    <tr><td>Model</td><td><code>free-mode</code> or <code>paid-mode</code> (or <code>hybrid-model</code> for back-compat)</td></tr>
+    <tr><td>API key</td><td>any non-empty string (e.g. <code>anything</code>)</td></tr>
+</table>
+
+<p>The proxy accepts a placeholder key because real upstream authentication happens per-provider from the keys it loaded at startup. Your client doesn't need to know any of them.</p>
+
+<h3>Smoke test</h3>
+<pre><code>curl -s http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer anything" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"free-mode","messages":[{"role":"user","content":"1+1?"}],"max_tokens":40}'</code></pre>
+
+<p>Response headers tell you which upstream served the call:</p>
+<pre><code>x-litellm-model-api-base:    https://api.groq.com/openai/v1
+x-litellm-attempted-retries: 0
+x-litellm-response-cost:     0.00002
+x-litellm-response-duration-ms: 384</code></pre>
+</div>
+
+<div class="section" id="modes">
+<h2>The two modes</h2>
+
+<p>You select a mode by passing one of these as the <code>model</code> field:</p>
+
+<table>
+    <tr><th>Mode</th><th>Upstreams</th><th>Cost to you</th><th>Use for</th></tr>
+    <tr>
+        <td><span class="badge badge-free">free-mode</span></td>
+        <td>22 upstreams, all $0 or free-tier-bounded</td>
+        <td>$0 (subject to per-provider free-tier daily/monthly caps)</td>
+        <td>Routine chat, code generation, anything that doesn't need premium reasoning</td>
+    </tr>
+    <tr>
+        <td><span class="badge badge-paid">paid-mode</span></td>
+        <td>8 upstreams, premium frontier models</td>
+        <td>Real money — billed per-token by the upstream provider (Anthropic, DeepSeek, Moonshot, etc.)</td>
+        <td>Hard reasoning, large-context strategy work, tasks the free tier can't handle</td>
+    </tr>
+    <tr>
+        <td><span class="badge badge-free">free-mode-large</span></td>
+        <td>5 long-context upstreams (Gemini 1M, OpenRouter Ring 262k, NVIDIA, Fireworks, Hypereal)</td>
+        <td>$0</td>
+        <td>Auto-triggered when a free-mode call exceeds the upstream's context window</td>
+    </tr>
+    <tr>
+        <td><span class="badge badge-paid">paid-mode-large</span></td>
+        <td>3 long-context paid upstreams</td>
+        <td>Paid</td>
+        <td>Auto-triggered for oversize paid-mode prompts</td>
+    </tr>
+    <tr>
+        <td>hybrid-model / hybrid-model-large</td>
+        <td>Backward-compat aliases (subset of free-mode)</td>
+        <td>$0</td>
+        <td>Existing Roo/Kilo configs that target this name keep working</td>
+    </tr>
+</table>
+
+<div class="callout-info callout">
+<h4>How to know which mode is active right now</h4>
+<p>Run <code>/modevllmp</code> in Claude Code (or <code>python3 tools/vllmp_mode_status.py</code> directly). Each model group shows UPSTREAMS / HEALTHY / COOLED / 60-min-request-count / overall STATUS (HEALTHY · DEGRADED · ALL COOLED).</p>
+</div>
+
+<h3>Automatic fallback chain</h3>
+<p>Every group has a fallback target so a fully-cooled mode escalates rather than failing:</p>
+<pre><code>hybrid-model    → free-mode-large → free-mode → paid-mode
+free-mode       → free-mode-large → paid-mode
+free-mode-large → paid-mode-large → paid-mode → free-mode
+paid-mode       → paid-mode-large → free-mode-large → free-mode
+paid-mode-large → free-mode-large → paid-mode → free-mode</code></pre>
+
+<p>Plus context-window-specific fallbacks for the <code>ContextWindowExceededError</code> class so a prompt that overflows a small-context upstream gets re-routed to a 128k+ model automatically.</p>
+</div>
+
+<div class="section" id="providers">
+<h2>Provider inventory (verified 2026-05-25)</h2>
+
+<p>43 keys were tested by <code>tools/verify_all_keys.py</code> (re-runnable any time to re-audit). Of those, 27 are alive and wired into the rotation. The rest are listed with their status so you know what you have versus what's actively serving traffic.</p>
+
+<h3>Free-mode pool (active)</h3>
+<table>
+    <tr><th>Provider</th><th>Model</th><th>Why it's "free"</th><th>Notes</th></tr>
+    <tr><td>Groq</td><td>llama-3.1-8b-instant</td><td>Free tier (RPD cap)</td><td>Sub-second, tool-call safe</td></tr>
+    <tr><td>NVIDIA NIM ×2 keys</td><td>meta/llama-3.1-8b-instruct</td><td>Generous free credits</td><td>Primary + alt key rotated</td></tr>
+    <tr><td>Gemini ×2 keys</td><td>gemini-flash-latest</td><td>Free tier (20 req/day/key)</td><td>1M context — daily cap hits fast under load</td></tr>
+    <tr><td>GitHub Models ×2 keys</td><td>gpt-4o-mini (via Azure OpenAI compat)</td><td>Free with GitHub PAT</td><td>Per-tier 8k token request cap on some accounts</td></tr>
+    <tr><td>Fireworks ×2 keys</td><td>kimi-k2p5 (free model)</td><td>Free model on free tier</td><td>Fast, 128k context</td></tr>
+    <tr><td>DeepInfra (alt key only)</td><td>Meta-Llama-3.1-8B-Instruct</td><td>Free tier</td><td>Primary key dead, alt works</td></tr>
+    <tr><td>Nous ×2 keys</td><td>deepseek/deepseek-v4-flash:free</td><td>Per Nous portal: only this :free model is free</td><td>Other Nous models are paid</td></tr>
+    <tr><td>Mistral ×3 keys</td><td>mistral-small-latest</td><td>Free tier</td><td>32k context, tool-call safe</td></tr>
+    <tr><td>OpenRouter</td><td>inclusionai/ring-2.6-1t</td><td>:free variant on OpenRouter</td><td>1-trillion-param reasoning, 262k context</td></tr>
+    <tr><td>OFOX</td><td>z-ai/glm-4.7-flash:free</td><td>:free variant</td><td>Chinese gateway, OpenAI-compat</td></tr>
+    <tr><td>LLM7</td><td>gpt-4o-mini-2024-07-18</td><td>Free tier</td><td>Public free LLM endpoint</td></tr>
+    <tr><td>Cerebras</td><td>llama3.1-8b</td><td>Free tier</td><td>Sub-second; rejects tool schemas with minItems/maxItems</td></tr>
+    <tr><td>Together ×2 keys</td><td>Meta-Llama-3-8B-Instruct-Lite</td><td>Lite variant is free</td><td>8k context — fallback handles overflow</td></tr>
+    <tr><td>Bluesmind</td><td>meta/llama-3.1-8b-instruct</td><td>Free tier on aggregator</td><td>160 models total, most are paid-tier-restricted</td></tr>
+    <tr><td>Hypereal</td><td>gpt-5.5-instant</td><td>Was free post-top-up</td><td>Will be moved to paid-mode if billing changes</td></tr>
+</table>
+
+<h3>Paid-mode pool (active)</h3>
+<table>
+    <tr><th>Provider</th><th>Model</th><th>Roughly costs</th><th>Notes</th></tr>
+    <tr><td>Anthropic ×2 keys</td><td>claude-haiku-4-5</td><td>Per-token, low</td><td>Native Anthropic API via /v1/messages</td></tr>
+    <tr><td>DeepSeek (native)</td><td>deepseek-chat</td><td>Per-token, very low</td><td>Direct DeepSeek API</td></tr>
+    <tr><td>Moonshot (native)</td><td>moonshot-v1-8k</td><td>Per-token</td><td>Direct Kimi API</td></tr>
+    <tr><td>AIMLAPI (paid key)</td><td>gpt-4o-mini</td><td>$20 cap</td><td>Free AIMLAPI key is permanently exhausted</td></tr>
+    <tr><td>Hypereal ×2 keys</td><td>gpt-5.5-instant</td><td>Per-token from credit pool</td><td>Top up at hypereal.cloud as needed</td></tr>
+    <tr><td>OpenAI (direct)</td><td>gpt-4o-mini</td><td>Per-token</td><td>Currently out of quota — auto-uses if topped up</td></tr>
+</table>
+
+<h3>Excluded (with reason — re-runnable verify will resurface if status changes)</h3>
+<table>
+    <tr><th>Provider</th><th>Status</th><th>How to fix</th></tr>
+    <tr><td><span class="badge badge-blocked">xAI Grok</span></td><td>Key reports as invalid per xAI's own response</td><td>Regenerate at <a href="https://console.x.ai">console.x.ai</a></td></tr>
+    <tr><td><span class="badge badge-blocked">Cloudflare Workers AI</span></td><td>Daily 10k-neuron quota exhausted</td><td>Auto-resets at UTC midnight; available via <code>cloudflare-llama</code> direct alias</td></tr>
+    <tr><td><span class="badge badge-blocked">HuggingFace (all 3 tokens)</span></td><td>Account-pool monthly credits depleted</td><td>Wait for next month, or subscribe to PRO</td></tr>
+    <tr><td><span class="badge badge-blocked">Ollama Cloud</span></td><td>Key is an SSH-ed25519 public key — needs JWT signing, not bearer auth</td><td>Would require a custom signing shim — not implemented</td></tr>
+    <tr><td><span class="badge badge-blocked">Qwen (DashScope)</span></td><td>Key invalid per provider</td><td>Re-issue key in Alibaba console</td></tr>
+    <tr><td><span class="badge badge-blocked">Chutes</span></td><td>Account balance $0</td><td>Top up</td></tr>
+    <tr><td><span class="badge badge-blocked">Inception</span></td><td>Models locked to accounts created before a cutoff date</td><td>Not fixable on this account</td></tr>
+    <tr><td><span class="badge badge-blocked">AIMLAPI free key</span></td><td>ALL_TIME_LIMIT reached (permanent)</td><td>Paid AIMLAPI key works and is in paid-mode</td></tr>
+    <tr><td><span class="badge badge-blocked">Cursor / Kilocode / Opencode</span></td><td>CLI auth tokens, not HTTPS chat APIs</td><td>Use the corresponding <code>/consult-*</code> slash commands directly instead</td></tr>
+</table>
+
+<h3>Direct-target single-provider aliases</h3>
+<p>Bypass rotation by using one of these model names — useful for testing one provider in isolation:</p>
+<ul>
+    <li><code>cloudflare-llama</code> — direct CF Workers AI</li>
+    <li><code>nvidia-deepseek-v4-pro</code> — direct NVIDIA NIM with DeepSeek</li>
+    <li><code>openrouter-ring-1t</code> — direct OpenRouter Ring 2.6 1T</li>
+    <li><code>claude-haiku-direct</code> — direct Anthropic Claude Haiku 4.5</li>
+    <li><code>deepseek-chat-direct</code> — direct DeepSeek native</li>
+</ul>
+</div>
+
+<div class="section" id="commands">
+<h2>Slash commands (Claude Code)</h2>
+<table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>/startvllmp</code> (alias <code>/STARTVLLMP</code>)</td><td>Start proxy in background. Refuses if already running.</td></tr>
+    <tr><td><code>/restartvllmp</code> (alias <code>/RESTARTVLLMP</code>)</td><td>Kill existing + relaunch. Use after editing config or rotating a key.</td></tr>
+    <tr><td><code>/stopvllmp</code></td><td>Stop the proxy.</td></tr>
+    <tr><td><code>/statusvllmp</code></td><td>PID, health, key load count, registered model groups, recent log tail.</td></tr>
+    <tr><td><code>/modevllmp</code></td><td><strong>The mode dashboard.</strong> Per-group: UPSTREAMS / HEALTHY / COOLED / 60-min-req-count / STATUS. Tells you at a glance whether free or paid is degraded.</td></tr>
+    <tr><td><code>/testvllmp [N]</code></td><td>Fire N test requests, report distinct upstreams hit (proves rotation works).</td></tr>
+    <tr><td><code>/tailvllmp [N]</code></td><td>Tail the proxy log with rotation / cooldown / 429 lines highlighted.</td></tr>
+</table>
+
+<p>All commands live in <code>.claude/commands/</code> and are normal markdown — feel free to edit.</p>
+</div>
+
+<div class="section" id="security">
+<h2>Security &amp; key management</h2>
+
+<div class="callout">
+<h4>Three-rule security model</h4>
+<p>(1) Keys live <strong>outside the repo</strong>, in a gitignored file in the user's home directory.<br>
+(2) The proxy launcher <strong>reads keys at startup</strong> and exports them into the process env before launching LiteLLM. Keys never appear in the YAML config — only env-var references like <code>os.environ/PROVIDER_API_KEY</code>.<br>
+(3) The keys file is <strong>file-first</strong> when loading — stale shell env vars from old sessions cannot silently override the canonical file values. This caught a bug where old <code>GROQ_API_KEY</code> values were causing 403s on live providers.</p>
+</div>
+
+<h3>Where the keys live</h3>
+<ul>
+    <li>Canonical source: <code>~/dbpasses.txt</code> — gitignored, outside the repo. Owner-readable only.</li>
+    <li>Label format: human-readable line (e.g. <code>NVIDIA:</code>, <code>GROQ FREE KEY:</code>, <code>OPEN ROUTER API KEY</code>) followed by the key value on the next non-blank line.</li>
+    <li>The launcher's parser tolerates trailing whitespace on labels, skips sub-header lines (pure-uppercase identifiers like sub-label markers), skips URL annotation lines, and skips section divider lines (<code>=====</code>).</li>
+</ul>
+
+<h3>What the proxy never does</h3>
+<ul>
+    <li>Never hardcodes keys in <code>litellm_config.yaml</code> — only <code>os.environ/...</code> references.</li>
+    <li>Never echoes keys in logs (LiteLLM sanitizes; the cooldown callback records error messages but those are upstream responses, not keys).</li>
+    <li>Never commits the keys file (gitignored).</li>
+    <li>Never accepts requests from outside localhost (LiteLLM binds <code>0.0.0.0:4000</code> by default — if you need network isolation, run with <code>--host 127.0.0.1</code> or restrict at the OS firewall level).</li>
+</ul>
+
+<h3>Re-auditing keys</h3>
+<p>Whenever you add or rotate a key, re-run the audit:</p>
+<pre><code>python3 tools/verify_all_keys.py</code></pre>
+<p>The harness pings every provider's chat-completions endpoint with &ldquo;1+1?&rdquo; in parallel and reports OK / DEAD / NOFUNDS / QUOTA / NOKEY / CONFIG per key. Sends a real browser User-Agent so Cloudflare-fronted providers (Groq, Together, Cerebras, AIMLAPI, LLM7) don't return their bot-protection 403.</p>
+</div>
+
+<div class="section" id="cooldown">
+<h2>Smart cooldown observability</h2>
+<p>Every upstream failure goes through <code>tools/litellm_smart_cooldown.py</code>, a custom LiteLLM logger that:</p>
+<ol>
+    <li>Classifies the failure into a category: <code>daily_quota_cf</code> · <code>monthly_quota_hf</code> · <code>dead_key</code> · <code>rate_limit</code> · <code>server_error</code> · <code>bad_request</code> · <code>other</code></li>
+    <li>Computes a <em>meaningful</em> unban time per category (CF → next UTC midnight, HF → first of next month, dead keys → 24h, transient → 300s)</li>
+    <li>Writes the state to <code>/tmp/litellm_cooldown_state.json</code> with <code>cool_until_utc</code>, hit count, last error message, last seen time</li>
+</ol>
+
+<p>Inspect anytime:</p>
+<pre><code>jq . /tmp/litellm_cooldown_state.json</code></pre>
+
+<div class="callout callout-warn">
+<h4>Honest limitation</h4>
+<p>LiteLLM's router still enforces its own static 300s <code>cooldown_time</code> internally — the smart callback gives the <em>operator</em> visibility into why something is parked and when it should recover, but dynamic per-deployment enforcement of those long unban windows would require monkey-patching router internals that change across LiteLLM versions. So the recorded categories are informational; actual re-try timing follows the static 300s.</p>
+</div>
+</div>
+
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting</h2>
+
+<h3>"Connection error" in Roo / Kilo</h3>
+<p>Usually means the proxy is restarting. Wait 10 seconds and retry, or check <code>/statusvllmp</code> to confirm PID is alive.</p>
+
+<h3>413 "Request body too large"</h3>
+<p>One of the upstreams in the rotation has a small per-request cap (e.g. GitHub Models gpt-4o-mini on certain tiers is 8k tokens). The proxy auto-falls back to a long-context group via the generic <code>fallbacks:</code> rules. If you still see the error, the large group is also exhausted — switch to <code>paid-mode-large</code> manually.</p>
+
+<h3>429 "MidStreamFallbackError"</h3>
+<p>An upstream started streaming and then hit a rate limit mid-stream. LiteLLM can't always recover from this cleanly. Usually it's Gemini hitting its 20 req/day free-tier cap. The next call will rotate to a different upstream. To make this less common, top up Gemini's billing or rely on <code>paid-mode</code>.</p>
+
+<h3>"NOKEY" in /modevllmp or verify_all_keys</h3>
+<p>Means the launcher couldn't find that provider's label in <code>~/dbpasses.txt</code>. Either the label string doesn't match exactly, the key file has unexpected indentation, or the key block is structured differently than expected (e.g. label-then-sub-label-then-value). Open <code>tools/start_litellm_proxy.sh</code> and check the <code>parse_key</code> line for that provider against the actual file content.</p>
+
+<h3>One provider keeps cooling immediately after restart</h3>
+<p>Check <code>jq . /tmp/litellm_cooldown_state.json</code> for the <code>category</code> field:</p>
+<ul>
+    <li><code>dead_key</code> → regenerate the key at the provider's console</li>
+    <li><code>monthly_quota_hf</code> → wait for first of next month or pay</li>
+    <li><code>daily_quota_cf</code> → waits until UTC midnight automatically</li>
+    <li><code>rate_limit</code> → transient, should clear on its own</li>
+</ul>
+
+<h3>Want to add a new provider</h3>
+<ol>
+    <li>Add the key to <code>~/dbpasses.txt</code> with a clear label.</li>
+    <li>Add a <code>parse_key "LABEL FROM FILE" ENV_VAR_NAME</code> line to <code>tools/start_litellm_proxy.sh</code>.</li>
+    <li>Add an entry to <code>tools/verify_all_keys.py</code> for the audit harness (label, env var, test function).</li>
+    <li>Run the audit; if it returns OK, add a <code>model_list</code> entry to <code>litellm_config.yaml</code> under the appropriate group (<code>free-mode</code> if zero-cost, <code>paid-mode</code> if billed).</li>
+    <li><code>/restartvllmp</code> and confirm with <code>/modevllmp</code>.</li>
+</ol>
+</div>
+
+<footer>
+    <p><a href="/updates/">← Back to all updates</a> · <a href="/audit/">Audit dashboard</a> · <a href="/">Home</a></p>
+    <p style="margin-top:8px;font-size:0.83em;color:#64748b;">Generated 2026-05-25. Inventory and status reflect the audit run on that date — re-run <code>python3 tools/verify_all_keys.py</code> for current state.</p>
+</footer>
+
+</div>
+</body>
+</html>
