@@ -604,29 +604,42 @@ function mergePicksFromSources(sources) {
 async function loadPicksAndLeaderboard() {
   const sources = [];
 
-  // Try loading daily pick files (most complete source)
-  const today = new Date();
-  for (let d = 0; d < 5; d++) {
-    const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
-    const ds = date.toISOString().slice(0, 10).replace(/-/g, '');
-    try {
-      const resp = await fetch('./data/ai_tournament/picks_' + ds + '.json');
-      if (resp.ok) {
-        const data = await resp.json();
-        if (Array.isArray(data)) sources.push(data);
-      }
-    } catch { /* file may not exist yet */ }
-  }
+  // 2026-05-25: per-day picks_YYYYMMDD.json files live under data/ai_tournament/
+  // in the repo but ai-tournament-pipeline.yml only copies the latest one to
+  // audit_dashboard/data/ai_tournament_picks_latest.json (flat), not into a
+  // mirrored subdir under audit_dashboard/. The old loop emitted 4 console 404s
+  // on every page load. Prefer the merged latest.json (which is reliably
+  // deployed); only attempt the per-day sweep when latest.json is unavailable
+  // AND a HEAD probe shows the subdir exists.
+  let usedLatest = false;
+  try {
+    const resp = await fetch('./data/ai_tournament_picks_latest.json');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (Array.isArray(data)) { sources.push(data); usedLatest = true; }
+    }
+  } catch { /* not available */ }
 
-  // Fallback: try the merged picks file
-  if (sources.length === 0) {
+  if (!usedLatest) {
+    let subdirExists = false;
     try {
-      const resp = await fetch('./data/ai_tournament_picks_latest.json');
-      if (resp.ok) {
-        const data = await resp.json();
-        if (Array.isArray(data)) sources.push(data);
+      const probe = await fetch('./data/ai_tournament/', { method: 'HEAD' });
+      subdirExists = probe.ok || probe.status === 405; // 405 = HEAD disallowed but dir exists
+    } catch { subdirExists = false; }
+    if (subdirExists) {
+      const today = new Date();
+      for (let d = 0; d < 5; d++) {
+        const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
+        const ds = date.toISOString().slice(0, 10).replace(/-/g, '');
+        try {
+          const resp = await fetch('./data/ai_tournament/picks_' + ds + '.json');
+          if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data)) sources.push(data);
+          }
+        } catch { /* file may not exist yet */ }
       }
-    } catch { /* not available */ }
+    }
   }
 
   // Last resort: try leaderboard JSON for model list (no picks detail)
@@ -643,6 +656,11 @@ async function loadPicksAndLeaderboard() {
 
   if (sources.length > 0) {
     allPicks = mergePicksFromSources(sources);
+    // 2026-05-25: expose to window so ai_postmortem_helper.js (the brain-icon
+    // click handler) can find picks by id. Without this the helper at line
+    // 248 sees window.allPicks=undefined and silently returns — the brain
+    // icon looked broken (no modal opened on click).
+    window.allPicks = allPicks;
   } else if (leaderboardModels) {
     // No pick-level data — show leaderboard models as all-time only
     renderLeaderboard(leaderboardModels);
