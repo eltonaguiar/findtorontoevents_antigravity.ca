@@ -34,6 +34,56 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+<!-- 2026-05-25 — Audit Deep-Dive Session: CI status, incident review, peer consultations, dashboard analysis -->
+<div class="update-entry" data-date="2026-05-25" data-type="fix" data-category="trading">
+  <div class="date-badge">May 25, 2026</div>
+  <h3>🔍 Audit Deep-Dive — GitHub Actions, Incidents Review &amp; Dashboard Analysis</h3>
+  
+  <p><strong>Purpose:</strong> Comprehensive review of CI health, audit/incidents.html tasks, peer consultations, and AI tournament/pick quality assessment.</p>
+  
+  <div style="background:rgba(239,68,68,0.08); border-left:4px solid #ef4444; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#ef4444">GitHub Actions Status</strong><br>
+    • <strong>11 workflows with failures</strong> in last 100 runs (across 90 unique workflows)<br>
+    • Worst: "Deploy Competition to Live Site" — 5/7 failures<br>
+    • Also failing: Outcome Resolver, Winner Pattern Scanner, Sports endpoint smoke test, CI Tests, MOMENTUM CATCHER, Forex Smart Picks, Pick Monitor &amp; Price Validator<br>
+    • All other workflows actively running or completed successfully
+  </div>
+  
+  <div style="background:rgba(245,158,11,0.08); border-left:4px solid #f59e0b; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#f59e0b">Top P0 Incidents (from /audit/incidents.html)</strong><br>
+    • <strong>signal_outcomes table 82 days stale</strong> — outcome resolver dead, ALL forward-WR unverifiable<br>
+    • <strong>PnL mismatch on 38.97% rows</strong> — ~10K rows corrupt, all cohort WR/PF stats suspect<br>
+    • <strong>WON label bug</strong> — 2,531 'WON' rows avg pnl=-41.13% (losing trades labeled won)<br>
+    • <strong>sync writer missing</strong> — only 0.09% of raw picks have outcomes recorded<br>
+    • <strong>trust_score NULL on 99.99%</strong> — HC overlay unverified on nearly all closed picks<br>
+    • <strong>56,559 ghost rows</strong> — duplicate entries (MATICUSDT top cohort: 20,474 identical)<br>
+    • <strong>forward_validator frozen 270h</strong> — 29.2M open positions not being resolved<br>
+    • <strong>smart_picks confidence inverted</strong> — structurally flips the ranker
+  </div>
+  
+  <div style="background:rgba(34,197,94,0.08); border-left:4px solid #22c55e; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#22c55e">Audit Dashboard Findings</strong><br>
+    • Main dashboard last updated 2026-05-21 (4 days stale), many tables showing "Loading..."<br>
+    • HyroTrader page returns 404<br>
+    • AI Tournament Phase 1B active — collecting picks from 8 models, no ranked data yet<br>
+    • Consensus features identified per asset class (equity, ETF, crypto, forex, commodity, bond)
+  </div>
+  
+  <div style="background:rgba(15,23,42,0.3); border-left:4px solid #3b82f6; padding:10px 14px; margin:10px 0;">
+    <strong style="color:#3b82f6">Peer Consultation Results</strong><br>
+    • Opencode consulted → confirmed priorities: data integrity chain (#2→#5→#6) is right fix order<br>
+    • Added recommendations: audit trail gap, schema validation constraints, dead validator alerting<br>
+  </div>
+  
+  <div style="margin-top:12px;">
+    <strong style="color:#cbd5e1">Recommended next steps:</strong><br>
+    <span style="color:#ef4444">• IMMEDIATE:</span> Fix signal_outcomes resolver + PnL reconciliation (unlocks everything)<br>
+    <span style="color:#f59e0b">• NEXT SESSION:</span> Trust score backfill + smart_picks_engine weight fix + ghost row dedup<br>
+    <span style="color:#22c55e">• LOW-EFFORT:</span> Add insufficient-n badges, remove IPO claim, kill BOND emission, revive Swarm Picks tab
+  </div>
+</div>
+<!-- END ENTRY -->
+
   <div class="header">
     <h1>Latest Updates</h1>
     <div class="subtitle">New features, improvements, and bug fixes across all our apps</div>
@@ -110,6 +160,76 @@
   </div>
     
 <!-- Update: May 24, 2026 — AI Tournament Pipeline: Hedge Fund Grade + Curated Picks -->
+<div class="update-entry" style="--dot-color: #38bdf8; background: #061a26; border: 2px solid #38bdf8; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="infrastructure,litellm,proxy,routing,rotation,free-tier,paid-tier,roo,kilo,goal-1,improvement,documentation" data-category="infrastructure" data-types="feature,documentation,improvement">
+    <div class="update-date" style="line-height:1.5">May 25, 2026 — <strong style="color:#38bdf8;">🛠 LiteLLM rotating-fallback proxy: one URL, 25+ free upstreams, FREE vs PAID modes</strong></div>
+    <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+      <p style="margin:0 0 8px;"><strong>📖 Full operator guides:</strong> <a href="/updates/2026-05-25-litellm-proxy-guide.html" style="color:#7dd3fc;font-weight:700;">LiteLLM Proxy Guide →</a> · <a href="/updates/2026-05-25-git-bloat-lockdown-guide.html" style="color:#c084fc;font-weight:700;">Git Bloat Lockdown Guide →</a> · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/GIT_HISTORY_REWRITE_2026-05-25.md" style="color:#f0abfc;font-weight:700;">Recovery Doc →</a></p>
+
+      <p style="margin:0 0 8px;">Stood up a local LiteLLM proxy on <code>http://localhost:4000/v1</code> that fronts <strong>25+ verified-alive LLM upstreams</strong> behind one OpenAI-compatible endpoint with automatic rate-limit rotation. Roo / Kilo / any <code>openai</code>-SDK client targets a single base URL and model name; the proxy fans across the keys, cools failing instances, and routes oversize prompts to long-context fallbacks transparently.</p>
+
+      <p style="margin:0 0 8px;"><strong>Virtual model names</strong> — caller picks one of these:</p>
+      <table style="width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:0.86em;">
+        <tr style="background:#0a1726;"><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #1f2937;">Model name</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #1f2937;">Cost</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #1f2937;">Contains</th></tr>
+        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>free-mode</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#4ade80;font-weight:600;">$0 / free-tier</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">22 upstreams — Groq · NVIDIA NIM (×2) · Gemini (×2) · GitHub Models (×2) · Fireworks (×2) · DeepInfra-alt · Nous deepseek-v4-flash:free (×2) · Mistral (×3) · OpenRouter Ring-2.6-1T (:free) · OFOX glm-4.7-flash:free · LLM7 · Cerebras · Together-Lite (×2) · Bluesmind llama-3.1-8b · Hypereal gpt-5.5-instant</td></tr>
+        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>free-mode-large</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#4ade80;font-weight:600;">$0</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">5 long-context free: Gemini 1M (×2 keys) · OpenRouter Ring 262K · NVIDIA · Fireworks kimi-k2p5 · auto-triggered when free-mode exceeds upstream context</td></tr>
+        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>paid-mode</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#fb923c;font-weight:600;">Real money — billed per-token by upstream</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">8 upstreams — Anthropic Claude Haiku 4.5 (×2 keys, native /v1/messages) · DeepSeek chat (deepseek.com native) · Moonshot Kimi (moonshot.ai native) · AIMLAPI paid · Hypereal gpt-5.5-instant (×2) · OpenAI direct (quota-exhausted, surfaces if topped up)</td></tr>
+        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>paid-mode-large</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#fb923c;font-weight:600;">Paid</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">3 long-context paid: Anthropic Claude Haiku 4.5 · DeepSeek chat · Hypereal gpt-5.5-instant</td></tr>
+        <tr><td style="padding:6px 10px;vertical-align:top;"><code>hybrid-model</code><br><code>hybrid-model-large</code></td><td style="padding:6px 10px;vertical-align:top;color:#4ade80;font-weight:600;">$0 first, paid only as last-resort fallback</td><td style="padding:6px 10px;vertical-align:top;"><strong>Not a paid/free mix at the entry level</strong> — directly contains 5 free-tier upstreams (Groq · NVIDIA · Gemini · GitHub Models · Hypereal gpt-5.5). Reaches paid only via the fallback chain <code>hybrid-model → free-mode-large → free-mode → paid-mode</code> if every free upstream is cooled. Backward-compat alias for existing Roo / Kilo configs.</td></tr>
+      </table>
+
+      <p style="margin:0 0 8px;"><strong>What's NOT in either mode</strong> (verified excluded 2026-05-25):</p>
+      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
+        <li><strong>Cloudflare Workers AI</strong> — daily 10k-neuron quota exhausted; auto-rejoins at UTC midnight via direct alias <code>cloudflare-llama</code></li>
+        <li><strong>HuggingFace (3 tokens)</strong> — account-pool monthly credits depleted; waits until first of next month</li>
+        <li><strong>xAI Grok</strong> — key reports as invalid per xAI's own response; needs regeneration at console.x.ai before it can rejoin paid-mode</li>
+        <li><strong>Inception (mercury)</strong> — model locked to accounts created before a cutoff date — not fixable on this account</li>
+        <li><strong>Ollama Cloud</strong> — key is an SSH-ed25519 public key requiring JWT signing, not bearer auth — would need custom shim</li>
+        <li><strong>Qwen DashScope</strong> — key invalid per provider; re-issue needed</li>
+        <li><strong>Chutes</strong> — account balance $0</li>
+        <li><strong>AIMLAPI free key</strong> — ALL_TIME_LIMIT reached (paid AIMLAPI key works and is in paid-mode)</li>
+        <li><strong>DeepInfra primary key</strong> — dead (401); alt key works and is in free-mode</li>
+        <li><strong>Cursor / Kilocode / Opencode</strong> — CLI auth tokens, not HTTPS chat APIs; remain available as direct <code>/consult-*</code> slash commands</li>
+      </ul>
+
+      <p style="margin:0 0 8px;"><strong>43 keys audited</strong> with a new harness (<code>tools/verify_all_keys.py</code>) that pings each provider's chat-completions endpoint with "1+1?". Result: 27 alive, 3 dead-key (DeepInfra primary, Qwen, Ollama Cloud SSH-key needs JWT-signing not bearer), 4 no-funds (HF ×2 monthly, OpenAI, Chutes), 3 quota (Cloudflare daily, AIMLAPI-free all-time, OFOX transient), 2 config (xAI key invalid per xAI's own response — regenerate at console.x.ai; Inception account-restricted).</p>
+
+      <p style="margin:0 0 8px;"><strong>Smart-cooldown callback</strong> (<code>tools/litellm_smart_cooldown.py</code>) classifies every upstream failure and writes <code>/tmp/litellm_cooldown_state.json</code> with the meaningful unban time: Cloudflare → next UTC midnight, HF → first of next month, dead keys → 24h flag for operator action. <em>Honesty note:</em> LiteLLM's router still enforces its own static 300 s cooldown — the callback gives the operator visibility into <em>why</em> something is parked, but dynamic per-deployment enforcement would require monkey-patching router internals that change across versions.</p>
+
+      <p style="margin:0 0 8px;"><strong>7 slash commands</strong> for daily operation, all under <code>.claude/commands/</code>:</p>
+      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
+        <li><code>/startvllmp</code> (alias <code>/STARTVLLMP</code>) — start proxy idempotently</li>
+        <li><code>/restartvllmp</code> (alias <code>/RESTARTVLLMP</code>) — kill + relaunch after config or key edits</li>
+        <li><code>/stopvllmp</code> — stop the proxy</li>
+        <li><code>/statusvllmp</code> — PID, health, key count, registered model groups</li>
+        <li><code>/modevllmp</code> — per-group table: UPSTREAMS / HEALTHY / COOLED / 60m-reqs / STATUS — answers "is paid healthy right now?" at a glance</li>
+        <li><code>/testvllmp [N]</code> — fire N test requests, report distinct upstreams hit (proves rotation)</li>
+        <li><code>/tailvllmp [N]</code> — tail log with rotation / cooldown / 429 highlights</li>
+      </ul>
+
+      <p style="margin:0 0 8px;"><strong>Lessons from build-out:</strong></p>
+      <ol style="margin:0 0 10px 18px;padding:0;font-size:0.9em;">
+        <li><strong>Stale shell env vars silently shadow file values</strong> — inverted priority to file-first in <code>_load_keys()</code> after old <code>GROQ_API_KEY</code> in shell sessions returned 403 from live providers.</li>
+        <li><strong>urllib's default User-Agent is rejected with 403 "error 1010"</strong> by every Cloudflare-fronted provider (Groq, Together, Cerebras, AIMLAPI, LLM7). Sending a real UA fixed 5 false-dead providers in one rerun.</li>
+        <li><strong>Per-account-pool quotas</strong> hit hard on HF — all 3 tokens off the same account share the monthly free credit pool. No amount of rotation rescues a depleted account-pool.</li>
+        <li><strong>Subprocess-CLI consults can't be bridged to LiteLLM cleanly</strong> — codex / opencode / kilo / cursor-agent stay as direct <code>/consult-*</code> slash commands, not proxy upstreams.</li>
+        <li><strong>Puter.js "free unlimited Nous" is misleading marketing</strong> — fact-checked: requires per-end-user Puter.com sign-in (browser-only), end users pay Puter once credit pool is exhausted. Not usable as a server-side rotation upstream.</li>
+        <li><strong>Hypereal Claude/Kimi require <code>/v1/messages</code></strong> (Anthropic native format), not <code>/v1/chat/completions</code> — dropped from paid-mode rotation; only <code>gpt-5.5-instant</code> survives there. Use Anthropic-direct for Claude instead.</li>
+      </ol>
+
+      <p style="margin:0 0 6px;"><strong>Files:</strong></p>
+      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/litellm_config.yaml" style="color:#7dd3fc">litellm_config.yaml</a> — provider chain + free/paid split + fallbacks</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/start_litellm_proxy.sh" style="color:#7dd3fc">tools/start_litellm_proxy.sh</a> — launcher with smart label parser</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/verify_all_keys.py" style="color:#7dd3fc">tools/verify_all_keys.py</a> — re-runnable key-health harness</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/vllmp_mode_status.py" style="color:#7dd3fc">tools/vllmp_mode_status.py</a> — backs <code>/modevllmp</code></li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/litellm_smart_cooldown.py" style="color:#7dd3fc">tools/litellm_smart_cooldown.py</a> — failure classifier + unban-date state file</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/.claude/skills/litellm-proxy/SKILL.md" style="color:#7dd3fc">.claude/skills/litellm-proxy/SKILL.md</a> — Roo/Kilo setup docs</li>
+      </ul>
+
+      <p style="margin:0;font-size:0.85em;color:#9ca3af;"><strong>Roo / Kilo setup:</strong> Base URL = <code>http://localhost:4000/v1</code>, Model = <code>free-mode</code> (or <code>paid-mode</code>), API key = any non-empty string. Keys are gitignored at <code>~/dbpasses.txt</code> — never hardcoded in config or repo.</p>
+    </div>
+  </div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -296,75 +416,7 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-  <div class="update-entry" style="--dot-color: #38bdf8; background: #061a26; border: 2px solid #38bdf8; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="infrastructure,litellm,proxy,routing,rotation,free-tier,paid-tier,roo,kilo,goal-1,improvement,documentation" data-category="infrastructure" data-types="feature,documentation,improvement">
-    <div class="update-date" style="line-height:1.5">May 25, 2026 — <strong style="color:#38bdf8;">🛠 LiteLLM rotating-fallback proxy: one URL, 25+ free upstreams, FREE vs PAID modes</strong></div>
-    <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-      <p style="margin:0 0 8px;"><strong>📖 Full operator guides:</strong> <a href="/updates/2026-05-25-litellm-proxy-guide.html" style="color:#7dd3fc;font-weight:700;">LiteLLM Proxy Guide →</a> · <a href="/updates/2026-05-25-git-bloat-lockdown-guide.html" style="color:#c084fc;font-weight:700;">Git Bloat Lockdown Guide →</a> · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/GIT_HISTORY_REWRITE_2026-05-25.md" style="color:#f0abfc;font-weight:700;">Recovery Doc →</a></p>
-
-      <p style="margin:0 0 8px;">Stood up a local LiteLLM proxy on <code>http://localhost:4000/v1</code> that fronts <strong>25+ verified-alive LLM upstreams</strong> behind one OpenAI-compatible endpoint with automatic rate-limit rotation. Roo / Kilo / any <code>openai</code>-SDK client targets a single base URL and model name; the proxy fans across the keys, cools failing instances, and routes oversize prompts to long-context fallbacks transparently.</p>
-
-      <p style="margin:0 0 8px;"><strong>Virtual model names</strong> — caller picks one of these:</p>
-      <table style="width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:0.86em;">
-        <tr style="background:#0a1726;"><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #1f2937;">Model name</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #1f2937;">Cost</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #1f2937;">Contains</th></tr>
-        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>free-mode</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#4ade80;font-weight:600;">$0 / free-tier</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">22 upstreams — Groq · NVIDIA NIM (×2) · Gemini (×2) · GitHub Models (×2) · Fireworks (×2) · DeepInfra-alt · Nous deepseek-v4-flash:free (×2) · Mistral (×3) · OpenRouter Ring-2.6-1T (:free) · OFOX glm-4.7-flash:free · LLM7 · Cerebras · Together-Lite (×2) · Bluesmind llama-3.1-8b · Hypereal gpt-5.5-instant</td></tr>
-        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>free-mode-large</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#4ade80;font-weight:600;">$0</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">5 long-context free: Gemini 1M (×2 keys) · OpenRouter Ring 262K · NVIDIA · Fireworks kimi-k2p5 · auto-triggered when free-mode exceeds upstream context</td></tr>
-        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>paid-mode</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#fb923c;font-weight:600;">Real money — billed per-token by upstream</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">8 upstreams — Anthropic Claude Haiku 4.5 (×2 keys, native /v1/messages) · DeepSeek chat (deepseek.com native) · Moonshot Kimi (moonshot.ai native) · AIMLAPI paid · Hypereal gpt-5.5-instant (×2) · OpenAI direct (quota-exhausted, surfaces if topped up)</td></tr>
-        <tr><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;"><code>paid-mode-large</code></td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;color:#fb923c;font-weight:600;">Paid</td><td style="padding:6px 10px;vertical-align:top;border-bottom:1px solid #1f2937;">3 long-context paid: Anthropic Claude Haiku 4.5 · DeepSeek chat · Hypereal gpt-5.5-instant</td></tr>
-        <tr><td style="padding:6px 10px;vertical-align:top;"><code>hybrid-model</code><br><code>hybrid-model-large</code></td><td style="padding:6px 10px;vertical-align:top;color:#4ade80;font-weight:600;">$0 first, paid only as last-resort fallback</td><td style="padding:6px 10px;vertical-align:top;"><strong>Not a paid/free mix at the entry level</strong> — directly contains 5 free-tier upstreams (Groq · NVIDIA · Gemini · GitHub Models · Hypereal gpt-5.5). Reaches paid only via the fallback chain <code>hybrid-model → free-mode-large → free-mode → paid-mode</code> if every free upstream is cooled. Backward-compat alias for existing Roo / Kilo configs.</td></tr>
-      </table>
-
-      <p style="margin:0 0 8px;"><strong>What's NOT in either mode</strong> (verified excluded 2026-05-25):</p>
-      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
-        <li><strong>Cloudflare Workers AI</strong> — daily 10k-neuron quota exhausted; auto-rejoins at UTC midnight via direct alias <code>cloudflare-llama</code></li>
-        <li><strong>HuggingFace (3 tokens)</strong> — account-pool monthly credits depleted; waits until first of next month</li>
-        <li><strong>xAI Grok</strong> — key reports as invalid per xAI's own response; needs regeneration at console.x.ai before it can rejoin paid-mode</li>
-        <li><strong>Inception (mercury)</strong> — model locked to accounts created before a cutoff date — not fixable on this account</li>
-        <li><strong>Ollama Cloud</strong> — key is an SSH-ed25519 public key requiring JWT signing, not bearer auth — would need custom shim</li>
-        <li><strong>Qwen DashScope</strong> — key invalid per provider; re-issue needed</li>
-        <li><strong>Chutes</strong> — account balance $0</li>
-        <li><strong>AIMLAPI free key</strong> — ALL_TIME_LIMIT reached (paid AIMLAPI key works and is in paid-mode)</li>
-        <li><strong>DeepInfra primary key</strong> — dead (401); alt key works and is in free-mode</li>
-        <li><strong>Cursor / Kilocode / Opencode</strong> — CLI auth tokens, not HTTPS chat APIs; remain available as direct <code>/consult-*</code> slash commands</li>
-      </ul>
-
-      <p style="margin:0 0 8px;"><strong>43 keys audited</strong> with a new harness (<code>tools/verify_all_keys.py</code>) that pings each provider's chat-completions endpoint with "1+1?". Result: 27 alive, 3 dead-key (DeepInfra primary, Qwen, Ollama Cloud SSH-key needs JWT-signing not bearer), 4 no-funds (HF ×2 monthly, OpenAI, Chutes), 3 quota (Cloudflare daily, AIMLAPI-free all-time, OFOX transient), 2 config (xAI key invalid per xAI's own response — regenerate at console.x.ai; Inception account-restricted).</p>
-
-      <p style="margin:0 0 8px;"><strong>Smart-cooldown callback</strong> (<code>tools/litellm_smart_cooldown.py</code>) classifies every upstream failure and writes <code>/tmp/litellm_cooldown_state.json</code> with the meaningful unban time: Cloudflare → next UTC midnight, HF → first of next month, dead keys → 24h flag for operator action. <em>Honesty note:</em> LiteLLM's router still enforces its own static 300 s cooldown — the callback gives the operator visibility into <em>why</em> something is parked, but dynamic per-deployment enforcement would require monkey-patching router internals that change across versions.</p>
-
-      <p style="margin:0 0 8px;"><strong>7 slash commands</strong> for daily operation, all under <code>.claude/commands/</code>:</p>
-      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
-        <li><code>/startvllmp</code> (alias <code>/STARTVLLMP</code>) — start proxy idempotently</li>
-        <li><code>/restartvllmp</code> (alias <code>/RESTARTVLLMP</code>) — kill + relaunch after config or key edits</li>
-        <li><code>/stopvllmp</code> — stop the proxy</li>
-        <li><code>/statusvllmp</code> — PID, health, key count, registered model groups</li>
-        <li><code>/modevllmp</code> — per-group table: UPSTREAMS / HEALTHY / COOLED / 60m-reqs / STATUS — answers "is paid healthy right now?" at a glance</li>
-        <li><code>/testvllmp [N]</code> — fire N test requests, report distinct upstreams hit (proves rotation)</li>
-        <li><code>/tailvllmp [N]</code> — tail log with rotation / cooldown / 429 highlights</li>
-      </ul>
-
-      <p style="margin:0 0 8px;"><strong>Lessons from build-out:</strong></p>
-      <ol style="margin:0 0 10px 18px;padding:0;font-size:0.9em;">
-        <li><strong>Stale shell env vars silently shadow file values</strong> — inverted priority to file-first in <code>_load_keys()</code> after old <code>GROQ_API_KEY</code> in shell sessions returned 403 from live providers.</li>
-        <li><strong>urllib's default User-Agent is rejected with 403 "error 1010"</strong> by every Cloudflare-fronted provider (Groq, Together, Cerebras, AIMLAPI, LLM7). Sending a real UA fixed 5 false-dead providers in one rerun.</li>
-        <li><strong>Per-account-pool quotas</strong> hit hard on HF — all 3 tokens off the same account share the monthly free credit pool. No amount of rotation rescues a depleted account-pool.</li>
-        <li><strong>Subprocess-CLI consults can't be bridged to LiteLLM cleanly</strong> — codex / opencode / kilo / cursor-agent stay as direct <code>/consult-*</code> slash commands, not proxy upstreams.</li>
-        <li><strong>Puter.js "free unlimited Nous" is misleading marketing</strong> — fact-checked: requires per-end-user Puter.com sign-in (browser-only), end users pay Puter once credit pool is exhausted. Not usable as a server-side rotation upstream.</li>
-        <li><strong>Hypereal Claude/Kimi require <code>/v1/messages</code></strong> (Anthropic native format), not <code>/v1/chat/completions</code> — dropped from paid-mode rotation; only <code>gpt-5.5-instant</code> survives there. Use Anthropic-direct for Claude instead.</li>
-      </ol>
-
-      <p style="margin:0 0 6px;"><strong>Files:</strong></p>
-      <ul style="margin:0 0 10px 18px;padding:0;font-size:0.88em;">
-        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/litellm_config.yaml" style="color:#7dd3fc">litellm_config.yaml</a> — provider chain + free/paid split + fallbacks</li>
-        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/start_litellm_proxy.sh" style="color:#7dd3fc">tools/start_litellm_proxy.sh</a> — launcher with smart label parser</li>
-        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/verify_all_keys.py" style="color:#7dd3fc">tools/verify_all_keys.py</a> — re-runnable key-health harness</li>
-        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/vllmp_mode_status.py" style="color:#7dd3fc">tools/vllmp_mode_status.py</a> — backs <code>/modevllmp</code></li>
-        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/litellm_smart_cooldown.py" style="color:#7dd3fc">tools/litellm_smart_cooldown.py</a> — failure classifier + unban-date state file</li>
-        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/.claude/skills/litellm-proxy/SKILL.md" style="color:#7dd3fc">.claude/skills/litellm-proxy/SKILL.md</a> — Roo/Kilo setup docs</li>
-      </ul>
-
-      <p style="margin:0;font-size:0.85em;color:#9ca3af;"><strong>Roo / Kilo setup:</strong> Base URL = <code>http://localhost:4000/v1</code>, Model = <code>free-mode</code> (or <code>paid-mode</code>), API key = any non-empty string. Keys are gitignored at <code>~/dbpasses.txt</code> — never hardcoded in config or repo.</p>
-    </div>
-  </div>
+  
 
   <div class="update-entry" style="--dot-color: #ef4444; background: #1c0a0a; border: 2px solid #ef4444; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="multi-ai,grounding,leakage,commodity,debunk,meta,goal-1,improvement,documentation" data-category="trading" data-types="documentation,improvement,fix">
     <div class="update-date" style="line-height:1.5">May 25, 2026 — <strong style="color:#ef4444;">⚠ Multi-AI Panel Meta-Review: same question, opposite answers — prompt grounding is the variable</strong></div>
@@ -483,7 +535,6 @@ JUNK &lt; 60</pre>
         <p style="margin:0"><a href="/audit/simulation_full_report_20260524.html">📊 Full Simulation Report</a> · <a href="/audit/curated_picks_20260524.html">🎯 Curated Picks</a> · <a href="/audit/ai-tournament.html">🏆 AI Tournament</a> · <a href="/audit/hedge_fund_simulation_20260524.html">🤖 3-Round Debate</a> · 20+ commits, 10+ model swarm</p>
       </div>
     </div>
-
 
   <!-- AUDIT-VALIDATION-PROGRESS (amendable in-progress entry — update as the stat audit advances) -->
   <div class="update-entry" style="--dot-color: #c4b5fd; background: #1a1230; border: 2px solid #c4b5fd; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="audit,plan,institutional,90day,swarm-reviewed,goal-1,documentation,improvement" data-category="trading" data-types="documentation,improvement">
@@ -950,7 +1001,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: May 17, 2026 ~09:30 UTC -- External-AI input audit -->
     <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="external-ai,audit,ernie,lmarena,verification,convergence-trap,money-ready,goal-1,documentation" data-category="trading" data-types="documentation">
       <div class="update-date" style="line-height:1.5">May 17, 2026 &mdash; 09:30 UTC &mdash; <strong style="color:#f59e0b;">&#x1F50E; External-AI Input Audit &mdash; Verify Before You Trust</strong></div>
@@ -960,7 +1010,6 @@ JUNK &lt; 60</pre>
         <p style="margin:0;color:#9ca3af;font-size:0.88em;"><strong>Lesson:</strong> external-AI advice is generic until grounded in the repo. <code>alpha_engine/money_ready_verdict.py</code> was already built &mdash; an external plan told us to &ldquo;create&rdquo; it. Always grep the live repo before acting on an &ldquo;already exists&rdquo; or &ldquo;already verified&rdquo; claim. The bottleneck is repo-grounded execution, not idea generation.</p>
       </div>
     </div>
-
 
     <!-- Update: May 17, 2026 ~11:30 UTC — Session X+: P0/P1 gates + FUTURES audit + swarm remaining analysis -->
     <div class="update-entry" style="--dot-color: #f97316;" data-tags="p0-gates,futures-audit,multi-asset-copytrader,cta-commodity,ml-enhanced-15m,pending-spa,equity-watch,class-wr-floors,direction-triples,swarm-analysis,goal-1,fix,feature" data-category="trading" data-types="fix,feature,documentation">
@@ -1266,8 +1315,6 @@ JUNK &lt; 60</pre>
         <p style="margin:0;color:#9ca3af;font-size:0.88em;"><strong>Verified:</strong> failover ran live in CI &mdash; the Bond scanner fetched 14/14 symbols via Tiingo and persisted 8 picks to <code>active_picks.json</code>. 10 PRs merged this session.</p>
       </div>
     </div>
-
-
 
     <!-- Update: May 17, 2026 ~08:10 UTC — Session wrap: COMMODITY gate fix, trust_score backfill, dormancy monitor, investigation docs -->
     <div class="update-entry" style="--dot-color: #22c55e;" data-tags="commodity,trust-score,dormancy,quality-gates,mercury2,quan-engine,session-report,goal-1,fix,documentation" data-category="trading" data-types="fix,documentation">
@@ -1691,7 +1738,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: May 13, 2026 ~01:55 UTC — Multi-class concentration disclosure + 4-round swarm + exec-gate hardening + DB rotation -->
     <div class="update-entry" style="--dot-color: #06b6d4;" data-tags="opus-4-7,session,p0-2,p0-3,ns-c,ns-e,asset-class-concentration,capped-vs-raw-pnl,futures-quarantine,multi-asset-copytrader,exec-gate,crypto-utc-filter,forex-disable,ml-ab-router,swarm-methodology,reasoning-effort,db-rotation,audit,goal-1,feature,fix,documentation" data-category="trading" data-types="feature,fix,documentation">
       <div class="update-date" style="line-height:1.5">May 13, 2026 &mdash; 01:55 UTC &mdash; <strong style="color:#06b6d4;">&#x1F52C; Concentration disclosure + exec-gate hardening + 4-round multi-family swarm</strong></div>
@@ -1884,7 +1930,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: May 13, 2026 ~03:00 UTC — Opus 4.7 session progress: 4 PRs merged, 5 P0.5 infra items active, multi_asset_cot slippage-eats-edge found -->
     <div class="update-entry" style="--dot-color: #22c55e;" data-tags="opus-4-7,session-progress,charter-position-sizer,multi-asset-cot,slippage-eats-edge,bond-elite-floor,ml-gate-ab-enabled,donchian-futures,ernie-playbook,supreme-plan-v2,audit,goal-1,documentation,feature" data-category="trading" data-types="documentation,feature">
       <div class="update-date" style="line-height:1.5">May 13, 2026 &mdash; 03:00 UTC &mdash; <strong style="color:#22c55e;">&#x2705; Session progress: 4 PRs merged, P0.5-1 live, multi_asset_cot slippage-eats-edge caught</strong></div>
@@ -1957,7 +2002,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: May 13, 2026 ~02:50 UTC — SUPREME EDGE ENHANCEMENT v2 plan published -->
     <div class="update-entry" style="--dot-color: #fbbf24;" data-tags="supreme-plan-v2,master-plan,p0-5-infra,thin-sample-universe-expansion,position-sizing,slippage,drift-circuit-breaker,concentration,portfolio-mdd,bond-3-layer,commodity-shadow,external-model-review,deepseek,loker-480b,audit,goal-1,documentation" data-category="trading" data-types="documentation">
       <div class="update-date" style="line-height:1.5">May 13, 2026 &mdash; 02:50 UTC &mdash; <strong style="color:#fbbf24;">&#x1F4DC; SUPREME EDGE ENHANCEMENT v2 &mdash; Amended Master Plan</strong></div>
@@ -1982,7 +2026,6 @@ JUNK &lt; 60</pre>
         <span class="badge badge-documentation">External-model second-opinion (DeepSeek + Loker + GPT-OSS) added to standard toolkit</span>
       </div>
     </div>
-
 
     <!-- Update: May 13, 2026 ~02:30 UTC — Opus 4.7 session: COT timing-leakage caught, BOND unblocked, COMMODITY WF live, multi-model second-opinion -->
     <div class="update-entry" style="--dot-color: #ef4444;" data-tags="opus-4-7,cot-timing-leakage,bond-elite-floor,commodity-walkforward,multi-model-review,deepseek-v4-pro,gpt-oss-120b,loker-480b,supreme-edge,audit,goal-1,fix,feature,documentation" data-category="trading" data-types="fix,feature,documentation">
@@ -2040,7 +2083,6 @@ JUNK &lt; 60</pre>
         <span class="badge badge-documentation">Session reports: commodity_bond_forensic, cot_timing_leakage_audit, deepseek_v4_pro_review, session_handoff_2026-05-12_opus, merged_action_items_v2</span>
       </div>
     </div>
-
 
     <!-- Update: May 12, 2026 ~23:50 UTC — ML Gatekeeper A/B joblib bundles LIVE -->
     <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="ml-gatekeeper,phase-d,joblib,gatekeeper-old,gatekeeper-new,ab-router,leakage-purge,supreme-edge,audit,goal-1,feature" data-category="trading" data-types="feature">
@@ -2229,7 +2271,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: May 12, 2026 ~05:00 UTC — 9 P0 PRs ALL MERGED + per-class research + paper_pilot fix (mb2v7tau session 2) -->
     <div class="update-entry" style="--dot-color: #10b981;" data-tags="p0-cluster-complete,9-prs-merged,grok-research,asset-class-edge-hunt,commodity-seasonal-strategy,paper-pilot-fix,ftp-whitelist,anti-overfit-wireup,supreme-edge,audit,goal-1,feature,fix" data-category="trading" data-types="feature,fix">
       <div class="update-date" style="line-height:1.5">May 12, 2026 &mdash; 05:00 UTC &mdash; <strong style="color:#10b981;">&#x2705; ALL 9 P0 PRs MERGED + Per-Class Research + Paper-Pilot Fix</strong>
@@ -2347,7 +2388,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: May 12, 2026 ~05:30 UTC — 9 P0 PRs opened + per-asset-class impact (Claude Opus 4.7, peer mb2v7tau) -->
     <div class="update-entry" style="--dot-color: #22c55e;" data-tags="p0-cluster,9-prs,supreme-edge,asset-class-impact,sports-removal,kimi_signal_tracking,crypto_soc,forex-hard-cap,multi_asset_cot-verify,claude_gainer_st-demote,quan_engine-cap,anti-overfit-cpcv-pbo-dsr,mdd-audit,ernie-coder,swarm-grok-cerebras,audit,goal-1,feature,fix" data-category="trading" data-types="feature,fix">
       <div class="update-date" style="line-height:1.5">May 12, 2026 &mdash; 05:30 UTC &mdash; <strong style="color:#22c55e;">&#x2705; 9 P0 PRs Opened: Per-Asset-Class Edge Cleanup</strong>
@@ -2417,7 +2457,6 @@ JUNK &lt; 60</pre>
         <span><strong>Session:</strong> Claude Opus 4.7 caveman mode &middot; <strong>Subagents:</strong> 6 cavecrew-investigators (WON-vs-PnL writer, resolver dead-cycle, ghost rows, Closed Holds bug, top-N backtest scope, asset-class expansion, sync writer design, BOND wiring, meta_strategy cohort prep) &middot; <strong>NFA:</strong> all shipped fixes are forward-only guards; legacy DB rows need separate backfill SQL with user sign-off</span>
       </div>
     </div>
-
 
     <!-- Update: May 11, 2026 ~22:45 UTC — Kimi 4-agent swarm RAW-DB audit + Wave 1 unfreeze + P0 #2/#3/#4 shipped -->
     <div class="update-entry" style="--dot-color: #ef4444;" data-tags="kimi-swarm,raw-db-audit,4-agent,calibration-inverted,anti-overfit-validator,pbo,cpcv,dsr,wfe,backtest-overfitting,reality-check,55510-picks,wr-11pct,wave-1-shipped,circuit-breaker-removed,kimi_signal_tracking-blacklisted,crypto_soc-quarantined,elite-score-raised,forex-70,commodity-65,equity-60,supreme-edge,execution,audit,goal-1,documentation,fix" data-category="trading" data-types="documentation,fix">
@@ -4485,7 +4524,6 @@ JUNK &lt; 60</pre>
       </ul>
     </div>
 
-
     <!-- Update: April 4, 2026 - Sports live-monitor pipeline + stale pending void fix -->
     <div class="update-entry" style="--dot-color: #38bdf8;" data-tags="sports,live-monitor,odds,value-bets,void,pending,ftp,redis,github-actions" data-category="trading" data-types="fix,improvement">
       <div class="update-date">Apr 4, 2026 &mdash; Sports betting (live-monitor)</div>
@@ -4518,7 +4556,6 @@ JUNK &lt; 60</pre>
         <li><strong>Gainer Momentum Alignment:</strong> SMA(200) trend-following gates added to Stock Momentum variants to capture high-volume breakouts (RVOL > 1.5) on leaders like AMD and GOOGL.</li>
       </ul>
     </div>
-
 
     <!-- Update: March 29, 2026 - Rocket Pick DNA + Research-Backed Scoring -->
     <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="rockets,dna,scoring,research,crypto,trading,winners,patterns" data-category="trading" data-types="feature,improvement">
@@ -4974,7 +5011,6 @@ JUNK &lt; 60</pre>
         <p><em>Stability and logic patches verified by Antigravity Agent. View the latest high-conviction picks on the <a href="/audit/">Audit Dashboard</a>.</em></p>
       </div>
     </div>
-
 
     <div class="update-entry" style="--dot-color: #22c55e;" data-tags="crypto,scoring,golden-criteria,ml,analysis,audit" data-category="crypto" data-types="feature,milestone">
       <div class="update-date">Mar 27, 2026 &mdash; 4:00 PM EST</div>
@@ -6313,7 +6349,6 @@ JUNK &lt; 60</pre>
       </div>
     </div>
 
-
     <!-- Update: March 13, 2026 - Pump Watch PnL Bug Fix + Link Audit + Overlooked Profitable Systems -->
     <div class="update-entry" style="--dot-color: #ef4444;" data-tags="pump-watch,bug-fix,audit,performance,pnl,kimi,claws-of-doom" data-category="trading" data-types="fix,feature">
       <div class="update-date">Mar 13, 2026 (07:50 EST)</div>
@@ -7504,7 +7539,6 @@ JUNK &lt; 60</pre>
         </ul>
       </div>
     </div>
-
 
     <!-- Update: March 11, 2026 - Inter-Agent Coordination & Performance -->
     <div class="update-entry" style="--dot-color: #3b82f6;"
@@ -10539,155 +10573,6 @@ JUNK &lt; 60</pre>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $729,280.06. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <h4 style="color:#ef4444; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
           Mar 10, 2026 &mdash; 03:30 PM EST | DATA INTEGRITY AUDIT &mdash; Metric Inflation Bugs Fixed
         </h4>
@@ -10815,7 +10700,6 @@ JUNK &lt; 60</pre>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $631,056.84. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
 
-
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
           Mar 10, 2026 &mdash; 02:15 PM EST | Detailed Performance Report (Live Bybit Verified)
         </h4>
@@ -10867,14 +10751,6 @@ JUNK &lt; 60</pre>
 
         <p style="font-size:0.85em; color:#6b7280"><em>Total equity: $631,057 (incl. unrealized). All entries verified against live Bybit prices. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
-
-
-
-
-
-
-
-
 
         <h4 style="color:#3b82f6; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
           Mar 10, 2026 &mdash; 06:00 AM EST | Stop Loss Overshoot Fix + 6-Source Price Failover
@@ -43150,7 +43026,6 @@ py quant_lab/stress_tester.py --walkforward         # Walk-forward validation</p
             <p>Full v2 results: <code>consistency_v2_results.json</code> (48 pairs × 5 checks × rolling windows).</p>
           </div>
         </div>
-
 
         <!-- Feb 17, 2026 — KIMI_FEB172026: Live Trading Signals with EST Documentation -->
         <div class="update-entry" style="--dot-color: #ff6b35;"
