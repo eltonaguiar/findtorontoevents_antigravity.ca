@@ -13,17 +13,22 @@ User asks "ask nvidia models" / "/consult-nvidiamodels" / "get peer model opinio
 
 ## Prerequisites
 
-- API key stored in environment: `NVIDIA_NIM_API_KEY` (or hardcoded — see Known Issues)
-- Default key: `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`
+- API key stored in environment: `NVIDIA_API_KEY` (preferred) or `NVIDIA_NIM_API_KEY`. **Never** hardcode.
 - Base URL: `https://integrate.api.nvidia.com/v1`
+
+```bash
+export NVIDIA_API_KEY='nvapi-...'   # your own key; rotate per Cloudflare/NVIDIA dashboard
+```
 
 ## The one command that works
 
 ```bash
 python3 -c "
-import json, subprocess, time
+import json, subprocess, time, os, sys
 
-API_KEY = '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'
+API_KEY = os.environ.get('NVIDIA_API_KEY') or os.environ.get('NVIDIA_NIM_API_KEY')
+if not API_KEY:
+    sys.exit('set NVIDIA_API_KEY (or NVIDIA_NIM_API_KEY) in env first')
 BASE_URL = 'https://integrate.api.nvidia.com/v1'
 PROMPT = '''YOUR_ANALYSIS_PROMPT_HERE'''
 
@@ -91,7 +96,7 @@ import json, subprocess
 resp = subprocess.run([
     'curl', '-s', '--max-time', '15',
     'https://integrate.api.nvidia.com/v1/chat/completions',
-    '-H', 'Authorization: Bearer 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',
+    '-H', 'Authorization: Bearer $NVIDIA_API_KEY',
     '-H', 'Content-Type: application/json',
     '-d', '{\"model\":\"nvidia/nemotron-nano-12b-v2-vl\",\"messages\":[{\"role\":\"user\",\"content\":\"reply with exactly: NIM_PONG\"}],\"max_tokens\":20}'
 ], capture_output=True, text=True, timeout=20)
@@ -107,7 +112,7 @@ else:
 
 ```bash
 curl -s --max-time 30 "https://integrate.api.nvidia.com/v1/models" \
-  -H "Authorization: Bearer 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" \
+  -H "Authorization: Bearer $NVIDIA_API_KEY" \
   | python3 -c "import sys,json; d=json.load(sys.stdin); [print(m['id']) for m in d.get('data',[])]"
 ```
 
@@ -115,7 +120,7 @@ curl -s --max-time 30 "https://integrate.api.nvidia.com/v1/models" \
 
 - **minimaxai/minimax-m2.7** — May return empty responses on free-tier accounts. Fall back to Kimi K2.6 or GPT-OSS-120B.
 - **nvidia/llama-3.1-nemotron-ultra-253b-v1** — Returns 404 for some accounts. Use `nvidia/llama-3.3-nemotron-super-49b-v1.5` instead.
-- **API key exposure** — The key is hardcoded in this skill. For production, use environment variable `NVIDIA_NIM_API_KEY`.
+- **API key exposure** — 2026-05-25: a previously-hardcoded key was removed from this file and replaced with `$NVIDIA_API_KEY` env lookup. The removed key was already in git history before that scrub; **it must be rotated at the NVIDIA dashboard** since a `git log -p` will still surface it. Always read from env going forward.
 - **Rate limits** — Add `time.sleep(0.5)` between calls to avoid 429 errors.
 - **Timeout** — Large models (253B+) may need 90s+ timeout. Set `--max-time` accordingly.
 - **Response truncation** — Some models may return very long responses. The `max_tokens: 1500` parameter controls output length.
