@@ -23,6 +23,7 @@ Reference docs:
 from __future__ import annotations
 
 import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -32,6 +33,15 @@ from audit_trail import dashboard_generator as dg
 
 ROOT = Path(__file__).resolve().parent.parent
 TARGET_NAMES = ("signal_validation", "mega_mutation", "rl_agent", "claude_gainer")
+
+# 2026-05-25: the fixture used to hardcode last_signal_at="2026-04-25" with the
+# comment "~18 days ago — not stale". That bug rotted: by 2026-05-25 the date
+# was exactly 30 days old (the staleness threshold), so test_tier2_payload_
+# staleness_detection started failing on every CI run. Use a relative date so
+# the fixture stays "18 days ago" forever.
+_FRESH_LAST_SIGNAL_AT = (datetime.now(timezone.utc) - timedelta(days=18)).strftime(
+    "%Y-%m-%dT%H:%M:%SZ"
+)
 
 
 def _make_system(
@@ -44,9 +54,11 @@ def _make_system(
     pf=2.5,
     mdd=12.0,
     asset_classes=("CRYPTO",),
-    last_signal_at="2026-04-25T00:00:00Z",
+    last_signal_at=None,
     status="active",
 ):
+    if last_signal_at is None:
+        last_signal_at = _FRESH_LAST_SIGNAL_AT
     return {
         "name": name,
         "active_picks": 0,
@@ -232,7 +244,8 @@ def test_tier2_payload_staleness_detection():
     # Active system: last_signal 10 days ago
     active = dg._compute_tier2_proven_strategies(_fixture_systems(), _fixture_closed_picks())
     sv = next(c for c in active["cards"] if c["name"] == "signal_validation")
-    # fixture last_signal_at = 2026-04-25, ~18 days ago → not stale
+    # fixture last_signal_at = now - 18 days → not stale (uses _FRESH_LAST_SIGNAL_AT
+    # to avoid wall-clock rot; old hardcoded 2026-04-25 tripped 30d threshold on 2026-05-25)
     assert sv["is_stale"] is False, f"Expected not stale, got is_stale={sv['is_stale']} stale_days={sv['stale_days']}"
     assert sv["stale_days"] is not None
     assert sv["stale_days"] < 30
