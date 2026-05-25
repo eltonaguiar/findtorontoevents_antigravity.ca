@@ -34,6 +34,55 @@ curl -s --max-time 10 "https://integrate.api.nvidia.com/v1/models" \
   | python3 -c "import sys,json; print('OK,', len(json.load(sys.stdin).get('data',[])), 'models')"
 ```
 
+## 🔴 MANDATORY: Leakage-Context Block
+
+**Every prompt sent to NIM models for asset-class / edge / pick-performance questions MUST include a leakage-context block** listing known data-quality incidents that intersect the prompt's domain. Multi-model consensus is worthless when all models see the same corrupted inputs.
+
+### Why this exists (case study, 2026-05-25)
+
+5/5 NIM models (Kimi K2.6, GPT-OSS-120B, GLM-5.1, Nemotron Super 49B, Mistral Nemotron) converged on *"COMMODITY is the system's #1 alpha, allocate 20-30%"* — because the prompt fed them pre-dedup numbers (PF=4.31) without mentioning H-101. In parallel, a 3-engine Codex/Gemini/Grok panel that WAS shown the leakage evidence correctly classified the same cell as `DATA_QUALITY_LEAKAGE` at ~90% confidence. **The difference was the prompt, not the model quality.** Reports: `reports/2026-05-25_multi_ai_panel_meta_review.md` + `reports/2026-05-25_commodity_cot_edge_triangulation.md`.
+
+### Template — paste at the TOP of any analysis prompt
+
+```
+LEAKAGE CONTEXT — Read before analyzing:
+
+The following known data-quality incidents affect the dataset you are about
+to analyze. Your first task is to determine whether ANY of these incidents
+invalidate the numbers presented. If so, flag it explicitly and adjust your
+analysis accordingly.
+
+Known incidents (see reports/hypothesis_registry.json for full state):
+ - H-101 (COMMODITY): COT publication-lag look-ahead. Pre-dedup commodity
+   numbers show PF~4.3/WR~58%; post-policy ground truth is PF~0.31/WR~11%.
+   The CFTC COT release-lag (T+3) was not respected. Any commodity analysis
+   citing PF>1.0 on multi_asset_copytrader or multi_asset_cot is
+   contaminated unless proven otherwise.
+ - M-095 (COMMODITY): CT=F cotton over-emission. 230 closed picks come from
+   16 unique signal dates (14× re-emission ratio). One profitable trade
+   counted ~14×, inflating PF.
+ - M-069 (NET): slippage-adjusted re-judgment reclassifies marginal wins
+   as losses. Gross-PF and Net-PF can diverge by 2-3×.
+ - QUALITY_BUCKETS (ALL): the `quality_bucket` field
+   (profitable_tp / moderate_confidence / etc.) in
+   performance_report_*.json is POST-HOC and circular. `profitable_tp` =
+   "picks that hit TP." Do NOT treat the bucket as a pre-trade filter.
+
+Be skeptical:
+ - If the data suggests one symbol/source dominates, flag concentration risk.
+ - If you see PF>3.0 on a single asset class, check for look-ahead or
+   survivorship bias before recommending allocation.
+```
+
+### When to include the block
+- ALWAYS for asset-class performance questions citing dashboard numbers
+- ALWAYS for COMMODITY questions (H-101 / M-095 must be stated)
+- ALWAYS when referencing `quality_bucket` data in `performance_report_*.json`
+- SKIP only for purely theoretical / no-dataset prompts
+
+### Post-fan-out cross-check
+After collecting model replies, **flag any model that endorses a known-bad signal without addressing the cited leakage evidence.** Document the failure mode; it's diagnostic of the model's grounding behavior.
+
 ## Subcommands
 
 ### `list` — show all text-gen models on NIM

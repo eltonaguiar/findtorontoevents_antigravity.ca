@@ -613,7 +613,13 @@ async function loadPicksAndLeaderboard() {
   // AND a HEAD probe shows the subdir exists.
   let usedLatest = false;
   try {
-    const resp = await fetch('./data/ai_tournament_picks_latest.json');
+    // 2026-05-25: cache-bust the latest snapshot so the card stays in sync
+    // with model.html (which also Date.now()-busts at model.html:196). Without
+    // this the tournament card could show a stale snapshot (e.g. 9/7/2) while
+    // a detail-page click loaded a fresh snapshot (e.g. 6/5/1), producing the
+    // user-reported "click 2 resolved, land on a page showing 1 resolved"
+    // mismatch.
+    const resp = await fetch('./data/ai_tournament_picks_latest.json?' + Date.now());
     if (resp.ok) {
       const data = await resp.json();
       if (Array.isArray(data)) { sources.push(data); usedLatest = true; }

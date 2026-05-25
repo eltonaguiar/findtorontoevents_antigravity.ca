@@ -120,6 +120,46 @@ curl -s --max-time 30 "https://integrate.api.nvidia.com/v1/models" \
 - **Timeout** — Large models (253B+) may need 90s+ timeout. Set `--max-time` accordingly.
 - **Response truncation** — Some models may return very long responses. The `max_tokens: 1500` parameter controls output length.
 
+## 🔴 MANDATORY: Leakage-Context Block
+
+**Every prompt sent to NVIDIA NIM models MUST include a leakage-context block** listing known data-quality incidents that intersect the asset classes or data sources being analyzed. Multi-model consensus is worthless when all models are shown the same corrupted inputs.
+
+### Template (include at TOP of prompt, before the analysis request):
+
+```
+LEAKAGE CONTEXT — Read before analyzing:
+
+The following data-quality incidents affect the dataset you are about to analyze.
+Your first task is to determine whether ANY of these incidents invalidate
+the numbers presented. If so, flag it explicitly in your response and adjust
+your analysis accordingly.
+
+Known incidents:
+- H-101 (COMMODITY): COT look-ahead leakage — pre-dedup commodity data shows
+  PF=4.31/WR=58.4% but post-policy ground truth is PF=0.31/WR=10.7%.
+  The CFTC COT publication lag (T+3) was not respected. Any commodity
+  analysis citing PF>1.0 is contaminated unless proven otherwise.
+- M-095 (COMMODITY): CT=F cotton over-emission — 230 closed picks from 16
+  unique dates = 14.4 picks/date average. One profitable trade counted 230×.
+- M-069 (NET): Slippage-adjusted re-judgment — wins reclassified as losses.
+- QUALITY_BUCKETS (ALL): The `quality_bucket` field (profitable_tp,
+  moderate_confidence, etc.) in performance_report_*.json is POST-HOC
+  circular — buckets are defined by exit outcome, not pre-hoc gates.
+  `profitable_tp` = "all TP_HIT picks". Do not treat as a classifier.
+
+Be skeptical. If data suggests one symbol/source dominates, flag concentration risk.
+If you see PF>3.0 on a single asset class, check for look-ahead or survivorship bias.
+```
+
+### When to use:
+- ALWAYS when analyzing any asset-class performance numbers from findtorontoevents.ca
+- ALWAYS when asked about COMMODITY edge (H-101/M-095 must be stated)
+- ALWAYS when referencing `performance_report_*.json` quality_bucket data
+- SKIP only when the question is purely theoretical/hypothetical with no dataset reference
+
+### Lesson from 2026-05-25 incident:
+5/5 NIM models converged on "COMMODITY is #1 edge" because all were shown the same pre-dedup contaminated data (PF=4.31) without being told about H-101. The 3-engine Codex/Gemini/Grok panel that WAS shown leakage evidence correctly classified it at ~90% confidence. **The difference was the prompt, not the model quality.**
+
 ## Result compilation pattern
 
 After querying multiple models, compile findings by:
@@ -127,6 +167,7 @@ After querying multiple models, compile findings by:
 2. Noting model-specific unique insights
 3. Presenting allocation/action recommendations with model consensus level
 4. Saving full results to JSON for audit trail
+5. **Cross-referencing each model's output against the known leakage incidents** — flag any model that endorses a known-bad signal without addressing the leakage evidence
 
 ## Related skills
 
