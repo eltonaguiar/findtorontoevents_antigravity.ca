@@ -73,6 +73,12 @@ _KEY_LABELS = {
     "DEEPINFRA_API_KEY_ALT": "DEEPINFRA API KEY ALT:",
     "NOUS_API_KEY":       "NOUS API KEY (USE ONLY FREE MODELS):",
     "NOUS_API_KEY_ALT":   "NOUS API KEY ALT USE ONLY FREE MODELS:",
+    "MISTRAL_API_KEY":    "MISTRAL API KEY:",
+    "MISTRAL_API_KEY_ALT": "MISTRAL API KEY ALT:",
+    "AIMLAPI_FREE_KEY":   "AIMLAPI.COM",
+    "AIMLAPI_PAID_KEY":   "AIMLAPIKEY PAID ($20 limit):",
+    "HYPERBOLIC_API_KEY": "HYPEREAL CLOUD API KEY:",
+    "HYPERBOLIC_API_KEY_ALT": "HYPEREAL CLOUD API KEY 2:",
     "CF_ACCOUNT_ID":      "Cloudflare account iD:",
     "CF_API_TOKEN":       "Cloudflare API key:",
 }
@@ -235,6 +241,38 @@ def _call_nous(model, prompt, max_tokens=1500, timeout=90):
         key, model, prompt, max_tokens, timeout)
 
 
+def _call_mistral(model, prompt, max_tokens=1500, timeout=90):
+    """Mistral AI direct REST — OpenAI-compatible."""
+    key = _get_key("MISTRAL_API_KEY") or _get_key("MISTRAL_API_KEY_ALT")
+    if not key:
+        raise RuntimeError("MISTRAL_API_KEY not in env or ~/dbpasses.txt")
+    return _post_openai_compat(
+        "https://api.mistral.ai/v1/chat/completions",
+        key, model, prompt, max_tokens, timeout)
+
+
+def _call_aimlapi(model, prompt, max_tokens=1500, timeout=90):
+    """AIMLAPI.com — OpenAI-compatible gateway aggregating many providers.
+    Prefer the FREE key first (the PAID key has a $20 limit that we
+    should preserve for genuine paid-only models)."""
+    key = _get_key("AIMLAPI_FREE_KEY") or _get_key("AIMLAPI_PAID_KEY")
+    if not key:
+        raise RuntimeError("AIMLAPI_FREE_KEY not in env or ~/dbpasses.txt")
+    return _post_openai_compat(
+        "https://api.aimlapi.com/v1/chat/completions",
+        key, model, prompt, max_tokens, timeout)
+
+
+def _call_hyperbolic(model, prompt, max_tokens=1500, timeout=90):
+    """Hyperbolic Cloud — OpenAI-compatible. Key format ck_..."""
+    key = _get_key("HYPERBOLIC_API_KEY") or _get_key("HYPERBOLIC_API_KEY_ALT")
+    if not key:
+        raise RuntimeError("HYPERBOLIC_API_KEY not in env or ~/dbpasses.txt")
+    return _post_openai_compat(
+        "https://api.hyperbolic.xyz/v1/chat/completions",
+        key, model, prompt, max_tokens, timeout)
+
+
 def _call_gemini_api(model, prompt, max_tokens=1500, timeout=90):
     """Google Gemini's REST API uses key in query param, not header."""
     key = _get_key("GEMINI_API_KEY") or _get_key("GEMINI_API_KEY_ALT")
@@ -299,6 +337,9 @@ PROVIDERS = {
     "cloudflare":    (_call_cloudflare,    "@cf/meta/llama-3.1-8b-instruct"),
     "deepinfra":     (_call_deepinfra,     "meta-llama/Meta-Llama-3.1-8B-Instruct"),
     "nous":          (_call_nous,          "Hermes-4-405B"),
+    "mistral":       (_call_mistral,       "mistral-small-latest"),
+    "aimlapi":       (_call_aimlapi,       "gpt-4o-mini"),
+    "hyperbolic":    (_call_hyperbolic,    "meta-llama/Meta-Llama-3.1-8B-Instruct"),
 }
 
 
@@ -306,26 +347,31 @@ PROVIDERS = {
 # Fan-out presets
 # ---------------------------------------------------------------------------
 FANOUTS = {
+    # All defaults verified 2026-05-25 with a '1+1?' ping — only known-working
+    # free-tier models on accounts that aren't rate-limited.
     "diverse5": [
         ("nvidia",     "moonshotai/kimi-k2.6"),
-        ("cloudflare", "@cf/meta/llama-3.3-70b-instruct-fp8-fast"),
-        ("groq",       "llama-3.3-70b-versatile"),
-        ("gemini_api", "gemini-2.0-flash"),
-        ("cerebras",   "llama-3.3-70b"),
+        ("groq",       "qwen/qwen3-32b"),
+        ("cerebras",   "llama3.1-8b"),
+        ("together",   "meta-llama/Meta-Llama-3-8B-Instruct-Lite"),
+        ("fireworks",  "accounts/fireworks/models/kimi-k2p5"),
     ],
     "fast4": [
-        ("groq",       "llama-3.1-8b-instant"),
-        ("cerebras",   "llama-3.3-70b"),
-        ("fireworks",  "accounts/fireworks/models/llama-v3p3-70b-instruct"),
-        ("gemini_api", "gemini-2.0-flash"),
+        ("groq",       "qwen/qwen3-32b"),
+        ("cerebras",   "llama3.1-8b"),
+        ("mistral",    "mistral-small-latest"),
+        ("github_models", "gpt-4o-mini"),
     ],
     "reasoning4": [
         ("nvidia",     "moonshotai/kimi-k2.6"),
-        ("gemini_api", "gemini-2.0-flash"),  # use gemini-2.5-pro if quota allows
-        ("together",   "meta-llama/Llama-3.3-70B-Instruct-Turbo"),
-        ("fireworks",  "accounts/fireworks/models/deepseek-v3"),
+        ("nous",       "Hermes-4-405B"),
+        ("fireworks",  "accounts/fireworks/models/kimi-k2p5"),
+        ("aimlapi",    "gpt-4o-mini"),
     ],
-    "all9": [(name, default) for name, (_, default) in PROVIDERS.items()],
+    # The full panel includes quota-blocked providers — they'll record ERROR
+    # entries but the run continues. Use this when you want maximum diversity
+    # and don't mind partial misses.
+    "all": [(name, default) for name, (_, default) in PROVIDERS.items()],
 }
 
 
@@ -362,6 +408,9 @@ def main() -> int:
             "cloudflare": ("CF_API_TOKEN", "CF_ACCOUNT_ID"),
             "deepinfra": ("DEEPINFRA_API_KEY",),
             "nous": ("NOUS_API_KEY",),
+            "mistral": ("MISTRAL_API_KEY",),
+            "aimlapi": ("AIMLAPI_FREE_KEY",),
+            "hyperbolic": ("HYPERBOLIC_API_KEY",),
         }
         for name, (_, default) in PROVIDERS.items():
             need = key_for_provider.get(name, ())
