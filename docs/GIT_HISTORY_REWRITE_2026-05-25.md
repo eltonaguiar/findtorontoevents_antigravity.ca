@@ -159,25 +159,114 @@ GitHub may auto-detect and offer to "Update branch" on the PR page — that's th
 
 ## Verification — how to confirm you're on the new history
 
-After recovery, run:
+### Quick one-shot validate script
+
+Paste this into a terminal at the repo root. It runs 8 checks and prints PASS / FAIL per check + an overall verdict. **All 8 must PASS.**
 
 ```bash
-# Local .git should be small
-du -sh .git
-# Expected: ~330 MB (was ~2.3 GB before)
+#!/usr/bin/env bash
+# Save as /tmp/validate-rewrite.sh, chmod +x, run inside the repo root.
+cd "$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "FAIL: not in a git repo"; exit 1; }
 
-# No missing blobs
-git fsck
-# Expected: empty output (or only "dangling" notes — those are fine)
+pass=0; fail=0
+ok()   { echo "  ✓ PASS — $1"; pass=$((pass+1)); }
+bad()  { echo "  ✗ FAIL — $1   (expected: $2)"; fail=$((fail+1)); }
 
-# Recent commits look right
-git log --oneline -3
-# Expected: most recent commits visible, including the merge commits from 2026-05-25 with messages like "chore: gitignore regenerable bloat" and "feat(proxy): full LiteLLM proxy session"
+echo "=== Git history rewrite recovery validator (2026-05-25) ==="
+echo
 
-# Bloat files NOT in working tree
-ls ml_crypto_predictor/production_models/*.pkl 2>/dev/null | wc -l
-# Expected: 0 if you re-cloned (gitignored, not in commit history). If you used Option B, the files may still be on disk from your previous working tree — that's fine, they just won't get re-committed.
+# 1) Recovery doc is present (proves you fetched after the rewrite)
+test -f docs/GIT_HISTORY_REWRITE_2026-05-25.md \
+  && ok "recovery doc present" \
+  || bad "recovery doc missing" "docs/GIT_HISTORY_REWRITE_2026-05-25.md should exist on main"
+
+# 2) Local HEAD matches origin (you've actually fetched the new history)
+git fetch origin main --quiet 2>/dev/null
+LOCAL=$(git rev-parse HEAD 2>/dev/null)
+REMOTE=$(git rev-parse origin/main 2>/dev/null)
+[ -n "$LOCAL" ] && [ "$LOCAL" = "$REMOTE" ] \
+  && ok "HEAD matches origin/main ($LOCAL)" \
+  || bad "HEAD diverges from origin/main" "local=$LOCAL  remote=$REMOTE — run git pull or git reset --hard origin/main"
+
+# 3) No missing-blob corruption
+fsck_out=$(git fsck --no-progress 2>&1 | grep -iE 'missing blob|missing tree|missing commit' | head -3)
+[ -z "$fsck_out" ] \
+  && ok "fsck clean (no missing blobs/trees)" \
+  || bad "fsck reports missing objects" "$fsck_out"
+
+# 4) Post-rewrite gitignore commits are in lineage
+matches=$(git log --oneline | grep -cE 'gitignore v4|gitignore regenerable bloat|gitignore v3')
+[ "$matches" -ge 3 ] \
+  && ok "post-rewrite gitignore commits present ($matches found, expected ≥3)" \
+  || bad "post-rewrite gitignore commits missing" "expected to see commits 'chore: gitignore regenerable bloat', 'gitignore v3', 'gitignore v4'"
+
+# 5) Scrubbed paths NOT tracked
+leaked=$(git ls-files \
+  | grep -cE '(^|/)ml_crypto_predictor/production_models/.*\.pkl$|(^|/)ml_crypto_predictor/enhanced_models/models/.*\.joblib$|^audit/data/dashboard_data\.json$|^events\.json$|^next/events\.json$|^data/live_picks\.db$|^alpha_engine/data/closed_picks\.json$|^alpha_engine/data/closed_picks_enriched\.json$|^alpha_engine/data/closed_picks\.archive\.jsonl$|^tools/data/audit_edge_review_live\.json$|^tools/data/snapshots/dashboard_data_.*\.json$')
+[ "$leaked" -eq 0 ] \
+  && ok "no scrubbed bloat paths tracked in index" \
+  || bad "$leaked bloat path(s) still tracked" "run: git ls-files | grep production_models — those should not exist"
+
+# 6) Scrubbed paths ARE gitignored
+gi_lines=$(grep -cE '^ml_crypto_predictor/production_models/\*\.pkl|^ml_crypto_predictor/enhanced_models/models/\*\.joblib|^audit/data/dashboard_data\.json' .gitignore 2>/dev/null)
+[ "${gi_lines:-0}" -ge 3 ] \
+  && ok "gitignore covers the scrubbed paths" \
+  || bad "gitignore missing scrub-path entries" "expected ≥3 of the bloat patterns in .gitignore — pull origin/main again"
+
+# 7) Working tree clean enough to pull cleanly (no merge conflict markers)
+conflicts=$(git ls-files --unmerged 2>/dev/null | wc -l)
+[ "$conflicts" -eq 0 ] \
+  && ok "no unresolved merge conflicts" \
+  || bad "$conflicts unmerged path(s)" "resolve with git status / git mergetool"
+
+# 8) A `git pull --ff-only` would succeed (proves no history divergence)
+git fetch origin main --quiet 2>/dev/null
+if git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
+  ok "git pull --ff-only origin main would succeed (no divergence)"
+else
+  bad "git pull --ff-only origin main would fail" "your local main has commits not in origin OR diverged history — see Option B in this doc"
+fi
+
+echo
+total=$((pass+fail))
+if [ "$fail" -eq 0 ]; then
+  echo "RESULT: ✓✓✓ ALL ${total} CHECKS PASSED — recovery complete"
+  exit 0
+else
+  echo "RESULT: ✗ ${fail}/${total} CHECKS FAILED — see fixes above"
+  exit 1
+fi
 ```
+
+### Quick manual checks (if you don't want to save a script)
+
+```bash
+# All four lines should succeed (echo their value on the right) or print 0 / empty
+git rev-parse --verify HEAD                                          # any commit SHA
+git fsck --no-progress 2>&1 | grep -c 'missing'                      # 0
+git ls-files | grep -E '\.pkl$|\.joblib$' | wc -l                    # 0
+git log --oneline | grep -cE 'gitignore v[34]'                       # ≥2
+```
+
+### Quick remote-side check (without cloning)
+
+You can also verify origin is on the new history without any local repo:
+
+```bash
+gh api 'repos/eltonaguiar/findtorontoevents_antigravity.ca/commits?path=docs/GIT_HISTORY_REWRITE_2026-05-25.md&per_page=1' --jq '.[0].sha + " " + .[0].commit.message' 2>/dev/null | head -1
+# Expected: a SHA + "docs: recovery guide for the 2026-05-25 git history rewrite"
+# If empty: the rewrite hasn't propagated to origin/main yet
+```
+
+### Disk size sanity
+
+```bash
+du -sh .git
+```
+
+- **If you re-cloned today (Option A)**: expect ~2 GB initially (GitHub server still keeps both old + new packs). Run `git gc --prune=now` locally to compact your copy to **~330 MB immediately**, regardless of GitHub's gc state.
+- **After GitHub's server-side gc cycle (1-2 days)**: new clones will get ~330 MB directly, no local gc needed.
+- **If still 2.3+ GB after a fresh clone + local `git gc --prune=now`**: something went wrong, you're somehow still on pre-rewrite history. Re-do Option A.
 
 ---
 
