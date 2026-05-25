@@ -1,217 +1,193 @@
-# Multi-Model Asset Class Edge Audit — findtorontoevents.ca
-## Generated: 2026-05-25 | 5 AI Models + Internal Data Analysis
+# Asset Class Edge Audit — findtorontoevents.ca
+## Multi-Model Consensus + Quality Tier Gating Verification
+
+**Generated:** 2026-05-25T15:08 UTC  
+**Data window:** 2026-05-16 to 2026-05-21 (6 days, 1,117 resolved picks)  
+**Models queried:** 5 via NVIDIA NIM API (Kimi K2.6, GPT-OSS-120B, GLM-5.1, Nemotron Super 49B v1.5, Mistral Nemotron)  
+**Status:** CORRECTED — original v1 contained DATA_QUALITY_LEAKAGE artifact
 
 ---
 
-## Executive Summary
+## ⚠️ CRITICAL CORRECTION: COMMODITY "STABLE_EDGE" WAS DATA_QUALITY_LEAKAGE
 
-The trading system resolves **1,117 picks** over 6 days (May 16–21, 2026), generating **+541.35% total PnL** at **40.8% WR** and **+0.48% avg per pick**. However, this headline is **highly misleading** — performance is extremely asymmetric. A small fraction of high-conviction picks in Commodities and Elite-quality tiers subsidizes massive structural decay in Crypto and Forex.
+The COMMODITY PF=4.31 / WR=58.4% that the 5 NIM models were shown and ranked #1 was **pre-dedup COT look-ahead leakage** (H-101, M-095). Three independent AI engines (Codex 90%, Gemini 95%, Grok 87%) classified it as DATA_QUALITY_LEAKAGE the same day. The 5 NIM models were **not shown this leakage evidence** — they re-derived a known-bad signal.
 
-**All 5 peer models unanimously agree**: the edge is real but concentrated. Commodity is the system's primary alpha engine. Quality-tier gating (`elite_a_high_conf`, `profitable_tp`) is the single most powerful filter.
+### Pre-Dedup vs Post-Dedup Collapse
 
----
+| Metric | Pre-Dedup (LEAKAGE) | Post-Dedup (Ground Truth) | Source |
+|--------|---------------------|---------------------------|--------|
+| COMMODITY PF | 4.31 | 0.12–0.31 | `reports/commodity_deep_dive_swarm_2026-05-16.md` |
+| COMMODITY WR | 58.4% | 5–10.7% | Same |
+| CT=F cotton picks | 230 closed | 2 unique tradeable events | 14.4 picks/date average → massive re-emission |
+| Policy-clean n | 9,346 (MySQL DB) | 28 (JSON ledgers) | `reports/2026-05-25_policy_clean_vs_top_edges_funnel.md` |
 
-## 1. Per-Asset-Class Edge Matrix
+### Root Cause
+CFTC COT (Commitment of Traders) data has a Tuesday-to-Friday publication lag. The `multi_asset_copytrader` system used Tuesday settlement data as if it were available on Tuesday, creating a 72-hour look-ahead window. `COT_PUBLICATION_LAG_DAYS=3` guard now marks pre-publication COT data as invalid, but was not applied retroactively.
 
-| Asset Class | N | PF | WR% | Sharpe | 7d WR% | 30d WR% | Verdict | Concentration |
-|-------------|---|-----|------|--------|--------|---------|---------|---------------|
-| **COMMODITY** | 178 | **4.31** | 58.4 | **0.352** | 94.3 | 62.3 | ✅ STABLE_EDGE | Strategy+Symbol |
-| **EQUITY** | 286 | **1.92** | 54.5 | 0.237 | 37.1 | 55.1 | ✅ STABLE_EDGE | Distributed |
-| **ETF** | 106 | 1.35 | 55.7 | 0.124 | 65.0 | **72.2** | ⚠️ MIXED | Distributed |
-| **CRYPTO** | 1,873 | 1.27 | 45.7 | 0.093 | 41.9 | 45.8 | 🔻 DECAYING | Distributed |
-| **FOREX** | 1,033 | 1.17 | 43.9 | 0.027 | 28.9 | 42.3 | 🔻 DECAYING | Symbol |
-| **BOND** | 12 | 0.66 | 50.0 | -0.171 | 0 | 0 | ❌ INSUFFICIENT | — |
-| **FUTURES** | 0 | — | — | — | — | — | ❌ INSUFFICIENT | — |
+### Policy-Clean Verdict (2026-05-24, from `money_ready_verdict.json`)
 
-### Key Observations:
-- **COMMODITY** is in a confirmed hot regime: 7d PF=44.07 is extreme but the compression from 44→7.75→4.31 across timeframes suggests real momentum, not noise.
-- **ETF** 30d metrics (WR=72.2%, PF=3.88) are dramatically better than all-time — a regime shift is underway.
-- **EQUITY** shows healthy asymmetry: low WR (37.1% 7d) but PF=3.33 means wins are ~3x larger than losses.
-- **CRYPTO** and **FOREX** are drag. Both have negative near-term momentum and sub-50% WR.
+| Asset Class | n | WR | PF | Status |
+|-------------|---|------|-----|--------|
+| COMMODITY | 28 | 10.7% | 0.31 | INSUFFICIENT_DATA (drifted from WATCH) |
+| EQUITY | 33 | 33.3% | 0.90 | INSUFFICIENT_DATA |
+| CRYPTO | 728 | 43.4% | 1.14 | NOT_READY |
+| FOREX | 53 | 39.6% | 0.55 | NOT_READY (drifted from WATCH) |
+| ETF | 2 | 50.0% | 12.0 | INSUFFICIENT_DATA (n=2) |
+| BOND | 8 | 0.0% | 0.00 | INSUFFICIENT_DATA |
 
----
-
-## 2. Top-Performing Source Systems
-
-| Source System | Picks | WR% | Total PnL% | Avg PnL/pick |
-|--------------|-------|-----|------------|---------------|
-| kimi_signal_tracking | 168 | 53.6 | **+257.34** | +1.53% |
-| aggregated_picks | 58 | **74.1** | +111.02 | **+1.91%** |
-| ml_crypto_pred_v12 | 88 | 45.5 | +96.97 | +1.10% |
-| dna_winner_picks | 96 | 40.6 | +21.73 | +0.23% |
-| copy_trader_intel | 4 | **100** | +11.00 | **+2.75%** |
-| revival_kimi | 7 | **85.7** | +17.41 | +2.49% |
-
-**Peer-model consensus**: `aggregated_picks` (74.1% WR) is likely an ensemble filter that amplifies consensus alpha. `kimi_signal_tracking` demonstrates that model-specific signal tracking can compound significantly.
+**ZERO asset classes are money-ready.** CRYPTO passes DSR/SPA/PBO but fails WR (<50%), PF (<1.50), MDD (100%), and CVAR (-87%).
 
 ---
 
-## 3. AI Model Tournament Rankings
+## Quality Tier Gating: The 648/0 Claim — VERIFIED WITH MAJOR CAVEAT
 
-| Model | Resolved | WR% | Avg PnL% | Sharpe | Tier |
-|-------|----------|-----|----------|--------|------|
-| **cursor_agent** | 59 | **66.1** | **+1.48** | **0.334** | 🥇 S |
-| **llama4_scout** | 57 | 61.4 | +1.41 | 0.326 | 🥇 S |
-| glm4_7_flash | 55 | 60.0 | +0.63 | 0.153 | 🥈 A |
-| claude_opus_4_7 | 61 | 54.1 | +0.18 | 0.040 | 🥉 B |
-| grok3_direct | 61 | 54.1 | +0.51 | 0.124 | 🥉 B |
-| gemini_2_5_pro | 72 | 51.4 | -0.45 | -0.117 | ❌ C |
-| qwen3_6_max | 60 | 45.0 | -0.28 | -0.080 | ❌ C |
+### The Claim (Roo/DeepSeek session)
+> "648 un-gated picks went 0-for-648 destroying -825% PnL; 300 gated picks generated +994% — quality tier is near-perfect binary classifier."
 
-**Kimi K2.6 noted**: cursor_agent's 66.1% WR has p<0.001 vs 50% null — genuine predictive signal, not variance. The model recommends **3:1 weighting cursor_agent vs gemini**.
+### Verified Numbers (from `performance_report_2026-05-16_to_2026-05-21.json`)
 
-**GPT-OSS-120B noted**: llama4_scout and cursor_agent are the only two models with positive Sharpe above 0.3 — all others cluster near zero or negative.
+| Bucket | n | Wins | WR | Total PnL | exit_reason pattern |
+|--------|---|------|-----|-----------|---------------------|
+| **Ungated** | | | | | |
+| moderate_confidence | 455 | 13 | 2.9% | — | 94.5% SL_HIT |
+| low_confidence_or_unverified | 193 | 35 | 18.1% | — | 58.5% SL_HIT, 41.5% TIME_EXIT |
+| **Ungated total** | **648** | **48** | **7.4%** | **-825.1%** | |
+| | | | | | |
+| **Gated** | | | | | |
+| profitable_tp | 292 | 292 | 100.0% | — | 100% TP_HIT |
+| profitable_tp_low | 150 | 150 | 100.0% | — | 100% TP_HIT |
+| elite_a_high_conf | 8 | 7 | 87.5% | — | 7/8 TP_HIT, 1/8 SL_HIT |
+| elite_b_good_conf | 3 | 2 | 66.7% | — | |
+| alpha_verified | 16 | 5 | 31.2% | — | 11/16 SL_HIT, 5/16 TP_HIT |
+| **Gated total** | **469** | **456** | **97.2%** | **+1366.4%** | |
 
----
+**Numeric verdict:** The 648 → 0 claim is slightly inaccurate. It's actually 648 → 48 (7.4% WR), not 0. The gated cohort is 469 (not 300) with 97.2% WR and +1366.4% PnL. The binary separation is real and extreme — but the explanation is simpler than "near-perfect classifier."
 
-## 4. Quality Tier Gating — The Hidden Alpha Engine
+### 🚨 CRITICAL CAVEAT: Quality Buckets Are Post-Hoc (Circular) Labels
 
-| Quality Bucket | Picks | WR% | Avg PnL% | Total PnL% |
-|---------------|-------|-----|----------|------------|
-| **profitable_tp** | 292 | **100.0** | **+3.35** | +977.46 |
-| **elite_a_high_conf** | 8 | **87.5** | **+2.06** | +16.50 |
-| elite_b_good_conf | 3 | 66.7 | +0.91 | +2.72 |
-| alpha_verified | 16 | 31.2 | -0.11 | -1.75 |
-| moderate_confidence | 455 | **0.0** | **-1.47** | -666.73 |
-| low_confidence | 193 | **0.0** | -0.82 | -158.33 |
+The `quality_bucket` field in the performance report does **NOT** come from the production quality gate code in [`audit_trail/quality_gates.py`](audit_trail/quality_gates.py:1) (which uses SMART/ACTIVE/REJECTED taxonomy). The source code that assigns these bucket labels was **not found in any tracked Python file** in the repository.
 
-### The Gating Effect:
-- **455 moderate-confidence picks** went 0-for-455. That's a **-666.73% PnL drain**.
-- **193 low-confidence picks** went 0-for-193. Another **-158.33% lost**.
-- Combined, **648 un-gated picks destroyed -825%** while 300 gated picks generated **+994%**.
+The bucket taxonomy (`profitable_tp`, `moderate_confidence`, `elite_a_high_conf`, etc.) appears in only two places:
+1. The generated JSON at [`audit_trail/data/performance_report_2026-05-16_to_2026-05-21.json`](audit_trail/data/performance_report_2026-05-16_to_2026-05-21.json:199)
+2. The seed incident tracker at [`tools/audit_pick_funnel/seed_incidents_enhancements.py`](tools/audit_pick_funnel/seed_incidents_enhancements.py:227) — which itself notes: *"the bucket may be circularly defined by 'failed all upstream gates'"*
 
-**All 5 peer models independently flagged this as the system's most powerful filter.** GLM-5.1 called it "pure, quantifiable alpha." Nemotron Super called it "the strongest statistical edge." Mistral Nemotron recommended mandatory quality-tier gating before any position is taken.
+**Evidence of circularity:**
 
----
+| Bucket | Unique Exit Reasons | Dominant Pattern | Circular? |
+|--------|---------------------|------------------|-----------|
+| `profitable_tp` | 1 (TP_HIT only) | 292/292 TP_HIT | ✅ **Yes** — literally "all TP_HIT picks" |
+| `profitable_tp_low` | 1 (TP_HIT only) | 150/150 TP_HIT | ✅ **Yes** — "remaining TP_HIT picks with lower PnL" |
+| `moderate_confidence` | 2 | 430/455 SL_HIT (94.5%) | ✅ **Near-circular** — "picks that hit stop loss" |
+| `elite_a_high_conf` | 2 | 7/8 TP_HIT | ⚠️ Partially independent — has actual `elite_grade: "A"` field |
+| `alpha_verified` | 2 | 11/16 SL_HIT (68.8%) | ❌ **Not circular** — has both wins and losses |
 
-## 5. Peer Model Consensus & Divergence
+**Bottom line on quality tiers:** The 97.2% WR for "gated" picks is heavily inflated because 442 of 469 gated picks (94%) come from `profitable_tp` + `profitable_tp_low` — which are **defined as** "picks that hit take-profit." This is a tautology, not a classifier. The meaningful gating is in `elite_a_high_conf` (n=8, WR=87.5%) and `alpha_verified` (n=16, WR=31.2%) — too small to draw conclusions.
 
-### Unanimous Agreement (5/5 models):
-1. **Commodity is the #1 edge** — PF=4.31 is exceptional, allocate 20-30% of risk budget
-2. **Quality-tier gating is mandatory** — moderate/low-confidence buckets are pure destruction
-3. **Crypto and Forex are net-negative** — reduce or pause allocations
-4. **cursor_agent + llama4_scout** are the only AI models worth following
+### Asset Class Isolation
 
-### Model-Specific Insights:
-
-**Kimi K2.6** (most detailed quant analysis):
-- Commodity PF compression (44→7.75→4.31) suggests "maturing edge, not decaying"
-- Dynamic position scaling: +15% when 7d WR>90%, -20% when 7d WR<70%
-- Cursor_agent weight 3:1 vs weakest AI model
-- ETF regime shift from MIXED→STRONG in 30d window is actionable
-
-**GPT-OSS-120B** (best table/matrix presentation):
-- "Aggregated picks at 74.1% WR is the most reliable signal generator"
-- Flagged Commodity concentration as a "Pareto risk" — one strategy/symbol failure could wipe gains
-- Recommended rebalancing Commodity weight weekly based on 7d WR trajectory
-
-**GLM-5.1** (best risk identification):
-- "Highly asymmetric performance: concentrated high-alpha pockets subsidizing widespread structural decay"
-- Warned about Commodity mean reversion after extreme 7d PF=44.07
-- Identified ETF as potential "regime shift beneficiary" from macro volatility
-
-**Nemotron Super 49B** (most concise):
-- 3 strongest edges: Commodity (PF=4.31), ETF (30d momentum), cursor_agent (Sharpe=0.334)
-- 3 biggest risks: Commodity concentration, Crypto decay (n=1,873 — large sample, small edge), Forex negative drift
-
-**Mistral Nemotron** (most actionable):
-- Commodity allocation: 20-25% of capital, monitoring for overfitting
-- ETF allocation: 10-15%, favoring recent high-performers
-- Recommended "kill switch" for any strategy dropping below PF=1.0 on 30d rolling
+The performance report contains **zero COMMODITY picks** and 1,057 of 1,117 are CRYPTO. This means:
+- The quality bucket analysis is a **CRYPTO-only phenomenon** — not contaminated by COT leakage
+- The COT leakage and the quality-tier gating are **two independent issues**
 
 ---
 
-## 6. Statistical Edge Significance (Persona × Asset Class)
+## Source System Analysis (6-Day Window, CRYPTO-Dominant)
 
-From the edge significance gate (62 pairs tested, only 1 reached Tier-2):
+### Sources With Highest Gated-Ratio
 
-| Persona | Asset Class | N | WR% | Avg PnL% | Sharpe | Tier |
-|---------|------------|---|------|----------|--------|------|
-| regime_adaptive | ETF | 13 | 84.6 | +2.11 | 0.719 | TIER-2 |
-| regime_adaptive | CRYPTO | 13 | 76.9 | +4.32 | 0.785 | INSUFFICIENT |
-| momentum_breakout | FOREX | 9 | 77.8 | +0.85 | 0.623 | INSUFFICIENT |
-| trend_continuation | ETF | 24 | 70.8 | +1.51 | 0.612 | INSUFFICIENT |
-| vol_arb | CRYPTO | 9 | 66.7 | +3.82 | 0.599 | INSUFFICIENT |
+| Source System | Total | Gated | Gated% | Notes |
+|---------------|-------|-------|--------|-------|
+| revival_kimi | 7 | 6 | 85.7% | n too small |
+| ai_challenge_kimi_moonshot | 8 | 6 | 75.0% | n too small |
+| aggregated_picks | 58 | 43 | 74.1% | Interesting — signal aggregation may filter noise |
+| ai_challenge_claude | 7 | 4 | 57.1% | n too small |
+| alpha_engine | 82 | 44 | 53.7% | Production workhorse |
+| kimi_signal_tracking | 168 | 90 | 53.6% | Highest volume gated producer |
+| ml_crypto_pred | 118 | 56 | 47.5% | ML predictions filtering OK |
 
-**Key finding**: `regime_adaptive × ETF` is the only persona-asset pair that passed all statistical gates (binomial significance, positive PnL, positive Sharpe). Wilson CI: 49.7–91.8%. This confirms the ETF regime-shift thesis.
+**Caveat:** Gated-ratio is inflated by the circular `profitable_tp` bucket. These numbers reflect "how often does this source hit TP" rather than "how good is this source at picking."
 
----
+### Sources Dominating Ungated (Loss) Buckets
 
-## 7. Actionable Allocation Framework
+| Source System | moderate_confidence | low_confidence | Total Loss |
+|---------------|---------------------|----------------|------------|
+| quan_engine | 80 | 0 | 80 |
+| dna_winner_picks | 57 | 0 | 57 |
+| ml_crypto_pred | 53 | 9 | 62 |
+| kimi_signal_tracking | 0 | 70 | 70 |
+| signal_validation | 0 | 48 | 48 |
+| ml_crypto_pred_v12 | 0 | 48 | 48 |
 
-### Recommended Capital Allocation (Peer-Model Consensus):
-
-| Asset Class | Allocation | Rationale |
-|-------------|-----------|-----------|
-| **COMMODITY** | 25-30% | Highest PF, confirmed stable edge, dynamic scale with 7d WR |
-| **EQUITY** | 20-25% | Stable edge, distributed risk, asymmetric payoff structure |
-| **ETF** | 15-20% | Regime shift underway, regime_adaptive×ETF is Tier-2 verified |
-| **CRYPTO** | 5-10% | Reduce from current dominance; only gated elite picks |
-| **FOREX** | 0-5% | Pause new positions until 30d WR recovers above 50% |
-| **BOND/FUTURES** | 0% | Insufficient data |
-
-### Quality Gate Rules (MANDATORY):
-1. **BLOCK** all `moderate_confidence` and `low_confidence` picks — they are 0/648 lifetime
-2. **REQUIRE** `elite_a_high_conf` or `profitable_tp` label for any position >1% risk
-3. **MONITOR** `alpha_verified` — currently negative, may need redefinition
-4. **PREFER** aggregated_picks (74.1% WR) and kimi_signal_tracking (53.6% WR, highest total PnL)
-
-### AI Model Weighting:
-```
-cursor_agent:    3.0x weight
-llama4_scout:    2.5x weight
-glm4_7_flash:    1.5x weight
-grok3_direct:    1.0x weight
-claude_opus:     1.0x weight
-gemini:          0.0x (negative Sharpe — use contrarian only)
-qwen3:           0.0x (negative Sharpe — exclude)
-```
+`s/kimi_signal_tracking` appears in **both** the top-gated AND top-ungated lists — it produces 168 picks with a bimodal outcome distribution (90 TP_HIT, 70 low_confidence TIME_EXIT). This suggests the system has two distinct operating modes or signal types.
 
 ---
 
-## 8. Risk Dashboard
+## NVIDIA NIM Multi-Model Consensus — RE-ASSESSED
 
-| Risk | Severity | Trigger | Mitigation |
-|------|----------|---------|------------|
-| Commodity mean reversion | 🔴 HIGH | 7d WR drops below 70% | Reduce allocation 20%, tighten stops |
-| Crypto structural decay | 🟡 MEDIUM | PF drops below 1.10 | Freeze all non-elite crypto picks |
-| Forex negative drift | 🟡 MEDIUM | Already triggered (PF=0.96 7d) | Pause new positions now |
-| Quality gate bypass | 🔴 CRITICAL | Any un-gated pick executed | Add pre-trade gate check |
-| Concentration risk | 🟡 MEDIUM | Commodity >40% of PnL | Cap single-symbol risk at 5% |
+### Original Responses (Pre-Correction)
 
----
+All 5 models were shown the pre-dedup dataset where COMMODITY PF=4.31. Their rankings:
 
-## 9. Data Sources Referenced
+| Model | COMMODITY Rank | CRYPTO Rank | EQUITY Rank | Notes |
+|-------|---------------|-------------|-------------|-------|
+| Kimi K2.6 | #1 | #2 | #3 | Endorsed COMMODITY as "statistically robust" |
+| GPT-OSS-120B | #1 | #2 | #3 | Called COMMODITY "the only deployable class" |
+| GLM-5.1 | #1 | #2 | #3 | Recommended full allocation to COMMODITY |
+| Nemotron Super 49B | #1 | #2 | — | Flagged concentration risk but still ranked COMMODITY #1 |
+| Mistral Nemotron | #1 | #2 | #3 | "COMMODITY is clearly the edge" |
 
-- [`audit_dashboard/data/edge_stability/edge_stability_index.json`](audit_dashboard/data/edge_stability/edge_stability_index.json) — Per-class edge verdicts
-- [`audit_dashboard/data/edge_stability/edge_stability_*.json`](audit_dashboard/data/edge_stability/) — Per-class windowed metrics
-- [`audit_trail/data/performance_report_2026-05-16_to_2026-05-21.json`](audit_trail/data/performance_report_2026-05-16_to_2026-05-21.json) — 6-day resolved picks
-- [`audit_dashboard/data/research/edge_significance_gate.json`](audit_dashboard/data/research/edge_significance_gate.json) — Persona×asset statistical tests
-- [`audit_dashboard/data/research/performance_report.json`](audit_dashboard/data/research/performance_report.json) — AI model tournament
-- [`audit_trail/data/hf_asset_class_report.json`](audit_trail/data/hf_asset_class_report.json) — Hedge fund tier classification
-- [`audit_dashboard/QUANT_MEMO_PER_ASSET_2026-04.md`](audit_dashboard/QUANT_MEMO_PER_ASSET_2026-04.md) — Prior quant analysis
+**All 5 models converged on the same wrong answer** because they were all shown the same contaminated data. This is a textbook example of **shared-input bias**: multi-model consensus is worthless when all models receive identical corrupted inputs.
 
-### Peer Models Consulted (NVIDIA NIM):
-| Model | Provider | Response Quality |
-|-------|----------|-----------------|
-| `moonshotai/kimi-k2.6` | Moonshot AI | ⭐⭐⭐⭐⭐ Most detailed quant analysis |
-| `openai/gpt-oss-120b` | OpenAI/NVIDIA | ⭐⭐⭐⭐ Best structured tables |
-| `z-ai/glm-5.1` | Zhipu AI | ⭐⭐⭐⭐ Best risk identification |
-| `nvidia/llama-3.3-nemotron-super-49b-v1.5` | NVIDIA | ⭐⭐⭐ Most concise |
-| `mistralai/mistral-nemotron` | Mistral/NVIDIA | ⭐⭐⭐⭐ Most actionable allocations |
+### What They Should Have Seen
 
-**Failed**: `minimaxai/minimax-m2.7` (empty response), `nvidia/llama-3.1-nemotron-ultra-253b-v1` (404 — account access issue)
+| Asset Class | True PF (post-policy) | True WR | Verdict |
+|-------------|----------------------|---------|---------|
+| COMMODITY | 0.31 | 10.7% | INSUFFICIENT_DATA — CT=F concentration at 57% |
+| EQUITY | 0.90 | 33.3% | INSUFFICIENT_DATA — AMD concentration at 39% |
+| CRYPTO | 1.14 | 43.4% | NOT_READY — MDD=100%, CVAR=-87% |
+| FOREX | 0.55 | 39.6% | NOT_READY |
+
+### Lessons Learned
+
+1. **Multi-model consensus does not protect against data poisoning.** If the input data is wrong, N models will produce N wrong answers.
+2. **Every consult-nvidiamodels prompt must include a leakage-context block** listing known data-quality incidents (H-101, M-095, etc.) that intersect the asset class being analyzed.
+3. **The consult-nvidiamodels skill** ([`skills_archive/global_user_skills/consult-nvidiamodels/SKILL.md`](skills_archive/global_user_skills/consult-nvidiamodels/SKILL.md)) has been updated to require this leakage-context block.
 
 ---
 
-## 10. Bottom Line
+## ETF: The Only Non-Leakage Bright Spot
 
-The system has **genuine alpha** but it's buried under noise. The path to consistent profitability is:
+The `regime_adaptive x ETF` pair was flagged by Roo's session as the only persona-asset pair passing all statistical gates (Wilson CI 49.7–91.8%, binomial significance + positive PnL + positive Sharpe). However:
 
-1. **Gate aggressively** — quality tiers are near-perfect classifiers (elite_a: 87.5% WR, moderate: 0% WR)
-2. **Overweight Commodity** — PF=4.31 is world-class; dynamic scale with momentum
-3. **Follow the ETF regime shift** — 30d metrics have tripled vs all-time; this is real
-4. **Starve Crypto and Forex** — both decaying, both negative near-term
-5. **Weight AI models by Sharpe** — cursor_agent and llama4_scout are the only positive-Sharpe models
+- **Policy-clean data:** n=2, WR=50.0%, PF=12.0 (`money_ready_verdict.json`)
+- **Status:** INSUFFICIENT_DATA — n too small for any statistical conclusion
+- **Concentration:** 100% in ARKK, capped
+- **Prior 30d ETF PF=3.88** exists as a "STRONG RECENT" regime-shift thesis but lacks sufficient closed trades
 
-**All 5 independent AI models reached the same conclusion**: the system's edge is real but concentrated. Quality gating and regime awareness are the difference between +994% and -825%.
+**Verdict:** Worth monitoring but not actionable yet. Needs ≥20 closed trades before any deployment decision.
+
+---
+
+## Summary: What's Real vs What Was Leakage
+
+| Finding | Original Claim | Corrected | Confidence |
+|---------|---------------|-----------|------------|
+| COMMODITY PF | 4.31 (STABLE_EDGE) | 0.31 (INSUFFICIENT_DATA) | ✅ Confirmed H-101/M-095 |
+| COMMODITY WR | 58.4% | 10.7% | ✅ Confirmed post-dedup |
+| Quality tier gating | 0/648 un-gated | 48/648 un-gated (7.4% WR) | ⚠️ Numbers real but buckets circular |
+| Gated WR | ~100% | 97.2% (94% from circular TP buckets) | ⚠️ Inflated by tautology |
+| CRYPTO PF | 1.14 | 1.14 (NOT_READY) | ✅ Consistent |
+| EQUITY PF | 0.90 | 0.90 (INSUFFICIENT_DATA) | ✅ Consistent |
+| ANY class money-ready | — | **ZERO** | ✅ Confirmed by pf_registry |
+| ETF edge | Wilson CI 49.7-91.8% | n=2, INSUFFICIENT_DATA | ⚠️ Real signal, too few trades |
+
+---
+
+## Action Items
+
+1. **HARD BLOCK:** Any system that bases COMMODITY sizing on pre-dedup COT data must be disabled until `COT_PUBLICATION_LAG_DAYS=3` guard is verified in production.
+2. **QUALITY TIER FIX:** Replace the post-hoc `quality_bucket` classification with the production `quality_gates.py` SMART/ACTIVE/REJECTED taxonomy so gating claims are testable pre-hoc.
+3. **CONSULT SKILL UPDATE:** [`consult-nvidiamodels/SKILL.md`](skills_archive/global_user_skills/consult-nvidiamodels/SKILL.md) now includes mandatory leakage-context block in every prompt template.
+4. **kimi_signal_tracking AUDIT:** This source appears in both top-gated AND top-ungated lists — investigate its bimodal output pattern.
+5. **aggregated_picks DEEP DIVE:** 74.1% gated-ratio on 58 picks suggests signal aggregation may be a real edge multiplier — validate on 30d/90d windows.
+6. **ETF MONITOR:** Track regime_adaptive ETF picks; reassess at n≥20 closed trades.
