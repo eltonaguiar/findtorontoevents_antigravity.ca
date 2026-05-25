@@ -4544,7 +4544,7 @@ function renderAssetClassQuality(hasFilters, activePicks, smartRows, f) {
     const tip = 'Thresholds: score>=' + minScore.toFixed(0) + ', fwr>=' + minFwr.toFixed(2) + ', min_trades=' + minTrades +
       '. Active=' + activeCount + ', Smart=' + smartCount + ', ForwardWR=' + forwardWR.toFixed(2) +
       ', State=' + classState +
-      '. Updated ' + (row.lastUpdated || D.generated_at || 'unknown');
+      '. Updated ' + (window._fmtEST ? window._fmtEST(row.lastUpdated || D.generated_at) : (row.lastUpdated || D.generated_at || 'unknown'));
     return '<div class=\"asset-quality-badge\" title=\"' + tip.replace(/\"/g, '&quot;') + '\" style=\"padding:6px 10px;border-radius:8px;border:1px solid ' + accent + ';background:' + bg + ';font-size:11px;line-height:1.4;min-width:220px\">' +
       '<div style=\"display:flex;align-items:center;justify-content:space-between;gap:8px\">' +
       '<strong style=\"color:' + accent + '\">' + ac + '</strong>' +
@@ -5024,6 +5024,48 @@ function renderSummary() {
   const statsFiltered = hasFilters || !trustBookNarrowed();
   // Apply 500% per-trade cap to match backend summary methodology (line 4173 of dashboard_generator.py)
   const _capPnl = v => Math.max(-500, Math.min(500, v || 0));
+  // 2026-05-25: unrealized PnL on active picks was rendering as +0.00% in
+  // crypto-panel + NC tiles whenever the server-side `unrealized_pnl_pct` /
+  // `_livePnl` fields weren't populated (most active picks today). Fall back
+  // to entry_price + current_price + direction so the tile shows reality.
+  // User-reported: DOTUSDT under claude_gainer_st was -0.24% live, tile showed +0.00%.
+  window._unrealizedPnlPct = function(p) {
+    if (p == null) return 0;
+    if (p.unrealized_pnl_pct != null && !Number.isNaN(+p.unrealized_pnl_pct)) return +p.unrealized_pnl_pct;
+    if (p._livePnl != null && !Number.isNaN(+p._livePnl)) return +p._livePnl;
+    var e = +(p.entry_price || 0), c = +(p.current_price || p.live_price || 0);
+    if (!e || !c) return 0;
+    var dir = String(p.direction || 'LONG').toUpperCase();
+    if (dir === 'SHORT' || dir === 'SELL') return ((e - c) / e) * 100;
+    return ((c - e) / e) * 100;
+  };
+  // 2026-05-25: EST tooltip helper — converts ISO `2026-05-25T01:55:35Z`
+  // (or +00:00) to `2026-05-24 21:55 EST` for human display in tile tooltips.
+  window._fmtEST = function(iso) {
+    if (!iso) return 'unknown';
+    try {
+      var d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return String(iso);
+      // toLocaleString with America/Toronto auto-handles DST (EST/EDT)
+      var s = d.toLocaleString('en-CA', {
+        timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+      // en-CA gives `2026-05-24, 21:55` — strip comma + append zone abbrev
+      var jan = new Date(d.getFullYear(), 0, 1).getTimezoneOffset();
+      var jul = new Date(d.getFullYear(), 6, 1).getTimezoneOffset();
+      var nowOff = d.getTimezoneOffset();
+      // Toronto: standard=EST (UTC-5, offset 300), DST=EDT (UTC-4, offset 240).
+      // The page may run in any browser tz; emit America/Toronto's actual offset for `d`.
+      // Easiest: derive from the offset between UTC string and localized hours.
+      var torontoStandard = 300; // EST
+      var torontoDst = 240;      // EDT
+      // Heuristic: if Toronto is currently observing DST at this instant, label EDT.
+      var monNum = d.getUTCMonth() + 1;
+      var isDst = (monNum > 3 && monNum < 11);  // Mar..Oct approx; good enough for tooltip
+      return s.replace(',', '') + ' ' + (isDst ? 'EDT' : 'EST');
+    } catch (e) { return String(iso); }
+  };
   const outcomeStats = computeOutcomeStats(closedPicks, { capPnl: _capPnl, getPnl: p => Number(p?.pnl_pct || 0) });
   const wins = outcomeStats.wins;
   const losses = outcomeStats.losses;
@@ -5280,11 +5322,21 @@ function renderSummary() {
     (function() {
       var v = s.total_pnl_pct_geomean_annualized;
       var has = (v !== null && v !== undefined && !Number.isNaN(v));
+      // 2026-05-25: when v is at the +999.9 (or -99.9) clamp, the underlying math
+      // overflowed the sanity ceiling — the displayed number is NOT a real return,
+      // it's "rate beyond ceiling". Flag visually + in tooltip.
+      var atCeiling = has && (v >= 999.8 || v <= -99.8);
+      var labelTxt = atCeiling ? 'Annualized geomean ⚠' : 'Annualized geomean';
+      var valTxt = has ? (atCeiling ? (v >= 999.8 ? '≥+999.9% (ceiling)' : '≤-99.9% (floor)') : fmtPct(v)) : '—';
+      var tipBase = 'Daily mean return × 252 trading days. Reflects per-day expected return scaled to a year.\n\n' +
+        'IMPORTANT: hard-clamped to [-99.9%, +999.9%]. When the displayed value is at the ceiling it means the underlying math overflowed (e.g. a single huge daily mean), NOT that the portfolio returned 999.9%. ' +
+        'For a bounded headline, use Rolling-100 compound to its left. For raw aggregate, see Total PnL.\n\n' +
+        'Source: summary.total_pnl_pct_geomean_annualized · clamp set in dashboard_generator.py:_ANNUALIZED_CEIL_PCT';
       return {
-        label: 'Annualized geomean',
-        value: has ? fmtPct(v) : '—',
-        cls: has ? (v >= 0 ? 'positive' : 'negative') : '',
-        tip: 'Daily mean return × 252 trading days. Reflects per-day expected return scaled to a year. Sanity-capped ±9999%. (summary.total_pnl_pct_geomean_annualized)'
+        label: labelTxt,
+        value: valTxt,
+        cls: has ? (atCeiling ? '' : (v >= 0 ? 'positive' : 'negative')) : '',
+        tip: tipBase + (atCeiling ? '\n\nCURRENT STATE: overflow — treat as "rate exceeds ceiling, not a real return".' : '')
       };
     })(),
     ...((!statsFiltered && s.closed_pnl_concentration) ? (function() {
@@ -5973,10 +6025,12 @@ function renderNonCryptoPanel() {
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Open positions in this category after quality gates (published picks.active). Not a strategy count. Unrelated to any ?active= URL on this page." style="cursor:help;text-decoration:underline dotted">Active picks</span><span class="nc-val">' + serverActiveCount + '</span></div>';
       cardsHtml += '<div class="nc-nodata">No closed picks yet</div>';
     } else if (resolved > 0) {
-      // Compute unrealized PnL from active positions
+      // Compute unrealized PnL from active positions.
+      // 2026-05-25: fall back to entry+current+direction when unrealized_pnl_pct/_livePnl are null
+      // (most live active picks today). Was rendering as +0.00% — see _unrealizedPnlPct.
       var unrealizedPnl = 0;
       catActive.forEach(function(p) {
-        var upnl = p.unrealized_pnl_pct || p._livePnl || 0;
+        var upnl = window._unrealizedPnlPct ? window._unrealizedPnlPct(p) : (p.unrealized_pnl_pct || p._livePnl || 0);
         unrealizedPnl += Math.max(-500, Math.min(500, upnl));
       });
       // Honest headline: equal-weight COMPOUNDED return on the visible closed
@@ -6360,7 +6414,7 @@ function renderCryptoPanel() {
 
     var unrealizedPnl = 0;
     catActive.forEach(function(p) {
-      var upnl = p.unrealized_pnl_pct || p._livePnl || 0;
+      var upnl = window._unrealizedPnlPct ? window._unrealizedPnlPct(p) : (p.unrealized_pnl_pct || p._livePnl || 0);
       unrealizedPnl += Math.max(-500, Math.min(500, upnl));
     });
     // Honest headline: equal-weight compounded return on closed picks (chrono,
@@ -6580,10 +6634,11 @@ function showNcDrillDown(catKey) {
   var wr = catStats.winRate;
   var totalPnl = catStats.totalPnl;
 
-  // Unrealized PnL from active picks (same field precedence as NC cards: unrealized_pnl_pct, _livePnl, then pnl_pct)
+  // Unrealized PnL from active picks. 2026-05-25: use _unrealizedPnlPct so we fall back
+  // to entry+current+direction when both unrealized_pnl_pct and _livePnl are null
+  // (the common case on live active picks today).
   var unrealizedPnl = catActive.reduce(function(s, p) {
-    var raw = p.unrealized_pnl_pct != null ? p.unrealized_pnl_pct : (p._livePnl != null ? p._livePnl : (p.pnl_pct || 0));
-    var upnl = parseFloat(raw) || 0;
+    var upnl = window._unrealizedPnlPct ? window._unrealizedPnlPct(p) : (p.unrealized_pnl_pct != null ? +p.unrealized_pnl_pct : (p._livePnl != null ? +p._livePnl : +(p.pnl_pct || 0)));
     return s + Math.max(-500, Math.min(500, upnl));
   }, 0);
 
@@ -13072,11 +13127,53 @@ function applyHighConvictionPreset() {
     });
   }, 150);
 }
+// CLICK FUNNEL TELEMETRY (2026-05-25) — captures button clicks + visible-picks
+// snapshot to localStorage for the pick_funnel.html "your session" panel.
+// Local-only (no network, no PII); capped at 200 entries.
+window._logFunnelClick = function(buttonId) {
+  try {
+    var KEY = '_audit_click_funnel_v1';
+    var assetFilter = null;
+    try {
+      var s = document.getElementById('asset-filter') || document.getElementById('filter-asset');
+      if (s && 'value' in s) assetFilter = s.value;
+    } catch(e){}
+    var rows = [];
+    try {
+      var tbl = document.querySelector('#tab-active .data-table tbody')
+             || document.querySelector('#active-picks-tbody')
+             || document.querySelector('table tbody');
+      if (tbl) {
+        rows = Array.prototype.slice.call(tbl.querySelectorAll('tr'))
+          .filter(function(r){ return r.offsetParent !== null; });
+      }
+    } catch(e){}
+    var top3 = rows.slice(0,3).map(function(r){
+      var c = r.querySelector('td:nth-child(2)') || r.querySelector('td');
+      return c ? (c.textContent||'').trim().slice(0,16) : '';
+    }).filter(Boolean);
+    var entry = {
+      ts: new Date().toISOString(),
+      buttonId: buttonId,
+      asset_class_filter: assetFilter,
+      visible_picks_count: rows.length,
+      top_3_symbols: top3
+    };
+    var arr = [];
+    try { arr = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(arr)) arr = []; } catch(e){}
+    arr.push(entry);
+    if (arr.length > 200) arr = arr.slice(-200);
+    localStorage.setItem(KEY, JSON.stringify(arr));
+  } catch(e){ /* swallow */ }
+};
 // Single HIGH CONVICTION button (duplicate removed)
 var _btnConv = el('btn-conviction-picks');
-if (_btnConv) _btnConv.addEventListener('click', applyHighConvictionPreset);
+if (_btnConv) _btnConv.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks'); applyHighConvictionPreset(); });
 var _btnConvHero = el('btn-conviction-picks-hero');
-if (_btnConvHero) _btnConvHero.addEventListener('click', applyHighConvictionPreset);
+if (_btnConvHero) _btnConvHero.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks-hero'); applyHighConvictionPreset(); });
+// MONEY READY button instrumentation (button uses inline onclick=applyMoneyReady())
+var _btnMoneyReadyTelemetry = el('btn-money-ready');
+if (_btnMoneyReadyTelemetry) _btnMoneyReadyTelemetry.addEventListener('click', function(){ window._logFunnelClick('btn-money-ready'); });
 // Explainer close button + hide-on-clear wiring
 var _btnHcExplainerClose = el('hc-explainer-close');
 if (_btnHcExplainerClose) {
@@ -18034,6 +18131,13 @@ setTimeout(function() { if (typeof init === "function") init(); else console.war
       </div>
     </div>`;
 
+    // AI Postmortem (per-pick prompt + localStorage save) — see helper script below
+    try {
+      if (window._aiPostmortem && typeof window._aiPostmortem.renderSection === 'function') {
+        html += window._aiPostmortem.renderSection(p);
+      }
+    } catch(e) { /* helper not yet loaded — non-fatal */ }
+
     // Disclaimer
     html += `<div style="padding:12px 20px;background:#1e293b44;font-size:10px;color:#475569;border-radius:0 0 12px 12px">
       <strong>Disclaimer:</strong> This analysis is generated from historical system performance data and does not constitute financial advice. Past performance does not guarantee future results. All metrics are computed from self-reported system data${integrity.level === 'VERIFIED' ? ' that has been cross-verified against market prices' : ''}. Position sizing suggestions assume independent, uncorrelated trades.
@@ -18046,6 +18150,8 @@ setTimeout(function() { if (typeof init === "function") init(); else console.war
   window.generateAnalysis = generateAnalysis;
 })();
 </script>
+<!-- AI POSTMORTEM HELPER (inlined; source: audit_dashboard/ai_postmortem_helper.js) -->
+<script src="ai_postmortem_helper.js"></script>
 <script>
 // === EXCEL/CSV EXPORT ===
 function exportTableToExcel(tableEl, filename) {
