@@ -48,7 +48,14 @@ function _config_get($key, $default) {
 
 // Google OAuth Credentials
 // From: https://console.cloud.google.com/apis/credentials
-define('GOOGLE_CLIENT_ID', _config_get('GOOGLE_CLIENT_ID', ''));
+// 2026-05-25: client_id is a PUBLIC identifier (not a secret) — hardcoded as
+// fallback default so /fc/#/guest OAuth works even when the .env wasn't deployed
+// to 50webs alongside this PHP. The client_SECRET stays env-only.
+// User-reported live failure: "Missing required parameter: client_id" on
+// accounts.google.com/signin/oauth/error. Root cause: .env on prod had only
+// MySQL creds, no GOOGLE_CLIENT_ID, so getenv() returned '' and the SPA built
+// the Google authorize URL with client_id=.
+define('GOOGLE_CLIENT_ID', _config_get('GOOGLE_CLIENT_ID', '975574174292-n332bled0ud1bc51v1hcqpnmp8dass12.apps.googleusercontent.com'));
 define('GOOGLE_CLIENT_SECRET', _config_get('GOOGLE_CLIENT_SECRET', ''));
 
 // Database credentials (if needed)
