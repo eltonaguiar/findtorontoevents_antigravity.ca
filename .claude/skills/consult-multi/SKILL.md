@@ -91,7 +91,7 @@ Presets (each writes one `.md` per peer to `--out-dir`):
 | aimlapi | ✅ working | gpt-4o-mini | Free key preferred over $20-limit paid key |
 | huggingface | ⚠️ quota | openai/gpt-oss-20b | 402 monthly free credits depleted; subscribe to PRO or wait month reset. The legacy `api-inference.huggingface.co` is DNS-unresolvable from this network — only the router endpoint is usable. |
 | cloudflare | ⚠️ quota | @cf/meta/llama-3.1-8b-instruct | 429 daily 10,000-neuron quota exhausted; resets at UTC midnight |
-| hypereal | ⚠️ paid | kimi-k2.6 | Frontier-model proxy (Claude Opus 4.7, GPT-5.5, Gemini 3.5, etc.). Requires $2 min credit balance; current balance=0. **Domain: hypereal.cloud** (NOT hyperbolic.xyz — common confusion). Anthropic models route via `/v1/messages`. |
+| hypereal | ✅ partial | gpt-5.5-instant | Frontier-model proxy at **hypereal.cloud** (NOT hyperbolic.xyz). After 2026-05-25 top-up: `gpt-5.5-instant` works on shared credit pool. Other models (kimi-k2.6, deepseek-v4-flash, gpt-5.4-mini, qwen3.5-flash, glm-5) still report `balance=0` — Hypereal uses per-model/per-tier credit pools. Anthropic models (`claude-*`) need separate `/v1/messages` endpoint (Anthropic native format). |
 
 **The 3 ⚠️ providers have valid keys** — they're quota-capped at the account level. Wait or pay.
 

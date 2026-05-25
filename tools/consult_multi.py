@@ -362,7 +362,7 @@ PROVIDERS = {
     "nous":          (_call_nous,          "Hermes-4-405B"),
     "mistral":       (_call_mistral,       "mistral-small-latest"),
     "aimlapi":       (_call_aimlapi,       "gpt-4o-mini"),
-    "hypereal":      (_call_hypereal,      "kimi-k2.6"),
+    "hypereal":      (_call_hypereal,      "gpt-5.5-instant"),
 }
 
 
