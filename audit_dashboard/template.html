@@ -18131,6 +18131,13 @@ setTimeout(function() { if (typeof init === "function") init(); else console.war
       </div>
     </div>`;
 
+    // AI Postmortem (per-pick prompt + localStorage save) — see helper script below
+    try {
+      if (window._aiPostmortem && typeof window._aiPostmortem.renderSection === 'function') {
+        html += window._aiPostmortem.renderSection(p);
+      }
+    } catch(e) { /* helper not yet loaded — non-fatal */ }
+
     // Disclaimer
     html += `<div style="padding:12px 20px;background:#1e293b44;font-size:10px;color:#475569;border-radius:0 0 12px 12px">
       <strong>Disclaimer:</strong> This analysis is generated from historical system performance data and does not constitute financial advice. Past performance does not guarantee future results. All metrics are computed from self-reported system data${integrity.level === 'VERIFIED' ? ' that has been cross-verified against market prices' : ''}. Position sizing suggestions assume independent, uncorrelated trades.
@@ -18143,6 +18150,8 @@ setTimeout(function() { if (typeof init === "function") init(); else console.war
   window.generateAnalysis = generateAnalysis;
 })();
 </script>
+<!-- AI POSTMORTEM HELPER (inlined; source: audit_dashboard/ai_postmortem_helper.js) -->
+<script src="ai_postmortem_helper.js"></script>
 <script>
 // === EXCEL/CSV EXPORT ===
 function exportTableToExcel(tableEl, filename) {

@@ -740,17 +740,20 @@ async function loadPicks() {
 
       const recentPicks = modelPicks.slice(0, 5);
       html += `<div class="picks-mini"><table>
-        <tr><th>Symbol</th><th>Dir</th><th>Class</th><th>Conf</th><th>Date (EST)</th><th>Reason</th></tr>`;
+        <tr><th>Symbol</th><th>Dir</th><th>Class</th><th>Conf</th><th>Date (EST)</th><th>Reason</th><th></th></tr>`;
       recentPicks.forEach(p => {
         const conf = typeof p.confidence === 'number' ? (p.confidence*100).toFixed(0)+'%' : (p.confidence||'—');
         const reason = p.reason || p.thesis || '—';
-        html += `<tr>
+        const pId = (window._aiPostmortem && window._aiPostmortem.pickId) ? window._aiPostmortem.pickId(p) : (p.pick_id || (p.model_id+'_'+p.symbol+'_'+p.submitted_at));
+        const explainBtn = `<button data-aipm-explain="${esc(pId)}" title="AI explain this pick (postmortem)" class="aipm-row-btn" style="background:transparent;border:1px solid #334155;color:#94a3b8;border-radius:3px;padding:1px 5px;font-size:10px;cursor:pointer;opacity:0;transition:opacity 0.15s">&#129504;</button>`;
+        html += `<tr class="aipm-row" onmouseover="this.querySelector('.aipm-row-btn').style.opacity=1" onmouseout="this.querySelector('.aipm-row-btn').style.opacity=0">
           <td><strong>${esc(p.symbol)}</strong></td>
           <td>${esc(p.direction)}</td>
           <td>${esc(p.asset_class)}</td>
           <td>${conf}</td>
           <td class="small">${toEST(p.submitted_at)}</td>
           <td class="small" style="max-width:280px">${esc(reason).slice(0,150)}${reason.length>150?'…':''}</td>
+          <td>${explainBtn}</td>
         </tr>`;
       });
       html += `</table></div>`;
@@ -786,5 +789,7 @@ function msEli5Content() { return '<div><b>What do these numbers mean?</b><br><b
 // ── Init ──
 loadPicksAndLeaderboard().then(() => { loadPicks(); loadModelSummary(); });
 </script>
+<!-- AI POSTMORTEM HELPER (per-pick prompt + localStorage save, shared w/ /audit) -->
+<script src="ai_postmortem_helper.js"></script>
 </body>
 </html>
