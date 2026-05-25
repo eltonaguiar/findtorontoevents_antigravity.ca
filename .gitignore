@@ -617,3 +617,43 @@ mlruns/
 !docs/**/checkpoints/
 **/runs/events.out.tfevents.*
 **/tb_events/
+
+# =========================================================================
+# 2026-05-25 bloat fix v11 — Cursor on this PC audit (reports/2026-05-25-large-files-gitignore-audit.md)
+# Adds .venv/ at root level (was only protected by nested .venv/.gitignore)
+# + ~30 more stale-tracked live-state JSONs that v6-v8 patterns named the
+# class but didn't catch the specific paths.
+# =========================================================================
+
+# --- .venv at top level (defense in depth; .venv/.gitignore is the only other guard) ---
+/.venv/
+**/.venv/
+
+# --- alpha_engine live-state JSONs (v6 broad patterns missed these specific names) ---
+alpha_engine/data/closed_picks_fast.json
+alpha_engine/data/forex_walk_forward_results.json
+alpha_engine/data/precursor_history.json
+alpha_engine/data/prediction_quality_history.json
+alpha_engine/data/momentum_tracker_picks.json
+alpha_engine/data/theory_portfolios_history.json
+alpha_engine/data/strategy_performance.json
+alpha_engine/data/extensive_backtest_results.json
+
+# --- audit_dashboard pick_funnel snapshots (frequently re-committed) ---
+audit_dashboard/data/pick_funnel_*.json
+
+# --- backtest_results trade_logs (per-strategy JSONs accumulate) ---
+backtest_results/futures_comparison/trade_logs/*.json
+
+# --- ML models (skyrocket_detector dir was missed by v6/v7) ---
+skyrocket_detector/data/*.joblib
+
+# --- HTML backups + OLD-suffix files (v3 *.bak missed *.backup variant) ---
+**/*.backup
+**/*_OLD.html
+
+# --- One-off archive docs (Mar-12 pre-archive snapshot) ---
+docs/CHATWITHIT_ARCHIVE_PRE_*.md
+
+# --- crypto_signal_engine price cache (regenerated each scan) ---
+crypto_signal_engine/data/price_cache.json
