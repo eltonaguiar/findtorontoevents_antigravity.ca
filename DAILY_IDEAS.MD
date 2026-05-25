@@ -2808,3 +2808,731 @@ Swarm run: $0.0043 (DeepSeek + Cerebras, OpenRouter skipped). Total session swar
 - `DAILY_IDEAS.MD` — this appendix appended
 
 ---
+
+---
+
+## 2026-05-25 02:55 UTC (22:55 EST 2026-05-24) — Tier-Rating Algorithm Question (cross-model survey)
+
+**Source:** user request via Claude Opus 4.7 session, broadcast queued to the AI tournament fleet for inclusion in next prompting cycle.
+
+### Question posed to every model in the tournament
+
+> "If you were challenged to give a pick rating system to create a tier list of symbols on a scale of 1–10 per asset class, what algorithm would you use for each asset class? Output one weighted-formula recipe per class (EQUITY, ETF, CRYPTO, FOREX, COMMODITY, BOND, FUTURES, PENNY) with the exact feature weights you'd use, why you chose them, and the data feed each feature requires. Also state at what score you'd refuse to enter the trade (the floor)."
+
+**Why we're asking:** to harvest each model's belief about the right per-class scoring objective and convert the highest-agreement formulas into a `score_v3` candidate for `alpha_engine/score_pick.py`. Currently smart_picks uses a class-agnostic composite; we suspect per-class formulas would lift WR/PF meaningfully (especially on FOREX which is sub-floor — see CLAUDE.md Goal #1 status).
+
+### Claude Opus 4.7 — proposed answer (first respondent)
+
+Each class gets a **0–100 sub-score** that's mapped to 1–10 via deciles (≥90 = 10, ≥80 = 9, …). The features and weights:
+
+**EQUITY** (target Tier 2: PF>1.5 / WR>50%)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Momentum (12-1 mo return, sector-relative) | 25% | yfinance |
+| Quality (ROIC ttm, debt/equity) | 20% | SimFin / SEC EDGAR |
+| Earnings revision delta 30d | 15% | Zacks API or yfinance.recommendations |
+| Realized-vol regime (1mo < 12mo median) | 15% | yfinance |
+| Insider buying 90d (% of float) | 10% | OpenInsider scrape |
+| Liquidity (ADV > $50M) | 10% | yfinance |
+| Catalyst proximity (earnings within 21d) | 5% | yfinance.calendar |
+
+**Floor: refuse < 4/10.** Rationale: project data shows EQUITY all-time PF 1.92 — protecting that against the recent n=33 WR 33% degradation needs the momentum × quality combo + regime tag.
+
+**ETF** (current borderline T2 — n=87, push to 100)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Trend (price > 50dma > 200dma) | 30% | yfinance |
+| Cross-asset breadth confirmation | 20% | yfinance (constituent breadth) |
+| Flow proxy (volume z-score 5d vs 60d) | 20% | yfinance |
+| Sector momentum rank (top decile) | 15% | computed |
+| VIX regime (<22 = risk-on) | 15% | ^VIX |
+
+**Floor: < 4/10.** ETFs are beta-dominated — trend + flow + regime is the high-Sharpe recipe.
+
+**CRYPTO** (sub-T2; needs concentration cut)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Funding-rate regime (-0.01% to 0.05% favorable for long) | 25% | Binance / Bybit funding API |
+| Spot volume z-score 7d | 20% | Binance API (+ CoinGecko fallback) |
+| Whale-tx 10k+ count 24h vs 30d median | 15% | on-chain (Glassnode free tier / Whale Alert) |
+| Open-interest delta 24h | 15% | Binance OI |
+| ATR-normalised distance from 20dma (mean-rev signal) | 15% | computed |
+| RSI(14) NOT in 70-85 (avoid exhaustion zone) | 10% | computed |
+
+**Floor: < 5/10** (crypto needs a higher bar because slippage + funding eats edge). Targets the `quan_engine 18% volume @ PF 0.70` problem — funding + whale gates are the historically validated screens.
+
+**FOREX** (sub-floor PF 0.27 — mutate-before-kill mandatory)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Interest-rate differential (carry, 2Y spread) | 30% | FRED |
+| DXY trend regime (50dma slope) | 20% | yfinance ^DXY |
+| Commitments of Traders — small-spec extreme (contrarian) | 20% | CFTC weekly |
+| Realized-vol regime (low-vol = carry, high-vol = trend) | 15% | yfinance |
+| News-event proximity (CPI / NFP / FOMC within 48h → skip) | 15% | FRED calendar |
+
+**Floor: < 6/10** (the highest floor — FOREX requires high conviction to overcome 1-2 pip spreads compounding). This is the Tier-2 rescue plan: pivot off pure technical to **carry + COT + macro-event** as the spine, in line with `docs/MUTATION_THREE_AXIS_PROTOCOL.md`.
+
+**COMMODITY** (close to T2: PF 1.78 / WR 46.9%, lift WR)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Term-structure (contango vs backwardation, slope) | 25% | CME / Nasdaq Data Link |
+| COT commercials net positioning | 20% | CFTC |
+| Inventory delta (oil EIA / gold COMEX / nat-gas EIA) | 20% | EIA / COMEX |
+| Seasonal pattern (calendar bias z-score) | 15% | computed historical |
+| USD inverse (DXY trend negative = commodity tailwind) | 10% | yfinance |
+| Geopolitical-tension news tag | 10% | RSS scrape (OilPrice/Reuters) |
+
+**Floor: < 5/10.** COT + inventory is the proven hedge-fund recipe (Bridgewater, multi-strat commodity pods).
+
+**BOND** (T2 PF+WR but n=18 — needs scale)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Yield-curve slope (10Y-2Y) regime | 30% | FRED |
+| Real-yield regime (10Y TIPS) | 25% | FRED |
+| TSMOM signal (12mo momentum on ^TNX) | 20% | yfinance |
+| Fed-funds path expectation vs market (CME FedWatch) | 15% | CME FedWatch |
+| Inflation surprise index | 10% | FRED CPI YoY surprise |
+
+**Floor: < 5/10.** Bonds are macro-pure — the regime features ARE the signal.
+
+**FUTURES** (broad — applies the relevant per-class formula above, weighted)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Underlying class score (EQUITY/COMMODITY formula) | 50% | computed |
+| Roll-yield (front-month vs next) | 20% | CME |
+| COT non-commercials extreme | 15% | CFTC |
+| OI trend (5d delta) | 15% | CME |
+
+**Floor: < 5/10.**
+
+**PENNY** (highest dispersion — strictest gate)
+| Feature | Weight | Data feed |
+|---|---|---|
+| Short-interest % of float (squeeze fuel) | 25% | Finra / Fintel |
+| Recent earnings beat × revenue growth > 25% | 20% | yfinance |
+| Volume spike z-score 5d vs 60d | 20% | yfinance |
+| Float < 50M (squeeze ceiling) | 15% | yfinance |
+| Insider buying 30d | 10% | OpenInsider |
+| News catalyst tag (FDA / contract / partnership) | 10% | RSS |
+
+**Floor: < 7/10** (highest — most picks must be rejected; survivor edge is huge).
+
+### Implementation path
+
+1. Add the question above as a system-prompt addendum in the next AI-tournament pipeline run (`tools/ai_tournament/generate_picks_fleet.py` → inject before per-class persona prompt).
+2. Each model's answer captured in a new submission file `data/ai_tournament/tier_algorithms/<model>_<date>.json` (schema: `{ model_id, asset_class, formula: [{feature, weight, data_feed, why}], floor }`).
+3. Cross-model consensus extracted via majority-weight per feature → seeds `alpha_engine/score_v3.py` (new file, opt-in sidecar per the Wire-Up Rule with a documented production caller target).
+4. Run on existing closed picks; compare WR/PF lift vs current `score_pick.py` per class. Promote only classes where lift is statistically significant (n>=100, paired bootstrap p<0.05).
+
+### Next step
+
+Queue the question for grok3, qwen3_6_max, deepseek_v4, cerebras_llama4, cursor_agent, ring_261T, gemini_2_5_pro, mercury_v2 in the next pipeline run. Append each model's verbatim answer to this entry (or a follow-up entry).
+
+
+---
+
+## 2026-05-25 03:00 UTC — Tier-rating algorithm: cross-model responses
+
+Ran the question through tools/swarm/swarm_run.py against deepseek + cerebras + gemini in parallel. Cerebras returned non-JSON (worker error). Two valid responses below — see full files in `swarm_runs/tier_rating_20260525T025721Z/`.
+
+### deepseek (deepseek-chat, 29s)
+
+```json
+{
+  "model_id": "alpha_engine_v3_candidate",
+  "answered_at": "2025-04-09T14:30:00Z",
+  "asset_classes": {
+    "EQUITY": {
+      "features": [
+        {
+          "name": "earnings_surprise_zscore",
+          "weight": 30,
+          "data_feed": "yfinance earnings calendar + IBKR fundamental data",
+          "why": "Forward-looking earnings beats drive 70% of short-term price discovery in liquid equities"
+        },
+        {
+          "name": "institutional_flow_ratio",
+          "weight": 25,
+          "data_feed": "NASDAQ TotalView ITCH + FINRA ATS data via Polygon.io",
+          "why": "Dark pool volume / total volume > 0.35 signals smart money accumulation"
+        },
+        {
+          "name": "short_interest_days_to_cover",
+          "weight": 20,
+          "data_feed": "FINRA short interest file (biweekly)",
+          "why": "Days-to-cover > 5 creates gamma squeeze potential on positive catalyst"
+        },
+        {
+          "name": "relative_strength_20d_vs_spy",
+          "weight": 15,
+          "data_feed": "yfinance adjusted close",
+          "why": "Momentum persistence over 20 days predicts next-week continuation 62% of time"
+        },
+        {
+          "name": "implied_volatility_percentile",
+          "weight": 10,
+          "data_feed": "yfinance options chain (30-day IV)",
+          "why": "IV < 20th percentile signals undervalued optionality; IV > 80th signals froth"
+        }
+      ],
+      "floor": 4,
+      "signature_insight": "Most systems overweight P/E ratios for equities, but in the current regime of earnings dispersion, the earnings surprise z-score relative to whisper numbers is 3x more predictive than trailing multiples."
+    },
+    "ETF": {
+      "features": [
+        {
+          "name": "premium_discount_zscore",
+          "weight": 35,
+          "data_feed": "yfinance NAV + market price (1-min bars)",
+          "why": "Persistent >1% premium signals retail euphoria; discount signals liquidation pressure"
+        },
+        {
+          "name": "creation_redemption_flow",
+          "weight": 30,
+          "data_feed": "Bloomberg AP flow data via ETF Global",
+          "why": "Net creations > 0.5% of AUM in a week predicts 2-week outperformance"
+        },
+        {
+          "name": "sector_concentration_herfindahl",
+          "weight": 20,
+          "data_feed": "yfinance holdings breakdown (top 10)",
+          "why": "HHI > 2500 means the ETF is a single-sector bet, not a diversifier"
+        },
+        {
+          "name": "bid_ask_spread_bps",
+          "weight": 15,
+          "data_feed": "yfinance intraday quote data",
+          "why": "Spread > 50 bps on a $50 ETF signals structural illiquidity that erodes returns"
+        }
+      ],
+      "floor": 3,
+      "signature_insight": "Rating systems treat ETFs like stocks, but the primary driver is the creation/redemption mechanism - a premium >2% with low creations is a short signal, not a buy signal."
+    },
+    "CRYPTO": {
+      "features": [
+        {
+          "name": "funding_rate_8h_ema",
+          "weight": 35,
+          "data_feed": "Binance futures API (perpetual funding rate)",
+          "why": "Sustained funding > 0.05% predicts 72-hour mean reversion with 68% accuracy"
+        },
+        {
+          "name": "exchange_netflow_24h",
+          "weight": 25,
+          "data_feed": "Glassnode exchange flow data",
+          "why": "Net outflow > 1% of circulating supply signals accumulation; inflow > 2% signals distribution"
+        },
+        {
+          "name": "stablecoin_dominance_change",
+          "weight": 20,
+          "data_feed": "CoinGecko stablecoin market cap data",
+          "why": "USDT.D + USDC.D rising > 0.5% in 24h predicts altcoin underperformance"
+        },
+        {
+          "name": "onchain_active_addresses_7d_ma",
+          "weight": 15,
+          "data_feed": "CoinMetrics network data",
+          "why": "Active addresses declining while price rising is a bearish divergence with 80% hit rate"
+        },
+        {
+          "name": "open_interest_change_24h",
+          "weight": 5,
+          "data_feed": "Coinglass OI data",
+          "why": "OI up > 20% with flat price signals impending liquidation cascade"
+        }
+      ],
+      "floor": 5,
+      "signature_insight": "The biggest mistake is using 24h volume as a signal - it's easily wash-traded. Funding rate and exchange flows are the only honest signals in crypto."
+    },
+    "FOREX": {
+      "features": [
+        {
+          "name": "carry_trade_differential_3m",
+          "weight": 30,
+          "data_feed": "FRED (DFII10 for USD, respective central bank rates via Bloomberg)",
+          "why": "Interest rate differentials explain 60% of medium-term FX moves in G10 pairs"
+        },
+        {
+          "name": "cftc_net_speculative_positioning_zscore",
+          "weight": 25,
+          "data_feed": "CFTC COT report (legacy format, net non-commercial positions)",
+          "why": "Extreme positioning (>2 std dev) predicts 2-week reversals with 72% accuracy"
+        },
+        {
+          "name": "purchasing_power_parity_deviation",
+          "weight": 20,
+          "data_feed": "OECD CPI data + FRED real exchange rate indices",
+          "why": "PPP deviation > 20% is a mean-reversion signal over 3-6 months"
+        },
+        {
+          "name": "volatility_regime_switch_indicator",
+          "weight": 15,
+          "data_feed": "yfinance EUR/USD 1-month ATM IV",
+          "why": "IV > 12% signals regime switch; trend-following fails, mean-reversion works"
+        },
+        {
+          "name": "central_bank_hawkishness_score",
+          "weight": 10,
+          "data_feed": "Bloomberg central bank sentiment index (proprietary NLP)",
+          "why": "Hawkish surprise in minutes moves rates 50% more than data releases"
+        }
+      ],
+      "floor": 4,
+      "signature_insight": "Most systems ignore the CFTC COT report for FX, but net speculative positioning is the single most predictive feature - when 90% of specs are long, the top is in."
+    },
+    "COMMODITY": {
+      "features": [
+        {
+          "name": "eia_inventory_surprise",
+          "weight": 35,
+          "data_feed": "EIA Weekly Petroleum Status Report (crude + products)",
+          "why": "Inventory surprise > 2 std dev moves crude 3% intraday with 80% directional accuracy"
+        },
+        {
+          "name": "cftc_producer_hedging_ratio",
+          "weight": 25,
+          "data_feed": "CFTC COT report (commercial long/short ratio)",
+          "why": "Producers hedging > 80% of production signals price top; under-hedging signals bottom"
+        },
+        {
+          "name": "contango_backwardation_structure",
+          "weight": 20,
+          "data_feed": "CME futures curve (front vs 12-month)",
+          "why": "Backwardation > 5% predicts spot outperformance over next month"
+        },
+        {
+          "name": "usd_index_correlation_30d",
+          "weight": 15,
+          "data_feed": "FRED (DTWEXBGS) + yfinance commodity ETF",
+          "why": "Dollar correlation > -0.8 means commodity is a pure dollar play; < -0.3 means supply-driven"
+        },
+        {
+          "name": "global_pmi_trend",
+          "weight": 5,
+          "data_feed": "S&P Global PMI (manufacturing, via FRED or Bloomberg)",
+          "why": "PMI > 50 rising adds 2% tailwind to industrial commodities"
+        }
+      ],
+      "floor": 4,
+      "signature_insight": "Rating systems use spot price momentum, but the futures curve structure (contango/backwardation) is 2x more predictive - backwardation is a physical shortage signal."
+    },
+    "BOND": {
+      "features": [
+        {
+          "name": "yield_curve_slope_2y10y",
+          "weight": 35,
+          "data_feed": "FRED (DGS2 + DGS10)",
+          "why": "Steepening > 50bp predicts risk-on rotation; inversion deepening predicts recession"
+        },
+        {
+          "name": "fed_funds_futures_implied_rate_change",
+          "weight": 30,
+          "data_feed": "CME FedWatch Tool (30-day Fed Funds futures)",
+          "why": "Probability of 25bp hike/cut > 70% moves 2-year yields 10bp same day"
+        },
+        {
+          "name": "breakeven_inflation_rate_5y5y",
+          "weight": 20,
+          "data_feed": "FRED (T5YIE + T10YIE)",
+          "why": "Breakeven > 2.5% signals inflation panic; < 1.5% signals deflation risk"
+        },
+        {
+          "name": "corporate_spread_oas",
+          "weight": 15,
+          "data_feed": "FRED (BAMLC0A0CM for IG, BAMLH0A0HYM for HY)",
+          "why": "HY spread widening > 100bp in a week predicts 10-year yield drop of 20bp"
+        }
+      ],
+      "floor": 3,
+      "signature_insight": "The biggest mistake is treating bonds as 'safe' - the yield curve slope is the only thing that matters for direction; duration is a trap in steepening regimes."
+    },
+    "FUTURES": {
+      "features": [
+        {
+          "name": "cftc_managed_money_long_short_ratio",
+          "weight": 35,
+          "data_feed": "CFTC COT report (managed money category)",
+          "why": "Managed money net long > 80% of open interest is a contrarian top signal"
+        },
+        {
+          "name": "roll_yield_annualized",
+          "weight": 30,
+          "data_feed": "CME futures curve (front vs deferred)",
+          "why": "Positive roll yield > 10% annualized is a structural carry trade signal"
+        },
+        {
+          "name": "volume_open_interest_divergence",
+          "weight": 20,
+          "data_feed": "CME daily volume + open interest data",
+          "why": "Volume up 50% with OI flat signals liquidation; OI up with volume flat signals accumulation"
+        },
+        {
+          "name": "basis_to_spot_deviation",
+          "weight": 15,
+          "data_feed": "yfinance spot vs futures price",
+          "why": "Basis > 2% signals arbitrage opportunity; basis < -2% signals backwardation squeeze"
+        }
+      ],
+      "floor": 4,
+      "signature_insight": "Most systems ignore roll yield - but in futures, the carry (positive or negative) determines 80% of total return over a quarter."
+    },
+    "PENNY": {
+      "features": [
+        {
+          "name": "insider_buying_dollar_value",
+          "weight": 40,
+          "data_feed": "SEC EDGAR Form 4 filings via SEC API",
+          "why": "Insider buying > $100k in a month predicts 50% upside with 65% accuracy"
+        },
+        {
+          "name": "reverse_merger_rumor_score",
+          "weight": 25,
+          "data_feed": "OTC Markets news feed + SEC 8-K filings",
+          "why": "Reverse merger announcements drive 200%+ moves; pre-announcement volume spike is predictive"
+        },
+        {
+          "name": "bid_ask_spread_percent",
+          "weight": 20,
+          "data_feed": "yfinance quote data (1-min bars)",
+          "why": "Spread > 10% means you lose 10% on entry; only tradeable if spread < 5%"
+        },
+        {
+          "name": "outstanding_shares_change_30d",
+          "weight": 15,
+          "data_feed": "OTC Markets share structure data",
+          "why": "Share count up > 20% in 30 days signals toxic dilution; down > 10% signals buyback"
+        }
+      ],
+      "floor": 6,
+      "signature_insight": "The single biggest mistake is using technical analysis on penny stocks - they're too illiquid. Insider buying and share structure changes are the only reliable signals."
+    }
+  },
+  "engine": "deepseek",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs/tier_rating_20260525T025721Z/deepseek.json.raw.txt",
+    "engine": "deepseek",
+    "ts": "20260525T025750Z",
+    "session_id": "",
+    "model_fingerprint": "deepseek-v4-flash",
+    "tokens_in": 643,
+    "tokens_out": 2744,
+    "transport_status": "200",
+    "retry_count": 0
+  }
+}
+```
+
+### gemini (gemini-exp-1206-cli, 66s)
+
+```json
+{
+  "model_id": "gemini-exp-1206-cli",
+  "answered_at": "2026-05-25T00:00:00Z",
+  "asset_classes": {
+    "EQUITY": {
+      "features": [
+        {
+          "name": "Earnings Revision Momentum",
+          "weight": 30,
+          "data_feed": "Zacks / IEX Cloud",
+          "why": "Captures institutional repricing and analyst sentiment shifts ahead of actual price action."
+        },
+        {
+          "name": "Relative Strength vs SPY",
+          "weight": 25,
+          "data_feed": "yfinance",
+          "why": "Confirms idiosyncratic alpha generation rather than just riding a beta-driven market float."
+        },
+        {
+          "name": "Free Cash Flow Yield",
+          "weight": 20,
+          "data_feed": "Edgar / Financial Modeling Prep",
+          "why": "Provides a hard fundamental downside floor against multiple contraction in tightening regimes."
+        },
+        {
+          "name": "Options Put/Call Volatility Skew",
+          "weight": 15,
+          "data_feed": "Polygon.io / CBOE",
+          "why": "Reveals hidden smart-money hedging activity and expected tail-risk direction."
+        },
+        {
+          "name": "Insider Buying Breadth",
+          "weight": 10,
+          "data_feed": "SEC Form 4 / Finviz",
+          "why": "Signals asymmetric, high-conviction accumulation from those with perfect internal information."
+        }
+      ],
+      "floor": 6,
+      "signature_insight": "Relying purely on backward-looking P/E ratios instead of forward earnings revision momentum inevitably traps systems in value traps."
+    },
+    "ETF": {
+      "features": [
+        {
+          "name": "Net Inflow/Outflow Velocity",
+          "weight": 30,
+          "data_feed": "ETF Global / Bloomberg",
+          "why": "Tracks the mechanical creation/redemption pressure directly driving the underlying basket of assets."
+        },
+        {
+          "name": "Sector Relative VIX",
+          "weight": 25,
+          "data_feed": "CBOE / yfinance",
+          "why": "Avoids allocating to sectors experiencing stealth volatility expansion before absolute price breaks."
+        },
+        {
+          "name": "Premium/Discount to NAV",
+          "weight": 20,
+          "data_feed": "IEX Cloud / yfinance",
+          "why": "Exploits structural arbitrage gaps and extreme retail sentiment before market makers close them."
+        },
+        {
+          "name": "Macro Trend Alignment (200 SMA)",
+          "weight": 15,
+          "data_feed": "yfinance",
+          "why": "Prevents catching falling knives during systemic macro-regime shifts across entire sectors."
+        },
+        {
+          "name": "Dividend Yield vs Risk-Free Rate",
+          "weight": 10,
+          "data_feed": "FRED (DGS10) / yfinance",
+          "why": "Measures the baseline yield-seeker demand floor for income-focused ETF products."
+        }
+      ],
+      "floor": 5,
+      "signature_insight": "Treating ETFs like single stocks ignores the mechanical reality of AP creation/redemption flows that override pure price technicals."
+    },
+    "CRYPTO": {
+      "features": [
+        {
+          "name": "Perp Funding Rate Delta",
+          "weight": 35,
+          "data_feed": "Binance / Bybit API",
+          "why": "Flags heavily overcrowded leverage ripe for engineered liquidation cascades."
+        },
+        {
+          "name": "On-Chain Active Addresses",
+          "weight": 25,
+          "data_feed": "Glassnode / CryptoQuant",
+          "why": "Validates whether speculative price rallies are supported by actual network utilization and adoption."
+        },
+        {
+          "name": "Exchange Net Position Change",
+          "weight": 20,
+          "data_feed": "CryptoQuant",
+          "why": "Detects institutional/whale accumulation or distribution before it impacts the spot order books."
+        },
+        {
+          "name": "Social Dominance Sentiment",
+          "weight": 15,
+          "data_feed": "LunarCrush",
+          "why": "Captures the retail herd momentum that predictably drives terminal blow-off tops."
+        },
+        {
+          "name": "Moving Average Ribbon (4h)",
+          "weight": 5,
+          "data_feed": "Binance Spot API",
+          "why": "Provides a baseline localized trend context to filter out counter-trend chop."
+        }
+      ],
+      "floor": 7,
+      "signature_insight": "Ignoring derivative funding rates is fatal; crypto price action is heavily dictated by leverage liquidations, not just organic spot demand."
+    },
+    "FOREX": {
+      "features": [
+        {
+          "name": "Real Interest Rate Differential",
+          "weight": 35,
+          "data_feed": "FRED / Central Bank APIs",
+          "why": "Acts as the primary gravitational pull for massive, sustained institutional capital flows."
+        },
+        {
+          "name": "COT Non-Commercial Net Positioning",
+          "weight": 25,
+          "data_feed": "CFTC COT Report",
+          "why": "Tracks speculative extremes to identify crowded trades ripe for vicious mean reversion."
+        },
+        {
+          "name": "Sovereign CDS Spreads",
+          "weight": 20,
+          "data_feed": "Bloomberg / Refinitiv",
+          "why": "Serves as an early warning system for hidden geopolitical tail-risks or debt crises."
+        },
+        {
+          "name": "Terms of Trade Index Momentum",
+          "weight": 10,
+          "data_feed": "World Bank / OECD",
+          "why": "Anchors long-term currency valuation to the structural realities of a country's export/import balance."
+        },
+        {
+          "name": "RSI Divergence (Daily)",
+          "weight": 10,
+          "data_feed": "OANDA API",
+          "why": "Times the exhaustion points of overextended, multi-month macro currency trends."
+        }
+      ],
+      "floor": 7,
+      "signature_insight": "Applying pure equity-style TA fails because FX pairs are relative liquidity ratios driven by central bank divergence, not corporate cash flows."
+    },
+    "COMMODITY": {
+      "features": [
+        {
+          "name": "Roll Yield / Curve Structure",
+          "weight": 35,
+          "data_feed": "CME Group API",
+          "why": "Backwardation implies immediate physical scarcity, driving spot prices up and creating positive roll yield."
+        },
+        {
+          "name": "Commercial Hedger Positioning",
+          "weight": 25,
+          "data_feed": "CFTC COT Report",
+          "why": "Tracks the 'smart money' that actually produces or consumes the physical asset in the real economy."
+        },
+        {
+          "name": "Global Inventory Drawdowns",
+          "weight": 20,
+          "data_feed": "EIA (Energy) / USDA (Agri)",
+          "why": "Confirms fundamental, structural supply-demand imbalances outside of speculative paper trading."
+        },
+        {
+          "name": "US Dollar Inverse Correlation",
+          "weight": 10,
+          "data_feed": "yfinance (DXY)",
+          "why": "Accounts for the mechanical denominator effect since global commodities are priced in USD."
+        },
+        {
+          "name": "Historical Seasonality Win-Rate",
+          "weight": 10,
+          "data_feed": "Moore Research Center",
+          "why": "Respects the intrinsic, unavoidable harvest and consumption cycles of physical goods."
+        }
+      ],
+      "floor": 6,
+      "signature_insight": "Trading commodities without analyzing the futures curve guarantees bleeding capital to negative roll yield in contango markets."
+    },
+    "BOND": {
+      "features": [
+        {
+          "name": "Yield Curve Slope (2Y/10Y)",
+          "weight": 35,
+          "data_feed": "FRED (T10Y2Y)",
+          "why": "Dictates duration risk premium and signals broader economic regime shifts (recession vs expansion)."
+        },
+        {
+          "name": "Breakeven Inflation Momentum",
+          "weight": 25,
+          "data_feed": "FRED (T5YIE)",
+          "why": "Separates nominal yield changes from real yield drivers, critical for inflation-adjusted purchasing power."
+        },
+        {
+          "name": "Central Bank Balance Sheet Velocity",
+          "weight": 20,
+          "data_feed": "FRED (WALCL)",
+          "why": "Tracks the sheer, brute-force liquidity that either crushes or lifts aggregate bond prices."
+        },
+        {
+          "name": "Credit Spread (BAA vs 10Y)",
+          "weight": 15,
+          "data_feed": "FRED (BAA10Y)",
+          "why": "Measures systemic risk appetite and default probabilities spilling over into safe-haven treasuries."
+        },
+        {
+          "name": "Term Premium",
+          "weight": 5,
+          "data_feed": "NY Fed (Adrian-Crump-Moench)",
+          "why": "Captures the shifting excess compensation investors demand for bearing long-term interest rate risk."
+        }
+      ],
+      "floor": 5,
+      "signature_insight": "Equating high yield with high quality traps systems in duration risk; bonds must be modeled as macro liquidity derivatives, not isolated assets."
+    },
+    "FUTURES": {
+      "features": [
+        {
+          "name": "Volume Profile / VWAP Deviations",
+          "weight": 30,
+          "data_feed": "CME Group API / Sierra Chart",
+          "why": "Pinpoints hidden institutional liquidity resting levels and value areas untouched by standard time-based charts."
+        },
+        {
+          "name": "Order Book Imbalance (Level 2)",
+          "weight": 25,
+          "data_feed": "CME Globex Level 2",
+          "why": "Catches micro-structure directional pressure milliseconds before it translates into price movement."
+        },
+        {
+          "name": "Open Interest Delta",
+          "weight": 20,
+          "data_feed": "CME Group API",
+          "why": "Confirms whether a price spike is driven by aggressive new money entering or just trapped shorts covering."
+        },
+        {
+          "name": "Cross-Asset Beta Arbitrage",
+          "weight": 15,
+          "data_feed": "yfinance (NQ vs DXY/TNX)",
+          "why": "Measures systemic algorithmic arbitrage flows that drag index futures regardless of localized technicals."
+        },
+        {
+          "name": "Session Pivot Point Confluence",
+          "weight": 10,
+          "data_feed": "Local algorithm calculation",
+          "why": "Respects algorithmic and psychological boundaries that dictate intraday mean-reversion zones."
+        }
+      ],
+      "floor": 7,
+      "signature_insight": "Trading index futures based on daily chart patterns ignores that intraday movement is entirely dominated by algorithmic liquidity seeking and order book microstructure."
+    },
+    "PENNY": {
+      "features": [
+        {
+          "name": "Relative Volume (RVOL)",
+          "weight": 40,
+          "data_feed": "Polygon.io / Finviz",
+          "why": "Illiquid micro-caps only move when extreme, abnormal retail or chatroom volume violently enters the order book."
+        },
+        {
+          "name": "Float vs Short Interest",
+          "weight": 25,
+          "data_feed": "Ortex / FINRA",
+          "why": "Identifies highly constrained supply structures that are mathematically ripe for parabolic short squeezes."
+        },
+        {
+          "name": "SEC Filing Catalysts",
+          "weight": 15,
+          "data_feed": "Edgar API",
+          "why": "Distinguishes legitimate fundamental catalyst pumps (FDA approvals, contracts) from baseless manipulation."
+        },
+        {
+          "name": "Dilution Risk (Shelf/Warrants)",
+          "weight": 10,
+          "data_feed": "BamSEC / Edgar API",
+          "why": "Acts as a hard veto to avoid buying right before a toxic financing vehicle dumps newly printed shares on retail."
+        },
+        {
+          "name": "VWAP Reclaim (1m/5m)",
+          "weight": 10,
+          "data_feed": "Polygon.io",
+          "why": "Proves intraday momentum buyers have successfully absorbed and overwhelmed the morning short-sellers."
+        }
+      ],
+      "floor": 8,
+      "signature_insight": "Applying standard fundamental valuations to penny stocks is a death sentence; they are strictly instruments of liquidity, float dynamics, and catalyst momentum."
+    }
+  },
+  "engine": "gemini",
+  "_swarm_meta": {
+    "raw_path": "swarm_runs/tier_rating_20260525T025721Z/gemini.json.raw.txt",
+    "engine": "gemini",
+    "ts": "20260525T025828Z",
+    "session_id": "",
+    "model_fingerprint": "",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "transport_status": "ok",
+    "retry_count": 0
+  }
+}
+```
+
+### Next step
+
+Run a consensus extractor (TODO: tools/ai_tournament/consensus_tier_algorithm.py): for each (asset_class, feature_concept) tuple, take the median weight across models that included it (Claude/Deepseek/Gemini so far); features with >=2-model consensus go into `alpha_engine/score_v3.py` (opt-in sidecar per Wire-Up Rule, with a documented production-caller target). Pending: cursor_agent, grok3, ring_261T, qwen3_6_max, mercury_v2, nemotron3_super responses — to queue, append this prompt to their next pipeline run.
