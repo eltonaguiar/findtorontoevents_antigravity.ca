@@ -125,7 +125,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add alpha_engine/data/closed_picks.json alpha_engine/data/outcome_resolver_log.json
+          git add alpha_engine/data/outcome_resolver_log.json
+          # closed_picks.json is gitignored (1.9 MB live / 21 MB historical bloat per
+          # commit 8bc9cf075). Optional add so workflow doesn't fail when file is absent
+          # on fresh runner checkout. Fix for 17h freeze starting 2026-05-25T19:54 UTC.
+          # See reports/2026-05-26_forward_validator_freeze_diagnosis.md.
+          git add alpha_engine/data/closed_picks.json 2>/dev/null || true
           git add alpha_engine/data/active_picks.json alpha_engine/data/expired_picks_archive.json 2>/dev/null || true
           git add rapid_fire_data/closed_picks.json rapid_fire_data/now_picks.json 2>/dev/null || true
           git add quan_engine/data/active_signals.json quan_engine/data/quan_engine.db 2>/dev/null || true
