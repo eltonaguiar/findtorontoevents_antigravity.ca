@@ -3144,8 +3144,11 @@ def run_generation():
         active_symbols_by_strategy[strategy] = existing
         _directional_accepted += 1
 
-        print(f"  NEW: {signal.get('signal_type', signal.get('side', 'BUY'))} {signal['symbol']} @ {signal['entry_price']} "
-              f"[{signal['strategy']}] ML={signal.get('ml_score', '?')}")
+        # Use .get() defensively — incident 2026-05-26: 'strategy' key may be missing on certain
+        # emitter paths (active_picks_sync, prediction_market_agents), crashing alpha-engine-fast
+        # workflow with KeyError. Fixes 89-runs-per-day failure chain on alpha-engine-fast.yml.
+        print(f"  NEW: {signal.get('signal_type', signal.get('side', 'BUY'))} {signal.get('symbol', '?')} @ {signal.get('entry_price', '?')} "
+              f"[{signal.get('strategy', '?')}] ML={signal.get('ml_score', '?')}")
 
     # --- Structural vs Directional stats ---
     # Directional blocked = total signals processed minus all accepted and structural
