@@ -69,6 +69,23 @@ jobs:
             python alpha_engine/outcome_resolver.py
           fi
 
+      # INC #10 fix (2026-05-26): mirror resolved outcomes into MySQL at_signal_outcomes
+      # so the audit dashboard's signal_outcomes coverage stops being 82-days stale.
+      # backfill_local_sources.py uses INSERT IGNORE so re-running is idempotent (safe
+      # to call hourly even though it scans more than just new picks). Soft-fail so
+      # MySQL connectivity issues don't break the resolver chain above.
+      - name: Mirror resolved outcomes to MySQL at_signal_outcomes (INC #10)
+        if: ${{ inputs.dry_run != 'true' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_STOCKS_PASSWORD }}
+          DB_STOCKS_NAME: ${{ secrets.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+        run: |
+          python audit_trail/backfill_local_sources.py 2>&1 \
+            || echo "::warning title=at_signal_outcomes_mirror::backfill_local_sources failed — outcomes not mirrored to MySQL this cycle (resolver above still wrote JSON outputs)"
+
       - name: Commit resolved picks
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true' }}
         env:
