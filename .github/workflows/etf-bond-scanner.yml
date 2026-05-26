@@ -106,7 +106,7 @@ jobs:
           # persist. The scanner_output dump is best-effort (also uploaded
           # as an artifact); add it tolerantly so a missing/renamed path
           # never aborts the commit.
-          git add alpha_engine/data/active_picks.json
+          git add -f alpha_engine/data/active_picks.json 2>/dev/null || true
           git add alpha_engine/data/scanner_output/active_picks_etf.json 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "No ETF pick changes to commit"
@@ -208,7 +208,7 @@ jobs:
           # persist. The scanner_output dump is best-effort (also uploaded as
           # an artifact); add it tolerantly so a missing/renamed path never
           # aborts the commit.
-          git add alpha_engine/data/active_picks.json
+          git add -f alpha_engine/data/active_picks.json 2>/dev/null || true
           git add alpha_engine/data/active_picks_bond.json 2>/dev/null || true
           git add alpha_engine/data/scanner_output/active_picks_bond.json 2>/dev/null || true
           if git diff --staged --quiet; then
