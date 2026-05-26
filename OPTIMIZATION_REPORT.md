@@ -1,10 +1,10 @@
 # 🎛️ Optimization Report
 
-**Generated:** 2026-05-26T20:45:20.531757
+**Generated:** 2026-05-26T22:28:46.414539
 
 ## 📊 Overall Accuracy
-- **Total Signals:** 349
-- **Accuracy:** 58.9%
+- **Total Signals:** 350
+- **Accuracy:** 58.7%
 - **Target:** 65.0%
 
 ## 📈 Accuracy by Asset Class
@@ -23,7 +23,7 @@
 
 ## 🔧 Recent Tweaks
 
-**2026-05-26T20:45:18**
+**2026-05-26T22:28:45**
 - SYMBOL_DISABLE: BTC-USD
   - Reason: Accuracy 50.0% below minimum 55.0%
   - Change: enabled → disabled
@@ -43,7 +43,7 @@
   - Reason: Accuracy 50.0% below minimum 55.0%
   - Change: enabled → disabled
 - SYMBOL_DISABLE: AUD-USD
-  - Reason: Accuracy 53.8% below minimum 55.0%
+  - Reason: Accuracy 50.0% below minimum 55.0%
   - Change: enabled → disabled
 
 ---
