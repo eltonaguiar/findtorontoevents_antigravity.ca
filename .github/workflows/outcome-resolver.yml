@@ -41,9 +41,41 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install yfinance pandas numpy requests
+        run: pip install yfinance pandas numpy requests pymysql
         env:
           PIP_BREAK_SYSTEM_PACKAGES: "1"
+
+      - name: Active Picks Sync — bridge ACTIVE → CLOSED for signal_outcomes
+        # PR #2 live-writer: reads at_raw_picks OPEN/ACTIVE rows from MySQL,
+        # detects TP/SL/time-exit against live prices, and writes terminal entries
+        # to both at_raw_picks (status/exit_price/pnl_pct) and closed_picks.json.
+        # This is the missing upstream piece that causes signal_outcomes table
+        # to have only 0.09% coverage (121 rows on 136K+ raw picks).
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
+          ACTIVE_PICKS_SYNC_APPLY: '1'
+        run: |
+          echo "============================================"
+          echo "  ACTIVE PICKS SYNC — MySQL writer (PR#2)"
+          echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "============================================"
+          python alpha_engine/active_picks_sync.py \
+            --asset-class CRYPTO \
+            --max-rows 5000 \
+            --apply
+          python alpha_engine/active_picks_sync.py \
+            --asset-class EQUITY \
+            --max-rows 5000 \
+            --apply
+          python alpha_engine/active_picks_sync.py \
+            --asset-class FOREX \
+            --max-rows 5000 \
+            --apply
 
       - name: Prune expired picks from active_picks.json
         env:
