@@ -1,0 +1,81 @@
+# Won vs PnL Contradiction — Historical Backfill
+# Fixes status='WON' rows that have negative pnl_pct (logically impossible).
+# Runs once on-demand via workflow_dispatch, then idempotent (safe to re-run).
+
+name: "Won PNL Contradiction Backfill"
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Apply corrections (WON -> LOST)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      dry_run:
+        description: 'Preview only (no DB writes)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: won-pnl-backfill
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run Won PNL Contradiction Backfill
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
+        run: |
+          APPLY="false"
+          DRY_RUN="true"
+
+          if [ "${{ inputs.apply }}" = "true" ]; then
+            APPLY="--apply"
+            echo "APPLY MODE: WON rows will be corrected to LOST"
+          fi
+
+          if [ "${{ inputs.dry_run }}" = "false" ] && [ "${{ inputs.apply }}" = "false" ]; then
+            DRY_RUN="--dry-run-only"
+            echo "DRY RUN MODE: Report only, no changes"
+          fi
+
+          python tools/audit_won_picks_auto.py $APPLY --report reports/won_pnl_contradiction_dryrun_$(date -u +%Y%m%d_%H%M)Z.json
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: won-pnl-report
+          path: reports/won_pnl_contradiction_dryrun_*.json
+          retention-days: 30
