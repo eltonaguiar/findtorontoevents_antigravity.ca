@@ -117,13 +117,22 @@ def _compute_ml_composite(pick: dict) -> tuple[float, str]:
     # (n=3500); Z-AI independent grounded analysis 2026-05-25 confirmed ~0.07.
     # Weighting a 0.07-IC signal at 30% was top-of-funnel poison (Gemini
     # consult: 'active poison'). Freed 20% -> ml_composite (positive signal)
-    # + small bump to forward_wr. NOT promoting elite_score yet — this file's
-    # docstring at line 70 says r=-0.001 while SCORE_PNL_EDGE_REVIEW reports
-    # 0.20 pool / 0.39 non-crypto; resolve the contradiction in a follow-up.
-    # Optional: asset-class-aware weights (disabled by default for safe rollout).
-    _w_ml, _w_conf, _w_fwd = 0.75, 0.10, 0.15
+    # + small bump to forward_wr.
+    #
+    # 2026-05-27 PR1 FIX: Asset-class-aware defaults (no flag required).
+    # CRYPTO confidence is SYSTEM-WIDE INVERTED (conf>=0.9 => 14.4% WR,
+    # conf 0.5-0.6 => 60.3% WR per INC P0 calibration). Zero out confidence
+    # for CRYPTO by default; redistribute to ml_score + forward_wr.
+    # Non-crypto classes retain 0.10 confidence weight (IC ~0.20 for EQUITY).
+    _raw_ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
+    if _raw_ac == "CRYPTO":
+        # CRYPTO: confidence anti-predictive -> zero it, boost ml_score + fwd_wr
+        _w_ml, _w_conf, _w_fwd = 0.80, 0.00, 0.20
+    else:
+        # Non-crypto: confidence IC ~0.20 (EQUITY) — keep small weight
+        _w_ml, _w_conf, _w_fwd = 0.75, 0.10, 0.15
+    # Override from risk policy if explicit per-class weights are configured
     if bool(_POLICY_FLAGS.get("enable_asset_class_ml_composite_v2")):
-        _raw_ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
         _weights_by_ac = (_RISK_POLICY.get("ml_composite_weights_by_asset") or {})
         _w = _weights_by_ac.get(_raw_ac) or _weights_by_ac.get("DEFAULT")
         if isinstance(_w, dict):
@@ -147,8 +156,12 @@ def _compute_ml_composite(pick: dict) -> tuple[float, str]:
         # Fallback path — apply penalty so it doesn't beat real composite picks.
         # Base: conf * 0.8 * 0.5 = conf * 0.4 (halved from old).
         ml_null_penalty = 0.5
-        if bool(_POLICY_FLAGS.get("disable_non_crypto_ml_null_penalty_v2")):
-            _raw_ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
+        # PR1 FIX (2026-05-27): CRYPTO confidence is anti-predictive.
+        # Zero out the fallback score for CRYPTO when ml_score is missing,
+        # rather than ranking on the inverted confidence signal.
+        if _raw_ac == "CRYPTO":
+            ml_null_penalty = 0.15  # Drastically reduce confidence fallback for crypto
+        elif bool(_POLICY_FLAGS.get("disable_non_crypto_ml_null_penalty_v2")):
             if _raw_ac and _raw_ac != "CRYPTO":
                 ml_null_penalty = 1.0
         score = conf * 0.8 * ml_null_penalty
@@ -1037,6 +1050,18 @@ def score_pick(pick, live_price, regime_data, now, fear_greed=0):
     score += direction_score
     # 2. Elite/quality score (35 pts max, was 20)
     quality_score = round(min(elite, 100) / 100 * quality_max)
+    # PR1 FIX (2026-05-27): CRYPTO elite_score is partially confidence-derived.
+    # Since confidence is anti-predictive for CRYPTO (conf>=0.9 => 14.4% WR),
+    # cap quality contribution when confidence is in the inversion zone.
+    # Non-crypto classes: elite_score IC ~0.20-0.39, no adjustment needed.
+    if asset_class == "crypto" and not non_crypto:
+        _c = float(pick.get("confidence", 0) or 0)
+        if _c > 0.90:
+            quality_score = max(0, quality_score - 10)  # Overconfidence penalty
+        elif _c > 0.85:
+            quality_score = max(0, quality_score - 5)   # Mild penalty
+        elif 0.50 <= _c <= 0.65:
+            quality_score = min(quality_max, quality_score + 5)  # Sweet spot bonus
     score += quality_score
     # 3. Freshness (15 pts — unchanged)
     freshness_score = 15 if age_h < 1 else 12 if age_h < 4 else 8 if age_h < 12 else 4 if age_h < 24 else 0
