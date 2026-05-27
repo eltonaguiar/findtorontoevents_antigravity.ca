@@ -189,6 +189,8 @@ jobs:
       - name: Push KIMI picks to Audit Trail
         env:
           PYTHONPATH: ${{ github.workspace }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
         run: python KIMI_RISEOFTHECLAW/audit_push.py 2>&1 || echo "KIMI audit push failed (non-fatal)"
 
       - name: Commit all scanner data (single atomic push)

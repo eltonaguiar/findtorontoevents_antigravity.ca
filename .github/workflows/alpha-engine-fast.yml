@@ -47,6 +47,8 @@ jobs:
           ALPHA_TOURNAMENT: "1"
           ALPHA_MIN_FAMILIES: "2"
           HF_GATE_EQUITY_BANNED_SOURCES: 'stocks_competition,fast_stocks_competition,multi_asset_institutional,kimi_signal_tracking,ml_bg_system_f'
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
         run: |
           echo "============================================"
           echo " ALPHA ENGINE FAST Tight TP/SL Variant"
