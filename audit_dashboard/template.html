@@ -5172,17 +5172,23 @@ function renderSummary() {
   // 500% cap was producing absurd numbers (e.g. +1,122,354%) because it allowed
   // single-trade outliers to balloon the geometric compound across thousands of trades.
   const displayCompoundEw = statsFiltered ? (closedPicks.length ? Math.min(9999, Math.max(-99, compoundEwCappedPct(closedPicks, 2))) : null) : serverCompoundEw;
+  // 2026-05-27 PnL honesty fix: headline is the compounded EW return (what an
+  // actual account would have earned), additive sum-of-pct is demoted to a
+  // labelled sub-line. The additive figure is mathematically a sum of independent
+  // per-trade percent returns \u2014 NOT a portfolio return \u2014 and was producing
+  // ~+888% headlines when expectancy \u00d7 n compounded to ~+219%.
+  const _purgedCompound = usingInstitutionalPnl && typeof cm.purged_pnl_compounded_ew === 'number'
+    ? cm.purged_pnl_compounded_ew : null;
+  const _headlineCompound = usingInstitutionalPnl ? _purgedCompound : displayCompoundEw;
+  const _hasHeadlineCompound = _headlineCompound != null && !Number.isNaN(_headlineCompound);
   const totalPnlSubParts = [];
+  // Always surface the additive sum honestly so analysts can still cross-check
+  // expectancy \u00d7 n. Greyed so it's clearly secondary.
+  totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px" title="Sum of per-trade PnL%. Informational only \u2014 not a portfolio compound return.">\u03a3 per-trade %: <span style="color:${displayPnl >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(displayPnl)}</span></span>`);
   if (usingInstitutionalPnl) {
-    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">Raw incl. toxic: <span style="color:var(--red);font-weight:600">${fmtPct(rawTotalPnl)}</span></span>`);
+    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">Raw incl. toxic (\u03a3): <span style="color:var(--red);font-weight:600">${fmtPct(rawTotalPnl)}</span></span>`);
   } else if (cappedPnl != null) {
-    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">excl. outliers: <span style="color:${cappedPnl >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(cappedPnl)}</span> (${outlierCount} capped)</span>`);
-  }
-  if (usingInstitutionalPnl && typeof cm.purged_pnl_compounded_ew === 'number') {
-    const _pew = cm.purged_pnl_compounded_ew;
-    totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">Purged EW compound (raw, chrono): <span style="color:${_pew >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(_pew)}</span></span>`);
-  } else if (displayCompoundEw != null && !usingInstitutionalPnl) {
-    totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">EW compound (\u00b12 cap, chrono): <span style="color:${displayCompoundEw >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(displayCompoundEw)}</span></span>`);
+    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">excl. outliers (\u03a3, capped): <span style="color:${cappedPnl >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(cappedPnl)}</span> (${outlierCount} capped)</span>`);
   }
   const totalPnlSubHtml = totalPnlSubParts.join('<br>');
 
@@ -5307,7 +5313,15 @@ function renderSummary() {
       tip: cardTips.verifiedRealized,
       sub: `<span style="font-size:9px;color:var(--text-dim)">${verifiedAlpha?.realized?.trades || 0} trades - ${fmtPct(verifiedAlpha?.realized?.total_pnl_pct || 0)} total</span>`
     },
-    { label: usingInstitutionalPnl ? 'Institutional PnL' : 'Total PnL', value: fmtPct(displayPnl), cls: displayPnl >= 0 ? 'positive' : 'negative', tip: (usingInstitutionalPnl ? `Institutional PnL: excludes known toxic/broken assets (TRXUSDT, KATUSDT, Mercury2 — ${purgedCount} purged picks).\n\nRaw total (incl. toxic): ${fmtPct(rawTotalPnl)}\nTop toxic: TRXUSDT alone = 93% of raw total.\n\n` : '') + cardTips.totalPnl + '\n\nClick for concentration & top trades drill-down.', clickable: true, clickFn: 'showPnlDrillDown',
+    { label: usingInstitutionalPnl ? 'Institutional PnL (compound)' : 'Total PnL (compound)',
+      value: _hasHeadlineCompound ? fmtPct(_headlineCompound) : fmtPct(displayPnl),
+      cls: (_hasHeadlineCompound ? _headlineCompound : displayPnl) >= 0 ? 'positive' : 'negative',
+      tip: (_hasHeadlineCompound
+            ? `Equal-weight geometric compound of capped per-trade PnL%, chronological. This is what an actual account starting at 1.0 would have earned. Σ-per-trade and raw additive sums shown below for cross-checking expectancy × n.\n\n`
+            : `(compound figure unavailable — falling back to additive sum, which is informational only)\n\n`)
+        + (usingInstitutionalPnl ? `Institutional: excludes known toxic/broken assets (TRXUSDT, KATUSDT, Mercury2 — ${purgedCount} purged picks).\nRaw total (incl. toxic, Σ): ${fmtPct(rawTotalPnl)}\nTop toxic: TRXUSDT alone = 93% of raw total.\n\n` : '')
+        + cardTips.totalPnl + '\n\nClick for concentration & top trades drill-down.',
+      clickable: true, clickFn: 'showPnlDrillDown',
       sub: totalPnlSubHtml },
     // ── loop3 49759d10 new compound metrics (rendered alongside Total PnL) ──
     (function() {
