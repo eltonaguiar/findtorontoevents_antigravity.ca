@@ -72,6 +72,12 @@
   /* Recency subset styling — distinct accents per window. */
   .recency-2w  { border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.04); padding: 10px 14px; border-radius: 4px; margin: 10px 0; }
   .recency-48h { border-left: 4px solid #ec4899; background: rgba(236,72,153,0.05); padding: 10px 14px; border-radius: 4px; margin: 10px 0; }
+  /* Visually demote (do not hide) rows whose only "edge" comes from a single-source concentration caveat. */
+  tr.row-demoted { opacity: 0.55; }
+  tr.row-demoted td { font-style: italic; }
+  .demote-icon { color: #fbbf24; margin-right: 4px; cursor: help; }
+  .raw-sub { display:block; font-size: 9px; color:#9ca3af; font-weight: normal; }
+  .pf-undefined { color: #9ca3af !important; text-decoration: underline dotted; cursor: help; }
   .chip-14d { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:800; font-size:10px; letter-spacing:0.3px; background:#78350f; color:#fcd34d; border:1px solid #f59e0b; margin-left:6px; }
   .chip-48h { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:800; font-size:10px; letter-spacing:0.3px; background:#831843; color:#fbcfe8; border:1px solid #ec4899; margin-left:6px; }
   .chip-all { display:inline-block; padding:2px 7px; border-radius:9px; font-weight:800; font-size:10px; letter-spacing:0.3px; background:#1e3a8a; color:#bfdbfe; border:1px solid #3b82f6; margin-left:6px; }
@@ -559,10 +565,70 @@ function _fmtRec(v, dp=2){
   return Number(v).toFixed(dp);
 }
 function _wrCls(v){ if (v==null) return 'pnl-neu'; return v>=55?'pnl-pos':(v<45?'pnl-neg':'pnl-neu'); }
-function _pfCls(v){ if (v==null||v==='inf') return v==='inf'?'pnl-pos':'pnl-neu'; return v>=1.5?'pnl-pos':(v<1?'pnl-neg':'pnl-neu'); }
+// PF='inf' means losses=0 → undefined edge; do NOT render as green. Treat as neutral and flag via _pfCellMarkup.
+function _pfCls(v){ if (v==null||v==='inf') return 'pnl-neu'; return v>=1.5?'pnl-pos':(v<1?'pnl-neg':'pnl-neu'); }
 function _caveatBadges(cv){
   if (!cv || !cv.length) return '';
   return cv.map(c=>`<span class="badge b-fail" title="${c}" style="margin-left:4px;font-size:9px">${c.split('=')[0]}</span>`).join('');
+}
+// Detect single_source_concentration in caveats — these rows should be visually demoted.
+function _hasSingleSourceConc(cv){
+  if (!cv || !cv.length) return false;
+  return cv.some(c => typeof c === 'string' && c.indexOf('single_source_concentration') === 0);
+}
+function _rowDemoteAttr(cv){
+  if (!_hasSingleSourceConc(cv)) return '';
+  const tip = (cv||[]).join(' | ').replace(/"/g,'&quot;');
+  return ` class="row-demoted" title="Visually demoted: ${tip}"`;
+}
+function _demoteIcon(cv){
+  if (!_hasSingleSourceConc(cv)) return '';
+  const tip = (cv||[]).join(' | ').replace(/"/g,'&quot;');
+  return `<span class="demote-icon" title="${tip}">&#9888;</span>`;
+}
+// Render shrunk WR as PRIMARY; raw wr_pct shown as small grey sub-line. Falls back to raw with "(unshrunk)" tag.
+function _wrPrimaryCell(b, insuffFloor){
+  const shrunk = b.wr_shrunk_pct;
+  const raw = b.wr_pct;
+  if (shrunk != null){
+    const sub = (raw != null) ? `<span class="raw-sub">raw ${_fmtRec(raw)}%</span>` : '';
+    return `<td class="num ${_wrCls(shrunk)}">${_fmtRec(shrunk)}%${sub}</td>`;
+  }
+  if (raw != null){
+    return `<td class="num ${_wrCls(raw)}">${_fmtRec(raw)}% <span class="raw-sub">(unshrunk)</span></td>`;
+  }
+  if (b.n_decisive != null && b.n_decisive < (insuffFloor||10)){
+    return `<td class="num insuff">INSUFF-N (n=${b.n_decisive})</td>`;
+  }
+  return `<td class="num">—</td>`;
+}
+function _wrPrimaryInline(b, insuffFloor){
+  const shrunk = b.wr_shrunk_pct;
+  const raw = b.wr_pct;
+  if (shrunk != null){
+    const sub = (raw != null) ? ` <span class="small" style="color:#9ca3af">(raw ${_fmtRec(raw)}%)</span>` : '';
+    return `<span class="${_wrCls(shrunk)}">${_fmtRec(shrunk)}%</span>${sub}`;
+  }
+  if (raw != null){
+    return `<span class="${_wrCls(raw)}">${_fmtRec(raw)}%</span> <span class="small" style="color:#9ca3af">(unshrunk)</span>`;
+  }
+  if (b.n_decisive != null && b.n_decisive < (insuffFloor||10)){
+    return `<span class="insuff">INSUFF-N(${b.n_decisive})</span>`;
+  }
+  return '—';
+}
+// PF cell — if pf==='inf' (losses=0), render with .pf-undefined class + tooltip explaining undefined edge.
+function _pfCellMarkup(pf, dp){
+  if (pf === 'inf'){
+    return `<td class="num pf-undefined" title="PF undefined when losses=0; not a real edge">&infin;</td>`;
+  }
+  return `<td class="num ${_pfCls(pf)}">${_fmtRec(pf, dp||3)}</td>`;
+}
+function _pfInline(pf, dp){
+  if (pf === 'inf'){
+    return `<span class="pf-undefined" title="PF undefined when losses=0; not a real edge">&infin;</span>`;
+  }
+  return `<span class="${_pfCls(pf)}">${_fmtRec(pf, dp||2)}</span>`;
 }
 function renderRecencyTable(s, mountId, accentClass){
   const el = document.getElementById(mountId);
@@ -570,23 +636,21 @@ function renderRecencyTable(s, mountId, accentClass){
   if (!s || !s.by_class){ el.innerHTML = '<p class="small" style="color:#ef4444">Sidecar missing — run tools/audit_pick_funnel/build_recency_summary.py.</p>'; return; }
   const entries = Object.entries(s.by_class).sort((a,b)=>(b[1].n_touched||0)-(a[1].n_touched||0));
   const rows = entries.map(([ac,b])=>{
-    const wrCell = (b.wr_pct!=null)
-      ? `<td class="num ${_wrCls(b.wr_pct)}">${_fmtRec(b.wr_pct)}%</td>`
-      : (b.n_decisive < (s.insufficient_n_floor||10)
-          ? `<td class="num insuff">INSUFF-N (n=${b.n_decisive})</td>`
-          : `<td class="num">—</td>`);
-    const wrsCell = b.wr_shrunk_pct!=null ? `<td class="num">${_fmtRec(b.wr_shrunk_pct)}%</td>` : `<td class="num insuff">—</td>`;
+    // PRIMARY column is now wr_shrunk_pct; raw shown as sub-line below.
+    const wrCell = _wrPrimaryCell(b, s.insufficient_n_floor);
+    // Secondary column retained for back-compat with the table header label "WR_shrunk" — show raw here instead.
+    const wrsCell = (b.wr_pct!=null) ? `<td class="num">${_fmtRec(b.wr_pct)}% <span class="raw-sub">raw</span></td>` : `<td class="num insuff">—</td>`;
     const pf = b.pf;
-    const pfCell = `<td class="num ${_pfCls(pf)}">${_fmtRec(pf,3)}</td>`;
+    const pfCell = _pfCellMarkup(pf, 3);
     const topSrc = b.top_source ? `${b.top_source} <span class="small">(${Math.round((b.top_source_share||0)*100)}%)</span>` : '—';
     const topSym = b.top_symbol ? `${b.top_symbol} <span class="small">(${Math.round((b.top_symbol_share||0)*100)}%)</span>` : '—';
-    return `<tr><td><b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td>${wrCell}${wrsCell}${pfCell}<td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${topSym}</td><td class="small">${topSrc}</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
+    return `<tr${_rowDemoteAttr(b.caveats)}><td>${_demoteIcon(b.caveats)}<b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td>${wrCell}${wrsCell}${pfCell}<td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${topSym}</td><td class="small">${topSrc}</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
   }).join('');
   const fallback = s.fallback_mode ? `<div class="small" style="color:#fca5a5;margin-bottom:6px">⚠ FALLBACK MODE: ${s.source}</div>` : '';
   el.innerHTML = `${fallback}<p class="small">Generated ${s.generated_at} · window=${s.window_label} · cutoff=${s.cutoff_utc} · source=${s.source} · prior=${s.shrinkage_prior}</p>
     <table class="lb"><thead><tr>
       <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
-      <th class="num">WR</th><th class="num">WR<sub>shrunk</sub></th><th class="num">PF</th><th class="num">Mean PnL</th>
+      <th class="num">WR<sub>shrunk</sub> (primary)</th><th class="num">WR (raw)</th><th class="num">PF</th><th class="num">Mean PnL</th>
       <th>Top symbol</th><th>Top source</th><th>Caveats</th>
     </tr></thead><tbody>${rows}</tbody></table>`;
 }
@@ -597,10 +661,9 @@ function renderRecencyCompact(s, mountId, columnsOnly){
   if (!s || !s.by_class){ el.innerHTML = '<p class="small" style="color:#ef4444">Sidecar missing.</p>'; return; }
   const entries = Object.entries(s.by_class).sort((a,b)=>(b[1].n_touched||0)-(a[1].n_touched||0));
   const rows = entries.map(([ac,b])=>{
-    const wr = (b.wr_pct!=null) ? `<span class="${_wrCls(b.wr_pct)}">${_fmtRec(b.wr_pct)}%</span>`
-              : (b.n_decisive < (s.insufficient_n_floor||10) ? `<span class="insuff">INSUFF-N(${b.n_decisive})</span>` : '—');
-    const pf = `<span class="${_pfCls(b.pf)}">${_fmtRec(b.pf,2)}</span>`;
-    return `<tr><td><b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_decisive}</td><td class="num">${wr}</td><td class="num">${pf}</td><td class="small">${b.top_source||'—'} <span class="small">(${Math.round((b.top_source_share||0)*100)}%)</span></td><td>${_caveatBadges(b.caveats)}</td></tr>`;
+    const wr = _wrPrimaryInline(b, s.insufficient_n_floor);
+    const pf = _pfInline(b.pf, 2);
+    return `<tr${_rowDemoteAttr(b.caveats)}><td>${_demoteIcon(b.caveats)}<b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_decisive}</td><td class="num">${wr}</td><td class="num">${pf}</td><td class="small">${b.top_source||'—'} <span class="small">(${Math.round((b.top_source_share||0)*100)}%)</span></td><td>${_caveatBadges(b.caveats)}</td></tr>`;
   }).join('');
   el.innerHTML = `<table class="lb"><thead><tr><th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">decisive</th><th class="num">WR</th><th class="num">PF</th><th>Top source (share)</th><th>Caveats</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
@@ -610,9 +673,9 @@ function renderRecency48hHero(s){
   if (!s || !s.by_class){ el.innerHTML = '<p class="small" style="color:#ef4444">48h sidecar missing.</p>'; return; }
   const entries = Object.entries(s.by_class).sort((a,b)=>(b[1].n_touched||0)-(a[1].n_touched||0));
   const summary = entries.map(([ac,b])=>{
-    const wr = (b.wr_pct!=null) ? `<span class="${_wrCls(b.wr_pct)}">${_fmtRec(b.wr_pct)}%</span>`
-              : (b.n_decisive < (s.insufficient_n_floor||10) ? `<span class="insuff">INSUFF-N(${b.n_decisive})</span>` : '—');
-    return `<tr><td><b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td><td class="num">${wr}</td><td class="num ${_pfCls(b.pf)}">${_fmtRec(b.pf,3)}</td><td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${b.top_source||'—'} (${Math.round((b.top_source_share||0)*100)}%)</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
+    const wr = _wrPrimaryInline(b, s.insufficient_n_floor);
+    const pfTd = _pfCellMarkup(b.pf, 3);
+    return `<tr${_rowDemoteAttr(b.caveats)}><td>${_demoteIcon(b.caveats)}<b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td><td class="num">${wr}</td>${pfTd}<td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${b.top_source||'—'} (${Math.round((b.top_source_share||0)*100)}%)</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
   }).join('');
   // Per-pick detail per class — collapsed by default
   const detail = entries.map(([ac,b])=>{
@@ -632,7 +695,7 @@ function renderRecency48hHero(s){
   el.innerHTML = `<p class="small" style="color:#fbcfe8">Generated ${s.generated_at} · cutoff=${s.cutoff_utc} · source=${s.source}</p>
     <table class="lb"><thead><tr>
       <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
-      <th class="num">WR</th><th class="num">PF</th><th class="num">Mean PnL</th><th>Top source</th><th>Caveats</th>
+      <th class="num">WR<sub>shrunk</sub> (raw)</th><th class="num">PF</th><th class="num">Mean PnL</th><th>Top source</th><th>Caveats</th>
     </tr></thead><tbody>${summary}</tbody></table>
     <div style="margin-top:10px"><b style="font-size:12px;color:#fbcfe8">Per-pick detail (48h):</b>${detail||'<p class="small">No per-pick rows.</p>'}</div>`;
 }
