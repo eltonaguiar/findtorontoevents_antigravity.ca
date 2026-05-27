@@ -13,6 +13,13 @@ name: ML Gatekeeper Train A/B (Phase D)
 #   gh workflow run ml-gatekeeper-train-ab.yml -f drop_leakage=true
 
 on:
+  # Nightly cron — train both arms automatically so the A/B router has fresh
+  # bundles. Without scheduled retraining the gatekeeper bundles silently age
+  # against a moving outcome distribution (P0 — MiMo v2.5 Pro audit 2026-05-27).
+  # Schedule chosen so both runs finish before audit-dashboard cron at 22:00 UTC.
+  schedule:
+    - cron: '7 19 * * *'   # 19:07 UTC — OLD arm (with leakage features)
+    - cron: '17 19 * * *'  # 19:17 UTC — NEW arm (leakage-purged)
   workflow_dispatch:
     inputs:
       drop_leakage:
@@ -50,7 +57,17 @@ jobs:
       - name: Resolve arm name
         id: arm
         run: |
-          if [ "${{ inputs.drop_leakage }}" = "true" ]; then
+          # Map either workflow_dispatch input OR cron schedule to drop_leakage.
+          # Schedule '17 19 * * *' → NEW (leakage-purged); '7 19 * * *' → OLD.
+          DROP="${{ inputs.drop_leakage }}"
+          if [ -z "$DROP" ]; then
+            case "${{ github.event.schedule }}" in
+              "17 19 * * *") DROP=true ;;
+              *)             DROP=false ;;
+            esac
+          fi
+          echo "drop=$DROP" >> "$GITHUB_OUTPUT"
+          if [ "$DROP" = "true" ]; then
             echo "bundle=gatekeeper_new.joblib" >> "$GITHUB_OUTPUT"
             echo "label=NEW (leakage-purged)" >> "$GITHUB_OUTPUT"
           else
@@ -62,14 +79,14 @@ jobs:
         env:
           PYTHONUTF8: "1"
           PYTHONPATH: ${{ github.workspace }}
-          ML_GATE_DROP_LEAKAGE: ${{ inputs.drop_leakage == 'true' && '1' || '' }}
+          ML_GATE_DROP_LEAKAGE: ${{ steps.arm.outputs.drop == 'true' && '1' || '' }}
         run: |
           python -m ml_gatekeeper.train_gatekeeper
           ls -la ml_gatekeeper/models/
 
       - name: Verify bundle stamping
         env:
-          EXPECTED_DROPPED: ${{ inputs.drop_leakage }}
+          EXPECTED_DROPPED: ${{ steps.arm.outputs.drop }}
           BUNDLE_NAME: ${{ steps.arm.outputs.bundle }}
         run: |
           python - <<'PY'
