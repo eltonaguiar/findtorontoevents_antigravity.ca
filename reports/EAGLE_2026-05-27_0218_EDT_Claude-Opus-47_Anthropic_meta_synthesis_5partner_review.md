@@ -6,7 +6,7 @@
 
 ---
 
-## The 5 partner files reviewed
+## The 6 partner files reviewed
 
 | # | File | Model / Provider | Lines | Style |
 |---|---|---|---|---|
@@ -15,6 +15,28 @@
 | 3 | `reports/EAGLE-2026-05-27-remaining-items-claude-sonnet46-copilot.md` | Claude Sonnet 4.6 via GitHub Copilot | 318 | Remaining-items focused |
 | 4 | `updates/EAGLE_2026-05-27_0615EST_qwen-coder_alpha_engine_review.md` | qwen-coder | 299 | Alpha-engine drill-down |
 | 5 | `EAGLE_2026-05-27T06-10-51_EST.md` | (no model signed) | 68 | Skeleton stub |
+| 6 | (pasted by user 02:50 EDT, not file-committed) | **Mercury 2 (Inception Labs)** | ~120 (paste) | Template + tooling-focused — explicit "cannot read files locally", produces empty strategic-review TABLE for user to fill |
+
+### Mercury 2 (partner #6) — what it added
+
+Mercury 2 explicitly stated it has no file-system access ("I cannot directly read the files on your local drive"). Its contribution is:
+
+1. **A working Python dedup script** — SHA-256 hash + shortest-path-wins; same logic as my `tools/dedup_md_files.py` (independent re-derivation = validates the approach).
+2. **Empty per-class table TEMPLATE** the user can populate — columns: `Asset Class | Key Winning Picks (filtered) | Reason for Filtering | Suggested Exemption Criteria | "Sure-thing" Oscillating Trades | Top-Notch Strategy`. **This is the right shape for what the user actually asked for** ("picks that won big but were filtered", "exemption after hot streak", "trades that oscillate between 2 prices").
+3. **Compact SQL schema** (single `enhancement_incident` table with `tags TEXT[]`, `related_files TEXT[]`). Different from my 3-table proposal (`roadmap_items` + `roadmap_item_history` + `roadmap_item_reviews`). Trade-off:
+   - Mercury 2's design: simpler ingest, harder to audit status-history (no per-change tracking)
+   - My design: heavier ingest, full audit trail + per-reviewer attribution
+   - **Recommendation:** start with Mercury 2's flatter schema for v1 (faster to ship), migrate to my history+reviews schema in v2 when reviewer-attribution becomes load-bearing.
+
+**Mercury 2 net contribution:** the column-shape of the strategic-review table is the missing piece across the prior 5 partners. None of #1–#5 explicitly named "exemption-after-hot-streak" as a separate column — they treated it as part of the gate critique. Mercury 2's framing surfaces this as a first-class question.
+
+### TODO surfaced by Mercury 2 that none of #1–#5 answered
+
+The user's original prompt asked: *"do certain trades fluctuate between 2 prices over and over and are basically a sure thing?"* — **none of the 5 prior partners answered this.** Mercury 2 named it but punted ("Spot any price-pair that repeatedly cycles between two levels — flag them as high-probability mean-reversion trades").
+
+This is an **answerable empirical question** against `trading_picks` history. Adding to incidents/enhancements as new item:
+
+- **ENH-OSC-01** — "Oscillating-pair scanner": query MySQL `trading_picks` for (symbol, asset_class) where `STD(entry_price) / AVG(entry_price) < 0.02` AND `n >= 20` AND `WIN_RATE > 0.65`. Surface candidates as a new dashboard tile "Range-bound sure-things". Owner: data-eng. Effort: S (~40 LOC SQL + 1 dashboard widget). **Not in any prior partner's quick-win list — original add from this meta-synthesis.**
 
 ---
 
