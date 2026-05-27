@@ -33,6 +33,9 @@ import logging
 import os
 import sys
 
+# Ensure the project root is in sys.path so 'tools' can be imported
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -62,18 +65,22 @@ def _connect():
         log.error("pymysql is not installed. Run: pip install pymysql")
         sys.exit(1)
 
-    return pymysql.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASS,
-        database=DB_NAME,
-        connect_timeout=CONNECT_TIMEOUT,
-        read_timeout=60,
-        write_timeout=60,
-        charset="utf8mb4",
-        autocommit=False,
-    )
+    try:
+        from tools.db_env import get_stocks_creds
+        creds = get_stocks_creds()
+        return pymysql.connect(
+            host=creds["host"], port=creds["port"], user=creds["user"],
+            password=creds["password"], database=creds["database"],
+            connect_timeout=creds["connect_timeout"], read_timeout=creds["read_timeout"],
+            write_timeout=60, charset="utf8mb4", autocommit=False,
+        )
+    except (ImportError, KeyError) as exc:
+        log.warning("tools.db_env not available or failed, falling back to env vars: %s", exc)
+        return pymysql.connect(
+            host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASS,
+            database=DB_NAME, connect_timeout=CONNECT_TIMEOUT,
+            read_timeout=60, write_timeout=60, charset="utf8mb4", autocommit=False,
+        )
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -174,6 +181,32 @@ def step_delete_dupes(cur, dry_run: bool) -> int:
         log.info("[DRY-RUN] Would delete %d duplicate rows.", dupe_count)
         return dupe_count
 
+    # 1. Create backup table of duplicates
+    backup_table = "trading_picks_duplicates_backup"
+    log.info("Creating backup table '%s' and backing up duplicates...", backup_table)
+    cur.execute(f"CREATE TABLE IF NOT EXISTS {backup_table} LIKE trading_picks")
+    
+    # We use the same logic as the DELETE query to identify them for backup.
+    insert_backup_sql = f"""
+        INSERT INTO {backup_table}
+        SELECT tp.* FROM trading_picks tp
+        INNER JOIN (
+            SELECT MIN(id) AS keeper_id, symbol, direction, strategy, entry_price
+            FROM trading_picks
+            GROUP BY symbol, direction, strategy, entry_price
+            HAVING COUNT(*) > 1
+        ) AS dupes
+            ON  tp.symbol       = dupes.symbol
+            AND tp.direction    = dupes.direction
+            AND tp.strategy     = dupes.strategy
+            AND tp.entry_price  = dupes.entry_price
+            AND tp.id          != dupes.keeper_id
+    """
+    cur.execute(insert_backup_sql)
+    inserted = cur.rowcount
+    log.info("Backed up %d duplicate rows to %s.", inserted, backup_table)
+
+    # 2. Perform the actual deletion
     # Build the list of keeper IDs using a temp-table workaround that MySQL allows.
     # We materialise the subquery as a derived table aliased as `keepers`.
     delete_sql = """
