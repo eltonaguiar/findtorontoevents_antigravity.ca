@@ -262,6 +262,18 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.40,
         "allow_without_forward": True,  # New strategy, build forward record
     },
+    # PR3 (2026-05-27): Wire forex_carry_ppp — ECB research-based enhanced carry
+    # Kwas et al. (2024) PPP equilibrium overlay. EURUSD-focused, needs forward record.
+    # Incident: INC P0 (FOREX all losers) + INC P1 (forex_carry not in allowlist).
+    "forex_carry_ppp": {
+        "categories": {"forex"},
+        "min_confidence": 0.52,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.40,
+        "allow_without_forward": True,  # Probation: build forward record
+    },
     # ── ETF strategies (new 2026-04-07) ──────────────────────────────────────
     # All start on probation (allow_without_forward=True) to build forward record.
     # Benchmarks: Antonacci dual-momentum 75%+ WR, Faber TAA ~65% WR in academic tests.
@@ -403,7 +415,12 @@ NON_CRYPTO_TP_SL_CAPS: dict[str, tuple[float, float]] = {
     # ATR ceiling) + 1.5% TP (1.875:1 R:R). All three forex cap locations
     # updated together: production_scanner.py TP_CAP_FOREX/SL_CAP_FOREX and
     # config.py CATEGORY_RISK forex. See updates/2026-04-25-forex-tpsl-review.md.
-    "forex":     (0.015, 0.008),   # 1.5% TP, 0.8% SL — 2-model consensus, see review doc
+    #
+    # PR3 (2026-05-27): WIDENED SL from 0.8% to 1.0%. Incident analysis shows
+    # SL at 0.8% still sits at median daily FX ATR for volatile pairs (GBP, JPY).
+    # 1.0% SL clears the ATR ceiling for all G10 pairs. TP unchanged at 1.5%.
+    # Expected: SL_HIT rate drops from 44% to ~30%, R:R improves to 1.5:1.
+    "forex":     (0.015, 0.010),   # 1.5% TP, 1.0% SL — PR3 ATR-clearing fix
     "equity":    (0.080, 0.050),   # 8.0% TP, 5.0% SL
     "etf":       (0.050, 0.030),   # 5.0% TP, 3.0% SL
     "commodity": (0.030, 0.020),   # 3.0% TP, 2.0% SL (commodities move 1-3%/day)

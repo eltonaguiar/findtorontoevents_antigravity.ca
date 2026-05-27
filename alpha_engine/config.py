@@ -174,13 +174,9 @@ CATEGORY_RISK: dict[str, tuple[float, float, int]] = {
     "crypto":  (-0.08, 0.15, 7),
     "meme":    (-0.15, 0.35, 3),
     "penny":   (-0.12, 0.25, 5),
-    "forex":   (-0.008, 0.015, 7),     # 2026-04-25: WIDENED from -0.005/+0.0075
-    # to -0.8%/+1.5%. The 2026-04-18 widening (4.3% WR -> 47.5% WR) helped but
-    # FX class still has PF=0.26 expectancy=-$0.99/trade on 1558 closed picks,
-    # SL_HIT 44% vs TP_HIT 12%. Two-model Ollama consensus (gpt-oss:120b +
-    # qwen3-coder:480b) — 0.5% SL sits AT median daily FX ATR (0.3-0.8%), so
-    # stops trigger on noise. New 0.8% SL is above ATR ceiling; 1.5% TP gives
-    # 1.875:1 R:R. See updates/2026-04-25-forex-tpsl-review.md.
+    "forex":   (-0.010, 0.015, 7),     # PR3 (2026-05-27): WIDENED SL -0.8% -> -1.0%
+    # to clear median daily FX ATR for all G10 pairs. TP unchanged at 1.5%.
+    # Prior: 2026-04-25 widened from -0.005/+0.0075. See updates/2026-04-25-forex-tpsl-review.md.
     "stock":   (-0.06, 0.12, 10),
     "equity":  (-0.03, 0.05, 14),      # 3% SL, 5% TP, 14-day hold (earnings/catalysts need time)
 }
@@ -191,7 +187,7 @@ CATEGORY_RISK_FAST: dict[str, tuple[float, float, int]] = {
     "crypto":  (-0.04, 0.075, 3),
     "meme":    (-0.075, 0.175, 2),
     "penny":   (-0.06, 0.125, 3),
-    "forex":   (-0.008, 0.015, 5),     # 2026-04-25: WIDENED from -0.005/+0.0075 (see CATEGORY_RISK above)
+    "forex":   (-0.010, 0.015, 5),     # PR3 (2026-05-27): SL -0.8% -> -1.0% (see CATEGORY_RISK)
     "stock":   (-0.03, 0.06, 5),
     "equity":  (-0.015, 0.025, 7),     # 1.5% SL, 2.5% TP, 7-day hold
 }

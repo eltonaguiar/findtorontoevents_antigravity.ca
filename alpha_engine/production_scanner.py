@@ -1217,7 +1217,8 @@ TP_CAP_EQUITY = 0.10  # 10% max for stocks/ETF (swing-style picks)
 # SL cap: max allowed SL distance from entry (as a fraction)
 SL_CAP_CRYPTO = 0.10  # 10% max SL for crypto
 # 2026-04-25: WIDENED from 0.005 -> 0.008. See TP_CAP_FOREX comment above.
-SL_CAP_FOREX = 0.008  # 0.8% max SL for forex (was 0.005 — see review doc)
+# PR3 (2026-05-27): WIDENED from 0.008 -> 0.010. Clear median daily FX ATR for all G10 pairs.
+SL_CAP_FOREX = 0.010  # 1.0% max SL for forex (was 0.008 — PR3 ATR-clearing fix)
 SL_CAP_COMMODITY = 0.08
 SL_CAP_EQUITY = 0.07
 
