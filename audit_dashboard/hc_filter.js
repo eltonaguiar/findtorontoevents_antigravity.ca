@@ -338,6 +338,17 @@ function evaluateHcGates1to9(pick, opt) {
   if (!trustTier && typeof getTrustTier === 'function') {
     trustTier = String(getTrustTier(p).tier || '').toUpperCase();
   }
+  // PR6 (2026-05-27): When trust_score is NULL (99.99% of closed picks),
+  // derive from trust_tier so the HC overlay doesn't reject everything.
+  // Tier-to-score mapping: PROVEN=9, ELITE=8, TRUSTED=7, DEVELOPING=5,
+  // WATCH=3, SANDBOX/UNPROVEN/PROBATION/DEMOTED=1 (also blacklisted).
+  if (trust === 0 && trustTier) {
+    var _tierMap = {
+      'PROVEN': 9, 'ELITE': 8, 'TRUSTED': 7, 'DEVELOPING': 5,
+      'WATCH': 3, 'SANDBOX': 1, 'UNPROVEN': 1, 'PROBATION': 1, 'DEMOTED': 1
+    };
+    trust = _tierMap[trustTier] || 0;
+  }
   var fwdWr = Number(p.strat_fwd_wr || p.forward_wr || 0);
   if (fwdWr > 1.5) fwdWr = fwdWr / 100;
   var fwdN = parseInt(
