@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-05-27T08:13:46.051071+00:00",
+  "generated_at": "2026-05-27T09:52:18.530266+00:00",
   "strategy_name": "cot_positioning",
   "symbol": "CT=F",
   "asset_class": "COMMODITY",
   "tier": "SHADOW_INSUFFICIENT_N",
   "dsr": null,
-  "dsr_note": "DSR withheld: only 5 unique CFTC COT releases (need >=20). The prior DSR=1.0 / TIER_1_RENAISSANCE headline was an over-emission artifact (~20x re-emission of the same weekly release inflated n and WR). DSR=1.0 cannot be honestly emitted on this sample. See reports/cot_paper_pilot_overemission_falsified_20260513.md ; reports/cot_timing_leakage_audit_2026-05-13.md.",
-  "tier_note": "Tier downgraded to SHADOW_INSUFFICIENT_N: deduped n=5 < 20 unique releases.",
+  "dsr_note": "DSR withheld: only 6 unique CFTC COT releases (need >=20). The prior DSR=1.0 / TIER_1_RENAISSANCE headline was an over-emission artifact (~20x re-emission of the same weekly release inflated n and WR). DSR=1.0 cannot be honestly emitted on this sample. See reports/cot_paper_pilot_overemission_falsified_20260513.md ; reports/cot_timing_leakage_audit_2026-05-13.md.",
+  "tier_note": "Tier downgraded to SHADOW_INSUFFICIENT_N: deduped n=6 < 20 unique releases.",
   "falsification_refs": [
     "reports/cot_paper_pilot_overemission_falsified_20260513.md",
     "reports/cot_timing_leakage_audit_2026-05-13.md"
@@ -23,17 +23,17 @@
   },
   "window_days": 90,
   "stats": {
-    "n_total": 5,
+    "n_total": 6,
     "n_wins": 2,
-    "n_losses": 3,
-    "wr_pct": 40.0,
-    "cum_pnl_usd": -51.61,
-    "avg_pnl_per_trade_usd": -10.32,
+    "n_losses": 4,
+    "wr_pct": 33.33,
+    "cum_pnl_usd": -85.34,
+    "avg_pnl_per_trade_usd": -14.22,
     "expected_per_trade_low_usd": 3.4,
     "expected_per_trade_high_usd": 13.4,
-    "n_unique_releases": 5,
-    "n_raw_emissions": 35,
-    "over_emission_ratio": 7.0,
+    "n_unique_releases": 6,
+    "n_raw_emissions": 36,
+    "over_emission_ratio": 6.0,
     "dedup_basis": "one trade per unique CFTC COT release week (Tue report period)",
     "trades": [
       {
@@ -105,12 +105,26 @@
         "cum_pnl_net": -51.61,
         "created_at": "2026-05-19 15:16:48",
         "closed_at": ""
+      },
+      {
+        "id": "multi_asset_cot_positioning::CT=F::2026-05-27_0821",
+        "release_week": "2026-W22",
+        "status": "LOST",
+        "direction": "SHORT",
+        "entry_price": 76.589996,
+        "exit_price": 81.785352,
+        "pnl_pct": -0.0678,
+        "pnl_usd_gross": -23.73,
+        "pnl_usd_net": -33.73,
+        "cum_pnl_net": -85.34,
+        "created_at": "2026-05-27 08:21:40",
+        "closed_at": ""
       }
     ]
   },
   "graduation_gate": {
     "verdict": "BELOW_EXPECTED",
-    "detail": "avg $-10.32 below tolerance floor $4.20; investigate before sizing",
+    "detail": "avg $-14.22 below tolerance floor $4.20; investigate before sizing",
     "ready_for_live": false
   },
   "codex_state_machine": {
