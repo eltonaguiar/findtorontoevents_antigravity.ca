@@ -1,7 +1,6 @@
 ---
 name: dedup-md-files
 description: Content-dedup a list of markdown paths (handles many worktree copies of the same report). Returns the canonical (shortest-path) file per unique content hash so a reviewer doesn't read the same .md N times.
-aliases: [dedup-md, canonical-mds, md-dedup]
 ---
 
 # /dedup-md-files — Get the canonical set of unique .md paths
